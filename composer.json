@@ -1,0 +1,15 @@
+{
+    "name": "lkrms/util",
+    "type": "library",
+    "license": "MIT",
+    "description": "Frequently used functions + cURL wrapper + CLI helper",
+    "require": {
+        "php": ">=7.2",
+        "lib-curl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lkrms\\": "src/"
+        }
+    }
+}
