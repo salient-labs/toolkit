@@ -7,7 +7,7 @@ namespace Lkrms\Curler;
 class CurlerHeader
 {
     private $Headers = array(
-        'user-agent' => 'User-Agent:Curler PHP (https://github.com/lkrms/curler-php)'
+        'user-agent' => 'User-Agent:util-php/Curler (https://github.com/lkrms/util-php)'
     );
 
     public function SetHeader(string $name, string $value)
