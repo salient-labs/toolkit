@@ -11,7 +11,7 @@ use ValueError;
  *
  * @package Lkrms
  */
-class Dotenv
+class Env
 {
     /**
      * Load environment variables from `.env` to `getenv()`, `$_ENV` and
@@ -76,6 +76,29 @@ class Dotenv
             $_ENV[$name]     = $value;
             $_SERVER[$name]  = $value;
         }
+    }
+
+    /**
+     * Retrieve an environment variable
+     *
+     * Looks for `$name` in `$_ENV`, `$_SERVER` and `getenv()`, in that order,
+     * and returns the first value it finds, throwing an exception if `$name`
+     * isn't set.
+     *
+     * @param string $name The environment variable to retrieve.
+     * @return string
+     * @throws RuntimeException
+     */
+    public static function Get(string $name) : string
+    {
+        $value = $_ENV[$name]??($_SERVER[$name]??(getenv($name, true) ? : getenv($name)));
+
+        if ($value === false)
+        {
+            throw new RuntimeException("Environment variable $name is not set");
+        }
+
+        return $value;
     }
 }
 
