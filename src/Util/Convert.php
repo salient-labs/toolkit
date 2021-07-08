@@ -34,5 +34,16 @@ class Convert
     {
         return empty($value) ? null : $value;
     }
+
+    /**
+     * Return `'true'` if a boolean is true, `'false'` if it's not
+     *
+     * @param bool $value The variable being checked.
+     * @return string Either `'true'` or `'false'`.
+     */
+    public static function BoolToString(bool $value)
+    {
+        return $value ? 'true' : 'false';
+    }
 }
 
