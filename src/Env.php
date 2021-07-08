@@ -59,11 +59,11 @@ class Env
                 continue;
             }
 
-            if ($match[3])
+            if ($match[3]??null)
             {
                 $value = preg_replace("/\\\\([\"\$`])/", '\1', $match[3]);
             }
-            elseif ($match[5])
+            elseif ($match[5]??null)
             {
                 $value = str_replace("'\\''", "'", $match[5]);
             }
@@ -91,7 +91,7 @@ class Env
      */
     public static function Get(string $name) : string
     {
-        $value = $_ENV[$name]??($_SERVER[$name]??(getenv($name, true) ? : getenv($name)));
+        $value = $_ENV[$name]??$_SERVER[$name]??(getenv($name, true) ? : getenv($name));
 
         if ($value === false)
         {
