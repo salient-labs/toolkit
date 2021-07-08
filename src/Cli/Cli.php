@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Lkrms\Cli;
+use Lkrms\Console;
 use Lkrms\Util\Assert;
 use Lkrms\Util\Convert;
 use Exception;
@@ -42,11 +43,6 @@ class Cli
     private static $GetOptCalled = false;
 
     private static $NextArgumentIndex;
-
-    public static function ErrorWrite(string $string)
-    {
-        fwrite(STDERR, $string . "\n");
-    }
 
     public static function GetCommandName()
     {
@@ -191,7 +187,7 @@ class Cli
             $usage .= $option['defaultValue'] ? "\n    Default: $option[defaultValue]" : '';
         }
 
-        self::ErrorWrite($usage);
+        Console::Error($usage);
         exit ($status);
     }
 
@@ -264,7 +260,7 @@ class Cli
 
                 if ( ! $option->MultipleAllowed && is_array($a))
                 {
-                    self::ErrorWrite(self::GetCommandName() . ": {$option->DisplayName} cannot be used multiple times");
+                    Console::Error(self::GetCommandName() . ": {$option->DisplayName} cannot be used multiple times");
                     $opt = false;
                 }
 
@@ -276,7 +272,7 @@ class Cli
                     {
                         if ( ! in_array($v, $option->AllowedValues))
                         {
-                            self::ErrorWrite(self::GetCommandName() . ": invalid value for {$option->DisplayName} -- '$v'");
+                            Console::Error(self::GetCommandName() . ": invalid value for {$option->DisplayName} -- '$v'");
                             $opt = false;
                         }
                     }
@@ -294,7 +290,7 @@ class Cli
                 {
                     if ($GLOBALS['argc'] > 1 && ! $isHelp)
                     {
-                        self::ErrorWrite(self::GetCommandName() . ": {$o->DisplayName} is required");
+                        Console::Error(self::GetCommandName() . ": {$o->DisplayName} is required");
                     }
 
                     $opt = false;
