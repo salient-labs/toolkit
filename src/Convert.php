@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms;
 
 /**
  * Functions for type wrangling
  *
- * @package Lkrms\Util
+ * @package Lkrms
  */
 class Convert
 {

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms;
 use Exception;
 
 /**
  * Assertion functions
  *
- * @package Lkrms\Util
+ * @package Lkrms
  */
 class Assert
 {

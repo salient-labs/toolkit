@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms;
 
 /**
  * Functions for value testing
  *
- * @package Lkrms\Util
+ * @package Lkrms
  */
 class Test
 {

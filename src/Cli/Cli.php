@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 namespace Lkrms\Cli;
+use Lkrms\Assert;
 use Lkrms\Console;
-use Lkrms\Util\Assert;
-use Lkrms\Util\Convert;
+use Lkrms\Convert;
 use Exception;
 
 class Cli
