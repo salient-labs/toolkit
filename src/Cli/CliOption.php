@@ -34,7 +34,7 @@ class CliOption
 
     public $DefaultValue;
 
-    private static function ScalarToString(mixed $value, string $errorMessage) : string
+    private static function ScalarToString($value, string $errorMessage) : string
     {
         if (is_scalar($value))
         {
