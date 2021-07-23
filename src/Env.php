@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms;
 
 use RuntimeException;
-use ValueError;
+use UnexpectedValueException;
 
 /**
  * Environment-related functions
@@ -29,7 +29,7 @@ class Env
      * @param bool $replace If `true`, override existing environment variables.
      * @return void
      * @throws RuntimeException
-     * @throws ValueError
+     * @throws UnexpectedValueException
      */
     public static function Load(string $filename, bool $replace = false): void
     {
@@ -50,7 +50,7 @@ class Env
             }
             elseif ( ! preg_match("/^([A-Z_][A-Z0-9_]*)=(\"(([^\"\$`]|\\\\[\"\$`])*)\"|'(([^']|'\\\\'')*)'|[^]\"\$'*?`\\s[]*)\$/i", $line, $match))
             {
-                throw new ValueError("Invalid entry at line $l in $filename");
+                throw new UnexpectedValueException("Invalid entry at line $l in $filename");
             }
 
             $name = $match[1];

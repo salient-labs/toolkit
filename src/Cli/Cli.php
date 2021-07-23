@@ -298,7 +298,7 @@ class Cli
                 }
             }
 
-            if ($opt === false)
+            if ($opt === false || $isHelp)
             {
                 self::Usage($isHelp ? 0 : 1);
             }
