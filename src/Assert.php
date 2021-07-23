@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Lkrms;
+
 use Exception;
 
 /**
@@ -14,7 +15,7 @@ class Assert
 {
     private static function GetName( ? string $name) : string
     {
-        return is_null($name) ? 'value' : "'$name'";
+        return is_null($name) ? "value" : "'$name'";
     }
 
     public static function NotNull($value, string $name = null)
@@ -73,9 +74,9 @@ class Assert
 
     public static function SapiIsCli()
     {
-        if (PHP_SAPI != 'cli')
+        if (PHP_SAPI != "cli")
         {
-            throw new Exception('CLI required');
+            throw new Exception("CLI required");
         }
     }
 }

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Lkrms\Curler;
+
 use CURLFile;
 use Exception;
 
@@ -23,15 +24,15 @@ class CurlerFile
     {
         if (empty($filename) || ! is_file($filename) || ! ($filename = realpath($filename)))
         {
-            throw new Exception('Invalid filename');
+            throw new Exception("Invalid filename");
         }
 
-        $this->FileName  = $filename;
-        $this->PostName  = is_null($postname) ? basename($filename) : $postname;
-        $this->MimeType  = is_null($mimetype) ? mime_content_type($filename) : $mimetype;
+        $this->FileName = $filename;
+        $this->PostName = is_null($postname) ? basename($filename) : $postname;
+        $this->MimeType = is_null($mimetype) ? mime_content_type($filename) : $mimetype;
     }
 
-    public function GetCurlFile() : CURLFile
+    public function GetCurlFile(): CURLFile
     {
         return new CURLFile($this->FileName, $this->MimeType, $this->PostName);
     }

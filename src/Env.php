@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Lkrms;
+
 use RuntimeException;
 use ValueError;
 
@@ -30,7 +31,7 @@ class Env
      * @throws RuntimeException
      * @throws ValueError
      */
-    public static function Load(string $filename, bool $replace = false) : void
+    public static function Load(string $filename, bool $replace = false): void
     {
         $lines = file($filename, FILE_IGNORE_NEW_LINES);
 
@@ -43,11 +44,11 @@ class Env
         {
             $l = $i + 1;
 
-            if ( ! trim($line) || substr($line, 0, 1) == '#')
+            if ( ! trim($line) || substr($line, 0, 1) == "#")
             {
                 continue;
             }
-            elseif ( ! preg_match("/^([A-Z_][A-Z0-9_]*)=(\"(([^\"\$`]|\\\\[\"\$`])*)\"|'(([^']|'\\\\'')*)'|[^]\"\$'*?`\s[]*)$/i", $line, $match))
+            elseif ( ! preg_match("/^([A-Z_][A-Z0-9_]*)=(\"(([^\"\$`]|\\\\[\"\$`])*)\"|'(([^']|'\\\\'')*)'|[^]\"\$'*?`\\s[]*)\$/i", $line, $match))
             {
                 throw new ValueError("Invalid entry at line $l in $filename");
             }
@@ -59,11 +60,11 @@ class Env
                 continue;
             }
 
-            if ($match[3]??null)
+            if ($match[3] ?? null)
             {
-                $value = preg_replace("/\\\\([\"\$`])/", '\1', $match[3]);
+                $value = preg_replace("/\\\\([\"\$`])/", "\\1", $match[3]);
             }
-            elseif ($match[5]??null)
+            elseif ($match[5] ?? null)
             {
                 $value = str_replace("'\\''", "'", $match[5]);
             }
@@ -72,9 +73,9 @@ class Env
                 $value = $match[2];
             }
 
-            putenv($name . '=' . $value);
-            $_ENV[$name]     = $value;
-            $_SERVER[$name]  = $value;
+            putenv($name . "=" . $value);
+            $_ENV[$name]    = $value;
+            $_SERVER[$name] = $value;
         }
     }
 
@@ -89,9 +90,9 @@ class Env
      * @return string
      * @throws RuntimeException
      */
-    public static function Get(string $name) : string
+    public static function Get(string $name): string
     {
-        $value = $_ENV[$name]??$_SERVER[$name]??(getenv($name, true) ? : getenv($name));
+        $value = $_ENV[$name] ?? $_SERVER[$name] ?? (getenv($name, true) ?: getenv($name));
 
         if ($value === false)
         {

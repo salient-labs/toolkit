@@ -17,7 +17,7 @@ class Convert
      * @param mixed $value The variable being checked.
      * @return array Either `$value` or `[$value]`.
      */
-    public static function AnyToArray($value) : array
+    public static function AnyToArray($value): array
     {
         return is_array($value) ? $value : [
             $value
@@ -43,7 +43,7 @@ class Convert
      */
     public static function BoolToString(bool $value)
     {
-        return $value ? 'true' : 'false';
+        return $value ? "true" : "false";
     }
 }
 

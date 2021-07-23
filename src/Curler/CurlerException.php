@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Lkrms\Curler;
+
 use Exception;
 
 class CurlerException extends Exception
@@ -19,7 +20,7 @@ class CurlerException extends Exception
     {
         if (empty($arr))
         {
-            return '';
+            return "";
         }
 
         $s = "\n$entity:";
@@ -34,9 +35,9 @@ class CurlerException extends Exception
 
     public function __toString()
     {
-        $curlerDetail  = '';
-        $curlerDetail .= self::GetArrayAsString('cURL info', $this->curler->GetLastCurlInfo());
-        $curlerDetail .= self::GetArrayAsString('Response headers', $this->curler->GetLastResponseHeaders());
+        $curlerDetail  = "";
+        $curlerDetail .= self::GetArrayAsString("cURL info", $this->curler->GetLastCurlInfo());
+        $curlerDetail .= self::GetArrayAsString("Response headers", $this->curler->GetLastResponseHeaders());
 
         if ($this->curler->GetDebug() && ! is_null($this->curler->GetLastResponse()))
         {

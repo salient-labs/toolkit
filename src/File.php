@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Lkrms;
+
 use RuntimeException;
 
 /**
@@ -19,14 +20,14 @@ class File
      * @return string Either "\r\n" or "\n".
      * @throws RuntimeException
      */
-    public static function GetEol(string $filename) : string
+    public static function GetEol(string $filename): string
     {
         $endings = [
             "\r\n",
             "\n",
         ];
 
-        $handle = fopen($filename, 'r');
+        $handle = fopen($filename, "r");
 
         if ($handle === false)
         {

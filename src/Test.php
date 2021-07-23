@@ -27,7 +27,7 @@ class Test
      */
     public static function IsFlagSet(int $value, int $flag, ? int $mask = null) : bool
     {
-        return ($value & ($mask??$flag)) === $flag;
+        return ($value & ($mask ?? $flag)) === $flag;
     }
 
     /**
@@ -39,9 +39,9 @@ class Test
      * @param int $mask The mask being applied to `$value`.
      * @return bool
      */
-    public static function IsOneFlagSet(int $value, int $mask) : bool
+    public static function IsOneFlagSet(int $value, int $mask): bool
     {
-        return substr_count(decbin($value & $mask), '1') === 1;
+        return substr_count(decbin($value & $mask), "1") === 1;
     }
 }
 
