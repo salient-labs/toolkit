@@ -13,7 +13,7 @@ use Exception;
  */
 class Assert
 {
-    private static function GetName( ? string $name) : string
+    private static function GetName(?string $name): string
     {
         return is_null($name) ? "value" : "'$name'";
     }
@@ -36,7 +36,7 @@ class Assert
         }
     }
 
-    public static function PregMatch( ? string $value, string $pattern, string $name = null)
+    public static function PregMatch(?string $value, string $pattern, string $name = null)
     {
         if (is_null($value) || ! preg_match($pattern, $value))
         {

@@ -25,7 +25,7 @@ class Test
      * @param null|int $mask The mask being applied to `$value` and `$flag`.
      * @return bool
      */
-    public static function IsFlagSet(int $value, int $flag, ? int $mask = null) : bool
+    public static function IsFlagSet(int $value, int $flag, ?int $mask = null): bool
     {
         return ($value & ($mask ?? $flag)) === $flag;
     }

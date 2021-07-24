@@ -74,7 +74,7 @@ class Curler
         return $query;
     }
 
-    private function Initialise($requestType, ? array $queryString)
+    private function Initialise($requestType, ?array $queryString)
     {
         $query = "";
 
@@ -118,7 +118,7 @@ class Curler
         curl_setopt(self::$Curl, CURLINFO_HEADER_OUT, $this->Debug);
     }
 
-    private function SetData( ? array $data, bool $asJson)
+    private function SetData(?array $data, bool $asJson)
     {
         $query   = "";
         $hasFile = false;
@@ -127,9 +127,7 @@ class Curler
         {
             array_walk_recursive($data,
 
-            function ( & $item, $key)
-
-            use ( & $hasFile)
+            function (&$item, $key) use (&$hasFile)
             {
                 if ($item instanceof CurlerFile)
                 {
@@ -158,7 +156,7 @@ class Curler
         }
     }
 
-    private function Execute() : string
+    private function Execute(): string
     {
         // add headers for authentication etc.
         curl_setopt(self::$Curl, CURLOPT_HTTPHEADER, $this->Headers->GetHeaders());
@@ -191,7 +189,7 @@ class Curler
         return $result;
     }
 
-    public function GetBaseUrl() : string
+    public function GetBaseUrl(): string
     {
         return $this->BaseUrl;
     }
@@ -238,12 +236,12 @@ class Curler
         return $this->Execute();
     }
 
-    public function GetJson(array $queryString = null): ? array
+    public function GetJson(array $queryString = null): ?array
     {
         return json_decode($this->Get($queryString), true);
     }
 
-    public function Post(array $data = null, array $queryString = null, bool $dataAsJson = true) : string
+    public function Post(array $data = null, array $queryString = null, bool $dataAsJson = true): string
     {
         $this->Initialise("POST", $queryString);
         $this->SetData($data, $dataAsJson);
@@ -251,12 +249,12 @@ class Curler
         return $this->Execute();
     }
 
-    public function PostJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ? array
+    public function PostJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ?array
     {
         return json_decode($this->Post($data, $queryString, $dataAsJson), true);
     }
 
-    public function RawPost(string $data, string $contentType, array $queryString = null) : string
+    public function RawPost(string $data, string $contentType, array $queryString = null): string
     {
         $this->Initialise("POST", $queryString);
         $this->Headers->SetHeader("Content-Type", $contentType);
@@ -265,12 +263,12 @@ class Curler
         return $this->Execute();
     }
 
-    public function RawPostJson(string $data, string $contentType, array $queryString = null): ? array
+    public function RawPostJson(string $data, string $contentType, array $queryString = null): ?array
     {
         return json_decode($this->RawPost($data, $contentType, $queryString), true);
     }
 
-    public function Put(array $data = null, array $queryString = null, bool $dataAsJson = true) : string
+    public function Put(array $data = null, array $queryString = null, bool $dataAsJson = true): string
     {
         $this->Initialise("PUT", $queryString);
         $this->SetData($data, $dataAsJson);
@@ -278,12 +276,12 @@ class Curler
         return $this->Execute();
     }
 
-    public function PutJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ? array
+    public function PutJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ?array
     {
         return json_decode($this->Put($data, $queryString, $dataAsJson), true);
     }
 
-    public function Patch(array $data = null, array $queryString = null, bool $dataAsJson = true) : string
+    public function Patch(array $data = null, array $queryString = null, bool $dataAsJson = true): string
     {
         $this->Initialise("PATCH", $queryString);
         $this->SetData($data, $dataAsJson);
@@ -291,12 +289,12 @@ class Curler
         return $this->Execute();
     }
 
-    public function PatchJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ? array
+    public function PatchJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ?array
     {
         return json_decode($this->Patch($data, $queryString, $dataAsJson), true);
     }
 
-    public function Delete(array $data = null, array $queryString = null, bool $dataAsJson = true) : string
+    public function Delete(array $data = null, array $queryString = null, bool $dataAsJson = true): string
     {
         $this->Initialise("DELETE", $queryString);
         $this->SetData($data, $dataAsJson);
@@ -304,27 +302,27 @@ class Curler
         return $this->Execute();
     }
 
-    public function DeleteJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ? array
+    public function DeleteJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ?array
     {
         return json_decode($this->Delete($data, $queryString, $dataAsJson), true);
     }
 
-    public function GetLastCurlInfo() : ? array
+    public function GetLastCurlInfo(): ?array
     {
         return $this->LastCurlInfo;
     }
 
-    public function GetLastResponse() : ? string
+    public function GetLastResponse(): ?string
     {
         return $this->LastResponse;
     }
 
-    public function GetLastResponseCode() : ? int
+    public function GetLastResponseCode(): ?int
     {
         return $this->LastResponseCode;
     }
 
-    public function GetLastResponseHeaders() : ? array
+    public function GetLastResponseHeaders(): ?array
     {
         return $this->LastResponseHeaders;
     }
@@ -335,7 +333,7 @@ class Curler
      * @param array $queryString
      * @return array All returned entities.
      */
-    public function GetAllLinked(array $queryString = null) : array
+    public function GetAllLinked(array $queryString = null): array
     {
         $this->Initialise("GET", $queryString);
         $entities = array();

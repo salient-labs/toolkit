@@ -47,7 +47,7 @@ class CliOption
         }
     }
 
-    public function __construct( ? string $long, ? string $short, ? string $valueName, ? string $description, int $flags = Cli::OPTION_TYPE_FLAG, array $allowedValues = null, $defaultValue = null)
+    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $flags = Cli::OPTION_TYPE_FLAG, array $allowedValues = null, $defaultValue = null)
     {
         if ( ! Test::IsOneFlagSet($flags, Cli::MASK_OPTION_TYPE))
         {
@@ -84,7 +84,7 @@ class CliOption
                 $this->DefaultValue = Convert::AnyToArray($this->DefaultValue);
                 array_walk($this->DefaultValue,
 
-                function ( & $value)
+                function (&$value)
                 {
                     $value = self::ScalarToString($value, "defaultValue must be a scalar or an array of scalars");
                 }

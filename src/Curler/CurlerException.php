@@ -16,7 +16,7 @@ class CurlerException extends Exception
         parent::__construct($message, $code, $previous);
     }
 
-    private static function GetArrayAsString(string $entity, ? array $arr)
+    private static function GetArrayAsString(string $entity, ?array $arr)
     {
         if (empty($arr))
         {

@@ -50,9 +50,9 @@ class Cli
         return basename($GLOBALS["argv"][0]);
     }
 
-    public static function AddOption( ? string $long, ? string $short, ? string $valueName, ? string $description, int $flags = self::OPTION_TYPE_FLAG, array $allowedValues = null, $defaultValue = null)
+    public static function AddOption(?string $long, ?string $short, ?string $valueName, ?string $description, int $flags = self::OPTION_TYPE_FLAG, array $allowedValues = null, $defaultValue = null)
     {
-        self::AddCliOption( new CliOption($long, $short, $valueName, $description, $flags, $allowedValues, $defaultValue));
+        self::AddCliOption(new CliOption($long, $short, $valueName, $description, $flags, $allowedValues, $defaultValue));
     }
 
     public static function AddCliOption(CliOption $option)
@@ -156,7 +156,7 @@ class Cli
         ];
     }
 
-    public static function Usage(int $status = 0) : void
+    public static function Usage(int $status = 0): void
     {
         $usage = "Usage: " . self::GetCommandName();
 
