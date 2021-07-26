@@ -4,34 +4,60 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
+use Lkrms\Convert;
+
 class Curler
 {
+    /**
+     * @var string
+     */
     private $BaseUrl;
 
+    /**
+     * @var CurlerHeaders
+     */
     private $Headers;
 
+    /**
+     * @var array
+     */
     private $LastCurlInfo;
 
+    /**
+     * @var string
+     */
     private $LastResponse;
 
+    /**
+     * @var int
+     */
     private $LastResponseCode;
 
+    /**
+     * @var array
+     */
     private $LastResponseHeaders;
 
+    /**
+     * @var bool
+     */
     private $Debug = false;
 
+    /**
+     * @var bool
+     */
     private $NoNumericKeys = false;
 
     private static $Curl;
 
     private static $ResponseHeaders;
 
-    public function __construct(string $baseUrl, CurlerHeader $headers)
+    public function __construct(string $baseUrl, CurlerHeaders $headers)
     {
         $this->BaseUrl = $baseUrl;
         $this->Headers = $headers;
 
-        if ( ! is_resource(self::$Curl))
+        if (is_null(self::$Curl))
         {
             self::$Curl = curl_init();
 
@@ -76,16 +102,13 @@ class Curler
 
     private function Initialise($requestType, ?array $queryString)
     {
-        $query = "";
-
-        if (is_array($queryString))
+        if (empty($queryString))
         {
-            $query = $this->HttpBuildQuery($queryString);
-
-            if ($query)
-            {
-                $query = "?" . $query;
-            }
+            $query = "";
+        }
+        else
+        {
+            $query = "?" . $this->HttpBuildQuery($queryString);
         }
 
         curl_setopt(self::$Curl, CURLOPT_URL, $this->BaseUrl . $query);
@@ -120,18 +143,16 @@ class Curler
 
     private function SetData(?array $data, bool $asJson)
     {
-        $query   = "";
-        $hasFile = false;
-
         if ( ! is_null($data))
         {
+            $hasFile = false;
             array_walk_recursive($data,
 
-            function (&$item, $key) use (&$hasFile)
+            function (&$value, $key) use (&$hasFile)
             {
-                if ($item instanceof CurlerFile)
+                if ($value instanceof CurlerFile)
                 {
-                    $item    = $item->GetCurlFile();
+                    $value   = $value->GetCurlFile();
                     $hasFile = true;
                 }
             }
@@ -162,7 +183,7 @@ class Curler
         curl_setopt(self::$Curl, CURLOPT_HTTPHEADER, $this->Headers->GetHeaders());
 
         // clear any previous response headers
-        self::$ResponseHeaders = array();
+        self::$ResponseHeaders = [];
 
         // execute the request
         $result = curl_exec(self::$Curl);
@@ -175,7 +196,7 @@ class Curler
         {
             $this->LastResponse     = null;
             $this->LastResponseCode = null;
-            throw new CurlerException("cURL error: " . curl_error(self::$Curl), $this);
+            throw new CurlerException($this, "cURL error: " . curl_error(self::$Curl));
         }
 
         $this->LastResponse     = $result;
@@ -183,7 +204,7 @@ class Curler
 
         if ($this->LastResponseCode >= 400)
         {
-            throw new CurlerException("HTTP error " . ($this->LastResponseHeaders["status"] ?? $this->LastResponseCode), $this);
+            throw new CurlerException($this, "HTTP error " . ($this->LastResponseHeaders["status"] ?? $this->LastResponseCode));
         }
 
         return $result;
@@ -194,7 +215,7 @@ class Curler
         return $this->BaseUrl;
     }
 
-    public function GetHeaders(): CurlerHeader
+    public function GetHeaders(): CurlerHeaders
     {
         return $this->Headers;
     }
@@ -204,9 +225,9 @@ class Curler
         return $this->Debug;
     }
 
-    public function GetNoNumericKeys(): bool
+    public function GetNumericKeys(): bool
     {
-        return $this->NoNumericKeys;
+        return ! $this->NoNumericKeys;
     }
 
     public function EnableDebug()
@@ -236,7 +257,7 @@ class Curler
         return $this->Execute();
     }
 
-    public function GetJson(array $queryString = null): ?array
+    public function GetJson(array $queryString = null)
     {
         return json_decode($this->Get($queryString), true);
     }
@@ -249,7 +270,7 @@ class Curler
         return $this->Execute();
     }
 
-    public function PostJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ?array
+    public function PostJson(array $data = null, array $queryString = null, bool $dataAsJson = true)
     {
         return json_decode($this->Post($data, $queryString, $dataAsJson), true);
     }
@@ -263,7 +284,7 @@ class Curler
         return $this->Execute();
     }
 
-    public function RawPostJson(string $data, string $contentType, array $queryString = null): ?array
+    public function RawPostJson(string $data, string $contentType, array $queryString = null)
     {
         return json_decode($this->RawPost($data, $contentType, $queryString), true);
     }
@@ -276,7 +297,7 @@ class Curler
         return $this->Execute();
     }
 
-    public function PutJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ?array
+    public function PutJson(array $data = null, array $queryString = null, bool $dataAsJson = true)
     {
         return json_decode($this->Put($data, $queryString, $dataAsJson), true);
     }
@@ -289,7 +310,7 @@ class Curler
         return $this->Execute();
     }
 
-    public function PatchJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ?array
+    public function PatchJson(array $data = null, array $queryString = null, bool $dataAsJson = true)
     {
         return json_decode($this->Patch($data, $queryString, $dataAsJson), true);
     }
@@ -302,7 +323,7 @@ class Curler
         return $this->Execute();
     }
 
-    public function DeleteJson(array $data = null, array $queryString = null, bool $dataAsJson = true): ?array
+    public function DeleteJson(array $data = null, array $queryString = null, bool $dataAsJson = true)
     {
         return json_decode($this->Delete($data, $queryString, $dataAsJson), true);
     }
@@ -328,7 +349,7 @@ class Curler
     }
 
     /**
-     * Follows HTTP "Link" headers to retrieve and merge paged JSON data.
+     * Follow HTTP `Link` headers to retrieve and merge paged JSON data
      *
      * @param array $queryString
      * @return array All returned entities.
@@ -336,7 +357,7 @@ class Curler
     public function GetAllLinked(array $queryString = null): array
     {
         $this->Initialise("GET", $queryString);
-        $entities = array();
+        $entities = [];
         $nextUrl  = null;
 
         do
@@ -347,12 +368,11 @@ class Curler
                 $nextUrl = null;
             }
 
-            $result = json_decode($this->Execute(), true);
-
             // collect data from response and move on to next page
+            $result   = json_decode($this->Execute(), true);
             $entities = array_merge($entities, $result);
 
-            if (isset($this->LastResponseHeaders["link"]) && preg_match("/<([^>]+)>;\\s*rel=(['\"])next\\2/", $this->LastResponseHeaders["link"], $matches))
+            if (preg_match("/<([^>]+)>;\\s*rel=(['\"])next\\2/", $this->LastResponseHeaders["link"] ?? "", $matches))
             {
                 $nextUrl = $matches[1];
             }
@@ -363,16 +383,16 @@ class Curler
     }
 
     /**
-     * Follows $result['links']['next'] to retrieve and merge paged JSON data.
+     * Follow `$result['links']['next']` to retrieve and merge paged JSON data
      *
-     * @param string $entityName Data is retrieved from $result[$entityName].
+     * @param string $entityName Data is retrieved from `$result[$entityName]`.
      * @param array $queryString
      * @return array All returned entities.
      */
     public function GetAllLinkedByEntity($entityName, array $queryString = null): array
     {
         $this->Initialise("GET", $queryString);
-        $entities = array();
+        $entities = [];
         $nextUrl  = null;
 
         do
@@ -380,18 +400,48 @@ class Curler
             if ($nextUrl)
             {
                 curl_setopt(self::$Curl, CURLOPT_URL, $nextUrl);
-                $nextUrl = null;
             }
-
-            $result = json_decode($this->Execute(), true);
 
             // collect data from response and move on to next page
+            $result   = json_decode($this->Execute(), true);
             $entities = array_merge($entities, $result[$entityName]);
+            $nextUrl  = $result["links"]["next"] ?? null;
+        }
+        while ($nextUrl);
 
-            if (isset($result["links"]["next"]))
+        return $entities;
+    }
+
+    public function GetAllLinkedByOData(array $queryString = null, string $prefix = null)
+    {
+        $this->Initialise("GET", $queryString);
+        $entities = [];
+        $nextUrl  = null;
+
+        do
+        {
+            if ($nextUrl)
             {
-                $nextUrl = $result["links"]["next"];
+                curl_setopt(self::$Curl, CURLOPT_URL, $nextUrl);
             }
+
+            // collect data from response and move on to next page
+            $result = json_decode($this->Execute(), true);
+
+            if (is_null($prefix))
+            {
+                if ($this->LastResponseHeaders["odata-version"] == "4.0")
+                {
+                    $prefix = "@odata.";
+                }
+                else
+                {
+                    $prefix = "@";
+                }
+            }
+
+            $entities = array_merge($entities, $result["value"]);
+            $nextUrl  = $result[$prefix . "nextLink"] ?? null;
         }
         while ($nextUrl);
 
@@ -402,9 +452,7 @@ class Curler
     {
         if (empty($path))
         {
-            $entities = array_merge($entities ?? [], is_array($data) ? $data : [
-                $data
-            ]);
+            $entities = array_merge($entities ?? [], Convert::AnyToArray($data));
         }
         elseif (is_array($data))
         {
@@ -425,11 +473,11 @@ class Curler
         }
     }
 
-    public function GetByGraphQL(string $query, array $variables = null, string $entityPath = null, string $pagePath = null, callable$filter = null): array
+    public function GetByGraphQL(string $query, array $variables = null, string $entityPath = null, string $pagePath = null, callable $filter = null): array
     {
         if ( ! is_null($pagePath) && ! (($variables["first"] ?? null) && array_key_exists("after", $variables)))
         {
-            throw new CurlerException("\$first and \$after variables are required for pagination", $this);
+            throw new CurlerException($this, "\$first and \$after variables are required for pagination");
         }
 
         $entities  = [];
@@ -444,7 +492,7 @@ class Curler
 
             if ( ! isset($result->data))
             {
-                throw new CurlerException("no data returned", $this);
+                throw new CurlerException($this, "no data returned");
             }
 
             $nextQuery = null;
@@ -461,11 +509,11 @@ class Curler
             if ( ! is_null($pagePath))
             {
                 $page = [];
-                self::CollateNested($result->data, is_null($pagePath) ? null : explode(".", $pagePath), $page);
+                self::CollateNested($result->data, explode(".", $pagePath), $page);
 
                 if (count($page) != 1 || ! isset($page[0]->pageInfo->endCursor) || ! isset($page[0]->pageInfo->hasNextPage))
                 {
-                    throw new CurlerException("paginationPath did not resolve to a single object with pageInfo.endCursor and pageInfo.hasNextPage fields", $this);
+                    throw new CurlerException($this, "paginationPath did not resolve to a single object with pageInfo.endCursor and pageInfo.hasNextPage fields");
                 }
 
                 if ($page[0]->pageInfo->hasNextPage)

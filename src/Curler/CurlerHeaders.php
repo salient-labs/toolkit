@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
-class CurlerHeader
+/**
+ * HTTP header handler
+ *
+ * @package Lkrms\Curler
+ */
+class CurlerHeaders
 {
-    private $Headers = array(
+    private $Headers = [
         "user-agent" => "User-Agent:util-php/Curler (https://github.com/lkrms/util-php)"
-    );
+    ];
 
     public function SetHeader(string $name, string $value)
     {
@@ -18,10 +23,7 @@ class CurlerHeader
 
     public function UnsetHeader(string $name)
     {
-        if (isset($this->Headers[$name]))
-        {
-            unset($this->Headers[$name]);
-        }
+        unset($this->Headers[strtolower($name)]);
     }
 
     public function GetHeaders(): array

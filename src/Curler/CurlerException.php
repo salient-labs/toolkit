@@ -5,46 +5,72 @@ declare(strict_types=1);
 namespace Lkrms\Curler;
 
 use Exception;
+use Throwable;
 
+/**
+ * Thrown when a cURL request fails
+ *
+ * @package Lkrms\Curler
+ */
 class CurlerException extends Exception
 {
-    protected $curler;
+    /**
+     * @var array
+     */
+    protected $CurlInfo;
 
-    public function __construct(string $message, Curler $curler, $code = 0, $previous = null)
+    /**
+     * @var array
+     */
+    protected $ResponseHeaders;
+
+    /**
+     * @var string
+     */
+    protected $Response;
+
+    public function __construct(Curler $curler, string $message, int $code = 0, Throwable $previous = null)
     {
-        $this->curler = $curler;
+        $this->CurlInfo        = $curler->GetLastCurlInfo();
+        $this->ResponseHeaders = $curler->GetLastResponseHeaders();
+
+        if ($curler->GetDebug())
+        {
+            $this->Response = $curler->GetLastResponse();
+        }
+
         parent::__construct($message, $code, $previous);
     }
 
-    private static function GetArrayAsString(string $entity, ?array $arr)
+    private function ArrayToString(string $name, ?array $array): string
     {
-        if (empty($arr))
+        if (is_null($array))
         {
             return "";
         }
 
-        $s = "\n$entity:";
+        $string = "\n$name:";
 
-        foreach ($arr as $k => $v)
+        foreach ($array as $key => $value)
         {
-            $s .= "\n{$k} " . var_export($v, true);
+            $string .= "\n$key " . var_export($value, true);
         }
 
-        return $s;
+        return $string;
     }
 
     public function __toString()
     {
-        $curlerDetail  = "";
-        $curlerDetail .= self::GetArrayAsString("cURL info", $this->curler->GetLastCurlInfo());
-        $curlerDetail .= self::GetArrayAsString("Response headers", $this->curler->GetLastResponseHeaders());
+        $string  = "";
+        $string .= $this->ArrayToString("cURL info", $this->CurlInfo);
+        $string .= $this->ArrayToString("Response headers", $this->ResponseHeaders);
 
-        if ($this->curler->GetDebug() && ! is_null($this->curler->GetLastResponse()))
+        if ( ! is_null($this->Response))
         {
-            $curlerDetail .= "\nResponse:\n" . $this->curler->GetLastResponse();
+            $string .= "\nResponse:\n" . $this->Response;
         }
 
-        return __CLASS__ . ": {$this->message} in {$this->file}:{$this->line}" . $curlerDetail;
+        return __CLASS__ . ": {$this->message} in {$this->file}:{$this->line}" . $string;
     }
 }
 
