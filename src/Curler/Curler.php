@@ -52,10 +52,10 @@ class Curler
 
     private static $ResponseHeaders;
 
-    public function __construct(string $baseUrl, CurlerHeaders $headers)
+    public function __construct(string $baseUrl, CurlerHeaders $headers = null)
     {
         $this->BaseUrl = $baseUrl;
-        $this->Headers = $headers;
+        $this->Headers = $headers ?: new CurlerHeaders;
 
         if (is_null(self::$Curl))
         {
