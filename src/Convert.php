@@ -25,14 +25,14 @@ class Convert
     }
 
     /**
-     * If a variable is empty, make it null
+     * If a variable is 'falsey', make it null
      *
      * @param mixed $value The variable being checked.
      * @return mixed Either `$value` or `null`.
      */
     public static function EmptyToNull($value)
     {
-        return empty($value) ? null : $value;
+        return ! $value ? null : $value;
     }
 
     /**
