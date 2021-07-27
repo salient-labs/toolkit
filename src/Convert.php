@@ -45,5 +45,37 @@ class Convert
     {
         return $value ? "true" : "false";
     }
+
+    /**
+     * Format an array's keys and values
+     *
+     * @param array $array The array to format.
+     * @return string
+     */
+    public static function ArrayToString(array $array): string
+    {
+        $indent = str_repeat(" ", 4);
+        $string = "";
+
+        foreach ($array as $key => $value)
+        {
+            if ( ! is_scalar($value))
+            {
+                $value = json_encode($value);
+            }
+
+            $value = str_replace("\r\n", "\n", (string)$value);
+            $value = str_replace("\n", PHP_EOL . $indent, $value, $count);
+
+            if ($count)
+            {
+                $value = PHP_EOL . $indent . $value;
+            }
+
+            $string .= sprintf("%s: %s\n", $key, $value);
+        }
+
+        return $string;
+    }
 }
 

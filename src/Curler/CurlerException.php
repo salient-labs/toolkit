@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Curler;
 
 use Exception;
+use Lkrms\Convert;
 use Throwable;
 
 /**
@@ -36,41 +37,27 @@ class CurlerException extends Exception
 
         if ($curler->GetDebug())
         {
-            $this->Response = $curler->GetLastResponse();
+            $this->Response = $curler->GetLastResponse() ?: "";
         }
 
         parent::__construct($message, $code, $previous);
     }
 
-    private function ArrayToString(string $name, ?array $array): string
-    {
-        if (is_null($array))
-        {
-            return "";
-        }
-
-        $string = "\n$name:";
-
-        foreach ($array as $key => $value)
-        {
-            $string .= "\n$key " . var_export($value, true);
-        }
-
-        return $string;
-    }
-
     public function __toString()
     {
-        $string  = "";
-        $string .= $this->ArrayToString("cURL info", $this->CurlInfo);
-        $string .= $this->ArrayToString("Response headers", $this->ResponseHeaders);
+        $string   = [];
+        $string[] = parent::__toString();
+        $string[] = implode("\n", [
+            "Response:",
+            Convert::ArrayToString($this->ResponseHeaders) ?: "<no headers>",
+            is_null($this->Response) ? "<response body not available>" : ($this->Response ?: "<empty response body>"),
+        ]);
+        $string[] = implode("\n", [
+            "cURL info:",
+            Convert::ArrayToString($this->CurlInfo)
+        ]);
 
-        if ( ! is_null($this->Response))
-        {
-            $string .= "\nResponse:\n" . $this->Response;
-        }
-
-        return __CLASS__ . ": {$this->message} in {$this->file}:{$this->line}" . $string;
+        return implode("\n\n", $string);
     }
 }
 

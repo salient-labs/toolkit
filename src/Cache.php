@@ -32,7 +32,8 @@ class Cache
 
     private static function FlushExpired()
     {
-        self::$db->exec(<<<SQL
+        self::$db->exec(
+<<<SQL
 DELETE
 FROM _cache_item
 WHERE expires_at <= CURRENT_TIMESTAMP
@@ -62,7 +63,8 @@ SQL
     {
         self::$db = new SQLite3($filename);
         self::$db->enableExceptions();
-        self::$db->exec(<<<SQL
+        self::$db->exec(
+<<<SQL
 CREATE TABLE IF NOT EXISTS _cache_item (
     item_key TEXT NOT NULL PRIMARY KEY,
     item_value BLOB,
@@ -109,7 +111,8 @@ SQL
             $expiry += time();
         }
 
-        $stmt = self::$db->prepare(<<<SQL
+        $stmt = self::$db->prepare(
+<<<SQL
 INSERT INTO _cache_item(item_key, item_value, expires_at)
     VALUES (:item_key, :item_value, datetime(:expires_at, 'unixepoch'))
     ON CONFLICT(item_key) DO UPDATE SET
@@ -138,7 +141,8 @@ SQL
     public static function Get(string $key)
     {
         self::CheckLoaded(__METHOD__);
-        $stmt = self::$db->prepare(<<<SQL
+        $stmt = self::$db->prepare(
+<<<SQL
 SELECT item_value
 FROM _cache_item
 WHERE item_key = :item_key
@@ -169,7 +173,8 @@ SQL
     public static function Delete(string $key)
     {
         self::CheckLoaded(__METHOD__);
-        $stmt = self::$db->prepare(<<<SQL
+        $stmt = self::$db->prepare(
+<<<SQL
 DELETE
 FROM _cache_item
 WHERE item_key = :item_key
@@ -187,7 +192,8 @@ SQL
     public static function Flush()
     {
         self::CheckLoaded(__METHOD__);
-        self::$db->exec(<<<SQL
+        self::$db->exec(
+<<<SQL
 DELETE
 FROM _cache_item
 SQL
