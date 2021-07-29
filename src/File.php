@@ -83,7 +83,7 @@ class File
 
         if ($includeHeaderRow)
         {
-            array_unshift($data, array_keys($data[0] ?? []));
+            array_unshift($data, array_keys($data[array_keys($data)[0]] ?? []));
         }
 
         foreach ($data as $row)
