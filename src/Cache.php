@@ -26,7 +26,6 @@ class Cache
         if ( ! self::$Loaded)
         {
             throw new RuntimeException($method . ": Load() must be called first");
-            self::Load(":memory:");
         }
     }
 

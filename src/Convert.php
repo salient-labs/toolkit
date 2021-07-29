@@ -77,5 +77,43 @@ class Convert
 
         return $string;
     }
+
+    /**
+     * Clean up a string for comparison with other strings
+     *
+     * Normalised values may vary with each release and should be considered
+     * transient.
+     *
+     * @param string $text The string being normalised.
+     * @param bool $toUpper If true, make `$text` uppercase.
+     * @param null|string $stripPattern Matching characters are removed.
+     * @param null|string $spacePattern Matching characters are replaced with
+     * whitespace.
+     * @return string
+     */
+    public static function Normalise(string $text, bool $toUpper = true, ?string $stripPattern = "\\.", ?string $spacePattern = "[^A-Z0-9]")
+    {
+        if ($toUpper)
+        {
+            $text = mb_strtoupper($text);
+        }
+
+        $text = mb_ereg_replace("&", " AND ", $text);
+        $text = mb_ereg_replace("[\342\200\220\342\200\221\342\200\223\342\200\222]", "-", $text);
+
+        if ($stripPattern)
+        {
+            $text = mb_ereg_replace($stripPattern, "", $text);
+        }
+
+        if ($spacePattern)
+        {
+            $text = mb_ereg_replace($spacePattern, " ", $text);
+        }
+
+        $text = mb_ereg_replace("\\s+", " ", $text);
+
+        return $text;
+    }
 }
 
