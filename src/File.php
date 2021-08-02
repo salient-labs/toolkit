@@ -115,5 +115,31 @@ class File
             fclose($f);
         }
     }
+
+    /**
+     * Get a pathname relative to a parent directory
+     *
+     * @param string $childPath Path to a child of `$parentPath` (must exist).
+     * @param string $parentPath Path to an ancestor of `$childPath`.
+     * @return false|string
+     * @throws RuntimeException
+     */
+    public static function GetChildPathRelative(string $childPath, string $parentPath)
+    {
+        $file = realpath($childPath);
+        $dir  = realpath($parentPath);
+
+        if ($file === false || $dir === false)
+        {
+            return false;
+        }
+
+        if ($file == $dir || strpos($file, $dir) !== 0)
+        {
+            throw new RuntimeException("$childPath is not a descendant of $parentPath");
+        }
+
+        return substr($file, strlen($dir) + 1);
+    }
 }
 

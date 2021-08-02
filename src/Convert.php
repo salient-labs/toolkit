@@ -79,6 +79,18 @@ class Convert
     }
 
     /**
+     * Generate a unique non-crypto hash
+     *
+     * @param string $string The string being hashed.
+     * @return string
+     */
+    public static function Hash(string $string): string
+    {
+        // xxHash isn't supported until PHP 8.1, so MD5 is the best fit
+        return hash("md5", $string);
+    }
+
+    /**
      * Clean up a string for comparison with other strings
      *
      * Normalised values may vary with each release and should be considered
