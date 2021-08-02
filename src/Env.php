@@ -84,19 +84,27 @@ class Env
      *
      * Looks for `$name` in `$_ENV`, `$_SERVER` and `getenv()`, in that order,
      * and returns the first value it finds, throwing an exception if `$name`
-     * isn't set.
+     * isn't set and no `$default` is given.
      *
      * @param string $name The environment variable to retrieve.
+     * @param string|null $default The value to return if `$name` isn't set.
      * @return string
      * @throws RuntimeException
      */
-    public static function Get(string $name): string
+    public static function Get(string $name, string $default = null): string
     {
         $value = $_ENV[$name] ?? $_SERVER[$name] ?? (getenv($name, true) ?: getenv($name));
 
         if ($value === false)
         {
-            throw new RuntimeException("Environment variable $name is not set");
+            if (is_null($default))
+            {
+                throw new RuntimeException("Environment variable $name is not set");
+            }
+            else
+            {
+                return $default;
+            }
         }
 
         return $value;
