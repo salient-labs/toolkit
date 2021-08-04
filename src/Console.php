@@ -55,7 +55,7 @@ class Console
 
     const UNDIM = "\033[22m";
 
-    const RESET = "\033[m\033[22m";
+    const RESET = "\033[m\017";
 
     /**
      * @var int
