@@ -24,6 +24,11 @@ class Curler
     private $LastCurlInfo;
 
     /**
+     * @var mixed
+     */
+    private $LastRequestData;
+
+    /**
      * @var string
      */
     private $LastResponse;
@@ -119,6 +124,7 @@ class Curler
 
                 curl_setopt(self::$Curl, CURLOPT_CUSTOMREQUEST, null);
                 curl_setopt(self::$Curl, CURLOPT_HTTPGET, true);
+                $this->LastRequestData = null;
 
                 break;
 
@@ -143,7 +149,11 @@ class Curler
 
     private function SetData(?array $data, bool $asJson)
     {
-        if ( ! is_null($data))
+        if (is_null($data))
+        {
+            $query = "";
+        }
+        else
         {
             $hasFile = false;
             array_walk_recursive($data,
@@ -172,9 +182,10 @@ class Curler
             {
                 $query = $this->HttpBuildQuery($data);
             }
-
-            curl_setopt(self::$Curl, CURLOPT_POSTFIELDS, $query);
         }
+
+        curl_setopt(self::$Curl, CURLOPT_POSTFIELDS, $query);
+        $this->LastRequestData = $query;
     }
 
     private function Execute(): string
@@ -331,6 +342,11 @@ class Curler
     public function GetLastCurlInfo(): ?array
     {
         return $this->LastCurlInfo;
+    }
+
+    public function GetLastRequestData()
+    {
+        return $this->LastRequestData;
     }
 
     public function GetLastResponse(): ?string

@@ -21,6 +21,11 @@ class CurlerException extends Exception
     protected $CurlInfo;
 
     /**
+     * @var mixed
+     */
+    protected $RequestData;
+
+    /**
      * @var array
      */
     protected $ResponseHeaders;
@@ -33,6 +38,7 @@ class CurlerException extends Exception
     public function __construct(Curler $curler, string $message, int $code = 0, Throwable $previous = null)
     {
         $this->CurlInfo        = $curler->GetLastCurlInfo();
+        $this->RequestData     = $curler->GetLastRequestData();
         $this->ResponseHeaders = $curler->GetLastResponseHeaders();
 
         if ($curler->GetDebug())
@@ -55,6 +61,10 @@ class CurlerException extends Exception
         $string[] = implode("\n", [
             "cURL info:",
             Convert::ArrayToString($this->CurlInfo)
+        ]);
+        $string[] = implode("\n", [
+            "Request:",
+            is_array($this->RequestData) ? Convert::ArrayToString($this->RequestData) : $this->RequestData
         ]);
 
         return implode("\n\n", $string);
