@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
+use Lkrms\Console;
 use Lkrms\Convert;
+use UnexpectedValueException;
 
 class Curler
 {
@@ -19,14 +21,14 @@ class Curler
     private $Headers;
 
     /**
-     * @var array
-     */
-    private $LastCurlInfo;
-
-    /**
      * @var mixed
      */
     private $LastRequestData;
+
+    /**
+     * @var array
+     */
+    private $LastCurlInfo;
 
     /**
      * @var string
@@ -46,7 +48,22 @@ class Curler
     /**
      * @var bool
      */
+    private $AutoRetryAfter = false;
+
+    /**
+     * @var int
+     */
+    private $AutoRetryAfterMax = 60;
+
+    /**
+     * @var bool
+     */
     private $Debug = false;
+
+    /**
+     * @var bool
+     */
+    private $DataAsJson = true;
 
     /**
      * @var bool
@@ -147,7 +164,7 @@ class Curler
         curl_setopt(self::$Curl, CURLINFO_HEADER_OUT, $this->Debug);
     }
 
-    private function SetData(?array $data, bool $asJson)
+    private function SetData(?array $data, ?bool $asJson)
     {
         if (is_null($data))
         {
@@ -155,6 +172,11 @@ class Curler
         }
         else
         {
+            if (is_null($asJson))
+            {
+                $asJson = $this->DataAsJson;
+            }
+
             $hasFile = false;
             array_walk_recursive($data,
 
@@ -193,25 +215,40 @@ class Curler
         // add headers for authentication etc.
         curl_setopt(self::$Curl, CURLOPT_HTTPHEADER, $this->Headers->GetHeaders());
 
-        // clear any previous response headers
-        self::$ResponseHeaders = [];
-
-        // execute the request
-        $result = curl_exec(self::$Curl);
-
-        // save transfer information
-        $this->LastCurlInfo        = curl_getinfo(self::$Curl);
-        $this->LastResponseHeaders = self::$ResponseHeaders;
-
-        if ($result === false)
+        for ($attempt = 0; $attempt < 2; $attempt++)
         {
-            $this->LastResponse     = null;
-            $this->LastResponseCode = null;
-            throw new CurlerException($this, "cURL error: " . curl_error(self::$Curl));
-        }
+            // clear any previous response headers
+            self::$ResponseHeaders = [];
 
-        $this->LastResponse     = $result;
-        $this->LastResponseCode = (int)curl_getinfo(self::$Curl, CURLINFO_RESPONSE_CODE);
+            // execute the request
+            $result = curl_exec(self::$Curl);
+
+            // save transfer information
+            $this->LastCurlInfo        = curl_getinfo(self::$Curl);
+            $this->LastResponseHeaders = self::$ResponseHeaders;
+
+            if ($result === false)
+            {
+                $this->LastResponse     = null;
+                $this->LastResponseCode = null;
+                throw new CurlerException($this, "cURL error: " . curl_error(self::$Curl));
+            }
+
+            $this->LastResponse     = $result;
+            $this->LastResponseCode = (int)curl_getinfo(self::$Curl, CURLINFO_RESPONSE_CODE);
+
+            if ($this->AutoRetryAfter && $attempt == 0 && $this->LastResponseCode == 429 && ! is_null($after = $this->GetLastRetryAfter()) && ($this->AutoRetryAfterMax == 0 || $after <= $this->AutoRetryAfterMax))
+            {
+                // sleep for at least one second
+                $after = max(1, $after);
+                Console::Debug("Received HTTP error 429 Too Many Requests, sleeping for {$after}s");
+                sleep($after);
+
+                continue;
+            }
+
+            break;
+        }
 
         if ($this->LastResponseCode >= 400)
         {
@@ -231,14 +268,52 @@ class Curler
         return $this->Headers;
     }
 
+    public function GetAutoRetryAfter(): bool
+    {
+        return $this->AutoRetryAfter;
+    }
+
+    public function GetAutoRetryAfterMax(): int
+    {
+        return $this->AutoRetryAfterMax;
+    }
+
     public function GetDebug(): bool
     {
         return $this->Debug;
     }
 
+    public function GetDataAsJson(): bool
+    {
+        return $this->DataAsJson;
+    }
+
     public function GetNumericKeys(): bool
     {
         return ! $this->NoNumericKeys;
+    }
+
+    public function EnableAutoRetryAfter()
+    {
+        $this->AutoRetryAfter = true;
+    }
+
+    public function DisableAutoRetryAfter()
+    {
+        $this->AutoRetryAfter = false;
+    }
+
+    /**
+     * @param int $seconds A positive integer, or `0` for no maximum.
+     */
+    public function SetMaxRetryAfter(int $seconds)
+    {
+        if ($seconds < 0)
+        {
+            throw new UnexpectedValueException("seconds must be greater than or equal to 0");
+        }
+
+        $this->AutoRetryAfterMax = $seconds;
     }
 
     public function EnableDebug()
@@ -249,6 +324,16 @@ class Curler
     public function DisableDebug()
     {
         $this->Debug = false;
+    }
+
+    public function EnableDataAsJson()
+    {
+        $this->DataAsJson = true;
+    }
+
+    public function DisableDataAsJson()
+    {
+        $this->DataAsJson = false;
     }
 
     public function EnableNumericKeys()
@@ -273,7 +358,7 @@ class Curler
         return json_decode($this->Get($queryString), true);
     }
 
-    public function Post(array $data = null, array $queryString = null, bool $dataAsJson = true): string
+    public function Post(array $data = null, array $queryString = null, bool $dataAsJson = null): string
     {
         $this->Initialise("POST", $queryString);
         $this->SetData($data, $dataAsJson);
@@ -281,7 +366,7 @@ class Curler
         return $this->Execute();
     }
 
-    public function PostJson(array $data = null, array $queryString = null, bool $dataAsJson = true)
+    public function PostJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
         return json_decode($this->Post($data, $queryString, $dataAsJson), true);
     }
@@ -300,7 +385,7 @@ class Curler
         return json_decode($this->RawPost($data, $contentType, $queryString), true);
     }
 
-    public function Put(array $data = null, array $queryString = null, bool $dataAsJson = true): string
+    public function Put(array $data = null, array $queryString = null, bool $dataAsJson = null): string
     {
         $this->Initialise("PUT", $queryString);
         $this->SetData($data, $dataAsJson);
@@ -308,12 +393,12 @@ class Curler
         return $this->Execute();
     }
 
-    public function PutJson(array $data = null, array $queryString = null, bool $dataAsJson = true)
+    public function PutJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
         return json_decode($this->Put($data, $queryString, $dataAsJson), true);
     }
 
-    public function Patch(array $data = null, array $queryString = null, bool $dataAsJson = true): string
+    public function Patch(array $data = null, array $queryString = null, bool $dataAsJson = null): string
     {
         $this->Initialise("PATCH", $queryString);
         $this->SetData($data, $dataAsJson);
@@ -321,12 +406,12 @@ class Curler
         return $this->Execute();
     }
 
-    public function PatchJson(array $data = null, array $queryString = null, bool $dataAsJson = true)
+    public function PatchJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
         return json_decode($this->Patch($data, $queryString, $dataAsJson), true);
     }
 
-    public function Delete(array $data = null, array $queryString = null, bool $dataAsJson = true): string
+    public function Delete(array $data = null, array $queryString = null, bool $dataAsJson = null): string
     {
         $this->Initialise("DELETE", $queryString);
         $this->SetData($data, $dataAsJson);
@@ -334,19 +419,42 @@ class Curler
         return $this->Execute();
     }
 
-    public function DeleteJson(array $data = null, array $queryString = null, bool $dataAsJson = true)
+    public function DeleteJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
         return json_decode($this->Delete($data, $queryString, $dataAsJson), true);
     }
 
-    public function GetLastCurlInfo(): ?array
+    public function GetLastRetryAfter(): ?int
     {
-        return $this->LastCurlInfo;
+        $retryAfter = $this->LastResponseHeaders["retry-after"] ?? null;
+
+        if ( ! is_null($retryAfter))
+        {
+            if (preg_match("/^[0-9]+\$/", $retryAfter))
+            {
+                $retryAfter = (int)$retryAfter;
+            }
+            elseif (($retryAfter = strtotime($retryAfter)) !== false)
+            {
+                $retryAfter = max(0, $retryAfter - time());
+            }
+            else
+            {
+                $retryAfter = null;
+            }
+        }
+
+        return $retryAfter;
     }
 
     public function GetLastRequestData()
     {
         return $this->LastRequestData;
+    }
+
+    public function GetLastCurlInfo(): ?array
+    {
+        return $this->LastCurlInfo;
     }
 
     public function GetLastResponse(): ?string
