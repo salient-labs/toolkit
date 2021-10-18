@@ -79,5 +79,15 @@ class Assert
             throw new Exception("CLI required");
         }
     }
+
+    public static function LocaleIsUtf8()
+    {
+        $locale = setlocale(LC_CTYPE, "");
+
+        if ( ! preg_match('/\.UTF-?8$/i', $locale))
+        {
+            throw new Exception("Locale '$locale' does not support UTF-8");
+        }
+    }
 }
 
