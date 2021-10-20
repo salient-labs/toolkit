@@ -26,6 +26,11 @@ class CurlerException extends Exception
     protected $RequestData;
 
     /**
+     * @var int
+     */
+    protected $ResponseCode;
+
+    /**
      * @var array
      */
     protected $ResponseHeaders;
@@ -39,6 +44,7 @@ class CurlerException extends Exception
     {
         $this->CurlInfo        = $curler->GetLastCurlInfo();
         $this->RequestData     = $curler->GetLastRequestData();
+        $this->ResponseCode    = $curler->GetLastResponseCode();
         $this->ResponseHeaders = $curler->GetLastResponseHeaders();
 
         if ($curler->GetDebug())
@@ -68,6 +74,16 @@ class CurlerException extends Exception
         ]);
 
         return implode("\n\n", $string);
+    }
+
+    public function getResponseCode(): ?int
+    {
+        return $this->ResponseCode;
+    }
+
+    public function getStatusLine(): ?string
+    {
+        return $this->ResponseHeaders["status"] ?? (string)$this->ResponseCode;
     }
 }
 

@@ -109,5 +109,10 @@ class Env
 
         return $value;
     }
+
+    public static function GetDebug(): bool
+    {
+        return (bool)self::Get("LU_DEBUG", "");
+    }
 }
 

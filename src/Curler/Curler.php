@@ -6,6 +6,7 @@ namespace Lkrms\Curler;
 
 use Lkrms\Console;
 use Lkrms\Convert;
+use Lkrms\Env;
 use UnexpectedValueException;
 
 class Curler
@@ -48,6 +49,11 @@ class Curler
     /**
      * @var bool
      */
+    private $ThrowHttpError = true;
+
+    /**
+     * @var bool
+     */
     private $AutoRetryAfter = false;
 
     /**
@@ -58,7 +64,7 @@ class Curler
     /**
      * @var bool
      */
-    private $Debug = false;
+    private $Debug;
 
     /**
      * @var bool
@@ -78,6 +84,7 @@ class Curler
     {
         $this->BaseUrl = $baseUrl;
         $this->Headers = $headers ?: new CurlerHeaders;
+        $this->Debug   = Env::GetDebug();
 
         if (is_null(self::$Curl))
         {
@@ -250,9 +257,9 @@ class Curler
             break;
         }
 
-        if ($this->LastResponseCode >= 400)
+        if ($this->LastResponseCode >= 400 && $this->ThrowHttpError)
         {
-            throw new CurlerException($this, "HTTP error " . ($this->LastResponseHeaders["status"] ?? $this->LastResponseCode));
+            throw new CurlerException($this, "HTTP error " . $this->GetLastStatusLine());
         }
 
         return $result;
@@ -266,6 +273,11 @@ class Curler
     public function GetHeaders(): CurlerHeaders
     {
         return $this->Headers;
+    }
+
+    public function GetThrowHttpError(): bool
+    {
+        return $this->ThrowHttpError;
     }
 
     public function GetAutoRetryAfter(): bool
@@ -291,6 +303,16 @@ class Curler
     public function GetNumericKeys(): bool
     {
         return ! $this->NoNumericKeys;
+    }
+
+    public function EnableThrowHttpError()
+    {
+        $this->ThrowHttpError = true;
+    }
+
+    public function DisableThrowHttpError()
+    {
+        $this->ThrowHttpError = false;
     }
 
     public function EnableAutoRetryAfter()
@@ -470,6 +492,11 @@ class Curler
     public function GetLastResponseHeaders(): ?array
     {
         return $this->LastResponseHeaders;
+    }
+
+    public function GetLastStatusLine(): ?string
+    {
+        return $this->LastResponseHeaders["status"] ?? (string)$this->LastResponseCode;
     }
 
     /**
