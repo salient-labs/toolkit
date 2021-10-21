@@ -82,7 +82,10 @@ class Assert
 
     public static function LocaleIsUtf8()
     {
-        $locale = setlocale(LC_CTYPE, "");
+        if (($locale = setlocale(LC_CTYPE, "")) === false)
+        {
+            throw new Exception("Invalid locale (check LANG and LC_*)");
+        }
 
         if ( ! preg_match('/\.UTF-?8$/i', $locale))
         {
