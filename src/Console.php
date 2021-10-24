@@ -60,12 +60,24 @@ class Console
     /**
      * @var int
      */
-    private static $GroupDepth = 0;
+    private static $GroupDepth = null;
 
     /**
      * @var bool
      */
     private static $Timestamp = false;
+
+    private static function CheckGroupDepth()
+    {
+        if (is_null(self::$GroupDepth))
+        {
+            self::$GroupDepth = 0;
+
+            return false;
+        }
+
+        return true;
+    }
 
     public static function EnableTimestamp()
     {
@@ -77,52 +89,29 @@ class Console
         self::$Timestamp = false;
     }
 
-    private static function Write($stream, string $msg1, ?string $msg2, string $pre = null, string $clr1 = null, string $clr2 = null, string $clrP = null)
+    private static function Write($stream, string $msg1, ?string $msg2, string $pre, string $clr1, string $clr2, string $clrP = null)
     {
-        switch (self::$GroupDepth)
-        {
-            case 0:
+        $clrP = ! is_null($clrP) ? $clrP : self::BOLD . $clr2;
 
-                $pre  = ! is_null($pre) ? $pre : "==> ";
-                $clr1 = ! is_null($clr1) ? $clr1 : self::BOLD;
-                $clr2 = ! is_null($clr2) ? $clr2 : self::CYAN;
-                $clrP = ! is_null($clrP) ? $clrP : self::BOLD . $clr2;
+        //
+        self::CheckGroupDepth();
+        $margin = self::$GroupDepth * 4;
 
-                break;
-
-            case 1:
-
-                $pre  = ! is_null($pre) ? $pre : "   -> ";
-                $clr1 = ! is_null($clr1) ? $clr1 : "";
-                $clr2 = ! is_null($clr2) ? $clr2 : self::YELLOW;
-                $clrP = ! is_null($clrP) ? $clrP : self::BOLD . $clr2;
-
-                break;
-
-            default:
-
-                $pre  = ! is_null($pre) ? $pre : "     -- ";
-                $clr1 = ! is_null($clr1) ? $clr1 : ( ! is_null($clr2) ? $clr2 : self::YELLOW);
-                $clr2 = ! is_null($clr2) ? $clr2 : $clr1;
-                $clrP = ! is_null($clrP) ? $clrP : $clr2;
-
-                break;
-        }
-
-        $indent  = mb_strlen($pre, "UTF-8");
+        //
+        $indent  = strlen($pre);
         $indent  = max(0, strpos($msg1, "\n") ? $indent : $indent - 4);
         $indent += (self::$Timestamp ? 25 : 0);
 
-        if ($indent)
+        if ($margin + $indent)
         {
-            $msg1 = str_replace("\n", "\n" . str_repeat(" ", $indent), $msg1);
+            $msg1 = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent), $msg1);
         }
 
         if ($msg2)
         {
             if (strpos($msg2, "\n"))
             {
-                $msg2 = str_replace("\n", "\n" . str_repeat(" ", $indent + 2), "\n" . ltrim($msg2));
+                $msg2 = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent + 2), "\n" . ltrim($msg2));
             }
             else
             {
@@ -131,46 +120,93 @@ class Console
         }
 
         $pre  = $clrP . $pre . ($clrP ? self::RESET : "");
+        $pre  = str_repeat(" ", $margin) . $pre;
         $msg1 = $clr1 . $msg1 . ($clr1 ? self::RESET : "");
         $msg2 = $msg2 ? $clr2 . $msg2 . ($clr2 ? self::RESET : "") : "";
         fwrite($stream, (self::$Timestamp ? (new DateTime())->format("[d M H:i:s.u] ") : "") . $pre . $msg1 . $msg2 . "\n");
         fflush($stream);
     }
 
+    /**
+     * Increase indent and print "==> $msg1 $msg2" to STDOUT
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     */
     public static function Group(string $msg1, string $msg2 = null)
     {
-        self::Write(STDOUT, $msg1, $msg2);
-        self::$GroupDepth++;
+        if (self::CheckGroupDepth())
+        {
+            self::$GroupDepth++;
+        }
+
+        self::Info($msg1, $msg2);
     }
 
+    /**
+     * Decrease indent
+     *
+     */
     public static function GroupEnd()
     {
+        self::CheckGroupDepth();
         self::$GroupDepth--;
+        self::$GroupDepth = self::$GroupDepth < 0 ? null : self::$GroupDepth;
     }
 
-    public static function Log(string $msg1, string $msg2 = null)
-    {
-        self::Write(STDOUT, $msg1, $msg2);
-    }
-
-    public static function Info(string $msg1, string $msg2 = null)
-    {
-        self::Write(STDOUT, $msg1, $msg2, null, null, self::GREEN);
-    }
-
-    public static function Warn(string $msg1, string $msg2 = null)
-    {
-        self::Write(STDERR, $msg1, $msg2, "\342\234\230 ", self::YELLOW . self::BOLD, self::BOLD, self::YELLOW . self::BOLD);
-    }
-
-    public static function Error(string $msg1, string $msg2 = null)
-    {
-        self::Write(STDERR, $msg1, $msg2, "\342\234\230 ", self::RED . self::BOLD, self::BOLD, self::RED . self::BOLD);
-    }
-
+    /**
+     * Print "  - $msg1 $msg2" to STDOUT
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     */
     public static function Debug(string $msg1, string $msg2 = null)
     {
-        self::Write(STDOUT, $msg1, $msg2, null, self::DIM . self::BOLD, self::DIM, self::DIM);
+        self::Write(STDOUT, $msg1, $msg2, "  - ", self::DIM . self::BOLD, self::DIM . self::CYAN);
+    }
+
+    /**
+     * Print " -> $msg1 $msg2" to STDOUT
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     */
+    public static function Log(string $msg1, string $msg2 = null)
+    {
+        self::Write(STDOUT, $msg1, $msg2, " -> ", "", self::YELLOW);
+    }
+
+    /**
+     * Print "==> $msg1 $msg2" to STDOUT
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     */
+    public static function Info(string $msg1, string $msg2 = null)
+    {
+        self::Write(STDOUT, $msg1, $msg2, "==> ", self::BOLD, self::CYAN);
+    }
+
+    /**
+     * Print " :: $msg1 $msg2" to STDERR
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     */
+    public static function Warn(string $msg1, string $msg2 = null)
+    {
+        self::Write(STDERR, $msg1, $msg2, " :: ", self::YELLOW . self::BOLD, self::BOLD, self::YELLOW . self::BOLD);
+    }
+
+    /**
+     * Print " !! $msg1 $msg2" to STDERR
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     */
+    public static function Error(string $msg1, string $msg2 = null)
+    {
+        self::Write(STDERR, $msg1, $msg2, " !! ", self::RED . self::BOLD, self::BOLD, self::RED . self::BOLD);
     }
 }
 
