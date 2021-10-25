@@ -5,7 +5,12 @@
     "description": "Frequently used functions + cURL wrapper + CLI helper",
     "require": {
         "php": ">=7.2",
-        "lib-curl": "*"
+        "lib-curl": "*",
+        "psr/log": "^1.1",
+        "filp/whoops": "^2.14"
+    },
+    "suggest": {
+        "analog/analog": "Use Analog as a target for console output methods in \\Lkrms\\Console"
     },
     "autoload": {
         "psr-4": {

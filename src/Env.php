@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
+use DateTimeZone;
+use Exception;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -14,6 +16,17 @@ use UnexpectedValueException;
  */
 class Env
 {
+    private static $HonourTimezone = true;
+
+    /**
+     * Prevent {@link Env::Load()} using environment variable TZ to set the
+     * default timezone
+     */
+    public static function IgnoreTimezone()
+    {
+        self::$HonourTimezone = false;
+    }
+
     /**
      * Load environment variables from `.env` to `getenv()`, `$_ENV` and
      * `$_SERVER`
@@ -76,6 +89,19 @@ class Env
             putenv($name . "=" . $value);
             $_ENV[$name]    = $value;
             $_SERVER[$name] = $value;
+        }
+
+        if (self::$HonourTimezone && $tz = preg_replace("/^:?(.*\/zoneinfo\/)?/", "", self::Get("TZ", "")))
+        {
+            try
+            {
+                $timezone = new DateTimeZone($tz);
+                date_default_timezone_set($timezone->getName());
+            }
+            catch (Exception $ex)
+            {
+                Console::Debug("Not a valid timezone:", $tz, $ex);
+            }
         }
     }
 
