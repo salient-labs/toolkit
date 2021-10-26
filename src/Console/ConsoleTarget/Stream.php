@@ -100,9 +100,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         ConsoleLevel::DEBUG
     ], bool $addColour = null, bool $addTimestamp = null, string $timestamp = null, string $timezone = null): Stream
     {
-        $stream = fopen($path, "a");
-
-        if ($stream === false)
+        if ( ! (file_exists($path) || (touch($path) && chmod($path, 0600))) || ($stream = fopen($path, "a")) === false)
         {
             throw new RuntimeException("Could not open $path");
         }
