@@ -79,6 +79,34 @@ class Convert
     }
 
     /**
+     * If a number is 1, return $singular, otherwise return $plural
+     *
+     * @param int           $number
+     * @param string        $singular
+     * @param string|null   $plural         If `null`, `{$singular}s` will be used instead
+     * @param bool          $includeNumber  Return `$number $noun` instead of `$noun`
+     * @return string
+     */
+    public static function NumberToNoun(int $number, string $singular, string $plural = null, bool $includeNumber = false): string
+    {
+        if ($number == 1)
+        {
+            $noun = $singular;
+        }
+        else
+        {
+            $noun = is_null($plural) ? $singular . "s" : $plural;
+        }
+
+        if ($includeNumber)
+        {
+            return "$number $noun";
+        }
+
+        return $noun;
+    }
+
+    /**
      * Generate a unique non-crypto hash
      *
      * @param string $string The string being hashed.

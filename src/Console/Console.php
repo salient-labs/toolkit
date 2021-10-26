@@ -74,6 +74,16 @@ class Console
      */
     private static $TargetsChecked = false;
 
+    /**
+     * @var int
+     */
+    private static $Warnings = 0;
+
+    /**
+     * @var int
+     */
+    private static $Errors = 0;
+
     private static function CheckGroupDepth()
     {
         if (is_null(self::$GroupDepth))
@@ -92,23 +102,10 @@ class Console
         {
             return;
         }
-        elseif (empty(self::$Targets))
+
+        // If no targets have been added, log everything to /tmp/{basename}-{realpath hash}-{user ID}.log
+        if (empty(self::$Targets))
         {
-            // Default targets:
-            // - errors and warnings -> STDERR
-            // - notices and info    -> STDOUT
-            // - everything          -> /tmp/{name}-{hash}-{user ID}.log
-            self::AddTarget(new Stream(STDERR, [
-                ConsoleLevel::EMERGENCY,
-                ConsoleLevel::ALERT,
-                ConsoleLevel::CRITICAL,
-                ConsoleLevel::ERROR,
-                ConsoleLevel::WARNING,
-            ]));
-            self::AddTarget(new Stream(STDOUT, [
-                ConsoleLevel::NOTICE,
-                ConsoleLevel::INFO,
-            ]));
             $path     = realpath($_SERVER["SCRIPT_FILENAME"]);
             $basename = basename($path);
             $hash     = Convert::Hash($path);
@@ -117,6 +114,19 @@ class Console
             self::AddTarget(Stream::FromPath($logFile));
         }
 
+        // - errors and warnings -> STDERR
+        // - notices and info    -> STDOUT
+        self::AddTarget(new Stream(STDERR, [
+            ConsoleLevel::EMERGENCY,
+            ConsoleLevel::ALERT,
+            ConsoleLevel::CRITICAL,
+            ConsoleLevel::ERROR,
+            ConsoleLevel::WARNING,
+        ]));
+        self::AddTarget(new Stream(STDOUT, [
+            ConsoleLevel::NOTICE,
+            ConsoleLevel::INFO,
+        ]));
         self::$TargetsChecked = true;
     }
 
@@ -255,6 +265,7 @@ class Console
      */
     public static function Warn(string $msg1, string $msg2 = null, Exception $ex = null)
     {
+        self::$Warnings++;
         self::Write(ConsoleLevel::WARNING, $msg1, $msg2, " :: ", self::YELLOW . self::BOLD, self::BOLD, self::YELLOW . self::BOLD, $ex);
     }
 
@@ -266,7 +277,37 @@ class Console
      */
     public static function Error(string $msg1, string $msg2 = null, Exception $ex = null)
     {
+        self::$Errors++;
         self::Write(ConsoleLevel::ERROR, $msg1, $msg2, " !! ", self::RED . self::BOLD, self::BOLD, self::RED . self::BOLD, $ex);
+    }
+
+    public static function GetWarnings(): int
+    {
+        return self::$Warnings;
+    }
+
+    public static function GetErrors(): int
+    {
+        return self::$Errors;
+    }
+
+    public static function GetSummary($successText = " without errors"): string
+    {
+        if (self::$Warnings + self::$Errors)
+        {
+            $summary = " with " . Convert::NumberToNoun(self::$Errors, "error", null, true);
+
+            if (self::$Warnings)
+            {
+                $summary .= " and " . Convert::NumberToNoun(self::$Warnings, "warning", null, true);
+            }
+
+            return $summary;
+        }
+        else
+        {
+            return $successText;
+        }
     }
 }
 
