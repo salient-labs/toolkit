@@ -210,7 +210,7 @@ class Console
             self::$GroupDepth++;
         }
 
-        self::Write(ConsoleLevel::NOTICE, $msg1, $msg2, "<<< ", self::BOLD . self::MAGENTA, self::BOLD, self::BOLD . self::MAGENTA);
+        self::Write(ConsoleLevel::NOTICE, $msg1, $msg2, ">>> ", self::BOLD, self::CYAN);
     }
 
     /**
@@ -266,7 +266,7 @@ class Console
     public static function Warn(string $msg1, string $msg2 = null, Exception $ex = null)
     {
         self::$Warnings++;
-        self::Write(ConsoleLevel::WARNING, $msg1, $msg2, " :: ", self::YELLOW . self::BOLD, self::BOLD, self::YELLOW . self::BOLD, $ex);
+        self::Write(ConsoleLevel::WARNING, $msg1, $msg2, "  ! ", self::YELLOW . self::BOLD, self::BOLD, self::YELLOW . self::BOLD, $ex);
     }
 
     /**
