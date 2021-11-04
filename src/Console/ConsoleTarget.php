@@ -6,11 +6,24 @@ namespace Lkrms\Console;
 
 abstract class ConsoleTarget
 {
+    private $Prefix;
+
     abstract protected function WriteToTarget(int $level, string $message, array $context);
 
-    public function Write($message, array $context = [], int $level = ConsoleLevel::INFO)
+    public function Write($message, array $context = [], int $level = ConsoleLevel::INFO): void
     {
-        $this->WriteToTarget($level, $message, $context);
+        $this->WriteToTarget(
+            $level,
+            ($this->Prefix
+                ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
+                : $message),
+            $context
+        );
+    }
+
+    public function SetPrefix(?string $prefix): void
+    {
+        $this->Prefix = $prefix;
     }
 }
 

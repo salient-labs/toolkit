@@ -7,6 +7,7 @@ namespace Lkrms\Console;
 use Exception;
 use Lkrms\Console\ConsoleTarget\Stream;
 use Lkrms\Convert;
+use RuntimeException;
 
 /**
  * Functions for console output
@@ -70,6 +71,11 @@ class Console
     private static $Targets = [];
 
     /**
+     * @var array
+     */
+    private static $TtyTargets = [];
+
+    /**
      * @var bool
      */
     private static $TargetsChecked = false;
@@ -116,18 +122,31 @@ class Console
 
         // - errors and warnings -> STDERR
         // - notices and info    -> STDOUT
-        self::AddTarget(new Stream(STDERR, [
+        self::AddTarget(self::$TtyTargets[2] = new Stream(STDERR, [
             ConsoleLevel::EMERGENCY,
             ConsoleLevel::ALERT,
             ConsoleLevel::CRITICAL,
             ConsoleLevel::ERROR,
             ConsoleLevel::WARNING,
         ]));
-        self::AddTarget(new Stream(STDOUT, [
+        self::AddTarget(self::$TtyTargets[1] = new Stream(STDOUT, [
             ConsoleLevel::NOTICE,
             ConsoleLevel::INFO,
         ]));
         self::$TargetsChecked = true;
+    }
+
+    /**
+     * Return a ConsoleTarget array with STDOUT and STDERR at keys 1 and 2 respectively
+     *
+     * @return array<int,ConsoleTarget>
+     * @throws RuntimeException
+     */
+    public static function GetTtyTargets(): array
+    {
+        self::CheckTargets();
+
+        return self::$TtyTargets;
     }
 
     public static function AddTarget(ConsoleTarget $target)
@@ -150,7 +169,7 @@ class Console
             $msg1 = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent), $msg1);
         }
 
-        if ($msg2)
+        if (!is_null($msg2))
         {
             if (strpos($msg2, "\n"))
             {
@@ -180,7 +199,7 @@ class Console
             {
                 if (is_null($colourMessage))
                 {
-                    $clrP          = ! is_null($clrP) ? $clrP : self::BOLD . $clr2;
+                    $clrP          = !is_null($clrP) ? $clrP : self::BOLD . $clr2;
                     $_pre          = $clrP . $pre . ($clrP ? self::RESET : "");
                     $_pre          = str_repeat(" ", $margin) . $_pre;
                     $_msg1         = $clr1 . $msg1 . ($clr1 ? self::RESET : "");

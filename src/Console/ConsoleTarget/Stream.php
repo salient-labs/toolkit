@@ -6,6 +6,7 @@ namespace Lkrms\Console\ConsoleTarget;
 
 use DateTime;
 use DateTimeZone;
+use Lkrms\Console\Console;
 use Lkrms\Console\ConsoleLevel;
 use RuntimeException;
 
@@ -75,21 +76,39 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         //
         $this->Stream       = $stream;
         $this->Levels       = $levels;
-        $this->AddColour    = ! is_null($addColour) ? $addColour : $isTty;
-        $this->AddTimestamp = ! is_null($addTimestamp) ? $addTimestamp : ! $isTty;
+        $this->AddColour    = !is_null($addColour) ? $addColour : $isTty;
+        $this->AddTimestamp = !is_null($addTimestamp) ? $addTimestamp : !$isTty;
 
-        if ( ! is_null($timestamp))
+        if (!is_null($timestamp))
         {
             $this->Timestamp = $timestamp;
         }
 
-        if ( ! is_null($timezone))
+        if (!is_null($timezone))
         {
             $this->Timezone = new DateTimeZone($timezone);
         }
     }
 
-    public static function FromPath($path, array $levels = [
+    public function Reopen(string $path = null): void
+    {
+        if (!$this->Path)
+        {
+            throw new RuntimeException("Stream object not created by Stream::FromPath()");
+        }
+
+        $path = $path ?: $this->Path;
+
+        if (!fclose($this->Stream) || !(file_exists($path) || (touch($path) && chmod($path, 0600))) || ($stream = fopen($path, "a")) === false)
+        {
+            throw new RuntimeException("Could not close {$this->Path} and open $path");
+        }
+
+        $this->Stream = $stream;
+        $this->Path   = $path;
+    }
+
+    public static function FromPath(string $path, array $levels = [
         ConsoleLevel::EMERGENCY,
         ConsoleLevel::ALERT,
         ConsoleLevel::CRITICAL,
@@ -100,7 +119,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         ConsoleLevel::DEBUG
     ], bool $addColour = null, bool $addTimestamp = null, string $timestamp = null, string $timezone = null): Stream
     {
-        if ( ! (file_exists($path) || (touch($path) && chmod($path, 0600))) || ($stream = fopen($path, "a")) === false)
+        if (!(file_exists($path) || (touch($path) && chmod($path, 0600))) || ($stream = fopen($path, "a")) === false)
         {
             throw new RuntimeException("Could not open $path");
         }
@@ -122,6 +141,18 @@ class Stream extends \Lkrms\Console\ConsoleTarget
             }
 
             fwrite($this->Stream, $message . "\n");
+        }
+    }
+
+    public function SetPrefix(?string $prefix): void
+    {
+        if ($prefix && $this->AddColour)
+        {
+            parent::SetPrefix(Console::DIM . $prefix . Console::UNDIM);
+        }
+        else
+        {
+            parent::SetPrefix($prefix);
         }
     }
 
