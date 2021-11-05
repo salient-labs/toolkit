@@ -43,5 +43,41 @@ class Test
     {
         return substr_count(decbin($value & $mask), "1") === 1;
     }
+
+    /**
+     * Return true for arrays with consecutive integer keys numbered from 0
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    public static function IsListArray($value): bool
+    {
+        return is_array($value) &&
+            array_keys($value) === range(0, count($value) - 1);
+    }
+
+    /**
+     * Return true for arrays with at least one string key
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    public static function IsAssociativeArray($value): bool
+    {
+        return is_array($value) &&
+            count(array_filter(array_keys($value), "is_string")) > 0;
+    }
+
+    /**
+     * Return true for non-empty arrays with no string keys
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    public static function IsIndexedArray($value): bool
+    {
+        return is_array($value) &&
+            !empty($value) && !self::IsAssociativeArray($value);
+    }
 }
 

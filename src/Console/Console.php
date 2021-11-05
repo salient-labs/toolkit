@@ -7,6 +7,7 @@ namespace Lkrms\Console;
 use Exception;
 use Lkrms\Console\ConsoleTarget\Stream;
 use Lkrms\Convert;
+use Lkrms\Error;
 use RuntimeException;
 
 /**
@@ -251,7 +252,9 @@ class Console
      */
     public static function Debug(string $msg1, string $msg2 = null, Exception $ex = null)
     {
-        self::Write(ConsoleLevel::DEBUG, $msg1, $msg2, "  - ", self::DIM . self::BOLD, self::DIM . self::CYAN, null, $ex);
+        self::Write(ConsoleLevel::DEBUG,
+            (($caller = Error::GetCaller()) ? "{{$caller}} " : "") . $msg1,
+            $msg2, "  - ", self::DIM . self::BOLD, self::DIM . self::CYAN, null, $ex);
     }
 
     /**

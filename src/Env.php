@@ -57,18 +57,18 @@ class Env
         {
             $l = $i + 1;
 
-            if ( ! trim($line) || substr($line, 0, 1) == "#")
+            if (!trim($line) || substr($line, 0, 1) == "#")
             {
                 continue;
             }
-            elseif ( ! preg_match("/^([A-Z_][A-Z0-9_]*)=(\"(([^\"\$`]|\\\\[\"\$`])*)\"|'(([^']|'\\\\'')*)'|[^]\"\$'*?`\\s[]*)\$/i", $line, $match))
+            elseif (!preg_match("/^([A-Z_][A-Z0-9_]*)=(\"(([^\"\$`]|\\\\[\"\$`])*)\"|'(([^']|'\\\\'')*)'|[^]\"\$'*?`\\s[]*)\$/i", $line, $match))
             {
                 throw new UnexpectedValueException("Invalid entry at line $l in $filename");
             }
 
             $name = $match[1];
 
-            if ( ! $replace && (getenv($name) !== false || array_key_exists($name, $_ENV) || array_key_exists($name, $_SERVER)))
+            if (!$replace && (getenv($name) !== false || array_key_exists($name, $_ENV) || array_key_exists($name, $_SERVER)))
             {
                 continue;
             }
@@ -139,6 +139,25 @@ class Env
     public static function GetDebug(): bool
     {
         return (bool)self::Get("LU_DEBUG", "");
+    }
+
+    public static function GetMemoryLimit(): int
+    {
+        return Convert::SizeToBytes(ini_get('memory_limit') ?: 0);
+    }
+
+    public static function GetMemoryUsagePercent($precision = 2): float
+    {
+        $limit = self::GetMemoryLimit();
+
+        if ($limit <= 0)
+        {
+            return 0;
+        }
+        else
+        {
+            return round(memory_get_usage(true) * 100 / $limit, $precision);
+        }
     }
 }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
+use UnexpectedValueException;
+
 /**
  * Functions for type wrangling
  *
@@ -12,16 +14,25 @@ namespace Lkrms;
 class Convert
 {
     /**
-     * If a variable isn't an array, make it the first element of one
+     * If a variable isn't an indexed array, make it the first element of one
      *
      * @param mixed $value The variable being checked.
      * @return array Either `$value` or `[$value]`.
      */
     public static function AnyToArray($value): array
     {
-        return is_array($value) ? $value : [
-            $value
-        ];
+        return Test::IsIndexedArray($value) ? $value : [$value];
+    }
+
+    /**
+     * If a variable isn't a list, make it the first element of one
+     *
+     * @param mixed $value The variable being checked.
+     * @return array Either `$value` or `[$value]`.
+     */
+    public static function AnyToList($value): array
+    {
+        return Test::IsListArray($value) ? $value : [$value];
     }
 
     /**
@@ -32,7 +43,7 @@ class Convert
      */
     public static function EmptyToNull($value)
     {
-        return ! $value ? null : $value;
+        return !$value ? null : $value;
     }
 
     /**
@@ -59,7 +70,7 @@ class Convert
 
         foreach ($array as $key => $value)
         {
-            if ( ! is_scalar($value))
+            if (!is_scalar($value))
             {
                 $value = json_encode($value);
             }
@@ -104,6 +115,25 @@ class Convert
         }
 
         return $noun;
+    }
+
+    /**
+     * Convert php.ini values like "128M" to bytes
+     *
+     * @param string $size From the PHP FAQ: "The available options are K (for Kilobytes), M (for Megabytes) and G (for
+     * Gigabytes), and are all case-insensitive."
+     * @return int
+     */
+    public static function SizeToBytes(string $size): int
+    {
+        if (!preg_match('/^(.+?)([KMG]?)$/', strtoupper($size), $match) || !is_numeric($match[1]))
+        {
+            throw new UnexpectedValueException("Invalid shorthand: '$size'");
+        }
+
+        $power = ['' => 0, 'K' => 1, 'M' => 2, 'G' => 3];
+
+        return (int)($match[1] * (1024 ** $power[$match[2]]));
     }
 
     /**

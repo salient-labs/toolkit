@@ -7,6 +7,7 @@ namespace Lkrms\Curler;
 use Lkrms\Console;
 use Lkrms\Convert;
 use Lkrms\Env;
+use Lkrms\Test;
 use UnexpectedValueException;
 
 class Curler
@@ -20,6 +21,16 @@ class Curler
      * @var CurlerHeaders
      */
     private $Headers;
+
+    /**
+     * @var string
+     */
+    private $LastRequestType;
+
+    /**
+     * @var string
+     */
+    private $LastQuery;
 
     /**
      * @var mixed
@@ -95,25 +106,22 @@ class Curler
 
             // collect response headers
             curl_setopt(self::$Curl, CURLOPT_HEADERFUNCTION,
-
-            function ($curl, $header)
-            {
-                $split = explode(":", $header, 2);
-
-                if (count($split) == 2)
+                function ($curl, $header)
                 {
-                    list ($name, $value) = $split;
+                    $split = explode(":", $header, 2);
 
-                    // header field names are case-insensitive
-                    $name  = strtolower($name);
-                    $value = trim($value);
-                    self::$ResponseHeaders[$name] = $value;
-                }
+                    if (count($split) == 2)
+                    {
+                        list ($name, $value) = $split;
 
-                return strlen($header);
-            }
+                        // header field names are case-insensitive
+                        $name  = strtolower($name);
+                        $value = trim($value);
+                        self::$ResponseHeaders[$name] = $value;
+                    }
 
-            );
+                    return strlen($header);
+                });
         }
     }
 
@@ -166,6 +174,8 @@ class Curler
         }
 
         $this->Headers->UnsetHeader("Content-Type");
+        $this->LastRequestType = $requestType;
+        $this->LastQuery       = $query;
 
         // in debug mode, collect request headers
         curl_setopt(self::$Curl, CURLINFO_HEADER_OUT, $this->Debug);
@@ -186,17 +196,14 @@ class Curler
 
             $hasFile = false;
             array_walk_recursive($data,
-
-            function (&$value, $key) use (&$hasFile)
-            {
-                if ($value instanceof CurlerFile)
+                function (&$value, $key) use (&$hasFile)
                 {
-                    $value   = $value->GetCurlFile();
-                    $hasFile = true;
-                }
-            }
-
-            );
+                    if ($value instanceof CurlerFile)
+                    {
+                        $value   = $value->GetCurlFile();
+                        $hasFile = true;
+                    }
+                });
 
             if ($hasFile)
             {
@@ -227,6 +234,11 @@ class Curler
             // clear any previous response headers
             self::$ResponseHeaders = [];
 
+            if ($this->Debug)
+            {
+                Console::Debug("Sending {$this->LastRequestType} to {$this->BaseUrl}{$this->LastQuery}");
+            }
+
             // execute the request
             $result = curl_exec(self::$Curl);
 
@@ -244,7 +256,7 @@ class Curler
             $this->LastResponse     = $result;
             $this->LastResponseCode = (int)curl_getinfo(self::$Curl, CURLINFO_RESPONSE_CODE);
 
-            if ($this->AutoRetryAfter && $attempt == 0 && $this->LastResponseCode == 429 && ! is_null($after = $this->GetLastRetryAfter()) && ($this->AutoRetryAfterMax == 0 || $after <= $this->AutoRetryAfterMax))
+            if ($this->AutoRetryAfter && $attempt == 0 && $this->LastResponseCode == 429 && !is_null($after = $this->GetLastRetryAfter()) && ($this->AutoRetryAfterMax == 0 || $after <= $this->AutoRetryAfterMax))
             {
                 // sleep for at least one second
                 $after = max(1, $after);
@@ -302,7 +314,7 @@ class Curler
 
     public function GetNumericKeys(): bool
     {
-        return ! $this->NoNumericKeys;
+        return !$this->NoNumericKeys;
     }
 
     public function EnableThrowHttpError()
@@ -450,7 +462,7 @@ class Curler
     {
         $retryAfter = $this->LastResponseHeaders["retry-after"] ?? null;
 
-        if ( ! is_null($retryAfter))
+        if (!is_null($retryAfter))
         {
             if (preg_match("/^[0-9]+\$/", $retryAfter))
             {
@@ -467,6 +479,16 @@ class Curler
         }
 
         return $retryAfter;
+    }
+
+    public function GetLastRequestType(): ?string
+    {
+        return $this->LastRequestType;
+    }
+
+    public function GetLastQuery(): ?string
+    {
+        return $this->LastQuery;
     }
 
     public function GetLastRequestData()
@@ -603,9 +625,9 @@ class Curler
     {
         if (empty($path))
         {
-            $entities = array_merge($entities ?? [], Convert::AnyToArray($data));
+            $entities = array_merge($entities ?? [], Convert::AnyToList($data));
         }
-        elseif (is_array($data))
+        elseif (Test::IsListArray($data))
         {
             foreach ($data as $nested)
             {
@@ -617,16 +639,16 @@ class Curler
             $field = array_shift($path);
 
             // gracefully skip missing data
-            if (isset($data->$field))
+            if (isset($data[$field]))
             {
-                self::CollateNested($data->$field, $path, $entities);
+                self::CollateNested($data[$field], $path, $entities);
             }
         }
     }
 
-    public function GetByGraphQL(string $query, array $variables = null, string $entityPath = null, string $pagePath = null, callable $filter = null): array
+    public function GetByGraphQL(string $query, array $variables = null, string $entityPath = null, string $pagePath = null, callable $filter = null, int $requestLimit = null): array
     {
-        if ( ! is_null($pagePath) && ! (($variables["first"] ?? null) && array_key_exists("after", $variables)))
+        if (!is_null($pagePath) && !(($variables["first"] ?? null) && array_key_exists("after", $variables)))
         {
             throw new CurlerException($this, "\$first and \$after variables are required for pagination");
         }
@@ -639,16 +661,26 @@ class Curler
 
         do
         {
-            $result = json_decode($this->Post($nextQuery));
+            if (!is_null($requestLimit))
+            {
+                if ($requestLimit == 0)
+                {
+                    break;
+                }
 
-            if ( ! isset($result->data))
+                $requestLimit--;
+            }
+
+            $result = json_decode($this->Post($nextQuery), true);
+
+            if (!isset($result["data"]))
             {
                 throw new CurlerException($this, "no data returned");
             }
 
             $nextQuery = null;
             $objects   = [];
-            self::CollateNested($result->data, is_null($entityPath) ? null : explode(".", $entityPath), $objects);
+            self::CollateNested($result["data"], is_null($entityPath) ? null : explode(".", $entityPath), $objects);
 
             if ($filter)
             {
@@ -657,19 +689,21 @@ class Curler
 
             $entities = array_merge($entities, $objects);
 
-            if ( ! is_null($pagePath))
+            if (!is_null($pagePath))
             {
                 $page = [];
-                self::CollateNested($result->data, explode(".", $pagePath), $page);
+                self::CollateNested($result["data"], explode(".", $pagePath), $page);
 
-                if (count($page) != 1 || ! isset($page[0]->pageInfo->endCursor) || ! isset($page[0]->pageInfo->hasNextPage))
+                if (count($page) != 1 ||
+                    !isset($page[0]["pageInfo"]["endCursor"]) ||
+                    !isset($page[0]["pageInfo"]["hasNextPage"]))
                 {
                     throw new CurlerException($this, "paginationPath did not resolve to a single object with pageInfo.endCursor and pageInfo.hasNextPage fields");
                 }
 
-                if ($page[0]->pageInfo->hasNextPage)
+                if ($page[0]["pageInfo"]["hasNextPage"])
                 {
-                    $variables["after"] = $page[0]->pageInfo->endCursor;
+                    $variables["after"] = $page[0]["pageInfo"]["endCursor"];
                     $nextQuery          = [
                         "query"     => $query,
                         "variables" => $variables,
