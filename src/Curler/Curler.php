@@ -646,7 +646,52 @@ class Curler
         }
     }
 
-    public function GetByGraphQL(string $query, array $variables = null, string $entityPath = null, string $pagePath = null, callable $filter = null, int $requestLimit = null): array
+    public static function WalkGraphQL(array & $data, callable $filter = null)
+    {
+        if (Test::IsListArray($data))
+        {
+            array_walk($data, function (&$data) use ($filter)
+            {
+                if (is_array($data))
+                {
+                    self::WalkGraphQL($data, $filter);
+                }
+            });
+
+            if ($filter)
+            {
+                $data = array_filter($data, $filter);
+            }
+
+            return;
+        }
+
+        foreach (array_keys($data) as $key)
+        {
+            if (substr($key, -10) == "Connection" &&
+                is_array($data[$key]["nodes"] ?? null) &&
+                !array_key_exists($newKey = substr($key, 0, -10), $data))
+            {
+                $data[$newKey] = $data[$key]["nodes"];
+                unset($data[$key]);
+                $key = $newKey;
+            }
+
+            if (is_array($data[$key]))
+            {
+                self::WalkGraphQL($data[$key], $filter);
+            }
+        }
+    }
+
+    public function GetByGraphQL(
+        string $query,
+        array $variables   = null,
+        string $entityPath = null,
+        string $pagePath   = null,
+        callable $filter   = null,
+        int $requestLimit  = null
+    ): array
     {
         if (!is_null($pagePath) && !(($variables["first"] ?? null) && array_key_exists("after", $variables)))
         {
@@ -682,10 +727,7 @@ class Curler
             $objects   = [];
             self::CollateNested($result["data"], is_null($entityPath) ? null : explode(".", $entityPath), $objects);
 
-            if ($filter)
-            {
-                $objects = array_filter($objects, $filter);
-            }
+            self::WalkGraphQL($objects, $filter);
 
             $entities = array_merge($entities, $objects);
 
