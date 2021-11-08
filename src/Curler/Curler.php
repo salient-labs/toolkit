@@ -125,13 +125,38 @@ class Curler
         }
     }
 
-    private function HttpBuildQuery($queryData): string
+    private function HttpBuildQuery(array $queryData, string & $query = null, string $name = "", string $format = "%s"): string
     {
-        $query = http_build_query($queryData);
-
-        if ($this->NoNumericKeys)
+        if (is_null($query))
         {
-            $query = preg_replace("/(^|&)([^=]*%5B)[0-9]+(%5D[^=]*)/", "\$1\$2\$3", $query);
+            $query = "";
+        }
+
+        foreach ($queryData as $param => $value)
+        {
+            $_name = sprintf($format, $param);
+
+            if (!is_array($value))
+            {
+                if (is_bool($value))
+                {
+                    $value = (int)$value;
+                }
+
+                $query .= ($query ? "&" : "") . urlencode($name . $_name) . "=" . urlencode((string)$value);
+
+                continue;
+            }
+            elseif (Test::IsListArray($value))
+            {
+                $_format = "[]";
+            }
+            else
+            {
+                $_format = "[%s]";
+            }
+
+            $this->HttpBuildQuery($value, $query, $name . $_name, $_format);
         }
 
         return $query;
