@@ -6,56 +6,124 @@ namespace Lkrms\Cli;
 
 use Lkrms\Assert;
 use Lkrms\Convert;
-use Lkrms\Test;
-use Exception;
+use Lkrms\Mixin\TConstructible;
+use Lkrms\Mixin\TGettable;
+use RuntimeException;
+use UnexpectedValueException;
 
+/**
+ *
+ * @package Lkrms
+ */
 class CliOption
 {
-    public $Long;
+    use TConstructible, TGettable;
 
-    public $Short;
+    /**
+     * @var string|null
+     */
+    protected $Long;
 
-    public $Key;
+    /**
+     * @var string|null
+     */
+    protected $Short;
 
-    public $DisplayName;
+    /**
+     * @var string
+     */
+    protected $Key;
 
-    public $IsFlag;
+    /**
+     * @var string
+     */
+    protected $DisplayName;
 
-    public $IsRequired;
+    /**
+     * @var int
+     */
+    protected $OptionType;
 
-    public $IsValueRequired;
+    /**
+     * @var bool
+     */
+    protected $IsFlag;
 
-    public $MultipleAllowed;
+    /**
+     * @var bool
+     */
+    protected $IsRequired;
 
-    public $ValueName;
+    /**
+     * @var bool
+     */
+    protected $IsValueRequired;
 
-    public $Description;
+    /**
+     * @var bool
+     */
+    protected $MultipleAllowed;
 
-    public $AllowedValues;
+    /**
+     *
+     * @var string|null
+     */
+    protected $ValueName;
 
-    public $DefaultValue;
+    /**
+     * @var string|null
+     */
+    protected $Description;
 
-    private static function ScalarToString($value, string $errorMessage): string
+    /**
+     * @var array<int, string>|null
+     */
+    protected $AllowedValues;
+
+    /**
+     * @var string
+     */
+    protected $DefaultValue;
+
+    protected $Value;
+
+    /**
+     * @var bool
+     */
+    protected $IsValueSet = false;
+
+    /**
+     *
+     * @param string|null   $long           e.g. `dest`
+     * @param string|null   $short          e.g. `d`
+     * @param string|null   $valueName      e.g. `DIR`
+     * @param string|null   $description    e.g. `Sync files to DIR`
+     * @param int           $optionType     e.g. {@see CliOptionType::VALUE}
+     * @param array<int,string>|null    $allowedValues  For {@see CliOptionType::ONE_OF}
+     * @param bool          $required
+     * @param bool          $multipleAllowed
+     * @param string|array<int,string>|null $defaultValue
+     * @see TConstructible::From()
+     */
+    public function __construct(
+        ?string $long,
+        ?string $short,
+        ?string $valueName,
+        ?string $description,
+        int $optionType       = CliOptionType::FLAG,
+        array $allowedValues  = null,
+        bool $required        = false,
+        bool $multipleAllowed = false,
+        $defaultValue         = null
+    )
     {
-        if (is_scalar($value))
-        {
-            return (string)$value;
-        }
-        else
-        {
-            throw new Exception($errorMessage);
-        }
-    }
+        $this->Long  = $long ?: null;
+        $this->Short = $short ?: null;
 
-    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $flags = Cli::OPTION_TYPE_FLAG, array $allowedValues = null, $defaultValue = null)
-    {
-        if (!Test::IsOneFlagSet($flags, Cli::MASK_OPTION_TYPE))
+        if (is_null($this->Long) && is_null($this->Short))
         {
-            throw new Exception("Invalid option type");
+            throw new UnexpectedValueException("At least one must be set: long, short");
         }
-
-        $this->Long  = Convert::EmptyToNull($long);
-        $this->Short = Convert::EmptyToNull($short);
 
         if (!is_null($this->Long))
         {
@@ -68,36 +136,68 @@ class CliOption
         }
 
         $this->Key             = $this->Short . "|" . $this->Long;
-        $this->DisplayName     = $this->Long ? "--" . $this->Long : ($this->Short ? "-" . $this->Short : null);
-        $this->IsFlag          = Test::IsFlagSet($flags, Cli::OPTION_TYPE_FLAG);
-        $this->IsRequired      = $this->IsFlag ? false : Test::IsFlagSet($flags, Cli::OPTION_REQUIRED);
-        $this->IsValueRequired = $this->IsFlag ? false : !Test::IsFlagSet($flags, Cli::OPTION_VALUE_NOT_REQUIRED);
-        $this->MultipleAllowed = Test::IsFlagSet($flags, Cli::OPTION_MULTIPLE_ALLOWED);
-        $this->ValueName       = $this->IsFlag ? null : $valueName;
+        $this->DisplayName     = $this->Long ? "--" . $this->Long : "-" . $this->Short;
+        $this->OptionType      = $optionType;
+        $this->MultipleAllowed = $multipleAllowed;
         $this->Description     = $description;
-        $this->DefaultValue    = $this->IsFlag ? true : ($this->IsRequired ? null : $defaultValue);
 
-        if (!is_null($this->DefaultValue) && !$this->IsFlag)
+        if ($this->IsFlag = ($optionType == CliOptionType::FLAG))
+        {
+            $this->IsRequired      = false;
+            $this->IsValueRequired = false;
+            $this->DefaultValue    = false;
+
+            return;
+        }
+
+        $this->IsRequired      = $required;
+        $this->IsValueRequired = ($optionType != CliOptionType::VALUE_OPTIONAL);
+        $this->ValueName       = $valueName ?: "VALUE";
+        $this->DefaultValue    = $this->IsRequired ? null : $defaultValue;
+
+        if (!is_null($this->DefaultValue))
         {
             if ($this->MultipleAllowed)
             {
                 $this->DefaultValue = Convert::AnyToArray($this->DefaultValue);
-                array_walk($this->DefaultValue, function (&$value)
-                {
-                    $value = self::ScalarToString($value, "defaultValue must be a scalar or an array of scalars");
-                });
+                array_walk($this->DefaultValue,
+                    function (&$value)
+                    {
+                        if (($default = Convert::ScalarToString($value)) === false)
+                        {
+                            throw new UnexpectedValueException("defaultValue must be a scalar or an array of scalars");
+                        }
+
+                        $value = $default;
+                    });
             }
             else
             {
-                $this->DefaultValue = self::ScalarToString($this->DefaultValue, "defaultValue must be a scalar");
+                if (($default = Convert::ScalarToString($this->DefaultValue)) === false)
+                {
+                    throw new UnexpectedValueException("defaultValue must be a scalar");
+                }
+
+                $this->DefaultValue = $default;
             }
         }
 
-        if (Test::IsFlagSet($flags, Cli::OPTION_TYPE_ONE_OF))
+        if ($optionType == CliOptionType::ONE_OF)
         {
             Assert::NotEmpty($allowedValues, "allowedValues");
             $this->AllowedValues = $allowedValues;
         }
+    }
+
+    public function SetValue($value)
+    {
+        if ($this->IsValueSet)
+        {
+            throw new RuntimeException("Value already set: {$this->DisplayName}");
+        }
+
+        $this->Value      = $value;
+        $this->IsValueSet = true;
     }
 }
 

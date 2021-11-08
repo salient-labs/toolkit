@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests\Cli;
+
+use Lkrms\Cli;
+use Lkrms\Env;
+use Lkrms\Err;
+use Lkrms\Tests\Cli\Command\TestOptions;
+
+$loader = require (__DIR__ . "/../../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
+
+Err::HandleErrors();
+
+Env::Load(__DIR__ . "/../.env");
+
+TestOptions::Register();
+TestOptions::Register(["sync"]);
+
+$status = Cli::RunCommand();
+exit ($status);

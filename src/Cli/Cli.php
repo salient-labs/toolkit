@@ -6,332 +6,207 @@ namespace Lkrms\Cli;
 
 use Lkrms\Assert;
 use Lkrms\Console;
-use Lkrms\Convert;
-use Exception;
+use UnexpectedValueException;
 
+/**
+ * CLI app toolkit
+ *
+ * @package Lkrms
+ */
 class Cli
 {
-    public const OPTION_TYPE_FLAG = 1 << 0;
+    /**
+     * @var array<string,CliCommand>;
+     */
+    private static $Commands = [];
 
-    public const OPTION_TYPE_VALUE = 1 << 1;
+    /**
+     * @var array<string,array<string,array|CliCommand>|CliCommand>
+     */
+    private static $CommandTree = [];
 
-    public const OPTION_TYPE_ONE_OF = 1 << 2;
+    /**
+     * @var CliCommand
+     */
+    private static $RunningCommand;
 
-    public const OPTION_REQUIRED = 1 << 3;
+    /**
+     * @var int
+     */
+    private static $FirstArgumentIndex;
 
-    public const OPTION_VALUE_NOT_REQUIRED = 1 << 4;
-
-    public const OPTION_MULTIPLE_ALLOWED = 1 << 5;
-
-    public const MASK_OPTION_TYPE = (1 << 3) - 1;
-
-    private static $Options = [];
-
-    private static $UniqueOptions = [];
-
-    private static $UsageShortFlags = [];
-
-    private static $UsageLongFlags = [];
-
-    private static $UsageRequiredValues = [];
-
-    private static $UsageOptionalValues = [];
-
-    private static $UsageArguments = [];
-
-    private static $GetOpt;
-
-    private static $GetOptCalled = false;
-
-    private static $NextArgumentIndex;
-
-    public static function GetCommandName()
+    public static function GetProgramName(): string
     {
         return basename($GLOBALS["argv"][0]);
     }
 
-    public static function AddOption(?string $long, ?string $short, ?string $valueName, ?string $description, int $flags = self::OPTION_TYPE_FLAG, array $allowedValues = null, $defaultValue = null)
+    public static function GetRunningCommand(): ?CliCommand
     {
-        self::AddCliOption(new CliOption($long, $short, $valueName, $description, $flags, $allowedValues, $defaultValue));
+        return self::$RunningCommand;
     }
 
-    public static function AddCliOption(CliOption $option)
+    public static function GetFirstArgumentIndex(): ?int
     {
-        if (self::$GetOptCalled)
-        {
-            throw new Exception("Cannot add options after calling GetOpt");
-        }
-
-        $hasShort    = !is_null($option->Short);
-        $hasLong     = !is_null($option->Long);
-        $optionNames = [];
-
-        if ($hasShort)
-        {
-            Assert::ExactStringLength($option->Short, 1, "option->Short");
-            $optionNames[] = $option->Short;
-        }
-
-        if ($hasLong)
-        {
-            Assert::MinimumStringLength($option->Long, 2, "option->Long");
-            $optionNames[] = $option->Long;
-        }
-
-        if (!count($optionNames))
-        {
-            throw new Exception("Option name missing");
-        }
-
-        if (count(array_intersect($optionNames, array_keys(self::$Options))))
-        {
-            throw new Exception("Option already defined");
-        }
-
-        self::$UniqueOptions[$option->Key] = $option;
-
-        if ($hasShort)
-        {
-            self::$Options[$option->Short] = $option;
-        }
-
-        if ($hasLong)
-        {
-            self::$Options[$option->Long] = $option;
-        }
-
-        $usage = [];
-
-        if ($option->IsFlag)
-        {
-            if ($hasShort)
-            {
-                $usage[] = "-" . $option->Short;
-
-                // for abbreviated output
-                self::$UsageShortFlags[] = $option->Short;
-            }
-
-            if ($hasLong)
-            {
-                if (!$hasShort)
-                {
-                    self::$UsageLongFlags[] = $option->Long;
-                }
-
-                $usage[] = "--" . $option->Long;
-            }
-        }
-        else
-        {
-            $valueName   = $option->ValueName ?? "value";
-            $shortSuffix = "";
-
-            if ($hasShort)
-            {
-                $usage[]     = "-{$option->Short}";
-                $shortSuffix = $option->IsValueRequired ? " $valueName" : "[$valueName]";
-            }
-
-            if ($hasLong)
-            {
-                $usage[] = "--{$option->Long}" . ($option->IsValueRequired ? " $valueName" : "[=$valueName]");
-            }
-
-            if ($option->IsRequired)
-            {
-                self::$UsageRequiredValues[] = $usage[0] . $shortSuffix;
-            }
-            else
-            {
-                self::$UsageOptionalValues[] = $usage[0] . $shortSuffix;
-            }
-        }
-
-        self::$UsageArguments[] = [
-            "argument"      => implode(", ", $usage),
-            "description"   => $option->Description,
-            "defaultValue"  => $option->IsFlag ? null : (is_string($option->DefaultValue) || is_null($option->DefaultValue) ? $option->DefaultValue : json_encode($option->DefaultValue)),
-            "allowedValues" => $option->AllowedValues,
-        ];
+        return self::$FirstArgumentIndex;
     }
 
-    public static function Usage(int $status = 0): void
+    public static function GetCommand(string $name): ?CliCommand
     {
-        $usage = "Usage: " . self::GetCommandName();
-
-        if (!empty(self::$UsageShortFlags))
-        {
-            $usage .= " [-" . implode("", self::$UsageShortFlags) . "]";
-        }
-
-        if (!empty(self::$UsageLongFlags))
-        {
-            $usage .= " [--" . implode("] [--", self::$UsageLongFlags) . "]";
-        }
-
-        if (!empty(self::$UsageOptionalValues))
-        {
-            $usage .= " [" . implode("] [", self::$UsageOptionalValues) . "]";
-        }
-
-        if (!empty(self::$UsageRequiredValues))
-        {
-            $usage .= " " . implode(" ", self::$UsageRequiredValues);
-        }
-
-        foreach (self::$UsageArguments as $option)
-        {
-            $usage .= "\n\n  $option[argument]";
-            $usage .= $option["description"] ? "\n    $option[description]" : "";
-            $usage .= $option["allowedValues"] ? "\n    Available values: " . implode(" ", $option["allowedValues"]) : "";
-            $usage .= $option["defaultValue"] ? "\n    Default: $option[defaultValue]" : "";
-        }
-
-        Console::Error($usage);
-        exit ($status);
+        return self::$Commands[$name] ?? null;
     }
 
-    public static function GetOpt()
+    /**
+     *
+     * @param string[] $nameParts
+     * @return array<string,array|CliCommand>|CliCommand|null
+     */
+    public static function GetCommandTree(array $nameParts = [])
     {
-        if (!self::$GetOptCalled)
+        $tree = self::$CommandTree;
+
+        foreach ($nameParts as $part)
         {
-            self::$GetOptCalled = true;
-
-            // build arguments to getopt
-            $short = "";
-            $long  = [];
-
-            foreach (self::$UniqueOptions as $option)
+            if (!is_array($tree))
             {
-                $suffix = "";
+                return null;
+            }
 
-                if ($option->IsValueRequired)
-                {
-                    $suffix = ":";
-                }
-                elseif (!$option->IsFlag)
-                {
-                    $suffix = "::";
-                }
+            $tree = $tree[$part] ?? null;
+        }
 
-                if ($option->Short)
-                {
-                    $short .= $option->Short . $suffix;
-                }
+        return $tree;
+    }
 
-                if ($option->Long)
+    /**
+     *
+     * @param CliCommand $command
+     * @see CliCommand::Register()
+     */
+    public static function RegisterCommand(CliCommand $command)
+    {
+        $nameParts = $command->GetQualifiedName();
+
+        if (!is_null(self::GetCommandTree($nameParts)))
+        {
+            throw new UnexpectedValueException("Command already registered at '" . implode(" ", $nameParts) . "'");
+        }
+
+        $tree = & self::$CommandTree;
+        $name = array_pop($nameParts);
+
+        foreach ($nameParts as $part)
+        {
+            if (!is_array($tree[$part] ?? null))
+            {
+                $tree[$part] = [];
+            }
+
+            $tree = & $tree[$part];
+        }
+
+        $tree[$name] = $command;
+        self::$Commands[$command->GetName()] = $command;
+    }
+
+    /**
+     *
+     * @param string $name
+     * @param array|CliCommand $node
+     * @return string
+     */
+    private static function GetUsage(string $name, $node): string
+    {
+        if ($node instanceof CliCommand)
+        {
+            return $node->GetUsage();
+        }
+        elseif (is_array($node))
+        {
+            $name     = trim(self::GetProgramName() . " $name");
+            $synopses = [];
+
+            foreach ($node as $childName => $childNode)
+            {
+                if ($childNode instanceof CliCommand)
                 {
-                    $long[] = $option->Long . $suffix;
+                    $synopses[] = "_{$childName}_" . $childNode->GetUsage(true);
+                }
+                elseif (is_array($childNode))
+                {
+                    $synopses[] = "_{$childName}_ <command>";
                 }
             }
 
-            $opt = getopt($short, $long, self::$NextArgumentIndex);
+            $synopses = implode("\n  ", $synopses);
 
-            if ($opt === false)
+            return
+<<<EOF
+___NAME___
+  __{$name}__
+
+___SYNOPSIS___
+  __{$name}__ <command>
+
+___SUBCOMMANDS___
+  $synopses
+EOF;
+        }
+    }
+
+    public static function RunCommand(): int
+    {
+        Assert::SapiIsCli();
+
+        $node = self::$CommandTree;
+        $name = "";
+
+        try
+        {
+            for ($i = 1; $i < $GLOBALS["argc"]; $i++)
             {
-                self::Usage(1);
-            }
+                $part = $GLOBALS["argv"][$i];
 
-            $mergedOpt = [];
-            $isHelp    = false;
-
-            foreach ($opt as $o => $a)
-            {
-                $o = self::$Options[$o]->Key ?? null;
-
-                if (is_null($o))
+                if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $part))
                 {
-                    throw new Exception("Unknown option returned by getopt");
+                    $node  = $node[$part] ?? null;
+                    $name .= ($name ? " " : "") . $part;
                 }
-
-                if (isset($mergedOpt[$o]))
+                elseif ($part == "--help" && $i + 1 == $GLOBALS["argc"])
                 {
-                    $mergedOpt[$o] = array_merge(Convert::AnyToArray($mergedOpt[$o]), Convert::AnyToArray($a));
+                    Console::PrintTtyOnly(self::GetUsage($name, $node));
+
+                    return 0;
                 }
                 else
                 {
-                    $mergedOpt[$o] = $a;
+                    break;
                 }
-            }
 
-            foreach ($mergedOpt as $o => $a)
-            {
-                $option = self::$UniqueOptions[$o];
-
-                if (!$option->MultipleAllowed && is_array($a))
+                if ($node instanceof CliCommand)
                 {
-                    Console::Error(self::GetCommandName() . ": {$option->DisplayName} cannot be used multiple times");
-                    $opt = false;
-                }
+                    self::$RunningCommand     = $node;
+                    self::$FirstArgumentIndex = $i + 1;
 
-                if (!is_null($option->AllowedValues))
+                    return $node->Run();
+                }
+                elseif (!is_array($node))
                 {
-                    $arr = Convert::AnyToArray($a);
-
-                    foreach ($arr as $v)
-                    {
-                        if (!in_array($v, $option->AllowedValues))
-                        {
-                            Console::Error(self::GetCommandName() . ": invalid value for {$option->DisplayName} -- '$v'");
-                            $opt = false;
-                        }
-                    }
+                    throw new CliInvalidArgumentException("no command registered at '$name'");
                 }
             }
 
-            $isHelp = count(array_intersect(array_keys($mergedOpt), [
-                "h|help",
-                "|help"
-            ]));
+            throw new CliInvalidArgumentException("missing or incomplete command" . ($name ? " '$name'" : ""));
+        }
+        catch (CliInvalidArgumentException $ex)
+        {
+            unset($ex);
 
-            foreach (self::$UniqueOptions as $o)
+            if ($node && $usage = self::GetUsage($name, $node))
             {
-                if ($o->IsRequired && !isset($mergedOpt[$o->Key]))
-                {
-                    if ($GLOBALS["argc"] > 1 && !$isHelp)
-                    {
-                        Console::Error(self::GetCommandName() . ": {$o->DisplayName} is required");
-                    }
-
-                    $opt = false;
-                }
+                Console::PrintTtyOnly($usage);
             }
 
-            if ($opt === false || $isHelp)
-            {
-                self::Usage($isHelp ? 0 : 1);
-            }
-
-            self::$GetOpt = $mergedOpt;
-        }
-
-        return self::$GetOpt;
-    }
-
-    public static function GetOptionValue(string $optionName)
-    {
-        if (!isset(self::$Options[$optionName]))
-        {
-            throw new Exception("Option not defined");
-        }
-
-        $option = self::$Options[$optionName];
-        $opt    = self::GetOpt();
-        $val    = $opt[$option->Key] ?? $option->DefaultValue;
-
-        if ($option->IsFlag)
-        {
-            // setting a flag should make its value true
-            return is_array($val) ? count($val) : !$val;
-        }
-        elseif ($option->MultipleAllowed)
-        {
-            return is_null($val) ? null : Convert::AnyToArray($val);
-        }
-        else
-        {
-            return $val;
+            return 1;
         }
     }
 }
