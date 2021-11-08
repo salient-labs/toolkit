@@ -58,6 +58,40 @@ class Convert
     }
 
     /**
+     * Create a map from a list of items
+     *
+     * Something like: `[ ITEM[$key] => ITEM, ... ]`
+     *
+     * @param array<int,array|object> $list
+     * @param string $key
+     * @return array<string,array|object>
+     */
+    public static function ListToMap(array $list, string $key): array
+    {
+        return array_combine(
+            array_map(
+                function ($item) use ($key)
+                {
+                    if (is_array($item))
+                    {
+                        return $item[$key];
+                    }
+                    elseif (is_object($item))
+                    {
+                        return $item->$key;
+                    }
+                    else
+                    {
+                        throw new UnexpectedValueException("Item is not an array or object");
+                    }
+                },
+                $list
+            ),
+            $list
+        );
+    }
+
+    /**
      * Format an array's keys and values
      *
      * @param array $array The array to format.
