@@ -62,8 +62,8 @@ class Cli
             throw new Exception("Cannot add options after calling GetOpt");
         }
 
-        $hasShort    = ! is_null($option->Short);
-        $hasLong     = ! is_null($option->Long);
+        $hasShort    = !is_null($option->Short);
+        $hasLong     = !is_null($option->Long);
         $optionNames = [];
 
         if ($hasShort)
@@ -78,7 +78,7 @@ class Cli
             $optionNames[] = $option->Long;
         }
 
-        if ( ! count($optionNames))
+        if (!count($optionNames))
         {
             throw new Exception("Option name missing");
         }
@@ -114,7 +114,7 @@ class Cli
 
             if ($hasLong)
             {
-                if ( ! $hasShort)
+                if (!$hasShort)
                 {
                     self::$UsageLongFlags[] = $option->Long;
                 }
@@ -160,22 +160,22 @@ class Cli
     {
         $usage = "Usage: " . self::GetCommandName();
 
-        if ( ! empty(self::$UsageShortFlags))
+        if (!empty(self::$UsageShortFlags))
         {
             $usage .= " [-" . implode("", self::$UsageShortFlags) . "]";
         }
 
-        if ( ! empty(self::$UsageLongFlags))
+        if (!empty(self::$UsageLongFlags))
         {
             $usage .= " [--" . implode("] [--", self::$UsageLongFlags) . "]";
         }
 
-        if ( ! empty(self::$UsageOptionalValues))
+        if (!empty(self::$UsageOptionalValues))
         {
             $usage .= " [" . implode("] [", self::$UsageOptionalValues) . "]";
         }
 
-        if ( ! empty(self::$UsageRequiredValues))
+        if (!empty(self::$UsageRequiredValues))
         {
             $usage .= " " . implode(" ", self::$UsageRequiredValues);
         }
@@ -194,7 +194,7 @@ class Cli
 
     public static function GetOpt()
     {
-        if ( ! self::$GetOptCalled)
+        if (!self::$GetOptCalled)
         {
             self::$GetOptCalled = true;
 
@@ -210,7 +210,7 @@ class Cli
                 {
                     $suffix = ":";
                 }
-                elseif ( ! $option->IsFlag)
+                elseif (!$option->IsFlag)
                 {
                     $suffix = "::";
                 }
@@ -259,19 +259,19 @@ class Cli
             {
                 $option = self::$UniqueOptions[$o];
 
-                if ( ! $option->MultipleAllowed && is_array($a))
+                if (!$option->MultipleAllowed && is_array($a))
                 {
                     Console::Error(self::GetCommandName() . ": {$option->DisplayName} cannot be used multiple times");
                     $opt = false;
                 }
 
-                if ( ! is_null($option->AllowedValues))
+                if (!is_null($option->AllowedValues))
                 {
                     $arr = Convert::AnyToArray($a);
 
                     foreach ($arr as $v)
                     {
-                        if ( ! in_array($v, $option->AllowedValues))
+                        if (!in_array($v, $option->AllowedValues))
                         {
                             Console::Error(self::GetCommandName() . ": invalid value for {$option->DisplayName} -- '$v'");
                             $opt = false;
@@ -287,9 +287,9 @@ class Cli
 
             foreach (self::$UniqueOptions as $o)
             {
-                if ($o->IsRequired && ! isset($mergedOpt[$o->Key]))
+                if ($o->IsRequired && !isset($mergedOpt[$o->Key]))
                 {
-                    if ($GLOBALS["argc"] > 1 && ! $isHelp)
+                    if ($GLOBALS["argc"] > 1 && !$isHelp)
                     {
                         Console::Error(self::GetCommandName() . ": {$o->DisplayName} is required");
                     }
@@ -311,7 +311,7 @@ class Cli
 
     public static function GetOptionValue(string $optionName)
     {
-        if ( ! isset(self::$Options[$optionName]))
+        if (!isset(self::$Options[$optionName]))
         {
             throw new Exception("Option not defined");
         }
@@ -323,11 +323,11 @@ class Cli
         if ($option->IsFlag)
         {
             // setting a flag should make its value true
-            return is_array($val) ? count($val) : ! $val;
+            return is_array($val) ? count($val) : !$val;
         }
         elseif ($option->MultipleAllowed)
         {
-            return Convert::AnyToArray($val);
+            return is_null($val) ? null : Convert::AnyToArray($val);
         }
         else
         {
