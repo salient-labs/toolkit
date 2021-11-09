@@ -646,11 +646,11 @@ class Curler
         return $entities;
     }
 
-    private static function CollateNested($data, array $path = null, array & $entities = null)
+    private static function CollateNested($data, array $path, array & $entities)
     {
         if (empty($path))
         {
-            $entities = array_merge($entities ?? [], Convert::AnyToList($data));
+            $entities = array_merge($entities, Convert::AnyToList($data));
         }
         elseif (Test::IsListArray($data))
         {
