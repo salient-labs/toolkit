@@ -87,6 +87,13 @@ class Curler
      */
     private $ForceNumericKeys = false;
 
+    /**
+     * Used with calls to Console::Debug
+     *
+     * @var int
+     */
+    private $InternalStackDepth = 0;
+
     private static $Curl;
 
     private static $ResponseHeaders;
@@ -252,6 +259,11 @@ class Curler
 
     private function Execute(): string
     {
+        $depth = $this->InternalStackDepth + 2;
+
+        // Reset it now in case there's an error later
+        $this->InternalStackDepth = 0;
+
         // Add headers for authentication etc.
         curl_setopt(self::$Curl, CURLOPT_HTTPHEADER, $this->Headers->GetHeaders());
 
@@ -262,7 +274,7 @@ class Curler
 
             if ($this->Debug || $this->LastRequestType != "GET")
             {
-                Console::Debug("{$this->LastRequestType} {$this->BaseUrl}{$this->LastQuery}", null, null, 2);
+                Console::Debug("{$this->LastRequestType} {$this->BaseUrl}{$this->LastQuery}", null, null, $depth);
             }
 
             // Execute the request
@@ -286,7 +298,7 @@ class Curler
             {
                 // Sleep for at least one second
                 $after = max(1, $after);
-                Console::Debug("Received HTTP error 429 Too Many Requests, sleeping for {$after}s", null, null, 2);
+                Console::Debug("Received HTTP error 429 Too Many Requests, sleeping for {$after}s", null, null, $depth);
                 sleep($after);
 
                 continue;
@@ -410,6 +422,8 @@ class Curler
 
     public function GetJson(array $queryString = null)
     {
+        $this->InternalStackDepth = 1;
+
         return json_decode($this->Get($queryString), true);
     }
 
@@ -423,6 +437,8 @@ class Curler
 
     public function PostJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
+        $this->InternalStackDepth = 1;
+
         return json_decode($this->Post($data, $queryString, $dataAsJson), true);
     }
 
@@ -437,6 +453,8 @@ class Curler
 
     public function RawPostJson(string $data, string $contentType, array $queryString = null)
     {
+        $this->InternalStackDepth = 1;
+
         return json_decode($this->RawPost($data, $contentType, $queryString), true);
     }
 
@@ -450,6 +468,8 @@ class Curler
 
     public function PutJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
+        $this->InternalStackDepth = 1;
+
         return json_decode($this->Put($data, $queryString, $dataAsJson), true);
     }
 
@@ -463,6 +483,8 @@ class Curler
 
     public function PatchJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
+        $this->InternalStackDepth = 1;
+
         return json_decode($this->Patch($data, $queryString, $dataAsJson), true);
     }
 
@@ -476,6 +498,8 @@ class Curler
 
     public function DeleteJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
+        $this->InternalStackDepth = 1;
+
         return json_decode($this->Delete($data, $queryString, $dataAsJson), true);
     }
 
@@ -736,6 +760,8 @@ class Curler
 
                 $requestLimit--;
             }
+
+            $this->InternalStackDepth = 1;
 
             $result = json_decode($this->Post($nextQuery), true);
 

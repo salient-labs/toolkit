@@ -229,11 +229,11 @@ class Console
      * @throws RuntimeException
      */
     public static function Debug(string $msg1, string $msg2 = null,
-        Exception $ex = null, int $depth = 1)
+        Exception $ex = null, int $depth = 0)
     {
+        $caller = Error::GetCaller($depth);
         self::Write(ConsoleLevel::DEBUG,
-            (($caller = Error::GetCaller($depth)) ? "{{$caller}} " : "") . $msg1,
-            $msg2, "  - ",
+            ($caller ? "{{$caller}} " : "") . $msg1, $msg2, "  - ",
             ConsoleColour::DIM . ConsoleColour::BOLD,
             ConsoleColour::DIM . ConsoleColour::CYAN, null, $ex);
     }
@@ -247,8 +247,8 @@ class Console
     public static function Log(string $msg1, string $msg2 = null,
         Exception $ex = null)
     {
-        self::Write(ConsoleLevel::INFO, $msg1, $msg2, " -> ", "",
-            ConsoleColour::YELLOW, null, $ex);
+        self::Write(ConsoleLevel::INFO, $msg1, $msg2, " -> ",
+            "", ConsoleColour::YELLOW, null, $ex);
     }
 
     /**
@@ -260,8 +260,8 @@ class Console
     public static function LogProgress(string $msg1, string $msg2 = null,
         Exception $ex = null)
     {
-        self::Write(ConsoleLevel::INFO, $msg1, $msg2, " -> ", "",
-            ConsoleColour::YELLOW, null, $ex, true);
+        self::Write(ConsoleLevel::INFO, $msg1, $msg2, " -> ",
+            "", ConsoleColour::YELLOW, null, $ex, true);
     }
 
     /**
