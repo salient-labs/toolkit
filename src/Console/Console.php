@@ -17,62 +17,18 @@ use RuntimeException;
  */
 class Console
 {
-    const BLACK = "\033[30m";
-
-    const RED = "\033[31m";
-
-    const GREEN = "\033[32m";
-
-    const YELLOW = "\033[33m";
-
-    const BLUE = "\033[34m";
-
-    const MAGENTA = "\033[35m";
-
-    const CYAN = "\033[36m";
-
-    const WHITE = "\033[37m";
-
-    const GREY = "\033[90m";
-
-    const BLACK_BG = "\033[40m";
-
-    const RED_BG = "\033[41m";
-
-    const GREEN_BG = "\033[42m";
-
-    const YELLOW_BG = "\033[43m";
-
-    const BLUE_BG = "\033[44m";
-
-    const MAGENTA_BG = "\033[45m";
-
-    const CYAN_BG = "\033[46m";
-
-    const WHITE_BG = "\033[47m";
-
-    const GREY_BG = "\033[100m";
-
-    const BOLD = "\033[1m";
-
-    const DIM = "\033[2m";
-
-    const UNDIM = "\033[22m";
-
-    const RESET = "\033[m\017";
-
     /**
      * @var int
      */
     private static $GroupDepth = null;
 
     /**
-     * @var array
+     * @var array<int,ConsoleTarget>
      */
     private static $Targets = [];
 
     /**
-     * @var array
+     * @var array<int,ConsoleTarget>
      */
     private static $TtyTargets = [];
 
@@ -155,7 +111,17 @@ class Console
         self::$Targets[] = $target;
     }
 
-    private static function Write(int $level, string $msg1, ?string $msg2, string $pre, string $clr1, string $clr2, string $clrP = null, Exception $ex = null)
+    private static function Write(
+        int $level,
+        string $msg1,
+        ?string $msg2,
+        string $pre,
+        string $clr1,
+        string $clr2,
+        string $clrP  = null,
+        Exception $ex = null,
+        bool $ttyOnly = false
+    )
     {
         //
         self::CheckGroupDepth();
@@ -196,15 +162,20 @@ class Console
 
         foreach (self::$Targets as $target)
         {
+            if ($ttyOnly && !$target->IsTty())
+            {
+                continue;
+            }
+
             if ($target instanceof Stream && $target->AddColour())
             {
                 if (is_null($colourMessage))
                 {
-                    $clrP          = !is_null($clrP) ? $clrP : self::BOLD . $clr2;
-                    $_pre          = $clrP . $pre . ($clrP ? self::RESET : "");
+                    $clrP          = !is_null($clrP) ? $clrP : ConsoleColour::BOLD . $clr2;
+                    $_pre          = $clrP . $pre . ($clrP ? ConsoleColour::RESET : "");
                     $_pre          = str_repeat(" ", $margin) . $_pre;
-                    $_msg1         = $clr1 . $msg1 . ($clr1 ? self::RESET : "");
-                    $_msg2         = $msg2 ? $clr2 . $msg2 . ($clr2 ? self::RESET : "") : "";
+                    $_msg1         = $clr1 . $msg1 . ($clr1 ? ConsoleColour::RESET : "");
+                    $_msg2         = $msg2 ? $clr2 . $msg2 . ($clr2 ? ConsoleColour::RESET : "") : "";
                     $colourMessage = $_pre . $_msg1 . $_msg2;
                 }
 
@@ -230,7 +201,9 @@ class Console
             self::$GroupDepth++;
         }
 
-        self::Write(ConsoleLevel::NOTICE, $msg1, $msg2, ">>> ", self::BOLD, self::CYAN);
+        self::Write(ConsoleLevel::NOTICE, $msg1, $msg2, ">>> ",
+            ConsoleColour::BOLD,
+            ConsoleColour::CYAN);
     }
 
     /**
@@ -255,11 +228,14 @@ class Console
      * @return void
      * @throws RuntimeException
      */
-    public static function Debug(string $msg1, string $msg2 = null, Exception $ex = null, int $depth = 1)
+    public static function Debug(string $msg1, string $msg2 = null,
+        Exception $ex = null, int $depth = 1)
     {
         self::Write(ConsoleLevel::DEBUG,
             (($caller = Error::GetCaller($depth)) ? "{{$caller}} " : "") . $msg1,
-            $msg2, "  - ", self::DIM . self::BOLD, self::DIM . self::CYAN, null, $ex);
+            $msg2, "  - ",
+            ConsoleColour::DIM . ConsoleColour::BOLD,
+            ConsoleColour::DIM . ConsoleColour::CYAN, null, $ex);
     }
 
     /**
@@ -268,9 +244,24 @@ class Console
      * @param string $msg1
      * @param string|null $msg2
      */
-    public static function Log(string $msg1, string $msg2 = null, Exception $ex = null)
+    public static function Log(string $msg1, string $msg2 = null,
+        Exception $ex = null)
     {
-        self::Write(ConsoleLevel::INFO, $msg1, $msg2, " -> ", "", self::YELLOW, null, $ex);
+        self::Write(ConsoleLevel::INFO, $msg1, $msg2, " -> ", "",
+            ConsoleColour::YELLOW, null, $ex);
+    }
+
+    /**
+     * Print " -> $msg1 $msg2" to TTY targets only
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     */
+    public static function LogProgress(string $msg1, string $msg2 = null,
+        Exception $ex = null)
+    {
+        self::Write(ConsoleLevel::INFO, $msg1, $msg2, " -> ", "",
+            ConsoleColour::YELLOW, null, $ex, true);
     }
 
     /**
@@ -281,7 +272,9 @@ class Console
      */
     public static function Info(string $msg1, string $msg2 = null, Exception $ex = null)
     {
-        self::Write(ConsoleLevel::NOTICE, $msg1, $msg2, "==> ", self::BOLD, self::CYAN, null, $ex);
+        self::Write(ConsoleLevel::NOTICE, $msg1, $msg2, "==> ",
+            ConsoleColour::BOLD,
+            ConsoleColour::CYAN, null, $ex);
     }
 
     /**
@@ -293,7 +286,10 @@ class Console
     public static function Warn(string $msg1, string $msg2 = null, Exception $ex = null)
     {
         self::$Warnings++;
-        self::Write(ConsoleLevel::WARNING, $msg1, $msg2, "  ! ", self::YELLOW . self::BOLD, self::BOLD, self::YELLOW . self::BOLD, $ex);
+        self::Write(ConsoleLevel::WARNING, $msg1, $msg2, "  ! ",
+            ConsoleColour::YELLOW . ConsoleColour::BOLD,
+            ConsoleColour::BOLD,
+            ConsoleColour::YELLOW . ConsoleColour::BOLD, $ex);
     }
 
     /**
@@ -305,7 +301,10 @@ class Console
     public static function Error(string $msg1, string $msg2 = null, Exception $ex = null)
     {
         self::$Errors++;
-        self::Write(ConsoleLevel::ERROR, $msg1, $msg2, " !! ", self::RED . self::BOLD, self::BOLD, self::RED . self::BOLD, $ex);
+        self::Write(ConsoleLevel::ERROR, $msg1, $msg2, " !! ",
+            ConsoleColour::RED . ConsoleColour::BOLD,
+            ConsoleColour::BOLD,
+            ConsoleColour::RED . ConsoleColour::BOLD, $ex);
     }
 
     public static function GetWarnings(): int

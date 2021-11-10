@@ -6,7 +6,7 @@ namespace Lkrms\Console\ConsoleTarget;
 
 use DateTime;
 use DateTimeZone;
-use Lkrms\Console\Console;
+use Lkrms\Console\ConsoleColour;
 use Lkrms\Console\ConsoleLevel;
 use RuntimeException;
 
@@ -50,6 +50,11 @@ class Stream extends \Lkrms\Console\ConsoleTarget
     private $Path;
 
     /**
+     * @var bool
+     */
+    private $IsTty;
+
+    /**
      * Use an open stream as a console output target
      *
      * @param resource      $stream
@@ -70,14 +75,14 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         ConsoleLevel::DEBUG
     ], bool $addColour = null, bool $addTimestamp = null, string $timestamp = null, string $timezone = null)
     {
-        $isTty = stream_isatty($stream);
         stream_set_write_buffer($stream, 0);
 
         //
         $this->Stream       = $stream;
         $this->Levels       = $levels;
-        $this->AddColour    = !is_null($addColour) ? $addColour : $isTty;
-        $this->AddTimestamp = !is_null($addTimestamp) ? $addTimestamp : !$isTty;
+        $this->IsTty        = stream_isatty($stream);
+        $this->AddColour    = !is_null($addColour) ? $addColour : $this->IsTty;
+        $this->AddTimestamp = !is_null($addTimestamp) ? $addTimestamp : !$this->IsTty;
 
         if (!is_null($timestamp))
         {
@@ -88,6 +93,11 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         {
             $this->Timezone = new DateTimeZone($timezone);
         }
+    }
+
+    public function IsTty(): bool
+    {
+        return $this->IsTty;
     }
 
     public function Reopen(string $path = null): void
@@ -148,7 +158,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
     {
         if ($prefix && $this->AddColour)
         {
-            parent::SetPrefix(Console::DIM . $prefix . Console::UNDIM);
+            parent::SetPrefix(ConsoleColour::DIM . $prefix . ConsoleColour::UNDIM);
         }
         else
         {

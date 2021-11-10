@@ -25,5 +25,10 @@ abstract class ConsoleTarget
     {
         $this->Prefix = $prefix;
     }
+
+    public function IsTty(): bool
+    {
+        return false;
+    }
 }
 
