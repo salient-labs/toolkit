@@ -85,7 +85,7 @@ class Curler
     /**
      * @var bool
      */
-    private $NoNumericKeys = false;
+    private $ForceNumericKeys = false;
 
     private static $Curl;
 
@@ -94,17 +94,17 @@ class Curler
     public function __construct(string $baseUrl, CurlerHeaders $headers = null)
     {
         $this->BaseUrl = $baseUrl;
-        $this->Headers = $headers ?: new CurlerHeaders;
+        $this->Headers = $headers ?: new CurlerHeaders();
         $this->Debug   = Env::GetDebug();
 
         if (is_null(self::$Curl))
         {
             self::$Curl = curl_init();
 
-            // don't send output to browser
+            // Don't send output to browser
             curl_setopt(self::$Curl, CURLOPT_RETURNTRANSFER, true);
 
-            // collect response headers
+            // Collect response headers
             curl_setopt(self::$Curl, CURLOPT_HEADERFUNCTION,
                 function ($curl, $header)
                 {
@@ -114,7 +114,7 @@ class Curler
                     {
                         list ($name, $value) = $split;
 
-                        // header field names are case-insensitive
+                        // Header field names are case-insensitive
                         $name  = strtolower($name);
                         $value = trim($value);
                         self::$ResponseHeaders[$name] = $value;
@@ -125,7 +125,8 @@ class Curler
         }
     }
 
-    private function HttpBuildQuery(array $queryData, string & $query = null, string $name = "", string $format = "%s"): string
+    private function HttpBuildQuery(array $queryData,
+        string & $query = null, string $name = "", string $format = "%s"): string
     {
         if (is_null($query))
         {
@@ -147,7 +148,7 @@ class Curler
 
                 continue;
             }
-            elseif (Test::IsListArray($value))
+            elseif (!$this->ForceNumericKeys && Test::IsListArray($value))
             {
                 $_format = "[]";
             }
@@ -194,7 +195,7 @@ class Curler
 
             default:
 
-                // allows DELETE, PATCH etc.
+                // Allow DELETE, PATCH etc.
                 curl_setopt(self::$Curl, CURLOPT_CUSTOMREQUEST, $requestType);
         }
 
@@ -202,7 +203,7 @@ class Curler
         $this->LastRequestType = $requestType;
         $this->LastQuery       = $query;
 
-        // in debug mode, collect request headers
+        // In debug mode, collect request headers
         curl_setopt(self::$Curl, CURLINFO_HEADER_OUT, $this->Debug);
     }
 
@@ -221,7 +222,7 @@ class Curler
 
             $hasFile = false;
             array_walk_recursive($data,
-                function (&$value, $key) use (&$hasFile)
+                function (&$value) use (&$hasFile)
                 {
                     if ($value instanceof CurlerFile)
                     {
@@ -251,23 +252,23 @@ class Curler
 
     private function Execute(): string
     {
-        // add headers for authentication etc.
+        // Add headers for authentication etc.
         curl_setopt(self::$Curl, CURLOPT_HTTPHEADER, $this->Headers->GetHeaders());
 
         for ($attempt = 0; $attempt < 2; $attempt++)
         {
-            // clear any previous response headers
+            // Clear any previous response headers
             self::$ResponseHeaders = [];
 
-            if ($this->Debug)
+            if ($this->Debug || $this->LastRequestType != "GET")
             {
-                Console::Debug("Sending {$this->LastRequestType} to {$this->BaseUrl}{$this->LastQuery}");
+                Console::Debug("{$this->LastRequestType} {$this->BaseUrl}{$this->LastQuery}", null, null, 2);
             }
 
-            // execute the request
+            // Execute the request
             $result = curl_exec(self::$Curl);
 
-            // save transfer information
+            // Save transfer information
             $this->LastCurlInfo        = curl_getinfo(self::$Curl);
             $this->LastResponseHeaders = self::$ResponseHeaders;
 
@@ -283,9 +284,9 @@ class Curler
 
             if ($this->AutoRetryAfter && $attempt == 0 && $this->LastResponseCode == 429 && !is_null($after = $this->GetLastRetryAfter()) && ($this->AutoRetryAfterMax == 0 || $after <= $this->AutoRetryAfterMax))
             {
-                // sleep for at least one second
+                // Sleep for at least one second
                 $after = max(1, $after);
-                Console::Debug("Received HTTP error 429 Too Many Requests, sleeping for {$after}s");
+                Console::Debug("Received HTTP error 429 Too Many Requests, sleeping for {$after}s", null, null, 2);
                 sleep($after);
 
                 continue;
@@ -337,9 +338,14 @@ class Curler
         return $this->DataAsJson;
     }
 
-    public function GetNumericKeys(): bool
+    public function GetForceNumericKeys(): bool
     {
-        return !$this->NoNumericKeys;
+        return $this->ForceNumericKeys;
+    }
+
+    public function SetForceNumericKeys(bool $value)
+    {
+        $this->ForceNumericKeys = $value;
     }
 
     public function EnableThrowHttpError()
@@ -393,16 +399,6 @@ class Curler
     public function DisableDataAsJson()
     {
         $this->DataAsJson = false;
-    }
-
-    public function EnableNumericKeys()
-    {
-        $this->NoNumericKeys = false;
-    }
-
-    public function DisableNumericKeys()
-    {
-        $this->NoNumericKeys = true;
     }
 
     public function Get(array $queryString = null): string
@@ -566,7 +562,7 @@ class Curler
                 $nextUrl = null;
             }
 
-            // collect data from response and move on to next page
+            // Collect data from response and move on to next page
             $result   = json_decode($this->Execute(), true);
             $entities = array_merge($entities, $result);
 
@@ -600,7 +596,7 @@ class Curler
                 curl_setopt(self::$Curl, CURLOPT_URL, $nextUrl);
             }
 
-            // collect data from response and move on to next page
+            // Collect data from response and move on to next page
             $result   = json_decode($this->Execute(), true);
             $entities = array_merge($entities, $result[$entityName]);
             $nextUrl  = $result["links"]["next"] ?? null;
@@ -623,7 +619,7 @@ class Curler
                 curl_setopt(self::$Curl, CURLOPT_URL, $nextUrl);
             }
 
-            // collect data from response and move on to next page
+            // Collect data from response and move on to next page
             $result = json_decode($this->Execute(), true);
 
             if (is_null($prefix))
@@ -663,7 +659,7 @@ class Curler
         {
             $field = array_shift($path);
 
-            // gracefully skip missing data
+            // Gracefully skip missing data
             if (isset($data[$field]))
             {
                 self::CollateNested($data[$field], $path, $entities);

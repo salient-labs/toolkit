@@ -245,15 +245,20 @@ class Console
     }
 
     /**
-     * Print "  - $msg1 $msg2" to STDOUT
+     * Print "  - {CALLER} $msg1 $msg2" to STDOUT
      *
      * @param string $msg1
      * @param string|null $msg2
+     * @param Exception|null $ex
+     * @param int $depth Passed to {@link Error::GetCaller()}. To print your
+     * caller's name instead of your own, set `$depth` = 2.
+     * @return void
+     * @throws RuntimeException
      */
-    public static function Debug(string $msg1, string $msg2 = null, Exception $ex = null)
+    public static function Debug(string $msg1, string $msg2 = null, Exception $ex = null, int $depth = 1)
     {
         self::Write(ConsoleLevel::DEBUG,
-            (($caller = Error::GetCaller()) ? "{{$caller}} " : "") . $msg1,
+            (($caller = Error::GetCaller($depth)) ? "{{$caller}} " : "") . $msg1,
             $msg2, "  - ", self::DIM . self::BOLD, self::DIM . self::CYAN, null, $ex);
     }
 

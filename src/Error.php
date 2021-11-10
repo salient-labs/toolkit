@@ -54,7 +54,7 @@ class Error
         return self::$Whoops;
     }
 
-    public static function GetCaller($depth = 1): string
+    public static function GetCaller(int $depth = 1): string
     {
         $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $depth + 2);
 
