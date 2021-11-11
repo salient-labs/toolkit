@@ -150,7 +150,9 @@ class Stream extends \Lkrms\Console\ConsoleTarget
                 $message = $now . str_replace("\n", "\n" . str_repeat(" ", strlen($now)), $message);
             }
 
-            fwrite($this->Stream, $message . "\n");
+            // Don't add a newline if $message has a trailing carriage return
+            // (e.g. when a progress bar is being displayed)
+            fwrite($this->Stream, $message . (substr($message, -1) == "\r" ? "" : "\n"));
         }
     }
 

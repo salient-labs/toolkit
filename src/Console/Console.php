@@ -317,7 +317,7 @@ class Console
         return self::$Errors;
     }
 
-    public static function GetSummary($successText = " without errors"): string
+    public static function GetSummary($successText = " without errors", bool $reset = true): string
     {
         if (self::$Warnings + self::$Errors)
         {
@@ -326,6 +326,11 @@ class Console
             if (self::$Warnings)
             {
                 $summary .= " and " . Convert::NumberToNoun(self::$Warnings, "warning", null, true);
+            }
+
+            if ($reset)
+            {
+                self::$Warnings = self::$Errors = 0;
             }
 
             return $summary;
