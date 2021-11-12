@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\Cache;
+use Lkrms\Error;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Error::HandleErrors();
+
+Cache::Load();
+
+Cache::Set('key', 'value1');
+var_dump(Cache::Get('key'));
+
+Cache::Set('key', ['value1', 'value2']);
+var_dump(Cache::Get('key'));

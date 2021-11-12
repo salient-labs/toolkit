@@ -23,7 +23,7 @@ class Cache
 
     private static function CheckLoaded(string $method)
     {
-        if ( ! self::$Loaded)
+        if (!self::$Loaded)
         {
             throw new RuntimeException($method . ": Load() must be called first");
         }
@@ -79,6 +79,7 @@ BEGIN
 END;
 SQL
         );
+
         self::FlushExpired();
         self::$Loaded = true;
     }
@@ -101,7 +102,7 @@ SQL
 
         // If $expiry is non-zero and exceeds 60*60*24*30 seconds (30 days),
         // take it as a Unix timestamp, otherwise take it as seconds from now
-        if ( ! $expiry)
+        if (!$expiry)
         {
             $expiry = null;
         }
@@ -110,21 +111,56 @@ SQL
             $expiry += time();
         }
 
-        $stmt = self::$db->prepare(
+        $sql = [];
+
+        if (version_compare((SQLite3::version())["versionString"], "3.24") >= 0)
+        {
+            $sql[] =
 <<<SQL
 INSERT INTO _cache_item(item_key, item_value, expires_at)
-    VALUES (:item_key, :item_value, datetime(:expires_at, 'unixepoch'))
-    ON CONFLICT(item_key) DO UPDATE SET
-        item_value = excluded.item_value,
-        expires_at = excluded.expires_at
-    WHERE item_value IS NOT excluded.item_value
-        OR expires_at IS NOT excluded.expires_at
-SQL
-        );
-        $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
-        $stmt->bindValue(":item_value", serialize($value), SQLITE3_BLOB);
-        $stmt->bindValue(":expires_at", $expiry, SQLITE3_INTEGER);
-        $stmt->execute();
+VALUES (
+    :item_key,
+    :item_value,
+    datetime(:expires_at, 'unixepoch')
+  )
+ON CONFLICT(item_key) DO
+  UPDATE
+  SET item_value = excluded.item_value,
+    expires_at = excluded.expires_at
+  WHERE item_value IS NOT excluded.item_value
+    OR expires_at IS NOT excluded.expires_at;
+SQL;
+        }
+        else
+        {
+            // SQLite 3.24 was only released in June 2018 (after Ubuntu 18.04),
+            // so it isn't ubiquitous enough to get away with no UPSERT shim
+            $sql[] =
+<<<SQL
+UPDATE _cache_item
+SET item_value = :item_value,
+  expires_at = datetime(:expires_at, 'unixepoch')
+WHERE item_key = :item_key
+SQL;
+            $sql[] =
+<<<SQL
+INSERT OR IGNORE INTO _cache_item(item_key, item_value, expires_at)
+VALUES (
+    :item_key,
+    :item_value,
+    datetime(:expires_at, 'unixepoch')
+  )
+SQL;
+        }
+
+        foreach ($sql as $_sql)
+        {
+            $stmt = self::$db->prepare($_sql);
+            $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
+            $stmt->bindValue(":item_value", serialize($value), SQLITE3_BLOB);
+            $stmt->bindValue(":expires_at", $expiry, SQLITE3_INTEGER);
+            $stmt->execute();
+        }
     }
 
     /**
