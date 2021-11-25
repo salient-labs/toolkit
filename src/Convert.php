@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
+use Closure;
+use ReflectionFunction;
 use UnexpectedValueException;
 
 /**
@@ -307,6 +309,25 @@ class Convert
     public static function HttpBuildQuery(array $data, bool $forceNumericKeys = false): string
     {
         return self::_HttpBuildQuery($data, $forceNumericKeys);
+    }
+
+    /**
+     * Returns a hash that uniquely identifies a Closure (or any other callable)
+     *
+     * @param callable $closure
+     * @return string
+     */
+    public static function ClosureToHash(callable $closure): string
+    {
+        if (!$closure instanceof Closure)
+        {
+            $closure = Closure::fromCallable($closure);
+        }
+
+        $closure = new ReflectionFunction($closure);
+
+        // ReflectionFunction::__toString() is unambiguous and consistent
+        return self::Hash((string)$closure);
     }
 }
 
