@@ -4,12 +4,12 @@
 namespace Lkrms\Tests;
 
 use Lkrms\Cache;
-use Lkrms\Error;
+use Lkrms\Err;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Error::HandleErrors();
+Err::HandleErrors();
 
 Cache::Load();
 
