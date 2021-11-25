@@ -7,6 +7,8 @@ namespace Lkrms;
 use Exception;
 
 /**
+ * Literally so random
+ *
  * @package Lkrms
  */
 class Generate

@@ -9,7 +9,7 @@ use SQLite3;
 use UnexpectedValueException;
 
 /**
- * A simple SQLite object cache inspired by memcached
+ * A SQLite object cache inspired by memcached
  *
  * @package Lkrms
  */
@@ -80,6 +80,11 @@ SQL
      */
     public static function Load(string $filename = ":memory:")
     {
+        if ($filename != ":memory:")
+        {
+            File::MaybeCreate($filename, 0600, 0700);
+        }
+
         self::$db = new SQLite3($filename);
         self::$db->enableExceptions();
         self::$db->exec(

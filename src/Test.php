@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms;
 
 /**
- * Functions for value testing
+ * Test a value against another value
  *
  * @package Lkrms
  */

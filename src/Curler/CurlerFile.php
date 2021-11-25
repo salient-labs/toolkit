@@ -7,6 +7,11 @@ namespace Lkrms\Curler;
 use CURLFile;
 use RuntimeException;
 
+/**
+ * File upload helper
+ *
+ * @package Lkrms\Curler
+ */
 class CurlerFile
 {
     private $Filename;
@@ -22,7 +27,7 @@ class CurlerFile
      */
     public function __construct(string $filename, string $postFilename = null, string $mimeType = null)
     {
-        if ( ! is_file($filename) || ($filename = realpath($filename)) === false)
+        if (!is_file($filename) || ($filename = realpath($filename)) === false)
         {
             throw new RuntimeException("File not found: $filename");
         }

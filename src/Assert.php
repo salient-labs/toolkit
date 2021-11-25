@@ -4,92 +4,143 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
-use Exception;
+use RuntimeException;
+use UnexpectedValueException;
 
 /**
- * Assertion functions
+ * Throw an exception if a condition isn't met
  *
  * @package Lkrms
  */
 class Assert
 {
-    private static function GetName(?string $name): string
+    private static function ThrowUnexpectedValue(string $message, ?string $name): void
     {
-        return is_null($name) ? "value" : "'$name'";
+        $message = str_replace("{}", is_null($name) ? "value" : "'$name'", $message);
+        throw new UnexpectedValueException($message);
     }
 
-    public static function NotNull($value, string $name = null)
+    /**
+     *
+     * @param mixed $value
+     * @param string|null $name
+     * @return void
+     * @throws UnexpectedValueException
+     */
+    public static function NotNull($value, string $name = null): void
     {
         if (is_null($value))
         {
-            $name = self::GetName($name);
-            throw new Exception("$name can't be null");
+            self::ThrowUnexpectedValue("{} cannot be null", $name);
         }
     }
 
-    public static function NotEmpty($value, string $name = null)
+    /**
+     *
+     * @param mixed $value
+     * @param string|null $name
+     * @return void
+     * @throws UnexpectedValueException
+     */
+    public static function NotEmpty($value, string $name = null): void
     {
         if (empty($value))
         {
-            $name = self::GetName($name);
-            throw new Exception("$name can't be empty");
+            self::ThrowUnexpectedValue("{} cannot be empty", $name);
         }
     }
 
-    public static function PregMatch(?string $value, string $pattern, string $name = null)
+    /**
+     *
+     * @param null|string $value
+     * @param string $pattern
+     * @param string|null $name
+     * @return void
+     * @throws UnexpectedValueException
+     */
+    public static function PregMatch(?string $value, string $pattern, string $name = null): void
     {
-        if (is_null($value) || ! preg_match($pattern, $value))
+        if (is_null($value) || !preg_match($pattern, $value))
         {
-            $name = self::GetName($name);
-            throw new Exception("$name must match pattern '$pattern'");
+            self::ThrowUnexpectedValue("{} must match pattern '$pattern'", $name);
         }
     }
 
-    public static function ExactStringLength($value, int $length, string $name = null)
+    /**
+     *
+     * @param mixed $value
+     * @param int $length
+     * @param string|null $name
+     * @return void
+     * @throws UnexpectedValueException
+     */
+    public static function ExactStringLength($value, int $length, string $name = null): void
     {
-        if ( ! is_string($value) || strlen($value) != $length)
+        if (!is_string($value) || strlen($value) != $length)
         {
-            $name = self::GetName($name);
-            throw new Exception("$name must be a string with length $length");
+            self::ThrowUnexpectedValue("{} must be a string with length $length", $name);
         }
     }
 
-    public static function MinimumStringLength($value, int $minLength, string $name = null)
+    /**
+     *
+     * @param mixed $value
+     * @param int $minLength
+     * @param string|null $name
+     * @return void
+     * @throws UnexpectedValueException
+     */
+    public static function MinimumStringLength($value, int $minLength, string $name = null): void
     {
-        if ( ! is_string($value) || strlen($value) < $minLength)
+        if (!is_string($value) || strlen($value) < $minLength)
         {
-            $name = self::GetName($name);
-            throw new Exception("$name must be a string with length at least $minLength");
+            self::ThrowUnexpectedValue("{} must be a string with length at least $minLength", $name);
         }
     }
 
-    public static function IsArray($value, string $name = null)
+    /**
+     *
+     * @param mixed $value
+     * @param string|null $name
+     * @return void
+     * @throws UnexpectedValueException
+     */
+    public static function IsArray($value, string $name = null): void
     {
-        if ( ! is_array($value))
+        if (!is_array($value))
         {
-            $name = self::GetName($name);
-            throw new Exception("$name must be an array");
+            self::ThrowUnexpectedValue("{} must be an array", $name);
         }
     }
 
-    public static function SapiIsCli()
+    /**
+     *
+     * @return void
+     * @throws RuntimeException
+     */
+    public static function SapiIsCli(): void
     {
         if (PHP_SAPI != "cli")
         {
-            throw new Exception("CLI required");
+            throw new RuntimeException("CLI required");
         }
     }
 
-    public static function LocaleIsUtf8()
+    /**
+     *
+     * @return void
+     * @throws RuntimeException
+     */
+    public static function LocaleIsUtf8(): void
     {
         if (($locale = setlocale(LC_CTYPE, "")) === false)
         {
-            throw new Exception("Invalid locale (check LANG and LC_*)");
+            throw new RuntimeException("Invalid locale (check LANG and LC_*)");
         }
 
-        if ( ! preg_match('/\.UTF-?8$/i', $locale))
+        if (!preg_match('/\.UTF-?8$/i', $locale))
         {
-            throw new Exception("Locale '$locale' does not support UTF-8");
+            throw new RuntimeException("Locale '$locale' does not support UTF-8");
         }
     }
 }

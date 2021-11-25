@@ -10,28 +10,42 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * Environment-related functions
+ * A minimal dotenv implementation with shell-compatible parsing
  *
  * @package Lkrms
  */
 class Env
 {
+    private static $Loaded;
+
     private static $HonourTimezone = true;
 
     /**
-     * Prevent {@link Env::Load()} using environment variable TZ to set the
-     * default timezone
+     * Ignore the runtime environment's timezone
+     *
+     * Prevents {@see Env::Load()} using the environment variable `TZ` to set
+     * the default timezone.
+     *
+     * @return void
+     * @throws RuntimeException if {@see Env::Load()} has already been called
      */
-    public static function IgnoreTimezone()
+    public static function IgnoreTimezone(): void
     {
+        if (self::$Loaded)
+        {
+            throw new RuntimeException("Environment already loaded");
+        }
+
         self::$HonourTimezone = false;
     }
 
     /**
-     * Load environment variables from `.env` to `getenv()`, `$_ENV` and
-     * `$_SERVER`
+     * Load environment variables
      *
-     * Each line in the .env file should be a shell-compatible variable
+     * Variables are loaded from the given .env file to `getenv()`, `$_ENV` and
+     * `$_SERVER`.
+     *
+     * Each line in `$filename` should be a shell-compatible variable
      * assignment. Unquoted values cannot contain whitespace, `"`, `'`, `$`,
      * backticks or glob characters. Double-quoted values cannot contain `"`,
      * `$`, or backticks unless they are escaped. Single-quoted values may
@@ -91,6 +105,8 @@ class Env
             $_SERVER[$name] = $value;
         }
 
+        self::$Loaded = true;
+
         if (self::$HonourTimezone && $tz = preg_replace("/^:?(.*\/zoneinfo\/)?/", "", self::Get("TZ", "")))
         {
             try
@@ -109,13 +125,12 @@ class Env
      * Retrieve an environment variable
      *
      * Looks for `$name` in `$_ENV`, `$_SERVER` and `getenv()`, in that order,
-     * and returns the first value it finds, throwing an exception if `$name`
-     * isn't set and no `$default` is given.
+     * and returns the first value it finds.
      *
      * @param string $name The environment variable to retrieve.
      * @param string|null $default The value to return if `$name` isn't set.
      * @return string
-     * @throws RuntimeException
+     * @throws RuntimeException if `$name` isn't set and no `$default` is given
      */
     public static function Get(string $name, string $default = null): string
     {
@@ -136,6 +151,14 @@ class Env
         return $value;
     }
 
+    /**
+     * Return true if debug mode is enabled
+     *
+     * Debug mode is enabled by setting `LU_DEBUG=1` in the environment.
+     *
+     * @return bool
+     * @throws RuntimeException
+     */
     public static function GetDebug(): bool
     {
         return (bool)self::Get("LU_DEBUG", "");

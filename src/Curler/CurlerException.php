@@ -9,7 +9,7 @@ use Lkrms\Convert;
 use Throwable;
 
 /**
- * Thrown when a cURL request fails
+ * Thrown when a Curler request fails
  *
  * @package Lkrms\Curler
  */

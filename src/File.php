@@ -7,7 +7,7 @@ namespace Lkrms;
 use RuntimeException;
 
 /**
- * File-related functions
+ * Path/file helpers
  *
  * @package Lkrms
  */
@@ -44,13 +44,46 @@ class File
 
         foreach ($endings as $eol)
         {
-            if (substr($line, - strlen($eol)) == $eol)
+            if (substr($line, -strlen($eol)) == $eol)
             {
                 return $eol;
             }
         }
 
         throw new RuntimeException("Unable to determine end-of-line sequence: $filename");
+    }
+
+    /**
+     * Create a file if it doesn't exist
+     *
+     * `$permissions` and `$dirPermissions` are only used if the file and/or its parent directory don't exist.
+     *
+     * @param string $filename Full path to the file.
+     * @param int $permissions
+     * @param int $dirPermissions
+     * @return bool
+     */
+    public static function MaybeCreate(string $filename, int $permissions = 0777, int $dirPermissions = 0777): bool
+    {
+        $dir = dirname($filename);
+
+        if (!file_exists($dir))
+        {
+            if (!mkdir($dir, $dirPermissions, true))
+            {
+                throw new RuntimeException("Could not create directory $dir");
+            }
+        }
+
+        if (!file_exists($filename))
+        {
+            if (!touch($filename) || !chmod($filename, $permissions))
+            {
+                throw new RuntimeException("Could not create file $filename");
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -90,7 +123,7 @@ class File
         {
             foreach ($row as & $value)
             {
-                if ( ! is_scalar($value))
+                if (!is_scalar($value))
                 {
                     $value = json_encode($value);
                 }
@@ -140,6 +173,28 @@ class File
         }
 
         return substr($file, strlen($dir) + 1);
+    }
+
+    /**
+     * Return the name of a file unique to the current script and user
+     *
+     * Unlike with `tempnam()`, nothing is created on the filesystem.
+     *
+     * @param string $suffix
+     * @param string|null $dir If null, `sys_get_temp_dir()` is used.
+     * @return string
+     */
+    public static function StablePath(string $suffix = ".log", string $dir = null)
+    {
+        $path     = realpath($_SERVER["SCRIPT_FILENAME"]);
+        $basename = basename($path);
+        $hash     = Convert::Hash($path);
+        $euid     = posix_geteuid();
+
+        return (is_null($dir)
+            ? realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR
+            : ($dir ? rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : ""))
+        . "$basename-$hash-$euid$suffix";
     }
 }
 

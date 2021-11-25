@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
+/**
+ *
+ * @package Lkrms\Console
+ */
 abstract class ConsoleTarget
 {
     private $Prefix;

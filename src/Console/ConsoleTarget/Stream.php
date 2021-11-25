@@ -8,12 +8,13 @@ use DateTime;
 use DateTimeZone;
 use Lkrms\Console\ConsoleColour;
 use Lkrms\Console\ConsoleLevel;
+use Lkrms\File;
 use RuntimeException;
 
 /**
- * Sends `Console` output to a stream (e.g. a file or TTY)
+ * Write to a stream (e.g. a file or TTY)
  *
- * @package Lkrms
+ * @package Lkrms\Console
  */
 class Stream extends \Lkrms\Console\ConsoleTarget
 {
@@ -109,7 +110,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
 
         $path = $path ?: $this->Path;
 
-        if (!fclose($this->Stream) || !(file_exists($path) || (touch($path) && chmod($path, 0600))) || ($stream = fopen($path, "a")) === false)
+        if (!fclose($this->Stream) || !File::MaybeCreate($path, 0600) || ($stream = fopen($path, "a")) === false)
         {
             throw new RuntimeException("Could not close {$this->Path} and open $path");
         }
@@ -129,7 +130,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         ConsoleLevel::DEBUG
     ], bool $addColour = null, bool $addTimestamp = null, string $timestamp = null, string $timezone = null): Stream
     {
-        if (!(file_exists($path) || (touch($path) && chmod($path, 0600))) || ($stream = fopen($path, "a")) === false)
+        if (!File::MaybeCreate($path, 0600) || ($stream = fopen($path, "a")) === false)
         {
             throw new RuntimeException("Could not open $path");
         }
@@ -147,7 +148,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
             if ($this->AddTimestamp)
             {
                 $now     = (new DateTime("now", $this->Timezone))->format($this->Timestamp);
-                $message = $now . str_replace("\n", "\n" . str_repeat(" ", strlen($now)), $message);
+                $message = $now . str_replace("\n", "\n" . $now, $message);
             }
 
             // Don't add a newline if $message has a trailing carriage return

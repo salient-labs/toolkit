@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Console\ConsoleTarget;
 
 /**
- * Sends `Console` output to Analog for further processing
+ * Write to Analog
  *
- * @package Lkrms
+ * @package Lkrms\Console
  */
 class Analog extends \Lkrms\Console\ConsoleTarget
 {

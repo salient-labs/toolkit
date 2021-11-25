@@ -10,6 +10,11 @@ use Lkrms\Env;
 use Lkrms\Test;
 use UnexpectedValueException;
 
+/**
+ * For easy consumption of REST APIs
+ *
+ * @package Lkrms\Curler
+ */
 class Curler
 {
     /**

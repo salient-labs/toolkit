@@ -8,9 +8,9 @@ use Lkrms\Console\ConsoleLevel;
 use Psr\Log\LoggerInterface;
 
 /**
- * Sends `Console` output to any PSR-3 implementor
+ * Write to any PSR-3 implementor
  *
- * @package Lkrms
+ * @package Lkrms\Console
  */
 class Logger extends \Lkrms\Console\ConsoleTarget
 {

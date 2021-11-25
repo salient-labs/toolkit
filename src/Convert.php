@@ -7,7 +7,7 @@ namespace Lkrms;
 use UnexpectedValueException;
 
 /**
- * Functions for type wrangling
+ * Type wrangling
  *
  * @package Lkrms
  */
@@ -121,6 +121,40 @@ class Convert
         }
 
         return $string;
+    }
+
+    /**
+     * Remove zero-width values from an array before imploding it
+     *
+     * @param string $separator
+     * @param array $array
+     * @return string
+     */
+    public static function ImplodeNotEmpty(string $separator, array $array): string
+    {
+        return implode($separator, array_filter($array,
+            function ($value)
+            {
+                return strlen((string)$value) > 0;
+            }));
+    }
+
+    /**
+     * Convert a scalar to a string
+     *
+     * @param mixed $value
+     * @return string|false Returns `false` if `$value` is not a scalar
+     */
+    public static function ScalarToString($value)
+    {
+        if (is_scalar($value))
+        {
+            return (string)$value;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     /**

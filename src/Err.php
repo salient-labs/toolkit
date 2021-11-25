@@ -10,11 +10,11 @@ use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
 
 /**
- * Basically a wrapper for Whoops
+ * Just a Whoops wrapper
  *
  * @package Lkrms
  */
-class Error
+class Err
 {
     /**
      * @var Run
