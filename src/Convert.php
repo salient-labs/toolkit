@@ -219,5 +219,60 @@ class Convert
 
         return $text;
     }
+
+    private static function _HttpBuildQuery(
+        array $data,
+        bool $forceNumericKeys,
+        string & $query = null,
+        string $name    = "",
+        string $format  = "%s"
+    ): string
+    {
+        if (is_null($query))
+        {
+            $query = "";
+        }
+
+        foreach ($data as $param => $value)
+        {
+            $_name = sprintf($format, $param);
+
+            if (!is_array($value))
+            {
+                if (is_bool($value))
+                {
+                    $value = (int)$value;
+                }
+
+                $query .= ($query ? "&" : "") . urlencode($name . $_name) . "=" . urlencode((string)$value);
+
+                continue;
+            }
+            elseif (!$forceNumericKeys && Test::IsListArray($value))
+            {
+                $_format = "[]";
+            }
+            else
+            {
+                $_format = "[%s]";
+            }
+
+            self::_HttpBuildQuery($value, $forceNumericKeys, $query, $name . $_name, $_format);
+        }
+
+        return $query;
+    }
+
+    /**
+     * A more API-friendly http_build_query
+     *
+     * @param array $data
+     * @param bool $forceNumericKeys
+     * @return string
+     */
+    public static function HttpBuildQuery(array $data, bool $forceNumericKeys = false): string
+    {
+        return self::_HttpBuildQuery($data, $forceNumericKeys);
+    }
 }
 

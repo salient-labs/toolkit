@@ -1,0 +1,38 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\Convert;
+use Lkrms\Error;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Error::HandleErrors();
+
+$data = [
+    "user_id"       => 7654,
+    "fields"        => [
+        "surname"   => "Williams",
+        "email"     => "JWilliams432@gmail.com",
+        "notify_by" => [
+            "email",
+            "sms",
+        ],
+    ],
+];
+
+$queries = [
+    "no_force_numeric_keys" => Convert::HttpBuildQuery($data),
+    "force_numeric_keys"    => Convert::HttpBuildQuery($data, true),
+];
+
+$decoded = array_map(
+    function ($q)
+    {
+        return urldecode($q);
+    }, $queries
+);
+
+var_dump([$queries, $decoded]);

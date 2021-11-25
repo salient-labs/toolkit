@@ -6,6 +6,7 @@ namespace Lkrms;
 
 use RuntimeException;
 use SQLite3;
+use UnexpectedValueException;
 
 /**
  * A simple SQLite object cache inspired by memcached
@@ -38,6 +39,25 @@ FROM _cache_item
 WHERE expires_at <= CURRENT_TIMESTAMP
 SQL
         );
+    }
+
+    /**
+     * @param string|string[] $key
+     * @return string
+     * @throws UnexpectedValueException
+     */
+    private static function GetKey($key): string
+    {
+        if (Test::IsIndexedArray($key))
+        {
+            return implode("/", $key);
+        }
+        elseif (is_string($key) && !empty($key))
+        {
+            return $key;
+        }
+
+        throw new UnexpectedValueException("Invalid key: " . $key);
     }
 
     /**
@@ -99,6 +119,13 @@ SQL
     public static function Set(string $key, $value, int $expiry = 0)
     {
         self::CheckLoaded(__METHOD__);
+
+        if ($value === false)
+        {
+            self::Delete($key);
+
+            return;
+        }
 
         // If $expiry is non-zero and exceeds 60*60*24*30 seconds (30 days),
         // take it as a Unix timestamp, otherwise take it as seconds from now
@@ -233,6 +260,29 @@ DELETE
 FROM _cache_item
 SQL
         );
+    }
+
+    /**
+     * Retrieve an item, or get it from a callback and store it for next time
+     *
+     * @param string|string[] $key
+     * @param callable $callback
+     * @param int $expiry
+     * @return mixed
+     * @throws UnexpectedValueException
+     * @throws RuntimeException
+     */
+    public static function MaybeGet($key, callable $callback, int $expiry = 0)
+    {
+        $key = self::GetKey($key);
+
+        if (($value = self::Get($key)) === false)
+        {
+            $value = $callback();
+            self::Set($key, $value, $expiry);
+        }
+
+        return $value;
     }
 }
 
