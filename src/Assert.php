@@ -115,6 +115,26 @@ class Assert
 
     /**
      *
+     * @param mixed $value
+     * @param string|null $name
+     * @return void
+     * @throws UnexpectedValueException
+     */
+    public static function IsIntArray($value, string $name = null): void
+    {
+        if (!Test::IsIndexedArray($value) ||
+            count(array_filter($value,
+                function ($v)
+                {
+                    return !is_int($v);
+                })))
+        {
+            self::ThrowUnexpectedValue("{} must be an integer array", $name);
+        }
+    }
+
+    /**
+     *
      * @return void
      * @throws RuntimeException
      */
