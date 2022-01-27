@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
+use InvalidArgumentException;
 use Whoops\Handler\HandlerInterface;
 use Whoops\Handler\PlainTextHandler;
 use Whoops\Handler\PrettyPageHandler;
@@ -23,9 +24,13 @@ class Err
 
     /**
      * @param callable|HandlerInterface $handler
+     * @param string|string[] $silenceInPaths One or multiple regex patterns to
+     * match files where `E_STRICT`, `E_DEPRECATED` and `E_USER_DEPRECATED`
+     * errors will be silenced (e.g. your project's `vendor` directory).
      * @return Run
+     * @throws InvalidArgumentException
      */
-    public static function HandleErrors($handler = null): Run
+    public static function HandleErrors($handler = null, $silenceInPaths = null): Run
     {
         if (!self::$Whoops)
         {
@@ -47,6 +52,11 @@ class Err
             {
                 self::$Whoops->pushHandler(new PrettyPageHandler());
             }
+        }
+
+        if ($silenceInPaths)
+        {
+            self::$Whoops->silenceErrorsInPaths($silenceInPaths, E_STRICT | E_DEPRECATED | E_USER_DEPRECATED);
         }
 
         self::$Whoops->register();
