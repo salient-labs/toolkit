@@ -30,6 +30,16 @@ abstract class ConsoleTarget
         $this->Prefix = $prefix;
     }
 
+    public function IsStdout(): bool
+    {
+        return false;
+    }
+
+    public function IsStderr(): bool
+    {
+        return false;
+    }
+
     public function IsTty(): bool
     {
         return false;

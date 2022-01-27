@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
+use Exception;
+
 /**
  * Test a value against another value
  *
@@ -79,6 +81,31 @@ class Test
     {
         return is_array($value) &&
             !empty($value) && !self::IsAssociativeArray($value);
+    }
+
+    /**
+     * Return true if a stream is backed by the same resource as another
+     *
+     * @param resource $value
+     * @param resource $stream
+     * @return bool
+     */
+    public static function IsSameStream($value, $stream): bool
+    {
+        try
+        {
+            $meta       = stream_get_meta_data($value);
+            $streamMeta = stream_get_meta_data($stream);
+        }
+        catch (Exception $ex)
+        {
+            unset($ex);
+
+            return false;
+        }
+
+        return ($meta['uri'] ?? null) &&
+            ($streamMeta['uri'] ?? null) === $meta['uri'];
     }
 }
 

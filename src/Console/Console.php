@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 use Exception;
+use Lkrms\Console\ConsoleTarget\NullTarget;
 use Lkrms\Console\ConsoleTarget\Stream;
 use Lkrms\Convert;
 use Lkrms\Err;
@@ -26,12 +27,17 @@ class Console
     /**
      * @var array<int,ConsoleTarget>
      */
-    private static $Targets = [];
+    private static $LogTargets = [];
 
     /**
      * @var array<int,ConsoleTarget>
      */
-    private static $TtyTargets = [];
+    private static $OutputTargets = [];
+
+    /**
+     * @var array<int,ConsoleTarget>
+     */
+    private static $Targets = [];
 
     /**
      * @var bool
@@ -99,44 +105,61 @@ class Console
             return;
         }
 
-        // If no targets have been added, log everything to /tmp/{basename}-{realpath hash}-{user ID}.log
-        if (empty(self::$Targets))
+        // If no output log has been added, create one at
+        // /tmp/{basename}-{realpath hash}-{user ID}.log
+        if (empty(self::$LogTargets))
         {
             self::AddTarget(Stream::FromPath(File::StablePath(".log")));
         }
 
-        // - errors and warnings -> STDERR
-        // - notices and info    -> STDOUT
-        self::AddTarget(self::$TtyTargets[2] = new Stream(STDERR, [
-            ConsoleLevel::EMERGENCY,
-            ConsoleLevel::ALERT,
-            ConsoleLevel::CRITICAL,
-            ConsoleLevel::ERROR,
-            ConsoleLevel::WARNING,
-        ]));
-        self::AddTarget(self::$TtyTargets[1] = new Stream(STDOUT, [
-            ConsoleLevel::NOTICE,
-            ConsoleLevel::INFO,
-        ]));
+        // If no output streams have been added, send errors and warnings to
+        // STDERR, and everything else to STDOUT
+        if (empty(self::$OutputTargets))
+        {
+            self::AddTarget(new Stream(STDERR, [
+                ConsoleLevel::EMERGENCY,
+                ConsoleLevel::ALERT,
+                ConsoleLevel::CRITICAL,
+                ConsoleLevel::ERROR,
+                ConsoleLevel::WARNING,
+            ]));
+            self::AddTarget(new Stream(STDOUT, [
+                ConsoleLevel::NOTICE,
+                ConsoleLevel::INFO,
+            ]));
+        }
+
         self::$TargetsChecked = true;
     }
 
     /**
-     * Return a ConsoleTarget array with STDOUT and STDERR at keys 1 and 2 respectively
+     * Get active targets backed by STDOUT or STDERR
      *
      * @return array<int,ConsoleTarget>
      * @throws RuntimeException
      */
-    public static function GetTtyTargets(): array
+    public static function GetOutputTargets(): array
     {
         self::CheckTargets();
 
-        return self::$TtyTargets;
+        return self::$OutputTargets;
     }
 
     public static function AddTarget(ConsoleTarget $target)
     {
-        self::$Targets[] = $target;
+        if ($target->IsStdout() || $target->IsStderr())
+        {
+            self::$OutputTargets[] = $target;
+        }
+        else
+        {
+            self::$LogTargets[] = $target;
+        }
+
+        if (!$target instanceof NullTarget)
+        {
+            self::$Targets[] = $target;
+        }
     }
 
     private static function Write(

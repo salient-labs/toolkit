@@ -9,6 +9,7 @@ use DateTimeZone;
 use Lkrms\Console\ConsoleColour;
 use Lkrms\Console\ConsoleLevel;
 use Lkrms\File;
+use Lkrms\Test;
 use RuntimeException;
 
 /**
@@ -56,6 +57,16 @@ class Stream extends \Lkrms\Console\ConsoleTarget
     private $IsTty;
 
     /**
+     * @var bool
+     */
+    private $IsStdout;
+
+    /**
+     * @var bool
+     */
+    private $IsStderr;
+
+    /**
      * Use an open stream as a console output target
      *
      * @param resource      $stream
@@ -85,6 +96,9 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         $this->AddColour    = !is_null($addColour) ? $addColour : $this->IsTty;
         $this->AddTimestamp = !is_null($addTimestamp) ? $addTimestamp : !$this->IsTty;
 
+        $this->IsStdout = Test::IsSameStream($stream, STDOUT);
+        $this->IsStderr = Test::IsSameStream($stream, STDERR);
+
         if (!is_null($timestamp))
         {
             $this->Timestamp = $timestamp;
@@ -99,6 +113,16 @@ class Stream extends \Lkrms\Console\ConsoleTarget
     public function IsTty(): bool
     {
         return $this->IsTty;
+    }
+
+    public function IsStdout(): bool
+    {
+        return $this->IsStdout;
+    }
+
+    public function IsStderr(): bool
+    {
+        return $this->IsStderr;
     }
 
     public function Reopen(string $path = null): void
