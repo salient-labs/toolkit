@@ -52,6 +52,6 @@ class ConsoleColour
 
     public const UNDIM = "\033[22m";
 
-    public const RESET = "\033[m\017";
+    public const RESET = "\033[m";
 }
 
