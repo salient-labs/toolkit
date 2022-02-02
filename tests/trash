@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\Err;
+use Lkrms\Trash;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Err::HandleErrors();
+
+Trash::Load("/tmp/__Lkrms__Trash.db");
+
+Trash::Put(
+    'generic_entity',
+    '4271',
+    ['id' => 4271, 'name' => "Test object"],
+    'com.linacreative.ephemeral',
+    filectime(__FILE__),
+    filemtime(__FILE__)
+);
