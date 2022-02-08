@@ -1,0 +1,54 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests\Mixin;
+
+use Lkrms\Err;
+use Lkrms\Mixin\TGettable;
+use Lkrms\Mixin\TSettable;
+
+$loader = require (__DIR__ . "/../../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
+
+Err::HandleErrors();
+
+class A
+{
+    use TGettable, TSettable;
+
+    protected function _GetSettableProperties()
+    {
+        return ['Id', 'Name'];
+    }
+
+    protected $Id;
+
+    protected $Name;
+}
+
+class B extends A
+{
+    protected function _GetSettableProperties()
+    {
+        return ['Id', 'Name', 'Data'];
+    }
+
+    private $Data = [];
+}
+
+$data = [
+    "id"   => 1,
+    "name" => "Test entry",
+    "data" => [3, 4, 5],
+];
+
+$a       = new A();
+$a->Id   = $data["id"];
+$a->Name = $data["name"];
+
+$b       = new B();
+$b->Id   = $data["id"];
+$b->Name = $data["name"];
+$b->Data = $data["data"];
+
+var_dump($a, $b);

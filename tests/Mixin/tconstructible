@@ -1,0 +1,39 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests\Mixin;
+
+use Lkrms\Err;
+use Lkrms\Mixin\IExtensible;
+use Lkrms\Mixin\TConstructible;
+use Lkrms\Mixin\TExtensible;
+
+$loader = require (__DIR__ . "/../../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
+
+Err::HandleErrors();
+
+class A implements IExtensible
+{
+    use TConstructible, TExtensible;
+
+    public $Id;
+
+    public $Name;
+}
+
+class B extends A
+{
+    public $Data = [];
+}
+
+$data = [
+    "id"   => 1,
+    "name" => "Test entry",
+    "data" => [3, 4, 5],
+];
+
+$a = A::From($data);
+$b = B::From($data);
+
+var_dump($a, $b);

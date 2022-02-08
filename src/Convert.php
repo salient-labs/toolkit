@@ -16,6 +16,13 @@ use UnexpectedValueException;
 class Convert
 {
     /**
+     * See mb_regex_set_options
+     *
+     * l = find longest matches, z = Perl syntax
+     */
+    public const MB_REGEX_OPTIONS = "lz";
+
+    /**
      * If a variable isn't an indexed array, make it the first element of one
      *
      * @param mixed $value The variable being checked.
@@ -219,6 +226,20 @@ class Convert
     }
 
     /**
+     * Convert a multiple-word identifier to snake_case
+     *
+     * @param string $text The identifier to convert.
+     * @return string
+     */
+    public static function IdentifierToSnakeCase(string $text): string
+    {
+        $text = preg_replace("/[^[:alnum:]]+/", "_", $text);
+        $text = preg_replace("/([[:lower:]])([[:upper:]])/", '$1_$2', $text);
+
+        return strtolower($text);
+    }
+
+    /**
      * Clean up a string for comparison with other strings
      *
      * Normalised values may vary with each release and should be considered
@@ -238,20 +259,20 @@ class Convert
             $text = mb_strtoupper($text);
         }
 
-        $text = mb_ereg_replace("&", " AND ", $text);
-        $text = mb_ereg_replace("[\342\200\220\342\200\221\342\200\223\342\200\222]", "-", $text);
+        $text = mb_ereg_replace("&", " AND ", $text, self::MB_REGEX_OPTIONS);
+        $text = mb_ereg_replace("[\342\200\220\342\200\221\342\200\223\342\200\222]", "-", $text, self::MB_REGEX_OPTIONS);
 
         if ($stripPattern)
         {
-            $text = mb_ereg_replace($stripPattern, "", $text);
+            $text = mb_ereg_replace($stripPattern, "", $text, self::MB_REGEX_OPTIONS);
         }
 
         if ($spacePattern)
         {
-            $text = mb_ereg_replace($spacePattern, " ", $text);
+            $text = mb_ereg_replace($spacePattern, " ", $text, self::MB_REGEX_OPTIONS);
         }
 
-        $text = mb_ereg_replace("\\s+", " ", $text);
+        $text = mb_ereg_replace("\\s+", " ", $text, self::MB_REGEX_OPTIONS);
 
         return $text;
     }
