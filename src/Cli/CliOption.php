@@ -49,7 +49,7 @@ class CliOption
 
     public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $flags = Cli::OPTION_TYPE_FLAG, array $allowedValues = null, $defaultValue = null)
     {
-        if ( ! Test::IsOneFlagSet($flags, Cli::MASK_OPTION_TYPE))
+        if (!Test::IsOneFlagSet($flags, Cli::MASK_OPTION_TYPE))
         {
             throw new Exception("Invalid option type");
         }
@@ -57,12 +57,12 @@ class CliOption
         $this->Long  = Convert::EmptyToNull($long);
         $this->Short = Convert::EmptyToNull($short);
 
-        if ( ! is_null($this->Long))
+        if (!is_null($this->Long))
         {
             Assert::PregMatch($long, "/^[a-z0-9][-a-z0-9_]+\$/i", "long");
         }
 
-        if ( ! is_null($this->Short))
+        if (!is_null($this->Short))
         {
             Assert::PregMatch($short, "/^[a-z0-9]\$/i", "short");
         }
@@ -71,25 +71,21 @@ class CliOption
         $this->DisplayName     = $this->Long ? "--" . $this->Long : ($this->Short ? "-" . $this->Short : null);
         $this->IsFlag          = Test::IsFlagSet($flags, Cli::OPTION_TYPE_FLAG);
         $this->IsRequired      = $this->IsFlag ? false : Test::IsFlagSet($flags, Cli::OPTION_REQUIRED);
-        $this->IsValueRequired = $this->IsFlag ? false : ! Test::IsFlagSet($flags, Cli::OPTION_VALUE_NOT_REQUIRED);
+        $this->IsValueRequired = $this->IsFlag ? false : !Test::IsFlagSet($flags, Cli::OPTION_VALUE_NOT_REQUIRED);
         $this->MultipleAllowed = Test::IsFlagSet($flags, Cli::OPTION_MULTIPLE_ALLOWED);
         $this->ValueName       = $this->IsFlag ? null : $valueName;
         $this->Description     = $description;
         $this->DefaultValue    = $this->IsFlag ? true : ($this->IsRequired ? null : $defaultValue);
 
-        if ( ! is_null($this->DefaultValue) && ! $this->IsFlag)
+        if (!is_null($this->DefaultValue) && !$this->IsFlag)
         {
             if ($this->MultipleAllowed)
             {
                 $this->DefaultValue = Convert::AnyToArray($this->DefaultValue);
-                array_walk($this->DefaultValue,
-
-                function (&$value)
+                array_walk($this->DefaultValue, function (&$value)
                 {
                     $value = self::ScalarToString($value, "defaultValue must be a scalar or an array of scalars");
-                }
-
-                );
+                });
             }
             else
             {
