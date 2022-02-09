@@ -6,6 +6,8 @@ namespace Lkrms\Tests\Mixin;
 use Lkrms\Err;
 use Lkrms\Mixin\TGettable;
 use Lkrms\Mixin\TSettable;
+use RuntimeException;
+use UnexpectedValueException;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
@@ -16,7 +18,7 @@ class A
 {
     use TGettable, TSettable;
 
-    protected function _GetSettableProperties()
+    protected function _GetSettable()
     {
         return ['Id', 'Name'];
     }
@@ -24,31 +26,111 @@ class A
     protected $Id;
 
     protected $Name;
+
+    protected $Unwritable = "can't change me";
 }
 
 class B extends A
 {
-    protected function _GetSettableProperties()
+    protected function _GetData()
     {
-        return ['Id', 'Name', 'Data'];
+        return $this->Data;
+    }
+
+    protected function _SetData($value)
+    {
+        $this->Data         = $value;
+        $this->DataModified = time();
     }
 
     private $Data = [];
+
+    protected $DataModified;
+
+    private $DoNotEven;
 }
 
-$data = [
-    "id"   => 1,
-    "name" => "Test entry",
-    "data" => [3, 4, 5],
-];
+class C
+{
+    use TGettable, TSettable;
+
+    protected function _GetGettable()
+    {
+        return [];
+    }
+
+    protected $Id = 0;
+
+    protected $Name = "Hidden";
+}
+
+$exceptions = [];
 
 $a       = new A();
-$a->Id   = $data["id"];
-$a->Name = $data["name"];
+$a->Id   = 1;
+$a->Name = "Test entry";
 
 $b       = new B();
-$b->Id   = $data["id"];
-$b->Name = $data["name"];
-$b->Data = $data["data"];
+$b->Id   = 2;
+$b->Name = "Another test entry";
+$b->Data = [3, 4, 5];
 
-var_dump($a, $b);
+$c = new C();
+
+$a_id         = $a->Id;
+$a_name       = $a->Name;
+$a_unwritable = $a->Unwritable;
+
+$b_id            = $b->Id;
+$b_name          = $b->Name;
+$b_data          = $b->Data;
+$b_data_modified = $b->DataModified;
+
+try
+{
+    $a->Unwritable = 'ok';
+    throw new RuntimeException('Writing to $a->Unwritable was allowed');
+}
+catch (UnexpectedValueException $ex)
+{
+    $exceptions[] = $ex;
+}
+
+try
+{
+    $b->DoNotEven = 'ok';
+    throw new RuntimeException('Writing to $b->DoNotEven was allowed');
+}
+catch (UnexpectedValueException $ex)
+{
+    $exceptions[] = $ex;
+}
+
+try
+{
+    $id = $c->Id;
+    throw new RuntimeException('Reading from $c->Id was allowed');
+}
+catch (UnexpectedValueException $ex)
+{
+    $exceptions[] = $ex;
+}
+
+try
+{
+    $c->Id = 3;
+    throw new RuntimeException('Writing to $c->Id was allowed');
+}
+catch (UnexpectedValueException $ex)
+{
+    $exceptions[] = $ex;
+}
+
+var_export([
+    'a_set' => $a,
+    'b_set' => $b,
+    'c_set' => $c,
+    'a_get' => ['id' => $a_id, 'name' => $a_name, 'unwritable' => $a_unwritable],
+    'b_get' => ['id' => $b_id, 'name' => $b_name, 'data' => $b_data, 'data_modified' => $b_data_modified],
+    'exceptions' => $exceptions
+]);

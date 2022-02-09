@@ -20,5 +20,7 @@ interface IExtensible
     public function IsMetaPropertySet(string $name): bool;
 
     public function UnsetMetaProperty(string $name): void;
+
+    public function GetMetaProperties(): array;
 }
 

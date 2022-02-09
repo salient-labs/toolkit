@@ -35,7 +35,7 @@ $decoded = array_map(
     }, $queries
 );
 
-var_dump([$queries, $decoded]);
+var_export([$queries, $decoded]);
 
 $identifiers = [
     "twowords", "TWOWORDS", "twoWords", "TwoWords",
@@ -48,4 +48,4 @@ $identifiers = array_combine($identifiers, array_map(function ($i)
     return Convert::IdentifierToSnakeCase($i);
 }, $identifiers));
 
-var_dump($identifiers);
+var_export($identifiers);

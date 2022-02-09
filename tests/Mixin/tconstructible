@@ -27,13 +27,30 @@ class B extends A
     public $Data = [];
 }
 
-$data = [
-    "id"   => 1,
-    "name" => "Test entry",
-    "data" => [3, 4, 5],
-];
+$a = A::From([
+    "id"    => 1,
+    "name"  => "Test entry",
+    "DATA"  => [3, 4, 5],
+    "DATA2" => [32, 42, 52],
+]);
+$b = B::From([
+    "id"   => 2,
+    "name" => "Another test entry",
+    "DATA" => [13, 14, 15],
+]);
 
-$a = A::From($data);
-$b = B::From($data);
+$a_id   = $a->Id;
+$a_name = $a->Name;
+$a_data = $a->Data;
+$a_meta = $a->GetMetaProperties();
 
-var_dump($a, $b);
+$b_id   = $b->Id;
+$b_name = $b->Name;
+$b_data = $b->Data;
+
+var_export([
+    'a_set' => $a,
+    'b_set' => $b,
+    'a_get' => ['id' => $a_id, 'name' => $a_name, 'data' => $a_data, 'meta' => $a_meta],
+    'b_get' => ['id' => $b_id, 'name' => $b_name, 'data' => $b_data],
+]);

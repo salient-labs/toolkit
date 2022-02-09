@@ -4,36 +4,40 @@ declare(strict_types=1);
 
 namespace Lkrms\Mixin;
 
-use ReflectionClass;
-use ReflectionProperty;
 use UnexpectedValueException;
 
 /**
  * A basic implementation of __set
  *
- * Override {@see TSettable::_GetSettableProperties()} to allow access to
- * private and protected variables.
+ * Override {@see TSettable::_GetSettable()} to allow access to `protected`
+ * variables via `__set`.
  *
- * If `_Set<Property>($value)` is found in the exhibiting class, it will be
- * called instead of setting the property directly.
+ * The default is to deny `__set` for all properties.
+ *
+ * If `_Set<Property>($value)` is defined, it will be called instead of
+ * assigning `$value` to `<Property>`. The existence of `_Set<Property>()` in
+ * the exhibiting class implies that `<Property>` is settable, regardless of
+ * {@see TSettable::_GetSettable()}'s return value.
  *
  * @package Lkrms
  */
 trait TSettable
 {
+    use TGettable;
+
     /**
-     * Return a list of allowed property names, or null to allow all
+     * Return a list of settable `protected` properties, or `null` to allow all
      *
      * @return null|string[]
      */
-    protected function _GetSettableProperties(): ?array
+    protected function _GetSettable(): ?array
     {
-        return null;
+        return [];
     }
 
     private static $SettableProperties = [];
 
-    private static $SettablePropertyMethods = [];
+    private static $SettableMethods = [];
 
     final public function __set(string $name, $value)
     {
@@ -41,68 +45,24 @@ trait TSettable
 
         if (!array_key_exists($c, self::$SettableProperties))
         {
-            $auto  = false;
-            $class = new ReflectionClass($c);
-            self::$SettableProperties[$c]      = $this->_GetSettableProperties();
-            self::$SettablePropertyMethods[$c] = [];
-
-            if (is_null(self::$SettableProperties[$c]))
-            {
-                $auto = true;
-                self::$SettableProperties[$c] = array_map(
-                    function ($property)
-                    {
-                        return $property->name;
-                    },
-                    $class->getProperties(
-                        ReflectionProperty::IS_PRIVATE | ReflectionProperty::IS_PROTECTED
-                    )
-                );
-            }
-
-            self::$SettableProperties[$c] = array_filter(
-                self::$SettableProperties[$c],
-                function ($p) use ($auto, $class)
-                {
-                    if ($auto)
-                    {
-                        return $class->hasMethod("_Set" . $p);
-                    }
-                    else
-                    {
-                        return !in_array($p, [
-                            "GettableProperties",
-                            "GettablePropertyMethods",
-                            "SettableProperties",
-                            "SettablePropertyMethods",
-                        ]);
-                    }
-                }
-            );
-
-            foreach (self::$SettableProperties[$c] as $p)
-            {
-                $m = "_Set" . $p;
-
-                if ($auto || $class->hasMethod($m))
-                {
-                    self::$SettablePropertyMethods[$c][$p] = $m;
-                }
-            }
+            $this->ResolveGettable("/^_[sS]et(.+)/", $this->_GetSettable(), self::$SettableProperties[$c], self::$SettableMethods[$c]);
         }
 
-        if (!in_array($name, self::$SettableProperties[$c]))
+        if ($method = self::$SettableMethods[$c][$name] ?? null)
         {
-            throw new UnexpectedValueException("Cannot set property '$name'");
+            $this->$method($value);
         }
-
-        if ($m = self::$SettablePropertyMethods[$c][$name] ?? null)
+        elseif (in_array($name, self::$SettableProperties[$c]))
         {
-            $this->$m($value);
+            $this->$name = $value;
+        }
+        elseif ($this instanceof IExtensible)
+        {
+            $this->SetMetaProperty($name, $value);
         }
         else
         {
-            $this->$name = $value;
+            throw new UnexpectedValueException("Cannot set property '$name'");
         }
     }
 }
