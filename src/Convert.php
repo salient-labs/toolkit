@@ -313,6 +313,20 @@ class Convert
         return $text;
     }
 
+    /**
+     * A wrapper for get_object_vars
+     *
+     * Because you can't exclude `private` and `protected` properties from
+     * inside the class. (Not easily, anyway.)
+     *
+     * @param object $object
+     * @return array
+     */
+    public static function ObjectToArray(object $object)
+    {
+        return get_object_vars($object);
+    }
+
     private static function _HttpBuildQuery(
         array $data,
         bool $forceNumericKeys,

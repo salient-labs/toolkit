@@ -92,12 +92,18 @@ class File
      * @param array $data An array of arrays (rows) to convert to CSV.
      * @param string|null $filename Path to the output file, or `null` to return
      * the CSV as a string.
-     * @param bool $includeHeaderRow If `true`, include `array_keys($data[0])`
-     * as a header row.
+     * @param bool $headerRow If `true`, include `array_keys($data[0])` as a
+     * header row.
+     * @param string $nullValue What should appear in cells that are `null`?
      * @return string|false|void
      * @throws RuntimeException
      */
-    public static function WriteCsv(array $data, string $filename = null, $includeHeaderRow = true)
+    public static function WriteCsv(
+        array $data,
+        string $filename  = null,
+        bool $headerRow   = true,
+        string $nullValue = null
+    )
     {
         $return = false;
 
@@ -114,7 +120,7 @@ class File
             throw new RuntimeException("Could not open $filename");
         }
 
-        if ($includeHeaderRow)
+        if ($headerRow)
         {
             array_unshift($data, array_keys($data[array_keys($data)[0]] ?? []));
         }
@@ -123,7 +129,11 @@ class File
         {
             foreach ($row as & $value)
             {
-                if (!is_scalar($value))
+                if (is_null($value))
+                {
+                    $value = $nullValue;
+                }
+                elseif (!is_scalar($value))
                 {
                     $value = json_encode($value);
                 }

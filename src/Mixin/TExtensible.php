@@ -17,11 +17,11 @@ trait TExtensible
 {
     use TGettable, TSettable;
 
-    private $MetaProperties = [];
+    protected $MetaProperties = [];
 
-    private $MetaPropertyNames = [];
+    protected $MetaPropertyNames = [];
 
-    private function NormaliseMetaProperty(string $name)
+    protected function NormaliseMetaProperty(string $name)
     {
         $normalised = Convert::IdentifierToSnakeCase($name);
         $this->MetaPropertyNames[$normalised] = $this->MetaPropertyNames[$normalised] ?? $name;
