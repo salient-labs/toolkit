@@ -126,7 +126,7 @@ catch (UnexpectedValueException $ex)
     $exceptions[] = $ex;
 }
 
-var_export([
+print_r([
     'a_set' => $a,
     'b_set' => $b,
     'c_set' => $c,

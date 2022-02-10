@@ -35,7 +35,7 @@ $decoded = array_map(
     }, $queries
 );
 
-var_export([$queries, $decoded]);
+print_r([$queries, $decoded]);
 
 $identifiers = [
     "twowords", "TWOWORDS", "twoWords", "TwoWords",
@@ -48,4 +48,14 @@ $identifiers = array_combine($identifiers, array_map(function ($i)
     return Convert::IdentifierToSnakeCase($i);
 }, $identifiers));
 
-var_export($identifiers);
+print_r($identifiers);
+
+$list = [
+    ['id' => 38, 'name' => 'Amir'],
+    ['id' => 32, 'name' => 'Greta'],
+    ['id' => 71, 'name' => 'Terry'],
+];
+
+$map = Convert::ListToMap($list, 'id');
+
+print_r($map);

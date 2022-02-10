@@ -7,6 +7,7 @@ namespace Lkrms\Mixin;
 use Lkrms\Convert;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionProperty;
 use UnexpectedValueException;
 
 /**
@@ -37,35 +38,43 @@ trait TConstructible
     {
         $class = new ReflectionClass(static::class);
 
+        $nameCallback      = function ($reflection) { return $reflection->name; };
+        $normaliseCallback = function ($name) { return Convert::IdentifierToSnakeCase($name); };
+
+        // $arrayMap: normalised_name => ORIGINAL_NAME
+        $keys     = array_keys($array);
+        $arrayMap = array_combine(array_map($normaliseCallback, $keys), $keys);
+
         if ($constructor = $class->getConstructor())
         {
+            // $paramMap: originalName => normalised_name
+            $params   = $constructor->getParameters();
+            $keys     = array_map($nameCallback, $params);
+            $paramMap = array_combine($keys, array_map($normaliseCallback, $keys));
+
             $args = [];
 
-            foreach ($constructor->getParameters() as $param)
+            foreach ($params as $param)
             {
                 if (!empty($array))
                 {
-                    // Check for an exact match first
+                    // Try for an exact match
                     if (array_key_exists($param->name, $array))
                     {
-                        $args[] = $array[$param->name];
-                        unset($array[$param->name]);
-
-                        continue;
+                        $key = $param->name;
+                    }
+                    else
+                    {
+                        // Settle for a less exact one
+                        $key = $arrayMap[$paramMap[$param->name]] ?? null;
                     }
 
-                    // Failing that, normalise $array keys and check for an
-                    // inexact match
-                    $keys = $keys ?? array_keys($array);
-                    $map  = $map ?? array_combine(array_map(function ($k)
-                    {
-                        return Convert::IdentifierToSnakeCase($k);
-                    }, $keys), $keys);
-
-                    if ($key = $map[Convert::IdentifierToSnakeCase($param->name)] ?? null)
+                    if ($key)
                     {
                         $args[] = $array[$key];
-                        unset($array[$key]);
+                        unset($array[$key], $arrayMap[$paramMap[$param->name]]);
+
+                        continue;
                     }
                 }
 
@@ -90,48 +99,42 @@ trait TConstructible
             $obj = $class->newInstanceWithoutConstructor();
         }
 
-        if (!empty($array))
+        if (empty($array))
         {
-            unset($map);
+            return $obj;
+        }
 
+        // $propMap: normalised_name => OriginalName
+        $props = array_filter(
+            $class->getProperties(ReflectionProperty::IS_PUBLIC),
+            function ($prop) { return !$prop->isStatic(); }
+        );
+        $keys    = array_map($nameCallback, $props);
+        $propMap = array_combine(array_map($normaliseCallback, $keys), $keys);
+
+        $props = array_intersect_key($propMap, $arrayMap);
+
+        foreach ($props as $normalised => $prop)
+        {
+            $obj->$prop = $array[$arrayMap[$normalised]];
+            unset($array[$arrayMap[$normalised]], $arrayMap[$normalised]);
+        }
+
+        if (empty($array))
+        {
+            return $obj;
+        }
+
+        if ($obj instanceof IExtensible)
+        {
             foreach ($array as $name => $value)
             {
-                $propName = $name;
-
-                if (!$class->hasProperty($name))
-                {
-                    $props = $props ?? array_map(function ($p)
-                    {
-                        return $p->name;
-                    }, $class->getProperties());
-                    $map = $map ?? array_combine(array_map(function ($p)
-                    {
-                        return Convert::IdentifierToSnakeCase($p);
-                    }, $props), $props);
-                    $propName = $map[Convert::IdentifierToSnakeCase($name)] ?? null;
-                }
-
-                if ($propName)
-                {
-                    $property = $class->getProperty($propName);
-
-                    if (!$property->isStatic() && $property->isPublic())
-                    {
-                        $property->setValue($obj, $value);
-
-                        continue;
-                    }
-                }
-
-                if ($obj instanceof IExtensible)
-                {
-                    $obj->SetMetaProperty($name, $value);
-
-                    continue;
-                }
-
-                throw new UnexpectedValueException("No public instance property with name '$name' in {$class->name}");
+                $obj->$name = $value;
             }
+        }
+        else
+        {
+            throw new UnexpectedValueException("Not found in {$class->name}: " . implode(", ", $arrayMap));
         }
 
         return $obj;

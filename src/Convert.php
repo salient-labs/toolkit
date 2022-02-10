@@ -67,13 +67,49 @@ class Convert
     }
 
     /**
-     * Create a map from a list of items
+     * Create a map from a list of objects or arrays
      *
-     * Something like: `[ ITEM[$key] => ITEM, ... ]`
+     * For example, to map from each array's `id` to the array itself:
+     *
+     * ```php
+     * $list = [
+     *     ['id' => 38, 'name' => 'Amir'],
+     *     ['id' => 32, 'name' => 'Greta'],
+     *     ['id' => 71, 'name' => 'Terry'],
+     * ];
+     *
+     * $map = Convert::ListToMap($list, 'id');
+     *
+     * print_r($map);
+     * ```
+     *
+     * ```
+     * Array
+     * (
+     *     [38] => Array
+     *         (
+     *             [id] => 38
+     *             [name] => Amir
+     *         )
+     *
+     *     [32] => Array
+     *         (
+     *             [id] => 32
+     *             [name] => Greta
+     *         )
+     *
+     *     [71] => Array
+     *         (
+     *             [id] => 71
+     *             [name] => Terry
+     *         )
+     *
+     * )
+     * ```
      *
      * @param array<int,array|object> $list
      * @param string $key
-     * @return array<string,array|object>
+     * @return array<int|string,array|object>
      */
     public static function ListToMap(array $list, string $key): array
     {

@@ -14,12 +14,12 @@ Err::HandleErrors();
 Cache::Load();
 
 Cache::Set('key', 'value1');
-var_export(Cache::Get('key'));
+print_r(Cache::Get('key'));
 
 Cache::Set('key', ['value1', 'value2']);
-var_export(Cache::Get('key'));
+print_r(Cache::Get('key'));
 
-var_export(Cache::MaybeGet(
+print_r(Cache::MaybeGet(
     [basename(__FILE__), "MaybeGet"],
     function ()
     {
@@ -33,7 +33,7 @@ var_export(Cache::MaybeGet(
 foreach ([1, 2] as $seconds)
 {
     sleep($seconds);
-    var_export(Cache::MaybeGet(
+    print_r(Cache::MaybeGet(
         [basename(__FILE__), "MaybeGet"],
         "time"
     ));
