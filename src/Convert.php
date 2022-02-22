@@ -286,9 +286,16 @@ class Convert
      * @param null|string $stripPattern Matching characters are removed.
      * @param null|string $spacePattern Matching characters are replaced with
      * whitespace.
+     * @param bool $trim If true, remove leading and trailing whitespace.
      * @return string
      */
-    public static function Normalise(string $text, bool $toUpper = true, ?string $stripPattern = "\\.", ?string $spacePattern = "[^A-Z0-9]")
+    public static function Normalise(
+        string $text,
+        bool $toUpper         = true,
+        ?string $stripPattern = null,
+        ?string $spacePattern = "[^a-zA-Z0-9]",
+        bool $trim            = true
+    )
     {
         if ($toUpper)
         {
@@ -296,7 +303,10 @@ class Convert
         }
 
         $text = mb_ereg_replace("&", " AND ", $text, self::MB_REGEX_OPTIONS);
-        $text = mb_ereg_replace("[\342\200\220\342\200\221\342\200\223\342\200\222]", "-", $text, self::MB_REGEX_OPTIONS);
+
+        // Replace (some) Unicode hyphens with plain ones; more here:
+        // https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5Cp%7BDash%7D&abb=on&esc=on&g=&i=
+        $text = mb_ereg_replace("[\u{2010}-\u{2015}]", "-", $text, self::MB_REGEX_OPTIONS);
 
         if ($stripPattern)
         {
@@ -306,6 +316,11 @@ class Convert
         if ($spacePattern)
         {
             $text = mb_ereg_replace($spacePattern, " ", $text, self::MB_REGEX_OPTIONS);
+        }
+
+        if ($trim)
+        {
+            $text = mb_ereg_replace("(^\\s+|\\s+\$)", "", $text, self::MB_REGEX_OPTIONS);
         }
 
         $text = mb_ereg_replace("\\s+", " ", $text, self::MB_REGEX_OPTIONS);
