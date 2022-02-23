@@ -8,6 +8,7 @@ use Exception;
 use Lkrms\Console\ConsoleTarget\NullTarget;
 use Lkrms\Console\ConsoleTarget\Stream;
 use Lkrms\Convert;
+use Lkrms\Env;
 use Lkrms\Err;
 use Lkrms\File;
 use RuntimeException;
@@ -123,10 +124,18 @@ class Console
                 ConsoleLevel::ERROR,
                 ConsoleLevel::WARNING,
             ]));
-            self::AddTarget(new Stream(STDOUT, [
+
+            $levels = [
                 ConsoleLevel::NOTICE,
                 ConsoleLevel::INFO,
-            ]));
+            ];
+
+            if (Env::GetDebug())
+            {
+                $levels[] = ConsoleLevel::DEBUG;
+            }
+
+            self::AddTarget(new Stream(STDOUT, $levels));
         }
 
         self::$TargetsChecked = true;

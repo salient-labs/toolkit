@@ -75,10 +75,12 @@ class Err
 
         if ($f = $frames[$depth + 2] ?? null)
         {
+            $line = $frames[$depth + 1]["line"] ?? null;
+
             return implode($f["type"] ?? "", array_filter([
                 $f["class"] ?? null,
-                $f["function"] ?? null,
-            ]));
+                preg_replace('/.*\\\\(\{closure\})$/', '$1', $f["function"] ?? ""),
+            ])) . ($line ? ":$line" : "");
         }
         elseif ($f = $frames[$depth + 1] ?? null)
         {

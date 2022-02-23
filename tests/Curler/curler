@@ -1,0 +1,28 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests\Curler;
+
+use Lkrms\Curler\Curler;
+use Lkrms\Env;
+use Lkrms\Err;
+
+$loader = require (__DIR__ . "/../../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
+
+Err::HandleErrors();
+
+Env::Load(__DIR__ . "/../.env");
+
+class A
+{
+    public function __construct()
+    {
+        $curl = new Curler("https://api.github.com/meta");
+        $curl->EnableDebug();
+        print_r($curl->Get());
+        print_r($curl->GetJson());
+    }
+}
+
+new A();

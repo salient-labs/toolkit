@@ -23,94 +23,94 @@ class Curler
     /**
      * @var string
      */
-    private $BaseUrl;
+    protected $BaseUrl;
 
     /**
      * @var CurlerHeaders
      */
-    private $Headers;
+    protected $Headers;
 
     /**
      * @var array
      */
-    private $ResponseHeaders;
+    protected $ResponseHeaders;
 
     /**
      * @var string
      */
-    private $LastRequestType;
+    protected $LastRequestType;
 
     /**
      * @var string
      */
-    private $LastQuery;
+    protected $LastQuery;
 
     /**
      * @var mixed
      */
-    private $LastRequestData;
+    protected $LastRequestData;
 
     /**
      * @var array
      */
-    private $LastCurlInfo;
+    protected $LastCurlInfo;
 
     /**
      * @var string
      */
-    private $LastResponse;
+    protected $LastResponse;
 
     /**
      * @var int
      */
-    private $LastResponseCode;
+    protected $LastResponseCode;
 
     /**
      * @var array
      */
-    private $LastResponseHeaders;
+    protected $LastResponseHeaders;
 
     /**
      * @var bool
      */
-    private $ThrowHttpError = true;
+    protected $ThrowHttpError = true;
 
     /**
      * @var bool
      */
-    private $AutoRetryAfter = false;
+    protected $AutoRetryAfter = false;
 
     /**
      * @var int
      */
-    private $AutoRetryAfterMax = 60;
+    protected $AutoRetryAfterMax = 60;
 
     /**
      * @var bool
      */
-    private $Debug;
+    protected $Debug;
 
     /**
      * @var bool
      */
-    private $DataAsJson = true;
+    protected $DataAsJson = true;
 
     /**
      * @var bool
      */
-    private $ForceNumericKeys = false;
+    protected $ForceNumericKeys = false;
 
     /**
      * Used with calls to Console::Debug
      *
      * @var int
      */
-    private $InternalStackDepth = 0;
+    protected $InternalStackDepth = 0;
 
     /**
      * @var CurlHandle
      */
-    private $Handle;
+    protected $Handle;
 
     /**
      * @var CurlMultiHandle
@@ -120,7 +120,7 @@ class Curler
     /**
      * @var array
      */
-    private static $MultiInfo = [];
+    protected static $MultiInfo = [];
 
     public function __construct(string $baseUrl, CurlerHeaders $headers = null)
     {
@@ -165,7 +165,7 @@ class Curler
         }
     }
 
-    private function Initialise($requestType, ?array $queryString)
+    protected function Initialise($requestType, ?array $queryString)
     {
         if (empty($queryString))
         {
@@ -208,7 +208,7 @@ class Curler
         $this->LastResponseHeaders = null;
     }
 
-    private function SetData(?array $data, ?bool $asJson)
+    protected function SetData(?array $data, ?bool $asJson)
     {
         if (is_null($data))
         {
@@ -251,8 +251,10 @@ class Curler
         $this->LastRequestData = $query;
     }
 
-    private function Execute($close = true): string
+    protected function Execute($close = true): string
     {
+        // Console::Debug() should print the details of whatever called a Curler
+        // public method, i.e. not \Execute, not \Get, but one frame deeper
         $depth = $this->InternalStackDepth + 2;
 
         // Reset it now in case there's an error later

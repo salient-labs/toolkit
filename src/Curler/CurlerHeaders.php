@@ -26,9 +26,24 @@ class CurlerHeaders
         unset($this->Headers[strtolower($name)]);
     }
 
+    /**
+     * @return string[]
+     */
     public function GetHeaders(): array
     {
         return array_values($this->Headers);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function GetPublicHeaders(): array
+    {
+        return array_values(array_filter(
+            $this->Headers,
+            function ($key) { return !in_array($key, ["authorization"]); },
+            ARRAY_FILTER_USE_KEY
+        ));
     }
 }
 
