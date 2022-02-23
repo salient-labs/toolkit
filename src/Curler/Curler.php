@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
+use CurlHandle;
+use CurlMultiHandle;
 use Lkrms\Console;
 use Lkrms\Convert;
 use Lkrms\Env;
 use Lkrms\Test;
+use RuntimeException;
 use UnexpectedValueException;
 
 /**
@@ -26,6 +29,11 @@ class Curler
      * @var CurlerHeaders
      */
     private $Headers;
+
+    /**
+     * @var array
+     */
+    private $ResponseHeaders;
 
     /**
      * @var string
@@ -99,80 +107,62 @@ class Curler
      */
     private $InternalStackDepth = 0;
 
-    private static $Curl;
+    /**
+     * @var CurlHandle
+     */
+    private $Handle;
 
-    private static $ResponseHeaders;
+    /**
+     * @var CurlMultiHandle
+     */
+    private static $MultiHandle;
+
+    /**
+     * @var array
+     */
+    private static $MultiInfo = [];
 
     public function __construct(string $baseUrl, CurlerHeaders $headers = null)
     {
         $this->BaseUrl = $baseUrl;
         $this->Headers = $headers ?: new CurlerHeaders();
         $this->Debug   = Env::GetDebug();
-
-        if (is_null(self::$Curl))
-        {
-            self::$Curl = curl_init();
-
-            // Don't send output to browser
-            curl_setopt(self::$Curl, CURLOPT_RETURNTRANSFER, true);
-
-            // Collect response headers
-            curl_setopt(self::$Curl, CURLOPT_HEADERFUNCTION,
-                function ($curl, $header)
-                {
-                    $split = explode(":", $header, 2);
-
-                    if (count($split) == 2)
-                    {
-                        list ($name, $value) = $split;
-
-                        // Header field names are case-insensitive
-                        $name  = strtolower($name);
-                        $value = trim($value);
-                        self::$ResponseHeaders[$name] = $value;
-                    }
-
-                    return strlen($header);
-                });
-        }
     }
 
-    private function HttpBuildQuery(array $queryData,
-        string & $query = null, string $name = "", string $format = "%s"): string
+    private function CreateHandle(string $url)
     {
-        if (is_null($query))
-        {
-            $query = "";
-        }
+        $this->Handle = curl_init($url);
 
-        foreach ($queryData as $param => $value)
-        {
-            $_name = sprintf($format, $param);
+        // Don't send output to browser
+        curl_setopt($this->Handle, CURLOPT_RETURNTRANSFER, true);
 
-            if (!is_array($value))
+        // Collect response headers
+        curl_setopt(
+            $this->Handle,
+            CURLOPT_HEADERFUNCTION,
+            function ($curl, $header)
             {
-                if (is_bool($value))
+                $split = explode(":", $header, 2);
+
+                if (count($split) == 2)
                 {
-                    $value = (int)$value;
+                    list ($name, $value) = $split;
+
+                    // Header field names are case-insensitive
+                    $name  = strtolower($name);
+                    $value = trim($value);
+                    $this->ResponseHeaders[$name] = $value;
                 }
 
-                $query .= ($query ? "&" : "") . urlencode($name . $_name) . "=" . urlencode((string)$value);
+                return strlen($header);
+            }
+        );
 
-                continue;
-            }
-            elseif (!$this->ForceNumericKeys && Test::IsListArray($value))
-            {
-                $_format = "[]";
-            }
-            else
-            {
-                $_format = "[%s]";
-            }
-
-            $this->HttpBuildQuery($value, $query, $name . $_name, $_format);
+        // In debug mode, collect request headers
+        if ($this->Debug)
+        {
+            curl_setopt($this->Handle, CURLINFO_HEADER_OUT, true);
         }
-
-        return $query;
     }
 
     private function Initialise($requestType, ?array $queryString)
@@ -183,40 +173,39 @@ class Curler
         }
         else
         {
-            $query = "?" . $this->HttpBuildQuery($queryString);
+            $query = "?" . Convert::HttpBuildQuery($queryString, $this->ForceNumericKeys);
         }
 
-        curl_setopt(self::$Curl, CURLOPT_URL, $this->BaseUrl . $query);
+        $this->CreateHandle($this->BaseUrl . $query);
 
         switch ($requestType)
         {
             case "GET":
 
-                curl_setopt(self::$Curl, CURLOPT_CUSTOMREQUEST, null);
-                curl_setopt(self::$Curl, CURLOPT_HTTPGET, true);
-                $this->LastRequestData = null;
-
                 break;
 
             case "POST":
 
-                curl_setopt(self::$Curl, CURLOPT_CUSTOMREQUEST, null);
-                curl_setopt(self::$Curl, CURLOPT_POST, true);
+                curl_setopt($this->Handle, CURLOPT_POST, true);
 
                 break;
 
             default:
 
-                // Allow DELETE, PATCH etc.
-                curl_setopt(self::$Curl, CURLOPT_CUSTOMREQUEST, $requestType);
+                // DELETE, PATCH, etc.
+                curl_setopt($this->Handle, CURLOPT_CUSTOMREQUEST, $requestType);
+
+                break;
         }
 
         $this->Headers->UnsetHeader("Content-Type");
-        $this->LastRequestType = $requestType;
-        $this->LastQuery       = $query;
-
-        // In debug mode, collect request headers
-        curl_setopt(self::$Curl, CURLINFO_HEADER_OUT, $this->Debug);
+        $this->LastRequestType     = $requestType;
+        $this->LastQuery           = $query;
+        $this->LastRequestData     = null;
+        $this->LastCurlInfo        = null;
+        $this->LastResponse        = null;
+        $this->LastResponseCode    = null;
+        $this->LastResponseHeaders = null;
     }
 
     private function SetData(?array $data, ?bool $asJson)
@@ -254,15 +243,15 @@ class Curler
             }
             else
             {
-                $query = $this->HttpBuildQuery($data);
+                $query = Convert::HttpBuildQuery($data, $this->ForceNumericKeys);
             }
         }
 
-        curl_setopt(self::$Curl, CURLOPT_POSTFIELDS, $query);
+        curl_setopt($this->Handle, CURLOPT_POSTFIELDS, $query);
         $this->LastRequestData = $query;
     }
 
-    private function Execute(): string
+    private function Execute($close = true): string
     {
         $depth = $this->InternalStackDepth + 2;
 
@@ -270,12 +259,17 @@ class Curler
         $this->InternalStackDepth = 0;
 
         // Add headers for authentication etc.
-        curl_setopt(self::$Curl, CURLOPT_HTTPHEADER, $this->Headers->GetHeaders());
+        curl_setopt($this->Handle, CURLOPT_HTTPHEADER, $this->Headers->GetHeaders());
+
+        if (is_null(self::$MultiHandle))
+        {
+            self::$MultiHandle = curl_multi_init();
+        }
 
         for ($attempt = 0; $attempt < 2; $attempt++)
         {
             // Clear any previous response headers
-            self::$ResponseHeaders = [];
+            $this->ResponseHeaders = [];
 
             if ($this->Debug || $this->LastRequestType != "GET")
             {
@@ -283,23 +277,70 @@ class Curler
             }
 
             // Execute the request
-            $result = curl_exec(self::$Curl);
+            curl_multi_add_handle(self::$MultiHandle, $this->Handle);
+            $active = null;
+            $error  = null;
 
-            // Save transfer information
-            $this->LastCurlInfo        = curl_getinfo(self::$Curl);
-            $this->LastResponseHeaders = self::$ResponseHeaders;
-
-            if ($result === false)
+            do
             {
-                $this->LastResponse     = null;
-                $this->LastResponseCode = null;
-                throw new CurlerException($this, "cURL error: " . curl_error(self::$Curl));
+                if (($status = curl_multi_exec(self::$MultiHandle, $active)) !== CURLM_OK)
+                {
+                    throw new RuntimeException("cURL multi error: " . curl_multi_strerror($status));
+                }
+
+                if ($active)
+                {
+                    if (curl_multi_select(self::$MultiHandle) == -1)
+                    {
+                        // 100 milliseconds, as suggested here:
+                        // https://curl.se/libcurl/c/curl_multi_fdset.html
+                        usleep(100000);
+                    }
+                }
+
+                while (($message = curl_multi_info_read(self::$MultiHandle)) !== false)
+                {
+                    self::$MultiInfo[] = $message;
+                }
+            }
+            while ($active);
+
+            // Claim messages that apply to this instance
+            foreach (self::$MultiInfo as $i => $message)
+            {
+                if ($message["handle"] === $this->Handle)
+                {
+                    if ($message["result"] !== CURLE_OK)
+                    {
+                        $error = $message["result"];
+                    }
+
+                    unset(self::$MultiInfo[$i]);
+                }
             }
 
-            $this->LastResponse     = $result;
-            $this->LastResponseCode = (int)curl_getinfo(self::$Curl, CURLINFO_RESPONSE_CODE);
+            // Save transfer information
+            $this->LastCurlInfo        = curl_getinfo($this->Handle);
+            $this->LastResponseHeaders = $this->ResponseHeaders;
 
-            if ($this->AutoRetryAfter && $attempt == 0 && $this->LastResponseCode == 429 && !is_null($after = $this->GetLastRetryAfter()) && ($this->AutoRetryAfterMax == 0 || $after <= $this->AutoRetryAfterMax))
+            if (is_null($error))
+            {
+                $this->LastResponse     = curl_multi_getcontent($this->Handle);
+                $this->LastResponseCode = (int)curl_getinfo($this->Handle, CURLINFO_RESPONSE_CODE);
+            }
+
+            curl_multi_remove_handle(self::$MultiHandle, $this->Handle);
+
+            if (!is_null($error))
+            {
+                throw new CurlerException($this, "cURL error: " . curl_strerror($error));
+            }
+
+            if ($this->AutoRetryAfter &&
+                $attempt == 0 &&
+                $this->LastResponseCode == 429 &&
+                !is_null($after = $this->GetLastRetryAfter()) &&
+                ($this->AutoRetryAfterMax == 0 || $after <= $this->AutoRetryAfterMax))
             {
                 // Sleep for at least one second
                 $after = max(1, $after);
@@ -312,12 +353,17 @@ class Curler
             break;
         }
 
+        if ($close)
+        {
+            curl_close($this->Handle);
+        }
+
         if ($this->LastResponseCode >= 400 && $this->ThrowHttpError)
         {
             throw new CurlerException($this, "HTTP error " . $this->GetLastStatusLine());
         }
 
-        return $result;
+        return $this->LastResponse;
     }
 
     public function GetBaseUrl(): string
@@ -451,7 +497,7 @@ class Curler
     {
         $this->Initialise("POST", $queryString);
         $this->Headers->SetHeader("Content-Type", $contentType);
-        curl_setopt(self::$Curl, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($this->Handle, CURLOPT_POSTFIELDS, $data);
 
         return $this->Execute();
     }
@@ -587,12 +633,12 @@ class Curler
         {
             if ($nextUrl)
             {
-                curl_setopt(self::$Curl, CURLOPT_URL, $nextUrl);
+                curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
                 $nextUrl = null;
             }
 
             // Collect data from response and move on to next page
-            $result   = json_decode($this->Execute(), true);
+            $result   = json_decode($this->Execute(false), true);
             $entities = array_merge($entities, $result);
 
             if (preg_match("/<([^>]+)>;\\s*rel=(['\"])next\\2/", $this->LastResponseHeaders["link"] ?? "", $matches))
@@ -601,6 +647,8 @@ class Curler
             }
         }
         while ($nextUrl);
+
+        curl_close($this->Handle);
 
         return $entities;
     }
@@ -622,15 +670,17 @@ class Curler
         {
             if ($nextUrl)
             {
-                curl_setopt(self::$Curl, CURLOPT_URL, $nextUrl);
+                curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
             }
 
             // Collect data from response and move on to next page
-            $result   = json_decode($this->Execute(), true);
+            $result   = json_decode($this->Execute(false), true);
             $entities = array_merge($entities, $result[$entityName]);
             $nextUrl  = $result["links"]["next"] ?? null;
         }
         while ($nextUrl);
+
+        curl_close($this->Handle);
 
         return $entities;
     }
@@ -645,11 +695,11 @@ class Curler
         {
             if ($nextUrl)
             {
-                curl_setopt(self::$Curl, CURLOPT_URL, $nextUrl);
+                curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
             }
 
             // Collect data from response and move on to next page
-            $result = json_decode($this->Execute(), true);
+            $result = json_decode($this->Execute(false), true);
 
             if (is_null($prefix))
             {
@@ -667,6 +717,8 @@ class Curler
             $nextUrl  = $result[$prefix . "nextLink"] ?? null;
         }
         while ($nextUrl);
+
+        curl_close($this->Handle);
 
         return $entities;
     }
