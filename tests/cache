@@ -35,7 +35,8 @@ foreach ([1, 2] as $seconds)
     sleep($seconds);
     print_r(Cache::MaybeGet(
         [basename(__FILE__), "MaybeGet"],
-        "time"
+        "time",
+        2
     ));
 }
 

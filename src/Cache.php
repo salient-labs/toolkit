@@ -30,7 +30,7 @@ class Cache
         }
     }
 
-    private static function FlushExpired()
+    public static function FlushExpired()
     {
         self::$db->exec(
 <<<SQL
@@ -77,8 +77,9 @@ SQL
      * called.
      *
      * @param string $filename The SQLite database to use.
+     * @param bool $autoFlush Automatically flush expired values?
      */
-    public static function Load(string $filename = ":memory:")
+    public static function Load(string $filename = ":memory:", bool $autoFlush = true)
     {
         if ($filename != ":memory:")
         {
@@ -105,7 +106,11 @@ END;
 SQL
         );
 
-        self::FlushExpired();
+        if ($autoFlush)
+        {
+            self::FlushExpired();
+        }
+
         self::$Loaded = true;
     }
 
@@ -202,21 +207,40 @@ SQL;
      * value has expired or doesn't exist in the cache.
      *
      * @param string $key The key of the item to retrieve.
+     * @param int $maxAge The time in seconds before stored values should be
+     * considered expired (maximum 30 days). Overrides stored expiry times for
+     * this request only. `0` = no expiry.
      * @return mixed The `unserialize`d value stored in the cache.
      * @throws RuntimeException
      */
-    public static function Get(string $key)
+    public static function Get(string $key, int $maxAge = null)
     {
         self::CheckLoaded(__METHOD__);
-        $stmt = self::$db->prepare(
-<<<SQL
-SELECT item_value
-FROM _cache_item
-WHERE item_key = :item_key
-    AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
-SQL
-        );
-        $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
+
+        $sql = [
+            "item_key = :item_key"
+        ];
+        $bind = [
+            [":item_key", $key, SQLITE3_TEXT]
+        ];
+
+        if (is_null($maxAge) || $maxAge > 2592000)
+        {
+            $sql[] = "(expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)";
+        }
+        elseif ($maxAge)
+        {
+            $sql[]  = "datetime(set_at, :max_age) > CURRENT_TIMESTAMP";
+            $bind[] = [":max_age", "+$maxAge seconds", SQLITE3_TEXT];
+        }
+
+        $stmt = self::$db->prepare("SELECT item_value FROM _cache_item WHERE " . implode(" AND ", $sql));
+
+        foreach ($bind as $param)
+        {
+            $stmt->bindValue(...$param);
+        }
+
         $result = $stmt->execute();
 
         if (($row = $result->fetchArray(SQLITE3_NUM)) === false)
@@ -281,7 +305,7 @@ SQL
     {
         $key = self::GetKey($key);
 
-        if (($value = self::Get($key)) === false)
+        if (($value = self::Get($key, $expiry)) === false)
         {
             $value = $callback();
             self::Set($key, $value, $expiry);
