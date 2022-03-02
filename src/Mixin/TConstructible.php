@@ -11,7 +11,7 @@ use ReflectionProperty;
 use UnexpectedValueException;
 
 /**
- * Makes constructors with (too) many parameters easier to invoke
+ * Converts arrays to instances
  *
  * @package Lkrms
  */
@@ -38,19 +38,19 @@ trait TConstructible
     {
         $class = new ReflectionClass(static::class);
 
-        $nameCallback      = function ($reflection) { return $reflection->name; };
-        $normaliseCallback = function ($name) { return Convert::IdentifierToSnakeCase($name); };
+        $getName = function ($reflection) { return $reflection->name; };
+        $mapFrom = function ($name) { return Convert::IdentifierToSnakeCase($name); };
 
         // $arrayMap: normalised_name => ORIGINAL_NAME
         $keys     = array_keys($array);
-        $arrayMap = array_combine(array_map($normaliseCallback, $keys), $keys);
+        $arrayMap = array_combine(array_map($mapFrom, $keys), $keys);
 
         if ($constructor = $class->getConstructor())
         {
             // $paramMap: originalName => normalised_name
             $params   = $constructor->getParameters();
-            $keys     = array_map($nameCallback, $params);
-            $paramMap = array_combine($keys, array_map($normaliseCallback, $keys));
+            $keys     = array_map($getName, $params);
+            $paramMap = array_combine($keys, array_map($mapFrom, $keys));
 
             $args = [];
 
@@ -109,8 +109,8 @@ trait TConstructible
             $class->getProperties(ReflectionProperty::IS_PUBLIC),
             function ($prop) { return !$prop->isStatic(); }
         );
-        $keys    = array_map($nameCallback, $props);
-        $propMap = array_combine(array_map($normaliseCallback, $keys), $keys);
+        $keys    = array_map($getName, $props);
+        $propMap = array_combine(array_map($mapFrom, $keys), $keys);
 
         $props = array_intersect_key($propMap, $arrayMap);
 

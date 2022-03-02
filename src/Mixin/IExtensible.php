@@ -8,6 +8,7 @@ namespace Lkrms\Mixin;
  * Implements arbitrary property storage
  *
  * @package Lkrms
+ * @see TExtensible
  */
 interface IExtensible
 {
@@ -20,5 +21,13 @@ interface IExtensible
     public function UnsetMetaProperty(string $name): void;
 
     public function GetMetaProperties(): array;
+
+    public function __set(string $name, mixed $value): void;
+
+    public function __get(string $name): mixed;
+
+    public function __isset(string $name): bool;
+
+    public function __unset(string $name): void;
 }
 

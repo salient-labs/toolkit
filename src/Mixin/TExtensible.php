@@ -34,7 +34,7 @@ trait TExtensible
         return $normalised;
     }
 
-    public function ResolvePropertyName(string $name): string
+    public function ResolvePropertyName(string $name)
     {
         return $this->NormalisePropertyName($name);
     }

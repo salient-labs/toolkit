@@ -108,8 +108,8 @@ trait TGettable
 
         unset($prop);
 
-        // If the exhibiting class implements IResolvable, create maps from
-        // normalised to actual property names
+        // If the class implements IResolvable, create maps from normalised to
+        // actual property names
         if ($normalised === true || $this instanceof IResolvable)
         {
             $mapFrom = function ($name) { return Convert::IdentifierToSnakeCase($name); };
