@@ -7,46 +7,56 @@ namespace Lkrms\Mixin;
 use Lkrms\Convert;
 
 /**
- * Used alongside IExtensible to implement arbitrary property storage
+ * Implements IExtensible and IResolvable to provide arbitrary property storage
  *
  * @package Lkrms
  * @see IExtensible
+ * @see IResolvable
  * @see TConstructible
  */
 trait TExtensible
 {
-    use TGettable, TSettable;
+    use TSettable;
 
     protected $MetaProperties = [];
 
     protected $MetaPropertyNames = [];
 
-    protected function NormaliseMetaProperty(string $name)
+    protected function NormalisePropertyName(string $name, bool $save = false)
     {
         $normalised = Convert::IdentifierToSnakeCase($name);
-        $this->MetaPropertyNames[$normalised] = $this->MetaPropertyNames[$normalised] ?? $name;
+
+        if ($save)
+        {
+            $this->MetaPropertyNames[$normalised] = $name;
+        }
 
         return $normalised;
     }
 
+    public function ResolvePropertyName(string $name): string
+    {
+        return $this->NormalisePropertyName($name);
+    }
+
     public function SetMetaProperty(string $name, $value): void
     {
-        $this->MetaProperties[$this->NormaliseMetaProperty($name)] = $value;
+        $this->MetaProperties[$this->NormalisePropertyName($name, true)] = $value;
     }
 
     public function GetMetaProperty(string $name)
     {
-        return $this->MetaProperties[$this->NormaliseMetaProperty($name)] ?? null;
+        return $this->MetaProperties[$this->NormalisePropertyName($name)] ?? null;
     }
 
     public function IsMetaPropertySet(string $name): bool
     {
-        return isset($this->MetaProperties[$this->NormaliseMetaProperty($name)]);
+        return isset($this->MetaProperties[$this->NormalisePropertyName($name)]);
     }
 
     public function UnsetMetaProperty(string $name): void
     {
-        unset($this->MetaProperties[$this->NormaliseMetaProperty($name)]);
+        unset($this->MetaProperties[$this->NormalisePropertyName($name)]);
     }
 
     public function GetMetaProperties(): array

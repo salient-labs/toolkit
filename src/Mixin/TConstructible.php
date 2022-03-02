@@ -139,5 +139,25 @@ trait TConstructible
 
         return $obj;
     }
+
+    /**
+     * Convert a list of arrays to a list of instances
+     *
+     * Array keys are not preserved.
+     *
+     * @param array $arrays An array of arrays. Each element is passed to {@see TConstructible::From()}.
+     * @return static[]
+     */
+    public static function ListFrom(array $arrays): array
+    {
+        $list = [];
+
+        foreach ($arrays as $array)
+        {
+            $list[] = static::From($array);
+        }
+
+        return $list;
+    }
 }
 

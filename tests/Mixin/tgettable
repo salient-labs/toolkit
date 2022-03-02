@@ -3,6 +3,7 @@
 
 namespace Lkrms\Tests\Mixin;
 
+use Exception;
 use Lkrms\Err;
 use Lkrms\Mixin\TGettable;
 use Lkrms\Mixin\TSettable;
@@ -16,7 +17,7 @@ Err::HandleErrors();
 
 class A
 {
-    use TGettable, TSettable;
+    use TSettable;
 
     protected function _GetSettable()
     {
@@ -43,7 +44,26 @@ class B extends A
         $this->DataModified = time();
     }
 
+    protected function _GetMeta($isset = false)
+    {
+        return $isset ? isset($this->Meta) : $this->Meta;
+    }
+
+    protected function _SetMeta($value, $unset = false)
+    {
+        if ($unset)
+        {
+            $this->Meta = null;
+        }
+        else
+        {
+            $this->Meta = $value;
+        }
+    }
+
     private $Data = [];
+
+    private $Meta;
 
     protected $DataModified;
 
@@ -52,7 +72,7 @@ class B extends A
 
 class C
 {
-    use TGettable, TSettable;
+    use TSettable;
 
     protected function _GetGettable()
     {
@@ -85,6 +105,12 @@ $b_id            = $b->Id;
 $b_name          = $b->Name;
 $b_data          = $b->Data;
 $b_data_modified = $b->DataModified;
+
+$b_meta1 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, "Meta")];
+$b->Meta = [];
+$b_meta2 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, "Meta")];
+unset($b->Meta);
+$b_meta3 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, "Meta")];
 
 try
 {
@@ -126,11 +152,28 @@ catch (UnexpectedValueException $ex)
     $exceptions[] = $ex;
 }
 
+try
+{
+    isset($b->Data);
+}
+catch (UnexpectedValueException $ex)
+{
+    $exceptions[] = $ex;
+}
+
 print_r([
     'a_set' => $a,
     'b_set' => $b,
     'c_set' => $c,
     'a_get' => ['id' => $a_id, 'name' => $a_name, 'unwritable' => $a_unwritable],
-    'b_get' => ['id' => $b_id, 'name' => $b_name, 'data' => $b_data, 'data_modified' => $b_data_modified],
-    'exceptions' => $exceptions
+    'b_get'             => [
+        'id'            => $b_id,
+        'name'          => $b_name,
+        'data'          => $b_data,
+        'data_modified' => $b_data_modified,
+        'b_meta1'       => $b_meta1,
+        'b_meta2'       => $b_meta2,
+        'b_meta3'       => $b_meta3,
+    ],
+    'exceptions' => array_map(function (Exception $ex) { return $ex->getMessage(); }, $exceptions)
 ]);

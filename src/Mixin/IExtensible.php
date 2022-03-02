@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Mixin;
 
 /**
- * Used alongside TExtensible to implement arbitrary property storage
+ * Implements arbitrary property storage
  *
  * @package Lkrms
- * @see TExtensible
- * @see TConstructible
  */
 interface IExtensible
 {
