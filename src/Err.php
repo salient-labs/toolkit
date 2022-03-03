@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Lkrms;
 
 use InvalidArgumentException;
+use Lkrms\Console\ConsoleWhoopsHandler;
 use Whoops\Handler\HandlerInterface;
-use Whoops\Handler\PlainTextHandler;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
 
@@ -46,7 +46,7 @@ class Err
         {
             if (PHP_SAPI == "cli")
             {
-                self::$Whoops->pushHandler(new PlainTextHandler());
+                self::$Whoops->pushHandler(new ConsoleWhoopsHandler());
             }
             else
             {

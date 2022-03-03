@@ -182,7 +182,7 @@ trait TGettable
             : "Cannot check if property '$name' is set");
     }
 
-    final public function __get(string $name)
+    final public function __get(string $name): mixed
     {
         return $this->GetProperty($name);
     }

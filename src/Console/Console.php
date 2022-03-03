@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
-use Exception;
 use Lkrms\Console\ConsoleTarget\NullTarget;
 use Lkrms\Console\ConsoleTarget\Stream;
 use Lkrms\Convert;
@@ -12,6 +11,7 @@ use Lkrms\Env;
 use Lkrms\Err;
 use Lkrms\File;
 use RuntimeException;
+use Throwable;
 
 /**
  * Print aesthetically pleasing messages to various targets
@@ -55,36 +55,83 @@ class Console
      */
     private static $Errors = 0;
 
+    /**
+     * Apply inline formatting to a string
+     *
+     * The following markup is recognised:
+     *
+     * - `___`Priority 1`___` or `***`Priority 1`***` (bold + colour)
+     * - `__`Priority 2`__` or `**`Priority 2`**` (bold)
+     * - `_`Priority 3`_` or `*`Priority 3`*` (alternate colour)
+     * - `,,`Low Priority`,,` (dim)
+     * - `__[[__`SKIP`__]]__` (no formatting)
+     *
+     * If `$colour` is `true`, inline markup is replaced with terminal escape
+     * sequences to set and reset appropriate display attributes. Otherwise, the
+     * markup is simply removed.
+     *
+     * @param string $string
+     * @param bool $colour
+     * @return string
+     */
     public static function Format(string $string, $colour = false): string
     {
         if ($colour)
         {
-            list ($bold, $cyan, $yellow, $reset) = [
+            list ($bold, $unbold, $dim, $undim, $cyan, $yellow, $default) = [
                 ConsoleColour::BOLD,
+                ConsoleColour::UNBOLD,
+                ConsoleColour::DIM,
+                ConsoleColour::UNDIM,
                 ConsoleColour::CYAN,
                 ConsoleColour::YELLOW,
-                ConsoleColour::RESET
+                ConsoleColour::DEFAULT
             ];
         }
         else
         {
-            list ($bold, $cyan, $yellow, $reset) = [
-                "", "", "", ""
+            list ($bold, $unbold, $dim, $undim, $cyan, $yellow, $default) = [
+                "", "", "", "", "", "", ""
             ];
         }
 
-        return preg_replace(
-            [
+        $str     = "";
+        $matches = [];
+
+        while ($string && preg_match("/^((.*?)__\\[\\[__(.*?)__\\]\\]__)?(.*)\$/s", $string, $matches))
+        {
+            $format   = $matches[2];
+            $noFormat = $matches[3];
+            $string   = $matches[4];
+
+            if (!$matches[1])
+            {
+                $format   = $matches[4];
+                $noFormat = "";
+                $string   = "";
+            }
+
+            $str .= preg_replace([
                 "/\\b___([^\n]+?)___\\b/", "/\\*\\*\\*([^\n]+?)\\*\\*\\*/",
                 "/\\b__([^\n]+?)__\\b/", "/\\*\\*([^\n]+?)\\*\\*/",
                 "/\\b_([^\n]+?)_\\b/", "/\\*([^\n]+?)\\*/",
+                "/,,([^\n]+?),,/",
             ], [
-                "$bold$cyan\$1$reset", "$bold$cyan\$1$reset",
-                "$bold\$1$reset", "$bold\$1$reset",
-                "$yellow\$1$reset", "$yellow\$1$reset",
-            ],
-            $string
-        );
+                "$bold$cyan\$1$default$unbold", "$bold$cyan\$1$default$unbold",
+                "$bold\$1$unbold", "$bold\$1$unbold",
+                "$yellow\$1$default", "$yellow\$1$default",
+                "$dim\$1$undim"
+            ], $format) . $noFormat;
+        }
+
+        return $str;
+    }
+
+    private static function HasBold(string $string): bool
+    {
+        $string = preg_replace("/__\\[\\[__(.*?)__\\]\\]__/", "", $string);
+
+        return (bool)preg_match("/(\\b(___?)([^\n]+?)\\2\\b|(\\*\\*\\*?)([^\n]+?)\\4)/", $string);
     }
 
     private static function CheckGroupDepth()
@@ -179,7 +226,7 @@ class Console
         string $clr1,
         string $clr2,
         string $clrP  = null,
-        Exception $ex = null,
+        Throwable $ex = null,
         bool $ttyOnly = false
     )
     {
@@ -208,13 +255,14 @@ class Console
             }
         }
 
-        $msg = str_repeat(" ", $margin) . $pre . $msg1 . $msg2;
+        $msg = str_repeat(" ", $margin) . $pre . self::Format($msg1) . self::Format($msg2 ?: "");
 
         $clrP   = !is_null($clrP) ? $clrP : ConsoleColour::BOLD . $clr2;
+        $clr1   = !self::HasBold($msg1) ? $clr1 : str_replace(ConsoleColour::BOLD, "", $clr1);
         $ttyMsg = (str_repeat(" ", $margin)
             . $clrP . $pre . ($clrP ? ConsoleColour::RESET : "")
-            . $clr1 . $msg1 . ($clr1 ? ConsoleColour::RESET : "")
-            . ($msg2 ? $clr2 . $msg2 . ($clr2 ? ConsoleColour::RESET : "") : ""));
+            . $clr1 . self::Format($msg1, true) . ($clr1 ? ConsoleColour::RESET : "")
+            . ($msg2 ? $clr2 . self::Format($msg2 ?: "", true) . ($clr2 ? ConsoleColour::RESET : "") : ""));
 
         $context = [];
 
@@ -224,19 +272,25 @@ class Console
             $context["exception"] = $ex;
         }
 
-        self::Print($msg, $ttyMsg, $level, $context, $ttyOnly);
+        self::Print($msg, $ttyMsg, $level, $context, $ttyOnly, true);
     }
 
     public static function Print(
         string $plain,
-        string $tty    = null,
-        int $level     = ConsoleLevel::INFO,
-        array $context = [],
-        bool $ttyOnly  = false
+        string $tty     = null,
+        int $level      = ConsoleLevel::INFO,
+        array $context  = [],
+        bool $ttyOnly   = false,
+        bool $formatted = false
     )
     {
-        $tty   = self::Format(is_null($tty) ? $plain : $tty, true);
-        $plain = self::Format($plain);
+        $tty = is_null($tty) ? $plain : $tty;
+
+        if (!$formatted)
+        {
+            $plain = self::Format($plain);
+            $tty   = self::Format($tty, true);
+        }
 
         self::CheckTargets();
 
@@ -259,7 +313,7 @@ class Console
     }
 
     /**
-     * Increase indent and print "<<< $msg1 $msg2" to STDOUT
+     * Increase indent and print "<<< $msg1 $msg2"
      *
      * @param string $msg1
      * @param string|null $msg2
@@ -288,34 +342,34 @@ class Console
     }
 
     /**
-     * Print "  - {CALLER} $msg1 $msg2" to STDOUT
+     * Print "--- {CALLER} $msg1 $msg2"
      *
      * @param string $msg1
      * @param string|null $msg2
-     * @param Exception|null $ex
+     * @param Throwable|null $ex
      * @param int $depth Passed to {@see Err::GetCaller()}. To print your
      * caller's name instead of your own, set `$depth` = 2.
      * @return void
      * @throws RuntimeException
      */
     public static function Debug(string $msg1, string $msg2 = null,
-        Exception $ex = null, int $depth = 0)
+        Throwable $ex = null, int $depth = 0)
     {
         $caller = Err::GetCaller($depth);
         self::Write(ConsoleLevel::DEBUG,
-            ($caller ? "{{$caller}} " : "") . $msg1, $msg2, "  - ",
+            "{{$caller}} " . $msg1, $msg2, "--- ",
             ConsoleColour::DIM . ConsoleColour::BOLD,
             ConsoleColour::DIM . ConsoleColour::CYAN, null, $ex);
     }
 
     /**
-     * Print " -> $msg1 $msg2" to STDOUT
+     * Print " -> $msg1 $msg2"
      *
      * @param string $msg1
      * @param string|null $msg2
      */
     public static function Log(string $msg1, string $msg2 = null,
-        Exception $ex = null)
+        Throwable $ex = null)
     {
         self::Write(ConsoleLevel::INFO, $msg1, $msg2, " -> ",
             "", ConsoleColour::YELLOW, null, $ex);
@@ -328,19 +382,19 @@ class Console
      * @param string|null $msg2
      */
     public static function LogProgress(string $msg1, string $msg2 = null,
-        Exception $ex = null)
+        Throwable $ex = null)
     {
         self::Write(ConsoleLevel::INFO, $msg1, $msg2, " -> ",
             "", ConsoleColour::YELLOW, null, $ex, true);
     }
 
     /**
-     * Print "==> $msg1 $msg2" to STDOUT
+     * Print "==> $msg1 $msg2"
      *
      * @param string $msg1
      * @param string|null $msg2
      */
-    public static function Info(string $msg1, string $msg2 = null, Exception $ex = null)
+    public static function Info(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
         self::Write(ConsoleLevel::NOTICE, $msg1, $msg2, "==> ",
             ConsoleColour::BOLD,
@@ -348,32 +402,30 @@ class Console
     }
 
     /**
-     * Print " :: $msg1 $msg2" to STDERR
+     * Print " :: $msg1 $msg2"
      *
      * @param string $msg1
      * @param string|null $msg2
      */
-    public static function Warn(string $msg1, string $msg2 = null, Exception $ex = null)
+    public static function Warn(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
         self::$Warnings++;
         self::Write(ConsoleLevel::WARNING, $msg1, $msg2, "  ! ",
-            ConsoleColour::YELLOW . ConsoleColour::BOLD,
-            ConsoleColour::BOLD,
+            ConsoleColour::YELLOW . ConsoleColour::BOLD, "",
             ConsoleColour::YELLOW . ConsoleColour::BOLD, $ex);
     }
 
     /**
-     * Print " !! $msg1 $msg2" to STDERR
+     * Print " !! $msg1 $msg2"
      *
      * @param string $msg1
      * @param string|null $msg2
      */
-    public static function Error(string $msg1, string $msg2 = null, Exception $ex = null)
+    public static function Error(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
         self::$Errors++;
         self::Write(ConsoleLevel::ERROR, $msg1, $msg2, " !! ",
-            ConsoleColour::RED . ConsoleColour::BOLD,
-            ConsoleColour::BOLD,
+            ConsoleColour::RED . ConsoleColour::BOLD, "",
             ConsoleColour::RED . ConsoleColour::BOLD, $ex);
     }
 

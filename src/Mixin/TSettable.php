@@ -108,7 +108,7 @@ trait TSettable
         }
     }
 
-    final public function __set(string $name, $value): void
+    final public function __set(string $name, mixed $value): void
     {
         $this->SetProperty($name, $value);
     }

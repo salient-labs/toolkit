@@ -26,6 +26,8 @@ class ConsoleColour
 
     public const WHITE = "\033[37m";
 
+    public const DEFAULT = "\033[39m";
+
     public const GREY = "\033[90m";
 
     public const BLACK_BG = "\033[40m";
@@ -44,9 +46,13 @@ class ConsoleColour
 
     public const WHITE_BG = "\033[47m";
 
+    public const DEFAULT_BG = "\033[49m";
+
     public const GREY_BG = "\033[100m";
 
     public const BOLD = "\033[1m";
+
+    public const UNBOLD = "\033[22m";
 
     public const DIM = "\033[2m";
 

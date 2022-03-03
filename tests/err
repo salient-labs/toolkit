@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\Console\Console;
+use Lkrms\Err;
+use UnexpectedValueException;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Err::HandleErrors();
+
+function returnCaller()
+{
+    return Err::GetCaller();
+}
+
+Console::Debug("Err::GetCaller()", returnCaller(), null, 0);
+
+throw new UnexpectedValueException("Well, this was unexpected");
