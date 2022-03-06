@@ -1,0 +1,48 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\Console\Console;
+use Lkrms\Console\ConsoleTarget\Stream;
+use Lkrms\Err;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Err::HandleErrors();
+
+// Send all output, including debug messages and errors, to STDOUT
+Console::AddTarget(new Stream(STDOUT));
+
+// Disable output logging
+Console::DisableDefaultLogTarget();
+
+$items = [
+    [100, 101, 102],
+    [200, 201, 202],
+    [300, 301, 302],
+];
+
+Console::Group("Processing items");
+
+for ($i = 0; $i < count($items); $i++)
+{
+    Console::Info("Processing row:", $i + 1);
+
+    for ($j = 0; $j < count($items[$i]); $j++)
+    {
+        Console::Log("Processing item:", $items[$i][$j]);
+    }
+
+    if ($i % 2)
+    {
+        Console::Warn("WARNING: odd-numbered index at row:", ($i + 1));
+    }
+    else
+    {
+        Console::Debug("Row processing complete");
+    }
+}
+
+Console::GroupEnd();

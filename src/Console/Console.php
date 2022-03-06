@@ -14,7 +14,7 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Print aesthetically pleasing messages to various targets
+ * Log various message types to various targets
  *
  * @package Lkrms\Console
  */
@@ -23,7 +23,7 @@ class Console
     /**
      * @var int
      */
-    private static $GroupDepth = null;
+    private static $GroupDepth;
 
     /**
      * @var array<int,ConsoleTarget>
@@ -54,6 +54,33 @@ class Console
      * @var int
      */
     private static $Errors = 0;
+
+    /**
+     * @var bool
+     */
+    private static $AutomaticLogTarget = true;
+
+    /**
+     * Disable the default output log
+     *
+     * Call while bootstrapping your app to disable the output log created at
+     * `<temp_dir>/<basename>-<realpath_hash>-<user_id>.log` by default.
+     *
+     * This happens automatically when a log target is added explicitly via
+     * {@see Console::AddTarget()}.
+     *
+     * @return void
+     * @see File::StablePath()
+     */
+    public static function DisableDefaultLogTarget(): void
+    {
+        if (self::$TargetsChecked && self::$AutomaticLogTarget)
+        {
+            throw new RuntimeException("Targets have already been created");
+        }
+
+        self::$AutomaticLogTarget = false;
+    }
 
     /**
      * Apply inline formatting to a string
@@ -112,14 +139,20 @@ class Console
             }
 
             $str .= preg_replace([
-                "/\\b___([^\n]+?)___\\b/", "/\\*\\*\\*([^\n]+?)\\*\\*\\*/",
-                "/\\b__([^\n]+?)__\\b/", "/\\*\\*([^\n]+?)\\*\\*/",
-                "/\\b_([^\n]+?)_\\b/", "/\\*([^\n]+?)\\*/",
+                "/\\b___([^\n]+?)___\\b/",
+                "/\\b__([^\n]+?)__\\b/",
+                "/\\b_([^\n]+?)_\\b/",
+                "/\\*\\*\\*([^\n]+?)\\*\\*\\*/",
+                "/\\*\\*([^\n]+?)\\*\\*/",
+                "/\\*([^\n]+?)\\*/",
                 "/,,([^\n]+?),,/",
             ], [
-                "$bold$cyan\$1$default$unbold", "$bold$cyan\$1$default$unbold",
-                "$bold\$1$unbold", "$bold\$1$unbold",
-                "$yellow\$1$default", "$yellow\$1$default",
+                "$bold$cyan\$1$default$unbold",
+                "$bold\$1$unbold",
+                "$yellow\$1$default",
+                "$bold$cyan\$1$default$unbold",
+                "$bold\$1$unbold",
+                "$yellow\$1$default",
                 "$dim\$1$undim"
             ], $format) . $noFormat;
         }
@@ -134,8 +167,9 @@ class Console
         return (bool)preg_match("/(\\b(___?)([^\n]+?)\\2\\b|(\\*\\*\\*?)([^\n]+?)\\4)/", $string);
     }
 
-    private static function CheckGroupDepth()
+    private static function CheckGroupDepth(): bool
     {
+        // Return false if this is the first call to an output function
         if (is_null(self::$GroupDepth))
         {
             self::$GroupDepth = 0;
@@ -153,9 +187,9 @@ class Console
             return;
         }
 
-        // If no output log has been added, create one at
-        // /tmp/{basename}-{realpath hash}-{user ID}.log
-        if (empty(self::$LogTargets))
+        // If no output log has been added, log everything to
+        // `<temp_dir>/<basename>-<realpath_hash>-<user_id>.log`
+        if (self::$AutomaticLogTarget && empty(self::$LogTargets))
         {
             self::AddTarget(Stream::FromPath(File::StablePath(".log")));
         }
@@ -357,9 +391,9 @@ class Console
     {
         $caller = Err::GetCaller($depth);
         self::Write(ConsoleLevel::DEBUG,
-            "{{$caller}} " . $msg1, $msg2, "--- ",
-            ConsoleColour::DIM . ConsoleColour::BOLD,
-            ConsoleColour::DIM . ConsoleColour::CYAN, null, $ex);
+            "{{$caller}} __" . $msg1 . "__", $msg2, "--- ",
+            ConsoleColour::DIM,
+            ConsoleColour::DIM, null, $ex);
     }
 
     /**
