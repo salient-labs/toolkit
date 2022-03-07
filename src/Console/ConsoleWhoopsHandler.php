@@ -9,7 +9,7 @@ use Whoops\Handler\PlainTextHandler;
 
 /**
  *
- * @package Lkrms\Console
+ * @package Lkrms
  */
 class ConsoleWhoopsHandler extends PlainTextHandler
 {

@@ -11,7 +11,7 @@ use UnexpectedValueException;
 /**
  * A SQLite object cache inspired by memcached
  *
- * @package Lkrms
+ * @package Lkrms\Service
  */
 class Cache
 {

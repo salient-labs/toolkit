@@ -11,6 +11,10 @@ use Lkrms\Mixin\IResolvable;
 use Lkrms\Mixin\TConstructible;
 use Lkrms\Mixin\TExtensible;
 
+/**
+ *
+ * @package Lkrms
+ */
 abstract class AbstractEntity implements IExtensible, IResolvable, JsonSerializable
 {
     use TConstructible, TExtensible;

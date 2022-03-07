@@ -10,7 +10,7 @@ use RuntimeException;
 /**
  * File upload helper
  *
- * @package Lkrms\Curler
+ * @package Lkrms
  */
 class CurlerFile
 {

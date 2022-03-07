@@ -16,7 +16,7 @@ use Throwable;
 /**
  * Log various message types to various targets
  *
- * @package Lkrms\Console
+ * @package Lkrms
  */
 class Console
 {

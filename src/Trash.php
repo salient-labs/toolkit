@@ -10,7 +10,7 @@ use SQLite3;
 /**
  * A SQLite store for deleted JSON objects
  *
- * @package Lkrms
+ * @package Lkrms\Service
  */
 class Trash
 {

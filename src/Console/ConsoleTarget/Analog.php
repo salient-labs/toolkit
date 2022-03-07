@@ -7,7 +7,7 @@ namespace Lkrms\Console\ConsoleTarget;
 /**
  * Write to Analog
  *
- * @package Lkrms\Console
+ * @package Lkrms
  */
 class Analog extends \Lkrms\Console\ConsoleTarget
 {

@@ -6,7 +6,7 @@ namespace Lkrms\Console;
 
 /**
  *
- * @package Lkrms\Console
+ * @package Lkrms
  */
 class ConsoleColour
 {

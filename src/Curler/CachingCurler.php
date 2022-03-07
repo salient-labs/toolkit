@@ -10,7 +10,7 @@ use Lkrms\Convert;
 /**
  * Adds GET request caching to Curler
  *
- * @package Lkrms\Curler
+ * @package Lkrms
  */
 class CachingCurler extends Curler
 {

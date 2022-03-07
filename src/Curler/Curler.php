@@ -16,7 +16,7 @@ use UnexpectedValueException;
 /**
  * For easy consumption of REST APIs
  *
- * @package Lkrms\Curler
+ * @package Lkrms
  */
 class Curler
 {

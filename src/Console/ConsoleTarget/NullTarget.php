@@ -7,7 +7,7 @@ namespace Lkrms\Console\ConsoleTarget;
 /**
  * Equivalent to /dev/null
  *
- * @package Lkrms\Console
+ * @package Lkrms
  */
 class NullTarget extends \Lkrms\Console\ConsoleTarget
 {

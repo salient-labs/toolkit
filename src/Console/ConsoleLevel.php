@@ -8,7 +8,7 @@ use Psr\Log\LogLevel;
 
 /**
  *
- * @package Lkrms\Console
+ * @package Lkrms
  */
 class ConsoleLevel
 {
