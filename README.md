@@ -1,6 +1,6 @@
 # lkrms/util
 
-A lightweight PHP toolkit with opinionated defaults.
+A PHP toolkit with opinionated defaults and a small footprint.
 
 ## Installation
 
@@ -10,98 +10,58 @@ Install the latest version with [Composer](https://getcomposer.org/):
 composer require lkrms/util
 ```
 
-## Writing messages to the console
+## Using `Console` for terminal output and logging
 
-Taking cues from the [Console API][Console_API], Log4j and `syslog`,
-[`Lkrms\Console\Console`][Console.php] provides a simple logging service used
-throughout the toolkit. Features include:
+> You don't have to use `Lkrms\Console\Console` for message logging, but
+> `lkrms/util` uses it internally, so familiarity is recommended.
 
-- Familiar logging methods, e.g. `Console::Log()`, `Console::Error()` and
-  `Console::Debug()`
-- Output to an arbitrary number of registered `ConsoleTarget` instances
-- Filtering by `ConsoleLevel`[^log-levels] for each `ConsoleTarget`
+To make it easier to create readable terminal output and log entries, the
+[`Lkrms\Console\Console`][Console.php] class provides:
+
+- Familiar methods like `Console::Log()` and `Console::Error()`
+- Output to an arbitrary number of registered targets
+- Filtering of messages delivered to each target by log level
 - Terminal-friendly message formatting
 
 ### Default targets
 
-If no output targets[^targets] have been registered via `Console::AddTarget()`:
+If no output targets[^targets] are registered via `Console::AddTarget()` and PHP
+is running on the command line:
 
 - Warnings and errors are written to `STDERR`
-- Other messages are written to `STDOUT`
-- Debug output is suppressed
+- Informational messages are written to `STDOUT`
+- Debug messages are suppressed
 
-If no log targets have been registered, all output is logged to a temporary
-file.[^log-file] This can be disabled by calling
-`Console::DisableDefaultLogTarget()` while bootstrapping your app.
+Similarly, if no log targets are registered:
 
-### Quick reference
+- A temporary log file based on the name of the running script is created at:
+  ```
+  {sys_get_temp_dir()}/<basename>-<realpath_hash>-<user_id>.log
+  ```
+- Warnings, errors, informational messages and debug messages are written to the
+  log file
 
-| `Console` method | `ConsoleLevel`  | Message prefix | Default output target |
-| ---------------- | --------------- | -------------- | --------------------- |
-| `Error()`        | `ERROR` = `3`   | ` !! `         | `STDERR`              |
-| `Warn()`         | `WARNING` = `4` | `  ! `         | `STDERR`              |
-| `Group()`        | `NOTICE` = `5`  | `>>> `         | `STDOUT`              |
-| `Info()`         | `NOTICE` = `5`  | `==> `         | `STDOUT`              |
-| `Log()`          | `INFO` = `6`    | ` -> `         | `STDOUT`              |
-| `LogProgress()`  | `INFO` = `6`    | ` -> `         | `STDOUT`              |
-| `Debug()`        | `DEBUG` = `7`   | `--- `         | none                  |
+This can be disabled by calling `Console::DisableDefaultLogTarget()` while
+bootstrapping your app.
 
-Calling `Console::Group()` adds a level of indentation to all `Console` output
-until `Console::GroupEnd()` is called.
+### Output methods
 
-### Example
+| `Console` method  | `ConsoleLevel`  | Message prefix | Default output target |
+| ----------------- | --------------- | -------------- | --------------------- |
+| `Error()`         | `ERROR` = `3`   | ` !! `         | `STDERR`              |
+| `Warn()`          | `WARNING` = `4` | `  ! `         | `STDERR`              |
+| `Group()`[^group] | `NOTICE` = `5`  | `>>> `         | `STDOUT`              |
+| `Info()`          | `NOTICE` = `5`  | `==> `         | `STDOUT`              |
+| `Log()`           | `INFO` = `6`    | ` -> `         | `STDOUT`              |
+| `LogProgress()`   | `INFO` = `6`    | ` -> `         | `STDOUT`              |
+| `Debug()`         | `DEBUG` = `7`   | `--- `         | none                  |
 
-```php
-use Lkrms\Console\Console;
-use Lkrms\Console\ConsoleTarget\Stream;
-
-// Send all output, including debug messages and errors, to STDOUT
-Console::AddTarget(new Stream(STDOUT));
-
-// Disable output logging
-Console::DisableDefaultLogTarget();
-
-$items = [
-    [100, 101, 102],
-    [200, 201, 202],
-    [300, 301, 302],
-];
-
-Console::Group("Processing items");
-
-for ($i = 0; $i < count($items); $i++)
-{
-    Console::Info("Processing row:", $i + 1);
-
-    for ($j = 0; $j < count($items[$i]); $j++)
-    {
-        Console::Log("Processing item:", $items[$i][$j]);
-    }
-
-    if ($i % 2)
-    {
-        Console::Warn("WARNING: odd-numbered index at row:", ($i + 1));
-    }
-    else
-    {
-        Console::Debug("Row processing complete");
-    }
-}
-
-Console::GroupEnd();
-```
+[^group]: `Console::Group()` adds a level of indentation to all `Console` output
+    until `Console::GroupEnd()` is called.
 
 ---
-
-[^log-levels]: Each `ConsoleLevel` has the same integer value as its `syslog`
-    counterpart, and can be converted to a [PSR-3][psr-3] log level by
-    `ConsoleLevel::ToPsrLogLevel()`.
 
 [^targets]: `$target` is regarded as an output target if `$target->IsStdout()`
     or `$target->IsStderr()` return `true`.
 
-[^log-file]: The default log filename is generated by `File::StablePath()`.
-
-[Console_API]: https://developer.mozilla.org/en-US/docs/Web/API/Console_API
 [Console.php]: src/Console/Console.php
-[psr-3]: https://www.php-fig.org/psr/psr-3/

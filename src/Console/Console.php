@@ -194,9 +194,9 @@ class Console
             self::AddTarget(Stream::FromPath(File::StablePath(".log")));
         }
 
-        // If no output streams have been added, send errors and warnings to
-        // STDERR, and everything else to STDOUT
-        if (empty(self::$OutputTargets))
+        // If no output streams have been added and we're running on the command
+        // line, send errors and warnings to STDERR, everything else to STDOUT
+        if (PHP_SAPI == "cli" && empty(self::$OutputTargets))
         {
             self::AddTarget(new Stream(STDERR, [
                 ConsoleLevel::EMERGENCY,
