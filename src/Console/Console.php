@@ -346,6 +346,17 @@ class Console
         }
     }
 
+    public static function PrintTtyOnly(
+        string $plain,
+        string $tty     = null,
+        int $level      = ConsoleLevel::INFO,
+        array $context  = [],
+        bool $formatted = false
+    )
+    {
+        self::Print($plain, $tty, $level, $context, true, $formatted);
+    }
+
     /**
      * Increase indent and print "<<< $msg1 $msg2"
      *

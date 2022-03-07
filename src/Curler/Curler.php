@@ -826,7 +826,7 @@ class Curler
 
             if (!isset($result["data"]))
             {
-                throw new CurlerException($this, "no data returned");
+                throw new CurlerException($this, "No data returned");
             }
 
             $nextQuery = null;
