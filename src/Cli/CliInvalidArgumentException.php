@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Cli;
 
 use Exception;
-use Lkrms\Console;
+use Lkrms\Console\Console;
 
 /**
  * Thrown when invalid arguments are given

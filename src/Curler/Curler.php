@@ -6,7 +6,7 @@ namespace Lkrms\Curler;
 
 use CurlHandle;
 use CurlMultiHandle;
-use Lkrms\Console;
+use Lkrms\Console\Console;
 use Lkrms\Convert;
 use Lkrms\Env;
 use Lkrms\Test;
