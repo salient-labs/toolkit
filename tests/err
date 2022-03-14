@@ -5,12 +5,22 @@ namespace Lkrms\Tests;
 
 use Lkrms\Console\Console;
 use Lkrms\Err;
+use Throwable;
 use UnexpectedValueException;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
 Err::HandleErrors();
+
+try
+{
+    Err::HandleErrors();
+}
+catch (Throwable $ex)
+{
+    print_r($ex);
+}
 
 function returnCaller()
 {

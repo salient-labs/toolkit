@@ -89,7 +89,6 @@ class Stream extends \Lkrms\Console\ConsoleTarget
     {
         stream_set_write_buffer($stream, 0);
 
-        //
         $this->Stream       = $stream;
         $this->Levels       = $levels;
         $this->IsTty        = stream_isatty($stream);

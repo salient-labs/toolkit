@@ -167,17 +167,13 @@ class Console
         return (bool)preg_match("/(\\b(___?)([^\n]+?)\\2\\b|(\\*\\*\\*?)([^\n]+?)\\4)/", $string);
     }
 
-    private static function CheckGroupDepth(): bool
+    private static function CheckGroupDepth(): ?int
     {
-        // Return false if this is the first call to an output function
-        if (is_null(self::$GroupDepth))
-        {
-            self::$GroupDepth = 0;
+        // Return null if this is the first call to an output function
+        $return           = self::$GroupDepth;
+        self::$GroupDepth = self::$GroupDepth ?: 0;
 
-            return false;
-        }
-
-        return true;
+        return $return;
     }
 
     private static function CheckTargets()
@@ -264,11 +260,9 @@ class Console
         bool $ttyOnly = false
     )
     {
-        //
         self::CheckGroupDepth();
         $margin = self::$GroupDepth * 4;
 
-        //
         $indent = strlen($pre);
         $indent = max(0, strpos($msg1, "\n") ? $indent : $indent - 4);
 
@@ -365,7 +359,7 @@ class Console
      */
     public static function Group(string $msg1, string $msg2 = null)
     {
-        if (self::CheckGroupDepth())
+        if (!is_null(self::CheckGroupDepth()))
         {
             self::$GroupDepth++;
         }
@@ -472,6 +466,42 @@ class Console
         self::Write(ConsoleLevel::ERROR, $msg1, $msg2, " !! ",
             ConsoleColour::RED . ConsoleColour::BOLD, "",
             ConsoleColour::RED . ConsoleColour::BOLD, $ex);
+    }
+
+    public static function Exception(Throwable $exception, bool $willQuit = false)
+    {
+        $msg2 = "";
+        $ex   = $exception;
+        $i    = 0;
+
+        do
+        {
+            $msg2 .= (($i ? "\nCaused by __" . get_class($ex) . "__: " : "") .
+                sprintf("__[[__%s__]]__,, in %s:%d,,", $ex->getMessage(), $ex->getFile(), $ex->getLine()));
+            $ex = $ex->getPrevious();
+            $i++;
+        }
+        while ($ex);
+
+        // If this is the first and only call to an output function before the
+        // running script succumbs to $exception, don't risk adding filesystem
+        // errors to the mix
+        if ($willQuit && !self::$TargetsChecked)
+        {
+            self::$AutomaticLogTarget = false;
+        }
+
+        self::Error("Uncaught __" . get_class($exception) . "__:", $msg2, $exception);
+        self::Write(
+            ConsoleLevel::DEBUG,
+            "__Stack trace:__",
+            "__[[__" . $exception->getTraceAsString() . "__]]__",
+            "--- ",
+            ConsoleColour::DIM,
+            ConsoleColour::DIM,
+            null,
+            $exception
+        );
     }
 
     public static function GetWarnings(): int
