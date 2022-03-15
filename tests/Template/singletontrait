@@ -1,0 +1,55 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests\Template;
+
+use Lkrms\Template\SingletonTrait;
+
+$loader = require (__DIR__ . "/../../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
+
+class A
+{
+    use SingletonTrait;
+}
+
+class B extends A
+{
+}
+
+class C extends A
+{
+    public $name;
+
+    public static function GetInstance(string $name = null)
+    {
+        if (self::HasInstance())
+        {
+            return parent::GetInstance();
+        }
+
+        $instance       = parent::GetInstance();
+        $instance->name = $name;
+
+        return $instance;
+    }
+}
+
+$a  = A::GetInstance();
+$aa = A::GetInstance();
+
+$b  = B::GetInstance();
+$bb = B::GetInstance();
+
+$c  = C::GetInstance("name1");
+$cc = C::GetInstance("name2");
+
+print_r([
+    "a"      => $a,
+    "b"      => $b,
+    "c"      => $c,
+    "a===aa" => $a === $aa,
+    "b===bb" => $b === $bb,
+    "c===cc" => $c === $cc,
+    "a===b"  => $a === $b,
+]);
