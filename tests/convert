@@ -24,8 +24,8 @@ $data = [
 ];
 
 $queries = [
-    "no_force_numeric_keys" => Convert::HttpBuildQuery($data),
-    "force_numeric_keys"    => Convert::HttpBuildQuery($data, true),
+    "no_force_numeric_keys" => Convert::httpBuildQuery($data),
+    "force_numeric_keys"    => Convert::httpBuildQuery($data, true),
 ];
 
 $decoded = array_map(
@@ -45,7 +45,7 @@ $identifiers = [
 
 $snakeCase = array_combine($identifiers, array_map(function ($i)
 {
-    return Convert::IdentifierToSnakeCase($i);
+    return Convert::identifierToSnakeCase($i);
 }, $identifiers));
 
 print_r($snakeCase);
@@ -63,6 +63,6 @@ $list = [
     ['id' => 71, 'name' => 'Terry'],
 ];
 
-$map = Convert::ListToMap($list, 'id');
+$map = Convert::listToMap($list, 'id');
 
 print_r($map);

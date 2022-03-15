@@ -197,7 +197,7 @@ class File
     public static function StablePath(string $suffix = ".log", string $dir = null)
     {
         $basename = basename($_SERVER["SCRIPT_FILENAME"]);
-        $hash     = Convert::Hash(realpath($_SERVER["SCRIPT_FILENAME"]));
+        $hash     = Convert::hash(realpath($_SERVER["SCRIPT_FILENAME"]));
         $euid     = posix_geteuid();
 
         return (is_null($dir)

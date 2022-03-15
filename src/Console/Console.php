@@ -255,7 +255,7 @@ class Console
 
     private static function CheckLoggedOnce(string $method, string $msg1, string $msg2): int
     {
-        $hash = Convert::Hash($method, $msg1, $msg2);
+        $hash = Convert::hash($method, $msg1, $msg2);
         self::$LoggedOnce[$hash] = self::$LoggedOnce[$hash] ?? 0;
 
         return self::$LoggedOnce[$hash]++;
@@ -653,11 +653,11 @@ class Console
     {
         if (self::$Warnings + self::$Errors)
         {
-            $summary = " with " . Convert::NumberToNoun(self::$Errors, "error", null, true);
+            $summary = " with " . Convert::numberToNoun(self::$Errors, "error", null, true);
 
             if (self::$Warnings)
             {
-                $summary .= " and " . Convert::NumberToNoun(self::$Warnings, "warning", null, true);
+                $summary .= " and " . Convert::numberToNoun(self::$Warnings, "warning", null, true);
             }
 
             if ($reset)

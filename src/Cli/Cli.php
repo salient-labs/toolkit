@@ -155,7 +155,7 @@ EOF;
 
     public static function runCommand(): int
     {
-        Assert::SapiIsCli();
+        Assert::sapiIsCli();
 
         $node = self::$CommandTree;
         $name = "";

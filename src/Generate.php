@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
-use Exception;
+use Closure;
+use ReflectionFunction;
 
 /**
  * Literally so random
@@ -19,9 +20,8 @@ class Generate
      * Compliant with RFC4122.
      *
      * @return string
-     * @throws Exception
      */
-    public static function Uuid()
+    public static function uuid(): string
     {
         $bytes  = random_bytes(16);
         $uuid   = [];
@@ -32,6 +32,101 @@ class Generate
         $uuid[] = bin2hex(substr($bytes, 10, 6));
 
         return implode("-", $uuid);
+    }
+
+    /**
+     * Generate a unique non-crypto hash
+     *
+     * @param array<int|string,string|Stringable> $value One or more values to
+     * hash.
+     * @return string
+     */
+    public static function hash(...$value): string
+    {
+        // xxHash isn't supported until PHP 8.1, so MD5 is the best fit
+        return hash("md5", implode("\000", Convert::toStrings(...$value)));
+    }
+
+    /**
+     * Generate a hash that uniquely identifies a Closure (or any other
+     * callable)
+     *
+     * @param callable $closure
+     * @return string
+     */
+    public static function closureHash(callable $closure): string
+    {
+        if (!($closure instanceof Closure))
+        {
+            $closure = Closure::fromCallable($closure);
+        }
+
+        $closure = new ReflectionFunction($closure);
+
+        // ReflectionFunction::__toString() is unambiguous and consistent
+        return self::hash((string)$closure);
+    }
+
+    /**
+     * Returns the Levenshtein distance between two strings relative to the
+     * length of the longest string
+     *
+     * @param string $string1
+     * @param string $string2
+     * @param bool $normalise If true, normalise the strings with
+     * {@see Convert::toNormal()} before comparing them.
+     * @return float A value between `0` and `1`, where `0` means the strings
+     * are identical, and `1` means they have no similarities.
+     */
+    public static function textDistance(
+        string $string1,
+        string $string2,
+        bool $normalise = true
+    ): float
+    {
+        if ($string1 . $string2 == "")
+        {
+            return (float)0;
+        }
+
+        if ($normalise)
+        {
+            $string1 = Convert::toNormal($string1);
+            $string2 = Convert::toNormal($string2);
+        }
+
+        return levenshtein($string1, $string2) / max(strlen($string1), strlen($string2));
+    }
+
+    /**
+     * Returns the similarity of two strings relative to the length of the
+     * longest string
+     *
+     * @param string $string1
+     * @param string $string2
+     * @param bool $normalise If true, normalise the strings with
+     * {@see Convert::toNormal()} before comparing them.
+     * @return float A value between `0` and `1`, where `0` means the strings
+     * have no similarities, and `1` means they are identical.
+     */
+    public static function textSimilarity(
+        string $string1,
+        string $string2,
+        bool $normalise = true
+    ): float
+    {
+        if ($string1 . $string2 == "")
+        {
+            return (float)1;
+        }
+
+        if ($normalise)
+        {
+            $string1 = Convert::toNormal($string1);
+            $string2 = Convert::toNormal($string2);
+        }
+
+        return max(similar_text($string1, $string2), similar_text($string2, $string1)) / max(strlen($string1), strlen($string2));
     }
 }
 

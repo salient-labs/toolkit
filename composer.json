@@ -2,15 +2,16 @@
     "name": "lkrms/util",
     "type": "library",
     "license": "MIT",
-    "description": "Frequently used functions + cURL wrapper + CLI helper",
+    "description": "A PHP toolkit with opinionated defaults and a small footprint",
     "require": {
         "php": ">=7.2",
         "lib-curl": "*",
         "psr/log": "^1.1",
+        "level-2/dice": "^4.0",
         "filp/whoops": "^2.14"
     },
     "suggest": {
-        "analog/analog": "Use Analog as a target for console output methods in \\Lkrms\\Console"
+        "analog/analog": "Log console output to Analog via Lkrms\\Console\\ConsoleTarget\\Analog"
     },
     "autoload": {
         "psr-4": {

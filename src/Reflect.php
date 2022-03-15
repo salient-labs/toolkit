@@ -15,6 +15,22 @@ use UnexpectedValueException;
 class Reflect
 {
     /**
+     * Return Reflector->name for the given Reflector or list thereof
+     *
+     * @param Reflector|Reflector[] $reflection
+     * @return string|string[]
+     */
+    public static function getName($reflection)
+    {
+        if (is_array($reflection))
+        {
+            return array_map(function ($r) { return $r->name; }, $reflection);
+        }
+
+        return $reflection->name;
+    }
+
+    /**
      * Return an array of traits used by this class and its parent classes
      *
      * In other words, merge arrays returned by `ReflectionClass::getTraits()`
@@ -24,7 +40,7 @@ class Reflect
      * @return array<string,ReflectionClass> An array that maps trait names to
      * `ReflectionClass` instances.
      */
-    public static function GetAllTraits(ReflectionClass $class): array
+    public static function getAllTraits(ReflectionClass $class): array
     {
         $allTraits = [];
 

@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Lkrms;
 
 use Closure;
-use ReflectionFunction;
+use Stringable;
 use UnexpectedValueException;
 
 /**
- * Type wrangling
+ * Data wrangling
  *
  * @package Lkrms
  */
-class Convert
+abstract class Convert
 {
     /**
      * See mb_regex_set_options
@@ -28,9 +28,17 @@ class Convert
      * @param mixed $value The variable being checked.
      * @return array Either `$value` or `[$value]`.
      */
-    public static function AnyToArray($value): array
+    public static function toArray($value): array
     {
-        return Test::IsIndexedArray($value) ? $value : [$value];
+        return Test::isIndexedArray($value) ? $value : [$value];
+    }
+
+    /**
+     * @deprecated Use {@see Convert::toArray()} instead
+     */
+    public static function anyToArray($value): array
+    {
+        return self::toArray($value);
     }
 
     /**
@@ -39,9 +47,17 @@ class Convert
      * @param mixed $value The variable being checked.
      * @return array Either `$value` or `[$value]`.
      */
-    public static function AnyToList($value): array
+    public static function toList($value): array
     {
-        return Test::IsListArray($value) ? $value : [$value];
+        return Test::isListArray($value) ? $value : [$value];
+    }
+
+    /**
+     * @deprecated Use {@see Convert::toList()} instead
+     */
+    public static function anyToList($value): array
+    {
+        return self::toList($value);
     }
 
     /**
@@ -50,35 +66,31 @@ class Convert
      * @param mixed $value The variable being checked.
      * @return mixed Either `$value` or `null`.
      */
-    public static function EmptyToNull($value)
+    public static function emptyToNull($value)
     {
         return !$value ? null : $value;
     }
 
     /**
-     * Return `'true'` if a boolean is true, `'false'` if it's not
-     *
-     * @param bool $value The variable being checked.
-     * @return string Either `'true'` or `'false'`.
+     * @deprecated Use {@see Format::bool()} instead
      */
-    public static function BoolToString(bool $value)
+    public static function boolToString(bool $value)
     {
-        return $value ? "true" : "false";
+        return Format::bool($value);
     }
 
     /**
-     * Create a map from a list of objects or arrays
+     * Create a map from a list
      *
      * For example, to map from each array's `id` to the array itself:
      *
      * ```php
      * $list = [
-     *     ['id' => 38, 'name' => 'Amir'],
      *     ['id' => 32, 'name' => 'Greta'],
      *     ['id' => 71, 'name' => 'Terry'],
      * ];
      *
-     * $map = Convert::ListToMap($list, 'id');
+     * $map = Convert::listToMap($list, 'id');
      *
      * print_r($map);
      * ```
@@ -86,12 +98,6 @@ class Convert
      * ```
      * Array
      * (
-     *     [38] => Array
-     *         (
-     *             [id] => 38
-     *             [name] => Amir
-     *         )
-     *
      *     [32] => Array
      *         (
      *             [id] => 32
@@ -107,65 +113,49 @@ class Convert
      * )
      * ```
      *
-     * @param array<int,array|object> $list
-     * @param string $key
-     * @return array<int|string,array|object>
+     * @param array $list
+     * @param string|Closure $key Either the index or property name to use when
+     * retrieving keys from arrays and objects in `$list`, or a closure that
+     * returns a key for each item in `$list`.
+     * @return array
      */
-    public static function ListToMap(array $list, string $key): array
+    public static function listToMap(array $list, $key): array
     {
-        return array_combine(
-            array_map(
-                function ($item) use ($key)
+        if ($key instanceof Closure)
+        {
+            $callback = $key;
+        }
+        else
+        {
+            $callback = function ($item) use ($key)
+            {
+                if (is_array($item))
                 {
-                    if (is_array($item))
-                    {
-                        return $item[$key];
-                    }
-                    elseif (is_object($item))
-                    {
-                        return $item->$key;
-                    }
-                    else
-                    {
-                        throw new UnexpectedValueException("Item is not an array or object");
-                    }
-                },
-                $list
-            ),
+                    return $item[$key];
+                }
+                elseif (is_object($item))
+                {
+                    return $item->$key;
+                }
+                else
+                {
+                    throw new UnexpectedValueException("Item is not an array or object");
+                }
+            };
+        }
+
+        return array_combine(
+            array_map($callback, $list),
             $list
         );
     }
 
     /**
-     * Format an array's keys and values
-     *
-     * @param array $array The array to format.
-     * @return string
+     * @deprecated Use {@see Format::array()} instead
      */
-    public static function ArrayToString(array $array): string
+    public static function arrayToString(array $array): string
     {
-        $indent = str_repeat(" ", 4);
-        $string = "";
-
-        foreach ($array as $key => $value)
-        {
-            if (!is_scalar($value))
-            {
-                $value = json_encode($value);
-            }
-
-            $value = str_replace("\r\n", "\n", (string)$value);
-            $value = str_replace("\n", PHP_EOL . $indent, $value, $count);
-
-            if ($count)
-            {
-                $value = PHP_EOL . $indent . $value;
-            }
-
-            $string .= sprintf("%s: %s\n", $key, $value);
-        }
-
-        return $string;
+        return Format::array($array);
     }
 
     /**
@@ -175,13 +165,20 @@ class Convert
      * @param array $array
      * @return string
      */
-    public static function ImplodeNotEmpty(string $separator, array $array): string
+    public static function sparseToString(string $separator, array $array): string
     {
-        return implode($separator, array_filter($array,
-            function ($value)
-            {
-                return strlen((string)$value) > 0;
-            }));
+        return implode($separator, array_filter(
+            $array,
+            function ($value) { return strlen((string)$value) > 0; }
+        ));
+    }
+
+    /**
+     * @deprecated Use {@see Convert::sparseToString()} instead
+     */
+    public static function implodeNotEmpty(string $separator, array $array): string
+    {
+        return self::sparseToString($separator, $array);
     }
 
     /**
@@ -190,7 +187,7 @@ class Convert
      * @param mixed $value
      * @return string|false Returns `false` if `$value` is not a scalar
      */
-    public static function ScalarToString($value)
+    public static function scalarToString($value)
     {
         if (is_scalar($value))
         {
@@ -205,13 +202,13 @@ class Convert
     /**
      * If a number is 1, return $singular, otherwise return $plural
      *
-     * @param int           $number
-     * @param string        $singular
-     * @param string|null   $plural         If `null`, `{$singular}s` will be used instead
-     * @param bool          $includeNumber  Return `$number $noun` instead of `$noun`
+     * @param int $number
+     * @param string $singular
+     * @param string|null $plural If `null`, `{$singular}s` will be used instead
+     * @param bool $includeNumber Return `$number $noun` instead of `$noun`
      * @return string
      */
-    public static function NumberToNoun(int $number, string $singular, string $plural = null, bool $includeNumber = false): string
+    public static function numberToNoun(int $number, string $singular, string $plural = null, bool $includeNumber = false): string
     {
         if ($number == 1)
         {
@@ -233,11 +230,12 @@ class Convert
     /**
      * Convert php.ini values like "128M" to bytes
      *
-     * @param string $size From the PHP FAQ: "The available options are K (for Kilobytes), M (for Megabytes) and G (for
-     * Gigabytes), and are all case-insensitive."
+     * @param string $size From the PHP FAQ: "The available options are K (for
+     * Kilobytes), M (for Megabytes) and G (for Gigabytes), and are all
+     * case-insensitive."
      * @return int
      */
-    public static function SizeToBytes(string $size): int
+    public static function sizeToBytes(string $size): int
     {
         if (!preg_match('/^(.+?)([KMG]?)$/', strtoupper($size), $match) || !is_numeric($match[1]))
         {
@@ -250,15 +248,22 @@ class Convert
     }
 
     /**
-     * Generate a unique non-crypto hash
+     * Convert the given strings and Stringables to an array of strings
      *
-     * @param string[] $text One or more strings to hash.
-     * @return string
+     * @param array<int|string,string|Stringable> $value
+     * @return string[]
      */
-    public static function Hash(string...$text): string
+    public static function toStrings(...$value): array
     {
-        // xxHash isn't supported until PHP 8.1, so MD5 is the best fit
-        return hash("md5", implode("\000", $text));
+        return array_map(function ($string) { return (string)$string; }, $value);
+    }
+
+    /**
+     * @deprecated Use {@see Generate::hash()} instead
+     */
+    public static function hash(...$value): string
+    {
+        return Generate::hash(...$value);
     }
 
     /**
@@ -267,12 +272,20 @@ class Convert
      * @param string $text The identifier to convert.
      * @return string
      */
-    public static function IdentifierToSnakeCase(string $text): string
+    public static function toSnakeCase(string $text): string
     {
         $text = preg_replace("/[^[:alnum:]]+/", "_", $text);
         $text = preg_replace("/([[:lower:]])([[:upper:]])/", '$1_$2', $text);
 
         return strtolower($text);
+    }
+
+    /**
+     * @deprecated Use {@see Convert::toSnakeCase()} instead
+     */
+    public static function identifierToSnakeCase(string $text): string
+    {
+        return self::toSnakeCase($text);
     }
 
     /**
@@ -303,7 +316,7 @@ class Convert
      * @param bool $trim If true, remove leading and trailing whitespace.
      * @return string
      */
-    public static function Normalise(
+    public static function toNormal(
         string $text,
         bool $toUpper         = true,
         ?string $stripPattern = null,
@@ -343,6 +356,20 @@ class Convert
     }
 
     /**
+     * @deprecated Use {@see Convert::toNormal()} instead
+     */
+    public static function normalise(
+        string $text,
+        bool $toUpper         = true,
+        ?string $stripPattern = null,
+        ?string $spacePattern = "[^a-zA-Z0-9]",
+        bool $trim            = true
+    )
+    {
+        return self::toNormal($text, $toUpper, $stripPattern, $spacePattern, $trim);
+    }
+
+    /**
      * A wrapper for get_object_vars
      *
      * Because you can't exclude `private` and `protected` properties from
@@ -351,12 +378,12 @@ class Convert
      * @param object $object
      * @return array
      */
-    public static function ObjectToArray(object $object)
+    public static function objectToArray(object $object)
     {
         return get_object_vars($object);
     }
 
-    private static function _HttpBuildQuery(
+    private static function _dataToQuery(
         array $data,
         bool $forceNumericKeys,
         string & $query = null,
@@ -384,7 +411,7 @@ class Convert
 
                 continue;
             }
-            elseif (!$forceNumericKeys && Test::IsListArray($value))
+            elseif (!$forceNumericKeys && Test::isListArray($value))
             {
                 $_format = "[]";
             }
@@ -393,7 +420,7 @@ class Convert
                 $_format = "[%s]";
             }
 
-            self::_HttpBuildQuery($value, $forceNumericKeys, $query, $name . $_name, $_format);
+            self::_dataToQuery($value, $forceNumericKeys, $query, $name . $_name, $_format);
         }
 
         return $query;
@@ -406,28 +433,25 @@ class Convert
      * @param bool $forceNumericKeys
      * @return string
      */
-    public static function HttpBuildQuery(array $data, bool $forceNumericKeys = false): string
+    public static function dataToQuery(array $data, bool $forceNumericKeys = false): string
     {
-        return self::_HttpBuildQuery($data, $forceNumericKeys);
+        return self::_dataToQuery($data, $forceNumericKeys);
     }
 
     /**
-     * Returns a hash that uniquely identifies a Closure (or any other callable)
-     *
-     * @param callable $closure
-     * @return string
+     * @deprecated Use {@see Convert::dataToQuery()} instead
      */
-    public static function ClosureToHash(callable $closure): string
+    public static function httpBuildQuery(array $data, bool $forceNumericKeys = false): string
     {
-        if (!($closure instanceof Closure))
-        {
-            $closure = Closure::fromCallable($closure);
-        }
+        return self::dataToQuery($data, $forceNumericKeys);
+    }
 
-        $closure = new ReflectionFunction($closure);
-
-        // ReflectionFunction::__toString() is unambiguous and consistent
-        return self::Hash((string)$closure);
+    /**
+     * @deprecated Use {@see Generate::closureHash()} instead
+     */
+    public static function closureToHash(callable $closure): string
+    {
+        return Generate::closureHash($closure);
     }
 }
 

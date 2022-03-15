@@ -14,7 +14,7 @@ use UnexpectedValueException;
  */
 class Assert
 {
-    private static function ThrowUnexpectedValue(string $message, ?string $name): void
+    private static function throwUnexpectedValue(string $message, ?string $name): void
     {
         $message = str_replace("{}", is_null($name) ? "value" : "'$name'", $message);
         throw new UnexpectedValueException($message);
@@ -27,11 +27,11 @@ class Assert
      * @return void
      * @throws UnexpectedValueException
      */
-    public static function NotNull($value, string $name = null): void
+    public static function notNull($value, string $name = null): void
     {
         if (is_null($value))
         {
-            self::ThrowUnexpectedValue("{} cannot be null", $name);
+            self::throwUnexpectedValue("{} cannot be null", $name);
         }
     }
 
@@ -42,11 +42,11 @@ class Assert
      * @return void
      * @throws UnexpectedValueException
      */
-    public static function NotEmpty($value, string $name = null): void
+    public static function notEmpty($value, string $name = null): void
     {
         if (empty($value))
         {
-            self::ThrowUnexpectedValue("{} cannot be empty", $name);
+            self::throwUnexpectedValue("{} cannot be empty", $name);
         }
     }
 
@@ -58,11 +58,11 @@ class Assert
      * @return void
      * @throws UnexpectedValueException
      */
-    public static function PregMatch(?string $value, string $pattern, string $name = null): void
+    public static function pregMatch(?string $value, string $pattern, string $name = null): void
     {
         if (is_null($value) || !preg_match($pattern, $value))
         {
-            self::ThrowUnexpectedValue("{} must match pattern '$pattern'", $name);
+            self::throwUnexpectedValue("{} must match pattern '$pattern'", $name);
         }
     }
 
@@ -74,11 +74,11 @@ class Assert
      * @return void
      * @throws UnexpectedValueException
      */
-    public static function ExactStringLength($value, int $length, string $name = null): void
+    public static function exactStringLength($value, int $length, string $name = null): void
     {
         if (!is_string($value) || strlen($value) != $length)
         {
-            self::ThrowUnexpectedValue("{} must be a string with length $length", $name);
+            self::throwUnexpectedValue("{} must be a string with length $length", $name);
         }
     }
 
@@ -90,11 +90,11 @@ class Assert
      * @return void
      * @throws UnexpectedValueException
      */
-    public static function MinimumStringLength($value, int $minLength, string $name = null): void
+    public static function minimumStringLength($value, int $minLength, string $name = null): void
     {
         if (!is_string($value) || strlen($value) < $minLength)
         {
-            self::ThrowUnexpectedValue("{} must be a string with length at least $minLength", $name);
+            self::throwUnexpectedValue("{} must be a string with length at least $minLength", $name);
         }
     }
 
@@ -105,11 +105,11 @@ class Assert
      * @return void
      * @throws UnexpectedValueException
      */
-    public static function IsArray($value, string $name = null): void
+    public static function isArray($value, string $name = null): void
     {
         if (!is_array($value))
         {
-            self::ThrowUnexpectedValue("{} must be an array", $name);
+            self::throwUnexpectedValue("{} must be an array", $name);
         }
     }
 
@@ -120,16 +120,16 @@ class Assert
      * @return void
      * @throws UnexpectedValueException
      */
-    public static function IsIntArray($value, string $name = null): void
+    public static function isIntArray($value, string $name = null): void
     {
-        if (!Test::IsIndexedArray($value) ||
+        if (!Test::isIndexedArray($value) ||
             count(array_filter($value,
                 function ($v)
                 {
                     return !is_int($v);
                 })))
         {
-            self::ThrowUnexpectedValue("{} must be an integer array", $name);
+            self::throwUnexpectedValue("{} must be an integer array", $name);
         }
     }
 
@@ -138,7 +138,7 @@ class Assert
      * @return void
      * @throws RuntimeException
      */
-    public static function SapiIsCli(): void
+    public static function sapiIsCli(): void
     {
         if (PHP_SAPI != "cli")
         {
@@ -151,7 +151,7 @@ class Assert
      * @return void
      * @throws RuntimeException
      */
-    public static function LocaleIsUtf8(): void
+    public static function localeIsUtf8(): void
     {
         if (($locale = setlocale(LC_CTYPE, "")) === false)
         {

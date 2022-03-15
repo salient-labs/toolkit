@@ -1,10 +1,12 @@
 #!/usr/bin/env php
 <?php
 
-namespace Lkrms\Tests\Mixin;
+namespace Lkrms\Tests\Template;
 
 use Lkrms\Err;
-use Lkrms\Mixin\TSettable;
+use Lkrms\Template\IGettable;
+use Lkrms\Template\ISettable;
+use Lkrms\Template\TSettable;
 use RuntimeException;
 use Throwable;
 use UnexpectedValueException;
@@ -14,11 +16,11 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 
 Err::HandleErrors();
 
-class A
+class A implements IGettable, ISettable
 {
     use TSettable;
 
-    protected function _GetSettable()
+    public function getSettable(): ?array
     {
         return ['Id', 'Name'];
     }
@@ -43,21 +45,24 @@ class B extends A
         $this->DataModified = time();
     }
 
-    protected function _GetMeta($isset = false)
+    protected function _GetMeta()
     {
-        return $isset ? isset($this->Meta) : $this->Meta;
+        return $this->Meta;
     }
 
-    protected function _SetMeta($value, $unset = false)
+    protected function _IssetMeta()
     {
-        if ($unset)
-        {
-            $this->Meta = null;
-        }
-        else
-        {
-            $this->Meta = $value;
-        }
+        return isset($this->Meta);
+    }
+
+    protected function _SetMeta($value)
+    {
+        $this->Meta = $value;
+    }
+
+    protected function _UnsetMeta()
+    {
+        $this->Meta = null;
     }
 
     private $Data = [];
@@ -69,11 +74,11 @@ class B extends A
     private $DoNotEven;
 }
 
-class C
+class C implements IGettable, ISettable
 {
     use TSettable;
 
-    protected function _GetGettable()
+    public function getGettable(): ?array
     {
         return [];
     }

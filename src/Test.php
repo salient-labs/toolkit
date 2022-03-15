@@ -27,7 +27,7 @@ class Test
      * @param null|int $mask The mask being applied to `$value` and `$flag`.
      * @return bool
      */
-    public static function IsFlagSet(int $value, int $flag, ?int $mask = null): bool
+    public static function isFlagSet(int $value, int $flag, ?int $mask = null): bool
     {
         return ($value & ($mask ?? $flag)) === $flag;
     }
@@ -41,7 +41,7 @@ class Test
      * @param int $mask The mask being applied to `$value`.
      * @return bool
      */
-    public static function IsOneFlagSet(int $value, int $mask): bool
+    public static function isOneFlagSet(int $value, int $mask): bool
     {
         return substr_count(decbin($value & $mask), "1") === 1;
     }
@@ -52,7 +52,7 @@ class Test
      * @param mixed $value
      * @return bool
      */
-    public static function IsListArray($value): bool
+    public static function isListArray($value): bool
     {
         return is_array($value) &&
             (empty($value) ||
@@ -65,7 +65,7 @@ class Test
      * @param mixed $value
      * @return bool
      */
-    public static function IsAssociativeArray($value): bool
+    public static function isAssociativeArray($value): bool
     {
         return is_array($value) &&
             count(array_filter(array_keys($value), "is_string")) > 0;
@@ -77,10 +77,10 @@ class Test
      * @param mixed $value
      * @return bool
      */
-    public static function IsIndexedArray($value): bool
+    public static function isIndexedArray($value): bool
     {
         return is_array($value) &&
-            !empty($value) && !self::IsAssociativeArray($value);
+            !empty($value) && !self::isAssociativeArray($value);
     }
 
     /**
@@ -90,7 +90,7 @@ class Test
      * @param resource $stream
      * @return bool
      */
-    public static function IsSameStream($value, $stream): bool
+    public static function isSameStream($value, $stream): bool
     {
         try
         {

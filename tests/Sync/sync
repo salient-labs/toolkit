@@ -1,0 +1,63 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests\Sync;
+
+use Lkrms\Console;
+use Lkrms\Err;
+use Lkrms\Ioc\Ioc;
+use Lkrms\Sync\SyncEntityFuzzyResolver;
+use Lkrms\Sync\SyncEntityProvider;
+use Lkrms\Sync\SyncEntityResolver;
+use Lkrms\Tests\Sync\Api\JsonPlaceholderApi;
+use Lkrms\Tests\Sync\Entity\Post;
+use Lkrms\Tests\Sync\Entity\PostProvider;
+use Lkrms\Tests\Sync\Entity\User;
+use Lkrms\Tests\Sync\Entity\UserProvider;
+
+$loader = require (__DIR__ . "/../../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
+
+Err::HandleErrors();
+
+// Register JsonPlaceholderApi as the provider for Post and User objects
+Ioc::register(PostProvider::class, JsonPlaceholderApi::class);
+Ioc::register(UserProvider::class, JsonPlaceholderApi::class);
+
+// When creating Post instances from API data, instantiate a custom subclass
+// instead of a standard Post
+Ioc::register(Post::class, CustomEntity\Post::class);
+
+$postApi = new SyncEntityProvider(Post::class);
+$userApi = new SyncEntityProvider(User::class);
+
+$posts = $postApi->list();
+Console::Info("Posts retrieved:", count($posts));
+
+$resolver       = new SyncEntityResolver($userApi, "Name");
+$fuzzyResolver  = new SyncEntityFuzzyResolver($userApi, "Name", null, null, 0.6);
+$fuzzyResolver2 = new SyncEntityFuzzyResolver($userApi, "Name", null, SyncEntityFuzzyResolver::ALGORITHM_SIMILAR_TEXT, 0.6);
+
+$byName          = $resolver->getByName("Leanne Graham");
+$closestByName1a = $fuzzyResolver->getByName("leanne graham", $uncertainty1a);
+$closestByName1b = $fuzzyResolver->getByName("GRAHAM, leanne", $uncertainty1b);
+$closestByName1c = $fuzzyResolver->getByName("Lee-Anna Graham", $uncertainty1c);
+$closestByName2a = $fuzzyResolver2->getByName("leanne graham", $uncertainty2a);
+$closestByName2b = $fuzzyResolver2->getByName("GRAHAM, leanne", $uncertainty2b);
+$closestByName2c = $fuzzyResolver2->getByName("Lee-Anna Graham", $uncertainty2c);
+
+print_r([
+    'byName'          => $byName->Name ?? null,
+    'closestByName1a' => $closestByName1a->Name ?? null,
+    'closestByName1b' => $closestByName1b->Name ?? null,
+    'closestByName1c' => $closestByName1c->Name ?? null,
+    'closestByName2a' => $closestByName2a->Name ?? null,
+    'closestByName2b' => $closestByName2b->Name ?? null,
+    'closestByName2c' => $closestByName2c->Name ?? null,
+    'uncertainty1a'   => $uncertainty1a,
+    'uncertainty1b'   => $uncertainty1b,
+    'uncertainty1c'   => $uncertainty1c,
+    'uncertainty2a'   => $uncertainty2a,
+    'uncertainty2b'   => $uncertainty2b,
+    'uncertainty2c'   => $uncertainty2c,
+]);

@@ -95,8 +95,8 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         $this->AddColour    = !is_null($addColour) ? $addColour : $this->IsTty;
         $this->AddTimestamp = !is_null($addTimestamp) ? $addTimestamp : !$this->IsTty;
 
-        $this->IsStdout = Test::IsSameStream($stream, STDOUT);
-        $this->IsStderr = Test::IsSameStream($stream, STDERR);
+        $this->IsStdout = Test::isSameStream($stream, STDOUT);
+        $this->IsStderr = Test::isSameStream($stream, STDERR);
 
         if (!is_null($timestamp))
         {

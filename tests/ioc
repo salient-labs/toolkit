@@ -1,0 +1,161 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\Err;
+use Lkrms\Ioc\Ioc;
+use RuntimeException;
+use UnexpectedValueException;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Err::HandleErrors();
+
+class IdGenerator
+{
+    private $counters = [];
+
+    public function getNext(string $type)
+    {
+        $this->counters[$type] = $this->counters[$type] ?? 100 * (count($this->counters) + 1);
+
+        return $this->counters[$type]++;
+    }
+}
+
+class User
+{
+    public $id;
+
+    public function __construct(IdGenerator $idGenerator)
+    {
+        $this->id = $idGenerator->getNext(__CLASS__);
+    }
+}
+
+class Staff extends User
+{
+    public $staffId;
+
+    public function __construct(IdGenerator $idGenerator)
+    {
+        parent::__construct($idGenerator);
+        $this->staffId = $idGenerator->getNext(__CLASS__);
+    }
+}
+
+class DepartmentHead extends Staff
+{
+    public $department;
+
+    public function __construct(IdGenerator $idGenerator, Department $department)
+    {
+        parent::__construct($idGenerator);
+        $this->department = $department;
+    }
+}
+
+class Department
+{
+    public $id;
+
+    public $name;
+
+    public function __construct(IdGenerator $idGenerator, $name = null)
+    {
+        $this->id   = $idGenerator->getNext(__CLASS__);
+        $this->name = $name;
+    }
+}
+
+class DepartmentStaff
+{
+    public $user;
+
+    public $department;
+
+    public $departmentHead;
+
+    // Parameter order is a workaround for
+    // https://github.com/Level-2/Dice/issues/200
+    public function __construct(User $user, DepartmentHead $departmentHead, Department $department)
+    {
+        $this->user           = $user;
+        $this->department     = $department;
+        $this->departmentHead = $departmentHead;
+    }
+}
+
+$exceptions = [];
+
+Ioc::registerSingleton(IdGenerator::class);
+
+// Create one 'Department' per 'DepartmentStaff'
+Ioc::register(DepartmentStaff::class, null, null, [Department::class]);
+
+// Give 'Department' instances a default name
+Ioc::register(Department::class, null, ["<auto>"]);
+
+try
+{
+    // Should throw an exception for trying to substitute a 'shareInstances'
+    // dependency
+    Ioc::registerFor(DepartmentStaff::class, Department::class, "SpecialDepartment");
+}
+catch (UnexpectedValueException $ex)
+{
+    $exceptions[] = $ex;
+}
+
+try
+{
+    // Should throw an exception for trying to pop from an empty stack
+    Ioc::pop();
+}
+catch (RuntimeException $ex)
+{
+    $exceptions[] = $ex;
+}
+
+// Create 'Staff' instead of 'User' instances when creating 'DepartmentStaff'
+Ioc::registerFor(DepartmentStaff::class, User::class, Staff::class);
+
+// $user1 should be a 'User' instance
+$user1 = Ioc::create(User::class);
+
+// $user2 should be a 'Staff' instance
+Ioc::push();
+Ioc::register(User::class, Staff::class);
+$user2 = Ioc::create(User::class);
+Ioc::pop();
+
+// $user3 should be a 'User' instance
+$user3 = Ioc::create(User::class);
+
+// User, Staff and Department IDs should all increment
+$exec1 = Ioc::create(DepartmentHead::class);
+$exec2 = Ioc::create(DepartmentHead::class);
+
+// Department names should be applied to separate instances
+$dept1 = Ioc::create(Department::class, ["English"]);
+$dept2 = Ioc::create(Department::class, ["Mathematics"]);
+
+// One department instance should be created per object tree
+$deptStaff1 = Ioc::create(DepartmentStaff::class);
+$deptStaff2 = Ioc::create(DepartmentStaff::class);
+
+print_r([
+    "exceptions"  => $exceptions,
+    "idGenerator" => Ioc::create(IdGenerator::class),
+    "user1"       => $user1,
+    "user2"       => $user2,
+    "user3"       => $user3,
+    "exec1"       => $exec1,
+    "exec2"       => $exec2,
+    "dept1"       => $dept1,
+    "dept2"       => $dept2,
+    "deptStaff1"  => $deptStaff1,
+    "deptStaff2"  => $deptStaff2,
+]);

@@ -61,16 +61,16 @@ class CurlerException extends Exception
         $string[] = parent::__toString();
         $string[] = implode("\n", [
             "Response:",
-            Convert::ArrayToString($this->ResponseHeaders) ?: "<no headers>",
+            Convert::arrayToString($this->ResponseHeaders) ?: "<no headers>",
             is_null($this->Response) ? "<response body not available>" : ($this->Response ?: "<empty response body>"),
         ]);
         $string[] = implode("\n", [
             "cURL info:",
-            Convert::ArrayToString($this->CurlInfo)
+            Convert::arrayToString($this->CurlInfo)
         ]);
         $string[] = implode("\n", [
             "Request:",
-            is_array($this->RequestData) ? Convert::ArrayToString($this->RequestData) : $this->RequestData
+            is_array($this->RequestData) ? Convert::arrayToString($this->RequestData) : $this->RequestData
         ]);
 
         return implode("\n\n", $string);

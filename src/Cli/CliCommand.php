@@ -387,7 +387,7 @@ abstract class CliCommand
                 $options .= ("\n  _" . implode(", ", $line) . "_"
                     . str_replace($valueName, "__" . $valueName . "__", (array_pop($value) ?: ""))
                     . ($option->Description ? "\n    " . $option->Description : "")
-                    . ((!$option->IsFlag && $option->DefaultValue) ? $sep . "default: ___" . implode(",", Convert::AnyToArray($option->DefaultValue)) . "___" : "")
+                    . ((!$option->IsFlag && $option->DefaultValue) ? $sep . "default: ___" . implode(",", Convert::anyToArray($option->DefaultValue)) . "___" : "")
                     . ($option->AllowedValues ? $sep . "options:" . $sep . "- _" . implode("_" . $sep . "- _", $option->AllowedValues) . "_" : "")) . "\n";
             }
         }
@@ -511,7 +511,7 @@ EOF;
 
             if (isset($merged[$key]))
             {
-                $merged[$key] = array_merge(Convert::AnyToArray($merged[$key]), Convert::AnyToArray($value));
+                $merged[$key] = array_merge(Convert::anyToArray($merged[$key]), Convert::anyToArray($value));
             }
             else
             {
@@ -537,9 +537,9 @@ EOF;
                 $this->optionError("{$option->DisplayName} cannot be used multiple times");
             }
 
-            if (!is_null($option->AllowedValues) && !empty($invalid = array_diff(Convert::AnyToArray($value), $option->AllowedValues)))
+            if (!is_null($option->AllowedValues) && !empty($invalid = array_diff(Convert::anyToArray($value), $option->AllowedValues)))
             {
-                $this->optionError("invalid {$option->DisplayName} " . Convert::NumberToNoun(count($invalid), "value") . ": " . implode(", ", $invalid));
+                $this->optionError("invalid {$option->DisplayName} " . Convert::numberToNoun(count($invalid), "value") . ": " . implode(", ", $invalid));
             }
         }
 
@@ -558,11 +558,11 @@ EOF;
 
                 if ($option->IsFlag && $option->MultipleAllowed)
                 {
-                    $value = is_null($value) ? 0 : count(Convert::AnyToArray($value));
+                    $value = is_null($value) ? 0 : count(Convert::anyToArray($value));
                 }
                 elseif ($option->MultipleAllowed)
                 {
-                    $value = is_null($value) ? [] : Convert::AnyToArray($value);
+                    $value = is_null($value) ? [] : Convert::anyToArray($value);
                 }
 
                 $option->setValue($value);

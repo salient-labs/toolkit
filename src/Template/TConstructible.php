@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Mixin;
+namespace Lkrms\Template;
 
 use Lkrms\Convert;
+use Lkrms\Ioc\Ioc;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
@@ -23,7 +24,7 @@ trait TConstructible
      * The constructor (if any) is invoked with parameters taken from `$array`.
      * If `$array` values remain, they are assigned to public properties. If
      * further values remain and the class implements {@see IExtensible}, they
-     * are assigned via {@see IExtensible::SetMetaProperty()}.
+     * are assigned via {@see IExtensible::setMetaProperty()}.
      *
      * Array keys, constructor parameters and public property names are
      * normalised for comparison if necessary.
@@ -36,14 +37,20 @@ trait TConstructible
      */
     public static function From(array $array)
     {
-        $class = new ReflectionClass(static::class);
+        /**
+         * @todo Reimplement with caching
+         */
+
+        $class = new ReflectionClass(Ioc::resolve(static::class));
 
         $getName = function ($reflection) { return $reflection->name; };
-        $mapFrom = function ($name) { return Convert::IdentifierToSnakeCase($name); };
+        $mapFrom = function ($name) { return Convert::identifierToSnakeCase($name); };
 
         // $arrayMap: normalised_name => ORIGINAL_NAME
         $keys     = array_keys($array);
         $arrayMap = array_combine(array_map($mapFrom, $keys), $keys);
+
+        $args = null;
 
         if ($constructor = $class->getConstructor())
         {
@@ -91,13 +98,9 @@ trait TConstructible
                     throw new UnexpectedValueException("No value for required parameter '{$param->name}' in {$class->name}::{$constructor->name}()");
                 }
             }
+        }
 
-            $obj = $class->newInstanceArgs($args);
-        }
-        else
-        {
-            $obj = $class->newInstanceWithoutConstructor();
-        }
+        $obj = Ioc::create(static::class, $args);
 
         if (empty($array))
         {

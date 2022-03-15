@@ -35,7 +35,7 @@ SQL
      */
     private static function GetKey($key): string
     {
-        if (Test::IsIndexedArray($key))
+        if (Test::isIndexedArray($key))
         {
             return implode("/", $key);
         }

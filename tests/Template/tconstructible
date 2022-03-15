@@ -1,12 +1,12 @@
 #!/usr/bin/env php
 <?php
 
-namespace Lkrms\Tests\Mixin;
+namespace Lkrms\Tests\Template;
 
 use Lkrms\Err;
-use Lkrms\Mixin\IExtensible;
-use Lkrms\Mixin\TConstructible;
-use Lkrms\Mixin\TExtensible;
+use Lkrms\Template\IExtensible;
+use Lkrms\Template\TConstructible;
+use Lkrms\Template\TExtensible;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
@@ -42,7 +42,7 @@ $b = B::From([
 $a_id   = $a->Id;
 $a_name = $a->Name;
 $a_data = $a->Data;
-$a_meta = $a->GetMetaProperties();
+$a_meta = $a->getMetaProperties();
 
 $b_id   = $b->Id;
 $b_name = $b->Name;

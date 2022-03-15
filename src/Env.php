@@ -166,7 +166,7 @@ class Env
 
     public static function GetMemoryLimit(): int
     {
-        return Convert::SizeToBytes(ini_get('memory_limit') ?: 0);
+        return Convert::sizeToBytes(ini_get('memory_limit') ?: 0);
     }
 
     public static function GetMemoryUsagePercent($precision = 2): float

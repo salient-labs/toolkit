@@ -8,7 +8,7 @@ namespace Lkrms\Template;
  * An abstract singleton class
  *
  * @package Lkrms
- * @see SingletonTrait
+ * @see TSingleton
  */
 abstract class Singleton
 {

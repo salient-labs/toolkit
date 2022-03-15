@@ -6,8 +6,9 @@ namespace Lkrms\Cli;
 
 use Lkrms\Assert;
 use Lkrms\Convert;
-use Lkrms\Mixin\TConstructible;
-use Lkrms\Mixin\TGettable;
+use Lkrms\Template\IGettable;
+use Lkrms\Template\TConstructible;
+use Lkrms\Template\TGettable;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -15,7 +16,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class CliOption
+class CliOption implements IGettable
 {
     use TConstructible, TGettable;
 
@@ -127,12 +128,12 @@ class CliOption
 
         if (!is_null($this->Long))
         {
-            Assert::PregMatch($long, "/^[a-z0-9][-a-z0-9_]+\$/i", "long");
+            Assert::pregMatch($long, "/^[a-z0-9][-a-z0-9_]+\$/i", "long");
         }
 
         if (!is_null($this->Short))
         {
-            Assert::PregMatch($short, "/^[a-z0-9]\$/i", "short");
+            Assert::pregMatch($short, "/^[a-z0-9]\$/i", "short");
         }
 
         $this->Key             = $this->Short . "|" . $this->Long;
@@ -159,11 +160,11 @@ class CliOption
         {
             if ($this->MultipleAllowed)
             {
-                $this->DefaultValue = Convert::AnyToArray($this->DefaultValue);
+                $this->DefaultValue = Convert::anyToArray($this->DefaultValue);
                 array_walk($this->DefaultValue,
                     function (&$value)
                     {
-                        if (($default = Convert::ScalarToString($value)) === false)
+                        if (($default = Convert::scalarToString($value)) === false)
                         {
                             throw new UnexpectedValueException("defaultValue must be a scalar or an array of scalars");
                         }
@@ -173,7 +174,7 @@ class CliOption
             }
             else
             {
-                if (($default = Convert::ScalarToString($this->DefaultValue)) === false)
+                if (($default = Convert::scalarToString($this->DefaultValue)) === false)
                 {
                     throw new UnexpectedValueException("defaultValue must be a scalar");
                 }
@@ -184,7 +185,7 @@ class CliOption
 
         if ($optionType == CliOptionType::ONE_OF)
         {
-            Assert::NotEmpty($allowedValues, "allowedValues");
+            Assert::notEmpty($allowedValues, "allowedValues");
             $this->AllowedValues = $allowedValues;
         }
     }

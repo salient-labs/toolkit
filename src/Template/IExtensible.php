@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Mixin;
+namespace Lkrms\Template;
 
 /**
  * Implements arbitrary property storage
@@ -12,15 +12,15 @@ namespace Lkrms\Mixin;
  */
 interface IExtensible
 {
-    public function SetMetaProperty(string $name, $value): void;
+    public function setMetaProperty(string $name, $value): void;
 
-    public function GetMetaProperty(string $name);
+    public function getMetaProperty(string $name);
 
-    public function IsMetaPropertySet(string $name): bool;
+    public function isMetaPropertySet(string $name): bool;
 
-    public function UnsetMetaProperty(string $name): void;
+    public function unsetMetaProperty(string $name): void;
 
-    public function GetMetaProperties(): array;
+    public function getMetaProperties(): array;
 
     public function __set(string $name, mixed $value): void;
 

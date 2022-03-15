@@ -51,7 +51,7 @@ class CachingCurler extends Curler
                 $headers = ($this->HeadersCallback)($headers);
             }
 
-            $key    = "curler/" . $url . "/" . Convert::Hash(implode("\000", $headers));
+            $key    = "curler/" . $url . "/" . Convert::hash(implode("\000", $headers));
             $result = Cache::Get($key);
 
             if ($result === false)

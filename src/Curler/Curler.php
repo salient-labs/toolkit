@@ -173,7 +173,7 @@ class Curler
         }
         else
         {
-            $query = "?" . Convert::HttpBuildQuery($queryString, $this->ForceNumericKeys);
+            $query = "?" . Convert::httpBuildQuery($queryString, $this->ForceNumericKeys);
         }
 
         $this->CreateHandle($this->BaseUrl . $query);
@@ -243,7 +243,7 @@ class Curler
             }
             else
             {
-                $query = Convert::HttpBuildQuery($data, $this->ForceNumericKeys);
+                $query = Convert::httpBuildQuery($data, $this->ForceNumericKeys);
             }
         }
 
@@ -729,9 +729,9 @@ class Curler
     {
         if (empty($path))
         {
-            $entities = array_merge($entities, Convert::AnyToList($data));
+            $entities = array_merge($entities, Convert::anyToList($data));
         }
-        elseif (Test::IsListArray($data))
+        elseif (Test::isListArray($data))
         {
             foreach ($data as $nested)
             {
@@ -752,7 +752,7 @@ class Curler
 
     public static function WalkGraphQL(array & $data, callable $filter = null)
     {
-        if (Test::IsListArray($data))
+        if (Test::isListArray($data))
         {
             array_walk($data, function (&$data) use ($filter)
             {

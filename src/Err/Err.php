@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Err;
 
-use RuntimeException;
 use Whoops\Handler\HandlerInterface;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
@@ -31,22 +30,22 @@ class Err
      */
     public static function HandleErrors($handler = null, $silenceInPaths = null)
     {
-        if (self::$Whoops)
+        if (!self::$Whoops)
         {
-            throw new RuntimeException("Error handling already initialised");
-        }
+            self::$Whoops = new Run();
 
-        self::$Whoops = new Run();
-
-        if (PHP_SAPI == "cli")
-        {
-            self::$Whoops->pushHandler(new CliHandler());
-        }
-        else
-        {
-            // @todo: log errors via Console here too (i.e. extend
-            // PrettyPageHandler)
-            self::$Whoops->pushHandler(new PrettyPageHandler());
+            if (PHP_SAPI == "cli")
+            {
+                self::$Whoops->pushHandler(new CliHandler());
+            }
+            else
+            {
+                /**
+                 * @todo Log non-CLI errors via Console too (i.e. extend
+                 * PrettyPageHandler)
+                 */
+                self::$Whoops->pushHandler(new PrettyPageHandler());
+            }
         }
 
         if ($handler)

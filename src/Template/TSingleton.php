@@ -10,7 +10,7 @@ namespace Lkrms\Template;
  * @package Lkrms
  * @see Singleton
  */
-trait SingletonTrait
+trait TSingleton
 {
     private static $Singletons = [];
 

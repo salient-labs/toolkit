@@ -3,14 +3,14 @@
 
 namespace Lkrms\Tests\Template;
 
-use Lkrms\Template\SingletonTrait;
+use Lkrms\Template\TSingleton;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 
 class A
 {
-    use SingletonTrait;
+    use TSingleton;
 }
 
 class B extends A
