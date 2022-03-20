@@ -46,6 +46,11 @@ class Console
     private static $TargetsChecked = false;
 
     /**
+     * @var array<string,int>
+     */
+    private static $LoggedOnce = [];
+
+    /**
      * @var int
      */
     private static $Warnings = 0;
@@ -242,10 +247,18 @@ class Console
             self::$LogTargets[] = $target;
         }
 
-        if (!$target instanceof NullTarget)
+        if (!($target instanceof NullTarget))
         {
             self::$Targets[] = $target;
         }
+    }
+
+    private static function CheckLoggedOnce(string $method, string $msg1, string $msg2): int
+    {
+        $hash = Convert::Hash($method, $msg1, $msg2);
+        self::$LoggedOnce[$hash] = self::$LoggedOnce[$hash] ?? 0;
+
+        return self::$LoggedOnce[$hash]++;
     }
 
     private static function Write(
@@ -364,9 +377,14 @@ class Console
             self::$GroupDepth++;
         }
 
-        self::Write(ConsoleLevel::NOTICE, $msg1, $msg2, ">>> ",
+        self::Write(
+            ConsoleLevel::NOTICE,
+            $msg1,
+            $msg2,
+            ">>> ",
             ConsoleColour::BOLD,
-            ConsoleColour::CYAN);
+            ConsoleColour::CYAN
+        );
     }
 
     /**
@@ -388,17 +406,21 @@ class Console
      * @param Throwable|null $ex
      * @param int $depth Passed to {@see Err::GetCaller()}. To print your
      * caller's name instead of your own, set `$depth` = 2.
-     * @return void
-     * @throws RuntimeException
      */
     public static function Debug(string $msg1, string $msg2 = null,
         Throwable $ex = null, int $depth = 0)
     {
         $caller = Err::GetCaller($depth);
-        self::Write(ConsoleLevel::DEBUG,
-            "{{$caller}} __" . $msg1 . "__", $msg2, "--- ",
+        self::Write(
+            ConsoleLevel::DEBUG,
+            "{{$caller}} __" . $msg1 . "__",
+            $msg2,
+            "--- ",
             ConsoleColour::DIM,
-            ConsoleColour::DIM, null, $ex);
+            ConsoleColour::DIM,
+            null,
+            $ex
+        );
     }
 
     /**
@@ -410,8 +432,16 @@ class Console
     public static function Log(string $msg1, string $msg2 = null,
         Throwable $ex = null)
     {
-        self::Write(ConsoleLevel::INFO, $msg1, $msg2, " -> ",
-            "", ConsoleColour::YELLOW, null, $ex);
+        self::Write(
+            ConsoleLevel::INFO,
+            $msg1,
+            $msg2,
+            " -> ",
+            "",
+            ConsoleColour::YELLOW,
+            null,
+            $ex
+        );
     }
 
     /**
@@ -423,8 +453,17 @@ class Console
     public static function LogProgress(string $msg1, string $msg2 = null,
         Throwable $ex = null)
     {
-        self::Write(ConsoleLevel::INFO, $msg1, $msg2, " -> ",
-            "", ConsoleColour::YELLOW, null, $ex, true);
+        self::Write(
+            ConsoleLevel::INFO,
+            $msg1,
+            $msg2,
+            " -> ",
+            "",
+            ConsoleColour::YELLOW,
+            null,
+            $ex,
+            true
+        );
     }
 
     /**
@@ -435,9 +474,16 @@ class Console
      */
     public static function Info(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
-        self::Write(ConsoleLevel::NOTICE, $msg1, $msg2, "==> ",
+        self::Write(
+            ConsoleLevel::NOTICE,
+            $msg1,
+            $msg2,
+            "==> ",
             ConsoleColour::BOLD,
-            ConsoleColour::CYAN, null, $ex);
+            ConsoleColour::CYAN,
+            null,
+            $ex
+        );
     }
 
     /**
@@ -449,9 +495,16 @@ class Console
     public static function Warn(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
         self::$Warnings++;
-        self::Write(ConsoleLevel::WARNING, $msg1, $msg2, "  ! ",
-            ConsoleColour::YELLOW . ConsoleColour::BOLD, "",
-            ConsoleColour::YELLOW . ConsoleColour::BOLD, $ex);
+        self::Write(
+            ConsoleLevel::WARNING,
+            $msg1,
+            $msg2,
+            "  ! ",
+            ConsoleColour::YELLOW . ConsoleColour::BOLD,
+            "",
+            ConsoleColour::YELLOW . ConsoleColour::BOLD,
+            $ex
+        );
     }
 
     /**
@@ -463,9 +516,16 @@ class Console
     public static function Error(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
         self::$Errors++;
-        self::Write(ConsoleLevel::ERROR, $msg1, $msg2, " !! ",
-            ConsoleColour::RED . ConsoleColour::BOLD, "",
-            ConsoleColour::RED . ConsoleColour::BOLD, $ex);
+        self::Write(
+            ConsoleLevel::ERROR,
+            $msg1,
+            $msg2,
+            " !! ",
+            ConsoleColour::RED . ConsoleColour::BOLD,
+            "",
+            ConsoleColour::RED . ConsoleColour::BOLD,
+            $ex
+        );
     }
 
     public static function Exception(Throwable $exception, bool $willQuit = false)
@@ -502,6 +562,82 @@ class Console
             null,
             $exception
         );
+    }
+
+    /**
+     * Print "--- {CALLER} $msg1 $msg2" unless already printed
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     * @param Throwable|null $ex
+     * @param int $depth
+     */
+    public static function DebugOnce(string $msg1, string $msg2 = null, Throwable $ex = null, int $depth = 0)
+    {
+        if (!self::CheckLoggedOnce(__METHOD__, $msg1, $msg2))
+        {
+            self::Debug($msg1, $msg2, $ex, $depth + 1);
+        }
+    }
+
+    /**
+     * Print " -> $msg1 $msg2" unless already printed
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     * @param Throwable|null $ex
+     */
+    public static function LogOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    {
+        if (!self::CheckLoggedOnce(__METHOD__, $msg1, $msg2))
+        {
+            self::Log($msg1, $msg2, $ex);
+        }
+    }
+
+    /**
+     * Print "==> $msg1 $msg2" unless already printed
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     * @param Throwable|null $ex
+     */
+    public static function InfoOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    {
+        if (!self::CheckLoggedOnce(__METHOD__, $msg1, $msg2))
+        {
+            self::Info($msg1, $msg2, $ex);
+        }
+    }
+
+    /**
+     * Print " :: $msg1 $msg2" unless already printed
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     * @param Throwable|null $ex
+     */
+    public static function WarnOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    {
+        if (!self::CheckLoggedOnce(__METHOD__, $msg1, $msg2))
+        {
+            self::Warn($msg1, $msg2, $ex);
+        }
+    }
+
+    /**
+     * Print " !! $msg1 $msg2" unless already printed
+     *
+     * @param string $msg1
+     * @param string|null $msg2
+     * @param Throwable|null $ex
+     */
+    public static function ErrorOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    {
+        if (!self::CheckLoggedOnce(__METHOD__, $msg1, $msg2))
+        {
+            self::Error($msg1, $msg2, $ex);
+        }
     }
 
     public static function GetWarnings(): int

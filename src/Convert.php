@@ -252,13 +252,13 @@ class Convert
     /**
      * Generate a unique non-crypto hash
      *
-     * @param string $string The string being hashed.
+     * @param string[] $text One or more strings to hash.
      * @return string
      */
-    public static function Hash(string $string): string
+    public static function Hash(string...$text): string
     {
         // xxHash isn't supported until PHP 8.1, so MD5 is the best fit
-        return hash("md5", $string);
+        return hash("md5", implode("\000", $text));
     }
 
     /**
@@ -405,7 +405,7 @@ class Convert
      */
     public static function ClosureToHash(callable $closure): string
     {
-        if (!$closure instanceof Closure)
+        if (!($closure instanceof Closure))
         {
             $closure = Closure::fromCallable($closure);
         }

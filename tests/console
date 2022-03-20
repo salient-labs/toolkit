@@ -46,3 +46,16 @@ for ($i = 0; $i < count($items); $i++)
 }
 
 Console::GroupEnd();
+
+$i = 0;
+
+while ($i++ < 5)
+{
+    Console::InfoOnce("This message is printed repeatedly",
+        "but it should only appear once");
+    Console::LogOnce("This message is printed repeatedly",
+        "but it should only appear once");
+    Console::DebugOnce("This message is printed repeatedly",
+        "but it should only appear once");
+}
+
