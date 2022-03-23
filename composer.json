@@ -7,7 +7,7 @@
         "php": ">=7.2",
         "lib-curl": "*",
         "psr/log": "^1.1",
-        "level-2/dice": "^4.0",
+        "lkrms/dice": "dev-main",
         "filp/whoops": "^2.14"
     },
     "suggest": {

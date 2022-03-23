@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "78b3c29f7c2793679e1d6230160bde10",
+    "content-hash": "7bc2f30184cb3c8e60a0edc2b9cab7d7",
     "packages": [
         {
             "name": "filp/whoops",
@@ -78,17 +78,17 @@
             "time": "2022-01-07T12:00:00+00:00"
         },
         {
-            "name": "level-2/dice",
-            "version": "4.0.3",
+            "name": "lkrms/dice",
+            "version": "dev-main",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Level-2/Dice.git",
-                "reference": "3e9a8548398c01e2527110c916a93f6efa17ac9c"
+                "url": "https://github.com/lkrms/Dice.git",
+                "reference": "50a8c9c01510194faa5ef72ed87f91e10e237623"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Level-2/Dice/zipball/3e9a8548398c01e2527110c916a93f6efa17ac9c",
-                "reference": "3e9a8548398c01e2527110c916a93f6efa17ac9c",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/50a8c9c01510194faa5ef72ed87f91e10e237623",
+                "reference": "50a8c9c01510194faa5ef72ed87f91e10e237623",
                 "shasum": ""
             },
             "require": {
@@ -97,6 +97,7 @@
             "require-dev": {
                 "phpunit/phpunit": "^6.5"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -107,13 +108,7 @@
             "license": [
                 "BSD-2-Clause"
             ],
-            "authors": [
-                {
-                    "name": "Tom Butler",
-                    "email": "tom@r.je"
-                }
-            ],
-            "description": "A minimalist Dependency injection container (DIC) for PHP. Please note: 3.0+ is only compatible with PHP 7.0. The 2.0 branch is compatbile with PHP 5.6.",
+            "description": "A minimalist Dependency injection container (DIC) for PHP. Forked from level-2/dice.",
             "homepage": "http://r.je/dice.html",
             "keywords": [
                 "dependency injection",
@@ -122,10 +117,9 @@
                 "ioc"
             ],
             "support": {
-                "issues": "https://github.com/Level-2/Dice/issues",
-                "source": "https://github.com/Level-2/Dice/tree/4.0.3"
+                "source": "https://github.com/lkrms/Dice/tree/main"
             },
-            "time": "2021-04-20T14:06:06+00:00"
+            "time": "2022-03-23T23:40:39+00:00"
         },
         {
             "name": "psr/log",
@@ -181,7 +175,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "lkrms/dice": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
