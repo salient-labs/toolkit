@@ -520,11 +520,11 @@ EOF;
 
                 if ($option->IsFlag && $option->MultipleAllowed)
                 {
-                    $value = count(Convert::AnyToArray($value));
+                    $value = is_null($value) ? 0 : count(Convert::AnyToArray($value));
                 }
                 elseif ($option->MultipleAllowed)
                 {
-                    $value = Convert::AnyToArray($value);
+                    $value = is_null($value) ? [] : Convert::AnyToArray($value);
                 }
 
                 $option->SetValue($value);
