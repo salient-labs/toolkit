@@ -210,15 +210,12 @@ abstract class CliCommand
      */
     private function addOption($option, array & $options = null, $hide = false)
     {
-        if (is_array($option))
+        if (!($option instanceof CliOption))
         {
             $option = CliOption::From($option);
         }
 
-        if (!is_null($options))
-        {
-            $options[] = $option;
-        }
+        $option->validate();
 
         list ($short, $long, $names) = [$option->Short, $option->Long, []];
 
@@ -235,6 +232,11 @@ abstract class CliCommand
         if (!empty(array_intersect($names, array_keys($this->OptionsByName))))
         {
             throw new UnexpectedValueException("Option names must be unique: " . implode(", ", $names));
+        }
+
+        if (!is_null($options))
+        {
+            $options[] = $option;
         }
 
         foreach ($names as $key)
@@ -387,7 +389,7 @@ abstract class CliCommand
                 $options .= ("\n  _" . implode(", ", $line) . "_"
                     . str_replace($valueName, "__" . $valueName . "__", (array_pop($value) ?: ""))
                     . ($option->Description ? "\n    " . $option->Description : "")
-                    . ((!$option->IsFlag && $option->DefaultValue) ? $sep . "default: ___" . implode(",", Convert::anyToArray($option->DefaultValue)) . "___" : "")
+                    . ((!$option->IsFlag && $option->DefaultValue) ? $sep . "default: ___" . implode(",", Convert::toArray($option->DefaultValue)) . "___" : "")
                     . ($option->AllowedValues ? $sep . "options:" . $sep . "- _" . implode("_" . $sep . "- _", $option->AllowedValues) . "_" : "")) . "\n";
             }
         }
@@ -511,7 +513,7 @@ EOF;
 
             if (isset($merged[$key]))
             {
-                $merged[$key] = array_merge(Convert::anyToArray($merged[$key]), Convert::anyToArray($value));
+                $merged[$key] = array_merge(Convert::toArray($merged[$key]), Convert::toArray($value));
             }
             else
             {
@@ -537,7 +539,7 @@ EOF;
                 $this->optionError("{$option->DisplayName} cannot be used multiple times");
             }
 
-            if (!is_null($option->AllowedValues) && !empty($invalid = array_diff(Convert::anyToArray($value), $option->AllowedValues)))
+            if (!is_null($option->AllowedValues) && !empty($invalid = array_diff(Convert::toArray($value), $option->AllowedValues)))
             {
                 $this->optionError("invalid {$option->DisplayName} " . Convert::numberToNoun(count($invalid), "value") . ": " . implode(", ", $invalid));
             }
@@ -558,11 +560,11 @@ EOF;
 
                 if ($option->IsFlag && $option->MultipleAllowed)
                 {
-                    $value = is_null($value) ? 0 : count(Convert::anyToArray($value));
+                    $value = is_null($value) ? 0 : count(Convert::toArray($value));
                 }
                 elseif ($option->MultipleAllowed)
                 {
-                    $value = is_null($value) ? [] : Convert::anyToArray($value);
+                    $value = is_null($value) ? [] : Convert::toArray($value);
                 }
 
                 $option->setValue($value);

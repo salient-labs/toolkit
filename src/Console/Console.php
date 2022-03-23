@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
-use Lkrms\Console\ConsoleTarget\NullTarget;
 use Lkrms\Console\ConsoleTarget\Stream;
 use Lkrms\Convert;
 use Lkrms\Env;
 use Lkrms\Err;
 use Lkrms\File;
+use Lkrms\Generate;
 use RuntimeException;
 use Throwable;
 
@@ -247,15 +247,12 @@ class Console
             self::$LogTargets[] = $target;
         }
 
-        if (!($target instanceof NullTarget))
-        {
-            self::$Targets[] = $target;
-        }
+        self::$Targets[] = $target;
     }
 
     private static function CheckLoggedOnce(string $method, string $msg1, string $msg2): int
     {
-        $hash = Convert::hash($method, $msg1, $msg2);
+        $hash = Generate::hash($method, $msg1, $msg2);
         self::$LoggedOnce[$hash] = self::$LoggedOnce[$hash] ?? 0;
 
         return self::$LoggedOnce[$hash]++;

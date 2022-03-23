@@ -121,21 +121,6 @@ class CliOption implements IGettable
         $this->Long  = $long ?: null;
         $this->Short = $short ?: null;
 
-        if (is_null($this->Long) && is_null($this->Short))
-        {
-            throw new UnexpectedValueException("At least one must be set: long, short");
-        }
-
-        if (!is_null($this->Long))
-        {
-            Assert::pregMatch($long, "/^[a-z0-9][-a-z0-9_]+\$/i", "long");
-        }
-
-        if (!is_null($this->Short))
-        {
-            Assert::pregMatch($short, "/^[a-z0-9]\$/i", "short");
-        }
-
         $this->Key             = $this->Short . "|" . $this->Long;
         $this->DisplayName     = $this->Long ? "--" . $this->Long : "-" . $this->Short;
         $this->OptionType      = $optionType;
@@ -154,13 +139,33 @@ class CliOption implements IGettable
         $this->IsRequired      = $required;
         $this->IsValueRequired = ($optionType != CliOptionType::VALUE_OPTIONAL);
         $this->ValueName       = $valueName ?: "VALUE";
+        $this->AllowedValues   = $allowedValues;
         $this->DefaultValue    = $this->IsRequired ? null : $defaultValue;
+
+    }
+
+    public function validate()
+    {
+        if (is_null($this->Long) && is_null($this->Short))
+        {
+            throw new UnexpectedValueException("At least one must be set: long, short");
+        }
+
+        if (!is_null($this->Long))
+        {
+            Assert::pregMatch($this->Long, "/^[a-z0-9][-a-z0-9_]+\$/i", "long");
+        }
+
+        if (!is_null($this->Short))
+        {
+            Assert::pregMatch($this->Short, "/^[a-z0-9]\$/i", "short");
+        }
 
         if (!is_null($this->DefaultValue))
         {
             if ($this->MultipleAllowed)
             {
-                $this->DefaultValue = Convert::anyToArray($this->DefaultValue);
+                $this->DefaultValue = Convert::toArray($this->DefaultValue);
                 array_walk($this->DefaultValue,
                     function (&$value)
                     {
@@ -183,10 +188,9 @@ class CliOption implements IGettable
             }
         }
 
-        if ($optionType == CliOptionType::ONE_OF)
+        if ($this->OptionType == CliOptionType::ONE_OF)
         {
-            Assert::notEmpty($allowedValues, "allowedValues");
-            $this->AllowedValues = $allowedValues;
+            Assert::notEmpty($this->AllowedValues, "allowedValues");
         }
     }
 
