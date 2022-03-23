@@ -18,7 +18,7 @@ class CliInvalidArgumentException extends Exception
     {
         if ($message)
         {
-            Console::Error(Cli::GetProgramName() . ": $message");
+            Console::Error(Cli::getProgramName() . ": $message");
         }
 
         parent::__construct($message ?: "Invalid arguments");

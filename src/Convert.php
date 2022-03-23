@@ -276,6 +276,20 @@ class Convert
     }
 
     /**
+     * Convert a multiple-word identifier to kebab-case
+     *
+     * @param string $text
+     * @return string
+     */
+    public static function toKebabCase(string $text): string
+    {
+        $text = preg_replace("/[^[:alnum:]]+/", "-", $text);
+        $text = preg_replace("/([[:lower:]])([[:upper:]])/", '$1-$2', $text);
+
+        return strtolower($text);
+    }
+
+    /**
      * Clean up a string for comparison with other strings
      *
      * Normalised values may vary with each release and should be considered

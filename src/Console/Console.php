@@ -316,13 +316,14 @@ class Console
         self::Print($msg, $ttyMsg, $level, $context, $ttyOnly, true);
     }
 
-    public static function Print(
+    private static function Print(
         string $plain,
         string $tty     = null,
         int $level      = ConsoleLevel::INFO,
         array $context  = [],
         bool $ttyOnly   = false,
-        bool $formatted = false
+        bool $formatted = false,
+        array $targets  = null
     )
     {
         $tty = is_null($tty) ? $plain : $tty;
@@ -333,9 +334,13 @@ class Console
             $tty   = self::Format($tty, true);
         }
 
-        self::CheckTargets();
+        if (is_null($targets))
+        {
+            self::CheckTargets();
+            $targets = self::$Targets;
+        }
 
-        foreach (self::$Targets as $target)
+        foreach ($targets as $target)
         {
             if ($ttyOnly && !$target->IsTty())
             {
@@ -353,15 +358,9 @@ class Console
         }
     }
 
-    public static function PrintTtyOnly(
-        string $plain,
-        string $tty     = null,
-        int $level      = ConsoleLevel::INFO,
-        array $context  = [],
-        bool $formatted = false
-    )
+    public static function PrintTo(string $string, ConsoleTarget...$targets)
     {
-        self::Print($plain, $tty, $level, $context, true, $formatted);
+        self::Print($string, null, ConsoleLevel::INFO, [], false, false, $targets);
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
+use Lkrms\Assert;
 use Lkrms\Console\Console;
 use Lkrms\Convert;
 use RuntimeException;
@@ -16,65 +17,82 @@ use UnexpectedValueException;
 abstract class CliCommand
 {
     /**
-     * Return the name of the command and any parent commands
+     * Return the name of the command as an array of its parts
+     *
+     * At least one component must be returned, and components are required to
+     * match the regular expression: `^[a-zA-Z][a-zA-Z0-9_-]*$`
      *
      * A subclass could return the following, for example:
      *
      * ```php
-     * ["data", "canvas", "sync-from-sis"]
+     * ["sync", "canvas", "from-sis"]
      * ```
      *
      * to register itself as the handler for:
      *
      * ```
-     * my-cli-app data canvas sync-from-sis
+     * my-cli-app sync canvas from-sis
      * ```
      *
-     * @return array<int,string> Must contain at least one element, and elements
-     * must match the regular expression `^[a-zA-Z][a-zA-Z0-9_-]*$`.
+     * @return string[]
      */
-    abstract protected function _GetQualifiedName(): array;
+    abstract protected function getDefaultName(): array;
 
     /**
-     * Return the command's options
+     * Return a list of CliOption objects and/or arrays to create them from
      *
-     * For example:
+     * The following return values are equivalent:
      *
      * ```php
-     * protected function _GetOptions(): array
-     * {
-     *     return [
-     *         CliOption::From([
-     *             "long"        => "dest",
-     *             "short"       => "d",
-     *             "valueName"   => "DIR",
-     *             "description" => "Sync files to DIR",
-     *             "optionType"  => CliOptionType::VALUE,
-     *             "required"    => true,
-     *         ]),
-     *     ];
-     * }
+     * // 1.
+     * [
+     *   new CliOption(
+     *     "dest", "d", "DIR", "Sync files to DIR", CliOptionType::VALUE, null, true
+     *   ),
+     * ]
+     *
+     * // 2.
+     * [
+     *   [
+     *     "long"        => "dest",
+     *     "short"       => "d",
+     *     "valueName"   => "DIR",
+     *     "description" => "Sync files to DIR",
+     *     "optionType"  => CliOptionType::VALUE,
+     *     "required"    => true,
+     *   ],
+     * ]
      * ```
      *
      * @return array<int,CliOption|array>
      * @see TConstructible::From()
      */
-    abstract protected function _GetOptions(): array;
+    abstract protected function getOptionList(): array;
 
     /**
-     * Run the command and return an exit status
+     * Run the command, optionally returning an exit status
      *
-     * @return int
+     * PHP's exit status will be:
+     * 1. the return value of this method (if an `int` is returned)
+     * 2. the last value passed to {@see CliCommand::setExitStatus()}, or
+     * 3. `0`, indicating success, unless an unhandled error occurs
+     *
+     * @return int|void
      */
-    abstract protected function _Run(...$params): int;
+    abstract protected function run(...$params);
 
     /**
-     * @var array<int,string>
+     * @var int
+     */
+    private $ExitStatus = 0;
+
+    /**
+     * @var string[]
      */
     private $QualifiedName;
 
     /**
-     * @var array<int,CliOption>
+     * @var CliOption[]
      */
     private $Options;
 
@@ -113,6 +131,16 @@ abstract class CliCommand
      */
     private $IsHelp = false;
 
+    public static function assertQualifiedNameIsValid(?array $nameParts)
+    {
+        Assert::notEmpty($nameParts, "nameParts");
+
+        foreach ($nameParts as $i => $name)
+        {
+            Assert::pregMatch($name, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "nameParts[$i]");
+        }
+    }
+
     /**
      * Create an instance of the command and register it
      *
@@ -120,54 +148,54 @@ abstract class CliCommand
      *
      * ```php
      * // 1.
-     * MyCliCommand::Register();
+     * MyCliCommand::register();
      *
      * // 2.
-     * Cli::RegisterCommand(new MyCliCommand());
+     * Cli::registerCommand(new MyCliCommand());
      * ```
      *
      * But the only way to override a command's default `QualifiedName` is with
-     * `CliCommand::Register()`:
+     * `CliCommand::register()`:
      *
      * ```php
-     * MyCliCommand::Register(["command", "subcommand", "my-cli-command"]);
+     * MyCliCommand::register(["command", "subcommand", "my-cli-command"]);
      * ```
      *
      * @param array|null $qualifiedName If set, the qualified name returned by
      * the subclass will be ignored.
      */
-    final public static function Register(array $qualifiedName = null)
+    final public static function register(array $qualifiedName = null)
     {
         $command = new static();
 
         if (!is_null($qualifiedName))
         {
-            CliAssert::QualifiedNameIsValid($qualifiedName);
+            self::assertQualifiedNameIsValid($qualifiedName);
             $command->QualifiedName = $qualifiedName;
         }
 
-        Cli::RegisterCommand($command);
+        Cli::registerCommand($command);
     }
 
-    final public function GetName(): string
+    final public function getName(): string
     {
-        return implode(" ", $this->GetQualifiedName());
+        return implode(" ", $this->getQualifiedName());
     }
 
-    final public function GetCommandName()
+    final public function getCommandName()
     {
-        return Cli::GetProgramName() . " " . $this->GetName();
+        return Cli::getProgramName() . " " . $this->getName();
     }
 
     /**
      *
-     * @return array<int,string>
+     * @return string[]
      */
-    final public function GetQualifiedName(): array
+    final public function getQualifiedName(): array
     {
         if (!$this->QualifiedName)
         {
-            CliAssert::QualifiedNameIsValid($nameParts = $this->_GetQualifiedName());
+            self::assertQualifiedNameIsValid($nameParts = $this->getDefaultName());
             $this->QualifiedName = $nameParts;
         }
 
@@ -180,7 +208,7 @@ abstract class CliCommand
      * @param array|null $options
      * @param bool $hide
      */
-    private function AddOption($option, array & $options = null, $hide = false)
+    private function addOption($option, array & $options = null, $hide = false)
     {
         if (is_array($option))
         {
@@ -222,24 +250,24 @@ abstract class CliCommand
         }
     }
 
-    private function LoadOptions()
+    private function loadOptions()
     {
         if (!is_null($this->Options))
         {
             return;
         }
 
-        $_options = $this->_GetOptions();
+        $_options = $this->getOptionList();
         $options  = [];
 
         foreach ($_options as $option)
         {
-            $this->AddOption($option, $options);
+            $this->addOption($option, $options);
         }
 
         if (!array_key_exists("help", $this->OptionsByName))
         {
-            $this->AddOption([
+            $this->addOption([
                 "long"  => "help",
                 "short" => array_key_exists("h", $this->OptionsByName) ? null : "h"
             ], $options, true);
@@ -250,23 +278,23 @@ abstract class CliCommand
 
     /**
      *
-     * @return array<int,CliOption>
+     * @return CliOption[]
      */
-    final public function GetOptions(): array
+    final public function getOptions(): array
     {
-        $this->LoadOptions();
+        $this->loadOptions();
 
         return $this->Options;
     }
 
-    final public function GetOptionByName(string $name)
+    final public function getOptionByName(string $name)
     {
-        $this->LoadOptions();
+        $this->loadOptions();
 
         return $this->OptionsByName[$name] ?? false;
     }
 
-    final public function GetUsage(bool $line1 = false): string
+    final public function getUsage(bool $line1 = false): string
     {
         $options = "";
 
@@ -286,14 +314,14 @@ abstract class CliCommand
         $optional  = [];
         $required  = [];
 
-        foreach ($this->GetOptions() as $option)
+        foreach ($this->getOptions() as $option)
         {
             if (array_key_exists($option->Key, $this->HiddenOptionsByKey))
             {
                 continue;
             }
 
-            list ($short, $long, $line, $value) = [$option->Short, $option->Long, [], []];
+            list ($short, $long, $line, $value, $valueName) = [$option->Short, $option->Long, [], [], ""];
 
             if ($option->IsFlag)
             {
@@ -316,6 +344,11 @@ abstract class CliCommand
             else
             {
                 $valueName = $option->ValueName;
+
+                if ($valueName != strtoupper($valueName))
+                {
+                    $valueName = "<" . Convert::toKebabCase($valueName) . ">";
+                }
 
                 if ($short)
                 {
@@ -343,14 +376,19 @@ abstract class CliCommand
             {
                 // Format:
                 //
-                //     _-o, --option_[=value]
-                //       Option description (default: _auto_)
-                //       __Options:__ option1, option2, option3
-                $options .= ("\n  _" . implode(", ", $line) . "_" . (array_pop($value) ?: "")
+                //     _-o, --option_[=__VALUE__]
+                //       Option description
+                //         default: ___auto___
+                //         options:
+                //         - _option1_
+                //         - _option2_
+                //         - _option3_
+                $sep      = ($option->Description ? "\n      " : "\n    ");
+                $options .= ("\n  _" . implode(", ", $line) . "_"
+                    . str_replace($valueName, "__" . $valueName . "__", (array_pop($value) ?: ""))
                     . ($option->Description ? "\n    " . $option->Description : "")
-                    . ((!$option->IsFlag && $option->DefaultValue) ? ($option->Description ? " " : "\n    ")
-                        . "(default: _" . implode(",", Convert::AnyToArray($option->DefaultValue)) . "_)" : "")
-                    . ($option->AllowedValues ? "\n    __Options:__ " . implode(" ", $option->AllowedValues) : "")) . "\n";
+                    . ((!$option->IsFlag && $option->DefaultValue) ? $sep . "default: ___" . implode(",", Convert::AnyToArray($option->DefaultValue)) . "___" : "")
+                    . ($option->AllowedValues ? $sep . "options:" . $sep . "- _" . implode("_" . $sep . "- _", $option->AllowedValues) . "_" : "")) . "\n";
             }
         }
 
@@ -359,7 +397,7 @@ abstract class CliCommand
             . ($optional ? " [" . implode("] [", $optional) . "]" : "")
             . ($required ? " " . implode(" ", $required) : ""));
 
-        $name    = $this->GetCommandName();
+        $name    = $this->getCommandName();
         $options = trim($options, "\n");
 
         return $line1 ? $synopsis :
@@ -375,31 +413,31 @@ $options
 EOF;
     }
 
-    final protected function OptionError(string $message)
+    final protected function optionError(string $message)
     {
-        Console::Error($this->GetCommandName() . ": $message");
+        Console::Error($this->getCommandName() . ": $message");
         $this->OptionErrors++;
     }
 
-    private function LoadOptionValues()
+    private function loadOptionValues()
     {
         if (!is_null($this->OptionValues))
         {
             return;
         }
 
-        if (Cli::GetRunningCommand() !== $this)
+        if (Cli::getRunningCommand() !== $this)
         {
             throw new RuntimeException(static::class . " is not running");
         }
 
-        $this->LoadOptions();
+        $this->loadOptions();
         $this->OptionErrors = 0;
 
         $args   = $GLOBALS["argv"];
         $merged = [];
 
-        for ($i = Cli::GetFirstArgumentIndex(); $i < $GLOBALS["argc"]; $i++)
+        for ($i = Cli::getFirstArgumentIndex(); $i < $GLOBALS["argc"]; $i++)
         {
             list ($arg, $short, $matches) = [$args[$i], false, null];
 
@@ -422,7 +460,7 @@ EOF;
                 }
                 elseif (substr($arg, 0, 1) == "-")
                 {
-                    $this->OptionError("invalid argument '$arg'");
+                    $this->optionError("invalid argument '$arg'");
 
                     continue;
                 }
@@ -434,13 +472,13 @@ EOF;
 
             if (is_null($option))
             {
-                $this->OptionError("unknown option '$name'");
+                $this->optionError("unknown option '$name'");
 
                 continue;
             }
             elseif ($option->IsFlag)
             {
-                # Handle multiple short flags per argument, e.g. `cp -rv`
+                // Handle multiple short flags per argument, e.g. `cp -rv`
                 if ($short && $value)
                 {
                     $args[$i] = "-$value";
@@ -463,7 +501,7 @@ EOF;
                     {
                         // Allow null to be stored to prevent an additional
                         // "argument required" error
-                        $this->OptionError("{$option->DisplayName} value required");
+                        $this->optionError("{$option->DisplayName} value required");
                         $i--;
                     }
                 }
@@ -496,12 +534,12 @@ EOF;
 
             if (!$option->MultipleAllowed && is_array($value))
             {
-                $this->OptionError("{$option->DisplayName} cannot be used multiple times");
+                $this->optionError("{$option->DisplayName} cannot be used multiple times");
             }
 
             if (!is_null($option->AllowedValues) && !empty($invalid = array_diff(Convert::AnyToArray($value), $option->AllowedValues)))
             {
-                $this->OptionError("invalid {$option->DisplayName} " . Convert::NumberToNoun(count($invalid), "value") . ": " . implode(", ", $invalid));
+                $this->optionError("invalid {$option->DisplayName} " . Convert::NumberToNoun(count($invalid), "value") . ": " . implode(", ", $invalid));
             }
         }
 
@@ -509,9 +547,9 @@ EOF;
         {
             if ($option->IsRequired && !array_key_exists($option->Key, $merged))
             {
-                if (!($GLOBALS["argc"] - Cli::GetFirstArgumentIndex() == 1 && $this->IsHelp))
+                if (!($GLOBALS["argc"] - Cli::getFirstArgumentIndex() == 1 && $this->IsHelp))
                 {
-                    $this->OptionError("{$option->DisplayName} argument required");
+                    $this->optionError("{$option->DisplayName} argument required");
                 }
             }
             else
@@ -527,7 +565,7 @@ EOF;
                     $value = is_null($value) ? [] : Convert::AnyToArray($value);
                 }
 
-                $option->SetValue($value);
+                $option->setValue($value);
             }
         }
 
@@ -547,23 +585,23 @@ EOF;
      * will be returned.
      *
      * @param string $name Either the `Short` or `Long` name of the option
-     * @return string|array<int,string>|bool|int|null
+     * @return string|string[]|bool|int|null
      */
-    final public function GetOptionValue(string $name)
+    final public function getOptionValue(string $name)
     {
-        if (!($option = $this->GetOptionByName($name)))
+        if (!($option = $this->getOptionByName($name)))
         {
             throw new UnexpectedValueException("No option with name '$name'");
         }
 
-        $this->LoadOptionValues();
+        $this->loadOptionValues();
 
         return $option->Value;
     }
 
-    final public function GetAllOptionValues()
+    final public function getAllOptionValues()
     {
-        $this->LoadOptionValues();
+        $this->loadOptionValues();
 
         $values = [];
 
@@ -576,18 +614,36 @@ EOF;
         return $values;
     }
 
-    final public function Run(): int
+    final public function __invoke(): int
     {
-        $this->LoadOptionValues();
+        $this->loadOptionValues();
 
         if ($this->IsHelp)
         {
-            Console::PrintTtyOnly($this->GetUsage());
+            Console::PrintTo($this->getUsage(), ...Console::GetOutputTargets());
 
             return 0;
         }
 
-        return $this->_Run(...array_slice($GLOBALS['argv'], $this->NextArgumentIndex));
+        $return = $this->run(...array_slice($GLOBALS['argv'], $this->NextArgumentIndex));
+
+        if (is_int($return))
+        {
+            return $return;
+        }
+
+        return $this->ExitStatus;
+    }
+
+    /**
+     * Set the command's return value / exit status
+     *
+     * @param int $status
+     * @see CliCommand::run()
+     */
+    protected function setExitStatus(int $status)
+    {
+        $this->ExitStatus = $status;
     }
 }
 

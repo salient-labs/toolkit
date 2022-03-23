@@ -43,12 +43,19 @@ $identifiers = [
     "two-words", "TWO-WORDS", "Two-Words",
 ];
 
-$identifiers = array_combine($identifiers, array_map(function ($i)
+$snakeCase = array_combine($identifiers, array_map(function ($i)
 {
     return Convert::IdentifierToSnakeCase($i);
 }, $identifiers));
 
-print_r($identifiers);
+print_r($snakeCase);
+
+$kebabCase = array_combine($identifiers, array_map(function ($i)
+{
+    return Convert::toKebabCase($i);
+}, $identifiers));
+
+print_r($kebabCase);
 
 $list = [
     ['id' => 38, 'name' => 'Amir'],

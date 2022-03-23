@@ -10,7 +10,7 @@ use Lkrms\Cli\CliOptionType;
 
 class TestOptions extends CliCommand
 {
-    protected function _GetQualifiedName(): array
+    protected function getDefaultName(): array
     {
         return [
             "test",
@@ -18,7 +18,7 @@ class TestOptions extends CliCommand
         ];
     }
 
-    protected function _GetOptions(): array
+    protected function getOptionList(): array
     {
         //[
         //    "long"            => "",
@@ -80,12 +80,10 @@ class TestOptions extends CliCommand
         ];
     }
 
-    protected function _Run(...$args): int
+    protected function run(...$args)
     {
-        var_dump($this->GetAllOptionValues());
+        var_dump($this->getAllOptionValues());
         var_dump($args);
-
-        return 0;
     }
 }
 

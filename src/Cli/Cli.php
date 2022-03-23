@@ -35,22 +35,22 @@ class Cli
      */
     private static $FirstArgumentIndex;
 
-    public static function GetProgramName(): string
+    public static function getProgramName(): string
     {
         return basename($GLOBALS["argv"][0]);
     }
 
-    public static function GetRunningCommand(): ?CliCommand
+    public static function getRunningCommand(): ?CliCommand
     {
         return self::$RunningCommand;
     }
 
-    public static function GetFirstArgumentIndex(): ?int
+    public static function getFirstArgumentIndex(): ?int
     {
         return self::$FirstArgumentIndex;
     }
 
-    public static function GetCommand(string $name): ?CliCommand
+    public static function getCommand(string $name): ?CliCommand
     {
         return self::$Commands[$name] ?? null;
     }
@@ -60,7 +60,7 @@ class Cli
      * @param string[] $nameParts
      * @return array<string,array|CliCommand>|CliCommand|null
      */
-    public static function GetCommandTree(array $nameParts = [])
+    public static function getCommandTree(array $nameParts = [])
     {
         $tree = self::$CommandTree;
 
@@ -80,13 +80,13 @@ class Cli
     /**
      *
      * @param CliCommand $command
-     * @see CliCommand::Register()
+     * @see CliCommand::register()
      */
-    public static function RegisterCommand(CliCommand $command)
+    public static function registerCommand(CliCommand $command)
     {
-        $nameParts = $command->GetQualifiedName();
+        $nameParts = $command->getQualifiedName();
 
-        if (!is_null(self::GetCommandTree($nameParts)))
+        if (!is_null(self::getCommandTree($nameParts)))
         {
             throw new UnexpectedValueException("Command already registered at '" . implode(" ", $nameParts) . "'");
         }
@@ -105,7 +105,7 @@ class Cli
         }
 
         $tree[$name] = $command;
-        self::$Commands[$command->GetName()] = $command;
+        self::$Commands[$command->getName()] = $command;
     }
 
     /**
@@ -114,22 +114,22 @@ class Cli
      * @param array|CliCommand $node
      * @return string
      */
-    private static function GetUsage(string $name, $node): string
+    private static function getUsage(string $name, $node): string
     {
         if ($node instanceof CliCommand)
         {
-            return $node->GetUsage();
+            return $node->getUsage();
         }
         elseif (is_array($node))
         {
-            $name     = trim(self::GetProgramName() . " $name");
+            $name     = trim(self::getProgramName() . " $name");
             $synopses = [];
 
             foreach ($node as $childName => $childNode)
             {
                 if ($childNode instanceof CliCommand)
                 {
-                    $synopses[] = "_{$childName}_" . $childNode->GetUsage(true);
+                    $synopses[] = "_{$childName}_" . $childNode->getUsage(true);
                 }
                 elseif (is_array($childNode))
                 {
@@ -153,7 +153,7 @@ EOF;
         }
     }
 
-    public static function RunCommand(): int
+    public static function runCommand(): int
     {
         Assert::SapiIsCli();
 
@@ -173,7 +173,7 @@ EOF;
                 }
                 elseif ($part == "--help" && $i + 1 == $GLOBALS["argc"])
                 {
-                    Console::PrintTtyOnly(self::GetUsage($name, $node));
+                    Console::PrintTo(self::getUsage($name, $node), ...Console::GetOutputTargets());
 
                     return 0;
                 }
@@ -187,7 +187,7 @@ EOF;
                     self::$RunningCommand     = $node;
                     self::$FirstArgumentIndex = $i + 1;
 
-                    return $node->Run();
+                    return $node();
                 }
                 elseif (!is_array($node))
                 {
@@ -201,9 +201,9 @@ EOF;
         {
             unset($ex);
 
-            if ($node && $usage = self::GetUsage($name, $node))
+            if ($node && $usage = self::getUsage($name, $node))
             {
-                Console::PrintTtyOnly($usage);
+                Console::PrintTo($usage, ...Console::GetOutputTargets());
             }
 
             return 1;

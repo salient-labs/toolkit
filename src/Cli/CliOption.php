@@ -189,7 +189,7 @@ class CliOption
         }
     }
 
-    public function SetValue($value)
+    public function setValue($value)
     {
         if ($this->IsValueSet)
         {
