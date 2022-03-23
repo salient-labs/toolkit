@@ -4,31 +4,15 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
-use RuntimeException;
-use SQLite3;
+use Lkrms\Store\Sqlite;
 
 /**
  * A SQLite store for deleted JSON objects
  *
  * @package Lkrms\Service
  */
-class Trash
+class Trash extends Sqlite
 {
-    private static $Loaded = false;
-
-    /**
-     * @var SQLite3
-     */
-    private static $db;
-
-    private static function CheckLoaded(string $method)
-    {
-        if (! static::$Loaded)
-        {
-            throw new RuntimeException($method . ": Load() must be called first");
-        }
-    }
-
     /**
      * Check if database is open
      *
@@ -36,7 +20,7 @@ class Trash
      */
     public static function IsLoaded(): bool
     {
-        return static::$Loaded;
+        return self::isOpen();
     }
 
     /**
@@ -49,14 +33,8 @@ class Trash
      */
     public static function Load(string $filename)
     {
-        if ($filename != ":memory:")
-        {
-            File::MaybeCreate($filename, 0600, 0700);
-        }
-
-        self::$db = new SQLite3($filename);
-        self::$db->enableExceptions();
-        self::$db->exec(
+        self::open($filename);
+        self::db()->exec(
 <<<SQL
 CREATE TABLE IF NOT EXISTS _trash_item (
   item_type TEXT NOT NULL,
@@ -69,7 +47,6 @@ CREATE TABLE IF NOT EXISTS _trash_item (
 )
 SQL
         );
-        self::$Loaded = true;
     }
 
     /**
@@ -82,13 +59,12 @@ SQL
      * deleted?
      * @param int|null $createdAt When was the object originally created?
      * @param int|null $modifiedAt When was the object most recently changed?
-     * @throws RuntimeException
      */
     public static function Put(string $type, ?string $key, $object,
         ?string $deletedFrom, int $createdAt = null, int $modifiedAt = null)
     {
-        self::CheckLoaded(__METHOD__);
-        $stmt = self::$db->prepare(
+        self::assertIsOpen();
+        $stmt = self::db()->prepare(
 <<<SQL
 INSERT INTO _trash_item(
     item_type,
@@ -115,17 +91,16 @@ SQL
         $stmt->bindValue(":created_at", $createdAt, SQLITE3_INTEGER);
         $stmt->bindValue(":modified_at", $modifiedAt, SQLITE3_INTEGER);
         $stmt->execute();
+        $stmt->close();
     }
 
     /**
      * Delete everything
-     *
-     * @throws RuntimeException
      */
     public static function Empty()
     {
-        self::CheckLoaded(__METHOD__);
-        self::$db->exec(
+        self::assertIsOpen();
+        self::db()->exec(
 <<<SQL
 DELETE
 FROM _trash_item

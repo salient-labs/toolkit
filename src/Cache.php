@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
+use Exception;
+use Lkrms\Store\Sqlite;
 use RuntimeException;
 use SQLite3;
 use UnexpectedValueException;
@@ -13,26 +15,11 @@ use UnexpectedValueException;
  *
  * @package Lkrms\Service
  */
-class Cache
+class Cache extends Sqlite
 {
-    private static $Loaded = false;
-
-    /**
-     * @var SQLite3
-     */
-    private static $db;
-
-    private static function CheckLoaded(string $method)
-    {
-        if (!self::$Loaded)
-        {
-            throw new RuntimeException($method . ": Load() must be called first");
-        }
-    }
-
     public static function FlushExpired()
     {
-        self::$db->exec(
+        self::db()->exec(
 <<<SQL
 DELETE
 FROM _cache_item
@@ -67,7 +54,7 @@ SQL
      */
     public static function IsLoaded(): bool
     {
-        return self::$Loaded;
+        return self::isOpen();
     }
 
     /**
@@ -81,14 +68,8 @@ SQL
      */
     public static function Load(string $filename = ":memory:", bool $autoFlush = true)
     {
-        if ($filename != ":memory:")
-        {
-            File::MaybeCreate($filename, 0600, 0700);
-        }
-
-        self::$db = new SQLite3($filename);
-        self::$db->enableExceptions();
-        self::$db->exec(
+        self::open($filename);
+        self::db()->exec(
 <<<SQL
 CREATE TABLE IF NOT EXISTS _cache_item (
     item_key TEXT NOT NULL PRIMARY KEY,
@@ -110,8 +91,6 @@ SQL
         {
             self::FlushExpired();
         }
-
-        self::$Loaded = true;
     }
 
     /**
@@ -128,31 +107,36 @@ SQL
      */
     public static function Set(string $key, $value, int $expiry = 0)
     {
-        self::CheckLoaded(__METHOD__);
+        self::assertIsOpen();
 
-        if ($value === false)
+        try
         {
-            self::Delete($key);
+            self::beginTransaction();
 
-            return;
-        }
+            if ($value === false)
+            {
+                self::Delete($key);
 
-        // If $expiry is non-zero and exceeds 60*60*24*30 seconds (30 days),
-        // take it as a Unix timestamp, otherwise take it as seconds from now
-        if (!$expiry)
-        {
-            $expiry = null;
-        }
-        elseif ($expiry <= 2592000)
-        {
-            $expiry += time();
-        }
+                return;
+            }
 
-        $sql = [];
+            // If $expiry is non-zero and exceeds 60*60*24*30 seconds (30 days),
+            // take it as a Unix timestamp, otherwise take it as seconds from
+            // now
+            if (!$expiry)
+            {
+                $expiry = null;
+            }
+            elseif ($expiry <= 2592000)
+            {
+                $expiry += time();
+            }
 
-        if (version_compare((SQLite3::version())["versionString"], "3.24") >= 0)
-        {
-            $sql[] =
+            $sql = [];
+
+            if (version_compare((SQLite3::version())["versionString"], "3.24") >= 0)
+            {
+                $sql[] =
 <<<SQL
 INSERT INTO _cache_item(item_key, item_value, expires_at)
 VALUES (
@@ -167,19 +151,20 @@ ON CONFLICT(item_key) DO
   WHERE item_value IS NOT excluded.item_value
     OR expires_at IS NOT excluded.expires_at;
 SQL;
-        }
-        else
-        {
-            // SQLite 3.24 was only released in June 2018 (after Ubuntu 18.04),
-            // so it isn't ubiquitous enough to get away with no UPSERT shim
-            $sql[] =
+            }
+            else
+            {
+                // SQLite 3.24 was only released in June 2018 (after Ubuntu
+                // 18.04), so it isn't ubiquitous enough to get away with no
+                // UPSERT shim
+                $sql[] =
 <<<SQL
 UPDATE _cache_item
 SET item_value = :item_value,
   expires_at = datetime(:expires_at, 'unixepoch')
 WHERE item_key = :item_key
 SQL;
-            $sql[] =
+                $sql[] =
 <<<SQL
 INSERT OR IGNORE INTO _cache_item(item_key, item_value, expires_at)
 VALUES (
@@ -188,15 +173,24 @@ VALUES (
     datetime(:expires_at, 'unixepoch')
   )
 SQL;
-        }
+            }
 
-        foreach ($sql as $_sql)
+            foreach ($sql as $_sql)
+            {
+                $stmt = self::db()->prepare($_sql);
+                $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
+                $stmt->bindValue(":item_value", serialize($value), SQLITE3_BLOB);
+                $stmt->bindValue(":expires_at", $expiry, SQLITE3_INTEGER);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            self::commitTransaction();
+        }
+        catch (Exception $ex)
         {
-            $stmt = self::$db->prepare($_sql);
-            $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
-            $stmt->bindValue(":item_value", serialize($value), SQLITE3_BLOB);
-            $stmt->bindValue(":expires_at", $expiry, SQLITE3_INTEGER);
-            $stmt->execute();
+            self::rollbackTransaction();
+            throw $ex;
         }
     }
 
@@ -215,7 +209,7 @@ SQL;
      */
     public static function Get(string $key, int $maxAge = null)
     {
-        self::CheckLoaded(__METHOD__);
+        self::assertIsOpen();
 
         $sql = [
             "item_key = :item_key"
@@ -234,7 +228,7 @@ SQL;
             $bind[] = [":max_age", "+$maxAge seconds", SQLITE3_TEXT];
         }
 
-        $stmt = self::$db->prepare("SELECT item_value FROM _cache_item WHERE " . implode(" AND ", $sql));
+        $stmt = self::db()->prepare("SELECT item_value FROM _cache_item WHERE " . implode(" AND ", $sql));
 
         foreach ($bind as $param)
         {
@@ -242,8 +236,10 @@ SQL;
         }
 
         $result = $stmt->execute();
+        $row    = $result->fetchArray(SQLITE3_NUM);
+        $stmt->close();
 
-        if (($row = $result->fetchArray(SQLITE3_NUM)) === false)
+        if ($row === false)
         {
             return false;
         }
@@ -263,8 +259,8 @@ SQL;
      */
     public static function Delete(string $key)
     {
-        self::CheckLoaded(__METHOD__);
-        $stmt = self::$db->prepare(
+        self::assertIsOpen();
+        $stmt = self::db()->prepare(
 <<<SQL
 DELETE
 FROM _cache_item
@@ -273,6 +269,7 @@ SQL
         );
         $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
         $stmt->execute();
+        $stmt->close();
     }
 
     /**
@@ -282,8 +279,8 @@ SQL
      */
     public static function Flush()
     {
-        self::CheckLoaded(__METHOD__);
-        self::$db->exec(
+        self::assertIsOpen();
+        self::db()->exec(
 <<<SQL
 DELETE
 FROM _cache_item
