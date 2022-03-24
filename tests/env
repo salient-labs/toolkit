@@ -1,0 +1,42 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\Env;
+use Lkrms\Err;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Err::HandleErrors();
+
+Env::Load(__DIR__ . "/.env");
+
+$debugMode1 = Env::debug();
+$debugMode2 = Env::debug(false);
+$debugMode3 = Env::debug();
+$debugMode4 = Env::debug(true);
+$debugMode5 = Env::debug();
+
+print_r([
+    "debugMode1" => $debugMode1,
+    "debugMode2" => $debugMode2,
+    "debugMode3" => $debugMode3,
+    "debugMode4" => $debugMode4,
+    "debugMode5" => $debugMode5,
+]);
+
+$dryRunMode1 = Env::dryRun();
+$dryRunMode2 = Env::dryRun(true);
+$dryRunMode3 = Env::dryRun();
+$dryRunMode4 = Env::dryRun(false);
+$dryRunMode5 = Env::dryRun();
+
+print_r([
+    "dryRunMode1" => $dryRunMode1,
+    "dryRunMode2" => $dryRunMode2,
+    "dryRunMode3" => $dryRunMode3,
+    "dryRunMode4" => $dryRunMode4,
+    "dryRunMode5" => $dryRunMode5,
+]);

@@ -212,7 +212,7 @@ class Console
                 ConsoleLevel::INFO,
             ];
 
-            if (Env::GetDebug())
+            if (Env::debug())
             {
                 $levels[] = ConsoleLevel::DEBUG;
             }

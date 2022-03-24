@@ -126,7 +126,7 @@ class Curler
     {
         $this->BaseUrl = $baseUrl;
         $this->Headers = $headers ?: new CurlerHeaders();
-        $this->Debug   = Env::GetDebug();
+        $this->Debug   = Env::debug();
     }
 
     private function CreateHandle(string $url)

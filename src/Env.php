@@ -16,27 +16,19 @@ use UnexpectedValueException;
  */
 class Env
 {
-    private static $Loaded;
+    private static $IsDryRun;
 
-    private static $HonourTimezone = true;
+    private static $IgnoreTimezone;
 
     /**
      * Ignore the runtime environment's timezone
      *
-     * Prevents {@see Env::Load()} using the environment variable `TZ` to set
-     * the default timezone.
-     *
-     * @return void
-     * @throws RuntimeException if {@see Env::Load()} has already been called
+     * Prevents {@see Env::load()} setting the default timezone from the `TZ`
+     * environment variable.
      */
-    public static function IgnoreTimezone(): void
+    public static function ignoreTimezone(): void
     {
-        if (self::$Loaded)
-        {
-            throw new RuntimeException("Environment already loaded");
-        }
-
-        self::$HonourTimezone = false;
+        self::$IgnoreTimezone = true;
     }
 
     /**
@@ -52,13 +44,12 @@ class Env
      * contain single quotes as long as they look like this: `'\''`. Lines
      * starting with `#` are ignored.
      *
-     * @param string $filename Path to the .env file to load.
+     * @param string $filename The `.env` file to load.
      * @param bool $replace If `true`, override existing environment variables.
-     * @return void
-     * @throws RuntimeException
-     * @throws UnexpectedValueException
+     * @throws RuntimeException if `$filename` cannot be opened
+     * @throws UnexpectedValueException if `$filename` cannot be parsed
      */
-    public static function Load(string $filename, bool $replace = false): void
+    public static function load(string $filename, bool $replace = false): void
     {
         $lines = file($filename, FILE_IGNORE_NEW_LINES);
 
@@ -100,14 +91,10 @@ class Env
                 $value = $match[2];
             }
 
-            putenv($name . "=" . $value);
-            $_ENV[$name]    = $value;
-            $_SERVER[$name] = $value;
+            self::set($name, $value);
         }
 
-        self::$Loaded = true;
-
-        if (self::$HonourTimezone && $tz = preg_replace("/^:?(.*\/zoneinfo\/)?/", "", self::Get("TZ", "")))
+        if (!self::$IgnoreTimezone && $tz = preg_replace("/^:?(.*\/zoneinfo\/)?/", "", self::get("TZ", "")))
         {
             try
             {
@@ -122,23 +109,52 @@ class Env
     }
 
     /**
+     * Set an environment variable
+     *
+     * The variable is loaded to `getenv()`, `$_ENV` and `$_SERVER`.
+     *
+     * @param string $name
+     * @param string $value
+     */
+    public static function set(string $name, string $value): void
+    {
+        putenv($name . "=" . $value);
+        $_ENV[$name]    = $value;
+        $_SERVER[$name] = $value;
+    }
+
+    /**
+     * Unset an environment variable
+     *
+     * The variable is removed from `getenv()`, `$_ENV` and `$_SERVER`.
+     *
+     * @param string $name
+     */
+    public static function unset(string $name): void
+    {
+        putenv($name);
+        unset($_ENV[$name]);
+        unset($_SERVER[$name]);
+    }
+
+    /**
      * Retrieve an environment variable
      *
      * Looks for `$name` in `$_ENV`, `$_SERVER` and `getenv()`, in that order,
      * and returns the first value it finds.
      *
      * @param string $name The environment variable to retrieve.
-     * @param string|null $default The value to return if `$name` isn't set.
-     * @return string
-     * @throws RuntimeException if `$name` isn't set and no `$default` is given
+     * @param string|null $default The value to return if `$name` is not set.
+     * @return null|string
+     * @throws RuntimeException if `$name` is not set and no `$default` is given
      */
-    public static function Get(string $name, string $default = null): string
+    public static function get(string $name, string $default = null): ?string
     {
-        $value = $_ENV[$name] ?? $_SERVER[$name] ?? (getenv($name, true) ?: getenv($name));
+        $value = $_ENV[$name] ?? $_SERVER[$name] ?? (($local = getenv($name, true)) !== false ? $local : getenv($name));
 
         if ($value === false)
         {
-            if (is_null($default))
+            if (func_num_args() < 2)
             {
                 throw new RuntimeException("Environment variable $name is not set");
             }
@@ -152,26 +168,85 @@ class Env
     }
 
     /**
-     * Return true if debug mode is enabled
+     * Return an environment variable as a list of strings
      *
-     * Debug mode is enabled by setting `LU_DEBUG=1` in the environment.
+     * See {@see Env::get()} for details.
      *
-     * @return bool
-     * @throws RuntimeException
+     * @param string $name The environment variable to retrieve.
+     * @param string[]|null $default The value to return if `$name` is not set.
+     * @param string $delimiter The character used between items.
+     * @return string[]|null
+     * @throws RuntimeException if `$name` is not set and no `$default` is given
      */
-    public static function GetDebug(): bool
+    public static function getList(string $name, array $default = null, string $delimiter = ","): ?array
     {
-        return (bool)self::Get("LU_DEBUG", "");
+        if (func_num_args() < 2)
+        {
+            $value = self::get($name);
+        }
+        else
+        {
+            $value = self::get($name, null);
+
+            if (is_null($value))
+            {
+                return $default;
+            }
+        }
+
+        return $value ? explode($delimiter, $value) : [];
     }
 
-    public static function GetMemoryLimit(): int
+    /**
+     * Optionally turn dry-run mode on or off, then return its current state
+     *
+     * @param bool|null $newState
+     * @return bool
+     */
+    public static function dryRun(bool $newState = null): bool
+    {
+        if (func_num_args() && !is_null($newState))
+        {
+            self::$IsDryRun = $newState;
+        }
+
+        return (bool)self::$IsDryRun;
+    }
+
+    /**
+     * Optionally turn debug mode on or off, then return its current state
+     *
+     * Debug mode can also be enabled by setting the `DEBUG` environment
+     * variable.
+     *
+     * @param bool|null $newState
+     * @return bool
+     */
+    public static function debug(bool $newState = null): bool
+    {
+        if (func_num_args() && !is_null($newState))
+        {
+            if ($newState)
+            {
+                self::set("DEBUG", "1");
+            }
+            else
+            {
+                self::unset("DEBUG");
+            }
+        }
+
+        return (bool)self::get("DEBUG", "");
+    }
+
+    public static function getMemoryLimit(): int
     {
         return Convert::sizeToBytes(ini_get('memory_limit') ?: 0);
     }
 
-    public static function GetMemoryUsagePercent($precision = 2): float
+    public static function getMemoryUsagePercent($precision = 2): float
     {
-        $limit = self::GetMemoryLimit();
+        $limit = self::getMemoryLimit();
 
         if ($limit <= 0)
         {
