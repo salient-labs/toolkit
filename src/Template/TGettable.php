@@ -44,7 +44,7 @@ trait TGettable
         return ($this->getPropertyClosure($action, $name, [$this, 'getGettable']))();
     }
 
-    final public function __get(string $name): mixed
+    final public function __get(string $name)
     {
         return $this->getProperty("get", $name);
     }

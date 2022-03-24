@@ -44,7 +44,7 @@ trait TSettable
         return ($this->getPropertyClosure($action, $name, [$this, 'getSettable']))(...$params);
     }
 
-    final public function __set(string $name, mixed $value): void
+    final public function __set(string $name, $value): void
     {
         $this->setProperty("set", $name, $value);
     }

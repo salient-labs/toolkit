@@ -116,7 +116,7 @@ abstract class Ioc
         /**
          * @todo Suppress instantiation and dependency resolution
          */
-        return (self::$Container->create($name))::class;
+        return get_class(self::$Container->create($name));
     }
 
     /**

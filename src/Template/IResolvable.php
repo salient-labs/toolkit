@@ -23,9 +23,9 @@ interface IResolvable
      */
     public static function normalisePropertyName(string $name): string;
 
-    public function __set(string $name, mixed $value): void;
+    public function __set(string $name, $value): void;
 
-    public function __get(string $name): mixed;
+    public function __get(string $name);
 
     public function __isset(string $name): bool;
 

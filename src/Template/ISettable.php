@@ -14,7 +14,7 @@ interface ISettable extends IAccessible
 {
     public function getSettable(): ?array;
 
-    public function __set(string $name, mixed $value): void;
+    public function __set(string $name, $value): void;
 
     public function __unset(string $name): void;
 }

@@ -14,7 +14,7 @@ interface IGettable extends IAccessible
 {
     public function getGettable(): ?array;
 
-    public function __get(string $name): mixed;
+    public function __get(string $name);
 
     public function __isset(string $name): bool;
 }
