@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
+use DateTime;
+use UnexpectedValueException;
+
 /**
  * Data in, readable text out
  *
@@ -62,6 +65,51 @@ class Format
     public static function bool(bool $value)
     {
         return $value ? "true" : "false";
+    }
+
+    private static function getBetween(string $between): array
+    {
+        if (strlen($between) % 2)
+        {
+            throw new UnexpectedValueException('String length is not even: ' . $between);
+        }
+
+        return [
+            substr($between, 0, strlen($between) / 2),
+            substr($between, strlen($between) / 2)
+        ];
+    }
+
+    public static function date(DateTime $date, string $between = '[]'): string
+    {
+        list ($l, $r) = self::getBetween($between);
+
+        $noYear = date('Y') == $date->format('Y');
+        $noTime = $date->format('H:i:s') == '00:00:00';
+
+        $format = 'D j M' . ($noYear ? '' : ' Y') . ($noTime ? '' : ' H:i:s T');
+
+        return $l . $date->format($format) . $r;
+    }
+
+    public static function dateRange(
+        DateTime $from,
+        DateTime $to,
+        string $between   = '[]',
+        string $delimiter = "\u{2013}"
+    ): string
+    {
+        list ($l, $r) = self::getBetween($between);
+
+        $sameYear = ($year = $from->format('Y')) == $to->format('Y');
+        $sameZone = $from->getTimezone() == $to->getTimezone();
+        $noYear   = $sameYear && date('Y') == $year;
+        $noTime   = $sameZone && $from->format('H:i:s') == '00:00:00' && $to->format('H:i:s') == '00:00:00';
+
+        $fromFormat = 'D j M' . ($noYear ? '' : ' Y') . ($noTime ? '' : ' H:i:s' . ($sameZone ? '' : ' T'));
+        $toFormat   = $fromFormat . ($noTime || !$sameZone ? '' : ' T');
+
+        return $l . $from->format($fromFormat) . "$r$delimiter$l" . $to->format($toFormat) . $r;
     }
 }
 
