@@ -251,7 +251,7 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
         return (array)$array;
     }
 
-    final public function jsonSerialize()
+    final public function jsonSerialize(): array
     {
         return $this->toArray();
     }

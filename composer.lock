@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7bc2f30184cb3c8e60a0edc2b9cab7d7",
+    "content-hash": "370767fd77c3b26779cecb2e1d4e9fd3",
     "packages": [
         {
             "name": "filp/whoops",
@@ -79,7 +79,7 @@
         },
         {
             "name": "lkrms/dice",
-            "version": "dev-main",
+            "version": "v4.0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/Dice.git",
@@ -97,7 +97,6 @@
             "require-dev": {
                 "phpunit/phpunit": "^6.5"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -117,7 +116,7 @@
                 "ioc"
             ],
             "support": {
-                "source": "https://github.com/lkrms/Dice/tree/main"
+                "source": "https://github.com/lkrms/Dice/tree/v4.0.3.1"
             },
             "time": "2022-03-23T23:40:39+00:00"
         },
@@ -175,9 +174,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "lkrms/dice": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

@@ -491,7 +491,7 @@ EOF;
             }
             elseif (!$option->IsValueRequired)
             {
-                $value = $value ?: "";
+                $value = $value ?: $option->DefaultValue ?: "";
             }
             elseif ($option->IsValueRequired)
             {
@@ -539,9 +539,11 @@ EOF;
                 $this->optionError("{$option->DisplayName} cannot be used multiple times");
             }
 
-            if (!is_null($option->AllowedValues) && !empty($invalid = array_diff(Convert::toArray($value), $option->AllowedValues)))
+            if (!is_null($option->AllowedValues) && !is_null($value) &&
+                !empty($invalid = array_diff(Convert::toArray($value), $option->AllowedValues)))
             {
-                $this->optionError("invalid {$option->DisplayName} " . Convert::numberToNoun(count($invalid), "value") . ": " . implode(", ", $invalid));
+                $this->optionError("invalid {$option->DisplayName} "
+                    . Convert::numberToNoun(count($invalid), "value") . ": " . implode(", ", $invalid));
             }
         }
 
@@ -556,7 +558,7 @@ EOF;
             }
             else
             {
-                $value = $merged[$option->Key] ?? $option->DefaultValue;
+                $value = $merged[$option->Key] ?? (!$option->IsValueRequired ? null : $option->DefaultValue);
 
                 if ($option->IsFlag && $option->MultipleAllowed)
                 {

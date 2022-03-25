@@ -29,5 +29,10 @@ class CliOptionType
      * e.g. `-v on|off`
      */
     public const ONE_OF = 3;
+
+    /**
+     * e.g. `-v(on|off)`
+     */
+    public const ONE_OF_OPTIONAL = 4;
 }
 

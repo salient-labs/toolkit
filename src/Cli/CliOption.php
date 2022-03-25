@@ -135,13 +135,15 @@ class CliOption implements IGettable
 
             return;
         }
+        elseif (in_array($optionType, [CliOptionType::ONE_OF, CliOptionType::ONE_OF_OPTIONAL]))
+        {
+            $this->AllowedValues = $allowedValues;
+        }
 
         $this->IsRequired      = $required;
-        $this->IsValueRequired = ($optionType != CliOptionType::VALUE_OPTIONAL);
+        $this->IsValueRequired = !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
         $this->ValueName       = $valueName ?: "VALUE";
-        $this->AllowedValues   = $allowedValues;
         $this->DefaultValue    = $this->IsRequired ? null : $defaultValue;
-
     }
 
     public function validate()
@@ -188,7 +190,7 @@ class CliOption implements IGettable
             }
         }
 
-        if ($this->OptionType == CliOptionType::ONE_OF)
+        if (in_array($this->OptionType, [CliOptionType::ONE_OF, CliOptionType::ONE_OF_OPTIONAL]))
         {
             Assert::notEmpty($this->AllowedValues, "allowedValues");
         }
