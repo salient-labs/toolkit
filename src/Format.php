@@ -62,7 +62,7 @@ class Format
      * @param bool $value
      * @return string Either `"true"` or `"false"`.
      */
-    public static function bool(bool $value)
+    public static function bool(bool $value): string
     {
         return $value ? "true" : "false";
     }

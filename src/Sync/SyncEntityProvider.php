@@ -142,7 +142,7 @@ class SyncEntityProvider
             else
             {
                 throw new UnexpectedValueException("Invalid or missing method: " .
-                    $this->SyncProvider::class . "::$method");
+                    get_class($this->SyncProvider) . "::$method");
             }
         }
 

@@ -154,11 +154,11 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
     private function _serialize(
         &$node,
         SyncEntity $root,
+        $parents  = [],
+        $siblings = [],
         SyncEntity $parentEntity = null,
         array & $parentArray     = null,
-        string $parentKey        = null,
-        $parents                 = [],
-        $siblings                = []
+        string $parentKey        = null
     )
     {
         $entityNode = null;
@@ -175,9 +175,9 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
             }
             else
             {
-                $onlySerializeId = $root->OnlySerializeId[$node::class] ?? [];
+                $onlySerializeId = $root->OnlySerializeId[get_class($node)] ?? [];
 
-                if ($noSerialize = $root->DoNotSerialize[$node::class] ?? null)
+                if ($noSerialize = $root->DoNotSerialize[get_class($node)] ?? null)
                 {
                     $node = array_diff_key($node->serialize(), $noSerialize);
                 }
@@ -213,7 +213,7 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
                     continue;
                 }
 
-                $this->_serialize($child, $root, $entityNode, $node, $key, $parents, $siblings);
+                $this->_serialize($child, $root, $parents, $siblings, $entityNode, $node, $key);
             }
         }
         elseif (is_object($node))
@@ -235,7 +235,7 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
                     continue;
                 }
 
-                $this->_serialize($node->$key, $root, null, null, null, $parents, $siblings);
+                $this->_serialize($node->$key, $root, $parents, $siblings);
             }
         }
     }
