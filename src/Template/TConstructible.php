@@ -35,7 +35,7 @@ trait TConstructible
      * @throws UnexpectedValueException Thrown when required values are not
      * provided or the provided values cannot be applied
      */
-    public static function From(array $array)
+    public static function from(array $array)
     {
         /**
          * @todo Reimplement with caching
@@ -44,7 +44,7 @@ trait TConstructible
         $class = new ReflectionClass(Ioc::resolve(static::class));
 
         $getName = function ($reflection) { return $reflection->name; };
-        $mapFrom = function ($name) { return Convert::identifierToSnakeCase($name); };
+        $mapFrom = function ($name) { return Convert::toSnakeCase($name); };
 
         // $arrayMap: normalised_name => ORIGINAL_NAME
         $keys     = array_keys($array);
@@ -148,16 +148,28 @@ trait TConstructible
      *
      * Array keys are not preserved.
      *
-     * @param array $arrays An array of arrays. Each element is passed to {@see TConstructible::From()}.
+     * @param array<int,array|static> $arrays Nested arrays are passed to
+     * {@see TConstructible::from()}. Instances are added to the list as-is.
      * @return static[]
      */
-    public static function ListFrom(array $arrays): array
+    public static function listFrom(array $arrays): array
     {
         $list = [];
 
-        foreach ($arrays as $array)
+        foreach ($arrays as $index => $array)
         {
-            $list[] = static::From($array);
+            if ($array instanceof static )
+            {
+                $list[] = $array;
+
+                continue;
+            }
+            elseif (!is_array($array))
+            {
+                throw new UnexpectedValueException("Array expected at index $index");
+            }
+
+            $list[] = static::from($array);
         }
 
         return $list;

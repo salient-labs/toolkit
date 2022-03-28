@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Curler;
 
 use Exception;
-use Lkrms\Convert;
+use Lkrms\Format;
 use Throwable;
 
 /**
@@ -61,16 +61,16 @@ class CurlerException extends Exception
         $string[] = parent::__toString();
         $string[] = implode("\n", [
             "Response:",
-            Convert::arrayToString($this->ResponseHeaders) ?: "<no headers>",
+            Format::array($this->ResponseHeaders) ?: "<no headers>",
             is_null($this->Response) ? "<response body not available>" : ($this->Response ?: "<empty response body>"),
         ]);
         $string[] = implode("\n", [
             "cURL info:",
-            Convert::arrayToString($this->CurlInfo)
+            Format::array($this->CurlInfo)
         ]);
         $string[] = implode("\n", [
             "Request:",
-            is_array($this->RequestData) ? Convert::arrayToString($this->RequestData) : $this->RequestData
+            is_array($this->RequestData) ? Format::array($this->RequestData) : $this->RequestData
         ]);
 
         return implode("\n\n", $string);

@@ -19,7 +19,7 @@ abstract class Singleton
         self::$Singletons[ static::class] = $this;
     }
 
-    final protected static function HasInstance(): bool
+    final protected static function hasInstance(): bool
     {
         return !is_null(self::$Singletons[ static::class] ?? null);
     }
@@ -28,7 +28,7 @@ abstract class Singleton
      *
      * @return static
      */
-    public static function GetInstance()
+    public static function getInstance()
     {
         return (self::$Singletons[ static::class] ?? null) ?: new static();
     }

@@ -24,7 +24,7 @@ trait TExtensible
 
     public static function normalisePropertyName(string $name): string
     {
-        return Convert::identifierToSnakeCase($name);
+        return Convert::toSnakeCase($name);
     }
 
     public function setMetaProperty(string $name, $value): void

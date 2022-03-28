@@ -23,26 +23,26 @@ class C extends A
 
     public static function GetInstance(string $name = null)
     {
-        if (self::HasInstance())
+        if (self::hasInstance())
         {
-            return parent::GetInstance();
+            return parent::getInstance();
         }
 
-        $instance       = parent::GetInstance();
+        $instance       = parent::getInstance();
         $instance->name = $name;
 
         return $instance;
     }
 }
 
-$a  = A::GetInstance();
-$aa = A::GetInstance();
+$a  = A::getInstance();
+$aa = A::getInstance();
 
-$b  = B::GetInstance();
-$bb = B::GetInstance();
+$b  = B::getInstance();
+$bb = B::getInstance();
 
-$c  = C::GetInstance("name1");
-$cc = C::GetInstance("name2");
+$c  = C::getInstance("name1");
+$cc = C::getInstance("name2");
 
 print_r([
     "a"      => $a,

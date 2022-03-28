@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Template;
 
 /**
- * Provides public write access to protected properties via __set and __unset
+ * Provides access to protected properties via __set and __unset
  *
  * @package Lkrms
  * @see TSettable

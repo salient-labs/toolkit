@@ -49,12 +49,12 @@
   - [x] `Template\IResolvable`
   - [x] `Template\ISettable`
   - [x] `Template\PropertyResolver`
-  - [ ] `Template\Singleton`
-  - [ ] `Template\TConstructible`
+  - [x] `Template\Singleton`
+  - [x] `Template\TConstructible`
   - [x] `Template\TExtensible`
   - [x] `Template\TGettable`
   - [x] `Template\TSettable`
-  - [ ] `Template\TSingleton`
+  - [x] `Template\TSingleton`
   - [x] `Test`
   - [ ] `Trash`
 

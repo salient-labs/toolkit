@@ -10,7 +10,7 @@ class Post extends \Lkrms\Tests\Sync\Entity\Post
 {
     public function _setUserId($value)
     {
-        $this->User = User::From(["id" => $value]);
+        $this->User = User::from(["id" => $value]);
     }
 }
 

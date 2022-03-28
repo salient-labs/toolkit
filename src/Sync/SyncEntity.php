@@ -18,6 +18,22 @@ use UnexpectedValueException;
 /**
  * Represents the state of an entity in an external system
  *
+ * By default:
+ * - All `protected` properties are gettable and settable.
+ *
+ *   To change this, override {@see \Lkrms\Template\TGettable::getGettable()}
+ *   and/or {@see \Lkrms\Template\TSettable::getSettable()}.
+ *
+ * - {@see SyncEntity::serialize()} returns an associative array of `public`
+ *   property values.
+ *
+ * - No `DoNotSerialize` or `OnlySerializeId` rules are applied. See
+ *   {@see SyncEntity::getDoNotSerialize()} and
+ *   {@see SyncEntity::getOnlySerializeId()} for more information.
+ *
+ * - {@see SyncEntity::getSerializedIdKey()} appends `_id` to the names of
+ *   fields replaced with their {@see SyncEntity::$Id} during serialization.
+ *
  * @package Lkrms
  */
 abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensible, JsonSerializable
@@ -44,6 +60,16 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
         return IAccessible::ALLOW_ALL_PROTECTED;
     }
 
+    /**
+     * Convert the entity to an export-ready associative array
+     *
+     * Nested objects and lists must be returned as-is. Don't serialize anything
+     * except the entity itself.
+     *
+     * @return array
+     * @see SyncEntity::getDoNotSerialize()
+     * @see SyncEntity::getOnlySerializeId()
+     */
     protected function serialize(): array
     {
         return Convert::objectToArray($this);
@@ -115,6 +141,19 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
         return null;
     }
 
+    /**
+     * Returns the key to use when a nested object is replaced during
+     * serialization
+     *
+     * The default implementation appends `_id` to the key being replaced.
+     * `user`, for example, would be replaced with `user_id`.
+     *
+     * @param string $key The key of the object being replaced in the entity's
+     * serialized form.
+     * @return string
+     * @see SyncEntity::serialize()
+     * @see SyncEntity::getOnlySerializeId()
+     */
     protected function getSerializedIdKey(string $key): string
     {
         return $key . "_id";
@@ -137,7 +176,8 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
         // - $parentEntity->getSerializedIdKey($parentKey) returns a new name
         // - the new name hasn't already been used in $parentArray
         if (!is_null($parentEntity) &&
-            $newParentKey = $parentEntity->getSerializedIdKey($parentKey))
+            ($newParentKey = $parentEntity->getSerializedIdKey($parentKey)) &&
+            $newParentKey != $parentKey)
         {
             if (array_key_exists($newParentKey, $parentArray))
             {
@@ -240,6 +280,17 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
         }
     }
 
+    /**
+     * Serialize the entity and its nested entities
+     *
+     * The entity's `DoNotSerialize` and `OnlySerializeId` rules are applied to
+     * each `SyncEntity` encountered during this recursive operation.
+     *
+     * @return array
+     * @see SyncEntity::serialize()
+     * @see SyncEntity::getDoNotSerialize()
+     * @see SyncEntity::getOnlySerializeId()
+     */
     public function toArray(): array
     {
         $this->DoNotSerialize  = array_map('array_flip', $this->getDoNotSerialize() ?: []);

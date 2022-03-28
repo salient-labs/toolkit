@@ -65,7 +65,7 @@ abstract class CliCommand
      * ```
      *
      * @return array<int,CliOption|array>
-     * @see TConstructible::From()
+     * @see TConstructible::from()
      */
     abstract protected function getOptionList(): array;
 
@@ -212,7 +212,7 @@ abstract class CliCommand
     {
         if (!($option instanceof CliOption))
         {
-            $option = CliOption::From($option);
+            $option = CliOption::from($option);
         }
 
         $option->validate();

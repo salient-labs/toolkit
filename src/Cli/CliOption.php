@@ -104,7 +104,7 @@ class CliOption implements IGettable
      * @param bool          $required
      * @param bool          $multipleAllowed
      * @param string|array<int,string>|null $defaultValue
-     * @see TConstructible::From()
+     * @see TConstructible::from()
      */
     public function __construct(
         ?string $long,

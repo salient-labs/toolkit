@@ -33,7 +33,7 @@ class JsonPlaceholderApi extends SyncProvider implements PostProvider, UserProvi
 
     public function getPost($id): Post
     {
-        return Post::From($this->getCurler("/posts/" . $id)->GetJson());
+        return Post::from($this->getCurler("/posts/" . $id)->GetJson());
     }
 
     public function updatePost(Post $post): Post
@@ -48,7 +48,7 @@ class JsonPlaceholderApi extends SyncProvider implements PostProvider, UserProvi
 
     public function listPost(): array
     {
-        return Post::ListFrom($this->getCurler("/posts")->GetJson());
+        return Post::listFrom($this->getCurler("/posts")->GetJson());
     }
 
     public function createUser(User $user): User
@@ -58,7 +58,7 @@ class JsonPlaceholderApi extends SyncProvider implements PostProvider, UserProvi
 
     public function getUser($id): User
     {
-        return User::From($this->getCurler("/users/" . $id)->GetJson());
+        return User::from($this->getCurler("/users/" . $id)->GetJson());
     }
 
     public function updateUser(User $user): User
@@ -73,7 +73,7 @@ class JsonPlaceholderApi extends SyncProvider implements PostProvider, UserProvi
 
     public function listUser(): array
     {
-        return User::ListFrom($this->getCurler("/users")->GetJson());
+        return User::listFrom($this->getCurler("/users")->GetJson());
     }
 }
 

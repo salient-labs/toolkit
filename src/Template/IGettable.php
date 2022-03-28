@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Template;
 
 /**
- * Provides public read access to protected properties via __get and __isset
+ * Provides access to protected properties via __get and __isset
  *
  * @package Lkrms
  * @see TGettable

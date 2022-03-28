@@ -7,6 +7,8 @@ use Lkrms\Err;
 use Lkrms\Template\IExtensible;
 use Lkrms\Template\TConstructible;
 use Lkrms\Template\TExtensible;
+use Throwable;
+use UnexpectedValueException;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
@@ -27,17 +29,41 @@ class B extends A
     public $Data = [];
 }
 
-$a = A::From([
+$exceptions = [];
+
+$value1 = [
     "id"    => 1,
     "name"  => "Test entry",
     "DATA"  => [3, 4, 5],
     "DATA2" => [32, 42, 52],
-]);
-$b = B::From([
+];
+
+$value2 = [
     "id"   => 2,
     "name" => "Another test entry",
     "DATA" => [13, 14, 15],
-]);
+];
+
+$value3 = [
+    "id"   => 3,
+    "name" => "One more test entry",
+    "DATA" => [29, 27, 26],
+];
+
+$a = A::from($value1);
+$b = B::from($value2);
+$c = B::from($value3);
+$d = B::listFrom([$value1, $value2, $c]);
+$e = A::listFrom([$value1, $value2, $c]);
+
+try
+{
+    $f = B::listFrom([$value1, $value2, $a]);
+}
+catch (UnexpectedValueException $ex)
+{
+    $exceptions[] = $ex;
+}
 
 $a_id   = $a->Id;
 $a_name = $a->Name;
@@ -53,4 +79,20 @@ print_r([
     'b_set' => $b,
     'a_get' => ['id' => $a_id, 'name' => $a_name, 'data' => $a_data, 'meta' => $a_meta],
     'b_get' => ['id' => $b_id, 'name' => $b_name, 'data' => $b_data],
+    'd' => $d,
+    'e' => $e,
+
+    // true
+    'b == $d[1]' => $b == $d[1],
+
+    // false
+    'b === $d[1]' => $b === $d[1],
+
+    // true
+    'c == $d[2]' => $c == $d[2],
+
+    // true
+    'c === $d[2]' => $c === $d[2],
+
+    'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
 ]);

@@ -173,7 +173,7 @@ class Curler
         }
         else
         {
-            $query = "?" . Convert::httpBuildQuery($queryString, $this->ForceNumericKeys);
+            $query = "?" . Convert::dataToQuery($queryString, $this->ForceNumericKeys);
         }
 
         $this->CreateHandle($this->BaseUrl . $query);
@@ -243,7 +243,7 @@ class Curler
             }
             else
             {
-                $query = Convert::httpBuildQuery($data, $this->ForceNumericKeys);
+                $query = Convert::dataToQuery($data, $this->ForceNumericKeys);
             }
         }
 
@@ -729,7 +729,7 @@ class Curler
     {
         if (empty($path))
         {
-            $entities = array_merge($entities, Convert::anyToList($data));
+            $entities = array_merge($entities, Convert::toList($data));
         }
         elseif (Test::isListArray($data))
         {
