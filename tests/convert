@@ -41,6 +41,14 @@ $identifiers = [
     "twowords", "TWOWORDS", "twoWords", "TwoWords",
     "two_words", "TWO_WORDS", "two_Words", "Two_Words",
     "two-words", "TWO-WORDS", "Two-Words",
+    "12twowords", "two12words", "twowords12",
+    "12TWOWORDS", "TWO12WORDS", "TWOWORDS12",
+    "12twoWords", "two12Words", "twoWords12",
+    "12TwoWords", "Two12Words", "TwoWords12",
+    "12two_words", "two12_words", "two_12words", "two_words12",
+    "12TWO_WORDS", "TWO12_WORDS", "TWO_12WORDS", "TWO_WORDS12",
+    "12two_Words", "two12_Words", "two_12Words", "two_Words12",
+    "12Two_Words", "Two12_Words", "Two_12Words", "Two_Words12",
 ];
 
 $snakeCase = array_combine($identifiers, array_map(function ($i)
@@ -56,6 +64,13 @@ $kebabCase = array_combine($identifiers, array_map(function ($i)
 }, $identifiers));
 
 print_r($kebabCase);
+
+$pascalCase = array_combine($identifiers, array_map(function ($i)
+{
+    return Convert::toPascalCase($i);
+}, $identifiers));
+
+print_r($pascalCase);
 
 $list = [
     ['id' => 38, 'name' => 'Amir'],

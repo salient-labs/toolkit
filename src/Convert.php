@@ -267,7 +267,7 @@ abstract class Convert
     }
 
     /**
-     * Convert a multiple-word identifier to snake_case
+     * Convert an identifier to snake_case
      *
      * @param string $text The identifier to convert.
      * @return string
@@ -289,7 +289,7 @@ abstract class Convert
     }
 
     /**
-     * Convert a multiple-word identifier to kebab-case
+     * Convert an identifier to kebab-case
      *
      * @param string $text
      * @return string
@@ -300,6 +300,23 @@ abstract class Convert
         $text = preg_replace("/([[:lower:]])([[:upper:]])/", '$1-$2', $text);
 
         return strtolower($text);
+    }
+
+    /**
+     * Convert an identifier to PascalCase
+     *
+     * @param string $text
+     * @return string
+     */
+    public static function toPascalCase(string $text): string
+    {
+        $text = preg_replace_callback(
+            '/([[:upper:]]?[[:lower:][:digit:]]+|([[:upper:]](?![[:lower:]]))+)/',
+            function (array $matches) { return ucfirst(strtolower($matches[0])); },
+            $text
+        );
+
+        return preg_replace("/[^[:alnum:]]+/", "", $text);
     }
 
     /**
