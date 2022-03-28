@@ -17,12 +17,16 @@ use UnexpectedValueException;
 abstract class CliCommand
 {
     /**
-     * Return the name of the command as an array of its parts
+     * Return a short description of the command
      *
-     * At least one component must be returned, and components are required to
-     * match the regular expression: `^[a-zA-Z][a-zA-Z0-9_-]*$`
+     * @return string
+     */
+    abstract public function getDescription(): string;
+
+    /**
+     * Return the command name as an array of subcommands
      *
-     * A subclass could return the following, for example:
+     * A command could return the following, for example:
      *
      * ```php
      * ["sync", "canvas", "from-sis"]
@@ -34,9 +38,13 @@ abstract class CliCommand
      * my-cli-app sync canvas from-sis
      * ```
      *
-     * @return string[]
+     * Valid subcommands start with a letter, followed by any number of letters,
+     * numbers, hyphens, or underscores.
+     *
+     * @return string[] An `UnexpectedValueException` will be thrown if an empty
+     * array or invalid subcommand is returned.
      */
-    abstract protected function getDefaultName(): array;
+    abstract protected function _getName(): array;
 
     /**
      * Return a list of CliOption objects and/or arrays to create them from
@@ -67,7 +75,7 @@ abstract class CliCommand
      * @return array<int,CliOption|array>
      * @see TConstructible::from()
      */
-    abstract protected function getOptionList(): array;
+    abstract protected function _getOptions(): array;
 
     /**
      * Run the command, optionally returning an exit status
@@ -89,7 +97,7 @@ abstract class CliCommand
     /**
      * @var string[]
      */
-    private $QualifiedName;
+    private $Name;
 
     /**
      * @var CliOption[]
@@ -131,13 +139,13 @@ abstract class CliCommand
      */
     private $IsHelp = false;
 
-    public static function assertQualifiedNameIsValid(?array $nameParts)
+    final public static function assertNameIsValid(?array $name)
     {
-        Assert::notEmpty($nameParts, "nameParts");
+        Assert::notEmpty($name, "name");
 
-        foreach ($nameParts as $i => $name)
+        foreach ($name as $i => $subcommand)
         {
-            Assert::pregMatch($name, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "nameParts[$i]");
+            Assert::pregMatch($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
         }
     }
 
@@ -154,52 +162,52 @@ abstract class CliCommand
      * Cli::registerCommand(new MyCliCommand());
      * ```
      *
-     * But the only way to override a command's default `QualifiedName` is with
-     * `CliCommand::register()`:
+     * But the only way to register a command with an application-specific name
+     * is with `CliCommand::register()`:
      *
      * ```php
-     * MyCliCommand::register(["command", "subcommand", "my-cli-command"]);
+     * MyCliCommand::register(["subcommand", "my-cli-command"]);
      * ```
      *
-     * @param array|null $qualifiedName If set, the qualified name returned by
-     * the subclass will be ignored.
+     * @param array|null $name If set, the name returned by the command will be
+     * ignored.
      */
-    final public static function register(array $qualifiedName = null)
+    final public static function register(array $name = null)
     {
         $command = new static();
 
-        if (!is_null($qualifiedName))
+        if (!is_null($name))
         {
-            self::assertQualifiedNameIsValid($qualifiedName);
-            $command->QualifiedName = $qualifiedName;
+            self::assertNameIsValid($name);
+            $command->Name = $name;
         }
 
         Cli::registerCommand($command);
     }
 
-    final public function getName(): string
+    final public function getCommandName(): string
     {
-        return implode(" ", $this->getQualifiedName());
+        return implode(" ", $this->getName());
     }
 
-    final public function getCommandName()
+    final public function getLongCommandName(): string
     {
-        return Cli::getProgramName() . " " . $this->getName();
+        return Cli::getProgramName() . " " . $this->getCommandName();
     }
 
     /**
      *
      * @return string[]
      */
-    final public function getQualifiedName(): array
+    final public function getName(): array
     {
-        if (!$this->QualifiedName)
+        if (!$this->Name)
         {
-            self::assertQualifiedNameIsValid($nameParts = $this->getDefaultName());
-            $this->QualifiedName = $nameParts;
+            self::assertNameIsValid($name = $this->_getName());
+            $this->Name = $name;
         }
 
-        return $this->QualifiedName;
+        return $this->Name;
     }
 
     /**
@@ -259,7 +267,7 @@ abstract class CliCommand
             return;
         }
 
-        $_options = $this->getOptionList();
+        $_options = $this->_getOptions();
         $options  = [];
 
         foreach ($_options as $option)
@@ -289,11 +297,11 @@ abstract class CliCommand
         return $this->Options;
     }
 
-    final public function getOptionByName(string $name)
+    final public function getOptionByName(string $name): ?CliOption
     {
         $this->loadOptions();
 
-        return $this->OptionsByName[$name] ?? false;
+        return $this->OptionsByName[$name] ?? null;
     }
 
     final public function getUsage(bool $line1 = false): string
@@ -399,13 +407,17 @@ abstract class CliCommand
             . ($optional ? " [" . implode("] [", $optional) . "]" : "")
             . ($required ? " " . implode(" ", $required) : ""));
 
-        $name    = $this->getCommandName();
+        $name    = $this->getLongCommandName();
+        $desc    = $this->getDescription();
         $options = trim($options, "\n");
 
         return $line1 ? $synopsis :
 <<<EOF
 ___NAME___
   __{$name}__
+
+___DESCRIPTION___
+  {$desc}
 
 ___SYNOPSIS___
   __{$name}__{$synopsis}
@@ -417,7 +429,7 @@ EOF;
 
     final protected function optionError(string $message)
     {
-        Console::Error($this->getCommandName() . ": $message");
+        Console::Error($this->getLongCommandName() . ": $message");
         $this->OptionErrors++;
     }
 
@@ -603,7 +615,11 @@ EOF;
         return $option->Value;
     }
 
-    final public function getAllOptionValues()
+    /**
+     *
+     * @return array<string,string|string[]|bool|int|null>
+     */
+    final public function getAllOptionValues(): array
     {
         $this->loadOptionValues();
 
@@ -645,7 +661,7 @@ EOF;
      * @param int $status
      * @see CliCommand::run()
      */
-    protected function setExitStatus(int $status)
+    final protected function setExitStatus(int $status)
     {
         $this->ExitStatus = $status;
     }

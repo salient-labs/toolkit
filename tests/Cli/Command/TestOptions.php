@@ -9,7 +9,7 @@ use Lkrms\Cli\CliOptionType;
 
 class TestOptions extends CliCommand
 {
-    protected function getDefaultName(): array
+    protected function _getName(): array
     {
         return [
             "test",
@@ -17,7 +17,7 @@ class TestOptions extends CliCommand
         ];
     }
 
-    protected function getOptionList(): array
+    protected function _getOptions(): array
     {
         //[
         //    "long"            => "",

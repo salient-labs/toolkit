@@ -57,21 +57,21 @@ class Cli
 
     /**
      *
-     * @param string[] $nameParts
+     * @param string[] $name
      * @return array<string,array|CliCommand>|CliCommand|null
      */
-    public static function getCommandTree(array $nameParts = [])
+    public static function getCommandTree(array $name = [])
     {
         $tree = self::$CommandTree;
 
-        foreach ($nameParts as $part)
+        foreach ($name as $subcommand)
         {
             if (!is_array($tree))
             {
                 return null;
             }
 
-            $tree = $tree[$part] ?? null;
+            $tree = $tree[$subcommand] ?? null;
         }
 
         return $tree;
@@ -84,28 +84,28 @@ class Cli
      */
     public static function registerCommand(CliCommand $command)
     {
-        $nameParts = $command->getQualifiedName();
+        $name = $command->getName();
 
-        if (!is_null(self::getCommandTree($nameParts)))
+        if (!is_null(self::getCommandTree($name)))
         {
-            throw new UnexpectedValueException("Command already registered at '" . implode(" ", $nameParts) . "'");
+            throw new UnexpectedValueException("Command already registered at '" . implode(" ", $name) . "'");
         }
 
         $tree = & self::$CommandTree;
-        $name = array_pop($nameParts);
+        $leaf = array_pop($name);
 
-        foreach ($nameParts as $part)
+        foreach ($name as $subcommand)
         {
-            if (!is_array($tree[$part] ?? null))
+            if (!is_array($tree[$subcommand] ?? null))
             {
-                $tree[$part] = [];
+                $tree[$subcommand] = [];
             }
 
-            $tree = & $tree[$part];
+            $tree = & $tree[$subcommand];
         }
 
-        $tree[$name] = $command;
-        self::$Commands[$command->getName()] = $command;
+        $tree[$leaf] = $command;
+        self::$Commands[$command->getCommandName()] = $command;
     }
 
     /**
@@ -164,14 +164,14 @@ EOF;
         {
             for ($i = 1; $i < $GLOBALS["argc"]; $i++)
             {
-                $part = $GLOBALS["argv"][$i];
+                $arg = $GLOBALS["argv"][$i];
 
-                if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $part))
+                if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg))
                 {
-                    $node  = $node[$part] ?? null;
-                    $name .= ($name ? " " : "") . $part;
+                    $node  = $node[$arg] ?? null;
+                    $name .= ($name ? " " : "") . $arg;
                 }
-                elseif ($part == "--help" && $i + 1 == $GLOBALS["argc"])
+                elseif ($arg == "--help" && $i + 1 == $GLOBALS["argc"])
                 {
                     Console::PrintTo(self::getUsage($name, $node), ...Console::GetOutputTargets());
 
