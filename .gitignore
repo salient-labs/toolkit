@@ -2,4 +2,5 @@
 /vendor/
 composer.phar
 phpdoc.xml
+*.generated.*
 *.log

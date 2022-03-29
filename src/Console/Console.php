@@ -192,7 +192,7 @@ class Console
         // `<temp_dir>/<basename>-<realpath_hash>-<user_id>.log`
         if (self::$AutomaticLogTarget && empty(self::$LogTargets))
         {
-            self::AddTarget(Stream::FromPath(File::StablePath(".log")));
+            self::AddTarget(Stream::FromPath(File::getStablePath(".log")));
         }
 
         // If no output streams have been added and we're running on the command

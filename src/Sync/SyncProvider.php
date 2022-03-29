@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Lkrms\Sync;
 
 use Lkrms\Generate;
+use Lkrms\Sync\Provider\ISyncProvider;
 
 /**
  * Base class for API providers
  *
  * @package Lkrms
  */
-abstract class SyncProvider
+abstract class SyncProvider implements ISyncProvider
 {
     /**
      * Returns a stable identifier unique to the connected backend instance

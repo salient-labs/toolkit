@@ -43,7 +43,7 @@ abstract class Sqlite
 
         if ($filename != ":memory:")
         {
-            File::MaybeCreate($filename, 0600, 0700);
+            File::maybeCreate($filename, 0600, 0700);
         }
 
         $db = new SQLite3($filename);

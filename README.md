@@ -10,10 +10,42 @@ Install the latest version with [Composer](https://getcomposer.org/):
 composer require lkrms/util
 ```
 
+## Using the CLI utility
+
+`lkrms/util` includes code generators and other command-line tools you can use
+during development by running `lk-util` from your project's `vendor/bin`
+directory (preferred), or via `composer exec lk-util`.
+
+For a list of available subcommands, run `lk-util` with no arguments. For usage
+information, add `--help` to any command.
+
+To make it easier to work with fully-qualified class names in a terminal,
+`lk-util` allows fallback namespaces and classes to be specified via environment
+variables. The following Visual Studio Code settings illustrate how they can be
+used:
+
+```jsonc
+{
+  "settings": {
+    "terminal.integrated.env.linux": {
+      // Added to unqualified '--class' names
+      "SYNC_ENTITY_NAMESPACE": "Lkrms\\Tests\\Sync\\Entity",
+      // Used if '--package' is not specified
+      "SYNC_ENTITY_PACKAGE": "Lkrms\\Tests",
+      // Used if '--api-provider' is not specified
+      "SYNC_ENTITY_PROVIDER": "JsonPlaceholderApi",
+      // Added to unqualified '--api-provider' names (e.g. "JsonPlaceholderApi")
+      "SYNC_PROVIDER_NAMESPACE": "Lkrms\\Tests\\Sync\\Api"
+    }
+  }
+}
+```
+
 ## Using `Console` for terminal output and logging
 
 > You don't have to use `Lkrms\Console\Console` for message logging, but
-> `lkrms/util` uses it internally, so familiarity is recommended.
+> `lkrms/util` uses it internally, so familiarising yourself with its default
+> behaviour is recommended.
 
 To make it easier to create readable terminal output and log entries, the
 [`Lkrms\Console\Console`][Console.php] class provides:

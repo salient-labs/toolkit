@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\Env;
+use Lkrms\Err\Err;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Err::HandleErrors();
+
+Env::Load(__DIR__ . "/.env");
+
+require (__DIR__ . '/../bin/lk-util');

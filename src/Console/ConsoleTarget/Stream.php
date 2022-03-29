@@ -133,7 +133,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
 
         $path = $path ?: $this->Path;
 
-        if (!fclose($this->Stream) || !File::MaybeCreate($path, 0600) || ($stream = fopen($path, "a")) === false)
+        if (!fclose($this->Stream) || !File::maybeCreate($path, 0600) || ($stream = fopen($path, "a")) === false)
         {
             throw new RuntimeException("Could not close {$this->Path} and open $path");
         }
@@ -153,7 +153,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         ConsoleLevel::DEBUG
     ], bool $addColour = null, bool $addTimestamp = null, string $timestamp = null, string $timezone = null): Stream
     {
-        if (!File::MaybeCreate($path, 0600) || ($stream = fopen($path, "a")) === false)
+        if (!File::maybeCreate($path, 0600) || ($stream = fopen($path, "a")) === false)
         {
             throw new RuntimeException("Could not open $path");
         }

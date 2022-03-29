@@ -31,7 +31,7 @@
   - [x] `Err\CliHandler`
   - [ ] `Err\Err`
   - [x] `Error`
-  - [ ] `File`
+  - [x] `File`
   - [x] `Format`
   - [x] `Generate`
   - [x] `Ioc\Ioc`
@@ -62,4 +62,8 @@
 - [x] Implement `CliOptionType::ONE_OF_OPTIONAL`
 - [ ] Implement shared/default command options
 - [ ] Add automatic `help` command
+
+### Console
+- [ ] Improve default targets so console messages aren't included in redirected
+  output
 

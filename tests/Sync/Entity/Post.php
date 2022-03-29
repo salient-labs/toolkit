@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
-use Lkrms\Sync\SyncEntity;
-
-class Post extends SyncEntity
+/**
+ *
+ * @package Lkrms\Tests
+ */
+class Post extends \Lkrms\Sync\SyncEntity
 {
     /**
      * @var int

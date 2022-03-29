@@ -33,6 +33,6 @@ interface UserProvider
     /**
      * @return User[]
      */
-    public function listUser(): array;
+    public function getUsers(): array;
 }
 

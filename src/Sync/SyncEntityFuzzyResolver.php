@@ -81,7 +81,7 @@ class SyncEntityFuzzyResolver extends SyncEntityResolver
 
         $this->Entities = [];
 
-        foreach ($this->EntityProvider->list() as $entity)
+        foreach ($this->EntityProvider->getList() as $entity)
         {
             $this->Entities[] = [
                 $entity,

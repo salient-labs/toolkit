@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Lkrms;
 
 use ReflectionClass;
+use ReflectionIntersectionType;
+use ReflectionNamedType;
+use ReflectionType;
+use ReflectionUnionType;
 use UnexpectedValueException;
 
 /**
@@ -28,6 +32,54 @@ class Reflect
         }
 
         return $reflection->name;
+    }
+
+    /**
+     * Return all types represented by the given ReflectionType
+     *
+     * Reflection methods that return a `ReflectionType` may actually return any
+     * of the following:
+     * - `ReflectionType` (had `isBuiltin()` until becoming `abstract` in PHP 8)
+     * - `ReflectionNamedType` (PHP 7.1+)
+     * - `ReflectionUnionType` (PHP 8+)
+     * - `ReflectionIntersectionType` (PHP 8.1+)
+     *
+     * Depending on the PHP version, `getAllTypes` returns an array of
+     * `ReflectionNamedType` and/or `ReflectionType` instances.
+     *
+     * @param null|ReflectionType $type e.g. the return value of
+     * `ReflectionParameter::getType()`.
+     * @return ReflectionType[]
+     * @see Convert::getAllTypeNames()
+     */
+    public static function getAllTypes(?ReflectionType $type): array
+    {
+        if ($type instanceof ReflectionUnionType)
+        {
+            return $type->getTypes();
+        }
+        elseif ($type instanceof ReflectionIntersectionType)
+        {
+            return [];
+        }
+
+        return is_null($type) ? [] : [$type];
+    }
+
+    /**
+     * Return the names of all types represented by the given ReflectionType
+     *
+     * @param null|ReflectionType $type e.g. the return value of
+     * `ReflectionParameter::getType()`.
+     * @return string[]
+     * @see Convert::getAllTypes()
+     */
+    public static function getAllTypeNames(?ReflectionType $type): array
+    {
+        return array_map(
+            function (ReflectionType $t) { return $t instanceof ReflectionNamedType ? $t->getName() : (string)$t; },
+            self::getAllTypes($type)
+        );
     }
 
     /**

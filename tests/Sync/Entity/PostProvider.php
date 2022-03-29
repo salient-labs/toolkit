@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
-interface PostProvider
+interface PostProvider extends \Lkrms\Sync\Provider\ISyncProvider
 {
     /**
      * @param Post $post
@@ -33,6 +33,6 @@ interface PostProvider
     /**
      * @return Post[]
      */
-    public function listPost(): array;
+    public function getPosts(): array;
 }
 

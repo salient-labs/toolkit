@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
-use Lkrms\Sync\SyncEntity;
-
-class User extends SyncEntity
+/**
+ *
+ * @package Lkrms\Tests
+ */
+class User extends \Lkrms\Sync\SyncEntity
 {
     /**
      * @var int
@@ -32,6 +34,16 @@ class User extends SyncEntity
      * @var array
      */
     public $Address;
+
+    /**
+     * @var string
+     */
+    public $Phone;
+
+    /**
+     * @var string
+     */
+    public $Website;
 
     /**
      * @var array

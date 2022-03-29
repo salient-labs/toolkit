@@ -41,7 +41,7 @@ class CachingCurler extends Curler
     {
         $this->InternalStackDepth += 1;
 
-        if ($this->LastRequestType == "GET")
+        if ($this->LastRequestType == "GET" && Cache::IsLoaded())
         {
             $url     = curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL);
             $headers = $this->Headers->GetHeaders();

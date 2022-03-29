@@ -4,26 +4,31 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Api;
 
-use Lkrms\Curler\Curler;
-use Lkrms\Sync\SyncProvider;
+use Lkrms\Curler\CurlerHeaders;
+use Lkrms\Sync\Provider\HttpSyncProvider;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\PostProvider;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Entity\UserProvider;
 use RuntimeException;
 
-class JsonPlaceholderApi extends SyncProvider implements PostProvider, UserProvider
+class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserProvider
 {
     private const JSON_PLACEHOLDER_BASE_URL = "https://jsonplaceholder.typicode.com";
 
-    private function getCurler(string $path): Curler
-    {
-        return new Curler(self::JSON_PLACEHOLDER_BASE_URL . $path);
-    }
-
-    public function getBackendIdentifier(): string
+    protected function getBaseUrl(): string
     {
         return self::JSON_PLACEHOLDER_BASE_URL;
+    }
+
+    protected function getHeaders(): ?CurlerHeaders
+    {
+        return null;
+    }
+
+    protected function getBackendIdentifier(): array
+    {
+        return [self::JSON_PLACEHOLDER_BASE_URL];
     }
 
     public function createPost(Post $post): Post
@@ -46,7 +51,7 @@ class JsonPlaceholderApi extends SyncProvider implements PostProvider, UserProvi
         throw new RuntimeException("Not implemented");
     }
 
-    public function listPost(): array
+    public function getPosts(): array
     {
         return Post::listFrom($this->getCurler("/posts")->GetJson());
     }
@@ -71,7 +76,7 @@ class JsonPlaceholderApi extends SyncProvider implements PostProvider, UserProvi
         throw new RuntimeException("Not implemented");
     }
 
-    public function listUser(): array
+    public function getUsers(): array
     {
         return User::listFrom($this->getCurler("/users")->GetJson());
     }

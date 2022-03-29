@@ -18,7 +18,7 @@ abstract class HttpSyncProvider extends SyncProvider
 {
     abstract protected function getBaseUrl(): string;
 
-    abstract protected function getHeaders(): CurlerHeaders;
+    abstract protected function getHeaders(): ?CurlerHeaders;
 
     protected function headersCallback(array $headers): array
     {

@@ -31,7 +31,7 @@ Ioc::register(Post::class, CustomEntity\Post::class);
 $postApi = new SyncEntityProvider(Post::class);
 $userApi = new SyncEntityProvider(User::class);
 
-$posts = $postApi->list();
+$posts = $postApi->getList();
 Console::Info("Posts retrieved:", count($posts));
 
 $resolver       = new SyncEntityResolver($userApi, "Name");

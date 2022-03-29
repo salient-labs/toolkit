@@ -1,0 +1,29 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Util;
+
+use Lkrms\Cli\Cli;
+use Lkrms\Env;
+use Lkrms\Err\Err;
+use Lkrms\Util\Command\Generate\GenerateSyncEntityClass;
+use Lkrms\Util\Command\Generate\GenerateSyncEntityProviderInterface;
+use Lkrms\Util\Command\Sync\HttpGetPath;
+
+$loader = require ($_composer_autoload_path ?? __DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Util\\", __DIR__);
+
+Err::HandleErrors();
+
+if (($_composer_autoload_path ?? null) &&
+    file_exists($env = dirname(dirname(realpath($_composer_autoload_path))) . "/.env"))
+{
+    Env::load($env);
+}
+
+GenerateSyncEntityClass::register();
+GenerateSyncEntityProviderInterface::register();
+HttpGetPath::register();
+
+$status = Cli::runCommand();
+exit ($status);

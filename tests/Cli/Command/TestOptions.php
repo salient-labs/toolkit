@@ -9,6 +9,11 @@ use Lkrms\Cli\CliOptionType;
 
 class TestOptions extends CliCommand
 {
+    public function getDescription(): string
+    {
+        return "Test the available option types";
+    }
+
     protected function _getName(): array
     {
         return [

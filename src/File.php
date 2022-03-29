@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
+use Composer\Autoload\ClassLoader;
 use RuntimeException;
 
 /**
@@ -16,33 +17,20 @@ class File
     /**
      * Get a file's end-of-line sequence
      *
-     * @param string $filename Path to the file to check.
-     * @return string Either "\r\n" or "\n".
-     * @throws RuntimeException
+     * @param string $filename
+     * @return string|false `"\r\n"` or `"\n"` on success, or `false` if the
+     * file's line endings couldn't be determined.
      */
-    public static function GetEol(string $filename): string
+    public static function getEol(string $filename)
     {
-        $endings = [
-            "\r\n",
-            "\n",
-        ];
-
-        $handle = fopen($filename, "r");
-
-        if ($handle === false)
+        if (($handle = fopen($filename, "r")) === false ||
+            ($line   = fgets($handle)) === false ||
+            fclose($handle) === false)
         {
-            throw new RuntimeException("Could not open $filename");
+            return false;
         }
 
-        $line = fgets($handle);
-        fclose($handle);
-
-        if ($line === false)
-        {
-            throw new RuntimeException("Could not read $filename");
-        }
-
-        foreach ($endings as $eol)
+        foreach (["\r\n", "\n"] as $eol)
         {
             if (substr($line, -strlen($eol)) == $eol)
             {
@@ -50,40 +38,33 @@ class File
             }
         }
 
-        throw new RuntimeException("Unable to determine end-of-line sequence: $filename");
+        return false;
     }
 
     /**
      * Create a file if it doesn't exist
      *
-     * `$permissions` and `$dirPermissions` are only used if the file and/or its parent directory don't exist.
-     *
      * @param string $filename Full path to the file.
-     * @param int $permissions
-     * @param int $dirPermissions
-     * @return bool
+     * @param int $permissions Only used if `$filename` needs to be created.
+     * @param int $dirPermissions Only used if `$filename`'s parent directory
+     * needs to be created.
+     * @return bool `true` on success or `false` on failure.
      */
-    public static function MaybeCreate(string $filename, int $permissions = 0777, int $dirPermissions = 0777): bool
+    public static function maybeCreate(
+        string $filename,
+        int $permissions    = 0777,
+        int $dirPermissions = 0777
+    ): bool
     {
         $dir = dirname($filename);
 
-        if (!file_exists($dir))
+        if ((file_exists($dir) || mkdir($dir, $dirPermissions, true)) &&
+            (file_exists($filename) || (touch($filename) && chmod($filename, $permissions))))
         {
-            if (!mkdir($dir, $dirPermissions, true))
-            {
-                throw new RuntimeException("Could not create directory $dir");
-            }
+            return true;
         }
 
-        if (!file_exists($filename))
-        {
-            if (!touch($filename) || !chmod($filename, $permissions))
-            {
-                throw new RuntimeException("Could not create file $filename");
-            }
-        }
-
-        return true;
+        return false;
     }
 
     /**
@@ -98,7 +79,7 @@ class File
      * @return string|false|void
      * @throws RuntimeException
      */
-    public static function WriteCsv(
+    public static function writeCsv(
         array $data,
         string $filename  = null,
         bool $headerRow   = true,
@@ -160,32 +141,6 @@ class File
     }
 
     /**
-     * Get a pathname relative to a parent directory
-     *
-     * @param string $childPath Path to a child of `$parentPath` (must exist).
-     * @param string $parentPath Path to an ancestor of `$childPath`.
-     * @return false|string
-     * @throws RuntimeException
-     */
-    public static function GetChildPathRelative(string $childPath, string $parentPath)
-    {
-        $file = realpath($childPath);
-        $dir  = realpath($parentPath);
-
-        if ($file === false || $dir === false)
-        {
-            return false;
-        }
-
-        if ($file == $dir || strpos($file, $dir) !== 0)
-        {
-            throw new RuntimeException("$childPath is not a descendant of $parentPath");
-        }
-
-        return substr($file, strlen($dir) + 1);
-    }
-
-    /**
      * Return the name of a file unique to the current script and user
      *
      * Unlike with `tempnam()`, nothing is created on the filesystem.
@@ -194,7 +149,7 @@ class File
      * @param string|null $dir If null, `sys_get_temp_dir()` is used.
      * @return string
      */
-    public static function StablePath(string $suffix = ".log", string $dir = null)
+    public static function getStablePath(string $suffix = ".log", string $dir = null)
     {
         $basename = basename($_SERVER["SCRIPT_FILENAME"]);
         $hash     = Generate::hash(realpath($_SERVER["SCRIPT_FILENAME"]));
@@ -204,6 +159,73 @@ class File
             ? realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR
             : ($dir ? rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : ""))
         . "$basename-$hash-$euid$suffix";
+    }
+
+    /**
+     * Use ClassLoader to find the path to the file where a class is defined
+     *
+     * @param string $class
+     * @return null|string
+     */
+    public static function getClassPath(string $class): ?string
+    {
+        $class = trim($class, "\\");
+
+        foreach (ClassLoader::getRegisteredLoaders() as $loader)
+        {
+            if ($file = $loader->findFile($class))
+            {
+                return $file;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Use ClassLoader's PSR-4 prefixes to resolve a namespace to a path
+     *
+     * @param string $namespace
+     * @return null|string
+     */
+    public static function getNamespacePath(string $namespace): ?string
+    {
+        $namespace = trim($namespace, "\\");
+        $prefixes  = [];
+
+        foreach (ClassLoader::getRegisteredLoaders() as $loader)
+        {
+            $prefixes = array_merge($prefixes, $loader->getPrefixesPsr4());
+        }
+
+        uksort($prefixes, function ($p1, $p2)
+        {
+            $l1 = strlen($p1);
+            $l2 = strlen($p2);
+
+            return ($l1 === $l2) ? 0 : ($l1 < $l2 ? 1 : - 1);
+        });
+
+        foreach ($prefixes as $prefix => $dirs)
+        {
+            if (substr($namespace . "\\", 0, strlen($prefix)) == $prefix)
+            {
+                foreach (Convert::toArray($dirs) as $dir)
+                {
+                    if (($dir = realpath($dir)) && is_dir($dir))
+                    {
+                        if ($subdir = strtr(substr($namespace, strlen($prefix)), "\\", DIRECTORY_SEPARATOR))
+                        {
+                            return $dir . DIRECTORY_SEPARATOR . $subdir;
+                        }
+
+                        return $dir;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }
 

@@ -72,6 +72,19 @@ $pascalCase = array_combine($identifiers, array_map(function ($i)
 
 print_r($pascalCase);
 
+$normalise = [
+    "History & Geography",
+    "& Mathematics",
+    "Languages — Modern",
+    "I.T.",
+    "IT. ",
+    "it",
+];
+var_dump(array_combine($normalise, array_map(
+    function ($i) { return Convert::toNormal($i); },
+    $normalise
+)));
+
 $list = [
     ['id' => 38, 'name' => 'Amir'],
     ['id' => 32, 'name' => 'Greta'],
@@ -81,3 +94,39 @@ $list = [
 $map = Convert::listToMap($list, 'id');
 
 print_r($map);
+
+$nouns = [
+    "blitz",
+    "boy",
+    "bus",
+    "cat",
+    "city",
+    "halo",
+    "house",
+    "lunch",
+    "marsh",
+    "photo",
+    "piano",
+    "potato",
+    "puppy",
+    "ray",
+    "tax",
+    "truss",
+];
+
+print_r(array_combine($nouns, array_map(
+    function ($i) { return Convert::nounToPlural($i); },
+    $nouns
+)));
+
+$fqcn = [
+    'Composer\Command\DumpAutoloadCommand',
+    '\Composer\Command\ExecCommand',
+    'RequireCommand',
+    'Composer\Command\UpdateCommand\\',
+];
+
+print_r(array_combine($fqcn, array_map(
+    function ($i) { return Convert::classToBasename($i); },
+    $fqcn
+)));

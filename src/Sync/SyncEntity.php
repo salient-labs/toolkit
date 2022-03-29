@@ -61,6 +61,20 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
     }
 
     /**
+     * Return the plural of the class name
+     *
+     * e.g. `Faculty::getPlural()` should return `Faculties`.
+     *
+     * Override if needed.
+     *
+     * @return string
+     */
+    public static function getPlural(): string
+    {
+        return Convert::nounToPlural(Convert::classToBasename(static::class));
+    }
+
+    /**
      * Convert the entity to an export-ready associative array
      *
      * Nested objects and lists must be returned as-is. Don't serialize anything

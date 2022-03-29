@@ -4,31 +4,32 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync;
 
+use Lkrms\Convert;
 use Lkrms\Ioc\Ioc;
+use Lkrms\Reflect;
 use ReflectionClass;
 use ReflectionMethod;
-use ReflectionNamedType;
 use UnexpectedValueException;
 
 /**
- * A generic wrapper for a SyncEntity CRUD implementation
+ * Provides a generic interface for a SyncEntity provider
  *
- * Or, to put it more simply, `SyncEntityProvider` allows this:
+ * So you can do this:
  *
  * ```php
- * $facultyProvider = new SyncEntityProvider(Faculty::class);
- * $facultyList     = $facultyProvider->get();
+ * $genericProvider = new SyncEntityProvider(Faculty::class);
+ * $faculties       = $genericProvider->get();
  * ```
  *
  * instead of this:
  *
  * ```php
  * $facultyProvider = Ioc::create(Faculty::class . "Provider");
- * $facultyList     = $facultyProvider->getFaculty();
+ * $faculties       = $facultyProvider->getFaculty();
  * ```
  *
  * When a new `SyncEntityProvider` is created, it is bound to the
- * {@see SyncProvider} currently servicing the given {@see SyncEntity}.
+ * {@see SyncProvider} currently registered for the given {@see SyncEntity}.
  *
  * Registering a different provider for an entity has no effect on existing
  * `SyncEntityProvider` instances.
@@ -45,7 +46,12 @@ class SyncEntityProvider
     /**
      * @var string
      */
-    private $SyncEntityShort;
+    private $SyncEntityNoun;
+
+    /**
+     * @var string
+     */
+    private $SyncEntityPlural;
 
     /**
      * @var SyncProvider
@@ -61,10 +67,10 @@ class SyncEntityProvider
             throw new UnexpectedValueException("Not a subclass of SyncEntity: " . $name);
         }
 
-        $parts                 = explode("\\", $name);
-        $this->SyncEntity      = $name;
-        $this->SyncEntityShort = end($parts);
-        $this->SyncProvider    = Ioc::create($name . "Provider");
+        $this->SyncEntity       = $name;
+        $this->SyncEntityNoun   = Convert::classToBasename($name);
+        $this->SyncEntityPlural = $name::getPlural();
+        $this->SyncProvider     = Ioc::create($name . "Provider");
     }
 
     private function getProviderClass(): ReflectionClass
@@ -82,59 +88,66 @@ class SyncEntityProvider
     }
 
     private function checkProviderMethod(
-        string $methodName,
-        bool $firstParamIsEntity,
-        ?bool $firstParamAllowsNull
-    ): bool
+        string $method,
+        string $altMethod,
+        bool $entityParam,
+        bool $idParam,
+        bool $paramRequired
+    ): ?string
     {
-        $methodName .= $this->SyncEntityShort;
-
-        if (is_null($method = $this->getProviderMethod($methodName)))
+        if (is_null($method = $this->getProviderMethod($method)) &&
+            is_null($method = $this->getProviderMethod($altMethod)))
         {
-            return false;
+            return null;
         }
 
-        if ($firstParamIsEntity || !is_null($firstParamAllowsNull))
+        if ($entityParam || $idParam)
         {
             if (is_null($param = $method->getParameters()[0] ?? null))
             {
-                return false;
+                return null;
             }
 
-            if (!is_null($firstParamAllowsNull) &&
-                ($firstParamAllowsNull xor $param->allowsNull()))
+            if ($paramRequired && $param->allowsNull())
             {
-                return false;
+                return null;
             }
 
-            if ($firstParamIsEntity &&
-                (!(($type = $param->getType()) instanceof ReflectionNamedType) ||
-                    $type->getName() != $this->SyncEntity))
+            $type = Reflect::getAllTypeNames($param->getType());
+
+            if (($entityParam && $type != [$this->SyncEntity]) ||
+                ($idParam && !empty(array_diff($type, ["int", "string"]))))
             {
-                return false;
+                return null;
             }
         }
 
-        return true;
+        return $method->getName();
     }
 
     private function run(
         int $operation,
-        string $methodName,
-        bool $firstParamIsEntity,
-        ?bool $firstParamAllowsNull,
+        string $method,
+        string $altMethod,
+        bool $entityParam,
+        bool $idParam,
+        bool $paramRequired,
         ...$params
     )
     {
-        $method = $methodName . $this->SyncEntityShort;
-
         if (is_null($callback = $this->Callbacks[$operation] ?? null))
         {
-            if ($this->checkProviderMethod($methodName, $firstParamIsEntity, $firstParamAllowsNull))
+            if ($providerMethod = $this->checkProviderMethod(
+                $method,
+                $altMethod,
+                $entityParam,
+                $idParam,
+                $paramRequired
+            ))
             {
-                $callback = function (...$params) use ($method)
+                $callback = function (...$params) use ($providerMethod)
                 {
-                    return $this->SyncProvider->$method(...$params);
+                    return $this->SyncProvider->$providerMethod(...$params);
                 };
 
                 $this->Callbacks[$operation] = $callback;
@@ -146,10 +159,19 @@ class SyncEntityProvider
             }
         }
 
-        if ($firstParamIsEntity && !is_a($params[0] ?? null, $this->SyncEntity))
+        $param = $params[0] ?? null;
+
+        if ($entityParam && !is_null($param) && !is_a($param, $this->SyncEntity))
         {
-            throw new UnexpectedValueException("Not an instance of " .
-                $this->SyncEntity . ': $param[0]');
+            throw new UnexpectedValueException("Not an instance of " . $this->SyncEntity . ': $param[0]');
+        }
+        elseif ($idParam && !is_null($param) && !is_int($param) && !is_string($param))
+        {
+            throw new UnexpectedValueException('Not an identifier: $param[0]');
+        }
+        elseif ($paramRequired && is_null($param))
+        {
+            throw new UnexpectedValueException('Value required: $param[0]');
         }
 
         return $callback(...$params);
@@ -159,81 +181,189 @@ class SyncEntityProvider
      * Adds an entity to the backend
      *
      * The underlying {@see SyncProvider} must implement the
-     * {@see SyncOperation::CREATE} operation, e.g. for a `Faculty` entity:
+     * {@see SyncOperation::CREATE} operation, e.g. one of the following for a
+     * `Faculty` entity:
      *
      * ```php
-     * public function createFaculty(Faculty $entity);
+     * // 1.
+     * public function createFaculty(Faculty $entity): Faculty;
+     *
+     * // 2.
+     * public function create_Faculty(Faculty $entity): Faculty;
      * ```
      *
+     * The first parameter:
+     * - MUST be defined
+     * - MUST have a type declaration, which MUST be the class of the entity
+     *   being created
+     * - MUST be required
+     *
      * @param SyncEntity $entity
-     * @param mixed $params Additional parameters to pass to the
-     * {@see SyncProvider}'s `create` method for the entity.
+     * @param mixed $params Additional parameters to pass to the provider.
+     * @return SyncEntity
      */
-    public function create(SyncEntity $entity, ...$params)
+    public function create(SyncEntity $entity, ...$params): SyncEntity
     {
         return $this->run(
             SyncOperation::CREATE,
-            "create",
+            "create" . $this->SyncEntityNoun,
+            "create_" . $this->SyncEntityNoun,
             true,
             false,
+            true,
             $entity,
             ...$params
         );
     }
 
-    public function get($id = null, ...$params)
+    /**
+     * Returns an entity from the backend
+     *
+     * The underlying {@see SyncProvider} must implement the
+     * {@see SyncOperation::READ} operation, e.g. one of the following for a
+     * `Faculty` entity:
+     *
+     * ```php
+     * // 1.
+     * public function getFaculty(int $id = null): Faculty;
+     *
+     * // 2.
+     * public function get_Faculty(int $id = null): Faculty;
+     * ```
+     *
+     * The first parameter:
+     * - MUST be defined
+     * - MAY have a type declaration, which MUST be one of `int`, `string`, or
+     *   `int|string` if included
+     * - MAY be nullable
+     *
+     * @param int|string|null $id
+     * @param mixed $params Additional parameters to pass to the provider.
+     * @return SyncEntity
+     */
+    public function get($id = null, ...$params): SyncEntity
     {
-        if (is_null($id))
-        {
-            return $this->list(...$params);
-        }
-
         return $this->run(
             SyncOperation::READ,
-            "get",
+            "get" . $this->SyncEntityNoun,
+            "get_" . $this->SyncEntityNoun,
             false,
-            null,
+            true,
+            false,
             $id,
             ...$params
         );
     }
 
-    public function update(SyncEntity $entity, ...$params)
+    /**
+     * Updates an entity in the backend
+     *
+     * The underlying {@see SyncProvider} must implement the
+     * {@see SyncOperation::UPDATE} operation, e.g. one of the following for a
+     * `Faculty` entity:
+     *
+     * ```php
+     * // 1.
+     * public function updateFaculty(Faculty $entity): Faculty;
+     *
+     * // 2.
+     * public function update_Faculty(Faculty $entity): Faculty;
+     * ```
+     *
+     * The first parameter:
+     * - MUST be defined
+     * - MUST have a type declaration, which MUST be the class of the entity
+     *   being updated
+     * - MUST be required
+     *
+     * @param SyncEntity $entity
+     * @param mixed $params Additional parameters to pass to the provider.
+     * @return SyncEntity
+     */
+    public function update(SyncEntity $entity, ...$params): SyncEntity
     {
         return $this->run(
             SyncOperation::UPDATE,
-            "update",
+            "update" . $this->SyncEntityNoun,
+            "update_" . $this->SyncEntityNoun,
             true,
             false,
+            true,
             $entity,
             ...$params
         );
     }
 
-    public function delete(SyncEntity $entity, ...$params)
+    /**
+     * Deletes an entity in the backend
+     *
+     * The underlying {@see SyncProvider} must implement the
+     * {@see SyncOperation::DELETE} operation, e.g. one of the following for a
+     * `Faculty` entity:
+     *
+     * ```php
+     * // 1.
+     * public function deleteFaculty(Faculty $entity): Faculty;
+     *
+     * // 2.
+     * public function delete_Faculty(Faculty $entity): Faculty;
+     * ```
+     *
+     * The first parameter:
+     * - MUST be defined
+     * - MUST have a type declaration, which MUST be the class of the entity
+     *   being deleted
+     * - MUST be required
+     *
+     * The return value:
+     * - SHOULD represent the final state of the entity before it was deleted
+     * - MAY be `null`
+     *
+     * @param SyncEntity $entity
+     * @param mixed $params Additional parameters to pass to the provider.
+     * @return null|SyncEntity
+     */
+    public function delete(SyncEntity $entity, ...$params): ?SyncEntity
     {
         return $this->run(
             SyncOperation::DELETE,
-            "delete",
+            "delete" . $this->SyncEntityNoun,
+            "delete_" . $this->SyncEntityNoun,
             true,
             false,
+            true,
             $entity,
             ...$params
         );
     }
 
-    public function list(...$params)
+    /**
+     * Returns a list of entities from the backend
+     *
+     * The underlying {@see SyncProvider} must implement the
+     * {@see SyncOperation::READ_LIST} operation, e.g. one of the following for
+     * a `Faculty` entity:
+     *
+     * ```php
+     * // 1. With a plural entity name
+     * public function getFaculties(): array;
+     *
+     * // 2. With a singular name
+     * public function getList_Faculty(): array;
+     * ```
+     *
+     * @param mixed $params Parameters to pass to the provider.
+     * @return SyncEntity[]
+     */
+    public function getList(...$params): array
     {
-        $method = ["list", false, null];
-
-        if (!$this->checkProviderMethod(...$method))
-        {
-            $method = ["get", false, true];
-        }
-
         return $this->run(
-            SyncOperation::LIST,
-            ...$method,
+            SyncOperation::READ_LIST,
+            "get" . $this->SyncEntityPlural,
+            "getList_" . $this->SyncEntityNoun,
+            false,
+            false,
+            false,
             ...$params
         );
     }

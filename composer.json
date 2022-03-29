@@ -6,16 +6,20 @@
     "require": {
         "php": ">=7.2",
         "lib-curl": "*",
+        "composer-runtime-api": "^2.2",
         "psr/log": "^1.1",
         "lkrms/dice": "v4.0.3.1",
         "filp/whoops": "^2.14"
     },
     "suggest": {
-        "analog/analog": "Log console output to Analog via Lkrms\\Console\\ConsoleTarget\\Analog"
+        "analog/analog": "Log console output to Analog"
     },
     "autoload": {
         "psr-4": {
             "Lkrms\\": "src/"
         }
-    }
+    },
+    "bin": [
+        "bin/lk-util"
+    ]
 }

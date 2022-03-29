@@ -41,7 +41,7 @@ class SyncEntityResolver
     {
         $nameField = $this->NameField;
         $matches   = array_filter(
-            $this->EntityProvider->list([$nameField => $name]),
+            $this->EntityProvider->getList([$nameField => $name]),
             function ($entity) use ($nameField, $name) { return ($entity->$nameField ?? null) == $name; }
         );
 

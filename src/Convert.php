@@ -16,13 +16,6 @@ use UnexpectedValueException;
 abstract class Convert
 {
     /**
-     * See mb_regex_set_options
-     *
-     * l = find longest matches, z = Perl syntax
-     */
-    public const MB_REGEX_OPTIONS = "lz";
-
-    /**
      * If a variable isn't an indexed array, make it the first element of one
      *
      * @param mixed $value The variable being checked.
@@ -31,14 +24,6 @@ abstract class Convert
     public static function toArray($value): array
     {
         return Test::isIndexedArray($value) ? $value : [$value];
-    }
-
-    /**
-     * @deprecated Use {@see Convert::toArray()} instead
-     */
-    public static function anyToArray($value): array
-    {
-        return self::toArray($value);
     }
 
     /**
@@ -53,14 +38,6 @@ abstract class Convert
     }
 
     /**
-     * @deprecated Use {@see Convert::toList()} instead
-     */
-    public static function anyToList($value): array
-    {
-        return self::toList($value);
-    }
-
-    /**
      * If a variable is 'falsey', make it null
      *
      * @param mixed $value The variable being checked.
@@ -72,11 +49,14 @@ abstract class Convert
     }
 
     /**
-     * @deprecated Use {@see Format::bool()} instead
+     * Remove the namespace from a fully-qualified class name
+     *
+     * @param string $class
+     * @return string
      */
-    public static function boolToString(bool $value)
+    public static function classToBasename(string $class): string
     {
-        return Format::bool($value);
+        return substr(strrchr("\\" . $class, "\\"), 1);
     }
 
     /**
@@ -151,14 +131,6 @@ abstract class Convert
     }
 
     /**
-     * @deprecated Use {@see Format::array()} instead
-     */
-    public static function arrayToString(array $array): string
-    {
-        return Format::array($array);
-    }
-
-    /**
      * Remove zero-width values from an array before imploding it
      *
      * @param string $separator
@@ -171,14 +143,6 @@ abstract class Convert
             $array,
             function ($value) { return strlen((string)$value) > 0; }
         ));
-    }
-
-    /**
-     * @deprecated Use {@see Convert::sparseToString()} instead
-     */
-    public static function implodeNotEmpty(string $separator, array $array): string
-    {
-        return self::sparseToString($separator, $array);
     }
 
     /**
@@ -228,6 +192,37 @@ abstract class Convert
     }
 
     /**
+     * Return the plural of a singular noun
+     *
+     * @param string $noun
+     * @return string
+     */
+    public static function nounToPlural(string $noun): string
+    {
+        if (preg_match('/(?:(sh?|ch|x|z|(?<!^phot)(?<!^pian)(?<!^hal)o)|([^aeiou]y)|(is)|(on))$/i', $noun, $matches))
+        {
+            if ($matches[1])
+            {
+                return $noun . "es";
+            }
+            elseif ($matches[2])
+            {
+                return substr_replace($noun, "ies", -1);
+            }
+            elseif ($matches[3])
+            {
+                return substr_replace($noun, "es", -2);
+            }
+            elseif ($matches[4])
+            {
+                return substr_replace($noun, "a", -2);
+            }
+        }
+
+        return $noun . "s";
+    }
+
+    /**
      * Convert php.ini values like "128M" to bytes
      *
      * @param string $size From the PHP FAQ: "The available options are K (for
@@ -259,14 +254,6 @@ abstract class Convert
     }
 
     /**
-     * @deprecated Use {@see Generate::hash()} instead
-     */
-    public static function hash(...$value): string
-    {
-        return Generate::hash(...$value);
-    }
-
-    /**
      * Convert an identifier to snake_case
      *
      * @param string $text The identifier to convert.
@@ -278,14 +265,6 @@ abstract class Convert
         $text = preg_replace("/([[:lower:]])([[:upper:]])/", '$1_$2', $text);
 
         return strtolower($text);
-    }
-
-    /**
-     * @deprecated Use {@see Convert::toSnakeCase()} instead
-     */
-    public static function identifierToSnakeCase(string $text): string
-    {
-        return self::toSnakeCase($text);
     }
 
     /**
@@ -320,70 +299,44 @@ abstract class Convert
     }
 
     /**
-     * Clean up a string for comparison with other strings
+     * Convert an identifier to camelCase
      *
-     * Normalised values may vary with each release and should be considered
-     * transient.
-     *
-     * @param string $text The string being normalised.
-     * @param bool $toUpper If true, make `$text` uppercase.
-     * @param null|string $stripPattern Matching characters are removed.
-     * @param null|string $spacePattern Matching characters are replaced with
-     * whitespace.
-     * @param bool $trim If true, remove leading and trailing whitespace.
+     * @param string $text
      * @return string
      */
-    public static function toNormal(
-        string $text,
-        bool $toUpper         = true,
-        ?string $stripPattern = null,
-        ?string $spacePattern = "[^a-zA-Z0-9]",
-        bool $trim            = true
-    )
+    public static function toCamelCase(string $text): string
     {
-        if ($toUpper)
-        {
-            $text = mb_strtoupper($text);
-        }
-
-        $text = mb_ereg_replace("&", " AND ", $text, self::MB_REGEX_OPTIONS);
-
-        // Replace (some) Unicode hyphens with plain ones; more here:
-        // https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=%5Cp%7BDash%7D&abb=on&esc=on&g=&i=
-        $text = mb_ereg_replace("[\u{2010}-\u{2015}]", "-", $text, self::MB_REGEX_OPTIONS);
-
-        if ($stripPattern)
-        {
-            $text = mb_ereg_replace($stripPattern, "", $text, self::MB_REGEX_OPTIONS);
-        }
-
-        if ($spacePattern)
-        {
-            $text = mb_ereg_replace($spacePattern, " ", $text, self::MB_REGEX_OPTIONS);
-        }
-
-        if ($trim)
-        {
-            $text = mb_ereg_replace("(^\\s+|\\s+\$)", "", $text, self::MB_REGEX_OPTIONS);
-        }
-
-        $text = mb_ereg_replace("\\s+", " ", $text, self::MB_REGEX_OPTIONS);
-
-        return $text;
+        return lcfirst(self::toPascalCase($text));
     }
 
     /**
-     * @deprecated Use {@see Convert::toNormal()} instead
+     * Clean up a string for comparison with other strings
+     *
+     * This method is not guaranteed to be idempotent between releases.
+     *
+     * Here's what it currently does:
+     * 1. Replaces ampersands (`&`) with ` and `
+     * 2. Removes full stops (`.`)
+     * 3. Replaces non-alphanumeric sequences with a space (` `)
+     * 4. Trims leading and trailing spaces
+     * 5. Makes letters uppercase
+     *
+     * @param string $text
+     * @return string
      */
-    public static function normalise(
-        string $text,
-        bool $toUpper         = true,
-        ?string $stripPattern = null,
-        ?string $spacePattern = "[^a-zA-Z0-9]",
-        bool $trim            = true
-    )
+    public static function toNormal(string $text)
     {
-        return self::toNormal($text, $toUpper, $stripPattern, $spacePattern, $trim);
+        $replace = [
+            "/(?<=[^&])&(?=[^&])/u" => " and ",
+            "/\.+/u"           => "",
+            "/[^[:alnum:]]+/u" => " ",
+        ];
+
+        return strtoupper(trim(preg_replace(
+            array_keys($replace),
+            array_values($replace),
+            $text
+        )));
     }
 
     /**
@@ -453,6 +406,70 @@ abstract class Convert
     public static function dataToQuery(array $data, bool $forceNumericKeys = false): string
     {
         return self::_dataToQuery($data, $forceNumericKeys);
+    }
+
+    /**
+     * @deprecated Use {@see Convert::toArray()} instead
+     */
+    public static function anyToArray($value): array
+    {
+        return self::toArray($value);
+    }
+
+    /**
+     * @deprecated Use {@see Convert::toList()} instead
+     */
+    public static function anyToList($value): array
+    {
+        return self::toList($value);
+    }
+
+    /**
+     * @deprecated Use {@see Format::bool()} instead
+     */
+    public static function boolToString(bool $value)
+    {
+        return Format::bool($value);
+    }
+
+    /**
+     * @deprecated Use {@see Format::array()} instead
+     */
+    public static function arrayToString(array $array): string
+    {
+        return Format::array($array);
+    }
+
+    /**
+     * @deprecated Use {@see Convert::sparseToString()} instead
+     */
+    public static function implodeNotEmpty(string $separator, array $array): string
+    {
+        return self::sparseToString($separator, $array);
+    }
+
+    /**
+     * @deprecated Use {@see Generate::hash()} instead
+     */
+    public static function hash(...$value): string
+    {
+        return Generate::hash(...$value);
+    }
+
+    /**
+     * @deprecated Use {@see Convert::toSnakeCase()} instead
+     */
+    public static function identifierToSnakeCase(string $text): string
+    {
+        return self::toSnakeCase($text);
+    }
+
+    /**
+     * @deprecated Use {@see Convert::toNormal()} instead
+     */
+    public static function normalise(string $text, bool $toUpper = true, ?string $stripPattern = null, ?string $spacePattern = "[^a-zA-Z0-9]", bool $trim = true)
+    {
+        return self::toNormal($text, $toUpper, $stripPattern, $spacePattern, $trim);
     }
 
     /**
