@@ -2,6 +2,9 @@
 
 ### General
 - [ ] Formalise tests
+  - [ ] Convert informal tests to PHPUnit tests
+  - [ ] Adopt PHPStan, incl. creating [extensions](https://phpstan.org/developing-extensions/extension-types)
+  - [ ] Write more tests
 - [ ] Adopt camelCase method names
   - [x] `Assert`
   - [ ] `Cache`
@@ -60,10 +63,17 @@
 
 ### Cli
 - [x] Implement `CliOptionType::ONE_OF_OPTIONAL`
+- [ ] Allow commands to be chained and/or invoked as functions
 - [ ] Implement shared/default command options
 - [ ] Add automatic `help` command
 
 ### Console
-- [ ] Improve default targets so console messages aren't included in redirected
-  output
+- [ ] Improve default targets so console messages aren't included in redirected output
+
+### CLI utility
+- [ ] `generate`:
+  - [x] Add `sync-entity-provider` option to make `get` method parameter nullable
+  - [ ] Generate stubs from OpenAPI specs
+- [ ] `http`:
+  - [x] Use same option names and environment variables as `generate` commands
 

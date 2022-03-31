@@ -7,8 +7,8 @@ use Lkrms\Cli\Cli;
 use Lkrms\Env;
 use Lkrms\Err\Err;
 use Lkrms\Util\Command\Generate\GenerateSyncEntityClass;
-use Lkrms\Util\Command\Generate\GenerateSyncEntityProviderInterface;
-use Lkrms\Util\Command\Sync\HttpGetPath;
+use Lkrms\Util\Command\Generate\GenerateSyncEntityInterface;
+use Lkrms\Util\Command\Http\HttpGetPath;
 
 $loader = require ($_composer_autoload_path ?? __DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Util\\", __DIR__);
@@ -22,7 +22,7 @@ if (($_composer_autoload_path ?? null) &&
 }
 
 GenerateSyncEntityClass::register();
-GenerateSyncEntityProviderInterface::register();
+GenerateSyncEntityInterface::register();
 HttpGetPath::register();
 
 $status = Cli::runCommand();

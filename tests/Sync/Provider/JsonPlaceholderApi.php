@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Tests\Sync\Api;
+namespace Lkrms\Tests\Sync\Provider;
 
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;

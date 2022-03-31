@@ -84,12 +84,14 @@ class GenerateSyncEntityClass extends CliCommand
                 "description" => "The path to a JSON-serialized sample entity",
                 "optionType"  => CliOptionType::VALUE,
             ], [
-                "long"        => "api-provider",
+                "long"        => "provider",
+                "short"       => "i",
                 "valueName"   => "CLASS",
                 "description" => "The HttpSyncProvider class to retrieve a sample entity from",
                 "optionType"  => CliOptionType::VALUE,
             ], [
-                "long"        => "api-path",
+                "long"        => "endpoint",
+                "short"       => "e",
                 "valueName"   => "PATH",
                 "description" => "The endpoint to retrieve a sample entity from, e.g. '/user'",
                 "optionType"  => CliOptionType::VALUE,
@@ -116,26 +118,26 @@ class GenerateSyncEntityClass extends CliCommand
             throw new CliInvalidArgumentException("invalid class: $fqcn");
         }
 
-        if ($apiClass = $this->getOptionValue("api-provider") ?: Env::get("SYNC_ENTITY_PROVIDER", ""))
+        if ($providerClass = $this->getOptionValue("provider") ?: Env::get("SYNC_ENTITY_PROVIDER", ""))
         {
-            if (!class_exists($apiClass) &&
-                !(strpos($apiClass, "\\") === false && ($apiNamespace = Env::get("SYNC_PROVIDER_NAMESPACE", "")) &&
-                    class_exists($apiClass = $apiNamespace . "\\" . $apiClass)))
+            if (!class_exists($providerClass) &&
+                !(strpos($providerClass, "\\") === false && ($providerNamespace = Env::get("SYNC_PROVIDER_NAMESPACE", "")) &&
+                    class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
             {
-                throw new CliInvalidArgumentException("class does not exist: $apiClass");
+                throw new CliInvalidArgumentException("class does not exist: $providerClass");
             }
 
-            $api = new $apiClass();
+            $provider = new $providerClass();
 
-            if ($api instanceof HttpSyncProvider)
+            if ($provider instanceof HttpSyncProvider)
             {
-                $entity = $api->getCurler(
-                    $this->getOptionValue("api-path") ?: "/" . Convert::toKebabCase($class)
+                $entity = $provider->getCurler(
+                    $this->getOptionValue("endpoint") ?: "/" . Convert::toKebabCase($class)
                 )->GetJson();
             }
             else
             {
-                throw new CliInvalidArgumentException("not a subclass of HttpSyncProvider: $apiClass");
+                throw new CliInvalidArgumentException("not a subclass of HttpSyncProvider: $providerClass");
             }
         }
         elseif ($json = $this->getOptionValue("json"))

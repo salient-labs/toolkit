@@ -24,8 +24,10 @@ use Lkrms\Sync\SyncOperation;
  *
  * @package Lkrms\Util
  */
-class GenerateSyncEntityProviderInterface extends CliCommand
+class GenerateSyncEntityInterface extends CliCommand
 {
+    private const OPERATIONS = ["create", "get", "update", "delete", "get-list"];
+
     public function getDescription(): string
     {
         return "Generate a provider interface for an entity class";
@@ -72,9 +74,13 @@ class GenerateSyncEntityProviderInterface extends CliCommand
                 "valueName"       => "OPERATION",
                 "description"     => "A sync operation to include in the interface (may be used more than once)",
                 "optionType"      => CliOptionType::ONE_OF,
-                "allowedValues"   => ["create", "get", "update", "delete", "get-list"],
+                "allowedValues"   => self::OPERATIONS,
                 "multipleAllowed" => true,
-                "defaultValue"    => ["create", "get", "update", "delete", "get-list"],
+                "defaultValue"    => self::OPERATIONS,
+            ], [
+                "long"        => "nullable-get",
+                "short"       => "n",
+                "description" => "Allow passing null identifiers to the 'get' operation",
             ],
         ];
     }
@@ -101,7 +107,7 @@ class GenerateSyncEntityProviderInterface extends CliCommand
         $camelClass = Convert::toCamelCase($class);
         $operations = array_map(
             function ($op) use ($operationMap) { return $operationMap[$op]; },
-            $this->getOptionValue("op")
+            array_intersect(self::OPERATIONS, $this->getOptionValue("op"))
         );
 
         if (!$fqcn)
@@ -175,8 +181,16 @@ class GenerateSyncEntityProviderInterface extends CliCommand
             {
                 case SyncOperation::READ:
 
-                    $paramDoc  = 'int|string|null $id';
-                    $paramCode = '$id = null';
+                    if ($this->getOptionValue("nullable-get"))
+                    {
+                        $paramDoc  = 'int|string|null $id';
+                        $paramCode = '$id = null';
+                    }
+                    else
+                    {
+                        $paramDoc  = 'int|string $id';
+                        $paramCode = '$id';
+                    }
 
                     break;
 

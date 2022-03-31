@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util\Command\Sync;
+namespace Lkrms\Util\Command\Http;
 
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliInvalidArgumentException;
 use Lkrms\Cli\CliOptionType;
+use Lkrms\Env;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 
 /**
@@ -30,12 +31,14 @@ class HttpGetPath extends CliCommand
         return [
             [
                 "long"        => "provider",
+                "short"       => "i",
                 "valueName"   => "CLASS",
                 "description" => "The HttpSyncProvider class to retrieve data from",
                 "optionType"  => CliOptionType::VALUE,
                 "required"    => true,
             ], [
-                "long"        => "path",
+                "long"        => "endpoint",
+                "short"       => "e",
                 "valueName"   => "PATH",
                 "description" => "The endpoint to retrieve data from, e.g. '/user'",
                 "optionType"  => CliOptionType::VALUE,
@@ -46,10 +49,12 @@ class HttpGetPath extends CliCommand
 
     protected function run(...$args)
     {
-        $providerClass = $this->getOptionValue("provider");
-        $endpointPath  = $this->getOptionValue("path");
+        $providerClass = $this->getOptionValue("provider") ?: Env::get("SYNC_ENTITY_PROVIDER", "");
+        $endpointPath  = $this->getOptionValue("endpoint");
 
-        if (!class_exists($providerClass))
+        if (!class_exists($providerClass) &&
+            !(strpos($providerClass, "\\") === false && ($providerNamespace = Env::get("SYNC_PROVIDER_NAMESPACE", "")) &&
+                class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
         {
             throw new CliInvalidArgumentException("class does not exist: $providerClass");
         }

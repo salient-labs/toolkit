@@ -10,11 +10,11 @@ use Lkrms\Sync\SyncEntityFuzzyResolver;
 use Lkrms\Sync\SyncEntityProvider;
 use Lkrms\Sync\SyncEntityResolver;
 use Lkrms\Sync\SyncOperation;
-use Lkrms\Tests\Sync\Api\JsonPlaceholderApi;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\PostProvider;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Entity\UserProvider;
+use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Throwable;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
