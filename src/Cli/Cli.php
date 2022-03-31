@@ -112,34 +112,37 @@ class Cli
      *
      * @param string $name
      * @param array|CliCommand $node
-     * @return string
+     * @return null|string
      */
-    private static function getUsage(string $name, $node): string
+    private static function getUsage(string $name, $node): ?string
     {
         if ($node instanceof CliCommand)
         {
             return $node->getUsage();
         }
-        elseif (is_array($node))
+        elseif (!is_array($node))
         {
-            $name     = trim(self::getProgramName() . " $name");
-            $synopses = [];
+            return null;
+        }
 
-            foreach ($node as $childName => $childNode)
+        $name     = trim(self::getProgramName() . " $name");
+        $synopses = [];
+
+        foreach ($node as $childName => $childNode)
+        {
+            if ($childNode instanceof CliCommand)
             {
-                if ($childNode instanceof CliCommand)
-                {
-                    $synopses[] = "_{$childName}_" . $childNode->getUsage(true);
-                }
-                elseif (is_array($childNode))
-                {
-                    $synopses[] = "_{$childName}_ <command>";
-                }
+                $synopses[] = "_{$childName}_" . $childNode->getUsage(true);
             }
+            elseif (is_array($childNode))
+            {
+                $synopses[] = "_{$childName}_ <command>";
+            }
+        }
 
-            $synopses = implode("\n  ", $synopses);
+        $synopses = implode("\n  ", $synopses);
 
-            return
+        return
 <<<EOF
 ___NAME___
   __{$name}__
@@ -150,7 +153,6 @@ ___SYNOPSIS___
 ___SUBCOMMANDS___
   $synopses
 EOF;
-        }
     }
 
     public static function runCommand(): int

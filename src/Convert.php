@@ -245,7 +245,7 @@ abstract class Convert
     /**
      * Convert the given strings and Stringables to an array of strings
      *
-     * @param array<int|string,string|Stringable> $value
+     * @param string|Stringable $value
      * @return string[]
      */
     public static function toStrings(...$value): array
@@ -469,7 +469,7 @@ abstract class Convert
      */
     public static function normalise(string $text, bool $toUpper = true, ?string $stripPattern = null, ?string $spacePattern = "[^a-zA-Z0-9]", bool $trim = true)
     {
-        return self::toNormal($text, $toUpper, $stripPattern, $spacePattern, $trim);
+        return self::toNormal($text);
     }
 
     /**

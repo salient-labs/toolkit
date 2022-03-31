@@ -278,7 +278,7 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
             {
                 if ($node->$key instanceof SyncEntity)
                 {
-                    $siblings[$node->$key->getKey()] = true;
+                    $siblings[$node->$key->getInstanceKey()] = true;
                 }
             }
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "370767fd77c3b26779cecb2e1d4e9fd3",
+    "content-hash": "399d9074e5fe8703107d885d7f5eaebd",
     "packages": [
         {
             "name": "filp/whoops",
@@ -171,7 +171,136 @@
             "time": "2021-05-03T11:20:27+00:00"
         }
     ],
-    "packages-dev": [],
+    "packages-dev": [
+        {
+            "name": "analog/analog",
+            "version": "1.0.19-stable",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jbroadway/analog.git",
+                "reference": "53afd53b77bf911d926e5b895484a3fed3479aee"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jbroadway/analog/zipball/53afd53b77bf911d926e5b895484a3fed3479aee",
+                "reference": "53afd53b77bf911d926e5b895484a3fed3479aee",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2",
+                "psr/log": "^1.0.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Analog": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Johnny Broadway",
+                    "email": "johnny@johnnybroadway.com",
+                    "homepage": "http://www.johnnybroadway.com/"
+                }
+            ],
+            "description": "Fast, flexible, easy PSR-3-compatible PHP logging package with dozens of handlers.",
+            "homepage": "https://github.com/jbroadway/analog",
+            "keywords": [
+                "PSR3",
+                "alerts",
+                "amon",
+                "apprise",
+                "chrome-logger",
+                "console",
+                "debug",
+                "debugging",
+                "error",
+                "errors",
+                "firephp",
+                "gelf",
+                "log",
+                "logger",
+                "logging",
+                "logs",
+                "monitor",
+                "monitoring",
+                "psr-3",
+                "stderr",
+                "syslog"
+            ],
+            "support": {
+                "issues": "https://github.com/jbroadway/analog/issues",
+                "source": "https://github.com/jbroadway/analog/tree/1.0.19-stable"
+            },
+            "time": "2021-11-05T03:59:12+00:00"
+        },
+        {
+            "name": "phpstan/phpstan",
+            "version": "1.5.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpstan/phpstan.git",
+                "reference": "39953ac1452a8843702ee41a35b4861d3e8207a7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/39953ac1452a8843702ee41a35b4861d3e8207a7",
+                "reference": "39953ac1452a8843702ee41a35b4861d3e8207a7",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2|^8.0"
+            },
+            "conflict": {
+                "phpstan/phpstan-shim": "*"
+            },
+            "bin": [
+                "phpstan",
+                "phpstan.phar"
+            ],
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHPStan - PHP Static Analysis Tool",
+            "support": {
+                "issues": "https://github.com/phpstan/phpstan/issues",
+                "source": "https://github.com/phpstan/phpstan/tree/1.5.3"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/ondrejmirtes",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/phpstan",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.patreon.com/phpstan",
+                    "type": "patreon"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/phpstan/phpstan",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2022-03-30T21:55:08+00:00"
+        }
+    ],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],
@@ -179,7 +308,7 @@
     "prefer-lowest": false,
     "platform": {
         "php": ">=7.2",
-        "lib-curl": "*"
+        "composer-runtime-api": "^2.2"
     },
     "platform-dev": [],
     "plugin-api-version": "2.2.0"

@@ -5,11 +5,14 @@
     "description": "A PHP toolkit with opinionated defaults and a small footprint",
     "require": {
         "php": ">=7.2",
-        "lib-curl": "*",
         "composer-runtime-api": "^2.2",
         "psr/log": "^1.1",
-        "lkrms/dice": "v4.0.3.1",
+        "lkrms/dice": "^4.0.3.1",
         "filp/whoops": "^2.14"
+    },
+    "require-dev": {
+        "analog/analog": "^1.0",
+        "phpstan/phpstan": "^1.5"
     },
     "suggest": {
         "analog/analog": "Log console output to Analog"

@@ -104,8 +104,7 @@ class Test
             return false;
         }
 
-        return ($meta['uri'] ?? null) &&
-            ($streamMeta['uri'] ?? null) === $meta['uri'];
+        return $streamMeta['uri'] === $meta['uri'];
     }
 }
 

@@ -92,20 +92,20 @@ class PropertyResolver
             $class->getProperties($propertyFilter),
             function (ReflectionProperty $prop) { return !$prop->isStatic(); }
         );
-        $names = Reflect::getName($props);
+        $names = Reflect::getNames($props);
 
         $this->Properties = array_values(is_null($allowedProperties)
             ? $names
             : array_intersect($names, array_merge(
                 $allowedProperties,
-                Reflect::getName(array_filter(
+                Reflect::getNames(array_filter(
                     $props,
                     function (ReflectionProperty $prop) { return $prop->isPublic(); }
                 ))
         )));
 
         // 2. Resolve "magic" property methods, e.g. _get<Property>()
-        $methods = Reflect::getName(array_values(
+        $methods = Reflect::getNames(array_values(
             array_filter(
                 $class->getMethods($methodFilter),
                 function (ReflectionMethod $method) use ($re) { return !$method->isStatic() && preg_match($re, $method->name); }

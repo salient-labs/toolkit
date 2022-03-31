@@ -19,19 +19,14 @@ use UnexpectedValueException;
 class Reflect
 {
     /**
-     * Return Reflector->name for the given Reflector or list thereof
+     * Return the names of the given Reflection objects
      *
-     * @param Reflector|Reflector[] $reflection
-     * @return string|string[]
+     * @param array<int,\ReflectionClass|\ReflectionClassConstant|\ReflectionFunctionAbstract|\ReflectionParameter|\ReflectionProperty> $reflections
+     * @return string[]
      */
-    public static function getName($reflection)
+    public static function getNames(array $reflections): array
     {
-        if (is_array($reflection))
-        {
-            return array_map(function ($r) { return $r->name; }, $reflection);
-        }
-
-        return $reflection->name;
+        return array_map(function ($r) { return $r->name; }, $reflections);
     }
 
     /**
@@ -102,12 +97,12 @@ class Reflect
             $class     = $class->getParentClass();
         }
 
-        if (is_null($traits))
+        if ($class)
         {
             throw new UnexpectedValueException("Error retrieving traits for class {$class->name}");
         }
 
-        return $traits;
+        return $allTraits;
     }
 }
 

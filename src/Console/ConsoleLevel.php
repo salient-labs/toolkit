@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 use Psr\Log\LogLevel;
+use UnexpectedValueException;
 
 /**
  *
@@ -64,6 +65,10 @@ class ConsoleLevel
             case self::DEBUG:
 
                 return LogLevel::DEBUG;
+
+            default:
+
+                throw new UnexpectedValueException("Invalid level: $level");
         }
     }
 }
