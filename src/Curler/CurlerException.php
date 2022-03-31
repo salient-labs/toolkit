@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
-use Exception;
 use Lkrms\Format;
 use Throwable;
 
@@ -13,7 +12,7 @@ use Throwable;
  *
  * @package Lkrms
  */
-class CurlerException extends Exception
+class CurlerException extends \Lkrms\Exception
 {
     /**
      * @var array

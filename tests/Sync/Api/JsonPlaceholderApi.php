@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Lkrms\Tests\Sync\Api;
 
 use Lkrms\Curler\CurlerHeaders;
+use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Provider\HttpSyncProvider;
+use Lkrms\Sync\SyncOperation;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\PostProvider;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Entity\UserProvider;
-use RuntimeException;
 
 class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserProvider
 {
@@ -33,7 +34,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 
     public function createPost(Post $post): Post
     {
-        throw new RuntimeException("Not implemented");
+        throw new SyncOperationNotImplementedException(self::class, Post::class, SyncOperation::CREATE);
     }
 
     public function getPost($id): Post
@@ -43,12 +44,12 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 
     public function updatePost(Post $post): Post
     {
-        throw new RuntimeException("Not implemented");
+        throw new SyncOperationNotImplementedException(self::class, Post::class, SyncOperation::UPDATE);
     }
 
     public function deletePost(Post $post): ?Post
     {
-        throw new RuntimeException("Not implemented");
+        throw new SyncOperationNotImplementedException(self::class, Post::class, SyncOperation::DELETE);
     }
 
     public function getPosts(): array
@@ -58,7 +59,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 
     public function createUser(User $user): User
     {
-        throw new RuntimeException("Not implemented");
+        throw new SyncOperationNotImplementedException(self::class, User::class, SyncOperation::CREATE);
     }
 
     public function getUser($id): User
@@ -68,12 +69,12 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 
     public function updateUser(User $user): User
     {
-        throw new RuntimeException("Not implemented");
+        throw new SyncOperationNotImplementedException(self::class, User::class, SyncOperation::UPDATE);
     }
 
     public function deleteUser(User $user): ?User
     {
-        throw new RuntimeException("Not implemented");
+        throw new SyncOperationNotImplementedException(self::class, User::class, SyncOperation::DELETE);
     }
 
     public function getUsers(): array

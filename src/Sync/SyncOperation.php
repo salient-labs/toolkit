@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync;
 
+use UnexpectedValueException;
+
 /**
  *
  * @package Lkrms
@@ -59,5 +61,23 @@ class SyncOperation
      * - `GET /<entity_name>`
      */
     public const READ_LIST = 4;
+
+    private const NAME_MAP = [
+        self::CREATE    => "CREATE",
+        self::READ      => "READ",
+        self::UPDATE    => "UPDATE",
+        self::DELETE    => "DELETE",
+        self::READ_LIST => "READ_LIST",
+    ];
+
+    public static function toName(int $operation): string
+    {
+        if (is_null($name = self::NAME_MAP [$operation] ?? null))
+        {
+            throw new UnexpectedValueException("Invalid SyncOperation: $operation");
+        }
+
+        return $name;
+    }
 }
 

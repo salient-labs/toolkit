@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
-use Exception;
 use Lkrms\Console\Console;
 
 /**
@@ -12,7 +11,7 @@ use Lkrms\Console\Console;
  *
  * @package Lkrms
  */
-class CliInvalidArgumentException extends Exception
+class CliInvalidArgumentException extends \Lkrms\Exception
 {
     public function __construct(string $message = null)
     {

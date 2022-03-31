@@ -212,7 +212,7 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
         $siblings = [],
         SyncEntity $parentEntity = null,
         array & $parentArray     = null,
-        string $parentKey        = null
+        $parentKey               = null
     )
     {
         $entityNode = null;

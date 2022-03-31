@@ -9,11 +9,13 @@ use Lkrms\Ioc\Ioc;
 use Lkrms\Sync\SyncEntityFuzzyResolver;
 use Lkrms\Sync\SyncEntityProvider;
 use Lkrms\Sync\SyncEntityResolver;
+use Lkrms\Sync\SyncOperation;
 use Lkrms\Tests\Sync\Api\JsonPlaceholderApi;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\PostProvider;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Entity\UserProvider;
+use Throwable;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
@@ -60,4 +62,41 @@ print_r([
     'uncertainty2a'   => $uncertainty2a,
     'uncertainty2b'   => $uncertainty2b,
     'uncertainty2c'   => $uncertainty2c,
+]);
+
+$exceptions = [];
+
+$ops = [];
+
+try
+{
+    foreach ([
+        SyncOperation::CREATE,
+        SyncOperation::READ,
+        SyncOperation::UPDATE,
+        SyncOperation::DELETE,
+        SyncOperation::READ_LIST,
+        -1,
+    ] as $op)
+    {
+        $ops[$op] = SyncOperation::toName($op);
+    }
+}
+catch (Throwable $ex)
+{
+    $exceptions[] = $ex;
+}
+
+try
+{
+    $postApi->create(new Post());
+}
+catch (Throwable $ex)
+{
+    $exceptions[] = $ex;
+}
+
+print_r([
+    "ops"        => $ops,
+    "exceptions" => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
 ]);
