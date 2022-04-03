@@ -163,7 +163,7 @@ class GenerateSyncEntityClass extends CliCommand
         {
             if (Test::isListArray($entity))
             {
-                $entity = $entity[0] ?? [];
+                $entity = $entity[0];
             }
 
             $typeMap = [

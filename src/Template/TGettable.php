@@ -26,6 +26,8 @@ use Closure;
  */
 trait TGettable
 {
+    use TClassCache;
+
     /**
      * Return a list of gettable protected properties
      *
@@ -54,53 +56,31 @@ trait TGettable
         return (bool)$this->getProperty("isset", $name);
     }
 
-    /**
-     * @var array<string,array<string,PropertyResolver>>
-     */
-    private static $GettableResolver = [];
-
-    /**
-     * @var array<string,array<string,array<string,Closure>>>
-     */
-    private static $GettableClosure = [];
-
     private function getPropertyResolver(string $action, callable $allowed): PropertyResolver
     {
-        $arr = & self::$GettableResolver;
-
-        if (!isset($arr[ static::class]))
-        {
-            $arr[ static::class] = [];
-        }
-
-        if (!isset($arr[ static::class][$action]))
-        {
-            $arr[ static::class][$action] = new PropertyResolver(static::class, $action, ($allowed)());
-        }
-
-        return $arr[ static::class][$action];
+        return self::getOrSetClassCache(
+            __METHOD__,
+            function () use ($action, $allowed)
+            {
+                return new PropertyResolver(static::class, $action, ($allowed)());
+            },
+            $action
+        );
     }
 
     private function getPropertyClosure(string $action, string $name, callable $allowed): Closure
     {
-        $arr = & self::$GettableClosure;
+        $closure = self::getOrSetClassCache(
+            __METHOD__,
+            function () use ($action, $name, $allowed)
+            {
+                return $this->getPropertyResolver($action, $allowed)->getClosure($name);
+            },
+            $action,
+            $name
+        );
 
-        if (!isset($arr[ static::class]))
-        {
-            $arr[ static::class] = [];
-        }
-
-        if (!isset($arr[ static::class][$action]))
-        {
-            $arr[ static::class][$action] = [];
-        }
-
-        if (!isset($arr[ static::class][$action][$name]))
-        {
-            $arr[ static::class][$action][$name] = $this->getPropertyResolver($action, $allowed)->getClosure($name);
-        }
-
-        return ($arr[ static::class][$action][$name])->BindTo($this, $this);
+        return ($closure)->BindTo($this, $this);
     }
 }
 

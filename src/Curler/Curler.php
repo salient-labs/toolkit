@@ -731,7 +731,7 @@ class Curler
         {
             $entities = array_merge($entities, Convert::toList($data));
         }
-        elseif (Test::isListArray($data))
+        elseif (Test::isListArray($data, true))
         {
             foreach ($data as $nested)
             {
@@ -752,7 +752,7 @@ class Curler
 
     public static function WalkGraphQL(array & $data, callable $filter = null)
     {
-        if (Test::isListArray($data))
+        if (Test::isListArray($data, true))
         {
             array_walk($data, function (&$data) use ($filter)
             {

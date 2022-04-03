@@ -30,11 +30,6 @@ class Cli
      */
     private static $RunningCommand;
 
-    /**
-     * @var int
-     */
-    private static $FirstArgumentIndex;
-
     public static function getProgramName(): string
     {
         return basename($GLOBALS["argv"][0]);
@@ -45,11 +40,6 @@ class Cli
         return self::$RunningCommand;
     }
 
-    public static function getFirstArgumentIndex(): ?int
-    {
-        return self::$FirstArgumentIndex;
-    }
-
     public static function getCommand(string $name): ?CliCommand
     {
         return self::$Commands[$name] ?? null;
@@ -58,7 +48,10 @@ class Cli
     /**
      *
      * @param string[] $name
-     * @return array<string,array|CliCommand>|CliCommand|null
+     * @return array<string,array|CliCommand>|CliCommand|null|false `null` if
+     * `$name` could be added to the tree, `false` if a command has been
+     * registered above `$name`, otherwise the `CliCommand` or associative
+     * subcommand array at `$name`.
      */
     public static function getCommandTree(array $name = [])
     {
@@ -66,15 +59,19 @@ class Cli
 
         foreach ($name as $subcommand)
         {
-            if (!is_array($tree))
+            if (is_null($tree))
             {
                 return null;
+            }
+            elseif (!is_array($tree))
+            {
+                return false;
             }
 
             $tree = $tree[$subcommand] ?? null;
         }
 
-        return $tree;
+        return $tree ?: null;
     }
 
     /**
@@ -104,7 +101,15 @@ class Cli
             $tree = & $tree[$subcommand];
         }
 
-        $tree[$leaf] = $command;
+        if (!is_null($leaf))
+        {
+            $tree[$leaf] = $command;
+        }
+        else
+        {
+            $tree = $command;
+        }
+
         self::$Commands[$command->getCommandName()] = $command;
     }
 
@@ -159,21 +164,25 @@ EOF;
     {
         Assert::sapiIsCli();
 
+        $args = array_slice($GLOBALS["argv"], 1);
         $node = self::$CommandTree;
         $name = "";
 
         try
         {
-            for ($i = 1; $i < $GLOBALS["argc"]; $i++)
+            while (is_array($node))
             {
-                $arg = $GLOBALS["argv"][$i];
+                $arg = array_shift($args) ?: "";
 
+                // Descend into the command tree if $arg is a legal subcommand,
+                // print usage info if $arg is "--help" and there are no further
+                // arguments, or fail
                 if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg))
                 {
                     $node  = $node[$arg] ?? null;
                     $name .= ($name ? " " : "") . $arg;
                 }
-                elseif ($arg == "--help" && $i + 1 == $GLOBALS["argc"])
+                elseif ($arg == "--help" && empty($args))
                 {
                     Console::PrintTo(self::getUsage($name, $node), ...Console::GetOutputTargets());
 
@@ -181,23 +190,20 @@ EOF;
                 }
                 else
                 {
-                    break;
-                }
-
-                if ($node instanceof CliCommand)
-                {
-                    self::$RunningCommand     = $node;
-                    self::$FirstArgumentIndex = $i + 1;
-
-                    return $node();
-                }
-                elseif (!is_array($node))
-                {
-                    throw new CliInvalidArgumentException("no command registered at '$name'");
+                    throw new CliInvalidArgumentException("missing or incomplete command" . ($name ? " '$name'" : ""));
                 }
             }
 
-            throw new CliInvalidArgumentException("missing or incomplete command" . ($name ? " '$name'" : ""));
+            if ($node instanceof CliCommand)
+            {
+                self::$RunningCommand = $node;
+
+                return $node($args);
+            }
+            else
+            {
+                throw new CliInvalidArgumentException("no command registered at '$name'");
+            }
         }
         catch (CliInvalidArgumentException $ex)
         {

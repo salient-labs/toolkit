@@ -68,6 +68,26 @@ class File
     }
 
     /**
+     * Create a directory if it doesn't exist
+     *
+     * @param string $filename Full path to the directory.
+     * @param int $permissions Only used if `$filename` needs to be created.
+     * @return bool `true` on success or `false` on failure.
+     */
+    public static function maybeCreateDirectory(
+        string $filename,
+        int $permissions = 0777
+    ): bool
+    {
+        if (file_exists($filename) || mkdir($filename, $permissions, true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Convert an array to CSV
      *
      * @param array $data An array of arrays (rows) to convert to CSV.

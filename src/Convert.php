@@ -34,7 +34,7 @@ abstract class Convert
      */
     public static function toList($value): array
     {
-        return Test::isListArray($value) ? $value : [$value];
+        return Test::isListArray($value, true) ? $value : [$value];
     }
 
     /**
@@ -381,7 +381,7 @@ abstract class Convert
 
                 continue;
             }
-            elseif (!$forceNumericKeys && Test::isListArray($value))
+            elseif (!$forceNumericKeys && Test::isListArray($value, true))
             {
                 $_format = "[]";
             }

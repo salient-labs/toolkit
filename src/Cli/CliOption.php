@@ -6,6 +6,7 @@ namespace Lkrms\Cli;
 
 use Lkrms\Assert;
 use Lkrms\Convert;
+use Lkrms\Template\IClassCache;
 use Lkrms\Template\IGettable;
 use Lkrms\Template\TConstructible;
 use Lkrms\Template\TGettable;
@@ -16,7 +17,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class CliOption implements IGettable
+class CliOption implements IClassCache, IGettable
 {
     use TConstructible, TGettable;
 

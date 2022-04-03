@@ -16,23 +16,25 @@ class CachingCurler extends Curler
 {
     private $Expiry;
 
-    private $HeadersCallback;
+    private $Callback;
 
     /**
      *
      * @param string $baseUrl
      * @param CurlerHeaders|null $headers
      * @param int $expiry
-     * @param callable|null $headersCallback To replace request headers used in
-     * the cache key, provide a callback that takes the return value of
-     * {@see CurlerHeaders::GetHeaders()} and returns something else.
+     * @param callable|null $callback Provide a callback to use instead of
+     * `$headers->GetHeaders()` when adding request headers to cache keys.
+     * ```php
+     * callback(CurlerHeaders $headers): string[]
+     * ```
      * @return void
      */
     public function __construct(string $baseUrl, CurlerHeaders $headers = null,
-        int $expiry = 3600, callable $headersCallback = null)
+        int $expiry = 3600, callable $callback = null)
     {
-        $this->Expiry          = $expiry;
-        $this->HeadersCallback = $headersCallback;
+        $this->Expiry   = $expiry;
+        $this->Callback = $callback;
 
         parent::__construct($baseUrl, $headers);
     }
@@ -41,23 +43,19 @@ class CachingCurler extends Curler
     {
         $this->InternalStackDepth += 1;
 
-        if ($this->LastRequestType == "GET" && Cache::IsLoaded())
+        if ($this->LastRequestType == "GET" && Cache::isLoaded())
         {
             $url     = curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL);
-            $headers = $this->Headers->GetHeaders();
-
-            if (!is_null($this->HeadersCallback))
-            {
-                $headers = ($this->HeadersCallback)($headers);
-            }
-
+            $headers = (is_null($this->Callback)
+                ? $this->Headers->GetHeaders()
+                : ($this->Callback)($this->Headers));
             $key    = "curler/" . $url . "/" . Generate::hash(...$headers);
-            $result = Cache::Get($key);
+            $result = Cache::get($key);
 
             if ($result === false)
             {
                 $result = parent::Execute($close);
-                Cache::Set($key, [$this->LastResponseHeaders, $result], $this->Expiry);
+                Cache::set($key, [$this->LastResponseHeaders, $result], $this->Expiry);
             }
             else
             {

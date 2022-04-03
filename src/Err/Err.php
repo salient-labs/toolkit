@@ -28,7 +28,7 @@ class Err
      * `E_USER_DEPRECATED` errors will be silenced (e.g. your project's `vendor`
      * directory).
      */
-    public static function HandleErrors($handler = null, $silenceInPaths = null)
+    public static function handleErrors($handler = null, $silenceInPaths = null)
     {
         if (!self::$Whoops)
         {
@@ -61,7 +61,7 @@ class Err
         self::$Whoops->register();
     }
 
-    public static function GetCaller(int $depth = 0): string
+    public static function getCaller(int $depth = 0): string
     {
         // 0. called us (function = GetCaller)
         // 1. called them (function = OurCaller)

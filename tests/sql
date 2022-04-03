@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\Err;
+use Lkrms\Sql;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Err::HandleErrors();
+
+Sql::valueInList("record_id", function () { return "?"; }, $where, $var);
+Sql::valueInList("user_id", function () { return "?"; }, $where, $var, 12, 36, 7, 32);
+Sql::valueInList("session_id", function () { return "?"; }, $where, $var, '1000', '1001', '1002');
+
+var_dump([$where, $var]);

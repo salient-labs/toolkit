@@ -5,9 +5,12 @@
   - [ ] Convert informal tests to PHPUnit tests
   - [ ] Adopt PHPStan, incl. creating [extensions](https://phpstan.org/developing-extensions/extension-types)
   - [ ] Write more tests
+- [ ] Move `Sync\SyncProvider` to `Sync\Provider\SyncProvider`
+  - [ ] Create an alias at `Sync\SyncProvider`
+- [ ] Review `Template` classes (and others) for `TClassCache` candidates
 - [ ] Adopt camelCase method names
   - [x] `Assert`
-  - [ ] `Cache`
+  - [x] `Cache`
   - [x] `Cli`
   - [x] `Cli\Cli`
   - [x] `Cli\CliCommand`
@@ -32,7 +35,7 @@
   - [x] `Env`
   - [x] `Err`
   - [x] `Err\CliHandler`
-  - [ ] `Err\Err`
+  - [x] `Err\Err`
   - [x] `Error`
   - [x] `File`
   - [x] `Format`
@@ -59,11 +62,13 @@
   - [x] `Template\TSettable`
   - [x] `Template\TSingleton`
   - [x] `Test`
-  - [ ] `Trash`
+  - [x] `Trash`
 
 ### Cli
 - [x] Implement `CliOptionType::ONE_OF_OPTIONAL`
 - [ ] Allow commands to be chained and/or invoked as functions
+  - [x] Receive arguments via `CliCommand::__invoke()` instead of reading from `$GLOBALS["argv"]`
+- [ ] Allow subcommands to be abbreviated
 - [ ] Implement shared/default command options
 - [ ] Add automatic `help` command
 

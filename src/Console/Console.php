@@ -406,7 +406,7 @@ class Console
     public static function Debug(string $msg1, string $msg2 = null,
         Throwable $ex = null, int $depth = 0)
     {
-        $caller = Err::GetCaller($depth);
+        $caller = Err::getCaller($depth);
         self::Write(
             ConsoleLevel::DEBUG,
             "{{$caller}} __" . $msg1 . "__",

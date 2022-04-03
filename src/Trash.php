@@ -18,7 +18,7 @@ class Trash extends Sqlite
      *
      * @return bool
      */
-    public static function IsLoaded(): bool
+    public static function isLoaded(): bool
     {
         return self::isOpen();
     }
@@ -31,7 +31,7 @@ class Trash extends Sqlite
      *
      * @param string $filename The SQLite database to use.
      */
-    public static function Load(string $filename)
+    public static function load(string $filename)
     {
         self::open($filename);
         self::db()->exec(
@@ -60,7 +60,7 @@ SQL
      * @param int|null $createdAt When was the object originally created?
      * @param int|null $modifiedAt When was the object most recently changed?
      */
-    public static function Put(string $type, ?string $key, $object,
+    public static function put(string $type, ?string $key, $object,
         ?string $deletedFrom, int $createdAt = null, int $modifiedAt = null)
     {
         self::assertIsOpen();
@@ -97,7 +97,7 @@ SQL
     /**
      * Delete everything
      */
-    public static function Empty()
+    public static function empty()
     {
         self::assertIsOpen();
         self::db()->exec(

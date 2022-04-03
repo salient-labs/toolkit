@@ -41,8 +41,8 @@ abstract class CliCommand
      * Valid subcommands start with a letter, followed by any number of letters,
      * numbers, hyphens, or underscores.
      *
-     * @return string[] An `UnexpectedValueException` will be thrown if an empty
-     * array or invalid subcommand is returned.
+     * @return string[] An `UnexpectedValueException` will be thrown if an
+     * invalid subcommand is returned.
      */
     abstract protected function _getName(): array;
 
@@ -121,6 +121,11 @@ abstract class CliCommand
     private $HiddenOptionsByKey = [];
 
     /**
+     * @var string[]
+     */
+    private $Arguments = [];
+
+    /**
      * @var array<string,string|array|bool|null>
      */
     private $OptionValues;
@@ -142,8 +147,6 @@ abstract class CliCommand
 
     final public static function assertNameIsValid(?array $name)
     {
-        Assert::notEmpty($name, "name");
-
         foreach ($name as $i => $subcommand)
         {
             Assert::pregMatch($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
@@ -197,7 +200,10 @@ abstract class CliCommand
 
     final public function getLongCommandName(): string
     {
-        return Cli::getProgramName() . " " . $this->getCommandName();
+        $name = $this->getName();
+        array_unshift($name, Cli::getProgramName());
+
+        return implode(" ", $name);
     }
 
     /**
@@ -206,7 +212,7 @@ abstract class CliCommand
      */
     final public function getName(): array
     {
-        if (!$this->Name)
+        if (is_null($this->Name))
         {
             self::assertNameIsValid($name = $this->_getName());
             $this->Name = $name;
@@ -445,18 +451,13 @@ EOF;
             return;
         }
 
-        if (Cli::getRunningCommand() !== $this)
-        {
-            throw new RuntimeException(static::class . " is not running");
-        }
-
         $this->loadOptions();
         $this->OptionErrors = 0;
 
-        $args   = $GLOBALS["argv"];
+        $args   = $this->Arguments;
         $merged = [];
 
-        for ($i = Cli::getFirstArgumentIndex(); $i < $GLOBALS["argc"]; $i++)
+        for ($i = 0; $i < count($args); $i++)
         {
             list ($arg, $short, $matches) = [$args[$i], false, null];
 
@@ -568,7 +569,7 @@ EOF;
         {
             if ($option->IsRequired && !array_key_exists($option->Key, $merged))
             {
-                if (!($GLOBALS["argc"] - Cli::getFirstArgumentIndex() == 1 && $this->IsHelp))
+                if (!(count($args) == 1 && $this->IsHelp))
                 {
                     $this->optionError("{$option->DisplayName} argument required");
                 }
@@ -639,8 +640,9 @@ EOF;
         return $values;
     }
 
-    final public function __invoke(): int
+    final public function __invoke(array $args): int
     {
+        $this->Arguments = $args;
         $this->loadOptionValues();
 
         if ($this->IsHelp)
@@ -650,7 +652,7 @@ EOF;
             return 0;
         }
 
-        $return = $this->run(...array_slice($GLOBALS['argv'], $this->NextArgumentIndex));
+        $return = $this->run(...array_slice($this->Arguments, $this->NextArgumentIndex));
 
         if (is_int($return))
         {

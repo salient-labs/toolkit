@@ -7,6 +7,7 @@ namespace Lkrms\Sync;
 use JsonSerializable;
 use Lkrms\Convert;
 use Lkrms\Template\IAccessible;
+use Lkrms\Template\IClassCache;
 use Lkrms\Template\IExtensible;
 use Lkrms\Template\IGettable;
 use Lkrms\Template\IResolvable;
@@ -36,7 +37,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensible, JsonSerializable
+abstract class SyncEntity implements IClassCache, IGettable, ISettable, IResolvable, IExtensible, JsonSerializable
 {
     use TConstructible, TExtensible;
 
@@ -54,6 +55,11 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
      * @var array<string,string[]>
      */
     private $OnlySerializeId;
+
+    /**
+     * @var bool
+     */
+    private $DetectRecursion;
 
     public function getSettable(): ?array
     {
@@ -180,9 +186,9 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
 
     private function _serializeId(
         &$node,
-        SyncEntity $parentEntity,
+        ?SyncEntity $parentEntity,
         array & $parentArray,
-        string $parentKey
+        $parentKey
     )
     {
         // Rename $node to `<parent_key>_id` or similar if:
@@ -208,8 +214,7 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
     private function _serialize(
         &$node,
         SyncEntity $root,
-        $parents  = [],
-        $siblings = [],
+        $parents = [],
         SyncEntity $parentEntity = null,
         array & $parentArray     = null,
         $parentKey               = null
@@ -222,44 +227,53 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
             $entityNode = $node;
 
             // Prevent recursion by replacing each $node descended from itself
-            // or a previous sibling of itself with $node->Id
-            if ($parents[$node->getInstanceKey()] ?? false)
+            // with $node->Id
+            if ($root->DetectRecursion && ($parents[$node->getInstanceKey()] ?? false))
             {
                 $this->_serializeId($node, $parentEntity, $parentArray, $parentKey);
             }
             else
             {
-                $onlySerializeId = $root->OnlySerializeId[get_class($node)] ?? [];
-
-                if ($noSerialize = $root->DoNotSerialize[get_class($node)] ?? null)
+                if ($root->DetectRecursion)
                 {
-                    $node = array_diff_key($node->serialize(), $noSerialize);
+                    $parents[$node->getInstanceKey()] = true;
+                }
+
+                $delete = $replace = [];
+                $class  = get_class($node);
+
+                do
+                {
+                    if ($keys = $root->DoNotSerialize[$class] ?? null)
+                    {
+                        array_push($delete, ...$keys);
+                    }
+
+                    if ($keys = $root->OnlySerializeId[$class] ?? null)
+                    {
+                        array_push($replace, ...$keys);
+                    }
+                }
+                while (($class = get_parent_class($class)) && $class != SyncEntity::class);
+
+                if ($delete)
+                {
+                    $node = array_diff_key($node->serialize(), array_flip($delete));
                 }
                 else
                 {
                     $node = $node->serialize();
                 }
 
-                foreach ($onlySerializeId as $key)
+                foreach ($replace as $key)
                 {
                     $this->_serializeId($node[$key], $entityNode, $node, $key);
                 }
             }
         }
 
-        $parents  = array_merge($parents, $siblings);
-        $siblings = [];
-
         if (is_array($node))
         {
-            foreach ($node as $child)
-            {
-                if ($child instanceof SyncEntity)
-                {
-                    $siblings[$child->getInstanceKey()] = true;
-                }
-            }
-
             foreach ($node as $key => & $child)
             {
                 if (is_null($child) || is_scalar($child))
@@ -267,7 +281,7 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
                     continue;
                 }
 
-                $this->_serialize($child, $root, $parents, $siblings, $entityNode, $node, $key);
+                $this->_serialize($child, $root, $parents, $entityNode, $node, $key);
             }
         }
         elseif (is_object($node))
@@ -276,20 +290,12 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
 
             foreach ($keys as $key)
             {
-                if ($node->$key instanceof SyncEntity)
-                {
-                    $siblings[$node->$key->getInstanceKey()] = true;
-                }
-            }
-
-            foreach ($keys as $key)
-            {
                 if (is_null($node->$key) || is_scalar($node->$key))
                 {
                     continue;
                 }
 
-                $this->_serialize($node->$key, $root, $parents, $siblings);
+                $this->_serialize($node->$key, $root, $parents);
             }
         }
     }
@@ -307,8 +313,9 @@ abstract class SyncEntity implements IGettable, ISettable, IResolvable, IExtensi
      */
     public function toArray(): array
     {
-        $this->DoNotSerialize  = array_map('array_flip', $this->getDoNotSerialize() ?: []);
+        $this->DoNotSerialize  = $this->getDoNotSerialize() ?: [];
         $this->OnlySerializeId = $this->getOnlySerializeId() ?: [];
+        $this->DetectRecursion = !$this->DoNotSerialize && !$this->OnlySerializeId;
 
         $array = $this;
         $this->_serialize($array, $this);

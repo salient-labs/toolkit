@@ -80,7 +80,7 @@ class Env
 
             if ($match[3] ?? null)
             {
-                $value = preg_replace("/\\\\([\"\$`])/", "\\1", $match[3]);
+                $value = preg_replace("/\\\\([\"\$\\`])/", "\\1", $match[3]);
             }
             elseif ($match[5] ?? null)
             {

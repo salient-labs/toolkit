@@ -123,11 +123,7 @@ class Assert
     public static function isIntArray($value, string $name = null): void
     {
         if (!Test::isIndexedArray($value) ||
-            count(array_filter($value,
-                function ($v)
-                {
-                    return !is_int($v);
-                })))
+            count(array_filter($value, function ($v) { return !is_int($v); })))
         {
             self::throwUnexpectedValue("{} must be an integer array", $name);
         }

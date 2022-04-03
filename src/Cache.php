@@ -17,7 +17,7 @@ use UnexpectedValueException;
  */
 class Cache extends Sqlite
 {
-    public static function FlushExpired()
+    public static function flushExpired()
     {
         self::db()->exec(
 <<<SQL
@@ -33,7 +33,7 @@ SQL
      * @return string
      * @throws UnexpectedValueException
      */
-    private static function GetKey($key): string
+    private static function getKey($key): string
     {
         if (Test::isIndexedArray($key))
         {
@@ -52,7 +52,7 @@ SQL
      *
      * @return bool
      */
-    public static function IsLoaded(): bool
+    public static function isLoaded(): bool
     {
         return self::isOpen();
     }
@@ -66,7 +66,7 @@ SQL
      * @param string $filename The SQLite database to use.
      * @param bool $autoFlush Automatically flush expired values?
      */
-    public static function Load(string $filename = ":memory:", bool $autoFlush = true)
+    public static function load(string $filename = ":memory:", bool $autoFlush = true)
     {
         self::open($filename);
         self::db()->exec(
@@ -89,7 +89,7 @@ SQL
 
         if ($autoFlush)
         {
-            self::FlushExpired();
+            self::flushExpired();
         }
     }
 
@@ -105,7 +105,7 @@ SQL
      * 30 days), or the expiry time's Unix timestamp. `0` = no expiry.
      * @throws RuntimeException
      */
-    public static function Set(string $key, $value, int $expiry = 0)
+    public static function set(string $key, $value, int $expiry = 0)
     {
         self::assertIsOpen();
 
@@ -115,7 +115,7 @@ SQL
 
             if ($value === false)
             {
-                self::Delete($key);
+                self::delete($key);
 
                 return;
             }
@@ -207,7 +207,7 @@ SQL;
      * @return mixed The `unserialize`d value stored in the cache.
      * @throws RuntimeException
      */
-    public static function Get(string $key, int $maxAge = null)
+    public static function get(string $key, int $maxAge = null)
     {
         self::assertIsOpen();
 
@@ -257,7 +257,7 @@ SQL;
      * @param string $key The key of the item to delete.
      * @throws RuntimeException
      */
-    public static function Delete(string $key)
+    public static function delete(string $key)
     {
         self::assertIsOpen();
         $stmt = self::db()->prepare(
@@ -277,7 +277,7 @@ SQL
      *
      * @throws RuntimeException
      */
-    public static function Flush()
+    public static function flush()
     {
         self::assertIsOpen();
         self::db()->exec(
@@ -298,14 +298,14 @@ SQL
      * @throws UnexpectedValueException
      * @throws RuntimeException
      */
-    public static function MaybeGet($key, callable $callback, int $expiry = 0)
+    public static function maybeGet($key, callable $callback, int $expiry = 0)
     {
-        $key = self::GetKey($key);
+        $key = self::getKey($key);
 
-        if (($value = self::Get($key, $expiry)) === false)
+        if (($value = self::get($key, $expiry)) === false)
         {
             $value = $callback();
-            self::Set($key, $value, $expiry);
+            self::set($key, $value, $expiry);
         }
 
         return $value;

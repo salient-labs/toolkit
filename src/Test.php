@@ -50,37 +50,54 @@ class Test
      * Return true for arrays with consecutive integer keys numbered from 0
      *
      * @param mixed $value
+     * @param bool $allowEmpty
      * @return bool
      */
-    public static function isListArray($value): bool
+    public static function isListArray($value, bool $allowEmpty = false): bool
     {
         return is_array($value) &&
-            (empty($value) ||
-                array_keys($value) === range(0, count($value) - 1));
+            (empty($value) ? $allowEmpty : array_keys($value) === range(0, count($value) - 1));
     }
 
     /**
-     * Return true for arrays with at least one string key
+     * Return true for arrays with one or more string keys
      *
      * @param mixed $value
+     * @param bool $allowEmpty
      * @return bool
      */
-    public static function isAssociativeArray($value): bool
+    public static function isAssociativeArray($value, bool $allowEmpty = false): bool
     {
-        return is_array($value) &&
-            count(array_filter(array_keys($value), "is_string")) > 0;
+        if (is_array($value))
+        {
+            if (empty($value))
+            {
+                return $allowEmpty;
+            }
+
+            foreach (array_keys($value) as $key)
+            {
+                if (is_string($key))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
-     * Return true for non-empty arrays with no string keys
+     * Return true for arrays with no string keys
      *
      * @param mixed $value
+     * @param bool $allowEmpty
      * @return bool
      */
-    public static function isIndexedArray($value): bool
+    public static function isIndexedArray($value, bool $allowEmpty = false): bool
     {
         return is_array($value) &&
-            !empty($value) && !self::isAssociativeArray($value);
+            (empty($value) ? $allowEmpty : !self::isAssociativeArray($value));
     }
 
     /**
