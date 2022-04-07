@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync;
 
+use Lkrms\Console\Console;
 use Lkrms\Convert;
 use Lkrms\Generate;
 
@@ -151,6 +152,13 @@ class SyncEntityFuzzyResolver extends SyncEntityResolver
             if (!is_null($this->UncertaintyThreshold) &&
                 $uncertainty >= $this->UncertaintyThreshold)
             {
+                $nameField = $this->NameField;
+                Console::DebugOnce(sprintf(
+                    "Match with '%s' exceeds uncertainty threshold (%.2f >= %.2f):",
+                    $match[0]->$nameField,
+                    $uncertainty,
+                    $this->UncertaintyThreshold
+                ), $name);
                 $cache       = $match = false;
                 $uncertainty = null;
             }

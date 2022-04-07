@@ -18,12 +18,21 @@ abstract class HttpSyncProvider extends SyncProvider
 {
     abstract protected function getBaseUrl(): string;
 
+    /**
+     * Headers to use when creating a Curler instance
+     *
+     * Called once per {@see HttpSyncProvider::getCurler()} call.
+     *
+     * The requested endpoint is passed as the first parameter.
+     *
+     * @return null|CurlerHeaders
+     */
     abstract protected function getHeaders(): ?CurlerHeaders;
 
     /**
      * The time, in seconds, before upstream responses expire
      *
-     * Use `null` to disable response caching (the default) or `0` to cache
+     * Return `null` to disable response caching (the default) or `0` to cache
      * upstream responses indefinitely.
      *
      * The `$expiry` parameter of {@see HttpSyncProvider::getCurler()} takes
@@ -35,6 +44,16 @@ abstract class HttpSyncProvider extends SyncProvider
     protected function getCacheExpiry(): ?int
     {
         return null;
+    }
+
+    /**
+     * Automatically retry rate-limited requests with Retry-After headers?
+     *
+     * @return bool
+     */
+    protected function getAutoRetryAfter(): bool
+    {
+        return false;
     }
 
     /**
@@ -58,20 +77,27 @@ abstract class HttpSyncProvider extends SyncProvider
 
         if (!is_null($expiry))
         {
-            return new CachingCurler(
+            $curler = new CachingCurler(
                 $this->getBaseUrl() . $path,
-                $this->getHeaders(),
+                $this->getHeaders($path),
                 $expiry,
                 function (CurlerHeaders $headers) { return $this->cacheKeyCallback($headers); }
             );
         }
         else
         {
-            return new Curler(
+            $curler = new Curler(
                 $this->getBaseUrl() . $path,
-                $this->getHeaders()
+                $this->getHeaders($path)
             );
         }
+
+        if ($this->getAutoRetryAfter())
+        {
+            $curler->EnableAutoRetryAfter();
+        }
+
+        return $curler;
     }
 }
 

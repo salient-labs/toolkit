@@ -5,9 +5,8 @@
   - [ ] Convert informal tests to PHPUnit tests
   - [ ] Adopt PHPStan, incl. creating [extensions](https://phpstan.org/developing-extensions/extension-types)
   - [ ] Write more tests
-- [ ] Move `Sync\SyncProvider` to `Sync\Provider\SyncProvider`
-  - [ ] Create an alias at `Sync\SyncProvider`
-- [ ] Review `Template` classes (and others) for `TClassCache` candidates
+- [ ] Review `Template` classes (and others) for `TClassCache` and `PropertyResolver` candidates
+  - [ ] Move `PropertyResolver` to a more appropriate namespace?
 - [ ] Adopt camelCase method names
   - [x] `Assert`
   - [x] `Cache`
@@ -63,6 +62,13 @@
   - [x] `Template\TSingleton`
   - [x] `Test`
   - [x] `Trash`
+
+### Sync
+
+- [ ] Move `Sync\SyncProvider` to `Sync\Provider\SyncProvider`
+  - [ ] Create an alias at `Sync\SyncProvider`
+- [ ] Implement automatic local storage of entities
+- [ ] Add optional callback and/or field map parameters to `TConstructible::from()` and `listFrom()`
 
 ### Cli
 - [x] Implement `CliOptionType::ONE_OF_OPTIONAL`
