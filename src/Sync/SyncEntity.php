@@ -6,12 +6,12 @@ namespace Lkrms\Sync;
 
 use JsonSerializable;
 use Lkrms\Convert;
+use Lkrms\Reflect;
 use Lkrms\Template\IAccessible;
 use Lkrms\Template\IClassCache;
+use Lkrms\Template\IConstructible;
 use Lkrms\Template\IExtensible;
-use Lkrms\Template\IGettable;
-use Lkrms\Template\IResolvable;
-use Lkrms\Template\ISettable;
+use Lkrms\Template\TClassCache;
 use Lkrms\Template\TConstructible;
 use Lkrms\Template\TExtensible;
 use UnexpectedValueException;
@@ -37,9 +37,9 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-abstract class SyncEntity implements IClassCache, IGettable, ISettable, IResolvable, IExtensible, JsonSerializable
+abstract class SyncEntity implements IConstructible, IExtensible, IClassCache, JsonSerializable
 {
-    use TConstructible, TExtensible;
+    use TConstructible, TExtensible, TClassCache;
 
     /**
      * @var int|string
@@ -61,9 +61,14 @@ abstract class SyncEntity implements IClassCache, IGettable, ISettable, IResolva
      */
     private $DetectRecursion;
 
-    public function getSettable(): ?array
+    public static function getGettable(): array
     {
-        return IAccessible::ALLOW_ALL_PROTECTED;
+        return IAccessible::ALLOW_PROTECTED;
+    }
+
+    public static function getSettable(): array
+    {
+        return IAccessible::ALLOW_PROTECTED;
     }
 
     /**
@@ -78,6 +83,54 @@ abstract class SyncEntity implements IClassCache, IGettable, ISettable, IResolva
     public static function getPlural(): string
     {
         return Convert::nounToPlural(Convert::classToBasename(static::class));
+    }
+
+    /**
+     * Return prefixes to remove when normalising field/property names
+     *
+     * Instantiable entity names are removed by default, e.g. for an `AdminUser`
+     * class that extends a {@see SyncEntity} subclass called `User`, prefixes
+     * "AdminUser" and "User" are removed to ensure fields like "USER_ID" and
+     * "ADMIN_USER_FULL_NAME" match with properties like "Id" and "FullName",
+     * but if `User` were an `abstract` class, the only prefix removed would be
+     * "AdminUser", because classes that can't be instantiated are ignored.
+     *
+     * Return `null` to suppress prefix removal.
+     *
+     * @return string[]|null
+     */
+    protected static function getRemovablePrefixes(): ?array
+    {
+        return array_map(
+            function (string $name) { return Convert::classToBasename($name); },
+            Reflect::getClassNamesBetween(static::class, self::class, true)
+        );
+    }
+
+    final public static function normalisePropertyName(string $name): string
+    {
+        if (!($closure = self::getClassCache(__METHOD__)))
+        {
+            if ($prefixes = static::getRemovablePrefixes())
+            {
+                $prefixes = array_unique(array_map(
+                    function (string $prefix) { return Convert::toCamelCase($prefix); },
+                    $prefixes
+                ));
+                $regex   = implode("|", $prefixes);
+                $regex   = count($prefixes) > 1 ? "($regex)" : $regex;
+                $regex   = "/^{$regex}_/";
+                $closure = function (string $name) use ($regex) { return preg_replace($regex, "", Convert::toSnakeCase($name)); };
+            }
+            else
+            {
+                $closure = function (string $name) { return Convert::toSnakeCase($name); };
+            }
+
+            self::setClassCache(__METHOD__, $closure);
+        }
+
+        return $closure($name);
     }
 
     /**

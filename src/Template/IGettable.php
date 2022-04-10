@@ -12,7 +12,7 @@ namespace Lkrms\Template;
  */
 interface IGettable extends IAccessible
 {
-    public function getGettable(): ?array;
+    public static function getGettable(): array;
 
     public function __get(string $name);
 

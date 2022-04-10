@@ -15,19 +15,14 @@ trait TClassCache
 {
     private static $ClassCache = [];
 
-    private static function & getClassCacheArray(string $itemType): array
+    private static function & getClassCacheRoot(string $itemType)
     {
-        if (!isset(self::$ClassCache[ static::class]))
+        if (!array_key_exists(static::class, self::$ClassCache))
         {
-            self::$ClassCache[ static::class] = [];
+            self::$ClassCache[static::class] = [];
         }
 
-        if (!isset(self::$ClassCache[ static::class][$itemType]))
-        {
-            self::$ClassCache[ static::class][$itemType] = [];
-        }
-
-        return self::$ClassCache[ static::class][$itemType];
+        return self::$ClassCache[static::class][$itemType];
     }
 
     /**
@@ -42,7 +37,7 @@ trait TClassCache
      */
     final public static function getClassCache(string $itemType, ...$itemPath)
     {
-        $cache = self::getClassCacheArray($itemType);
+        $cache = self::getClassCacheRoot($itemType);
 
         while (is_array($cache) && !empty($itemPath))
         {
@@ -64,13 +59,25 @@ trait TClassCache
      */
     final public static function setClassCache(string $itemType, $item, ...$itemPath)
     {
-        $cache = & self::getClassCacheArray($itemType);
+        $cache = & self::getClassCacheRoot($itemType);
+
+        if (empty($itemPath))
+        {
+            $cache = $item;
+
+            return;
+        }
+
+        if (is_null($cache))
+        {
+            $cache = [];
+        }
 
         while (!empty($itemPath))
         {
             $key = array_shift($itemPath);
 
-            if (!isset($cache[$key]))
+            if (!array_key_exists($key, $cache))
             {
                 $cache[$key] = [];
             }

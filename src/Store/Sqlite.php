@@ -50,8 +50,8 @@ abstract class Sqlite
         $db->enableExceptions();
         $db->busyTimeout(60000);
         $db->exec('PRAGMA journal_mode=WAL');
-        self::$Db[ static::class] = $db;
-        self::$Filename[ static::class] = $filename;
+        self::$Db[static::class] = $db;
+        self::$Filename[static::class] = $filename;
     }
 
     /**
@@ -65,7 +65,7 @@ abstract class Sqlite
         }
 
         self::db()->close();
-        unset(self::$Db[ static::class], self::$Filename[ static::class]);
+        unset(self::$Db[static::class], self::$Filename[static::class]);
     }
 
     /**
@@ -75,7 +75,7 @@ abstract class Sqlite
      */
     public static function isOpen(): bool
     {
-        return isset(self::$Db[ static::class]);
+        return isset(self::$Db[static::class]);
     }
 
     /**
@@ -85,7 +85,7 @@ abstract class Sqlite
      */
     public static function getFilename(): ?string
     {
-        return self::$Filename[ static::class] ?? null;
+        return self::$Filename[static::class] ?? null;
     }
 
     /**
@@ -111,12 +111,12 @@ abstract class Sqlite
      */
     protected static function db(): ?SQLite3
     {
-        return self::$Db[ static::class] ?? null;
+        return self::$Db[static::class] ?? null;
     }
 
     protected static function isTransactionOpen(): bool
     {
-        return self::$IsTransactionOpen[ static::class] ?? false;
+        return self::$IsTransactionOpen[static::class] ?? false;
     }
 
     protected static function beginTransaction()
@@ -129,7 +129,7 @@ abstract class Sqlite
         }
 
         self::db()->exec("BEGIN");
-        self::$IsTransactionOpen[ static::class] = true;
+        self::$IsTransactionOpen[static::class] = true;
     }
 
     protected static function commitTransaction()
@@ -142,7 +142,7 @@ abstract class Sqlite
         }
 
         self::db()->exec("COMMIT");
-        unset(self::$IsTransactionOpen[ static::class]);
+        unset(self::$IsTransactionOpen[static::class]);
     }
 
     protected static function rollbackTransaction()
@@ -155,7 +155,7 @@ abstract class Sqlite
         }
 
         self::db()->exec("ROLLBACK");
-        unset(self::$IsTransactionOpen[ static::class]);
+        unset(self::$IsTransactionOpen[static::class]);
     }
 
     protected static function invokeInTransaction(callable $callback)

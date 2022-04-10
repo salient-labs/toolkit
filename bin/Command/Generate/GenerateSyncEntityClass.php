@@ -161,6 +161,11 @@ class GenerateSyncEntityClass extends CliCommand
 
         if ($entity)
         {
+            if (is_array($entity["data"] ?? null))
+            {
+                $entity = $entity["data"];
+            }
+
             if (Test::isListArray($entity))
             {
                 $entity = $entity[0];

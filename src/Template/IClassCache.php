@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Template;
 
 /**
- * An in-memory cache shared between instances of the same class
+ * Implements an in-memory cache shared between instances of the same class
  *
  * @package Lkrms
  * @see TClassCache

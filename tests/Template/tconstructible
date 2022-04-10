@@ -5,6 +5,7 @@ namespace Lkrms\Tests\Template;
 
 use Lkrms\Err;
 use Lkrms\Template\IExtensible;
+use Lkrms\Template\IResolvable;
 use Lkrms\Template\TConstructible;
 use Lkrms\Template\TExtensible;
 use Throwable;
@@ -53,12 +54,11 @@ $value3 = [
 $a = A::from($value1);
 $b = B::from($value2);
 $c = B::from($value3);
-$d = B::listFrom([$value1, $value2, $c]);
-$e = A::listFrom([$value1, $value2, $c]);
+$d = B::listFrom([$value1, $value2, $value3]);
 
 try
 {
-    $f = B::listFrom([$value1, $value2, $a]);
+    $e = B::listFrom([$value1, $value2, $c]);
 }
 catch (UnexpectedValueException $ex)
 {
@@ -80,19 +80,12 @@ print_r([
     'a_get' => ['id' => $a_id, 'name' => $a_name, 'data' => $a_data, 'meta' => $a_meta],
     'b_get' => ['id' => $b_id, 'name' => $b_name, 'data' => $b_data],
     'd' => $d,
-    'e' => $e,
 
     // true
     'b == $d[1]' => $b == $d[1],
 
     // false
     'b === $d[1]' => $b === $d[1],
-
-    // true
-    'c == $d[2]' => $c == $d[2],
-
-    // true
-    'c === $d[2]' => $c === $d[2],
 
     'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
 ]);

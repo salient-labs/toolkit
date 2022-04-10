@@ -7,16 +7,18 @@ namespace Lkrms\Template;
 use Lkrms\Convert;
 
 /**
- * Implements IExtensible and IResolvable to provide arbitrary property storage
+ * Implements IExtensible to provide arbitrary property storage via normalised
+ * property names
  *
  * @package Lkrms
- * @see IExtensible
+ * @see IGettable
+ * @see ISettable
  * @see IResolvable
- * @see TConstructible
+ * @see IExtensible
  */
 trait TExtensible
 {
-    use TSettable;
+    use TGettable, TSettable;
 
     protected $MetaProperties = [];
 

@@ -10,7 +10,7 @@ namespace Lkrms\Template;
  * @package Lkrms
  * @see TExtensible
  */
-interface IExtensible
+interface IExtensible extends IGettable, ISettable, IResolvable
 {
     public function setMetaProperty(string $name, $value): void;
 
@@ -21,13 +21,5 @@ interface IExtensible
     public function unsetMetaProperty(string $name): void;
 
     public function getMetaProperties(): array;
-
-    public function __set(string $name, $value): void;
-
-    public function __get(string $name);
-
-    public function __isset(string $name): bool;
-
-    public function __unset(string $name): void;
 }
 

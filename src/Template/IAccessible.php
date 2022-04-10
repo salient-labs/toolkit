@@ -15,15 +15,13 @@ interface IAccessible
 {
     /**
      * Make all protected properties accessible
-     *
-     * This is the default for {@see TGettable}.
      */
-    public const ALLOW_ALL_PROTECTED = null;
+    public const ALLOW_PROTECTED = ["*"];
 
     /**
      * Make all non-public properties inaccessible
      *
-     * This is the default for {@see TSettable}.
+     * This is the default for {@see TGettable} and {@see TSettable}.
      */
     public const ALLOW_NONE = [];
 }

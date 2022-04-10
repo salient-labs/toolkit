@@ -12,7 +12,7 @@ namespace Lkrms\Template;
  */
 interface ISettable extends IAccessible
 {
-    public function getSettable(): ?array;
+    public static function getSettable(): array;
 
     public function __set(string $name, $value): void;
 

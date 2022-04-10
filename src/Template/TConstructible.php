@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace Lkrms\Template;
 
-use Lkrms\Convert;
-use Lkrms\Ioc\Ioc;
-use ReflectionClass;
-use ReflectionException;
-use ReflectionProperty;
+use Lkrms\Reflect\PropertyResolver;
 use UnexpectedValueException;
 
 /**
- * Converts arrays to instances
+ * Implements IConstructible to convert arrays to instances
  *
  * @package Lkrms
  */
@@ -27,149 +23,54 @@ trait TConstructible
      * are assigned via {@see IExtensible::setMetaProperty()}.
      *
      * Array keys, constructor parameters and public property names are
-     * normalised for comparison if necessary.
+     * normalised for comparison.
      *
      * @param array $array
      * @return static
-     * @throws ReflectionException
-     * @throws UnexpectedValueException Thrown when required values are not
-     * provided or the provided values cannot be applied
+     * @throws UnexpectedValueException when required values are not provided
      */
     public static function from(array $array)
     {
-        /**
-         * @todo Reimplement with caching
-         */
-
-        $class = new ReflectionClass(Ioc::resolve(static::class));
-
-        $getName = function ($reflection) { return $reflection->name; };
-        $mapFrom = function ($name) { return Convert::toSnakeCase($name); };
-
-        // $arrayMap: normalised_name => ORIGINAL_NAME
-        $keys     = array_keys($array);
-        $arrayMap = array_combine(array_map($mapFrom, $keys), $keys);
-
-        $args = null;
-
-        if ($constructor = $class->getConstructor())
-        {
-            // $paramMap: originalName => normalised_name
-            $params   = $constructor->getParameters();
-            $keys     = array_map($getName, $params);
-            $paramMap = array_combine($keys, array_map($mapFrom, $keys));
-
-            $args = [];
-
-            foreach ($params as $param)
-            {
-                if (!empty($array))
-                {
-                    // Try for an exact match
-                    if (array_key_exists($param->name, $array))
-                    {
-                        $key = $param->name;
-                    }
-                    else
-                    {
-                        // Settle for a less exact one
-                        $key = $arrayMap[$paramMap[$param->name]] ?? null;
-                    }
-
-                    if ($key)
-                    {
-                        $args[] = $array[$key];
-                        unset($array[$key], $arrayMap[$paramMap[$param->name]]);
-
-                        continue;
-                    }
-                }
-
-                if ($param->isOptional())
-                {
-                    $args[] = $param->getDefaultValue();
-                }
-                elseif ($param->allowsNull())
-                {
-                    $args[] = null;
-                }
-                else
-                {
-                    throw new UnexpectedValueException("No value for required parameter '{$param->name}' in {$class->name}::{$constructor->name}()");
-                }
-            }
-        }
-
-        $obj = Ioc::create(static::class, $args);
-
-        if (empty($array))
-        {
-            return $obj;
-        }
-
-        // $propMap: normalised_name => OriginalName
-        $props = array_filter(
-            $class->getProperties(ReflectionProperty::IS_PUBLIC),
-            function ($prop) { return !$prop->isStatic(); }
-        );
-        $keys    = array_map($getName, $props);
-        $propMap = array_combine(array_map($mapFrom, $keys), $keys);
-
-        $props = array_intersect_key($propMap, $arrayMap);
-
-        foreach ($props as $normalised => $prop)
-        {
-            $obj->$prop = $array[$arrayMap[$normalised]];
-            unset($array[$arrayMap[$normalised]], $arrayMap[$normalised]);
-        }
-
-        if (empty($array))
-        {
-            return $obj;
-        }
-
-        if ($obj instanceof IExtensible)
-        {
-            foreach ($array as $name => $value)
-            {
-                $obj->$name = $value;
-            }
-        }
-        else
-        {
-            throw new UnexpectedValueException("Not found in {$class->name}: " . implode(", ", $arrayMap));
-        }
-
-        return $obj;
+        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($array);
     }
 
     /**
      * Convert a list of arrays to a list of instances
      *
-     * Array keys are not preserved.
+     * To suppress array signature checks, set `$sameKeys` to `true` if every
+     * array in the list has the same keys in the same order.
      *
-     * @param array<int,array|static> $arrays Nested arrays are passed to
-     * {@see TConstructible::from()}. Instances are added to the list as-is.
+     * @param array[] $arrays
+     * @param bool $sameKeys If `true`, improve performance by assuming every
+     * array in the list has the same keys in the same order.
      * @return static[]
      */
-    public static function listFrom(array $arrays): array
+    public static function listFrom(array $arrays, bool $sameKeys = false): array
     {
+        if (empty($arrays))
+        {
+            return [];
+        }
+
+        if ($sameKeys)
+        {
+            $closure = PropertyResolver::getFor(static::class)->getCreateFromSignatureClosure(array_keys(reset($arrays)));
+        }
+        else
+        {
+            $closure = PropertyResolver::getFor(static::class)->getCreateFromClosure();
+        }
+
         $list = [];
 
         foreach ($arrays as $index => $array)
         {
-            if ($array instanceof static )
-            {
-                $list[] = $array;
-
-                continue;
-            }
-            elseif (!is_array($array))
+            if (!is_array($array))
             {
                 throw new UnexpectedValueException("Array expected at index $index");
             }
 
-            $list[] = static::from($array);
+            $list[] = ($closure)($array);
         }
 
         return $list;

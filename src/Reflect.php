@@ -9,6 +9,7 @@ use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
+use RuntimeException;
 use UnexpectedValueException;
 
 /**
@@ -27,6 +28,41 @@ class Reflect
     public static function getNames(array $reflections): array
     {
         return array_map(function ($r) { return $r->name; }, $reflections);
+    }
+
+    /**
+     * Return the names of a class and its parents, up to and including $parent
+     *
+     * @param string|ReflectionClass $child
+     * @param string|ReflectionClass $parent
+     * @param bool $instantiable If set, only instantiable classes will be
+     * included.
+     * @return string[]
+     */
+    public static function getClassNamesBetween($child, $parent, bool $instantiable = false): array
+    {
+        $child  = self::toReflectionClass($child);
+        $parent = self::toReflectionClass($parent);
+
+        if (!is_a($child->name, $parent->name, true) || $parent->isInterface())
+        {
+            throw new RuntimeException("{$child->name} is not a subclass of {$parent->name}");
+        }
+
+        $names = [];
+
+        do
+        {
+            if ($instantiable && !$child->isInstantiable())
+            {
+                continue;
+            }
+
+            $names[] = $child->name;
+        }
+        while ($child->name != $parent->name && $child = $child->getParentClass());
+
+        return $names;
     }
 
     /**
@@ -103,6 +139,11 @@ class Reflect
         }
 
         return $allTraits;
+    }
+
+    private static function toReflectionClass($class): ReflectionClass
+    {
+        return $class instanceof ReflectionClass ? $class : new ReflectionClass($class);
     }
 }
 

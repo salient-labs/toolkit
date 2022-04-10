@@ -1,0 +1,85 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests\Reflect;
+
+use Lkrms\Err\Err;
+use Lkrms\Reflect\PropertyResolver;
+use Lkrms\Template\IAccessible;
+use Lkrms\Template\TConstructible;
+use Lkrms\Template\TExtensible;
+
+$loader = require (__DIR__ . "/../../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
+
+Err::HandleErrors();
+
+class A
+{
+    use TExtensible;
+
+    public static function getGettable(): array
+    {
+        return IAccessible::ALLOW_PROTECTED;
+    }
+
+    public static function getSettable(): array
+    {
+        return ['Id', 'Name'];
+    }
+
+    protected $Id;
+
+    protected $Name;
+
+    protected $Unwritable = "can't change me";
+}
+
+class B extends A
+{
+    use TConstructible;
+
+    protected function _GetData()
+    {
+        return $this->Data;
+    }
+
+    protected function _SetData($value)
+    {
+        $this->Data         = $value;
+        $this->DataModified = time();
+    }
+
+    protected function _GetMeta()
+    {
+        return $this->Meta;
+    }
+
+    protected function _IssetMeta()
+    {
+        return isset($this->Meta);
+    }
+
+    protected function _SetMeta($value)
+    {
+        $this->Meta = $value;
+    }
+
+    protected function _UnsetMeta()
+    {
+        $this->Meta = null;
+    }
+
+    private $Data = [];
+
+    private $Meta;
+
+    protected $DataModified;
+
+    private $DoNotEven;
+}
+
+print_r([
+    "A" => PropertyResolver::getFor(A::class),
+    "B" => PropertyResolver::getFor(B::class),
+]);

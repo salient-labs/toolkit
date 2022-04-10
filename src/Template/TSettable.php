@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Lkrms\Template;
 
+use Lkrms\Reflect\PropertyResolver;
+
 /**
- * A basic implementation of __set and __unset
+ * Implements ISettable to provide a basic implementation of __set and __unset
  *
  * Override {@see TSettable::getSettable()} to allow access to `protected`
  * variables via `__set` and `__unset`.
@@ -24,24 +26,22 @@ namespace Lkrms\Template;
  */
 trait TSettable
 {
-    use TGettable;
-
     /**
      * Return a list of settable protected properties
      *
      * To make all `protected` properties settable, return
-     * {@see IAccessible::ALLOW_ALL_PROTECTED}.
+     * {@see IAccessible::ALLOW_PROTECTED}.
      *
-     * @return null|string[]
+     * @return string[]
      */
-    public function getSettable(): ?array
+    public static function getSettable(): array
     {
         return IAccessible::ALLOW_NONE;
     }
 
     private function setProperty(string $action, string $name, ...$params)
     {
-        return ($this->getPropertyClosure($action, $name, [$this, 'getSettable']))(...$params);
+        return (PropertyResolver::getFor(static::class)->getPropertyActionClosure($name, $action))($this, ...$params);
     }
 
     final public function __set(string $name, $value): void

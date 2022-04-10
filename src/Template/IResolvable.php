@@ -15,8 +15,7 @@ interface IResolvable
      * Convert a property name to its normalised form
      *
      * Returns the value to use when comparing `$name` with other normalised
-     * property names to determine whether or not they resolve to the same
-     * property.
+     * names to determine whether or not they represent the same property.
      *
      * @param string $name
      * @return string

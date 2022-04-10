@@ -6,7 +6,8 @@ namespace Lkrms\Cli;
 
 use Lkrms\Assert;
 use Lkrms\Convert;
-use Lkrms\Template\IClassCache;
+use Lkrms\Template\IAccessible;
+use Lkrms\Template\IConstructible;
 use Lkrms\Template\IGettable;
 use Lkrms\Template\TConstructible;
 use Lkrms\Template\TGettable;
@@ -17,7 +18,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class CliOption implements IClassCache, IGettable
+class CliOption implements IConstructible, IGettable
 {
     use TConstructible, TGettable;
 
@@ -93,6 +94,11 @@ class CliOption implements IClassCache, IGettable
      * @var bool
      */
     protected $IsValueSet = false;
+
+    public static function getGettable(): array
+    {
+        return IAccessible::ALLOW_PROTECTED;
+    }
 
     /**
      *

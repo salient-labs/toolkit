@@ -16,6 +16,26 @@ use UnexpectedValueException;
 abstract class Convert
 {
     /**
+     * "snake_case"
+     */
+    public const IDENTIFIER_CASE_SNAKE = 0;
+
+    /**
+     * "kebab-case"
+     */
+    public const IDENTIFIER_CASE_KEBAB = 1;
+
+    /**
+     * "PascalCase"
+     */
+    public const IDENTIFIER_CASE_PASCAL = 2;
+
+    /**
+     * "camelCase"
+     */
+    public const IDENTIFIER_CASE_CAMEL = 3;
+
+    /**
      * If a variable isn't an indexed array, make it the first element of one
      *
      * @param mixed $value The variable being checked.
@@ -251,6 +271,37 @@ abstract class Convert
     public static function toStrings(...$value): array
     {
         return array_map(function ($string) { return (string)$string; }, $value);
+    }
+
+    /**
+     * Perform the given case conversion
+     *
+     * @param string $text
+     * @param int $case
+     * @return string
+     */
+    public static function toCase(string $text, int $case = self::IDENTIFIER_CASE_SNAKE): string
+    {
+        switch ($case)
+        {
+            case self::IDENTIFIER_CASE_SNAKE:
+
+                return self::toSnakeCase($text);
+
+            case self::IDENTIFIER_CASE_KEBAB:
+
+                return self::toKebabCase($text);
+
+            case self::IDENTIFIER_CASE_PASCAL:
+
+                return self::toPascalCase($text);
+
+            case self::IDENTIFIER_CASE_CAMEL:
+
+                return self::toCamelCase($text);
+        }
+
+        throw new UnexpectedValueException("Invalid case: $case");
     }
 
     /**

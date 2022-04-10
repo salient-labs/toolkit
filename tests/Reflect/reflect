@@ -1,0 +1,133 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests\Reflect;
+
+use Lkrms\Err;
+use Lkrms\Reflect;
+use ReflectionClass;
+use Throwable;
+
+$loader = require (__DIR__ . "/../../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Err::HandleErrors();
+
+interface MyInterface
+{
+}
+
+abstract class MyBaseClass
+{
+}
+
+class MyClass extends MyBaseClass implements MyInterface
+{
+    public $Id;
+
+    public $AltId;
+
+    public $Name;
+
+    public $Parent;
+
+    public $AltParent;
+
+    public function __construct(
+        $id,
+        int $altId,
+        string $name,
+        MyClass $parent,
+        MyClass $altParent = null
+    )
+    {
+        $this->Id        = $id;
+        $this->AltId     = $altId;
+        $this->Name      = $name;
+        $this->Parent    = $parent;
+        $this->AltParent = $altParent;
+    }
+}
+
+class MySubclass extends MyClass
+{
+}
+
+class MyOtherClass
+{
+}
+
+$exceptions = [];
+
+$class  = new ReflectionClass(MyClass::class);
+$method = $class->getConstructor();
+
+$types = [];
+$names = [];
+
+foreach ($method->getParameters() as $param)
+{
+    $types[$param->getName()] = Reflect::getAllTypes($param->getType());
+    $names[$param->getName()] = Reflect::getAllTypeNames($param->getType());
+}
+
+var_dump($types);
+var_dump($names);
+
+$classNames = [
+    "MyClass,MyClass"                     => Reflect::getClassNamesBetween(MyClass::class, MyClass::class),
+    "MySubclass,MySubclass"               => Reflect::getClassNamesBetween(MySubclass::class, MySubclass::class),
+    "MySubclass,MyClass"                  => Reflect::getClassNamesBetween(MySubclass::class, MyClass::class),
+    "MySubclass,MyBaseClass"              => Reflect::getClassNamesBetween(MySubclass::class, MyBaseClass::class),
+    "MySubclass,MyBaseClass,instantiable" => Reflect::getClassNamesBetween(MySubclass::class, MyBaseClass::class, true),
+];
+
+try
+{
+    Reflect::getClassNamesBetween(MyInterface::class, MyInterface::class);
+}
+catch (Throwable $ex)
+{
+    $exceptions[] = $ex;
+}
+
+try
+{
+    Reflect::getClassNamesBetween(MyClass::class, MyInterface::class);
+}
+catch (Throwable $ex)
+{
+    $exceptions[] = $ex;
+}
+
+try
+{
+    Reflect::getClassNamesBetween(MySubclass::class, MyInterface::class);
+}
+catch (Throwable $ex)
+{
+    $exceptions[] = $ex;
+}
+
+try
+{
+    Reflect::getClassNamesBetween(MyOtherClass::class, MyClass::class);
+}
+catch (Throwable $ex)
+{
+    $exceptions[] = $ex;
+}
+
+try
+{
+    Reflect::getClassNamesBetween(MyClass::class, MySubclass::class);
+}
+catch (Throwable $ex)
+{
+    $exceptions[] = $ex;
+}
+
+print_r($classNames);
+print_r(array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions));
+
+// PRETTY_ALIGN_RANGE,100

@@ -4,8 +4,10 @@
 namespace Lkrms\Tests\Template;
 
 use Lkrms\Err;
+use Lkrms\Template\IAccessible;
 use Lkrms\Template\IGettable;
 use Lkrms\Template\ISettable;
+use Lkrms\Template\TGettable;
 use Lkrms\Template\TSettable;
 use RuntimeException;
 use Throwable;
@@ -16,11 +18,11 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 
 Err::HandleErrors();
 
-class A implements IGettable, ISettable
+class A implements ISettable
 {
     use TSettable;
 
-    public function getSettable(): ?array
+    public static function getSettable(): array
     {
         return ['Id', 'Name'];
     }
@@ -32,8 +34,15 @@ class A implements IGettable, ISettable
     protected $Unwritable = "can't change me";
 }
 
-class B extends A
+class B extends A implements IGettable
 {
+    use TGettable;
+
+    public static function getGettable(): array
+    {
+        return IAccessible::ALLOW_PROTECTED;
+    }
+
     protected function _GetData()
     {
         return $this->Data;
@@ -76,9 +85,9 @@ class B extends A
 
 class C implements IGettable, ISettable
 {
-    use TSettable;
+    use TGettable, TSettable;
 
-    public function getGettable(): ?array
+    public static function getGettable(): array
     {
         return [];
     }
@@ -101,10 +110,6 @@ $b->Data = [3, 4, 5];
 
 $c = new C();
 
-$a_id         = $a->Id;
-$a_name       = $a->Name;
-$a_unwritable = $a->Unwritable;
-
 $b_id            = $b->Id;
 $b_name          = $b->Name;
 $b_data          = $b->Data;
@@ -118,10 +123,20 @@ $b_meta3 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b
 
 try
 {
+    $a_id = $a->Id;
+    throw new RuntimeException('Reading from $a->Id was allowed');
+}
+catch (Throwable $ex)
+{
+    $exceptions[] = $ex;
+}
+
+try
+{
     $a->Unwritable = 'ok';
     throw new RuntimeException('Writing to $a->Unwritable was allowed');
 }
-catch (UnexpectedValueException $ex)
+catch (RuntimeException $ex)
 {
     $exceptions[] = $ex;
 }
@@ -131,7 +146,7 @@ try
     $b->DoNotEven = 'ok';
     throw new RuntimeException('Writing to $b->DoNotEven was allowed');
 }
-catch (UnexpectedValueException $ex)
+catch (RuntimeException $ex)
 {
     $exceptions[] = $ex;
 }
@@ -141,7 +156,7 @@ try
     $id = $c->Id;
     throw new RuntimeException('Reading from $c->Id was allowed');
 }
-catch (UnexpectedValueException $ex)
+catch (RuntimeException $ex)
 {
     $exceptions[] = $ex;
 }
@@ -151,7 +166,7 @@ try
     $c->Id = 3;
     throw new RuntimeException('Writing to $c->Id was allowed');
 }
-catch (UnexpectedValueException $ex)
+catch (RuntimeException $ex)
 {
     $exceptions[] = $ex;
 }
@@ -160,7 +175,7 @@ try
 {
     isset($b->Data);
 }
-catch (UnexpectedValueException $ex)
+catch (RuntimeException $ex)
 {
     $exceptions[] = $ex;
 }
@@ -169,7 +184,7 @@ print_r([
     'a_set' => $a,
     'b_set' => $b,
     'c_set' => $c,
-    'a_get' => ['id' => $a_id, 'name' => $a_name, 'unwritable' => $a_unwritable],
+
     'b_get'             => [
         'id'            => $b_id,
         'name'          => $b_name,
@@ -179,5 +194,6 @@ print_r([
         'b_meta2'       => $b_meta2,
         'b_meta3'       => $b_meta3,
     ],
+
     'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions)
 ]);
