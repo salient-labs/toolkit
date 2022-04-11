@@ -30,7 +30,7 @@ class ConsoleLevel
 
     public const DEBUG = 7;
 
-    public static function ToPsrLogLevel(int $level): string
+    public static function toPsrLogLevel(int $level): string
     {
         switch ($level)
         {

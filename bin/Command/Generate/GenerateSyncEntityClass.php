@@ -135,7 +135,7 @@ class GenerateSyncEntityClass extends CliCommand
             {
                 $entity = $provider->getCurler(
                     $this->getOptionValue("endpoint") ?: "/" . Convert::toKebabCase($class)
-                )->GetJson();
+                )->getJson();
             }
             else
             {
@@ -271,7 +271,7 @@ class GenerateSyncEntityClass extends CliCommand
             {
                 if (!$this->getOptionValue("force"))
                 {
-                    Console::Warn("File already exists:", $file);
+                    Console::warn("File already exists:", $file);
                     $file = preg_replace('/\.php$/', ".generated.php", $file);
                 }
                 else
@@ -283,7 +283,7 @@ class GenerateSyncEntityClass extends CliCommand
 
         if ($verb)
         {
-            Console::Info($verb, $file);
+            Console::info($verb, $file);
         }
 
         file_put_contents($file, implode(PHP_EOL, $lines) . PHP_EOL);

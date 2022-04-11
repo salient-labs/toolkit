@@ -245,7 +245,7 @@ class GenerateSyncEntityInterface extends CliCommand
             {
                 if (!$this->getOptionValue("force"))
                 {
-                    Console::Warn("File already exists:", $file);
+                    Console::warn("File already exists:", $file);
                     $file = preg_replace('/\.php$/', ".generated.php", $file);
                 }
                 else
@@ -257,7 +257,7 @@ class GenerateSyncEntityInterface extends CliCommand
 
         if ($verb)
         {
-            Console::Info($verb, $file);
+            Console::info($verb, $file);
         }
 
         file_put_contents($file, implode(PHP_EOL, $lines) . PHP_EOL);

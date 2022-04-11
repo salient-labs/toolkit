@@ -9,7 +9,7 @@ use Lkrms\Sql;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::HandleErrors();
+Err::handleErrors();
 
 Sql::valueInList("record_id", function () { return "?"; }, $where, $var);
 Sql::valueInList("user_id", function () { return "?"; }, $where, $var, 12, 36, 7, 32);

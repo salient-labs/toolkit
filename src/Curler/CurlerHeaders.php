@@ -15,13 +15,13 @@ class CurlerHeaders
         "user-agent" => "User-Agent:util-php/Curler (https://github.com/lkrms/util-php)"
     ];
 
-    public function SetHeader(string $name, string $value)
+    public function setHeader(string $name, string $value)
     {
         // HTTP headers are case-insensitive, so make sure we don't end up with duplicates
         $this->Headers[strtolower($name)] = "{$name}:{$value}";
     }
 
-    public function UnsetHeader(string $name)
+    public function unsetHeader(string $name)
     {
         unset($this->Headers[strtolower($name)]);
     }
@@ -29,7 +29,7 @@ class CurlerHeaders
     /**
      * @return string[]
      */
-    public function GetHeaders(): array
+    public function getHeaders(): array
     {
         return array_values($this->Headers);
     }
@@ -37,7 +37,7 @@ class CurlerHeaders
     /**
      * @return string[]
      */
-    public function GetPublicHeaders(): array
+    public function getPublicHeaders(): array
     {
         return array_values(array_filter(
             $this->Headers,

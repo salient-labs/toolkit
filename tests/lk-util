@@ -9,8 +9,8 @@ use Lkrms\Err\Err;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::HandleErrors();
+Err::handleErrors();
 
-Env::Load(__DIR__ . "/.env");
+Env::load(__DIR__ . "/.env");
 
 require (__DIR__ . '/../bin/lk-util');

@@ -20,7 +20,7 @@ use Throwable;
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 
-Err::HandleErrors();
+Err::handleErrors();
 
 // Register JsonPlaceholderApi as the provider for Post and User objects
 Ioc::register(PostProvider::class, JsonPlaceholderApi::class);
@@ -34,7 +34,7 @@ $postApi = new SyncEntityProvider(Post::class);
 $userApi = new SyncEntityProvider(User::class);
 
 $posts = $postApi->getList();
-Console::Info("Posts retrieved:", count($posts));
+Console::info("Posts retrieved:", count($posts));
 
 $resolver       = new SyncEntityResolver($userApi, "Name");
 $fuzzyResolver  = new SyncEntityFuzzyResolver($userApi, "Name", null, null, 0.6);

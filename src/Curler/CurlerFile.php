@@ -37,7 +37,7 @@ class CurlerFile
         $this->MimeType     = $mimeType ?: mime_content_type($filename);
     }
 
-    public function GetCurlFile(): CURLFile
+    public function getCurlFile(): CURLFile
     {
         return new CURLFile($this->Filename, $this->MimeType, $this->PostFilename);
     }

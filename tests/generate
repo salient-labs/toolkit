@@ -9,7 +9,7 @@ use Lkrms\Generate;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::HandleErrors();
+Err::handleErrors();
 
 $distances = [
     "DELIVERY,milk delivery,false"  => Generate::textDistance("DELIVERY", "milk delivery", false),

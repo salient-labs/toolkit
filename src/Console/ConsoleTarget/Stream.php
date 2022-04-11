@@ -109,26 +109,26 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         }
     }
 
-    public function IsTty(): bool
+    public function isTty(): bool
     {
         return $this->IsTty;
     }
 
-    public function IsStdout(): bool
+    public function isStdout(): bool
     {
         return $this->IsStdout;
     }
 
-    public function IsStderr(): bool
+    public function isStderr(): bool
     {
         return $this->IsStderr;
     }
 
-    public function Reopen(string $path = null): void
+    public function reopen(string $path = null): void
     {
         if (!$this->Path)
         {
-            throw new RuntimeException("Stream object not created by Stream::FromPath()");
+            throw new RuntimeException("Stream object not created by Stream::fromPath()");
         }
 
         $path = $path ?: $this->Path;
@@ -142,7 +142,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         $this->Path   = $path;
     }
 
-    public static function FromPath(string $path, array $levels = [
+    public static function fromPath(string $path, array $levels = [
         ConsoleLevel::EMERGENCY,
         ConsoleLevel::ALERT,
         ConsoleLevel::CRITICAL,
@@ -164,7 +164,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         return $_this;
     }
 
-    protected function WriteToTarget(int $level, string $message, array $context)
+    protected function writeToTarget(int $level, string $message, array $context)
     {
         if (in_array($level, $this->Levels))
         {
@@ -180,24 +180,24 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         }
     }
 
-    public function SetPrefix(?string $prefix): void
+    public function setPrefix(?string $prefix): void
     {
         if ($prefix && $this->AddColour)
         {
-            parent::SetPrefix(ConsoleColour::DIM . $prefix . ConsoleColour::UNDIM);
+            parent::setPrefix(ConsoleColour::DIM . $prefix . ConsoleColour::UNDIM);
         }
         else
         {
-            parent::SetPrefix($prefix);
+            parent::setPrefix($prefix);
         }
     }
 
-    public function AddColour(): bool
+    public function addColour(): bool
     {
         return $this->AddColour;
     }
 
-    public function Path(): string
+    public function path(): string
     {
         return $this->Path;
     }

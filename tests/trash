@@ -9,11 +9,11 @@ use Lkrms\Trash;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::HandleErrors();
+Err::handleErrors();
 
-Trash::Load("/tmp/__Lkrms__Trash.db");
+Trash::load("/tmp/__Lkrms__Trash.db");
 
-Trash::Put(
+Trash::put(
     'generic_entity',
     '4271',
     ['id' => 4271, 'name' => "Test object"],

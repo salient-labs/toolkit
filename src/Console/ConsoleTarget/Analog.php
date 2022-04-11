@@ -11,7 +11,7 @@ namespace Lkrms\Console\ConsoleTarget;
  */
 class Analog extends \Lkrms\Console\ConsoleTarget
 {
-    protected function WriteToTarget(int $level, string $message, array $context)
+    protected function writeToTarget(int $level, string $message, array $context)
     {
         // Analog's level constants have the same values as equivalent
         // ConsoleLevel constants

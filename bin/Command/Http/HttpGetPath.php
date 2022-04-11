@@ -66,7 +66,7 @@ class HttpGetPath extends CliCommand
             throw new CliInvalidArgumentException("not a subclass of HttpSyncProvider: $providerClass");
         }
 
-        $data = $provider->getCurler($endpointPath)->GetJson();
+        $data = $provider->getCurler($endpointPath)->getJson();
 
         echo json_encode($data);
     }

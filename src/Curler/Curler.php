@@ -101,7 +101,7 @@ class Curler
     protected $ForceNumericKeys = false;
 
     /**
-     * Used with calls to Console::Debug
+     * Used with calls to Console::debug()
      *
      * @var int
      */
@@ -129,7 +129,7 @@ class Curler
         $this->Debug   = Env::debug();
     }
 
-    private function CreateHandle(string $url)
+    private function createHandle(string $url)
     {
         $this->Handle = curl_init($url);
 
@@ -165,7 +165,7 @@ class Curler
         }
     }
 
-    protected function Initialise($requestType, ?array $queryString)
+    protected function initialise($requestType, ?array $queryString)
     {
         if (empty($queryString))
         {
@@ -176,7 +176,7 @@ class Curler
             $query = "?" . Convert::dataToQuery($queryString, $this->ForceNumericKeys);
         }
 
-        $this->CreateHandle($this->BaseUrl . $query);
+        $this->createHandle($this->BaseUrl . $query);
 
         switch ($requestType)
         {
@@ -198,7 +198,7 @@ class Curler
                 break;
         }
 
-        $this->Headers->UnsetHeader("Content-Type");
+        $this->Headers->unsetHeader("Content-Type");
         $this->LastRequestType     = $requestType;
         $this->LastQuery           = $query;
         $this->LastRequestData     = null;
@@ -208,7 +208,7 @@ class Curler
         $this->LastResponseHeaders = null;
     }
 
-    protected function SetData(?array $data, ?bool $asJson)
+    protected function setData(?array $data, ?bool $asJson)
     {
         if (is_null($data))
         {
@@ -227,7 +227,7 @@ class Curler
                 {
                     if ($value instanceof CurlerFile)
                     {
-                        $value   = $value->GetCurlFile();
+                        $value   = $value->getCurlFile();
                         $hasFile = true;
                     }
                 });
@@ -238,7 +238,7 @@ class Curler
             }
             elseif ($asJson)
             {
-                $this->Headers->SetHeader("Content-Type", "application/json");
+                $this->Headers->setHeader("Content-Type", "application/json");
                 $query = json_encode($data);
             }
             else
@@ -251,9 +251,9 @@ class Curler
         $this->LastRequestData = $query;
     }
 
-    protected function Execute($close = true): string
+    protected function execute($close = true): string
     {
-        // Console::Debug() should print the details of whatever called a Curler
+        // Console::debug() should print the details of whatever called a Curler
         // public method, i.e. not \Execute, not \Get, but one frame deeper
         $depth = $this->InternalStackDepth + 2;
 
@@ -261,7 +261,7 @@ class Curler
         $this->InternalStackDepth = 0;
 
         // Add headers for authentication etc.
-        curl_setopt($this->Handle, CURLOPT_HTTPHEADER, $this->Headers->GetHeaders());
+        curl_setopt($this->Handle, CURLOPT_HTTPHEADER, $this->Headers->getHeaders());
 
         if (is_null(self::$MultiHandle))
         {
@@ -275,7 +275,7 @@ class Curler
 
             if ($this->Debug || $this->LastRequestType != "GET")
             {
-                Console::Debug("{$this->LastRequestType} {$this->BaseUrl}{$this->LastQuery}", null, null, $depth);
+                Console::debug("{$this->LastRequestType} {$this->BaseUrl}{$this->LastQuery}", null, null, $depth);
             }
 
             // Execute the request
@@ -341,12 +341,12 @@ class Curler
             if ($this->AutoRetryAfter &&
                 $attempt == 0 &&
                 $this->LastResponseCode == 429 &&
-                !is_null($after = $this->GetLastRetryAfter()) &&
+                !is_null($after = $this->getLastRetryAfter()) &&
                 ($this->AutoRetryAfterMax == 0 || $after <= $this->AutoRetryAfterMax))
             {
                 // Sleep for at least one second
                 $after = max(1, $after);
-                Console::Debug("Received HTTP error 429 Too Many Requests, sleeping for {$after}s", null, null, $depth);
+                Console::debug("Received HTTP error 429 Too Many Requests, sleeping for {$after}s", null, null, $depth);
                 sleep($after);
 
                 continue;
@@ -362,73 +362,73 @@ class Curler
 
         if ($this->LastResponseCode >= 400 && $this->ThrowHttpError)
         {
-            throw new CurlerException($this, "HTTP error " . $this->GetLastStatusLine());
+            throw new CurlerException($this, "HTTP error " . $this->getLastStatusLine());
         }
 
         return $this->LastResponse;
     }
 
-    public function GetBaseUrl(): string
+    public function getBaseUrl(): string
     {
         return $this->BaseUrl;
     }
 
-    public function GetHeaders(): CurlerHeaders
+    public function getHeaders(): CurlerHeaders
     {
         return $this->Headers;
     }
 
-    public function GetThrowHttpError(): bool
+    public function getThrowHttpError(): bool
     {
         return $this->ThrowHttpError;
     }
 
-    public function GetAutoRetryAfter(): bool
+    public function getAutoRetryAfter(): bool
     {
         return $this->AutoRetryAfter;
     }
 
-    public function GetAutoRetryAfterMax(): int
+    public function getAutoRetryAfterMax(): int
     {
         return $this->AutoRetryAfterMax;
     }
 
-    public function GetDebug(): bool
+    public function getDebug(): bool
     {
         return $this->Debug;
     }
 
-    public function GetDataAsJson(): bool
+    public function getDataAsJson(): bool
     {
         return $this->DataAsJson;
     }
 
-    public function GetForceNumericKeys(): bool
+    public function getForceNumericKeys(): bool
     {
         return $this->ForceNumericKeys;
     }
 
-    public function SetForceNumericKeys(bool $value)
+    public function setForceNumericKeys(bool $value)
     {
         $this->ForceNumericKeys = $value;
     }
 
-    public function EnableThrowHttpError()
+    public function enableThrowHttpError()
     {
         $this->ThrowHttpError = true;
     }
 
-    public function DisableThrowHttpError()
+    public function disableThrowHttpError()
     {
         $this->ThrowHttpError = false;
     }
 
-    public function EnableAutoRetryAfter()
+    public function enableAutoRetryAfter()
     {
         $this->AutoRetryAfter = true;
     }
 
-    public function DisableAutoRetryAfter()
+    public function disableAutoRetryAfter()
     {
         $this->AutoRetryAfter = false;
     }
@@ -436,7 +436,7 @@ class Curler
     /**
      * @param int $seconds A positive integer, or `0` for no maximum.
      */
-    public function SetMaxRetryAfter(int $seconds)
+    public function setMaxRetryAfter(int $seconds)
     {
         if ($seconds < 0)
         {
@@ -446,117 +446,117 @@ class Curler
         $this->AutoRetryAfterMax = $seconds;
     }
 
-    public function EnableDebug()
+    public function enableDebug()
     {
         $this->Debug = true;
     }
 
-    public function DisableDebug()
+    public function disableDebug()
     {
         $this->Debug = false;
     }
 
-    public function EnableDataAsJson()
+    public function enableDataAsJson()
     {
         $this->DataAsJson = true;
     }
 
-    public function DisableDataAsJson()
+    public function disableDataAsJson()
     {
         $this->DataAsJson = false;
     }
 
-    public function Get(array $queryString = null): string
+    public function get(array $queryString = null): string
     {
-        $this->Initialise("GET", $queryString);
+        $this->initialise("GET", $queryString);
 
-        return $this->Execute();
+        return $this->execute();
     }
 
-    public function GetJson(array $queryString = null)
+    public function getJson(array $queryString = null)
     {
         $this->InternalStackDepth = 1;
 
-        return json_decode($this->Get($queryString), true);
+        return json_decode($this->get($queryString), true);
     }
 
-    public function Post(array $data = null, array $queryString = null, bool $dataAsJson = null): string
+    public function post(array $data = null, array $queryString = null, bool $dataAsJson = null): string
     {
-        $this->Initialise("POST", $queryString);
-        $this->SetData($data, $dataAsJson);
+        $this->initialise("POST", $queryString);
+        $this->setData($data, $dataAsJson);
 
-        return $this->Execute();
+        return $this->execute();
     }
 
-    public function PostJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
+    public function postJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
         $this->InternalStackDepth = 1;
 
-        return json_decode($this->Post($data, $queryString, $dataAsJson), true);
+        return json_decode($this->post($data, $queryString, $dataAsJson), true);
     }
 
-    public function RawPost(string $data, string $contentType, array $queryString = null): string
+    public function rawPost(string $data, string $contentType, array $queryString = null): string
     {
-        $this->Initialise("POST", $queryString);
-        $this->Headers->SetHeader("Content-Type", $contentType);
+        $this->initialise("POST", $queryString);
+        $this->Headers->setHeader("Content-Type", $contentType);
         curl_setopt($this->Handle, CURLOPT_POSTFIELDS, $data);
 
-        return $this->Execute();
+        return $this->execute();
     }
 
-    public function RawPostJson(string $data, string $contentType, array $queryString = null)
+    public function rawPostJson(string $data, string $contentType, array $queryString = null)
     {
         $this->InternalStackDepth = 1;
 
-        return json_decode($this->RawPost($data, $contentType, $queryString), true);
+        return json_decode($this->rawPost($data, $contentType, $queryString), true);
     }
 
-    public function Put(array $data = null, array $queryString = null, bool $dataAsJson = null): string
+    public function put(array $data = null, array $queryString = null, bool $dataAsJson = null): string
     {
-        $this->Initialise("PUT", $queryString);
-        $this->SetData($data, $dataAsJson);
+        $this->initialise("PUT", $queryString);
+        $this->setData($data, $dataAsJson);
 
-        return $this->Execute();
+        return $this->execute();
     }
 
-    public function PutJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
-    {
-        $this->InternalStackDepth = 1;
-
-        return json_decode($this->Put($data, $queryString, $dataAsJson), true);
-    }
-
-    public function Patch(array $data = null, array $queryString = null, bool $dataAsJson = null): string
-    {
-        $this->Initialise("PATCH", $queryString);
-        $this->SetData($data, $dataAsJson);
-
-        return $this->Execute();
-    }
-
-    public function PatchJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
+    public function putJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
         $this->InternalStackDepth = 1;
 
-        return json_decode($this->Patch($data, $queryString, $dataAsJson), true);
+        return json_decode($this->put($data, $queryString, $dataAsJson), true);
     }
 
-    public function Delete(array $data = null, array $queryString = null, bool $dataAsJson = null): string
+    public function patch(array $data = null, array $queryString = null, bool $dataAsJson = null): string
     {
-        $this->Initialise("DELETE", $queryString);
-        $this->SetData($data, $dataAsJson);
+        $this->initialise("PATCH", $queryString);
+        $this->setData($data, $dataAsJson);
 
-        return $this->Execute();
+        return $this->execute();
     }
 
-    public function DeleteJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
+    public function patchJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
         $this->InternalStackDepth = 1;
 
-        return json_decode($this->Delete($data, $queryString, $dataAsJson), true);
+        return json_decode($this->patch($data, $queryString, $dataAsJson), true);
     }
 
-    public function GetLastRetryAfter(): ?int
+    public function delete(array $data = null, array $queryString = null, bool $dataAsJson = null): string
+    {
+        $this->initialise("DELETE", $queryString);
+        $this->setData($data, $dataAsJson);
+
+        return $this->execute();
+    }
+
+    public function deleteJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
+    {
+        $this->InternalStackDepth = 1;
+
+        return json_decode($this->delete($data, $queryString, $dataAsJson), true);
+    }
+
+    public function getLastRetryAfter(): ?int
     {
         $retryAfter = $this->LastResponseHeaders["retry-after"] ?? null;
 
@@ -579,42 +579,42 @@ class Curler
         return $retryAfter;
     }
 
-    public function GetLastRequestType(): ?string
+    public function getLastRequestType(): ?string
     {
         return $this->LastRequestType;
     }
 
-    public function GetLastQuery(): ?string
+    public function getLastQuery(): ?string
     {
         return $this->LastQuery;
     }
 
-    public function GetLastRequestData()
+    public function getLastRequestData()
     {
         return $this->LastRequestData;
     }
 
-    public function GetLastCurlInfo(): ?array
+    public function getLastCurlInfo(): ?array
     {
         return $this->LastCurlInfo;
     }
 
-    public function GetLastResponse(): ?string
+    public function getLastResponse(): ?string
     {
         return $this->LastResponse;
     }
 
-    public function GetLastResponseCode(): ?int
+    public function getLastResponseCode(): ?int
     {
         return $this->LastResponseCode;
     }
 
-    public function GetLastResponseHeaders(): ?array
+    public function getLastResponseHeaders(): ?array
     {
         return $this->LastResponseHeaders;
     }
 
-    public function GetLastStatusLine(): ?string
+    public function getLastStatusLine(): ?string
     {
         return $this->LastResponseHeaders["status"] ?? (string)$this->LastResponseCode;
     }
@@ -625,9 +625,9 @@ class Curler
      * @param array $queryString
      * @return array All returned entities.
      */
-    public function GetAllLinked(array $queryString = null): array
+    public function getAllLinked(array $queryString = null): array
     {
-        $this->Initialise("GET", $queryString);
+        $this->initialise("GET", $queryString);
         $entities = [];
         $nextUrl  = null;
 
@@ -640,7 +640,7 @@ class Curler
             }
 
             // Collect data from response and move on to next page
-            $result   = json_decode($this->Execute(false), true);
+            $result   = json_decode($this->execute(false), true);
             $entities = array_merge($entities, $result);
 
             if (preg_match("/<([^>]+)>;\\s*rel=(['\"])next\\2/", $this->LastResponseHeaders["link"] ?? "", $matches))
@@ -662,9 +662,9 @@ class Curler
      * @param array $queryString
      * @return array All returned entities.
      */
-    public function GetAllLinkedByEntity($entityName, array $queryString = null): array
+    public function getAllLinkedByEntity($entityName, array $queryString = null): array
     {
-        $this->Initialise("GET", $queryString);
+        $this->initialise("GET", $queryString);
         $entities = [];
         $nextUrl  = null;
 
@@ -676,7 +676,7 @@ class Curler
             }
 
             // Collect data from response and move on to next page
-            $result   = json_decode($this->Execute(false), true);
+            $result   = json_decode($this->execute(false), true);
             $entities = array_merge($entities, $result[$entityName]);
             $nextUrl  = $result["links"]["next"] ?? null;
         }
@@ -687,9 +687,9 @@ class Curler
         return $entities;
     }
 
-    public function GetAllLinkedByOData(array $queryString = null, string $prefix = null)
+    public function getAllLinkedByOData(array $queryString = null, string $prefix = null)
     {
-        $this->Initialise("GET", $queryString);
+        $this->initialise("GET", $queryString);
         $entities = [];
         $nextUrl  = null;
 
@@ -701,7 +701,7 @@ class Curler
             }
 
             // Collect data from response and move on to next page
-            $result = json_decode($this->Execute(false), true);
+            $result = json_decode($this->execute(false), true);
 
             if (is_null($prefix))
             {
@@ -725,7 +725,7 @@ class Curler
         return $entities;
     }
 
-    private static function CollateNested($data, array $path, array & $entities)
+    private static function collateNested($data, array $path, array & $entities)
     {
         if (empty($path))
         {
@@ -735,7 +735,7 @@ class Curler
         {
             foreach ($data as $nested)
             {
-                self::CollateNested($nested, $path, $entities);
+                self::collateNested($nested, $path, $entities);
             }
         }
         else
@@ -745,12 +745,12 @@ class Curler
             // Gracefully skip missing data
             if (isset($data[$field]))
             {
-                self::CollateNested($data[$field], $path, $entities);
+                self::collateNested($data[$field], $path, $entities);
             }
         }
     }
 
-    public static function WalkGraphQL(array & $data, callable $filter = null)
+    public static function walkGraphQL(array & $data, callable $filter = null)
     {
         if (Test::isListArray($data, true))
         {
@@ -758,7 +758,7 @@ class Curler
             {
                 if (is_array($data))
                 {
-                    self::WalkGraphQL($data, $filter);
+                    self::walkGraphQL($data, $filter);
                 }
             });
 
@@ -783,12 +783,12 @@ class Curler
 
             if (is_array($data[$key]))
             {
-                self::WalkGraphQL($data[$key], $filter);
+                self::walkGraphQL($data[$key], $filter);
             }
         }
     }
 
-    public function GetByGraphQL(
+    public function getByGraphQL(
         string $query,
         array $variables   = null,
         string $entityPath = null,
@@ -822,7 +822,7 @@ class Curler
 
             $this->InternalStackDepth = 1;
 
-            $result = json_decode($this->Post($nextQuery), true);
+            $result = json_decode($this->post($nextQuery), true);
 
             if (!isset($result["data"]))
             {
@@ -831,16 +831,16 @@ class Curler
 
             $nextQuery = null;
             $objects   = [];
-            self::CollateNested($result["data"], is_null($entityPath) ? null : explode(".", $entityPath), $objects);
+            self::collateNested($result["data"], is_null($entityPath) ? null : explode(".", $entityPath), $objects);
 
-            self::WalkGraphQL($objects, $filter);
+            self::walkGraphQL($objects, $filter);
 
             $entities = array_merge($entities, $objects);
 
             if (!is_null($pagePath))
             {
                 $page = [];
-                self::CollateNested($result["data"], explode(".", $pagePath), $page);
+                self::collateNested($result["data"], explode(".", $pagePath), $page);
 
                 if (count($page) != 1 ||
                     !isset($page[0]["pageInfo"]["endCursor"]) ||

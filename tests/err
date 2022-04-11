@@ -11,15 +11,15 @@ use UnexpectedValueException;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::HandleErrors();
+Err::handleErrors();
 
 function returnCaller()
 {
-    return Err::GetCaller();
+    return Err::getCaller();
 }
 
-Console::Debug("Err::GetCaller()", returnCaller(), null, 0);
+Console::debug("Err::getCaller()", returnCaller(), null, 0);
 
-Err::HandleErrors(null, '@^' . preg_quote(dirname(__DIR__)) . '/vendor/adodb/adodb-php/@');
+Err::handleErrors(null, '@^' . preg_quote(dirname(__DIR__)) . '/vendor/adodb/adodb-php/@');
 
 throw new UnexpectedValueException("Well, this was unexpected");

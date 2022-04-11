@@ -10,13 +10,13 @@ use Lkrms\Err;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::HandleErrors();
+Err::handleErrors();
 
 // Send all output, including debug messages and errors, to STDOUT
-Console::AddTarget(new Stream(STDOUT));
+Console::addTarget(new Stream(STDOUT));
 
 // Disable output logging
-Console::DisableDefaultLogTarget();
+Console::disableDefaultLogTarget();
 
 $items = [
     [100, 101, 102],
@@ -24,38 +24,38 @@ $items = [
     [300, 301, 302],
 ];
 
-Console::Group("Processing items");
+Console::group("Processing items");
 
 for ($i = 0; $i < count($items); $i++)
 {
-    Console::Info("Processing row:", $i + 1);
+    Console::info("Processing row:", $i + 1);
 
     for ($j = 0; $j < count($items[$i]); $j++)
     {
-        Console::Log("Processing item:", $items[$i][$j]);
+        Console::log("Processing item:", $items[$i][$j]);
     }
 
     if ($i % 2)
     {
-        Console::Warn("WARNING: odd-numbered index at row:", ($i + 1));
+        Console::warn("WARNING: odd-numbered index at row:", ($i + 1));
     }
     else
     {
-        Console::Debug("Row processing complete");
+        Console::debug("Row processing complete");
     }
 }
 
-Console::GroupEnd();
+Console::groupEnd();
 
 $i = 0;
 
 while ($i++ < 5)
 {
-    Console::InfoOnce("This message is printed repeatedly",
+    Console::infoOnce("This message is printed repeatedly",
         "but it should only appear once");
-    Console::LogOnce("This message is printed repeatedly",
+    Console::logOnce("This message is printed repeatedly",
         "but it should only appear once");
-    Console::DebugOnce("This message is printed repeatedly",
+    Console::debugOnce("This message is printed repeatedly",
         "but it should only appear once");
 }
 

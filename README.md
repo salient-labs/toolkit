@@ -50,14 +50,14 @@ used:
 To make it easier to create readable terminal output and log entries, the
 [`Lkrms\Console\Console`][Console.php] class provides:
 
-- Familiar methods like `Console::Log()` and `Console::Error()`
+- Familiar methods like `Console::log()` and `Console::error()`
 - Output to an arbitrary number of registered targets
 - Filtering of messages delivered to each target by log level
 - Terminal-friendly message formatting
 
 ### Default targets
 
-If no output targets[^targets] are registered via `Console::AddTarget()` and PHP
+If no output targets[^targets] are registered via `Console::addTarget()` and PHP
 is running on the command line:
 
 - Warnings and errors are written to `STDERR`
@@ -73,7 +73,7 @@ Similarly, if no log targets are registered:
 - Warnings, errors, informational messages and debug messages are written to the
   log file
 
-This can be disabled by calling `Console::DisableDefaultLogTarget()` while
+This can be disabled by calling `Console::disableDefaultLogTarget()` while
 bootstrapping your app.
 
 ### Output methods
@@ -88,12 +88,12 @@ bootstrapping your app.
 | `LogProgress()`   | `INFO` = `6`    | ` -> `         | `STDOUT`              |
 | `Debug()`         | `DEBUG` = `7`   | `--- `         | none                  |
 
-[^group]: `Console::Group()` adds a level of indentation to all `Console` output
-    until `Console::GroupEnd()` is called.
+[^group]: `Console::group()` adds a level of indentation to all `Console` output
+    until `Console::groupEnd()` is called.
 
 ---
 
-[^targets]: `$target` is regarded as an output target if `$target->IsStdout()`
-    or `$target->IsStderr()` return `true`.
+[^targets]: `$target` is regarded as an output target if `$target->isStdout()`
+    or `$target->isStderr()` return `true`.
 
 [Console.php]: src/Console/Console.php

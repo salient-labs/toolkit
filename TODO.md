@@ -7,21 +7,21 @@
   - [ ] Write more tests
 - [x] Review `Template` classes for `PropertyResolver` candidates
   - [x] Move `PropertyResolver` to a more appropriate namespace?
-- [ ] Adopt camelCase method names
+- [x] Adopt camelCase method names
   - [x] `Console`
-  - [ ] `Console\Console`
+  - [x] `Console\Console`
   - [x] `Console\ConsoleColour`
-  - [ ] `Console\ConsoleLevel`
-  - [ ] `Console\ConsoleTarget`
-  - [ ] `Console\ConsoleTarget\Analog`
-  - [ ] `Console\ConsoleTarget\Logger`
-  - [ ] `Console\ConsoleTarget\Stream`
+  - [x] `Console\ConsoleLevel`
+  - [x] `Console\ConsoleTarget`
+  - [x] `Console\ConsoleTarget\Analog`
+  - [x] `Console\ConsoleTarget\Logger`
+  - [x] `Console\ConsoleTarget\Stream`
   - [x] `Curler`
-  - [ ] `Curler\CachingCurler`
-  - [ ] `Curler\Curler`
+  - [x] `Curler\CachingCurler`
+  - [x] `Curler\Curler`
   - [x] `Curler\CurlerException`
-  - [ ] `Curler\CurlerFile`
-  - [ ] `Curler\CurlerHeaders`
+  - [x] `Curler\CurlerFile`
+  - [x] `Curler\CurlerHeaders`
 
 ### Sync
 

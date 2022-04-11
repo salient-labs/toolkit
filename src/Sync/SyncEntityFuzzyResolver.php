@@ -153,7 +153,7 @@ class SyncEntityFuzzyResolver extends SyncEntityResolver
                 $uncertainty >= $this->UncertaintyThreshold)
             {
                 $nameField = $this->NameField;
-                Console::DebugOnce(sprintf(
+                Console::debugOnce(sprintf(
                     "Match with '%s' exceeds uncertainty threshold (%.2f >= %.2f):",
                     $match[0]->$nameField,
                     $uncertainty,

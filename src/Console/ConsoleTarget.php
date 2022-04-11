@@ -12,11 +12,11 @@ abstract class ConsoleTarget
 {
     private $Prefix;
 
-    abstract protected function WriteToTarget(int $level, string $message, array $context);
+    abstract protected function writeToTarget(int $level, string $message, array $context);
 
-    public function Write($message, array $context = [], int $level = ConsoleLevel::INFO): void
+    public function write($message, array $context = [], int $level = ConsoleLevel::INFO): void
     {
-        $this->WriteToTarget(
+        $this->writeToTarget(
             $level,
             ($this->Prefix
                 ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
@@ -25,22 +25,22 @@ abstract class ConsoleTarget
         );
     }
 
-    public function SetPrefix(?string $prefix): void
+    public function setPrefix(?string $prefix): void
     {
         $this->Prefix = $prefix;
     }
 
-    public function IsStdout(): bool
+    public function isStdout(): bool
     {
         return false;
     }
 
-    public function IsStderr(): bool
+    public function isStderr(): bool
     {
         return false;
     }
 
-    public function IsTty(): bool
+    public function isTty(): bool
     {
         return false;
     }

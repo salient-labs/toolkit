@@ -103,7 +103,7 @@ class Env
             }
             catch (Exception $ex)
             {
-                Console::Debug("Not a valid timezone:", $tz, $ex);
+                Console::debug("Not a valid timezone:", $tz, $ex);
             }
         }
     }

@@ -24,9 +24,9 @@ class Logger extends \Lkrms\Console\ConsoleTarget
         $this->Logger = $logger;
     }
 
-    protected function WriteToTarget(int $level, string $message, array $context)
+    protected function writeToTarget(int $level, string $message, array $context)
     {
-        $this->Logger->log(ConsoleLevel::ToPsrLogLevel($level), $message, $context);
+        $this->Logger->log(ConsoleLevel::toPsrLogLevel($level), $message, $context);
     }
 }
 

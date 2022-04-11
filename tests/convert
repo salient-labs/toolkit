@@ -9,7 +9,7 @@ use Lkrms\Err;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::HandleErrors();
+Err::handleErrors();
 
 $data = [
     "user_id"       => 7654,

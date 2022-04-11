@@ -26,7 +26,7 @@ class Trash extends Sqlite
     /**
      * Create or open a storage database
      *
-     * Must be called before {@see Trash::Put()} or {@see Trash::Empty()} are
+     * Must be called before {@see Trash::put()} or {@see Trash::empty()} are
      * called.
      *
      * @param string $filename The SQLite database to use.

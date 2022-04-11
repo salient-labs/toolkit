@@ -17,7 +17,7 @@ class CliInvalidArgumentException extends \Lkrms\Exception
     {
         if ($message)
         {
-            Console::Error(Cli::getProgramName() . ": $message");
+            Console::error(Cli::getProgramName() . ": $message");
         }
 
         parent::__construct($message ?: "Invalid arguments");

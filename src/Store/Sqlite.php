@@ -123,7 +123,7 @@ abstract class Sqlite
     {
         if (self::isTransactionOpen())
         {
-            Console::Debug("Transaction already open");
+            Console::debug("Transaction already open");
 
             return;
         }
@@ -136,7 +136,7 @@ abstract class Sqlite
     {
         if (!self::isTransactionOpen())
         {
-            Console::Debug("No transaction open");
+            Console::debug("No transaction open");
 
             return;
         }

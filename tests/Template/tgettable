@@ -16,7 +16,7 @@ use UnexpectedValueException;
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 
-Err::HandleErrors();
+Err::handleErrors();
 
 class A implements ISettable
 {

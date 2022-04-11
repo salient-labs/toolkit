@@ -21,7 +21,7 @@ class C extends A
 {
     public $name;
 
-    public static function GetInstance(string $name = null)
+    public static function getInstance(string $name = null)
     {
         if (self::hasInstance())
         {

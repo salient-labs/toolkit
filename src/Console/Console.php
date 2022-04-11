@@ -72,12 +72,12 @@ class Console
      * `<temp_dir>/<basename>-<realpath_hash>-<user_id>.log` by default.
      *
      * This happens automatically when a log target is added explicitly via
-     * {@see Console::AddTarget()}.
+     * {@see Console::addTarget()}.
      *
      * @return void
-     * @see File::StablePath()
+     * @see File::stablePath()
      */
-    public static function DisableDefaultLogTarget(): void
+    public static function disableDefaultLogTarget(): void
     {
         if (self::$TargetsChecked && self::$AutomaticLogTarget)
         {
@@ -106,7 +106,7 @@ class Console
      * @param bool $colour
      * @return string
      */
-    public static function Format(string $string, $colour = false): string
+    public static function format(string $string, $colour = false): string
     {
         if ($colour)
         {
@@ -165,14 +165,14 @@ class Console
         return $str;
     }
 
-    private static function HasBold(string $string): bool
+    private static function hasBold(string $string): bool
     {
         $string = preg_replace("/__\\[\\[__(.*?)__\\]\\]__/", "", $string);
 
         return (bool)preg_match("/(\\b(___?)([^\n]+?)\\2\\b|(\\*\\*\\*?)([^\n]+?)\\4)/", $string);
     }
 
-    private static function CheckGroupDepth(): ?int
+    private static function checkGroupDepth(): ?int
     {
         // Return null if this is the first call to an output function
         $return           = self::$GroupDepth;
@@ -181,7 +181,7 @@ class Console
         return $return;
     }
 
-    private static function CheckTargets()
+    private static function checkTargets()
     {
         if (self::$TargetsChecked)
         {
@@ -192,14 +192,14 @@ class Console
         // `<temp_dir>/<basename>-<realpath_hash>-<user_id>.log`
         if (self::$AutomaticLogTarget && empty(self::$LogTargets))
         {
-            self::AddTarget(Stream::FromPath(File::getStablePath(".log")));
+            self::addTarget(Stream::fromPath(File::getStablePath(".log")));
         }
 
         // If no output streams have been added and we're running on the command
         // line, send errors and warnings to STDERR, everything else to STDOUT
         if (PHP_SAPI == "cli" && empty(self::$OutputTargets))
         {
-            self::AddTarget(new Stream(STDERR, [
+            self::addTarget(new Stream(STDERR, [
                 ConsoleLevel::EMERGENCY,
                 ConsoleLevel::ALERT,
                 ConsoleLevel::CRITICAL,
@@ -217,7 +217,7 @@ class Console
                 $levels[] = ConsoleLevel::DEBUG;
             }
 
-            self::AddTarget(new Stream(STDOUT, $levels));
+            self::addTarget(new Stream(STDOUT, $levels));
         }
 
         self::$TargetsChecked = true;
@@ -229,16 +229,16 @@ class Console
      * @return array<int,ConsoleTarget>
      * @throws RuntimeException
      */
-    public static function GetOutputTargets(): array
+    public static function getOutputTargets(): array
     {
-        self::CheckTargets();
+        self::checkTargets();
 
         return self::$OutputTargets;
     }
 
-    public static function AddTarget(ConsoleTarget $target)
+    public static function addTarget(ConsoleTarget $target)
     {
-        if ($target->IsStdout() || $target->IsStderr())
+        if ($target->isStdout() || $target->isStderr())
         {
             self::$OutputTargets[] = $target;
         }
@@ -250,7 +250,7 @@ class Console
         self::$Targets[] = $target;
     }
 
-    private static function CheckLoggedOnce(string $method, string $msg1, ?string $msg2): int
+    private static function checkLoggedOnce(string $method, string $msg1, ?string $msg2): int
     {
         $hash = Generate::hash($method, $msg1, $msg2);
         self::$LoggedOnce[$hash] = self::$LoggedOnce[$hash] ?? 0;
@@ -258,7 +258,7 @@ class Console
         return self::$LoggedOnce[$hash]++;
     }
 
-    private static function Write(
+    private static function write(
         int $level,
         string $msg1,
         ?string $msg2,
@@ -270,7 +270,7 @@ class Console
         bool $ttyOnly = false
     )
     {
-        self::CheckGroupDepth();
+        self::checkGroupDepth();
         $margin = self::$GroupDepth * 4;
 
         $indent = strlen($pre);
@@ -293,14 +293,14 @@ class Console
             }
         }
 
-        $msg = str_repeat(" ", $margin) . $pre . self::Format($msg1) . self::Format($msg2 ?: "");
+        $msg = str_repeat(" ", $margin) . $pre . self::format($msg1) . self::format($msg2 ?: "");
 
         $clrP   = !is_null($clrP) ? $clrP : ConsoleColour::BOLD . $clr2;
-        $clr1   = !self::HasBold($msg1) ? $clr1 : str_replace(ConsoleColour::BOLD, "", $clr1);
+        $clr1   = !self::hasBold($msg1) ? $clr1 : str_replace(ConsoleColour::BOLD, "", $clr1);
         $ttyMsg = (str_repeat(" ", $margin)
             . $clrP . $pre . ($clrP ? ConsoleColour::RESET : "")
-            . $clr1 . self::Format($msg1, true) . ($clr1 ? ConsoleColour::RESET : "")
-            . ($msg2 ? $clr2 . self::Format($msg2 ?: "", true) . ($clr2 ? ConsoleColour::RESET : "") : ""));
+            . $clr1 . self::format($msg1, true) . ($clr1 ? ConsoleColour::RESET : "")
+            . ($msg2 ? $clr2 . self::format($msg2 ?: "", true) . ($clr2 ? ConsoleColour::RESET : "") : ""));
 
         $context = [];
 
@@ -310,10 +310,10 @@ class Console
             $context["exception"] = $ex;
         }
 
-        self::Print($msg, $ttyMsg, $level, $context, $ttyOnly, true);
+        self::print($msg, $ttyMsg, $level, $context, $ttyOnly, true);
     }
 
-    private static function Print(
+    private static function print(
         string $plain,
         string $tty     = null,
         int $level      = ConsoleLevel::INFO,
@@ -327,37 +327,37 @@ class Console
 
         if (!$formatted)
         {
-            $plain = self::Format($plain);
-            $tty   = self::Format($tty, true);
+            $plain = self::format($plain);
+            $tty   = self::format($tty, true);
         }
 
         if (is_null($targets))
         {
-            self::CheckTargets();
+            self::checkTargets();
             $targets = self::$Targets;
         }
 
         foreach ($targets as $target)
         {
-            if ($ttyOnly && !$target->IsTty())
+            if ($ttyOnly && !$target->isTty())
             {
                 continue;
             }
 
-            if ($target instanceof Stream && $target->AddColour())
+            if ($target instanceof Stream && $target->addColour())
             {
-                $target->Write($tty, $context, $level);
+                $target->write($tty, $context, $level);
             }
             else
             {
-                $target->Write($plain, $context, $level);
+                $target->write($plain, $context, $level);
             }
         }
     }
 
-    public static function PrintTo(string $string, ConsoleTarget...$targets)
+    public static function printTo(string $string, ConsoleTarget...$targets)
     {
-        self::Print($string, null, ConsoleLevel::INFO, [], false, false, $targets);
+        self::print($string, null, ConsoleLevel::INFO, [], false, false, $targets);
     }
 
     /**
@@ -366,14 +366,14 @@ class Console
      * @param string $msg1
      * @param string|null $msg2
      */
-    public static function Group(string $msg1, string $msg2 = null)
+    public static function group(string $msg1, string $msg2 = null)
     {
-        if (!is_null(self::CheckGroupDepth()))
+        if (!is_null(self::checkGroupDepth()))
         {
             self::$GroupDepth++;
         }
 
-        self::Write(
+        self::write(
             ConsoleLevel::NOTICE,
             $msg1,
             $msg2,
@@ -387,9 +387,9 @@ class Console
      * Decrease indent
      *
      */
-    public static function GroupEnd()
+    public static function groupEnd()
     {
-        self::CheckGroupDepth();
+        self::checkGroupDepth();
         self::$GroupDepth--;
         self::$GroupDepth = self::$GroupDepth < 0 ? null : self::$GroupDepth;
     }
@@ -400,14 +400,14 @@ class Console
      * @param string $msg1
      * @param string|null $msg2
      * @param Throwable|null $ex
-     * @param int $depth Passed to {@see Err::GetCaller()}. To print your
+     * @param int $depth Passed to {@see Err::getCaller()}. To print your
      * caller's name instead of your own, set `$depth` = 2.
      */
-    public static function Debug(string $msg1, string $msg2 = null,
+    public static function debug(string $msg1, string $msg2 = null,
         Throwable $ex = null, int $depth = 0)
     {
         $caller = Err::getCaller($depth);
-        self::Write(
+        self::write(
             ConsoleLevel::DEBUG,
             "{{$caller}} __" . $msg1 . "__",
             $msg2,
@@ -425,10 +425,10 @@ class Console
      * @param string $msg1
      * @param string|null $msg2
      */
-    public static function Log(string $msg1, string $msg2 = null,
+    public static function log(string $msg1, string $msg2 = null,
         Throwable $ex = null)
     {
-        self::Write(
+        self::write(
             ConsoleLevel::INFO,
             $msg1,
             $msg2,
@@ -446,10 +446,10 @@ class Console
      * @param string $msg1
      * @param string|null $msg2
      */
-    public static function LogProgress(string $msg1, string $msg2 = null,
+    public static function logProgress(string $msg1, string $msg2 = null,
         Throwable $ex = null)
     {
-        self::Write(
+        self::write(
             ConsoleLevel::INFO,
             $msg1,
             $msg2,
@@ -468,9 +468,9 @@ class Console
      * @param string $msg1
      * @param string|null $msg2
      */
-    public static function Info(string $msg1, string $msg2 = null, Throwable $ex = null)
+    public static function info(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
-        self::Write(
+        self::write(
             ConsoleLevel::NOTICE,
             $msg1,
             $msg2,
@@ -488,10 +488,10 @@ class Console
      * @param string $msg1
      * @param string|null $msg2
      */
-    public static function Warn(string $msg1, string $msg2 = null, Throwable $ex = null)
+    public static function warn(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
         self::$Warnings++;
-        self::Write(
+        self::write(
             ConsoleLevel::WARNING,
             $msg1,
             $msg2,
@@ -509,10 +509,10 @@ class Console
      * @param string $msg1
      * @param string|null $msg2
      */
-    public static function Error(string $msg1, string $msg2 = null, Throwable $ex = null)
+    public static function error(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
         self::$Errors++;
-        self::Write(
+        self::write(
             ConsoleLevel::ERROR,
             $msg1,
             $msg2,
@@ -524,7 +524,7 @@ class Console
         );
     }
 
-    public static function Exception(Throwable $exception, bool $willQuit = false)
+    public static function exception(Throwable $exception, bool $willQuit = false)
     {
         $msg2 = "";
         $ex   = $exception;
@@ -547,8 +547,8 @@ class Console
             self::$AutomaticLogTarget = false;
         }
 
-        self::Error("Uncaught __" . get_class($exception) . "__:", $msg2, $exception);
-        self::Write(
+        self::error("Uncaught __" . get_class($exception) . "__:", $msg2, $exception);
+        self::write(
             ConsoleLevel::DEBUG,
             "__Stack trace:__",
             "__[[__" . $exception->getTraceAsString() . "__]]__",
@@ -568,11 +568,11 @@ class Console
      * @param Throwable|null $ex
      * @param int $depth
      */
-    public static function DebugOnce(string $msg1, string $msg2 = null, Throwable $ex = null, int $depth = 0)
+    public static function debugOnce(string $msg1, string $msg2 = null, Throwable $ex = null, int $depth = 0)
     {
-        if (!self::CheckLoggedOnce(__METHOD__, $msg1, $msg2))
+        if (!self::checkLoggedOnce(__METHOD__, $msg1, $msg2))
         {
-            self::Debug($msg1, $msg2, $ex, $depth + 1);
+            self::debug($msg1, $msg2, $ex, $depth + 1);
         }
     }
 
@@ -583,11 +583,11 @@ class Console
      * @param string|null $msg2
      * @param Throwable|null $ex
      */
-    public static function LogOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    public static function logOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
-        if (!self::CheckLoggedOnce(__METHOD__, $msg1, $msg2))
+        if (!self::checkLoggedOnce(__METHOD__, $msg1, $msg2))
         {
-            self::Log($msg1, $msg2, $ex);
+            self::log($msg1, $msg2, $ex);
         }
     }
 
@@ -598,11 +598,11 @@ class Console
      * @param string|null $msg2
      * @param Throwable|null $ex
      */
-    public static function InfoOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    public static function infoOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
-        if (!self::CheckLoggedOnce(__METHOD__, $msg1, $msg2))
+        if (!self::checkLoggedOnce(__METHOD__, $msg1, $msg2))
         {
-            self::Info($msg1, $msg2, $ex);
+            self::info($msg1, $msg2, $ex);
         }
     }
 
@@ -613,11 +613,11 @@ class Console
      * @param string|null $msg2
      * @param Throwable|null $ex
      */
-    public static function WarnOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    public static function warnOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
-        if (!self::CheckLoggedOnce(__METHOD__, $msg1, $msg2))
+        if (!self::checkLoggedOnce(__METHOD__, $msg1, $msg2))
         {
-            self::Warn($msg1, $msg2, $ex);
+            self::warn($msg1, $msg2, $ex);
         }
     }
 
@@ -628,25 +628,25 @@ class Console
      * @param string|null $msg2
      * @param Throwable|null $ex
      */
-    public static function ErrorOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    public static function errorOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
     {
-        if (!self::CheckLoggedOnce(__METHOD__, $msg1, $msg2))
+        if (!self::checkLoggedOnce(__METHOD__, $msg1, $msg2))
         {
-            self::Error($msg1, $msg2, $ex);
+            self::error($msg1, $msg2, $ex);
         }
     }
 
-    public static function GetWarnings(): int
+    public static function getWarnings(): int
     {
         return self::$Warnings;
     }
 
-    public static function GetErrors(): int
+    public static function getErrors(): int
     {
         return self::$Errors;
     }
 
-    public static function GetSummary($successText = " without errors", bool $reset = true): string
+    public static function getSummary($successText = " without errors", bool $reset = true): string
     {
         if (self::$Warnings + self::$Errors)
         {

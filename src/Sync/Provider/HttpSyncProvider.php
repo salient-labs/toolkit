@@ -65,7 +65,7 @@ abstract class HttpSyncProvider extends SyncProvider
      */
     protected function cacheKeyCallback(CurlerHeaders $headers): array
     {
-        return $headers->GetHeaders();
+        return $headers->getHeaders();
     }
 
     final public function getCurler(string $path, int $expiry = null): Curler
@@ -94,7 +94,7 @@ abstract class HttpSyncProvider extends SyncProvider
 
         if ($this->getAutoRetryAfter())
         {
-            $curler->EnableAutoRetryAfter();
+            $curler->enableAutoRetryAfter();
         }
 
         return $curler;

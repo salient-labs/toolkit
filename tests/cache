@@ -9,17 +9,17 @@ use Lkrms\Err;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::HandleErrors();
+Err::handleErrors();
 
-Cache::Load();
+Cache::load();
 
-Cache::Set('key', 'value1');
-print_r(Cache::Get('key'));
+Cache::set('key', 'value1');
+print_r(Cache::get('key'));
 
-Cache::Set('key', ['value1', 'value2']);
-print_r(Cache::Get('key'));
+Cache::set('key', ['value1', 'value2']);
+print_r(Cache::get('key'));
 
-print_r(Cache::MaybeGet(
+print_r(Cache::maybeGet(
     [basename(__FILE__), "MaybeGet"],
     function ()
     {
@@ -33,7 +33,7 @@ print_r(Cache::MaybeGet(
 foreach ([1, 2] as $seconds)
 {
     sleep($seconds);
-    print_r(Cache::MaybeGet(
+    print_r(Cache::maybeGet(
         [basename(__FILE__), "MaybeGet"],
         "time",
         2

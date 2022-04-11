@@ -440,7 +440,7 @@ EOF;
 
     final protected function optionError(string $message)
     {
-        Console::Error($this->getLongCommandName() . ": $message");
+        Console::error($this->getLongCommandName() . ": $message");
         $this->OptionErrors++;
     }
 
@@ -647,7 +647,7 @@ EOF;
 
         if ($this->IsHelp)
         {
-            Console::PrintTo($this->getUsage(), ...Console::GetOutputTargets());
+            Console::printTo($this->getUsage(), ...Console::getOutputTargets());
 
             return 0;
         }

@@ -184,7 +184,7 @@ EOF;
                 }
                 elseif ($arg == "--help" && empty($args))
                 {
-                    Console::PrintTo(self::getUsage($name, $node), ...Console::GetOutputTargets());
+                    Console::printTo(self::getUsage($name, $node), ...Console::getOutputTargets());
 
                     return 0;
                 }
@@ -211,7 +211,7 @@ EOF;
 
             if ($node && $usage = self::getUsage($name, $node))
             {
-                Console::PrintTo($usage, ...Console::GetOutputTargets());
+                Console::printTo($usage, ...Console::getOutputTargets());
             }
 
             return 1;
