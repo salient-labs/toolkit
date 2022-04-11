@@ -29,6 +29,8 @@ use RuntimeException;
  */
 class GenerateSyncEntityClass extends CliCommand
 {
+    public static $EntityName;
+
     public function getDescription(): string
     {
         return "Generate an entity class";
@@ -178,10 +180,21 @@ class GenerateSyncEntityClass extends CliCommand
                 "NULL"    => "mixed",
             ];
 
+            $entityClass = new class extends SyncEntity
+            {
+                protected static function getRemovablePrefixes(): ?array
+                {
+                    return [GenerateSyncEntityClass::$EntityName];
+                }
+            };
+
+            self::$EntityName = $class;
+
             foreach ($entity as $key => $value)
             {
                 if (is_string($key) && preg_match('/^[[:alpha:]]/', $key))
                 {
+                    $key  = $entityClass::normalisePropertyName($key);
                     $key  = Convert::toPascalCase($key);
                     $type = gettype($value);
                     $type = $typeMap[$type] ?? $type;
