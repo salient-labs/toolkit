@@ -101,8 +101,12 @@ class SyncEntityProvider
             return null;
         }
 
+        $required = 0;
+
         if ($entityParam || $idParam)
         {
+            $required = 1;
+
             if (is_null($param = $method->getParameters()[0] ?? null))
             {
                 return null;
@@ -120,6 +124,11 @@ class SyncEntityProvider
             {
                 return null;
             }
+        }
+
+        if ($method->getNumberOfRequiredParameters() != $required)
+        {
+            return null;
         }
 
         return $method->getName();
