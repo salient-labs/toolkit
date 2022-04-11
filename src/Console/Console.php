@@ -250,7 +250,7 @@ class Console
         self::$Targets[] = $target;
     }
 
-    private static function CheckLoggedOnce(string $method, string $msg1, string $msg2): int
+    private static function CheckLoggedOnce(string $method, string $msg1, ?string $msg2): int
     {
         $hash = Generate::hash($method, $msg1, $msg2);
         self::$LoggedOnce[$hash] = self::$LoggedOnce[$hash] ?? 0;
