@@ -72,7 +72,7 @@ abstract class Ioc
          * 'substitutions', named instances and rule keys recursively
          */
         if (!empty($subs = array_intersect(
-            $rule['shareInstances'] ?? [],
+            $rule["shareInstances"] ?? [],
             array_keys($rule["substitutions"] ?? [])
         )))
         {
@@ -112,11 +112,9 @@ abstract class Ioc
     public static function resolve(string $name): string
     {
         self::checkContainer();
+        $rule = self::$Container->getRule($name);
 
-        /**
-         * @todo Suppress instantiation and dependency resolution
-         */
-        return get_class(self::$Container->create($name));
+        return isset($rule["instanceOf"]) ? $rule["instanceOf"] : $name;
     }
 
     /**
