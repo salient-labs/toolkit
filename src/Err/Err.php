@@ -67,7 +67,8 @@ class Err
         // 1. called them (function = OurCaller)
         // 2. used the name of their caller (function = CallsOurCaller)
         //
-        // Use class and function from 2 if possible, otherwise file and line from 1
+        // Use class and function from 2 if possible, otherwise file and line
+        // from 1
         $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $depth + 3);
 
         if ($f = $frames[$depth + 2] ?? null)

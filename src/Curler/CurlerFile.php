@@ -22,8 +22,10 @@ class CurlerFile
 
     /**
      * @param string $filename File to upload.
-     * @param string $postFilename Name to give file when uploading (default: `basename($filename)`).
-     * @param string $mimeType MIME type of file (default: `mime_content_type($filename)`).
+     * @param string $postFilename Name to give file when uploading (default:
+     * `basename($filename)`).
+     * @param string $mimeType MIME type of file (default:
+     * `mime_content_type($filename)`).
      */
     public function __construct(string $filename, string $postFilename = null, string $mimeType = null)
     {

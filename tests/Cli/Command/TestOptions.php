@@ -24,17 +24,17 @@ class TestOptions extends CliCommand
 
     protected function _getOptions(): array
     {
-        //[
-        //    "long"            => "",
-        //    "short"           => "",
-        //    "valueName"       => "VALUE",
-        //    "description"     => null,
-        //    "optionType"      => CliOptionType::FLAG,
-        //    "allowedValues"   => null,
-        //    "required"        => false,
-        //    "multipleAllowed" => false,
-        //    "defaultValue"    => null,
-        //],
+        // Defaults:
+        //
+        //     "long"            => "",
+        //     "short"           => "",
+        //     "valueName"       => "VALUE",
+        //     "description"     => null,
+        //     "optionType"      => CliOptionType::FLAG,
+        //     "allowedValues"   => null,
+        //     "required"        => false,
+        //     "multipleAllowed" => false,
+        //     "defaultValue"    => null,
         return [
             [
                 "long"            => "verbose",

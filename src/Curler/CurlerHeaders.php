@@ -17,7 +17,8 @@ class CurlerHeaders
 
     public function setHeader(string $name, string $value)
     {
-        // HTTP headers are case-insensitive, so make sure we don't end up with duplicates
+        // HTTP headers are case-insensitive, so make sure we don't end up with
+        // duplicates
         $this->Headers[strtolower($name)] = "{$name}:{$value}";
     }
 
