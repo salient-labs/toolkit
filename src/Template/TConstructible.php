@@ -26,12 +26,13 @@ trait TConstructible
      * normalised for comparison.
      *
      * @param array $array
+     * @param callable|null $callback
      * @return static
      * @throws UnexpectedValueException when required values are not provided
      */
-    public static function from(array $array)
+    public static function from(array $array, callable $callback = null)
     {
-        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($array);
+        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($array, $callback);
     }
 
     /**
@@ -41,11 +42,12 @@ trait TConstructible
      * array in the list has the same keys in the same order.
      *
      * @param array[] $arrays
+     * @param callable|null $callback
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order.
      * @return static[]
      */
-    public static function listFrom(array $arrays, bool $sameKeys = false): array
+    public static function listFrom(array $arrays, callable $callback = null, bool $sameKeys = false): array
     {
         if (empty($arrays))
         {
@@ -70,7 +72,7 @@ trait TConstructible
                 throw new UnexpectedValueException("Array expected at index $index");
             }
 
-            $list[] = ($closure)($array);
+            $list[] = ($closure)($array, $callback);
         }
 
         return $list;

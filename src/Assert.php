@@ -12,9 +12,9 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class Assert
+abstract class Assert
 {
-    private static function throwUnexpectedValue(string $message, ?string $name): void
+    private static function throwUnexpectedValue(string $message, ?string $name)
     {
         $message = str_replace("{}", is_null($name) ? "value" : "'$name'", $message);
         throw new UnexpectedValueException($message);
@@ -24,10 +24,8 @@ class Assert
      *
      * @param mixed $value
      * @param string|null $name
-     * @return void
-     * @throws UnexpectedValueException
      */
-    public static function notNull($value, string $name = null): void
+    public static function notNull($value, string $name = null)
     {
         if (is_null($value))
         {
@@ -39,10 +37,8 @@ class Assert
      *
      * @param mixed $value
      * @param string|null $name
-     * @return void
-     * @throws UnexpectedValueException
      */
-    public static function notEmpty($value, string $name = null): void
+    public static function notEmpty($value, string $name = null)
     {
         if (empty($value))
         {
@@ -55,46 +51,14 @@ class Assert
      * @param null|string $value
      * @param string $pattern
      * @param string|null $name
-     * @return void
-     * @throws UnexpectedValueException
+     * @param string $message
      */
-    public static function pregMatch(?string $value, string $pattern, string $name = null): void
+    public static function pregMatch(?string $value, string $pattern, string $name = null, string $message = "must match pattern '{}'")
     {
         if (is_null($value) || !preg_match($pattern, $value))
         {
-            self::throwUnexpectedValue("{} must match pattern '$pattern'", $name);
-        }
-    }
-
-    /**
-     *
-     * @param mixed $value
-     * @param int $length
-     * @param string|null $name
-     * @return void
-     * @throws UnexpectedValueException
-     */
-    public static function exactStringLength($value, int $length, string $name = null): void
-    {
-        if (!is_string($value) || strlen($value) != $length)
-        {
-            self::throwUnexpectedValue("{} must be a string with length $length", $name);
-        }
-    }
-
-    /**
-     *
-     * @param mixed $value
-     * @param int $minLength
-     * @param string|null $name
-     * @return void
-     * @throws UnexpectedValueException
-     */
-    public static function minimumStringLength($value, int $minLength, string $name = null): void
-    {
-        if (!is_string($value) || strlen($value) < $minLength)
-        {
-            self::throwUnexpectedValue("{} must be a string with length at least $minLength", $name);
+            $message = str_replace("{}", $pattern, $message);
+            self::throwUnexpectedValue("{} $message", $name);
         }
     }
 
@@ -102,10 +66,8 @@ class Assert
      *
      * @param mixed $value
      * @param string|null $name
-     * @return void
-     * @throws UnexpectedValueException
      */
-    public static function isArray($value, string $name = null): void
+    public static function isArray($value, string $name = null)
     {
         if (!is_array($value))
         {
@@ -113,28 +75,7 @@ class Assert
         }
     }
 
-    /**
-     *
-     * @param mixed $value
-     * @param string|null $name
-     * @return void
-     * @throws UnexpectedValueException
-     */
-    public static function isIntArray($value, string $name = null): void
-    {
-        if (!Test::isIndexedArray($value) ||
-            count(array_filter($value, function ($v) { return !is_int($v); })))
-        {
-            self::throwUnexpectedValue("{} must be an integer array", $name);
-        }
-    }
-
-    /**
-     *
-     * @return void
-     * @throws RuntimeException
-     */
-    public static function sapiIsCli(): void
+    public static function sapiIsCli()
     {
         if (PHP_SAPI != "cli")
         {
@@ -142,12 +83,7 @@ class Assert
         }
     }
 
-    /**
-     *
-     * @return void
-     * @throws RuntimeException
-     */
-    public static function localeIsUtf8(): void
+    public static function localeIsUtf8()
     {
         if (($locale = setlocale(LC_CTYPE, "")) === false)
         {
@@ -156,7 +92,7 @@ class Assert
 
         if (!preg_match('/\.UTF-?8$/i', $locale))
         {
-            throw new RuntimeException("Locale '$locale' does not support UTF-8");
+            throw new RuntimeException("'$locale' is not a UTF-8 locale");
         }
     }
 }

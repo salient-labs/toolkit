@@ -13,7 +13,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class Cli
+abstract class Cli
 {
     /**
      * @var array<string,CliCommand>;

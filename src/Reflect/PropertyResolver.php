@@ -424,8 +424,13 @@ class PropertyResolver
         /**
          * @todo Create a chain of closures
          */
-        $closure = function (array $array) use ($parameterKeys, $methodKeys, $propertyKeys, $metaKeys)
+        $closure = function (array $array, callable $callback = null) use ($parameterKeys, $methodKeys, $propertyKeys, $metaKeys)
         {
+            if ($callback)
+            {
+                $array = $callback($array);
+            }
+
             $args = $this->DefaultArguments;
 
             foreach ($parameterKeys as $key => $index)
@@ -465,11 +470,11 @@ class PropertyResolver
             return $closure;
         }
 
-        $closure = function (array $array)
+        $closure = function (array $array, callable $callback = null)
         {
             $keys = array_keys($array);
 
-            return ($this->getCreateFromSignatureClosure($keys))($array);
+            return ($this->getCreateFromSignatureClosure($keys))($array, $callback);
         };
 
         $this->CreateFromClosure = $closure;

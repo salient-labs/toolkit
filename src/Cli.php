@@ -9,7 +9,7 @@ if (!class_alias("\Lkrms\Cli\Cli", "\Lkrms\Cli"))
     /**
      * @ignore
      */
-    class Cli extends Cli\Cli
+    abstract class Cli extends Cli\Cli
     {
     }
 }

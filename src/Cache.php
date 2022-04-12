@@ -6,7 +6,6 @@ namespace Lkrms;
 
 use Exception;
 use Lkrms\Store\Sqlite;
-use RuntimeException;
 use SQLite3;
 use UnexpectedValueException;
 
@@ -15,7 +14,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms\Service
  */
-class Cache extends Sqlite
+abstract class Cache extends Sqlite
 {
     public static function flushExpired()
     {
@@ -31,7 +30,6 @@ SQL
     /**
      * @param string|string[] $key
      * @return string
-     * @throws UnexpectedValueException
      */
     private static function getKey($key): string
     {
@@ -103,7 +101,6 @@ SQL
      * @param mixed $value The value to `serialize` and store.
      * @param int $expiry The time in seconds before `$value` expires (maximum
      * 30 days), or the expiry time's Unix timestamp. `0` = no expiry.
-     * @throws RuntimeException
      */
     public static function set(string $key, $value, int $expiry = 0)
     {
@@ -205,7 +202,6 @@ SQL;
      * considered expired (maximum 30 days). Overrides stored expiry times for
      * this request only. `0` = no expiry.
      * @return mixed The `unserialize`d value stored in the cache.
-     * @throws RuntimeException
      */
     public static function get(string $key, int $maxAge = null)
     {
@@ -255,7 +251,6 @@ SQL;
      * Deletes the value stored under the `$key` from the cache.
      *
      * @param string $key The key of the item to delete.
-     * @throws RuntimeException
      */
     public static function delete(string $key)
     {
@@ -275,7 +270,6 @@ SQL
     /**
      * Delete all items
      *
-     * @throws RuntimeException
      */
     public static function flush()
     {
@@ -295,8 +289,6 @@ SQL
      * @param callable $callback
      * @param int $expiry
      * @return mixed
-     * @throws UnexpectedValueException
-     * @throws RuntimeException
      */
     public static function maybeGet($key, callable $callback, int $expiry = 0)
     {

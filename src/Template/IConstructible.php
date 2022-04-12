@@ -15,15 +15,17 @@ interface IConstructible
     /**
      *
      * @param array<string,mixed> $array
+     * @param callable|null $callback
      * @return static
      */
-    public static function from(array $array);
+    public static function from(array $array, callable $callback = null);
 
     /**
      *
      * @param array<int,array<string,mixed>> $arrays
+     * @param callable|null $callback
      * @return static[]
      */
-    public static function listFrom(array $arrays): array;
+    public static function listFrom(array $arrays, callable $callback = null): array;
 }
 
