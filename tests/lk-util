@@ -13,4 +13,4 @@ Err::handleErrors();
 
 Env::load(__DIR__ . "/.env");
 
-require (__DIR__ . '/../bin/lk-util');
+require (__DIR__ . "/../lib/util/bootstrap.php");

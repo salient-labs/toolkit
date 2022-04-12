@@ -60,7 +60,7 @@ abstract class Closure
         $sig = implode("\000", array_merge(
             array_keys($keyMap),
             array_values($keyMap),
-            [$sameKeys, $skip],
+            [$sameKeys, $skip]
         ));
 
         if ($closure = self::$ArrayMappers[$sig] ?? null)
