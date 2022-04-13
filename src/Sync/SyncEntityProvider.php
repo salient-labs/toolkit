@@ -12,7 +12,7 @@ use ReflectionMethod;
 use UnexpectedValueException;
 
 /**
- * Provides a generic interface for a SyncEntity provider
+ * Provides a generic interface with a SyncEntity's current provider
  *
  * So you can do this:
  *
@@ -58,6 +58,11 @@ class SyncEntityProvider
      */
     private $SyncProvider;
 
+    /**
+     * @var ReflectionClass
+     */
+    private $SyncProviderClass;
+
     private $Callbacks = [];
 
     public function __construct(string $name)
@@ -67,20 +72,16 @@ class SyncEntityProvider
             throw new UnexpectedValueException("Not a subclass of SyncEntity: " . $name);
         }
 
-        $this->SyncEntity       = $name;
-        $this->SyncEntityNoun   = Convert::classToBasename($name);
-        $this->SyncEntityPlural = $name::getPlural();
-        $this->SyncProvider     = Ioc::create($name . "Provider");
-    }
-
-    private function getProviderClass(): ReflectionClass
-    {
-        return new ReflectionClass($this->SyncProvider);
+        $this->SyncEntity        = $name;
+        $this->SyncEntityNoun    = Convert::classToBasename($name);
+        $this->SyncEntityPlural  = $name::getPlural();
+        $this->SyncProvider      = Ioc::create($name . "Provider");
+        $this->SyncProviderClass = new ReflectionClass($this->SyncProvider);
     }
 
     private function getProviderMethod(string $methodName): ?ReflectionMethod
     {
-        $class = $this->getProviderClass();
+        $class = $this->SyncProviderClass;
 
         return $class->hasMethod($methodName)
             ? $class->getMethod($methodName)
