@@ -14,10 +14,12 @@ composer require lkrms/util
 
 `lkrms/util` includes code generators and other command-line tools you can use
 during development by running `lk-util` from your project's `vendor/bin`
-directory (preferred), or via `composer exec lk-util`.
+directory.
 
 For a list of available subcommands, run `lk-util` with no arguments. For usage
 information, add `--help` to any command.
+
+### Environment variables
 
 To make it easier to work with fully-qualified class names in a terminal,
 `lk-util` allows fallback namespaces and classes to be specified via environment
@@ -43,14 +45,16 @@ used:
 
 ## Using `Console` for terminal output and logging
 
-> You don't have to use `Lkrms\Console\Console` for message logging, but
-> `lkrms/util` uses it internally, so familiarising yourself with its default
-> behaviour is recommended.
+> You don't have to use `Lkrms\Console` for message logging, but `lkrms/util`
+> uses it internally, so becoming familiar with its default behaviour is
+> recommended.
 
 To make it easier to create readable terminal output and log entries, the
 [`Lkrms\Console\Console`][Console.php] class provides:
 
 - Familiar methods like `Console::log()` and `Console::error()`
+- Variants like `Console::logOnce()` and `Console::errorOnce()` to output
+  messages once per run
 - Output to an arbitrary number of registered targets
 - Filtering of messages delivered to each target by log level
 - Terminal-friendly message formatting
@@ -80,13 +84,13 @@ bootstrapping your app.
 
 | `Console` method  | `ConsoleLevel`  | Message prefix | Default output target |
 | ----------------- | --------------- | -------------- | --------------------- |
-| `Error()`         | `ERROR` = `3`   | ` !! `         | `STDERR`              |
-| `Warn()`          | `WARNING` = `4` | `  ! `         | `STDERR`              |
-| `Group()`[^group] | `NOTICE` = `5`  | `>>> `         | `STDOUT`              |
-| `Info()`          | `NOTICE` = `5`  | `==> `         | `STDOUT`              |
-| `Log()`           | `INFO` = `6`    | ` -> `         | `STDOUT`              |
-| `LogProgress()`   | `INFO` = `6`    | ` -> `         | `STDOUT`              |
-| `Debug()`         | `DEBUG` = `7`   | `--- `         | none                  |
+| `error[Once]()`   | `ERROR` = `3`   | ` !! `         | `STDERR`              |
+| `warn[Once]()`    | `WARNING` = `4` | `  ! `         | `STDERR`              |
+| `group()`[^group] | `NOTICE` = `5`  | `>>> `         | `STDOUT`              |
+| `info[Once]()`    | `NOTICE` = `5`  | `==> `         | `STDOUT`              |
+| `log[Once]()`     | `INFO` = `6`    | ` -> `         | `STDOUT`              |
+| `logProgress()`   | `INFO` = `6`    | ` -> `         | `STDOUT`              |
+| `debug[Once]()`   | `DEBUG` = `7`   | `--- `         | none                  |
 
 [^group]: `Console::group()` adds a level of indentation to all `Console` output
     until `Console::groupEnd()` is called.
