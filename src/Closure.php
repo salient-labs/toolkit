@@ -46,8 +46,8 @@ abstract class Closure
      *
      * @param array<int|string,int|string> $keyMap An array that maps input keys
      * to output keys.
-     * @param bool $sameKeys If `true`, assume every input array has the same
-     * keys in the same order they are given in `$keyMap`.
+     * @param bool $sameKeys If `true`, improve performance by assuming every
+     * input array has the same keys in the same order as in `$keyMap`.
      * @param int $skip A bitmask of `Closure::SKIP_*` values.
      * @return \Closure
      */

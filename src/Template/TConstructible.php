@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Template;
 
+use Lkrms\Closure;
 use Lkrms\Reflect\PropertyResolver;
 use UnexpectedValueException;
 
@@ -15,52 +16,140 @@ use UnexpectedValueException;
 trait TConstructible
 {
     /**
-     * Create a new class instance from an array
+     * Create an instance of the class from an array
      *
-     * The constructor (if any) is invoked with parameters taken from `$array`.
-     * If `$array` values remain, they are assigned to public properties. If
+     * The constructor (if any) is invoked with parameters taken from `$data`.
+     * If `$data` values remain, they are assigned to public properties. If
      * further values remain and the class implements {@see IExtensible}, they
      * are assigned via {@see IExtensible::setMetaProperty()}.
      *
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.
      *
-     * @param array $array
-     * @param callable|null $callback
+     * @param array<string,mixed> $data
      * @return static
-     * @throws UnexpectedValueException when required values are not provided
      */
-    public static function from(array $array, callable $callback = null)
+    public static function fromArray(array $data)
     {
-        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($array, $callback);
+        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($data);
     }
 
     /**
-     * Convert a list of arrays to a list of instances
+     * Create an instance of the class from an array after applying a callback
      *
-     * To suppress array signature checks, set `$sameKeys` to `true` if every
-     * array in the list has the same keys in the same order.
+     * See {@see TConstructible::fromArray()} for more information.
      *
-     * @param array[] $arrays
-     * @param callable|null $callback
+     * @param array $data
+     * @param callable $callback
+     * @return static
+     */
+    public static function fromArrayVia(array $data, callable $callback)
+    {
+        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($data, $callback);
+    }
+
+    /**
+     * Create an instance of the class from an array after remapping its values
+     *
+     * See {@see Closure::getArrayMapper()} and
+     * {@see TConstructible::fromArray()} for more information.
+     *
+     * @param array $data
+     * @param array<int|string,int|string> $keyMap An array that maps `$data`
+     * keys to names the class will be able to resolve.
+     * @param bool $sameKeys If `true`, improve performance by assuming `$data`
+     * has the same keys in the same order as in `$keyMap`.
+     * @param int $skip A bitmask of `Closure::SKIP_*` values.
+     * @return static
+     */
+    public static function fromMappedArray(
+        array $data,
+        array $keyMap,
+        bool $sameKeys = false,
+        int $skip      = Closure::SKIP_MISSING | Closure::SKIP_UNMAPPED
+    )
+    {
+        $callback = Closure::getArrayMapper($keyMap, $sameKeys, $skip);
+
+        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($data, $callback);
+    }
+
+    /**
+     * Create a list of instances from a list of arrays
+     *
+     * See {@see TConstructible::fromArray()} for more information.
+     *
+     * @param array<int,array<string,mixed>> $list
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order.
      * @return static[]
      */
-    public static function listFrom(array $arrays, callable $callback = null, bool $sameKeys = false): array
+    public static function listFromArrays(array $list, bool $sameKeys = false): array
+    {
+        return self::getListFrom($list, self::getCreateFromClosure($sameKeys, $list));
+    }
+
+    /**
+     * Create a list of instances from a list of arrays, applying a callback
+     * before each array is processed
+     *
+     * See {@see TConstructible::fromArray()} for more information.
+     *
+     * @param array[] $list
+     * @param callable $callback
+     * @param bool $sameKeys If `true`, improve performance by assuming every
+     * array in the list has the same keys in the same order.
+     * @return static[]
+     */
+    public static function listFromArraysVia(array $list, callable $callback, bool $sameKeys = false): array
+    {
+        return self::getListFrom($list, self::getCreateFromClosure($sameKeys, $list), $callback);
+    }
+
+    /**
+     * Create a list of instances from a list of arrays, remapping each array's
+     * values before it is processed
+     *
+     * See {@see Closure::getArrayMapper()} and
+     * {@see TConstructible::fromArray()} for more information.
+     *
+     * @param array[] $list
+     * @param array<int|string,int|string> $keyMap An array that maps array keys
+     * to names the class will be able to resolve.
+     * @param bool $sameKeys If `true`, improve performance by assuming every
+     * array in the list has the same keys in the same order as in `$keyMap`.
+     * @param int $skip A bitmask of `Closure::SKIP_*` values.
+     * @return static[]
+     */
+    public static function listFromMappedArrays(
+        array $list,
+        array $keyMap,
+        bool $sameKeys = false,
+        int $skip      = Closure::SKIP_MISSING | Closure::SKIP_UNMAPPED
+    ): array
+    {
+        $callback = Closure::getArrayMapper($keyMap, $sameKeys, $skip);
+
+        return self::getListFrom($list, self::getCreateFromClosure($sameKeys, $list), $callback);
+    }
+
+    private static function getCreateFromClosure(bool $sameKeys, array $dataList): \Closure
+    {
+        if ($sameKeys)
+        {
+            return PropertyResolver::getFor(static::class)->getCreateFromSignatureClosure(array_keys(reset($dataList)));
+        }
+        else
+        {
+            return PropertyResolver::getFor(static::class)->getCreateFromClosure();
+        }
+    }
+
+    private static function getListFrom(array $arrays, callable $closure, callable $callback = null): array
     {
         if (empty($arrays))
         {
             return [];
-        }
-
-        if ($sameKeys)
-        {
-            $closure = PropertyResolver::getFor(static::class)->getCreateFromSignatureClosure(array_keys(reset($arrays)));
-        }
-        else
-        {
-            $closure = PropertyResolver::getFor(static::class)->getCreateFromClosure();
         }
 
         $list = [];

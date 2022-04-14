@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Template;
 
 /**
- * Can be instantiated from an associative array
+ * Can be instantiated from an array
  *
  * @package Lkrms
  * @see TConstructible
@@ -14,18 +14,48 @@ interface IConstructible
 {
     /**
      *
-     * @param array<string,mixed> $array
-     * @param callable|null $callback
+     * @param array<string,mixed> $data
      * @return static
      */
-    public static function from(array $array, callable $callback = null);
+    public static function fromArray(array $data);
 
     /**
      *
-     * @param array<int,array<string,mixed>> $arrays
-     * @param callable|null $callback
+     * @param array $data
+     * @param callable $callback
+     * @return static
+     */
+    public static function fromArrayVia(array $data, callable $callback);
+
+    /**
+     *
+     * @param array $data
+     * @param array<int|string,int|string> $keyMap
+     * @return static
+     */
+    public static function fromMappedArray(array $data, array $keyMap);
+
+    /**
+     *
+     * @param array<int,array<string,mixed>> $list
      * @return static[]
      */
-    public static function listFrom(array $arrays, callable $callback = null): array;
+    public static function listFromArrays(array $list): array;
+
+    /**
+     *
+     * @param array[] $list
+     * @param callable $callback
+     * @return static[]
+     */
+    public static function listFromArraysVia(array $list, callable $callback): array;
+
+    /**
+     *
+     * @param array[] $list
+     * @param array<int|string,int|string> $keyMap
+     * @return static[]
+     */
+    public static function listFromMappedArrays(array $list, array $keyMap): array;
 }
 

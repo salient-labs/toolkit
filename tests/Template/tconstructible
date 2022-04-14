@@ -51,14 +51,14 @@ $value3 = [
     "DATA" => [29, 27, 26],
 ];
 
-$a = A::from($value1);
-$b = B::from($value2);
-$c = B::from($value3);
-$d = B::listFrom([$value1, $value2, $value3]);
+$a = A::fromArray($value1);
+$b = B::fromArray($value2);
+$c = B::fromArray($value3);
+$d = B::listFromArrays([$value1, $value2, $value3]);
 
 try
 {
-    $e = B::listFrom([$value1, $value2, $c]);
+    $e = B::listFromArrays([$value1, $value2, $c]);
 }
 catch (UnexpectedValueException $ex)
 {

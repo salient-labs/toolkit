@@ -231,7 +231,7 @@ abstract class CliCommand
     {
         if (!($option instanceof CliOption))
         {
-            $option = CliOption::from($option);
+            $option = CliOption::fromArray($option);
         }
 
         $option->validate();
