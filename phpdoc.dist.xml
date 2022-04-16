@@ -21,4 +21,7 @@
     <setting
             name="title"
             value="lkrms/util" />
+    <setting
+            name="graphs.enabled"
+            value="true" />
 </phpdocumentor>
