@@ -22,7 +22,7 @@ class CliHandler extends PlainTextHandler
             parent::handle();
         }
 
-        Console::exception($this->getException(), true);
+        Console::exception($this->getException());
 
         return Handler::QUIT;
     }

@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
+use Lkrms\Console\ConsoleColour as C;
 use Lkrms\Console\ConsoleTarget\Stream;
-use Lkrms\Convert;
 use Lkrms\Env;
 use Lkrms\File;
 use Lkrms\Generate;
-use Lkrms\Runtime;
-use RuntimeException;
 use Throwable;
 
 /**
@@ -18,25 +16,20 @@ use Throwable;
  *
  * @package Lkrms
  */
-class Console
+abstract class Console extends ConsoleMessageWriter
 {
     /**
-     * @var int
-     */
-    private static $GroupDepth;
-
-    /**
-     * @var array<int,ConsoleTarget>
+     * @var ConsoleTarget[]
      */
     private static $LogTargets = [];
 
     /**
-     * @var array<int,ConsoleTarget>
+     * @var ConsoleTarget[]
      */
     private static $OutputTargets = [];
 
     /**
-     * @var array<int,ConsoleTarget>
+     * @var ConsoleTarget[]
      */
     private static $Targets = [];
 
@@ -51,134 +44,35 @@ class Console
     private static $LoggedOnce = [];
 
     /**
-     * @var int
-     */
-    private static $Warnings = 0;
-
-    /**
-     * @var int
-     */
-    private static $Errors = 0;
-
-    /**
      * @var bool
      */
-    private static $AutomaticLogTarget = true;
+    private static $DefaultOutputLogIsEnabled = true;
+
+    /**
+     * message level => [$msg1 colour, $msg2 colour, prefix colour]
+     */
+    protected const COLOUR_MAP = [
+        ConsoleLevel::ERROR   => [C::BOLD . C::RED, "", C::BOLD . C::RED],
+        ConsoleLevel::WARNING => [C::BOLD . C::YELLOW, "", C::BOLD . C::YELLOW],
+        ConsoleLevel::NOTICE  => [C::BOLD, C::CYAN, null],
+        ConsoleLevel::INFO    => ["", C::YELLOW, null],
+        ConsoleLevel::DEBUG   => [C::DIM, C::DIM, null],
+    ];
 
     /**
      * Disable the default output log
      *
      * Call while bootstrapping your app to disable the output log created at
-     * `<temp_dir>/<basename>-<realpath_hash>-<user_id>.log` by default.
+     * `{TMPDIR}/<basename>-<realpath_hash>-<user_id>.log` by default.
      *
-     * This happens automatically when a log target is added explicitly via
-     * {@see Console::addTarget()}.
+     * This happens automatically when a log target is registered explicitly via
+     * {@see Console::registerTarget()}.
      *
-     * @return void
      * @see File::stablePath()
      */
-    public static function disableDefaultLogTarget(): void
+    public static function disableDefaultOutputLog()
     {
-        if (self::$TargetsChecked && self::$AutomaticLogTarget)
-        {
-            throw new RuntimeException("Targets have already been created");
-        }
-
-        self::$AutomaticLogTarget = false;
-    }
-
-    /**
-     * Apply inline formatting to a string
-     *
-     * The following markup is recognised:
-     *
-     * - `___`Priority 1`___` or `***`Priority 1`***` (bold + colour)
-     * - `__`Priority 2`__` or `**`Priority 2`**` (bold)
-     * - `_`Priority 3`_` or `*`Priority 3`*` (alternate colour)
-     * - `,,`Low Priority`,,` (dim)
-     * - `__[[__`SKIP`__]]__` (no formatting)
-     *
-     * If `$colour` is `true`, inline markup is replaced with terminal escape
-     * sequences to set and reset appropriate display attributes. Otherwise, the
-     * markup is simply removed.
-     *
-     * @param string $string
-     * @param bool $colour
-     * @return string
-     */
-    public static function format(string $string, $colour = false): string
-    {
-        if ($colour)
-        {
-            list ($bold, $unbold, $dim, $undim, $cyan, $yellow, $default) = [
-                ConsoleColour::BOLD,
-                ConsoleColour::UNBOLD,
-                ConsoleColour::DIM,
-                ConsoleColour::UNDIM,
-                ConsoleColour::CYAN,
-                ConsoleColour::YELLOW,
-                ConsoleColour::DEFAULT
-            ];
-        }
-        else
-        {
-            list ($bold, $unbold, $dim, $undim, $cyan, $yellow, $default) = [
-                "", "", "", "", "", "", ""
-            ];
-        }
-
-        $str     = "";
-        $matches = [];
-
-        while ($string && preg_match("/^((.*?)__\\[\\[__(.*?)__\\]\\]__)?(.*)\$/s", $string, $matches))
-        {
-            $format   = $matches[2];
-            $noFormat = $matches[3];
-            $string   = $matches[4];
-
-            if (!$matches[1])
-            {
-                $format   = $matches[4];
-                $noFormat = "";
-                $string   = "";
-            }
-
-            $str .= preg_replace([
-                "/\\b___([^\n]+?)___\\b/",
-                "/\\b__([^\n]+?)__\\b/",
-                "/\\b_([^\n]+?)_\\b/",
-                "/\\*\\*\\*([^\n]+?)\\*\\*\\*/",
-                "/\\*\\*([^\n]+?)\\*\\*/",
-                "/\\*([^\n]+?)\\*/",
-                "/,,([^\n]+?),,/",
-            ], [
-                "$bold$cyan\$1$default$unbold",
-                "$bold\$1$unbold",
-                "$yellow\$1$default",
-                "$bold$cyan\$1$default$unbold",
-                "$bold\$1$unbold",
-                "$yellow\$1$default",
-                "$dim\$1$undim"
-            ], $format) . $noFormat;
-        }
-
-        return $str;
-    }
-
-    private static function hasBold(string $string): bool
-    {
-        $string = preg_replace("/__\\[\\[__(.*?)__\\]\\]__/", "", $string);
-
-        return (bool)preg_match("/(\\b(___?)([^\n]+?)\\2\\b|(\\*\\*\\*?)([^\n]+?)\\4)/", $string);
-    }
-
-    private static function checkGroupDepth(): ?int
-    {
-        // Return null if this is the first call to an output function
-        $return           = self::$GroupDepth;
-        self::$GroupDepth = self::$GroupDepth ?: 0;
-
-        return $return;
+        self::$DefaultOutputLogIsEnabled = false;
     }
 
     private static function checkTargets()
@@ -188,46 +82,29 @@ class Console
             return;
         }
 
-        // If no output log has been added, log everything to
-        // `<temp_dir>/<basename>-<realpath_hash>-<user_id>.log`
-        if (self::$AutomaticLogTarget && empty(self::$LogTargets))
+        // If no output log has been registered, log everything to
+        // `{TMPDIR}/<basename>-<realpath_hash>-<user_id>.log`
+        if (self::$DefaultOutputLogIsEnabled)
         {
-            self::addTarget(Stream::fromPath(File::getStablePath(".log")));
+            self::registerTarget(Stream::fromPath(File::getStablePath(".log")));
         }
 
-        // If no output streams have been added and we're running on the command
-        // line, send errors and warnings to STDERR, everything else to STDOUT
+        // If no output streams have been registered and we're running on the
+        // command line, send errors and warnings to STDERR, everything else to
+        // STDOUT
         if (PHP_SAPI == "cli" && empty(self::$OutputTargets))
         {
-            self::addTarget(new Stream(STDERR, [
-                ConsoleLevel::EMERGENCY,
-                ConsoleLevel::ALERT,
-                ConsoleLevel::CRITICAL,
-                ConsoleLevel::ERROR,
-                ConsoleLevel::WARNING,
-            ]));
-
-            $levels = [
-                ConsoleLevel::NOTICE,
-                ConsoleLevel::INFO,
-            ];
-
-            if (Env::debug())
-            {
-                $levels[] = ConsoleLevel::DEBUG;
-            }
-
-            self::addTarget(new Stream(STDOUT, $levels));
+            self::registerTarget(new Stream(STDERR, ConsoleLevels::ERRORS));
+            self::registerTarget(new Stream(STDOUT, Env::debug() ? ConsoleLevels::INFO_DEBUG : ConsoleLevels::INFO));
         }
 
         self::$TargetsChecked = true;
     }
 
     /**
-     * Get active targets backed by STDOUT or STDERR
+     * Get registered targets backed by STDOUT or STDERR
      *
-     * @return array<int,ConsoleTarget>
-     * @throws RuntimeException
+     * @return ConsoleTarget[]
      */
     public static function getOutputTargets(): array
     {
@@ -236,7 +113,7 @@ class Console
         return self::$OutputTargets;
     }
 
-    public static function addTarget(ConsoleTarget $target)
+    public static function registerTarget(ConsoleTarget $target)
     {
         if ($target->isStdout() || $target->isStderr())
         {
@@ -245,90 +122,122 @@ class Console
         else
         {
             self::$LogTargets[] = $target;
+            self::$DefaultOutputLogIsEnabled = false;
         }
 
         self::$Targets[] = $target;
     }
 
-    private static function checkLoggedOnce(string $method, string $msg1, ?string $msg2): int
+    protected static function logWrite(
+        string $method,
+        string $msg1,
+        ?string $msg2
+    ): int
     {
         $hash = Generate::hash($method, $msg1, $msg2);
-        self::$LoggedOnce[$hash] = self::$LoggedOnce[$hash] ?? 0;
+
+        if (!array_key_exists($hash, self::$LoggedOnce))
+        {
+            self::$LoggedOnce[$hash] = 0;
+        }
 
         return self::$LoggedOnce[$hash]++;
     }
 
-    private static function write(
+    /**
+     *
+     * @param int $level
+     * @param string $msg1 Message.
+     * @param null|string $msg2 Secondary message.
+     * @param string $prefix Prefix.
+     * @param string $clr1 Primary colour (may include BOLD).
+     * @param string $clr2 Secondary colour (never includes BOLD).
+     * @param string|null $clrP Prefix colour.
+     * @param Throwable|null $ex Associated exception.
+     * @param bool $ttyOnly
+     */
+    protected static function write(
         int $level,
         string $msg1,
         ?string $msg2,
-        string $pre,
-        string $clr1,
-        string $clr2,
-        string $clrP  = null,
+        string $prefix,
         Throwable $ex = null,
         bool $ttyOnly = false
     )
     {
-        self::checkGroupDepth();
-        $margin = self::$GroupDepth * 4;
+        list ($clr1, $clr2, $clrP) = self::COLOUR_MAP[$level];
 
-        $indent = strlen($pre);
-        $indent = max(0, strpos($msg1, "\n") ? $indent : $indent - 4);
+        $clr1    = !ConsoleText::hasBold($msg1) ? $clr1 : str_replace(ConsoleColour::BOLD, "", $clr1);
+        $clrP    = !is_null($clrP) ? $clrP : ConsoleColour::BOLD . $clr2;
+        $ttyMsg1 = ConsoleText::formatColour($msg1);
+        $msg1    = ConsoleText::formatPlain($msg1);
+
+        $margin = max(0, self::$GroupLevel) * 4;
+        $indent = strlen($prefix);
+        $indent = max(0, strpos($msg1, "\n") !== false ? $indent : $indent - 4);
 
         if ($margin + $indent)
         {
-            $msg1 = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent), $msg1);
+            foreach ([&$msg1, &$ttyMsg1] as &$msgRef)
+            {
+                $msgRef = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent), $msgRef);
+            }
         }
 
         if (!is_null($msg2))
         {
-            if (strpos($msg2, "\n"))
+            $ttyMsg2 = ConsoleText::formatColour($msg2);
+            $msg2    = ConsoleText::formatPlain($msg2);
+
+            foreach ([&$msg2, &$ttyMsg2] as &$msgRef)
             {
-                $msg2 = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent + 2), "\n" . ltrim($msg2));
-            }
-            else
-            {
-                $msg2 = " " . $msg2;
+                if (strpos($msgRef, "\n") !== false)
+                {
+                    $msgRef = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent + 2), "\n" . ltrim($msgRef));
+                }
+                else
+                {
+                    $msgRef = " " . $msgRef;
+                }
             }
         }
 
-        $msg = str_repeat(" ", $margin) . $pre . self::format($msg1) . self::format($msg2 ?: "");
-
-        $clrP   = !is_null($clrP) ? $clrP : ConsoleColour::BOLD . $clr2;
-        $clr1   = !self::hasBold($msg1) ? $clr1 : str_replace(ConsoleColour::BOLD, "", $clr1);
+        unset($msgRef);
+        $msg    = str_repeat(" ", $margin) . $prefix . $msg1 . ($msg2 ?: "");
         $ttyMsg = (str_repeat(" ", $margin)
-            . $clrP . $pre . ($clrP ? ConsoleColour::RESET : "")
-            . $clr1 . self::format($msg1, true) . ($clr1 ? ConsoleColour::RESET : "")
-            . ($msg2 ? $clr2 . self::format($msg2 ?: "", true) . ($clr2 ? ConsoleColour::RESET : "") : ""));
-
-        $context = [];
+            . $clrP . $prefix . ($clrP ? ConsoleColour::RESET : "")
+            . $clr1 . $ttyMsg1 . ($clr1 ? ConsoleColour::RESET : "")
+            . ($msg2 ? $clr2 . $ttyMsg2 . ($clr2 ? ConsoleColour::RESET : "") : ""));
 
         if ($ex)
         {
-            // As per PSR-3
-            $context["exception"] = $ex;
+            $context = ["exception" => $ex];
         }
 
-        self::print($msg, $ttyMsg, $level, $context, $ttyOnly, true);
+        self::print($msg, $ttyMsg, $level, $context ?? [], $ttyOnly);
     }
 
+    /**
+     *
+     * @param string $plain
+     * @param null|string $tty
+     * @param int $level
+     * @param array $context
+     * @param bool $ttyOnly
+     * @param ConsoleTarget[]|null $targets
+     */
     private static function print(
         string $plain,
-        string $tty     = null,
-        int $level      = ConsoleLevel::INFO,
-        array $context  = [],
-        bool $ttyOnly   = false,
-        bool $formatted = false,
-        array $targets  = null
+        ?string $tty,
+        int $level,
+        array $context,
+        bool $ttyOnly,
+        array $targets = null
     )
     {
-        $tty = is_null($tty) ? $plain : $tty;
-
-        if (!$formatted)
+        if (is_null($tty))
         {
-            $plain = self::format($plain);
-            $tty   = self::format($tty, true);
+            $tty = $plain;
         }
 
         if (is_null($targets))
@@ -344,7 +253,7 @@ class Console
                 continue;
             }
 
-            if ($target instanceof Stream && $target->addColour())
+            if ($target->supportsColour())
             {
                 $target->write($tty, $context, $level);
             }
@@ -355,319 +264,31 @@ class Console
         }
     }
 
-    public static function printTo(string $string, ConsoleTarget ...$targets)
+    public static function printTo(
+        string $msg,
+        ConsoleTarget ...$targets
+    )
     {
-        self::print($string, null, ConsoleLevel::INFO, [], false, false, $targets);
+        $ttyMsg = ConsoleText::formatColour($msg);
+        $msg    = ConsoleText::formatPlain($msg);
+
+        self::print($msg, $ttyMsg, ConsoleLevel::INFO, [], false, $targets ?: null);
     }
 
     /**
-     * Increase indent and print "<<< $msg1 $msg2"
-     *
-     * @param string $msg1
-     * @param string|null $msg2
+     * @deprecated Use {@see Console::disableDefaultOutputLog()} instead
      */
-    public static function group(string $msg1, string $msg2 = null)
+    public static function disableDefaultLogTarget()
     {
-        if (!is_null(self::checkGroupDepth()))
-        {
-            self::$GroupDepth++;
-        }
-
-        self::write(
-            ConsoleLevel::NOTICE,
-            $msg1,
-            $msg2,
-            ">>> ",
-            ConsoleColour::BOLD,
-            ConsoleColour::CYAN
-        );
+        self::disableDefaultOutputLog();
     }
 
     /**
-     * Decrease indent
-     *
+     * @deprecated Use {@see Console::registerTarget()} instead
      */
-    public static function groupEnd()
+    public static function addTarget(ConsoleTarget $target)
     {
-        self::checkGroupDepth();
-        self::$GroupDepth--;
-        self::$GroupDepth = self::$GroupDepth < 0 ? null : self::$GroupDepth;
-    }
-
-    /**
-     * Print "--- {CALLER} $msg1 $msg2"
-     *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @param int $depth Passed to {@see Runtime::getCaller()}. To print your
-     * caller's name instead of your own, set `$depth` = 1.
-     */
-    public static function debug(string $msg1, string $msg2 = null,
-        Throwable $ex = null, int $depth = 0)
-    {
-        $caller = implode("", Runtime::getCaller($depth));
-        self::write(
-            ConsoleLevel::DEBUG,
-            "{{$caller}} __" . $msg1 . "__",
-            $msg2,
-            "--- ",
-            ConsoleColour::DIM,
-            ConsoleColour::DIM,
-            null,
-            $ex
-        );
-    }
-
-    /**
-     * Print " -> $msg1 $msg2"
-     *
-     * @param string $msg1
-     * @param string|null $msg2
-     */
-    public static function log(string $msg1, string $msg2 = null,
-        Throwable $ex = null)
-    {
-        self::write(
-            ConsoleLevel::INFO,
-            $msg1,
-            $msg2,
-            " -> ",
-            "",
-            ConsoleColour::YELLOW,
-            null,
-            $ex
-        );
-    }
-
-    /**
-     * Print " -> $msg1 $msg2" to TTY targets only
-     *
-     * @param string $msg1
-     * @param string|null $msg2
-     */
-    public static function logProgress(string $msg1, string $msg2 = null,
-        Throwable $ex = null)
-    {
-        self::write(
-            ConsoleLevel::INFO,
-            $msg1,
-            $msg2,
-            " -> ",
-            "",
-            ConsoleColour::YELLOW,
-            null,
-            $ex,
-            true
-        );
-    }
-
-    /**
-     * Print "==> $msg1 $msg2"
-     *
-     * @param string $msg1
-     * @param string|null $msg2
-     */
-    public static function info(string $msg1, string $msg2 = null, Throwable $ex = null)
-    {
-        self::write(
-            ConsoleLevel::NOTICE,
-            $msg1,
-            $msg2,
-            "==> ",
-            ConsoleColour::BOLD,
-            ConsoleColour::CYAN,
-            null,
-            $ex
-        );
-    }
-
-    /**
-     * Print " :: $msg1 $msg2"
-     *
-     * @param string $msg1
-     * @param string|null $msg2
-     */
-    public static function warn(string $msg1, string $msg2 = null, Throwable $ex = null)
-    {
-        self::$Warnings++;
-        self::write(
-            ConsoleLevel::WARNING,
-            $msg1,
-            $msg2,
-            "  ! ",
-            ConsoleColour::YELLOW . ConsoleColour::BOLD,
-            "",
-            ConsoleColour::YELLOW . ConsoleColour::BOLD,
-            $ex
-        );
-    }
-
-    /**
-     * Print " !! $msg1 $msg2"
-     *
-     * @param string $msg1
-     * @param string|null $msg2
-     */
-    public static function error(string $msg1, string $msg2 = null, Throwable $ex = null)
-    {
-        self::$Errors++;
-        self::write(
-            ConsoleLevel::ERROR,
-            $msg1,
-            $msg2,
-            " !! ",
-            ConsoleColour::RED . ConsoleColour::BOLD,
-            "",
-            ConsoleColour::RED . ConsoleColour::BOLD,
-            $ex
-        );
-    }
-
-    public static function exception(Throwable $exception, bool $willQuit = false)
-    {
-        $msg2 = "";
-        $ex   = $exception;
-        $i    = 0;
-
-        do
-        {
-            $msg2 .= (($i ? "\nCaused by __" . get_class($ex) . "__: " : "") .
-                sprintf("__[[__%s__]]__,, in %s:%d,,", $ex->getMessage(), $ex->getFile(), $ex->getLine()));
-            $ex = $ex->getPrevious();
-            $i++;
-        }
-        while ($ex);
-
-        // If this is the first and only call to an output function before the
-        // running script succumbs to $exception, don't risk adding filesystem
-        // errors to the mix
-        if ($willQuit && !self::$TargetsChecked)
-        {
-            self::$AutomaticLogTarget = false;
-        }
-
-        self::error("Uncaught __" . get_class($exception) . "__:", $msg2, $exception);
-        self::write(
-            ConsoleLevel::DEBUG,
-            "__Stack trace:__",
-            "__[[__" . $exception->getTraceAsString() . "__]]__",
-            "--- ",
-            ConsoleColour::DIM,
-            ConsoleColour::DIM,
-            null,
-            $exception
-        );
-    }
-
-    /**
-     * Print "--- {CALLER} $msg1 $msg2" unless already printed
-     *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @param int $depth
-     */
-    public static function debugOnce(string $msg1, string $msg2 = null, Throwable $ex = null, int $depth = 0)
-    {
-        if (!self::checkLoggedOnce(__METHOD__, $msg1, $msg2))
-        {
-            self::debug($msg1, $msg2, $ex, $depth + 1);
-        }
-    }
-
-    /**
-     * Print " -> $msg1 $msg2" unless already printed
-     *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     */
-    public static function logOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
-    {
-        if (!self::checkLoggedOnce(__METHOD__, $msg1, $msg2))
-        {
-            self::log($msg1, $msg2, $ex);
-        }
-    }
-
-    /**
-     * Print "==> $msg1 $msg2" unless already printed
-     *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     */
-    public static function infoOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
-    {
-        if (!self::checkLoggedOnce(__METHOD__, $msg1, $msg2))
-        {
-            self::info($msg1, $msg2, $ex);
-        }
-    }
-
-    /**
-     * Print " :: $msg1 $msg2" unless already printed
-     *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     */
-    public static function warnOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
-    {
-        if (!self::checkLoggedOnce(__METHOD__, $msg1, $msg2))
-        {
-            self::warn($msg1, $msg2, $ex);
-        }
-    }
-
-    /**
-     * Print " !! $msg1 $msg2" unless already printed
-     *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     */
-    public static function errorOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
-    {
-        if (!self::checkLoggedOnce(__METHOD__, $msg1, $msg2))
-        {
-            self::error($msg1, $msg2, $ex);
-        }
-    }
-
-    public static function getWarnings(): int
-    {
-        return self::$Warnings;
-    }
-
-    public static function getErrors(): int
-    {
-        return self::$Errors;
-    }
-
-    public static function getSummary($successText = " without errors", bool $reset = true): string
-    {
-        if (self::$Warnings + self::$Errors)
-        {
-            $summary = " with " . Convert::numberToNoun(self::$Errors, "error", null, true);
-
-            if (self::$Warnings)
-            {
-                $summary .= " and " . Convert::numberToNoun(self::$Warnings, "warning", null, true);
-            }
-
-            if ($reset)
-            {
-                self::$Warnings = self::$Errors = 0;
-            }
-
-            return $summary;
-        }
-        else
-        {
-            return $successText;
-        }
+        self::registerTarget($target);
     }
 }
 

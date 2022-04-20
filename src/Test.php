@@ -99,29 +99,5 @@ class Test
         return is_array($value) &&
             (empty($value) ? $allowEmpty : !self::isAssociativeArray($value));
     }
-
-    /**
-     * Return true if a stream is backed by the same resource as another
-     *
-     * @param resource $value
-     * @param resource $stream
-     * @return bool
-     */
-    public static function isSameStream($value, $stream): bool
-    {
-        try
-        {
-            $meta       = stream_get_meta_data($value);
-            $streamMeta = stream_get_meta_data($stream);
-        }
-        catch (Exception $ex)
-        {
-            unset($ex);
-
-            return false;
-        }
-
-        return $streamMeta['uri'] === $meta['uri'];
-    }
 }
 

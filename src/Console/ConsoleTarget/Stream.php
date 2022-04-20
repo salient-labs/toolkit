@@ -6,10 +6,8 @@ namespace Lkrms\Console\ConsoleTarget;
 
 use DateTime;
 use DateTimeZone;
-use Lkrms\Console\ConsoleColour;
-use Lkrms\Console\ConsoleLevel;
+use Lkrms\Console\ConsoleLevels;
 use Lkrms\File;
-use Lkrms\Test;
 use RuntimeException;
 
 /**
@@ -19,10 +17,13 @@ use RuntimeException;
  */
 class Stream extends \Lkrms\Console\ConsoleTarget
 {
+    /**
+     * @var resource
+     */
     private $Stream;
 
     /**
-     * @var array
+     * @var int[]
      */
     private $Levels;
 
@@ -44,21 +45,6 @@ class Stream extends \Lkrms\Console\ConsoleTarget
     /**
      * @var bool
      */
-    private $AddColour;
-
-    /**
-     * @var string
-     */
-    private $Path;
-
-    /**
-     * @var bool
-     */
-    private $IsTty;
-
-    /**
-     * @var bool
-     */
     private $IsStdout;
 
     /**
@@ -67,36 +53,42 @@ class Stream extends \Lkrms\Console\ConsoleTarget
     private $IsStderr;
 
     /**
+     * @var bool
+     */
+    private $IsTty;
+
+    /**
+     * @var string
+     */
+    private $Path;
+
+    /**
      * Use an open stream as a console output target
      *
-     * @param resource      $stream
-     * @param array         $levels
-     * @param bool|null     $addColour      If `null`, colour will not be added unless `$stream` is a TTY
-     * @param bool|null     $addTimestamp   If `null`, timestamps will be added unless `$stream` is a TTY
-     * @param string|null   $timestamp      Default: `[d M H:i:s.uO] `
-     * @param string|null   $timezone       Default: as per `date_default_timezone_set` or INI setting `date.timezone`
+     * @param resource $stream
+     * @param int[] $levels
+     * @param bool|null $addTimestamp If `null`, timestamps will be added unless
+     * `$stream` is a TTY
+     * @param string|null $timestamp Default: `[d M H:i:s.uO] `
+     * @param string|null $timezone Default: as per `date_default_timezone_set`
+     * or INI setting `date.timezone`
      */
-    public function __construct($stream, array $levels = [
-        ConsoleLevel::EMERGENCY,
-        ConsoleLevel::ALERT,
-        ConsoleLevel::CRITICAL,
-        ConsoleLevel::ERROR,
-        ConsoleLevel::WARNING,
-        ConsoleLevel::NOTICE,
-        ConsoleLevel::INFO,
-        ConsoleLevel::DEBUG
-    ], bool $addColour = null, bool $addTimestamp = null, string $timestamp = null, string $timezone = null)
+    public function __construct(
+        $stream,
+        array $levels      = ConsoleLevels::ALL,
+        bool $addTimestamp = null,
+        string $timestamp  = null,
+        string $timezone   = null
+    )
     {
         stream_set_write_buffer($stream, 0);
 
         $this->Stream       = $stream;
         $this->Levels       = $levels;
+        $this->IsStdout     = File::getStreamUri($stream) == "php://stdout";
+        $this->IsStderr     = File::getStreamUri($stream) == "php://stderr";
         $this->IsTty        = stream_isatty($stream);
-        $this->AddColour    = !is_null($addColour) ? $addColour : $this->IsTty;
         $this->AddTimestamp = !is_null($addTimestamp) ? $addTimestamp : !$this->IsTty;
-
-        $this->IsStdout = Test::isSameStream($stream, STDOUT);
-        $this->IsStderr = Test::isSameStream($stream, STDERR);
 
         if (!is_null($timestamp))
         {
@@ -109,11 +101,6 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         }
     }
 
-    public function isTty(): bool
-    {
-        return $this->IsTty;
-    }
-
     public function isStdout(): bool
     {
         return $this->IsStdout;
@@ -124,11 +111,16 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         return $this->IsStderr;
     }
 
-    public function reopen(string $path = null): void
+    public function isTty(): bool
+    {
+        return $this->IsTty;
+    }
+
+    public function reopen(string $path = null)
     {
         if (!$this->Path)
         {
-            throw new RuntimeException("Stream object not created by Stream::fromPath()");
+            throw new RuntimeException("Stream not created by Stream::fromPath()");
         }
 
         $path = $path ?: $this->Path;
@@ -142,26 +134,35 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         $this->Path   = $path;
     }
 
-    public static function fromPath(string $path, array $levels = [
-        ConsoleLevel::EMERGENCY,
-        ConsoleLevel::ALERT,
-        ConsoleLevel::CRITICAL,
-        ConsoleLevel::ERROR,
-        ConsoleLevel::WARNING,
-        ConsoleLevel::NOTICE,
-        ConsoleLevel::INFO,
-        ConsoleLevel::DEBUG
-    ], bool $addColour = null, bool $addTimestamp = null, string $timestamp = null, string $timezone = null): Stream
+    /**
+     * Open a file in append mode and return a console output target for it
+     *
+     * @param string $path
+     * @param int[] $levels
+     * @param bool|null $addTimestamp If `null`, timestamps will be added unless
+     * `$stream` is a TTY
+     * @param string|null $timestamp Default: `[d M H:i:s.uO] `
+     * @param string|null $timezone Default: as per `date_default_timezone_set`
+     * or INI setting `date.timezone`
+     * @return Stream
+     */
+    public static function fromPath(
+        string $path,
+        array $levels      = ConsoleLevels::ALL,
+        bool $addTimestamp = null,
+        string $timestamp  = null,
+        string $timezone   = null
+    ): Stream
     {
         if (!File::maybeCreate($path, 0600) || ($stream = fopen($path, "a")) === false)
         {
             throw new RuntimeException("Could not open $path");
         }
 
-        $_this       = new Stream($stream, $levels, $addColour, $addTimestamp, $timestamp, $timezone);
-        $_this->Path = $path;
+        $stream       = new Stream($stream, $levels, $addTimestamp, $timestamp, $timezone);
+        $stream->Path = $path;
 
-        return $_this;
+        return $stream;
     }
 
     protected function writeToTarget(int $level, string $message, array $context)
@@ -180,24 +181,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         }
     }
 
-    public function setPrefix(?string $prefix): void
-    {
-        if ($prefix && $this->AddColour)
-        {
-            parent::setPrefix(ConsoleColour::DIM . $prefix . ConsoleColour::UNDIM);
-        }
-        else
-        {
-            parent::setPrefix($prefix);
-        }
-    }
-
-    public function addColour(): bool
-    {
-        return $this->AddColour;
-    }
-
-    public function path(): string
+    public function getPath(): string
     {
         return $this->Path;
     }

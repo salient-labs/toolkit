@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 /**
+ * Base class for console targets
  *
  * @package Lkrms
  */
 abstract class ConsoleTarget
 {
+    /**
+     * @var string
+     */
     private $Prefix;
 
     abstract protected function writeToTarget(int $level, string $message, array $context);
 
-    public function write($message, array $context = [], int $level = ConsoleLevel::INFO): void
+    final public function write($message, array $context = [], int $level = ConsoleLevel::INFO)
     {
         $this->writeToTarget(
             $level,
@@ -25,9 +29,16 @@ abstract class ConsoleTarget
         );
     }
 
-    public function setPrefix(?string $prefix): void
+    final public function setPrefix(?string $prefix)
     {
-        $this->Prefix = $prefix;
+        if ($prefix && $this->supportsColour())
+        {
+            $this->Prefix = ConsoleColour::DIM . $prefix . ConsoleColour::UNDIM;
+        }
+        else
+        {
+            $this->Prefix = $prefix;
+        }
     }
 
     public function isStdout(): bool
@@ -43,6 +54,11 @@ abstract class ConsoleTarget
     public function isTty(): bool
     {
         return false;
+    }
+
+    public function supportsColour(): bool
+    {
+        return $this->isTty();
     }
 }
 

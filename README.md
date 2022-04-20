@@ -46,8 +46,7 @@ used:
 ## Using `Console` for terminal output and logging
 
 > You don't have to use `Lkrms\Console` for message logging, but `lkrms/util`
-> uses it internally, so becoming familiar with its default behaviour is
-> recommended.
+> uses it internally, so it's worth knowing its default behaviour.
 
 To make it easier to create readable terminal output and log entries, the
 [`Lkrms\Console\Console`][Console.php] class provides:
@@ -61,8 +60,8 @@ To make it easier to create readable terminal output and log entries, the
 
 ### Default targets
 
-If no output targets[^targets] are registered via `Console::addTarget()` and PHP
-is running on the command line:
+If no output targets[^targets] are registered via `Console::registerTarget()`
+and PHP is running on the command line:
 
 - Warnings and errors are written to `STDERR`
 - Informational messages are written to `STDOUT`
@@ -72,12 +71,12 @@ Similarly, if no log targets are registered:
 
 - A temporary log file based on the name of the running script is created at:
   ```
-  {sys_get_temp_dir()}/<basename>-<realpath_hash>-<user_id>.log
+  {TMPDIR}/<basename>-<realpath_hash>-<user_id>.log
   ```
 - Warnings, errors, informational messages and debug messages are written to the
   log file
 
-This can be disabled by calling `Console::disableDefaultLogTarget()` while
+This can be disabled by calling `Console::disableDefaultOutputLog()` while
 bootstrapping your app.
 
 ### Output methods
@@ -86,11 +85,11 @@ bootstrapping your app.
 | ----------------- | --------------- | -------------- | --------------------- |
 | `error[Once]()`   | `ERROR` = `3`   | ` !! `         | `STDERR`              |
 | `warn[Once]()`    | `WARNING` = `4` | `  ! `         | `STDERR`              |
-| `group()`[^group] | `NOTICE` = `5`  | `>>> `         | `STDOUT`              |
 | `info[Once]()`    | `NOTICE` = `5`  | `==> `         | `STDOUT`              |
 | `log[Once]()`     | `INFO` = `6`    | ` -> `         | `STDOUT`              |
-| `logProgress()`   | `INFO` = `6`    | ` -> `         | `STDOUT`              |
 | `debug[Once]()`   | `DEBUG` = `7`   | `--- `         | none                  |
+| `group()`[^group] | `NOTICE` = `5`  | `>>> `         | `STDOUT`              |
+| `logProgress()`   | `INFO` = `6`    | ` -> `         | `STDOUT`              |
 
 [^group]: `Console::group()` adds a level of indentation to all `Console` output
     until `Console::groupEnd()` is called.

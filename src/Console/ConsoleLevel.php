@@ -8,12 +8,14 @@ use Psr\Log\LogLevel;
 use UnexpectedValueException;
 
 /**
+ * Enumerates console message levels
+ *
+ * Constants have the same values as their syslog / journalctl counterparts.
  *
  * @package Lkrms
  */
-class ConsoleLevel
+abstract class ConsoleLevel
 {
-    // Values are the same as syslog/journalctl
     public const EMERGENCY = 0;
 
     public const ALERT = 1;
@@ -30,46 +32,25 @@ class ConsoleLevel
 
     public const DEBUG = 7;
 
+    private const LOG_LEVEL_MAP = [
+        self::EMERGENCY => LogLevel::EMERGENCY,
+        self::ALERT     => LogLevel::ALERT,
+        self::CRITICAL  => LogLevel::CRITICAL,
+        self::ERROR     => LogLevel::ERROR,
+        self::WARNING   => LogLevel::WARNING,
+        self::NOTICE    => LogLevel::NOTICE,
+        self::INFO      => LogLevel::INFO,
+        self::DEBUG     => LogLevel::DEBUG,
+    ];
+
     public static function toPsrLogLevel(int $level): string
     {
-        switch ($level)
+        if (is_null($logLevel = self::LOG_LEVEL_MAP[$level] ?? null))
         {
-            case self::EMERGENCY:
-
-                return LogLevel::EMERGENCY;
-
-            case self::ALERT:
-
-                return LogLevel::ALERT;
-
-            case self::CRITICAL:
-
-                return LogLevel::CRITICAL;
-
-            case self::ERROR:
-
-                return LogLevel::ERROR;
-
-            case self::WARNING:
-
-                return LogLevel::WARNING;
-
-            case self::NOTICE:
-
-                return LogLevel::NOTICE;
-
-            case self::INFO:
-
-                return LogLevel::INFO;
-
-            case self::DEBUG:
-
-                return LogLevel::DEBUG;
-
-            default:
-
-                throw new UnexpectedValueException("Invalid level: $level");
+            throw new UnexpectedValueException("Invalid level: $level");
         }
+
+        return $logLevel;
     }
 }
 
