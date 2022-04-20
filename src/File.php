@@ -88,6 +88,23 @@ class File
     }
 
     /**
+     * Get the URI or filename associated with a stream
+     *
+     * @param resource $stream Any stream created by `fopen()`, `fsockopen()`,
+     * `pfsockopen()` or `stream_socket_client()`.
+     * @return null|string `null` if `$stream` is not an open stream resource.
+     */
+    public static function getStreamUri($stream): ?string
+    {
+        if (is_resource($stream) && get_resource_type($stream) == "stream")
+        {
+            return stream_get_meta_data($stream)["uri"];
+        }
+
+        return null;
+    }
+
+    /**
      * Convert an array to CSV
      *
      * @param array $data An array of arrays (rows) to convert to CSV.

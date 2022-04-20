@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\Err;
+use Lkrms\File;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Err::handleErrors();
+
+$file = fopen(__FILE__, "r");
+$url  = fopen("https://1.1.1.1/", "r");
+
+print_r([
+    "__FILE__" => File::getStreamUri($file),
+    "1.1.1.1"  => File::getStreamUri($url),
+    "STDIN"    => File::getStreamUri(STDIN),
+    "STDOUT"   => File::getStreamUri(STDOUT),
+    "STDERR"   => File::getStreamUri(STDERR),
+]);
