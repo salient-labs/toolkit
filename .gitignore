@@ -1,6 +1,10 @@
 /build/
 /vendor/
 composer.phar
-phpdoc.xml
 *.generated.*
 *.log
+
+phpdoc.xml
+
+phpunit.xml
+.phpunit.*

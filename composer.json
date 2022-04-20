@@ -12,7 +12,8 @@
     },
     "require-dev": {
         "analog/analog": "^1.0",
-        "phpstan/phpstan": "^1.5"
+        "phpstan/phpstan": "^1.5",
+        "phpunit/phpunit": "^9"
     },
     "suggest": {
         "analog/analog": "Log console output to Analog"
