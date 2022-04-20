@@ -7,9 +7,9 @@ namespace Lkrms\Console;
 use Lkrms\Console\ConsoleTarget\Stream;
 use Lkrms\Convert;
 use Lkrms\Env;
-use Lkrms\Err;
 use Lkrms\File;
 use Lkrms\Generate;
+use Lkrms\Runtime;
 use RuntimeException;
 use Throwable;
 
@@ -400,13 +400,13 @@ class Console
      * @param string $msg1
      * @param string|null $msg2
      * @param Throwable|null $ex
-     * @param int $depth Passed to {@see Err::getCaller()}. To print your
-     * caller's name instead of your own, set `$depth` = 2.
+     * @param int $depth Passed to {@see Runtime::getCaller()}. To print your
+     * caller's name instead of your own, set `$depth` = 1.
      */
     public static function debug(string $msg1, string $msg2 = null,
         Throwable $ex = null, int $depth = 0)
     {
-        $caller = Err::getCaller($depth);
+        $caller = implode("", Runtime::getCaller($depth));
         self::write(
             ConsoleLevel::DEBUG,
             "{{$caller}} __" . $msg1 . "__",
