@@ -72,7 +72,7 @@ class SyncOperation
 
     public static function toName(int $operation): string
     {
-        if (is_null($name = self::NAME_MAP [$operation] ?? null))
+        if (is_null($name = self::NAME_MAP[$operation] ?? null))
         {
             throw new UnexpectedValueException("Invalid SyncOperation: $operation");
         }

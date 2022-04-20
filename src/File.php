@@ -128,7 +128,7 @@ class File
 
         foreach ($data as $row)
         {
-            foreach ($row as & $value)
+            foreach ($row as &$value)
             {
                 if (is_null($value))
                 {

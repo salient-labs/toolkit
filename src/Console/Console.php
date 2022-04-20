@@ -355,7 +355,7 @@ class Console
         }
     }
 
-    public static function printTo(string $string, ConsoleTarget...$targets)
+    public static function printTo(string $string, ConsoleTarget ...$targets)
     {
         self::print($string, null, ConsoleLevel::INFO, [], false, false, $targets);
     }

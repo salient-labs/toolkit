@@ -133,8 +133,7 @@ SQL
 
             if (version_compare((SQLite3::version())["versionString"], "3.24") >= 0)
             {
-                $sql[] =
-<<<SQL
+                $sql[] = <<<SQL
 INSERT INTO _cache_item(item_key, item_value, expires_at)
 VALUES (
     :item_key,
@@ -154,15 +153,13 @@ SQL;
                 // SQLite 3.24 was only released in June 2018 (after Ubuntu
                 // 18.04), so it isn't ubiquitous enough to get away with no
                 // UPSERT shim
-                $sql[] =
-<<<SQL
+                $sql[] = <<<SQL
 UPDATE _cache_item
 SET item_value = :item_value,
   expires_at = datetime(:expires_at, 'unixepoch')
 WHERE item_key = :item_key
 SQL;
-                $sql[] =
-<<<SQL
+                $sql[] = <<<SQL
 INSERT OR IGNORE INTO _cache_item(item_key, item_value, expires_at)
 VALUES (
     :item_key,

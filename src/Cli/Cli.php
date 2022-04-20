@@ -147,8 +147,7 @@ abstract class Cli
 
         $synopses = implode("\n  ", $synopses);
 
-        return
-<<<EOF
+        return <<<EOF
 ___NAME___
   __{$name}__
 

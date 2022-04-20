@@ -22,12 +22,12 @@ class SyncEntityFuzzyResolver extends SyncEntityResolver
      * Inexpensive, but string length cannot exceed 255 characters, and
      * similar_text() may match substrings better
      */
-    const ALGORITHM_LEVENSHTEIN = 0;
+    public const ALGORITHM_LEVENSHTEIN = 0;
 
     /**
      * Expensive, but strings of any length can be compared
      */
-    const ALGORITHM_SIMILAR_TEXT = 1;
+    public const ALGORITHM_SIMILAR_TEXT = 1;
 
     /**
      * @var string|null
