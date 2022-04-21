@@ -50,4 +50,3 @@ class Sql
         $where[] = "$field IN (" . implode(",", $expr) . ")";
     }
 }
-

@@ -44,4 +44,3 @@ class CurlerFile
         return new CURLFile($this->Filename, $this->MimeType, $this->PostFilename);
     }
 }
-

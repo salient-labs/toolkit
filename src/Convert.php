@@ -459,4 +459,3 @@ abstract class Convert
         return self::_dataToQuery($data, $forceNumericKeys);
     }
 }
-

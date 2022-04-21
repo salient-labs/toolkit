@@ -18,4 +18,3 @@ class Analog extends \Lkrms\Console\ConsoleTarget
         \Analog\Analog::log($message, $level);
     }
 }
-

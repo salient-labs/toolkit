@@ -136,8 +136,7 @@ abstract class Ioc
         array $constructParams = null,
         array $shareInstances  = null,
         array $customRule      = []
-    )
-    {
+    ) {
         $rule = array_merge(self::$DefaultRule, $customRule);
 
         if (!is_null($instanceOf))
@@ -179,8 +178,7 @@ abstract class Ioc
         array $constructParams = null,
         array $shareInstances  = null,
         array $customRule      = []
-    )
-    {
+    ) {
         $customRule["shared"] = true;
 
         self::register(
@@ -209,4 +207,3 @@ abstract class Ioc
         ]);
     }
 }
-

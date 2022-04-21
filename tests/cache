@@ -39,4 +39,3 @@ foreach ([1, 2] as $seconds)
         2
     ));
 }
-

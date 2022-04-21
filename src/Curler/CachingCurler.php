@@ -73,4 +73,3 @@ class CachingCurler extends Curler
         return parent::execute($close);
     }
 }
-

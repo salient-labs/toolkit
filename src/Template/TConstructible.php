@@ -67,8 +67,7 @@ trait TConstructible
         array $keyMap,
         bool $sameKeys = false,
         int $skip      = Closure::SKIP_MISSING | Closure::SKIP_UNMAPPED
-    )
-    {
+    ) {
         $callback = Closure::getArrayMapper($keyMap, $sameKeys, $skip);
 
         return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($data, $callback);
@@ -167,4 +166,3 @@ trait TConstructible
         return $list;
     }
 }
-

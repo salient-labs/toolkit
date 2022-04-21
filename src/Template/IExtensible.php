@@ -22,4 +22,3 @@ interface IExtensible extends IGettable, ISettable, IResolvable
 
     public function getMetaProperties(): array;
 }
-

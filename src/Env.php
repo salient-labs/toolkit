@@ -239,4 +239,3 @@ class Env
         return (bool)self::get("DEBUG", "");
     }
 }
-

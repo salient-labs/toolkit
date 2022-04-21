@@ -29,4 +29,3 @@ class Logger extends \Lkrms\Console\ConsoleTarget
         $this->Logger->log(ConsoleLevel::toPsrLogLevel($level), $message, $context);
     }
 }
-

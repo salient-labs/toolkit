@@ -111,4 +111,3 @@ trait TClassCache
         return $item;
     }
 }
-

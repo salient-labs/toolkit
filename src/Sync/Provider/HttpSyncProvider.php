@@ -100,4 +100,3 @@ abstract class HttpSyncProvider extends SyncProvider
         return $curler;
     }
 }
-

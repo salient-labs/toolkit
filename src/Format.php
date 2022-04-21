@@ -112,4 +112,3 @@ class Format
         return $l . $from->format($fromFormat) . "$r$delimiter$l" . $to->format($toFormat) . $r;
     }
 }
-

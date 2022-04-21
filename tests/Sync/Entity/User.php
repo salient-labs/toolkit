@@ -50,4 +50,3 @@ class User extends \Lkrms\Sync\SyncEntity
      */
     public $Company;
 }
-

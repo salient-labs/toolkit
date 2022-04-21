@@ -133,4 +133,3 @@ abstract class SyncProvider implements ISyncProvider
         return Convert::toList($this->getListFilter($args)["id"] ?? []);
     }
 }
-

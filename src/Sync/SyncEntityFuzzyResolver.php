@@ -68,8 +68,7 @@ class SyncEntityFuzzyResolver extends SyncEntityResolver
         ?string $weightField,
         int $algorithm = null,
         float $uncertaintyThreshold = null
-    )
-    {
+    ) {
         parent::__construct($entityProvider, $nameField);
         $this->WeightField          = $weightField;
         $this->Algorithm            = $algorithm;
@@ -173,4 +172,3 @@ class SyncEntityFuzzyResolver extends SyncEntityResolver
         return $match[0] ?? null;
     }
 }
-

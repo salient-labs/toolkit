@@ -54,4 +54,3 @@ trait TSettable
         $this->setProperty("unset", $name);
     }
 }
-

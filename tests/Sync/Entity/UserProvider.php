@@ -35,4 +35,3 @@ interface UserProvider
      */
     public function getUsers(): array;
 }
-

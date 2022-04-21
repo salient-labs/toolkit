@@ -18,4 +18,3 @@ interface IGettable extends IAccessible
 
     public function __isset(string $name): bool;
 }
-

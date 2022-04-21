@@ -128,4 +128,3 @@ class Generate
         return max(similar_text($string1, $string2), similar_text($string2, $string1)) / max(strlen($string1), strlen($string2));
     }
 }
-

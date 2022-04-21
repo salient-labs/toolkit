@@ -61,4 +61,3 @@ trait TExtensible
         return array_combine($names, $this->MetaProperties);
     }
 }
-

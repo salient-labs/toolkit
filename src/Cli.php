@@ -13,4 +13,3 @@ if (!class_alias("\Lkrms\Cli\Cli", "\Lkrms\Cli"))
     {
     }
 }
-

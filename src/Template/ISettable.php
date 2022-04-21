@@ -18,4 +18,3 @@ interface ISettable extends IAccessible
 
     public function __unset(string $name): void;
 }
-

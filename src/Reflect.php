@@ -146,4 +146,3 @@ class Reflect
         return $class instanceof ReflectionClass ? $class : new ReflectionClass($class);
     }
 }
-

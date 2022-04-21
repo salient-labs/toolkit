@@ -121,8 +121,7 @@ class File
         string $filename  = null,
         bool $headerRow   = true,
         string $nullValue = null
-    )
-    {
+    ) {
         $return = false;
 
         if (is_null($filename))
@@ -265,4 +264,3 @@ class File
         return null;
     }
 }
-

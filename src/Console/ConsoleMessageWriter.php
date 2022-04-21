@@ -389,4 +389,3 @@ abstract class ConsoleMessageWriter
         );
     }
 }
-

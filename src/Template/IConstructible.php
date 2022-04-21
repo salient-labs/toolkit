@@ -58,4 +58,3 @@ interface IConstructible
      */
     public static function listFromMappedArrays(array $list, array $keyMap): array;
 }
-

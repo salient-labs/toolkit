@@ -30,4 +30,3 @@ class Post extends \Lkrms\Sync\SyncEntity
      */
     public $User;
 }
-

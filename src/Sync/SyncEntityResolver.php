@@ -31,8 +31,7 @@ class SyncEntityResolver
     public function __construct(
         SyncEntityProvider $entityProvider,
         string $nameField
-    )
-    {
+    ) {
         $this->EntityProvider = $entityProvider;
         $this->NameField      = $nameField;
     }
@@ -59,4 +58,3 @@ class SyncEntityResolver
         }
     }
 }
-

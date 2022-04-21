@@ -27,4 +27,3 @@ class CliHandler extends PlainTextHandler
         return Handler::QUIT;
     }
 }
-

@@ -33,4 +33,3 @@ trait TSingleton
         return (self::$Singletons[static::class] ?? null) ?: new static();
     }
 }
-

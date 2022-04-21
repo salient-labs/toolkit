@@ -33,4 +33,3 @@ class GetCallerClass
         return static function ($depth = 0) { return self::getCallerViaStaticMethod($depth); };
     }
 }
-

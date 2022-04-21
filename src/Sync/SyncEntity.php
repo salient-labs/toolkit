@@ -242,8 +242,7 @@ abstract class SyncEntity implements IConstructible, IExtensible, IClassCache, J
         ?SyncEntity $parentEntity,
         array & $parentArray,
         $parentKey
-    )
-    {
+    ) {
         // Rename $node to `<parent_key>_id` or similar if:
         // - its parent was a SyncEntity ($parentEntity)
         // - $parentEntity->getSerializedIdKey($parentKey) returns a new name
@@ -271,8 +270,7 @@ abstract class SyncEntity implements IConstructible, IExtensible, IClassCache, J
         SyncEntity $parentEntity = null,
         array & $parentArray     = null,
         $parentKey               = null
-    )
-    {
+    ) {
         $entityNode = null;
 
         if ($node instanceof SyncEntity)
@@ -381,4 +379,3 @@ abstract class SyncEntity implements IConstructible, IExtensible, IClassCache, J
         return $this->toArray();
     }
 }
-

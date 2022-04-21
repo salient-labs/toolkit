@@ -17,19 +17,12 @@ use UnexpectedValueException;
 abstract class ConsoleLevel
 {
     public const EMERGENCY = 0;
-
     public const ALERT = 1;
-
     public const CRITICAL = 2;
-
     public const ERROR = 3;
-
     public const WARNING = 4;
-
     public const NOTICE = 5;
-
     public const INFO = 6;
-
     public const DEBUG = 7;
 
     private const LOG_LEVEL_MAP = [
@@ -53,4 +46,3 @@ abstract class ConsoleLevel
         return $logLevel;
     }
 }
-

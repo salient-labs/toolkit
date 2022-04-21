@@ -15,4 +15,3 @@ interface ISyncProvider
 {
     public function getBackendHash(): string;
 }
-

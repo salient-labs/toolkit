@@ -604,4 +604,3 @@ class PropertyResolver
         return in_array($property, $this->SettableProperties);
     }
 }
-

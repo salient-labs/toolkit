@@ -54,4 +54,3 @@ trait TGettable
         return (bool)$this->getProperty("isset", $name);
     }
 }
-

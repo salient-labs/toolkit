@@ -97,4 +97,3 @@ class TestOptions extends CliCommand
         var_dump($args);
     }
 }
-

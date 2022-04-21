@@ -151,4 +151,3 @@ abstract class Closure
         return $closure;
     }
 }
-

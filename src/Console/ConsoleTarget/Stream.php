@@ -79,8 +79,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         bool $addTimestamp = null,
         string $timestamp  = null,
         string $timezone   = null
-    )
-    {
+    ) {
         stream_set_write_buffer($stream, 0);
 
         $this->Stream       = $stream;
@@ -186,4 +185,3 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         return $this->Path;
     }
 }
-

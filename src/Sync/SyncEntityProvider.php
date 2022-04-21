@@ -143,8 +143,7 @@ class SyncEntityProvider
         bool $idParam,
         bool $paramRequired,
         ...$params
-    )
-    {
+    ) {
         if (is_null($callback = $this->Callbacks[$operation] ?? null))
         {
             if ($providerMethod = $this->checkProviderMethod(
@@ -378,4 +377,3 @@ class SyncEntityProvider
         );
     }
 }
-

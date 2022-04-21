@@ -70,4 +70,3 @@ class Err
         return implode("", Runtime::getCaller($depth + 1));
     }
 }
-

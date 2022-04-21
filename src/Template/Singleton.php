@@ -33,4 +33,3 @@ abstract class Singleton
         return (self::$Singletons[static::class] ?? null) ?: new static();
     }
 }
-

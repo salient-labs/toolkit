@@ -80,4 +80,3 @@ class SyncOperation
         return $name;
     }
 }
-

@@ -163,8 +163,7 @@ abstract class Console extends ConsoleMessageWriter
         string $prefix,
         Throwable $ex = null,
         bool $ttyOnly = false
-    )
-    {
+    ) {
         list ($clr1, $clr2, $clrP) = self::COLOUR_MAP[$level];
 
         $clr1    = !ConsoleText::hasBold($msg1) ? $clr1 : str_replace(ConsoleColour::BOLD, "", $clr1);
@@ -233,8 +232,7 @@ abstract class Console extends ConsoleMessageWriter
         array $context,
         bool $ttyOnly,
         array $targets = null
-    )
-    {
+    ) {
         if (is_null($tty))
         {
             $tty = $plain;
@@ -267,8 +265,7 @@ abstract class Console extends ConsoleMessageWriter
     public static function printTo(
         string $msg,
         ConsoleTarget ...$targets
-    )
-    {
+    ) {
         $ttyMsg = ConsoleText::formatColour($msg);
         $msg    = ConsoleText::formatPlain($msg);
 
@@ -291,4 +288,3 @@ abstract class Console extends ConsoleMessageWriter
         self::registerTarget($target);
     }
 }
-

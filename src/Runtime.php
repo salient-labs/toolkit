@@ -12,7 +12,6 @@ namespace Lkrms;
 abstract class Runtime
 {
     public const RUNNING = 0;
-
     public const STOPPING = 1;
 
     private static $State;
@@ -145,4 +144,3 @@ abstract class Runtime
         }
     }
 }
-

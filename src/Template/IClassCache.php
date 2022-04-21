@@ -40,4 +40,3 @@ interface IClassCache
      */
     public static function getOrSetClassCache(string $itemType, callable $callback, ...$itemPath);
 }
-

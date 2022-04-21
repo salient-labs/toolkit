@@ -13,4 +13,3 @@ if (!class_alias("\Lkrms\Err\Err", "\Lkrms\Err"))
     {
     }
 }
-

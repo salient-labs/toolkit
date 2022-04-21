@@ -13,4 +13,3 @@ if (!class_alias("\Lkrms\Console\Console", "\Lkrms\Console"))
     {
     }
 }
-

@@ -13,4 +13,3 @@ if (!class_alias("\Lkrms\Curler\Curler", "\Lkrms\Curler"))
     {
     }
 }
-

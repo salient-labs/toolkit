@@ -25,4 +25,3 @@ interface IAccessible
      */
     public const ALLOW_NONE = [];
 }
-

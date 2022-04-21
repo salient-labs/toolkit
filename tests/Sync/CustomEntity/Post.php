@@ -13,4 +13,3 @@ class Post extends \Lkrms\Tests\Sync\Entity\Post
         $this->User = User::fromArray(["id" => $value]);
     }
 }
-

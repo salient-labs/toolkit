@@ -100,4 +100,3 @@ class Test
             (empty($value) ? $allowEmpty : !self::isAssociativeArray($value));
     }
 }
-

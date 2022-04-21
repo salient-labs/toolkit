@@ -39,8 +39,7 @@ class MyClass extends MyBaseClass implements MyInterface
         string $name,
         MyClass $parent,
         MyClass $altParent = null
-    )
-    {
+    ) {
         $this->Id        = $id;
         $this->AltId     = $altId;
         $this->Name      = $name;
