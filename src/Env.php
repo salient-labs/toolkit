@@ -238,24 +238,5 @@ class Env
 
         return (bool)self::get("DEBUG", "");
     }
-
-    public static function getMemoryLimit(): int
-    {
-        return Convert::sizeToBytes(ini_get('memory_limit') ?: 0);
-    }
-
-    public static function getMemoryUsagePercent($precision = 2): float
-    {
-        $limit = self::getMemoryLimit();
-
-        if ($limit <= 0)
-        {
-            return 0;
-        }
-        else
-        {
-            return round(memory_get_usage(true) * 100 / $limit, $precision);
-        }
-    }
 }
 

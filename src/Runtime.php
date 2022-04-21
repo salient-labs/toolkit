@@ -44,30 +44,32 @@ abstract class Runtime
      * sorted correctly for concatenation to a caller string. Separators are
      * added under integer keys if required.
      * - `class`
-     * - `function`
+     * - `namespace` (if the caller is a namespaced global function)
      * - `file`
+     * - `function`
      * - `line`
      *
      * The return values below, for example, would implode to:
-     * - `Lkrms\Tests\RuntimeTest::returnMethodCaller:23`
-     * - `/path/to/tests/RuntimeTest.php{closure}:32`
+     * - `Lkrms\Tests\Runtime\GetCallerClass->getCallerViaMethod:18`
+     * - `/path/to/tests/Runtime/GetCallerFile.php::{closure}:38`
      *
      * ```
      * Array
      * (
-     *     [class] => Lkrms\Tests\TestClass
-     *     [0] => ::
-     *     [function] => returnMethodCaller
+     *     [class] => Lkrms\Tests\Runtime\GetCallerClass
+     *     [0] => ->
+     *     [function] => getCallerViaMethod
      *     [1] => :
-     *     [line] => 23
+     *     [line] => 18
      * )
      *
      * Array
      * (
-     *     [file] => /path/to/tests/src/Runtime.php
+     *     [file] => /path/to/tests/Runtime/GetCallerFile.php
+     *     [0] => ::
      *     [function] => {closure}
      *     [1] => :
-     *     [line] => 32
+     *     [line] => 38
      * )
      * ```
      *
@@ -83,23 +85,29 @@ abstract class Runtime
         // 1. called them (function = ourCaller)
         // 2. used the name of their caller (function = callsOurCaller)
         //
-        // Use class and function from 2 if possible, otherwise file and line
-        // from 1
+        // Use class (or namespace) and function from 2 if possible, otherwise
+        // file and line from 1
         $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $depth + 3);
         $file   = $frames[$depth + 1]["file"] ?? null;
         $line   = $frames[$depth + 1]["line"] ?? null;
 
-        if ($frame = $frames[$depth + 2] ?? null)
+        if (($frame = $frames[$depth + 2] ?? null) &&
+            preg_match('/^(?P<namespace>.*?)(?P<function>[^\\\\]+|\{closure\})$/',
+                $frame["function"] ?? "",
+                $function))
         {
-            $isClosure = (bool)preg_match('/\{closure\}$/', $frame["function"] ?? "");
+            $class     = $frame["class"] ?? null;
+            $namespace = $class ? null : $function["namespace"] ?? null;
+            $file      = $class || $namespace ? null : $file;
 
             return array_filter([
-                "class"    => $frame["class"] ?? null,
-                0          => $frame["type"] ?? null,
-                "file"     => !($frame["class"] ?? null) ? $file : null,
-                "function" => $isClosure ? "{closure}" : ($frame["function"] ?? null),
-                1          => is_null($line) ? null : ":",
-                "line"     => $line,
+                "class"     => $class,
+                "namespace" => $namespace,
+                "file"      => $file,
+                0           => $frame["type"] ?? ($file ? "::" : null),
+                "function"  => $function["function"],
+                1           => is_null($line) ? null : ":",
+                "line"      => $line,
             ]);
         }
         elseif ($frames[$depth + 1] ?? null)
@@ -114,5 +122,27 @@ abstract class Runtime
         return [];
     }
 
+    public static function getMemoryLimit(): int
+    {
+        return Convert::sizeToBytes(ini_get("memory_limit") ?: "0");
+    }
+
+    public static function getMemoryUsage(): int
+    {
+        return memory_get_usage(true);
+    }
+
+    public static function getMemoryUsagePercent(): int
+    {
+        $limit = self::getMemoryLimit();
+        if ($limit <= 0)
+        {
+            return 0;
+        }
+        else
+        {
+            return (int)round(memory_get_usage(true) * 100 / $limit);
+        }
+    }
 }
 

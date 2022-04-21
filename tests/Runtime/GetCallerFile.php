@@ -2,17 +2,41 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Tests\Runtime;
-
-use Lkrms\Runtime;
-
-function getCaller($depth)
+namespace Lkrms\Tests\Runtime
 {
-    return Runtime::getCaller($depth);
+    use Lkrms\Runtime;
+
+    function getCaller($depth)
+    {
+        return Runtime::getCaller($depth);
+    }
+
+    function getCallerViaFunction($depth = 0)
+    {
+        return getCaller($depth);
+    }
+
+    function getFunctionCallback()
+    {
+        return function ($depth = 0) { return getCallerViaFunction($depth); };
+    }
 }
 
-function getCallerViaFunction($depth = 0)
+namespace
 {
-    return getCaller($depth);
+    use function Lkrms\Tests\Runtime\getCaller;
+
+    function Lkrms_Tests_Runtime_getCallerViaFunction($depth = 0)
+    {
+        return getCaller($depth);
+    }
+
+    function Lkrms_Tests_Runtime_getFunctionCallback()
+    {
+        return function ($depth = 0)
+        {
+            return Lkrms_Tests_Runtime_getCallerViaFunction($depth);
+        };
+    }
 }
 
