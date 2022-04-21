@@ -6,6 +6,7 @@ namespace Lkrms\Cli;
 
 use Lkrms\Assert;
 use Lkrms\Console\Console;
+use Lkrms\Exception\InvalidCliArgumentException;
 use UnexpectedValueException;
 
 /**
@@ -217,7 +218,7 @@ EOF;
                 }
                 else
                 {
-                    throw new CliInvalidArgumentException("missing or incomplete command" . ($name ? " '$name'" : ""));
+                    throw new InvalidCliArgumentException("missing or incomplete command" . ($name ? " '$name'" : ""));
                 }
             }
 
@@ -229,10 +230,10 @@ EOF;
             }
             else
             {
-                throw new CliInvalidArgumentException("no command registered at '$name'");
+                throw new InvalidCliArgumentException("no command registered at '$name'");
             }
         }
-        catch (CliInvalidArgumentException $ex)
+        catch (InvalidCliArgumentException $ex)
         {
             unset($ex);
 

@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Sync\Exception;
+namespace Lkrms\Exception;
 
 use Lkrms\Convert;
 use Lkrms\Sync\SyncOperation;
 
 /**
+ * Thrown when an unimplemented sync operation is attempted
  *
  * @package Lkrms
  */
-class SyncOperationNotImplementedException extends \Lkrms\Exception
+class SyncOperationNotImplementedException extends \Lkrms\Exception\Exception
 {
     public function __construct(string $provider, string $entity, int $operation)
     {
@@ -23,4 +24,3 @@ class SyncOperationNotImplementedException extends \Lkrms\Exception
         ));
     }
 }
-

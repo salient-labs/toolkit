@@ -7,6 +7,7 @@ namespace Lkrms\Cli;
 use Lkrms\Assert;
 use Lkrms\Console\Console;
 use Lkrms\Convert;
+use Lkrms\Exception\InvalidCliArgumentException;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -594,7 +595,7 @@ EOF;
 
         if ($this->OptionErrors)
         {
-            throw new CliInvalidArgumentException();
+            throw new InvalidCliArgumentException();
         }
 
         $this->OptionValues = $merged;

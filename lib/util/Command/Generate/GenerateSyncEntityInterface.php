@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Util\Command\Generate;
 
 use Lkrms\Cli\CliCommand;
-use Lkrms\Cli\CliInvalidArgumentException;
+use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Console\Console;
 use Lkrms\Convert;
@@ -112,12 +112,12 @@ class GenerateSyncEntityInterface extends CliCommand
 
         if (!$fqcn)
         {
-            throw new CliInvalidArgumentException("invalid class: $fqcn");
+            throw new InvalidCliArgumentException("invalid class: $fqcn");
         }
 
         if (!is_a($fqcn, SyncEntity::class, true))
         {
-            throw new CliInvalidArgumentException("not a subclass of SyncEntity: $fqcn");
+            throw new InvalidCliArgumentException("not a subclass of SyncEntity: $fqcn");
         }
 
         $plural = $fqcn::getPlural();
@@ -263,4 +263,3 @@ class GenerateSyncEntityInterface extends CliCommand
         file_put_contents($file, implode(PHP_EOL, $lines) . PHP_EOL);
     }
 }
-

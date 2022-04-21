@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Util\Command\Generate;
 
 use Lkrms\Cli\CliCommand;
-use Lkrms\Cli\CliInvalidArgumentException;
+use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Console\Console;
 use Lkrms\Convert;
@@ -117,7 +117,7 @@ class GenerateSyncEntityClass extends CliCommand
 
         if (!$fqcn)
         {
-            throw new CliInvalidArgumentException("invalid class: $fqcn");
+            throw new InvalidCliArgumentException("invalid class: $fqcn");
         }
 
         if ($providerClass = $this->getOptionValue("provider") ?: Env::get("SYNC_ENTITY_PROVIDER", ""))
@@ -126,7 +126,7 @@ class GenerateSyncEntityClass extends CliCommand
                 !(strpos($providerClass, "\\") === false && ($providerNamespace = Env::get("SYNC_PROVIDER_NAMESPACE", "")) &&
                     class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
             {
-                throw new CliInvalidArgumentException("class does not exist: $providerClass");
+                throw new InvalidCliArgumentException("class does not exist: $providerClass");
             }
 
             $provider = new $providerClass();
@@ -139,7 +139,7 @@ class GenerateSyncEntityClass extends CliCommand
             }
             else
             {
-                throw new CliInvalidArgumentException("not a subclass of HttpSyncProvider: $providerClass");
+                throw new InvalidCliArgumentException("not a subclass of HttpSyncProvider: $providerClass");
             }
         }
         elseif ($json = $this->getOptionValue("json"))
@@ -150,7 +150,7 @@ class GenerateSyncEntityClass extends CliCommand
             }
             elseif (!file_exists($json))
             {
-                throw new CliInvalidArgumentException("file not found: $json");
+                throw new InvalidCliArgumentException("file not found: $json");
             }
 
             $entity = json_decode(file_get_contents($json), true);
@@ -289,4 +289,3 @@ class GenerateSyncEntityClass extends CliCommand
         file_put_contents($file, implode(PHP_EOL, $lines) . PHP_EOL);
     }
 }
-

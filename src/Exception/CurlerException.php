@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Curler;
+namespace Lkrms\Exception;
 
+use Lkrms\Curler\Curler;
 use Lkrms\Format;
 use Throwable;
 
@@ -12,7 +13,7 @@ use Throwable;
  *
  * @package Lkrms
  */
-class CurlerException extends \Lkrms\Exception
+class CurlerException extends \Lkrms\Exception\Exception
 {
     /**
      * @var array
@@ -85,4 +86,3 @@ class CurlerException extends \Lkrms\Exception
         return $this->ResponseHeaders["status"] ?? (string)$this->ResponseCode;
     }
 }
-

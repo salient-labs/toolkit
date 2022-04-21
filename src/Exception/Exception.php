@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms;
+namespace Lkrms\Exception;
 
 use RuntimeException;
 
@@ -14,4 +14,3 @@ use RuntimeException;
 class Exception extends RuntimeException
 {
 }
-

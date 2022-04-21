@@ -9,6 +9,7 @@ use CurlMultiHandle;
 use Lkrms\Console\Console;
 use Lkrms\Convert;
 use Lkrms\Env;
+use Lkrms\Exception\CurlerException;
 use Lkrms\Test;
 use RuntimeException;
 use UnexpectedValueException;
@@ -864,4 +865,3 @@ class Curler
         return $entities;
     }
 }
-

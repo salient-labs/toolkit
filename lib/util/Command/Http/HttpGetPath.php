@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Util\Command\Http;
 
 use Lkrms\Cli\CliCommand;
-use Lkrms\Cli\CliInvalidArgumentException;
+use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Env;
 use Lkrms\Sync\Provider\HttpSyncProvider;
@@ -56,14 +56,14 @@ class HttpGetPath extends CliCommand
             !(strpos($providerClass, "\\") === false && ($providerNamespace = Env::get("SYNC_PROVIDER_NAMESPACE", "")) &&
                 class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
         {
-            throw new CliInvalidArgumentException("class does not exist: $providerClass");
+            throw new InvalidCliArgumentException("class does not exist: $providerClass");
         }
 
         $provider = new $providerClass();
 
         if (!($provider instanceof HttpSyncProvider))
         {
-            throw new CliInvalidArgumentException("not a subclass of HttpSyncProvider: $providerClass");
+            throw new InvalidCliArgumentException("not a subclass of HttpSyncProvider: $providerClass");
         }
 
         $data = $provider->getCurler($endpointPath)->getJson();
@@ -71,4 +71,3 @@ class HttpGetPath extends CliCommand
         echo json_encode($data);
     }
 }
-

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Tests\Sync\Provider;
 
 use Lkrms\Curler\CurlerHeaders;
-use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
+use Lkrms\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 use Lkrms\Sync\SyncOperation;
 use Lkrms\Tests\Sync\Entity\Post;
@@ -82,4 +82,3 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return User::listFromArrays($this->getCurler("/users")->getJson());
     }
 }
-
