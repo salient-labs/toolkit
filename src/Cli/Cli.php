@@ -16,12 +16,12 @@ use UnexpectedValueException;
 abstract class Cli
 {
     /**
-     * @var array<string,CliCommand>;
+     * @var array<string,CliCommand>
      */
     private static $Commands = [];
 
     /**
-     * @var array<string,array<string,array|CliCommand>|CliCommand>
+     * @var array<string,array|CliCommand>
      */
     private static $CommandTree = [];
 
@@ -30,28 +30,42 @@ abstract class Cli
      */
     private static $RunningCommand;
 
+    /**
+     * Return the name used to run the script
+     *
+     * @return string
+     */
     public static function getProgramName(): string
     {
         return basename($GLOBALS["argv"][0]);
     }
 
+    /**
+     * Return the CliCommand started from the command line
+     *
+     * @return null|CliCommand
+     */
     public static function getRunningCommand(): ?CliCommand
     {
         return self::$RunningCommand;
     }
 
-    public static function getCommand(string $name): ?CliCommand
-    {
-        return self::$Commands[$name] ?? null;
-    }
-
     /**
+     * Resolve an array of subcommand names to a node in the command tree
+     *
+     * Returns one of the following:
+     * - `null` if nothing has been added to the tree at `$name`
+     * - the {@see CliCommand} registered at `$name`
+     * - an array that maps subcommands of `$name` to their respective nodes
+     * - `false` if a {@see CliCommand} has been added to the tree above
+     *   `$name`, e.g. if `$name` is `["sync", "canvas", "from-sis"]` and a
+     *   command has been registered at `["sync", "canvas"]`
+     *
+     * Nodes in the command tree are either subcommand arrays (branches) or
+     * {@see CliCommand} instances (leaves).
      *
      * @param string[] $name
-     * @return array<string,array|CliCommand>|CliCommand|null|false `null` if
-     * `$name` could be added to the tree, `false` if a command has been
-     * registered above `$name`, otherwise the `CliCommand` or associative
-     * subcommand array at `$name`.
+     * @return array<string,array|CliCommand>|CliCommand|null|false
      */
     public static function getCommandTree(array $name = [])
     {
@@ -75,6 +89,7 @@ abstract class Cli
     }
 
     /**
+     * Make a CliCommand available for execution
      *
      * @param CliCommand $command
      * @see CliCommand::register()
@@ -114,6 +129,7 @@ abstract class Cli
     }
 
     /**
+     * Generate a usage message for a command tree node
      *
      * @param string $name
      * @param array|CliCommand $node
@@ -159,6 +175,18 @@ ___SUBCOMMANDS___
 EOF;
     }
 
+    /**
+     * Process command-line arguments and take appropriate action
+     *
+     * One of the following actions will be taken:
+     * - if `--help` is the only remaining argument after processing any
+     *   subcommand names, print a usage message and return `0`
+     * - if subcommands resolve to a registered command, invoke it and return
+     *   its exit status
+     * - report an error, print a usage message, and return `1`
+     *
+     * @return int
+     */
     public static function runCommand(): int
     {
         Assert::sapiIsCli();
@@ -217,4 +245,3 @@ EOF;
         }
     }
 }
-

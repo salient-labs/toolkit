@@ -5,34 +5,56 @@ declare(strict_types=1);
 namespace Lkrms\Cli;
 
 /**
+ * Command-line option types
+ *
+ * See {@see CliCommand::_getOptions()} for more information.
  *
  * @package Lkrms
  */
-class CliOptionType
+abstract class CliOptionType
 {
     /**
-     * e.g. `-v`
+     * Enable a setting
+     *
+     * Examples:
+     * - `-v`
+     * - `--verbose`
      */
     public const FLAG = 0;
 
     /**
-     * e.g. `-v LEVEL`
+     * Set a value
+     *
+     * Examples:
+     * - `-v <level>`
+     * - `--verbosity <level>`
      */
     public const VALUE = 1;
 
     /**
-     * e.g. `-vLEVEL`
+     * Set a value, or don't
+     *
+     * Examples (note the lack of whitespace):
+     * - `-v<level>`
+     * - `--verbosity=<level>`
      */
     public const VALUE_OPTIONAL = 2;
 
     /**
-     * e.g. `-v on|off`
+     * Choose from a list of values
+     *
+     * Examples:
+     * - `-f (yes|no|ask)`
+     * - `--force (yes|no|ask)`
      */
     public const ONE_OF = 3;
 
     /**
-     * e.g. `-v(on|off)`
+     * Choose from a list of values, or don't
+     *
+     * Examples (note the lack of whitespace):
+     * - `-f(yes|no|ask)`
+     * - `--force=(yes|no|ask)`
      */
     public const ONE_OF_OPTIONAL = 4;
 }
-

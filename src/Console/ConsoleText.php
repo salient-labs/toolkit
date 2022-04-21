@@ -14,11 +14,8 @@ use Lkrms\Console\ConsoleColour as Colour;
 abstract class ConsoleText
 {
     private const TAG_HEADING = 0;
-
     private const TAG_SUBHEADING = 1;
-
     private const TAG_TITLE = 2;
-
     private const TAG_LOW_PRIORITY = 3;
 
     /**
@@ -65,8 +62,8 @@ REGEX;
     /**
      * Apply inline formatting to a string
      *
-     * If `$colour` is `true`, replace inline formatting with terminal escape
-     * sequences to set and subsequently clear the relevant display attributes,
+     * If `$colour` is `true`, replace inline formatting with escape sequences
+     * to set and subsequently clear the relevant terminal display attributes,
      * otherwise remove inline formatting.
      *
      * The following Markdown-like syntax is supported:
@@ -182,4 +179,3 @@ REGEX;
         return preg_replace("/" . self::REGEX_ESCAPED . "/u", '$1', $string);
     }
 }
-

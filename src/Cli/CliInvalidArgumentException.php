@@ -23,4 +23,3 @@ class CliInvalidArgumentException extends \Lkrms\Exception
         parent::__construct($message ?: "Invalid arguments");
     }
 }
-

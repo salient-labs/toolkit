@@ -11,6 +11,7 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
+ * Base class for CLI commands
  *
  * @package Lkrms
  */
@@ -673,4 +674,3 @@ EOF;
         $this->ExitStatus = $status;
     }
 }
-

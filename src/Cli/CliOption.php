@@ -15,6 +15,25 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
+ * A command-line option accepted by a CliCommand
+ *
+ * See {@see CliCommand::_getOptions()} for more information.
+ *
+ * @property-read string|null $Long
+ * @property-read string|null $Short
+ * @property-read string $Key
+ * @property-read string $DisplayName
+ * @property-read int $OptionType
+ * @property-read bool $IsFlag
+ * @property-read bool $IsRequired
+ * @property-read bool $IsValueRequired
+ * @property-read bool $MultipleAllowed
+ * @property-read string|null $ValueName
+ * @property-read string|null $Description
+ * @property-read string[]|null $AllowedValues
+ * @property-read string|string[]|null $DefaultValue
+ * @property-read string|string[]|bool|int|null $Value
+ * @property-read bool $IsValueSet
  *
  * @package Lkrms
  */
@@ -23,94 +42,118 @@ class CliOption implements IConstructible, IGettable
     use TConstructible, TGettable;
 
     /**
+     * @internal
      * @var string|null
      */
     protected $Long;
 
     /**
+     * @internal
      * @var string|null
      */
     protected $Short;
 
     /**
+     * @internal
      * @var string
      */
     protected $Key;
 
     /**
+     * @internal
      * @var string
      */
     protected $DisplayName;
 
     /**
+     * @internal
      * @var int
      */
     protected $OptionType;
 
     /**
+     * @internal
      * @var bool
      */
     protected $IsFlag;
 
     /**
+     * @internal
      * @var bool
      */
     protected $IsRequired;
 
     /**
+     * @internal
      * @var bool
      */
     protected $IsValueRequired;
 
     /**
+     * @internal
      * @var bool
      */
     protected $MultipleAllowed;
 
     /**
      *
+     * @internal
      * @var string|null
      */
     protected $ValueName;
 
     /**
+     * @internal
      * @var string|null
      */
     protected $Description;
 
     /**
-     * @var array<int, string>|null
+     * @internal
+     * @var string[]|null
      */
     protected $AllowedValues;
 
     /**
-     * @var string
+     * @internal
+     * @var string|string[]|null
      */
     protected $DefaultValue;
 
+    /**
+     * @internal
+     * @var string|string[]|bool|int|null
+     */
     protected $Value;
 
     /**
+     * @internal
      * @var bool
      */
     protected $IsValueSet = false;
 
+    /**
+     * @internal
+     * @return array
+     */
     public static function getGettable(): array
     {
         return IAccessible::ALLOW_PROTECTED;
     }
 
     /**
+     * Create a new command-line option
      *
-     * @param string|null   $long           e.g. `dest`
-     * @param string|null   $short          e.g. `d`
-     * @param string|null   $valueName      e.g. `DIR`
-     * @param string|null   $description    e.g. `Sync files to DIR`
-     * @param int           $optionType     e.g. {@see CliOptionType::VALUE}
-     * @param array<int,string>|null    $allowedValues  For {@see CliOptionType::ONE_OF}
-     * @param bool          $required
-     * @param bool          $multipleAllowed
-     * @param string|array<int,string>|null $defaultValue
+     * @param string|null $long e.g. `dest`
+     * @param string|null $short e.g. `d`
+     * @param string|null $valueName e.g. `DIR`
+     * @param string|null $description e.g. `Sync files to DIR`
+     * @param int $optionType e.g. {@see CliOptionType::VALUE}
+     * @param string[]|null $allowedValues For {@see CliOptionType::ONE_OF} and
+     * {@see CliOptionType::ONE_OF_OPTIONAL}
+     * @param bool $required
+     * @param bool $multipleAllowed
+     * @param string|string[]|null $defaultValue
      * @see TConstructible::from()
      */
     public function __construct(
@@ -123,11 +166,9 @@ class CliOption implements IConstructible, IGettable
         bool $required        = false,
         bool $multipleAllowed = false,
         $defaultValue         = null
-    )
-    {
-        $this->Long  = $long ?: null;
-        $this->Short = $short ?: null;
-
+    ) {
+        $this->Long            = $long ?: null;
+        $this->Short           = $short ?: null;
         $this->Key             = $this->Short . "|" . $this->Long;
         $this->DisplayName     = $this->Long ? "--" . $this->Long : "-" . $this->Short;
         $this->OptionType      = $optionType;
@@ -153,7 +194,13 @@ class CliOption implements IConstructible, IGettable
         $this->DefaultValue    = $this->IsRequired ? null : $defaultValue;
     }
 
-    public function validate()
+    /**
+     * @internal
+     * @return void
+     * @throws UnexpectedValueException
+     * @see CliCommand::addOption()
+     */
+    public function validate(): void
     {
         if (is_null($this->Long) && is_null($this->Short))
         {
@@ -203,7 +250,14 @@ class CliOption implements IConstructible, IGettable
         }
     }
 
-    public function setValue($value)
+    /**
+     * @internal
+     * @param string|string[]|bool|int|null $value
+     * @return void
+     * @throws RuntimeException
+     * @see CliCommand::loadOptionValues()
+     */
+    public function setValue($value): void
     {
         if ($this->IsValueSet)
         {
@@ -214,4 +268,3 @@ class CliOption implements IConstructible, IGettable
         $this->IsValueSet = true;
     }
 }
-
