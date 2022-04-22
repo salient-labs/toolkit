@@ -124,7 +124,7 @@ abstract class ConsoleMessageWriter
      * If no targets are specified, print to every registered target.
      *
      * @param string $msg
-     * @param ConsoleTarget[] $targets
+     * @param ConsoleTarget ...$targets
      * @see ConsoleLevel::INFO
      */
     abstract public static function printTo(

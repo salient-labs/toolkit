@@ -22,7 +22,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return self::JSON_PLACEHOLDER_BASE_URL;
     }
 
-    protected function getHeaders(): ?CurlerHeaders
+    protected function getHeaders(?string $path): ?CurlerHeaders
     {
         return null;
     }

@@ -150,9 +150,6 @@ abstract class Console extends ConsoleMessageWriter
      * @param string $msg1 Message.
      * @param null|string $msg2 Secondary message.
      * @param string $prefix Prefix.
-     * @param string $clr1 Primary colour (may include BOLD).
-     * @param string $clr2 Secondary colour (never includes BOLD).
-     * @param string|null $clrP Prefix colour.
      * @param Throwable|null $ex Associated exception.
      * @param bool $ttyOnly
      */
@@ -170,6 +167,7 @@ abstract class Console extends ConsoleMessageWriter
         $clrP    = !is_null($clrP) ? $clrP : ConsoleColour::BOLD . $clr2;
         $ttyMsg1 = ConsoleText::formatColour($msg1);
         $msg1    = ConsoleText::formatPlain($msg1);
+        $ttyMsg2 = null;
 
         $margin = max(0, self::$GroupLevel) * 4;
         $indent = strlen($prefix);
@@ -183,7 +181,7 @@ abstract class Console extends ConsoleMessageWriter
             }
         }
 
-        if (!is_null($msg2))
+        if ($msg2)
         {
             $ttyMsg2 = ConsoleText::formatColour($msg2);
             $msg2    = ConsoleText::formatPlain($msg2);

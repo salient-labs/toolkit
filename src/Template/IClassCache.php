@@ -16,7 +16,7 @@ interface IClassCache
      * Return an item from the class cache
      *
      * @param string $itemType
-     * @param int|string $itemPath
+     * @param int|string ...$itemPath
      * @return mixed
      */
     public static function getClassCache(string $itemType, ...$itemPath);
@@ -26,7 +26,7 @@ interface IClassCache
      *
      * @param string $itemType
      * @param mixed $item
-     * @param int|string $itemPath
+     * @param int|string ...$itemPath
      */
     public static function setClassCache(string $itemType, $item, ...$itemPath);
 
@@ -35,7 +35,7 @@ interface IClassCache
      *
      * @param string $itemType
      * @param callable $callback
-     * @param int|string $itemPath
+     * @param int|string ...$itemPath
      * @return mixed
      */
     public static function getOrSetClassCache(string $itemType, callable $callback, ...$itemPath);

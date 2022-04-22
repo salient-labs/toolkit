@@ -6,5 +6,7 @@ composer.phar
 
 phpdoc.xml
 
+phpstan.neon
+
 phpunit.xml
 .phpunit.*

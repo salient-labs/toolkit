@@ -87,10 +87,10 @@ abstract class CliCommand
      * 2. the last value passed to {@see CliCommand::setExitStatus()}, or
      * 3. `0`, indicating success, unless an unhandled error occurs
      *
-     * @param string $params
+     * @param string ...$params
      * @return int|void
      */
-    abstract protected function run(...$params);
+    abstract protected function run(string ...$params);
 
     /**
      * @var int

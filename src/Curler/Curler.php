@@ -32,42 +32,42 @@ class Curler
     protected $Headers;
 
     /**
-     * @var array
+     * @var array|null
      */
     protected $ResponseHeaders;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $LastRequestType;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $LastQuery;
 
     /**
-     * @var mixed
+     * @var mixed|null
      */
     protected $LastRequestData;
 
     /**
-     * @var array
+     * @var array|null
      */
     protected $LastCurlInfo;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $LastResponse;
 
     /**
-     * @var int
+     * @var int|null
      */
     protected $LastResponseCode;
 
     /**
-     * @var array
+     * @var array|null
      */
     protected $LastResponseHeaders;
 
@@ -109,12 +109,12 @@ class Curler
     protected $InternalStackDepth = 0;
 
     /**
-     * @var CurlHandle
+     * @var CurlHandle|null
      */
     protected $Handle;
 
     /**
-     * @var CurlMultiHandle
+     * @var CurlMultiHandle|null
      */
     private static $MultiHandle;
 

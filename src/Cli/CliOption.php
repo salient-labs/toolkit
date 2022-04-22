@@ -31,7 +31,7 @@ use UnexpectedValueException;
  * @property-read string|null $ValueName
  * @property-read string|null $Description
  * @property-read string[]|null $AllowedValues
- * @property-read string|string[]|null $DefaultValue
+ * @property-read string|string[]|bool|int|null $DefaultValue
  * @property-read string|string[]|bool|int|null $Value
  * @property-read bool $IsValueSet
  *
@@ -116,7 +116,7 @@ class CliOption implements IConstructible, IGettable
 
     /**
      * @internal
-     * @var string|string[]|null
+     * @var string|string[]|bool|int|null
      */
     protected $DefaultValue;
 
@@ -153,7 +153,7 @@ class CliOption implements IConstructible, IGettable
      * {@see CliOptionType::ONE_OF_OPTIONAL}
      * @param bool $required
      * @param bool $multipleAllowed
-     * @param string|string[]|null $defaultValue
+     * @param string|string[]|bool|int|null $defaultValue
      * @see TConstructible::from()
      */
     public function __construct(
@@ -179,7 +179,7 @@ class CliOption implements IConstructible, IGettable
         {
             $this->IsRequired      = false;
             $this->IsValueRequired = false;
-            $this->DefaultValue    = false;
+            $this->DefaultValue    = $this->MultipleAllowed ? 0 : false;
 
             return;
         }

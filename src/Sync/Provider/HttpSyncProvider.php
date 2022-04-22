@@ -16,18 +16,23 @@ use Lkrms\Sync\SyncProvider;
  */
 abstract class HttpSyncProvider extends SyncProvider
 {
+    /**
+     * Return the base URL of the upstream API
+     *
+     * @return string
+     */
     abstract protected function getBaseUrl(): string;
 
     /**
-     * Headers to use when creating a Curler instance
+     * Return headers to use when connecting to the upstream API
      *
      * Called once per {@see HttpSyncProvider::getCurler()} call.
      *
-     * The requested endpoint is passed as the first parameter.
-     *
+     * @param null|string $path The endpoint requested via
+     * {@see HttpSyncProvider::getCurler()}.
      * @return null|CurlerHeaders
      */
-    abstract protected function getHeaders(): ?CurlerHeaders;
+    abstract protected function getHeaders(?string $path): ?CurlerHeaders;
 
     /**
      * The time, in seconds, before upstream responses expire
@@ -47,7 +52,7 @@ abstract class HttpSyncProvider extends SyncProvider
     }
 
     /**
-     * Automatically retry rate-limited requests with Retry-After headers?
+     * Return true to obey "Retry-After" in "429 Too Many Requests" responses
      *
      * @return bool
      */
@@ -68,6 +73,13 @@ abstract class HttpSyncProvider extends SyncProvider
         return $headers->getHeaders();
     }
 
+    /**
+     * Get a Curler or CachingCurler instance bound to an API endpoint
+     *
+     * @param string $path
+     * @param int|null $expiry
+     * @return Curler
+     */
     final public function getCurler(string $path, int $expiry = null): Curler
     {
         if (func_num_args() <= 1)

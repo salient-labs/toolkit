@@ -1,0 +1,9 @@
+parameters:
+  level: 3
+  paths:
+    - src
+    - lib
+    - bin
+    - tests
+  bootstrapFiles:
+    - tests/bootstrap.php
