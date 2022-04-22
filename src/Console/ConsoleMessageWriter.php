@@ -334,7 +334,7 @@ abstract class ConsoleMessageWriter
     /**
      * Close the most recently created message group
      *
-     * @see Console::group()
+     * @see ConsoleMessageWriter::group()
      */
     public static function groupEnd()
     {

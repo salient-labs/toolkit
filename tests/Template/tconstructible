@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests\Template;
 
-use Lkrms\Err;
+use Lkrms\Err\Err;
 use Lkrms\Template\IExtensible;
 use Lkrms\Template\IResolvable;
 use Lkrms\Template\TConstructible;

@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Err;
+use Lkrms\Err\Err;
 use Lkrms\Sql;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");

@@ -144,17 +144,17 @@ class CliOption implements IConstructible, IGettable
     /**
      * Create a new command-line option
      *
-     * @param string|null $long e.g. `dest`
-     * @param string|null $short e.g. `d`
-     * @param string|null $valueName e.g. `DIR`
-     * @param string|null $description e.g. `Sync files to DIR`
-     * @param int $optionType e.g. {@see CliOptionType::VALUE}
+     * @param string|null $long
+     * @param string|null $short
+     * @param string|null $valueName
+     * @param string|null $description
+     * @param int $optionType
      * @param string[]|null $allowedValues For {@see CliOptionType::ONE_OF} and
      * {@see CliOptionType::ONE_OF_OPTIONAL}
      * @param bool $required
      * @param bool $multipleAllowed
      * @param string|string[]|bool|int|null $defaultValue
-     * @see TConstructible::from()
+     * @see \Lkrms\Template\TConstructible::fromArray()
      */
     public function __construct(
         ?string $long,

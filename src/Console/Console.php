@@ -68,7 +68,7 @@ abstract class Console extends ConsoleMessageWriter
      * This happens automatically when a log target is registered explicitly via
      * {@see Console::registerTarget()}.
      *
-     * @see File::stablePath()
+     * @see File::getStablePath()
      */
     public static function disableDefaultOutputLog()
     {

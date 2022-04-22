@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests\Template;
 
-use Lkrms\Err;
+use Lkrms\Err\Err;
 use Lkrms\Template\IAccessible;
 use Lkrms\Template\IGettable;
 use Lkrms\Template\ISettable;

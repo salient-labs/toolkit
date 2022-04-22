@@ -3,8 +3,8 @@
 
 namespace Lkrms\Tests\Sync;
 
-use Lkrms\Console;
-use Lkrms\Err;
+use Lkrms\Console\Console;
+use Lkrms\Err\Err;
 use Lkrms\Ioc\Ioc;
 use Lkrms\Sync\SyncEntityFuzzyResolver;
 use Lkrms\Sync\SyncEntityProvider;

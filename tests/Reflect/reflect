@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests\Reflect;
 
-use Lkrms\Err;
+use Lkrms\Err\Err;
 use Lkrms\Reflect;
 use ReflectionClass;
 use Throwable;

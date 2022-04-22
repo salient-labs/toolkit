@@ -6,7 +6,7 @@ namespace Lkrms\Tests;
 use Lkrms\Console\Console;
 use Lkrms\Console\ConsoleTarget\Stream;
 use Lkrms\Console\ConsoleText;
-use Lkrms\Err;
+use Lkrms\Err\Err;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);

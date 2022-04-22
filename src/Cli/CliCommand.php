@@ -75,7 +75,7 @@ abstract class CliCommand
      * ```
      *
      * @return array<int,CliOption|array>
-     * @see TConstructible::from()
+     * @see \Lkrms\Template\TConstructible::fromArray()
      */
     abstract protected function _getOptions(): array;
 
