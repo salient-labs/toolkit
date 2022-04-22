@@ -27,5 +27,5 @@ GenerateSyncEntityClass::register();
 GenerateSyncEntityInterface::register();
 HttpGetPath::register();
 
-$status = Cli::runCommand();
+$status = Cli::run();
 exit ($status);

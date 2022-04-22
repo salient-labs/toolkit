@@ -18,5 +18,5 @@ Env::load(__DIR__ . "/../.env");
 TestOptions::register();
 TestOptions::register(["sync"]);
 
-$status = Cli::runCommand();
+$status = Cli::run();
 exit ($status);

@@ -147,6 +147,11 @@ abstract class CliCommand
      */
     private $IsHelp = false;
 
+    /**
+     * @var bool
+     */
+    private $HasRun = false;
+
     final public static function assertNameIsValid(?array $name)
     {
         foreach ($name as $i => $subcommand)
@@ -440,7 +445,7 @@ $options
 EOF;
     }
 
-    final protected function optionError(string $message)
+    private function optionError(string $message)
     {
         Console::error($this->getLongCommandName() . ": $message");
         $this->OptionErrors++;
@@ -642,8 +647,25 @@ EOF;
         return $values;
     }
 
+    /**
+     * Parse the given arguments and run the command
+     *
+     * @param string[] $args
+     * @return int
+     * @see CliCommand::run()
+     */
     final public function __invoke(array $args): int
     {
+        if ($this->HasRun)
+        {
+            throw new RuntimeException("Command has already run");
+        }
+
+        if (Cli::getRunningCommand() !== $this)
+        {
+            Assert::sapiIsCli();
+        }
+
         $this->Arguments = $args;
         $this->loadOptionValues();
 
@@ -653,6 +675,8 @@ EOF;
 
             return 0;
         }
+
+        $this->HasRun = true;
 
         $return = $this->run(...array_slice($this->Arguments, $this->NextArgumentIndex));
 
@@ -668,10 +692,22 @@ EOF;
      * Set the command's return value / exit status
      *
      * @param int $status
+     * @return void
      * @see CliCommand::run()
      */
-    final protected function setExitStatus(int $status)
+    final protected function setExitStatus(int $status): void
     {
         $this->ExitStatus = $status;
+    }
+
+    /**
+     * Get the current return value / exit status
+     *
+     * @return int
+     * @see CliCommand::setExitStatus()
+     */
+    final protected function getExitStatus(): int
+    {
+        return $this->ExitStatus;
     }
 }

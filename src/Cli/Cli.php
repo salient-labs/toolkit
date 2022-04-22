@@ -188,7 +188,7 @@ EOF;
      *
      * @return int
      */
-    public static function runCommand(): int
+    public static function run(): int
     {
         Assert::sapiIsCli();
 
