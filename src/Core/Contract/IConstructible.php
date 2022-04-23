@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Core\Contract;
 
 /**
- * Can be instantiated from an array
+ * Converts arrays to instances
  *
  * @package Lkrms
- * @see TConstructible
  */
 interface IConstructible
 {

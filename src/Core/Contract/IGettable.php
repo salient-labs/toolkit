@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Lkrms\Core\Contract;
 
 /**
- * Provides access to protected properties via __get and __isset
+ * Reads inaccessible properties
  *
  * @package Lkrms
- * @see TGettable
  */
 interface IGettable
 {
+    /**
+     * Return a gettable property list, or ["*"] for all available properties
+     *
+     * @return string[]
+     */
     public static function getGettable(): array;
 
     public function __get(string $name);

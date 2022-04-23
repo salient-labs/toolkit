@@ -4,51 +4,68 @@ declare(strict_types=1);
 
 namespace Lkrms\Core\Mixin;
 
-use Lkrms\Convert;
+use Lkrms\Core\ClosureBuilder;
 
 /**
- * Implements IExtensible to provide arbitrary property storage via normalised
- * property names
+ * Implements IExtensible to store arbitrary property values
  *
  * @package Lkrms
- * @see IGettable
- * @see ISettable
- * @see IResolvable
- * @see IExtensible
+ * @see \Lkrms\Core\Contract\IExtensible
  */
 trait TExtensible
 {
-    use TGettable, TSettable;
-
+    /**
+     * Normalised property names => values
+     *
+     * @var array<string,mixed>
+     */
     protected $MetaProperties = [];
 
+    /**
+     * Normalised property names => last names passed to setMetaProperty
+     *
+     * @var array<string,string>
+     */
     protected $MetaPropertyNames = [];
 
-    public static function normalisePropertyName(string $name): string
+    /**
+     * Property names => normalised property names
+     *
+     * @var array<string,string>
+     */
+    private $MetaPropertyMap = [];
+
+    private function normaliseMetaProperty(string $name): string
     {
-        return Convert::toSnakeCase($name);
+        if (is_null($normalised = $this->MetaPropertyMap[$name] ?? null))
+        {
+            $normalised = ClosureBuilder::getFor(static::class)->maybeNormaliseProperty($name);
+            $this->MetaPropertyMap[$name] = $normalised;
+        }
+
+        return $normalised;
     }
 
     public function setMetaProperty(string $name, $value): void
     {
-        $normalised = self::normalisePropertyName($name);
+        $normalised = $this->normaliseMetaProperty($name);
         $this->MetaProperties[$normalised]    = $value;
         $this->MetaPropertyNames[$normalised] = $name;
     }
 
     public function getMetaProperty(string $name)
     {
-        return $this->MetaProperties[self::normalisePropertyName($name)] ?? null;
+        return $this->MetaProperties[$this->normaliseMetaProperty($name)] ?? null;
     }
 
     public function isMetaPropertySet(string $name): bool
     {
-        return isset($this->MetaProperties[self::normalisePropertyName($name)]);
+        return isset($this->MetaProperties[$this->normaliseMetaProperty($name)]);
     }
 
     public function unsetMetaProperty(string $name): void
     {
-        unset($this->MetaProperties[self::normalisePropertyName($name)]);
+        unset($this->MetaProperties[$this->normaliseMetaProperty($name)]);
     }
 
     public function getMetaProperties(): array

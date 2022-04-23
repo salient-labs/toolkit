@@ -13,8 +13,8 @@ use Lkrms\Core\Contract\ISettable;
 use Lkrms\Core\Mixin\TConstructible;
 use Lkrms\Core\Mixin\TExtensible;
 use Lkrms\Core\Mixin\TGettable;
+use Lkrms\Core\Mixin\TResolvable;
 use Lkrms\Core\Mixin\TSettable;
-use Lkrms\Convert;
 use Lkrms\Ioc\Ioc;
 use Lkrms\Reflect;
 use ReflectionClass;
@@ -182,20 +182,20 @@ class ClosureBuilder
         $class         = new ReflectionClass($class);
         $constructible = $class->implementsInterface(IConstructible::class);
         $extensible    = $class->implementsInterface(IExtensible::class);
-        $gettable      = $extensible || $class->implementsInterface(IGettable::class);
-        $settable      = $extensible || $class->implementsInterface(ISettable::class);
-        $resolvable    = $extensible || $class->implementsInterface(IResolvable::class);
+        $gettable      = $class->implementsInterface(IGettable::class);
+        $settable      = $class->implementsInterface(ISettable::class);
+        $resolvable    = $class->implementsInterface(IResolvable::class);
 
         // If the class hasn't implemented any of these interfaces, perform a
         // (slower) check using traits
-        if (!($constructible | $gettable | $settable | $resolvable))
+        if (!($constructible | $extensible | $gettable | $settable | $resolvable))
         {
             $traits        = Reflect::getAllTraits($class);
             $constructible = array_key_exists(TConstructible::class, $traits);
             $extensible    = array_key_exists(TExtensible::class, $traits);
-            $gettable      = $extensible || array_key_exists(TGettable::class, $traits);
-            $settable      = $extensible || array_key_exists(TSettable::class, $traits);
-            $resolvable    = $extensible;
+            $gettable      = array_key_exists(TGettable::class, $traits);
+            $settable      = array_key_exists(TSettable::class, $traits);
+            $resolvable    = array_key_exists(TResolvable::class, $traits);
         }
 
         $this->Class        = $class->name;
@@ -214,20 +214,11 @@ class ClosureBuilder
             $methodFilter   |= ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED;
         }
 
-        // IConstructible and IResolvable both provide access to properties via
-        // alternative names
-        if ($constructible || $resolvable)
+        // IResolvable provides access to properties via alternative names
+        if ($resolvable)
         {
-            $propertyFilter |= ReflectionProperty::IS_PUBLIC;
-
-            if ($resolvable)
-            {
-                $this->Normaliser = Closure::fromCallable("{$this->Class}::normalisePropertyName");
-            }
-            else
-            {
-                $this->Normaliser = function (string $name) { return Convert::toSnakeCase($name); };
-            }
+            $propertyFilter  |= ReflectionProperty::IS_PUBLIC;
+            $this->Normaliser = Closure::fromCallable("{$this->Class}::normaliseProperty");
         }
 
         // Get [non-static] declared properties
@@ -275,17 +266,14 @@ class ClosureBuilder
         if ($methodFilter)
         {
             $actions = [];
-
             if ($gettable)
             {
                 array_push($actions, "get", "isset");
             }
-
             if ($settable)
             {
                 array_push($actions, "set", "unset");
             }
-
             $regex = '/^_(' . implode("|", $actions) . ')(.+)$/i';
 
             foreach ($class->getMethods($methodFilter) as $method)
@@ -311,7 +299,7 @@ class ClosureBuilder
         {
             foreach ($constructor->getParameters() as $param)
             {
-                $normalised   = $this->maybeNormalise($param->name);
+                $normalised   = $this->maybeNormaliseProperty($param->name);
                 $defaultValue = null;
 
                 if ($param->isOptional())
@@ -352,7 +340,7 @@ class ClosureBuilder
         }
     }
 
-    protected function maybeNormalise(string $name): string
+    public function maybeNormaliseProperty(string $name): string
     {
         return $this->Normaliser ? ($this->Normaliser)($name) : $name;
     }
@@ -505,7 +493,7 @@ class ClosureBuilder
      */
     public function getPropertyActionClosure(string $name, string $action): Closure
     {
-        $_name = $this->maybeNormalise($name);
+        $_name = $this->maybeNormaliseProperty($name);
 
         if ($closure = $this->PropertyActionClosures[$_name][$action] ?? null)
         {

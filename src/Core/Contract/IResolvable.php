@@ -5,28 +5,17 @@ declare(strict_types=1);
 namespace Lkrms\Core\Contract;
 
 /**
- * Provides access to declared properties via alternative names
+ * Normalises property names
  *
  * @package Lkrms
  */
 interface IResolvable
 {
     /**
-     * Convert a property name to its normalised form
-     *
-     * Returns the value to use when comparing `$name` with other normalised
-     * names to determine whether or not they represent the same property.
+     * Return a normalised property name
      *
      * @param string $name
      * @return string
      */
-    public static function normalisePropertyName(string $name): string;
-
-    public function __set(string $name, $value): void;
-
-    public function __get(string $name);
-
-    public function __isset(string $name): bool;
-
-    public function __unset(string $name): void;
+    public static function normaliseProperty(string $name): string;
 }

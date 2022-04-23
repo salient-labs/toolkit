@@ -7,9 +7,9 @@ namespace Lkrms\Core\Mixin;
 use Lkrms\Core\ClosureBuilder;
 
 /**
- * Implements ISettable to provide a basic implementation of __set and __unset
+ * Implements ISettable to write inaccessible properties
  *
- * Override {@see TSettable::getSettable()} to allow access to `protected`
+ * Override {@see TSettable::getSettable()} to provide access to `protected`
  * variables via `__set` and `__unset`.
  *
  * The default is to deny `__set` and `__unset` for all properties.
@@ -22,7 +22,7 @@ use Lkrms\Core\ClosureBuilder;
  *   regardless of {@see TSettable::getSettable()}'s return value.
  *
  * @package Lkrms
- * @see ISettable
+ * @see \Lkrms\Core\Contract\ISettable
  */
 trait TSettable
 {

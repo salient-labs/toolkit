@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Lkrms\Core\Mixin;
 
-use Lkrms\Core\ClosureBuilder;
 use Lkrms\Closure;
+use Lkrms\Core\ClosureBuilder;
 use UnexpectedValueException;
 
 /**
  * Implements IConstructible to convert arrays to instances
  *
  * @package Lkrms
+ * @see \Lkrms\Core\Contract\IConstructible
  */
 trait TConstructible
 {
@@ -20,8 +21,9 @@ trait TConstructible
      *
      * The constructor (if any) is invoked with parameters taken from `$data`.
      * If `$data` values remain, they are assigned to public properties. If
-     * further values remain and the class implements {@see IExtensible}, they
-     * are assigned via {@see IExtensible::setMetaProperty()}.
+     * further values remain and the class implements
+     * {@see \Lkrms\Core\Contract\IExtensible}, they are assigned via
+     * {@see \Lkrms\Core\Contract\IExtensible::setMetaProperty()}.
      *
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.

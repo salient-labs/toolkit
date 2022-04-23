@@ -4,8 +4,14 @@
 namespace Lkrms\Tests\Template;
 
 use Lkrms\Core\Contract\IExtensible;
+use Lkrms\Core\Contract\IGettable;
+use Lkrms\Core\Contract\IResolvable;
+use Lkrms\Core\Contract\ISettable;
 use Lkrms\Core\Mixin\TConstructible;
 use Lkrms\Core\Mixin\TExtensible;
+use Lkrms\Core\Mixin\TGettable;
+use Lkrms\Core\Mixin\TResolvable;
+use Lkrms\Core\Mixin\TSettable;
 use Lkrms\Err\Err;
 use Throwable;
 use UnexpectedValueException;
@@ -15,9 +21,9 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 
 Err::handleErrors();
 
-class A implements IExtensible
+class A implements IExtensible, IGettable, ISettable, IResolvable
 {
-    use TConstructible, TExtensible;
+    use TConstructible, TExtensible, TGettable, TSettable, TResolvable;
 
     public $Id;
 

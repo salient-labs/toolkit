@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace Lkrms\Sync;
 
 use JsonSerializable;
+use Lkrms\Convert;
 use Lkrms\Core\Contract\IClassCache;
 use Lkrms\Core\Contract\IConstructible;
 use Lkrms\Core\Contract\IExtensible;
+use Lkrms\Core\Contract\IGettable;
+use Lkrms\Core\Contract\IResolvable;
+use Lkrms\Core\Contract\ISettable;
 use Lkrms\Core\Mixin\TClassCache;
 use Lkrms\Core\Mixin\TConstructible;
 use Lkrms\Core\Mixin\TExtensible;
-use Lkrms\Convert;
+use Lkrms\Core\Mixin\TGettable;
+use Lkrms\Core\Mixin\TResolvable;
+use Lkrms\Core\Mixin\TSettable;
 use Lkrms\Reflect;
 use UnexpectedValueException;
 
@@ -37,9 +43,9 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-abstract class SyncEntity implements IConstructible, IExtensible, IClassCache, JsonSerializable
+abstract class SyncEntity implements IConstructible, IExtensible, IGettable, IResolvable, ISettable, IClassCache, JsonSerializable
 {
-    use TConstructible, TExtensible, TClassCache;
+    use TConstructible, TExtensible, TGettable, TResolvable, TSettable, TClassCache;
 
     /**
      * @var int|string
@@ -107,7 +113,7 @@ abstract class SyncEntity implements IConstructible, IExtensible, IClassCache, J
         );
     }
 
-    final public static function normalisePropertyName(string $name): string
+    final public static function normaliseProperty(string $name): string
     {
         if (!($closure = self::getClassCache(__METHOD__)))
         {

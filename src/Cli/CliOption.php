@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
+use Lkrms\Assert;
+use Lkrms\Convert;
 use Lkrms\Core\Contract\IConstructible;
 use Lkrms\Core\Contract\IGettable;
 use Lkrms\Core\Mixin\TConstructible;
 use Lkrms\Core\Mixin\TGettable;
-use Lkrms\Assert;
-use Lkrms\Convert;
 use RuntimeException;
 use UnexpectedValueException;
 

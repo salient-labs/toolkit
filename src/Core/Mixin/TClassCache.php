@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Lkrms\Core\Mixin;
 
 /**
- * Implements IClassCache to provide an in-memory cache shared between instances
- * of the same class
+ * Implements IClassCache to share an ephemeral cache between instances of the
+ * same class
  *
  * @package Lkrms
- * @see IClassCache
+ * @see \Lkrms\Core\Contract\IClassCache
  */
 trait TClassCache
 {
@@ -64,7 +64,6 @@ trait TClassCache
         if (empty($itemPath))
         {
             $cache = $item;
-
             return;
         }
 
