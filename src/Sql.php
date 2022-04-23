@@ -9,7 +9,7 @@ namespace Lkrms;
  *
  * @package Lkrms
  */
-class Sql
+abstract class Sql
 {
     /**
      * Add "<name> IN (<value>[,<value>])" unless a list of values is empty

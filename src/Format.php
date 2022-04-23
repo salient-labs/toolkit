@@ -12,7 +12,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class Format
+abstract class Format
 {
     /**
      * Format an array's keys and values

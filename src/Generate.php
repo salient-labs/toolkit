@@ -12,7 +12,7 @@ use ReflectionFunction;
  *
  * @package Lkrms
  */
-class Generate
+abstract class Generate
 {
     /**
      * Generate a cryptographically secure random UUID

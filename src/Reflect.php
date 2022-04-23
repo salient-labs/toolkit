@@ -17,7 +17,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class Reflect
+abstract class Reflect
 {
     /**
      * Return the names of the given Reflection objects

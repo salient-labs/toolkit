@@ -12,7 +12,7 @@ use RuntimeException;
  *
  * @package Lkrms
  */
-class File
+abstract class File
 {
     /**
      * Get a file's end-of-line sequence

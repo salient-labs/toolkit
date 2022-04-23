@@ -14,7 +14,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class Env
+abstract class Env
 {
     private static $IsDryRun;
 
