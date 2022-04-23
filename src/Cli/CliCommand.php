@@ -75,7 +75,7 @@ abstract class CliCommand
      * ```
      *
      * @return array<int,CliOption|array>
-     * @see \Lkrms\Template\TConstructible::fromArray()
+     * @see \Lkrms\Core\Mixin\TConstructible::fromArray()
      */
     abstract protected function _getOptions(): array;
 
@@ -156,7 +156,7 @@ abstract class CliCommand
     {
         foreach ($name as $i => $subcommand)
         {
-            Assert::pregMatch($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
+            Assert::patternMatches($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
         }
     }
 

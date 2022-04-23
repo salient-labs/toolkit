@@ -3,15 +3,13 @@
 
 namespace Lkrms\Tests\Template;
 
+use Lkrms\Core\Contract\IGettable;
+use Lkrms\Core\Contract\ISettable;
+use Lkrms\Core\Mixin\TGettable;
+use Lkrms\Core\Mixin\TSettable;
 use Lkrms\Err\Err;
-use Lkrms\Template\IAccessible;
-use Lkrms\Template\IGettable;
-use Lkrms\Template\ISettable;
-use Lkrms\Template\TGettable;
-use Lkrms\Template\TSettable;
 use RuntimeException;
 use Throwable;
-use UnexpectedValueException;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
@@ -40,7 +38,7 @@ class B extends A implements IGettable
 
     public static function getGettable(): array
     {
-        return IAccessible::ALLOW_PROTECTED;
+        return ["*"];
     }
 
     protected function _GetData()

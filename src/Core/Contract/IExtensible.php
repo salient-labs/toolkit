@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Template;
+namespace Lkrms\Core\Contract;
 
 /**
  * Implements arbitrary property storage

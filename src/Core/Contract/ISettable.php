@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Template;
+namespace Lkrms\Core\Contract;
 
 /**
  * Provides access to protected properties via __set and __unset
@@ -10,7 +10,7 @@ namespace Lkrms\Template;
  * @package Lkrms
  * @see TSettable
  */
-interface ISettable extends IAccessible
+interface ISettable
 {
     public static function getSettable(): array;
 

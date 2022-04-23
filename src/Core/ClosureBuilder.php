@@ -2,22 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Reflect;
+namespace Lkrms\Core;
 
 use Closure;
+use Lkrms\Core\Contract\IConstructible;
+use Lkrms\Core\Contract\IExtensible;
+use Lkrms\Core\Contract\IGettable;
+use Lkrms\Core\Contract\IResolvable;
+use Lkrms\Core\Contract\ISettable;
+use Lkrms\Core\Mixin\TConstructible;
+use Lkrms\Core\Mixin\TExtensible;
+use Lkrms\Core\Mixin\TGettable;
+use Lkrms\Core\Mixin\TSettable;
 use Lkrms\Convert;
 use Lkrms\Ioc\Ioc;
 use Lkrms\Reflect;
-use Lkrms\Template\IAccessible;
-use Lkrms\Template\IConstructible;
-use Lkrms\Template\IExtensible;
-use Lkrms\Template\IGettable;
-use Lkrms\Template\IResolvable;
-use Lkrms\Template\ISettable;
-use Lkrms\Template\TConstructible;
-use Lkrms\Template\TExtensible;
-use Lkrms\Template\TGettable;
-use Lkrms\Template\TSettable;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -28,7 +27,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class PropertyResolver
+class ClosureBuilder
 {
     /**
      * @var string
@@ -165,7 +164,7 @@ class PropertyResolver
 
     private static $Instances = [];
 
-    public static function getFor(string $class): PropertyResolver
+    public static function getFor(string $class): ClosureBuilder
     {
         $class = Ioc::resolve($class);
 
@@ -258,7 +257,7 @@ class PropertyResolver
             if ($gettable)
             {
                 $properties = array_merge($class->getMethod("getGettable")->invoke(null), $this->PublicProperties);
-                $this->GettableProperties = (IAccessible::ALLOW_PROTECTED === $properties)
+                $this->GettableProperties = (["*"] === $properties)
                     ? $this->Properties
                     : array_intersect($this->Properties, $properties ?: []);
             }
@@ -266,7 +265,7 @@ class PropertyResolver
             if ($settable)
             {
                 $properties = array_merge($class->getMethod("getSettable")->invoke(null), $this->PublicProperties);
-                $this->SettableProperties = (IAccessible::ALLOW_PROTECTED === $properties)
+                $this->SettableProperties = (["*"] === $properties)
                     ? $this->Properties
                     : array_intersect($this->Properties, $properties ?: []);
             }

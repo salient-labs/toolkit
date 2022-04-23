@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Template;
+namespace Lkrms\Core\Mixin;
 
-use Lkrms\Reflect\PropertyResolver;
+use Lkrms\Core\ClosureBuilder;
 
 /**
  * Implements IGettable to provide a basic implementation of __get and __isset
@@ -29,19 +29,18 @@ trait TGettable
     /**
      * Return a list of gettable protected properties
      *
-     * To make all `protected` properties gettable, return
-     * {@see IAccessible::ALLOW_PROTECTED}.
+     * To make all `protected` properties gettable, return `["*"]`.
      *
      * @return string[]
      */
     public static function getGettable(): array
     {
-        return IAccessible::ALLOW_NONE;
+        return [];
     }
 
     private function getProperty(string $action, string $name)
     {
-        return (PropertyResolver::getFor(static::class)->getPropertyActionClosure($name, $action))($this);
+        return (ClosureBuilder::getFor(static::class)->getPropertyActionClosure($name, $action))($this);
     }
 
     final public function __get(string $name)

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Template;
+namespace Lkrms\Core\Mixin;
 
-use Lkrms\Reflect\PropertyResolver;
+use Lkrms\Core\ClosureBuilder;
 
 /**
  * Implements ISettable to provide a basic implementation of __set and __unset
@@ -29,19 +29,18 @@ trait TSettable
     /**
      * Return a list of settable protected properties
      *
-     * To make all `protected` properties settable, return
-     * {@see IAccessible::ALLOW_PROTECTED}.
+     * To make all `protected` properties settable, return `["*"]`.
      *
      * @return string[]
      */
     public static function getSettable(): array
     {
-        return IAccessible::ALLOW_NONE;
+        return [];
     }
 
     private function setProperty(string $action, string $name, ...$params)
     {
-        return (PropertyResolver::getFor(static::class)->getPropertyActionClosure($name, $action))($this, ...$params);
+        return (ClosureBuilder::getFor(static::class)->getPropertyActionClosure($name, $action))($this, ...$params);
     }
 
     final public function __set(string $name, $value): void

@@ -3,11 +3,10 @@
 
 namespace Lkrms\Tests\Reflect;
 
+use Lkrms\Core\ClosureBuilder;
+use Lkrms\Core\Mixin\TConstructible;
+use Lkrms\Core\Mixin\TExtensible;
 use Lkrms\Err\Err;
-use Lkrms\Reflect\PropertyResolver;
-use Lkrms\Template\IAccessible;
-use Lkrms\Template\TConstructible;
-use Lkrms\Template\TExtensible;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
@@ -20,7 +19,7 @@ class A
 
     public static function getGettable(): array
     {
-        return IAccessible::ALLOW_PROTECTED;
+        return ["*"];
     }
 
     public static function getSettable(): array
@@ -80,6 +79,6 @@ class B extends A
 }
 
 print_r([
-    "A" => PropertyResolver::getFor(A::class),
-    "B" => PropertyResolver::getFor(B::class),
+    "A" => ClosureBuilder::getFor(A::class),
+    "B" => ClosureBuilder::getFor(B::class),
 ]);

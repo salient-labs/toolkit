@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Template;
+namespace Lkrms\Core\Mixin;
 
 /**
  * Implements IClassCache to provide an in-memory cache shared between instances

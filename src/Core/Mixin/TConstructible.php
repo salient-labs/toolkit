@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Template;
+namespace Lkrms\Core\Mixin;
 
+use Lkrms\Core\ClosureBuilder;
 use Lkrms\Closure;
-use Lkrms\Reflect\PropertyResolver;
 use UnexpectedValueException;
 
 /**
@@ -31,7 +31,7 @@ trait TConstructible
      */
     public static function fromArray(array $data)
     {
-        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($data);
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data);
     }
 
     /**
@@ -45,7 +45,7 @@ trait TConstructible
      */
     public static function fromArrayVia(array $data, callable $callback)
     {
-        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($data, $callback);
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $callback);
     }
 
     /**
@@ -70,7 +70,7 @@ trait TConstructible
     ) {
         $callback = Closure::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($data, $callback);
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $callback);
     }
 
     /**
@@ -136,11 +136,11 @@ trait TConstructible
     {
         if ($sameKeys)
         {
-            return PropertyResolver::getFor(static::class)->getCreateFromSignatureClosure(array_keys(reset($dataList)));
+            return ClosureBuilder::getFor(static::class)->getCreateFromSignatureClosure(array_keys(reset($dataList)));
         }
         else
         {
-            return PropertyResolver::getFor(static::class)->getCreateFromClosure();
+            return ClosureBuilder::getFor(static::class)->getCreateFromClosure();
         }
     }
 

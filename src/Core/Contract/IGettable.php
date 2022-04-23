@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Template;
+namespace Lkrms\Core\Contract;
 
 /**
  * Provides access to protected properties via __get and __isset
@@ -10,7 +10,7 @@ namespace Lkrms\Template;
  * @package Lkrms
  * @see TGettable
  */
-interface IGettable extends IAccessible
+interface IGettable
 {
     public static function getGettable(): array;
 

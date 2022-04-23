@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Sync;
+namespace Lkrms\Sync\Provider;
 
 use Lkrms\Convert;
 use Lkrms\Generate;
-use Lkrms\Sync\Provider\ISyncProvider;
 
 /**
  * Base class for API providers

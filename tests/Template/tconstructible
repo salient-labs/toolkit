@@ -3,11 +3,10 @@
 
 namespace Lkrms\Tests\Template;
 
+use Lkrms\Core\Contract\IExtensible;
+use Lkrms\Core\Mixin\TConstructible;
+use Lkrms\Core\Mixin\TExtensible;
 use Lkrms\Err\Err;
-use Lkrms\Template\IExtensible;
-use Lkrms\Template\IResolvable;
-use Lkrms\Template\TConstructible;
-use Lkrms\Template\TExtensible;
 use Throwable;
 use UnexpectedValueException;
 

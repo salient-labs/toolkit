@@ -7,6 +7,7 @@ namespace Lkrms\Sync;
 use Lkrms\Console\Console;
 use Lkrms\Convert;
 use Lkrms\Generate;
+use Lkrms\Sync\Provider\SyncEntityProvider;
 
 /**
  * Uses Levenshtein distances or text similarity to resolve names to entities

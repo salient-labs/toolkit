@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
+use Lkrms\Core\Contract\IConstructible;
+use Lkrms\Core\Contract\IGettable;
+use Lkrms\Core\Mixin\TConstructible;
+use Lkrms\Core\Mixin\TGettable;
 use Lkrms\Assert;
 use Lkrms\Convert;
-use Lkrms\Template\IAccessible;
-use Lkrms\Template\IConstructible;
-use Lkrms\Template\IGettable;
-use Lkrms\Template\TConstructible;
-use Lkrms\Template\TGettable;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -138,7 +137,7 @@ class CliOption implements IConstructible, IGettable
      */
     public static function getGettable(): array
     {
-        return IAccessible::ALLOW_PROTECTED;
+        return ["*"];
     }
 
     /**
@@ -154,7 +153,7 @@ class CliOption implements IConstructible, IGettable
      * @param bool $required
      * @param bool $multipleAllowed
      * @param string|string[]|bool|int|null $defaultValue
-     * @see \Lkrms\Template\TConstructible::fromArray()
+     * @see \Lkrms\Core\Mixin\TConstructible::fromArray()
      */
     public function __construct(
         ?string $long,
@@ -209,12 +208,12 @@ class CliOption implements IConstructible, IGettable
 
         if (!is_null($this->Long))
         {
-            Assert::pregMatch($this->Long, "/^[a-z0-9][-a-z0-9_]+\$/i", "long");
+            Assert::patternMatches($this->Long, "/^[a-z0-9][-a-z0-9_]+\$/i", "long");
         }
 
         if (!is_null($this->Short))
         {
-            Assert::pregMatch($this->Short, "/^[a-z0-9]\$/i", "short");
+            Assert::patternMatches($this->Short, "/^[a-z0-9]\$/i", "short");
         }
 
         if (!is_null($this->DefaultValue))

@@ -3,7 +3,7 @@
 ### General
 - [ ] Review namespaces and classes before making a v1.0.0 release
   - [ ] Add `abstract` to classes with exclusively `static` members
-  - [ ] `Assert`: `pregMatch()` -> `patternMatches()`
+  - [x] `Assert`: `pregMatch()` -> `patternMatches()`
 - [ ] Throw custom exceptions
 - [ ] Formalise tests
   - [ ] Convert informal tests to PHPUnit tests
@@ -27,8 +27,8 @@
 - [ ] Add support for parallel downloads and queued actions
 
 ### Sync
-- [ ] Move `Sync\SyncProvider` to `Sync\Provider\SyncProvider`
-  - [ ] Create an alias at `Sync\SyncProvider`
+- [x] Move `Sync\SyncProvider` and `Sync\SyncEntityProvider` to `Sync\Provider\`
+  - ~~Create an alias at `Sync\SyncProvider`~~
 - [ ] Implement automatic local storage of entities
   - [ ] When a `SyncEntity` is created, load a local instance before applying provider state
   - [ ] Add `static` methods like `getFrom($provider)` and `syncFrom($provider)` to `SyncEntity`
@@ -38,7 +38,7 @@
 
 ### Cli
 - [x] Implement `CliOptionType::ONE_OF_OPTIONAL`
-- [ ] Allow commands to be chained and/or invoked as functions
+- [x] Allow commands to be chained and/or invoked as functions
   - [x] Receive arguments via `CliCommand::__invoke()` instead of reading from `$GLOBALS["argv"]`
 - [ ] Allow subcommands to be abbreviated
 - [ ] Implement shared/default command options

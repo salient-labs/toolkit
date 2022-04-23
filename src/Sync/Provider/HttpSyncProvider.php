@@ -7,7 +7,6 @@ namespace Lkrms\Sync\Provider;
 use Lkrms\Curler\CachingCurler;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerHeaders;
-use Lkrms\Sync\SyncProvider;
 
 /**
  * Base class for HTTP-based RESTful API providers
