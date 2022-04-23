@@ -16,27 +16,27 @@ use Throwable;
 class CurlerException extends \Lkrms\Exception\Exception
 {
     /**
-     * @var array
+     * @var array|null
      */
     protected $CurlInfo;
 
     /**
-     * @var mixed
+     * @var string|array|null
      */
     protected $RequestData;
 
     /**
-     * @var int
+     * @var int|null
      */
     protected $ResponseCode;
 
     /**
-     * @var array
+     * @var array|null
      */
     protected $ResponseHeaders;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $Response;
 

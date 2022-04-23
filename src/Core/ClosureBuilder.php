@@ -143,7 +143,7 @@ class ClosureBuilder
     /**
      * Converts property names to normalised property names
      *
-     * @var callable
+     * @var callable|null
      */
     protected $Normaliser;
 
@@ -153,7 +153,7 @@ class ClosureBuilder
     private $PropertyActionClosures = [];
 
     /**
-     * @var Closure
+     * @var Closure|null
      */
     private $CreateFromClosure;
 
@@ -162,6 +162,9 @@ class ClosureBuilder
      */
     private $CreateFromSignatureClosures = [];
 
+    /**
+     * @var array<string,ClosureBuilder>
+     */
     private static $Instances = [];
 
     public static function getFor(string $class): ClosureBuilder
@@ -556,7 +559,12 @@ class ClosureBuilder
             };
         }
 
-        if (!$closure || is_null($closure = $closure->bindTo(null, $this->Class)))
+        if ($closure)
+        {
+            $closure = $closure->bindTo(null, $this->Class);
+        }
+
+        if (!$closure)
         {
             throw new RuntimeException("Unable to perform '$action' on property '$name'");
         }

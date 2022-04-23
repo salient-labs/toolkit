@@ -17,7 +17,7 @@ use Whoops\Run;
 class Err
 {
     /**
-     * @var Run
+     * @var Run|null
      */
     private static $Whoops;
 

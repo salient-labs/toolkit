@@ -36,17 +36,17 @@ class SyncEntityFuzzyResolver extends SyncEntityResolver
     protected $WeightField;
 
     /**
-     * @var array<int,array{0:SyncEntity,1:string}>
+     * @var array<int,array{0:SyncEntity,1:string}>|null
      */
     protected $Entities;
 
     /**
-     * @var int
+     * @var int|null
      */
     protected $Algorithm;
 
     /**
-     * @var float
+     * @var float|null
      */
     protected $UncertaintyThreshold;
 

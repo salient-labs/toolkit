@@ -47,7 +47,7 @@ class Curler
     protected $LastQuery;
 
     /**
-     * @var mixed|null
+     * @var string|array|null
      */
     protected $LastRequestData;
 

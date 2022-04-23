@@ -98,12 +98,12 @@ abstract class CliCommand
     private $ExitStatus = 0;
 
     /**
-     * @var string[]
+     * @var string[]|null
      */
     private $Name;
 
     /**
-     * @var CliOption[]
+     * @var CliOption[]|null
      */
     private $Options;
 
@@ -128,17 +128,17 @@ abstract class CliCommand
     private $Arguments = [];
 
     /**
-     * @var array<string,string|array|bool|null>
+     * @var array<string,string|array|bool|null>|null
      */
     private $OptionValues;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $OptionErrors;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $NextArgumentIndex;
 
@@ -518,19 +518,16 @@ EOF;
             {
                 $value = $value ?: $option->DefaultValue ?: "";
             }
-            elseif ($option->IsValueRequired)
+            elseif (is_null($value))
             {
-                if (is_null($value))
-                {
-                    $i++;
+                $i++;
 
-                    if (is_null($value = ($args[$i] ?? null)))
-                    {
-                        // Allow null to be stored to prevent an additional
-                        // "argument required" error
-                        $this->optionError("{$option->DisplayName} value required");
-                        $i--;
-                    }
+                if (is_null($value = ($args[$i] ?? null)))
+                {
+                    // Allow null to be stored to prevent an additional
+                    // "argument required" error
+                    $this->optionError("{$option->DisplayName} value required");
+                    $i--;
                 }
             }
 

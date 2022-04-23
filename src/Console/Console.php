@@ -21,11 +21,6 @@ abstract class Console extends ConsoleMessageWriter
     /**
      * @var ConsoleTarget[]
      */
-    private static $LogTargets = [];
-
-    /**
-     * @var ConsoleTarget[]
-     */
     private static $OutputTargets = [];
 
     /**
@@ -121,7 +116,6 @@ abstract class Console extends ConsoleMessageWriter
         }
         else
         {
-            self::$LogTargets[] = $target;
             self::$DefaultOutputLogIsEnabled = false;
         }
 
