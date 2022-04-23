@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util\Command\Http;
+namespace Lkrms\LkUtil\Command\Http;
 
 use Lkrms\Cli\CliCommand;
 use Lkrms\Exception\InvalidCliArgumentException;
@@ -12,7 +12,7 @@ use Lkrms\Sync\Provider\HttpSyncProvider;
 
 /**
  *
- * @package Lkrms\Util
+ * @package Lkrms\LkUtil
  */
 class HttpGetPath extends CliCommand
 {

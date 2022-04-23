@@ -1,19 +1,19 @@
 <?php
 
-namespace Lkrms\Util;
+namespace Lkrms\LkUtil;
 
 use Lkrms\Cli\Cli;
 use Lkrms\Env;
 use Lkrms\Err\Err;
-use Lkrms\Util\Command\Generate\GenerateSyncEntityClass;
-use Lkrms\Util\Command\Generate\GenerateSyncEntityInterface;
-use Lkrms\Util\Command\Http\HttpGetPath;
+use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityClass;
+use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityInterface;
+use Lkrms\LkUtil\Command\Http\HttpGetPath;
 
 $loader = require (
     ($_composer_autoload_path = $_composer_autoload_path ?? "") ?:
     __DIR__ . "/../../vendor/autoload.php"
 );
-$loader->addPsr4("Lkrms\\Util\\", __DIR__);
+$loader->addPsr4("Lkrms\\LkUtil\\", __DIR__);
 
 Err::handleErrors();
 
