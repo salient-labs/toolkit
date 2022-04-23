@@ -101,7 +101,7 @@ class GenerateSyncEntityClass extends CliCommand
         ];
     }
 
-    protected function run(...$args)
+    protected function run(string ...$args)
     {
         $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
         $class      = array_pop($namespace);
@@ -194,7 +194,7 @@ class GenerateSyncEntityClass extends CliCommand
             {
                 if (is_string($key) && preg_match('/^[[:alpha:]]/', $key))
                 {
-                    $key  = $entityClass::normalisePropertyName($key);
+                    $key  = $entityClass::normaliseProperty($key);
                     $key  = Convert::toPascalCase($key);
                     $type = gettype($value);
                     $type = $typeMap[$type] ?? $type;

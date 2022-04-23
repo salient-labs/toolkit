@@ -37,7 +37,7 @@ class Generate
     /**
      * Generate a unique non-crypto hash
      *
-     * @param string|\Stringable $value One or more values to hash.
+     * @param string|\Stringable ...$value One or more values to hash.
      * @return string
      */
     public static function hash(...$value): string

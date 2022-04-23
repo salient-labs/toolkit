@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Template;
+namespace Lkrms\Core\Mixin;
 
 use Lkrms\Closure;
-use Lkrms\Reflect\PropertyResolver;
+use Lkrms\Core\ClosureBuilder;
 use UnexpectedValueException;
 
 /**
  * Implements IConstructible to convert arrays to instances
  *
  * @package Lkrms
+ * @see \Lkrms\Core\Contract\IConstructible
  */
 trait TConstructible
 {
@@ -20,8 +21,9 @@ trait TConstructible
      *
      * The constructor (if any) is invoked with parameters taken from `$data`.
      * If `$data` values remain, they are assigned to public properties. If
-     * further values remain and the class implements {@see IExtensible}, they
-     * are assigned via {@see IExtensible::setMetaProperty()}.
+     * further values remain and the class implements
+     * {@see \Lkrms\Core\Contract\IExtensible}, they are assigned via
+     * {@see \Lkrms\Core\Contract\IExtensible::setMetaProperty()}.
      *
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.
@@ -31,7 +33,7 @@ trait TConstructible
      */
     public static function fromArray(array $data)
     {
-        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($data);
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data);
     }
 
     /**
@@ -45,7 +47,7 @@ trait TConstructible
      */
     public static function fromArrayVia(array $data, callable $callback)
     {
-        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($data, $callback);
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $callback);
     }
 
     /**
@@ -70,7 +72,7 @@ trait TConstructible
     ) {
         $callback = Closure::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        return (PropertyResolver::getFor(static::class)->getCreateFromClosure())($data, $callback);
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $callback);
     }
 
     /**
@@ -136,11 +138,11 @@ trait TConstructible
     {
         if ($sameKeys)
         {
-            return PropertyResolver::getFor(static::class)->getCreateFromSignatureClosure(array_keys(reset($dataList)));
+            return ClosureBuilder::getFor(static::class)->getCreateFromSignatureClosure(array_keys(reset($dataList)));
         }
         else
         {
-            return PropertyResolver::getFor(static::class)->getCreateFromClosure();
+            return ClosureBuilder::getFor(static::class)->getCreateFromClosure();
         }
     }
 

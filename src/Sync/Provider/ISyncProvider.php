@@ -7,7 +7,7 @@ namespace Lkrms\Sync\Provider;
 /**
  * Base interface for SyncEntity providers
  *
- * Implemented by {@see Lkrms\Sync\SyncProvider}.
+ * Implemented by {@see Lkrms\Sync\Provider\SyncProvider}.
  *
  * @package Lkrms
  */

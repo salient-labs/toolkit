@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Template;
+namespace Lkrms\Core\Mixin;
 
 /**
- * Implements IClassCache to provide an in-memory cache shared between instances
- * of the same class
+ * Implements IClassCache to share an ephemeral cache between instances of the
+ * same class
  *
  * @package Lkrms
- * @see IClassCache
+ * @see \Lkrms\Core\Contract\IClassCache
  */
 trait TClassCache
 {
@@ -32,7 +32,7 @@ trait TClassCache
      * `$itemType` cache shared between instances of this class.
      *
      * @param string $itemType
-     * @param int|string $itemPath
+     * @param int|string ...$itemPath
      * @return mixed
      */
     final public static function getClassCache(string $itemType, ...$itemPath)
@@ -55,7 +55,7 @@ trait TClassCache
      *
      * @param string $itemType
      * @param mixed $item
-     * @param int|string $itemPath
+     * @param int|string ...$itemPath
      */
     final public static function setClassCache(string $itemType, $item, ...$itemPath)
     {
@@ -64,7 +64,6 @@ trait TClassCache
         if (empty($itemPath))
         {
             $cache = $item;
-
             return;
         }
 
@@ -97,7 +96,7 @@ trait TClassCache
      *
      * @param string $itemType
      * @param callable $callback
-     * @param int|string $itemPath
+     * @param int|string ...$itemPath
      * @return mixed
      */
     final public static function getOrSetClassCache(string $itemType, callable $callback, ...$itemPath)

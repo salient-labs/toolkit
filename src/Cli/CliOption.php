@@ -6,11 +6,10 @@ namespace Lkrms\Cli;
 
 use Lkrms\Assert;
 use Lkrms\Convert;
-use Lkrms\Template\IAccessible;
-use Lkrms\Template\IConstructible;
-use Lkrms\Template\IGettable;
-use Lkrms\Template\TConstructible;
-use Lkrms\Template\TGettable;
+use Lkrms\Core\Contract\IConstructible;
+use Lkrms\Core\Contract\IGettable;
+use Lkrms\Core\Mixin\TConstructible;
+use Lkrms\Core\Mixin\TGettable;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -31,7 +30,7 @@ use UnexpectedValueException;
  * @property-read string|null $ValueName
  * @property-read string|null $Description
  * @property-read string[]|null $AllowedValues
- * @property-read string|string[]|null $DefaultValue
+ * @property-read string|string[]|bool|int|null $DefaultValue
  * @property-read string|string[]|bool|int|null $Value
  * @property-read bool $IsValueSet
  *
@@ -116,7 +115,7 @@ class CliOption implements IConstructible, IGettable
 
     /**
      * @internal
-     * @var string|string[]|null
+     * @var string|string[]|bool|int|null
      */
     protected $DefaultValue;
 
@@ -138,23 +137,23 @@ class CliOption implements IConstructible, IGettable
      */
     public static function getGettable(): array
     {
-        return IAccessible::ALLOW_PROTECTED;
+        return ["*"];
     }
 
     /**
      * Create a new command-line option
      *
-     * @param string|null $long e.g. `dest`
-     * @param string|null $short e.g. `d`
-     * @param string|null $valueName e.g. `DIR`
-     * @param string|null $description e.g. `Sync files to DIR`
-     * @param int $optionType e.g. {@see CliOptionType::VALUE}
+     * @param string|null $long
+     * @param string|null $short
+     * @param string|null $valueName
+     * @param string|null $description
+     * @param int $optionType
      * @param string[]|null $allowedValues For {@see CliOptionType::ONE_OF} and
      * {@see CliOptionType::ONE_OF_OPTIONAL}
      * @param bool $required
      * @param bool $multipleAllowed
-     * @param string|string[]|null $defaultValue
-     * @see TConstructible::from()
+     * @param string|string[]|bool|int|null $defaultValue
+     * @see \Lkrms\Core\Mixin\TConstructible::fromArray()
      */
     public function __construct(
         ?string $long,
@@ -179,7 +178,7 @@ class CliOption implements IConstructible, IGettable
         {
             $this->IsRequired      = false;
             $this->IsValueRequired = false;
-            $this->DefaultValue    = false;
+            $this->DefaultValue    = $this->MultipleAllowed ? 0 : false;
 
             return;
         }
@@ -209,12 +208,12 @@ class CliOption implements IConstructible, IGettable
 
         if (!is_null($this->Long))
         {
-            Assert::pregMatch($this->Long, "/^[a-z0-9][-a-z0-9_]+\$/i", "long");
+            Assert::patternMatches($this->Long, "/^[a-z0-9][-a-z0-9_]+\$/i", "long");
         }
 
         if (!is_null($this->Short))
         {
-            Assert::pregMatch($this->Short, "/^[a-z0-9]\$/i", "short");
+            Assert::patternMatches($this->Short, "/^[a-z0-9]\$/i", "short");
         }
 
         if (!is_null($this->DefaultValue))

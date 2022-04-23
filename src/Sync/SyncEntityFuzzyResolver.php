@@ -7,6 +7,7 @@ namespace Lkrms\Sync;
 use Lkrms\Console\Console;
 use Lkrms\Convert;
 use Lkrms\Generate;
+use Lkrms\Sync\Provider\SyncEntityProvider;
 
 /**
  * Uses Levenshtein distances or text similarity to resolve names to entities
@@ -35,17 +36,17 @@ class SyncEntityFuzzyResolver extends SyncEntityResolver
     protected $WeightField;
 
     /**
-     * @var array<int,array{0:SyncEntity,1:string}>
+     * @var array<int,array{0:SyncEntity,1:string}>|null
      */
     protected $Entities;
 
     /**
-     * @var int
+     * @var int|null
      */
     protected $Algorithm;
 
     /**
-     * @var float
+     * @var float|null
      */
     protected $UncertaintyThreshold;
 

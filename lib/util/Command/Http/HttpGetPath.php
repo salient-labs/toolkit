@@ -47,7 +47,7 @@ class HttpGetPath extends CliCommand
         ];
     }
 
-    protected function run(...$args)
+    protected function run(string ...$args)
     {
         $providerClass = $this->getOptionValue("provider") ?: Env::get("SYNC_ENTITY_PROVIDER", "");
         $endpointPath  = $this->getOptionValue("endpoint");

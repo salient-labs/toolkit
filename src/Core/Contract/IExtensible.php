@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Template;
+namespace Lkrms\Core\Contract;
 
 /**
- * Implements arbitrary property storage
+ * Stores arbitrary property values
  *
  * @package Lkrms
- * @see TExtensible
  */
-interface IExtensible extends IGettable, ISettable, IResolvable
+interface IExtensible
 {
     public function setMetaProperty(string $name, $value): void;
 
@@ -20,5 +19,10 @@ interface IExtensible extends IGettable, ISettable, IResolvable
 
     public function unsetMetaProperty(string $name): void;
 
+    /**
+     * Return an array that maps names to values for all stored properties
+     *
+     * @return array<string,mixed>
+     */
     public function getMetaProperties(): array;
 }

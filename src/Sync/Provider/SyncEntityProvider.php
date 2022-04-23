@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Sync;
+namespace Lkrms\Sync\Provider;
 
 use Lkrms\Convert;
 use Lkrms\Ioc\Ioc;
 use Lkrms\Reflect;
+use Lkrms\Sync\SyncEntity;
+use Lkrms\Sync\SyncOperation;
 use ReflectionClass;
 use ReflectionMethod;
 use UnexpectedValueException;
@@ -208,7 +210,7 @@ class SyncEntityProvider
      * - MUST be required
      *
      * @param SyncEntity $entity
-     * @param mixed $params Additional parameters to pass to the provider.
+     * @param mixed ...$params Additional parameters to pass to the provider.
      * @return SyncEntity
      */
     public function create(SyncEntity $entity, ...$params): SyncEntity
@@ -247,7 +249,7 @@ class SyncEntityProvider
      * - MAY be nullable
      *
      * @param int|string|null $id
-     * @param mixed $params Additional parameters to pass to the provider.
+     * @param mixed ...$params Additional parameters to pass to the provider.
      * @return SyncEntity
      */
     public function get($id = null, ...$params): SyncEntity
@@ -286,7 +288,7 @@ class SyncEntityProvider
      * - MUST be required
      *
      * @param SyncEntity $entity
-     * @param mixed $params Additional parameters to pass to the provider.
+     * @param mixed ...$params Additional parameters to pass to the provider.
      * @return SyncEntity
      */
     public function update(SyncEntity $entity, ...$params): SyncEntity
@@ -329,7 +331,7 @@ class SyncEntityProvider
      * - MAY be `null`
      *
      * @param SyncEntity $entity
-     * @param mixed $params Additional parameters to pass to the provider.
+     * @param mixed ...$params Additional parameters to pass to the provider.
      * @return null|SyncEntity
      */
     public function delete(SyncEntity $entity, ...$params): ?SyncEntity
@@ -361,7 +363,7 @@ class SyncEntityProvider
      * public function getList_Faculty(): array;
      * ```
      *
-     * @param mixed $params Parameters to pass to the provider.
+     * @param mixed ...$params Parameters to pass to the provider.
      * @return SyncEntity[]
      */
     public function getList(...$params): array

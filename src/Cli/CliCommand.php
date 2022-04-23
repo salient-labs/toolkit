@@ -75,7 +75,7 @@ abstract class CliCommand
      * ```
      *
      * @return array<int,CliOption|array>
-     * @see TConstructible::from()
+     * @see \Lkrms\Core\Mixin\TConstructible::fromArray()
      */
     abstract protected function _getOptions(): array;
 
@@ -87,10 +87,10 @@ abstract class CliCommand
      * 2. the last value passed to {@see CliCommand::setExitStatus()}, or
      * 3. `0`, indicating success, unless an unhandled error occurs
      *
-     * @param string $params
+     * @param string ...$params
      * @return int|void
      */
-    abstract protected function run(...$params);
+    abstract protected function run(string ...$params);
 
     /**
      * @var int
@@ -98,12 +98,12 @@ abstract class CliCommand
     private $ExitStatus = 0;
 
     /**
-     * @var string[]
+     * @var string[]|null
      */
     private $Name;
 
     /**
-     * @var CliOption[]
+     * @var CliOption[]|null
      */
     private $Options;
 
@@ -128,17 +128,17 @@ abstract class CliCommand
     private $Arguments = [];
 
     /**
-     * @var array<string,string|array|bool|null>
+     * @var array<string,string|array|bool|null>|null
      */
     private $OptionValues;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $OptionErrors;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $NextArgumentIndex;
 
@@ -147,11 +147,16 @@ abstract class CliCommand
      */
     private $IsHelp = false;
 
+    /**
+     * @var bool
+     */
+    private $HasRun = false;
+
     final public static function assertNameIsValid(?array $name)
     {
         foreach ($name as $i => $subcommand)
         {
-            Assert::pregMatch($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
+            Assert::patternMatches($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
         }
     }
 
@@ -440,7 +445,7 @@ $options
 EOF;
     }
 
-    final protected function optionError(string $message)
+    private function optionError(string $message)
     {
         Console::error($this->getLongCommandName() . ": $message");
         $this->OptionErrors++;
@@ -513,19 +518,16 @@ EOF;
             {
                 $value = $value ?: $option->DefaultValue ?: "";
             }
-            elseif ($option->IsValueRequired)
+            elseif (is_null($value))
             {
-                if (is_null($value))
-                {
-                    $i++;
+                $i++;
 
-                    if (is_null($value = ($args[$i] ?? null)))
-                    {
-                        // Allow null to be stored to prevent an additional
-                        // "argument required" error
-                        $this->optionError("{$option->DisplayName} value required");
-                        $i--;
-                    }
+                if (is_null($value = ($args[$i] ?? null)))
+                {
+                    // Allow null to be stored to prevent an additional
+                    // "argument required" error
+                    $this->optionError("{$option->DisplayName} value required");
+                    $i--;
                 }
             }
 
@@ -642,8 +644,25 @@ EOF;
         return $values;
     }
 
+    /**
+     * Parse the given arguments and run the command
+     *
+     * @param string[] $args
+     * @return int
+     * @see CliCommand::run()
+     */
     final public function __invoke(array $args): int
     {
+        if ($this->HasRun)
+        {
+            throw new RuntimeException("Command has already run");
+        }
+
+        if (Cli::getRunningCommand() !== $this)
+        {
+            Assert::sapiIsCli();
+        }
+
         $this->Arguments = $args;
         $this->loadOptionValues();
 
@@ -653,6 +672,8 @@ EOF;
 
             return 0;
         }
+
+        $this->HasRun = true;
 
         $return = $this->run(...array_slice($this->Arguments, $this->NextArgumentIndex));
 
@@ -668,10 +689,22 @@ EOF;
      * Set the command's return value / exit status
      *
      * @param int $status
+     * @return void
      * @see CliCommand::run()
      */
-    final protected function setExitStatus(int $status)
+    final protected function setExitStatus(int $status): void
     {
         $this->ExitStatus = $status;
+    }
+
+    /**
+     * Get the current return value / exit status
+     *
+     * @return int
+     * @see CliCommand::setExitStatus()
+     */
+    final protected function getExitStatus(): int
+    {
+        return $this->ExitStatus;
     }
 }

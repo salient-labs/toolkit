@@ -92,7 +92,7 @@ abstract class Runtime
 
         if (($frame = $frames[$depth + 2] ?? null) &&
             preg_match('/^(?P<namespace>.*?)(?P<function>[^\\\\]+|\{closure\})$/',
-                $frame["function"] ?? "",
+                $frame["function"],
                 $function))
         {
             $class     = $frame["class"] ?? null;

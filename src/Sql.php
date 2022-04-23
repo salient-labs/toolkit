@@ -19,7 +19,7 @@ class Sql
      * `$db->param("<name>")` to the SQL for each value in `$list`.
      * @param array $where A list of WHERE clauses.
      * @param array $var An associative array of query variables.
-     * @param mixed $list Zero or more values.
+     * @param mixed ...$list Zero or more values.
      */
     public static function valueInList(string $field, callable $param, ?array & $where, ?array & $var, ...$list)
     {

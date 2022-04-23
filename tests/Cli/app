@@ -3,9 +3,9 @@
 
 namespace Lkrms\Tests\Cli;
 
-use Lkrms\Cli;
+use Lkrms\Cli\Cli;
 use Lkrms\Env;
-use Lkrms\Err;
+use Lkrms\Err\Err;
 use Lkrms\Tests\Cli\Command\TestOptions;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
@@ -18,5 +18,5 @@ Env::load(__DIR__ . "/../.env");
 TestOptions::register();
 TestOptions::register(["sync"]);
 
-$status = Cli::runCommand();
+$status = Cli::run();
 exit ($status);

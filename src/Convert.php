@@ -265,7 +265,7 @@ abstract class Convert
     /**
      * Convert the given strings and Stringables to an array of strings
      *
-     * @param string|Stringable $value
+     * @param string|Stringable ...$value
      * @return string[]
      */
     public static function toStrings(...$value): array

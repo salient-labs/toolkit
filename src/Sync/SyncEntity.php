@@ -6,14 +6,19 @@ namespace Lkrms\Sync;
 
 use JsonSerializable;
 use Lkrms\Convert;
+use Lkrms\Core\Contract\IClassCache;
+use Lkrms\Core\Contract\IConstructible;
+use Lkrms\Core\Contract\IExtensible;
+use Lkrms\Core\Contract\IGettable;
+use Lkrms\Core\Contract\IResolvable;
+use Lkrms\Core\Contract\ISettable;
+use Lkrms\Core\Mixin\TClassCache;
+use Lkrms\Core\Mixin\TConstructible;
+use Lkrms\Core\Mixin\TExtensible;
+use Lkrms\Core\Mixin\TGettable;
+use Lkrms\Core\Mixin\TResolvable;
+use Lkrms\Core\Mixin\TSettable;
 use Lkrms\Reflect;
-use Lkrms\Template\IAccessible;
-use Lkrms\Template\IClassCache;
-use Lkrms\Template\IConstructible;
-use Lkrms\Template\IExtensible;
-use Lkrms\Template\TClassCache;
-use Lkrms\Template\TConstructible;
-use Lkrms\Template\TExtensible;
 use UnexpectedValueException;
 
 /**
@@ -22,8 +27,9 @@ use UnexpectedValueException;
  * By default:
  * - All `protected` properties are gettable and settable.
  *
- *   To change this, override {@see \Lkrms\Template\TGettable::getGettable()}
- *   and/or {@see \Lkrms\Template\TSettable::getSettable()}.
+ *   To change this, override
+ *   {@see \Lkrms\Core\Mixin\TGettable::getGettable()} and/or
+ *   {@see \Lkrms\Core\Mixin\TSettable::getSettable()}.
  *
  * - {@see SyncEntity::serialize()} returns an associative array of `public`
  *   property values.
@@ -37,9 +43,9 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-abstract class SyncEntity implements IConstructible, IExtensible, IClassCache, JsonSerializable
+abstract class SyncEntity implements IConstructible, IExtensible, IGettable, IResolvable, ISettable, IClassCache, JsonSerializable
 {
-    use TConstructible, TExtensible, TClassCache;
+    use TConstructible, TExtensible, TGettable, TResolvable, TSettable, TClassCache;
 
     /**
      * @var int|string
@@ -63,12 +69,12 @@ abstract class SyncEntity implements IConstructible, IExtensible, IClassCache, J
 
     public static function getGettable(): array
     {
-        return IAccessible::ALLOW_PROTECTED;
+        return ["*"];
     }
 
     public static function getSettable(): array
     {
-        return IAccessible::ALLOW_PROTECTED;
+        return ["*"];
     }
 
     /**
@@ -107,7 +113,7 @@ abstract class SyncEntity implements IConstructible, IExtensible, IClassCache, J
         );
     }
 
-    final public static function normalisePropertyName(string $name): string
+    final public static function normaliseProperty(string $name): string
     {
         if (!($closure = self::getClassCache(__METHOD__)))
         {

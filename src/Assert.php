@@ -53,7 +53,7 @@ abstract class Assert
      * @param string|null $name
      * @param string $message
      */
-    public static function pregMatch(?string $value, string $pattern, string $name = null, string $message = "must match pattern '{}'")
+    public static function patternMatches(?string $value, string $pattern, string $name = null, string $message = "must match pattern '{}'")
     {
         if (is_null($value) || !preg_match($pattern, $value))
         {

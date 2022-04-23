@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Template;
+namespace Lkrms\Core\Mixin;
 
-use Lkrms\Reflect\PropertyResolver;
+use Lkrms\Core\ClosureBuilder;
 
 /**
- * Implements ISettable to provide a basic implementation of __set and __unset
+ * Implements ISettable to write inaccessible properties
  *
- * Override {@see TSettable::getSettable()} to allow access to `protected`
+ * Override {@see TSettable::getSettable()} to provide access to `protected`
  * variables via `__set` and `__unset`.
  *
  * The default is to deny `__set` and `__unset` for all properties.
@@ -22,26 +22,25 @@ use Lkrms\Reflect\PropertyResolver;
  *   regardless of {@see TSettable::getSettable()}'s return value.
  *
  * @package Lkrms
- * @see ISettable
+ * @see \Lkrms\Core\Contract\ISettable
  */
 trait TSettable
 {
     /**
      * Return a list of settable protected properties
      *
-     * To make all `protected` properties settable, return
-     * {@see IAccessible::ALLOW_PROTECTED}.
+     * To make all `protected` properties settable, return `["*"]`.
      *
      * @return string[]
      */
     public static function getSettable(): array
     {
-        return IAccessible::ALLOW_NONE;
+        return [];
     }
 
     private function setProperty(string $action, string $name, ...$params)
     {
-        return (PropertyResolver::getFor(static::class)->getPropertyActionClosure($name, $action))($this, ...$params);
+        return (ClosureBuilder::getFor(static::class)->getPropertyActionClosure($name, $action))($this, ...$params);
     }
 
     final public function __set(string $name, $value): void

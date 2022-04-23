@@ -104,8 +104,8 @@ abstract class Sqlite
     /**
      * Get the open SQLite3 instance
      *
-     * Call {@see Sqlite::assertOpen()} first to ensure the return value is not
-     * `null`.
+     * Call {@see Sqlite::assertIsOpen()} first to ensure the return value is
+     * not `null`.
      *
      * @return null|SQLite3 .
      */

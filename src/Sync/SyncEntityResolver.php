@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync;
 
+use Lkrms\Sync\Provider\SyncEntityProvider;
 use UnexpectedValueException;
 
 /**

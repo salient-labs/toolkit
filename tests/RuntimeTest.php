@@ -72,7 +72,7 @@ final class RuntimeTest extends \Lkrms\Tests\TestCase
         $this->assertArrayHasSubArrayAndKeys($thisMethod, ["line"], ($class::getStaticCallback())(2));
 
         $expected = [
-            "namespace" => \Lkrms\Tests\Runtime::class . "\\",
+            "namespace" => "Lkrms\\Tests\\Runtime\\",
             "function"  => "getCallerViaFunction",
             1           => ":",
         ];
@@ -80,7 +80,7 @@ final class RuntimeTest extends \Lkrms\Tests\TestCase
         $this->assertArrayHasSubArrayAndKeys($thisMethod, ["line"], getCallerViaFunction(1));
         $this->assertArrayHasSubArrayAndKeys($expected, ["line"], (getFunctionCallback())());
         $expected = [
-            "namespace" => \Lkrms\Tests\Runtime::class . "\\",
+            "namespace" => "Lkrms\\Tests\\Runtime\\",
             "function"  => "{closure}",
             1           => ":",
         ];

@@ -3,9 +3,9 @@
 
 namespace Lkrms\Tests\Cli;
 
-use Lkrms\Cli;
+use Lkrms\Cli\Cli;
 use Lkrms\Env;
-use Lkrms\Err;
+use Lkrms\Err\Err;
 use Lkrms\Tests\Cli\Command\TestOptions;
 use Throwable;
 
@@ -35,5 +35,5 @@ print_r([
     'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
 ]);
 
-$status = Cli::runCommand();
+$status = Cli::run();
 exit ($status);

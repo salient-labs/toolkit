@@ -2,22 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Reflect;
+namespace Lkrms\Core;
 
 use Closure;
-use Lkrms\Convert;
+use Lkrms\Core\Contract\IConstructible;
+use Lkrms\Core\Contract\IExtensible;
+use Lkrms\Core\Contract\IGettable;
+use Lkrms\Core\Contract\IResolvable;
+use Lkrms\Core\Contract\ISettable;
+use Lkrms\Core\Mixin\TConstructible;
+use Lkrms\Core\Mixin\TExtensible;
+use Lkrms\Core\Mixin\TGettable;
+use Lkrms\Core\Mixin\TResolvable;
+use Lkrms\Core\Mixin\TSettable;
 use Lkrms\Ioc\Ioc;
 use Lkrms\Reflect;
-use Lkrms\Template\IAccessible;
-use Lkrms\Template\IConstructible;
-use Lkrms\Template\IExtensible;
-use Lkrms\Template\IGettable;
-use Lkrms\Template\IResolvable;
-use Lkrms\Template\ISettable;
-use Lkrms\Template\TConstructible;
-use Lkrms\Template\TExtensible;
-use Lkrms\Template\TGettable;
-use Lkrms\Template\TSettable;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -28,7 +27,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class PropertyResolver
+class ClosureBuilder
 {
     /**
      * @var string
@@ -144,7 +143,7 @@ class PropertyResolver
     /**
      * Converts property names to normalised property names
      *
-     * @var callable
+     * @var callable|null
      */
     protected $Normaliser;
 
@@ -154,7 +153,7 @@ class PropertyResolver
     private $PropertyActionClosures = [];
 
     /**
-     * @var Closure
+     * @var Closure|null
      */
     private $CreateFromClosure;
 
@@ -163,9 +162,12 @@ class PropertyResolver
      */
     private $CreateFromSignatureClosures = [];
 
+    /**
+     * @var array<string,ClosureBuilder>
+     */
     private static $Instances = [];
 
-    public static function getFor(string $class): PropertyResolver
+    public static function getFor(string $class): ClosureBuilder
     {
         $class = Ioc::resolve($class);
 
@@ -183,20 +185,20 @@ class PropertyResolver
         $class         = new ReflectionClass($class);
         $constructible = $class->implementsInterface(IConstructible::class);
         $extensible    = $class->implementsInterface(IExtensible::class);
-        $gettable      = $extensible || $class->implementsInterface(IGettable::class);
-        $settable      = $extensible || $class->implementsInterface(ISettable::class);
-        $resolvable    = $extensible || $class->implementsInterface(IResolvable::class);
+        $gettable      = $class->implementsInterface(IGettable::class);
+        $settable      = $class->implementsInterface(ISettable::class);
+        $resolvable    = $class->implementsInterface(IResolvable::class);
 
         // If the class hasn't implemented any of these interfaces, perform a
         // (slower) check using traits
-        if (!($constructible | $gettable | $settable | $resolvable))
+        if (!($constructible | $extensible | $gettable | $settable | $resolvable))
         {
             $traits        = Reflect::getAllTraits($class);
             $constructible = array_key_exists(TConstructible::class, $traits);
             $extensible    = array_key_exists(TExtensible::class, $traits);
-            $gettable      = $extensible || array_key_exists(TGettable::class, $traits);
-            $settable      = $extensible || array_key_exists(TSettable::class, $traits);
-            $resolvable    = $extensible;
+            $gettable      = array_key_exists(TGettable::class, $traits);
+            $settable      = array_key_exists(TSettable::class, $traits);
+            $resolvable    = array_key_exists(TResolvable::class, $traits);
         }
 
         $this->Class        = $class->name;
@@ -215,20 +217,11 @@ class PropertyResolver
             $methodFilter   |= ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED;
         }
 
-        // IConstructible and IResolvable both provide access to properties via
-        // alternative names
-        if ($constructible || $resolvable)
+        // IResolvable provides access to properties via alternative names
+        if ($resolvable)
         {
-            $propertyFilter |= ReflectionProperty::IS_PUBLIC;
-
-            if ($resolvable)
-            {
-                $this->Normaliser = Closure::fromCallable("{$this->Class}::normalisePropertyName");
-            }
-            else
-            {
-                $this->Normaliser = function (string $name) { return Convert::toSnakeCase($name); };
-            }
+            $propertyFilter  |= ReflectionProperty::IS_PUBLIC;
+            $this->Normaliser = Closure::fromCallable("{$this->Class}::normaliseProperty");
         }
 
         // Get [non-static] declared properties
@@ -258,7 +251,7 @@ class PropertyResolver
             if ($gettable)
             {
                 $properties = array_merge($class->getMethod("getGettable")->invoke(null), $this->PublicProperties);
-                $this->GettableProperties = (IAccessible::ALLOW_PROTECTED === $properties)
+                $this->GettableProperties = (["*"] === $properties)
                     ? $this->Properties
                     : array_intersect($this->Properties, $properties ?: []);
             }
@@ -266,7 +259,7 @@ class PropertyResolver
             if ($settable)
             {
                 $properties = array_merge($class->getMethod("getSettable")->invoke(null), $this->PublicProperties);
-                $this->SettableProperties = (IAccessible::ALLOW_PROTECTED === $properties)
+                $this->SettableProperties = (["*"] === $properties)
                     ? $this->Properties
                     : array_intersect($this->Properties, $properties ?: []);
             }
@@ -276,17 +269,14 @@ class PropertyResolver
         if ($methodFilter)
         {
             $actions = [];
-
             if ($gettable)
             {
                 array_push($actions, "get", "isset");
             }
-
             if ($settable)
             {
                 array_push($actions, "set", "unset");
             }
-
             $regex = '/^_(' . implode("|", $actions) . ')(.+)$/i';
 
             foreach ($class->getMethods($methodFilter) as $method)
@@ -312,7 +302,7 @@ class PropertyResolver
         {
             foreach ($constructor->getParameters() as $param)
             {
-                $normalised   = $this->maybeNormalise($param->name);
+                $normalised   = $this->maybeNormaliseProperty($param->name);
                 $defaultValue = null;
 
                 if ($param->isOptional())
@@ -353,7 +343,7 @@ class PropertyResolver
         }
     }
 
-    protected function maybeNormalise(string $name): string
+    public function maybeNormaliseProperty(string $name): string
     {
         return $this->Normaliser ? ($this->Normaliser)($name) : $name;
     }
@@ -506,7 +496,7 @@ class PropertyResolver
      */
     public function getPropertyActionClosure(string $name, string $action): Closure
     {
-        $_name = $this->maybeNormalise($name);
+        $_name = $this->maybeNormaliseProperty($name);
 
         if ($closure = $this->PropertyActionClosures[$_name][$action] ?? null)
         {
@@ -569,7 +559,12 @@ class PropertyResolver
             };
         }
 
-        if (!$closure || is_null($closure = $closure->bindTo(null, $this->Class)))
+        if ($closure)
+        {
+            $closure = $closure->bindTo(null, $this->Class);
+        }
+
+        if (!$closure)
         {
             throw new RuntimeException("Unable to perform '$action' on property '$name'");
         }

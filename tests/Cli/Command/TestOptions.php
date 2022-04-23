@@ -91,7 +91,7 @@ class TestOptions extends CliCommand
         ];
     }
 
-    protected function run(...$args)
+    protected function run(string ...$args)
     {
         var_dump($this->getAllOptionValues());
         var_dump($args);

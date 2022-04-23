@@ -81,7 +81,7 @@ class Reflect
      * @param null|ReflectionType $type e.g. the return value of
      * `ReflectionParameter::getType()`.
      * @return ReflectionType[]
-     * @see Convert::getAllTypeNames()
+     * @see Reflect::getAllTypeNames()
      */
     public static function getAllTypes(?ReflectionType $type): array
     {
@@ -103,7 +103,7 @@ class Reflect
      * @param null|ReflectionType $type e.g. the return value of
      * `ReflectionParameter::getType()`.
      * @return string[]
-     * @see Convert::getAllTypes()
+     * @see Reflect::getAllTypes()
      */
     public static function getAllTypeNames(?ReflectionType $type): array
     {

@@ -20,7 +20,7 @@ use UnexpectedValueException;
 abstract class Ioc
 {
     /**
-     * @var Dice
+     * @var Dice|null
      */
     private static $Container;
 

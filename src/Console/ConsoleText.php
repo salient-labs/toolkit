@@ -88,10 +88,10 @@ REGEX;
 
             foreach (self::REGEX_MAP as $tag => $regex)
             {
-                $colours = self::COLOUR_MAP[$tag] ?? null;
+                $colours = self::COLOUR_MAP[$tag];
                 self::$PregReplace[0][] = "/" . $regex . "/u";
                 self::$PregReplace[1][] = '$1';
-                self::$PregReplace[2][] = $colours ? $colours[0] . '$1' . $colours[1] : '$1';
+                self::$PregReplace[2][] = $colours[0] . '$1' . $colours[1];
             }
         }
 
