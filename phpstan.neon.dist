@@ -10,3 +10,7 @@ parameters:
     - tests
   bootstrapFiles:
     - tests/bootstrap.php
+  ignoreErrors:
+    -
+      message: "#^Class Lkrms\\\\[^\\s]+ not found\\.$#"
+      path: lib/autoload_aliases.php

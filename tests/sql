@@ -4,7 +4,7 @@
 namespace Lkrms\Tests;
 
 use Lkrms\Err\Err;
-use Lkrms\Sql;
+use Lkrms\Util\Sql;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);

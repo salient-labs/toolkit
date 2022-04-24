@@ -6,7 +6,7 @@ namespace Lkrms\Store;
 
 use Exception;
 use Lkrms\Console\Console;
-use Lkrms\File;
+use Lkrms\Util\File;
 use RuntimeException;
 use SQLite3;
 

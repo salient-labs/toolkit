@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Core\Mixin;
 
-use Lkrms\Convert;
+use Lkrms\Util\Convert;
 
 /**
  * Implements IResolvable to normalise property names

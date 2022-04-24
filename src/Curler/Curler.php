@@ -7,10 +7,10 @@ namespace Lkrms\Curler;
 use CurlHandle;
 use CurlMultiHandle;
 use Lkrms\Console\Console;
-use Lkrms\Convert;
-use Lkrms\Env;
 use Lkrms\Exception\CurlerException;
-use Lkrms\Test;
+use Lkrms\Util\Convert;
+use Lkrms\Util\Env;
+use Lkrms\Util\Test;
 use RuntimeException;
 use UnexpectedValueException;
 

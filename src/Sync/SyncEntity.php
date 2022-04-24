@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Lkrms\Sync;
 
 use JsonSerializable;
-use Lkrms\Convert;
 use Lkrms\Core\Contract\IClassCache;
 use Lkrms\Core\Contract\IConstructible;
 use Lkrms\Core\Contract\IExtensible;
@@ -18,7 +17,8 @@ use Lkrms\Core\Mixin\TExtensible;
 use Lkrms\Core\Mixin\TGettable;
 use Lkrms\Core\Mixin\TResolvable;
 use Lkrms\Core\Mixin\TSettable;
-use Lkrms\Reflect;
+use Lkrms\Util\Convert;
+use Lkrms\Util\Reflect;
 use UnexpectedValueException;
 
 /**

@@ -7,7 +7,7 @@ namespace Lkrms\Console\ConsoleTarget;
 use DateTime;
 use DateTimeZone;
 use Lkrms\Console\ConsoleLevels;
-use Lkrms\File;
+use Lkrms\Util\File;
 use RuntimeException;
 
 /**

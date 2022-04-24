@@ -6,9 +6,9 @@ namespace Lkrms\Console;
 
 use Lkrms\Console\ConsoleColour as C;
 use Lkrms\Console\ConsoleTarget\Stream;
-use Lkrms\Env;
-use Lkrms\File;
-use Lkrms\Generate;
+use Lkrms\Util\Env;
+use Lkrms\Util\File;
+use Lkrms\Util\Generate;
 use Throwable;
 
 /**

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Lkrms\LkUtil\Command\Http;
 
 use Lkrms\Cli\CliCommand;
-use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Cli\CliOptionType;
-use Lkrms\Env;
+use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Sync\Provider\HttpSyncProvider;
+use Lkrms\Util\Env;
 
 /**
  *

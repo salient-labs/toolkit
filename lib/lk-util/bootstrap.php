@@ -3,11 +3,11 @@
 namespace Lkrms\LkUtil;
 
 use Lkrms\Cli\Cli;
-use Lkrms\Env;
 use Lkrms\Err\Err;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityClass;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityInterface;
 use Lkrms\LkUtil\Command\Http\HttpGetPath;
+use Lkrms\Util\Env;
 
 $loader = require (
     ($_composer_autoload_path = $_composer_autoload_path ?? "") ?:

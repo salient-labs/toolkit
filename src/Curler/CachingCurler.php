@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Curler;
 
 use Lkrms\Cache;
-use Lkrms\Generate;
+use Lkrms\Util\Generate;
 
 /**
  * Adds GET request caching to Curler

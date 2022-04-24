@@ -11,14 +11,14 @@ parameters:
 			path: src/Cli/CliCommand.php
 
 		-
-			message: "#^Strict comparison using \\=\\=\\= between array\\<int\\|string, mixed\\> and false will always evaluate to false\\.$#"
-			count: 1
-			path: src/Closure.php
-
-		-
 			message: "#^Ternary operator condition is always true\\.$#"
 			count: 1
 			path: src/Console/Console.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between array\\<int\\|string, mixed\\> and false will always evaluate to false\\.$#"
+			count: 1
+			path: src/Core/ClosureBuilder.php
 
 		-
 			message: "#^Call to function is_null\\(\\) with ReflectionMethod\\|null will always evaluate to false\\.$#"

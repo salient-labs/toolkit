@@ -6,6 +6,7 @@ namespace Lkrms;
 
 use Exception;
 use Lkrms\Store\Sqlite;
+use Lkrms\Util\Test;
 use SQLite3;
 use UnexpectedValueException;
 

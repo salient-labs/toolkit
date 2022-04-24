@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms;
 
+use Lkrms\Util\Convert;
+
 /**
  * Runtime state tracking
  *
