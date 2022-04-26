@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Lkrms;
-
-use Lkrms\Store\Sqlite;
+namespace Lkrms\Store;
 
 /**
  * A SQLite store for deleted JSON objects
  *
  * @package Lkrms\Service
  */
-class Trash extends Sqlite
+abstract class Trash extends Sqlite
 {
     /**
      * Check if database is open

@@ -4,7 +4,7 @@
 namespace Lkrms\Tests;
 
 use Lkrms\Console\Console;
-use Lkrms\Console\ConsoleTarget\Stream;
+use Lkrms\Console\ConsoleTarget\StreamTarget;
 use Lkrms\Console\ConsoleText;
 use Lkrms\Err\Err;
 
@@ -14,7 +14,7 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 Err::handleErrors();
 
 // Send all output, including debug messages and errors, to STDOUT
-Console::registerTarget(new Stream(STDOUT));
+Console::registerTarget(new StreamTarget(STDOUT));
 
 // Disable output logging
 Console::disableDefaultOutputLog();

@@ -10,7 +10,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class SyncOperation
+abstract class SyncOperation
 {
     /**
      * Add an entity to the connected system

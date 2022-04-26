@@ -15,7 +15,7 @@ use RuntimeException;
  *
  * @package Lkrms
  */
-class Stream extends \Lkrms\Console\ConsoleTarget
+class StreamTarget extends ConsoleTarget
 {
     /**
      * @var resource
@@ -119,7 +119,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
     {
         if (!$this->Path)
         {
-            throw new RuntimeException("Stream not created by Stream::fromPath()");
+            throw new RuntimeException("StreamTarget not created by StreamTarget::fromPath()");
         }
 
         $path = $path ?: $this->Path;
@@ -143,7 +143,7 @@ class Stream extends \Lkrms\Console\ConsoleTarget
      * @param string|null $timestamp Default: `[d M H:i:s.uO] `
      * @param string|null $timezone Default: as per `date_default_timezone_set`
      * or INI setting `date.timezone`
-     * @return Stream
+     * @return StreamTarget
      */
     public static function fromPath(
         string $path,
@@ -151,14 +151,14 @@ class Stream extends \Lkrms\Console\ConsoleTarget
         bool $addTimestamp = null,
         string $timestamp  = null,
         string $timezone   = null
-    ): Stream
+    ): StreamTarget
     {
         if (!File::maybeCreate($path, 0600) || ($stream = fopen($path, "a")) === false)
         {
             throw new RuntimeException("Could not open $path");
         }
 
-        $stream       = new Stream($stream, $levels, $addTimestamp, $timestamp, $timezone);
+        $stream       = new StreamTarget($stream, $levels, $addTimestamp, $timestamp, $timezone);
         $stream->Path = $path;
 
         return $stream;

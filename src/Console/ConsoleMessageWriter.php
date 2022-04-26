@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
+use Lkrms\Console\ConsoleTarget\ConsoleTarget;
 use Lkrms\Runtime;
 use Lkrms\Util\Convert;
 use Throwable;

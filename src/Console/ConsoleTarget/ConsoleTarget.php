@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Console;
+namespace Lkrms\Console\ConsoleTarget;
+
+use Lkrms\Console\ConsoleColour;
+use Lkrms\Console\ConsoleLevel;
 
 /**
  * Base class for console targets

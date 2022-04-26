@@ -12,7 +12,7 @@ use Psr\Log\LoggerInterface;
  *
  * @package Lkrms
  */
-class Logger extends \Lkrms\Console\ConsoleTarget
+class LoggerTarget extends ConsoleTarget
 {
     /**
      * @var LoggerInterface

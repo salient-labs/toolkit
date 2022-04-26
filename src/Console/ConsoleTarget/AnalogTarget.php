@@ -9,7 +9,7 @@ namespace Lkrms\Console\ConsoleTarget;
  *
  * @package Lkrms
  */
-class Analog extends \Lkrms\Console\ConsoleTarget
+class AnalogTarget extends ConsoleTarget
 {
     protected function writeToTarget(int $level, string $message, array $context)
     {
