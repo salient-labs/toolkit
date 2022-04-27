@@ -2,29 +2,32 @@
 
 ### General
 - [ ] Review namespaces and classes before making a v1.0.0 release
-  - [ ] Add `abstract` to classes with exclusively `static` members
+  - [x] Add `abstract` to classes with exclusively `static` members
   - [x] `Assert`: `pregMatch()` -> `patternMatches()`
+  - [ ] Refactor Curler
+    - [ ] Remove/deprecate `...Json()` methods
+    - [ ] Add support for parallel downloads and queued actions
+  - [ ] `Runtime` -> `App`
+  - [ ] Refactor Dice
+  - [ ] Surface `Ioc` methods via `App`
+- [ ] Implement a generic fluent interface (`TFluent`?) with instance creation and property getting/setting
 - [ ] Throw custom exceptions
 - [ ] Formalise tests
   - [ ] Convert informal tests to PHPUnit tests
-  - [ ] Adopt PHPStan
-    - [ ] Create [extensions](https://phpstan.org/developing-extensions/extension-types) as needed
+  - [x] Adopt PHPStan
+    - ~~Create [extensions](https://phpstan.org/developing-extensions/extension-types) as needed~~
   - [ ] Write more tests
 
 ### Documentation
 - Add missing descriptions
   - [ ] `SyncOperation`
-  - [ ] `SyncOperationNotImplementedException`
+  - [x] `SyncOperationNotImplementedException`
 - [ ] `SyncOperation`
   - [ ] Split "typically corresponds to" items
 
 ### Cache(/Trash)
 - [ ] Remove/deprecate `isLoaded()` and `load()`
 - [ ] Return `null` instead of `false` for missing entries
-
-### Curler
-- [ ] Remove/deprecate `...Json()` methods
-- [ ] Add support for parallel downloads and queued actions
 
 ### Sync
 - [x] Move `Sync\SyncProvider` and `Sync\SyncEntityProvider` to `Sync\Provider\`

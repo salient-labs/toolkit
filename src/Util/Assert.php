@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms;
+namespace Lkrms\Util;
 
 use RuntimeException;
 use UnexpectedValueException;
@@ -14,9 +14,9 @@ use UnexpectedValueException;
  */
 abstract class Assert
 {
-    private static function throwUnexpectedValue(string $message, ?string $name)
+    private static function throwException(string $message, ?string $name): void
     {
-        $message = str_replace("{}", is_null($name) ? "value" : "'$name'", $message);
+        $message = str_replace("{}", $name ? "'$name'" : "value", $message);
         throw new UnexpectedValueException($message);
     }
 
@@ -24,12 +24,14 @@ abstract class Assert
      *
      * @param mixed $value
      * @param string|null $name
+     * @return void
+     * @throws UnexpectedValueException
      */
-    public static function notNull($value, string $name = null)
+    public static function notNull($value, string $name = null): void
     {
         if (is_null($value))
         {
-            self::throwUnexpectedValue("{} cannot be null", $name);
+            self::throwException("{} cannot be null", $name);
         }
     }
 
@@ -37,12 +39,14 @@ abstract class Assert
      *
      * @param mixed $value
      * @param string|null $name
+     * @return void
+     * @throws UnexpectedValueException
      */
-    public static function notEmpty($value, string $name = null)
+    public static function notEmpty($value, string $name = null): void
     {
         if (empty($value))
         {
-            self::throwUnexpectedValue("{} cannot be empty", $name);
+            self::throwException("{} cannot be empty", $name);
         }
     }
 
@@ -52,13 +56,20 @@ abstract class Assert
      * @param string $pattern
      * @param string|null $name
      * @param string $message
+     * @return void
+     * @throws UnexpectedValueException
      */
-    public static function patternMatches(?string $value, string $pattern, string $name = null, string $message = "must match pattern '{}'")
+    public static function patternMatches(
+        ?string $value,
+        string $pattern,
+        string $name    = null,
+        string $message = "must match pattern '{}'"
+    ): void
     {
         if (is_null($value) || !preg_match($pattern, $value))
         {
             $message = str_replace("{}", $pattern, $message);
-            self::throwUnexpectedValue("{} $message", $name);
+            self::throwException("{} $message", $name);
         }
     }
 
@@ -66,16 +77,23 @@ abstract class Assert
      *
      * @param mixed $value
      * @param string|null $name
+     * @return void
+     * @throws UnexpectedValueException
      */
-    public static function isArray($value, string $name = null)
+    public static function isArray($value, string $name = null): void
     {
         if (!is_array($value))
         {
-            self::throwUnexpectedValue("{} must be an array", $name);
+            self::throwException("{} must be an array", $name);
         }
     }
 
-    public static function sapiIsCli()
+    /**
+     *
+     * @return void
+     * @throws RuntimeException
+     */
+    public static function sapiIsCli(): void
     {
         if (PHP_SAPI != "cli")
         {
@@ -83,7 +101,12 @@ abstract class Assert
         }
     }
 
-    public static function localeIsUtf8()
+    /**
+     *
+     * @return void
+     * @throws RuntimeException
+     */
+    public static function localeIsUtf8(): void
     {
         if (($locale = setlocale(LC_CTYPE, "")) === false)
         {

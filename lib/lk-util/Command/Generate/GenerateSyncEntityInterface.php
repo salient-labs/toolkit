@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util\Command\Generate;
+namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\CliCommand;
-use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Console\Console;
-use Lkrms\Convert;
-use Lkrms\Env;
-use Lkrms\File;
+use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Sync\Provider\ISyncProvider;
 use Lkrms\Sync\SyncEntity;
 use Lkrms\Sync\SyncOperation;
+use Lkrms\Util\Convert;
+use Lkrms\Util\Env;
+use Lkrms\Util\File;
 
 /**
  * Generates provider interfaces for SyncEntity subclasses
@@ -22,7 +22,7 @@ use Lkrms\Sync\SyncOperation;
  * - `SYNC_ENTITY_NAMESPACE`
  * - `SYNC_ENTITY_PACKAGE`
  *
- * @package Lkrms\Util
+ * @package Lkrms\LkUtil
  */
 class GenerateSyncEntityInterface extends CliCommand
 {

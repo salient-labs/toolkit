@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Lkrms;
+namespace Lkrms\Util;
 
 use DateTimeZone;
 use Exception;
+use Lkrms\Console\Console;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -14,7 +15,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class Env
+abstract class Env
 {
     private static $IsDryRun;
 

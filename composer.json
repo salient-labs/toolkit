@@ -21,7 +21,10 @@
     "autoload": {
         "psr-4": {
             "Lkrms\\": "src/"
-        }
+        },
+        "files": [
+            "lib/autoload_aliases.php"
+        ]
     },
     "bin": [
         "bin/lk-util"

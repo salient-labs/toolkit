@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms;
+namespace Lkrms\Util;
 
 use Closure;
 use ReflectionFunction;
@@ -12,7 +12,7 @@ use ReflectionFunction;
  *
  * @package Lkrms
  */
-class Generate
+abstract class Generate
 {
     /**
      * Generate a cryptographically secure random UUID

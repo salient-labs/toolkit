@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lkrms;
+namespace Lkrms\Store;
 
 use Exception;
-use Lkrms\Store\Sqlite;
+use Lkrms\Util\Test;
 use SQLite3;
 use UnexpectedValueException;
 

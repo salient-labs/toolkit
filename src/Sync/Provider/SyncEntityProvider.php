@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Provider;
 
-use Lkrms\Convert;
 use Lkrms\Ioc\Ioc;
-use Lkrms\Reflect;
 use Lkrms\Sync\SyncEntity;
 use Lkrms\Sync\SyncOperation;
+use Lkrms\Util\Convert;
+use Lkrms\Util\Reflect;
 use ReflectionClass;
 use ReflectionMethod;
 use UnexpectedValueException;

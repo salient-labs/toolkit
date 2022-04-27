@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms;
+namespace Lkrms\Util;
 
 use Exception;
 
@@ -11,7 +11,7 @@ use Exception;
  *
  * @package Lkrms
  */
-class Test
+abstract class Test
 {
     /**
      * Check if a flag is set in a bitmask

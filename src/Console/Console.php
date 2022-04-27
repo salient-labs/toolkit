@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 use Lkrms\Console\ConsoleColour as C;
-use Lkrms\Console\ConsoleTarget\Stream;
-use Lkrms\Env;
-use Lkrms\File;
-use Lkrms\Generate;
+use Lkrms\Console\ConsoleTarget\ConsoleTarget;
+use Lkrms\Console\ConsoleTarget\StreamTarget;
+use Lkrms\Util\Env;
+use Lkrms\Util\File;
+use Lkrms\Util\Generate;
 use Throwable;
 
 /**
@@ -81,7 +82,7 @@ abstract class Console extends ConsoleMessageWriter
         // `{TMPDIR}/<basename>-<realpath_hash>-<user_id>.log`
         if (self::$DefaultOutputLogIsEnabled)
         {
-            self::registerTarget(Stream::fromPath(File::getStablePath(".log")));
+            self::registerTarget(StreamTarget::fromPath(File::getStablePath(".log")));
         }
 
         // If no output streams have been registered and we're running on the
@@ -89,8 +90,8 @@ abstract class Console extends ConsoleMessageWriter
         // STDOUT
         if (PHP_SAPI == "cli" && empty(self::$OutputTargets))
         {
-            self::registerTarget(new Stream(STDERR, ConsoleLevels::ERRORS));
-            self::registerTarget(new Stream(STDOUT, Env::debug() ? ConsoleLevels::INFO_DEBUG : ConsoleLevels::INFO));
+            self::registerTarget(new StreamTarget(STDERR, ConsoleLevels::ERRORS));
+            self::registerTarget(new StreamTarget(STDOUT, Env::debug() ? ConsoleLevels::INFO_DEBUG : ConsoleLevels::INFO));
         }
 
         self::$TargetsChecked = true;

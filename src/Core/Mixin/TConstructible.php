@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Core\Mixin;
 
-use Lkrms\Closure;
 use Lkrms\Core\ClosureBuilder;
 use UnexpectedValueException;
 
@@ -53,7 +52,7 @@ trait TConstructible
     /**
      * Create an instance of the class from an array after remapping its values
      *
-     * See {@see Closure::getArrayMapper()} and
+     * See {@see ClosureBuilder::getArrayMapper()} and
      * {@see TConstructible::fromArray()} for more information.
      *
      * @param array $data
@@ -61,16 +60,16 @@ trait TConstructible
      * keys to names the class will be able to resolve.
      * @param bool $sameKeys If `true`, improve performance by assuming `$data`
      * has the same keys in the same order as in `$keyMap`.
-     * @param int $skip A bitmask of `Closure::SKIP_*` values.
+     * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
      * @return static
      */
     public static function fromMappedArray(
         array $data,
         array $keyMap,
         bool $sameKeys = false,
-        int $skip      = Closure::SKIP_MISSING | Closure::SKIP_UNMAPPED
+        int $skip      = ClosureBuilder::SKIP_MISSING | ClosureBuilder::SKIP_UNMAPPED
     ) {
-        $callback = Closure::getArrayMapper($keyMap, $sameKeys, $skip);
+        $callback = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
         return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $callback);
     }
@@ -111,7 +110,7 @@ trait TConstructible
      * Create a list of instances from a list of arrays, remapping each array's
      * values before it is processed
      *
-     * See {@see Closure::getArrayMapper()} and
+     * See {@see ClosureBuilder::getArrayMapper()} and
      * {@see TConstructible::fromArray()} for more information.
      *
      * @param array[] $list
@@ -119,17 +118,17 @@ trait TConstructible
      * to names the class will be able to resolve.
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order as in `$keyMap`.
-     * @param int $skip A bitmask of `Closure::SKIP_*` values.
+     * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
      * @return static[]
      */
     public static function listFromMappedArrays(
         array $list,
         array $keyMap,
         bool $sameKeys = false,
-        int $skip      = Closure::SKIP_MISSING | Closure::SKIP_UNMAPPED
+        int $skip      = ClosureBuilder::SKIP_MISSING | ClosureBuilder::SKIP_UNMAPPED
     ): array
     {
-        $callback = Closure::getArrayMapper($keyMap, $sameKeys, $skip);
+        $callback = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
         return self::getListFrom($list, self::getCreateFromClosure($sameKeys, $list), $callback);
     }

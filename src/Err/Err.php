@@ -14,7 +14,7 @@ use Whoops\Run;
  *
  * @package Lkrms
  */
-class Err
+abstract class Err
 {
     /**
      * @var Run|null

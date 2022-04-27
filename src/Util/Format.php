@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms;
+namespace Lkrms\Util;
 
 use DateTime;
 use UnexpectedValueException;
@@ -12,7 +12,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class Format
+abstract class Format
 {
     /**
      * Format an array's keys and values

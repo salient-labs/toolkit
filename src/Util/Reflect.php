@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms;
+namespace Lkrms\Util;
 
 use ReflectionClass;
 use ReflectionIntersectionType;
@@ -17,7 +17,7 @@ use UnexpectedValueException;
  *
  * @package Lkrms
  */
-class Reflect
+abstract class Reflect
 {
     /**
      * Return the names of the given Reflection objects
