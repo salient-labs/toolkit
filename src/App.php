@@ -2,9 +2,16 @@
 
 declare(strict_types=1);
 
-(function ()
+namespace Lkrms;
+
+/**
+ *
+ *
+ * @package Lkrms
+ */
+abstract class App
 {
-    $aliases = [
+    private const CLASS_ALIASES = [
         \Lkrms\Assert::class   => \Lkrms\Util\Assert::class,
         \Lkrms\Cache::class    => \Lkrms\Store\Cache::class,
         \Lkrms\Cli::class      => \Lkrms\Cli\Cli::class,
@@ -28,11 +35,34 @@ declare(strict_types=1);
         \Lkrms\Console\ConsoleTarget\Stream::class => \Lkrms\Console\ConsoleTarget\StreamTarget::class,
     ];
 
-    spl_autoload_register(function ($alias) use ($aliases)
+    /**
+     * @var bool
+     */
+    private static $LegacyAutoloaderIsRegistered;
+
+    /**
+     * Register an autoloader for renamed classes
+     *
+     * If the class being loaded matches the previous name of a defined class,
+     * the autoloader creates an alias that allows the previous name to be used.
+     *
+     * @return void
+     */
+    public static function registerLegacyAutoloader(): void
     {
-        if ($class = $aliases[$alias] ?? null)
+        if (self::$LegacyAutoloaderIsRegistered)
         {
-            class_alias($class, $alias);
+            return;
         }
-    });
-})();
+
+        spl_autoload_register(function (string $className)
+        {
+            if ($class = self::CLASS_ALIASES[$className] ?? null)
+            {
+                class_alias($class, $className);
+            }
+        });
+
+        self::$LegacyAutoloaderIsRegistered = true;
+    }
+}
