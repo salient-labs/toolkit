@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Closure;
+use Lkrms\Core\ClosureBuilder;
 use Lkrms\Err\Err;
 use Throwable;
 
@@ -58,15 +58,15 @@ $map2 = [
 
 $exceptions = [];
 
-$skipNone              = Closure::getArrayMapper($map, false, Closure::SKIP_NONE);
-$skipNone2             = Closure::getArrayMapper($map, false, Closure::SKIP_NONE);
-$skipMissing           = Closure::getArrayMapper($map, false, Closure::SKIP_MISSING);
-$skipNull              = Closure::getArrayMapper($map, false, Closure::SKIP_NULL);
-$skipUnmapped          = Closure::getArrayMapper($map, false, Closure::SKIP_UNMAPPED);
-$skipMissingOrUnmapped = Closure::getArrayMapper($map);
+$skipNone              = ClosureBuilder::getArrayMapper($map, false, ClosureBuilder::SKIP_NONE);
+$skipNone2             = ClosureBuilder::getArrayMapper($map, false, ClosureBuilder::SKIP_NONE);
+$skipMissing           = ClosureBuilder::getArrayMapper($map, false, ClosureBuilder::SKIP_MISSING);
+$skipNull              = ClosureBuilder::getArrayMapper($map, false, ClosureBuilder::SKIP_NULL);
+$skipUnmapped          = ClosureBuilder::getArrayMapper($map, false, ClosureBuilder::SKIP_UNMAPPED);
+$skipMissingOrUnmapped = ClosureBuilder::getArrayMapper($map);
 
-$sameKeys         = Closure::getArrayMapper($map2, true);
-$sameKeysSkipNull = Closure::getArrayMapper($map2, true, Closure::SKIP_NULL);
+$sameKeys         = ClosureBuilder::getArrayMapper($map2, true);
+$sameKeysSkipNull = ClosureBuilder::getArrayMapper($map2, true, ClosureBuilder::SKIP_NULL);
 
 try
 {
