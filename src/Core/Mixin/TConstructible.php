@@ -118,7 +118,7 @@ trait TConstructible
      */
     public static function listFromArrays(array $list, bool $sameKeys = false): array
     {
-        return self::getListFrom($list, self::getCreateFromClosure($sameKeys, $list));
+        return self::getListFrom($list, $sameKeys);
     }
 
     /**
@@ -135,7 +135,7 @@ trait TConstructible
      */
     public static function listFromArraysVia(array $list, callable $callback, bool $sameKeys = false): array
     {
-        return self::getListFrom($list, self::getCreateFromClosure($sameKeys, $list), $callback);
+        return self::getListFrom($list, $sameKeys, $callback);
     }
 
     /**
@@ -162,7 +162,7 @@ trait TConstructible
     {
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        return self::getListFrom($list, self::getCreateFromClosure($sameKeys, $list), $closure);
+        return self::getListFrom($list, $sameKeys, $closure);
     }
 
     /**
@@ -195,26 +195,30 @@ trait TConstructible
             return $closure($callback($in));
         };
 
-        return self::getListFrom($list, self::getCreateFromClosure($sameKeys, $list), $closure);
+        return self::getListFrom($list, $sameKeys, $closure);
     }
 
-    private static function getCreateFromClosure(bool $sameKeys, array $dataList): \Closure
-    {
-        if ($sameKeys)
-        {
-            return ClosureBuilder::getFor(static::class)->getCreateFromSignatureClosure(array_keys(reset($dataList)));
-        }
-        else
-        {
-            return ClosureBuilder::getFor(static::class)->getCreateFromClosure();
-        }
-    }
-
-    private static function getListFrom(array $arrays, callable $closure, callable $callback = null): array
+    private static function getListFrom(array $arrays, bool $sameKeys, callable $closure = null): array
     {
         if (empty($arrays))
         {
             return [];
+        }
+
+        if ($sameKeys)
+        {
+            $first = reset($arrays);
+
+            if ($closure)
+            {
+                $first = $closure($first);
+            }
+
+            $createFromClosure = ClosureBuilder::getFor(static::class)->getCreateFromSignatureClosure(array_keys($first));
+        }
+        else
+        {
+            $createFromClosure = ClosureBuilder::getFor(static::class)->getCreateFromClosure();
         }
 
         $list = [];
@@ -226,7 +230,7 @@ trait TConstructible
                 throw new UnexpectedValueException("Array expected at index $index");
             }
 
-            $list[] = ($closure)($array, $callback);
+            $list[] = ($createFromClosure)($array, $closure);
         }
 
         return $list;

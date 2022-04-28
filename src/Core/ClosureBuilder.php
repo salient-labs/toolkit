@@ -489,9 +489,14 @@ class ClosureBuilder
 
         $closure = function (array $array, callable $callback = null)
         {
+            if ($callback)
+            {
+                $array = $callback($array);
+            }
+
             $keys = array_keys($array);
 
-            return ($this->getCreateFromSignatureClosure($keys))($array, $callback);
+            return ($this->getCreateFromSignatureClosure($keys))($array);
         };
 
         $this->CreateFromClosure = $closure;
