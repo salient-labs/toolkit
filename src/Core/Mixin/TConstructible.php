@@ -69,9 +69,41 @@ trait TConstructible
         bool $sameKeys = false,
         int $skip      = ClosureBuilder::SKIP_MISSING | ClosureBuilder::SKIP_UNMAPPED
     ) {
-        $callback = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
+        $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $callback);
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $closure);
+    }
+
+    /**
+     * Create an instance of the class from an array after applying a callback
+     * and remapping its values
+     *
+     * See {@see ClosureBuilder::getArrayMapper()} and
+     * {@see TConstructible::fromArray()} for more information.
+     *
+     * @param array $data
+     * @param callable $callback Applied before remapping `$data`.
+     * @param array<int|string,int|string> $keyMap An array that maps `$data`
+     * keys to names the class will be able to resolve.
+     * @param bool $sameKeys If `true`, improve performance by assuming `$data`
+     * has the same keys in the same order as in `$keyMap`.
+     * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
+     * @return static
+     */
+    public static function fromMappedArrayVia(
+        array $data,
+        callable $callback,
+        array $keyMap,
+        bool $sameKeys = false,
+        int $skip      = ClosureBuilder::SKIP_MISSING
+    ) {
+        $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
+        $closure = function (array $in) use ($callback, $closure)
+        {
+            return $closure($callback($in));
+        };
+
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $closure);
     }
 
     /**
@@ -86,7 +118,7 @@ trait TConstructible
      */
     public static function listFromArrays(array $list, bool $sameKeys = false): array
     {
-        return self::getListFrom($list, self::getCreateFromClosure($sameKeys, $list));
+        return self::getListFrom($list, $sameKeys);
     }
 
     /**
@@ -103,7 +135,7 @@ trait TConstructible
      */
     public static function listFromArraysVia(array $list, callable $callback, bool $sameKeys = false): array
     {
-        return self::getListFrom($list, self::getCreateFromClosure($sameKeys, $list), $callback);
+        return self::getListFrom($list, $sameKeys, $callback);
     }
 
     /**
@@ -128,28 +160,65 @@ trait TConstructible
         int $skip      = ClosureBuilder::SKIP_MISSING | ClosureBuilder::SKIP_UNMAPPED
     ): array
     {
-        $callback = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
+        $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        return self::getListFrom($list, self::getCreateFromClosure($sameKeys, $list), $callback);
+        return self::getListFrom($list, $sameKeys, $closure);
     }
 
-    private static function getCreateFromClosure(bool $sameKeys, array $dataList): \Closure
+    /**
+     * Create a list of instances from a list of arrays, applying a callback and
+     * remapping each array's values before it is processed
+     *
+     * See {@see ClosureBuilder::getArrayMapper()} and
+     * {@see TConstructible::fromArray()} for more information.
+     *
+     * @param array[] $list
+     * @param callable $callback Applied before remapping each array.
+     * @param array<int|string,int|string> $keyMap An array that maps array keys
+     * to names the class will be able to resolve.
+     * @param bool $sameKeys If `true`, improve performance by assuming every
+     * array in the list has the same keys in the same order as in `$keyMap`.
+     * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
+     * @return static[]
+     */
+    public static function listFromMappedArraysVia(
+        array $list,
+        callable $callback,
+        array $keyMap,
+        bool $sameKeys = false,
+        int $skip      = ClosureBuilder::SKIP_MISSING
+    ): array
     {
-        if ($sameKeys)
+        $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
+        $closure = function (array $in) use ($callback, $closure)
         {
-            return ClosureBuilder::getFor(static::class)->getCreateFromSignatureClosure(array_keys(reset($dataList)));
-        }
-        else
-        {
-            return ClosureBuilder::getFor(static::class)->getCreateFromClosure();
-        }
+            return $closure($callback($in));
+        };
+
+        return self::getListFrom($list, $sameKeys, $closure);
     }
 
-    private static function getListFrom(array $arrays, callable $closure, callable $callback = null): array
+    private static function getListFrom(array $arrays, bool $sameKeys, callable $closure = null): array
     {
         if (empty($arrays))
         {
             return [];
+        }
+
+        if ($sameKeys)
+        {
+            $first = reset($arrays);
+
+            if ($closure)
+            {
+                $first = $closure($first);
+            }
+
+            $createFromClosure = ClosureBuilder::getFor(static::class)->getCreateFromSignatureClosure(array_keys($first));
+        }
+        else
+        {
+            $createFromClosure = ClosureBuilder::getFor(static::class)->getCreateFromClosure();
         }
 
         $list = [];
@@ -161,7 +230,7 @@ trait TConstructible
                 throw new UnexpectedValueException("Array expected at index $index");
             }
 
-            $list[] = ($closure)($array, $callback);
+            $list[] = ($createFromClosure)($array, $closure);
         }
 
         return $list;

@@ -36,6 +36,15 @@ interface IConstructible
 
     /**
      *
+     * @param array $data
+     * @param callable $callback
+     * @param array<int|string,int|string> $keyMap
+     * @return static
+     */
+    public static function fromMappedArrayVia(array $data, callable $callback, array $keyMap);
+
+    /**
+     *
      * @param array<int,array<string,mixed>> $list
      * @return static[]
      */
@@ -56,4 +65,13 @@ interface IConstructible
      * @return static[]
      */
     public static function listFromMappedArrays(array $list, array $keyMap): array;
+
+    /**
+     *
+     * @param array[] $list
+     * @param callable $callback
+     * @param array<int|string,int|string> $keyMap
+     * @return static[]
+     */
+    public static function listFromMappedArraysVia(array $list, callable $callback, array $keyMap): array;
 }

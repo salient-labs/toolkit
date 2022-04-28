@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
-interface UserProvider
+/**
+ * Synchronises User objects with a backend
+ *
+ * @package Lkrms\Tests
+ */
+interface UserProvider extends \Lkrms\Sync\Provider\ISyncProvider
 {
     /**
      * @param User $user
@@ -34,4 +39,5 @@ interface UserProvider
      * @return User[]
      */
     public function getUsers(): array;
+
 }

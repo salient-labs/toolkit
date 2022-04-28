@@ -8,7 +8,7 @@ use Psr\Log\LogLevel;
 use UnexpectedValueException;
 
 /**
- * Enumerates console message levels
+ * Console message levels
  *
  * Constants have the same values as their syslog / journalctl counterparts.
  *
