@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 /**
- * Defines groups of console message levels
+ * Groups of console message levels
  *
  * @package Lkrms
  */

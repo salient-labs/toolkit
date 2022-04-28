@@ -75,7 +75,10 @@ try
         SyncOperation::READ,
         SyncOperation::UPDATE,
         SyncOperation::DELETE,
+        SyncOperation::CREATE_LIST,
         SyncOperation::READ_LIST,
+        SyncOperation::UPDATE_LIST,
+        SyncOperation::DELETE_LIST,
         -1,
     ] as $op)
     {

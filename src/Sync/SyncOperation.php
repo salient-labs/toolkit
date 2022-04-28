@@ -7,6 +7,7 @@ namespace Lkrms\Sync;
 use UnexpectedValueException;
 
 /**
+ * Sync operation types
  *
  * @package Lkrms
  */
@@ -16,9 +17,10 @@ abstract class SyncOperation
      * Add an entity to the connected system
      *
      * Typically corresponds to:
-     * - `<provider>::create<entity_name>($entity)` or
-     *   `<provider>::create_<entity_name>($entity)`
+     * - `<provider>::create<entity_name>(<entity_class> $entity)`
+     * - `<provider>::create_<entity_name>(<entity_class> $entity)`
      * - `POST /<entity_name>`
+     * - `INSERT INTO <entity_name> ...`
      */
     public const CREATE = 0;
 
@@ -26,9 +28,11 @@ abstract class SyncOperation
      * Read an entity from the connected system
      *
      * Typically corresponds to:
-     * - `<provider>::get<entity_name>([$id])` or
-     *   `<provider>::get_<entity_name>([$id])`
-     * - `GET /<entity_name>/<id>` or `GET /<entity_name>`
+     * - `<provider>::get<entity_name>([int|string $id])`
+     * - `<provider>::get_<entity_name>([int|string $id])`
+     * - `GET /<entity_name>/<id>`
+     * - `GET /<entity_name>`
+     * - `SELECT ... FROM <entity_name> WHERE <id_field> = <id>`
      */
     public const READ = 1;
 
@@ -36,9 +40,11 @@ abstract class SyncOperation
      * Update an entity in the connected system
      *
      * Typically corresponds to:
-     * - `<provider>::update<entity_name>($entity)` or
-     *   `<provider>::update_<entity_name>($entity)`
-     * - `PUT /<entity_name>/<id>` or `PATCH /<entity_name>/<id>`
+     * - `<provider>::update<entity_name>(<entity_class> $entity)`
+     * - `<provider>::update_<entity_name>(<entity_class> $entity)`
+     * - `PUT /<entity_name>/<id>`
+     * - `PATCH /<entity_name>/<id>`
+     * - `UPDATE <entity_name> WHERE ...`
      */
     public const UPDATE = 2;
 
@@ -46,30 +52,87 @@ abstract class SyncOperation
      * Delete an entity from the connected system
      *
      * Typically corresponds to:
-     * - `<provider>::delete<entity_name>($entity)` or
-     *   `<provider>::delete_<entity_name>($entity)`
+     * - `<provider>::delete<entity_name>(<entity_class> $entity)`
+     * - `<provider>::delete_<entity_name>(<entity_class> $entity)`
      * - `DELETE /<entity_name>/<id>`
+     * - `DELETE FROM <entity_name> WHERE ...`
      */
     public const DELETE = 3;
+
+    /**
+     * Add a list of entities to the connected system
+     *
+     * Typically corresponds to:
+     * - `<provider>::create<plural_entity_name>(<entity_class>[] $entities)`
+     * - `<provider>::createList_<entity_name>(<entity_class>[] $entities)`
+     * - `POST /<entity_name>`
+     * - `INSERT INTO <entity_name> ...`
+     */
+    public const CREATE_LIST = 4;
 
     /**
      * Read a list of entities from the connected system
      *
      * Typically corresponds to:
-     * - `<provider>::get<plural_entity_name>()` or
-     *   `<provider>::getList_<entity_name>()`
+     * - `<provider>::get<plural_entity_name>()`
+     * - `<provider>::getList_<entity_name>()`
      * - `GET /<entity_name>`
+     * - `SELECT ... FROM <entity_name>`
      */
-    public const READ_LIST = 4;
+    public const READ_LIST = 5;
+
+    /**
+     * Update a list of entities in the connected system
+     *
+     * Typically corresponds to:
+     * - `<provider>::update<plural_entity_name>(<entity_class>[] $entity)`
+     * - `<provider>::updateList_<entity_name>(<entity_class>[] $entity)`
+     * - `PUT /<entity_name>`
+     * - `PATCH /<entity_name>`
+     * - `UPDATE <entity_name> WHERE ...`
+     */
+    public const UPDATE_LIST = 6;
+
+    /**
+     * Delete a list of entities from the connected system
+     *
+     * Typically corresponds to:
+     * - `<provider>::delete<plural_entity_name>(<entity_class>[] $entity)`
+     * - `<provider>::deleteList_<entity_name>(<entity_class>[] $entity)`
+     * - `DELETE /<entity_name>`
+     * - `DELETE FROM <entity_name> WHERE ...`
+     */
+    public const DELETE_LIST = 7;
 
     private const NAME_MAP = [
-        self::CREATE    => "CREATE",
-        self::READ      => "READ",
-        self::UPDATE    => "UPDATE",
-        self::DELETE    => "DELETE",
-        self::READ_LIST => "READ_LIST",
+        self::CREATE      => "CREATE",
+        self::READ        => "READ",
+        self::UPDATE      => "UPDATE",
+        self::DELETE      => "DELETE",
+        self::CREATE_LIST => "CREATE_LIST",
+        self::READ_LIST   => "READ_LIST",
+        self::UPDATE_LIST => "UPDATE_LIST",
+        self::DELETE_LIST => "DELETE_LIST",
     ];
 
+    private const LIST_MAP = [
+        self::CREATE      => false,
+        self::READ        => false,
+        self::UPDATE      => false,
+        self::DELETE      => false,
+        self::CREATE_LIST => true,
+        self::READ_LIST   => true,
+        self::UPDATE_LIST => true,
+        self::DELETE_LIST => true,
+    ];
+
+    /**
+     * Return the name of the given SyncOperation
+     *
+     * @param int $operation
+     * @return string
+     * @throws UnexpectedValueException
+     */
     public static function toName(int $operation): string
     {
         if (is_null($name = self::NAME_MAP[$operation] ?? null))
@@ -78,5 +141,23 @@ abstract class SyncOperation
         }
 
         return $name;
+    }
+
+    /**
+     * Return true if the SyncOperation is CREATE_LIST, READ_LIST, UPDATE_LIST
+     * or DELETE_LIST
+     *
+     * @param int $operation
+     * @return bool
+     * @throws UnexpectedValueException
+     */
+    public static function isList(int $operation): bool
+    {
+        if (is_null($list = self::LIST_MAP[$operation] ?? null))
+        {
+            throw new UnexpectedValueException("Invalid SyncOperation: $operation");
+        }
+
+        return $list;
     }
 }

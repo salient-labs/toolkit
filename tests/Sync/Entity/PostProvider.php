@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
+/**
+ * Synchronises Post objects with a backend
+ *
+ * @package Lkrms\Tests
+ */
 interface PostProvider extends \Lkrms\Sync\Provider\ISyncProvider
 {
     /**
@@ -34,4 +39,5 @@ interface PostProvider extends \Lkrms\Sync\Provider\ISyncProvider
      * @return Post[]
      */
     public function getPosts(): array;
+
 }

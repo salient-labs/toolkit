@@ -20,10 +20,10 @@
 
 ### Documentation
 - Add missing descriptions
-  - [ ] `SyncOperation`
+  - [x] `SyncOperation`
   - [x] `SyncOperationNotImplementedException`
-- [ ] `SyncOperation`
-  - [ ] Split "typically corresponds to" items
+- [x] `SyncOperation`
+  - [x] Split "typically corresponds to" items
 
 ### Cache(/Trash)
 - [ ] Remove/deprecate `isLoaded()` and `load()`
@@ -46,6 +46,7 @@
 - [ ] Allow subcommands to be abbreviated
 - [ ] Implement shared/default command options
 - [ ] Add automatic `help` command
+- [ ] Add `ALL` as a `ONE_OF` option if `MultipleAllowed` is set
 
 ### Console
 - [ ] Improve default targets so console messages aren't included in redirected output

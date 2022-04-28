@@ -26,7 +26,14 @@ use Lkrms\Util\File;
  */
 class GenerateSyncEntityInterface extends CliCommand
 {
-    private const OPERATIONS = ["create", "get", "update", "delete", "get-list"];
+    private const OPERATIONS = [
+        "create", "get", "update", "delete",
+        "create-list", "get-list", "update-list", "delete-list"
+    ];
+
+    private const DEFAULT_OPERATIONS = [
+        "create", "get", "update", "delete", "get-list"
+    ];
 
     public function getDescription(): string
     {
@@ -76,11 +83,17 @@ class GenerateSyncEntityInterface extends CliCommand
                 "optionType"      => CliOptionType::ONE_OF,
                 "allowedValues"   => self::OPERATIONS,
                 "multipleAllowed" => true,
-                "defaultValue"    => self::OPERATIONS,
+                "defaultValue"    => self::DEFAULT_OPERATIONS,
             ], [
                 "long"        => "nullable-get",
                 "short"       => "n",
                 "description" => "Allow passing null identifiers to the 'get' operation",
+            ], [
+                "long"        => "plural",
+                "short"       => "l",
+                "valueName"   => "PLURAL",
+                "description" => "Specify the plural form of CLASS",
+                "optionType"  => CliOptionType::VALUE,
             ],
         ];
     }
@@ -88,11 +101,14 @@ class GenerateSyncEntityInterface extends CliCommand
     protected function run(string ...$args)
     {
         $operationMap = [
-            "create"   => SyncOperation::CREATE,
-            "get"      => SyncOperation::READ,
-            "update"   => SyncOperation::UPDATE,
-            "delete"   => SyncOperation::DELETE,
-            "get-list" => SyncOperation::READ_LIST,
+            "create"      => SyncOperation::CREATE,
+            "get"         => SyncOperation::READ,
+            "update"      => SyncOperation::UPDATE,
+            "delete"      => SyncOperation::DELETE,
+            "create-list" => SyncOperation::CREATE_LIST,
+            "get-list"    => SyncOperation::READ_LIST,
+            "update-list" => SyncOperation::UPDATE_LIST,
+            "delete-list" => SyncOperation::DELETE_LIST,
         ];
 
         $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
@@ -120,26 +136,34 @@ class GenerateSyncEntityInterface extends CliCommand
             throw new InvalidCliArgumentException("not a subclass of SyncEntity: $fqcn");
         }
 
-        $plural = $fqcn::getPlural();
+        $plural = $this->getOptionValue("plural") ?: $fqcn::getPlural();
 
-        if ($plural != $class)
+        if (strcasecmp($class, $plural))
         {
-            $opMethod = [
-                SyncOperation::CREATE    => "create" . $class,
-                SyncOperation::READ      => "get" . $class,
-                SyncOperation::UPDATE    => "update" . $class,
-                SyncOperation::DELETE    => "delete" . $class,
-                SyncOperation::READ_LIST => "get" . $plural,
+            $camelPlural = Convert::toCamelCase($plural);
+            $opMethod    = [
+                SyncOperation::CREATE      => "create" . $class,
+                SyncOperation::READ        => "get" . $class,
+                SyncOperation::UPDATE      => "update" . $class,
+                SyncOperation::DELETE      => "delete" . $class,
+                SyncOperation::CREATE_LIST => "create" . $plural,
+                SyncOperation::READ_LIST   => "get" . $plural,
+                SyncOperation::UPDATE_LIST => "update" . $plural,
+                SyncOperation::DELETE_LIST => "delete" . $plural,
             ];
         }
         else
         {
-            $opMethod = [
-                SyncOperation::CREATE    => "create_" . $class,
-                SyncOperation::READ      => "get_" . $class,
-                SyncOperation::UPDATE    => "update_" . $class,
-                SyncOperation::DELETE    => "delete_" . $class,
-                SyncOperation::READ_LIST => "getList_" . $class,
+            $camelPlural = $camelClass;
+            $opMethod    = [
+                SyncOperation::CREATE      => "create_" . $class,
+                SyncOperation::READ        => "get_" . $class,
+                SyncOperation::UPDATE      => "update_" . $class,
+                SyncOperation::DELETE      => "delete_" . $class,
+                SyncOperation::CREATE_LIST => "createList_" . $class,
+                SyncOperation::READ_LIST   => "getList_" . $class,
+                SyncOperation::UPDATE_LIST => "updateList_" . $class,
+                SyncOperation::DELETE_LIST => "deleteList_" . $class,
             ];
         }
 
@@ -172,15 +196,24 @@ class GenerateSyncEntityInterface extends CliCommand
         foreach ($operations as $op)
         {
             // CREATE and UPDATE have the same signature, so it's a good default
-            $paramDoc   = $class . ' $' . $camelClass;
-            $paramCode  = $paramDoc;
-            $returnDoc  = $class;
-            $returnCode = $class;
+            if (SyncOperation::isList($op))
+            {
+                $paramDoc   = $class . '[] $' . $camelPlural;
+                $paramCode  = 'array $' . $camelPlural;
+                $returnDoc  = $class . "[]";
+                $returnCode = "array";
+            }
+            else
+            {
+                $paramDoc   = $class . ' $' . $camelClass;
+                $paramCode  = $paramDoc;
+                $returnDoc  = $class;
+                $returnCode = $class;
+            }
 
             switch ($op)
             {
                 case SyncOperation::READ:
-
                     if ($this->getOptionValue("nullable-get"))
                     {
                         $paramDoc  = 'int|string|null $id';
@@ -191,22 +224,16 @@ class GenerateSyncEntityInterface extends CliCommand
                         $paramDoc  = 'int|string $id';
                         $paramCode = '$id';
                     }
-
                     break;
 
                 case SyncOperation::DELETE:
-
-                    $returnDoc  = "null|" . $class;
-                    $returnCode = "?" . $class;
-
+                case SyncOperation::DELETE_LIST:
+                    $returnDoc  = "null|" . $returnDoc;
+                    $returnCode = "?" . $returnCode;
                     break;
 
                 case SyncOperation::READ_LIST:
-
-                    $paramDoc   = $paramCode = "";
-                    $returnDoc .= "[]";
-                    $returnCode = "array";
-
+                    $paramDoc = $paramCode = "";
                     break;
             }
 

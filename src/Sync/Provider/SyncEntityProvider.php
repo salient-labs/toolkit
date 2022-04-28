@@ -83,10 +83,8 @@ class SyncEntityProvider
 
     private function getProviderMethod(string $methodName): ?ReflectionMethod
     {
-        $class = $this->SyncProviderClass;
-
-        return $class->hasMethod($methodName)
-            ? $class->getMethod($methodName)
+        return $this->SyncProviderClass->hasMethod($methodName)
+            ? $this->SyncProviderClass->getMethod($methodName)
             : null;
     }
 
@@ -95,7 +93,8 @@ class SyncEntityProvider
         string $altMethod,
         bool $entityParam,
         bool $idParam,
-        bool $paramRequired
+        bool $paramRequired,
+        string $entityParamType
     ): ?string
     {
         if (is_null($method = $this->getProviderMethod($method)) &&
@@ -122,7 +121,7 @@ class SyncEntityProvider
 
             $type = Reflect::getAllTypeNames($param->getType());
 
-            if (($entityParam && $type != [$this->SyncEntity]) ||
+            if (($entityParam && $type != [$entityParamType]) ||
                 ($idParam && !empty(array_diff($type, ["int", "string"]))))
             {
                 return null;
@@ -146,6 +145,8 @@ class SyncEntityProvider
         bool $paramRequired,
         ...$params
     ) {
+        $isList = SyncOperation::isList($operation);
+
         if (is_null($callback = $this->Callbacks[$operation] ?? null))
         {
             if ($providerMethod = $this->checkProviderMethod(
@@ -153,7 +154,8 @@ class SyncEntityProvider
                 $altMethod,
                 $entityParam,
                 $idParam,
-                $paramRequired
+                $paramRequired,
+                $isList ? "array" : $this->SyncEntity
             ))
             {
                 $callback = function (...$params) use ($providerMethod)
@@ -172,9 +174,9 @@ class SyncEntityProvider
 
         $param = $params[0] ?? null;
 
-        if ($entityParam && !is_null($param) && !is_a($param, $this->SyncEntity))
+        if ($entityParam && !is_null($param) && !($isList ? is_array($param) : is_a($param, $this->SyncEntity)))
         {
-            throw new UnexpectedValueException("Not an instance of " . $this->SyncEntity . ': $param[0]');
+            throw new UnexpectedValueException($this->SyncEntity . ($isList ? "[]" : "") . ' required: $param[0]');
         }
         elseif ($idParam && !is_null($param) && !is_int($param) && !is_string($param))
         {
@@ -306,7 +308,7 @@ class SyncEntityProvider
     }
 
     /**
-     * Deletes an entity in the backend
+     * Deletes an entity from the backend
      *
      * The underlying {@see SyncProvider} must implement the
      * {@see SyncOperation::DELETE} operation, e.g. one of the following for a
@@ -349,6 +351,44 @@ class SyncEntityProvider
     }
 
     /**
+     * Adds a list of entities to the backend
+     *
+     * The underlying {@see SyncProvider} must implement the
+     * {@see SyncOperation::CREATE_LIST} operation, e.g. one of the following
+     * for a `Faculty` entity:
+     *
+     * ```php
+     * // 1. With a plural entity name
+     * public function createFaculties(array $entities): array;
+     *
+     * // 2. With a singular name
+     * public function createList_Faculty(array $entities): array;
+     * ```
+     *
+     * The first parameter:
+     * - MUST be defined
+     * - MUST have a type declaration, which MUST be `array`
+     * - MUST be required
+     *
+     * @param SyncEntity[] $entities
+     * @param mixed ...$params Additional parameters to pass to the provider.
+     * @return SyncEntity[]
+     */
+    public function createList(array $entities, ...$params): array
+    {
+        return $this->run(
+            SyncOperation::CREATE_LIST,
+            "create" . $this->SyncEntityPlural,
+            "createList_" . $this->SyncEntityNoun,
+            true,
+            false,
+            true,
+            $entities,
+            ...$params
+        );
+    }
+
+    /**
      * Returns a list of entities from the backend
      *
      * The underlying {@see SyncProvider} must implement the
@@ -375,6 +415,87 @@ class SyncEntityProvider
             false,
             false,
             false,
+            ...$params
+        );
+    }
+
+    /**
+     * Updates a list of entities in the backend
+     *
+     * The underlying {@see SyncProvider} must implement the
+     * {@see SyncOperation::UPDATE_LIST} operation, e.g. one of the following
+     * for a `Faculty` entity:
+     *
+     * ```php
+     * // 1. With a plural entity name
+     * public function updateFaculties(array $entities): array;
+     *
+     * // 2. With a singular name
+     * public function updateList_Faculty(array $entities): array;
+     * ```
+     *
+     * The first parameter:
+     * - MUST be defined
+     * - MUST have a type declaration, which MUST be `array`
+     * - MUST be required
+     *
+     * @param SyncEntity[] $entities
+     * @param mixed ...$params Additional parameters to pass to the provider.
+     * @return SyncEntity[]
+     */
+    public function updateList(array $entities, ...$params): array
+    {
+        return $this->run(
+            SyncOperation::UPDATE_LIST,
+            "update" . $this->SyncEntityPlural,
+            "updateList_" . $this->SyncEntityNoun,
+            true,
+            false,
+            true,
+            $entities,
+            ...$params
+        );
+    }
+
+    /**
+     * Deletes a list of entities from the backend
+     *
+     * The underlying {@see SyncProvider} must implement the
+     * {@see SyncOperation::DELETE_LIST} operation, e.g. one of the following
+     * for a `Faculty` entity:
+     *
+     * ```php
+     * // 1. With a plural entity name
+     * public function deleteFaculties(array $entities): ?array;
+     *
+     * // 2. With a singular name
+     * public function deleteList_Faculty(array $entities): ?array;
+     * ```
+     *
+     * The first parameter:
+     * - MUST be defined
+     * - MUST have a type declaration, which MUST be `array`
+     * - MUST be required
+     *
+     * The return value:
+     * - SHOULD represent the final state of the entities before they were
+     *   deleted
+     * - MAY be `null`
+     *
+     * @param SyncEntity[] $entities
+     * @param mixed ...$params Additional parameters to pass to the provider.
+     * @return null|SyncEntity[]
+     */
+    public function deleteList(array $entities, ...$params): ?array
+    {
+        return $this->run(
+            SyncOperation::DELETE_LIST,
+            "delete" . $this->SyncEntityPlural,
+            "deleteList_" . $this->SyncEntityNoun,
+            true,
+            false,
+            true,
+            $entities,
             ...$params
         );
     }
