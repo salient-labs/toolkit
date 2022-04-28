@@ -80,6 +80,17 @@ abstract class Convert
     }
 
     /**
+     * Remove the class from a method name
+     *
+     * @param string $method
+     * @return string
+     */
+    public static function methodToFunction(string $method): string
+    {
+        return preg_replace('/^.*?([a-z0-9_]*)$/i', '$1', $method);
+    }
+
+    /**
      * Create a map from a list
      *
      * For example, to map from each array's `id` to the array itself:
