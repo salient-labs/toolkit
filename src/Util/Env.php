@@ -181,6 +181,11 @@ abstract class Env
      */
     public static function getList(string $name, array $default = null, string $delimiter = ","): ?array
     {
+        if (!$delimiter)
+        {
+            throw new UnexpectedValueException("Invalid delimiter");
+        }
+
         if (func_num_args() < 2)
         {
             $value = self::get($name);

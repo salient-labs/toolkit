@@ -16,14 +16,9 @@ use Lkrms\Util\Env;
  */
 class HttpGetPath extends CliCommand
 {
-    public function getDescription(): string
+    protected function _getDescription(): string
     {
         return "Retrieve data from an HttpSyncProvider endpoint";
-    }
-
-    protected function _getName(): array
-    {
-        return ["http", "get"];
     }
 
     protected function _getOptions(): array
@@ -47,7 +42,7 @@ class HttpGetPath extends CliCommand
         ];
     }
 
-    protected function run(string ...$args)
+    protected function _run(string ...$args)
     {
         $providerClass = $this->getOptionValue("provider") ?: Env::get("SYNC_ENTITY_PROVIDER", "");
         $endpointPath  = $this->getOptionValue("endpoint");

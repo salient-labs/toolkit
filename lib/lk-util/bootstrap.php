@@ -23,9 +23,9 @@ if ($_composer_autoload_path &&
     Env::load($env);
 }
 
-GenerateSyncEntityClass::register();
-GenerateSyncEntityInterface::register();
-HttpGetPath::register();
+GenerateSyncEntityClass::register(["generate", "sync-entity"]);
+GenerateSyncEntityInterface::register(["generate", "sync-entity-provider"]);
+HttpGetPath::register(["http", "get"]);
 
 $status = Cli::run();
 exit ($status);

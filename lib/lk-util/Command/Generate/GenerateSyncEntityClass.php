@@ -31,14 +31,9 @@ class GenerateSyncEntityClass extends CliCommand
 {
     public static $EntityName;
 
-    public function getDescription(): string
+    protected function _getDescription(): string
     {
         return "Generate an entity class";
-    }
-
-    protected function _getName(): array
-    {
-        return ["generate", "sync-entity"];
     }
 
     protected function _getOptions(): array
@@ -101,7 +96,7 @@ class GenerateSyncEntityClass extends CliCommand
         ];
     }
 
-    protected function run(string ...$args)
+    protected function _run(string ...$args)
     {
         $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
         $class      = array_pop($namespace);
