@@ -183,6 +183,11 @@ class ClosureBuilder
     private $CreateFromSignatureClosures = [];
 
     /**
+     * @var Closure|null
+     */
+    private $SerializeClosure;
+
+    /**
      * @var array<string,ClosureBuilder>
      */
     private static $Instances = [];
@@ -607,6 +612,44 @@ class ClosureBuilder
         }
 
         $this->PropertyActionClosures[$_name][$action] = $closure;
+
+        return $closure;
+    }
+
+    public function getSerializeClosure(): Closure
+    {
+        if ($closure = $this->SerializeClosure)
+        {
+            return $closure;
+        }
+
+        $props = $this->GettableProperties ?: $this->PublicProperties;
+
+        if ($this->Normaliser)
+        {
+            $props = array_combine(
+                array_map($this->Normaliser, $props),
+                $props
+            );
+        }
+        else
+        {
+            $props = array_combine($props, $props);
+        }
+
+        $closure = static function ($instance) use ($props)
+        {
+            $arr = [];
+
+            foreach ($props as $key => $prop)
+            {
+                $arr[$key] = $instance->$prop;
+            }
+
+            return $arr;
+        };
+
+        $this->SerializeClosure = $closure;
 
         return $closure;
     }
