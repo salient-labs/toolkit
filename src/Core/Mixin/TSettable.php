@@ -7,7 +7,8 @@ namespace Lkrms\Core\Mixin;
 use Lkrms\Core\ClosureBuilder;
 
 /**
- * Implements ISettable to write inaccessible properties
+ * Implements ISettable to write properties that have not been declared or are
+ * not visible in the current scope
  *
  * Override {@see TSettable::getSettable()} to provide access to `protected`
  * variables via `__set` and `__unset`.

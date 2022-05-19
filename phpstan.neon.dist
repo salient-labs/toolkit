@@ -13,4 +13,4 @@ parameters:
   ignoreErrors:
     -
       message: "#^Class Lkrms\\\\[^\\s]+ not found\\.$#"
-      path: src/App.php
+      path: src/Util/Legacy.php

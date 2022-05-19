@@ -17,21 +17,6 @@ use UnexpectedValueException;
  */
 abstract class Env
 {
-    private static $IsDryRun;
-
-    private static $IgnoreTimezone;
-
-    /**
-     * Ignore the runtime environment's timezone
-     *
-     * Prevents {@see Env::load()} setting the default timezone from the `TZ`
-     * environment variable.
-     */
-    public static function ignoreTimezone(): void
-    {
-        self::$IgnoreTimezone = true;
-    }
-
     /**
      * Load environment variables
      *
@@ -95,7 +80,18 @@ abstract class Env
             self::set($name, $value);
         }
 
-        if (!self::$IgnoreTimezone && $tz = preg_replace("/^:?(.*\/zoneinfo\/)?/", "", self::get("TZ", "")))
+        self::apply();
+    }
+
+    /**
+     * Apply values from the environment to the running script
+     *
+     * Specifically:
+     * - If `TZ` is a valid timezone, pass it to `date_default_timezone_set`.
+     */
+    public static function apply(): void
+    {
+        if ($tz = preg_replace("/^:?(.*\/zoneinfo\/)?/", "", self::get("TZ", "")))
         {
             try
             {
@@ -203,20 +199,35 @@ abstract class Env
         return $value ? explode($delimiter, $value) : [];
     }
 
+    private static function getOrSetBool(string $name, bool $newState = null): bool
+    {
+        if (func_num_args() > 1 && !is_null($newState))
+        {
+            if ($newState)
+            {
+                self::set($name, "1");
+            }
+            else
+            {
+                self::unset($name);
+            }
+        }
+
+        return (bool)self::get($name, "");
+    }
+
     /**
      * Optionally turn dry-run mode on or off, then return its current state
+     *
+     * Dry-run mode can also be enabled by setting the `DRY_RUN` environment
+     * variable.
      *
      * @param bool|null $newState
      * @return bool
      */
     public static function dryRun(bool $newState = null): bool
     {
-        if (func_num_args() && !is_null($newState))
-        {
-            self::$IsDryRun = $newState;
-        }
-
-        return (bool)self::$IsDryRun;
+        return self::getOrSetBool("DRY_RUN", ...func_get_args());
     }
 
     /**
@@ -230,18 +241,6 @@ abstract class Env
      */
     public static function debug(bool $newState = null): bool
     {
-        if (func_num_args() && !is_null($newState))
-        {
-            if ($newState)
-            {
-                self::set("DEBUG", "1");
-            }
-            else
-            {
-                self::unset("DEBUG");
-            }
-        }
-
-        return (bool)self::get("DEBUG", "");
+        return self::getOrSetBool("DEBUG", ...func_get_args());
     }
 }

@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\App;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+App::load(__DIR__);
+
+print_r([
+    'App::getInstance()->CachePath' => App::getInstance()->CachePath,
+    'App::get("DataPath")'          => App::get("DataPath"),
+    'App::get("LogPath")'           => App::get("LogPath"),
+]);

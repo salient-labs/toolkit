@@ -7,6 +7,7 @@ namespace Lkrms\Console;
 use Lkrms\Console\ConsoleColour as C;
 use Lkrms\Console\ConsoleTarget\ConsoleTarget;
 use Lkrms\Console\ConsoleTarget\StreamTarget;
+use Lkrms\Runtime;
 use Lkrms\Util\Env;
 use Lkrms\Util\File;
 use Lkrms\Util\Generate;
@@ -80,7 +81,7 @@ abstract class Console extends ConsoleMessageWriter
 
         // If no output log has been registered, log everything to
         // `{TMPDIR}/<basename>-<realpath_hash>-<user_id>.log`
-        if (self::$DefaultOutputLogIsEnabled)
+        if (self::$DefaultOutputLogIsEnabled && !Runtime::isStopping())
         {
             self::registerTarget(StreamTarget::fromPath(File::getStablePath(".log")));
         }

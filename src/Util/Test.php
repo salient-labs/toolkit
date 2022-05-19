@@ -99,4 +99,15 @@ abstract class Test
         return is_array($value) &&
             (empty($value) ? $allowEmpty : !self::isAssociativeArray($value));
     }
+
+    /**
+     * Return true for absolute paths
+     *
+     * @param string $path
+     * @return bool
+     */
+    public static function isAbsolutePath(string $path): bool
+    {
+        return (bool)preg_match('/^(\\/|\\\\|[a-z]:\\\\)/i', $path);
+    }
 }

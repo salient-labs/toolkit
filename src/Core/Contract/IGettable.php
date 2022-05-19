@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Core\Contract;
 
 /**
- * Reads inaccessible properties
+ * Reads properties that have not been declared or are not visible in the
+ * current scope
  *
  * @package Lkrms
  */

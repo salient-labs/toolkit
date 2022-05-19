@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Core\Contract;
 
 /**
- * Writes inaccessible properties
+ * Writes properties that have not been declared or are not visible in the
+ * current scope
  *
  * @package Lkrms
  */
