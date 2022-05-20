@@ -82,7 +82,7 @@ abstract class SqliteStore
      *
      * @return null|string
      */
-    public function getFilename(): ?string
+    final public function getFilename(): ?string
     {
         return $this->Filename;
     }
@@ -92,7 +92,7 @@ abstract class SqliteStore
      *
      * @throws RuntimeException
      */
-    protected function assertIsOpen()
+    final protected function assertIsOpen()
     {
         if (!$this->isOpen())
         {
@@ -108,17 +108,17 @@ abstract class SqliteStore
      *
      * @return null|SQLite3 .
      */
-    protected function db(): ?SQLite3
+    final protected function db(): ?SQLite3
     {
         return $this->Db;
     }
 
-    protected function isTransactionOpen(): bool
+    final protected function isTransactionOpen(): bool
     {
         return $this->IsTransactionOpen ?: false;
     }
 
-    protected function beginTransaction()
+    final protected function beginTransaction()
     {
         if ($this->isTransactionOpen())
         {
@@ -131,7 +131,7 @@ abstract class SqliteStore
         $this->IsTransactionOpen = true;
     }
 
-    protected function commitTransaction()
+    final protected function commitTransaction()
     {
         if (!$this->isTransactionOpen())
         {
@@ -144,7 +144,7 @@ abstract class SqliteStore
         $this->IsTransactionOpen = false;
     }
 
-    protected function rollbackTransaction()
+    final protected function rollbackTransaction()
     {
         // Silently ignore transactionless rollback requests, e.g. when an
         // exception is caught in a Schrödinger's transaction scenario
@@ -157,7 +157,7 @@ abstract class SqliteStore
         $this->IsTransactionOpen = false;
     }
 
-    protected function invokeInTransaction(callable $callback)
+    final protected function invokeInTransaction(callable $callback)
     {
         if ($this->isTransactionOpen())
         {

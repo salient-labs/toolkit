@@ -10,6 +10,10 @@ use Lkrms\Core\Facade;
  * A facade for CacheStore
  *
  * @method static CacheStore load(string $filename = ":memory:", bool $autoFlush = true)
+ * @method static void open(string $filename = ":memory:", bool $autoFlush = true)
+ * @method static ?string getFilename()
+ * @method static bool isOpen()
+ * @method static void close()
  * @method static void set(string $key, mixed $value, int $expiry = 0)
  * @method static mixed get(string $key, int $maxAge = null)
  * @method static mixed maybeGet(string $key, callable $callback, int $expiry = 0)
