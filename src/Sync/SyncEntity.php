@@ -5,18 +5,10 @@ declare(strict_types=1);
 namespace Lkrms\Sync;
 
 use JsonSerializable;
+use Lkrms\Core\ClosureBuilder;
 use Lkrms\Core\Contract\IClassCache;
-use Lkrms\Core\Contract\IConstructible;
-use Lkrms\Core\Contract\IExtensible;
-use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Contract\IResolvable;
-use Lkrms\Core\Contract\ISettable;
+use Lkrms\Core\Entity;
 use Lkrms\Core\Mixin\TClassCache;
-use Lkrms\Core\Mixin\TConstructible;
-use Lkrms\Core\Mixin\TExtensible;
-use Lkrms\Core\Mixin\TGettable;
-use Lkrms\Core\Mixin\TResolvable;
-use Lkrms\Core\Mixin\TSettable;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Reflect;
 use UnexpectedValueException;
@@ -41,11 +33,10 @@ use UnexpectedValueException;
  * - {@see SyncEntity::getSerializedIdKey()} appends `_id` to the names of
  *   fields replaced with their {@see SyncEntity::$Id} during serialization.
  *
- * @package Lkrms
  */
-abstract class SyncEntity implements IConstructible, IExtensible, IGettable, IResolvable, ISettable, IClassCache, JsonSerializable
+abstract class SyncEntity extends Entity implements IClassCache, JsonSerializable
 {
-    use TConstructible, TExtensible, TGettable, TResolvable, TSettable, TClassCache;
+    use TClassCache;
 
     /**
      * @var int|string
@@ -66,30 +57,6 @@ abstract class SyncEntity implements IConstructible, IExtensible, IGettable, IRe
      * @var bool
      */
     private $DetectRecursion;
-
-    public static function getGettable(): array
-    {
-        return ["*"];
-    }
-
-    public static function getSettable(): array
-    {
-        return ["*"];
-    }
-
-    /**
-     * Return the plural of the class name
-     *
-     * e.g. `Faculty::getPlural()` should return `Faculties`.
-     *
-     * Override if needed.
-     *
-     * @return string
-     */
-    public static function getPlural(): string
-    {
-        return Convert::nounToPlural(Convert::classToBasename(static::class));
-    }
 
     /**
      * Return prefixes to remove when normalising field/property names
@@ -126,7 +93,10 @@ abstract class SyncEntity implements IConstructible, IExtensible, IGettable, IRe
                 $regex   = implode("|", $prefixes);
                 $regex   = count($prefixes) > 1 ? "($regex)" : $regex;
                 $regex   = "/^{$regex}_/";
-                $closure = function (string $name) use ($regex) { return preg_replace($regex, "", Convert::toSnakeCase($name)); };
+                $closure = function (string $name) use ($regex)
+                {
+                    return preg_replace($regex, "", Convert::toSnakeCase($name));
+                };
             }
             else
             {
@@ -151,7 +121,7 @@ abstract class SyncEntity implements IConstructible, IExtensible, IGettable, IRe
      */
     protected function serialize(): array
     {
-        return Convert::objectToArray($this);
+        return (ClosureBuilder::getFor(static::class)->getSerializeClosure())($this);
     }
 
     /**
@@ -341,19 +311,9 @@ abstract class SyncEntity implements IConstructible, IExtensible, IGettable, IRe
                 $this->_serialize($child, $root, $parents, $entityNode, $node, $key);
             }
         }
-        elseif (is_object($node))
+        else
         {
-            $keys = array_keys(Convert::objectToArray($node));
-
-            foreach ($keys as $key)
-            {
-                if (is_null($node->$key) || is_scalar($node->$key))
-                {
-                    continue;
-                }
-
-                $this->_serialize($node->$key, $root, $parents);
-            }
+            throw new UnexpectedValueException("Array or SyncEntity expected: " . print_r($node, true));
         }
     }
 
@@ -368,7 +328,7 @@ abstract class SyncEntity implements IConstructible, IExtensible, IGettable, IRe
      * @see SyncEntity::getDoNotSerialize()
      * @see SyncEntity::getOnlySerializeId()
      */
-    public function toArray(): array
+    final public function toArray(): array
     {
         $this->DoNotSerialize  = $this->getDoNotSerialize() ?: [];
         $this->OnlySerializeId = $this->getOnlySerializeId() ?: [];

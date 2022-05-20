@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Lkrms\Err;
 
 use Lkrms\Runtime;
-use Whoops\Handler\HandlerInterface;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
 
 /**
  * Just a Whoops wrapper
  *
- * @package Lkrms
  */
 abstract class Err
 {
@@ -22,14 +20,14 @@ abstract class Err
     private static $Whoops;
 
     /**
-     * @param callable|HandlerInterface|null $handler Called before standard
-     * handlers.
+     *
      * @param string|string[]|null $silenceInPaths One or multiple regex
      * patterns to match files where `E_STRICT`, `E_DEPRECATED` and
      * `E_USER_DEPRECATED` errors will be silenced (e.g. your project's `vendor`
      * directory).
+     * @return void
      */
-    public static function handleErrors($handler = null, $silenceInPaths = null)
+    public static function handleErrors($silenceInPaths = null): void
     {
         if (!self::$Whoops)
         {
@@ -47,11 +45,6 @@ abstract class Err
                  */
                 self::$Whoops->pushHandler(new PrettyPageHandler());
             }
-        }
-
-        if ($handler)
-        {
-            self::$Whoops->pushHandler($handler);
         }
 
         if ($silenceInPaths)

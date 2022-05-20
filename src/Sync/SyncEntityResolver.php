@@ -10,7 +10,6 @@ use UnexpectedValueException;
 /**
  * Resolves names to entities
  *
- * @package Lkrms
  */
 class SyncEntityResolver
 {

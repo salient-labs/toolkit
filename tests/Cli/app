@@ -15,7 +15,7 @@ Err::handleErrors();
 
 Env::load(__DIR__ . "/../.env");
 
-TestOptions::register();
+TestOptions::register(["test", "options"]);
 TestOptions::register(["sync"]);
 
 $status = Cli::run();

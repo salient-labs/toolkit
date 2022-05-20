@@ -7,7 +7,6 @@ namespace Lkrms\Console;
 /**
  * Escape sequences to set and clear terminal display attributes
  *
- * @package Lkrms
  */
 abstract class ConsoleColour
 {

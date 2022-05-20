@@ -9,7 +9,6 @@ namespace Lkrms\Cli;
  *
  * See {@see CliCommand::_getOptions()} for more information.
  *
- * @package Lkrms
  */
 abstract class CliOptionType
 {

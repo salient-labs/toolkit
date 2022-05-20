@@ -10,7 +10,6 @@ use Lkrms\Util\Convert;
 /**
  * Thrown when an unimplemented sync operation is attempted
  *
- * @package Lkrms
  */
 class SyncOperationNotImplementedException extends \Lkrms\Exception\Exception
 {

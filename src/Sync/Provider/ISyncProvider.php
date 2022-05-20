@@ -9,7 +9,6 @@ namespace Lkrms\Sync\Provider;
  *
  * Implemented by {@see Lkrms\Sync\Provider\SyncProvider}.
  *
- * @package Lkrms
  */
 interface ISyncProvider
 {

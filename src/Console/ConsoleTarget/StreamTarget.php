@@ -13,7 +13,6 @@ use RuntimeException;
 /**
  * Write to a stream (e.g. a file or TTY)
  *
- * @package Lkrms
  */
 class StreamTarget extends ConsoleTarget
 {
@@ -35,7 +34,7 @@ class StreamTarget extends ConsoleTarget
     /**
      * @var string
      */
-    private $Timestamp = "[d M H:i:s.uO] ";
+    private $Timestamp = "[d M y H:i:s.vO] ";
 
     /**
      * @var DateTimeZone
@@ -69,7 +68,7 @@ class StreamTarget extends ConsoleTarget
      * @param int[] $levels
      * @param bool|null $addTimestamp If `null`, timestamps will be added unless
      * `$stream` is a TTY
-     * @param string|null $timestamp Default: `[d M H:i:s.uO] `
+     * @param string|null $timestamp Default: `[d M y H:i:s.vO] `
      * @param string|null $timezone Default: as per `date_default_timezone_set`
      * or INI setting `date.timezone`
      */
@@ -140,7 +139,7 @@ class StreamTarget extends ConsoleTarget
      * @param int[] $levels
      * @param bool|null $addTimestamp If `null`, timestamps will be added unless
      * `$stream` is a TTY
-     * @param string|null $timestamp Default: `[d M H:i:s.uO] `
+     * @param string|null $timestamp Default: `[d M y H:i:s.vO] `
      * @param string|null $timezone Default: as per `date_default_timezone_set`
      * or INI setting `date.timezone`
      * @return StreamTarget

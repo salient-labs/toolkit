@@ -11,8 +11,8 @@
         "filp/whoops": "^2.14"
     },
     "require-dev": {
-        "analog/analog": "^1.0",
-        "phpstan/phpstan": "^1.5",
+        "analog/analog": "^1",
+        "phpstan/phpstan": "^1",
         "phpunit/phpunit": "^9"
     },
     "suggest": {

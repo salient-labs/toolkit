@@ -9,17 +9,9 @@ use Lkrms\Cli\CliOptionType;
 
 class TestOptions extends CliCommand
 {
-    public function getDescription(): string
+    protected function _getDescription(): string
     {
         return "Test the available option types";
-    }
-
-    protected function _getName(): array
-    {
-        return [
-            "test",
-            "options"
-        ];
     }
 
     protected function _getOptions(): array
@@ -91,7 +83,7 @@ class TestOptions extends CliCommand
         ];
     }
 
-    protected function run(string ...$args)
+    protected function _run(string ...$args)
     {
         var_dump($this->getAllOptionValues());
         var_dump($args);

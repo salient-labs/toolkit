@@ -12,7 +12,6 @@ use UnexpectedValueException;
  *
  * Constants have the same values as their syslog / journalctl counterparts.
  *
- * @package Lkrms
  */
 abstract class ConsoleLevel
 {

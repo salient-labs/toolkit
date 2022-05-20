@@ -33,8 +33,6 @@ use UnexpectedValueException;
  * @property-read string|string[]|bool|int|null $DefaultValue
  * @property-read string|string[]|bool|int|null $Value
  * @property-read bool $IsValueSet
- *
- * @package Lkrms
  */
 class CliOption implements IConstructible, IGettable
 {

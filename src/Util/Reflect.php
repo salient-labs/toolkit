@@ -15,7 +15,6 @@ use UnexpectedValueException;
 /**
  * Sometimes The Reflector Is Not Enough
  *
- * @package Lkrms
  */
 abstract class Reflect
 {

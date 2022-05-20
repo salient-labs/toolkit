@@ -9,7 +9,6 @@ use Lkrms\Core\ClosureBuilder;
 /**
  * Implements IExtensible to store arbitrary property values
  *
- * @package Lkrms
  * @see \Lkrms\Core\Contract\IExtensible
  */
 trait TExtensible

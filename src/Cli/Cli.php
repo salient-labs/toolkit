@@ -12,7 +12,6 @@ use UnexpectedValueException;
 /**
  * CLI app toolkit
  *
- * @package Lkrms
  */
 abstract class Cli
 {
@@ -90,18 +89,22 @@ abstract class Cli
     }
 
     /**
-     * Make a CliCommand available for execution
-     *
+     * @internal
      * @param CliCommand $command
      * @see CliCommand::register()
      */
     public static function registerCommand(CliCommand $command)
     {
+        if (!$command->isRegistrable() || $command->isRegistered())
+        {
+            throw new UnexpectedValueException("Instance cannot be registered (did you use " . get_class($command) . "::register()?)");
+        }
+
         $name = $command->getName();
 
         if (!is_null(self::getCommandTree($name)))
         {
-            throw new UnexpectedValueException("Command already registered at '" . implode(" ", $name) . "'");
+            throw new UnexpectedValueException("Another command has been registered at '" . implode(" ", $name) . "'");
         }
 
         $tree = & self::$CommandTree;
@@ -202,11 +205,36 @@ EOF;
             {
                 $arg = array_shift($args) ?: "";
 
-                // Descend into the command tree if $arg is a legal subcommand,
-                // print usage info if $arg is "--help" and there are no further
-                // arguments, or fail
+                // 1. Descend into the command tree if $arg is a legal
+                //    subcommand or unambiguous partial subcommand
+                // 2. Push "--help" onto $args and continue if $arg is "help"
+                // 3. Print usage info if $arg is "--help" and there are no
+                //    further arguments
+                // 4. Otherwise, fail
                 if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg))
                 {
+                    $nodes = array_filter(
+                        $node,
+                        function ($childName) use ($arg)
+                        {
+                            return strpos($childName, $arg) === 0;
+                        },
+                        ARRAY_FILTER_USE_KEY
+                    );
+
+                    if (!$nodes)
+                    {
+                        if ($arg == "help")
+                        {
+                            $args[] = "--help";
+                            continue;
+                        }
+                    }
+                    elseif (count($nodes) == 1)
+                    {
+                        $arg = key($nodes);
+                    }
+
                     $node  = $node[$arg] ?? null;
                     $name .= ($name ? " " : "") . $arg;
                 }

@@ -10,7 +10,6 @@ use RuntimeException;
 /**
  * Path/file helpers
  *
- * @package Lkrms
  */
 abstract class File
 {

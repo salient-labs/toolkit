@@ -7,7 +7,6 @@ namespace Lkrms\Curler;
 /**
  * HTTP header handler
  *
- * @package Lkrms
  */
 class CurlerHeaders
 {

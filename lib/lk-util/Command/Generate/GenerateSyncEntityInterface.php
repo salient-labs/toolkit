@@ -22,7 +22,6 @@ use Lkrms\Util\File;
  * - `SYNC_ENTITY_NAMESPACE`
  * - `SYNC_ENTITY_PACKAGE`
  *
- * @package Lkrms\LkUtil
  */
 class GenerateSyncEntityInterface extends CliCommand
 {
@@ -35,14 +34,9 @@ class GenerateSyncEntityInterface extends CliCommand
         "create", "get", "update", "delete", "get-list"
     ];
 
-    public function getDescription(): string
+    protected function _getDescription(): string
     {
         return "Generate a provider interface for an entity class";
-    }
-
-    protected function _getName(): array
-    {
-        return ["generate", "sync-entity-provider"];
     }
 
     protected function _getOptions(): array
@@ -98,7 +92,7 @@ class GenerateSyncEntityInterface extends CliCommand
         ];
     }
 
-    protected function run(string ...$args)
+    protected function _run(string ...$args)
     {
         $operationMap = [
             "create"      => SyncOperation::CREATE,
@@ -116,7 +110,7 @@ class GenerateSyncEntityInterface extends CliCommand
         $vendor     = reset($namespace) ?: "";
         $namespace  = implode("\\", $namespace) ?: Env::get("SYNC_ENTITY_NAMESPACE", "");
         $fqcn       = $namespace ? $namespace . "\\" . $class : $class;
-        $package    = $this->getOptionValue("package") ?: Env::get("SYNC_ENTITY_PACKAGE", $vendor ?: $class);
+        $package    = $this->getOptionValue("package") ?: Env::get("SYNC_ENTITY_PACKAGE", "");
         $desc       = $this->getOptionValue("desc") ?: "Synchronises $class objects with a backend";
         $interface  = $class . "Provider";
         $extends    = ISyncProvider::class;
@@ -174,6 +168,11 @@ class GenerateSyncEntityInterface extends CliCommand
             " * @package $package",
             " */",
         ];
+
+        if (!$package)
+        {
+            unset($docBlock[3]);
+        }
 
         $blocks = [
             "<?php",

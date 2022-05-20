@@ -20,7 +20,7 @@ Cache::set('key', ['value1', 'value2']);
 print_r(Cache::get('key'));
 
 print_r(Cache::maybeGet(
-    [basename(__FILE__), "MaybeGet"],
+    implode("/", [basename(__FILE__), "MaybeGet"]),
     function ()
     {
         return [
@@ -34,7 +34,7 @@ foreach ([1, 2] as $seconds)
 {
     sleep($seconds);
     print_r(Cache::maybeGet(
-        [basename(__FILE__), "MaybeGet"],
+        implode("/", [basename(__FILE__), "MaybeGet"]),
         "time",
         2
     ));

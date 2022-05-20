@@ -9,7 +9,6 @@ use Lkrms\Util\Convert;
 /**
  * Runtime state tracking
  *
- * @package Lkrms
  */
 abstract class Runtime
 {

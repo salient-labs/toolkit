@@ -13,7 +13,6 @@ use UnexpectedValueException;
  *
  * Just a facade for `Dice`.
  *
- * @package Lkrms
  * @link https://r.je/dice Dice home page
  * @link https://github.com/Level-2/Dice Dice repository on GitHub
  */

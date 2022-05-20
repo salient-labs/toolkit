@@ -8,7 +8,6 @@ namespace Lkrms\Core\Mixin;
  * Implements IClassCache to share an ephemeral cache between instances of the
  * same class
  *
- * @package Lkrms
  * @see \Lkrms\Core\Contract\IClassCache
  */
 trait TClassCache

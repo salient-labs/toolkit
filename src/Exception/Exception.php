@@ -9,7 +9,6 @@ use RuntimeException;
 /**
  * Base class for exceptions
  *
- * @package Lkrms
  */
 class Exception extends RuntimeException
 {

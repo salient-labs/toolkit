@@ -7,7 +7,6 @@ namespace Lkrms\Util;
 /**
  * SQL helpers
  *
- * @package Lkrms
  */
 abstract class Sql
 {

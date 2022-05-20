@@ -1,0 +1,35 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+// Legacy names
+use Lkrms\Assert;
+use Lkrms\Console;
+use Lkrms\Console\ConsoleTarget\Stream;
+use Lkrms\Err;
+
+// Not legacy
+use Lkrms\Util\Legacy;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Legacy::registerAutoloader();
+
+Err::handleErrors();
+Assert::sapiIsCli();
+
+Console::disableDefaultOutputLog();
+Console::registerTarget(new Stream(STDERR));
+$targets = Console::getOutputTargets();
+
+Console::info("This message has been brought to you by", Console::class);
+Console::log("With support from", Err::class);
+
+if ($targets[0] instanceof Stream)
+{
+    Console::info("The first output target is a:", Stream::class);
+}
+
+Console::log("Output targets:", print_r($targets, true));

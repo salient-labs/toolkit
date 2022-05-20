@@ -10,7 +10,6 @@ use Lkrms\Console\ConsoleLevel;
 /**
  * Base class for console targets
  *
- * @package Lkrms
  */
 abstract class ConsoleTarget
 {

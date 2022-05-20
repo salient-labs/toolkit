@@ -9,7 +9,6 @@ use Lkrms\Util\Convert;
 /**
  * Thrown when an unimplemented sync provider method is called
  *
- * @package Lkrms
  */
 class SyncProviderMethodNotImplementedException extends \Lkrms\Exception\Exception
 {

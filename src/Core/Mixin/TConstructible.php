@@ -10,7 +10,6 @@ use UnexpectedValueException;
 /**
  * Implements IConstructible to convert arrays to instances
  *
- * @package Lkrms
  * @see \Lkrms\Core\Contract\IConstructible
  */
 trait TConstructible

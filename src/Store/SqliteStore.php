@@ -13,33 +13,32 @@ use SQLite3;
 /**
  * Base class for SQLite-backed stores
  *
- * @package Lkrms\Service
  */
-abstract class Sqlite
+abstract class SqliteStore
 {
     /**
-     * @var array<string,SQLite3>
+     * @var SQLite3|null
      */
-    private static $Db = [];
+    private $Db;
 
     /**
-     * @var array<string,string>
+     * @var string|null
      */
-    private static $Filename = [];
+    private $Filename;
 
     /**
-     * @var array<string,bool>
+     * @var bool
      */
-    private static $IsTransactionOpen = [];
+    private $IsTransactionOpen;
 
     /**
      * Create or open a database
      *
      * @param string $filename
      */
-    public static function open(string $filename = ":memory:")
+    public function open(string $filename = ":memory:")
     {
-        self::close();
+        $this->close();
 
         if ($filename != ":memory:")
         {
@@ -50,22 +49,22 @@ abstract class Sqlite
         $db->enableExceptions();
         $db->busyTimeout(60000);
         $db->exec('PRAGMA journal_mode=WAL');
-        self::$Db[static::class] = $db;
-        self::$Filename[static::class] = $filename;
+        $this->Db       = $db;
+        $this->Filename = $filename;
     }
 
     /**
      * If a database is open, close it
      */
-    public static function close()
+    public function close()
     {
-        if (!self::isOpen())
+        if (!$this->isOpen())
         {
             return;
         }
 
-        self::db()->close();
-        unset(self::$Db[static::class], self::$Filename[static::class]);
+        $this->db()->close();
+        $this->Db = $this->Filename = null;
     }
 
     /**
@@ -73,9 +72,9 @@ abstract class Sqlite
      *
      * @return bool
      */
-    public static function isOpen(): bool
+    public function isOpen(): bool
     {
-        return isset(self::$Db[static::class]);
+        return !is_null($this->Db);
     }
 
     /**
@@ -83,9 +82,9 @@ abstract class Sqlite
      *
      * @return null|string
      */
-    public static function getFilename(): ?string
+    public function getFilename(): ?string
     {
-        return self::$Filename[static::class] ?? null;
+        return $this->Filename;
     }
 
     /**
@@ -93,9 +92,9 @@ abstract class Sqlite
      *
      * @throws RuntimeException
      */
-    protected static function assertIsOpen()
+    protected function assertIsOpen()
     {
-        if (!self::isOpen())
+        if (!$this->isOpen())
         {
             throw new RuntimeException("open() must be called first");
         }
@@ -109,73 +108,75 @@ abstract class Sqlite
      *
      * @return null|SQLite3 .
      */
-    protected static function db(): ?SQLite3
+    protected function db(): ?SQLite3
     {
-        return self::$Db[static::class] ?? null;
+        return $this->Db;
     }
 
-    protected static function isTransactionOpen(): bool
+    protected function isTransactionOpen(): bool
     {
-        return self::$IsTransactionOpen[static::class] ?? false;
+        return $this->IsTransactionOpen ?: false;
     }
 
-    protected static function beginTransaction()
+    protected function beginTransaction()
     {
-        if (self::isTransactionOpen())
+        if ($this->isTransactionOpen())
         {
             Console::debug("Transaction already open");
 
             return;
         }
 
-        self::db()->exec("BEGIN");
-        self::$IsTransactionOpen[static::class] = true;
+        $this->db()->exec("BEGIN");
+        $this->IsTransactionOpen = true;
     }
 
-    protected static function commitTransaction()
+    protected function commitTransaction()
     {
-        if (!self::isTransactionOpen())
+        if (!$this->isTransactionOpen())
         {
             Console::debug("No transaction open");
 
             return;
         }
 
-        self::db()->exec("COMMIT");
-        unset(self::$IsTransactionOpen[static::class]);
+        $this->db()->exec("COMMIT");
+        $this->IsTransactionOpen = false;
     }
 
-    protected static function rollbackTransaction()
+    protected function rollbackTransaction()
     {
         // Silently ignore transactionless rollback requests, e.g. when an
         // exception is caught in a Schrödinger's transaction scenario
-        if (!self::isTransactionOpen())
+        if (!$this->isTransactionOpen())
         {
             return;
         }
 
-        self::db()->exec("ROLLBACK");
-        unset(self::$IsTransactionOpen[static::class]);
+        $this->db()->exec("ROLLBACK");
+        $this->IsTransactionOpen = false;
     }
 
-    protected static function invokeInTransaction(callable $callback)
+    protected function invokeInTransaction(callable $callback)
     {
-        if (self::isTransactionOpen())
+        if ($this->isTransactionOpen())
         {
             throw new RuntimeException("Transaction already open");
         }
 
-        self::beginTransaction();
+        $this->beginTransaction();
 
         try
         {
-            $callback();
-            self::commitTransaction();
+            $result = $callback();
+            $this->commitTransaction();
         }
         catch (Exception $ex)
         {
-            self::rollbackTransaction();
+            $this->rollbackTransaction();
             throw $ex;
         }
+
+        return $result;
     }
 }

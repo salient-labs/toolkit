@@ -7,7 +7,8 @@ namespace Lkrms\Core\Mixin;
 use Lkrms\Core\ClosureBuilder;
 
 /**
- * Implements IGettable to read inaccessible properties
+ * Implements IGettable to read properties that have not been declared or are
+ * not visible in the current scope
  *
  * Override {@see TGettable::getGettable()} to provide access to `protected`
  * variables via `__get` and `__isset`.
@@ -21,7 +22,6 @@ use Lkrms\Core\ClosureBuilder;
  * - The existence of `_get<Property>()` implies that `<Property>` is gettable,
  *   regardless of {@see TGettable::getGettable()}'s return value.
  *
- * @package Lkrms
  * @see \Lkrms\Core\Contract\IGettable
  */
 trait TGettable

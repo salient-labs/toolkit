@@ -7,7 +7,6 @@ namespace Lkrms\Tests\Sync\Entity;
 /**
  * Synchronises User objects with a backend
  *
- * @package Lkrms\Tests
  */
 interface UserProvider extends \Lkrms\Sync\Provider\ISyncProvider
 {

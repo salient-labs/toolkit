@@ -10,7 +10,6 @@ use Lkrms\Console\Console;
 /**
  * Thrown when invalid command-line arguments are given
  *
- * @package Lkrms
  */
 class InvalidCliArgumentException extends \Lkrms\Exception\Exception
 {

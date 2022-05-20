@@ -14,7 +14,6 @@ use UnexpectedValueException;
 /**
  * Base class for CLI commands
  *
- * @package Lkrms
  */
 abstract class CliCommand
 {
@@ -23,30 +22,7 @@ abstract class CliCommand
      *
      * @return string
      */
-    abstract public function getDescription(): string;
-
-    /**
-     * Return the command name as an array of subcommands
-     *
-     * A command could return the following, for example:
-     *
-     * ```php
-     * ["sync", "canvas", "from-sis"]
-     * ```
-     *
-     * to register itself as the handler for:
-     *
-     * ```
-     * my-cli-app sync canvas from-sis
-     * ```
-     *
-     * Valid subcommands start with a letter, followed by any number of letters,
-     * numbers, hyphens, or underscores.
-     *
-     * @return string[] An `UnexpectedValueException` will be thrown if an
-     * invalid subcommand is returned.
-     */
-    abstract protected function _getName(): array;
+    abstract protected function _getDescription(): string;
 
     /**
      * Return a list of CliOption objects and/or arrays to create them from
@@ -90,7 +66,7 @@ abstract class CliCommand
      * @param string ...$params
      * @return int|void
      */
-    abstract protected function run(string ...$params);
+    abstract protected function _run(string ...$params);
 
     /**
      * @var int
@@ -150,6 +126,11 @@ abstract class CliCommand
     /**
      * @var bool
      */
+    private $IsRegistered = false;
+
+    /**
+     * @var bool
+     */
     private $HasRun = false;
 
     final public static function assertNameIsValid(?array $name)
@@ -165,46 +146,58 @@ abstract class CliCommand
     }
 
     /**
-     * Create an instance of the command and register it
+     * Register an instance of the class as a subcommand of the running app
      *
-     * The following statements are equivalent:
-     *
-     * ```php
-     * // 1.
-     * MyCliCommand::register();
-     *
-     * // 2.
-     * Cli::registerCommand(new MyCliCommand());
-     * ```
-     *
-     * But the only way to register a command with an application-specific name
-     * is with `CliCommand::register()`:
+     * For example, a PHP script called `sync-util` could register
+     * `Acme\Canvas\SyncFromSis` as follows:
      *
      * ```php
-     * MyCliCommand::register(["subcommand", "my-cli-command"]);
+     * \Acme\Canvas\SyncFromSis::register(["sync", "canvas", "from-sis"]);
+     *
+     * $status = Cli::run();
+     * exit ($status);
      * ```
      *
-     * @param array|null $name If set, the name returned by the command will be
-     * ignored.
+     * to have this CLI command invoke `Acme\Canvas\SyncFromSis`:
+     *
+     * ```shell
+     * php sync-util sync canvas from-sis
+     * ```
+     *
+     * @param string[] $name The command name as an array of subcommands.
+     *
+     * Valid subcommands start with a letter, followed by any number of letters,
+     * numbers, hyphens, or underscores.
+     *
+     * @throws UnexpectedValueException if an invalid subcommand is provided
      */
-    final public static function register(array $name = null)
+    final public static function register(array $name)
     {
-        $command = new static();
+        self::assertNameIsValid($name);
 
-        if (!is_null($name))
-        {
-            self::assertNameIsValid($name);
-            $command->Name = $name;
-        }
+        $command       = new static();
+        $command->Name = $name;
 
         Cli::registerCommand($command);
+
+        $command->IsRegistered = true;
     }
 
+    /**
+     * Get the command name as a string of space-delimited subcommands
+     *
+     * @return string
+     */
     final public function getCommandName(): string
     {
         return implode(" ", $this->getName());
     }
 
+    /**
+     * Get the command name, including the name used to run the script
+     *
+     * @return string
+     */
     final public function getLongCommandName(): string
     {
         $name = $this->getName();
@@ -214,27 +207,57 @@ abstract class CliCommand
     }
 
     /**
+     * Get the command name as an array of subcommands
      *
      * @return string[]
      */
     final public function getName(): array
     {
-        if (is_null($this->Name))
-        {
-            self::assertNameIsValid($name = $this->_getName());
-            $this->Name = $name;
-        }
+        return $this->Name ?: [];
+    }
 
-        return $this->Name;
+    /**
+     * Get a short description of the command
+     *
+     * @return string
+     */
+    final public function getDescription(): string
+    {
+        return $this->_getDescription();
+    }
+
+    /**
+     * Return true if the command has been registered as a subcommand of the
+     * running app
+     *
+     * @return bool
+     */
+    final public function isRegistered(): bool
+    {
+        return $this->IsRegistered;
+    }
+
+    /**
+     * Return true if the command can be registered as a subcommand of the
+     * running app
+     *
+     * Always returns `false` unless the instance was created by
+     * {@see CliCommand::register()}.
+     *
+     * @return bool
+     */
+    final public function isRegistrable(): bool
+    {
+        return !is_null($this->Name);
     }
 
     /**
      *
      * @param CliOption|array $option
-     * @param array|null $options
+     * @param array $options
      * @param bool $hide
      */
-    private function addOption($option, array & $options = null, $hide = false)
+    private function addOption($option, array & $options, $hide = false)
     {
         if (!($option instanceof CliOption))
         {
@@ -260,10 +283,7 @@ abstract class CliCommand
             throw new UnexpectedValueException("Option names must be unique: " . implode(", ", $names));
         }
 
-        if (!is_null($options))
-        {
-            $options[] = $option;
-        }
+        $options[] = $option;
 
         foreach ($names as $key)
         {
@@ -675,7 +695,7 @@ EOF;
 
         $this->HasRun = true;
 
-        $return = $this->run(...array_slice($this->Arguments, $this->NextArgumentIndex));
+        $return = $this->_run(...array_slice($this->Arguments, $this->NextArgumentIndex));
 
         if (is_int($return))
         {

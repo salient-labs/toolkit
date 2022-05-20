@@ -24,7 +24,7 @@ TestOptions::register([]);
 try
 {
     // Try to register it under its usual name
-    TestOptions::register();
+    TestOptions::register(["test", "options"]);
 }
 catch (Throwable $ex)
 {

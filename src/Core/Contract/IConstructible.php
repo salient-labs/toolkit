@@ -7,7 +7,6 @@ namespace Lkrms\Core\Contract;
 /**
  * Converts arrays to instances
  *
- * @package Lkrms
  */
 interface IConstructible
 {
