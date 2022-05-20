@@ -2,7 +2,8 @@
 
 ### General
 - [ ] Review namespaces and classes before making a v1.0.0 release
-  - [x] Add `abstract` to classes with exclusively `static` members
+  - [ ] Make classes `final` where possible
+  - [ ] Replace `abstract` with `extends \Core\Utility` where appropriate
   - [x] `Assert`: `pregMatch()` -> `patternMatches()`
   - [ ] Refactor Curler
     - [ ] Remove/deprecate `...Json()` methods
@@ -10,6 +11,7 @@
   - [ ] `Runtime` -> `App`
   - [ ] Refactor Dice
   - [ ] Surface `Ioc` methods via `App`
+  - [ ] Move `ClosureBuilder` to `Core\Util`
 - [ ] Implement a generic fluent interface (`TFluent`?) with instance creation and property getting/setting
 - [ ] Throw custom exceptions
 - [ ] Formalise tests
@@ -20,16 +22,18 @@
 - [ ] Add missing descriptions
 
 ### Cache(/Trash)
-- [ ] Remove/deprecate `isLoaded()` and `load()`
-- [ ] Return `null` instead of `false` for missing entries
+- [x] Remove/deprecate `isLoaded()` and `load()`
+- ~~Return `null` instead of `false` for missing entries~~
 
 ### Sync
+- [ ] Add `Provider` to `SyncEntity` and require it to be set during instantiation
 - [ ] Establish mechanism for resolving `$<entity>Id` properties to `$Entity` and vice-versa
 - [ ] Implement automatic local storage of entities
   - [ ] When a `SyncEntity` is created, load a local instance before applying provider state
   - [ ] Add `static` methods like `getFrom($provider)` and `syncFrom($provider)` to `SyncEntity`
   - [ ] Generate and store deltas while applying provider state
   - [ ] Track "deltas in" and "deltas out" in local store?
+- [ ] Add `SyncException` as a base class
 
 ### Cli
 - [x] Allow commands to be chained and/or invoked as functions

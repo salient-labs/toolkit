@@ -13,15 +13,20 @@ use Throwable;
  */
 final class CacheStore extends SqliteStore
 {
+    public function __construct(string $filename = ":memory:", bool $autoFlush = true)
+    {
+        $this->open($filename, $autoFlush);
+    }
+
     /**
      * Create or open a cache database
      *
      * @param string $filename The SQLite database to use.
      * @param bool $autoFlush Automatically flush expired values?
      */
-    public function __construct(string $filename = ":memory:", bool $autoFlush = true)
+    public function open(string $filename = ":memory:", bool $autoFlush = true)
     {
-        $this->open($filename);
+        parent::open($filename);
         $this->db()->exec(
 <<<SQL
 CREATE TABLE IF NOT EXISTS _cache_item (

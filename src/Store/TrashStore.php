@@ -10,14 +10,19 @@ namespace Lkrms\Store;
  */
 final class TrashStore extends SqliteStore
 {
+    public function __construct(string $filename = ":memory:")
+    {
+        $this->open($filename);
+    }
+
     /**
      * Create or open a storage database
      *
      * @param string $filename The SQLite database to use.
      */
-    public function __construct(string $filename)
+    public function open(string $filename = ":memory:")
     {
-        $this->open($filename);
+        parent::open($filename);
         $this->db()->exec(
 <<<SQL
 CREATE TABLE IF NOT EXISTS _trash_item (
