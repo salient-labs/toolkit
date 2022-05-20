@@ -9,7 +9,6 @@ use Lkrms\Console\ConsoleColour as Colour;
 /**
  * Format text for console output
  *
- * @package Lkrms
  */
 abstract class ConsoleText
 {

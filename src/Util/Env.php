@@ -13,7 +13,6 @@ use UnexpectedValueException;
 /**
  * A minimal dotenv implementation with shell-compatible parsing
  *
- * @package Lkrms
  */
 abstract class Env
 {

@@ -10,10 +10,6 @@ use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 use Lkrms\Util\Env;
 
-/**
- *
- * @package Lkrms\LkUtil
- */
 class HttpGetPath extends CliCommand
 {
     protected function _getDescription(): string

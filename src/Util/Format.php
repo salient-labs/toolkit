@@ -10,7 +10,6 @@ use UnexpectedValueException;
 /**
  * Data in, readable text out
  *
- * @package Lkrms
  */
 abstract class Format
 {

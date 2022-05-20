@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
 /**
  * Write to any PSR-3 implementor
  *
- * @package Lkrms
  */
 class LoggerTarget extends ConsoleTarget
 {

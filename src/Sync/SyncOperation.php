@@ -9,7 +9,6 @@ use UnexpectedValueException;
 /**
  * Sync operation types
  *
- * @package Lkrms
  */
 abstract class SyncOperation
 {

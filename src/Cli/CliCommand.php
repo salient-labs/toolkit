@@ -14,7 +14,6 @@ use UnexpectedValueException;
 /**
  * Base class for CLI commands
  *
- * @package Lkrms
  */
 abstract class CliCommand
 {

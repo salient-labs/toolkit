@@ -7,7 +7,6 @@ namespace Lkrms\Store;
 /**
  * A SQLite store for deleted JSON objects
  *
- * @package Lkrms\Service
  */
 final class TrashStore extends SqliteStore
 {

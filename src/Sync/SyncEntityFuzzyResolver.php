@@ -15,7 +15,6 @@ use Lkrms\Util\Generate;
  * The default algorithm is
  * {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}.
  *
- * @package Lkrms
  */
 class SyncEntityFuzzyResolver extends SyncEntityResolver
 {

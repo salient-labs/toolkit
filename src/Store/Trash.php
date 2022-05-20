@@ -14,8 +14,6 @@ use Lkrms\Core\Facade;
  * @method static void empty()
  *
  * @uses TrashStore
- *
- * @package Lkrms\Service
  */
 final class Trash extends Facade
 {

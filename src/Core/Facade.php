@@ -11,7 +11,6 @@ use RuntimeException;
 /**
  * Base class for facades
  *
- * @package Lkrms
  */
 abstract class Facade implements ISingular
 {

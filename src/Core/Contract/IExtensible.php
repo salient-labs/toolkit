@@ -7,7 +7,6 @@ namespace Lkrms\Core\Contract;
 /**
  * Stores arbitrary property values
  *
- * @package Lkrms
  */
 interface IExtensible
 {

@@ -8,7 +8,6 @@ namespace Lkrms\Core\Contract;
  * Reads properties that have not been declared or are not visible in the
  * current scope
  *
- * @package Lkrms
  */
 interface IGettable
 {

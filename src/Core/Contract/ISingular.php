@@ -7,7 +7,6 @@ namespace Lkrms\Core\Contract;
 /**
  * Provides a static interface for an underlying singleton
  *
- * @package Lkrms
  */
 interface ISingular
 {

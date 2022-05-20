@@ -19,7 +19,6 @@ use Lkrms\Util\Convert;
 /**
  * Base class for entities
  *
- * @package Lkrms
  */
 abstract class Entity implements IConstructible, IGettable, ISettable, IResolvable, IExtensible
 {

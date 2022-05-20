@@ -7,7 +7,6 @@ namespace Lkrms\Util;
 /**
  * Deprecation helpers
  *
- * @package Lkrms
  */
 abstract class Legacy
 {

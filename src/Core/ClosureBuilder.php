@@ -23,10 +23,6 @@ use ReflectionProperty;
 use RuntimeException;
 use UnexpectedValueException;
 
-/**
- *
- * @package Lkrms
- */
 class ClosureBuilder
 {
     /**

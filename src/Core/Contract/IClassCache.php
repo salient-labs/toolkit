@@ -7,7 +7,6 @@ namespace Lkrms\Core\Contract;
 /**
  * Shares an ephemeral cache between instances of the same class
  *
- * @package Lkrms
  */
 interface IClassCache
 {

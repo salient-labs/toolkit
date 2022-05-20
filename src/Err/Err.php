@@ -11,7 +11,6 @@ use Whoops\Run;
 /**
  * Just a Whoops wrapper
  *
- * @package Lkrms
  */
 abstract class Err
 {

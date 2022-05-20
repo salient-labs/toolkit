@@ -10,7 +10,6 @@ use Throwable;
 /**
  * A SQLite object cache inspired by memcached
  *
- * @package Lkrms\Service
  */
 final class CacheStore extends SqliteStore
 {

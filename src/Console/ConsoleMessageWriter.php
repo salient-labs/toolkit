@@ -12,7 +12,6 @@ use Throwable;
 /**
  * Base class for Console
  *
- * @package Lkrms
  */
 abstract class ConsoleMessageWriter
 {

@@ -9,7 +9,6 @@ use Exception;
 /**
  * Test a value against another value
  *
- * @package Lkrms
  */
 abstract class Test
 {

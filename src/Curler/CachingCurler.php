@@ -10,7 +10,6 @@ use Lkrms\Util\Generate;
 /**
  * Adds GET request caching to Curler
  *
- * @package Lkrms
  */
 class CachingCurler extends Curler
 {

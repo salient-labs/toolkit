@@ -21,8 +21,6 @@ use RuntimeException;
  * @property-read string $LogPath
  *
  * @method static mixed get(string $name)
- *
- * @package Lkrms
  */
 final class App implements IGettable, ISingular
 {

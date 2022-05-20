@@ -16,7 +16,6 @@ use Throwable;
 /**
  * Log various message types to various targets
  *
- * @package Lkrms
  */
 abstract class Console extends ConsoleMessageWriter
 {

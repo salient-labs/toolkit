@@ -12,7 +12,6 @@ use UnexpectedValueException;
 /**
  * CLI app toolkit
  *
- * @package Lkrms
  */
 abstract class Cli
 {

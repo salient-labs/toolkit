@@ -13,7 +13,6 @@ use SQLite3;
 /**
  * Base class for SQLite-backed stores
  *
- * @package Lkrms\Service
  */
 abstract class SqliteStore
 {

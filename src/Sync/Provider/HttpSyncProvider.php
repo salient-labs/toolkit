@@ -11,7 +11,6 @@ use Lkrms\Curler\CurlerHeaders;
 /**
  * Base class for HTTP-based RESTful API providers
  *
- * @package Lkrms
  */
 abstract class HttpSyncProvider extends SyncProvider
 {

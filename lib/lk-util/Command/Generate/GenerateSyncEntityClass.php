@@ -25,7 +25,6 @@ use RuntimeException;
  * - `SYNC_ENTITY_PROVIDER`
  * - `SYNC_PROVIDER_NAMESPACE`
  *
- * @package Lkrms\LkUtil
  */
 class GenerateSyncEntityClass extends CliCommand
 {
@@ -103,7 +102,7 @@ class GenerateSyncEntityClass extends CliCommand
         $vendor     = reset($namespace) ?: "";
         $namespace  = implode("\\", $namespace) ?: Env::get("SYNC_ENTITY_NAMESPACE", "");
         $fqcn       = $namespace ? $namespace . "\\" . $class : $class;
-        $package    = $this->getOptionValue("package") ?: Env::get("SYNC_ENTITY_PACKAGE", $vendor ?: $class);
+        $package    = $this->getOptionValue("package") ?: Env::get("SYNC_ENTITY_PACKAGE", "");
         $desc       = $this->getOptionValue("desc");
         $extends    = SyncEntity::class;
         $props      = ["Id" => "int|string"];
@@ -210,6 +209,11 @@ class GenerateSyncEntityClass extends CliCommand
         if (!$desc)
         {
             unset($docBlock[1]);
+        }
+
+        if (!$package)
+        {
+            unset($docBlock[3]);
         }
 
         $blocks = [

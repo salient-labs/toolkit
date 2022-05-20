@@ -18,8 +18,6 @@ use Lkrms\Core\Facade;
  * @method static void flushExpired()
  *
  * @uses CacheStore
- *
- * @package Lkrms\Service
  */
 final class Cache extends Facade
 {

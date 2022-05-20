@@ -11,7 +11,6 @@ use UnexpectedValueException;
 /**
  * Data wrangling
  *
- * @package Lkrms
  */
 abstract class Convert
 {

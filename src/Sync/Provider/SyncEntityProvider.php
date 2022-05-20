@@ -36,7 +36,6 @@ use UnexpectedValueException;
  * Registering a different provider for an entity has no effect on existing
  * `SyncEntityProvider` instances.
  *
- * @package Lkrms
  */
 class SyncEntityProvider
 {

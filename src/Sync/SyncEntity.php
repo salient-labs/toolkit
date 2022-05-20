@@ -33,7 +33,6 @@ use UnexpectedValueException;
  * - {@see SyncEntity::getSerializedIdKey()} appends `_id` to the names of
  *   fields replaced with their {@see SyncEntity::$Id} during serialization.
  *
- * @package Lkrms
  */
 abstract class SyncEntity extends Entity implements IClassCache, JsonSerializable
 {

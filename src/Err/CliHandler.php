@@ -9,10 +9,6 @@ use Lkrms\Runtime;
 use Whoops\Handler\Handler;
 use Whoops\Handler\PlainTextHandler;
 
-/**
- *
- * @package Lkrms
- */
 class CliHandler extends PlainTextHandler
 {
     public function handle()

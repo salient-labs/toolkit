@@ -13,7 +13,6 @@ use RuntimeException;
 /**
  * Write to a stream (e.g. a file or TTY)
  *
- * @package Lkrms
  */
 class StreamTarget extends ConsoleTarget
 {

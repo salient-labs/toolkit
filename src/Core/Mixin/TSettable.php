@@ -22,7 +22,6 @@ use Lkrms\Core\ClosureBuilder;
  * - The existence of `_set<Property>()` implies that `<Property>` is settable,
  *   regardless of {@see TSettable::getSettable()}'s return value.
  *
- * @package Lkrms
  * @see \Lkrms\Core\Contract\ISettable
  */
 trait TSettable

@@ -22,7 +22,6 @@ use Lkrms\Core\ClosureBuilder;
  * - The existence of `_get<Property>()` implies that `<Property>` is gettable,
  *   regardless of {@see TGettable::getGettable()}'s return value.
  *
- * @package Lkrms
  * @see \Lkrms\Core\Contract\IGettable
  */
 trait TGettable

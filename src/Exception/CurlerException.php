@@ -11,7 +11,6 @@ use Throwable;
 /**
  * Thrown when a Curler request fails
  *
- * @package Lkrms
  */
 class CurlerException extends \Lkrms\Exception\Exception
 {

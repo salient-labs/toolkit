@@ -7,7 +7,6 @@ namespace Lkrms\Console;
 /**
  * Groups of console message levels
  *
- * @package Lkrms
  */
 abstract class ConsoleLevels
 {

@@ -10,7 +10,6 @@ use Lkrms\Util\Generate;
 /**
  * Base class for API providers
  *
- * @package Lkrms
  */
 abstract class SyncProvider implements ISyncProvider
 {

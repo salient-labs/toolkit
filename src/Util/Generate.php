@@ -10,7 +10,6 @@ use ReflectionFunction;
 /**
  * Literally so random
  *
- * @package Lkrms
  */
 abstract class Generate
 {
