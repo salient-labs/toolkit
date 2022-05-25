@@ -8,6 +8,7 @@ use Lkrms\Core\Contract\IGettable;
 use Lkrms\Core\Contract\ISingular;
 use Lkrms\Core\Mixin\TGettable;
 use Lkrms\Err\Err;
+use Lkrms\Store\Cache;
 use Lkrms\Util\Env;
 use Lkrms\Util\Test;
 use RuntimeException;
@@ -19,8 +20,6 @@ use RuntimeException;
  * @property-read string $CachePath
  * @property-read string $DataPath
  * @property-read string $LogPath
- *
- * @method static mixed get(string $name)
  */
 final class App implements IGettable, ISingular
 {
@@ -64,7 +63,7 @@ final class App implements IGettable, ISingular
     /**
      * @param string|null $basePath
      * @param string|string[]|null $silenceErrorsInPaths
-     * @return static
+     * @return App
      */
     public static function load(
         string $basePath      = null,
@@ -72,7 +71,7 @@ final class App implements IGettable, ISingular
     ) {
         if (self::$Instance)
         {
-            throw new RuntimeException("App already loaded");
+            throw new RuntimeException(static::class . " already loaded");
         }
 
         self::$Instance = new App($basePath, $silenceErrorsInPaths);
@@ -85,25 +84,23 @@ final class App implements IGettable, ISingular
         return self::$Instance;
     }
 
-    public static function __callStatic(string $name, array $arguments)
+    /**
+     * Get the value of an instance property
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public static function get(string $name)
     {
         self::assertIsLoaded();
-
-        switch ($name)
-        {
-            case "get":
-                return self::$Instance->__get(...$arguments);
-
-            default:
-                return self::$Instance->$name(...$arguments);
-        }
+        return self::$Instance->__get($name);
     }
 
     private static function assertIsLoaded(): void
     {
         if (!self::$Instance)
         {
-            throw new RuntimeException("App not loaded");
+            throw new RuntimeException(static::class . " not loaded");
         }
     }
 
@@ -122,7 +119,6 @@ final class App implements IGettable, ISingular
     private function __construct(
         string $basePath      = null,
         $silenceErrorsInPaths = null
-
     ) {
         if (is_null($basePath) ||
             !is_dir($basePath) ||
@@ -144,6 +140,22 @@ final class App implements IGettable, ISingular
         $this->DataPath  = $this->getPath("app_data_path", "var/lib");
         $this->LogPath   = $this->getPath("app_log_path", "var/log");
 
-        Err::handleErrors($silenceErrorsInPaths);
+        Err::load($silenceErrorsInPaths);
+    }
+
+    public function enableCache(): App
+    {
+        $cacheDb = $this->CachePath . "/cache.db";
+
+        if (!Cache::isLoaded())
+        {
+            Cache::load($cacheDb);
+        }
+        elseif (!Test::areSameFile($cacheDb, $file = Cache::getFilename() ?: ""))
+        {
+            throw new RuntimeException("Cache database already loaded: $file");
+        }
+
+        return $this;
     }
 }

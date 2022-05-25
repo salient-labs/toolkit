@@ -26,21 +26,11 @@ abstract class Facade implements ISingular
      */
     private static $Instances = [];
 
-    /**
-     * Return true if the underlying instance has been initialised
-     *
-     * @return bool
-     */
     final public static function isLoaded(): bool
     {
         return isset(self::$Instances[static::class]);
     }
 
-    /**
-     * Create, initialise and return the underlying instance
-     *
-     * @return object
-     */
     final public static function load()
     {
         if (self::$Instances[static::class] ?? null)
@@ -53,18 +43,13 @@ abstract class Facade implements ISingular
         return $instance;
     }
 
-    /**
-     * Return the underlying instance, creating it if necessary
-     *
-     * @return object
-     */
     final public static function getInstance()
     {
         return self::$Instances[static::class] ?? static::load();
     }
 
     /**
-     * Pass static method calls to the underlying instance
+     * Pass static method calls to the instance behind the facade
      *
      * @param string $name
      * @param array $arguments

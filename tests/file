@@ -5,6 +5,7 @@ namespace Lkrms\Tests;
 
 use Lkrms\Err\Err;
 use Lkrms\Util\File;
+use Lkrms\Util\Test;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
@@ -14,10 +15,25 @@ Err::handleErrors();
 $file = fopen(__FILE__, "r");
 $url  = fopen("https://1.1.1.1/", "r");
 
+$compare = [
+    [
+        realpath(__FILE__),
+        __DIR__ . "/../" . basename(__DIR__) . "/" . basename(__FILE__),
+    ],
+    [
+        realpath(__FILE__),
+        __DIR__ . "/../" . basename(__DIR__),
+    ],
+];
+
 print_r([
     "__FILE__" => File::getStreamUri($file),
     "1.1.1.1"  => File::getStreamUri($url),
     "STDIN"    => File::getStreamUri(STDIN),
     "STDOUT"   => File::getStreamUri(STDOUT),
     "STDERR"   => File::getStreamUri(STDERR),
+    "areSame"  => array_map(
+        function ($f) { return array_merge($f, [Test::areSameFile($f[0], $f[1])]); },
+        $compare
+    )
 ]);

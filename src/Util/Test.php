@@ -109,4 +109,18 @@ abstract class Test
     {
         return (bool)preg_match('/^(\\/|\\\\|[a-z]:\\\\)/i', $path);
     }
+
+    /**
+     * Return true if two paths exist and refer to the same file
+     *
+     * @param string $path1
+     * @param string $path2
+     * @return bool
+     */
+    public static function areSameFile(string $path1, string $path2): bool
+    {
+        return file_exists($path1) && file_exists($path2) &&
+            is_int($inode = fileinode($path1)) &&
+            fileinode($path2) === $inode;
+    }
 }
