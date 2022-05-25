@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Lkrms\Util;
 
 use Composer\Autoload\ClassLoader;
+use Lkrms\Core\Utility;
 use RuntimeException;
 
 /**
- * Path/file helpers
+ * Work with files, directories and paths
  *
  */
-abstract class File
+final class File extends Utility
 {
     /**
      * Get a file's end-of-line sequence

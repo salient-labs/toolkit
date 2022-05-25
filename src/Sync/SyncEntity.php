@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Lkrms\Sync;
 
 use JsonSerializable;
-use Lkrms\Core\ClosureBuilder;
 use Lkrms\Core\Contract\IClassCache;
-use Lkrms\Core\Entity;
+use Lkrms\Core\Entity\ProviderEntity;
 use Lkrms\Core\Mixin\TClassCache;
+use Lkrms\Core\Support\ClosureBuilder;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Reflect;
 use UnexpectedValueException;
@@ -19,9 +19,8 @@ use UnexpectedValueException;
  * By default:
  * - All `protected` properties are gettable and settable.
  *
- *   To change this, override
- *   {@see \Lkrms\Core\Mixin\TGettable::getGettable()} and/or
- *   {@see \Lkrms\Core\Mixin\TSettable::getSettable()}.
+ *   To change this, override {@see \Lkrms\Core\Mixin\TGettable::getGettable()}
+ *   and/or {@see \Lkrms\Core\Mixin\TSettable::getSettable()}.
  *
  * - {@see SyncEntity::serialize()} returns an associative array of `public`
  *   property values.
@@ -34,7 +33,7 @@ use UnexpectedValueException;
  *   fields replaced with their {@see SyncEntity::$Id} during serialization.
  *
  */
-abstract class SyncEntity extends Entity implements IClassCache, JsonSerializable
+abstract class SyncEntity extends ProviderEntity implements IClassCache, JsonSerializable
 {
     use TClassCache;
 

@@ -5,6 +5,7 @@ namespace Lkrms\Tests\Template;
 
 use Lkrms\Core\Contract\IGettable;
 use Lkrms\Core\Contract\ISettable;
+use Lkrms\Core\Mixin\TFullyGettable;
 use Lkrms\Core\Mixin\TGettable;
 use Lkrms\Core\Mixin\TSettable;
 use Lkrms\Err\Err;
@@ -34,12 +35,7 @@ class A implements ISettable
 
 class B extends A implements IGettable
 {
-    use TGettable;
-
-    public static function getGettable(): array
-    {
-        return ["*"];
-    }
+    use TFullyGettable;
 
     protected function _GetData()
     {

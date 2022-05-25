@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Lkrms\Util;
 
+use Lkrms\Core\Utility;
+
 /**
  * SQL helpers
  *
  */
-abstract class Sql
+final class Sql extends Utility
 {
     /**
      * Add "<name> IN (<value>[,<value>])" unless a list of values is empty

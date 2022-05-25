@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Lkrms\Util;
 
 use Closure;
+use Lkrms\Core\Utility;
 use ReflectionFunction;
 
 /**
- * Literally so random
+ * Generate expensive values like hashes, secure UUIDs and string similarities
  *
  */
-abstract class Generate
+final class Generate extends Utility
 {
     /**
      * Generate a cryptographically secure random UUID

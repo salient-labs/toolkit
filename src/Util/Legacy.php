@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace Lkrms\Util;
 
-/**
- * Deprecation helpers
- *
- */
-abstract class Legacy
+use Lkrms\Core\Utility;
+
+final class Legacy extends Utility
 {
     private const CLASS_ALIASES = [
         \Lkrms\Assert::class   => \Lkrms\Util\Assert::class,
         \Lkrms\Cache::class    => \Lkrms\Store\Cache::class,
         \Lkrms\Cli::class      => \Lkrms\Cli\Cli::class,
-        \Lkrms\Closure::class  => \Lkrms\Core\ClosureBuilder::class,
         \Lkrms\Console::class  => \Lkrms\Console\Console::class,
         \Lkrms\Convert::class  => \Lkrms\Util\Convert::class,
         \Lkrms\Curler::class   => \Lkrms\Curler\Curler::class,

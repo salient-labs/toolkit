@@ -14,7 +14,7 @@ use Lkrms\Util\Generate;
 abstract class SyncProvider implements ISyncProvider
 {
     /**
-     * Returns a stable identifier unique to the connected backend instance
+     * Return a stable identifier unique to the connected backend instance
      *
      * This method must be idempotent for each backend instance the provider
      * connects to. The return value should correspond to the smallest possible
@@ -38,7 +38,7 @@ abstract class SyncProvider implements ISyncProvider
     abstract protected function getBackendIdentifier(): array;
 
     /**
-     * Returns a stable hash unique to the connected backend instance
+     * Return a stable hash unique to the connected backend instance
      *
      * @return string
      * @see SyncProvider::getBackendIdentifier()
@@ -49,7 +49,22 @@ abstract class SyncProvider implements ISyncProvider
     }
 
     /**
-     * Normalises arguments commonly passed to getList methods
+     * Inject the class when provider interfaces it implements are requested
+     *
+     * For example, if a {@see SyncProvider} subclass called `MySyncProvider`
+     * has implemented `FacultyProvider` - an interface that `extends`
+     * {@see ISyncProvider} - calling `MySyncProvider::bindProviderInterfaces()`
+     * will bind `FacultyProvider` to `MySyncProvider`, and the DI container
+     * will return a `MySyncProvider` instance whenever a `FacultyProvider` is
+     * requested.
+     */
+    public static function bindProviderInterfaces(): void
+    {
+        (ClosureBuilder::getFor(static::class)->getBindProviderInterfacesClosure())();
+    }
+
+    /**
+     * Normalise arguments commonly passed to getList methods
      *
      * A {@see SyncProvider} MUST NOT add mandatory arguments to any of its
      * {@see SyncOperation::READ_LIST} implementations, but a caller MAY pass
@@ -118,10 +133,10 @@ abstract class SyncProvider implements ISyncProvider
     }
 
     /**
-     * Returns a list of entity IDs passed to a getList method
+     * Return a list of entity IDs passed to a getList method
      *
-     * Uses {@see SyncProvider::getListFilter()} to normalise `$args`. Returns
-     * an empty array if no entity IDs are passed.
+     * `getListIds` uses {@see SyncProvider::getListFilter()} to normalise
+     * `$args`. Returns an empty array if no entity IDs are passed.
      *
      * @param array $args
      * @return array

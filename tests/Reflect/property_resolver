@@ -3,12 +3,12 @@
 
 namespace Lkrms\Tests\Reflect;
 
-use Lkrms\Core\ClosureBuilder;
 use Lkrms\Core\Mixin\TConstructible;
 use Lkrms\Core\Mixin\TExtensible;
-use Lkrms\Core\Mixin\TGettable;
+use Lkrms\Core\Mixin\TFullyGettable;
 use Lkrms\Core\Mixin\TResolvable;
 use Lkrms\Core\Mixin\TSettable;
+use Lkrms\Core\Support\ClosureBuilder;
 use Lkrms\Err\Err;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
@@ -18,12 +18,7 @@ Err::handleErrors();
 
 class A
 {
-    use TExtensible, TResolvable, TGettable, TSettable;
-
-    public static function getGettable(): array
-    {
-        return ["*"];
-    }
+    use TExtensible, TResolvable, TFullyGettable, TSettable;
 
     public static function getSettable(): array
     {

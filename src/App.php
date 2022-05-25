@@ -6,7 +6,7 @@ namespace Lkrms;
 
 use Lkrms\Core\Contract\IGettable;
 use Lkrms\Core\Contract\ISingular;
-use Lkrms\Core\Mixin\TGettable;
+use Lkrms\Core\Mixin\TFullyGettable;
 use Lkrms\Err\Err;
 use Lkrms\Store\Cache;
 use Lkrms\Util\Env;
@@ -14,7 +14,7 @@ use Lkrms\Util\Test;
 use RuntimeException;
 
 /**
- * Bootstrap your app
+ * A [soon-to-be] stackable application state container
  *
  * @property-read string $BasePath
  * @property-read string $CachePath
@@ -23,7 +23,7 @@ use RuntimeException;
  */
 final class App implements IGettable, ISingular
 {
-    use TGettable;
+    use TFullyGettable;
 
     /**
      * @var App|null
@@ -49,11 +49,6 @@ final class App implements IGettable, ISingular
      * @var string
      */
     protected $LogPath;
-
-    public static function getGettable(): array
-    {
-        return ["*"];
-    }
 
     public static function isLoaded(): bool
     {

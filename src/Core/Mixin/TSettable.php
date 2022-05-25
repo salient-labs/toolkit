@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Core\Mixin;
 
-use Lkrms\Core\ClosureBuilder;
+use Lkrms\Core\Support\ClosureBuilder;
 
 /**
  * Implements ISettable to write properties that have not been declared or are

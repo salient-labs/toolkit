@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Core\ClosureBuilder;
+use Lkrms\Core\Support\ClosureBuilder;
 use Lkrms\Err\Err;
 use Throwable;
 

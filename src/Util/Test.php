@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Lkrms\Util;
 
-use Exception;
+use Lkrms\Core\Utility;
 
 /**
- * Test a value against another value
+ * Perform a true/false test on a value
  *
  */
-abstract class Test
+final class Test extends Utility
 {
     /**
      * Check if a flag is set in a bitmask

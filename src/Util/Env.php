@@ -7,14 +7,15 @@ namespace Lkrms\Util;
 use DateTimeZone;
 use Exception;
 use Lkrms\Console\Console;
+use Lkrms\Core\Utility;
 use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * A minimal dotenv implementation with shell-compatible parsing
+ * A minimal dotenv implementation
  *
  */
-abstract class Env
+final class Env extends Utility
 {
     /**
      * Load environment variables

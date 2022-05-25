@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Lkrms\Util;
 
 use DateTime;
+use Lkrms\Core\Utility;
 use UnexpectedValueException;
 
 /**
- * Data in, readable text out
+ * Make data human-readable
  *
  */
-abstract class Format
+final class Format extends Utility
 {
     /**
      * Format an array's keys and values
