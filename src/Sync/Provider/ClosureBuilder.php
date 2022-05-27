@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Provider;
 
 use Closure;
-use Lkrms\Ioc\Ioc;
+use Lkrms\Container\DI;
 use ReflectionClass;
 
 class ClosureBuilder
@@ -32,7 +32,7 @@ class ClosureBuilder
 
     public static function getFor(string $class): ClosureBuilder
     {
-        $class = Ioc::resolve($class);
+        $class = DI::name($class);
 
         if ($instance = self::$Instances[$class] ?? null)
         {
@@ -75,7 +75,7 @@ class ClosureBuilder
             {
                 foreach ($this->ProviderInterfaces as $name)
                 {
-                    Ioc::register($name, $this->Class);
+                    DI::bind($name, $this->Class);
                 }
             };
         }

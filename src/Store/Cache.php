@@ -9,6 +9,8 @@ use Lkrms\Core\Facade;
 /**
  * A facade for CacheStore
  *
+ * @uses CacheStore
+ *
  * @method static CacheStore load(string $filename = ":memory:", bool $autoFlush = true)
  * @method static void open(string $filename = ":memory:", bool $autoFlush = true)
  * @method static ?string getFilename()
@@ -20,8 +22,6 @@ use Lkrms\Core\Facade;
  * @method static void delete(string $key)
  * @method static void flush()
  * @method static void flushExpired()
- *
- * @uses CacheStore
  */
 final class Cache extends Facade
 {

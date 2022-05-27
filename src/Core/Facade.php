@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Core;
 
+use Lkrms\Container\Container;
 use Lkrms\Core\Contract\ISingular;
-use Lkrms\Ioc\Ioc;
 use RuntimeException;
 
 /**
@@ -15,7 +15,7 @@ use RuntimeException;
 abstract class Facade implements ISingular
 {
     /**
-     * Return the name of the class to instantiate behind the facade
+     * Return the class or interface to instantiate behind the facade
      *
      * @return string
      */
@@ -25,6 +25,24 @@ abstract class Facade implements ISingular
      * @var array<string,object>
      */
     private static $Instances = [];
+
+    private static function _load()
+    {
+        if (is_a($service = static::getServiceName(), Container::class, true))
+        {
+            $container = $service::getGlobal(...func_get_args());
+            if (get_class($container) == $service)
+            {
+                return self::$Instances[static::class] = $container;
+            }
+        }
+        else
+        {
+            $container = Container::getGlobal();
+        }
+
+        return self::$Instances[static::class] = $container->get($service, ...func_get_args());
+    }
 
     final public static function isLoaded(): bool
     {
@@ -38,14 +56,12 @@ abstract class Facade implements ISingular
             throw new RuntimeException(static::class . " already loaded");
         }
 
-        $instance = Ioc::create(static::getServiceName(), func_get_args());
-        self::$Instances[static::class] = $instance;
-        return $instance;
+        return self::_load(...func_get_args());
     }
 
     final public static function getInstance()
     {
-        return self::$Instances[static::class] ?? static::load();
+        return self::$Instances[static::class] ?? self::_load();
     }
 
     /**

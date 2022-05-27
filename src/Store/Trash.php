@@ -9,6 +9,8 @@ use Lkrms\Core\Facade;
 /**
  * A facade for TrashStore
  *
+ * @uses TrashStore
+ *
  * @method static TrashStore load(string $filename = ":memory:")
  * @method static void open(string $filename = ":memory:")
  * @method static ?string getFilename()
@@ -16,8 +18,6 @@ use Lkrms\Core\Facade;
  * @method static void close()
  * @method static void put(string $type, ?string $key, array|object $object, ?string $deletedFrom, int $createdAt = null, int $modifiedAt = null)
  * @method static void empty()
- *
- * @uses TrashStore
  */
 final class Trash extends Facade
 {

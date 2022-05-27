@@ -29,7 +29,7 @@
     - [ ] Add support for parallel downloads and queued actions
   - [ ] `Runtime` -> `App`
   - [ ] Refactor Dice
-  - [ ] Surface `Ioc` methods via `App`
+  - [x] Surface `Ioc` methods via `App`
   - [x] Move `ClosureBuilder` to `Core\Support`
 - [ ] Implement a generic fluent interface (`TFluent`?) with instance creation and property getting/setting
 - [ ] Throw custom exceptions

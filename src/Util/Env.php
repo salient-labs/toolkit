@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Lkrms\Util;
 
 use DateTimeZone;
-use Exception;
 use Lkrms\Console\Console;
 use Lkrms\Core\Utility;
 use RuntimeException;
+use Throwable;
 use UnexpectedValueException;
 
 /**
@@ -21,7 +21,8 @@ final class Env extends Utility
      * Load environment variables
      *
      * Variables are loaded from the given .env file to `getenv()`, `$_ENV` and
-     * `$_SERVER`.
+     * `$_SERVER`. Variables already present in the environment are never
+     * overwritten.
      *
      * Each line in `$filename` should be a shell-compatible variable
      * assignment. Unquoted values cannot contain whitespace, `"`, `'`, `$`,
@@ -31,19 +32,19 @@ final class Env extends Utility
      * starting with `#` are ignored.
      *
      * @param string $filename The `.env` file to load.
-     * @param bool $replace If `true`, override existing environment variables.
+     * @param bool $apply If `true` (the default), {@see Env::apply()} will be
+     * called before the function returns.
      * @throws RuntimeException if `$filename` cannot be opened
      * @throws UnexpectedValueException if `$filename` cannot be parsed
      */
-    public static function load(string $filename, bool $replace = false): void
+    public static function load(string $filename, bool $apply = true): void
     {
-        $lines = file($filename, FILE_IGNORE_NEW_LINES);
-
-        if ($lines === false)
+        if (($lines = file($filename, FILE_IGNORE_NEW_LINES)) === false)
         {
             throw new RuntimeException("Could not open $filename");
         }
 
+        $queue = [];
         foreach ($lines as $i => $line)
         {
             $l = $i + 1;
@@ -59,7 +60,7 @@ final class Env extends Utility
 
             $name = $match[1];
 
-            if (!$replace && (getenv($name) !== false || array_key_exists($name, $_ENV) || array_key_exists($name, $_SERVER)))
+            if (getenv($name) !== false || array_key_exists($name, $_ENV) || array_key_exists($name, $_SERVER))
             {
                 continue;
             }
@@ -77,10 +78,15 @@ final class Env extends Utility
                 $value = $match[2];
             }
 
-            self::set($name, $value);
+            $queue[$name] = $value;
         }
 
-        self::apply();
+        array_walk($queue, fn($value, $name) => self::set($name, $value));
+
+        if ($apply)
+        {
+            self::apply();
+        }
     }
 
     /**
@@ -98,7 +104,7 @@ final class Env extends Utility
                 $timezone = new DateTimeZone($tz);
                 date_default_timezone_set($timezone->getName());
             }
-            catch (Exception $ex)
+            catch (Throwable $ex)
             {
                 Console::debug("Not a valid timezone:", $tz, $ex);
             }
@@ -147,7 +153,11 @@ final class Env extends Utility
      */
     public static function get(string $name, string $default = null): ?string
     {
-        $value = $_ENV[$name] ?? $_SERVER[$name] ?? (($local = getenv($name, true)) !== false ? $local : getenv($name));
+        $value = ($_ENV[$name]
+            ?? $_SERVER[$name]
+            ?? (($local = getenv($name, true)) !== false
+                ? $local
+                : getenv($name)));
 
         if ($value === false)
         {

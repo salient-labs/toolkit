@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lkrms;
+namespace Lkrms\App;
 
+use Lkrms\Container\Container;
 use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Contract\ISingular;
 use Lkrms\Core\Mixin\TFullyGettable;
 use Lkrms\Err\Err;
 use Lkrms\Store\Cache;
@@ -14,90 +14,42 @@ use Lkrms\Util\Test;
 use RuntimeException;
 
 /**
- * A [soon-to-be] stackable application state container
+ * A stackable service container with runtime environment helpers
+ *
+ * Typically accessed via the {@see App} facade.
  *
  * @property-read string $BasePath
  * @property-read string $CachePath
  * @property-read string $DataPath
  * @property-read string $LogPath
  */
-final class App implements IGettable, ISingular
+final class AppContainer extends Container implements IGettable
 {
     use TFullyGettable;
 
     /**
-     * @var App|null
-     */
-    private static $Instance;
-
-    /**
+     * @internal
      * @var string
      */
     protected $BasePath;
 
     /**
+     * @internal
      * @var string
      */
     protected $CachePath;
 
     /**
+     * @internal
      * @var string
      */
     protected $DataPath;
 
     /**
+     * @internal
      * @var string
      */
     protected $LogPath;
-
-    public static function isLoaded(): bool
-    {
-        return !is_null(self::$Instance);
-    }
-
-    /**
-     * @param string|null $basePath
-     * @param string|string[]|null $silenceErrorsInPaths
-     * @return App
-     */
-    public static function load(
-        string $basePath      = null,
-        $silenceErrorsInPaths = null
-    ) {
-        if (self::$Instance)
-        {
-            throw new RuntimeException(static::class . " already loaded");
-        }
-
-        self::$Instance = new App($basePath, $silenceErrorsInPaths);
-        return self::$Instance;
-    }
-
-    public static function getInstance()
-    {
-        self::assertIsLoaded();
-        return self::$Instance;
-    }
-
-    /**
-     * Get the value of an instance property
-     *
-     * @param string $name
-     * @return mixed
-     */
-    public static function get(string $name)
-    {
-        self::assertIsLoaded();
-        return self::$Instance->__get($name);
-    }
-
-    private static function assertIsLoaded(): void
-    {
-        if (!self::$Instance)
-        {
-            throw new RuntimeException(static::class . " not loaded");
-        }
-    }
 
     private function getPath(string $name, string $default): string
     {
@@ -111,10 +63,17 @@ final class App implements IGettable, ISingular
         return $this->BasePath . "/" . $default;
     }
 
-    private function __construct(
+    public function __construct(
         string $basePath      = null,
         $silenceErrorsInPaths = null
     ) {
+        if (Container::hasGlobal())
+        {
+            throw new RuntimeException("Global container already exists");
+        }
+
+        parent::__construct();
+
         if (is_null($basePath) ||
             !is_dir($basePath) ||
             !($this->BasePath = realpath($basePath)))
@@ -136,9 +95,11 @@ final class App implements IGettable, ISingular
         $this->LogPath   = $this->getPath("app_log_path", "var/log");
 
         Err::load($silenceErrorsInPaths);
+
+        Container::setGlobal($this);
     }
 
-    public function enableCache(): App
+    public function enableCache(): AppContainer
     {
         $cacheDb = $this->CachePath . "/cache.db";
 

@@ -111,6 +111,18 @@ final class Test extends Utility
     }
 
     /**
+     * Return true if an object or class implements the given interface
+     *
+     * @param object|string $class
+     * @param string $interface
+     * @return bool
+     */
+    public static function classImplements($class, string $interface): bool
+    {
+        return in_array($interface, class_implements($class) ?: []);
+    }
+
+    /**
      * Return true if two paths exist and refer to the same file
      *
      * @param string $path1

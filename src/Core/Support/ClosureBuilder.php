@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Core\Support;
 
 use Closure;
+use Lkrms\Container\DI;
 use Lkrms\Core\Contract\IConstructible;
 use Lkrms\Core\Contract\IConstructibleByProvider;
 use Lkrms\Core\Contract\IExtensible;
@@ -18,7 +19,6 @@ use Lkrms\Core\Mixin\TExtensible;
 use Lkrms\Core\Mixin\TGettable;
 use Lkrms\Core\Mixin\TResolvable;
 use Lkrms\Core\Mixin\TSettable;
-use Lkrms\Ioc\Ioc;
 use Lkrms\Util\Reflect;
 use ReflectionClass;
 use ReflectionMethod;
@@ -205,7 +205,7 @@ class ClosureBuilder
 
     public static function getFor(string $class): ClosureBuilder
     {
-        $class = Ioc::resolve($class);
+        $class = DI::name($class);
 
         if ($instance = self::$Instances[$class] ?? null)
         {
@@ -464,14 +464,14 @@ class ClosureBuilder
                     $args[$index] = $array[$key];
                 }
 
-                return Ioc::create($this->Class, $args);
+                return DI::get($this->Class, ...$args);
             };
         }
         else
         {
             $closure = function ()
             {
-                return Ioc::create($this->Class, $this->DefaultArguments);
+                return DI::get($this->Class, ...$this->DefaultArguments);
             };
         }
 

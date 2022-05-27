@@ -4,8 +4,8 @@
 namespace Lkrms\Tests\Sync;
 
 use Lkrms\Console\Console;
+use Lkrms\Container\DI;
 use Lkrms\Err\Err;
-use Lkrms\Ioc\Ioc;
 use Lkrms\Sync\Provider\SyncEntityProvider;
 use Lkrms\Sync\SyncEntityFuzzyResolver;
 use Lkrms\Sync\SyncEntityResolver;
@@ -23,17 +23,16 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 Err::handleErrors();
 
 // Register JsonPlaceholderApi as the provider for Post and User objects
-Ioc::register(PostProvider::class, JsonPlaceholderApi::class);
-Ioc::register(UserProvider::class, JsonPlaceholderApi::class);
+DI::bind(PostProvider::class, JsonPlaceholderApi::class);
+DI::bind(UserProvider::class, JsonPlaceholderApi::class);
 
 // When creating Post instances from API data, instantiate a custom subclass
 // instead of a standard Post
-Ioc::register(Post::class, CustomEntity\Post::class);
+DI::bind(Post::class, CustomEntity\Post::class);
 
-$postApi = new SyncEntityProvider(Post::class);
 $userApi = new SyncEntityProvider(User::class);
 
-$posts = $postApi->getList();
+$posts = Post::backend()->getList();
 Console::info("Posts retrieved:", count($posts));
 
 $resolver       = new SyncEntityResolver($userApi, "Name");
@@ -92,7 +91,7 @@ catch (Throwable $ex)
 
 try
 {
-    $postApi->create(new Post());
+    Post::backend()->create(new Post());
 }
 catch (Throwable $ex)
 {

@@ -9,6 +9,7 @@ use Lkrms\Core\Utility;
 final class Legacy extends Utility
 {
     private const CLASS_ALIASES = [
+        \Lkrms\App::class      => \Lkrms\App\App::class,
         \Lkrms\Assert::class   => \Lkrms\Util\Assert::class,
         \Lkrms\Cache::class    => \Lkrms\Store\Cache::class,
         \Lkrms\Cli::class      => \Lkrms\Cli\Cli::class,
@@ -20,6 +21,7 @@ final class Legacy extends Utility
         \Lkrms\File::class     => \Lkrms\Util\File::class,
         \Lkrms\Format::class   => \Lkrms\Util\Format::class,
         \Lkrms\Generate::class => \Lkrms\Util\Generate::class,
+        \Lkrms\Ioc\Ioc::class  => \Lkrms\Container\DI::class,
         \Lkrms\Reflect::class  => \Lkrms\Util\Reflect::class,
         \Lkrms\Sql::class      => \Lkrms\Util\Sql::class,
         \Lkrms\Test::class     => \Lkrms\Util\Test::class,

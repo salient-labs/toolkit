@@ -9,6 +9,7 @@ use Lkrms\Core\Contract\IClassCache;
 use Lkrms\Core\Entity\ProviderEntity;
 use Lkrms\Core\Mixin\TClassCache;
 use Lkrms\Core\Support\ClosureBuilder;
+use Lkrms\Sync\Provider\SyncEntityProvider;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Reflect;
 use UnexpectedValueException;
@@ -56,6 +57,17 @@ abstract class SyncEntity extends ProviderEntity implements IClassCache, JsonSer
      * @var bool
      */
     private $DetectRecursion;
+
+    /**
+     * Return an entity-agnostic interface with the SyncEntity's current
+     * provider
+     *
+     * @return SyncEntityProvider
+     */
+    final public static function backend(): SyncEntityProvider
+    {
+        return new SyncEntityProvider(static::class);
+    }
 
     /**
      * Return prefixes to remove when normalising field/property names

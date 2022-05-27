@@ -7,11 +7,12 @@ namespace Lkrms\Core\Contract;
 /**
  * Provides a static interface for an underlying singleton
  *
+ * @see \Lkrms\Core\Facade
  */
 interface ISingular
 {
     /**
-     * Return true if the underlying instance has been initialised
+     * Return true if the underlying instance has been created
      *
      * @return bool
      */
