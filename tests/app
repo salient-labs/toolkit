@@ -3,15 +3,17 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\App;
+use Lkrms\App\App;
+use Lkrms\Store\Cache;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-App::load(__DIR__);
+$app = App::load(__DIR__)->enableCache();
 
 print_r([
     'App::getInstance()->CachePath' => App::getInstance()->CachePath,
-    'App::get("DataPath")'          => App::get("DataPath"),
-    'App::get("LogPath")'           => App::get("LogPath"),
+    '$app->DataPath'       => $app->DataPath,
+    '$app->LogPath'        => $app->LogPath,
+    'Cache::getInstance()' => Cache::getInstance(),
 ]);

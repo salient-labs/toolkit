@@ -4,16 +4,38 @@ declare(strict_types=1);
 
 namespace Lkrms\Core\Mixin;
 
+use Lkrms\Core\Contract\IProvider;
 use Lkrms\Core\Support\ClosureBuilder;
+use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * Implements IConstructible to convert arrays to instances
+ * Implements IConstructibleByProvider to convert backend data to instances
  *
- * @see \Lkrms\Core\Contract\IConstructible
+ * @see \Lkrms\Core\Contract\IConstructibleByProvider
  */
-trait TConstructible
+trait TConstructibleByProvider
 {
+    /**
+     * @var IProvider|null
+     */
+    private $ProvidedBy;
+
+    public function setProvider(IProvider $provider): void
+    {
+        if ($this->ProvidedBy)
+        {
+            throw new RuntimeException("Provider already set");
+        }
+
+        $this->ProvidedBy = $provider;
+    }
+
+    public function getProvider(): IProvider
+    {
+        return $this->ProvidedBy;
+    }
+
     /**
      * Create an instance of the class from an array
      *
@@ -26,34 +48,37 @@ trait TConstructible
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.
      *
+     * @param IProvider $provider
      * @param array<string,mixed> $data
      * @return static
      */
-    public static function fromArray(array $data)
+    public static function fromArray(IProvider $provider, array $data)
     {
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data);
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data);
     }
 
     /**
      * Create an instance of the class from an array after applying a callback
      *
-     * See {@see TConstructible::fromArray()} for more information.
+     * See {@see TConstructibleByProvider::fromArray()} for more information.
      *
+     * @param IProvider $provider
      * @param array $data
      * @param callable $callback
      * @return static
      */
-    public static function fromArrayVia(array $data, callable $callback)
+    public static function fromArrayVia(IProvider $provider, array $data, callable $callback)
     {
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $callback);
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $callback);
     }
 
     /**
      * Create an instance of the class from an array after remapping its values
      *
      * See {@see ClosureBuilder::getArrayMapper()} and
-     * {@see TConstructible::fromArray()} for more information.
+     * {@see TConstructibleByProvider::fromArray()} for more information.
      *
+     * @param IProvider $provider
      * @param array $data
      * @param array<int|string,int|string> $keyMap An array that maps `$data`
      * keys to names the class will be able to resolve.
@@ -63,6 +88,7 @@ trait TConstructible
      * @return static
      */
     public static function fromMappedArray(
+        IProvider $provider,
         array $data,
         array $keyMap,
         bool $sameKeys = false,
@@ -70,7 +96,7 @@ trait TConstructible
     ) {
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $closure);
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure);
     }
 
     /**
@@ -78,8 +104,9 @@ trait TConstructible
      * and remapping its values
      *
      * See {@see ClosureBuilder::getArrayMapper()} and
-     * {@see TConstructible::fromArray()} for more information.
+     * {@see TConstructibleByProvider::fromArray()} for more information.
      *
+     * @param IProvider $provider
      * @param array $data
      * @param callable $callback Applied before remapping `$data`.
      * @param array<int|string,int|string> $keyMap An array that maps `$data`
@@ -90,6 +117,7 @@ trait TConstructible
      * @return static
      */
     public static function fromMappedArrayVia(
+        IProvider $provider,
         array $data,
         callable $callback,
         array $keyMap,
@@ -102,30 +130,32 @@ trait TConstructible
             return $closure($callback($in));
         };
 
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $closure);
+        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure);
     }
 
     /**
      * Create a list of instances from a list of arrays
      *
-     * See {@see TConstructible::fromArray()} for more information.
+     * See {@see TConstructibleByProvider::fromArray()} for more information.
      *
+     * @param IProvider $provider
      * @param array<int,array<string,mixed>> $list
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order.
      * @return static[]
      */
-    public static function listFromArrays(array $list, bool $sameKeys = false): array
+    public static function listFromArrays(IProvider $provider, array $list, bool $sameKeys = false): array
     {
-        return self::getListFrom($list, $sameKeys);
+        return self::getListFrom($provider, $list, $sameKeys);
     }
 
     /**
      * Create a list of instances from a list of arrays, applying a callback
      * before each array is processed
      *
-     * See {@see TConstructible::fromArray()} for more information.
+     * See {@see TConstructibleByProvider::fromArray()} for more information.
      *
+     * @param IProvider $provider
      * @param array[] $list
      * @param callable $callback
      * @param bool $sameKeys If `true`, improve performance by assuming every
@@ -133,12 +163,13 @@ trait TConstructible
      * @return static[]
      */
     public static function listFromArraysVia(
+        IProvider $provider,
         array $list,
         callable $callback,
         bool $sameKeys = false
     ): array
     {
-        return self::getListFrom($list, $sameKeys, $callback);
+        return self::getListFrom($provider, $list, $sameKeys, $callback);
     }
 
     /**
@@ -146,8 +177,9 @@ trait TConstructible
      * values before it is processed
      *
      * See {@see ClosureBuilder::getArrayMapper()} and
-     * {@see TConstructible::fromArray()} for more information.
+     * {@see TConstructibleByProvider::fromArray()} for more information.
      *
+     * @param IProvider $provider
      * @param array[] $list
      * @param array<int|string,int|string> $keyMap An array that maps array keys
      * to names the class will be able to resolve.
@@ -157,6 +189,7 @@ trait TConstructible
      * @return static[]
      */
     public static function listFromMappedArrays(
+        IProvider $provider,
         array $list,
         array $keyMap,
         bool $sameKeys = false,
@@ -165,7 +198,7 @@ trait TConstructible
     {
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        return self::getListFrom($list, $sameKeys, $closure);
+        return self::getListFrom($provider, $list, $sameKeys, $closure);
     }
 
     /**
@@ -173,8 +206,9 @@ trait TConstructible
      * remapping each array's values before it is processed
      *
      * See {@see ClosureBuilder::getArrayMapper()} and
-     * {@see TConstructible::fromArray()} for more information.
+     * {@see TConstructibleByProvider::fromArray()} for more information.
      *
+     * @param IProvider $provider
      * @param array[] $list
      * @param callable $callback Applied before remapping each array.
      * @param array<int|string,int|string> $keyMap An array that maps array keys
@@ -185,6 +219,7 @@ trait TConstructible
      * @return static[]
      */
     public static function listFromMappedArraysVia(
+        IProvider $provider,
         array $list,
         callable $callback,
         array $keyMap,
@@ -198,10 +233,10 @@ trait TConstructible
             return $closure($callback($in));
         };
 
-        return self::getListFrom($list, $sameKeys, $closure);
+        return self::getListFrom($provider, $list, $sameKeys, $closure);
     }
 
-    private static function getListFrom(array $arrays, bool $sameKeys, callable $closure = null): array
+    private static function getListFrom(IProvider $provider, array $arrays, bool $sameKeys, callable $closure = null): array
     {
         if (empty($arrays))
         {
@@ -233,7 +268,7 @@ trait TConstructible
                 throw new UnexpectedValueException("Array expected at index $index");
             }
 
-            $list[] = ($createFromClosure)($array, $closure);
+            $list[] = ($createFromClosure)($provider, $array, $closure);
         }
 
         return $list;

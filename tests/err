@@ -11,6 +11,6 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
 Err::handleErrors();
 
-Err::handleErrors(null, '@^' . preg_quote(dirname(__DIR__)) . '/vendor/adodb/adodb-php/@');
+Err::silenceErrorsInPaths('@^' . preg_quote(dirname(__DIR__)) . '/vendor/adodb/adodb-php/@');
 
 throw new UnexpectedValueException("Well, this was unexpected");

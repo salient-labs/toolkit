@@ -7,7 +7,7 @@ namespace Lkrms\Cli;
 use Lkrms\Core\Contract\IConstructible;
 use Lkrms\Core\Contract\IGettable;
 use Lkrms\Core\Mixin\TConstructible;
-use Lkrms\Core\Mixin\TGettable;
+use Lkrms\Core\Mixin\TFullyGettable;
 use Lkrms\Util\Assert;
 use Lkrms\Util\Convert;
 use RuntimeException;
@@ -36,7 +36,7 @@ use UnexpectedValueException;
  */
 class CliOption implements IConstructible, IGettable
 {
-    use TConstructible, TGettable;
+    use TConstructible, TFullyGettable;
 
     /**
      * @internal
@@ -128,15 +128,6 @@ class CliOption implements IConstructible, IGettable
      * @var bool
      */
     protected $IsValueSet = false;
-
-    /**
-     * @internal
-     * @return array
-     */
-    public static function getGettable(): array
-    {
-        return ["*"];
-    }
 
     /**
      * Create a new command-line option

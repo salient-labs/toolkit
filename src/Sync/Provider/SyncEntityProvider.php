@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Provider;
 
-use Lkrms\Ioc\Ioc;
+use Lkrms\Container\DI;
 use Lkrms\Sync\SyncEntity;
 use Lkrms\Sync\SyncOperation;
 use Lkrms\Util\Convert;
@@ -14,20 +14,26 @@ use ReflectionMethod;
 use UnexpectedValueException;
 
 /**
- * Provides a generic interface with a SyncEntity's current provider
+ * Provides an entity-agnostic interface with a SyncEntity's current provider
  *
  * So you can do this:
  *
  * ```php
+ * $faculties = Faculty::backend()->getList();
+ * ```
+ *
+ * or this:
+ *
+ * ```php
  * $genericProvider = new SyncEntityProvider(Faculty::class);
- * $faculties       = $genericProvider->get();
+ * $faculties       = $genericProvider->getList();
  * ```
  *
  * instead of this:
  *
  * ```php
- * $facultyProvider = Ioc::create(Faculty::class . "Provider");
- * $faculties       = $facultyProvider->getFaculty();
+ * $facultyProvider = DI::get(Faculty::class . "Provider");
+ * $faculties       = $facultyProvider->getFaculties();
  * ```
  *
  * When a new `SyncEntityProvider` is created, it is bound to the
@@ -76,7 +82,7 @@ class SyncEntityProvider
         $this->SyncEntity        = $name;
         $this->SyncEntityNoun    = Convert::classToBasename($name);
         $this->SyncEntityPlural  = $name::getPlural();
-        $this->SyncProvider      = Ioc::create($name . "Provider");
+        $this->SyncProvider      = DI::get($name . "Provider");
         $this->SyncProviderClass = new ReflectionClass($this->SyncProvider);
     }
 

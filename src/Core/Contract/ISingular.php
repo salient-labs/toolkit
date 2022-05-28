@@ -7,36 +7,32 @@ namespace Lkrms\Core\Contract;
 /**
  * Provides a static interface for an underlying singleton
  *
+ * @see \Lkrms\Core\Facade
  */
 interface ISingular
 {
     /**
-     * Return true if the underlying instance has been initialised
+     * Return true if the underlying instance has been created
      *
      * @return bool
      */
     public static function isLoaded(): bool;
 
     /**
-     * Create, initialise and return the underlying instance
+     * Create and return the underlying instance
      *
-     * @return object
      */
     public static function load();
 
     /**
      * Return the underlying instance
      *
-     * @return object
+     * If the underlying instance has not been created, the implementing class
+     * may either:
+     * 1. throw a {@see \RuntimeException}, or
+     * 2. create the underlying instance and return it
+     *
+     * @throws \RuntimeException
      */
     public static function getInstance();
-
-    /**
-     * Pass static method calls to the underlying instance
-     *
-     * @param string $name
-     * @param array $arguments
-     * @return mixed
-     */
-    public static function __callStatic(string $name, array $arguments);
 }

@@ -2,20 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Core;
+namespace Lkrms\Core\Support;
 
 use Closure;
+use Lkrms\Container\DI;
 use Lkrms\Core\Contract\IConstructible;
+use Lkrms\Core\Contract\IConstructibleByProvider;
 use Lkrms\Core\Contract\IExtensible;
 use Lkrms\Core\Contract\IGettable;
+use Lkrms\Core\Contract\IProvider;
 use Lkrms\Core\Contract\IResolvable;
 use Lkrms\Core\Contract\ISettable;
 use Lkrms\Core\Mixin\TConstructible;
+use Lkrms\Core\Mixin\TConstructibleByProvider;
 use Lkrms\Core\Mixin\TExtensible;
 use Lkrms\Core\Mixin\TGettable;
 use Lkrms\Core\Mixin\TResolvable;
 use Lkrms\Core\Mixin\TSettable;
-use Lkrms\Ioc\Ioc;
 use Lkrms\Util\Reflect;
 use ReflectionClass;
 use ReflectionMethod;
@@ -64,6 +67,11 @@ class ClosureBuilder
      * @var bool
      */
     protected $IsExtensible;
+
+    /**
+     * @var bool
+     */
+    protected $IsConstructibleByProvider;
 
     /**
      * Property names
@@ -197,13 +205,15 @@ class ClosureBuilder
 
     public static function getFor(string $class): ClosureBuilder
     {
-        $class = Ioc::resolve($class);
+        $class = DI::name($class);
 
-        if (is_null($instance = self::$Instances[$class] ?? null))
+        if ($instance = self::$Instances[$class] ?? null)
         {
-            $instance = new self($class);
-            self::$Instances[$class] = $instance;
+            return $instance;
         }
+
+        $instance = new self($class);
+        self::$Instances[$class] = $instance;
 
         return $instance;
     }
@@ -211,7 +221,8 @@ class ClosureBuilder
     protected function __construct(string $class)
     {
         $class         = new ReflectionClass($class);
-        $constructible = $class->implementsInterface(IConstructible::class);
+        $byProvider    = $class->implementsInterface(IConstructibleByProvider::class);
+        $constructible = $byProvider || $class->implementsInterface(IConstructible::class);
         $extensible    = $class->implementsInterface(IExtensible::class);
         $gettable      = $class->implementsInterface(IGettable::class);
         $settable      = $class->implementsInterface(ISettable::class);
@@ -222,7 +233,8 @@ class ClosureBuilder
         if (!($constructible | $extensible | $gettable | $settable | $resolvable))
         {
             $traits        = Reflect::getAllTraits($class);
-            $constructible = array_key_exists(TConstructible::class, $traits);
+            $byProvider    = array_key_exists(TConstructibleByProvider::class, $traits);
+            $constructible = $byProvider || array_key_exists(TConstructible::class, $traits);
             $extensible    = array_key_exists(TExtensible::class, $traits);
             $gettable      = array_key_exists(TGettable::class, $traits);
             $settable      = array_key_exists(TSettable::class, $traits);
@@ -233,6 +245,7 @@ class ClosureBuilder
         $this->IsGettable   = $gettable;
         $this->IsSettable   = $settable;
         $this->IsExtensible = $extensible;
+        $this->IsConstructibleByProvider = $byProvider;
 
         $propertyFilter = 0;
         $methodFilter   = 0;
@@ -439,42 +452,103 @@ class ClosureBuilder
             }
         }
 
-        /**
-         * @todo Create a chain of closures
-         */
-        $closure = function (array $array, callable $callback = null) use ($parameterKeys, $methodKeys, $propertyKeys, $metaKeys)
+        // 4. Build the smallest possible chain of closures
+        if ($parameterKeys)
+        {
+            $closure = function (array $array) use ($parameterKeys)
+            {
+                $args = $this->DefaultArguments;
+
+                foreach ($parameterKeys as $key => $index)
+                {
+                    $args[$index] = $array[$key];
+                }
+
+                return DI::get($this->Class, ...$args);
+            };
+        }
+        else
+        {
+            $closure = function ()
+            {
+                return DI::get($this->Class, ...$this->DefaultArguments);
+            };
+        }
+
+        if ($propertyKeys)
+        {
+            $closure = function (array $array) use ($closure, $propertyKeys)
+            {
+                $obj = $closure($array);
+
+                foreach ($propertyKeys as $key => $property)
+                {
+                    $obj->$property = $array[$key];
+                }
+
+                return $obj;
+            };
+        }
+
+        // Call `setProvider()` early because property methods might need it
+        if ($this->IsConstructibleByProvider)
+        {
+            $closure = function (array $array, IProvider $provider) use ($closure)
+            {
+                $obj = $closure($array);
+                $obj->setProvider($provider);
+                return $obj;
+            };
+        }
+
+        if ($methodKeys)
+        {
+            $closure = function (array $array, ?IProvider $provider) use ($closure, $methodKeys)
+            {
+                $obj = $closure($array, $provider);
+
+                foreach ($methodKeys as $key => $method)
+                {
+                    $obj->$method($array[$key]);
+                }
+
+                return $obj;
+            };
+        }
+
+        if ($metaKeys)
+        {
+            $closure = function (array $array, ?IProvider $provider) use ($closure, $metaKeys)
+            {
+                $obj = $closure($array, $provider);
+
+                foreach ($metaKeys as $key)
+                {
+                    $obj->setMetaProperty($key, $array[$key]);
+                }
+
+                return $obj;
+            };
+        }
+
+        $closure = function (array $array, callable $callback = null, IProvider $provider = null) use ($closure)
         {
             if ($callback)
             {
                 $array = $callback($array);
             }
 
-            $args = $this->DefaultArguments;
-
-            foreach ($parameterKeys as $key => $index)
-            {
-                $args[$index] = $array[$key];
-            }
-
-            $obj = Ioc::create($this->Class, $args);
-
-            foreach ($methodKeys as $key => $method)
-            {
-                $obj->$method($array[$key]);
-            }
-
-            foreach ($propertyKeys as $key => $property)
-            {
-                $obj->$property = $array[$key];
-            }
-
-            foreach ($metaKeys as $key)
-            {
-                $obj->setMetaProperty($key, $array[$key]);
-            }
-
-            return $obj;
+            return $closure($array, $provider);
         };
+
+        if ($this->IsConstructibleByProvider)
+        {
+            // Return a closure where $provider is not optional
+            $closure = function (IProvider $provider, array $array, callable $callback = null) use ($closure)
+            {
+                return $closure($array, $callback, $provider);
+            };
+        }
 
         $this->CreateFromSignatureClosures[$sig] = $closure;
 
@@ -488,17 +562,34 @@ class ClosureBuilder
             return $closure;
         }
 
-        $closure = function (array $array, callable $callback = null)
+        if ($this->IsConstructibleByProvider)
         {
-            if ($callback)
+            $closure = function (IProvider $provider, array $array, callable $callback = null)
             {
-                $array = $callback($array);
-            }
+                if ($callback)
+                {
+                    $array = $callback($array);
+                }
 
-            $keys = array_keys($array);
+                $keys = array_keys($array);
 
-            return ($this->getCreateFromSignatureClosure($keys))($array);
-        };
+                return ($this->getCreateFromSignatureClosure($keys))($provider, $array);
+            };
+        }
+        else
+        {
+            $closure = function (array $array, callable $callback = null)
+            {
+                if ($callback)
+                {
+                    $array = $callback($array);
+                }
+
+                $keys = array_keys($array);
+
+                return ($this->getCreateFromSignatureClosure($keys))($array);
+            };
+        }
 
         $this->CreateFromClosure = $closure;
 

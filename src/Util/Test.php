@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Lkrms\Util;
 
-use Exception;
+use Lkrms\Core\Utility;
 
 /**
- * Test a value against another value
+ * Perform a true/false test on a value
  *
  */
-abstract class Test
+final class Test extends Utility
 {
     /**
      * Check if a flag is set in a bitmask
@@ -108,5 +108,31 @@ abstract class Test
     public static function isAbsolutePath(string $path): bool
     {
         return (bool)preg_match('/^(\\/|\\\\|[a-z]:\\\\)/i', $path);
+    }
+
+    /**
+     * Return true if an object or class implements the given interface
+     *
+     * @param object|string $class
+     * @param string $interface
+     * @return bool
+     */
+    public static function classImplements($class, string $interface): bool
+    {
+        return in_array($interface, class_implements($class) ?: []);
+    }
+
+    /**
+     * Return true if two paths exist and refer to the same file
+     *
+     * @param string $path1
+     * @param string $path2
+     * @return bool
+     */
+    public static function areSameFile(string $path1, string $path2): bool
+    {
+        return file_exists($path1) && file_exists($path2) &&
+            is_int($inode = fileinode($path1)) &&
+            fileinode($path2) === $inode;
     }
 }

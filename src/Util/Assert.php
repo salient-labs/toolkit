@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Util;
 
+use Lkrms\Core\Utility;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -11,7 +12,7 @@ use UnexpectedValueException;
  * Throw an exception if a condition isn't met
  *
  */
-abstract class Assert
+final class Assert extends Utility
 {
     private static function throwException(string $message, ?string $name): void
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Util;
 
+use Lkrms\Core\Utility;
 use ReflectionClass;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
@@ -13,10 +14,10 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * Sometimes The Reflector Is Not Enough
+ * Reflection helpers
  *
  */
-abstract class Reflect
+final class Reflect extends Utility
 {
     /**
      * Return the names of the given Reflection objects

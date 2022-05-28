@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Cli;
 
 use Lkrms\Console\Console;
+use Lkrms\Container\DI;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Util\Assert;
 use Lkrms\Util\Convert;
@@ -141,10 +142,6 @@ abstract class CliCommand
         }
     }
 
-    final public function __construct()
-    {
-    }
-
     /**
      * Register an instance of the class as a subcommand of the running app
      *
@@ -175,7 +172,10 @@ abstract class CliCommand
     {
         self::assertNameIsValid($name);
 
-        $command       = new static();
+        /**
+         * @var static
+         */
+        $command       = DI::get(static::class);
         $command->Name = $name;
 
         Cli::registerCommand($command);
@@ -445,12 +445,19 @@ abstract class CliCommand
             . ($optional ? " [" . implode("] [", $optional) . "]" : "")
             . ($required ? " " . implode(" ", $required) : ""));
 
-        $name    = $this->getLongCommandName();
-        $desc    = $this->getDescription();
-        $options = trim($options, "\n");
+        $name        = $this->getLongCommandName();
+        $desc        = $this->getDescription();
+        if ($options = trim($options, "\n"))
+        {
+            $options = <<<EOF
 
-        return $line1 ? $synopsis :
-<<<EOF
+
+___OPTIONS___
+$options
+EOF;
+        };
+
+        return $line1 ? $synopsis : <<<EOF
 ___NAME___
   __{$name}__
 
@@ -458,10 +465,7 @@ ___DESCRIPTION___
   {$desc}
 
 ___SYNOPSIS___
-  __{$name}__{$synopsis}
-
-___OPTIONS___
-$options
+  __{$name}__{$synopsis}${options}
 EOF;
     }
 

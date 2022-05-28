@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Cli;
 
 use Lkrms\Console\Console;
+use Lkrms\Core\Utility;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Util\Assert;
 use UnexpectedValueException;
@@ -13,7 +14,7 @@ use UnexpectedValueException;
  * CLI app toolkit
  *
  */
-abstract class Cli
+final class Cli extends Utility
 {
     /**
      * @var array<string,CliCommand>

@@ -2,16 +2,35 @@
 
 ### General
 - [ ] Review namespaces and classes before making a v1.0.0 release
-  - [ ] Make classes `final` where possible
-  - [ ] Replace `abstract` with `extends \Core\Utility` where appropriate
+  - Make classes `final` where possible
+  - Replace `abstract` with `extends \Core\Utility` where appropriate
+  - [ ] Complete class review
+    - [ ] `Core\Mixin\TExtensible`
+    - [ ] `Core\Mixin\TGettable`
+    - [ ] `Core\Mixin\TResolvable`
+    - [ ] `Core\Mixin\TSettable`
+    - [x] `Core\Contract\IClassCache`
+    - [x] `Core\Contract\IConstructible`
+    - [x] `Core\Contract\IConstructibleByProvider`
+    - [x] `Core\Contract\IExtensible`
+    - [x] `Core\Contract\IGettable`
+    - [x] `Core\Contract\IProvider`
+    - [x] `Core\Contract\IResolvable`
+    - [x] `Core\Contract\ISettable`
+    - [x] `Core\Contract\ISingular`
+    - [x] `Core\Mixin\TClassCache`
+    - [x] `Core\Mixin\TConstructible`
+    - [x] `Core\Mixin\TConstructibleByProvider`
+    - [x] `Core\Mixin\TFullyGettable`
+    - [x] `Core\Mixin\TFullySettable`
   - [x] `Assert`: `pregMatch()` -> `patternMatches()`
   - [ ] Refactor Curler
     - [ ] Remove/deprecate `...Json()` methods
     - [ ] Add support for parallel downloads and queued actions
   - [ ] `Runtime` -> `App`
   - [ ] Refactor Dice
-  - [ ] Surface `Ioc` methods via `App`
-  - [ ] Move `ClosureBuilder` to `Core\Util`
+  - [x] Surface `Ioc` methods via `App`
+  - [x] Move `ClosureBuilder` to `Core\Support`
 - [ ] Implement a generic fluent interface (`TFluent`?) with instance creation and property getting/setting
 - [ ] Throw custom exceptions
 - [ ] Formalise tests
@@ -26,7 +45,7 @@
 - ~~Return `null` instead of `false` for missing entries~~
 
 ### Sync
-- [ ] Add `Provider` to `SyncEntity` and require it to be set during instantiation
+- [x] Add `Provider` to `SyncEntity` and require it to be set during instantiation
 - [ ] Establish mechanism for resolving `$<entity>Id` properties to `$Entity` and vice-versa
 - [ ] Implement automatic local storage of entities
   - [ ] When a `SyncEntity` is created, load a local instance before applying provider state

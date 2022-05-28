@@ -5,14 +5,20 @@ declare(strict_types=1);
 namespace Lkrms\Util;
 
 use Closure;
+use Lkrms\Core\Utility;
 use Stringable;
 use UnexpectedValueException;
 
 /**
- * Data wrangling
+ * Convert data from one type/format/structure to another
  *
+ * Examples:
+ * - normalise alphanumeric text
+ * - convert a list array to a map array
+ * - pluralise a singular noun
+ * - extract a class name from a FQCN
  */
-abstract class Convert
+final class Convert extends Utility
 {
     /**
      * "snake_case"

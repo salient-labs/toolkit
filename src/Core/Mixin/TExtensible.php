@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Core\Mixin;
 
-use Lkrms\Core\ClosureBuilder;
+use Lkrms\Core\Support\ClosureBuilder;
 
 /**
  * Implements IExtensible to store arbitrary property values

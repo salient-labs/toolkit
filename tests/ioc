@@ -3,8 +3,8 @@
 
 namespace Lkrms\Tests;
 
+use Lkrms\Container\DI;
 use Lkrms\Err\Err;
-use Lkrms\Ioc\Ioc;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -90,19 +90,21 @@ class DepartmentStaff
 
 $exceptions = [];
 
-Ioc::registerSingleton(IdGenerator::class);
+DI::singleton(IdGenerator::class);
 
 // Create one 'Department' per 'DepartmentStaff'
-Ioc::register(DepartmentStaff::class, null, null, [Department::class]);
+DI::bind(DepartmentStaff::class, null, null, [Department::class]);
 
 // Give 'Department' instances a default name
-Ioc::register(Department::class, null, ["<auto>"]);
+DI::bind(Department::class, null, ["<auto>"]);
 
 try
 {
     // Should throw an exception for trying to substitute a 'shareInstances'
     // dependency
-    Ioc::registerFor(DepartmentStaff::class, Department::class, "SpecialDepartment");
+    DI::bind(DepartmentStaff::class, null, null, null, [
+        "substitutions" => [Department::class => "SpecialDepartment"],
+    ]);
 }
 catch (UnexpectedValueException $ex)
 {
@@ -112,7 +114,7 @@ catch (UnexpectedValueException $ex)
 try
 {
     // Should throw an exception for trying to pop from an empty stack
-    Ioc::pop();
+    DI::pop();
 }
 catch (RuntimeException $ex)
 {
@@ -120,35 +122,37 @@ catch (RuntimeException $ex)
 }
 
 // Create 'Staff' instead of 'User' instances when creating 'DepartmentStaff'
-Ioc::registerFor(DepartmentStaff::class, User::class, Staff::class);
+DI::bind(DepartmentStaff::class, null, null, null, [
+    "substitutions" => [User::class => Staff::class]
+]);
 
 // $user1 should be a 'User' instance
-$user1 = Ioc::create(User::class);
+$user1 = DI::get(User::class);
 
 // $user2 should be a 'Staff' instance
-Ioc::push();
-Ioc::register(User::class, Staff::class);
-$user2 = Ioc::create(User::class);
-Ioc::pop();
+DI::push();
+DI::bind(User::class, Staff::class);
+$user2 = DI::get(User::class);
+DI::pop();
 
 // $user3 should be a 'User' instance
-$user3 = Ioc::create(User::class);
+$user3 = DI::get(User::class);
 
 // User, Staff and Department IDs should all increment
-$exec1 = Ioc::create(DepartmentHead::class);
-$exec2 = Ioc::create(DepartmentHead::class);
+$exec1 = DI::get(DepartmentHead::class);
+$exec2 = DI::get(DepartmentHead::class);
 
 // Department names should be applied to separate instances
-$dept1 = Ioc::create(Department::class, ["English"]);
-$dept2 = Ioc::create(Department::class, ["Mathematics"]);
+$dept1 = DI::get(Department::class, "English");
+$dept2 = DI::get(Department::class, "Mathematics");
 
 // One department instance should be created per object tree
-$deptStaff1 = Ioc::create(DepartmentStaff::class);
-$deptStaff2 = Ioc::create(DepartmentStaff::class);
+$deptStaff1 = DI::get(DepartmentStaff::class);
+$deptStaff2 = DI::get(DepartmentStaff::class);
 
 print_r([
     "exceptions"  => $exceptions,
-    "idGenerator" => Ioc::create(IdGenerator::class),
+    "idGenerator" => DI::get(IdGenerator::class),
     "user1"       => $user1,
     "user2"       => $user2,
     "user3"       => $user3,
