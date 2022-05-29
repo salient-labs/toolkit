@@ -130,7 +130,7 @@ class GenerateSyncEntityInterface extends CliCommand
             throw new InvalidCliArgumentException("not a subclass of SyncEntity: $fqcn");
         }
 
-        $plural = $this->getOptionValue("plural") ?: $fqcn::getPlural();
+        $plural = $this->getOptionValue("plural") ?: $fqcn::getPluralClassName();
 
         if (strcasecmp($class, $plural))
         {

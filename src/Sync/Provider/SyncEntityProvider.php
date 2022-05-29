@@ -81,7 +81,7 @@ class SyncEntityProvider
 
         $this->SyncEntity        = $name;
         $this->SyncEntityNoun    = Convert::classToBasename($name);
-        $this->SyncEntityPlural  = $name::getPlural();
+        $this->SyncEntityPlural  = $name::getPluralClassName();
         $this->SyncProvider      = DI::get($name . "Provider");
         $this->SyncProviderClass = new ReflectionClass($this->SyncProvider);
     }

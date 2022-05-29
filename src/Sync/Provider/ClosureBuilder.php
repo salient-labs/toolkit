@@ -62,7 +62,7 @@ class ClosureBuilder
         }
     }
 
-    public function getBindProviderInterfacesClosure(): Closure
+    public function getBindISyncProviderInterfacesClosure(): Closure
     {
         if ($closure = self::$BindProviderInterfacesClosures[$this->Class] ?? null)
         {
@@ -71,9 +71,13 @@ class ClosureBuilder
 
         if ($this->ProviderInterfaces)
         {
-            $closure = function ()
+            $closure = function (string ...$interfaces): void
             {
-                foreach ($this->ProviderInterfaces as $name)
+                $interfaces = array_intersect(
+                    $this->ProviderInterfaces,
+                    $interfaces ?: $this->ProviderInterfaces
+                );
+                foreach ($interfaces as $name)
                 {
                     DI::bind($name, $this->Class);
                 }
@@ -81,7 +85,7 @@ class ClosureBuilder
         }
         else
         {
-            $closure = static function ()
+            $closure = static function (): void
             {
             };
         }
