@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Provider;
 
+use Lkrms\Container\DI;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Generate;
 
@@ -49,18 +50,48 @@ abstract class SyncProvider implements ISyncProvider
     }
 
     /**
-     * Inject the class when provider interfaces it implements are requested
+     * Create DI container bindings for the class and the ISyncProvider
+     * interfaces it implements
      *
-     * For example, if a {@see SyncProvider} subclass called `MySyncProvider`
-     * has implemented `FacultyProvider` - an interface that `extends`
-     * {@see ISyncProvider} - calling `MySyncProvider::bindProviderInterfaces()`
-     * will bind `FacultyProvider` to `MySyncProvider`, and the DI container
-     * will return a `MySyncProvider` instance whenever a `FacultyProvider` is
-     * requested.
+     * Example:
+     *
+     * ```php
+     * interface OrgUnitProvider extends ISyncProvider
+     * {
+     *     public function getOrgUnits(): array;
+     * }
+     *
+     * interface UserProvider extends ISyncProvider
+     * {
+     *     public function getUsers(): array;
+     * }
+     *
+     * class LdapSyncProvider extends SyncProvider implements OrgUnitProvider, UserProvider
+     * {
+     *     // ...
+     * }
+     *
+     * // Option 1: bind the class and its ISyncProvider interfaces manually
+     * DI::singleton(LdapSyncProvider::class);
+     * DI::bind(OrgUnitProvider::class, LdapSyncProvider::class);
+     * DI::bind(UserProvider::class, LdapSyncProvider::class);
+     *
+     * // Option 2: call the SyncProvider's register() method
+     * LdapSyncProvider::register();
+     *
+     * // Now, when an OrgUnitProvider is requested, an LdapSyncProvider
+     * // instance will be returned
+     * $provider = DI::get(OrgUnitProvider::class);
+     * ```
+     *
+     * @param string ...$interfaces If no interfaces are specified, every
+     * ISyncProvider interface implemented by the class will be bound.
+     * @return void
      */
-    public static function bindProviderInterfaces(): void
+    public static function register(string ...$interfaces): void
     {
-        (ClosureBuilder::getFor(static::class)->getBindProviderInterfacesClosure())();
+        DI::singleton(static::class);
+        (ClosureBuilder::getFor(static::class)->getBindISyncProviderInterfacesClosure())(...$interfaces);
     }
 
     /**

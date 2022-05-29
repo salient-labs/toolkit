@@ -6,8 +6,8 @@
     "require": {
         "php": ">=7.4",
         "composer-runtime-api": "^2.2",
-        "lkrms/dice": "^4.0.3.1",
         "filp/whoops": "^2",
+        "lkrms/dice": "^4.0.3.1",
         "psr/container": "^2",
         "psr/log": "^1"
     },
@@ -26,5 +26,8 @@
     },
     "bin": [
         "bin/lk-util"
-    ]
+    ],
+    "config": {
+        "sort-packages": true
+    }
 }

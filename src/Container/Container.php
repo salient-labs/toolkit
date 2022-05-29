@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Container;
 
 use Dice\Dice;
-use Lkrms\Core\Subcontract\ConstructorHasNoRequiredParameters;
+use Lkrms\Core\Contract\ConstructorHasNoRequiredParameters;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 use UnexpectedValueException;
