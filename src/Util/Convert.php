@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Lkrms\Util;
 
 use Closure;
+use DateTime;
+use DateTimeZone;
 use Lkrms\Core\Utility;
+use Lkrms\Support\DateFormatter;
 use Stringable;
 use UnexpectedValueException;
 
@@ -60,6 +63,29 @@ final class Convert extends Utility
     public static function toList($value): array
     {
         return Test::isListArray($value, true) ? $value : [$value];
+    }
+
+    /**
+     * Convert a value to a DateTimeZone instance
+     *
+     * @param DateTimeZone|string|null $value
+     * @return DateTimeZone|null
+     */
+    public static function toTimezone($value): ?DateTimeZone
+    {
+        if ($value instanceof DateTimeZone)
+        {
+            return $value;
+        }
+        elseif (is_null($value))
+        {
+            return null;
+        }
+        elseif (is_string($value))
+        {
+            return new DateTimeZone($value);
+        }
+        throw new UnexpectedValueException("Invalid timezone");
     }
 
     /**
@@ -423,6 +449,7 @@ final class Convert extends Utility
     private static function _dataToQuery(
         array $data,
         bool $forceNumericKeys,
+        DateFormatter $dateFormatter,
         string & $query = null,
         string $name    = "",
         string $format  = "%s"
@@ -443,6 +470,10 @@ final class Convert extends Utility
                 {
                     $value = (int)$value;
                 }
+                elseif ($value instanceof DateTime)
+                {
+                    $value = $dateFormatter->format($value);
+                }
 
                 $query .= ($query ? "&" : "") . urlencode($name . $_name) . "=" . urlencode((string)$value);
 
@@ -457,7 +488,7 @@ final class Convert extends Utility
                 $_format = "[%s]";
             }
 
-            self::_dataToQuery($value, $forceNumericKeys, $query, $name . $_name, $_format);
+            self::_dataToQuery($value, $forceNumericKeys, $dateFormatter, $query, $name . $_name, $_format);
         }
 
         return $query;
@@ -466,12 +497,28 @@ final class Convert extends Utility
     /**
      * A more API-friendly http_build_query
      *
+     * Booleans are cast to integers (`0` or `1`), {@see DateTime}s are
+     * formatted by `$dateFormatter`, and other values are cast to string.
+     *
+     * Arrays with consecutive integer keys numbered from 0 are considered to be
+     * lists. By default, keys are not included when adding lists to query
+     * strings. Set `$forceNumericKeys` to override this behaviour.
+     *
      * @param array $data
      * @param bool $forceNumericKeys
+     * @param DateFormatter|null $dateFormatter
      * @return string
      */
-    public static function dataToQuery(array $data, bool $forceNumericKeys = false): string
+    public static function dataToQuery(
+        array $data,
+        bool $forceNumericKeys       = false,
+        DateFormatter $dateFormatter = null
+    ): string
     {
-        return self::_dataToQuery($data, $forceNumericKeys);
+        return self::_dataToQuery(
+            $data,
+            $forceNumericKeys,
+            $dateFormatter ?: new DateFormatter()
+        );
     }
 }

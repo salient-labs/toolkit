@@ -3,7 +3,10 @@
 
 namespace Lkrms\Tests;
 
+use DateTime;
+use DateTimeInterface;
 use Lkrms\Err\Err;
+use Lkrms\Support\DateFormatter;
 use Lkrms\Util\Convert;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
@@ -20,12 +23,15 @@ $data = [
             "email",
             "sms",
         ],
+        "created" => new DateTime("2021-10-02T17:23:14+10:00")
     ],
 ];
 
 $queries = [
     "no_force_numeric_keys" => Convert::dataToQuery($data),
     "force_numeric_keys"    => Convert::dataToQuery($data, true),
+    "date_format_rss"       => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::RSS)),
+    "date_format_utc"       => Convert::dataToQuery($data, false, new DateFormatter(DateFormatter::DEFAULT, "UTC")),
 ];
 
 $decoded = array_map(
