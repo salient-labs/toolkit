@@ -23,7 +23,7 @@ class CachingCurler extends Curler
      * @param CurlerHeaders|null $headers
      * @param int $expiry
      * @param callable|null $callback Provide a callback to use instead of
-     * `$headers->getHeaders()` when adding request headers to cache keys.
+     * `$headers->getPublicHeaders()` when adding request headers to cache keys.
      * ```php
      * callback(CurlerHeaders $headers): string[]
      * ```
@@ -40,13 +40,13 @@ class CachingCurler extends Curler
 
     protected function execute($close = true): string
     {
-        $this->InternalStackDepth += 1;
+        $this->StackDepth += 1;
 
-        if ($this->LastRequestType == "GET" && Cache::isLoaded())
+        if ($this->Method == "GET" && Cache::isLoaded())
         {
             $url     = curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL);
             $headers = (is_null($this->Callback)
-                ? $this->Headers->getHeaders()
+                ? $this->Headers->getPublicHeaders()
                 : ($this->Callback)($this->Headers));
             $key    = "curler/" . $url . "/" . Generate::hash(...$headers);
             $result = Cache::get($key);
@@ -54,7 +54,7 @@ class CachingCurler extends Curler
             if ($result === false)
             {
                 $result = parent::execute($close);
-                Cache::set($key, [$this->LastResponseHeaders, $result], $this->Expiry);
+                Cache::set($key, [$this->ResponseHeadersByName, $result], $this->Expiry);
             }
             else
             {
@@ -63,7 +63,7 @@ class CachingCurler extends Curler
                     curl_close($this->Handle);
                 }
 
-                list ($this->LastResponseHeaders, $result) = $result;
+                list ($this->ResponseHeadersByName, $result) = $result;
             }
 
             return $result;

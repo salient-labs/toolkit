@@ -19,14 +19,17 @@ class HttpGetPath extends CliCommand
 
     protected function _getOptions(): array
     {
+        $provider = Env::get("SYNC_ENTITY_PROVIDER", "") ?: null;
+
         return [
             [
-                "long"        => "provider",
-                "short"       => "i",
-                "valueName"   => "CLASS",
-                "description" => "The HttpSyncProvider class to retrieve data from",
-                "optionType"  => CliOptionType::VALUE,
-                "required"    => true,
+                "long"         => "provider",
+                "short"        => "i",
+                "valueName"    => "CLASS",
+                "description"  => "The HttpSyncProvider class to retrieve data from",
+                "optionType"   => CliOptionType::VALUE,
+                "required"     => is_null($provider),
+                "defaultValue" => $provider,
             ], [
                 "long"        => "endpoint",
                 "short"       => "e",
@@ -40,7 +43,7 @@ class HttpGetPath extends CliCommand
 
     protected function _run(string ...$args)
     {
-        $providerClass = $this->getOptionValue("provider") ?: Env::get("SYNC_ENTITY_PROVIDER", "");
+        $providerClass = $this->getOptionValue("provider");
         $endpointPath  = $this->getOptionValue("endpoint");
 
         if (!class_exists($providerClass) &&

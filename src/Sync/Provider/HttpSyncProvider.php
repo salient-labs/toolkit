@@ -17,9 +17,14 @@ abstract class HttpSyncProvider extends SyncProvider
     /**
      * Return the base URL of the upstream API
      *
+     * `$path` should be ignored unless the provider uses endpoint-specific base
+     * URLs to connect to the API. It should never be added to the return value.
+     *
+     * @param null|string $path The endpoint requested via
+     * {@see HttpSyncProvider::getCurler()}.
      * @return string
      */
-    abstract protected function getBaseUrl(): string;
+    abstract protected function getBaseUrl(?string $path): string;
 
     /**
      * Return headers to use when connecting to the upstream API
@@ -50,13 +55,14 @@ abstract class HttpSyncProvider extends SyncProvider
     }
 
     /**
-     * Return true to obey "Retry-After" in "429 Too Many Requests" responses
+     * Prepare a Curler instance for connecting to the upstream API
      *
-     * @return bool
+     * Called once per {@see HttpSyncProvider::getCurler()} call.
+     *
+     * @param Curler $curler
      */
-    protected function getAutoRetryAfter(): bool
+    protected function prepareCurler(Curler $curler): void
     {
-        return false;
     }
 
     /**
@@ -66,9 +72,20 @@ abstract class HttpSyncProvider extends SyncProvider
      * @return string[]
      * @see CachingCurler::__construct()
      */
-    protected function cacheKeyCallback(CurlerHeaders $headers): array
+    protected function getCurlerCacheKey(CurlerHeaders $headers): array
     {
-        return $headers->getHeaders();
+        return $headers->getPublicHeaders();
+    }
+
+    /**
+     * Get the URL of an API endpoint
+     *
+     * @param string $path
+     * @return string
+     */
+    final public function getEndpointUrl(string $path): string
+    {
+        return $this->getBaseUrl($path) . $path;
     }
 
     /**
@@ -80,7 +97,7 @@ abstract class HttpSyncProvider extends SyncProvider
      */
     final public function getCurler(string $path, int $expiry = null): Curler
     {
-        if (func_num_args() <= 1)
+        if (func_num_args() < 2)
         {
             $expiry = $this->getCacheExpiry();
         }
@@ -88,24 +105,21 @@ abstract class HttpSyncProvider extends SyncProvider
         if (!is_null($expiry))
         {
             $curler = new CachingCurler(
-                $this->getBaseUrl() . $path,
+                $this->getEndpointUrl($path),
                 $this->getHeaders($path),
                 $expiry,
-                function (CurlerHeaders $headers) { return $this->cacheKeyCallback($headers); }
+                fn(CurlerHeaders $headers) => $this->getCurlerCacheKey($headers)
             );
         }
         else
         {
             $curler = new Curler(
-                $this->getBaseUrl() . $path,
+                $this->getEndpointUrl($path),
                 $this->getHeaders($path)
             );
         }
 
-        if ($this->getAutoRetryAfter())
-        {
-            $curler->enableAutoRetryAfter();
-        }
+        $this->prepareCurler($curler);
 
         return $curler;
     }

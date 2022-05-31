@@ -6,8 +6,15 @@ namespace Lkrms\Curler;
 
 use CurlHandle;
 use CurlMultiHandle;
+use DateTimeInterface;
 use Lkrms\Console\Console;
+use Lkrms\Core\Contract\IGettable;
+use Lkrms\Core\Contract\ISettable;
+use Lkrms\Core\Mixin\TGettable;
+use Lkrms\Core\Mixin\TSettable;
 use Lkrms\Exception\CurlerException;
+use Lkrms\Support\DateFormatter;
+use Lkrms\Util\Composer;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Env;
 use Lkrms\Util\Test;
@@ -15,15 +22,43 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * For easy consumption of REST APIs
+ * A cURL wrapper optimised for consumption of REST APIs
  *
+ * @property-read string|null $Method
+ * @property-read string $Url
+ * @property-read string|null $Query
+ * @property-read CurlerHeaders $Headers
+ * @property-read string|array|null $Data
+ * @property-read CurlerHeaders|null $ResponseHeaders
+ * @property-read array|null $ResponseHeadersByName
+ * @property-read int|null $ResponseCode
+ * @property-read string|null $ResponseStatus
+ * @property-read string|null $ResponseData
+ * @property bool $ThrowHttpErrors
+ * @property bool $RetryAfterTooManyRequests
+ * @property int $RetryAfterMaxSeconds
+ * @property bool $PreferDataAsJson
+ * @property bool $ForceNumericKeys
+ * @property DateFormatter|null $DateFormatter
  */
-class Curler
+class Curler implements IGettable, ISettable
 {
+    use TGettable, TSettable;
+
+    /**
+     * @var string|null
+     */
+    protected $Method;
+
     /**
      * @var string
      */
-    protected $BaseUrl;
+    protected $Url;
+
+    /**
+     * @var string|null
+     */
+    protected $Query;
 
     /**
      * @var CurlerHeaders
@@ -31,69 +66,59 @@ class Curler
     protected $Headers;
 
     /**
-     * @var array|null
+     * @var string|array|null
+     */
+    protected $Data;
+
+    /**
+     * @var CurlerHeaders|null
      */
     protected $ResponseHeaders;
 
     /**
-     * @var string|null
-     */
-    protected $LastRequestType;
-
-    /**
-     * @var string|null
-     */
-    protected $LastQuery;
-
-    /**
-     * @var string|array|null
-     */
-    protected $LastRequestData;
-
-    /**
      * @var array|null
      */
-    protected $LastCurlInfo;
-
-    /**
-     * @var string|null
-     */
-    protected $LastResponse;
+    protected $ResponseHeadersByName;
 
     /**
      * @var int|null
      */
-    protected $LastResponseCode;
+    protected $ResponseCode;
 
     /**
-     * @var array|null
+     * @var string|null
      */
-    protected $LastResponseHeaders;
+    protected $ResponseStatus;
+
+    /**
+     * @var string|null
+     */
+    protected $ResponseData;
 
     /**
      * @var bool
      */
-    protected $ThrowHttpError = true;
+    protected $ThrowHttpErrors = true;
 
     /**
      * @var bool
      */
-    protected $AutoRetryAfter = false;
+    protected $RetryAfterTooManyRequests = false;
 
     /**
      * @var int
      */
-    protected $AutoRetryAfterMax = 60;
+    protected $RetryAfterMaxSeconds = 60;
+
+    /**
+     * @var DateFormatter|null
+     */
+    protected $DateFormatter;
 
     /**
      * @var bool
      */
-    protected $Debug;
-
-    /**
-     * @var bool
-     */
-    protected $DataAsJson = true;
+    protected $PreferDataAsJson = true;
 
     /**
      * @var bool
@@ -105,12 +130,17 @@ class Curler
      *
      * @var int
      */
-    protected $InternalStackDepth = 0;
+    protected $StackDepth = 0;
 
     /**
      * @var CurlHandle|null
      */
     protected $Handle;
+
+    /**
+     * @var string|null
+     */
+    protected static $UserAgent;
 
     /**
      * @var CurlMultiHandle|null
@@ -122,18 +152,104 @@ class Curler
      */
     protected static $MultiInfo = [];
 
-    public function __construct(string $baseUrl, CurlerHeaders $headers = null)
+    public static function getGettable(): array
     {
-        $this->BaseUrl = $baseUrl;
+        return [
+            "Method",
+            "Url",
+            "Query",
+            "Headers",
+            "Data",
+            "ResponseHeaders",
+            "ResponseHeadersByName",
+            "ResponseCode",
+            "ResponseStatus",
+            "ResponseData",
+            "ThrowHttpErrors",
+            "RetryAfterTooManyRequests",
+            "RetryAfterMaxSeconds",
+            "DateFormatter",
+            "PreferDataAsJson",
+            "ForceNumericKeys",
+        ];
+    }
+
+    public static function getSettable(): array
+    {
+        return [
+            "ThrowHttpErrors",
+            "RetryAfterTooManyRequests",
+            "RetryAfterMaxSeconds",
+            "DateFormatter",
+            "PreferDataAsJson",
+            "ForceNumericKeys",
+        ];
+    }
+
+    protected function _getResponseHeaders(): ?CurlerHeaders
+    {
+        if (is_null($this->ResponseHeaders))
+        {
+            return null;
+        }
+        return clone $this->ResponseHeaders;
+    }
+
+    public static function userAgent(string $value = null): ?string
+    {
+        if (func_num_args())
+        {
+            self::$UserAgent = $value;
+        }
+        return self::$UserAgent;
+    }
+
+    public function __construct(string $url, CurlerHeaders $headers = null)
+    {
+        $this->Url     = $url;
         $this->Headers = $headers ?: new CurlerHeaders();
-        $this->Debug   = Env::debug();
+    }
+
+    /**
+     * Run curl_getinfo on the underlying CurlHandle
+     *
+     * Returns `null` if no `CurlHandle` instance has been created.
+     *
+     * @param int|null $option
+     * @return null|array
+     */
+    public function getCurlInfo(int $option = null): ?array
+    {
+        if (!$this->Handle)
+        {
+            return null;
+        }
+
+        if (is_null($option))
+        {
+            return curl_getinfo($this->Handle);
+        }
+        else
+        {
+            return curl_getinfo($this->Handle, $option);
+        }
+    }
+
+    private function resetResponse()
+    {
+        $this->ResponseHeaders       = new CurlerHeaders();
+        $this->ResponseHeadersByName = null;
+
+        $this->ResponseCode   = null;
+        $this->ResponseStatus = null;
+        $this->ResponseData   = null;
     }
 
     private function createHandle(string $url)
     {
         $this->Handle = curl_init($url);
 
-        // Don't send output to browser
+        // Return the transfer as a string
         curl_setopt($this->Handle, CURLOPT_RETURNTRANSFER, true);
 
         // Collect response headers
@@ -142,24 +258,28 @@ class Curler
             CURLOPT_HEADERFUNCTION,
             function ($curl, $header)
             {
-                $split = explode(":", $header, 2);
-
-                if (count($split) == 2)
+                if (is_null($this->ResponseStatus))
                 {
-                    list ($name, $value) = $split;
-
-                    // Header field names are case-insensitive
-                    $name  = strtolower($name);
-                    $value = trim($value);
-                    $this->ResponseHeaders[$name] = $value;
+                    if (count($split = explode(" ", $header, 2)) == 2 &&
+                        explode("/", $split[0])[0] == "HTTP")
+                    {
+                        $this->ResponseStatus = trim($split[1]);
+                    }
+                    else
+                    {
+                        throw new CurlerException($this, "Invalid status line in response");
+                    }
                 }
-
+                else
+                {
+                    $this->ResponseHeaders->addRawHeader($header);
+                }
                 return strlen($header);
             }
         );
 
         // In debug mode, collect request headers
-        if ($this->Debug)
+        if (Env::debug())
         {
             curl_setopt($this->Handle, CURLINFO_HEADER_OUT, true);
         }
@@ -173,10 +293,14 @@ class Curler
         }
         else
         {
-            $query = "?" . Convert::dataToQuery($queryString, $this->ForceNumericKeys);
+            $query = "?" . Convert::dataToQuery(
+                $queryString,
+                $this->ForceNumericKeys,
+                $this->DateFormatter
+            );
         }
 
-        $this->createHandle($this->BaseUrl . $query);
+        $this->createHandle($this->Url . $query);
 
         switch ($requestType)
         {
@@ -199,13 +323,10 @@ class Curler
         }
 
         $this->Headers->unsetHeader("Content-Type");
-        $this->LastRequestType     = $requestType;
-        $this->LastQuery           = $query;
-        $this->LastRequestData     = null;
-        $this->LastCurlInfo        = null;
-        $this->LastResponse        = null;
-        $this->LastResponseCode    = null;
-        $this->LastResponseHeaders = null;
+        $this->Method = $requestType;
+        $this->Query  = $query;
+        $this->Data   = null;
+        $this->resetResponse();
     }
 
     protected function setData(?array $data, ?bool $asJson)
@@ -218,7 +339,7 @@ class Curler
         {
             if (is_null($asJson))
             {
-                $asJson = $this->DataAsJson;
+                $asJson = $this->PreferDataAsJson;
             }
 
             $hasFile = false;
@@ -229,6 +350,14 @@ class Curler
                     {
                         $value   = $value->getCurlFile();
                         $hasFile = true;
+                    }
+                    elseif ($value instanceof DateTimeInterface)
+                    {
+                        if (is_null($this->DateFormatter))
+                        {
+                            $this->DateFormatter = new DateFormatter();
+                        }
+                        $value = $this->DateFormatter->format($value);
                     }
                 });
 
@@ -243,22 +372,39 @@ class Curler
             }
             else
             {
-                $query = Convert::dataToQuery($data, $this->ForceNumericKeys);
+                $query = Convert::dataToQuery(
+                    $data,
+                    $this->ForceNumericKeys,
+                    $this->DateFormatter
+                );
             }
         }
 
         curl_setopt($this->Handle, CURLOPT_POSTFIELDS, $query);
-        $this->LastRequestData = $query;
+        $this->Data = $query;
     }
 
     protected function execute($close = true): string
     {
         // Console::debug() should print the details of whatever called a Curler
         // public method, i.e. not \Execute, not \Get, but one frame deeper
-        $depth = $this->InternalStackDepth + 2;
+        $depth = $this->StackDepth + 2;
 
         // Reset it now in case there's an error later
-        $this->InternalStackDepth = 0;
+        $this->StackDepth = 0;
+
+        if (!$this->Headers->hasHeader("User-Agent"))
+        {
+            if (is_null(self::$UserAgent))
+            {
+                self::$UserAgent = implode(" ", [
+                    str_replace("/", "~", Composer::getRootPackageName())
+                    . "/" . Composer::getRootPackageVersion(),
+                    "php/" . PHP_VERSION
+                ]);
+            }
+            $this->Headers->setHeader("User-Agent", self::$UserAgent);
+        }
 
         // Add headers for authentication etc.
         curl_setopt($this->Handle, CURLOPT_HTTPHEADER, $this->Headers->getHeaders());
@@ -271,11 +417,11 @@ class Curler
         for ($attempt = 0; $attempt < 2; $attempt++)
         {
             // Clear any previous response headers
-            $this->ResponseHeaders = [];
+            $this->resetResponse();
 
-            if ($this->Debug || $this->LastRequestType != "GET")
+            if (Env::debug() || $this->Method != "GET")
             {
-                Console::debug("{$this->LastRequestType} {$this->BaseUrl}{$this->LastQuery}", null, null, $depth);
+                Console::debug("{$this->Method} {$this->Url}{$this->Query}", null, null, $depth);
             }
 
             // Execute the request
@@ -322,13 +468,12 @@ class Curler
             }
 
             // Save transfer information
-            $this->LastCurlInfo        = curl_getinfo($this->Handle);
-            $this->LastResponseHeaders = $this->ResponseHeaders;
+            $this->ResponseHeadersByName = $this->ResponseHeaders->getHeadersByName();
 
             if (is_null($error))
             {
-                $this->LastResponse     = curl_multi_getcontent($this->Handle);
-                $this->LastResponseCode = (int)curl_getinfo($this->Handle, CURLINFO_RESPONSE_CODE);
+                $this->ResponseData = curl_multi_getcontent($this->Handle);
+                $this->ResponseCode = (int)curl_getinfo($this->Handle, CURLINFO_RESPONSE_CODE);
             }
 
             curl_multi_remove_handle(self::$MultiHandle, $this->Handle);
@@ -338,11 +483,11 @@ class Curler
                 throw new CurlerException($this, "cURL error: " . curl_strerror($error));
             }
 
-            if ($this->AutoRetryAfter &&
+            if ($this->RetryAfterTooManyRequests &&
                 $attempt == 0 &&
-                $this->LastResponseCode == 429 &&
+                $this->ResponseCode == 429 &&
                 !is_null($after = $this->getLastRetryAfter()) &&
-                ($this->AutoRetryAfterMax == 0 || $after <= $this->AutoRetryAfterMax))
+                ($this->RetryAfterMaxSeconds == 0 || $after <= $this->RetryAfterMaxSeconds))
             {
                 // Sleep for at least one second
                 $after = max(1, $after);
@@ -360,110 +505,169 @@ class Curler
             curl_close($this->Handle);
         }
 
-        if ($this->LastResponseCode >= 400 && $this->ThrowHttpError)
+        if ($this->ResponseCode >= 400 && $this->ThrowHttpErrors)
         {
             throw new CurlerException($this, "HTTP error " . $this->getLastStatusLine());
         }
 
-        return $this->LastResponse;
+        return $this->ResponseData;
     }
 
+    /**
+     * @deprecated
+     */
     public function getBaseUrl(): string
     {
-        return $this->BaseUrl;
+        return $this->Url;
     }
 
+    /**
+     * @deprecated
+     */
     public function getHeaders(): CurlerHeaders
     {
         return $this->Headers;
     }
 
+    /**
+     * @deprecated
+     */
     public function getThrowHttpError(): bool
     {
-        return $this->ThrowHttpError;
+        return $this->ThrowHttpErrors;
     }
 
+    /**
+     * @deprecated
+     */
     public function getAutoRetryAfter(): bool
     {
-        return $this->AutoRetryAfter;
+        return $this->RetryAfterTooManyRequests;
     }
 
+    /**
+     * @deprecated
+     */
     public function getAutoRetryAfterMax(): int
     {
-        return $this->AutoRetryAfterMax;
+        return $this->RetryAfterMaxSeconds;
     }
 
+    /**
+     * @deprecated Use {@see Env::debug()}
+     */
     public function getDebug(): bool
     {
-        return $this->Debug;
+        return Env::debug();
     }
 
+    /**
+     * @deprecated
+     */
     public function getDataAsJson(): bool
     {
-        return $this->DataAsJson;
+        return $this->PreferDataAsJson;
     }
 
+    /**
+     * @deprecated
+     */
     public function getForceNumericKeys(): bool
     {
         return $this->ForceNumericKeys;
     }
 
+    /**
+     * @deprecated
+     */
     public function setForceNumericKeys(bool $value)
     {
         $this->ForceNumericKeys = $value;
     }
 
+    /**
+     * @deprecated
+     */
     public function enableThrowHttpError()
     {
-        $this->ThrowHttpError = true;
-    }
-
-    public function disableThrowHttpError()
-    {
-        $this->ThrowHttpError = false;
-    }
-
-    public function enableAutoRetryAfter()
-    {
-        $this->AutoRetryAfter = true;
-    }
-
-    public function disableAutoRetryAfter()
-    {
-        $this->AutoRetryAfter = false;
+        $this->ThrowHttpErrors = true;
     }
 
     /**
-     * @param int $seconds A positive integer, or `0` for no maximum.
+     * @deprecated
+     */
+    public function disableThrowHttpError()
+    {
+        $this->ThrowHttpErrors = false;
+    }
+
+    /**
+     * @deprecated
+     */
+    public function enableAutoRetryAfter()
+    {
+        $this->RetryAfterTooManyRequests = true;
+    }
+
+    /**
+     * @deprecated
+     */
+    public function disableAutoRetryAfter()
+    {
+        $this->RetryAfterTooManyRequests = false;
+    }
+
+    /**
+     * @deprecated
      */
     public function setMaxRetryAfter(int $seconds)
     {
-        if ($seconds < 0)
+        $this->_setRetryAfterMaxSeconds($seconds);
+    }
+
+    /**
+     * @internal
+     */
+    protected function _setRetryAfterMaxSeconds(int $value): void
+    {
+        if ($value < 0)
         {
-            throw new UnexpectedValueException("seconds must be greater than or equal to 0");
+            throw new UnexpectedValueException("value must be greater than or equal to 0");
         }
 
-        $this->AutoRetryAfterMax = $seconds;
+        $this->RetryAfterMaxSeconds = $value;
     }
 
+    /**
+     * @deprecated Use {@see Env::debug()}
+     */
     public function enableDebug()
     {
-        $this->Debug = true;
+        Env::debug(true);
     }
 
+    /**
+     * @deprecated Use {@see Env::debug()}
+     */
     public function disableDebug()
     {
-        $this->Debug = false;
+        Env::debug(false);
     }
 
+    /**
+     * @deprecated
+     */
     public function enableDataAsJson()
     {
-        $this->DataAsJson = true;
+        $this->PreferDataAsJson = true;
     }
 
+    /**
+     * @deprecated
+     */
     public function disableDataAsJson()
     {
-        $this->DataAsJson = false;
+        $this->PreferDataAsJson = false;
     }
 
     public function get(array $queryString = null): string
@@ -475,7 +679,7 @@ class Curler
 
     public function getJson(array $queryString = null)
     {
-        $this->InternalStackDepth = 1;
+        $this->StackDepth = 1;
 
         return json_decode($this->get($queryString), true);
     }
@@ -490,7 +694,7 @@ class Curler
 
     public function postJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
-        $this->InternalStackDepth = 1;
+        $this->StackDepth = 1;
 
         return json_decode($this->post($data, $queryString, $dataAsJson), true);
     }
@@ -506,7 +710,7 @@ class Curler
 
     public function rawPostJson(string $data, string $contentType, array $queryString = null)
     {
-        $this->InternalStackDepth = 1;
+        $this->StackDepth = 1;
 
         return json_decode($this->rawPost($data, $contentType, $queryString), true);
     }
@@ -521,7 +725,7 @@ class Curler
 
     public function putJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
-        $this->InternalStackDepth = 1;
+        $this->StackDepth = 1;
 
         return json_decode($this->put($data, $queryString, $dataAsJson), true);
     }
@@ -536,7 +740,7 @@ class Curler
 
     public function patchJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
-        $this->InternalStackDepth = 1;
+        $this->StackDepth = 1;
 
         return json_decode($this->patch($data, $queryString, $dataAsJson), true);
     }
@@ -551,14 +755,14 @@ class Curler
 
     public function deleteJson(array $data = null, array $queryString = null, bool $dataAsJson = null)
     {
-        $this->InternalStackDepth = 1;
+        $this->StackDepth = 1;
 
         return json_decode($this->delete($data, $queryString, $dataAsJson), true);
     }
 
     public function getLastRetryAfter(): ?int
     {
-        $retryAfter = $this->LastResponseHeaders["retry-after"] ?? null;
+        $retryAfter = $this->ResponseHeadersByName["retry-after"] ?? null;
 
         if (!is_null($retryAfter))
         {
@@ -579,44 +783,60 @@ class Curler
         return $retryAfter;
     }
 
+    /**
+     * @deprecated
+     */
     public function getLastRequestType(): ?string
     {
-        return $this->LastRequestType;
+        return $this->Method;
     }
 
+    /**
+     * @deprecated
+     */
     public function getLastQuery(): ?string
     {
-        return $this->LastQuery;
+        return $this->Query;
     }
 
+    /**
+     * @deprecated
+     */
     public function getLastRequestData()
     {
-        return $this->LastRequestData;
+        return $this->Data;
     }
 
-    public function getLastCurlInfo(): ?array
-    {
-        return $this->LastCurlInfo;
-    }
-
+    /**
+     * @deprecated
+     */
     public function getLastResponse(): ?string
     {
-        return $this->LastResponse;
+        return $this->ResponseData;
     }
 
+    /**
+     * @deprecated
+     */
     public function getLastResponseCode(): ?int
     {
-        return $this->LastResponseCode;
+        return $this->ResponseCode;
     }
 
+    /**
+     * @deprecated
+     */
     public function getLastResponseHeaders(): ?array
     {
-        return $this->LastResponseHeaders;
+        return $this->ResponseHeadersByName;
     }
 
+    /**
+     * @deprecated
+     */
     public function getLastStatusLine(): ?string
     {
-        return $this->LastResponseHeaders["status"] ?? (string)$this->LastResponseCode;
+        return $this->ResponseStatus;
     }
 
     /**
@@ -643,7 +863,7 @@ class Curler
             $result   = json_decode($this->execute(false), true);
             $entities = array_merge($entities, $result);
 
-            if (preg_match("/<([^>]+)>;\\s*rel=(['\"])next\\2/", $this->LastResponseHeaders["link"] ?? "", $matches))
+            if (preg_match("/<([^>]+)>;\\s*rel=(['\"])next\\2/", $this->ResponseHeadersByName["link"] ?? "", $matches))
             {
                 $nextUrl = $matches[1];
             }
@@ -705,7 +925,7 @@ class Curler
 
             if (is_null($prefix))
             {
-                if ($this->LastResponseHeaders["odata-version"] == "4.0")
+                if ($this->ResponseHeadersByName["odata-version"] == "4.0")
                 {
                     $prefix = "@odata.";
                 }
@@ -820,7 +1040,7 @@ class Curler
                 $requestLimit--;
             }
 
-            $this->InternalStackDepth = 1;
+            $this->StackDepth = 1;
 
             $result = json_decode($this->post($nextQuery), true);
 

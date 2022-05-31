@@ -477,7 +477,7 @@ class ClosureBuilder
 
         if ($propertyKeys)
         {
-            $closure = function (array $array) use ($closure, $propertyKeys)
+            $closure = static function (array $array) use ($closure, $propertyKeys)
             {
                 $obj = $closure($array);
 
@@ -488,12 +488,13 @@ class ClosureBuilder
 
                 return $obj;
             };
+            $closure = $closure->bindTo(null, $this->Class);
         }
 
         // Call `setProvider()` early because property methods might need it
         if ($this->IsConstructibleByProvider)
         {
-            $closure = function (array $array, IProvider $provider) use ($closure)
+            $closure = static function (array $array, IProvider $provider) use ($closure)
             {
                 $obj = $closure($array);
                 $obj->setProvider($provider);
@@ -503,7 +504,7 @@ class ClosureBuilder
 
         if ($methodKeys)
         {
-            $closure = function (array $array, ?IProvider $provider) use ($closure, $methodKeys)
+            $closure = static function (array $array, ?IProvider $provider) use ($closure, $methodKeys)
             {
                 $obj = $closure($array, $provider);
 
@@ -514,11 +515,12 @@ class ClosureBuilder
 
                 return $obj;
             };
+            $closure = $closure->bindTo(null, $this->Class);
         }
 
         if ($metaKeys)
         {
-            $closure = function (array $array, ?IProvider $provider) use ($closure, $metaKeys)
+            $closure = static function (array $array, ?IProvider $provider) use ($closure, $metaKeys)
             {
                 $obj = $closure($array, $provider);
 
