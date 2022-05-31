@@ -21,6 +21,11 @@ parameters:
 			path: src/Core/Support/ClosureBuilder.php
 
 		-
+			message: "#^Property Lkrms\\\\Curler\\\\CurlerHeaders\\:\\:\\$Trailers is never read, only written\\.$#"
+			count: 1
+			path: src/Curler/CurlerHeaders.php
+
+		-
 			message: "#^Call to function is_null\\(\\) with ReflectionMethod\\|null will always evaluate to false\\.$#"
 			count: 1
 			path: src/Sync/Provider/SyncEntityProvider.php

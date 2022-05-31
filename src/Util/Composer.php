@@ -35,7 +35,7 @@ final class Composer extends Utility
     {
         if (preg_match('/^dev-/', $version = self::getRootPackageValue("version")))
         {
-            $version = self::getRootPackageValue("reference");
+            $version = substr(self::getRootPackageValue("reference"), 0, 7);
         }
 
         return $version;
@@ -62,7 +62,7 @@ final class Composer extends Utility
 
         if (preg_match('/^dev-/', $version = InstalledVersions::getVersion($name)))
         {
-            $version = InstalledVersions::getReference($name);
+            $version = substr(InstalledVersions::getReference($name), 0, 7);
         }
 
         return $version;

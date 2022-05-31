@@ -41,7 +41,7 @@ class CurlerException extends \Lkrms\Exception\Exception
 
     public function __construct(Curler $curler, string $message, int $code = 0, Throwable $previous = null)
     {
-        $this->CurlInfo        = $curler->getLastCurlInfo();
+        $this->CurlInfo        = $curler->getCurlInfo();
         $this->RequestData     = $curler->getLastRequestData();
         $this->ResponseCode    = $curler->getLastResponseCode();
         $this->ResponseHeaders = $curler->getLastResponseHeaders();

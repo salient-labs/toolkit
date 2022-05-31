@@ -40,9 +40,9 @@ class CachingCurler extends Curler
 
     protected function execute($close = true): string
     {
-        $this->InternalStackDepth += 1;
+        $this->StackDepth += 1;
 
-        if ($this->LastRequestType == "GET" && Cache::isLoaded())
+        if ($this->Method == "GET" && Cache::isLoaded())
         {
             $url     = curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL);
             $headers = (is_null($this->Callback)
@@ -54,7 +54,7 @@ class CachingCurler extends Curler
             if ($result === false)
             {
                 $result = parent::execute($close);
-                Cache::set($key, [$this->LastResponseHeaders, $result], $this->Expiry);
+                Cache::set($key, [$this->ResponseHeadersByName, $result], $this->Expiry);
             }
             else
             {
@@ -63,7 +63,7 @@ class CachingCurler extends Curler
                     curl_close($this->Handle);
                 }
 
-                list ($this->LastResponseHeaders, $result) = $result;
+                list ($this->ResponseHeadersByName, $result) = $result;
             }
 
             return $result;

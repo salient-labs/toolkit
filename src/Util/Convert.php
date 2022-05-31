@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Util;
 
 use Closure;
-use DateTime;
+use DateTimeInterface;
 use DateTimeZone;
 use Lkrms\Core\Utility;
 use Lkrms\Support\DateFormatter;
@@ -470,7 +470,7 @@ final class Convert extends Utility
                 {
                     $value = (int)$value;
                 }
-                elseif ($value instanceof DateTime)
+                elseif ($value instanceof DateTimeInterface)
                 {
                     $value = $dateFormatter->format($value);
                 }
