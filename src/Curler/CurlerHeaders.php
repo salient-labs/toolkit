@@ -40,6 +40,14 @@ class CurlerHeaders
     private $Trailers = [];
 
     /**
+     * @var string[]
+     */
+    private $PrivateHeaderNames = [
+        "authorization",
+        "proxy-authorization",
+    ];
+
+    /**
      * @internal
      * @param string $line
      */
@@ -164,6 +172,15 @@ class CurlerHeaders
         );
     }
 
+    public function addPrivateHeaderName(string $name): void
+    {
+        $lower = strtolower($name);
+        if (!in_array($lower, $this->PrivateHeaderNames))
+        {
+            $this->PrivateHeaderNames[] = $lower;
+        }
+    }
+
     /**
      * @return string[]
      */
@@ -175,7 +192,7 @@ class CurlerHeaders
                 $this->Headers,
                 fn(CurlerHeader $header) => !in_array(
                     strtolower($header->Name),
-                    ["authorization"]
+                    $this->PrivateHeaderNames
                 )
             )
         ));

@@ -383,9 +383,22 @@ abstract class ConsoleMessageWriter
         static::write(
             ConsoleLevel::DEBUG,
             "__Stack trace:__",
-            "`" . ConsoleText::escape($exception->getTraceAsString()) . "`",
+            "\n`" . ConsoleText::escape($exception->getTraceAsString()) . "`",
             "--- ",
             $exception
         );
+        if ($exception instanceof \Lkrms\Exception\Exception)
+        {
+            foreach ($exception->getDetail() as $section => $text)
+            {
+                static::write(
+                    ConsoleLevel::DEBUG,
+                    "__{$section}:__",
+                    "\n`" . ConsoleText::escape($text) . "`",
+                    "--- ",
+                    $exception
+                );
+            }
+        }
     }
 }

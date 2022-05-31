@@ -357,7 +357,7 @@ final class Convert extends Utility
         $text = preg_replace("/[^[:alnum:]]+/", "_", $text);
         $text = preg_replace("/([[:lower:]])([[:upper:]])/", '$1_$2', $text);
 
-        return strtolower($text);
+        return strtolower(trim($text, "_"));
     }
 
     /**
@@ -371,7 +371,7 @@ final class Convert extends Utility
         $text = preg_replace("/[^[:alnum:]]+/", "-", $text);
         $text = preg_replace("/([[:lower:]])([[:upper:]])/", '$1-$2', $text);
 
-        return strtolower($text);
+        return strtolower(trim($text, "-"));
     }
 
     /**

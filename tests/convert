@@ -46,6 +46,8 @@ print_r([$queries, $decoded]);
 $identifiers = [
     "twowords", "TWOWORDS", "twoWords", "TwoWords",
     "two_words", "TWO_WORDS", "two_Words", "Two_Words",
+    "_two_words_", "_TWO_WORDS_", "_two_Words_", "_Two_Words_",
+    "-two_words-", "-TWO_WORDS-", "-two_Words-", "-Two_Words-",
     "two-words", "TWO-WORDS", "Two-Words",
     "12twowords", "two12words", "twowords12",
     "12TWOWORDS", "TWO12WORDS", "TWOWORDS12",

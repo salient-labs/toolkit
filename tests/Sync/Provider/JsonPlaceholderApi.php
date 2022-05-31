@@ -17,7 +17,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 {
     private const JSON_PLACEHOLDER_BASE_URL = "https://jsonplaceholder.typicode.com";
 
-    protected function getBaseUrl(): string
+    protected function getBaseUrl(?string $path): string
     {
         return self::JSON_PLACEHOLDER_BASE_URL;
     }
