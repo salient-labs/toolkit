@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Lkrms\Util;
 
 use Closure;
+use DateInterval;
+use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use Lkrms\Core\Utility;
 use Lkrms\Support\DateFormatter;
-use Stringable;
 use UnexpectedValueException;
 
 /**
@@ -63,6 +64,25 @@ final class Convert extends Utility
     public static function toList($value): array
     {
         return Test::isListArray($value, true) ? $value : [$value];
+    }
+
+    /**
+     * Convert an interval to the equivalent number of seconds
+     *
+     * Works with ISO 8601 durations like `PT48M`.
+     *
+     * @param DateInterval|string $value
+     * @return int
+     */
+    public static function intervalToSeconds($value): int
+    {
+        if (!($value instanceof DateInterval))
+        {
+            $value = new DateInterval($value);
+        }
+        $then = new DateTimeImmutable();
+        $now  = $then->add($value);
+        return $now->getTimestamp() - $then->getTimestamp();
     }
 
     /**
@@ -122,6 +142,75 @@ final class Convert extends Utility
     }
 
     /**
+     * Move array values to a nested array
+     *
+     * @param array $array The array to transform.
+     * @param string $key The key in `$array` where the child array should be
+     * created.
+     * @param array $map An array that maps child array keys to `$array` keys.
+     * For example, to move `$data['userId']` to `$data['user']['id']`:
+     * ```php
+     * $data = Convert::arrayEntriesToChildArray($data, 'user', ['id' => 'userId']);
+     * ```
+     * @param bool $merge If `true` (the default), merge values from `$array`
+     * with an existing array at `$array[$key]`. If `false`, throw an exception
+     * if `$array[$key]` is already set.
+     * @return array
+     * @throws UnexpectedValueException if `$key` already exists in `$array` and
+     * merging is not possible
+     */
+    public static function arrayValuesToChildArray(
+        array $array,
+        string $key,
+        array $map,
+        bool $merge = true
+    ): array
+    {
+        if (array_key_exists($key, $array) &&
+            (!$merge || !is_array($array[$key])))
+        {
+            throw new UnexpectedValueException("'$key' is already set");
+        }
+        $child = $array[$key] ?? [];
+        foreach ($map as $to => $from)
+        {
+            if (array_key_exists($from, $array))
+            {
+                $child[$to] = $array[$from];
+                unset($array[$from]);
+            }
+        }
+        if (empty(array_filter($child, fn($value) => !is_null($value))))
+        {
+            $child = null;
+        }
+        $array[$key] = $child;
+        return $array;
+    }
+
+    /**
+     * Apply multiple arrayValuesToChildArray transformations to an array
+     *
+     * @param array $array The array to transform.
+     * @param array $maps An array that maps `$key` to `$map`, where `$key` and
+     * `$map` are passed to {@see arrayValuesToChildArray()}.
+     * @param bool $merge Passed to {@see arrayValuesToChildArray()}.
+     * @return array
+     */
+    public static function toNestedArrays(
+        array $array,
+        array $maps,
+        bool $merge = true
+    ): array
+    {
+        foreach ($maps as $key => $map)
+        {
+            $array = self::arrayValuesToChildArray($array, $key, $map, $merge);
+        }
+        return $array;
+    }
+
+    /**
      * Create a map from a list
      *
      * For example, to map from each array's `id` to the array itself:
@@ -157,7 +246,7 @@ final class Convert extends Utility
      *
      * @param array $list
      * @param string|Closure $key Either the index or property name to use when
-     * retrieving keys from arrays and objects in `$list`, or a closure that
+     * retrieving keys from arrays or objects in `$list`, or a closure that
      * returns a key for each item in `$list`.
      * @return array
      */
@@ -307,7 +396,7 @@ final class Convert extends Utility
     /**
      * Convert the given strings and Stringables to an array of strings
      *
-     * @param string|Stringable ...$value
+     * @param string|\Stringable ...$value
      * @return string[]
      */
     public static function toStrings(...$value): array
