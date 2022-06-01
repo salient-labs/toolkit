@@ -10,12 +10,38 @@ use Lkrms\Util\Generate;
 /**
  * Adds GET request caching to Curler
  *
+ * @property bool $CachePostRequests
  */
 class CachingCurler extends Curler
 {
+    /**
+     * @var bool
+     */
+    protected $CachePostRequests = false;
+
+    /**
+     * @var int
+     */
     private $Expiry;
 
+    /**
+     * @var callable|null
+     */
     private $Callback;
+
+    public static function getGettable(): array
+    {
+        return array_merge(parent::getGettable(), [
+            "CachePostRequests"
+        ]);
+    }
+
+    public static function getSettable(): array
+    {
+        return array_merge(parent::getSettable(), [
+            "CachePostRequests"
+        ]);
+    }
 
     /**
      *
@@ -42,13 +68,20 @@ class CachingCurler extends Curler
     {
         $this->StackDepth += 1;
 
-        if ($this->Method == "GET" && Cache::isLoaded())
+        if (Cache::isLoaded() && ($this->Method == "GET" ||
+            ($this->CachePostRequests && $this->Method == "POST" &&
+                !is_array($this->Data))))
         {
             $url     = curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL);
             $headers = (is_null($this->Callback)
                 ? $this->Headers->getPublicHeaders()
                 : ($this->Callback)($this->Headers));
-            $key    = "curler/" . $url . "/" . Generate::hash(...$headers);
+            if ($this->Method != "GET")
+            {
+                $url       = "{$this->Method}:$url";
+                $headers[] = $this->Data;
+            }
+            $key    = "curler/$url/" . Generate::hash(...$headers);
             $result = Cache::get($key);
 
             if ($result === false)

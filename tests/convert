@@ -138,3 +138,8 @@ print_r(array_combine($fqcn, array_map(
     function ($i) { return Convert::classToBasename($i); },
     $fqcn
 )));
+
+print_r([
+    "PT48M" => Convert::intervalToSeconds("PT48M"),
+    "P1W2D" => Convert::intervalToSeconds("P1W2D"),
+]);
