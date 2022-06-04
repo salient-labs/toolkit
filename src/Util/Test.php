@@ -13,6 +13,18 @@ use Lkrms\Core\Utility;
 final class Test extends Utility
 {
     /**
+     * Return true for integers and integer strings
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    public static function isIntValue($value): bool
+    {
+        return (is_int($value) ||
+            (is_string($value) && preg_match('/^[0-9]+$/', $value)));
+    }
+
+    /**
      * Check if a flag is set in a bitmask
      *
      * If `$mask` is not set, returns `true` if bits set in `$flag` are also set

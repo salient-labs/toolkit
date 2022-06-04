@@ -172,9 +172,7 @@ abstract class CliCommand
     {
         self::assertNameIsValid($name);
 
-        /**
-         * @var static
-         */
+        /** @var static */
         $command       = DI::get(static::class);
         $command->Name = $name;
 
