@@ -21,6 +21,11 @@ trait TConstructibleByProvider
      */
     private $ProvidedBy;
 
+    public function __clone(): void
+    {
+        $this->ProvidedBy = null;
+    }
+
     public function setProvider(IProvider $provider): void
     {
         if ($this->ProvidedBy)

@@ -58,6 +58,40 @@ abstract class SyncEntity extends ProviderEntity implements IClassCache, JsonSer
      */
     private $DetectRecursion;
 
+    public function __clone(): void
+    {
+        parent::__clone();
+        $this->Id = null;
+    }
+
+    /**
+     * Return true if the value of a property is the same between this and
+     * another instance of the same class
+     *
+     * @param string $property
+     * @param SyncEntity $entity
+     * @return bool
+     */
+    final public function propertyHasSameValueAs(
+        string $property,
+        SyncEntity $entity
+    ): bool
+    {
+        // $entity must be an instance of the same class
+        if (!is_a($entity, static::class))
+        {
+            return false;
+        }
+
+        $a = $this->$property;
+        $b = $entity->$property;
+        return $a === $b ||
+            ($a instanceof SyncEntity && $b instanceof SyncEntity &&
+                get_class($a) == get_class($b) &&
+                $a->getProvider() === $b->getProvider() &&
+                $a->Id === $b->Id);
+    }
+
     /**
      * Return an entity-agnostic interface with the SyncEntity's current
      * provider

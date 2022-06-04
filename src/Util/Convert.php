@@ -374,6 +374,59 @@ final class Convert extends Utility
     }
 
     /**
+     * Rearrange text to merge lists and remove duplicate lines
+     *
+     * Lines that match `$regex` are regarded as list items and are grouped by
+     * section. Other lines are used as the section name for any subsequent list
+     * items. Blank lines clear the current section name but are not included in
+     * the return value.
+     *
+     * @param string $text
+     * @param string $regex
+     * @return string
+     */
+    public static function mergeLists(
+        string $text,
+        string $regex = '/^\h*[-*] /'
+    ): string
+    {
+        $sections = [];
+        foreach (preg_split('/\r\n|\n/', $text) as $line)
+        {
+            if (!trim($line))
+            {
+                unset($section);
+                continue;
+            }
+            if (!preg_match($regex, $line))
+            {
+                $section = $line;
+            }
+            $key = $section ?? $line;
+            if (!array_key_exists($key, $sections))
+            {
+                $sections[$key] = [];
+            }
+            if ($key != $line && !in_array($line, $sections[$key]))
+            {
+                $sections[$key][] = $line;
+            }
+        }
+        // Move lines with no associated list to the top
+        $sections = array_merge(
+            array_filter($sections, fn($lines) => !count($lines)),
+            array_filter($sections, fn($lines) => count($lines))
+        );
+        $lines = [];
+        foreach ($sections as $section => $sectionLines)
+        {
+            $lines[] = $section;
+            array_push($lines, ...$sectionLines);
+        }
+        return implode("\n", $lines);
+    }
+
+    /**
      * Convert php.ini values like "128M" to bytes
      *
      * @param string $size From the PHP FAQ: "The available options are K (for
