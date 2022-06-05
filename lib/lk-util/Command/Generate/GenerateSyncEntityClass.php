@@ -105,7 +105,7 @@ class GenerateSyncEntityClass extends CliCommand
         $package    = $this->getOptionValue("package") ?: Env::get("SYNC_ENTITY_PACKAGE", "");
         $desc       = $this->getOptionValue("desc");
         $extends    = SyncEntity::class;
-        $props      = ["Id" => "int|string"];
+        $props      = ["Id" => "int|string|null"];
         $visibility = $this->getOptionValue("visibility");
         $entity     = null;
 
@@ -188,10 +188,18 @@ class GenerateSyncEntityClass extends CliCommand
             {
                 if (is_string($key) && preg_match('/^[[:alpha:]]/', $key))
                 {
-                    $key  = $entityClass::normaliseProperty($key);
-                    $key  = Convert::toPascalCase($key);
-                    $type = gettype($value);
-                    $type = $typeMap[$type] ?? $type;
+                    $key = $entityClass::normaliseProperty($key);
+                    $key = Convert::toPascalCase($key);
+
+                    // Don't limit `Id` to one type
+                    if (array_key_exists($key, $props))
+                    {
+                        continue;
+                    }
+
+                    $type  = gettype($value);
+                    $type  = $typeMap[$type] ?? $type;
+                    $type .= $type == "mixed" ? "" : "|null";
 
                     $props[$key] = $type;
                 }
@@ -216,11 +224,16 @@ class GenerateSyncEntityClass extends CliCommand
             unset($docBlock[3]);
         }
 
+        if (count($docBlock) == 3)
+        {
+            $docBlock = null;
+        }
+
         $blocks = [
             "<?php",
             "declare(strict_types=1);",
             "namespace $namespace;",
-            implode(PHP_EOL, $docBlock) . PHP_EOL .
+            ($docBlock ? implode(PHP_EOL, $docBlock) . PHP_EOL : "") .
             "class $class extends \\$extends" . PHP_EOL .
             "{"
         ];
