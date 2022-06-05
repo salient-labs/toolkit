@@ -6,6 +6,10 @@ namespace Lkrms\Util;
 
 use Lkrms\Core\Utility;
 
+/**
+ * Use the previous names of renamed classes
+ *
+ */
 final class Legacy extends Utility
 {
     private const CLASS_ALIASES = [

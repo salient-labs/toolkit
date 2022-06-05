@@ -16,7 +16,7 @@ use Throwable;
  * Log various message types to various targets
  *
  */
-abstract class Console extends ConsoleMessageWriter
+final class Console extends ConsoleMessageWriter
 {
     /**
      * @var ConsoleTarget[]

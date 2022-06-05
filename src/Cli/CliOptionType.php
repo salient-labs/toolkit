@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
+use Lkrms\Core\Enumeration;
+
 /**
  * Command-line option types
  *
  * See {@see CliCommand::_getOptions()} for more information.
  *
  */
-abstract class CliOptionType
+final class CliOptionType extends Enumeration
 {
     /**
      * Enable a setting

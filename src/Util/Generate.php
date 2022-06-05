@@ -9,7 +9,7 @@ use Lkrms\Core\Utility;
 use ReflectionFunction;
 
 /**
- * Generate expensive values like hashes, secure UUIDs and string similarities
+ * Generate values like hashes and secure UUIDs
  *
  */
 final class Generate extends Utility

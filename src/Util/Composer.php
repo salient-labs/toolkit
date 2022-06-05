@@ -9,7 +9,7 @@ use Lkrms\Core\Utility;
 use RuntimeException;
 
 /**
- * Get information about installed Composer packages
+ * Get information about installed packages
  *
  */
 final class Composer extends Utility

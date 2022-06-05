@@ -7,7 +7,7 @@ namespace Lkrms\Util;
 use Lkrms\Core\Utility;
 
 /**
- * SQL helpers
+ * Work with SQL queries
  *
  */
 final class Sql extends Utility

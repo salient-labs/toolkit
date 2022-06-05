@@ -11,7 +11,7 @@ use UnexpectedValueException;
 /**
  * Base class for collections of objects of a particular type
  */
-abstract class CollectionOf implements Iterator, ArrayAccess, Countable
+abstract class TypedCollection implements Iterator, ArrayAccess, Countable
 {
     abstract protected function getItemClass(): string;
 

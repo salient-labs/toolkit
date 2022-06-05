@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
+use Lkrms\Core\Enumeration;
+
 /**
  * Groups of console message levels
  *
  */
-abstract class ConsoleLevels
+final class ConsoleLevels extends Enumeration
 {
     public const ALL = [
         ConsoleLevel::EMERGENCY,
