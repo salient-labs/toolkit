@@ -23,6 +23,7 @@ final class Legacy extends Utility
         \Lkrms\Generate::class => \Lkrms\Util\Generate::class,
         \Lkrms\Ioc\Ioc::class  => \Lkrms\Container\DI::class,
         \Lkrms\Reflect::class  => \Lkrms\Util\Reflect::class,
+        \Lkrms\Runtime::class  => \Lkrms\Util\Runtime::class,
         \Lkrms\Sql::class      => \Lkrms\Util\Sql::class,
         \Lkrms\Test::class     => \Lkrms\Util\Test::class,
         \Lkrms\Trash::class    => \Lkrms\Store\Trash::class,

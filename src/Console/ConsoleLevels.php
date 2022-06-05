@@ -18,6 +18,16 @@ abstract class ConsoleLevels
         ConsoleLevel::WARNING,
         ConsoleLevel::NOTICE,
         ConsoleLevel::INFO,
+    ];
+
+    public const ALL_DEBUG = [
+        ConsoleLevel::EMERGENCY,
+        ConsoleLevel::ALERT,
+        ConsoleLevel::CRITICAL,
+        ConsoleLevel::ERROR,
+        ConsoleLevel::WARNING,
+        ConsoleLevel::NOTICE,
+        ConsoleLevel::INFO,
         ConsoleLevel::DEBUG,
     ];
 

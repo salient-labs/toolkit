@@ -2,41 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Lkrms;
+namespace Lkrms\Util;
 
+use Lkrms\Core\Utility;
 use Lkrms\Util\Convert;
 
 /**
- * Runtime state tracking
+ * Get information about the runtime environment
  *
  */
-abstract class Runtime
+final class Runtime extends Utility
 {
-    public const RUNNING = 0;
-    public const STOPPING = 1;
-
-    private static $State;
-
-    /**
-     * Set the state of the running script
-     *
-     * @param int $state One of the {@see Runtime} state values
-     */
-    public static function setState(int $state)
-    {
-        self::$State = $state;
-    }
-
-    /**
-     * Return true if the script state is STOPPING
-     *
-     * @return bool
-     */
-    public static function isStopping(): bool
-    {
-        return self::$State === self::STOPPING;
-    }
-
     /**
      * Use debug_backtrace to get information about the (caller's) caller
      *
