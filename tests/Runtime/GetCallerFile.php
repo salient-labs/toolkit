@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Runtime
 {
-    use Lkrms\Runtime;
+    use Lkrms\Util\Runtime;
 
     function getCaller($depth)
     {

@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 use Lkrms\Console\ConsoleTarget\ConsoleTarget;
-use Lkrms\Runtime;
+use Lkrms\Core\Utility;
 use Lkrms\Util\Convert;
+use Lkrms\Util\Runtime;
 use Throwable;
 
 /**
  * Base class for Console
  *
  */
-abstract class ConsoleMessageWriter
+abstract class ConsoleMessageWriter extends Utility
 {
     /**
      * @var int

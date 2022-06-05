@@ -39,7 +39,7 @@ abstract class SyncEntity extends ProviderEntity implements IClassCache, JsonSer
     use TClassCache;
 
     /**
-     * @var int|string
+     * @var int|string|null
      */
     public $Id;
 

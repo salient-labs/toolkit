@@ -14,7 +14,7 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * Reflection helpers
+ * Work with PHP's Reflector classes
  *
  */
 final class Reflect extends Utility

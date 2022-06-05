@@ -12,7 +12,7 @@ use Throwable;
 use UnexpectedValueException;
 
 /**
- * A minimal dotenv implementation
+ * Work with .env files and environment variables
  *
  */
 final class Env extends Utility

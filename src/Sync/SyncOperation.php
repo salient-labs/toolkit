@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync;
 
+use Lkrms\Core\ConvertibleEnumeration;
 use UnexpectedValueException;
 
 /**
  * Sync operation types
  *
  */
-abstract class SyncOperation
+final class SyncOperation extends ConvertibleEnumeration
 {
     /**
      * Add an entity to the connected system
@@ -103,6 +104,9 @@ abstract class SyncOperation
      */
     public const DELETE_LIST = 7;
 
+    /**
+     * @var array<int,string>
+     */
     private const NAME_MAP = [
         self::CREATE      => "CREATE",
         self::READ        => "READ",
@@ -114,6 +118,23 @@ abstract class SyncOperation
         self::DELETE_LIST => "DELETE_LIST",
     ];
 
+    /**
+     * @var array<string,int>
+     */
+    private const VALUE_MAP = [
+        "CREATE"      => self::CREATE,
+        "READ"        => self::READ,
+        "UPDATE"      => self::UPDATE,
+        "DELETE"      => self::DELETE,
+        "CREATE_LIST" => self::CREATE_LIST,
+        "READ_LIST"   => self::READ_LIST,
+        "UPDATE_LIST" => self::UPDATE_LIST,
+        "DELETE_LIST" => self::DELETE_LIST,
+    ];
+
+    /**
+     * @var array<int,bool>
+     */
     private const LIST_MAP = [
         self::CREATE      => false,
         self::READ        => false,
@@ -125,18 +146,21 @@ abstract class SyncOperation
         self::DELETE_LIST => true,
     ];
 
-    /**
-     * Return the name of the given SyncOperation
-     *
-     * @param int $operation
-     * @return string
-     * @throws UnexpectedValueException
-     */
-    public static function toName(int $operation): string
+    public static function fromName(string $name): int
     {
-        if (is_null($name = self::NAME_MAP[$operation] ?? null))
+        if (is_null($value = self::VALUE_MAP[$name] ?? null))
         {
-            throw new UnexpectedValueException("Invalid SyncOperation: $operation");
+            throw new UnexpectedValueException("Invalid SyncOperation name: $name");
+        }
+
+        return $value;
+    }
+
+    public static function toName(int $value): string
+    {
+        if (is_null($name = self::NAME_MAP[$value] ?? null))
+        {
+            throw new UnexpectedValueException("Invalid SyncOperation: $value");
         }
 
         return $name;

@@ -7,7 +7,6 @@ namespace Lkrms\Console;
 use Lkrms\Console\ConsoleColour as C;
 use Lkrms\Console\ConsoleTarget\ConsoleTarget;
 use Lkrms\Console\ConsoleTarget\StreamTarget;
-use Lkrms\Runtime;
 use Lkrms\Util\Env;
 use Lkrms\Util\File;
 use Lkrms\Util\Generate;
@@ -17,7 +16,7 @@ use Throwable;
  * Log various message types to various targets
  *
  */
-abstract class Console extends ConsoleMessageWriter
+final class Console extends ConsoleMessageWriter
 {
     /**
      * @var ConsoleTarget[]
@@ -30,19 +29,9 @@ abstract class Console extends ConsoleMessageWriter
     private static $Targets = [];
 
     /**
-     * @var bool
-     */
-    private static $TargetsChecked = false;
-
-    /**
      * @var array<string,int>
      */
     private static $LoggedOnce = [];
-
-    /**
-     * @var bool
-     */
-    private static $DefaultOutputLogIsEnabled = true;
 
     /**
      * message level => [$msg1 colour, $msg2 colour, prefix colour]
@@ -55,46 +44,39 @@ abstract class Console extends ConsoleMessageWriter
         ConsoleLevel::DEBUG   => [C::DIM, C::DIM, null],
     ];
 
-    /**
-     * Disable the default output log
-     *
-     * Call while bootstrapping your app to disable the output log created at
-     * `{TMPDIR}/<basename>-<realpath_hash>-<user_id>.log` by default.
-     *
-     * This happens automatically when a log target is registered explicitly via
-     * {@see Console::registerTarget()}.
-     *
-     * @see File::getStablePath()
-     */
-    public static function disableDefaultOutputLog()
+    private static function registerTargets()
     {
-        self::$DefaultOutputLogIsEnabled = false;
+        // Log output to `{TMPDIR}/<basename>-<realpath_hash>-<user_id>.log`
+        self::registerTarget(StreamTarget::fromPath(File::getStablePath(".log")));
+        self::registerOutputStreams();
     }
 
-    private static function checkTargets()
+    /**
+     * Register output streams as targets if running on the command line without
+     * registered STDOUT or STDERR targets
+     */
+    public static function registerOutputStreams()
     {
-        if (self::$TargetsChecked)
+        if (PHP_SAPI != "cli" || self::$OutputTargets)
         {
             return;
         }
 
-        // If no output log has been registered, log everything to
-        // `{TMPDIR}/<basename>-<realpath_hash>-<user_id>.log`
-        if (self::$DefaultOutputLogIsEnabled && !Runtime::isStopping())
+        // If one, and only one, of STDOUT and STDERR is an interactive terminal
+        // (e.g. STDOUT has been redirected to a file, or STDERR is being piped
+        // to another process), send Console messages to STDERR only
+        if (posix_isatty(STDOUT) xor posix_isatty(STDERR))
         {
-            self::registerTarget(StreamTarget::fromPath(File::getStablePath(".log")));
+            self::registerTarget(new StreamTarget(STDERR,
+                Env::debug() ? ConsoleLevels::ALL_DEBUG : ConsoleLevels::ALL));
+            return;
         }
 
-        // If no output streams have been registered and we're running on the
-        // command line, send errors and warnings to STDERR, everything else to
+        // Otherwise, send errors and warnings to STDERR, everything else to
         // STDOUT
-        if (PHP_SAPI == "cli" && empty(self::$OutputTargets))
-        {
-            self::registerTarget(new StreamTarget(STDERR, ConsoleLevels::ERRORS));
-            self::registerTarget(new StreamTarget(STDOUT, Env::debug() ? ConsoleLevels::INFO_DEBUG : ConsoleLevels::INFO));
-        }
-
-        self::$TargetsChecked = true;
+        self::registerTarget(new StreamTarget(STDERR, ConsoleLevels::ERRORS));
+        self::registerTarget(new StreamTarget(STDOUT,
+            Env::debug() ? ConsoleLevels::INFO_DEBUG : ConsoleLevels::INFO));
     }
 
     /**
@@ -104,9 +86,27 @@ abstract class Console extends ConsoleMessageWriter
      */
     public static function getOutputTargets(): array
     {
-        self::checkTargets();
+        if (!self::$Targets)
+        {
+            self::registerTargets();
+        }
 
         return self::$OutputTargets;
+    }
+
+    /**
+     * Get registered targets
+     *
+     * @return ConsoleTarget[]
+     */
+    public static function getTargets(): array
+    {
+        if (!self::$Targets)
+        {
+            self::registerTargets();
+        }
+
+        return self::$Targets;
     }
 
     public static function registerTarget(ConsoleTarget $target)
@@ -114,10 +114,6 @@ abstract class Console extends ConsoleMessageWriter
         if ($target->isStdout() || $target->isStderr())
         {
             self::$OutputTargets[] = $target;
-        }
-        else
-        {
-            self::$DefaultOutputLogIsEnabled = false;
         }
 
         self::$Targets[] = $target;
@@ -233,7 +229,10 @@ abstract class Console extends ConsoleMessageWriter
 
         if (is_null($targets))
         {
-            self::checkTargets();
+            if (!self::$Targets)
+            {
+                self::registerTargets();
+            }
             $targets = self::$Targets;
         }
 
@@ -263,21 +262,5 @@ abstract class Console extends ConsoleMessageWriter
         $msg    = ConsoleText::formatPlain($msg);
 
         self::print($msg, $ttyMsg, ConsoleLevel::INFO, [], false, $targets ?: null);
-    }
-
-    /**
-     * @deprecated Use {@see Console::disableDefaultOutputLog()} instead
-     */
-    public static function disableDefaultLogTarget()
-    {
-        self::disableDefaultOutputLog();
-    }
-
-    /**
-     * @deprecated Use {@see Console::registerTarget()} instead
-     */
-    public static function addTarget(ConsoleTarget $target)
-    {
-        self::registerTarget($target);
     }
 }

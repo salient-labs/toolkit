@@ -45,9 +45,6 @@ used:
 
 ## Using `Console` for terminal output and logging
 
-> You don't have to use `Lkrms\Console` for message logging, but `lkrms/util`
-> uses it internally, so it's worth knowing its default behaviour.
-
 To make it easier to create readable terminal output and log entries, the
 [`Lkrms\Console\Console`][Console.php] class provides:
 
@@ -60,24 +57,26 @@ To make it easier to create readable terminal output and log entries, the
 
 ### Default targets
 
-If no output targets[^targets] are registered via `Console::registerTarget()`
-and PHP is running on the command line:
+If one of `Console`'s [output methods](#output-methods) is called before any
+targets are registered using `Console::registerTarget()` or
+`Console::registerOutputStreams()`, the following defaults are applied.
 
-- Warnings and errors are written to `STDERR`
-- Informational messages are written to `STDOUT`
-- Debug messages are suppressed
+1. If PHP is running on the command line:
+   - Warnings and errors are written to `STDERR`
+   - If one, and only one, of `STDERR` and `STDOUT` is an interactive terminal,
+     informational messages are also written to `STDERR`, otherwise they are
+     written to `STDOUT`
+   - If the `DEBUG` environment variable is set, debug messages are written to
+     the same output stream as informational messages
 
-Similarly, if no log targets are registered:
+   > To apply this configuration explicitly, call
+   > `Console::registerOutputStreams()`
 
-- A temporary log file based on the name of the running script is created at:
-  ```
-  {TMPDIR}/<basename>-<realpath_hash>-<user_id>.log
-  ```
-- Warnings, errors, informational messages and debug messages are written to the
-  log file
-
-This can be disabled by calling `Console::disableDefaultOutputLog()` while
-bootstrapping your app.
+2. Warnings, errors, informational messages and debug messages are written to a
+   temporary log file, readable only by the owner:
+   ```
+   {TMPDIR}/<basename>-<realpath_hash>-<user_id>.log
+   ```
 
 ### Output methods
 
@@ -95,8 +94,5 @@ bootstrapping your app.
     until `Console::groupEnd()` is called.
 
 ---
-
-[^targets]: `$target` is regarded as an output target if `$target->isStdout()`
-    or `$target->isStderr()` return `true`.
 
 [Console.php]: src/Console/Console.php

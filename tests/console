@@ -16,9 +16,6 @@ Err::handleErrors();
 // Send all output, including debug messages and errors, to STDOUT
 Console::registerTarget(new StreamTarget(STDOUT));
 
-// Disable output logging
-Console::disableDefaultOutputLog();
-
 $items = [
     [100, 101, 102],
     [200, 201, 202],

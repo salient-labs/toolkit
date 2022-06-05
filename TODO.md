@@ -2,8 +2,8 @@
 
 ### General
 - [ ] Review namespaces and classes before making a v1.0.0 release
-  - Make classes `final` where possible
-  - Replace `abstract` with `extends \Core\Utility` where appropriate
+  - [ ] Make classes `final` where possible
+  - [x] Replace `abstract` with `extends \Core\Utility` where appropriate
   - [ ] Complete class review
     - [ ] `Core\Mixin\TExtensible`
     - [ ] `Core\Mixin\TGettable`
@@ -23,14 +23,12 @@
     - [x] `Core\Mixin\TConstructibleByProvider`
     - [x] `Core\Mixin\TFullyGettable`
     - [x] `Core\Mixin\TFullySettable`
-  - [x] `Assert`: `pregMatch()` -> `patternMatches()`
   - [ ] Refactor Curler
     - [ ] Remove/deprecate `...Json()` methods
     - [ ] Add support for parallel downloads and queued actions
-  - [ ] `Runtime` -> `App`
+  - [ ] `Cli` -> `CliHandler`, with `Cli` as a facade
+  - [ ] `Util` -> `Core\Utility`, with facades in `Core\Facade`
   - [ ] Refactor Dice
-  - [x] Surface `Ioc` methods via `App`
-  - [x] Move `ClosureBuilder` to `Core\Support`
 - [ ] Implement a generic fluent interface (`TFluent`?) with instance creation and property getting/setting
 - [ ] Throw custom exceptions
 - [ ] Formalise tests
@@ -39,10 +37,6 @@
 
 ### Documentation
 - [ ] Add missing descriptions
-
-### Cache(/Trash)
-- [x] Remove/deprecate `isLoaded()` and `load()`
-- ~~Return `null` instead of `false` for missing entries~~
 
 ### Sync
 - [x] Add `Provider` to `SyncEntity` and require it to be set during instantiation
@@ -63,7 +57,7 @@
 - [ ] Add `ALL` as a `ONE_OF` option if `MultipleAllowed` is set
 
 ### Console
-- [ ] Improve default targets so console messages aren't included in redirected output
+- [x] Improve default targets so console messages aren't included in redirected output
 
 ### CLI utility
 - [ ] `generate`:

@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 use Lkrms\Console\ConsoleColour as Colour;
+use Lkrms\Core\Utility;
 
 /**
  * Format text for console output
  *
  */
-abstract class ConsoleText
+final class ConsoleText extends Utility
 {
-    private const TAG_HEADING = 0;
-    private const TAG_SUBHEADING = 1;
-    private const TAG_TITLE = 2;
+    private const TAG_HEADING      = 0;
+    private const TAG_SUBHEADING   = 1;
+    private const TAG_TITLE        = 2;
     private const TAG_LOW_PRIORITY = 3;
 
     /**
