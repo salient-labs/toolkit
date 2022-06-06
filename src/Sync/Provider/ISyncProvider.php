@@ -9,7 +9,7 @@ use Lkrms\Core\Contract\IProvider;
 /**
  * Base interface for SyncEntity providers
  *
- * @see Lkrms\Sync\Provider\SyncProvider
+ * @see \Lkrms\Sync\Provider\SyncProvider
  */
 interface ISyncProvider extends IProvider
 {

@@ -671,7 +671,7 @@ EOF;
      *
      * @param string[] $args
      * @return int
-     * @see CliCommand::run()
+     * @see CliCommand::_run()
      */
     final public function __invoke(array $args): int
     {
@@ -712,7 +712,7 @@ EOF;
      *
      * @param int $status
      * @return void
-     * @see CliCommand::run()
+     * @see CliCommand::_run()
      */
     final protected function setExitStatus(int $status): void
     {

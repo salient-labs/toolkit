@@ -47,7 +47,8 @@ abstract class HttpSyncProvider extends SyncProvider
      * precedence.
      *
      * @return null|int
-     * @see \Lkrms\Cache::set() for more information about `$expiry` values
+     * @see \Lkrms\Store\CacheStore::set() for more information about `$expiry`
+     * values
      */
     protected function getCacheExpiry(): ?int
     {

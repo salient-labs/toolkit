@@ -57,9 +57,9 @@ To make it easier to create readable terminal output and log entries, the
 
 ### Default targets
 
-If one of `Console`'s [output methods](#output-methods) is called before any
-targets are registered using `Console::registerTarget()` or
-`Console::registerOutputStreams()`, the following defaults are applied.
+If a `Console` [output method](#output-methods) is called and no targets have
+been registered via `Console::registerTarget()`, one or more targets are created
+automatically to ensure messages are delivered or logged by default.
 
 1. If PHP is running on the command line:
    - Warnings and errors are written to `STDERR`
@@ -69,8 +69,11 @@ targets are registered using `Console::registerTarget()` or
    - If the `DEBUG` environment variable is set, debug messages are written to
      the same output stream as informational messages
 
-   > To apply this configuration explicitly, call
-   > `Console::registerOutputStreams()`
+   > This configuration can also be applied by calling:
+   >
+   > ```php
+   > Console::registerOutputStreams();
+   > ```
 
 2. Warnings, errors, informational messages and debug messages are written to a
    temporary log file, readable only by the owner:

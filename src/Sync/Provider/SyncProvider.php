@@ -98,9 +98,9 @@ abstract class SyncProvider implements ISyncProvider
      * Normalise arguments commonly passed to getList methods
      *
      * A {@see SyncProvider} MUST NOT add mandatory arguments to any of its
-     * {@see SyncOperation::READ_LIST} implementations, but a caller MAY pass
-     * undeclared arguments, and a provider MAY take them into account when
-     * performing the requested operation.
+     * {@see \Lkrms\Sync\SyncOperation::READ_LIST} implementations, but a caller
+     * MAY pass undeclared arguments, and a provider MAY take them into account
+     * when performing the requested operation.
      *
      * `getListFilter` returns an associative filter array based on `$args`.
      * Here's a typical invocation:
