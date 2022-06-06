@@ -184,8 +184,6 @@ class CliOption implements IConstructible, IGettable
 
     /**
      * @internal
-     * @return void
-     * @throws UnexpectedValueException
      * @see CliCommand::addOption()
      */
     public function validate(): void
@@ -241,8 +239,6 @@ class CliOption implements IConstructible, IGettable
     /**
      * @internal
      * @param string|string[]|bool|int|null $value
-     * @return void
-     * @throws RuntimeException
      * @see CliCommand::loadOptionValues()
      */
     public function setValue($value): void

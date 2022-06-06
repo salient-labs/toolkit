@@ -193,8 +193,8 @@ final class Convert extends Utility
      *
      * @param array $array The array to transform.
      * @param array $maps An array that maps `$key` to `$map`, where `$key` and
-     * `$map` are passed to {@see arrayValuesToChildArray()}.
-     * @param bool $merge Passed to {@see arrayValuesToChildArray()}.
+     * `$map` are passed to {@see Convert::arrayValuesToChildArray()}.
+     * @param bool $merge Passed to {@see Convert::arrayValuesToChildArray()}.
      * @return array
      */
     public static function toNestedArrays(
@@ -639,7 +639,7 @@ final class Convert extends Utility
     /**
      * A more API-friendly http_build_query
      *
-     * Booleans are cast to integers (`0` or `1`), {@see DateTime}s are
+     * Booleans are cast to integers (`0` or `1`), {@see \DateTime}s are
      * formatted by `$dateFormatter`, and other values are cast to string.
      *
      * Arrays with consecutive integer keys numbered from 0 are considered to be

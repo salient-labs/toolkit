@@ -52,12 +52,15 @@ final class Console extends ConsoleMessageWriter
     }
 
     /**
-     * Register output streams as targets if running on the command line without
-     * registered STDOUT or STDERR targets
+     * Register output streams as targets if running on the command line
+     *
+     * @param bool $ignoreSapi If set, send {@see Console} messages to STDERR
+     * and/or STDOUT even if not running on the command line
      */
-    public static function registerOutputStreams()
+    public static function registerOutputStreams(bool $ignoreSapi = false)
     {
-        if (PHP_SAPI != "cli" || self::$OutputTargets)
+        // Return if STDOUT or STDERR targets have already been registered
+        if ((!$ignoreSapi && PHP_SAPI != "cli") || self::$OutputTargets)
         {
             return;
         }

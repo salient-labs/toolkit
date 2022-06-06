@@ -203,8 +203,8 @@ class Container implements ContainerInterface, ConstructorHasNoRequiredParameter
      *
      * When the container needs an instance of `$id`, use a previously created
      * instance if possible, otherwise create a new `$instanceOf` as per
-     * {@see Container::register()}, and store it for use with subsequent
-     * requests for `$id`.
+     * {@see Container::bind()}, and store it for use with subsequent requests
+     * for `$id`.
      *
      * @param string $id
      * @param string|null $instanceOf Default: `$id`

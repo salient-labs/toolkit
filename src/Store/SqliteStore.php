@@ -103,8 +103,8 @@ abstract class SqliteStore
     /**
      * Get the open SQLite3 instance
      *
-     * Call {@see Sqlite::assertIsOpen()} first to ensure the return value is
-     * not `null`.
+     * Call {@see SqliteStore::assertIsOpen()} first to ensure the return value
+     * is not `null`.
      *
      * @return null|SQLite3 .
      */
