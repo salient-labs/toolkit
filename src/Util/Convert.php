@@ -617,7 +617,7 @@ final class Convert extends Utility
                     $value = $dateFormatter->format($value);
                 }
 
-                $query .= ($query ? "&" : "") . urlencode($name . $_name) . "=" . urlencode((string)$value);
+                $query .= ($query ? "&" : "") . rawurlencode($name . $_name) . "=" . rawurlencode((string)$value);
 
                 continue;
             }
