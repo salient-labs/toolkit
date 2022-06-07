@@ -4,28 +4,40 @@ declare(strict_types=1);
 
 namespace Lkrms\Support;
 
+use Lkrms\Console\Console;
+use Lkrms\Core\Contract\IGettable;
+use Lkrms\Core\Mixin\TFullyGettable;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Support\HttpRequest;
 use Lkrms\Support\HttpResponse;
 use RuntimeException;
+use Throwable;
 
 /**
  * Listen for HTTP requests on a local address
  *
+ * @property-read string $Address
+ * @property-read int $Port
+ * @property-read int $Timeout
  */
-final class HttpServer
+final class HttpServer implements IGettable
 {
+    use TFullyGettable;
+
     /**
+     * @internal
      * @var string
      */
     protected $Address;
 
     /**
+     * @internal
      * @var int
      */
     protected $Port;
 
     /**
+     * @internal
      * @var int
      */
     protected $Timeout;
@@ -161,14 +173,26 @@ final class HttpServer
             list ($method, $target, $version) = $startLine;
             $request = new HttpRequest($method, $target, $version, $headers, $body, $client);
 
+            Console::debug("$method request received from $client:", $target);
+
             $continue = false;
             $return   = null;
 
-            /** @var HttpResponse */
-            $response = $callback($request, $continue, $return);
-
-            fwrite($socket, $response->getResponse());
-            fclose($socket);
+            try
+            {
+                /** @var HttpResponse */
+                $response = $callback($request, $continue, $return);
+            }
+            catch (Throwable $ex)
+            {
+                $response = new HttpResponse("Internal server error", 500, "Internal Server Error");
+                throw $ex;
+            }
+            finally
+            {
+                fwrite($socket, $response->getResponse());
+                fclose($socket);
+            }
         }
         while ($continue);
 

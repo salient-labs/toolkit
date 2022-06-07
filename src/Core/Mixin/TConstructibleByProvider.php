@@ -6,6 +6,7 @@ namespace Lkrms\Core\Mixin;
 
 use Lkrms\Core\Contract\IProvider;
 use Lkrms\Core\Support\ClosureBuilder;
+use Lkrms\Sync\Provider\SyncProvider;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -41,6 +42,15 @@ trait TConstructibleByProvider
         return $this->ProvidedBy;
     }
 
+    private static function maybeBindAndRun(IProvider $provider, callable $callback)
+    {
+        if ($provider instanceof SyncProvider)
+        {
+            return $provider->bindAndRun($callback);
+        }
+        return $callback();
+    }
+
     /**
      * Create an instance of the class from an array
      *
@@ -59,7 +69,8 @@ trait TConstructibleByProvider
      */
     public static function fromArray(IProvider $provider, array $data)
     {
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data);
+        return self::maybeBindAndRun($provider,
+            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data));
     }
 
     /**
@@ -74,7 +85,8 @@ trait TConstructibleByProvider
      */
     public static function fromArrayVia(IProvider $provider, array $data, callable $callback)
     {
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $callback);
+        return self::maybeBindAndRun($provider,
+            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $callback));
     }
 
     /**
@@ -101,7 +113,8 @@ trait TConstructibleByProvider
     ) {
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure);
+        return self::maybeBindAndRun($provider,
+            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure));
     }
 
     /**
@@ -135,7 +148,8 @@ trait TConstructibleByProvider
             return $closure($callback($in));
         };
 
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure);
+        return self::maybeBindAndRun($provider,
+            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure));
     }
 
     /**
@@ -151,7 +165,8 @@ trait TConstructibleByProvider
      */
     public static function listFromArrays(IProvider $provider, array $list, bool $sameKeys = false): array
     {
-        return self::getListFrom($provider, $list, $sameKeys);
+        return self::maybeBindAndRun($provider,
+            fn() => self::getListFrom($provider, $list, $sameKeys));
     }
 
     /**
@@ -174,7 +189,8 @@ trait TConstructibleByProvider
         bool $sameKeys = false
     ): array
     {
-        return self::getListFrom($provider, $list, $sameKeys, $callback);
+        return self::maybeBindAndRun($provider,
+            fn() => self::getListFrom($provider, $list, $sameKeys, $callback));
     }
 
     /**
@@ -203,7 +219,8 @@ trait TConstructibleByProvider
     {
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        return self::getListFrom($provider, $list, $sameKeys, $closure);
+        return self::maybeBindAndRun($provider,
+            fn() => self::getListFrom($provider, $list, $sameKeys, $closure));
     }
 
     /**
@@ -238,7 +255,8 @@ trait TConstructibleByProvider
             return $closure($callback($in));
         };
 
-        return self::getListFrom($provider, $list, $sameKeys, $closure);
+        return self::maybeBindAndRun($provider,
+            fn() => self::getListFrom($provider, $list, $sameKeys, $closure));
     }
 
     private static function getListFrom(IProvider $provider, array $arrays, bool $sameKeys, callable $closure = null): array

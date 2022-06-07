@@ -53,15 +53,15 @@ final class HttpResponse implements IGettable
 
     public function __construct(
         ?string $body,
-        CurlerHeaders $headers = null,
         int $statusCode        = 200,
         string $reasonPhrase   = null,
+        CurlerHeaders $headers = null,
         string $version        = "HTTP/1.1"
     ) {
         $this->Body         = $body;
-        $this->Headers      = $headers ?: new CurlerHeaders();
         $this->StatusCode   = $statusCode;
         $this->ReasonPhrase = $reasonPhrase;
+        $this->Headers      = $headers ?: new CurlerHeaders();
         $this->Version      = $version;
 
         $this->Headers->setHeader("Content-Length", (string)strlen($this->Body));

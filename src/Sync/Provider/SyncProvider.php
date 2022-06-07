@@ -50,8 +50,19 @@ abstract class SyncProvider implements ISyncProvider
     }
 
     /**
-     * Create DI container bindings for the class and the ISyncProvider
-     * interfaces it implements
+     * Create a container binding for the class
+     *
+     * @see SyncProvider::bindInterfaces()
+     * @see SyncProvider::bindCustom()
+     */
+    final public static function bind(): void
+    {
+        DI::singleton(static::class);
+    }
+
+    /**
+     * Create container bindings for ISyncProvider interfaces implemented by the
+     * class
      *
      * Example:
      *
@@ -71,13 +82,14 @@ abstract class SyncProvider implements ISyncProvider
      *     // ...
      * }
      *
-     * // Option 1: bind the class and its ISyncProvider interfaces manually
+     * LdapSyncProvider::bind();
+     * LdapSyncProvider::bindInterfaces();
+     *
+     * // In this case, calling bind() and bindInterfaces() on LdapSyncProvider
+     * // is equivalent to:
      * DI::singleton(LdapSyncProvider::class);
      * DI::bind(OrgUnitProvider::class, LdapSyncProvider::class);
      * DI::bind(UserProvider::class, LdapSyncProvider::class);
-     *
-     * // Option 2: call the SyncProvider's register() method
-     * LdapSyncProvider::register();
      *
      * // Now, when an OrgUnitProvider is requested, an LdapSyncProvider
      * // instance will be returned
@@ -87,11 +99,48 @@ abstract class SyncProvider implements ISyncProvider
      * @param string ...$interfaces If no interfaces are specified, every
      * ISyncProvider interface implemented by the class will be bound.
      * @return void
+     * @see SyncProvider::bind()
      */
-    public static function register(string ...$interfaces): void
+    final public static function bindInterfaces(string ...$interfaces): void
     {
-        DI::singleton(static::class);
         (ClosureBuilder::getFor(static::class)->getBindISyncProviderInterfacesClosure())(...$interfaces);
+    }
+
+    /**
+     * Create container bindings scoped exclusively to the provider
+     *
+     * This method is called just before the callback function in
+     * {@see SyncProvider::bindAndRun()}. Changes made to the container are
+     * removed after the callback returns.
+     *
+     * If particular {@see \Lkrms\Sync\SyncEntity} subclasses should be used
+     * when the provider is instantiating those entities, they should be bound
+     * here.
+     */
+    protected function bindCustom(): void
+    {
+    }
+
+    /**
+     * Run the given callback after applying the provider's custom bindings to a
+     * temporary service container
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    final public function bindAndRun(callable $callback)
+    {
+        DI::push();
+        try
+        {
+            $this->bindCustom();
+            $this->bindInterfaces();
+            return $callback();
+        }
+        finally
+        {
+            DI::pop();
+        }
     }
 
     /**
