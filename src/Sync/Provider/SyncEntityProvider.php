@@ -364,10 +364,10 @@ class SyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function createFaculties(array $entities): array;
+     * public function createFaculties(iterable $entities): iterable;
      *
      * // 2. With a singular name
-     * public function createList_Faculty(array $entities): array;
+     * public function createList_Faculty(iterable $entities): iterable;
      * ```
      *
      * The first parameter:
@@ -375,11 +375,11 @@ class SyncEntityProvider
      * - MUST have a type declaration, which MUST be `array`
      * - MUST be required
      *
-     * @param SyncEntity[] $entities
+     * @param iterable<SyncEntity> $entities
      * @param mixed ...$params Additional parameters to pass to the provider.
-     * @return SyncEntity[]
+     * @return iterable<SyncEntity>
      */
-    public function createList(array $entities, ...$params): array
+    public function createList(iterable $entities, ...$params): iterable
     {
         return $this->run(
             SyncOperation::CREATE_LIST,
@@ -402,16 +402,16 @@ class SyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function getFaculties(): array;
+     * public function getFaculties(): iterable;
      *
      * // 2. With a singular name
-     * public function getList_Faculty(): array;
+     * public function getList_Faculty(): iterable;
      * ```
      *
      * @param mixed ...$params Parameters to pass to the provider.
-     * @return SyncEntity[]
+     * @return iterable<SyncEntity>
      */
-    public function getList(...$params): array
+    public function getList(...$params): iterable
     {
         return $this->run(
             SyncOperation::READ_LIST,
@@ -433,10 +433,10 @@ class SyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function updateFaculties(array $entities): array;
+     * public function updateFaculties(iterable $entities): iterable;
      *
      * // 2. With a singular name
-     * public function updateList_Faculty(array $entities): array;
+     * public function updateList_Faculty(iterable $entities): iterable;
      * ```
      *
      * The first parameter:
@@ -444,11 +444,11 @@ class SyncEntityProvider
      * - MUST have a type declaration, which MUST be `array`
      * - MUST be required
      *
-     * @param SyncEntity[] $entities
+     * @param iterable<SyncEntity> $entities
      * @param mixed ...$params Additional parameters to pass to the provider.
-     * @return SyncEntity[]
+     * @return iterable<SyncEntity>
      */
-    public function updateList(array $entities, ...$params): array
+    public function updateList(iterable $entities, ...$params): iterable
     {
         return $this->run(
             SyncOperation::UPDATE_LIST,
@@ -471,10 +471,10 @@ class SyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function deleteFaculties(array $entities): ?array;
+     * public function deleteFaculties(iterable $entities): ?iterable;
      *
      * // 2. With a singular name
-     * public function deleteList_Faculty(array $entities): ?array;
+     * public function deleteList_Faculty(iterable $entities): ?iterable;
      * ```
      *
      * The first parameter:
@@ -487,11 +487,11 @@ class SyncEntityProvider
      *   deleted
      * - MAY be `null`
      *
-     * @param SyncEntity[] $entities
+     * @param iterable<SyncEntity> $entities
      * @param mixed ...$params Additional parameters to pass to the provider.
-     * @return null|SyncEntity[]
+     * @return null|iterable<SyncEntity>
      */
-    public function deleteList(array $entities, ...$params): ?array
+    public function deleteList(iterable $entities, ...$params): ?iterable
     {
         return $this->run(
             SyncOperation::DELETE_LIST,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Core\Mixin;
 
+use Closure;
 use Lkrms\Core\Contract\IProvider;
 use Lkrms\Core\Support\ClosureBuilder;
 use Lkrms\Sync\Provider\SyncProvider;
@@ -158,14 +159,18 @@ trait TConstructibleByProvider
      * See {@see TConstructibleByProvider::fromArray()} for more information.
      *
      * @param IProvider $provider
-     * @param array<int,array<string,mixed>> $list
+     * @param iterable<array<string,mixed>> $list
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order.
      * @return static[]
      */
-    public static function listFromArrays(IProvider $provider, array $list, bool $sameKeys = false): array
+    public static function listFromArrays(
+        IProvider $provider,
+        iterable $list,
+        bool $sameKeys = false
+    ): iterable
     {
-        return self::maybeBindAndRun($provider,
+        yield from self::maybeBindAndRun($provider,
             fn() => self::getListFrom($provider, $list, $sameKeys));
     }
 
@@ -176,7 +181,7 @@ trait TConstructibleByProvider
      * See {@see TConstructibleByProvider::fromArray()} for more information.
      *
      * @param IProvider $provider
-     * @param array[] $list
+     * @param iterable<array> $list
      * @param callable $callback
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order.
@@ -184,12 +189,12 @@ trait TConstructibleByProvider
      */
     public static function listFromArraysVia(
         IProvider $provider,
-        array $list,
+        iterable $list,
         callable $callback,
         bool $sameKeys = false
-    ): array
+    ): iterable
     {
-        return self::maybeBindAndRun($provider,
+        yield from self::maybeBindAndRun($provider,
             fn() => self::getListFrom($provider, $list, $sameKeys, $callback));
     }
 
@@ -201,7 +206,7 @@ trait TConstructibleByProvider
      * {@see TConstructibleByProvider::fromArray()} for more information.
      *
      * @param IProvider $provider
-     * @param array[] $list
+     * @param iterable<array> $list
      * @param array<int|string,int|string> $keyMap An array that maps array keys
      * to names the class will be able to resolve.
      * @param bool $sameKeys If `true`, improve performance by assuming every
@@ -211,15 +216,15 @@ trait TConstructibleByProvider
      */
     public static function listFromMappedArrays(
         IProvider $provider,
-        array $list,
+        iterable $list,
         array $keyMap,
         bool $sameKeys = false,
         int $skip      = ClosureBuilder::SKIP_MISSING | ClosureBuilder::SKIP_UNMAPPED
-    ): array
+    ): iterable
     {
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        return self::maybeBindAndRun($provider,
+        yield from self::maybeBindAndRun($provider,
             fn() => self::getListFrom($provider, $list, $sameKeys, $closure));
     }
 
@@ -231,7 +236,7 @@ trait TConstructibleByProvider
      * {@see TConstructibleByProvider::fromArray()} for more information.
      *
      * @param IProvider $provider
-     * @param array[] $list
+     * @param iterable<array> $list
      * @param callable $callback Applied before remapping each array.
      * @param array<int|string,int|string> $keyMap An array that maps array keys
      * to names the class will be able to resolve.
@@ -242,12 +247,12 @@ trait TConstructibleByProvider
      */
     public static function listFromMappedArraysVia(
         IProvider $provider,
-        array $list,
+        iterable $list,
         callable $callback,
         array $keyMap,
         bool $sameKeys = false,
         int $skip      = ClosureBuilder::SKIP_MISSING
-    ): array
+    ): iterable
     {
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
         $closure = function (array $in) use ($callback, $closure)
@@ -255,35 +260,35 @@ trait TConstructibleByProvider
             return $closure($callback($in));
         };
 
-        return self::maybeBindAndRun($provider,
+        yield from self::maybeBindAndRun($provider,
             fn() => self::getListFrom($provider, $list, $sameKeys, $closure));
     }
 
-    private static function getListFrom(IProvider $provider, array $arrays, bool $sameKeys, callable $closure = null): array
+    private static function getListClosureFrom(
+        array $array,
+        bool $sameKeys,
+        ? callable $closure
+    ): Closure
     {
-        if (empty($arrays))
+        if (!$sameKeys)
         {
-            return [];
+            return ClosureBuilder::getFor(static::class)->getCreateFromClosure();
+        }
+        if ($closure)
+        {
+            $array = $closure($array);
         }
 
-        if ($sameKeys)
-        {
-            $first = reset($arrays);
+        return ClosureBuilder::getFor(static::class)->getCreateFromSignatureClosure(array_keys($array));
+    }
 
-            if ($closure)
-            {
-                $first = $closure($first);
-            }
-
-            $createFromClosure = ClosureBuilder::getFor(static::class)->getCreateFromSignatureClosure(array_keys($first));
-        }
-        else
-        {
-            $createFromClosure = ClosureBuilder::getFor(static::class)->getCreateFromClosure();
-        }
-
-        $list = [];
-
+    private static function getListFrom(
+        IProvider $provider,
+        iterable $arrays,
+        bool $sameKeys,
+        callable $closure = null
+    ): iterable
+    {
         foreach ($arrays as $index => $array)
         {
             if (!is_array($array))
@@ -291,9 +296,10 @@ trait TConstructibleByProvider
                 throw new UnexpectedValueException("Array expected at index $index");
             }
 
-            $list[] = ($createFromClosure)($provider, $array, $closure);
+            yield ($createFromClosure ??
+                $createFromClosure = self::getListClosureFrom(
+                    $array, $sameKeys, $closure
+                ))($provider, $array, $closure);
         }
-
-        return $list;
     }
 }

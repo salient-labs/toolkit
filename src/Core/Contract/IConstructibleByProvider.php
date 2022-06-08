@@ -53,37 +53,37 @@ interface IConstructibleByProvider
     /**
      *
      * @param IProvider $provider
-     * @param array<int,array<string,mixed>> $list
+     * @param iterable<array<string,mixed>> $list
      * @return static[]
      */
-    public static function listFromArrays(IProvider $provider, array $list): array;
+    public static function listFromArrays(IProvider $provider, iterable $list): iterable;
 
     /**
      *
      * @param IProvider $provider
-     * @param array[] $list
+     * @param iterable<array> $list
      * @param callable $callback
      * @return static[]
      */
-    public static function listFromArraysVia(IProvider $provider, array $list, callable $callback): array;
+    public static function listFromArraysVia(IProvider $provider, iterable $list, callable $callback): iterable;
 
     /**
      *
      * @param IProvider $provider
-     * @param array[] $list
+     * @param iterable<array> $list
      * @param array<int|string,int|string> $keyMap
      * @return static[]
      */
-    public static function listFromMappedArrays(IProvider $provider, array $list, array $keyMap): array;
+    public static function listFromMappedArrays(IProvider $provider, iterable $list, array $keyMap): iterable;
 
     /**
      *
      * @param IProvider $provider
-     * @param array[] $list
+     * @param iterable<array> $list
      * @param callable $callback
      * @param array<int|string,int|string> $keyMap
      * @return static[]
      */
-    public static function listFromMappedArraysVia(IProvider $provider, array $list, callable $callback, array $keyMap): array;
+    public static function listFromMappedArraysVia(IProvider $provider, iterable $list, callable $callback, array $keyMap): iterable;
 
 }

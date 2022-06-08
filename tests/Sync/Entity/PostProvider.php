@@ -37,6 +37,6 @@ interface PostProvider extends \Lkrms\Sync\Provider\ISyncProvider
     /**
      * @return Post[]
      */
-    public function getPosts(): array;
+    public function getPosts(): iterable;
 
 }

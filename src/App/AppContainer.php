@@ -99,6 +99,11 @@ final class AppContainer extends Container implements IGettable
         Container::setGlobal($this);
     }
 
+    public function hasCacheStore(): bool
+    {
+        return file_exists($this->CachePath . "/cache.db");
+    }
+
     public function enableCache(): AppContainer
     {
         $cacheDb = $this->CachePath . "/cache.db";

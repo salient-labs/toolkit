@@ -26,6 +26,11 @@ parameters:
 			path: src/Curler/CurlerHeaders.php
 
 		-
+			message: "#^Do\\-while loop condition is always false\\.$#"
+			count: 1
+			path: src/Support/HttpServer.php
+
+		-
 			message: "#^Call to function is_null\\(\\) with ReflectionMethod\\|null will always evaluate to false\\.$#"
 			count: 1
 			path: src/Sync/Provider/SyncEntityProvider.php

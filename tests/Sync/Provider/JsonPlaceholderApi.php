@@ -52,7 +52,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         throw new SyncOperationNotImplementedException(self::class, Post::class, SyncOperation::DELETE);
     }
 
-    public function getPosts(): array
+    public function getPosts(): iterable
     {
         return Post::listFromArrays($this, $this->getCurler("/posts")->getJson());
     }
@@ -77,7 +77,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         throw new SyncOperationNotImplementedException(self::class, User::class, SyncOperation::DELETE);
     }
 
-    public function getUsers(): array
+    public function getUsers(): iterable
     {
         return User::listFromArrays($this, $this->getCurler("/users")->getJson());
     }
