@@ -64,17 +64,6 @@ class Container implements ContainerInterface, ConstructorHasNoRequiredParameter
         return self::$Instance = new static(...func_get_args());
     }
 
-    /**
-     * Set the global container
-     *
-     * @param Container $container
-     * @return Container
-     */
-    final protected static function setGlobal(Container $container): Container
-    {
-        return self::$Instance = $container;
-    }
-
     private function dice(): Dice
     {
         return $this->Dice ?: ($this->Dice = new Dice());

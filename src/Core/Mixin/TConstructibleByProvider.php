@@ -8,6 +8,7 @@ use Closure;
 use Lkrms\Core\Contract\IProvider;
 use Lkrms\Core\Support\ClosureBuilder;
 use Lkrms\Sync\Provider\SyncProvider;
+use Psr\Container\ContainerInterface as Container;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -71,7 +72,7 @@ trait TConstructibleByProvider
     public static function fromArray(IProvider $provider, array $data)
     {
         return self::maybeBindAndRun($provider,
-            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data));
+            fn(Container $container = null) => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, null, $container));
     }
 
     /**
@@ -87,7 +88,7 @@ trait TConstructibleByProvider
     public static function fromArrayVia(IProvider $provider, array $data, callable $callback)
     {
         return self::maybeBindAndRun($provider,
-            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $callback));
+            fn(Container $container = null) => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $callback, $container));
     }
 
     /**
@@ -115,7 +116,7 @@ trait TConstructibleByProvider
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
         return self::maybeBindAndRun($provider,
-            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure));
+            fn(Container $container = null) => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure, $container));
     }
 
     /**
@@ -150,7 +151,7 @@ trait TConstructibleByProvider
         };
 
         return self::maybeBindAndRun($provider,
-            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure));
+            fn(Container $container = null) => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure, $container));
     }
 
     /**
@@ -170,8 +171,8 @@ trait TConstructibleByProvider
         bool $sameKeys = false
     ): iterable
     {
-        yield from self::maybeBindAndRun($provider,
-            fn() => self::getListFrom($provider, $list, $sameKeys));
+        return self::maybeBindAndRun($provider,
+            fn(Container $container = null) => self::getListFrom($provider, $list, $sameKeys, $container));
     }
 
     /**
@@ -194,8 +195,8 @@ trait TConstructibleByProvider
         bool $sameKeys = false
     ): iterable
     {
-        yield from self::maybeBindAndRun($provider,
-            fn() => self::getListFrom($provider, $list, $sameKeys, $callback));
+        return self::maybeBindAndRun($provider,
+            fn(Container $container = null) => self::getListFrom($provider, $list, $sameKeys, $container, $callback));
     }
 
     /**
@@ -224,8 +225,8 @@ trait TConstructibleByProvider
     {
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        yield from self::maybeBindAndRun($provider,
-            fn() => self::getListFrom($provider, $list, $sameKeys, $closure));
+        return self::maybeBindAndRun($provider,
+            fn(Container $container = null) => self::getListFrom($provider, $list, $sameKeys, $container, $closure));
     }
 
     /**
@@ -260,8 +261,8 @@ trait TConstructibleByProvider
             return $closure($callback($in));
         };
 
-        yield from self::maybeBindAndRun($provider,
-            fn() => self::getListFrom($provider, $list, $sameKeys, $closure));
+        return self::maybeBindAndRun($provider,
+            fn(Container $container = null) => self::getListFrom($provider, $list, $sameKeys, $container, $closure));
     }
 
     private static function getListClosureFrom(
@@ -286,6 +287,7 @@ trait TConstructibleByProvider
         IProvider $provider,
         iterable $arrays,
         bool $sameKeys,
+        ?Container $container,
         callable $closure = null
     ): iterable
     {
@@ -299,7 +301,7 @@ trait TConstructibleByProvider
             yield ($createFromClosure ??
                 $createFromClosure = self::getListClosureFrom(
                     $array, $sameKeys, $closure
-                ))($provider, $array, $closure);
+                ))($provider, $array, $closure, $container);
         }
     }
 }

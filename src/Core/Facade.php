@@ -31,10 +31,11 @@ abstract class Facade implements ISingular
         if (is_a($service = static::getServiceName(), Container::class, true))
         {
             $container = $service::getGlobal(...func_get_args());
-            if (get_class($container) == $service)
+            if (is_a($container, $service))
             {
                 return self::$Instances[static::class] = $container;
             }
+            throw new RuntimeException("Global container already exists");
         }
         else
         {

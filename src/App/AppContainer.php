@@ -67,11 +67,6 @@ final class AppContainer extends Container implements IGettable
         string $basePath      = null,
         $silenceErrorsInPaths = null
     ) {
-        if (Container::hasGlobal())
-        {
-            throw new RuntimeException("Global container already exists");
-        }
-
         parent::__construct();
 
         if (is_null($basePath) ||
@@ -95,8 +90,6 @@ final class AppContainer extends Container implements IGettable
         $this->LogPath   = $this->getPath("app_log_path", "var/log");
 
         Err::load($silenceErrorsInPaths);
-
-        Container::setGlobal($this);
     }
 
     public function hasCacheStore(): bool

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Provider;
 
+use Lkrms\Container\Container;
 use Lkrms\Container\DI;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Generate;
@@ -135,7 +136,7 @@ abstract class SyncProvider implements ISyncProvider
         {
             $this->bindCustom();
             $this->bindInterfaces();
-            return $callback();
+            return $callback(clone Container::getGlobal());
         }
         finally
         {
