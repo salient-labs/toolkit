@@ -204,9 +204,20 @@ class ClosureBuilder
      */
     private static $ArrayMappers = [];
 
-    public static function getFor(string $class): ClosureBuilder
+    public static function getFor(string $class, Container $container = null): ClosureBuilder
     {
-        $class = DI::name($class);
+        if ($container instanceof \Lkrms\Container\Container)
+        {
+            $class = $container->name($class);
+        }
+        elseif ($container)
+        {
+            $class = get_class($container->get($class));
+        }
+        else
+        {
+            $class = DI::name($class);
+        }
 
         if ($instance = self::$Instances[$class] ?? null)
         {
