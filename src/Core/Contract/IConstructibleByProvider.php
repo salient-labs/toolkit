@@ -54,7 +54,7 @@ interface IConstructibleByProvider
      *
      * @param IProvider $provider
      * @param iterable<array<string,mixed>> $list
-     * @return static[]
+     * @return iterable<static>
      */
     public static function listFromArrays(IProvider $provider, iterable $list): iterable;
 
@@ -63,7 +63,7 @@ interface IConstructibleByProvider
      * @param IProvider $provider
      * @param iterable<array> $list
      * @param callable $callback
-     * @return static[]
+     * @return iterable<static>
      */
     public static function listFromArraysVia(IProvider $provider, iterable $list, callable $callback): iterable;
 
@@ -72,7 +72,7 @@ interface IConstructibleByProvider
      * @param IProvider $provider
      * @param iterable<array> $list
      * @param array<int|string,int|string> $keyMap
-     * @return static[]
+     * @return iterable<static>
      */
     public static function listFromMappedArrays(IProvider $provider, iterable $list, array $keyMap): iterable;
 
@@ -82,7 +82,7 @@ interface IConstructibleByProvider
      * @param iterable<array> $list
      * @param callable $callback
      * @param array<int|string,int|string> $keyMap
-     * @return static[]
+     * @return iterable<static>
      */
     public static function listFromMappedArraysVia(IProvider $provider, iterable $list, callable $callback, array $keyMap): iterable;
 

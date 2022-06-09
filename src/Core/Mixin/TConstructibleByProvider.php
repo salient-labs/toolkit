@@ -167,7 +167,7 @@ trait TConstructibleByProvider
      * @param iterable<array<string,mixed>> $list
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order.
-     * @return static[]
+     * @return iterable<static>
      */
     public static function listFromArrays(
         IProvider $provider,
@@ -192,7 +192,7 @@ trait TConstructibleByProvider
      * @param callable $callback
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order.
-     * @return static[]
+     * @return iterable<static>
      */
     public static function listFromArraysVia(
         IProvider $provider,
@@ -221,7 +221,7 @@ trait TConstructibleByProvider
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order as in `$keyMap`.
      * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
-     * @return static[]
+     * @return iterable<static>
      */
     public static function listFromMappedArrays(
         IProvider $provider,
@@ -254,7 +254,7 @@ trait TConstructibleByProvider
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order as in `$keyMap`.
      * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
-     * @return static[]
+     * @return iterable<static>
      */
     public static function listFromMappedArraysVia(
         IProvider $provider,
