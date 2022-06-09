@@ -15,5 +15,5 @@ parameters:
       message: "#^Class Lkrms\\\\[^\\s]+ not found\\.$#"
       path: src/Util/Legacy.php
     -
-      message: "#^Closure invoked with [12] parameters?, 0 required\\.$#"
+      message: "#^Closure invoked with [123] parameters?, 1 required\\.$#"
       path: src/Core/Support/ClosureBuilder.php
