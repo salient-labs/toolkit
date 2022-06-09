@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Provider;
 
+use Lkrms\Container\Container;
 use Lkrms\Container\DI;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Generate;
@@ -135,7 +136,7 @@ abstract class SyncProvider implements ISyncProvider
         {
             $this->bindCustom();
             $this->bindInterfaces();
-            return $callback();
+            return $callback(clone Container::getGlobal());
         }
         finally
         {
@@ -170,8 +171,10 @@ abstract class SyncProvider implements ISyncProvider
      * getList(...$ids);
      * ```
      *
-     * If an array is found at `$args[0]`, a copy of the array with each key
-     * converted to `snake_case` is returned.
+     * If an array is found at `$args[0]`, a copy of the array with each
+     * alphanumeric key converted to `snake_case` is returned. Keys containing
+     * characters other than letters, numbers, hyphens and underscores--e.g.
+     * `$orderby`--are copied as-is.
      *
      * If every value in `$args` is either an `int` or a `string`, a filter
      * similar to the following is returned:
@@ -194,7 +197,10 @@ abstract class SyncProvider implements ISyncProvider
 
         if (!is_array($args[0]))
         {
-            if (!empty(array_filter($args, function ($arg) { return !is_int($arg) && !is_string($arg); })))
+            if (!empty(array_filter(
+                $args,
+                function ($arg) { return !is_int($arg) && !is_string($arg); }
+            )))
             {
                 return [];
             }
@@ -206,6 +212,11 @@ abstract class SyncProvider implements ISyncProvider
 
         foreach ($args[0] as $field => $value)
         {
+            if (preg_match('/[^[:alnum:]_-]/', $field))
+            {
+                $filter[$field] = $value;
+                continue;
+            }
             $filter[Convert::toSnakeCase($field)] = $value;
         }
 

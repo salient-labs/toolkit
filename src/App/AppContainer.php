@@ -22,6 +22,7 @@ use RuntimeException;
  * @property-read string $CachePath
  * @property-read string $DataPath
  * @property-read string $LogPath
+ * @property-read string $TempPath
  */
 final class AppContainer extends Container implements IGettable
 {
@@ -51,6 +52,12 @@ final class AppContainer extends Container implements IGettable
      */
     protected $LogPath;
 
+    /**
+     * @internal
+     * @var string
+     */
+    protected $TempPath;
+
     private function getPath(string $name, string $default): string
     {
         if ($path = Env::get($name, ""))
@@ -67,11 +74,6 @@ final class AppContainer extends Container implements IGettable
         string $basePath      = null,
         $silenceErrorsInPaths = null
     ) {
-        if (Container::hasGlobal())
-        {
-            throw new RuntimeException("Global container already exists");
-        }
-
         parent::__construct();
 
         if (is_null($basePath) ||
@@ -93,10 +95,14 @@ final class AppContainer extends Container implements IGettable
         $this->CachePath = $this->getPath("app_cache_path", "var/cache");
         $this->DataPath  = $this->getPath("app_data_path", "var/lib");
         $this->LogPath   = $this->getPath("app_log_path", "var/log");
+        $this->TempPath  = $this->getPath("app_temp_path", "var/tmp");
 
         Err::load($silenceErrorsInPaths);
+    }
 
-        Container::setGlobal($this);
+    public function hasCacheStore(): bool
+    {
+        return file_exists($this->CachePath . "/cache.db");
     }
 
     public function enableCache(): AppContainer

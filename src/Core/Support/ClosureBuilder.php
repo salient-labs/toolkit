@@ -20,6 +20,7 @@ use Lkrms\Core\Mixin\TGettable;
 use Lkrms\Core\Mixin\TResolvable;
 use Lkrms\Core\Mixin\TSettable;
 use Lkrms\Util\Reflect;
+use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -203,9 +204,20 @@ class ClosureBuilder
      */
     private static $ArrayMappers = [];
 
-    public static function getFor(string $class): ClosureBuilder
+    public static function getFor(string $class, Container $container = null): ClosureBuilder
     {
-        $class = DI::name($class);
+        if ($container instanceof \Lkrms\Container\Container)
+        {
+            $class = $container->name($class);
+        }
+        elseif ($container)
+        {
+            $class = get_class($container->get($class));
+        }
+        else
+        {
+            $class = DI::name($class);
+        }
 
         if ($instance = self::$Instances[$class] ?? null)
         {
@@ -455,7 +467,7 @@ class ClosureBuilder
         // 4. Build the smallest possible chain of closures
         if ($parameterKeys)
         {
-            $closure = function (array $array) use ($parameterKeys)
+            $closure = function (Container $container, array $array) use ($parameterKeys)
             {
                 $args = $this->DefaultArguments;
 
@@ -464,22 +476,22 @@ class ClosureBuilder
                     $args[$index] = $array[$key];
                 }
 
-                return DI::get($this->Class, ...$args);
+                return $container->get($this->Class, ...$args);
             };
         }
         else
         {
-            $closure = function ()
+            $closure = function (Container $container)
             {
-                return DI::get($this->Class, ...$this->DefaultArguments);
+                return $container->get($this->Class, ...$this->DefaultArguments);
             };
         }
 
         if ($propertyKeys)
         {
-            $closure = static function (array $array) use ($closure, $propertyKeys)
+            $closure = static function (Container $container, array $array) use ($closure, $propertyKeys)
             {
-                $obj = $closure($array);
+                $obj = $closure($container, $array);
 
                 foreach ($propertyKeys as $key => $property)
                 {
@@ -494,9 +506,9 @@ class ClosureBuilder
         // Call `setProvider()` early because property methods might need it
         if ($this->IsConstructibleByProvider)
         {
-            $closure = static function (array $array, IProvider $provider) use ($closure)
+            $closure = static function (Container $container, array $array, IProvider $provider) use ($closure)
             {
-                $obj = $closure($array);
+                $obj = $closure($container, $array);
                 $obj->setProvider($provider);
                 return $obj;
             };
@@ -504,9 +516,9 @@ class ClosureBuilder
 
         if ($methodKeys)
         {
-            $closure = static function (array $array, ?IProvider $provider) use ($closure, $methodKeys)
+            $closure = static function (Container $container, array $array, ?IProvider $provider) use ($closure, $methodKeys)
             {
-                $obj = $closure($array, $provider);
+                $obj = $closure($container, $array, $provider);
 
                 foreach ($methodKeys as $key => $method)
                 {
@@ -520,9 +532,9 @@ class ClosureBuilder
 
         if ($metaKeys)
         {
-            $closure = static function (array $array, ?IProvider $provider) use ($closure, $metaKeys)
+            $closure = static function (Container $container, array $array, ?IProvider $provider) use ($closure, $metaKeys)
             {
-                $obj = $closure($array, $provider);
+                $obj = $closure($container, $array, $provider);
 
                 foreach ($metaKeys as $key)
                 {
@@ -533,22 +545,27 @@ class ClosureBuilder
             };
         }
 
-        $closure = function (array $array, callable $callback = null, IProvider $provider = null) use ($closure)
+        $closure = function (array $array, callable $callback = null, Container $container = null, IProvider $provider = null) use ($closure)
         {
+            if (!$container)
+            {
+                $container = \Lkrms\Container\Container::getGlobal();
+            }
+
             if ($callback)
             {
                 $array = $callback($array);
             }
 
-            return $closure($array, $provider);
+            return $closure($container, $array, $provider);
         };
 
         if ($this->IsConstructibleByProvider)
         {
             // Return a closure where $provider is not optional
-            $closure = function (IProvider $provider, array $array, callable $callback = null) use ($closure)
+            $closure = function (IProvider $provider, array $array, callable $callback = null, Container $container = null) use ($closure)
             {
-                return $closure($array, $callback, $provider);
+                return $closure($array, $callback, $container, $provider);
             };
         }
 
@@ -566,7 +583,7 @@ class ClosureBuilder
 
         if ($this->IsConstructibleByProvider)
         {
-            $closure = function (IProvider $provider, array $array, callable $callback = null)
+            $closure = function (IProvider $provider, array $array, callable $callback = null, Container $container = null)
             {
                 if ($callback)
                 {
@@ -575,12 +592,12 @@ class ClosureBuilder
 
                 $keys = array_keys($array);
 
-                return ($this->getCreateFromSignatureClosure($keys))($provider, $array);
+                return ($this->getCreateFromSignatureClosure($keys))($provider, $array, null, $container);
             };
         }
         else
         {
-            $closure = function (array $array, callable $callback = null)
+            $closure = function (array $array, callable $callback = null, Container $container = null)
             {
                 if ($callback)
                 {
@@ -589,7 +606,7 @@ class ClosureBuilder
 
                 $keys = array_keys($array);
 
-                return ($this->getCreateFromSignatureClosure($keys))($array);
+                return ($this->getCreateFromSignatureClosure($keys))($array, null, $container);
             };
         }
 

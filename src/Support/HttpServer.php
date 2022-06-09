@@ -183,14 +183,14 @@ final class HttpServer implements IGettable
                 /** @var HttpResponse */
                 $response = $callback($request, $continue, $return);
             }
-            catch (Throwable $ex)
-            {
-                $response = new HttpResponse("Internal server error", 500, "Internal Server Error");
-                throw $ex;
-            }
             finally
             {
-                fwrite($socket, $response->getResponse());
+                fwrite(
+                    $socket,
+                    ($response ?? new HttpResponse(
+                        "Internal server error", 500, "Internal Server Error"
+                    ))->getResponse()
+                );
                 fclose($socket);
             }
         }

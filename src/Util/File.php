@@ -198,69 +198,18 @@ final class File extends Utility
     }
 
     /**
-     * Use ClassLoader to find the path to the file where a class is defined
-     *
-     * @param string $class
-     * @return null|string
+     * @deprecated Use {@see Composer::getClassPath()} instead
      */
     public static function getClassPath(string $class): ?string
     {
-        $class = trim($class, "\\");
-
-        foreach (ClassLoader::getRegisteredLoaders() as $loader)
-        {
-            if ($file = $loader->findFile($class))
-            {
-                return $file;
-            }
-        }
-
-        return null;
+        return Composer::getClassPath($class);
     }
 
     /**
-     * Use ClassLoader's PSR-4 prefixes to resolve a namespace to a path
-     *
-     * @param string $namespace
-     * @return null|string
+     * @deprecated Use {@see Composer::getNamespacePath()} instead
      */
     public static function getNamespacePath(string $namespace): ?string
     {
-        $namespace = trim($namespace, "\\");
-        $prefixes  = [];
-
-        foreach (ClassLoader::getRegisteredLoaders() as $loader)
-        {
-            $prefixes = array_merge($prefixes, $loader->getPrefixesPsr4());
-        }
-
-        uksort($prefixes, function ($p1, $p2)
-        {
-            $l1 = strlen($p1);
-            $l2 = strlen($p2);
-
-            return ($l1 === $l2) ? 0 : ($l1 < $l2 ? 1 : - 1);
-        });
-
-        foreach ($prefixes as $prefix => $dirs)
-        {
-            if (substr($namespace . "\\", 0, strlen($prefix)) == $prefix)
-            {
-                foreach (Convert::toArray($dirs) as $dir)
-                {
-                    if (($dir = realpath($dir)) && is_dir($dir))
-                    {
-                        if ($subdir = strtr(substr($namespace, strlen($prefix)), "\\", DIRECTORY_SEPARATOR))
-                        {
-                            return $dir . DIRECTORY_SEPARATOR . $subdir;
-                        }
-
-                        return $dir;
-                    }
-                }
-            }
-        }
-
-        return null;
+        return Composer::getNamespacePath($namespace);
     }
 }

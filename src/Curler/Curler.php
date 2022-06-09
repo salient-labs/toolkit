@@ -285,21 +285,27 @@ class Curler implements IGettable, ISettable
         }
     }
 
+    private function getQuery(?array $queryString): string
+    {
+        if (!$queryString)
+        {
+            return "";
+        }
+        return "?" . Convert::dataToQuery(
+            $queryString,
+            $this->ForceNumericKeys,
+            $this->DateFormatter
+        );
+    }
+
+    private function getUrl(?array $queryString): string
+    {
+        return $this->Url . $this->getQuery($queryString);
+    }
+
     protected function initialise($requestType, ?array $queryString)
     {
-        if (empty($queryString))
-        {
-            $query = "";
-        }
-        else
-        {
-            $query = "?" . Convert::dataToQuery(
-                $queryString,
-                $this->ForceNumericKeys,
-                $this->DateFormatter
-            );
-        }
-
+        $query = $this->getQuery($queryString);
         $this->createHandle($this->Url . $query);
 
         switch ($requestType)
@@ -421,7 +427,9 @@ class Curler implements IGettable, ISettable
 
             if (Env::debug() || $this->Method != "GET")
             {
-                Console::debug("{$this->Method} {$this->Url}{$this->Query}", null, null, $depth);
+                Console::debug("{$this->Method} " . curl_getinfo(
+                    $this->Handle, CURLINFO_EFFECTIVE_URL
+                ), null, null, $depth);
             }
 
             // Execute the request
@@ -837,6 +845,79 @@ class Curler implements IGettable, ISettable
     public function getLastStatusLine(): ?string
     {
         return $this->ResponseStatus;
+    }
+
+    /**
+     * Return data from a JSON endpoint by fetching subsequent pages until there
+     * are no more results
+     *
+     * Iterates over each item returned by the endpoint. If the endpoint doesn't
+     * return a list, iterates over each page.
+     *
+     * @param array<string,mixed> $queryString The first element must be the
+     * page number parameter. It will be incremented after each request.
+     * @param callable|string|null $selector If set, data will be taken from:
+     * - `$selector($result)` if `$selector` is callable, or
+     * - `$result[$selector]` if `$selector` is a string
+     * @return iterable
+     */
+    public function getAllByPage(array $queryString, $selector = null): iterable
+    {
+        if (!is_int(reset($queryString)) ||
+            is_null($pageKey = key($queryString)))
+        {
+            throw new UnexpectedValueException("First queryString element is not a page number");
+        };
+
+        $this->initialise("GET", $queryString);
+        $nextUrl = null;
+
+        try
+        {
+            do
+            {
+                if ($nextUrl)
+                {
+                    curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
+                    $nextUrl = null;
+                }
+
+                $page = json_decode($this->execute(false), true);
+                if ($selector)
+                {
+                    if (is_callable($selector))
+                    {
+                        $page = $selector($page);
+                    }
+                    elseif (is_string($selector))
+                    {
+                        $page = $page[$selector];
+                    }
+                    else
+                    {
+                        throw new UnexpectedValueException("Invalid selector");
+                    }
+                }
+
+                $yielded = 0;
+                foreach (Convert::toList($page) as $entry)
+                {
+                    yield $entry;
+                    $yielded++;
+                }
+
+                if ($yielded)
+                {
+                    $queryString[$pageKey]++;
+                    $nextUrl = $this->getUrl($queryString);
+                }
+            }
+            while ($nextUrl);
+        }
+        finally
+        {
+            curl_close($this->Handle);
+        }
     }
 
     /**

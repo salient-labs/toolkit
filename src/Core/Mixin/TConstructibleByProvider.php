@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Lkrms\Core\Mixin;
 
+use Closure;
 use Lkrms\Core\Contract\IProvider;
 use Lkrms\Core\Support\ClosureBuilder;
 use Lkrms\Sync\Provider\SyncProvider;
+use Psr\Container\ContainerInterface as Container;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -69,8 +71,9 @@ trait TConstructibleByProvider
      */
     public static function fromArray(IProvider $provider, array $data)
     {
-        return self::maybeBindAndRun($provider,
-            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data));
+        return self::maybeBindAndRun($provider, fn(Container $container = null) => (
+            ClosureBuilder::getFor(static::class, $container)->getCreateFromClosure()
+        )($provider, $data, null, $container));
     }
 
     /**
@@ -85,8 +88,9 @@ trait TConstructibleByProvider
      */
     public static function fromArrayVia(IProvider $provider, array $data, callable $callback)
     {
-        return self::maybeBindAndRun($provider,
-            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $callback));
+        return self::maybeBindAndRun($provider, fn(Container $container = null) => (
+            ClosureBuilder::getFor(static::class, $container)->getCreateFromClosure()
+        )($provider, $data, $callback, $container));
     }
 
     /**
@@ -113,8 +117,9 @@ trait TConstructibleByProvider
     ) {
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
-        return self::maybeBindAndRun($provider,
-            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure));
+        return self::maybeBindAndRun($provider, fn(Container $container = null) => (
+            ClosureBuilder::getFor(static::class, $container)->getCreateFromClosure()
+        )($provider, $data, $closure, $container));
     }
 
     /**
@@ -148,8 +153,9 @@ trait TConstructibleByProvider
             return $closure($callback($in));
         };
 
-        return self::maybeBindAndRun($provider,
-            fn() => (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($provider, $data, $closure));
+        return self::maybeBindAndRun($provider, fn(Container $container = null) => (
+            ClosureBuilder::getFor(static::class, $container)->getCreateFromClosure()
+        )($provider, $data, $closure, $container));
     }
 
     /**
@@ -158,15 +164,21 @@ trait TConstructibleByProvider
      * See {@see TConstructibleByProvider::fromArray()} for more information.
      *
      * @param IProvider $provider
-     * @param array<int,array<string,mixed>> $list
+     * @param iterable<array<string,mixed>> $list
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order.
-     * @return static[]
+     * @return iterable<static>
      */
-    public static function listFromArrays(IProvider $provider, array $list, bool $sameKeys = false): array
+    public static function listFromArrays(
+        IProvider $provider,
+        iterable $list,
+        bool $sameKeys = false
+    ): iterable
     {
         return self::maybeBindAndRun($provider,
-            fn() => self::getListFrom($provider, $list, $sameKeys));
+            fn(Container $container = null) => (
+                self::getListFrom($provider, $list, $sameKeys, $container)
+            ));
     }
 
     /**
@@ -176,21 +188,23 @@ trait TConstructibleByProvider
      * See {@see TConstructibleByProvider::fromArray()} for more information.
      *
      * @param IProvider $provider
-     * @param array[] $list
+     * @param iterable<array> $list
      * @param callable $callback
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order.
-     * @return static[]
+     * @return iterable<static>
      */
     public static function listFromArraysVia(
         IProvider $provider,
-        array $list,
+        iterable $list,
         callable $callback,
         bool $sameKeys = false
-    ): array
+    ): iterable
     {
         return self::maybeBindAndRun($provider,
-            fn() => self::getListFrom($provider, $list, $sameKeys, $callback));
+            fn(Container $container = null) => (
+                self::getListFrom($provider, $list, $sameKeys, $container, $callback)
+            ));
     }
 
     /**
@@ -201,26 +215,28 @@ trait TConstructibleByProvider
      * {@see TConstructibleByProvider::fromArray()} for more information.
      *
      * @param IProvider $provider
-     * @param array[] $list
+     * @param iterable<array> $list
      * @param array<int|string,int|string> $keyMap An array that maps array keys
      * to names the class will be able to resolve.
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order as in `$keyMap`.
      * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
-     * @return static[]
+     * @return iterable<static>
      */
     public static function listFromMappedArrays(
         IProvider $provider,
-        array $list,
+        iterable $list,
         array $keyMap,
         bool $sameKeys = false,
         int $skip      = ClosureBuilder::SKIP_MISSING | ClosureBuilder::SKIP_UNMAPPED
-    ): array
+    ): iterable
     {
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
 
         return self::maybeBindAndRun($provider,
-            fn() => self::getListFrom($provider, $list, $sameKeys, $closure));
+            fn(Container $container = null) => (
+                self::getListFrom($provider, $list, $sameKeys, $container, $closure)
+            ));
     }
 
     /**
@@ -231,23 +247,23 @@ trait TConstructibleByProvider
      * {@see TConstructibleByProvider::fromArray()} for more information.
      *
      * @param IProvider $provider
-     * @param array[] $list
+     * @param iterable<array> $list
      * @param callable $callback Applied before remapping each array.
      * @param array<int|string,int|string> $keyMap An array that maps array keys
      * to names the class will be able to resolve.
      * @param bool $sameKeys If `true`, improve performance by assuming every
      * array in the list has the same keys in the same order as in `$keyMap`.
      * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
-     * @return static[]
+     * @return iterable<static>
      */
     public static function listFromMappedArraysVia(
         IProvider $provider,
-        array $list,
+        iterable $list,
         callable $callback,
         array $keyMap,
         bool $sameKeys = false,
         int $skip      = ClosureBuilder::SKIP_MISSING
-    ): array
+    ): iterable
     {
         $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
         $closure = function (array $in) use ($callback, $closure)
@@ -256,34 +272,38 @@ trait TConstructibleByProvider
         };
 
         return self::maybeBindAndRun($provider,
-            fn() => self::getListFrom($provider, $list, $sameKeys, $closure));
+            fn(Container $container = null) => (
+                self::getListFrom($provider, $list, $sameKeys, $container, $closure)
+            ));
     }
 
-    private static function getListFrom(IProvider $provider, array $arrays, bool $sameKeys, callable $closure = null): array
+    private static function getListClosureFrom(
+        array $array,
+        bool $sameKeys,
+        ?Container $container,
+        ? callable $closure
+    ): Closure
     {
-        if (empty($arrays))
+        if (!$sameKeys)
         {
-            return [];
+            return ClosureBuilder::getFor(static::class, $container)->getCreateFromClosure();
+        }
+        if ($closure)
+        {
+            $array = $closure($array);
         }
 
-        if ($sameKeys)
-        {
-            $first = reset($arrays);
+        return ClosureBuilder::getFor(static::class, $container)->getCreateFromSignatureClosure(array_keys($array));
+    }
 
-            if ($closure)
-            {
-                $first = $closure($first);
-            }
-
-            $createFromClosure = ClosureBuilder::getFor(static::class)->getCreateFromSignatureClosure(array_keys($first));
-        }
-        else
-        {
-            $createFromClosure = ClosureBuilder::getFor(static::class)->getCreateFromClosure();
-        }
-
-        $list = [];
-
+    private static function getListFrom(
+        IProvider $provider,
+        iterable $arrays,
+        bool $sameKeys,
+        ?Container $container,
+        callable $closure = null
+    ): iterable
+    {
         foreach ($arrays as $index => $array)
         {
             if (!is_array($array))
@@ -291,9 +311,10 @@ trait TConstructibleByProvider
                 throw new UnexpectedValueException("Array expected at index $index");
             }
 
-            $list[] = ($createFromClosure)($provider, $array, $closure);
+            yield ($createFromClosure ??
+                $createFromClosure = self::getListClosureFrom(
+                    $array, $sameKeys, $container, $closure
+                ))($provider, $array, $closure, $container);
         }
-
-        return $list;
     }
 }

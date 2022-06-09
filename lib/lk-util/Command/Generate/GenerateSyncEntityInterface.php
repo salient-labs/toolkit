@@ -197,10 +197,10 @@ class GenerateSyncEntityInterface extends CliCommand
             // CREATE and UPDATE have the same signature, so it's a good default
             if (SyncOperation::isList($op))
             {
-                $paramDoc   = $class . '[] $' . $camelPlural;
-                $paramCode  = 'array $' . $camelPlural;
-                $returnDoc  = $class . "[]";
-                $returnCode = "array";
+                $paramDoc   = "iterable<" . $class . '> $' . $camelPlural;
+                $paramCode  = 'iterable $' . $camelPlural;
+                $returnDoc  = "iterable<" . $class . ">";
+                $returnCode = "iterable";
             }
             else
             {

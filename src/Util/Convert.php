@@ -45,20 +45,20 @@ final class Convert extends Utility
     public const IDENTIFIER_CASE_CAMEL = 3;
 
     /**
-     * If a variable isn't an indexed array, make it the first element of one
+     * If a value isn't an array, make it the first element of one
      *
-     * @param mixed $value The variable being checked.
+     * @param mixed $value
      * @return array Either `$value` or `[$value]`.
      */
     public static function toArray($value): array
     {
-        return Test::isIndexedArray($value) ? $value : [$value];
+        return is_array($value) ? $value : [$value];
     }
 
     /**
-     * If a variable isn't a list, make it the first element of one
+     * If a value isn't a list, make it the first element of one
      *
-     * @param mixed $value The variable being checked.
+     * @param mixed $value
      * @return array Either `$value` or `[$value]`.
      */
     public static function toList($value): array
@@ -109,9 +109,9 @@ final class Convert extends Utility
     }
 
     /**
-     * If a variable is 'falsey', make it null
+     * If a value is 'falsey', make it null
      *
-     * @param mixed $value The variable being checked.
+     * @param mixed $value
      * @return mixed Either `$value` or `null`.
      */
     public static function emptyToNull($value)

@@ -37,6 +37,14 @@ class Container implements ContainerInterface, ConstructorHasNoRequiredParameter
 
     public function __construct()
     {
+        $subs  = [ContainerInterface::class => $this];
+        $class = static::class;
+        do
+        {
+            $subs[$class] = $this;
+        }
+        while (self::class != $class && ($class = get_parent_class($class)));
+        $this->addRule("*", ["substitutions" => $subs]);
     }
 
     /**
@@ -62,17 +70,6 @@ class Container implements ContainerInterface, ConstructorHasNoRequiredParameter
         }
 
         return self::$Instance = new static(...func_get_args());
-    }
-
-    /**
-     * Set the global container
-     *
-     * @param Container $container
-     * @return Container
-     */
-    final protected static function setGlobal(Container $container): Container
-    {
-        return self::$Instance = $container;
     }
 
     private function dice(): Dice

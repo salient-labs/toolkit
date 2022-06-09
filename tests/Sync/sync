@@ -32,7 +32,7 @@ DI::bind(Post::class, CustomEntity\Post::class);
 
 $userApi = new SyncEntityProvider(User::class);
 
-$posts = Post::backend()->getList();
+$posts = iterator_to_array(Post::backend()->getList());
 Console::info("Posts retrieved:", count($posts));
 
 $resolver       = new SyncEntityResolver($userApi, "Name");

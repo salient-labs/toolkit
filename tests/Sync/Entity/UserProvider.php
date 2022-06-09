@@ -37,6 +37,6 @@ interface UserProvider extends \Lkrms\Sync\Provider\ISyncProvider
     /**
      * @return User[]
      */
-    public function getUsers(): array;
+    public function getUsers(): iterable;
 
 }
