@@ -24,6 +24,16 @@ use Lkrms\Core\Mixin\TResolvable;
  */
 abstract class ProviderEntity implements IConstructibleByProvider, IGettable, ISettable, IResolvable, IExtensible, ClassNameIsSingular
 {
-    use TConstructibleByProvider, TFullyGettable, TFullySettable, TResolvable, TExtensible, TPluralClassName;
+    use TConstructibleByProvider, TFullyGettable, TFullySettable, TResolvable, TExtensible, TPluralClassName
+    {
+        TConstructibleByProvider::__clone as _cloneTConstructibleByProvider;
+        TExtensible::__clone as _cloneTExtensible;
+    }
+
+    public function __clone()
+    {
+        $this->_cloneTConstructibleByProvider();
+        $this->_cloneTExtensible();
+    }
 
 }

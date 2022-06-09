@@ -11,9 +11,11 @@ parameters:
   bootstrapFiles:
     - tests/bootstrap.php
   ignoreErrors:
+    - "# has unknown class Curl(Multi)?Handle as its type\\.$#"
     -
       message: "#^Class Lkrms\\\\[^\\s]+ not found\\.$#"
       path: src/Util/Legacy.php
     -
-      message: "#^Closure invoked with [12] parameters?, 0 required\\.$#"
+      message: "#^Closure invoked with [123] parameters?, 1 required\\.$#"
       path: src/Core/Support/ClosureBuilder.php
+  reportUnmatchedIgnoredErrors: false

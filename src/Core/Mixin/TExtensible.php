@@ -34,6 +34,14 @@ trait TExtensible
      */
     private $MetaPropertyMap = [];
 
+    public function __clone()
+    {
+        // Don't clone undeclared properties
+        $this->MetaProperties    = [];
+        $this->MetaPropertyNames = [];
+        $this->MetaPropertyMap   = [];
+    }
+
     private function normaliseMetaProperty(string $name): string
     {
         if (is_null($normalised = $this->MetaPropertyMap[$name] ?? null))
