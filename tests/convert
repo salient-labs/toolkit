@@ -161,4 +161,4 @@ Section:
 - d
 EOF;
 
-print_r(["from" => $text, "to" => Convert::mergeLists($text)]);
+print_r(["from" => $text, "to" => Convert::linesToLists($text)]);

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
-use CurlHandle;
-use CurlMultiHandle;
 use DateTimeInterface;
 use Lkrms\Console\Console;
 use Lkrms\Core\Contract\IGettable;
@@ -133,7 +131,7 @@ class Curler implements IGettable, ISettable
     protected $StackDepth = 0;
 
     /**
-     * @var CurlHandle|null
+     * @var \CurlHandle|resource|null
      */
     protected $Handle;
 
@@ -143,7 +141,7 @@ class Curler implements IGettable, ISettable
     protected static $UserAgent;
 
     /**
-     * @var CurlMultiHandle|null
+     * @var \CurlMultiHandle|resource|null
      */
     private static $MultiHandle;
 

@@ -24,7 +24,7 @@ trait TConstructibleByProvider
      */
     private $ProvidedBy;
 
-    public function __clone(): void
+    public function __clone()
     {
         $this->ProvidedBy = null;
     }

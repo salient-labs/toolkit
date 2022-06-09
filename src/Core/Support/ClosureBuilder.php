@@ -872,10 +872,10 @@ class ClosureBuilder
                 {
                     $missing = array_diff_key($keyMap, $in);
 
-                    return $closure($in) + array_combine(
+                    return $closure($in) + (array_combine(
                         array_values($missing),
                         array_fill(0, count($missing), null)
-                    );
+                    ) ?: []);
                 };
             }
         }

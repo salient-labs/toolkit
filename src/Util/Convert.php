@@ -48,22 +48,31 @@ final class Convert extends Utility
      * If a value isn't an array, make it the first element of one
      *
      * @param mixed $value
-     * @return array Either `$value` or `[$value]`.
+     * @param bool $emptyIfNull
+     * @return array Either `$value`, `[$value]`, or `[]` (only if
+     * `$emptyIfNull` is set and `$value` is `null`).
      */
-    public static function toArray($value): array
+    public static function toArray($value, bool $emptyIfNull = false): array
     {
-        return is_array($value) ? $value : [$value];
+        return is_array($value)
+            ? $value
+            : ($emptyIfNull && is_null($value) ? [] : [$value]);
     }
 
     /**
      * If a value isn't a list, make it the first element of one
      *
      * @param mixed $value
-     * @return array Either `$value` or `[$value]`.
+     * @param bool $emptyIfNull
+     * @return array Either `$value`, `[$value]`, or `[]` (only if
+     * `$emptyIfNull` is set and `$value` is `null`).
      */
-    public static function toList($value): array
+    public static function toList($value, bool $emptyIfNull = false): array
     {
-        return Test::isListArray($value, true) ? $value : [$value];
+        return Test::isListArray($value, true)
+            ? $value
+            : ($emptyIfNull && is_null($value) ? [] : [$value]);
+            ;
     }
 
     /**
@@ -86,20 +95,31 @@ final class Convert extends Utility
     }
 
     /**
+     * A shim for DateTimeImmutable::createFromInterface() (PHP 8+)
+     *
+     * @param DateTimeInterface $date
+     * @return DateTimeImmutable
+     */
+    public static function toDateTimeImmutable(DateTimeInterface $date)
+    {
+        if ($date instanceof DateTimeImmutable)
+        {
+            return $date;
+        }
+        return DateTimeImmutable::createFromMutable($date);
+    }
+
+    /**
      * Convert a value to a DateTimeZone instance
      *
-     * @param DateTimeZone|string|null $value
-     * @return DateTimeZone|null
+     * @param DateTimeZone|string $value
+     * @return DateTimeZone
      */
-    public static function toTimezone($value): ?DateTimeZone
+    public static function toTimezone($value): DateTimeZone
     {
         if ($value instanceof DateTimeZone)
         {
             return $value;
-        }
-        elseif (is_null($value))
-        {
-            return null;
         }
         elseif (is_string($value))
         {
@@ -374,18 +394,18 @@ final class Convert extends Utility
     }
 
     /**
-     * Rearrange text to merge lists and remove duplicate lines
+     * Remove duplicates in a string where 'top-level' lines ("section names")
+     * are grouped with any subsequent 'child' lines ("list items")
      *
-     * Lines that match `$regex` are regarded as list items and are grouped by
-     * section. Other lines are used as the section name for any subsequent list
-     * items. Blank lines clear the current section name but are not included in
-     * the return value.
+     * Lines that match `$regex` are regarded as list items. Other lines are
+     * used as the section name for subsequent list items. Blank lines clear the
+     * current section name and are not included in the return value.
      *
      * @param string $text
      * @param string $regex
      * @return string
      */
-    public static function mergeLists(
+    public static function linesToLists(
         string $text,
         string $regex = '/^\h*[-*] /'
     ): string
@@ -662,5 +682,16 @@ final class Convert extends Utility
             $forceNumericKeys,
             $dateFormatter ?: new DateFormatter()
         );
+    }
+
+    /**
+     * @deprecated Use {@see Convert::linesToLists()} instead
+     */
+    public static function mergeLists(
+        string $text,
+        string $regex = '/^\h*[-*] /'
+    ): string
+    {
+        return self::linesToLists($text, $regex);
     }
 }

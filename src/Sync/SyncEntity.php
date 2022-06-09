@@ -58,7 +58,7 @@ abstract class SyncEntity extends ProviderEntity implements IClassCache, JsonSer
      */
     private $DetectRecursion;
 
-    public function __clone(): void
+    public function __clone()
     {
         parent::__clone();
         $this->Id = null;

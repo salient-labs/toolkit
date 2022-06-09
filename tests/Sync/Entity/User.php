@@ -36,10 +36,12 @@ class User extends \Lkrms\Sync\SyncEntity
      */
     public $Phone;
 
-    /**
-     * @var string
-     */
-    public $Website;
+    // Commented out for IExtensible / __clone() testing
+
+    ///**
+    // * @var string
+    // */
+    //public $Website;
 
     /**
      * @var array

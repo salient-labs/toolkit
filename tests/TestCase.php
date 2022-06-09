@@ -17,7 +17,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     public function assertArrayHasSignature(array $keys, array $array, string $message = '')
     {
-        $stub = array_combine($keys, array_fill(0, count($keys), "<value>"));
+        $stub = array_combine($keys, array_fill(0, count($keys), "<value>")) ?: [];
         $this->assertEquals(
             array_intersect_key($array + $stub, $stub),
             $array,

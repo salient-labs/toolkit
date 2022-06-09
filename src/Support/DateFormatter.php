@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Support;
 
-use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use Lkrms\Core\Contract\IGettable;
@@ -42,7 +41,9 @@ final class DateFormatter implements IGettable
         $timezone      = null
     ) {
         $this->Format   = $format;
-        $this->Timezone = Convert::toTimezone($timezone);
+        $this->Timezone = is_null($timezone)
+            ? null
+            : Convert::toTimezone($timezone);
     }
 
     /**
@@ -56,8 +57,7 @@ final class DateFormatter implements IGettable
         if ($this->Timezone &&
             $this->Timezone->getName() != $date->getTimezone()->getName())
         {
-            $date = DateTime::createFromInterface($date);
-            $date->setTimezone($this->Timezone);
+            $date = Convert::toDateTimeImmutable($date)->setTimezone($this->Timezone);
         }
 
         return $date->format($this->Format);
