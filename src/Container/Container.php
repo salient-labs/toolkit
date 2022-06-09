@@ -37,6 +37,14 @@ class Container implements ContainerInterface, ConstructorHasNoRequiredParameter
 
     public function __construct()
     {
+        $subs  = [ContainerInterface::class => $this];
+        $class = static::class;
+        do
+        {
+            $subs[$class] = $this;
+        }
+        while (self::class != $class && ($class = get_parent_class($class)));
+        $this->addRule("*", ["substitutions" => $subs]);
     }
 
     /**
