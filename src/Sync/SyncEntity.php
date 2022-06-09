@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync;
 
+use DateTimeInterface;
 use JsonSerializable;
 use Lkrms\Core\Contract\IClassCache;
 use Lkrms\Core\Entity\ProviderEntity;
@@ -355,6 +356,10 @@ abstract class SyncEntity extends ProviderEntity implements IClassCache, JsonSer
 
                 $this->_serialize($child, $root, $parents, $entityNode, $node, $key);
             }
+        }
+        elseif ($node instanceof DateTimeInterface)
+        {
+            $node = $this->getProvider()->getDateFormatter()->format($node);
         }
         else
         {
