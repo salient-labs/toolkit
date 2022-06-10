@@ -31,11 +31,11 @@ used:
   "settings": {
     "terminal.integrated.env.linux": {
       // Added to unqualified '--class' names
-      "SYNC_ENTITY_NAMESPACE": "Lkrms\\Tests\\Sync\\Entity",
+      "SYNC_NAMESPACE": "Lkrms\\Tests\\Sync\\Entity",
       // Used if '--package' is not specified
-      "SYNC_ENTITY_PACKAGE": "Lkrms\\Tests",
+      "SYNC_PACKAGE": "Lkrms\\Tests",
       // Used if '--provider' is not specified
-      "SYNC_ENTITY_PROVIDER": "JsonPlaceholderApi",
+      "SYNC_PROVIDER": "JsonPlaceholderApi",
       // Added to unqualified '--provider' names (e.g. "JsonPlaceholderApi")
       "SYNC_PROVIDER_NAMESPACE": "Lkrms\\Tests\\Sync\\Provider"
     }

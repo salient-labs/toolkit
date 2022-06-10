@@ -167,7 +167,7 @@ abstract class SyncEntity extends ProviderEntity implements IClassCache, JsonSer
      */
     protected function serialize(): array
     {
-        return (ClosureBuilder::getFor(static::class)->getSerializeClosure())($this);
+        return (ClosureBuilder::get(static::class)->getSerializeClosure())($this);
     }
 
     /**

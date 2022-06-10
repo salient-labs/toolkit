@@ -5,17 +5,21 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Provider;
 
 use Lkrms\Container\Container;
-use Lkrms\Container\DI;
+use Lkrms\Core\Contract\IBindable;
+use Lkrms\Core\Mixin\TBindableSingleton;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Generate;
+use UnexpectedValueException;
 
 /**
  * Base class for API providers
  *
  */
-abstract class SyncProvider implements ISyncProvider
+abstract class SyncProvider implements ISyncProvider, IBindable
 {
+    use TBindableSingleton;
+
     /**
      * Return a stable identifier unique to the connected backend instance
      *
@@ -52,96 +56,67 @@ abstract class SyncProvider implements ISyncProvider
     }
 
     /**
-     * Create a container binding for the class
-     *
-     * @see SyncProvider::bindInterfaces()
-     * @see SyncProvider::bindCustom()
+     * Create container bindings for ISyncProvider interfaces implemented by the
+     * class
      */
-    final public static function bind(): void
+    final public static function bindServices(Container $container, string ...$interfaces)
     {
-        DI::singleton(static::class);
+        self::_bindServices($container, false, ...$interfaces);
     }
 
     /**
      * Create container bindings for ISyncProvider interfaces implemented by the
-     * class
-     *
-     * Example:
-     *
-     * ```php
-     * interface OrgUnitProvider extends ISyncProvider
-     * {
-     *     public function getOrgUnits(): array;
-     * }
-     *
-     * interface UserProvider extends ISyncProvider
-     * {
-     *     public function getUsers(): array;
-     * }
-     *
-     * class LdapSyncProvider extends SyncProvider implements OrgUnitProvider, UserProvider
-     * {
-     *     // ...
-     * }
-     *
-     * LdapSyncProvider::bind();
-     * LdapSyncProvider::bindInterfaces();
-     *
-     * // In this case, calling bind() and bindInterfaces() on LdapSyncProvider
-     * // is equivalent to:
-     * DI::singleton(LdapSyncProvider::class);
-     * DI::bind(OrgUnitProvider::class, LdapSyncProvider::class);
-     * DI::bind(UserProvider::class, LdapSyncProvider::class);
-     *
-     * // Now, when an OrgUnitProvider is requested, an LdapSyncProvider
-     * // instance will be returned
-     * $provider = DI::get(OrgUnitProvider::class);
-     * ```
-     *
-     * @param string ...$interfaces If no interfaces are specified, every
-     * ISyncProvider interface implemented by the class will be bound.
-     * @return void
-     * @see SyncProvider::bind()
+     * class that aren't in the given exception list
      */
-    final public static function bindInterfaces(string ...$interfaces): void
+    final public static function bindServicesExcept(Container $container, string ...$interfaces)
     {
-        (ClosureBuilder::getFor(static::class)->getBindISyncProviderInterfacesClosure())(...$interfaces);
+        if (!$interfaces)
+        {
+            throw new UnexpectedValueException("No interfaces to exclude");
+        }
+        self::_bindServices($container, true, ...$interfaces);
+    }
+
+    private static function _bindServices(Container $container, bool $invert, string ...$interfaces)
+    {
+        (ClosureBuilder::get(
+            static::class
+        )->getBindISyncProviderInterfacesClosure())($container, $invert, ...$interfaces);
     }
 
     /**
-     * Create container bindings scoped exclusively to the provider
+     * {@inheritdoc}
      *
-     * This method is called just before the callback function in
-     * {@see SyncProvider::bindAndRun()}. Changes made to the container are
-     * removed after the callback returns.
+     * This method is called before the callback in
+     * {@see SyncProvider::invokeInBoundContainer()}. Changes made to the
+     * container are removed after the callback returns.
      *
      * If particular {@see \Lkrms\Sync\SyncEntity} subclasses should be used
      * when the provider is instantiating those entities, they should be bound
      * here.
      */
-    protected function bindCustom(): void
+    public static function bindConcrete(Container $container)
     {
     }
 
-    /**
-     * Run the given callback after applying the provider's custom bindings to a
-     * temporary service container
-     *
-     * @param callable $callback
-     * @return mixed
-     */
-    final public function bindAndRun(callable $callback)
+    final public function invokeInBoundContainer(callable $callback, Container $container = null)
     {
-        DI::push();
+        if (!$container)
+        {
+            $container = $this->container();
+        }
+        $container->push();
         try
         {
-            $this->bindCustom();
-            $this->bindInterfaces();
-            return $callback(clone Container::getGlobal());
+            static::bindServices($container);
+            static::bindConcrete($container);
+            $clone = clone $container;
+            $container->bindContainer($clone);
+            return $callback($clone);
         }
         finally
         {
-            DI::pop();
+            $container->pop();
         }
     }
 
@@ -150,6 +125,9 @@ abstract class SyncProvider implements ISyncProvider
         return new DateFormatter();
     }
 
+    /**
+     * @var DateFormatter|null
+     */
     private $DateFormatter;
 
     final public function getDateFormatter(): DateFormatter

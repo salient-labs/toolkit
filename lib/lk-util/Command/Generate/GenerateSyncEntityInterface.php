@@ -19,8 +19,8 @@ use Lkrms\Util\File;
  * Generates provider interfaces for SyncEntity subclasses
  *
  * Environment variables:
- * - `SYNC_ENTITY_NAMESPACE`
- * - `SYNC_ENTITY_PACKAGE`
+ * - `SYNC_NAMESPACE`
+ * - `SYNC_PACKAGE`
  *
  */
 class GenerateSyncEntityInterface extends CliCommand
@@ -55,6 +55,7 @@ class GenerateSyncEntityInterface extends CliCommand
                 "valueName"   => "PACKAGE",
                 "description" => "The PHPDoc package",
                 "optionType"  => CliOptionType::VALUE,
+                "env"         => "SYNC_PACKAGE",
             ], [
                 "long"        => "desc",
                 "short"       => "d",
@@ -108,9 +109,9 @@ class GenerateSyncEntityInterface extends CliCommand
         $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
         $class      = array_pop($namespace);
         $vendor     = reset($namespace) ?: "";
-        $namespace  = implode("\\", $namespace) ?: Env::get("SYNC_ENTITY_NAMESPACE", "");
+        $namespace  = implode("\\", $namespace) ?: Env::get("SYNC_NAMESPACE", "");
         $fqcn       = $namespace ? $namespace . "\\" . $class : $class;
-        $package    = $this->getOptionValue("package") ?: Env::get("SYNC_ENTITY_PACKAGE", "");
+        $package    = $this->getOptionValue("package");
         $desc       = $this->getOptionValue("desc") ?: "Synchronises $class objects with a backend";
         $interface  = $class . "Provider";
         $extends    = ISyncProvider::class;

@@ -10,7 +10,7 @@ use Lkrms\Support\DateFormatter;
  * Creates objects from backend data
  *
  */
-interface IProvider
+interface IProvider extends IBound
 {
     /**
      * Return a stable hash unique to the backend instance

@@ -26,16 +26,16 @@ Console::group("Processing items");
 
 for ($i = 0; $i < count($items); $i++)
 {
-    Console::info("Processing row:", $i + 1);
+    Console::info("Processing row:", (string)($i + 1));
 
     for ($j = 0; $j < count($items[$i]); $j++)
     {
-        Console::log("Processing item:", $items[$i][$j]);
+        Console::log("Processing item:", (string)$items[$i][$j]);
     }
 
     if ($i % 2)
     {
-        Console::warn("WARNING: odd-numbered index at row:", ($i + 1));
+        Console::warn("WARNING: odd-numbered index at row:", (string)($i + 1));
     }
     else
     {

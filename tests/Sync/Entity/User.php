@@ -47,4 +47,10 @@ class User extends \Lkrms\Sync\SyncEntity
      * @var array
      */
     public $Company;
+
+    /**
+     * @var Post[]
+     */
+    public $Posts;
+
 }

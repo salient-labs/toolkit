@@ -73,10 +73,11 @@ class B extends A
 
     protected $DataModified;
 
+    // @phpstan-ignore-next-line
     private $DoNotEven;
 }
 
 print_r([
-    "A" => ClosureBuilder::getFor(A::class),
-    "B" => ClosureBuilder::getFor(B::class),
+    "A" => ClosureBuilder::get(A::class),
+    "B" => ClosureBuilder::get(B::class),
 ]);

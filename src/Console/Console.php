@@ -175,7 +175,7 @@ final class Console extends ConsoleMessageWriter
             }
         }
 
-        if ($msg2)
+        if (!is_null($msg2))
         {
             $ttyMsg2 = ConsoleText::formatColour($msg2);
             $msg2    = ConsoleText::formatPlain($msg2);

@@ -10,6 +10,7 @@ use Lkrms\Core\Mixin\TConstructible;
 use Lkrms\Core\Mixin\TFullyGettable;
 use Lkrms\Util\Assert;
 use Lkrms\Util\Convert;
+use Lkrms\Util\Env;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -27,10 +28,12 @@ use UnexpectedValueException;
  * @property-read bool $IsRequired
  * @property-read bool $IsValueRequired
  * @property-read bool $MultipleAllowed
+ * @property-read string|null $Delimiter
  * @property-read string|null $ValueName
  * @property-read string|null $Description
  * @property-read string[]|null $AllowedValues
  * @property-read string|string[]|bool|int|null $DefaultValue
+ * @property-read string|null $EnvironmentVariable
  * @property-read string|string[]|bool|int|null $Value
  * @property-read bool $IsValueSet
  */
@@ -93,7 +96,12 @@ class CliOption implements IConstructible, IGettable
     protected $MultipleAllowed;
 
     /**
-     *
+     * @internal
+     * @var string|null
+     */
+    protected $Delimiter;
+
+    /**
      * @internal
      * @var string|null
      */
@@ -119,6 +127,12 @@ class CliOption implements IConstructible, IGettable
 
     /**
      * @internal
+     * @var string|null
+     */
+    protected $EnvironmentVariable;
+
+    /**
+     * @internal
      * @var string|string[]|bool|int|null
      */
     protected $Value;
@@ -130,19 +144,21 @@ class CliOption implements IConstructible, IGettable
     protected $IsValueSet = false;
 
     /**
-     * Create a new command-line option
-     *
      * @param string|null $long
      * @param string|null $short
      * @param string|null $valueName
      * @param string|null $description
-     * @param int $optionType
-     * @param string[]|null $allowedValues For {@see CliOptionType::ONE_OF} and
-     * {@see CliOptionType::ONE_OF_OPTIONAL}
+     * @param int $optionType The value of a {@see CliOptionType} constant.
+     * @param string[]|null $allowedValues Ignored unless `$optionType` is
+     * {@see CliOptionType::ONE_OF} or {@see CliOptionType::ONE_OF_OPTIONAL}.
      * @param bool $required
      * @param bool $multipleAllowed
      * @param string|string[]|bool|int|null $defaultValue
-     * @see \Lkrms\Core\Mixin\TConstructible::fromArray()
+     * @param string|null $env Use the value of environment variable `$env`, if
+     * set, instead of `$defaultValue`.
+     * @param string|null $delimiter If `$multipleAllowed` is set, use
+     * `$delimiter` to split one value into multiple values.
+     * @see \Lkrms\Core\Mixin\TConstructible::from()
      */
     public function __construct(
         ?string $long,
@@ -153,7 +169,9 @@ class CliOption implements IConstructible, IGettable
         array $allowedValues  = null,
         bool $required        = false,
         bool $multipleAllowed = false,
-        $defaultValue         = null
+        $defaultValue         = null,
+        string $env           = null,
+        ?string $delimiter    = ","
     ) {
         $this->Long            = $long ?: null;
         $this->Short           = $short ?: null;
@@ -180,6 +198,19 @@ class CliOption implements IConstructible, IGettable
         $this->IsValueRequired = !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
         $this->ValueName       = $valueName ?: "VALUE";
         $this->DefaultValue    = $this->IsRequired ? null : $defaultValue;
+
+        if (($this->EnvironmentVariable = $env) && Env::has($env))
+        {
+            $this->IsRequired   = false;
+            $this->DefaultValue = Env::get($env);
+        }
+
+        if ($this->MultipleAllowed &&
+            ($this->Delimiter = $delimiter) &&
+            $this->DefaultValue && is_string($this->DefaultValue))
+        {
+            $this->DefaultValue = explode($this->Delimiter, $this->DefaultValue);
+        }
     }
 
     /**

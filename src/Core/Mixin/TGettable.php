@@ -40,7 +40,7 @@ trait TGettable
 
     private function getProperty(string $action, string $name)
     {
-        return (ClosureBuilder::getFor(static::class)->getPropertyActionClosure($name, $action))($this);
+        return (ClosureBuilder::get(static::class)->getPropertyActionClosure($name, $action))($this);
     }
 
     final public function __get(string $name)

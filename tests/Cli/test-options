@@ -4,6 +4,7 @@
 namespace Lkrms\Tests\Cli;
 
 use Lkrms\Cli\Cli;
+use Lkrms\Container\Container;
 use Lkrms\Err\Err;
 use Lkrms\Tests\Cli\Command\TestOptions;
 use Lkrms\Util\Env;
@@ -16,15 +17,17 @@ Err::handleErrors();
 
 Env::load(__DIR__ . "/../.env");
 
+$container = Container::getGlobal();
+
 $exceptions = [];
 
 // Register TestOptions as the only command
-TestOptions::register([]);
+TestOptions::register($container, []);
 
 try
 {
     // Try to register it under its usual name
-    TestOptions::register(["test", "options"]);
+    TestOptions::register($container, ["test", "options"]);
 }
 catch (Throwable $ex)
 {

@@ -20,9 +20,9 @@ use RuntimeException;
  * Generates SyncEntity subclasses from sample entities
  *
  * Environment variables:
- * - `SYNC_ENTITY_NAMESPACE`
- * - `SYNC_ENTITY_PACKAGE`
- * - `SYNC_ENTITY_PROVIDER`
+ * - `SYNC_NAMESPACE`
+ * - `SYNC_PACKAGE`
+ * - `SYNC_PROVIDER`
  * - `SYNC_PROVIDER_NAMESPACE`
  *
  */
@@ -51,6 +51,7 @@ class GenerateSyncEntityClass extends CliCommand
                 "valueName"   => "PACKAGE",
                 "description" => "The PHPDoc package",
                 "optionType"  => CliOptionType::VALUE,
+                "env"         => "SYNC_PACKAGE",
             ], [
                 "long"        => "desc",
                 "short"       => "d",
@@ -85,6 +86,7 @@ class GenerateSyncEntityClass extends CliCommand
                 "valueName"   => "CLASS",
                 "description" => "The HttpSyncProvider class to retrieve a sample entity from",
                 "optionType"  => CliOptionType::VALUE,
+                "env"         => "SYNC_PROVIDER",
             ], [
                 "long"        => "endpoint",
                 "short"       => "e",
@@ -100,9 +102,9 @@ class GenerateSyncEntityClass extends CliCommand
         $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
         $class      = array_pop($namespace);
         $vendor     = reset($namespace) ?: "";
-        $namespace  = implode("\\", $namespace) ?: Env::get("SYNC_ENTITY_NAMESPACE", "");
+        $namespace  = implode("\\", $namespace) ?: Env::get("SYNC_NAMESPACE", "");
         $fqcn       = $namespace ? $namespace . "\\" . $class : $class;
-        $package    = $this->getOptionValue("package") ?: Env::get("SYNC_ENTITY_PACKAGE", "");
+        $package    = $this->getOptionValue("package");
         $desc       = $this->getOptionValue("desc");
         $extends    = SyncEntity::class;
         $props      = ["Id" => "int|string|null"];
@@ -114,10 +116,11 @@ class GenerateSyncEntityClass extends CliCommand
             throw new InvalidCliArgumentException("invalid class: $fqcn");
         }
 
-        if ($providerClass = $this->getOptionValue("provider") ?: Env::get("SYNC_ENTITY_PROVIDER", ""))
+        if ($providerClass = $this->getOptionValue("provider"))
         {
             if (!class_exists($providerClass) &&
-                !(strpos($providerClass, "\\") === false && ($providerNamespace = Env::get("SYNC_PROVIDER_NAMESPACE", "")) &&
+                !(strpos($providerClass, "\\") === false &&
+                    ($providerNamespace         = Env::get("SYNC_PROVIDER_NAMESPACE", "")) &&
                     class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
             {
                 throw new InvalidCliArgumentException("class does not exist: $providerClass");

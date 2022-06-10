@@ -3,9 +3,8 @@
 
 namespace Lkrms\Tests\Sync;
 
+use Lkrms\App\App;
 use Lkrms\Console\Console;
-use Lkrms\Container\DI;
-use Lkrms\Err\Err;
 use Lkrms\Sync\Provider\SyncEntityProvider;
 use Lkrms\Sync\SyncEntityFuzzyResolver;
 use Lkrms\Sync\SyncEntityResolver;
@@ -20,23 +19,21 @@ use Throwable;
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 
-Err::handleErrors();
+$app = App::load(dirname(__DIR__));
+$app->enableCache();
 
 // Register JsonPlaceholderApi as the provider for Post and User objects
-DI::bind(PostProvider::class, JsonPlaceholderApi::class);
-DI::bind(UserProvider::class, JsonPlaceholderApi::class);
-
-// When creating Post instances from API data, instantiate a custom subclass
-// instead of a standard Post
-DI::bind(Post::class, CustomEntity\Post::class);
+$app->bind(PostProvider::class, JsonPlaceholderApi::class);
+$app->bind(UserProvider::class, JsonPlaceholderApi::class);
 
 $userApi = new SyncEntityProvider(User::class);
 
 $posts = iterator_to_array(Post::backend()->getList());
-Console::info("Posts retrieved:", count($posts));
+Console::info("Posts retrieved:", (string)count($posts));
 
 /** @var Post */
-$post      = reset($posts);
+$post = reset($posts);
+/** @var User */
 $user      = User::backend()->get($post->User->Id);
 $postClone = clone $post;
 $userClone = clone $user;
@@ -52,7 +49,8 @@ print_r([
     '$user == $userClone (FALSE)'             => $user == $userClone,
     '$user->Company == $userClone->Company (FALSE)'  => $user->Company == $userClone->Company,
     '$user->Company === $userClone->Company (FALSE)' => $user->Company === $userClone->Company,
-    '$user->Website == $userClone->Website (FALSE)'  => $user->Website == $userClone->Website,
+    // @phpstan-ignore-next-line
+    '$user->Website == $userClone->Website (FALSE)' => $user->Website == $userClone->Website,
 ]);
 
 $resolver       = new SyncEntityResolver($userApi, "Name");
@@ -111,7 +109,7 @@ catch (Throwable $ex)
 
 try
 {
-    Post::backend()->create(new Post());
+    Post::backend()->create($app->get(Post::class));
 }
 catch (Throwable $ex)
 {

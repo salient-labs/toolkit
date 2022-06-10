@@ -683,6 +683,14 @@ class Curler implements IGettable, ISettable
         return $this->execute();
     }
 
+    public function head(array $queryString = null): CurlerHeaders
+    {
+        $this->initialise("HEAD", $queryString);
+        $this->execute();
+
+        return $this->ResponseHeaders;
+    }
+
     public function getJson(array $queryString = null)
     {
         $this->StackDepth = 1;

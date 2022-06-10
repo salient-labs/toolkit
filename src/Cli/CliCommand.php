@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Lkrms\Cli;
 
 use Lkrms\Console\Console;
-use Lkrms\Container\DI;
+use Lkrms\Core\Contract\IBound;
+use Lkrms\Core\Mixin\TBound;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Util\Assert;
 use Lkrms\Util\Convert;
+use Psr\Container\ContainerInterface as Container;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -16,8 +18,10 @@ use UnexpectedValueException;
  * Base class for CLI commands
  *
  */
-abstract class CliCommand
+abstract class CliCommand implements IBound
 {
+    use TBound;
+
     /**
      * Return a short description of the command
      *
@@ -52,7 +56,7 @@ abstract class CliCommand
      * ```
      *
      * @return array<int,CliOption|array>
-     * @see \Lkrms\Core\Mixin\TConstructible::fromArray()
+     * @see \Lkrms\Core\Mixin\TConstructible::from()
      */
     abstract protected function _getOptions(): array;
 
@@ -100,9 +104,9 @@ abstract class CliCommand
     private $HiddenOptionsByKey = [];
 
     /**
-     * @var string[]
+     * @var string[]|null
      */
-    private $Arguments = [];
+    private $Arguments;
 
     /**
      * @var array<string,string|array|bool|null>|null
@@ -134,14 +138,6 @@ abstract class CliCommand
      */
     private $HasRun = false;
 
-    final public static function assertNameIsValid(?array $name)
-    {
-        foreach ($name as $i => $subcommand)
-        {
-            Assert::patternMatches($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
-        }
-    }
-
     /**
      * Register an instance of the class as a subcommand of the running app
      *
@@ -168,12 +164,15 @@ abstract class CliCommand
      *
      * @throws UnexpectedValueException if an invalid subcommand is provided
      */
-    final public static function register(array $name)
+    final public static function register(Container $container, array $name)
     {
-        self::assertNameIsValid($name);
+        foreach ($name as $i => $subcommand)
+        {
+            Assert::patternMatches($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
+        }
 
         /** @var static */
-        $command       = DI::get(static::class);
+        $command       = $container->get(static::class);
         $command->Name = $name;
 
         Cli::registerCommand($command);
@@ -333,7 +332,14 @@ abstract class CliCommand
         return $this->Options;
     }
 
-    final public function getOptionByName(string $name): ?CliOption
+    final public function hasOption(string $name): bool
+    {
+        $this->loadOptions();
+
+        return !is_null($this->OptionsByName[$name] ?? null);
+    }
+
+    final public function getOption(string $name): ?CliOption
     {
         $this->loadOptions();
 
@@ -367,7 +373,7 @@ abstract class CliCommand
                 continue;
             }
 
-            list ($short, $long, $line, $value, $valueName) = [$option->Short, $option->Long, [], [], ""];
+            list ($short, $long, $line, $value, $valueName, $list) = [$option->Short, $option->Long, [], [], "", ""];
 
             if ($option->IsFlag)
             {
@@ -396,16 +402,21 @@ abstract class CliCommand
                     $valueName = "<" . Convert::toKebabCase($valueName) . ">";
                 }
 
+                if ($option->MultipleAllowed && $option->Delimiter)
+                {
+                    $list = "{$option->Delimiter}...";
+                }
+
                 if ($short)
                 {
                     $line[]  = "-{$short}";
-                    $value[] = $option->IsValueRequired ? " $valueName" : "[$valueName]";
+                    $value[] = $option->IsValueRequired ? " $valueName$list" : "[$valueName$list]";
                 }
 
                 if ($long)
                 {
                     $line[]  = "--{$long}";
-                    $value[] = $option->IsValueRequired ? " $valueName" : "[=$valueName]";
+                    $value[] = $option->IsValueRequired ? " $valueName$list" : "[=$valueName$list]";
                 }
 
                 if ($option->IsRequired)
@@ -553,6 +564,13 @@ EOF;
                 }
             }
 
+            if ($option->MultipleAllowed &&
+                $option->Delimiter &&
+                $value && is_string($value))
+            {
+                $value = explode($option->Delimiter, $value);
+            }
+
             $key = $option->Key;
 
             if (isset($merged[$key]))
@@ -637,33 +655,38 @@ EOF;
      */
     final public function getOptionValue(string $name)
     {
-        if (!($option = $this->getOptionByName($name)))
+        $this->assertHasRun();
+
+        if (!($option = $this->getOption($name)))
         {
             throw new UnexpectedValueException("No option with name '$name'");
         }
-
-        $this->loadOptionValues();
 
         return $option->Value;
     }
 
     /**
-     *
      * @return array<string,string|string[]|bool|int|null>
      */
     final public function getAllOptionValues(): array
     {
-        $this->loadOptionValues();
+        $this->assertHasRun();
 
         $values = [];
-
         foreach ($this->Options as $option)
         {
             $name          = $option->Long ?: $option->Short;
             $values[$name] = $option->Value;
         }
-
         return $values;
+    }
+
+    private function assertHasRun()
+    {
+        if (!$this->HasRun)
+        {
+            throw new RuntimeException("Command must be invoked first");
+        }
     }
 
     /**
@@ -691,7 +714,6 @@ EOF;
         if ($this->IsHelp)
         {
             Console::printTo($this->getUsage(), ...Console::getOutputTargets());
-
             return 0;
         }
 
@@ -711,10 +733,9 @@ EOF;
      * Set the command's return value / exit status
      *
      * @param int $status
-     * @return void
      * @see CliCommand::_run()
      */
-    final protected function setExitStatus(int $status): void
+    final protected function setExitStatus(int $status)
     {
         $this->ExitStatus = $status;
     }
@@ -728,5 +749,13 @@ EOF;
     final protected function getExitStatus(): int
     {
         return $this->ExitStatus;
+    }
+
+    /**
+     * @deprecated Use {@see CliCommand::getOption()} instead
+     */
+    final public function getOptionByName(string $name): ?CliOption
+    {
+        return $this->getOption($name);
     }
 }

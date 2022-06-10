@@ -38,6 +38,7 @@ abstract class TypedCollection implements Iterator, ArrayAccess, Countable
     /**
      * @return mixed|false
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return $this->Items[$this->Pointer] ?? false;
@@ -46,6 +47,7 @@ abstract class TypedCollection implements Iterator, ArrayAccess, Countable
     /**
      * @return int|null
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return array_key_exists($this->Pointer, $this->Items)
@@ -76,6 +78,7 @@ abstract class TypedCollection implements Iterator, ArrayAccess, Countable
     /**
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->Items[$offset];

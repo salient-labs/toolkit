@@ -37,6 +37,26 @@ class Container implements ContainerInterface, ConstructorHasNoRequiredParameter
 
     public function __construct()
     {
+        $this->bindContainer($this);
+    }
+
+    public function __clone()
+    {
+        $this->bindContainer($this);
+    }
+
+    /**
+     * Bind this instance to another for service container injection
+     *
+     * This function can be used to prevent temporary service containers binding
+     * instances they create to themselves. See
+     * {@see SyncProvider::invokeInBoundContainer()} for an example.
+     *
+     * @param Container $container The container that should resolve compatible
+     * requests to this instance.
+     */
+    final public function bindContainer(Container $container)
+    {
         $subs  = [ContainerInterface::class => $this];
         $class = static::class;
         do
@@ -44,7 +64,7 @@ class Container implements ContainerInterface, ConstructorHasNoRequiredParameter
             $subs[$class] = $this;
         }
         while (self::class != $class && ($class = get_parent_class($class)));
-        $this->addRule("*", ["substitutions" => $subs]);
+        $container->addRule("*", ["substitutions" => $subs]);
     }
 
     /**
