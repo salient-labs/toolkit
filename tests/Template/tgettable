@@ -74,6 +74,7 @@ class B extends A implements IGettable
 
     protected $DataModified;
 
+    // @phpstan-ignore-next-line
     private $DoNotEven;
 }
 
@@ -104,12 +105,15 @@ $b->Data = [3, 4, 5];
 
 $c = new C();
 
-$b_id            = $b->Id;
-$b_name          = $b->Name;
-$b_data          = $b->Data;
+$b_id   = $b->Id;
+$b_name = $b->Name;
+$b_data = $b->Data;
+// @phpstan-ignore-next-line
 $b_data_modified = $b->DataModified;
 
+// @phpstan-ignore-next-line
 $b_meta1 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, "Meta")];
+// @phpstan-ignore-next-line
 $b->Meta = [];
 $b_meta2 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, "Meta")];
 unset($b->Meta);
@@ -127,6 +131,7 @@ catch (Throwable $ex)
 
 try
 {
+    // @phpstan-ignore-next-line
     $a->Unwritable = 'ok';
     throw new RuntimeException('Writing to $a->Unwritable was allowed');
 }
@@ -137,6 +142,7 @@ catch (RuntimeException $ex)
 
 try
 {
+    // @phpstan-ignore-next-line
     $b->DoNotEven = 'ok';
     throw new RuntimeException('Writing to $b->DoNotEven was allowed');
 }
@@ -147,6 +153,7 @@ catch (RuntimeException $ex)
 
 try
 {
+    // @phpstan-ignore-next-line
     $id = $c->Id;
     throw new RuntimeException('Reading from $c->Id was allowed');
 }
@@ -157,6 +164,7 @@ catch (RuntimeException $ex)
 
 try
 {
+    // @phpstan-ignore-next-line
     $c->Id = 3;
     throw new RuntimeException('Writing to $c->Id was allowed');
 }
@@ -167,8 +175,10 @@ catch (RuntimeException $ex)
 
 try
 {
+    // @phpstan-ignore-next-line
     isset($b->Data);
 }
+// @phpstan-ignore-next-line
 catch (RuntimeException $ex)
 {
     $exceptions[] = $ex;

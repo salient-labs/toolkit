@@ -141,6 +141,29 @@ final class Env extends Utility
     }
 
     /**
+     * @return string|false
+     */
+    private static function _get(string $name)
+    {
+        return ($_ENV[$name]
+            ?? $_SERVER[$name]
+            ?? (($local = getenv($name, true)) !== false
+                ? $local
+                : getenv($name)));
+    }
+
+    /**
+     * Returns true if a variable exists in the environment
+     *
+     * @param string $name
+     * @return bool
+     */
+    public static function has(string $name): bool
+    {
+        return self::_get($name) !== false;
+    }
+
+    /**
      * Retrieve an environment variable
      *
      * Looks for `$name` in `$_ENV`, `$_SERVER` and `getenv()`, in that order,
@@ -153,11 +176,7 @@ final class Env extends Utility
      */
     public static function get(string $name, string $default = null): ?string
     {
-        $value = ($_ENV[$name]
-            ?? $_SERVER[$name]
-            ?? (($local = getenv($name, true)) !== false
-                ? $local
-                : getenv($name)));
+        $value = self::_get($name);
 
         if ($value === false)
         {

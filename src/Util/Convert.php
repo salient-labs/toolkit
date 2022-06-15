@@ -100,7 +100,7 @@ final class Convert extends Utility
      * @param DateTimeInterface $date
      * @return DateTimeImmutable
      */
-    public static function toDateTimeImmutable(DateTimeInterface $date)
+    public static function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
     {
         if ($date instanceof DateTimeImmutable)
         {

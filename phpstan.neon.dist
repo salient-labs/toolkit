@@ -6,8 +6,32 @@ parameters:
   paths:
     - src
     - lib
-    - bin
+    - bin/lk-util
     - tests
+    - tests/app
+    - tests/cache
+    - tests/Cli/app
+    - tests/Cli/test-options
+    - tests/closure
+    - tests/composer
+    - tests/console
+    - tests/convert
+    - tests/Curler/curler
+    - tests/env
+    - tests/err
+    - tests/file
+    - tests/generate
+    - tests/ioc
+    - tests/legacy
+    - tests/lk-util
+    - tests/Reflect/property_resolver
+    - tests/Reflect/reflect
+    - tests/sql
+    - tests/Support/http_server
+    - tests/Sync/sync
+    - tests/Template/tconstructible
+    - tests/Template/tgettable
+    - tests/trash
   bootstrapFiles:
     - tests/bootstrap.php
   ignoreErrors:
@@ -18,4 +42,10 @@ parameters:
     -
       message: "#^Closure invoked with [123] parameters?, 1 required\\.$#"
       path: src/Core/Support/ClosureBuilder.php
+    -
+      message: "#^(Class |Instantiated class )Lkrms(\\\\[^\\s]+)+ not found\\.$#"
+      path: tests/legacy
+    -
+      message: "#^Call to static method [^\\s]+\\(\\) on an unknown class Lkrms\\\\[^\\s]+\\.$#"
+      path: tests/legacy
   reportUnmatchedIgnoredErrors: false

@@ -40,7 +40,7 @@ trait TSettable
 
     private function setProperty(string $action, string $name, ...$params)
     {
-        return (ClosureBuilder::getFor(static::class)->getPropertyActionClosure($name, $action))($this, ...$params);
+        return (ClosureBuilder::get(static::class)->getPropertyActionClosure($name, $action))($this, ...$params);
     }
 
     final public function __set(string $name, $value): void

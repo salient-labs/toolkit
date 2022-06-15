@@ -4,6 +4,7 @@
 namespace Lkrms\Tests\Cli;
 
 use Lkrms\Cli\Cli;
+use Lkrms\Container\Container;
 use Lkrms\Err\Err;
 use Lkrms\Tests\Cli\Command\TestOptions;
 use Lkrms\Util\Env;
@@ -15,8 +16,10 @@ Err::handleErrors();
 
 Env::load(__DIR__ . "/../.env");
 
-TestOptions::register(["test", "options"]);
-TestOptions::register(["sync"]);
+$container = Container::getGlobal();
+
+TestOptions::register($container, ["test", "options"]);
+TestOptions::register($container, ["sync"]);
 
 $status = Cli::run();
 exit ($status);

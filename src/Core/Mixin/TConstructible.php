@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Core\Mixin;
 
 use Lkrms\Core\Support\ClosureBuilder;
+use Psr\Container\ContainerInterface as Container;
 use UnexpectedValueException;
 
 /**
@@ -15,10 +16,11 @@ use UnexpectedValueException;
 trait TConstructible
 {
     /**
-     * Create an instance of the class from an array
+     * Create an instance of the class from an array, optionally applying a
+     * callback and/or remapping its values
      *
      * The constructor (if any) is invoked with parameters taken from `$data`.
-     * If `$data` values remain, they are assigned to public properties. If
+     * If `$data` values remain, they are assigned to writable properties. If
      * further values remain and the class implements
      * {@see \Lkrms\Core\Contract\IExtensible}, they are assigned via
      * {@see \Lkrms\Core\Contract\IExtensible::setMetaProperty()}.
@@ -26,216 +28,191 @@ trait TConstructible
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.
      *
-     * @param array<string,mixed> $data
-     * @return static
-     */
-    public static function fromArray(array $data)
-    {
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data);
-    }
-
-    /**
-     * Create an instance of the class from an array after applying a callback
-     *
-     * See {@see TConstructible::fromArray()} for more information.
-     *
+     * @param null|Container $container Used to create the instance if set.
      * @param array $data
-     * @param callable $callback
-     * @return static
-     */
-    public static function fromArrayVia(array $data, callable $callback)
-    {
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $callback);
-    }
-
-    /**
-     * Create an instance of the class from an array after remapping its values
-     *
-     * See {@see ClosureBuilder::getArrayMapper()} and
-     * {@see TConstructible::fromArray()} for more information.
-     *
-     * @param array $data
-     * @param array<int|string,int|string> $keyMap An array that maps `$data`
-     * keys to names the class will be able to resolve.
-     * @param bool $sameKeys If `true`, improve performance by assuming `$data`
-     * has the same keys in the same order as in `$keyMap`.
+     * @param callable|null $callback If set, applied before optionally
+     * remapping `$data`.
+     * @param array<int|string,int|string>|null $keyMap An array that maps
+     * `$data` keys to names the class will be able to resolve. See
+     * {@see ClosureBuilder::getArrayMapper()} for more information.
+     * @param bool $sameKeys If `true` and `$keyMap` is set, improve performance
+     * by assuming `$data` has the same keys in the same order as in `$keyMap`.
      * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
      * @return static
      */
-    public static function fromMappedArray(
+    public static function from(
+        ?Container $container,
         array $data,
-        array $keyMap,
-        bool $sameKeys = false,
-        int $skip      = ClosureBuilder::SKIP_MISSING | ClosureBuilder::SKIP_UNMAPPED
+        callable $callback = null,
+        array $keyMap      = null,
+        bool $sameKeys     = false,
+        int $skip          = ClosureBuilder::SKIP_MISSING
     ) {
-        $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
+        $closure = null;
 
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $closure);
+        if (!is_null($keyMap))
+        {
+            $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
+        }
+
+        if (!is_null($callback))
+        {
+            $closure = !$closure ? $callback : fn(array $in) => $closure($callback($in));
+        }
+
+        return (ClosureBuilder::getBound(
+            $container, static::class
+        )->getCreateFromClosure())($data, $closure, $container);
     }
 
     /**
-     * Create an instance of the class from an array after applying a callback
-     * and remapping its values
+     * Create traversable instances from traversable arrays, optionally applying
+     * a callback and/or remapping each array's values before it is processed
      *
-     * See {@see ClosureBuilder::getArrayMapper()} and
-     * {@see TConstructible::fromArray()} for more information.
+     * See {@see TConstructible::from()} for more information.
      *
-     * @param array $data
-     * @param callable $callback Applied before remapping `$data`.
-     * @param array<int|string,int|string> $keyMap An array that maps `$data`
+     * @param null|Container $container Used to create each instance if set.
+     * @param iterable<array> $list
+     * @param callable|null $callback If set, applied before optionally
+     * remapping each array.
+     * @param array<int|string,int|string>|null $keyMap An array that maps array
      * keys to names the class will be able to resolve.
-     * @param bool $sameKeys If `true`, improve performance by assuming `$data`
-     * has the same keys in the same order as in `$keyMap`.
+     * @param bool $sameKeys If `true`, improve performance by assuming
+     * `$keyMap` (if set) and every array being traversed have the same keys in
+     * the same order.
      * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
-     * @return static
+     * @return iterable<static>
      */
-    public static function fromMappedArrayVia(
-        array $data,
-        callable $callback,
-        array $keyMap,
-        bool $sameKeys = false,
-        int $skip      = ClosureBuilder::SKIP_MISSING
-    ) {
-        $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
-        $closure = function (array $in) use ($callback, $closure)
+    public static function listFrom(
+        ?Container $container,
+        iterable $list,
+        callable $callback = null,
+        array $keyMap      = null,
+        bool $sameKeys     = false,
+        int $skip          = ClosureBuilder::SKIP_MISSING
+    ): iterable
+    {
+        $closure = null;
+
+        if (!is_null($keyMap))
         {
-            return $closure($callback($in));
-        };
-
-        return (ClosureBuilder::getFor(static::class)->getCreateFromClosure())($data, $closure);
-    }
-
-    /**
-     * Create a list of instances from a list of arrays
-     *
-     * See {@see TConstructible::fromArray()} for more information.
-     *
-     * @param array<int,array<string,mixed>> $list
-     * @param bool $sameKeys If `true`, improve performance by assuming every
-     * array in the list has the same keys in the same order.
-     * @return static[]
-     */
-    public static function listFromArrays(array $list, bool $sameKeys = false): array
-    {
-        return self::getListFrom($list, $sameKeys);
-    }
-
-    /**
-     * Create a list of instances from a list of arrays, applying a callback
-     * before each array is processed
-     *
-     * See {@see TConstructible::fromArray()} for more information.
-     *
-     * @param array[] $list
-     * @param callable $callback
-     * @param bool $sameKeys If `true`, improve performance by assuming every
-     * array in the list has the same keys in the same order.
-     * @return static[]
-     */
-    public static function listFromArraysVia(
-        array $list,
-        callable $callback,
-        bool $sameKeys = false
-    ): array
-    {
-        return self::getListFrom($list, $sameKeys, $callback);
-    }
-
-    /**
-     * Create a list of instances from a list of arrays, remapping each array's
-     * values before it is processed
-     *
-     * See {@see ClosureBuilder::getArrayMapper()} and
-     * {@see TConstructible::fromArray()} for more information.
-     *
-     * @param array[] $list
-     * @param array<int|string,int|string> $keyMap An array that maps array keys
-     * to names the class will be able to resolve.
-     * @param bool $sameKeys If `true`, improve performance by assuming every
-     * array in the list has the same keys in the same order as in `$keyMap`.
-     * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
-     * @return static[]
-     */
-    public static function listFromMappedArrays(
-        array $list,
-        array $keyMap,
-        bool $sameKeys = false,
-        int $skip      = ClosureBuilder::SKIP_MISSING | ClosureBuilder::SKIP_UNMAPPED
-    ): array
-    {
-        $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
-
-        return self::getListFrom($list, $sameKeys, $closure);
-    }
-
-    /**
-     * Create a list of instances from a list of arrays, applying a callback and
-     * remapping each array's values before it is processed
-     *
-     * See {@see ClosureBuilder::getArrayMapper()} and
-     * {@see TConstructible::fromArray()} for more information.
-     *
-     * @param array[] $list
-     * @param callable $callback Applied before remapping each array.
-     * @param array<int|string,int|string> $keyMap An array that maps array keys
-     * to names the class will be able to resolve.
-     * @param bool $sameKeys If `true`, improve performance by assuming every
-     * array in the list has the same keys in the same order as in `$keyMap`.
-     * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
-     * @return static[]
-     */
-    public static function listFromMappedArraysVia(
-        array $list,
-        callable $callback,
-        array $keyMap,
-        bool $sameKeys = false,
-        int $skip      = ClosureBuilder::SKIP_MISSING
-    ): array
-    {
-        $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
-        $closure = function (array $in) use ($callback, $closure)
-        {
-            return $closure($callback($in));
-        };
-
-        return self::getListFrom($list, $sameKeys, $closure);
-    }
-
-    private static function getListFrom(array $arrays, bool $sameKeys, callable $closure = null): array
-    {
-        if (empty($arrays))
-        {
-            return [];
+            $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
         }
 
-        if ($sameKeys)
+        if (!is_null($callback))
         {
-            $first = reset($arrays);
-
-            if ($closure)
-            {
-                $first = $closure($first);
-            }
-
-            $createFromClosure = ClosureBuilder::getFor(static::class)->getCreateFromSignatureClosure(array_keys($first));
-        }
-        else
-        {
-            $createFromClosure = ClosureBuilder::getFor(static::class)->getCreateFromClosure();
+            $closure = !$closure ? $callback : fn(array $in) => $closure($callback($in));
         }
 
-        $list = [];
+        return self::getListFrom($container, $list, $closure, $sameKeys);
+    }
 
-        foreach ($arrays as $index => $array)
+    private static function getListFrom(
+        ?Container $container,
+        iterable $list,
+        ? callable $closure,
+        bool $sameKeys
+    ): iterable
+    {
+        $createFromClosure = null;
+        foreach ($list as $index => $array)
         {
             if (!is_array($array))
             {
                 throw new UnexpectedValueException("Array expected at index $index");
             }
-
-            $list[] = ($createFromClosure)($array, $closure);
+            if (!$createFromClosure)
+            {
+                if ($sameKeys)
+                {
+                    if ($closure)
+                    {
+                        $closureArray = $closure($array);
+                    }
+                    $createFromClosure = ClosureBuilder::getBound(
+                        $container, static::class
+                    )->getCreateFromSignatureClosure(array_keys($closureArray ?? $array));
+                }
+                else
+                {
+                    $createFromClosure = ClosureBuilder::getBound(
+                        $container, static::class
+                    )->getCreateFromClosure();
+                }
+            }
+            yield $createFromClosure($array, $closure, $container);
         }
+    }
 
-        return $list;
+    /**
+     * @deprecated Use {@see TConstructible::from()} instead
+     * @return static
+     */
+    public static function fromArray(array $data)
+    {
+        return self::from(null, $data);
+    }
+
+    /**
+     * @deprecated Use {@see TConstructible::from()} instead
+     * @return static
+     */
+    public static function fromArrayVia(array $data, callable $callback)
+    {
+        return self::from(null, $data, $callback);
+    }
+
+    /**
+     * @deprecated Use {@see TConstructible::from()} instead
+     * @return static
+     */
+    public static function fromMappedArray(array $data, array $keyMap, bool $sameKeys = false, int $skip = ClosureBuilder::SKIP_MISSING | ClosureBuilder::SKIP_UNMAPPED)
+    {
+        return self::from(null, $data, null, $keyMap, $sameKeys, $skip);
+    }
+
+    /**
+     * @deprecated Use {@see TConstructible::from()} instead
+     * @return static
+     */
+    public static function fromMappedArrayVia(array $data, callable $callback, array $keyMap, bool $sameKeys = false, int $skip = ClosureBuilder::SKIP_MISSING)
+    {
+        return self::from(null, $data, $callback, $keyMap, $sameKeys, $skip);
+    }
+
+    /**
+     * @deprecated Use {@see TConstructible::listFrom()} instead
+     * @return iterable<static>
+     */
+    public static function listFromArrays(iterable $list, bool $sameKeys = false): iterable
+    {
+        return self::listFrom(null, $list, null, null, $sameKeys);
+    }
+
+    /**
+     * @deprecated Use {@see TConstructible::listFrom()} instead
+     * @return iterable<static>
+     */
+    public static function listFromArraysVia(iterable $list, callable $callback, bool $sameKeys = false): iterable
+    {
+        return self::listFrom(null, $list, $callback, null, $sameKeys);
+    }
+
+    /**
+     * @deprecated Use {@see TConstructible::listFrom()} instead
+     * @return iterable<static>
+     */
+    public static function listFromMappedArrays(iterable $list, array $keyMap, bool $sameKeys = false, int $skip = ClosureBuilder::SKIP_MISSING | ClosureBuilder::SKIP_UNMAPPED): iterable
+    {
+        return self::listFrom(null, $list, null, $keyMap, $sameKeys, $skip);
+    }
+
+    /**
+     * @deprecated Use {@see TConstructible::listFrom()} instead
+     * @return iterable<static>
+     */
+    public static function listFromMappedArraysVia(iterable $list, callable $callback, array $keyMap, bool $sameKeys = false, int $skip = ClosureBuilder::SKIP_MISSING): iterable
+    {
+        return self::listFrom(null, $list, $callback, $keyMap, $sameKeys, $skip);
     }
 }

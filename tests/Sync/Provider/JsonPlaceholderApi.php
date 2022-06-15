@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Provider;
 
+use Lkrms\Container\Container;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Provider\HttpSyncProvider;
@@ -32,6 +33,17 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return [self::JSON_PLACEHOLDER_BASE_URL];
     }
 
+    protected function getCacheExpiry(): ?int
+    {
+        return 24 * 60 * 60;
+    }
+
+    public static function bindConcrete(Container $container)
+    {
+        $container->bind(Post::class, \Lkrms\Tests\Sync\CustomEntity\Post::class);
+        $container->bind(User::class, \Lkrms\Tests\Sync\CustomEntity\User::class);
+    }
+
     public function createPost(Post $post): Post
     {
         throw new SyncOperationNotImplementedException(self::class, Post::class, SyncOperation::CREATE);
@@ -39,7 +51,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 
     public function getPost($id): Post
     {
-        return Post::fromArray($this, $this->getCurler("/posts/" . $id)->getJson());
+        return Post::fromProvider($this, $this->getCurler("/posts/" . $id)->getJson());
     }
 
     public function updatePost(Post $post): Post
@@ -54,7 +66,12 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 
     public function getPosts(): iterable
     {
-        return Post::listFromArrays($this, $this->getCurler("/posts")->getJson());
+        $filter   = $this->getListFilter(func_get_args());
+        if ($user = $filter["user"] ?? null)
+        {
+            return Post::listFromProvider($this, $this->getCurler("/users/$user/posts")->getJson());
+        }
+        return Post::listFromProvider($this, $this->getCurler("/posts")->getJson());
     }
 
     public function createUser(User $user): User
@@ -64,7 +81,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 
     public function getUser($id): User
     {
-        return User::fromArray($this, $this->getCurler("/users/" . $id)->getJson());
+        return User::fromProvider($this, $this->getCurler("/users/" . $id)->getJson());
     }
 
     public function updateUser(User $user): User
@@ -79,6 +96,6 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 
     public function getUsers(): iterable
     {
-        return User::listFromArrays($this, $this->getCurler("/users")->getJson());
+        return User::listFromProvider($this, $this->getCurler("/users")->getJson());
     }
 }

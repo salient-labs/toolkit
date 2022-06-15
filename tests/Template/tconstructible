@@ -56,14 +56,14 @@ $value3 = [
     "DATA" => [29, 27, 26],
 ];
 
-$a = A::fromArray($value1);
-$b = B::fromArray($value2);
-$c = B::fromArray($value3);
-$d = B::listFromArrays([$value1, $value2, $value3]);
+$a = A::from(null, $value1);
+$b = B::from(null, $value2);
+$c = B::from(null, $value3);
+$d = iterator_to_array(B::listFrom(null, [$value1, $value2, $value3]));
 
 try
 {
-    $e = B::listFromArrays([$value1, $value2, $c]);
+    $e = B::listFrom(null, [$value1, $value2, $c]);
 }
 catch (UnexpectedValueException $ex)
 {
@@ -72,6 +72,7 @@ catch (UnexpectedValueException $ex)
 
 $a_id   = $a->Id;
 $a_name = $a->Name;
+// @phpstan-ignore-next-line
 $a_data = $a->Data;
 $a_meta = $a->getMetaProperties();
 

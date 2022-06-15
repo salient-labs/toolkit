@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Provider;
 
 use Closure;
-use Lkrms\Container\DI;
 use ReflectionClass;
 
 class ClosureBuilder
@@ -30,10 +29,8 @@ class ClosureBuilder
      */
     private static $BindProviderInterfacesClosures = [];
 
-    public static function getFor(string $class): ClosureBuilder
+    public static function get(string $class): ClosureBuilder
     {
-        $class = DI::name($class);
-
         if ($instance = self::$Instances[$class] ?? null)
         {
             return $instance;
@@ -62,6 +59,12 @@ class ClosureBuilder
         }
     }
 
+    /**
+     * @return Closure
+     * ```php
+     * closure(\Lkrms\Container\Container $container, bool $invert, string ...$interfaces): void
+     * ```
+     */
     public function getBindISyncProviderInterfacesClosure(): Closure
     {
         if ($closure = self::$BindProviderInterfacesClosures[$this->Class] ?? null)
@@ -71,15 +74,14 @@ class ClosureBuilder
 
         if ($this->ProviderInterfaces)
         {
-            $closure = function (string ...$interfaces): void
+            $closure = function (\Lkrms\Container\Container $container, bool $invert, string ...$interfaces): void
             {
-                $interfaces = array_intersect(
-                    $this->ProviderInterfaces,
-                    $interfaces ?: $this->ProviderInterfaces
-                );
+                $interfaces = ($invert
+                    ? array_diff($this->ProviderInterfaces, $interfaces)
+                    : array_intersect($this->ProviderInterfaces, $interfaces ?: $this->ProviderInterfaces));
                 foreach ($interfaces as $name)
                 {
-                    DI::bind($name, $this->Class);
+                    $container->bind($name, $this->Class);
                 }
             };
         }

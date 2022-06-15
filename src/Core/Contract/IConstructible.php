@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Core\Contract;
 
+use Psr\Container\ContainerInterface as Container;
+
 /**
  * Converts arrays to instances
  *
@@ -11,66 +13,21 @@ namespace Lkrms\Core\Contract;
 interface IConstructible
 {
     /**
-     *
-     * @param array<string,mixed> $data
-     * @return static
-     */
-    public static function fromArray(array $data);
-
-    /**
-     *
+     * @param null|Container $container
      * @param array $data
-     * @param callable $callback
+     * @param callable|null $callback
+     * @param array<int|string,int|string>|null $keyMap
      * @return static
      */
-    public static function fromArrayVia(array $data, callable $callback);
+    public static function from(?Container $container, array $data, callable $callback = null, array $keyMap = null);
 
     /**
-     *
-     * @param array $data
-     * @param array<int|string,int|string> $keyMap
-     * @return static
+     * @param null|Container $container
+     * @param iterable<array> $list
+     * @param callable|null $callback
+     * @param array<int|string,int|string>|null $keyMap
+     * @return iterable<static>
      */
-    public static function fromMappedArray(array $data, array $keyMap);
+    public static function listFrom(?Container $container, iterable $list, callable $callback = null, array $keyMap = null): iterable;
 
-    /**
-     *
-     * @param array $data
-     * @param callable $callback
-     * @param array<int|string,int|string> $keyMap
-     * @return static
-     */
-    public static function fromMappedArrayVia(array $data, callable $callback, array $keyMap);
-
-    /**
-     *
-     * @param array<int,array<string,mixed>> $list
-     * @return static[]
-     */
-    public static function listFromArrays(array $list): array;
-
-    /**
-     *
-     * @param array[] $list
-     * @param callable $callback
-     * @return static[]
-     */
-    public static function listFromArraysVia(array $list, callable $callback): array;
-
-    /**
-     *
-     * @param array[] $list
-     * @param array<int|string,int|string> $keyMap
-     * @return static[]
-     */
-    public static function listFromMappedArrays(array $list, array $keyMap): array;
-
-    /**
-     *
-     * @param array[] $list
-     * @param callable $callback
-     * @param array<int|string,int|string> $keyMap
-     * @return static[]
-     */
-    public static function listFromMappedArraysVia(array $list, callable $callback, array $keyMap): array;
 }
