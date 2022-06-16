@@ -5,9 +5,9 @@ namespace Lkrms\Tests\Template;
 
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
-use Lkrms\Concern\TFullyGettable;
+use Lkrms\Concern\TFullyReadable;
 use Lkrms\Concern\TReadable;
-use Lkrms\Concern\TSettable;
+use Lkrms\Concern\TWritable;
 use Lkrms\Err\Err;
 use RuntimeException;
 use Throwable;
@@ -19,9 +19,9 @@ Err::handleErrors();
 
 class A implements IWritable
 {
-    use TSettable;
+    use TWritable;
 
-    public static function getSettable(): array
+    public static function getWritable(): array
     {
         return ['Id', 'Name'];
     }
@@ -35,7 +35,7 @@ class A implements IWritable
 
 class B extends A implements IReadable
 {
-    use TFullyGettable;
+    use TFullyReadable;
 
     protected function _GetData()
     {
@@ -80,9 +80,9 @@ class B extends A implements IReadable
 
 class C implements IReadable, IWritable
 {
-    use TReadable, TSettable;
+    use TReadable, TWritable;
 
-    public static function getGettable(): array
+    public static function getReadable(): array
     {
         return [];
     }

@@ -7,10 +7,10 @@ namespace Lkrms\Concern;
 use Lkrms\Support\ClosureBuilder;
 
 /**
- * Implements ISettable to write properties that have not been declared or are
+ * Implements IWritable to write properties that have not been declared or are
  * not visible in the current scope
  *
- * Override {@see TSettable::getSettable()} to provide access to `protected`
+ * Override {@see TWritable::getWritable()} to provide access to `protected`
  * variables via `__set` and `__unset`.
  *
  * The default is to deny `__set` and `__unset` for all properties.
@@ -19,19 +19,27 @@ use Lkrms\Support\ClosureBuilder;
  *   assigning `$value` to `<Property>`.
  * - If `_unset<Property>()` is defined, it will be called to unset `<Property>`
  *   instead of assigning `null`.
- * - The existence of `_set<Property>()` implies that `<Property>` is settable,
- *   regardless of {@see TSettable::getSettable()}'s return value.
+ * - The existence of `_set<Property>()` implies that `<Property>` is writable,
+ *   regardless of {@see TWritable::getWritable()}'s return value.
  *
  * @see \Lkrms\Contract\IWritable
  */
 trait TWritable
 {
     /**
-     * Return a list of settable protected properties
+     * Return a list of writable protected properties
      *
-     * To make all `protected` properties settable, return `["*"]`.
+     * To make all `protected` properties writable, return `["*"]`.
      *
      * @return string[]
+     */
+    public static function getWritable(): array
+    {
+        return static::getSettable();
+    }
+
+    /**
+     * @deprecated Rename to getWritable
      */
     public static function getSettable(): array
     {

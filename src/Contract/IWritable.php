@@ -12,11 +12,11 @@ namespace Lkrms\Contract;
 interface IWritable
 {
     /**
-     * Return a settable property list, or ["*"] for all available properties
+     * Return a writable property list, or ["*"] for all available properties
      *
      * @return string[]
      */
-    public static function getSettable(): array;
+    public static function getWritable(): array;
 
     public function __set(string $name, $value): void;
 

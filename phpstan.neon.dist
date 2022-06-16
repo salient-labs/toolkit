@@ -36,6 +36,10 @@ parameters:
     - tests/bootstrap.php
   ignoreErrors:
     - "# has unknown class Curl(Multi)?Handle as its type\\.$#"
+    - """
+        #^Call to deprecated method get(Get|Set)table\\(\\) of class Lkrms\\\\[^\\s]+\\:
+        Rename to get(Read|Writ)able$#
+      """
     -
       message: "#^Class Lkrms\\\\[^\\s]+ not found\\.$#"
       path: src/Util/Legacy.php

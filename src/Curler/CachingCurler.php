@@ -29,16 +29,16 @@ class CachingCurler extends Curler
      */
     private $Callback;
 
-    public static function getGettable(): array
+    public static function getReadable(): array
     {
-        return array_merge(parent::getGettable(), [
+        return array_merge(parent::getReadable(), [
             "CachePostRequests"
         ]);
     }
 
-    public static function getSettable(): array
+    public static function getWritable(): array
     {
-        return array_merge(parent::getSettable(), [
+        return array_merge(parent::getWritable(), [
             "CachePostRequests"
         ]);
     }

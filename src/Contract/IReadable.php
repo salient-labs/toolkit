@@ -12,11 +12,11 @@ namespace Lkrms\Contract;
 interface IReadable
 {
     /**
-     * Return a gettable property list, or ["*"] for all available properties
+     * Return a readable property list, or ["*"] for all available properties
      *
      * @return string[]
      */
-    public static function getGettable(): array;
+    public static function getReadable(): array;
 
     public function __get(string $name);
 

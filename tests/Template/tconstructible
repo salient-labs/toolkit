@@ -11,7 +11,7 @@ use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TResolvable;
-use Lkrms\Concern\TSettable;
+use Lkrms\Concern\TWritable;
 use Lkrms\Err\Err;
 use Throwable;
 use UnexpectedValueException;
@@ -23,7 +23,7 @@ Err::handleErrors();
 
 class A implements IExtensible, IReadable, IWritable, IResolvable
 {
-    use TConstructible, TExtensible, TReadable, TSettable, TResolvable;
+    use TConstructible, TExtensible, TReadable, TWritable, TResolvable;
 
     public $Id;
 

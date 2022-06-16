@@ -19,10 +19,10 @@ use UnexpectedValueException;
  * Represents the state of an entity in an external system
  *
  * By default:
- * - All `protected` properties are gettable and settable.
+ * - All `protected` properties are readable and writable.
  *
- *   To change this, override {@see \Lkrms\Concern\TReadable::getGettable()}
- *   and/or {@see \Lkrms\Concern\TSettable::getSettable()}.
+ *   To change this, override {@see \Lkrms\Concern\TReadable::getReadable()}
+ *   and/or {@see \Lkrms\Concern\TWritable::getWritable()}.
  *
  * - {@see SyncEntity::serialize()} returns an associative array of `public`
  *   property values.

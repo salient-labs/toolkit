@@ -5,9 +5,9 @@ namespace Lkrms\Tests\Reflect;
 
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
-use Lkrms\Concern\TFullyGettable;
+use Lkrms\Concern\TFullyReadable;
 use Lkrms\Concern\TResolvable;
-use Lkrms\Concern\TSettable;
+use Lkrms\Concern\TWritable;
 use Lkrms\Support\ClosureBuilder;
 use Lkrms\Err\Err;
 
@@ -18,9 +18,9 @@ Err::handleErrors();
 
 class A
 {
-    use TExtensible, TResolvable, TFullyGettable, TSettable;
+    use TExtensible, TResolvable, TFullyReadable, TWritable;
 
-    public static function getSettable(): array
+    public static function getWritable(): array
     {
         return ['Id', 'Name'];
     }

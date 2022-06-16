@@ -150,7 +150,7 @@ class Curler implements IReadable, IWritable
      */
     protected static $MultiInfo = [];
 
-    public static function getGettable(): array
+    public static function getReadable(): array
     {
         return [
             "Method",
@@ -172,7 +172,7 @@ class Curler implements IReadable, IWritable
         ];
     }
 
-    public static function getSettable(): array
+    public static function getWritable(): array
     {
         return [
             "ThrowHttpErrors",

@@ -58,12 +58,12 @@ class ClosureBuilder
     /**
      * @var bool
      */
-    protected $IsGettable;
+    protected $IsReadable;
 
     /**
      * @var bool
      */
-    protected $IsSettable;
+    protected $IsWritable;
 
     /**
      * @var bool
@@ -90,18 +90,18 @@ class ClosureBuilder
     protected $PublicProperties = [];
 
     /**
-     * Gettable property names
+     * Readable property names
      *
      * @var string[]
      */
-    protected $GettableProperties = [];
+    protected $ReadableProperties = [];
 
     /**
-     * Settable property names
+     * Writable property names
      *
      * @var string[]
      */
-    protected $SettableProperties = [];
+    protected $WritableProperties = [];
 
     /**
      * "Magic" property names => supported actions => method names
@@ -244,35 +244,35 @@ class ClosureBuilder
         $providable    = $class->implementsInterface(IProvidable::class);
         $constructible = $providable || $class->implementsInterface(IConstructible::class);
         $extensible    = $class->implementsInterface(IExtensible::class);
-        $gettable      = $class->implementsInterface(IReadable::class);
-        $settable      = $class->implementsInterface(IWritable::class);
+        $readable      = $class->implementsInterface(IReadable::class);
+        $writable      = $class->implementsInterface(IWritable::class);
         $resolvable    = $class->implementsInterface(IResolvable::class);
 
         // If the class hasn't implemented any of these interfaces, perform a
         // (slower) check using traits
-        if (!($constructible | $extensible | $gettable | $settable | $resolvable))
+        if (!($constructible | $extensible | $readable | $writable | $resolvable))
         {
             $traits        = Reflect::getAllTraits($class);
             $providable    = array_key_exists(TProvidable::class, $traits);
             $constructible = $providable || array_key_exists(TConstructible::class, $traits);
             $extensible    = array_key_exists(TExtensible::class, $traits);
-            $gettable      = array_key_exists(TReadable::class, $traits);
-            $settable      = array_key_exists(TWritable::class, $traits);
+            $readable      = array_key_exists(TReadable::class, $traits);
+            $writable      = array_key_exists(TWritable::class, $traits);
             $resolvable    = array_key_exists(TResolvable::class, $traits);
         }
 
         $this->Class        = $class->name;
-        $this->IsGettable   = $gettable;
-        $this->IsSettable   = $settable;
+        $this->IsReadable   = $readable;
+        $this->IsWritable   = $writable;
         $this->IsExtensible = $extensible;
         $this->IsProvidable = $providable;
 
         $propertyFilter = 0;
         $methodFilter   = 0;
 
-        // IReadable and ISettable provide access to protected and "magic"
+        // IReadable and IWritable provide access to protected and "magic"
         // properties
-        if ($gettable || $settable)
+        if ($readable || $writable)
         {
             $propertyFilter |= ReflectionProperty::IS_PROTECTED;
             $methodFilter   |= ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED;
@@ -309,18 +309,18 @@ class ClosureBuilder
                 }
             }
 
-            if ($gettable)
+            if ($readable)
             {
-                $properties = array_merge($class->getMethod("getGettable")->invoke(null), $this->PublicProperties);
-                $this->GettableProperties = (["*"] === $properties)
+                $properties = array_merge($class->getMethod("getReadable")->invoke(null), $this->PublicProperties);
+                $this->ReadableProperties = (["*"] === $properties)
                     ? $this->Properties
                     : array_intersect($this->Properties, $properties ?: []);
             }
 
-            if ($settable)
+            if ($writable)
             {
-                $properties = array_merge($class->getMethod("getSettable")->invoke(null), $this->PublicProperties);
-                $this->SettableProperties = (["*"] === $properties)
+                $properties = array_merge($class->getMethod("getWritable")->invoke(null), $this->PublicProperties);
+                $this->WritableProperties = (["*"] === $properties)
                     ? $this->Properties
                     : array_intersect($this->Properties, $properties ?: []);
             }
@@ -330,11 +330,11 @@ class ClosureBuilder
         if ($methodFilter)
         {
             $actions = [];
-            if ($gettable)
+            if ($readable)
             {
                 array_push($actions, "get", "isset");
             }
-            if ($settable)
+            if ($writable)
             {
                 array_push($actions, "set", "unset");
             }
@@ -477,7 +477,7 @@ class ClosureBuilder
             }
             elseif ($property = $this->PropertyMap[$normalisedKey] ?? null)
             {
-                if ($this->checkSettable($property, "set"))
+                if ($this->checkWritable($property, "set"))
                 {
                     $propertyKeys[$key] = $property;
                 }
@@ -693,8 +693,8 @@ class ClosureBuilder
         }
         elseif (in_array($property = $this->PropertyMap[$_name] ?? $name, $this->Properties))
         {
-            if ($this->checkGettable($property, $action) &&
-                $this->checkSettable($property, $action))
+            if ($this->checkReadable($property, $action) &&
+                $this->checkWritable($property, $action))
             {
                 switch ($action)
                 {
@@ -762,7 +762,7 @@ class ClosureBuilder
             return $closure;
         }
 
-        $props = $this->GettableProperties ?: $this->PublicProperties;
+        $props = $this->ReadableProperties ?: $this->PublicProperties;
 
         if ($this->Normaliser)
         {
@@ -793,24 +793,24 @@ class ClosureBuilder
         return $closure;
     }
 
-    private function checkGettable(string $property, string $action): bool
+    private function checkReadable(string $property, string $action): bool
     {
-        if (!$this->IsGettable || !in_array($action, ["get", "isset"]))
+        if (!$this->IsReadable || !in_array($action, ["get", "isset"]))
         {
             return true;
         }
 
-        return in_array($property, $this->GettableProperties);
+        return in_array($property, $this->ReadableProperties);
     }
 
-    private function checkSettable(string $property, string $action): bool
+    private function checkWritable(string $property, string $action): bool
     {
-        if (!$this->IsSettable || !in_array($action, ["set", "unset"]))
+        if (!$this->IsWritable || !in_array($action, ["set", "unset"]))
         {
             return true;
         }
 
-        return in_array($property, $this->SettableProperties);
+        return in_array($property, $this->WritableProperties);
     }
 
     /**
