@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
-use Lkrms\Core\Enumeration;
+use Lkrms\Concept\Enumeration;
 
 /**
  * Escape sequences to set and clear terminal display attributes

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Cli;
 
 use Lkrms\Console\Console;
-use Lkrms\Core\Utility;
+use Lkrms\Concept\Utility;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Util\Assert;
 use UnexpectedValueException;

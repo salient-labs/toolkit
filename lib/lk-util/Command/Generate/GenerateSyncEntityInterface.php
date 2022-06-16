@@ -11,6 +11,7 @@ use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Sync\Provider\ISyncProvider;
 use Lkrms\Sync\SyncEntity;
 use Lkrms\Sync\SyncOperation;
+use Lkrms\Util\Composer;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Env;
 use Lkrms\Util\File;
@@ -263,7 +264,7 @@ class GenerateSyncEntityInterface extends CliCommand
         {
             $file = "$interface.php";
 
-            if ($classFile = File::getClassPath($fqcn))
+            if ($classFile = Composer::getClassPath($fqcn))
             {
                 $file = dirname($classFile) . DIRECTORY_SEPARATOR . $file;
             }

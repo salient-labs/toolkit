@@ -6,10 +6,10 @@ namespace Lkrms\Curler;
 
 use DateTimeInterface;
 use Lkrms\Console\Console;
-use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Contract\ISettable;
-use Lkrms\Core\Mixin\TGettable;
-use Lkrms\Core\Mixin\TSettable;
+use Lkrms\Contract\IReadable;
+use Lkrms\Contract\IWritable;
+use Lkrms\Concern\TReadable;
+use Lkrms\Concern\TWritable;
 use Lkrms\Exception\CurlerException;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Util\Composer;
@@ -39,9 +39,9 @@ use UnexpectedValueException;
  * @property bool $ForceNumericKeys
  * @property DateFormatter|null $DateFormatter
  */
-class Curler implements IGettable, ISettable
+class Curler implements IReadable, IWritable
 {
-    use TGettable, TSettable;
+    use TReadable, TWritable;
 
     /**
      * @var string|null
@@ -150,7 +150,7 @@ class Curler implements IGettable, ISettable
      */
     protected static $MultiInfo = [];
 
-    public static function getGettable(): array
+    public static function getReadable(): array
     {
         return [
             "Method",
@@ -172,7 +172,7 @@ class Curler implements IGettable, ISettable
         ];
     }
 
-    public static function getSettable(): array
+    public static function getWritable(): array
     {
         return [
             "ThrowHttpErrors",
@@ -513,7 +513,7 @@ class Curler implements IGettable, ISettable
 
         if ($this->ResponseCode >= 400 && $this->ThrowHttpErrors)
         {
-            throw new CurlerException($this, "HTTP error " . $this->getLastStatusLine());
+            throw new CurlerException($this, "HTTP error " . $this->ResponseStatus);
         }
 
         return $this->ResponseData;

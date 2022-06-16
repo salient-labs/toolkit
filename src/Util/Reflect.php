@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Util;
 
-use Lkrms\Core\Utility;
+use Lkrms\Concept\Utility;
 use ReflectionClass;
 use ReflectionIntersectionType;
 use ReflectionNamedType;

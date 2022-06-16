@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Util;
 
 use Closure;
-use Lkrms\Core\Utility;
+use Lkrms\Concept\Utility;
 use ReflectionFunction;
 
 /**

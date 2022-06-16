@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Support;
 
 use Lkrms\Console\Console;
-use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Mixin\TFullyGettable;
+use Lkrms\Contract\IReadable;
+use Lkrms\Concern\TFullyReadable;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Support\HttpRequest;
 use Lkrms\Support\HttpResponse;
@@ -20,9 +20,9 @@ use Throwable;
  * @property-read int $Port
  * @property-read int $Timeout
  */
-final class HttpServer implements IGettable
+final class HttpServer implements IReadable
 {
-    use TFullyGettable;
+    use TFullyReadable;
 
     /**
      * @internal

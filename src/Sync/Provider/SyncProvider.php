@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Provider;
 
 use Lkrms\Container\Container;
-use Lkrms\Core\Contract\IBindable;
-use Lkrms\Core\Mixin\TBindableSingleton;
+use Lkrms\Contract\IBindable;
+use Lkrms\Concern\TBindableSingleton;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Generate;

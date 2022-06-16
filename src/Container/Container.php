@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Container;
 
 use Dice\Dice;
-use Lkrms\Core\Contract\ConstructorHasNoRequiredParameters;
+use Lkrms\Contract\HasNoRequiredConstructorParameters;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 use UnexpectedValueException;
@@ -18,7 +18,7 @@ use UnexpectedValueException;
  * @link https://r.je/dice Dice home page
  * @link https://github.com/Level-2/Dice Dice repository on GitHub
  */
-class Container implements ContainerInterface, ConstructorHasNoRequiredParameters
+class Container implements ContainerInterface, HasNoRequiredConstructorParameters
 {
     /**
      * @var Container|null

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
-use Lkrms\Core\Enumeration;
+use Lkrms\Concept\Enumeration;
 
 /**
  * Command-line option types

@@ -4,7 +4,7 @@
     "license": "MIT",
     "description": "A PHP toolkit with opinionated defaults and a small footprint",
     "require": {
-        "php": ">=7.4",
+        "php": ">=7.4,<8.2",
         "composer-runtime-api": "^2.2",
         "filp/whoops": "^2",
         "lkrms/dice": "^4.0.3.1",
@@ -13,7 +13,9 @@
     },
     "require-dev": {
         "analog/analog": "^1",
+        "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
+        "phpstan/phpstan-deprecation-rules": "^1",
         "phpunit/phpunit": "^9"
     },
     "suggest": {
@@ -28,6 +30,9 @@
         "bin/lk-util"
     ],
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
     }
 }

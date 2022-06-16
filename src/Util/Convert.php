@@ -9,7 +9,7 @@ use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
-use Lkrms\Core\Utility;
+use Lkrms\Concept\Utility;
 use Lkrms\Support\DateFormatter;
 use UnexpectedValueException;
 

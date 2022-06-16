@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Cli;
 
 use Lkrms\Console\Console;
-use Lkrms\Core\Contract\IBound;
-use Lkrms\Core\Mixin\TBound;
+use Lkrms\Contract\IBound;
+use Lkrms\Concern\TBound;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Util\Assert;
 use Lkrms\Util\Convert;
@@ -56,7 +56,7 @@ abstract class CliCommand implements IBound
      * ```
      *
      * @return array<int,CliOption|array>
-     * @see \Lkrms\Core\Mixin\TConstructible::from()
+     * @see \Lkrms\Concern\TConstructible::from()
      */
     abstract protected function _getOptions(): array;
 
@@ -258,7 +258,7 @@ abstract class CliCommand implements IBound
     {
         if (!($option instanceof CliOption))
         {
-            $option = CliOption::fromArray($option);
+            $option = CliOption::from($this->container(), $option);
         }
 
         $option->validate();

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Provider;
 
-use Lkrms\Container\DI;
+use Lkrms\Facade\DI;
 use Lkrms\Sync\SyncEntity;
 use Lkrms\Sync\SyncOperation;
 use Lkrms\Util\Convert;

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
-use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Mixin\TFullyGettable;
+use Lkrms\Contract\IReadable;
+use Lkrms\Concern\TFullyReadable;
 
 /**
  * @property-read string $Name
  * @property-read string $Value
  */
-final class CurlerHeader implements IGettable
+final class CurlerHeader implements IReadable
 {
-    use TFullyGettable;
+    use TFullyReadable;
 
     /**
      * @internal

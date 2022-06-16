@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync;
 
-use Lkrms\Core\ConvertibleEnumeration;
+use Lkrms\Concept\ConvertibleEnumeration;
 use UnexpectedValueException;
 
 /**

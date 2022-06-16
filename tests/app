@@ -3,8 +3,8 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\App\App;
-use Lkrms\Store\Cache;
+use Lkrms\Facade\App;
+use Lkrms\Facade\Cache;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);

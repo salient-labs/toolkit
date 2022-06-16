@@ -19,7 +19,7 @@ class A
     public function __construct()
     {
         $curl = new Curler("https://api.github.com/meta");
-        $curl->enableDebug();
+        Env::debug(true);
         print_r($curl->get());
         print_r($curl->getJson());
     }
