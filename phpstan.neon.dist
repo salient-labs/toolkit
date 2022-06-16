@@ -41,7 +41,7 @@ parameters:
       path: src/Util/Legacy.php
     -
       message: "#^Closure invoked with [123] parameters?, 1 required\\.$#"
-      path: src/Core/Support/ClosureBuilder.php
+      path: src/Support/ClosureBuilder.php
     -
       message: "#^(Class |Instantiated class )Lkrms(\\\\[^\\s]+)+ not found\\.$#"
       path: tests/legacy

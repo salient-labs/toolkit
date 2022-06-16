@@ -6,10 +6,10 @@ namespace Lkrms\Curler;
 
 use DateTimeInterface;
 use Lkrms\Console\Console;
-use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Contract\ISettable;
-use Lkrms\Core\Mixin\TGettable;
-use Lkrms\Core\Mixin\TSettable;
+use Lkrms\Contract\IReadable;
+use Lkrms\Contract\IWritable;
+use Lkrms\Concern\TReadable;
+use Lkrms\Concern\TWritable;
 use Lkrms\Exception\CurlerException;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Util\Composer;
@@ -39,9 +39,9 @@ use UnexpectedValueException;
  * @property bool $ForceNumericKeys
  * @property DateFormatter|null $DateFormatter
  */
-class Curler implements IGettable, ISettable
+class Curler implements IReadable, IWritable
 {
-    use TGettable, TSettable;
+    use TReadable, TWritable;
 
     /**
      * @var string|null

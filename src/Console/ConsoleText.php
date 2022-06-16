@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 use Lkrms\Console\ConsoleColour as Colour;
-use Lkrms\Core\Utility;
+use Lkrms\Concept\Utility;
 
 /**
  * Format text for console output

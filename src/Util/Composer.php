@@ -6,7 +6,7 @@ namespace Lkrms\Util;
 
 use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
-use Lkrms\Core\Utility;
+use Lkrms\Concept\Utility;
 use RuntimeException;
 
 /**

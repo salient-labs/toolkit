@@ -6,7 +6,7 @@ namespace Lkrms\Util;
 
 use DateTimeZone;
 use Lkrms\Console\Console;
-use Lkrms\Core\Utility;
+use Lkrms\Concept\Utility;
 use RuntimeException;
 use Throwable;
 use UnexpectedValueException;

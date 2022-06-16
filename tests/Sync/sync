@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests\Sync;
 
-use Lkrms\App\App;
+use Lkrms\Facade\App;
 use Lkrms\Console\Console;
 use Lkrms\Sync\Provider\SyncEntityProvider;
 use Lkrms\Sync\SyncEntityFuzzyResolver;

@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Container\DI;
+use Lkrms\Facade\DI;
 use Lkrms\Err\Err;
 use RuntimeException;
 use UnexpectedValueException;

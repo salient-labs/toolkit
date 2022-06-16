@@ -3,15 +3,15 @@
 
 namespace Lkrms\Tests\Template;
 
-use Lkrms\Core\Contract\IExtensible;
-use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Contract\IResolvable;
-use Lkrms\Core\Contract\ISettable;
-use Lkrms\Core\Mixin\TConstructible;
-use Lkrms\Core\Mixin\TExtensible;
-use Lkrms\Core\Mixin\TGettable;
-use Lkrms\Core\Mixin\TResolvable;
-use Lkrms\Core\Mixin\TSettable;
+use Lkrms\Contract\IExtensible;
+use Lkrms\Contract\IReadable;
+use Lkrms\Contract\IResolvable;
+use Lkrms\Contract\IWritable;
+use Lkrms\Concern\TConstructible;
+use Lkrms\Concern\TExtensible;
+use Lkrms\Concern\TReadable;
+use Lkrms\Concern\TResolvable;
+use Lkrms\Concern\TSettable;
 use Lkrms\Err\Err;
 use Throwable;
 use UnexpectedValueException;
@@ -21,9 +21,9 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 
 Err::handleErrors();
 
-class A implements IExtensible, IGettable, ISettable, IResolvable
+class A implements IExtensible, IReadable, IWritable, IResolvable
 {
-    use TConstructible, TExtensible, TGettable, TSettable, TResolvable;
+    use TConstructible, TExtensible, TReadable, TSettable, TResolvable;
 
     public $Id;
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
-use Lkrms\Core\Contract\IConstructible;
-use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Mixin\TConstructible;
-use Lkrms\Core\Mixin\TFullyGettable;
+use Lkrms\Contract\IConstructible;
+use Lkrms\Contract\IReadable;
+use Lkrms\Concern\TConstructible;
+use Lkrms\Concern\TFullyReadable;
 use Lkrms\Util\Assert;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Env;
@@ -37,9 +37,9 @@ use UnexpectedValueException;
  * @property-read string|string[]|bool|int|null $Value
  * @property-read bool $IsValueSet
  */
-class CliOption implements IConstructible, IGettable
+class CliOption implements IConstructible, IReadable
 {
-    use TConstructible, TFullyGettable;
+    use TConstructible, TFullyReadable;
 
     /**
      * @internal
@@ -158,7 +158,7 @@ class CliOption implements IConstructible, IGettable
      * set, instead of `$defaultValue`.
      * @param string|null $delimiter If `$multipleAllowed` is set, use
      * `$delimiter` to split one value into multiple values.
-     * @see \Lkrms\Core\Mixin\TConstructible::from()
+     * @see \Lkrms\Concern\TConstructible::from()
      */
     public function __construct(
         ?string $long,

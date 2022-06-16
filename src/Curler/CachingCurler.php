@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
-use Lkrms\Store\Cache;
+use Lkrms\Facade\Cache;
 use Lkrms\Util\Generate;
 
 /**

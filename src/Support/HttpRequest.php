@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Support;
 
-use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Mixin\TFullyGettable;
+use Lkrms\Contract\IReadable;
+use Lkrms\Concern\TFullyReadable;
 use Lkrms\Curler\CurlerHeaders;
 
 /**
@@ -17,9 +17,9 @@ use Lkrms\Curler\CurlerHeaders;
  * @property-read string|null $Body
  * @property-read string|null $Client
  */
-final class HttpRequest implements IGettable
+final class HttpRequest implements IReadable
 {
-    use TFullyGettable;
+    use TFullyReadable;
 
     /**
      * @internal

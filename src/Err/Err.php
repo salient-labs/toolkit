@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Err;
 
-use Lkrms\Core\Contract\ISingular;
+use Lkrms\Contract\ISingular;
 use RuntimeException;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;

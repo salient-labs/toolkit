@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Util;
 
 use Composer\Autoload\ClassLoader;
-use Lkrms\Core\Utility;
+use Lkrms\Concept\Utility;
 use RuntimeException;
 
 /**

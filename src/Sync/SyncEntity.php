@@ -6,10 +6,10 @@ namespace Lkrms\Sync;
 
 use DateTimeInterface;
 use JsonSerializable;
-use Lkrms\Core\Contract\IClassCache;
-use Lkrms\Core\Entity\ProviderEntity;
-use Lkrms\Core\Mixin\TClassCache;
-use Lkrms\Core\Support\ClosureBuilder;
+use Lkrms\Contract\IClassCache;
+use Lkrms\Concept\ProviderEntity;
+use Lkrms\Concern\TClassCache;
+use Lkrms\Support\ClosureBuilder;
 use Lkrms\Sync\Provider\SyncEntityProvider;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Reflect;
@@ -21,8 +21,8 @@ use UnexpectedValueException;
  * By default:
  * - All `protected` properties are gettable and settable.
  *
- *   To change this, override {@see \Lkrms\Core\Mixin\TGettable::getGettable()}
- *   and/or {@see \Lkrms\Core\Mixin\TSettable::getSettable()}.
+ *   To change this, override {@see \Lkrms\Concern\TReadable::getGettable()}
+ *   and/or {@see \Lkrms\Concern\TSettable::getSettable()}.
  *
  * - {@see SyncEntity::serialize()} returns an associative array of `public`
  *   property values.

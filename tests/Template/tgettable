@@ -3,11 +3,11 @@
 
 namespace Lkrms\Tests\Template;
 
-use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Contract\ISettable;
-use Lkrms\Core\Mixin\TFullyGettable;
-use Lkrms\Core\Mixin\TGettable;
-use Lkrms\Core\Mixin\TSettable;
+use Lkrms\Contract\IReadable;
+use Lkrms\Contract\IWritable;
+use Lkrms\Concern\TFullyGettable;
+use Lkrms\Concern\TReadable;
+use Lkrms\Concern\TSettable;
 use Lkrms\Err\Err;
 use RuntimeException;
 use Throwable;
@@ -17,7 +17,7 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 
 Err::handleErrors();
 
-class A implements ISettable
+class A implements IWritable
 {
     use TSettable;
 
@@ -33,7 +33,7 @@ class A implements ISettable
     protected $Unwritable = "can't change me";
 }
 
-class B extends A implements IGettable
+class B extends A implements IReadable
 {
     use TFullyGettable;
 
@@ -78,9 +78,9 @@ class B extends A implements IGettable
     private $DoNotEven;
 }
 
-class C implements IGettable, ISettable
+class C implements IReadable, IWritable
 {
-    use TGettable, TSettable;
+    use TReadable, TSettable;
 
     public static function getGettable(): array
     {

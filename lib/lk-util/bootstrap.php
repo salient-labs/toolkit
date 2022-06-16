@@ -2,7 +2,7 @@
 
 namespace Lkrms\LkUtil;
 
-use Lkrms\App\App;
+use Lkrms\Facade\App;
 use Lkrms\Cli\Cli;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityClass;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityInterface;

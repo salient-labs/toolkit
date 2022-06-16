@@ -3,12 +3,12 @@
 
 namespace Lkrms\Tests\Reflect;
 
-use Lkrms\Core\Mixin\TConstructible;
-use Lkrms\Core\Mixin\TExtensible;
-use Lkrms\Core\Mixin\TFullyGettable;
-use Lkrms\Core\Mixin\TResolvable;
-use Lkrms\Core\Mixin\TSettable;
-use Lkrms\Core\Support\ClosureBuilder;
+use Lkrms\Concern\TConstructible;
+use Lkrms\Concern\TExtensible;
+use Lkrms\Concern\TFullyGettable;
+use Lkrms\Concern\TResolvable;
+use Lkrms\Concern\TSettable;
+use Lkrms\Support\ClosureBuilder;
 use Lkrms\Err\Err;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");

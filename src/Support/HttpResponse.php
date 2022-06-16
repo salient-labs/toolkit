@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Support;
 
-use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Mixin\TFullyGettable;
+use Lkrms\Contract\IReadable;
+use Lkrms\Concern\TFullyReadable;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Util\Convert;
 
@@ -17,9 +17,9 @@ use Lkrms\Util\Convert;
  * @property-read CurlerHeaders $Headers
  * @property-read string|null $Body
  */
-final class HttpResponse implements IGettable
+final class HttpResponse implements IReadable
 {
-    use TFullyGettable;
+    use TFullyReadable;
 
     /**
      * @internal

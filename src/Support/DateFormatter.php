@@ -6,17 +6,17 @@ namespace Lkrms\Support;
 
 use DateTimeInterface;
 use DateTimeZone;
-use Lkrms\Core\Contract\IGettable;
-use Lkrms\Core\Mixin\TFullyGettable;
+use Lkrms\Contract\IReadable;
+use Lkrms\Concern\TFullyReadable;
 use Lkrms\Util\Convert;
 
 /**
  * @property-read string $Format
  * @property-read DateTimeZone|null $Timezone
  */
-final class DateFormatter implements IGettable
+final class DateFormatter implements IReadable
 {
-    use TFullyGettable;
+    use TFullyReadable;
 
     public const DEFAULT = DateTimeInterface::ATOM;
 
