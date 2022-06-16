@@ -1,0 +1,70 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests;
+
+use Lkrms\Concept\TypedCollection;
+use Lkrms\Err\Err;
+use RuntimeException;
+use Throwable;
+
+$loader = require (__DIR__ . "/../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+
+Err::handleErrors();
+
+class Entity
+{
+    public $Name;
+
+    public function __construct(string $name)
+    {
+        $this->Name = $name;
+    }
+}
+
+class EntityCollection extends TypedCollection
+{
+    protected function compareItems($a, $b): int
+    {
+        return strlen($b->Name) - strlen($a->Name);
+    }
+
+    protected function getItemClass(): string
+    {
+        return Entity::class;
+    }
+}
+
+$collection = new EntityCollection();
+
+$collection[]      = new Entity("delta");
+$collection[]      = new Entity("november");
+$collection[]      = $c = new Entity("charlie");
+$collection["ccc"] = $c;
+
+try
+{
+    $collection[] = "romeo";
+    throw new RuntimeException("ERROR: added a string to an EntityCollection!");
+}
+catch (Throwable $ex)
+{
+    $exceptions[] = $ex;
+}
+
+$sorted = $collection->sort();
+
+print_r([
+    '$collection'             => $collection,
+    '$collection->toArray()'  => $collection->toArray(),
+    '$sorted (longest first)' => $sorted,
+    '$exceptions'             => $exceptions,
+]);
+
+echo "\nKey is now: " . $collection->key() . "\n\n";
+foreach ($collection as $key => $value)
+{
+    printf("[%s]->Name => %s\n", $key, $value->Name);
+    echo " -> Key is now: " . $collection->key() . "\n\n";
+}
