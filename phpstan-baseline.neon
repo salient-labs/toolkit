@@ -40,3 +40,8 @@ parameters:
 			count: 1
 			path: src/Sync/Provider/SyncEntityProvider.php
 
+		-
+			message: "#^Casting class ReflectionType to string is deprecated\\.$#"
+			count: 1
+			path: src/Util/Reflect.php
+

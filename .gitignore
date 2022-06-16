@@ -1,14 +1,19 @@
-/build/
-/vendor/
 composer.phar
-*.generated.*
-*.log
-
-phpdoc.xml
+/vendor/
 
 phpstan.neon
 
 phpunit.xml
 .phpunit.*
 
+.env
+*.generated.php
+*.log
+/var/
+
+!/tests/.env
 /tests/.tmp
+
+/build/
+
+phpdoc.xml

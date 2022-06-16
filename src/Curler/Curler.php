@@ -513,7 +513,7 @@ class Curler implements IGettable, ISettable
 
         if ($this->ResponseCode >= 400 && $this->ThrowHttpErrors)
         {
-            throw new CurlerException($this, "HTTP error " . $this->getLastStatusLine());
+            throw new CurlerException($this, "HTTP error " . $this->ResponseStatus);
         }
 
         return $this->ResponseData;

@@ -10,6 +10,7 @@ use Lkrms\Cli\CliOptionType;
 use Lkrms\Console\Console;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 use Lkrms\Sync\SyncEntity;
+use Lkrms\Util\Composer;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Env;
 use Lkrms\Util\File;
@@ -272,7 +273,7 @@ class GenerateSyncEntityClass extends CliCommand
         {
             $file = "$class.php";
 
-            if ($dir = File::getNamespacePath($namespace))
+            if ($dir = Composer::getNamespacePath($namespace))
             {
                 if (!is_dir($dir))
                 {

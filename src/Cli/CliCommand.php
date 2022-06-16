@@ -258,7 +258,7 @@ abstract class CliCommand implements IBound
     {
         if (!($option instanceof CliOption))
         {
-            $option = CliOption::fromArray($option);
+            $option = CliOption::from($this->container(), $option);
         }
 
         $option->validate();
