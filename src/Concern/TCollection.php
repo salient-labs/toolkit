@@ -5,28 +5,32 @@ declare(strict_types=1);
 namespace Lkrms\Concern;
 
 use Lkrms\Concern\HasItems;
+use RuntimeException;
 
 /**
- * Implements Iterator, ArrayAccess and Countable to provide a simple array-like
- * collection
+ * Implements ICollection to provide simple array-like collection objects
  *
  * To maintain support for PHP 7.4 when PHP 9 enforces compatible return types,
  * `Iterator` and `ArrayAccess` methods with backward-incompatible return types
  * are provided by a separate version-specific trait.
  *
- * @see \Lkrms\Concept\TypedCollection
+ * @see \Lkrms\Contract\ICollection
  * @see \Lkrms\Concern\Partial\TCollection
+ * @see \Lkrms\Concept\TypedCollection
  */
 trait TCollection
 {
     use HasItems, \Lkrms\Concern\Partial\TCollection;
 
     /**
-     * @return mixed[]
+     * @return iterable<mixed>
      */
-    final public function toArray(): array
+    final public function toList(): iterable
     {
-        return $this->Items;
+        foreach ($this->Items as $item)
+        {
+            yield $item;
+        }
     }
 
     // Partial implementation of `Iterator`:
@@ -55,14 +59,11 @@ trait TCollection
 
     final public function offsetSet($offset, $value): void
     {
-        if (is_null($offset))
+        if (!is_null($offset))
         {
-            $this->Items[] = $value;
+            throw new RuntimeException("Items cannot be added by key");
         }
-        else
-        {
-            $this->Items[$offset] = $value;
-        }
+        $this->Items[] = $value;
     }
 
     final public function offsetUnset($offset): void

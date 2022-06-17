@@ -32,6 +32,7 @@ parameters:
     - tests/Template/tconstructible
     - tests/Template/tgettable
     - tests/trash
+    - tests/typedcollection
   bootstrapFiles:
     - tests/bootstrap.php
   ignoreErrors:

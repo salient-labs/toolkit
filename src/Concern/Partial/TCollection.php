@@ -18,6 +18,8 @@ if (PHP_VERSION_ID < 80000)
      */
     trait TCollection
     {
+        // Partial implementation of `Iterator`:
+
         /**
          * @return mixed|false
          */
@@ -27,12 +29,14 @@ if (PHP_VERSION_ID < 80000)
         }
 
         /**
-         * @return int|string|null
+         * @return int|null
          */
         final public function key()
         {
             return key($this->Items);
         }
+
+        // Partial implementation of `ArrayAccess`:
 
         /**
          * @return mixed
