@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-trait TSortable
+trait HasSortableItems
 {
     use HasItems;
 
     protected function compareItems($a, $b): int
     {
-        return $a == $b ? 0 : ($a < $b ? -1 : 1);
+        return $a <=> $b;
     }
 
     private function sortItems(): void
@@ -19,15 +19,12 @@ trait TSortable
     }
 
     /**
-     * Get a sorted copy of the object
-     *
      * @return static
      */
-    public function sort()
+    final public function sort()
     {
-        $copy = clone $this;
-        $copy->sortItems();
-        return $copy;
+        $this->sortItems();
+        return $this;
     }
 
 }

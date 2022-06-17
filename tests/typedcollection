@@ -38,10 +38,19 @@ class EntityCollection extends TypedCollection
 
 $collection = new EntityCollection();
 
-$collection[]      = new Entity("delta");
-$collection[]      = new Entity("november");
-$collection[]      = $c = new Entity("charlie");
-$collection["ccc"] = $c;
+$collection[] = new Entity("delta");
+$collection[] = new Entity("november");
+$collection[] = new Entity("charlie");
+
+try
+{
+    $collection["f"] = new Entity("foxtrot");
+    throw new RuntimeException("ERROR: added an item to a collection by key!");
+}
+catch (Throwable $ex)
+{
+    $exceptions[] = $ex;
+}
 
 try
 {
@@ -53,11 +62,11 @@ catch (Throwable $ex)
     $exceptions[] = $ex;
 }
 
-$sorted = $collection->sort();
+$sorted = (clone $collection)->sort();
 
 print_r([
     '$collection'             => $collection,
-    '$collection->toArray()'  => $collection->toArray(),
+    '$collection->toList()'   => iterator_to_array($collection->toList()),
     '$sorted (longest first)' => $sorted,
     '$exceptions'             => $exceptions,
 ]);

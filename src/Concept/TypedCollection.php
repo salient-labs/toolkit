@@ -2,19 +2,18 @@
 
 namespace Lkrms\Concept;
 
-use ArrayAccess;
-use Countable;
-use Iterator;
+use Lkrms\Concern\HasSortableItems;
 use Lkrms\Concern\TCollection;
-use Lkrms\Concern\TSortable;
+use Lkrms\Contract\ICollection;
 use UnexpectedValueException;
 
 /**
  * Base class for collections of objects of a particular type
+ *
  */
-abstract class TypedCollection implements Iterator, ArrayAccess, Countable
+abstract class TypedCollection implements ICollection
 {
-    use TCollection, TSortable
+    use TCollection, HasSortableItems
     {
         TCollection::offsetSet as private _offsetSet;
     }
