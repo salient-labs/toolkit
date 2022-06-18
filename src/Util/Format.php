@@ -67,6 +67,17 @@ final class Format extends Utility
         return $value ? "true" : "false";
     }
 
+    /**
+     * Return "yes" if a boolean is true, "no" if it's not
+     *
+     * @param bool $value
+     * @return string Either `"yes"` or `"no"`.
+     */
+    public static function yn(bool $value): string
+    {
+        return $value ? "yes" : "no";
+    }
+
     private static function getBetween(string $between): array
     {
         if (strlen($between) % 2)

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync;
 
-use Lkrms\Concept\ConvertibleEnumeration;
+use Lkrms\Concept\Enumeration;
+use Lkrms\Contract\IConvertibleEnumeration;
 use UnexpectedValueException;
 
 /**
  * Sync operation types
  *
  */
-final class SyncOperation extends ConvertibleEnumeration
+final class SyncOperation extends Enumeration implements IConvertibleEnumeration
 {
     /**
      * Add an entity to the connected system
@@ -122,14 +123,14 @@ final class SyncOperation extends ConvertibleEnumeration
      * @var array<string,int>
      */
     private const VALUE_MAP = [
-        "CREATE"      => self::CREATE,
-        "READ"        => self::READ,
-        "UPDATE"      => self::UPDATE,
-        "DELETE"      => self::DELETE,
-        "CREATE_LIST" => self::CREATE_LIST,
-        "READ_LIST"   => self::READ_LIST,
-        "UPDATE_LIST" => self::UPDATE_LIST,
-        "DELETE_LIST" => self::DELETE_LIST,
+        "create"      => self::CREATE,
+        "read"        => self::READ,
+        "update"      => self::UPDATE,
+        "delete"      => self::DELETE,
+        "create_list" => self::CREATE_LIST,
+        "read_list"   => self::READ_LIST,
+        "update_list" => self::UPDATE_LIST,
+        "delete_list" => self::DELETE_LIST,
     ];
 
     /**
@@ -148,7 +149,7 @@ final class SyncOperation extends ConvertibleEnumeration
 
     public static function fromName(string $name): int
     {
-        if (is_null($value = self::VALUE_MAP[$name] ?? null))
+        if (is_null($value = self::VALUE_MAP[strtolower($name)] ?? null))
         {
             throw new UnexpectedValueException("Invalid SyncOperation name: $name");
         }
