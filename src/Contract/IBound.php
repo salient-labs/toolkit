@@ -9,7 +9,7 @@ use Psr\Container\ContainerInterface as Container;
 /**
  * Binds instances to a container
  *
- * - Instances SHOULD bind to their containers of origin by accepting a
+ * - Instances MAY bind to their containers of origin by accepting a
  *   {@see Container} constructor parameter
  * - Each instance MUST return the same container every time
  *   {@see IBound::container()} is called

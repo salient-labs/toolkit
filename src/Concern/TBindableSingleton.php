@@ -6,31 +6,12 @@ namespace Lkrms\Concern;
 
 use Lkrms\Container\Container;
 
-/**
- * Partially implements IBindable to provide services and bind them to
- * containers
- *
- * @see \Lkrms\Contract\IBindable
- */
 trait TBindableSingleton
 {
-    /**
-     * @var Container
-     */
-    private $Container;
-
-    public function __construct(Container $container)
-    {
-        $this->Container = $container;
-    }
+    use TBindable;
 
     final public static function bind(Container $container)
     {
         $container->singleton(static::class);
-    }
-
-    final public function container(): Container
-    {
-        return $this->Container;
     }
 }

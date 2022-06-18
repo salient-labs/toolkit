@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Lkrms\Concern;
 
 /**
- * Implements IClassCache to share an ephemeral cache between instances of the
- * same class
+ * Shares an ephemeral cache between instances of the same class
  *
- * @see \Lkrms\Contract\IClassCache
  */
-trait TClassCache
+trait HasClassCache
 {
     private static $ClassCache = [];
 

@@ -39,7 +39,7 @@ final class ConsoleLevel extends Enumeration
     {
         if (is_null($logLevel = self::LOG_LEVEL_MAP[$level] ?? null))
         {
-            throw new UnexpectedValueException("Invalid level: $level");
+            throw new UnexpectedValueException("Invalid ConsoleLevel: $level");
         }
 
         return $logLevel;

@@ -99,27 +99,6 @@ abstract class SyncProvider implements ISyncProvider, IBindable
     {
     }
 
-    final public function invokeInBoundContainer(callable $callback, Container $container = null)
-    {
-        if (!$container)
-        {
-            $container = $this->container();
-        }
-        $container->push();
-        try
-        {
-            static::bindServices($container);
-            static::bindConcrete($container);
-            $clone = clone $container;
-            $container->bindContainer($clone);
-            return $callback($clone);
-        }
-        finally
-        {
-            $container->pop();
-        }
-    }
-
     protected function _getDateFormatter(): DateFormatter
     {
         return new DateFormatter();

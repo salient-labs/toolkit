@@ -44,7 +44,6 @@ final class Legacy extends Utility
 
         \Lkrms\Core\Contract\IBindable::class               => \Lkrms\Contract\IBindable::class,
         \Lkrms\Core\Contract\IBound::class                  => \Lkrms\Contract\IBound::class,
-        \Lkrms\Core\Contract\IClassCache::class             => \Lkrms\Contract\IClassCache::class,
         \Lkrms\Core\Contract\IConstructible::class          => \Lkrms\Contract\IConstructible::class,
         \Lkrms\Core\Contract\IConvertibleEnumeration::class => \Lkrms\Contract\IConvertibleEnumeration::class,
         \Lkrms\Core\Contract\IEnumeration::class            => \Lkrms\Contract\IEnumeration::class,
@@ -54,16 +53,16 @@ final class Legacy extends Utility
         \Lkrms\Core\Contract\IProvider::class               => \Lkrms\Contract\IProvider::class,
         \Lkrms\Core\Contract\IResolvable::class             => \Lkrms\Contract\IResolvable::class,
         \Lkrms\Core\Contract\ISettable::class               => \Lkrms\Contract\IWritable::class,
-        \Lkrms\Core\Contract\ISingular::class               => \Lkrms\Contract\ISingular::class,
+        \Lkrms\Core\Contract\ISingular::class               => \Lkrms\Contract\IFacade::class,
         \Lkrms\Core\Mixin\TBindableSingleton::class         => \Lkrms\Concern\TBindableSingleton::class,
         \Lkrms\Core\Mixin\TBound::class                     => \Lkrms\Concern\TBound::class,
-        \Lkrms\Core\Mixin\TClassCache::class                => \Lkrms\Concern\TClassCache::class,
+        \Lkrms\Core\Mixin\TClassCache::class                => \Lkrms\Concern\HasClassCache::class,
         \Lkrms\Core\Mixin\TConstructible::class             => \Lkrms\Concern\TConstructible::class,
         \Lkrms\Core\Mixin\TExtensible::class                => \Lkrms\Concern\TExtensible::class,
         \Lkrms\Core\Mixin\TFullyGettable::class             => \Lkrms\Concern\TFullyReadable::class,
         \Lkrms\Core\Mixin\TFullySettable::class             => \Lkrms\Concern\TFullyWritable::class,
         \Lkrms\Core\Mixin\TGettable::class                  => \Lkrms\Concern\TReadable::class,
-        \Lkrms\Core\Mixin\TPluralClassName::class           => \Lkrms\Concern\TPluralClassName::class,
+        \Lkrms\Core\Mixin\TPluralClassName::class           => \Lkrms\Concern\ClassNameHasPluralForm::class,
         \Lkrms\Core\Mixin\TProvidable::class                => \Lkrms\Concern\TProvidable::class,
         \Lkrms\Core\Mixin\TResolvable::class                => \Lkrms\Concern\TResolvable::class,
         \Lkrms\Core\Mixin\TSettable::class                  => \Lkrms\Concern\TWritable::class,
@@ -75,7 +74,6 @@ final class Legacy extends Utility
         \Lkrms\Core\TypedCollection::class                  => \Lkrms\Concept\TypedCollection::class,
         \Lkrms\Core\Utility::class                          => \Lkrms\Concept\Utility::class,
 
-        \Lkrms\Core\Contract\ClassNameIsSingular::class => \Lkrms\Contract\HasSingularClassName::class,
         \Lkrms\Core\Contract\ConstructorHasNoRequiredParameters::class => \Lkrms\Contract\HasNoRequiredConstructorParameters::class,
     ];
 

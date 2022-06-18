@@ -6,6 +6,7 @@
     "require": {
         "php": ">=7.4,<8.2",
         "composer-runtime-api": "^2.2",
+        "adodb/adodb-php": "^5.22",
         "filp/whoops": "^2",
         "lkrms/dice": "^4.0.3.1",
         "psr/container": "^2",

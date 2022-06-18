@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Err;
 
-use Lkrms\Contract\ISingular;
+use Lkrms\Contract\IFacade;
 use RuntimeException;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
@@ -13,7 +13,7 @@ use Whoops\Run;
  * A facade for Whoops
  *
  */
-final class Err implements ISingular
+final class Err implements IFacade
 {
     /**
      * @var Run|null

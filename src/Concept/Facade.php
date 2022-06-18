@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Lkrms\Concept;
 
 use Lkrms\Container\Container;
-use Lkrms\Contract\ISingular;
+use Lkrms\Contract\IFacade;
 use RuntimeException;
 
 /**
  * Base class for facades
  *
  */
-abstract class Facade implements ISingular
+abstract class Facade implements IFacade
 {
     /**
      * Return the class or interface to instantiate behind the facade
