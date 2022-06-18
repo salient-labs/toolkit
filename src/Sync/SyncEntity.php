@@ -6,9 +6,8 @@ namespace Lkrms\Sync;
 
 use DateTimeInterface;
 use JsonSerializable;
-use Lkrms\Contract\IClassCache;
 use Lkrms\Concept\ProviderEntity;
-use Lkrms\Concern\TClassCache;
+use Lkrms\Concern\HasClassCache;
 use Lkrms\Support\ClosureBuilder;
 use Lkrms\Sync\Provider\SyncEntityProvider;
 use Lkrms\Util\Convert;
@@ -35,9 +34,9 @@ use UnexpectedValueException;
  *   fields replaced with their {@see SyncEntity::$Id} during serialization.
  *
  */
-abstract class SyncEntity extends ProviderEntity implements IClassCache, JsonSerializable
+abstract class SyncEntity extends ProviderEntity implements JsonSerializable
 {
-    use TClassCache;
+    use HasClassCache;
 
     /**
      * @var int|string|null

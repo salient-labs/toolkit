@@ -9,7 +9,7 @@ namespace Lkrms\Contract;
  *
  * @see \Lkrms\Concept\Facade
  */
-interface ISingular
+interface IFacade
 {
     /**
      * Return true if the underlying instance has been created

@@ -48,9 +48,9 @@ interface IBindable extends IBound
      * restoring the container to its original state
      *
      * @param callable $callback A clone of the service container is passed to
-     * `$callback` to ensure bindings applied by the class are used in contexts
-     * where the global container may have changed, e.g. in generator functions,
-     * which don't run until they are traversed.
+     * `$callback` to ensure bindings applied by the class can be used in
+     * contexts where the global container may have changed, e.g. in generator
+     * functions, which don't run until they are traversed.
      * ```php
      * callback(\Psr\Container\ContainerInterface $container): mixed
      * ```
