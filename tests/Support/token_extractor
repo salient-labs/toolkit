@@ -1,0 +1,26 @@
+#!/usr/bin/env php
+<?php
+
+namespace Lkrms\Tests\Support;
+
+use Lkrms\Err\Err;
+use Lkrms\Support\TokenExtractor;
+use My\Full\Classname as Another;
+use My\Full\NSname;
+use ArrayObject;
+use function My\Full\functionName;
+use function My\Full\functionName as func;
+use const My\Full\CONSTANT;
+
+use My\Full\Classname as AnotherClass, My\Full\Classname;
+use some\namespace\ { ClassA, ClassB, ClassC as C, special\ClassD as D };
+use function some\namespace\ { fn_a, fn_b, fn_c };
+use const some\namespace\ { ConstA, ConstB, ConstC };
+
+$loader = require (__DIR__ . "/../../vendor/autoload.php");
+$loader->addPsr4("Lkrms\\Tests\\", dirname(__DIR__));
+
+Err::handleErrors();
+
+$extractor = new TokenExtractor(__FILE__);
+print_r($extractor->getUseMap());

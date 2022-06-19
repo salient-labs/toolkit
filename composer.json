@@ -19,13 +19,13 @@
         "phpstan/phpstan-deprecation-rules": "^1",
         "phpunit/phpunit": "^9"
     },
-    "suggest": {
-        "analog/analog": "Log console output to Analog"
-    },
     "autoload": {
         "psr-4": {
             "Lkrms\\": "src/"
-        }
+        },
+        "files": [
+            "vendor/adodb/adodb-php/adodb-exceptions.inc.php"
+        ]
     },
     "bin": [
         "bin/lk-util"

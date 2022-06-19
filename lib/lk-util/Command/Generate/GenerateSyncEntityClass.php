@@ -21,10 +21,10 @@ use RuntimeException;
  * Generates SyncEntity subclasses from sample entities
  *
  * Environment variables:
- * - `SYNC_NAMESPACE`
- * - `SYNC_PACKAGE`
- * - `SYNC_PROVIDER`
- * - `SYNC_PROVIDER_NAMESPACE`
+ * - `DEFAULT_NAMESPACE`
+ * - `PHPDOC_PACKAGE`
+ * - `DEFAULT_PROVIDER`
+ * - `PROVIDER_NAMESPACE`
  *
  */
 class GenerateSyncEntityClass extends CliCommand
@@ -52,7 +52,7 @@ class GenerateSyncEntityClass extends CliCommand
                 "valueName"   => "PACKAGE",
                 "description" => "The PHPDoc package",
                 "optionType"  => CliOptionType::VALUE,
-                "env"         => "SYNC_PACKAGE",
+                "env"         => "PHPDOC_PACKAGE",
             ], [
                 "long"        => "desc",
                 "short"       => "d",
@@ -87,7 +87,7 @@ class GenerateSyncEntityClass extends CliCommand
                 "valueName"   => "CLASS",
                 "description" => "The HttpSyncProvider class to retrieve a sample entity from",
                 "optionType"  => CliOptionType::VALUE,
-                "env"         => "SYNC_PROVIDER",
+                "env"         => "DEFAULT_PROVIDER",
             ], [
                 "long"        => "endpoint",
                 "short"       => "e",
@@ -103,7 +103,7 @@ class GenerateSyncEntityClass extends CliCommand
         $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
         $class      = array_pop($namespace);
         $vendor     = reset($namespace) ?: "";
-        $namespace  = implode("\\", $namespace) ?: Env::get("SYNC_NAMESPACE", "");
+        $namespace  = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
         $fqcn       = $namespace ? $namespace . "\\" . $class : $class;
         $package    = $this->getOptionValue("package");
         $desc       = $this->getOptionValue("desc");
@@ -121,7 +121,7 @@ class GenerateSyncEntityClass extends CliCommand
         {
             if (!class_exists($providerClass) &&
                 !(strpos($providerClass, "\\") === false &&
-                    ($providerNamespace         = Env::get("SYNC_PROVIDER_NAMESPACE", "")) &&
+                    ($providerNamespace         = Env::get("PROVIDER_NAMESPACE", "")) &&
                     class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
             {
                 throw new InvalidCliArgumentException("class does not exist: $providerClass");
@@ -279,7 +279,6 @@ class GenerateSyncEntityClass extends CliCommand
                 {
                     mkdir($dir, 0777, true);
                 }
-
                 $file = $dir . DIRECTORY_SEPARATOR . $file;
             }
 
@@ -290,7 +289,7 @@ class GenerateSyncEntityClass extends CliCommand
                     Console::warn("File already exists:", $file);
                     $file = preg_replace('/\.php$/', ".generated.php", $file);
                 }
-                else
+                if (file_exists($file))
                 {
                     $verb = "Replacing";
                 }

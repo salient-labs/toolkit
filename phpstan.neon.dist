@@ -28,6 +28,7 @@ parameters:
     - tests/Reflect/reflect
     - tests/sql
     - tests/Support/http_server
+    - tests/Support/token_extractor
     - tests/Sync/sync
     - tests/Template/tconstructible
     - tests/Template/tgettable
@@ -53,4 +54,7 @@ parameters:
     -
       message: "#^Call to static method [^\\s]+\\(\\) on an unknown class Lkrms\\\\[^\\s]+\\.$#"
       path: tests/legacy
+    -
+      message: "#^Used (constant|function) [^\\s]+ not found\\.$#"
+      path: tests/Support/token_extractor
   reportUnmatchedIgnoredErrors: false

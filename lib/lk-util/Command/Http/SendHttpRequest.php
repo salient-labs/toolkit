@@ -41,7 +41,7 @@ class SendHttpRequest extends CliCommand
                 "description" => "The HttpSyncProvider class to use",
                 "optionType"  => CliOptionType::VALUE,
                 "required"    => true,
-                "env"         => "SYNC_PROVIDER",
+                "env"         => "DEFAULT_PROVIDER",
             ],
             [
                 "long"        => "endpoint",
@@ -112,7 +112,7 @@ class SendHttpRequest extends CliCommand
 
         if (!class_exists($providerClass) &&
             !(strpos($providerClass, "\\") === false &&
-                ($providerNamespace         = Env::get("SYNC_PROVIDER_NAMESPACE", "")) &&
+                ($providerNamespace         = Env::get("PROVIDER_NAMESPACE", "")) &&
                 class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
         {
             throw new InvalidCliArgumentException("class does not exist: $providerClass");

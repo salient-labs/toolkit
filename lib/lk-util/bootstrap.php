@@ -4,6 +4,7 @@ namespace Lkrms\LkUtil;
 
 use Lkrms\Facade\App;
 use Lkrms\Cli\Cli;
+use Lkrms\LkUtil\Command\Generate\GenerateFacadeClass;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityClass;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityInterface;
 use Lkrms\LkUtil\Command\Http\SendHttpRequest;
@@ -21,8 +22,9 @@ if ($app->hasCacheStore())
     $app->enableCache();
 }
 
-GenerateSyncEntityClass::register($app, ["generate", "sync-entity"]);
-GenerateSyncEntityInterface::register($app, ["generate", "sync-entity-provider"]);
+GenerateFacadeClass::register($app, ["generate", "facade"]);
+GenerateSyncEntityClass::register($app, ["generate", "sync", "entity"]);
+GenerateSyncEntityInterface::register($app, ["generate", "sync", "provider"]);
 SendHttpRequest::register($app, ["http", "get"]);
 SendHttpRequest::register($app, ["http", "head"]);
 SendHttpRequest::register($app, ["http", "post"]);
