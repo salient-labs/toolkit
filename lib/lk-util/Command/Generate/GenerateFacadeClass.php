@@ -73,6 +73,11 @@ class GenerateFacadeClass extends CliCommand
                 "short"       => "f",
                 "description" => "Overwrite the class file if it already exists",
             ],
+            [
+                "long"        => "declared",
+                "short"       => "e",
+                "description" => "Ignore inherited methods",
+            ],
         ];
     }
 
@@ -89,8 +94,9 @@ class GenerateFacadeClass extends CliCommand
         $facadeFqcn      = $facadeNamespace ? $facadeNamespace . "\\" . $facade : $facade;
         $classPrefix     = $facadeNamespace ? "\\" : "";
 
-        $package = $this->getOptionValue("package");
-        $desc    = $this->getOptionValue("desc") ?: "A facade for $class";
+        $package  = $this->getOptionValue("package");
+        $desc     = $this->getOptionValue("desc") ?: "A facade for $class";
+        $declared = $this->getOptionValue("declared");
 
         $extends = trim(Facade::class, "\\");
         $service = $fqcn;
@@ -165,9 +171,14 @@ class GenerateFacadeClass extends CliCommand
             return $typeNameCallback($name) ?: $name;
         };
 
+        usort($_methods, fn(ReflectionMethod $a, ReflectionMethod $b) => $a->getName() <=> $b->getName());
         $methods = [];
         foreach ($_methods as $_method)
         {
+            if ($declared && $_method->getDeclaringClass() != $_class)
+            {
+                continue;
+            }
             $method = $_method->getName();
             if (strpos($method, "__") === 0)
             {
@@ -230,7 +241,7 @@ class GenerateFacadeClass extends CliCommand
             "namespace $facadeNamespace;",
             implode(PHP_EOL, $imports),
             implode(PHP_EOL, $docBlock) . PHP_EOL .
-            "class $facade extends $extends" . PHP_EOL .
+            "final class $facade extends $extends" . PHP_EOL .
             "{"
         ];
 
