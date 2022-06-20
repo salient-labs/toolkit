@@ -140,7 +140,7 @@ final class Convert extends Utility
     }
 
     /**
-     * Remove the namespace from a fully-qualified class name
+     * Remove the namespace from a class name
      *
      * @param string $class
      * @return string
@@ -148,6 +148,20 @@ final class Convert extends Utility
     public static function classToBasename(string $class): string
     {
         return substr(strrchr("\\" . $class, "\\"), 1);
+    }
+
+    /**
+     * Return the namespace of a class
+     *
+     * Returns an empty string if `$class` is not namespaced, otherwise returns
+     * the namespace followed by a namespace separator.
+     *
+     * @param string $class
+     * @return string
+     */
+    public static function classToNamespace(string $class): string
+    {
+        return substr($class, 0, strrpos("\\" . $class, "\\"));
     }
 
     /**

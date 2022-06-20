@@ -20,8 +20,8 @@ use Lkrms\Util\File;
  * Generates provider interfaces for SyncEntity subclasses
  *
  * Environment variables:
- * - `SYNC_NAMESPACE`
- * - `SYNC_PACKAGE`
+ * - `DEFAULT_NAMESPACE`
+ * - `PHPDOC_PACKAGE`
  *
  */
 class GenerateSyncEntityInterface extends CliCommand
@@ -56,7 +56,7 @@ class GenerateSyncEntityInterface extends CliCommand
                 "valueName"   => "PACKAGE",
                 "description" => "The PHPDoc package",
                 "optionType"  => CliOptionType::VALUE,
-                "env"         => "SYNC_PACKAGE",
+                "env"         => "PHPDOC_PACKAGE",
             ], [
                 "long"        => "desc",
                 "short"       => "d",
@@ -110,7 +110,7 @@ class GenerateSyncEntityInterface extends CliCommand
         $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
         $class      = array_pop($namespace);
         $vendor     = reset($namespace) ?: "";
-        $namespace  = implode("\\", $namespace) ?: Env::get("SYNC_NAMESPACE", "");
+        $namespace  = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
         $fqcn       = $namespace ? $namespace . "\\" . $class : $class;
         $package    = $this->getOptionValue("package");
         $desc       = $this->getOptionValue("desc") ?: "Synchronises $class objects with a backend";
@@ -276,7 +276,7 @@ class GenerateSyncEntityInterface extends CliCommand
                     Console::warn("File already exists:", $file);
                     $file = preg_replace('/\.php$/', ".generated.php", $file);
                 }
-                else
+                if (file_exists($file))
                 {
                     $verb = "Replacing";
                 }

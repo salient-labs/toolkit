@@ -16,14 +16,14 @@ parameters:
 			path: src/Console/Console.php
 
 		-
-			message: "#^Strict comparison using \\=\\=\\= between array\\<int\\|string, mixed\\> and false will always evaluate to false\\.$#"
-			count: 1
-			path: src/Support/ClosureBuilder.php
-
-		-
 			message: "#^Property Lkrms\\\\Curler\\\\CurlerHeaders\\:\\:\\$Trailers is never read, only written\\.$#"
 			count: 1
 			path: src/Curler/CurlerHeaders.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between array\\<int\\|string, mixed\\> and false will always evaluate to false\\.$#"
+			count: 1
+			path: src/Support/ClosureBuilder.php
 
 		-
 			message: "#^Do\\-while loop condition is always false\\.$#"
@@ -39,6 +39,11 @@ parameters:
 			message: "#^Result of && is always false\\.$#"
 			count: 1
 			path: src/Sync/Provider/SyncEntityProvider.php
+
+		-
+			message: "#^Call to an undefined method ReflectionType\\:\\:isBuiltin\\(\\)\\.$#"
+			count: 1
+			path: src/Util/Reflect.php
 
 		-
 			message: "#^Casting class ReflectionType to string is deprecated\\.$#"

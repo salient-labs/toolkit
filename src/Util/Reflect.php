@@ -8,6 +8,7 @@ use Lkrms\Concept\Utility;
 use ReflectionClass;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
+use ReflectionParameter;
 use ReflectionType;
 use ReflectionUnionType;
 use RuntimeException;
@@ -66,7 +67,7 @@ final class Reflect extends Utility
     }
 
     /**
-     * Return all types represented by the given ReflectionType
+     * Return all types included in the given ReflectionType
      *
      * Reflection methods that return a `ReflectionType` may actually return any
      * of the following:
@@ -85,20 +86,17 @@ final class Reflect extends Utility
      */
     public static function getAllTypes(?ReflectionType $type): array
     {
-        if ($type instanceof ReflectionUnionType)
+        if ($type instanceof ReflectionUnionType ||
+            $type instanceof ReflectionIntersectionType)
         {
             return $type->getTypes();
-        }
-        elseif ($type instanceof ReflectionIntersectionType)
-        {
-            return [];
         }
 
         return is_null($type) ? [] : [$type];
     }
 
     /**
-     * Return the names of all types represented by the given ReflectionType
+     * Return the names of all types included in the given ReflectionType
      *
      * @param null|ReflectionType $type e.g. the return value of
      * `ReflectionParameter::getType()`.
@@ -107,10 +105,110 @@ final class Reflect extends Utility
      */
     public static function getAllTypeNames(?ReflectionType $type): array
     {
-        return array_map(
-            function (ReflectionType $t) { return $t instanceof ReflectionNamedType ? $t->getName() : (string)$t; },
-            self::getAllTypes($type)
-        );
+        return array_map(fn(ReflectionType $t) => self::getTypeName($t),
+            self::getAllTypes($type));
+    }
+
+    /**
+     * Return the name of the given ReflectionNamedType or ReflectionType
+     *
+     * @param ReflectionType $type
+     * @return string
+     */
+    public static function getTypeName(ReflectionType $type): string
+    {
+        return $type instanceof ReflectionNamedType ? $type->getName() : (string)$type;
+    }
+
+    /**
+     * Convert the given ReflectionType to a PHP type declaration
+     *
+     * @param null|ReflectionType $type e.g. the return value of
+     * `ReflectionParameter::getType()`.
+     * @param string $classPrefix
+     * @param null|callable $typeNameCallback Applied to qualified class names
+     * if set. Must return `null` or an unqualified alias:
+     * ```php
+     * callback(string $name): ?string
+     * ```
+     * @return string
+     */
+    public static function getTypeDeclaration(
+        ?ReflectionType $type,
+        string $classPrefix          = "\\",
+        ? callable $typeNameCallback = null
+    ): string
+    {
+        $glue = "|";
+        if ($type instanceof ReflectionUnionType)
+        {
+            $types = $type->getTypes();
+        }
+        elseif ($type instanceof ReflectionIntersectionType)
+        {
+            $glue  = "&";
+            $types = $type->getTypes();
+        }
+        elseif (is_null($type))
+        {
+            $types = [];
+        }
+        else
+        {
+            $types = [$type];
+        }
+        $parts = [];
+        /** @var ReflectionNamedType|ReflectionType $type */
+        foreach ($types as $type)
+        {
+            $name    = self::getTypeName($type);
+            $alias   = $typeNameCallback ? $typeNameCallback($name) : null;
+            $parts[] = (($type->allowsNull() && strcasecmp($name, "null") ? "?" : "")
+                . ($alias || $type->isBuiltin() ? "" : $classPrefix)
+                . ($alias ?: $name));
+        }
+        return implode($glue, $parts);
+    }
+
+    /**
+     * Convert the given ReflectionParameter to a PHP parameter declaration
+     *
+     * @param ReflectionParameter $parameter
+     * @param string $classPrefix
+     * @param null|callable $typeNameCallback Applied to qualified class names
+     * if set. Must return `null` or an unqualified alias:
+     * ```php
+     * callback(string $name): ?string
+     * ```
+     * @return string
+     */
+    public static function getParameterDeclaration(
+        ReflectionParameter $parameter,
+        string $classPrefix          = "\\",
+        ? callable $typeNameCallback = null
+    ): string
+    {
+        $param = self::getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
+        $param = (($param ? "$param " : "")
+            . ($parameter->isPassedByReference() ? "&" : "")
+            . ($parameter->isVariadic() ? "..." : "")
+            . '$' . $parameter->getName());
+        if (!$parameter->isDefaultValueAvailable())
+        {
+            return $param;
+        }
+        $param .= " = ";
+        if (!$parameter->isDefaultValueConstant())
+        {
+            $value = $parameter->getDefaultValue();
+            return $param . (is_null($value) ? "null" : var_export($value, true));
+        }
+        $const = $parameter->getDefaultValueConstantName();
+        if (!preg_match('/^(self|parent|static)::/i', $const))
+        {
+            return "$param$classPrefix$const";
+        }
+        return "$param$const";
     }
 
     /**

@@ -34,12 +34,7 @@ $queries = [
     "date_format_utc"       => Convert::dataToQuery($data, false, new DateFormatter(DateFormatter::DEFAULT, "UTC")),
 ];
 
-$decoded = array_map(
-    function ($q)
-    {
-        return urldecode($q);
-    }, $queries
-);
+$decoded = array_map(fn($q) => urldecode($q), $queries);
 
 print_r([$queries, $decoded]);
 
@@ -59,24 +54,24 @@ $identifiers = [
     "12Two_Words", "Two12_Words", "Two_12Words", "Two_Words12",
 ];
 
-$snakeCase = array_combine($identifiers, array_map(function ($i)
-{
-    return Convert::toSnakeCase($i);
-}, $identifiers));
+$snakeCase = array_combine($identifiers, array_map(
+    fn($i) => Convert::toSnakeCase($i),
+    $identifiers
+));
 
 print_r($snakeCase);
 
-$kebabCase = array_combine($identifiers, array_map(function ($i)
-{
-    return Convert::toKebabCase($i);
-}, $identifiers));
+$kebabCase = array_combine($identifiers, array_map(
+    fn($i) => Convert::toKebabCase($i),
+    $identifiers
+));
 
 print_r($kebabCase);
 
-$pascalCase = array_combine($identifiers, array_map(function ($i)
-{
-    return Convert::toPascalCase($i);
-}, $identifiers));
+$pascalCase = array_combine($identifiers, array_map(
+    fn($i) => Convert::toPascalCase($i),
+    $identifiers
+));
 
 print_r($pascalCase);
 
@@ -89,7 +84,7 @@ $normalise = [
     "it",
 ];
 var_dump(array_combine($normalise, array_map(
-    function ($i) { return Convert::toNormal($i); },
+    fn($i) => Convert::toNormal($i),
     $normalise
 )));
 
@@ -123,7 +118,7 @@ $nouns = [
 ];
 
 print_r(array_combine($nouns, array_map(
-    function ($i) { return Convert::nounToPlural($i); },
+    fn($i) => Convert::nounToPlural($i),
     $nouns
 )));
 
@@ -134,10 +129,16 @@ $fqcn = [
     'Composer\Command\UpdateCommand\\',
 ];
 
-print_r(array_combine($fqcn, array_map(
-    function ($i) { return Convert::classToBasename($i); },
-    $fqcn
-)));
+print_r([
+    "basename" => array_combine($fqcn, array_map(
+        fn($i) => Convert::classToBasename($i),
+        $fqcn
+    )),
+    "namespace" => array_combine($fqcn, array_map(
+        fn($i)  => Convert::classToNamespace($i),
+        $fqcn
+    ))
+]);
 
 print_r([
     "PT48M" => Convert::intervalToSeconds("PT48M"),
