@@ -24,7 +24,7 @@
             "Lkrms\\": "src/"
         },
         "files": [
-            "vendor/adodb/adodb-php/adodb-exceptions.inc.php"
+            "bootstrap.php"
         ]
     },
     "bin": [

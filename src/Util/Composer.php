@@ -69,6 +69,16 @@ final class Composer extends Utility
         return $version;
     }
 
+    public static function getPackagePath(string $name = "lkrms/util"): ?string
+    {
+        if (!InstalledVersions::isInstalled($name))
+        {
+            return null;
+        }
+
+        return InstalledVersions::getInstallPath($name);
+    }
+
     /**
      * Use ClassLoader to find the file where a class is defined
      *
