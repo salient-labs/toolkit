@@ -140,14 +140,20 @@ final class Convert extends Utility
     }
 
     /**
-     * Remove the namespace from a class name
+     * Remove the namespace and an optional suffix from a class name
      *
      * @param string $class
+     * @param string|null $suffix Removed from the end of `$class` if set.
      * @return string
      */
-    public static function classToBasename(string $class): string
+    public static function classToBasename(string $class, string $suffix = null): string
     {
-        return substr(strrchr("\\" . $class, "\\"), 1);
+        $class = substr(strrchr("\\" . $class, "\\"), 1);
+        if ($suffix && ($pos = strrpos($class, $suffix)) > 0)
+        {
+            return substr($class, 0, $pos);
+        }
+        return $class;
     }
 
     /**

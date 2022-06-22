@@ -125,6 +125,9 @@ print_r(array_combine($nouns, array_map(
 $fqcn = [
     'Composer\Command\DumpAutoloadCommand',
     '\Composer\Command\ExecCommand',
+    '\Composer\Command\ACommand',
+    '\Composer\Command\Command',
+    'Command',
     'RequireCommand',
     'Composer\Command\UpdateCommand\\',
 ];
@@ -132,6 +135,10 @@ $fqcn = [
 print_r([
     "basename" => array_combine($fqcn, array_map(
         fn($i) => Convert::classToBasename($i),
+        $fqcn
+    )),
+    "basename_sans_suffix" => array_combine($fqcn, array_map(
+        fn($i)             => Convert::classToBasename($i, "Command"),
         $fqcn
     )),
     "namespace" => array_combine($fqcn, array_map(
