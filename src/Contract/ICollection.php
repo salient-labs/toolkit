@@ -21,4 +21,9 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      */
     public function toList(): iterable;
 
+    /**
+     * @return mixed[]
+     */
+    public function toArray(): array;
+
 }
