@@ -33,6 +33,14 @@ trait TCollection
         }
     }
 
+    /**
+     * @return mixed[]
+     */
+    final public function toArray(): array
+    {
+        return array_values($this->Items);
+    }
+
     // Partial implementation of `Iterator`:
 
     final public function next(): void
