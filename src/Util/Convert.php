@@ -422,17 +422,34 @@ final class Convert extends Utility
      * current section name and are not included in the return value.
      *
      * @param string $text
+     * @param string $separator Used between top-level lines and sections.
+     * @param null|string $marker Added before each section name. The equivalent
+     * number of spaces are added before each list item. To add a leading `"- "`
+     * to top-level lines and indent others with two spaces, set `$marker` to
+     * `"-"`.
      * @param string $regex
      * @return string
      */
     public static function linesToLists(
         string $text,
-        string $regex = '/^\h*[-*] /'
+        string $separator = "\n",
+        ?string $marker   = null,
+        string $regex     = '/^\h*[-*] /'
     ): string
     {
+        $marker       = $marker ? $marker . " " : null;
+        $indent       = $marker ? str_repeat(" ", mb_strlen($marker)) : "";
+        $markerIsItem = $marker && preg_match($regex, $marker);
+
         $sections = [];
         foreach (preg_split('/\r\n|\n/', $text) as $line)
         {
+            // Remove pre-existing markers early to ensure sections with the
+            // same name are combined
+            if ($marker && !$markerIsItem && strpos($line, $marker) === 0)
+            {
+                $line = substr($line, strlen($marker));
+            }
             if (!trim($line))
             {
                 unset($section);
@@ -457,13 +474,22 @@ final class Convert extends Utility
             array_filter($sections, fn($lines) => !count($lines)),
             array_filter($sections, fn($lines) => count($lines))
         );
-        $lines = [];
+        $groups = [];
         foreach ($sections as $section => $sectionLines)
         {
-            $lines[] = $section;
-            array_push($lines, ...$sectionLines);
+            if ($marker &&
+                !($markerIsItem && strpos($section, $marker) === 0) &&
+                !preg_match($regex, $section))
+            {
+                $section = $marker . $section;
+            }
+            $groups[] = $section;
+            if ($sectionLines)
+            {
+                $groups[] = $indent . implode("\n" . $indent, $sectionLines);
+            }
         }
-        return implode("\n", $lines);
+        return implode($separator, $groups);
     }
 
     /**
@@ -712,6 +738,6 @@ final class Convert extends Utility
         string $regex = '/^\h*[-*] /'
     ): string
     {
-        return self::linesToLists($text, $regex);
+        return self::linesToLists($text, "\n", $regex);
     }
 }
