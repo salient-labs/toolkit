@@ -169,4 +169,31 @@ Section:
 - d
 EOF;
 
-print_r(["from" => $text, "to" => Convert::linesToLists($text)]);
+$mbText = <<<EOF
+- Before lists
+📍 Section:
+- list item
+- another
+
+Other section:
+- item i
+- item ii
+
+- Standalone
+
+Also standalone
+
+Section:
+- another
+- and another
+EOF;
+
+print_r([
+    "from"        => $text,
+    "to"          => Convert::linesToLists($text),
+    "markdown"    => Convert::linesToLists($text, "\n\n"),
+    "nested"      => Convert::linesToLists($text, "\n\n", "-"),
+    "mb_from"     => $mbText,
+    "mb_to"       => Convert::linesToLists($mbText, "\n", "📍"),
+    "mb_markdown" => Convert::linesToLists($mbText, "\n\n", "📍"),
+]);

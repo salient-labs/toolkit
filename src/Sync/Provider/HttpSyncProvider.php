@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Provider;
 
+use Lkrms\Console\Console;
 use Lkrms\Curler\CachingCurler;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerHeaders;
@@ -123,5 +124,10 @@ abstract class HttpSyncProvider extends SyncProvider
         $this->prepareCurler($curler);
 
         return $curler;
+    }
+
+    public function checkHeartbeat(int $ttl = 300): void
+    {
+        Console::debugOnce(__METHOD__ . " not implemented:", static::class);
     }
 }

@@ -9,6 +9,7 @@ use Lkrms\Db\DbConnector;
 use Lkrms\Sync\Provider\SyncProvider;
 use Lkrms\Util\Assert;
 use RuntimeException;
+use Throwable;
 
 abstract class DbSyncProvider extends SyncProvider
 {
@@ -54,5 +55,22 @@ abstract class DbSyncProvider extends SyncProvider
             return $this->Db = $this->getDbConnector()->getConnection();
         }
         return $this->Db;
+    }
+
+    public function checkHeartbeat(int $ttl = 300): void
+    {
+        $connector = $this->getDbConnector();
+        try
+        {
+            $connector->getConnection();
+        }
+        catch (Throwable $ex)
+        {
+            throw new RuntimeException(
+                "Heartbeat connection to database '{$connector->Name}' failed",
+                0,
+                $ex
+            );
+        }
     }
 }
