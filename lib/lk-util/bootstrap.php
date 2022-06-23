@@ -4,6 +4,7 @@ namespace Lkrms\LkUtil;
 
 use Lkrms\Facade\App;
 use Lkrms\Cli\Cli;
+use Lkrms\LkUtil\Command\CheckHeartbeat;
 use Lkrms\LkUtil\Command\Generate\GenerateFacadeClass;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityClass;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityInterface;
@@ -25,6 +26,7 @@ if ($app->hasCacheStore())
 GenerateFacadeClass::register($app, ["generate", "facade"]);
 GenerateSyncEntityClass::register($app, ["generate", "sync", "entity"]);
 GenerateSyncEntityInterface::register($app, ["generate", "sync", "provider"]);
+CheckHeartbeat::register($app, ["heartbeat"]);
 SendHttpRequest::register($app, ["http", "get"]);
 SendHttpRequest::register($app, ["http", "head"]);
 SendHttpRequest::register($app, ["http", "post"]);
