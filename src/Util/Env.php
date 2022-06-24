@@ -194,6 +194,31 @@ final class Env extends Utility
     }
 
     /**
+     * Return an environment variable as an integer
+     *
+     * Casts the return value of {@see Env::get()} as an `int`, returning `null`
+     * if `$name` is set but empty.
+     *
+     * @param string $name The environment variable to retrieve.
+     * @param int|null $default The value to return if `$name` is not set.
+     * @return null|int
+     * @throws RuntimeException if `$name` is not set and no `$default` is given
+     */
+    public static function getInt(string $name, int $default = null): ?int
+    {
+        if (func_num_args() < 2)
+        {
+            $value = self::get($name);
+        }
+        else
+        {
+            // Passes "" if `$default` is `null`, "0" if `$default` is `0`
+            $value = self::get($name, (string)$default);
+        }
+        return ($value === "") ? null : (int)$default;
+    }
+
+    /**
      * Return an environment variable as a list of strings
      *
      * See {@see Env::get()} for details.
