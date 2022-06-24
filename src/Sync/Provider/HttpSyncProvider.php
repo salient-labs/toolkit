@@ -151,6 +151,7 @@ abstract class HttpSyncProvider extends SyncProvider
 
     public function checkHeartbeat(int $ttl = 300): void
     {
-        Console::debugOnce(__METHOD__ . " not implemented:", static::class);
+        Console::debugOnce("Not implemented:",
+            static::class . "::" . __FUNCTION__);
     }
 }
