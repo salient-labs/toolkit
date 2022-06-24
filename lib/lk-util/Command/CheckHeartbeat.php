@@ -29,6 +29,14 @@ class CheckHeartbeat extends CliCommand
                 "required"    => true,
                 "env"         => "DEFAULT_PROVIDER",
             ],
+            [
+                "long"         => "ttl",
+                "short"        => "t",
+                "valueName"    => "SECONDS",
+                "description"  => "The time-to-live of a positive result",
+                "optionType"   => CliOptionType::VALUE,
+                "defaultValue" => "300",
+            ],
         ];
     }
 
@@ -51,6 +59,6 @@ class CheckHeartbeat extends CliCommand
             throw new InvalidCliArgumentException("not a subclass of IProvider: $providerClass");
         }
 
-        $provider->checkHeartbeat();
+        $provider->checkHeartbeat((int)$this->getOptionValue("ttl"));
     }
 }

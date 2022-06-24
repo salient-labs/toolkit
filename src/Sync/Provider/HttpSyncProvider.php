@@ -80,6 +80,27 @@ abstract class HttpSyncProvider extends SyncProvider
     }
 
     /**
+     * @var int|null
+     */
+    private $TemporaryCacheExpiry;
+
+    /**
+     * @var bool|null
+     */
+    private $HasTemporaryCacheExpiry;
+
+    final public function setTemporaryCacheExpiry(?int $expiry): void
+    {
+        $this->TemporaryCacheExpiry    = $expiry;
+        $this->HasTemporaryCacheExpiry = true;
+    }
+
+    final public function clearTemporaryCacheExpiry(): void
+    {
+        $this->HasTemporaryCacheExpiry = false;
+    }
+
+    /**
      * Get the URL of an API endpoint
      *
      * @param string $path
@@ -101,7 +122,9 @@ abstract class HttpSyncProvider extends SyncProvider
     {
         if (func_num_args() < 2)
         {
-            $expiry = $this->getCacheExpiry();
+            $expiry = ($this->HasTemporaryCacheExpiry
+                ? $this->TemporaryCacheExpiry
+                : $this->getCacheExpiry());
         }
 
         if (!is_null($expiry))
@@ -128,6 +151,7 @@ abstract class HttpSyncProvider extends SyncProvider
 
     public function checkHeartbeat(int $ttl = 300): void
     {
-        Console::debugOnce(__METHOD__ . " not implemented:", static::class);
+        Console::debugOnce("Not implemented:",
+            static::class . "::" . __FUNCTION__);
     }
 }
