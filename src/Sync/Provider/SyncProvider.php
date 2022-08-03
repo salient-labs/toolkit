@@ -13,7 +13,8 @@ use Lkrms\Util\Generate;
 use UnexpectedValueException;
 
 /**
- * Base class for API providers
+ * Base class for providers that sync entities to and from third-party backends
+ * via their APIs
  *
  */
 abstract class SyncProvider implements ISyncProvider, IBindable
@@ -21,7 +22,8 @@ abstract class SyncProvider implements ISyncProvider, IBindable
     use TBindableSingleton;
 
     /**
-     * Return a stable identifier unique to the connected backend instance
+     * Return a stable identifier that uniquely identifies the connected backend
+     * instance
      *
      * This method must be idempotent for each backend instance the provider
      * connects to. The return value should correspond to the smallest possible
@@ -45,9 +47,6 @@ abstract class SyncProvider implements ISyncProvider, IBindable
     abstract protected function getBackendIdentifier(): array;
 
     /**
-     * Return a stable hash unique to the connected backend instance
-     *
-     * @return string
      * @see SyncProvider::getBackendIdentifier()
      */
     final public function getBackendHash(): string
