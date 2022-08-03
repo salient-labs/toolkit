@@ -20,7 +20,7 @@ abstract class DbSyncProvider extends SyncProvider
         $connector = $this->getDbConnector();
         if ($connector->Dsn)
         {
-            // TODO: implement DSN parsing
+            /** @todo Implement DSN parsing */
             throw new RuntimeException("DSN parsing not implemented: "
                 . static::class . "::" . __FUNCTION__);
         }

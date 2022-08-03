@@ -48,9 +48,7 @@ final class Err implements IFacade
         }
         else
         {
-            /**
-             * @todo Extend PrettyPageHandler
-             */
+            /** @todo Extend PrettyPageHandler */
             self::$Whoops->pushHandler(new PrettyPageHandler());
         }
 
@@ -77,12 +75,29 @@ final class Err implements IFacade
      * files where `E_STRICT`, `E_DEPRECATED` and `E_USER_DEPRECATED` errors
      * will be silenced (e.g. your project's `vendor` directory).
      * @return void
+     * @deprecated Use {@see Err::silencePaths()}
      */
     public static function silenceErrorsInPaths($patterns): void
     {
         self::assertIsLoaded();
         self::$Whoops->silenceErrorsInPaths($patterns,
             E_STRICT | E_DEPRECATED | E_USER_DEPRECATED);
+    }
+
+    public static function silencePaths(string ...$paths): void
+    {
+        self::assertIsLoaded();
+        foreach ($paths as $path)
+        {
+            if (($path = realpath($path)) === false)
+            {
+                continue;
+            }
+
+            $regex = preg_quote(rtrim($path, "/") . "/", "/");
+            self::$Whoops->silenceErrorsInPaths("/^$regex/",
+                E_STRICT | E_DEPRECATED | E_USER_DEPRECATED);
+        }
     }
 
     public static function __callStatic(string $name, array $arguments)

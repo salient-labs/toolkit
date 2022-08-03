@@ -159,9 +159,7 @@ final class HttpServer implements IReadable
             }
             while (true);
 
-            /**
-             * @todo: Add support for Transfer-Encoding
-             */
+            /** @todo Add support for Transfer-Encoding */
             if ($length = $headers->getHeadersByName(false)["Content-Length"] ?? null)
             {
                 if (($body = fread($socket, (int)$length)) === false)
