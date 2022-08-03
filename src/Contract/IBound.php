@@ -7,17 +7,19 @@ namespace Lkrms\Contract;
 use Psr\Container\ContainerInterface as Container;
 
 /**
- * Binds instances to a container
+ * Instances are bound to a container
  *
- * - Instances MAY bind to their containers of origin by accepting a
- *   {@see Container} constructor parameter
- * - Each instance MUST return the same container every time
- *   {@see IBound::container()} is called
  */
 interface IBound
 {
     /**
      * Get the container the instance is bound to
+     *
+     * Each instance:
+     * - MAY bind to its container of origin by accepting a {@see Container}
+     *   constructor parameter.
+     * - MUST return the same container for every call to
+     *   {@see IBound::container()}
      *
      * @return Container
      */
