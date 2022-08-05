@@ -106,7 +106,8 @@ final class AppContainer extends Container implements IReadable
         {
             $basePath = Composer::getRootPackagePath();
         }
-        elseif (!is_dir($basePath) ||
+
+        if (!is_dir($basePath) ||
             ($this->BasePath = realpath($basePath)) === false)
         {
             throw new RuntimeException("Invalid basePath: " . $basePath);
