@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Lkrms\Util;
 
+use Countable;
+use Iterator;
+use IteratorAggregate;
 use Lkrms\Concept\Utility;
 
 /**
@@ -146,5 +149,32 @@ final class Test extends Utility
         return file_exists($path1) && file_exists($path2) &&
             is_int($inode = fileinode($path1)) &&
             fileinode($path2) === $inode;
+    }
+
+    /**
+     * Return true if an array, iterable or Countable is empty
+     *
+     * Bear in mind that if `$value` is an empty `iterable`, calling this method
+     * will implicitly close it.
+     *
+     * @param array|Countable|Iterator|IteratorAggregate $value
+     * @return bool
+     */
+    public static function isEmpty($value): bool
+    {
+        if (is_array($value) || $value instanceof Countable)
+        {
+            return count($value) === 0;
+        }
+        elseif ($value instanceof Iterator ||
+            ($value instanceof IteratorAggregate &&
+                ($value = $value->getIterator()) instanceof Iterator))
+        {
+            return !$value->valid();
+        }
+        else
+        {
+            return false;
+        }
     }
 }
