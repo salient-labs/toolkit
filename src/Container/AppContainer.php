@@ -9,6 +9,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Cache;
+use Lkrms\Util\Composer;
 use Lkrms\Util\Env;
 use Lkrms\Util\File;
 use Lkrms\Util\Test;
@@ -97,15 +98,16 @@ final class AppContainer extends Container implements IReadable
         return ["BasePath"];
     }
 
-    public function __construct(
-        string $basePath      = null,
-        $silenceErrorsInPaths = null
-    ) {
+    public function __construct(string $basePath = null)
+    {
         parent::__construct();
 
-        if (is_null($basePath) ||
-            !is_dir($basePath) ||
-            !($this->BasePath = realpath($basePath)))
+        if (is_null($basePath))
+        {
+            $basePath = Composer::getRootPackagePath();
+        }
+        elseif (!is_dir($basePath) ||
+            ($this->BasePath = realpath($basePath)) === false)
         {
             throw new RuntimeException("Invalid basePath: " . $basePath);
         }
@@ -119,7 +121,11 @@ final class AppContainer extends Container implements IReadable
             Env::apply();
         }
 
-        Err::load($silenceErrorsInPaths);
+        Err::load();
+        if ($path = Composer::getPackagePath("adodb/adodb-php"))
+        {
+            Err::silencePaths($path);
+        }
     }
 
     public function hasCacheStore(): bool
