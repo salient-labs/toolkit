@@ -81,6 +81,13 @@ class GenerateFacadeClass extends CliCommand
         ];
     }
 
+    public const SKIP_METHODS = [
+        "getGettable",
+        "getReadable",
+        "getSettable",
+        "getWritable",
+    ];
+
     protected function _run(string ...$args)
     {
         $namespace = explode("\\", trim($this->getOptionValue("class"), "\\"));
@@ -171,18 +178,33 @@ class GenerateFacadeClass extends CliCommand
             return $typeNameCallback($name) ?: $name;
         };
 
-        usort($_methods, fn(ReflectionMethod $a, ReflectionMethod $b) => $a->getName() <=> $b->getName());
+        $extends = $typeCallback("$classPrefix$extends");
+        $service = $typeCallback("$classPrefix$service");
+
+        usort($_methods,
+            fn(ReflectionMethod $a, ReflectionMethod $b) => $a->isConstructor()
+            ? -1 : ($b->isConstructor()
+                ? 1 : $a->getName() <=> $b->getName()));
         $methods = [];
         foreach ($_methods as $_method)
         {
-            if ($declared && $_method->getDeclaringClass() != $_class)
+            if ($_method->isConstructor())
             {
-                continue;
+                $method = "load";
+                $type   = $service;
             }
-            $method = $_method->getName();
-            if (strpos($method, "__") === 0)
+            else
             {
-                continue;
+                $method = $_method->getName();
+                if (strpos($method, "__") === 0 ||
+                    in_array($method, self::SKIP_METHODS) ||
+                    ($declared && $_method->getDeclaringClass() != $_class))
+                {
+                    continue;
+                }
+                $type = ($_method->hasReturnType()
+                    ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
+                    : "mixed");
             }
 
             $params = [];
@@ -191,15 +213,10 @@ class GenerateFacadeClass extends CliCommand
                 $params[] = Reflect::getParameterDeclaration($_param, $classPrefix, $typeNameCallback);
             }
 
-            $methods[] = " * @method static "
-                . ($_method->hasReturnType() ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback) . " " : "mixed ")
-                . $_method->getName()
-                . "(" . str_replace("\n", "\n * ", implode(", ", $params)) . ")";
+            $methods[] = " * @method static $type $method("
+                . str_replace("\n", "\n * ", implode(", ", $params)) . ")";
         }
         $methods = implode(PHP_EOL, $methods);
-
-        $extends = $typeCallback("$classPrefix$extends");
-        $service = $typeCallback("$classPrefix$service");
 
         $imports = [];
         foreach ($useMap as $from => $to)
@@ -227,12 +244,12 @@ class GenerateFacadeClass extends CliCommand
 
         if (!$package)
         {
-            unset($docBlock[7]);
+            unset($docBlock[7], $docBlock[6]);
         }
 
         if (!$methods)
         {
-            unset($docBlock[6], $docBlock[5]);
+            unset($docBlock[5], $docBlock[4]);
         }
 
         $blocks = [

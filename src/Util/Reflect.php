@@ -189,7 +189,7 @@ final class Reflect extends Utility
     ): string
     {
         $param = self::getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
-        $param = (($param ? "$param " : "")
+        $param = (($param ? "$param " : "mixed ")
             . ($parameter->isPassedByReference() ? "&" : "")
             . ($parameter->isVariadic() ? "..." : "")
             . '$' . $parameter->getName());
@@ -201,7 +201,13 @@ final class Reflect extends Utility
         if (!$parameter->isDefaultValueConstant())
         {
             $value = $parameter->getDefaultValue();
-            return $param . (is_null($value) ? "null" : var_export($value, true));
+            $value = is_null($value) ? "null" : var_export($value, true);
+            /** @todo Flatten arrays properly */
+            if ($value == "array (\n)")
+            {
+                $value = "[]";
+            }
+            return $param . $value;
         }
         $const = $parameter->getDefaultValueConstantName();
         if (!preg_match('/^(self|parent|static)::/i', $const))

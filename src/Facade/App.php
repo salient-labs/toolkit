@@ -13,7 +13,7 @@ use Lkrms\Container\Container;
  *
  * @uses AppContainer
  *
- * @method static AppContainer load(string $basePath = null, string|string[]|null $silenceErrorsInPaths = null)
+ * @method static AppContainer load(?string $basePath = null)
  * @method static void bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = [])
  * @method static mixed bindContainer(Container $container)
  * @method static AppContainer enableCache()

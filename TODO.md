@@ -60,7 +60,7 @@
   - [ ] Generate entities and providers from OpenAPI specs
 - [ ] `generate facade`:
   - [ ] Retrieve types from PHPDoc tags
-  - [ ] Use `__construct` parameters to generate `load` method
+  - [x] Use `__construct` parameters to generate `load` method
   - [ ] Detect return by reference
 - [ ] `http`:
   - [ ] Allow headers to be specified

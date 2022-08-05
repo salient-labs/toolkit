@@ -12,13 +12,17 @@ use Lkrms\Container\Container;
  *
  * @uses Container
  *
+ * @method static Container load()
+ * @method static void bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = [])
+ * @method static mixed bindContainer(Container $container)
  * @method static mixed get(string $id, mixed ...$params)
- * @method static string name(string $id)
+ * @method static Container getGlobal()
  * @method static bool has(string $id)
- * @method static void push()
+ * @method static bool hasGlobal()
+ * @method static string name(string $id)
  * @method static void pop()
- * @method static void bind(string $id, string $instanceOf = null, array $constructParams = null, array $shareInstances = null, array $customRule = [])
- * @method static void singleton(string $id, string $instanceOf = null, array $constructParams = null, array $shareInstances = null, array $customRule = [])
+ * @method static void push()
+ * @method static void singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = [])
  */
 final class DI extends Facade
 {
