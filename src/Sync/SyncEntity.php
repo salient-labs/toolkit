@@ -385,6 +385,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
 
         $array = $this;
         $this->_serialize($array, $this);
+        unset($this->DoNotSerialize, $this->OnlySerializeId, $this->DetectRecursion);
 
         return (array)$array;
     }

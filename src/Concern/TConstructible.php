@@ -38,6 +38,9 @@ trait TConstructible
      * @param bool $sameKeys If `true` and `$keyMap` is set, improve performance
      * by assuming `$data` has the same keys in the same order as in `$keyMap`.
      * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
+     * @param null|static $parent If the class implements
+     * {@see \Lkrms\Contract\INode}, pass `$parent` to the instance via
+     * {@see \Lkrms\Contract\INode::setParent()}.
      * @return static
      */
     public static function from(
@@ -46,7 +49,8 @@ trait TConstructible
         callable $callback = null,
         array $keyMap      = null,
         bool $sameKeys     = false,
-        int $skip          = ClosureBuilder::SKIP_MISSING
+        int $skip          = ClosureBuilder::SKIP_MISSING,
+        $parent            = null
     ) {
         $closure = null;
 
@@ -62,7 +66,7 @@ trait TConstructible
 
         return (ClosureBuilder::getBound(
             $container, static::class
-        )->getCreateFromClosure())($data, $closure, $container);
+        )->getCreateFromClosure())($data, $closure, $container, $parent);
     }
 
     /**
@@ -81,6 +85,9 @@ trait TConstructible
      * `$keyMap` (if set) and every array being traversed have the same keys in
      * the same order.
      * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
+     * @param null|static $parent If the class implements
+     * {@see \Lkrms\Contract\INode}, pass `$parent` to each instance via
+     * {@see \Lkrms\Contract\INode::setParent()}.
      * @return iterable<static>
      */
     public static function listFrom(
@@ -89,7 +96,8 @@ trait TConstructible
         callable $callback = null,
         array $keyMap      = null,
         bool $sameKeys     = false,
-        int $skip          = ClosureBuilder::SKIP_MISSING
+        int $skip          = ClosureBuilder::SKIP_MISSING,
+        $parent            = null
     ): iterable
     {
         $closure = null;
@@ -104,14 +112,15 @@ trait TConstructible
             $closure = !$closure ? $callback : fn(array $in) => $closure($callback($in));
         }
 
-        return self::getListFrom($container, $list, $closure, $sameKeys);
+        return self::getListFrom($container, $list, $closure, $sameKeys, $parent);
     }
 
     private static function getListFrom(
         ?Container $container,
         iterable $list,
         ? callable $closure,
-        bool $sameKeys
+        bool $sameKeys,
+        $parent
     ): iterable
     {
         $createFromClosure = null;
@@ -140,7 +149,7 @@ trait TConstructible
                     )->getCreateFromClosure();
                 }
             }
-            yield $createFromClosure($array, $closure, $container);
+            yield $createFromClosure($array, $closure, $container, $parent);
         }
     }
 }
