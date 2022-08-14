@@ -23,6 +23,7 @@ final class CacheStore extends SqliteStore
      *
      * @param string $filename The SQLite database to use.
      * @param bool $autoFlush Automatically flush expired values?
+     * @return $this
      */
     public function open(string $filename = ":memory:", bool $autoFlush = true)
     {
@@ -49,6 +50,8 @@ SQL
         {
             $this->flushExpired();
         }
+
+        return $this;
     }
 
     /**
@@ -61,8 +64,9 @@ SQL
      * @param mixed $value The value to `serialize` and store.
      * @param int $expiry The time in seconds before `$value` expires (maximum
      * 30 days), or the expiry time's Unix timestamp. `0` = no expiry.
+     * @return $this
      */
-    public function set(string $key, $value, int $expiry = 0): void
+    public function set(string $key, $value, int $expiry = 0)
     {
         $this->assertIsOpen();
 
@@ -74,7 +78,7 @@ SQL
             {
                 $this->delete($key);
 
-                return;
+                return $this;
             }
 
             // If $expiry is non-zero and exceeds 60*60*24*30 seconds (30 days),
@@ -146,6 +150,8 @@ SQL;
             $this->rollbackTransaction();
             throw $ex;
         }
+
+        return $this;
     }
 
     /**
@@ -155,9 +161,9 @@ SQL;
      * value has expired or doesn't exist in the cache.
      *
      * @param string $key The key of the item to retrieve.
-     * @param int $maxAge The time in seconds before stored values should be
-     * considered expired (maximum 30 days). Overrides stored expiry times for
-     * this request only. `0` = no expiry.
+     * @param int|null $maxAge The time in seconds before stored values should
+     * be considered expired (maximum 30 days). Overrides stored expiry times
+     * for this request only. `0` = no expiry.
      * @return mixed The `unserialize`d value stored in the cache.
      */
     public function get(string $key, int $maxAge = null)
@@ -208,8 +214,9 @@ SQL;
      * Deletes the value stored under the `$key` from the cache.
      *
      * @param string $key The key of the item to delete.
+     * @return $this
      */
-    public function delete(string $key): void
+    public function delete(string $key)
     {
         $this->assertIsOpen();
 
@@ -223,13 +230,15 @@ SQL
         $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
+        return $this;
     }
 
     /**
      * Delete all items
      *
+     * @return $this
      */
-    public function flush(): void
+    public function flush()
     {
         $this->assertIsOpen();
 
@@ -239,13 +248,16 @@ DELETE
 FROM _cache_item
 SQL
         );
+
+        return $this;
     }
 
     /**
      * Delete expired items
      *
+     * @return $this
      */
-    public function flushExpired(): void
+    public function flushExpired()
     {
         $this->assertIsOpen();
 
@@ -256,6 +268,8 @@ FROM _cache_item
 WHERE expires_at <= CURRENT_TIMESTAMP
 SQL
         );
+
+        return $this;
     }
 
     /**

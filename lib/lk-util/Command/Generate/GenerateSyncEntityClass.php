@@ -13,7 +13,6 @@ use Lkrms\Sync\SyncEntity;
 use Lkrms\Util\Composer;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Env;
-use Lkrms\Util\File;
 use Lkrms\Util\Test;
 use RuntimeException;
 
@@ -46,49 +45,62 @@ class GenerateSyncEntityClass extends CliCommand
                 "description" => "The fully-qualified class name",
                 "optionType"  => CliOptionType::VALUE,
                 "required"    => true,
-            ], [
+            ],
+            [
                 "long"        => "package",
                 "short"       => "p",
                 "valueName"   => "PACKAGE",
                 "description" => "The PHPDoc package",
                 "optionType"  => CliOptionType::VALUE,
                 "env"         => "PHPDOC_PACKAGE",
-            ], [
+            ],
+            [
                 "long"        => "desc",
                 "short"       => "d",
                 "valueName"   => "DESCRIPTION",
                 "description" => "A short description of the entity",
                 "optionType"  => CliOptionType::VALUE,
-            ], [
+            ],
+            [
                 "long"        => "stdout",
                 "short"       => "s",
                 "description" => "Write to standard output",
-            ], [
+            ],
+            [
                 "long"        => "force",
                 "short"       => "f",
                 "description" => "Overwrite the class file if it already exists",
-            ], [
+            ],
+            [
+                "long"        => "no-meta",
+                "short"       => "m",
+                "description" => "Suppress '@lkrms-*' metadata tags",
+            ],
+            [
                 "long"          => "visibility",
                 "short"         => "v",
                 "valueName"     => "KEYWORD",
-                "description"   => "The default visibility of each property",
+                "description"   => "The visibility of the entity's properties",
                 "optionType"    => CliOptionType::ONE_OF,
                 "allowedValues" => ["public", "protected", "private"],
-                "defaultValue"  => "public",
-            ], [
+                "defaultValue"  => "protected",
+            ],
+            [
                 "long"        => "json",
                 "short"       => "j",
                 "valueName"   => "FILE",
                 "description" => "The path to a JSON-serialized sample entity",
                 "optionType"  => CliOptionType::VALUE,
-            ], [
+            ],
+            [
                 "long"        => "provider",
                 "short"       => "i",
                 "valueName"   => "CLASS",
                 "description" => "The HttpSyncProvider class to retrieve a sample entity from",
                 "optionType"  => CliOptionType::VALUE,
                 "env"         => "DEFAULT_PROVIDER",
-            ], [
+            ],
+            [
                 "long"        => "endpoint",
                 "short"       => "e",
                 "valueName"   => "PATH",
@@ -102,7 +114,6 @@ class GenerateSyncEntityClass extends CliCommand
     {
         $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
         $class      = array_pop($namespace);
-        $vendor     = reset($namespace) ?: "";
         $namespace  = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
         $fqcn       = $namespace ? $namespace . "\\" . $class : $class;
         $package    = $this->getOptionValue("package");
@@ -111,13 +122,14 @@ class GenerateSyncEntityClass extends CliCommand
         $props      = ["Id" => "int|string|null"];
         $visibility = $this->getOptionValue("visibility");
         $entity     = null;
+        $entityUri  = null;
 
         if (!$fqcn)
         {
             throw new InvalidCliArgumentException("invalid class: $fqcn");
         }
 
-        if ($providerClass = $this->getOptionValue("provider"))
+        if (!($json = $this->getOptionValue("json")) && ($providerClass = $this->getOptionValue("provider")))
         {
             if (!class_exists($providerClass) &&
                 !(strpos($providerClass, "\\") === false &&
@@ -127,28 +139,39 @@ class GenerateSyncEntityClass extends CliCommand
                 throw new InvalidCliArgumentException("class does not exist: $providerClass");
             }
 
-            $provider = new $providerClass();
+            $provider = $this->container()->get($providerClass);
 
             if ($provider instanceof HttpSyncProvider)
             {
-                $entity = $provider->getCurler(
-                    $this->getOptionValue("endpoint") ?: "/" . Convert::toKebabCase($class)
-                )->getJson();
+                $endpoint  = $this->getOptionValue("endpoint") ?: "/" . Convert::toKebabCase($class);
+                $entity    = $provider->getCurler($endpoint)->getJson();
+                $entityUri = $provider->getEndpointUrl($endpoint);
             }
             else
             {
                 throw new InvalidCliArgumentException("not a subclass of HttpSyncProvider: $providerClass");
             }
         }
-        elseif ($json = $this->getOptionValue("json"))
+        elseif ($json)
         {
             if ($json == "-")
             {
                 $json = "php://stdin";
             }
-            elseif (!file_exists($json))
+            else
             {
-                throw new InvalidCliArgumentException("file not found: $json");
+                if (($json = realpath($json)) === false)
+                {
+                    throw new InvalidCliArgumentException("file not found: " . $this->getOptionValue("json"));
+                }
+                elseif (strpos($json, $this->container()->BasePath) === 0)
+                {
+                    $entityUri = "./" . ltrim(str_replace($this->container()->BasePath, "", $json), "/");
+                }
+                else
+                {
+                    $entityUri = $json;
+                }
             }
 
             $entity = json_decode(file_get_contents($json), true);
@@ -210,25 +233,52 @@ class GenerateSyncEntityClass extends CliCommand
             }
         }
 
-        $docBlock = [
-            "/**",
-            " * $desc",
-            " *",
-            " * @package $package",
-            " */",
-        ];
-
-        if (!$desc)
+        $docBlock[] = "/**";
+        if ($desc)
         {
-            unset($docBlock[1]);
+            $docBlock[] = " * $desc";
+            $docBlock[] = " *";
         }
-
-        if (!$package)
+        if ($visibility == "protected")
         {
-            unset($docBlock[3]);
+            foreach ($props as $prop => $type)
+            {
+                $docBlock[] = " * @property $type \$$prop";
+            }
+            $docBlock[] = " *";
         }
-
-        if (count($docBlock) == 3)
+        if ($package)
+        {
+            $docBlock[] = " * @package $package";
+        }
+        if (!$this->getOptionValue("no-meta"))
+        {
+            if ($entityUri)
+            {
+                $docBlock[] = " * @lkrms-sample-entity $entityUri";
+            }
+            $ignore  = ["--stdout", "--force"];
+            $replace = [];
+            $with    = [];
+            if ($json)
+            {
+                $ignore[]  = $this->getEffectiveArgument("provider", true);
+                $ignore[]  = $this->getEffectiveArgument("endpoint", true);
+                $replace[] = '/^--json=.*/';
+                $with[]    = "--json=" . escapeshellarg(basename($entityUri ?: $this->getOptionValue("json")));
+            }
+            else
+            {
+                $ignore[] = $this->getEffectiveArgument("json", true);
+            }
+            $ignore     = array_filter($ignore, fn($arg) => !is_null($arg));
+            $docBlock[] = " * @lkrms-generate-command " . implode(" ", array_map(
+                fn($arg) => preg_replace($replace, $with, $arg),
+                array_diff($this->getEffectiveCommandLine(true), $ignore)
+            ));
+        }
+        $docBlock[] = " */";
+        if (count($docBlock) == 2)
         {
             $docBlock = null;
         }

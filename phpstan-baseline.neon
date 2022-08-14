@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Static property Lkrms\\\\Cli\\\\Cli\\:\\:\\$Commands is never read, only written\\.$#"
-			count: 1
-			path: src/Cli/Cli.php
-
-		-
 			message: "#^If condition is always false\\.$#"
 			count: 1
 			path: src/Cli/CliCommand.php
@@ -14,6 +9,11 @@ parameters:
 			message: "#^Ternary operator condition is always true\\.$#"
 			count: 1
 			path: src/Console/Console.php
+
+		-
+			message: "#^Property Lkrms\\\\Container\\\\CliAppContainer\\:\\:\\$Commands is never read, only written\\.$#"
+			count: 1
+			path: src/Container/CliAppContainer.php
 
 		-
 			message: "#^Property Lkrms\\\\Curler\\\\CurlerHeaders\\:\\:\\$Trailers is never read, only written\\.$#"
@@ -37,6 +37,11 @@ parameters:
 			message: "#^Do\\-while loop condition is always false\\.$#"
 			count: 1
 			path: src/Support/HttpServer.php
+
+		-
+			message: "#^Negated boolean expression is always true\\.$#"
+			count: 1
+			path: src/Support/PhpDocParser.php
 
 		-
 			message: "#^Call to function is_null\\(\\) with ReflectionMethod\\|null will always evaluate to false\\.$#"

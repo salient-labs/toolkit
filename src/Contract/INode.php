@@ -17,7 +17,7 @@ interface INode
      * new/previous parents.
      *
      * @param static|null $parent
-     * @return static
+     * @return $this
      */
     public function setParent($parent);
 

@@ -7,6 +7,7 @@ namespace Lkrms\Tests\Sync\Entity;
 /**
  * Synchronises Post objects with a backend
  *
+ * @lkrms-generate-command lk-util generate sync provider --class='Lkrms\Tests\Sync\Entity\Post' --op='create,get,update,delete,get-list'
  */
 interface PostProvider extends \Lkrms\Sync\Provider\ISyncProvider
 {
@@ -35,7 +36,7 @@ interface PostProvider extends \Lkrms\Sync\Provider\ISyncProvider
     public function deletePost(Post $post): ?Post;
 
     /**
-     * @return Post[]
+     * @return iterable<Post>
      */
     public function getPosts(): iterable;
 

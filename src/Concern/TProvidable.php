@@ -24,7 +24,7 @@ trait TProvidable
     private $_ProvidedBy;
 
     /**
-     * @return static
+     * @return $this
      */
     protected function clearProvider()
     {
@@ -33,7 +33,7 @@ trait TProvidable
     }
 
     /**
-     * @return static
+     * @return $this
      */
     public function setProvider(IProvider $provider)
     {

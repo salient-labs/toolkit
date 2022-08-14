@@ -14,7 +14,6 @@ use Lkrms\Sync\SyncOperation;
 use Lkrms\Util\Composer;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Env;
-use Lkrms\Util\File;
 
 /**
  * Generates provider interfaces for SyncEntity subclasses
@@ -50,28 +49,38 @@ class GenerateSyncEntityInterface extends CliCommand
                 "description" => "The SyncEntity subclass to generate a provider for",
                 "optionType"  => CliOptionType::VALUE,
                 "required"    => true,
-            ], [
+            ],
+            [
                 "long"        => "package",
                 "short"       => "p",
                 "valueName"   => "PACKAGE",
                 "description" => "The PHPDoc package",
                 "optionType"  => CliOptionType::VALUE,
                 "env"         => "PHPDOC_PACKAGE",
-            ], [
+            ],
+            [
                 "long"        => "desc",
                 "short"       => "d",
                 "valueName"   => "DESCRIPTION",
                 "description" => "A short description of the interface",
                 "optionType"  => CliOptionType::VALUE,
-            ], [
+            ],
+            [
                 "long"        => "stdout",
                 "short"       => "s",
                 "description" => "Write to standard output",
-            ], [
+            ],
+            [
                 "long"        => "force",
                 "short"       => "f",
                 "description" => "Overwrite the class file if it already exists",
-            ], [
+            ],
+            [
+                "long"        => "no-meta",
+                "short"       => "m",
+                "description" => "Suppress '@lkrms-*' metadata tags",
+            ],
+            [
                 "long"            => "op",
                 "short"           => "o",
                 "valueName"       => "OPERATION",
@@ -80,11 +89,13 @@ class GenerateSyncEntityInterface extends CliCommand
                 "allowedValues"   => self::OPERATIONS,
                 "multipleAllowed" => true,
                 "defaultValue"    => self::DEFAULT_OPERATIONS,
-            ], [
+            ],
+            [
                 "long"        => "nullable-get",
                 "short"       => "n",
                 "description" => "Allow passing null identifiers to the 'get' operation",
-            ], [
+            ],
+            [
                 "long"        => "plural",
                 "short"       => "l",
                 "valueName"   => "PLURAL",
@@ -109,11 +120,11 @@ class GenerateSyncEntityInterface extends CliCommand
 
         $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
         $class      = array_pop($namespace);
-        $vendor     = reset($namespace) ?: "";
         $namespace  = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
         $fqcn       = $namespace ? $namespace . "\\" . $class : $class;
         $package    = $this->getOptionValue("package");
-        $desc       = $this->getOptionValue("desc") ?: "Synchronises $class objects with a backend";
+        $desc       = $this->getOptionValue("desc");
+        $desc       = is_null($desc) ? "Synchronises $class objects with a backend" : $desc;
         $interface  = $class . "Provider";
         $extends    = ISyncProvider::class;
         $camelClass = Convert::toCamelCase($class);
@@ -163,24 +174,33 @@ class GenerateSyncEntityInterface extends CliCommand
             ];
         }
 
-        $docBlock = [
-            "/**",
-            " * $desc",
-            " *",
-            " * @package $package",
-            " */",
-        ];
-
-        if (!$package)
+        $docBlock[] = "/**";
+        if ($desc)
         {
-            unset($docBlock[3]);
+            $docBlock[] = " * $desc";
+            $docBlock[] = " *";
+        }
+        if ($package)
+        {
+            $docBlock[] = " * @package $package";
+        }
+        if (!$this->getOptionValue("no-meta"))
+        {
+            $docBlock[] = " * @lkrms-generate-command " . implode(" ",
+                array_diff($this->getEffectiveCommandLine(true),
+                    ["--stdout", "--force"]));
+        }
+        $docBlock[] = " */";
+        if (count($docBlock) == 2)
+        {
+            $docBlock = null;
         }
 
         $blocks = [
             "<?php",
             "declare(strict_types=1);",
             "namespace $namespace;",
-            implode(PHP_EOL, $docBlock) . PHP_EOL .
+            ($docBlock ? implode(PHP_EOL, $docBlock) . PHP_EOL : "") .
             "interface $interface extends \\$extends" . PHP_EOL .
             "{"
         ];

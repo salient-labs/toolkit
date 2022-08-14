@@ -4,53 +4,66 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
+/**
+ * @property int|string|null $Id
+ * @property string|null $Name
+ * @property string|null $Username
+ * @property string|null $Email
+ * @property array|null $Address
+ * @property string|null $Phone
+ * @property string|null $Website
+ * @property array|null $Company
+ *
+ * @lkrms-sample-entity https://jsonplaceholder.typicode.com/users
+ * @lkrms-generate-command lk-util generate sync entity --class='Lkrms\Tests\Sync\Entity\User' --visibility='protected' --provider='\Lkrms\Tests\Sync\Provider\JsonPlaceholderApi' --endpoint='/users'
+ */
 class User extends \Lkrms\Sync\SyncEntity
 {
     /**
-     * @var int
+     * @var int|string|null
      */
-    public $Id;
+    protected $Id;
 
     /**
-     * @var string
+     * @var string|null
      */
-    public $Name;
+    protected $Name;
 
     /**
-     * @var string
+     * @var string|null
      */
-    public $Username;
+    protected $Username;
 
     /**
-     * @var string
+     * @var string|null
      */
-    public $Email;
+    protected $Email;
 
     /**
-     * @var array
+     * @var array|null
      */
-    public $Address;
+    protected $Address;
 
     /**
-     * @var string
+     * @var string|null
      */
-    public $Phone;
+    protected $Phone;
 
     // Commented out for IExtensible / __clone() testing
 
     ///**
-    // * @var string
+    // * @var string|null
     // */
-    //public $Website;
+    //protected $Website;
 
     /**
-     * @var array
+     * @var array|null
      */
-    public $Company;
+    protected $Company;
 
     /**
-     * @var Post[]
+     * @var Post[]|null
      */
-    public $Posts;
+    protected $Posts;
 
 }

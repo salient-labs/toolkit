@@ -3,12 +3,11 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Err\Err;
 use Lkrms\Util\Env;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Env::load(__DIR__ . "/.env");
+Env::load(__DIR__ . "/.env", false);
 
 require (__DIR__ . "/../lib/lk-util/bootstrap.php");

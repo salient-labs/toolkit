@@ -33,11 +33,13 @@ class TestOptions extends CliCommand
                 "short"           => "v",
                 "description"     => "Increase verbosity",
                 "multipleAllowed" => true,
-            ], [
+            ],
+            [
                 "long"        => "archive",
                 "short"       => "a",
                 "description" => "Archive mode",
-            ], [
+            ],
+            [
                 "long"          => "stderr",
                 "description"   => "Change stderr output mode",
                 "valueName"     => "MODE",
@@ -47,26 +49,31 @@ class TestOptions extends CliCommand
                     "all"
                 ],
                 "defaultValue" => "errors",
-            ], [
+            ],
+            [
                 "long"        => "backup-dir",
                 "description" => "Make backups into hierarchy based in DIR",
                 "valueName"   => "DIR",
                 "optionType"  => CliOptionType::VALUE,
-            ], [
+            ],
+            [
                 "long"        => "links",
                 "short"       => "l",
                 "description" => "Copy symlinks as symlinks",
-            ], [
+            ],
+            [
                 "long"        => "copy-links",
                 "short"       => "L",
                 "description" => "Transform symlink into referent file/dir",
-            ], [
+            ],
+            [
                 "long"        => "in-place",
                 "short"       => "i",
                 "valueName"   => "SUFFIX",
                 "description" => "Edit files in place",
                 "optionType"  => CliOptionType::VALUE_OPTIONAL,
-            ], [
+            ],
+            [
                 "long"          => "refresh",
                 "short"         => "r",
                 "valueName"     => "CACHE",

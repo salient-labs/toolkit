@@ -76,10 +76,12 @@ class CurlerException extends \Lkrms\Exception\Exception
             $detail["Request"] = (is_array($this->RequestData)
                 ? Format::array($this->RequestData)
                 : (string)$this->RequestData);
-            $detail["curl_getinfo"] = Format::array(array_map(
-                fn($value) => is_string($value) ? trim($value) : $value,
-                $this->CurlInfo
-            ));
+            $detail["curl_getinfo"] = (is_null($this->CurlInfo)
+                ? ""
+                : Format::array(array_map(
+                    fn($value) => is_string($value) ? trim($value) : $value,
+                    $this->CurlInfo
+                )));
         }
         return $detail;
     }

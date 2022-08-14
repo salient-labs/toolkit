@@ -34,7 +34,7 @@ abstract class SqliteStore
     /**
      * Create or open a database
      *
-     * @param string $filename
+     * @return $this
      */
     public function open(string $filename = ":memory:")
     {
@@ -51,26 +51,30 @@ abstract class SqliteStore
         $db->exec('PRAGMA journal_mode=WAL');
         $this->Db       = $db;
         $this->Filename = $filename;
+        return $this;
     }
 
     /**
      * If a database is open, close it
+     *
+     * @return $this
      */
     public function close()
     {
         if (!$this->isOpen())
         {
-            return;
+            return $this;
         }
 
         $this->db()->close();
         $this->Db = $this->Filename = null;
+
+        return $this;
     }
 
     /**
      * Check if a database is open
      *
-     * @return bool
      */
     public function isOpen(): bool
     {
@@ -80,7 +84,6 @@ abstract class SqliteStore
     /**
      * Get the filename of the database
      *
-     * @return null|string
      */
     final public function getFilename(): ?string
     {
@@ -106,7 +109,6 @@ abstract class SqliteStore
      * Call {@see SqliteStore::assertIsOpen()} first to ensure the return value
      * is not `null`.
      *
-     * @return null|SQLite3 .
      */
     final protected function db(): ?SQLite3
     {

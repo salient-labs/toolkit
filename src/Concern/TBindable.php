@@ -52,7 +52,7 @@ trait TBindable
     {
         if (!$container)
         {
-            $container = $this->Container;
+            $container = $this->container();
         }
         $container->push();
         try
