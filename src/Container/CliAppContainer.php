@@ -8,6 +8,7 @@ use Lkrms\Cli\CliCommand;
 use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Util\Assert;
+use RuntimeException;
 use UnexpectedValueException;
 
 /**
@@ -32,6 +33,25 @@ class CliAppContainer extends AppContainer
      * @var null|CliCommand
      */
     private $RunningCommand;
+
+    public function __construct(string $basePath = null)
+    {
+        parent::__construct($basePath);
+
+        Assert::sapiIsCli();
+        if (!ini_get("register_argc_argv"))
+        {
+            throw new RuntimeException("register_argc_argv is not enabled");
+        }
+
+        // Keep running, even if:
+        // - the TTY disconnects
+        // - `max_execution_time` is non-zero
+        // - `memory_limit` is exceeded
+        ini_set("ignore_user_abort", "1");
+        ini_set("max_execution_time", "0");
+        ini_set("memory_limit", "-1");
+    }
 
     /**
      * Return the name used to run the script
@@ -242,8 +262,6 @@ EOF;
      */
     public function run(): int
     {
-        Assert::sapiIsCli();
-
         $args = array_slice($GLOBALS["argv"], 1);
         $node = $this->CommandTree;
         $name = "";

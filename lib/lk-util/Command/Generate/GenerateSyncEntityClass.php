@@ -304,6 +304,10 @@ class GenerateSyncEntityClass extends CliCommand
         foreach ($props as $prop => $type)
         {
             $lines[] = $indent . "/**";
+            if ($visibility == "protected")
+            {
+                $lines[] = $indent . " * @internal";
+            }
             $lines[] = $indent . " * @var $type";
             $lines[] = $indent . " */";
             $lines[] = $indent . "$visibility \$$prop;";

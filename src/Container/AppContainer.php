@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Container;
 
 use Lkrms\Concern\TReadable;
+use Lkrms\Console\Console;
+use Lkrms\Console\ConsoleLevels;
+use Lkrms\Console\ConsoleTarget\StreamTarget;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IReadable;
 use Lkrms\Err\Err;
@@ -16,7 +19,7 @@ use Lkrms\Util\Test;
 use RuntimeException;
 
 /**
- * A stackable service container with runtime environment helpers
+ * A stackable service container for self-contained applications
  *
  * Typically accessed via the {@see \Lkrms\Facade\App} facade.
  *
@@ -122,16 +125,13 @@ class AppContainer extends Container implements IReadable
             Env::apply();
         }
 
+        Console::registerOutputStreams();
+
         Err::load();
         if ($path = Composer::getPackagePath("adodb/adodb-php"))
         {
             Err::silencePaths($path);
         }
-    }
-
-    public function hasCacheStore(): bool
-    {
-        return file_exists($this->CachePath . "/cache.db");
     }
 
     /**
@@ -149,6 +149,30 @@ class AppContainer extends Container implements IReadable
         {
             throw new RuntimeException("Cache database already loaded: $file");
         }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function enableExistingCache()
+    {
+        if (file_exists($this->CachePath . "/cache.db"))
+        {
+            $this->enableCache();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function enableMessageLog(string $name = "app", array $levels = ConsoleLevels::ALL_DEBUG)
+    {
+        $name = basename($name, ".log") ?: "app";
+        Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log", $levels));
 
         return $this;
     }

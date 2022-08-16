@@ -16,21 +16,25 @@ namespace Lkrms\Tests\Sync\Entity;
 class Post extends \Lkrms\Sync\SyncEntity
 {
     /**
+     * @internal
      * @var int|string|null
      */
     protected $Id;
 
     /**
+     * @internal
      * @var User|null
      */
     protected $User;
 
     /**
+     * @internal
      * @var string|null
      */
     protected $Title;
 
     /**
+     * @internal
      * @var string|null
      */
     protected $Body;

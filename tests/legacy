@@ -3,13 +3,10 @@
 
 namespace Lkrms\Tests;
 
-// Legacy names
 use Lkrms\Assert;
 use Lkrms\Console;
 use Lkrms\Console\ConsoleTarget\Stream;
 use Lkrms\Err;
-
-// Not legacy
 use Lkrms\Util\Legacy;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");

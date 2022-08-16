@@ -15,22 +15,17 @@ $loader = require (
 );
 $loader->addPsr4("Lkrms\\LkUtil\\", __DIR__);
 
-$app = Cli::load();
-if ($app->hasCacheStore())
-{
-    $app->enableCache();
-}
-
-$app->command(["generate", "facade"], GenerateFacadeClass::class);
-$app->command(["generate", "sync", "entity"], GenerateSyncEntityClass::class);
-$app->command(["generate", "sync", "provider"], GenerateSyncEntityInterface::class);
-$app->command(["heartbeat"], CheckHeartbeat::class);
-$app->command(["http", "get"], SendHttpRequest::class);
-$app->command(["http", "head"], SendHttpRequest::class);
-$app->command(["http", "post"], SendHttpRequest::class);
-$app->command(["http", "put"], SendHttpRequest::class);
-$app->command(["http", "delete"], SendHttpRequest::class);
-$app->command(["http", "patch"], SendHttpRequest::class);
-
-$status = $app->run();
-exit ($status);
+(Cli::load()
+    ->enableExistingCache()
+    ->enableMessageLog()
+    ->command(["generate", "facade"], GenerateFacadeClass::class)
+    ->command(["generate", "sync", "entity"], GenerateSyncEntityClass::class)
+    ->command(["generate", "sync", "provider"], GenerateSyncEntityInterface::class)
+    ->command(["heartbeat"], CheckHeartbeat::class)
+    ->command(["http", "get"], SendHttpRequest::class)
+    ->command(["http", "head"], SendHttpRequest::class)
+    ->command(["http", "post"], SendHttpRequest::class)
+    ->command(["http", "put"], SendHttpRequest::class)
+    ->command(["http", "delete"], SendHttpRequest::class)
+    ->command(["http", "patch"], SendHttpRequest::class)
+    ->runAndExit());

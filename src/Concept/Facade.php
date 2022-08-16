@@ -37,10 +37,7 @@ abstract class Facade implements IFacade
             }
             throw new RuntimeException("Global container already exists");
         }
-        else
-        {
-            $container = Container::getGlobal();
-        }
+        $container = Container::getGlobal();
 
         return self::$Instances[static::class] = $container->get($service, ...func_get_args());
     }
