@@ -48,7 +48,7 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
     /**
      * Bind this instance to another for service container injection
      *
-     * This function can be used to prevent temporary service containers binding
+     * This function is used to prevent temporary service containers binding
      * instances they create to themselves. See
      * {@see SyncProvider::invokeInBoundContainer()} for an example.
      *
@@ -101,10 +101,12 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
     /**
      * Get a fully constructed object for the given identifier
      *
+     * @template T
+     * @psalm-param class-string<T> $id
+     * @psalm-return T
      * @param string $id Class or interface to resolve.
      * @param mixed ...$params Parameters to pass to the constructor if creating
      * a new instance.
-     * @return mixed
      */
     public function get(string $id, ...$params)
     {

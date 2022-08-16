@@ -33,6 +33,13 @@ class CliAppContainer extends AppContainer
      */
     private $RunningCommand;
 
+    public function __construct(string $basePath = null)
+    {
+        parent::__construct($basePath);
+
+        Assert::sapiIsCli();
+    }
+
     /**
      * Return the name used to run the script
      *
@@ -242,8 +249,6 @@ EOF;
      */
     public function run(): int
     {
-        Assert::sapiIsCli();
-
         $args = array_slice($GLOBALS["argv"], 1);
         $node = $this->CommandTree;
         $name = "";

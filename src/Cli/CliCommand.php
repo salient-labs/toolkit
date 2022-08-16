@@ -727,11 +727,6 @@ EOF;
             throw new RuntimeException("Command has already run");
         }
 
-        if ($this->container()->getRunningCommand() !== $this)
-        {
-            Assert::sapiIsCli();
-        }
-
         $this->Arguments = $args;
         $this->loadOptionValues();
 
