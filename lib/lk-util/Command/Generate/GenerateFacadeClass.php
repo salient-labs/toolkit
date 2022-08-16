@@ -188,6 +188,12 @@ class GenerateFacadeClass extends CliCommand
         $extends = $typeCallback("$classPrefix$extends");
         $service = $typeCallback("$classPrefix$service");
 
+        $returnTypeMap = [
+            'static' => $service,
+            'self'   => $service,
+            '$this'  => $service,
+        ];
+
         usort($_methods,
             fn(ReflectionMethod $a, ReflectionMethod $b) => $a->isConstructor()
             ? -1 : ($b->isConstructor()
@@ -216,6 +222,7 @@ class GenerateFacadeClass extends CliCommand
                 $type = ($phpDoc->Return["type"] ?? null) ?: ($_method->hasReturnType()
                     ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
                     : "mixed");
+                $type = $returnTypeMap[$type] ?? $type;
             }
 
             $params = [];

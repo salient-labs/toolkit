@@ -11,12 +11,12 @@ use Lkrms\Store\TrashStore;
  * A facade for TrashStore
  *
  * @method static TrashStore load(string $filename = ':memory:')
- * @method static $this close()
- * @method static $this empty()
+ * @method static TrashStore close()
+ * @method static TrashStore empty()
  * @method static ?string getFilename()
  * @method static bool isOpen()
- * @method static $this open(string $filename = ':memory:')
- * @method static $this put(string $type, ?string $key, array|object $object, ?string $deletedFrom, ?int $createdAt = null, ?int $modifiedAt = null)
+ * @method static TrashStore open(string $filename = ':memory:')
+ * @method static TrashStore put(string $type, ?string $key, array|object $object, ?string $deletedFrom, ?int $createdAt = null, ?int $modifiedAt = null)
  *
  * @uses TrashStore
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Store\TrashStore' --generate='Lkrms\Facade\Trash'

@@ -11,16 +11,16 @@ use Lkrms\Store\CacheStore;
  * A facade for CacheStore
  *
  * @method static CacheStore load(string $filename = ':memory:', bool $autoFlush = true)
- * @method static $this close()
- * @method static $this delete(string $key)
- * @method static $this flush()
- * @method static $this flushExpired()
+ * @method static CacheStore close()
+ * @method static CacheStore delete(string $key)
+ * @method static CacheStore flush()
+ * @method static CacheStore flushExpired()
  * @method static mixed get(string $key, ?int $maxAge = null)
  * @method static ?string getFilename()
  * @method static bool isOpen()
  * @method static mixed maybeGet(string $key, callable $callback, int $expiry = 0)
- * @method static $this open(string $filename = ':memory:', bool $autoFlush = true)
- * @method static $this set(string $key, mixed $value, int $expiry = 0)
+ * @method static CacheStore open(string $filename = ':memory:', bool $autoFlush = true)
+ * @method static CacheStore set(string $key, mixed $value, int $expiry = 0)
  *
  * @uses CacheStore
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Store\CacheStore' --generate='Lkrms\Facade\Cache'

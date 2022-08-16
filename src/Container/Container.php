@@ -99,14 +99,14 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
     }
 
     /**
-     * Get a fully constructed object for the given identifier
+     * Create a new instance of the given class or interface, or retrieve a
+     * singleton created earlier
      *
      * @template T
      * @psalm-param class-string<T> $id
      * @psalm-return T
-     * @param string $id Class or interface to resolve.
-     * @param mixed ...$params Parameters to pass to the constructor if creating
-     * a new instance.
+     * @param ...$params Values to pass to the constructor of the concrete class
+     * bound to `$id`. Ignored if `$id` resolves to an existing singleton.
      */
     public function get(string $id, ...$params)
     {
