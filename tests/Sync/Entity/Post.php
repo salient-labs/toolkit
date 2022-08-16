@@ -4,25 +4,35 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
+/**
+ * @property int|string|null $Id
+ * @property User|null $User
+ * @property string|null $Title
+ * @property string|null $Body
+ *
+ * @lkrms-sample-entity https://jsonplaceholder.typicode.com/posts
+ * @lkrms-generate-command lk-util generate sync entity --class='Lkrms\Tests\Sync\Entity\Post' --visibility='protected' --provider='\Lkrms\Tests\Sync\Provider\JsonPlaceholderApi' --endpoint='/posts'
+ */
 class Post extends \Lkrms\Sync\SyncEntity
 {
     /**
-     * @var int
+     * @var int|string|null
      */
-    public $Id;
+    protected $Id;
 
     /**
-     * @var string
+     * @var User|null
      */
-    public $Title;
+    protected $User;
 
     /**
-     * @var string
+     * @var string|null
      */
-    public $Body;
+    protected $Title;
 
     /**
-     * @var User
+     * @var string|null
      */
-    public $User;
+    protected $Body;
+
 }

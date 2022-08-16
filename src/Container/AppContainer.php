@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Lkrms\Container;
 
+use Lkrms\Concern\TReadable;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IReadable;
-use Lkrms\Concern\TReadable;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Cache;
 use Lkrms\Util\Composer;
@@ -18,7 +18,7 @@ use RuntimeException;
 /**
  * A stackable service container with runtime environment helpers
  *
- * Typically accessed via the {@see App} facade.
+ * Typically accessed via the {@see \Lkrms\Facade\App} facade.
  *
  * @property-read string $BasePath
  * @property-read string $CachePath
@@ -26,7 +26,7 @@ use RuntimeException;
  * @property-read string $LogPath
  * @property-read string $TempPath
  */
-final class AppContainer extends Container implements IReadable
+class AppContainer extends Container implements IReadable
 {
     use TReadable;
 
@@ -106,7 +106,8 @@ final class AppContainer extends Container implements IReadable
         {
             $basePath = Composer::getRootPackagePath();
         }
-        elseif (!is_dir($basePath) ||
+
+        if (!is_dir($basePath) ||
             ($this->BasePath = realpath($basePath)) === false)
         {
             throw new RuntimeException("Invalid basePath: " . $basePath);
@@ -133,7 +134,10 @@ final class AppContainer extends Container implements IReadable
         return file_exists($this->CachePath . "/cache.db");
     }
 
-    public function enableCache(): AppContainer
+    /**
+     * @return $this
+     */
+    public function enableCache()
     {
         $cacheDb = $this->CachePath . "/cache.db";
 

@@ -41,7 +41,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     /**
      * @var int|string|null
      */
-    public $Id;
+    protected $Id;
 
     /**
      * @var array<string,array<string,int>>
@@ -385,6 +385,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
 
         $array = $this;
         $this->_serialize($array, $this);
+        unset($this->DoNotSerialize, $this->OnlySerializeId, $this->DetectRecursion);
 
         return (array)$array;
     }

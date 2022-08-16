@@ -7,6 +7,8 @@ namespace Lkrms\Support;
 use Lkrms\Util\Convert;
 use UnexpectedValueException;
 
+defined("T_NAME_QUALIFIED") || define("T_NAME_QUALIFIED", 10001);
+
 /**
  * Reflection for files
  *

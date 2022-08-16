@@ -23,13 +23,17 @@ trait TProvidable
      */
     private $_ProvidedBy;
 
-    public function __clone()
+    /**
+     * @return $this
+     */
+    protected function clearProvider()
     {
         $this->_ProvidedBy = null;
+        return $this;
     }
 
     /**
-     * @return static
+     * @return $this
      */
     public function setProvider(IProvider $provider)
     {
@@ -78,6 +82,9 @@ trait TProvidable
      * @param bool $sameKeys If `true` and `$keyMap` is set, improve performance
      * by assuming `$data` has the same keys in the same order as in `$keyMap`.
      * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
+     * @param null|static $parent If the class implements
+     * {@see \Lkrms\Contract\INode}, pass `$parent` to the instance via
+     * {@see \Lkrms\Contract\INode::setParent()}.
      * @return static
      */
     public static function fromProvider(
@@ -86,7 +93,8 @@ trait TProvidable
         callable $callback = null,
         array $keyMap      = null,
         bool $sameKeys     = false,
-        int $skip          = ClosureBuilder::SKIP_MISSING
+        int $skip          = ClosureBuilder::SKIP_MISSING,
+        $parent            = null
     ) {
         $closure = null;
 
@@ -105,7 +113,7 @@ trait TProvidable
                 ClosureBuilder::getBound(
                     $container, static::class
                 )->getCreateFromClosure()
-            )($container, $provider, $data, $closure));
+            )($container, $provider, $data, $closure, $parent));
     }
 
     /**
@@ -124,6 +132,9 @@ trait TProvidable
      * `$keyMap` (if set) and every array being traversed have the same keys in
      * the same order.
      * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
+     * @param null|static $parent If the class implements
+     * {@see \Lkrms\Contract\INode}, pass `$parent` to each instance via
+     * {@see \Lkrms\Contract\INode::setParent()}.
      * @return iterable<static>
      */
     public static function listFromProvider(
@@ -132,7 +143,8 @@ trait TProvidable
         callable $callback = null,
         array $keyMap      = null,
         bool $sameKeys     = false,
-        int $skip          = ClosureBuilder::SKIP_MISSING
+        int $skip          = ClosureBuilder::SKIP_MISSING,
+        $parent            = null
     ): iterable
     {
         $closure = null;
@@ -149,7 +161,7 @@ trait TProvidable
 
         return self::maybeInvokeInBoundContainer($provider,
             fn(Container $container) => (
-                self::getListFromProvider($container, $provider, $list, $closure, $sameKeys)
+                self::getListFromProvider($container, $provider, $list, $closure, $sameKeys, $parent)
             ));
     }
 
@@ -158,7 +170,8 @@ trait TProvidable
         IProvider $provider,
         iterable $list,
         ? callable $closure,
-        bool $sameKeys
+        bool $sameKeys,
+        $parent
     ): iterable
     {
         $createFromClosure = null;
@@ -187,7 +200,7 @@ trait TProvidable
                     )->getCreateFromClosure();
                 }
             }
-            yield $createFromClosure($container, $provider, $array, $closure);
+            yield $createFromClosure($container, $provider, $array, $closure, $parent);
         }
     }
 }

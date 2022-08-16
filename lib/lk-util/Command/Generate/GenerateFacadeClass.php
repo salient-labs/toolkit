@@ -9,6 +9,7 @@ use Lkrms\Cli\CliOptionType;
 use Lkrms\Concept\Facade;
 use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
+use Lkrms\Support\PhpDocParser;
 use Lkrms\Support\TokenExtractor;
 use Lkrms\Util\Composer;
 use Lkrms\Util\Convert;
@@ -74,6 +75,11 @@ class GenerateFacadeClass extends CliCommand
                 "description" => "Overwrite the class file if it already exists",
             ],
             [
+                "long"        => "no-meta",
+                "short"       => "m",
+                "description" => "Suppress '@lkrms-*' metadata tags",
+            ],
+            [
                 "long"        => "declared",
                 "short"       => "e",
                 "description" => "Ignore inherited methods",
@@ -102,7 +108,8 @@ class GenerateFacadeClass extends CliCommand
         $classPrefix     = $facadeNamespace ? "\\" : "";
 
         $package  = $this->getOptionValue("package");
-        $desc     = $this->getOptionValue("desc") ?: "A facade for $class";
+        $desc     = $this->getOptionValue("desc");
+        $desc     = is_null($desc) ? "A facade for $class" : $desc;
         $declared = $this->getOptionValue("declared");
 
         $extends = trim(Facade::class, "\\");
@@ -188,6 +195,10 @@ class GenerateFacadeClass extends CliCommand
         $methods = [];
         foreach ($_methods as $_method)
         {
+            $phpDoc = (($docBlock = $_method->getDocComment())
+                ? new PhpDocParser($docBlock)
+                : null);
+
             if ($_method->isConstructor())
             {
                 $method = "load";
@@ -202,7 +213,7 @@ class GenerateFacadeClass extends CliCommand
                 {
                     continue;
                 }
-                $type = ($_method->hasReturnType()
+                $type = ($phpDoc->Return["type"] ?? null) ?: ($_method->hasReturnType()
                     ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
                     : "mixed");
             }
@@ -210,7 +221,13 @@ class GenerateFacadeClass extends CliCommand
             $params = [];
             foreach ($_method->getParameters() as $_param)
             {
-                $params[] = Reflect::getParameterDeclaration($_param, $classPrefix, $typeNameCallback);
+                $params[] = Reflect::getParameterDeclaration(
+                    $_param,
+                    $classPrefix,
+                    $typeNameCallback,
+                    // Override the declared type if defined in the PHPDoc
+                    $phpDoc->Params[$_param->getName()]["type"] ?? null
+                );
             }
 
             $methods[] = " * @method static $type $method("
@@ -230,27 +247,30 @@ class GenerateFacadeClass extends CliCommand
         }
         sort($imports);
 
-        $docBlock = [
-            "/**",
-            " * $desc",
-            " *",
-            " * @uses $service",
-            " *",
-            $methods,
-            " *",
-            " * @package $package",
-            " */",
-        ];
-
-        if (!$package)
+        unset($docBlock);
+        $docBlock[] = "/**";
+        if ($desc)
         {
-            unset($docBlock[7], $docBlock[6]);
+            $docBlock[] = " * $desc";
+            $docBlock[] = " *";
         }
-
-        if (!$methods)
+        if ($methods)
         {
-            unset($docBlock[5], $docBlock[4]);
+            $docBlock[] = $methods;
+            $docBlock[] = " *";
         }
+        if ($package)
+        {
+            $docBlock[] = " * @package $package";
+        }
+        $docBlock[] = " * @uses $service";
+        if (!$this->getOptionValue("no-meta"))
+        {
+            $docBlock[] = " * @lkrms-generate-command " . implode(" ",
+                array_diff($this->getEffectiveCommandLine(true),
+                    ["--stdout", "--force"]));
+        }
+        $docBlock[] = " */";
 
         $blocks = [
             "<?php",

@@ -17,7 +17,7 @@ interface IProvidable
     public function getProvider(): ?IProvider;
 
     /**
-     * @return static
+     * @return $this
      */
     public function setProvider(IProvider $provider);
 

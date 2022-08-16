@@ -19,7 +19,7 @@ trait HasSortableItems
     }
 
     /**
-     * @return static
+     * @return $this
      */
     final public function sort()
     {

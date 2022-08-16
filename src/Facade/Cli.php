@@ -4,34 +4,42 @@ declare(strict_types=1);
 
 namespace Lkrms\Facade;
 
+use Lkrms\Cli\CliCommand;
 use Lkrms\Concept\Facade;
-use Lkrms\Container\AppContainer;
+use Lkrms\Container\CliAppContainer;
 use Lkrms\Container\Container;
 
 /**
- * A facade for AppContainer
+ * A facade for CliAppContainer
  *
- * @method static AppContainer load(?string $basePath = null)
+ * @method static CliAppContainer load(?string $basePath = null)
  * @method static $this bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = [])
  * @method static void bindContainer(Container $container)
+ * @method static $this command(string[] $name, string $id)
  * @method static $this enableCache()
  * @method static mixed get(string $id, mixed ...$params)
+ * @method static array<string,array|string>|string|null|false getCommandTree(string[] $name = [])
  * @method static Container getGlobal()
+ * @method static ?CliCommand getNodeCommand(string $name, array<string,array|string>|string|null|false $node)
+ * @method static string getProgramName()
+ * @method static ?CliCommand getRunningCommand()
  * @method static bool has(string $id)
  * @method static bool hasCacheStore()
  * @method static bool hasGlobal()
  * @method static string name(string $id)
  * @method static $this pop()
  * @method static $this push()
+ * @method static int run()
+ * @method static never runAndExit()
  * @method static $this singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = [])
  *
- * @uses AppContainer
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Container\AppContainer' --generate='Lkrms\Facade\App'
+ * @uses CliAppContainer
+ * @lkrms-generate-command lk-util generate facade --class='Lkrms\Container\CliAppContainer' --generate='Lkrms\Facade\Cli'
  */
-final class App extends Facade
+final class Cli extends Facade
 {
     protected static function getServiceName(): string
     {
-        return AppContainer::class;
+        return CliAppContainer::class;
     }
 }

@@ -41,18 +41,23 @@ trait TBindable
     {
     }
 
+    final public static function bindAll(Container $container)
+    {
+        static::bind($container);
+        static::bindServices($container);
+        static::bindConcrete($container);
+    }
+
     final public function invokeInBoundContainer(callable $callback, Container $container = null)
     {
         if (!$container)
         {
-            $container = $this->Container;
+            $container = $this->container();
         }
         $container->push();
         try
         {
-            static::bind($container);
-            static::bindServices($container);
-            static::bindConcrete($container);
+            static::bindAll($container);
             $clone = clone $container;
             $container->bindContainer($clone);
             return $callback($clone);

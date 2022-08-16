@@ -391,7 +391,7 @@ class Curler implements IReadable, IWritable
     protected function execute($close = true): string
     {
         // Console::debug() should print the details of whatever called a Curler
-        // public method, i.e. not \Execute, not \Get, but one frame deeper
+        // public method, i.e. not execute(), not get(), but one frame deeper
         $depth = $this->StackDepth + 2;
 
         // Reset it now in case there's an error later
@@ -506,14 +506,15 @@ class Curler implements IReadable, IWritable
             break;
         }
 
-        if ($close)
-        {
-            curl_close($this->Handle);
-        }
-
         if ($this->ResponseCode >= 400 && $this->ThrowHttpErrors)
         {
             throw new CurlerException($this, "HTTP error " . $this->ResponseStatus);
+        }
+
+        if ($close)
+        {
+            curl_close($this->Handle);
+            $this->Handle = null;
         }
 
         return $this->ResponseData;

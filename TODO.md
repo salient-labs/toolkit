@@ -8,12 +8,12 @@
   - [ ] Refactor `Curler`
     - [ ] Remove/deprecate `...Json()` methods
     - [ ] Add support for parallel downloads
-  - [ ] `Cli` -> `CliAppContainer`, with `Cli` as a facade
-    - [ ] Reimplement `Cli::registerCommand()`
+  - [x] `Cli` -> `CliAppContainer`, with `Cli` as a facade
+    - [x] Reimplement `Cli::registerCommand()`
   - [ ] `Util` -> `Utility`, with facades in `Facade`
   - [ ] Reimplement `Convert::arrayValuesToChildArray()` and `Convert::toNestedArrays()` as a closure builder
   - [ ] Refactor Dice
-  - [ ] Adopt PHP's built-in `DateFormatter` alternative?
+  - ~~Adopt PHP's built-in `DateFormatter` alternative?~~
 - [ ] Implement a generic fluent interface (`TFluent`?) with instance creation and property getting/setting
 - [ ] Throw custom exceptions
 - [ ] Formalise tests
@@ -24,11 +24,11 @@
 - [ ] Add missing descriptions
 
 ### Container
-- [ ] Make `singleton`, `bind` etc. fluent?
+- [x] Make `singleton`, `bind` etc. fluent?
 - [ ] Initialise `Console` targets during `App::load`
 - [ ] Add `App::bindProviders(...$provider)` or similar (`bindServices`?)
-- [ ] Absorb `Err` into `App`
-  - [ ] Automatically create regular expressions for paths where non-critical errors should be suppressed
+- ~~Absorb `Err` into `App`~~
+  - [x] Automatically create regular expressions for paths where non-critical errors should be suppressed
 
 ### Sync
 - [x] Add `Provider` to `SyncEntity` and require it to be set during instantiation
@@ -59,7 +59,7 @@
 - [ ] `generate sync`:
   - [ ] Generate entities and providers from OpenAPI specs
 - [ ] `generate facade`:
-  - [ ] Retrieve types from PHPDoc tags
+  - [x] Retrieve types from PHPDoc tags
   - [x] Use `__construct` parameters to generate `load` method
   - [ ] Detect return by reference
 - [ ] `http`:

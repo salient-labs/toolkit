@@ -7,6 +7,7 @@ namespace Lkrms\Tests\Sync\Entity;
 /**
  * Synchronises User objects with a backend
  *
+ * @lkrms-generate-command lk-util generate sync provider --class='Lkrms\Tests\Sync\Entity\User' --op='create,get,update,delete,get-list'
  */
 interface UserProvider extends \Lkrms\Sync\Provider\ISyncProvider
 {
@@ -35,7 +36,7 @@ interface UserProvider extends \Lkrms\Sync\Provider\ISyncProvider
     public function deleteUser(User $user): ?User;
 
     /**
-     * @return User[]
+     * @return iterable<User>
      */
     public function getUsers(): iterable;
 

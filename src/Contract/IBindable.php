@@ -30,8 +30,8 @@ interface IBindable extends IBound
     public static function bindServices(Container $container, string ...$interfaces);
 
     /**
-     * Create container bindings for services provided by the class that
-     * aren't in the given exception list
+     * Create container bindings for services provided by the class that aren't
+     * in the given exception list
      *
      * @param Container $container
      * @param string ...$interfaces At least one interface to exclude.
@@ -42,6 +42,17 @@ interface IBindable extends IBound
      * Create container bindings for concrete classes
      */
     public static function bindConcrete(Container $container);
+
+    /**
+     * Create container bindings for the class, its services, and concrete
+     * classes
+     *
+     * See {@see \Lkrms\Concern\TBindable::bindAll()} for a typical
+     * implementation.
+     *
+     * @param Container $container
+     */
+    public static function bindAll(Container $container);
 
     /**
      * Bind the class to a service container and run the given callback, then

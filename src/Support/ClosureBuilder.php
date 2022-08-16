@@ -5,20 +5,21 @@ declare(strict_types=1);
 namespace Lkrms\Support;
 
 use Closure;
+use Lkrms\Concern\TConstructible;
+use Lkrms\Concern\TExtensible;
+use Lkrms\Concern\TProvidable;
+use Lkrms\Concern\TReadable;
+use Lkrms\Concern\TResolvable;
+use Lkrms\Concern\TWritable;
 use Lkrms\Container\FactoryContainer;
 use Lkrms\Contract\IConstructible;
 use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\IReadable;
+use Lkrms\Contract\INode;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
+use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\IWritable;
-use Lkrms\Concern\TConstructible;
-use Lkrms\Concern\TExtensible;
-use Lkrms\Concern\TReadable;
-use Lkrms\Concern\TProvidable;
-use Lkrms\Concern\TResolvable;
-use Lkrms\Concern\TWritable;
 use Lkrms\Util\Reflect;
 use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
@@ -74,6 +75,11 @@ class ClosureBuilder
      * @var bool
      */
     protected $IsProvidable;
+
+    /**
+     * @var bool
+     */
+    protected $IsNode;
 
     /**
      * Property names
@@ -212,6 +218,10 @@ class ClosureBuilder
      */
     private static $ArrayMappers = [];
 
+    /**
+     * Return a ClosureBuilder for $class after using $container to resolve it
+     * to a concrete class
+     */
     public static function getBound(?Container $container, string $class): ClosureBuilder
     {
         if (is_null($container))
@@ -225,6 +235,9 @@ class ClosureBuilder
         return self::get(get_class($container->get($class)));
     }
 
+    /**
+     * Return a ClosureBuilder for $class
+     */
     public static function get(string $class): ClosureBuilder
     {
         if ($instance = self::$Instances[$class] ?? null)
@@ -250,7 +263,7 @@ class ClosureBuilder
 
         // If the class hasn't implemented any of these interfaces, perform a
         // (slower) check using traits
-        if (!($constructible | $extensible | $readable | $writable | $resolvable))
+        if (!($constructible || $extensible || $readable || $writable || $resolvable))
         {
             $traits        = Reflect::getAllTraits($class);
             $providable    = array_key_exists(TProvidable::class, $traits);
@@ -266,6 +279,7 @@ class ClosureBuilder
         $this->IsWritable   = $writable;
         $this->IsExtensible = $extensible;
         $this->IsProvidable = $providable;
+        $this->IsNode       = $class->implementsInterface(INode::class);
 
         $propertyFilter = 0;
         $methodFilter   = 0;
@@ -311,18 +325,22 @@ class ClosureBuilder
 
             if ($readable)
             {
-                $properties = array_merge($class->getMethod("getReadable")->invoke(null), $this->PublicProperties);
-                $this->ReadableProperties = (["*"] === $properties)
-                    ? $this->Properties
-                    : array_intersect($this->Properties, $properties ?: []);
+                $properties = $class->getMethod("getReadable")->invoke(null);
+                $properties = array_merge(
+                    ["*"] === $properties ? $this->Properties : ($properties ?: []),
+                    $this->PublicProperties
+                );
+                $this->ReadableProperties = array_intersect($this->Properties, $properties);
             }
 
             if ($writable)
             {
-                $properties = array_merge($class->getMethod("getWritable")->invoke(null), $this->PublicProperties);
-                $this->WritableProperties = (["*"] === $properties)
-                    ? $this->Properties
-                    : array_intersect($this->Properties, $properties ?: []);
+                $properties = $class->getMethod("getWritable")->invoke(null);
+                $properties = array_merge(
+                    ["*"] === $properties ? $this->Properties : ($properties ?: []),
+                    $this->PublicProperties
+                );
+                $this->WritableProperties = array_intersect($this->Properties, $properties);
             }
         }
 
@@ -419,9 +437,9 @@ class ClosureBuilder
      * @return Closure
      * ```php
      * // If the class implements IProvidable:
-     * closure(\Psr\Container\ContainerInterface $container, \Lkrms\Contract\IProvider $provider, array $array, callable $callback = null)
+     * closure(\Psr\Container\ContainerInterface $container, \Lkrms\Contract\IProvider $provider, array $array, callable $callback = null, \Lkrms\Contract\INode $parent = null)
      * // Otherwise:
-     * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null)
+     * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null, \Lkrms\Contract\INode $parent = null)
      * ```
      */
     public function getCreateFromSignatureClosure(array $keys): Closure
@@ -569,7 +587,23 @@ class ClosureBuilder
             };
         }
 
-        $closure = function (array $array, callable $callback = null, Container $container = null, IProvider $provider = null) use ($closure)
+        if ($this->IsNode)
+        {
+            $closure = static function (Container $container, array $array, ?IProvider $provider, ?INode $parent) use ($closure)
+            {
+                /** @var INode */
+                $obj = $closure($container, $array, $provider);
+
+                if ($parent)
+                {
+                    $obj->setParent($parent);
+                }
+
+                return $obj;
+            };
+        }
+
+        $closure = function (array $array, callable $callback = null, Container $container = null, IProvider $provider = null, INode $parent = null) use ($closure)
         {
             if (!$container)
             {
@@ -581,15 +615,15 @@ class ClosureBuilder
                 $array = $callback($array);
             }
 
-            return $closure($container, $array, $provider);
+            return $closure($container, $array, $provider, $parent);
         };
 
         if ($this->IsProvidable)
         {
             // Return a closure where $container and $provider are not optional
-            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null) use ($closure)
+            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null, INode $parent = null) use ($closure)
             {
-                return $closure($array, $callback, $container, $provider);
+                return $closure($array, $callback, $container, $provider, $parent);
             };
         }
 
@@ -602,9 +636,9 @@ class ClosureBuilder
      * @return Closure
      * ```php
      * // If the class implements IProvidable:
-     * closure(\Psr\Container\ContainerInterface $container, \Lkrms\Contract\IProvider $provider, array $array, callable $callback = null)
+     * closure(\Psr\Container\ContainerInterface $container, \Lkrms\Contract\IProvider $provider, array $array, callable $callback = null, \Lkrms\Contract\INode $parent = null)
      * // Otherwise:
-     * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null)
+     * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null, \Lkrms\Contract\INode $parent = null)
      * ```
      */
     public function getCreateFromClosure(): Closure
@@ -616,7 +650,7 @@ class ClosureBuilder
 
         if ($this->IsProvidable)
         {
-            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null)
+            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null, INode $parent = null)
             {
                 if ($callback)
                 {
@@ -625,12 +659,12 @@ class ClosureBuilder
 
                 $keys = array_keys($array);
 
-                return ($this->getCreateFromSignatureClosure($keys))($container, $provider, $array);
+                return ($this->getCreateFromSignatureClosure($keys))($container, $provider, $array, null, $parent);
             };
         }
         else
         {
-            $closure = function (array $array, callable $callback = null, Container $container = null)
+            $closure = function (array $array, callable $callback = null, Container $container = null, INode $parent = null)
             {
                 if ($callback)
                 {
@@ -639,7 +673,7 @@ class ClosureBuilder
 
                 $keys = array_keys($array);
 
-                return ($this->getCreateFromSignatureClosure($keys))($array, null, $container);
+                return ($this->getCreateFromSignatureClosure($keys))($array, null, $container, $parent);
             };
         }
 

@@ -34,9 +34,8 @@ trait TExtensible
      */
     private $MetaPropertyMap = [];
 
-    public function __clone()
+    public function clearMetaProperties(): void
     {
-        // Don't clone undeclared properties
         $this->MetaProperties    = [];
         $this->MetaPropertyNames = [];
         $this->MetaPropertyMap   = [];

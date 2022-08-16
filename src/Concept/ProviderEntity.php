@@ -14,15 +14,15 @@ use Lkrms\Contract\IProvidable;
  */
 abstract class ProviderEntity extends Entity implements IProvidable
 {
-    use TProvidable
-    {
-        TProvidable::__clone as private _cloneTProvidable;
-    }
+    use TProvidable;
 
     public function __clone()
     {
-        parent::__clone();
-        $this->_cloneTProvidable();
+        // Detach from the provider servicing the original instance
+        $this->clearProvider();
+
+        // Undeclared properties are typically provider-specific
+        $this->clearMetaProperties();
     }
 
 }

@@ -2,41 +2,43 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Cli;
+namespace Lkrms\Container;
 
+use Lkrms\Cli\CliCommand;
 use Lkrms\Console\Console;
-use Lkrms\Concept\Utility;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Util\Assert;
 use UnexpectedValueException;
 
 /**
- * CLI app toolkit
+ * A stackable service container for CLI apps
+ *
+ * Typically accessed via the {@see \Lkrms\Facade\Cli} facade.
  *
  */
-final class Cli extends Utility
+class CliAppContainer extends AppContainer
 {
     /**
-     * @var array<string,CliCommand>
+     * @var array<string,string>
      */
-    private static $Commands = [];
+    private $Commands = [];
 
     /**
-     * @var array<string,array|CliCommand>
+     * @var array<string,array|string>
      */
-    private static $CommandTree = [];
+    private $CommandTree = [];
 
     /**
-     * @var CliCommand
+     * @var null|CliCommand
      */
-    private static $RunningCommand;
+    private $RunningCommand;
 
     /**
      * Return the name used to run the script
      *
      * @return string
      */
-    public static function getProgramName(): string
+    public function getProgramName(): string
     {
         return basename($GLOBALS["argv"][0]);
     }
@@ -44,11 +46,34 @@ final class Cli extends Utility
     /**
      * Return the CliCommand started from the command line
      *
-     * @return null|CliCommand
      */
-    public static function getRunningCommand(): ?CliCommand
+    public function getRunningCommand(): ?CliCommand
     {
-        return self::$RunningCommand;
+        return $this->RunningCommand;
+    }
+
+    /**
+     * Get a CliCommand instance from the given node in the command tree
+     *
+     * Returns `null` if no command is registered at the given node.
+     *
+     * @param string $name The name of the node as a space-delimited list of
+     * subcommands.
+     * @param array<string,array|string>|string|null|false $node The node as
+     * returned by {@see CliAppContainer::getCommandTree()}.
+     */
+    public function getNodeCommand(string $name, $node): ?CliCommand
+    {
+        if (is_string($node))
+        {
+            if (!(($command = $this->get($node)) instanceof CliCommand))
+            {
+                throw new UnexpectedValueException("Not a subclass of CliCommand: $node");
+            }
+            $command->setName($name ? explode(" ", $name) : []);
+            return $command;
+        }
+        return null;
     }
 
     /**
@@ -56,21 +81,21 @@ final class Cli extends Utility
      *
      * Returns one of the following:
      * - `null` if nothing has been added to the tree at `$name`
-     * - the {@see CliCommand} registered at `$name`
+     * - the name of the {@see CliCommand} class registered at `$name`
      * - an array that maps subcommands of `$name` to their respective nodes
-     * - `false` if a {@see CliCommand} has been added to the tree above
-     *   `$name`, e.g. if `$name` is `["sync", "canvas", "from-sis"]` and a
-     *   command has been registered at `["sync", "canvas"]`
+     * - `false` if a {@see CliCommand} has been registered above `$name`, e.g.
+     *   if `$name` is `["sync", "canvas", "from-sis"]` and a command has been
+     *   registered at `["sync", "canvas"]`
      *
      * Nodes in the command tree are either subcommand arrays (branches) or
-     * {@see CliCommand} instances (leaves).
+     * {@see CliCommand} class names (leaves).
      *
      * @param string[] $name
-     * @return array<string,array|CliCommand>|CliCommand|null|false
+     * @return array<string,array|string>|string|null|false
      */
-    public static function getCommandTree(array $name = [])
+    public function getCommandTree(array $name = [])
     {
-        $tree = self::$CommandTree;
+        $tree = $this->CommandTree;
 
         foreach ($name as $subcommand)
         {
@@ -90,28 +115,49 @@ final class Cli extends Utility
     }
 
     /**
-     * @internal
-     * @param CliCommand $command
-     * @see CliCommand::register()
+     * Register a CliCommand with the container
+     *
+     * For example, a PHP script called `sync-util` could register
+     * `Acme\Canvas\SyncFromSis`, a `CliCommand` subclass, as follows:
+     *
+     * ```php
+     * Cli::load()
+     *     ->command(["sync", "canvas", "from-sis"], \Acme\Canvas\SyncFromSis::class)
+     *     ->runAndExit();
+     * ```
+     *
+     * Then, `Acme\Canvas\SyncFromSis` could be invoked with:
+     *
+     * ```shell
+     * php sync-util sync canvas from-sis
+     * ```
+     *
+     * @param string[] $name The command name as an array of subcommands. Valid
+     * subcommands start with a letter, followed by any number of letters,
+     * numbers, hyphens, or underscores.
+     * @param string $id The {@see CliCommand} class to request from the
+     * container when an instance is required.
+     * @return $this
+     * @throws UnexpectedValueException if `$name` is invalid or has already
+     * been used
      */
-    public static function registerCommand(CliCommand $command)
+    public function command(array $name, string $id)
     {
-        if (!$command->isRegistrable() || $command->isRegistered())
+        foreach ($name as $i => $subcommand)
         {
-            throw new UnexpectedValueException("Instance cannot be registered (did you use " . get_class($command) . "::register()?)");
+            Assert::patternMatches($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
         }
 
-        $name = $command->getName();
-
-        if (!is_null(self::getCommandTree($name)))
+        if (!is_null($this->getCommandTree($name)))
         {
             throw new UnexpectedValueException("Another command has been registered at '" . implode(" ", $name) . "'");
         }
 
-        $tree = & self::$CommandTree;
-        $leaf = array_pop($name);
+        $tree   = & $this->CommandTree;
+        $branch = $name;
+        $leaf   = array_pop($branch);
 
-        foreach ($name as $subcommand)
+        foreach ($branch as $subcommand)
         {
             if (!is_array($tree[$subcommand] ?? null))
             {
@@ -123,42 +169,43 @@ final class Cli extends Utility
 
         if (!is_null($leaf))
         {
-            $tree[$leaf] = $command;
+            $tree[$leaf] = $id;
         }
         else
         {
-            $tree = $command;
+            $tree = $id;
         }
 
-        self::$Commands[$command->getCommandName()] = $command;
+        $this->Commands[implode(" ", $name)] = $id;
+
+        return $this;
     }
 
     /**
      * Generate a usage message for a command tree node
      *
      * @param string $name
-     * @param array|CliCommand $node
+     * @param array|string $node
      * @return null|string
      */
-    private static function getUsage(string $name, $node): ?string
+    private function getUsage(string $name, $node): ?string
     {
-        if ($node instanceof CliCommand)
+        if ($command = $this->getNodeCommand($name, $node))
         {
-            return $node->getUsage();
+            return $command->getUsage();
         }
         elseif (!is_array($node))
         {
             return null;
         }
 
-        $name     = trim(self::getProgramName() . " $name");
         $synopses = [];
 
         foreach ($node as $childName => $childNode)
         {
-            if ($childNode instanceof CliCommand)
+            if ($command = $this->getNodeCommand($name . ($name ? " " : "") . $childName, $childNode))
             {
-                $synopses[] = "_{$childName}_" . $childNode->getUsage(true);
+                $synopses[] = "_{$childName}_" . $command->getUsage(true);
             }
             elseif (is_array($childNode))
             {
@@ -166,6 +213,7 @@ final class Cli extends Utility
             }
         }
 
+        $name     = trim($this->getProgramName() . " $name");
         $synopses = implode("\n  ", $synopses);
 
         return <<<EOF
@@ -192,12 +240,12 @@ EOF;
      *
      * @return int
      */
-    public static function run(): int
+    public function run(): int
     {
         Assert::sapiIsCli();
 
         $args = array_slice($GLOBALS["argv"], 1);
-        $node = self::$CommandTree;
+        $node = $this->CommandTree;
         $name = "";
 
         try
@@ -241,7 +289,7 @@ EOF;
                 }
                 elseif ($arg == "--help" && empty($args))
                 {
-                    Console::printTo(self::getUsage($name, $node), ...Console::getOutputTargets());
+                    Console::printTo($this->getUsage($name, $node), ...Console::getOutputTargets());
 
                     return 0;
                 }
@@ -251,11 +299,11 @@ EOF;
                 }
             }
 
-            if ($node instanceof CliCommand)
+            if ($command = $this->getNodeCommand($name, $node))
             {
-                self::$RunningCommand = $node;
+                $this->RunningCommand = $command;
 
-                return $node($args);
+                return $command($args);
             }
             else
             {
@@ -266,12 +314,24 @@ EOF;
         {
             unset($ex);
 
-            if ($node && $usage = self::getUsage($name, $node))
+            if ($node && $usage = $this->getUsage($name, $node))
             {
                 Console::printTo($usage, ...Console::getOutputTargets());
             }
 
             return 1;
         }
+    }
+
+    /**
+     * Exit after actioning command-line arguments
+     *
+     * The value returned by {@see CliAppContainer::run()} is used as the exit status.
+     *
+     * @return never
+     */
+    public function runAndExit()
+    {
+        exit ($this->run());
     }
 }

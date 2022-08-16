@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Lkrms\Cli;
 
 use Lkrms\Console\Console;
+use Lkrms\Container\CliAppContainer;
 use Lkrms\Contract\IBound;
-use Lkrms\Concern\TBound;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Util\Assert;
 use Lkrms\Util\Convert;
-use Psr\Container\ContainerInterface as Container;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -20,8 +19,6 @@ use UnexpectedValueException;
  */
 abstract class CliCommand implements IBound
 {
-    use TBound;
-
     /**
      * Return a short description of the command
      *
@@ -72,6 +69,11 @@ abstract class CliCommand implements IBound
      * @return int|void
      */
     abstract protected function _run(string ...$params);
+
+    /**
+     * @var CliAppContainer
+     */
+    private $Container;
 
     /**
      * @var int
@@ -131,53 +133,30 @@ abstract class CliCommand implements IBound
     /**
      * @var bool
      */
-    private $IsRegistered = false;
-
-    /**
-     * @var bool
-     */
     private $HasRun = false;
 
-    /**
-     * Register an instance of the class as a subcommand of the running app
-     *
-     * For example, a PHP script called `sync-util` could register
-     * `Acme\Canvas\SyncFromSis` as follows:
-     *
-     * ```php
-     * \Acme\Canvas\SyncFromSis::register(["sync", "canvas", "from-sis"]);
-     *
-     * $status = Cli::run();
-     * exit ($status);
-     * ```
-     *
-     * to have this CLI command invoke `Acme\Canvas\SyncFromSis`:
-     *
-     * ```shell
-     * php sync-util sync canvas from-sis
-     * ```
-     *
-     * @param string[] $name The command name as an array of subcommands.
-     *
-     * Valid subcommands start with a letter, followed by any number of letters,
-     * numbers, hyphens, or underscores.
-     *
-     * @throws UnexpectedValueException if an invalid subcommand is provided
-     */
-    final public static function register(Container $container, array $name)
+    public function __construct(CliAppContainer $container)
     {
-        foreach ($name as $i => $subcommand)
+        $this->Container = $container;
+    }
+
+    final public function container(): CliAppContainer
+    {
+        return $this->Container;
+    }
+
+    /**
+     * @internal
+     * @param string[] $name
+     */
+    final public function setName(array $name): void
+    {
+        if (!is_null($this->Name))
         {
-            Assert::patternMatches($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
+            throw new RuntimeException("Name already set");
         }
 
-        /** @var static */
-        $command       = $container->get(static::class);
-        $command->Name = $name;
-
-        Cli::registerCommand($command);
-
-        $command->IsRegistered = true;
+        $this->Name = $name;
     }
 
     /**
@@ -197,10 +176,7 @@ abstract class CliCommand implements IBound
      */
     final public function getLongCommandName(): string
     {
-        $name = $this->getName();
-        array_unshift($name, Cli::getProgramName());
-
-        return implode(" ", $name);
+        return implode(" ", $this->getLongName());
     }
 
     /**
@@ -214,6 +190,20 @@ abstract class CliCommand implements IBound
     }
 
     /**
+     * Get the command name, including the name used to run the script, as an
+     * array
+     *
+     * @return string[]
+     */
+    final public function getLongName(): array
+    {
+        $name = $this->getName();
+        array_unshift($name, $this->container()->getProgramName());
+
+        return $name;
+    }
+
+    /**
      * Get a short description of the command
      *
      * @return string
@@ -221,31 +211,6 @@ abstract class CliCommand implements IBound
     final public function getDescription(): string
     {
         return $this->_getDescription();
-    }
-
-    /**
-     * Return true if the command has been registered as a subcommand of the
-     * running app
-     *
-     * @return bool
-     */
-    final public function isRegistered(): bool
-    {
-        return $this->IsRegistered;
-    }
-
-    /**
-     * Return true if the command can be registered as a subcommand of the
-     * running app
-     *
-     * Always returns `false` unless the instance was created by
-     * {@see CliCommand::register()}.
-     *
-     * @return bool
-     */
-    final public function isRegistrable(): bool
-    {
-        return !is_null($this->Name);
     }
 
     /**
@@ -681,6 +646,65 @@ EOF;
         return $values;
     }
 
+    /**
+     * @param string|CliOption $option
+     */
+    final public function getEffectiveArgument($option, bool $shellEscape = false): ?string
+    {
+        if (is_string($option))
+        {
+            $this->assertHasRun();
+
+            if (!($option = $this->getOption($option)))
+            {
+                throw new UnexpectedValueException("No option with name '$option'");
+            }
+        }
+        if (is_null($option->Value) || $option->Value === false || $option->Value === 0)
+        {
+            return null;
+        }
+        if (is_int($option->Value))
+        {
+            if ($option->Short)
+            {
+                return "-" . str_repeat($option->Short, $option->Value);
+            }
+            return implode(" ", array_fill(0, $option->Value, "--{$option->Long}"));
+        }
+        $value = null;
+        if (is_array($option->Value))
+        {
+            $value = implode(",", $option->Value);
+        }
+        elseif (is_string($option->Value))
+        {
+            $value = $option->Value;
+        }
+        if ($shellEscape && !is_null($value))
+        {
+            $value = escapeshellarg($value);
+        }
+        return $option->Long
+            ? "--{$option->Long}" . (is_null($value) ? "" : "=$value")
+            : "-{$option->Short}" . $value;
+    }
+
+    /**
+     * @return string[]
+     */
+    final public function getEffectiveCommandLine(bool $shellEscape = false): array
+    {
+        $this->assertHasRun();
+
+        $args = $this->getLongName();
+        foreach ($this->Options as $option)
+        {
+            $args[] = $this->getEffectiveArgument($option, $shellEscape);
+        }
+        return array_values(array_filter($args, fn($arg) => !is_null($arg)));
+    }
+
     private function assertHasRun()
     {
         if (!$this->HasRun)
@@ -703,7 +727,7 @@ EOF;
             throw new RuntimeException("Command has already run");
         }
 
-        if (Cli::getRunningCommand() !== $this)
+        if ($this->container()->getRunningCommand() !== $this)
         {
             Assert::sapiIsCli();
         }

@@ -140,6 +140,17 @@ final class Convert extends Utility
     }
 
     /**
+     * If an iterable isn't already an array, make it one
+     *
+     * @param iterable $iterable
+     * @return array
+     */
+    public static function iterableToArray(iterable $iterable): array
+    {
+        return is_array($iterable) ? $iterable : iterator_to_array($iterable);
+    }
+
+    /**
      * Remove the namespace and an optional suffix from a class name
      *
      * @param string $class

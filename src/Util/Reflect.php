@@ -180,16 +180,22 @@ final class Reflect extends Utility
      * ```php
      * callback(string $name): ?string
      * ```
+     * @param null|string $type If set, ignore the parameter's declared type and
+     * use `$type` instead. Do not use when generating code unless `$type` is
+     * from a trusted source.
      * @return string
      */
     public static function getParameterDeclaration(
         ReflectionParameter $parameter,
         string $classPrefix          = "\\",
-        ? callable $typeNameCallback = null
+        ? callable $typeNameCallback = null,
+        string $type = null
     ): string
     {
-        $param = self::getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
-        $param = (($param ? "$param " : "mixed ")
+        // If getTypeDeclaration isn't called, neither is $typeNameCallback
+        $param  = self::getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
+        $param  = is_null($type) ? ($param ?: "mixed") : $type;
+        $param .= (($param ? " " : "")
             . ($parameter->isPassedByReference() ? "&" : "")
             . ($parameter->isVariadic() ? "..." : "")
             . '$' . $parameter->getName());

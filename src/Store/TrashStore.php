@@ -19,6 +19,7 @@ final class TrashStore extends SqliteStore
      * Create or open a storage database
      *
      * @param string $filename The SQLite database to use.
+     * @return $this
      */
     public function open(string $filename = ":memory:")
     {
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS _trash_item (
 )
 SQL
         );
+        return $this;
     }
 
     /**
@@ -44,13 +46,13 @@ SQL
      * @param string $type The object's canonical type.
      * @param null|string $key The object's original identifier.
      * @param array|object $object Must be JSON-serializable. No `resource`s.
-     * @param null|string $deletedFrom Where was the object before it was
-     * deleted?
+     * @param null|string $deletedFrom Where was the object before it was deleted?
      * @param int|null $createdAt When was the object originally created?
      * @param int|null $modifiedAt When was the object most recently changed?
+     * @return $this
      */
     public function put(string $type, ?string $key, $object,
-        ?string $deletedFrom, int $createdAt = null, int $modifiedAt = null): void
+        ?string $deletedFrom, int $createdAt = null, int $modifiedAt = null)
     {
         $this->assertIsOpen();
         $stmt = $this->db()->prepare(
@@ -81,13 +83,15 @@ SQL
         $stmt->bindValue(":modified_at", $modifiedAt, SQLITE3_INTEGER);
         $stmt->execute();
         $stmt->close();
+        return $this;
     }
 
     /**
      * Delete everything
      *
+     * @return $this
      */
-    public function empty(): void
+    public function empty()
     {
         $this->assertIsOpen();
         $this->db()->exec(
@@ -96,5 +100,6 @@ DELETE
 FROM _trash_item
 SQL
         );
+        return $this;
     }
 }

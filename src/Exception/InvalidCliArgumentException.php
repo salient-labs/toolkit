@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Exception;
 
-use Lkrms\Cli\Cli;
 use Lkrms\Console\Console;
+use Lkrms\Facade\Cli;
 
 /**
  * Thrown when invalid command-line arguments are given
