@@ -41,7 +41,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     /**
      * @var int|string|null
      */
-    protected $Id;
+    public $Id;
 
     /**
      * @var array<string,array<string,int>>

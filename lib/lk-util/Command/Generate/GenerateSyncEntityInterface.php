@@ -124,7 +124,7 @@ class GenerateSyncEntityInterface extends CliCommand
         $fqcn       = $namespace ? $namespace . "\\" . $class : $class;
         $package    = $this->getOptionValue("package");
         $desc       = $this->getOptionValue("desc");
-        $desc       = is_null($desc) ? "Synchronises $class objects with a backend" : $desc;
+        $desc       = is_null($desc) ? "Syncs $class objects with a backend" : $desc;
         $interface  = $class . "Provider";
         $extends    = ISyncProvider::class;
         $camelClass = Convert::toCamelCase($class);

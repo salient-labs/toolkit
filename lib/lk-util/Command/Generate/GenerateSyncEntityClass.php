@@ -83,7 +83,7 @@ class GenerateSyncEntityClass extends CliCommand
                 "description"   => "The visibility of the entity's properties",
                 "optionType"    => CliOptionType::ONE_OF,
                 "allowedValues" => ["public", "protected", "private"],
-                "defaultValue"  => "protected",
+                "defaultValue"  => "public",
             ],
             [
                 "long"        => "json",

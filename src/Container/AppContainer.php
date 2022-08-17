@@ -13,6 +13,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Cache;
 use Lkrms\Util\Composer;
+use Lkrms\Util\Convert;
 use Lkrms\Util\Env;
 use Lkrms\Util\File;
 use Lkrms\Util\Test;
@@ -107,7 +108,7 @@ class AppContainer extends Container implements IReadable
 
         if (is_null($basePath))
         {
-            $basePath = Composer::getRootPackagePath();
+            $basePath = Env::get("app_base_path", "") ?: Composer::getRootPackagePath();
         }
 
         if (!is_dir($basePath) ||
@@ -167,11 +168,14 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
+     * @param $name Defaults to the name used to run the script.
      * @return $this
      */
-    public function enableMessageLog(string $name = "app", array $levels = ConsoleLevels::ALL_DEBUG)
+    public function enableMessageLog(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG)
     {
-        $name = basename($name, ".log") ?: "app";
+        $name = ($name
+            ? basename($name, ".log")
+            : Convert::pathToBasename($_SERVER["SCRIPT_FILENAME"], 1));
         Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log", $levels));
 
         return $this;

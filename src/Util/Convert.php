@@ -151,6 +151,25 @@ final class Convert extends Utility
     }
 
     /**
+     * Remove the directory and up to the given number of extensions from a path
+     *
+     * @param $extLimit If set, remove extensions matching the regular
+     * expression `\.[^.\s]+$` unless `""`, `"."`, or `".."` would remain:
+     * - `<0`: remove all extensions
+     * - `>0`: remove up to the given number of extensions
+     */
+    public static function pathToBasename(string $path, int $extLimit = 0): string
+    {
+        $path = basename($path);
+        if ($extLimit)
+        {
+            $range = $extLimit > 1 ? "{1,$extLimit}" : ($extLimit < 0 ? "+" : "");
+            $path  = preg_replace("/(?<=.)(?<!^\\.|^\\.\\.)(\\.[^.\\s]+){$range}\$/", "", $path);
+        }
+        return $path;
+    }
+
+    /**
      * Remove the namespace and an optional suffix from a class name
      *
      * @param string $class
