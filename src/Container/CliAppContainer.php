@@ -60,7 +60,7 @@ class CliAppContainer extends AppContainer
      */
     public function getProgramName(): string
     {
-        return basename($GLOBALS["argv"][0]);
+        return basename($_SERVER["argv"][0]);
     }
 
     /**
@@ -262,7 +262,7 @@ EOF;
      */
     public function run(): int
     {
-        $args = array_slice($GLOBALS["argv"], 1);
+        $args = array_slice($_SERVER["argv"], 1);
         $node = $this->CommandTree;
         $name = "";
 

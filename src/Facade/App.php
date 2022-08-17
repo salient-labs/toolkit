@@ -16,7 +16,7 @@ use Lkrms\Container\Container;
  * @method static void bindContainer(Container $container)
  * @method static AppContainer enableCache()
  * @method static AppContainer enableExistingCache()
- * @method static AppContainer enableMessageLog(string $name = 'app', array $levels = \Lkrms\Console\ConsoleLevels::ALL_DEBUG)
+ * @method static AppContainer enableMessageLog(?string $name = null, array $levels = \Lkrms\Console\ConsoleLevels::ALL_DEBUG)
  * @method static mixed get(string $id, mixed ...$params)
  * @method static Container getGlobal()
  * @method static bool has(string $id)

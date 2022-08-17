@@ -122,6 +122,68 @@ print_r(array_combine($nouns, array_map(
     $nouns
 )));
 
+$paths = [
+    'file',
+    'file.ext',
+    'file.tar.ext',
+    'file.another.tar.ext',
+    'file.not an.ext',
+    '/path/to/file',
+    '/path/to/file/',
+    '/path/to/file.ext',
+    '/path/to/file.ext/',
+    '/path/to/file.tar.ext',
+    '/path/to/file.tar.ext/',
+    '/path/to/file.another.tar.ext',
+    '/path/to/file.another.tar.ext/',
+    '/path/to/file.not an.ext',
+    '/path/to/file.not an.ext/',
+    'path/to/file',
+    'path/to/file/',
+    'path/to/file.ext',
+    'path/to/file.ext/',
+    'path/to/file.tar.ext',
+    'path/to/file.tar.ext/',
+    'path/to/file.another.tar.ext',
+    'path/to/file.another.tar.ext/',
+    'path/to/file.not an.ext',
+    'path/to/file.not an.ext/',
+    './file',
+    './file.ext',
+    './file.tar.ext',
+    './file.another.tar.ext',
+    './file.not an.ext',
+    './.file',
+    './.file.ext',
+    './.file.tar.ext',
+    './.file.another.tar.ext',
+    './.file.not an.ext',
+    './..file',
+    './..file.ext',
+    './..file.tar.ext',
+    './..file.another.tar.ext',
+    './..file.not an.ext',
+];
+
+print_r([
+    "pathToBasename" => array_combine($paths, array_map(
+        fn($i)       => Convert::pathToBasename($i),
+        $paths
+    )),
+    "pathToBasename(,1)" => array_combine($paths, array_map(
+        fn($i)           => Convert::pathToBasename($i, 1),
+        $paths
+    )),
+    "pathToBasename(,2)" => array_combine($paths, array_map(
+        fn($i)           => Convert::pathToBasename($i, 2),
+        $paths
+    )),
+    "pathToBasename(,-1)" => array_combine($paths, array_map(
+        fn($i)            => Convert::pathToBasename($i, -1),
+        $paths
+    )),
+]);
+
 $fqcn = [
     'Composer\Command\DumpAutoloadCommand',
     '\Composer\Command\ExecCommand',

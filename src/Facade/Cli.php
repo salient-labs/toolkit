@@ -18,7 +18,7 @@ use Lkrms\Container\Container;
  * @method static CliAppContainer command(string[] $name, string $id)
  * @method static CliAppContainer enableCache()
  * @method static CliAppContainer enableExistingCache()
- * @method static CliAppContainer enableMessageLog(string $name = 'app', array $levels = \Lkrms\Console\ConsoleLevels::ALL_DEBUG)
+ * @method static CliAppContainer enableMessageLog(?string $name = null, array $levels = \Lkrms\Console\ConsoleLevels::ALL_DEBUG)
  * @method static mixed get(string $id, mixed ...$params)
  * @method static array<string,array|string>|string|null|false getCommandTree(string[] $name = [])
  * @method static Container getGlobal()
