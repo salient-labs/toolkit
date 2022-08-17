@@ -7,8 +7,7 @@ namespace Lkrms\Container;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
-use Lkrms\Util\Assert;
-use RuntimeException;
+use Lkrms\Facade\Assert;
 use UnexpectedValueException;
 
 /**
@@ -39,10 +38,7 @@ class CliAppContainer extends AppContainer
         parent::__construct($basePath);
 
         Assert::sapiIsCli();
-        if (!ini_get("register_argc_argv"))
-        {
-            throw new RuntimeException("register_argc_argv is not enabled");
-        }
+        Assert::argvIsRegistered();
 
         // Keep running, even if:
         // - the TTY disconnects

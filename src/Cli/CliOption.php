@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
-use Lkrms\Contract\IConstructible;
-use Lkrms\Contract\IReadable;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TFullyReadable;
-use Lkrms\Util\Assert;
+use Lkrms\Contract\IConstructible;
+use Lkrms\Contract\IReadable;
+use Lkrms\Facade\Assert;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Env;
 use RuntimeException;
