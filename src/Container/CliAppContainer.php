@@ -78,7 +78,7 @@ class CliAppContainer extends AppContainer
      * @param array<string,array|string>|string|null|false $node The node as
      * returned by {@see CliAppContainer::getCommandTree()}.
      */
-    public function getNodeCommand(string $name, $node): ?CliCommand
+    protected function getNodeCommand(string $name, $node): ?CliCommand
     {
         if (is_string($node))
         {
@@ -109,7 +109,7 @@ class CliAppContainer extends AppContainer
      * @param string[] $name
      * @return array<string,array|string>|string|null|false
      */
-    public function getCommandTree(array $name = [])
+    protected function getCommandTree(array $name = [])
     {
         $tree = $this->CommandTree;
 

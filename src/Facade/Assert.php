@@ -21,6 +21,9 @@ use Lkrms\Utility\AssertionUtility;
  */
 final class Assert extends Facade
 {
+    /**
+     * @internal
+     */
     protected static function getServiceName(): string
     {
         return AssertionUtility::class;

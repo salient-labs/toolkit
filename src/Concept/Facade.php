@@ -42,11 +42,17 @@ abstract class Facade implements IFacade
         return self::$Instances[static::class] = $container->get($service, ...func_get_args());
     }
 
+    /**
+     * @internal
+     */
     final public static function isLoaded(): bool
     {
         return isset(self::$Instances[static::class]);
     }
 
+    /**
+     * @internal
+     */
     final public static function load()
     {
         if (self::$Instances[static::class] ?? null)
@@ -57,6 +63,9 @@ abstract class Facade implements IFacade
         return self::_load(...func_get_args());
     }
 
+    /**
+     * @internal
+     */
     final public static function getInstance()
     {
         return self::$Instances[static::class] ?? self::_load();
@@ -65,9 +74,7 @@ abstract class Facade implements IFacade
     /**
      * Pass static method calls to the instance behind the facade
      *
-     * @param string $name
-     * @param array $arguments
-     * @return mixed
+     * @internal
      */
     final public static function __callStatic(string $name, array $arguments)
     {
