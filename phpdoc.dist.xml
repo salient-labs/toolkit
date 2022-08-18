@@ -4,6 +4,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="https://www.phpdoc.org"
         xsi:noNamespaceSchemaLocation="https://docs.phpdoc.org/latest/phpdoc.xsd">
+    <title>lkrms/util</title>
     <paths>
         <output>build/api</output>
         <cache>build/cache</cache>
@@ -22,9 +23,6 @@
             </ignore-tags>
         </api>
     </version>
-    <setting
-            name="title"
-            value="lkrms/util" />
     <setting
             name="graphs.enabled"
             value="true" />
