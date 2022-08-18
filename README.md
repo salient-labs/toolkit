@@ -10,6 +10,16 @@ Install the latest version with [Composer](https://getcomposer.org/):
 composer require lkrms/util
 ```
 
+## Documentation
+
+[API documentation][api-docs] for `lkrms/util` is available online.
+
+> Courtesy of GitHub Pages and [this workflow][phpdoc-workflow], the online
+> documentation is updated after every commit to the `main` branch.
+
+To generate your own API documentation, run [phpDocumentor][phpdoc] in the root
+directory of this repository, then open `build/api/index.html`.
+
 ## Using the CLI utility
 
 `lkrms/util` includes code generators and other command-line tools you can use
@@ -98,4 +108,7 @@ automatically to ensure messages are delivered or logged by default.
 
 ---
 
+[api-docs]: https://lkrms.github.io/php-util/
+[phpdoc-workflow]: .github/workflows/documentation.yml
+[phpdoc]: https://phpdoc.org/
 [Console.php]: src/Console/Console.php
