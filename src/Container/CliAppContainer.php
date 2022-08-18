@@ -7,8 +7,7 @@ namespace Lkrms\Container;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
-use Lkrms\Util\Assert;
-use RuntimeException;
+use Lkrms\Facade\Assert;
 use UnexpectedValueException;
 
 /**
@@ -39,10 +38,7 @@ class CliAppContainer extends AppContainer
         parent::__construct($basePath);
 
         Assert::sapiIsCli();
-        if (!ini_get("register_argc_argv"))
-        {
-            throw new RuntimeException("register_argc_argv is not enabled");
-        }
+        Assert::argvIsRegistered();
 
         // Keep running, even if:
         // - the TTY disconnects
@@ -82,7 +78,7 @@ class CliAppContainer extends AppContainer
      * @param array<string,array|string>|string|null|false $node The node as
      * returned by {@see CliAppContainer::getCommandTree()}.
      */
-    public function getNodeCommand(string $name, $node): ?CliCommand
+    protected function getNodeCommand(string $name, $node): ?CliCommand
     {
         if (is_string($node))
         {
@@ -113,7 +109,7 @@ class CliAppContainer extends AppContainer
      * @param string[] $name
      * @return array<string,array|string>|string|null|false
      */
-    public function getCommandTree(array $name = [])
+    protected function getCommandTree(array $name = [])
     {
         $tree = $this->CommandTree;
 

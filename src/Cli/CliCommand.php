@@ -8,7 +8,6 @@ use Lkrms\Console\Console;
 use Lkrms\Container\CliAppContainer;
 use Lkrms\Contract\IBound;
 use Lkrms\Exception\InvalidCliArgumentException;
-use Lkrms\Util\Assert;
 use Lkrms\Util\Convert;
 use RuntimeException;
 use UnexpectedValueException;

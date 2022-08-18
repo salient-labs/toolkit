@@ -16,6 +16,11 @@ parameters:
 			path: src/Container/CliAppContainer.php
 
 		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: src/Container/Container.php
+
+		-
 			message: "#^Property Lkrms\\\\Curler\\\\CurlerHeaders\\:\\:\\$Trailers is never read, only written\\.$#"
 			count: 1
 			path: src/Curler/CurlerHeaders.php

@@ -6,8 +6,8 @@ namespace Lkrms\Sync\Provider;
 
 use ADOConnection;
 use Lkrms\Db\DbConnector;
+use Lkrms\Facade\Assert;
 use Lkrms\Sync\Provider\SyncProvider;
-use Lkrms\Util\Assert;
 use RuntimeException;
 use Throwable;
 

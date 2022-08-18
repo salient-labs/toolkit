@@ -12,33 +12,36 @@ use Lkrms\Container\Container;
 /**
  * A facade for CliAppContainer
  *
- * @method static CliAppContainer load(?string $basePath = null)
- * @method static CliAppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = [])
- * @method static void bindContainer(Container $container)
- * @method static CliAppContainer command(string[] $name, string $id)
+ * @method static CliAppContainer load(?string $basePath = null) Create and return the underlying CliAppContainer
+ * @method static CliAppContainer getInstance() Return the underlying CliAppContainer
+ * @method static bool isLoaded() Return true if the underlying CliAppContainer has been created
+ * @method static CliAppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = []) Bind a class to the given identifier
+ * @method static void bindContainer(Container $container) Bind this instance to another for service container injection
+ * @method static CliAppContainer command(string[] $name, string $id) Register a CliCommand with the container
  * @method static CliAppContainer enableCache()
  * @method static CliAppContainer enableExistingCache()
  * @method static CliAppContainer enableMessageLog(?string $name = null, array $levels = \Lkrms\Console\ConsoleLevels::ALL_DEBUG)
- * @method static mixed get(string $id, mixed ...$params)
- * @method static array<string,array|string>|string|null|false getCommandTree(string[] $name = [])
- * @method static Container getGlobal()
- * @method static ?CliCommand getNodeCommand(string $name, array<string,array|string>|string|null|false $node)
- * @method static string getProgramName()
- * @method static ?CliCommand getRunningCommand()
- * @method static bool has(string $id)
- * @method static bool hasGlobal()
- * @method static string name(string $id)
- * @method static CliAppContainer pop()
- * @method static CliAppContainer push()
- * @method static int run()
- * @method static never runAndExit()
- * @method static CliAppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = [])
+ * @method static mixed get(string $id, mixed ...$params) Create a new instance of the given class or interface, or retrieve a singleton created earlier
+ * @method static Container getGlobal() Get the current global container, creating one if necessary
+ * @method static string getProgramName() Return the name used to run the script
+ * @method static CliCommand|null getRunningCommand() Return the CliCommand started from the command line
+ * @method static bool has(string $id) Returns true if the given identifier can be resolved to a concrete class
+ * @method static bool hasGlobal() Returns true if a global container exists
+ * @method static string name(string $id) Get a concrete class name for the given identifier
+ * @method static CliAppContainer pop() Pop the most recently pushed container off the stack and activate it
+ * @method static CliAppContainer push() Push a copy of the container onto the stack
+ * @method static int run() Process command-line arguments and take appropriate action
+ * @method static never runAndExit() Exit after actioning command-line arguments
+ * @method static CliAppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = []) Bind a class to the given identifier as a shared dependency
  *
  * @uses CliAppContainer
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Container\CliAppContainer' --generate='Lkrms\Facade\Cli'
  */
 final class Cli extends Facade
 {
+    /**
+     * @internal
+     */
     protected static function getServiceName(): string
     {
         return CliAppContainer::class;

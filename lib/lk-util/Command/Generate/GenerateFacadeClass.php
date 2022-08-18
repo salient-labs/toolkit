@@ -92,6 +92,11 @@ class GenerateFacadeClass extends CliCommand
         "getReadable",
         "getSettable",
         "getWritable",
+
+        // IFacade displaces these if the underlying class has them
+        "getInstance",
+        "isLoaded",
+        "load",
     ];
 
     protected function _run(string ...$args)
@@ -207,8 +212,9 @@ class GenerateFacadeClass extends CliCommand
 
             if ($_method->isConstructor())
             {
-                $method = "load";
-                $type   = $service;
+                $method  = "load";
+                $type    = $service;
+                $summary = "Create and return the underlying $class";
             }
             else
             {
@@ -222,7 +228,15 @@ class GenerateFacadeClass extends CliCommand
                 $type = ($phpDoc->Return["type"] ?? null) ?: ($_method->hasReturnType()
                     ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
                     : "mixed");
-                $type = $returnTypeMap[$type] ?? $type;
+                $type    = $returnTypeMap[$type] ?? $type;
+                $summary = $phpDoc->Summary ?? null;
+
+                // Work around phpDocumentor's inability to parse "?<type>"
+                // return types
+                if (strpos($type, "?") === 0)
+                {
+                    $type = substr($type, 1) . "|null";
+                }
             }
 
             $params = [];
@@ -237,8 +251,15 @@ class GenerateFacadeClass extends CliCommand
                 );
             }
 
-            $methods[] = " * @method static $type $method("
-                . str_replace("\n", "\n * ", implode(", ", $params)) . ")";
+            $methods[] = (" * @method static $type $method("
+                . str_replace("\n", "\n * ", implode(", ", $params)) . ")"
+                . ($summary ? " $summary" : ""));
+
+            if ($_method->isConstructor())
+            {
+                $methods[] = " * @method static $type getInstance() Return the underlying $class";
+                $methods[] = " * @method static bool isLoaded() Return true if the underlying $class has been created";
+            }
         }
         $methods = implode(PHP_EOL, $methods);
 
@@ -300,6 +321,9 @@ class GenerateFacadeClass extends CliCommand
         }
 
         $lines   = [implode(PHP_EOL . PHP_EOL, $blocks)];
+        $lines[] = "    /**";
+        $lines[] = "     * @internal";
+        $lines[] = "     */";
         $lines[] = "    protected static function getServiceName(): string";
         $lines[] = "    {";
         $lines[] = "        return $service::class;";

@@ -1,0 +1,67 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Lkrms\Utility;
+
+use RuntimeException;
+use UnexpectedValueException;
+
+/**
+ * Throw an exception if a condition isn't met
+ *
+ */
+final class AssertionUtility
+{
+    private function throwUnexpectedValueException(string $message, ?string $name): void
+    {
+        throw new UnexpectedValueException(
+            str_replace("{}", $name ? "'$name'" : "value", $message)
+        );
+    }
+
+    public function notEmpty($value, ?string $name = null): void
+    {
+        if (empty($value))
+        {
+            self::throwUnexpectedValueException("{} cannot be empty", $name);
+        }
+    }
+
+    public function patternMatches(?string $value, string $pattern, ?string $name = null): void
+    {
+        if (is_null($value) || !preg_match($pattern, $value))
+        {
+            self::throwUnexpectedValueException("{} must match pattern '$pattern'", $name);
+        }
+    }
+
+    public function sapiIsCli(): void
+    {
+        if (PHP_SAPI != "cli")
+        {
+            throw new RuntimeException("CLI required");
+        }
+    }
+
+    public function argvIsRegistered(): void
+    {
+        if (!ini_get("register_argc_argv"))
+        {
+            throw new RuntimeException("register_argc_argv is not enabled");
+        }
+    }
+
+    public function localeIsUtf8(): void
+    {
+        if (($locale = setlocale(LC_CTYPE, "")) === false)
+        {
+            throw new RuntimeException("Invalid locale (check LANG and LC_*)");
+        }
+
+        if (!preg_match('/\.UTF-?8$/i', $locale))
+        {
+            throw new RuntimeException("'$locale' is not a UTF-8 locale");
+        }
+    }
+}

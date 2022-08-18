@@ -16,7 +16,7 @@ final class Legacy extends Utility
         \Lkrms\App::class              => \Lkrms\Facade\App::class,
         \Lkrms\App\App::class          => \Lkrms\Facade\App::class,
         \Lkrms\App\AppContainer::class => \Lkrms\Container\AppContainer::class,
-        \Lkrms\Assert::class           => \Lkrms\Util\Assert::class,
+        \Lkrms\Assert::class           => \Lkrms\Facade\Assert::class,
         \Lkrms\Cache::class            => \Lkrms\Facade\Cache::class,
         \Lkrms\Cli::class              => \Lkrms\Facade\Cli::class,
         \Lkrms\Cli\Cli::class          => \Lkrms\Facade\Cli::class,
@@ -37,6 +37,7 @@ final class Legacy extends Utility
         \Lkrms\Store\Trash::class      => \Lkrms\Facade\Trash::class,
         \Lkrms\Test::class             => \Lkrms\Util\Test::class,
         \Lkrms\Trash::class            => \Lkrms\Facade\Trash::class,
+        \Lkrms\Util\Assert::class      => \Lkrms\Facade\Assert::class,
 
         \Lkrms\Console\ConsoleTarget::class        => \Lkrms\Console\ConsoleTarget\ConsoleTarget::class,
         \Lkrms\Console\ConsoleTarget\Analog::class => \Lkrms\Console\ConsoleTarget\AnalogTarget::class,

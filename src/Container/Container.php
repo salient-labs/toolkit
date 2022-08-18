@@ -21,6 +21,11 @@ use UnexpectedValueException;
 class Container implements ContainerInterface, HasNoRequiredConstructorParameters
 {
     /**
+     * @var bool|null
+     */
+    private static $CreatingInstance;
+
+    /**
      * @var Container|null
      */
     private static $Instance;
@@ -37,6 +42,12 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
 
     public function __construct()
     {
+        if (self::$CreatingInstance)
+        {
+            self::$CreatingInstance = null;
+            self::$Instance         = $this;
+        }
+
         $this->bindContainer($this);
     }
 
@@ -90,7 +101,15 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
             return self::$Instance;
         }
 
-        return self::$Instance = new static(...func_get_args());
+        self::$CreatingInstance = true;
+        $instance = new static(...func_get_args());
+
+        if ($instance !== self::$Instance)
+        {
+            throw new RuntimeException("Error creating global container");
+        }
+
+        return $instance;
     }
 
     private function dice(): Dice
