@@ -87,8 +87,8 @@ abstract class SyncProvider implements ISyncProvider, IBindable
      * {@inheritdoc}
      *
      * This method is called before the callback in
-     * {@see SyncProvider::invokeInBoundContainer()}. Changes made to the
-     * container are removed after the callback returns.
+     * {@see \Lkrms\Concern\TBindable::invokeInBoundContainer()}. Changes made
+     * to the container are removed after the callback returns.
      *
      * If particular {@see \Lkrms\Sync\SyncEntity} subclasses should be used
      * when the provider is instantiating those entities, they should be bound
