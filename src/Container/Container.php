@@ -61,7 +61,7 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
      *
      * This function is used to prevent temporary service containers binding
      * instances they create to themselves. See
-     * {@see SyncProvider::invokeInBoundContainer()} for an example.
+     * {@see \Lkrms\Concern\TBindable::invokeInBoundContainer()} for an example.
      *
      * @internal
      * @param Container $container The container that should resolve compatible

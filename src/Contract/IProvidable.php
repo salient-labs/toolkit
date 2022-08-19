@@ -10,7 +10,7 @@ namespace Lkrms\Contract;
  * - Instances are bound to the {@see IProvider} servicing them and are spawned
  *   by its service container
  * - Calling {@see IProvidable::setProvider()} more than once per instance
- *   should raise a {@see RuntimeException}
+ *   should raise a `RuntimeException`
  */
 interface IProvidable
 {

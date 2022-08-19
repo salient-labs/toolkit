@@ -20,6 +20,10 @@
             <ignore-tags>
                 <ignore-tag>lkrms-generate-command</ignore-tag>
                 <ignore-tag>lkrms-sample-entity</ignore-tag>
+                <ignore-tag>psalm-param</ignore-tag>
+                <ignore-tag>psalm-return</ignore-tag>
+                <ignore-tag>psalm-template</ignore-tag>
+                <ignore-tag>template</ignore-tag>
             </ignore-tags>
         </api>
     </version>

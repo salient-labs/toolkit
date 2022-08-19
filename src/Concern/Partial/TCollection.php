@@ -29,7 +29,7 @@ if (PHP_VERSION_ID < 80000)
         }
 
         /**
-         * @return int|null
+         * @return int|string|null
          */
         final public function key()
         {
@@ -38,9 +38,6 @@ if (PHP_VERSION_ID < 80000)
 
         // Partial implementation of `ArrayAccess`:
 
-        /**
-         * @return mixed
-         */
         final public function offsetGet($offset)
         {
             return $this->Items[$offset];
@@ -50,7 +47,12 @@ if (PHP_VERSION_ID < 80000)
 else
 {
     /**
-     * @internal
+     * A partial implementation of Iterator and ArrayAccess for PHP 8+
+     *
+     * On PHP <=7.4, an alternate trait with undeclared return types is loaded
+     * instead.
+     *
+     * For internal use only. Use {@see \Lkrms\Concern\TCollection}.
      */
     trait TCollection
     {
@@ -74,9 +76,6 @@ else
 
         // Partial implementation of `ArrayAccess`:
 
-        /**
-         * @return mixed
-         */
         final public function offsetGet($offset): mixed
         {
             return $this->Items[$offset];
