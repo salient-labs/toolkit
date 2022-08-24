@@ -11,7 +11,7 @@ namespace Lkrms\Contract;
 interface IResolvable
 {
     /**
-     * Return a normalised property name
+     * Normalise the given property name
      *
      * @param string $name
      * @return string

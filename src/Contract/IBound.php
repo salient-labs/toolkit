@@ -16,8 +16,7 @@ interface IBound
      * Get the container the instance is bound to
      *
      * Each instance:
-     * - MAY bind to its container of origin by accepting a {@see Container}
-     *   constructor parameter.
+     * - SHOULD bind to a {@see Container} injected via its constructor
      * - MUST return the same container for every call to
      *   {@see IBound::container()}
      *

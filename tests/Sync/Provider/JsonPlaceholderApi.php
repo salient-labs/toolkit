@@ -7,6 +7,7 @@ namespace Lkrms\Tests\Sync\Provider;
 use Lkrms\Container\Container;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Exception\SyncOperationNotImplementedException;
+use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 use Lkrms\Sync\SyncOperation;
 use Lkrms\Tests\Sync\Entity\Post;
@@ -33,15 +34,22 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return [self::JSON_PLACEHOLDER_BASE_URL];
     }
 
+    protected function _getDateFormatter(): DateFormatter
+    {
+        return new DateFormatter();
+    }
+
     protected function getCacheExpiry(): ?int
     {
         return 24 * 60 * 60;
     }
 
-    public static function bindConcrete(Container $container)
+    public static function getBindings(): array
     {
-        $container->bind(Post::class, \Lkrms\Tests\Sync\CustomEntity\Post::class);
-        $container->bind(User::class, \Lkrms\Tests\Sync\CustomEntity\User::class);
+        return [
+            Post::class => \Lkrms\Tests\Sync\CustomEntity\Post::class,
+            User::class => \Lkrms\Tests\Sync\CustomEntity\User::class,
+        ];
     }
 
     public function createPost(Post $post): Post

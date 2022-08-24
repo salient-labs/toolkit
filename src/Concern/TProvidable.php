@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\IBindable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Support\ClosureBuilder;
 use Psr\Container\ContainerInterface as Container;
@@ -50,15 +49,6 @@ trait TProvidable
         return $this->_ProvidedBy;
     }
 
-    private static function maybeInvokeInBoundContainer(IProvider $provider, callable $callback)
-    {
-        if ($provider instanceof IBindable)
-        {
-            return $provider->invokeInBoundContainer($callback);
-        }
-        return $callback($provider->container());
-    }
-
     /**
      * Create an instance of the class from an array, optionally applying a
      * callback and/or remapping its values
@@ -72,8 +62,6 @@ trait TProvidable
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.
      *
-     * @param IProvider $provider
-     * @param array $data
      * @param null|callable $callback If set, applied before optionally
      * remapping `$data`.
      * @param null|array<int|string,int|string> $keyMap An array that maps
@@ -108,12 +96,10 @@ trait TProvidable
             $closure = !$closure ? $callback : fn(array $in) => $closure($callback($in));
         }
 
-        return self::maybeInvokeInBoundContainer($provider,
-            fn(Container $container) => (
-                ClosureBuilder::getBound(
-                    $container, static::class
-                )->getCreateFromClosure()
-            )($container, $provider, $data, $closure, $parent));
+        $container = self::maybeGetContextContainer($provider);
+        return ClosureBuilder::getBound(
+            $container, static::class
+        )->getCreateFromClosure()($container, $provider, $data, $closure, $parent);
     }
 
     /**
@@ -159,10 +145,8 @@ trait TProvidable
             $closure = !$closure ? $callback : fn(array $in) => $closure($callback($in));
         }
 
-        return self::maybeInvokeInBoundContainer($provider,
-            fn(Container $container) => (
-                self::getListFromProvider($container, $provider, $list, $closure, $sameKeys, $parent)
-            ));
+        $container = self::maybeGetContextContainer($provider);
+        return self::getListFromProvider($container, $provider, $list, $closure, $sameKeys, $parent);
     }
 
     private static function getListFromProvider(
@@ -202,5 +186,15 @@ trait TProvidable
             }
             yield $createFromClosure($container, $provider, $array, $closure, $parent);
         }
+    }
+
+    protected static function maybeGetContextContainer(?IProvider $provider): Container
+    {
+        if ($provider && ($container = $provider->container()) &&
+            $container instanceof \Lkrms\Container\Container)
+        {
+            return $container->context(get_class($provider));
+        }
+        return $container ?? \Lkrms\Container\Container::getGlobal();
     }
 }

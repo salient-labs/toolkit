@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Concern;
 
 use Lkrms\Support\ClosureBuilder;
+use RuntimeException;
 
 /**
  * Implements IWritable to write properties that have not been declared or are
@@ -27,21 +28,13 @@ use Lkrms\Support\ClosureBuilder;
 trait TWritable
 {
     /**
-     * Return a list of writable protected properties
+     * Get a list of writable protected properties
      *
      * To make all `protected` properties writable, return `["*"]`.
      *
      * @return string[]
      */
     public static function getWritable(): array
-    {
-        return static::getSettable();
-    }
-
-    /**
-     * @deprecated Rename to getWritable
-     */
-    public static function getSettable(): array
     {
         return [];
     }

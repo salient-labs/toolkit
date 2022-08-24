@@ -56,7 +56,6 @@ final class Legacy extends Utility
         \Lkrms\Core\Contract\IResolvable::class             => \Lkrms\Contract\IResolvable::class,
         \Lkrms\Core\Contract\ISettable::class               => \Lkrms\Contract\IWritable::class,
         \Lkrms\Core\Contract\ISingular::class               => \Lkrms\Contract\IFacade::class,
-        \Lkrms\Core\Mixin\TBindableSingleton::class         => \Lkrms\Concern\TBindableSingleton::class,
         \Lkrms\Core\Mixin\TBound::class                     => \Lkrms\Concern\TBound::class,
         \Lkrms\Core\Mixin\TClassCache::class                => \Lkrms\Concern\HasClassCache::class,
         \Lkrms\Core\Mixin\TConstructible::class             => \Lkrms\Concern\TConstructible::class,

@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Lkrms\Container;
 
 use Dice\Dice;
+use Lkrms\Container\ContextContainer;
 use Lkrms\Contract\HasNoRequiredConstructorParameters;
+use Lkrms\Contract\IBindable;
+use Lkrms\Contract\IBindableSingleton;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 use UnexpectedValueException;
@@ -31,6 +34,11 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
     private static $Instance;
 
     /**
+     * @var Container|null
+     */
+    protected $BackingContainer;
+
+    /**
      * @var Dice|null
      */
     private $Dice;
@@ -48,26 +56,18 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
             self::$Instance         = $this;
         }
 
-        $this->bindContainer($this);
+        $this->bindTo($this);
     }
 
     public function __clone()
     {
-        $this->bindContainer($this);
+        $this->bindTo($this);
     }
 
     /**
-     * Bind this instance to another for service container injection
-     *
-     * This function is used to prevent temporary service containers binding
-     * instances they create to themselves. See
-     * {@see \Lkrms\Concern\TBindable::invokeInBoundContainer()} for an example.
-     *
      * @internal
-     * @param Container $container The container that should resolve compatible
-     * requests to this instance.
      */
-    final public function bindContainer(Container $container): void
+    protected function bindTo(Container $container): void
     {
         $subs  = [ContainerInterface::class => $this];
         $class = static::class;
@@ -101,8 +101,14 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
             return self::$Instance;
         }
 
+        $class = static::class;
+        if ($class === ContextContainer::class)
+        {
+            $class = self::class;
+        }
+
         self::$CreatingInstance = true;
-        $instance = new static(...func_get_args());
+        $instance = new $class(...func_get_args());
 
         if ($instance !== self::$Instance)
         {
@@ -112,9 +118,14 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
         return $instance;
     }
 
-    private function dice(): Dice
+    private function me(): Container
     {
-        return $this->Dice ?: ($this->Dice = new Dice());
+        return $this->BackingContainer ?: $this;
+    }
+
+    protected function dice(): Dice
+    {
+        return $this->me()->Dice ?: ($this->me()->Dice = new Dice());
     }
 
     /**
@@ -160,7 +171,7 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
      */
     public function push()
     {
-        $this->DiceStack[] = clone $this->dice();
+        $this->me()->DiceStack[] = clone $this->dice();
         return $this;
     }
 
@@ -172,12 +183,12 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
      */
     public function pop()
     {
-        if (is_null($dice = array_pop($this->DiceStack)))
+        if (is_null($dice = array_pop($this->me()->DiceStack)))
         {
             throw new RuntimeException("Container stack is empty");
         }
 
-        $this->Dice = $dice;
+        $this->me()->Dice = $dice;
         return $this;
     }
 
@@ -194,11 +205,23 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
         }
     }
 
-    private function addRule(string $id, array $rule): void
+    protected function addRule(string $id, array $rule): void
     {
         $dice = $this->dice()->addRule($id, $rule);
         self::checkRule($dice->getRule($id));
-        $this->Dice = $dice;
+        $this->me()->Dice = $dice;
+    }
+
+    /**
+     * Get a context-specific facade for the container
+     *
+     * Returns a {@see ContextContainer} that surfaces the container's usual
+     * methods in the context of the given identifier, allowing contextual
+     * bindings to be applied in scenarios other than dependency injection.
+     */
+    public function context(string $id): ContextContainer
+    {
+        return ContextContainer::create($this->me(), $id);
     }
 
     /**
@@ -236,12 +259,11 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
     }
 
     /**
-     * Bind a class to the given identifier as a shared dependency
+     * Bind a class to the given identifier as a shared instance
      *
      * When the container needs an instance of `$id`, use a previously created
      * instance if possible, otherwise create a new `$instanceOf` as per
-     * {@see Container::bind()}, and store it for use with subsequent requests
-     * for `$id`.
+     * {@see Container::bind()}, and store it for use with subsequent requests.
      *
      * @param array $customRule Dice-compatible rules may be given here.
      * @return $this
@@ -262,5 +284,66 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
             $customRule
         );
         return $this;
+    }
+
+    /**
+     * Bind an IBindable and its services, optionally specifying the services to
+     * bind or exclude
+     *
+     * If `$id` implements {@see IBindableSingleton}, bind it as a shared
+     * instance.
+     *
+     * @param string[] $services
+     * @param string[] $exceptServices
+     * @return $this
+     */
+    public function bindable(string $id, ?array $services = null, ?array $exceptServices = null)
+    {
+        if (!is_subclass_of($id, IBindable::class))
+        {
+            throw new UnexpectedValueException($id . " does not implement " . IBindable::class);
+        }
+
+        if (is_subclass_of($id, IBindableSingleton::class))
+        {
+            $this->singleton($id);
+        }
+
+        $bindable = $id::getBindable();
+        if (!is_null($services))
+        {
+            if (count($bindable = array_intersect($bindable, $services)) < count($services))
+            {
+                throw new UnexpectedValueException($id . " does not implement: " . implode(", ", array_diff($services, $bindable)));
+            }
+        }
+        if (!is_null($exceptServices))
+        {
+            $bindable = array_diff($bindable, $exceptServices);
+        }
+        foreach ($bindable as $service)
+        {
+            $this->bind($service, $id);
+        }
+
+        if ($subs = $id::getBindings())
+        {
+            $this->addRule($id, ["substitutions" => $subs]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Identical to bindable()
+     *
+     * @param string[] $services
+     * @param string[] $exceptServices
+     * @return $this
+     * @see Container::bindable()
+     */
+    public function service(string $id, ?array $services = null, ?array $exceptServices = null)
+    {
+        return $this->bindable($id, $services, $exceptServices);
     }
 }

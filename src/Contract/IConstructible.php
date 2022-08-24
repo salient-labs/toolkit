@@ -7,7 +7,7 @@ namespace Lkrms\Contract;
 use Psr\Container\ContainerInterface as Container;
 
 /**
- * Converts arrays to instances
+ * Creates instances of itself from arrays
  *
  */
 interface IConstructible

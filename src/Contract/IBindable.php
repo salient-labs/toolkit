@@ -7,70 +7,45 @@ namespace Lkrms\Contract;
 use Lkrms\Container\Container;
 
 /**
- * Provides services and binds them to containers
+ * Provides services that can be bound to a container
  *
+ * In this context, a service is an `interface` implemented by the class,
+ * allowing it to be registered with (or "bound to") a {@see Container} as the
+ * concrete class to instantiate when the abstract service is requested.
+ *
+ * Containers resolve service/`interface` names to instances:
+ * - when they are requested explicitly via {@see Container::get()}, and
+ * - when they are used as type hints in the constructors of dependencies
+ *   encountered while resolving a call to {@see Container::get()}.
+ *
+ * If the class should be instantiated as a singleton (or "shared instance"),
+ * implement {@see IBindableSingleton}, otherwise implement {@see IBindable}.
  */
 interface IBindable extends IBound
 {
     /**
-     * Create a container binding for the class
+     * Get a list of services provided by the class
      *
-     * @param Container $container
+     * @return string[]
      */
-    public static function bind(Container $container);
+    public static function getBindable(): array;
 
     /**
-     * Create container bindings for services provided by the class
+     * Get an array that maps concrete classes to more specific subclasses
      *
-     * @param Container $container
-     * @param string ...$interfaces Only bind the given interfaces. If no
-     * interfaces are specified, every service interface implemented by the
-     * class will be bound.
-     */
-    public static function bindServices(Container $container, string ...$interfaces);
-
-    /**
-     * Create container bindings for services provided by the class that aren't
-     * in the given exception list
+     * When a container receives a request from an {@see IBindable} for a class
+     * bound to a more specific subclass by {@see IBindable::getBindings()}, it
+     * returns an instance of the subclass.
      *
-     * @param Container $container
-     * @param string ...$interfaces At least one interface to exclude.
-     */
-    public static function bindServicesExcept(Container $container, string ...$interfaces);
-
-    /**
-     * Create container bindings for concrete classes
-     */
-    public static function bindConcrete(Container $container);
-
-    /**
-     * Create container bindings for the class, its services, and concrete
-     * classes
+     * These bindings only apply:
+     * - when the class's dependencies are being resolved, and
+     * - when using a {@see \Lkrms\Container\ContextContainer} to work with a
+     *   container in the context of the class (see
+     *   {@see Container::context()}).
      *
-     * See {@see \Lkrms\Concern\TBindable::bindAll()} for a typical
-     * implementation.
-     *
-     * @param Container $container
+     * @return array<string,string>
      */
-    public static function bindAll(Container $container);
-
-    /**
-     * Bind the class to a service container and run the given callback, then
-     * restore the container to its original state
-     *
-     * @param callable $callback `$container` is cloned and passed to
-     * `$callback` so bindings applied by the class can be used in asynchronous
-     * contexts after the global container has been restored, e.g. in generator
-     * functions, which don't run until they are traversed.
-     * ```php
-     * callback(\Psr\Container\ContainerInterface $container): mixed
-     * ```
-     * @param Container|null $container If set, use `$container` as the basis
-     * for the temporary service container. The default is to use the container
-     * returned by {@see IBindable::container()}.
-     * @return mixed The callback's return value (if any).
-     */
-    public function invokeInBoundContainer(callable $callback, Container $container = null);
+    public static function getBindings(): array;
 
     /**
      * @return Container

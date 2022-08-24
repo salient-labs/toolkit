@@ -88,9 +88,7 @@ class GenerateFacadeClass extends CliCommand
     }
 
     public const SKIP_METHODS = [
-        "getGettable",
         "getReadable",
-        "getSettable",
         "getWritable",
 
         // IFacade displaces these if the underlying class has them

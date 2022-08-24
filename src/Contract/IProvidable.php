@@ -7,7 +7,7 @@ namespace Lkrms\Contract;
 /**
  * Represents the state of an external entity
  *
- * - Instances are bound to the {@see IProvider} servicing them and are spawned
+ * - Instances are bound to the {@see IProvider} servicing them and are created
  *   by its service container
  * - Calling {@see IProvidable::setProvider()} more than once per instance
  *   should raise a `RuntimeException`

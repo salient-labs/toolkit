@@ -7,7 +7,7 @@ namespace Lkrms\Facade;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Concept\Facade;
 use Lkrms\Container\CliAppContainer;
-use Lkrms\Container\Container;
+use Lkrms\Container\ContextContainer;
 
 /**
  * A facade for CliAppContainer
@@ -16,8 +16,9 @@ use Lkrms\Container\Container;
  * @method static CliAppContainer getInstance() Return the underlying CliAppContainer
  * @method static bool isLoaded() Return true if the underlying CliAppContainer has been created
  * @method static CliAppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = []) Bind a class to the given identifier
- * @method static void bindContainer(Container $container) Bind this instance to another for service container injection
+ * @method static CliAppContainer bindable(string $id, string[] $services = null, string[] $exceptServices = null) Bind an IBindable and its services, optionally specifying the services to bind or exclude
  * @method static CliAppContainer command(string[] $name, string $id) Register a CliCommand with the container
+ * @method static ContextContainer context(string $id) Get a context-specific facade for the container
  * @method static CliAppContainer enableCache()
  * @method static CliAppContainer enableExistingCache()
  * @method static CliAppContainer enableMessageLog(?string $name = null, array $levels = \Lkrms\Console\ConsoleLevels::ALL_DEBUG)
@@ -32,7 +33,8 @@ use Lkrms\Container\Container;
  * @method static CliAppContainer push() Push a copy of the container onto the stack
  * @method static int run() Process command-line arguments and take appropriate action
  * @method static never runAndExit() Exit after actioning command-line arguments
- * @method static CliAppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = []) Bind a class to the given identifier as a shared dependency
+ * @method static CliAppContainer service(string $id, string[] $services = null, string[] $exceptServices = null) Identical to bindable()
+ * @method static CliAppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null, array $customRule = []) Bind a class to the given identifier as a shared instance
  *
  * @uses CliAppContainer
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Container\CliAppContainer' --generate='Lkrms\Facade\Cli'

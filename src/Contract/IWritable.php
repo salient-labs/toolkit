@@ -12,7 +12,7 @@ namespace Lkrms\Contract;
 interface IWritable
 {
     /**
-     * Return a writable property list, or ["*"] for all available properties
+     * Get a list of writable properties, or ["*"] for all available properties
      *
      * @return string[]
      */
