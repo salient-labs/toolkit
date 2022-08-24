@@ -7,6 +7,7 @@ namespace Lkrms\Facade;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Concept\Facade;
 use Lkrms\Container\CliAppContainer;
+use Lkrms\Container\Container;
 use Lkrms\Container\ContextContainer;
 
 /**

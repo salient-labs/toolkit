@@ -189,15 +189,14 @@ final class Convert extends Utility
      * Return the namespace of a class
      *
      * Returns an empty string if `$class` is not namespaced, otherwise returns
-     * the namespace followed by a namespace separator. Global prefix operators
-     * are returned as-is.
+     * the namespace without adding or removing the global prefix operator.
      *
      * @param string $class
      * @return string
      */
     public static function classToNamespace(string $class): string
     {
-        return substr($class, 0, strrpos("\\" . $class, "\\"));
+        return substr($class, 0, max(0, strrpos("\\" . $class, "\\") - 1));
     }
 
     /**
