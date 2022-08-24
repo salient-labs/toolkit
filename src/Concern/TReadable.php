@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Concern;
 
 use Lkrms\Support\ClosureBuilder;
+use RuntimeException;
 
 /**
  * Implements IReadable to read properties that have not been declared or are
@@ -27,21 +28,13 @@ use Lkrms\Support\ClosureBuilder;
 trait TReadable
 {
     /**
-     * Return a list of readable protected properties
+     * Get a list of readable protected properties
      *
      * To make all `protected` properties readable, return `["*"]`.
      *
      * @return string[]
      */
     public static function getReadable(): array
-    {
-        return static::getGettable();
-    }
-
-    /**
-     * @deprecated Rename to getReadable
-     */
-    public static function getGettable(): array
     {
         return [];
     }

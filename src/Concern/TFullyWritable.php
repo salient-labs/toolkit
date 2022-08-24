@@ -18,14 +18,6 @@ trait TFullyWritable
      */
     public static function getWritable(): array
     {
-        return static::getSettable();
-    }
-
-    /**
-     * @deprecated Rename to getWritable
-     */
-    public static function getSettable(): array
-    {
         return ["*"];
     }
 }

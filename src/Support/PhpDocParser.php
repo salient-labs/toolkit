@@ -148,17 +148,17 @@ class PhpDocParser implements IReadable
                 continue;
             }
 
-            $token = strtok($lines, " \t");
-            $meta  = 0;
+            $meta = 0;
             switch ($tag)
             {
                 case "param":
-                    $type = null;
+                    $token = strtok($lines, " \t");
+                    $type  = null;
                     if (!preg_match('/^\$/', $token))
                     {
                         $type = $token;
                         $meta++;
-                        $token = strtok(" \t");
+                        $token = strtok(" \t\n\r");
                         if ($token === false || !preg_match('/^\$/', $token))
                         {
                             continue 2;
@@ -172,7 +172,8 @@ class PhpDocParser implements IReadable
                     break;
 
                 case "return":
-                    $type = $token;
+                    $token = strtok($lines, " \t\n\r");
+                    $type  = $token;
                     $meta++;
                     $this->Return = $this->getValue($type, $lines, $meta);
                     break;
@@ -201,7 +202,7 @@ class PhpDocParser implements IReadable
         }
         return [
             "type"        => $type,
-            "description" => preg_split('/\h+/', $lines, $meta + 1)[$meta] ?? null
+            "description" => preg_split('/\s+/', $lines, $meta + 1)[$meta] ?? null
         ];
     }
 

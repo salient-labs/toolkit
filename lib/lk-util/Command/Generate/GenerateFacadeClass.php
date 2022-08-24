@@ -88,9 +88,7 @@ class GenerateFacadeClass extends CliCommand
     }
 
     public const SKIP_METHODS = [
-        "getGettable",
         "getReadable",
-        "getSettable",
         "getWritable",
 
         // IFacade displaces these if the underlying class has them
@@ -99,7 +97,7 @@ class GenerateFacadeClass extends CliCommand
         "load",
     ];
 
-    protected function _run(string ...$args)
+    protected function run(string ...$args)
     {
         $namespace = explode("\\", trim($this->getOptionValue("class"), "\\"));
         $class     = array_pop($namespace);

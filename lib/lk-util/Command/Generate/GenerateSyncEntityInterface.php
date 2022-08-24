@@ -105,7 +105,7 @@ class GenerateSyncEntityInterface extends CliCommand
         ];
     }
 
-    protected function _run(string ...$args)
+    protected function run(string ...$args)
     {
         $operationMap = [
             "create"      => SyncOperation::CREATE,

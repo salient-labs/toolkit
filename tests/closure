@@ -3,8 +3,10 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Support\ClosureBuilder;
 use Lkrms\Err\Err;
+use Lkrms\Facade\Mapper;
+use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Support\ArrayMapperFlag;
 use Throwable;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
@@ -58,15 +60,15 @@ $map2 = [
 
 $exceptions = [];
 
-$skipNone              = ClosureBuilder::getArrayMapper($map, false, ClosureBuilder::SKIP_NONE);
-$skipNone2             = ClosureBuilder::getArrayMapper($map, false, ClosureBuilder::SKIP_NONE);
-$skipMissing           = ClosureBuilder::getArrayMapper($map, false, ClosureBuilder::SKIP_MISSING);
-$skipNull              = ClosureBuilder::getArrayMapper($map, false, ClosureBuilder::SKIP_NULL);
-$skipUnmapped          = ClosureBuilder::getArrayMapper($map, false, ClosureBuilder::SKIP_UNMAPPED);
-$skipMissingOrUnmapped = ClosureBuilder::getArrayMapper($map);
+$skipNone              = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
+$skipNone2             = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
+$skipMissing           = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED);
+$skipNull              = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL);
+$skipUnmapped          = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING);
+$skipMissingOrUnmapped = Mapper::getKeyMapClosure($map);
 
-$sameKeys         = ClosureBuilder::getArrayMapper($map2, true);
-$sameKeysSkipNull = ClosureBuilder::getArrayMapper($map2, true, ClosureBuilder::SKIP_NULL);
+$sameKeys         = Mapper::getKeyMapClosure($map2, ArrayKeyConformity::COMPLETE);
+$sameKeysSkipNull = Mapper::getKeyMapClosure($map2, ArrayKeyConformity::COMPLETE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL);
 
 try
 {

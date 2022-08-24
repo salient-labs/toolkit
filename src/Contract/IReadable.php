@@ -12,7 +12,7 @@ namespace Lkrms\Contract;
 interface IReadable
 {
     /**
-     * Return a readable property list, or ["*"] for all available properties
+     * Get a list of readable properties, or ["*"] for all available properties
      *
      * @return string[]
      */

@@ -13,7 +13,7 @@ use Throwable;
 
 abstract class DbSyncProvider extends SyncProvider
 {
-    abstract protected function _getDbConnector(): DbConnector;
+    abstract protected function getNewDbConnector(): DbConnector;
 
     protected function getBackendIdentifier(): array
     {
@@ -44,7 +44,7 @@ abstract class DbSyncProvider extends SyncProvider
 
     final public function getDbConnector(): DbConnector
     {
-        return $this->DbConnector ?: ($this->DbConnector = $this->_getDbConnector());
+        return $this->DbConnector ?: ($this->DbConnector = $this->getNewDbConnector());
     }
 
     final public function getDb(): ADOConnection

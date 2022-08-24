@@ -7,10 +7,10 @@ namespace Lkrms\Concern;
 use Lkrms\Container\Container;
 
 /**
- * Implements IBindable to provide services and bind them to containers
+ * Implements IBindable to provide services that can be bound to a container
  *
  * @see \Lkrms\Contract\IBindable
- * @see \Lkrms\Concern\TBindableSingleton
+ * @see \Lkrms\Contract\IBindableSingleton
  */
 trait TBindable
 {
@@ -24,48 +24,14 @@ trait TBindable
         $this->Container = $container;
     }
 
-    final public static function bind(Container $container)
+    public static function getBindable(): array
     {
-        $container->bind(static::class);
+        return [];
     }
 
-    public static function bindServices(Container $container, string ...$interfaces)
+    public static function getBindings(): array
     {
-    }
-
-    public static function bindServicesExcept(Container $container, string ...$interfaces)
-    {
-    }
-
-    public static function bindConcrete(Container $container)
-    {
-    }
-
-    final public static function bindAll(Container $container)
-    {
-        static::bind($container);
-        static::bindServices($container);
-        static::bindConcrete($container);
-    }
-
-    final public function invokeInBoundContainer(callable $callback, Container $container = null)
-    {
-        if (!$container)
-        {
-            $container = $this->container();
-        }
-        $container->push();
-        try
-        {
-            static::bindAll($container);
-            $clone = clone $container;
-            $container->bindContainer($clone);
-            return $callback($clone);
-        }
-        finally
-        {
-            $container->pop();
-        }
+        return [];
     }
 
     final public function container(): Container

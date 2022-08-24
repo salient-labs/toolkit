@@ -18,14 +18,6 @@ trait TFullyReadable
      */
     public static function getReadable(): array
     {
-        return static::getGettable();
-    }
-
-    /**
-     * @deprecated Rename to getReadable
-     */
-    public static function getGettable(): array
-    {
         return ["*"];
     }
 }

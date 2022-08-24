@@ -19,12 +19,10 @@ use Throwable;
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 
-$app = App::load(dirname(__DIR__));
-$app->enableCache();
-
 // Register JsonPlaceholderApi as the provider for Post and User objects
-$app->bind(PostProvider::class, JsonPlaceholderApi::class);
-$app->bind(UserProvider::class, JsonPlaceholderApi::class);
+$app = (App::load(dirname(__DIR__))
+    ->enableCache()
+    ->service(JsonPlaceholderApi::class));
 
 $userApi = new SyncEntityProvider(User::class);
 

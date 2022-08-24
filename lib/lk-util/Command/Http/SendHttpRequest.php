@@ -81,7 +81,7 @@ class SendHttpRequest extends CliCommand
         return $options;
     }
 
-    protected function _run(string ...$args)
+    protected function run(string ...$args)
     {
         $providerClass = $this->getOptionValue("provider");
         $endpointPath  = $this->getOptionValue("endpoint");

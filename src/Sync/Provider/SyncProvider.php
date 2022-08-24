@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Provider;
 
-use Lkrms\Container\Container;
-use Lkrms\Contract\IBindable;
-use Lkrms\Concern\TBindableSingleton;
+use Lkrms\Concern\TBindable;
+use Lkrms\Contract\IBindableSingleton;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Util\Convert;
 use Lkrms\Util\Generate;
-use UnexpectedValueException;
 
 /**
  * Base class for providers that sync entities to and from third-party backends
  * via their APIs
  *
  */
-abstract class SyncProvider implements ISyncProvider, IBindable
+abstract class SyncProvider implements ISyncProvider, IBindableSingleton
 {
-    use TBindableSingleton;
+    use TBindable;
 
     /**
      * Return a stable identifier that uniquely identifies the connected backend
@@ -47,61 +45,37 @@ abstract class SyncProvider implements ISyncProvider, IBindable
     abstract protected function getBackendIdentifier(): array;
 
     /**
+     * @var string|null
+     */
+    private $BackendHash;
+
+    /**
      * @see SyncProvider::getBackendIdentifier()
      */
     final public function getBackendHash(): string
     {
-        return Generate::hash(...$this->getBackendIdentifier());
+        return $this->BackendHash
+            ?: ($this->BackendHash = Generate::hash(...$this->getBackendIdentifier()));
     }
 
-    /**
-     * Create container bindings for ISyncProvider interfaces implemented by the
-     * class
-     */
-    final public static function bindServices(Container $container, string ...$interfaces)
+    final public static function getBindable(): array
     {
-        self::_bindServices($container, false, ...$interfaces);
-    }
-
-    /**
-     * Create container bindings for ISyncProvider interfaces implemented by the
-     * class that aren't in the given exception list
-     */
-    final public static function bindServicesExcept(Container $container, string ...$interfaces)
-    {
-        if (!$interfaces)
-        {
-            throw new UnexpectedValueException("No interfaces to exclude");
-        }
-        self::_bindServices($container, true, ...$interfaces);
-    }
-
-    private static function _bindServices(Container $container, bool $invert, string ...$interfaces)
-    {
-        (ClosureBuilder::get(
-            static::class
-        )->getBindISyncProviderInterfacesClosure())($container, $invert, ...$interfaces);
+        return ClosureBuilder::get(static::class)->getSyncProviderInterfaces();
     }
 
     /**
      * {@inheritdoc}
      *
-     * This method is called before the callback in
-     * {@see \Lkrms\Concern\TBindable::invokeInBoundContainer()}. Changes made
-     * to the container are removed after the callback returns.
-     *
      * If particular {@see \Lkrms\Sync\SyncEntity} subclasses should be used
-     * when the provider is instantiating those entities, they should be bound
+     * when the provider is instantiating those entities, they should be mapped
      * here.
      */
-    public static function bindConcrete(Container $container)
+    public static function getBindings(): array
     {
+        return [];
     }
 
-    protected function _getDateFormatter(): DateFormatter
-    {
-        return new DateFormatter();
-    }
+    abstract protected function _getDateFormatter(): DateFormatter;
 
     /**
      * @var DateFormatter|null
