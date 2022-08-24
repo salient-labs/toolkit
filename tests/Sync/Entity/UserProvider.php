@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Tests\Sync\Entity;
 
 /**
- * Synchronises User objects with a backend
+ * Syncs User objects with a backend
  *
  * @lkrms-generate-command lk-util generate sync provider --class='Lkrms\Tests\Sync\Entity\User' --op='create,get,update,delete,get-list'
  */

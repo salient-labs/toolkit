@@ -40,7 +40,7 @@ class CheckHeartbeat extends CliCommand
         ];
     }
 
-    protected function _run(string ...$args)
+    protected function run(string ...$args)
     {
         $providerClass = $this->getOptionValue("provider");
 

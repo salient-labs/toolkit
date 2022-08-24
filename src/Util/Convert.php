@@ -72,7 +72,6 @@ final class Convert extends Utility
         return Test::isListArray($value, true)
             ? $value
             : ($emptyIfNull && is_null($value) ? [] : [$value]);
-            ;
     }
 
     /**
@@ -190,7 +189,8 @@ final class Convert extends Utility
      * Return the namespace of a class
      *
      * Returns an empty string if `$class` is not namespaced, otherwise returns
-     * the namespace followed by a namespace separator.
+     * the namespace followed by a namespace separator. Global prefix operators
+     * are returned as-is.
      *
      * @param string $class
      * @return string

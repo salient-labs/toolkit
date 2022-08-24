@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\CliCommand;
-use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Console\Console;
+use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 use Lkrms\Sync\SyncEntity;
 use Lkrms\Util\Composer;
@@ -110,7 +110,7 @@ class GenerateSyncEntityClass extends CliCommand
         ];
     }
 
-    protected function _run(string ...$args)
+    protected function run(string ...$args)
     {
         $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
         $class      = array_pop($namespace);

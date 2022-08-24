@@ -97,7 +97,7 @@ class GenerateFacadeClass extends CliCommand
         "load",
     ];
 
-    protected function _run(string ...$args)
+    protected function run(string ...$args)
     {
         $namespace = explode("\\", trim($this->getOptionValue("class"), "\\"));
         $class     = array_pop($namespace);

@@ -39,9 +39,9 @@ parameters:
 			path: src/Err/Err.php
 
 		-
-			message: "#^Strict comparison using \\=\\=\\= between array\\<int\\|string, mixed\\> and false will always evaluate to false\\.$#"
+			message: "#^Strict comparison using \\=\\=\\= between array\\<array\\<int, int\\|string\\>\\|int\\|string, mixed\\> and false will always evaluate to false\\.$#"
 			count: 1
-			path: src/Support/ClosureBuilder.php
+			path: src/Support/ArrayMapper.php
 
 		-
 			message: "#^Do\\-while loop condition is always false\\.$#"

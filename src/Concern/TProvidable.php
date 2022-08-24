@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Concern;
 
 use Lkrms\Contract\IProvider;
+use Lkrms\Facade\Mapper;
+use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ClosureBuilder;
 use Psr\Container\ContainerInterface as Container;
 use RuntimeException;
@@ -62,15 +64,17 @@ trait TProvidable
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.
      *
-     * @param null|callable $callback If set, applied before optionally
+     * @param callable|null $callback If set, applied before optionally
      * remapping `$data`.
-     * @param null|array<int|string,int|string> $keyMap An array that maps
-     * `$data` keys to names the class will be able to resolve. See
-     * {@see ClosureBuilder::getArrayMapper()} for more information.
-     * @param bool $sameKeys If `true` and `$keyMap` is set, improve performance
-     * by assuming `$data` has the same keys in the same order as in `$keyMap`.
-     * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
-     * @param null|static $parent If the class implements
+     * @param array<int|string,int|string|array<int,int|string>>|null $keyMap An
+     * array that maps `$data` keys to names the class will be able to resolve.
+     * See {@see \Lkrms\Support\ArrayMapper::getKeyMapClosure()} for more
+     * information.
+     * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
+     * `COMPLETE` or `PARTIAL` wherever possible to improve performance.
+     * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
+     * values.
+     * @param static|null $parent If the class implements
      * {@see \Lkrms\Contract\INode}, pass `$parent` to the instance via
      * {@see \Lkrms\Contract\INode::setParent()}.
      * @return static
@@ -80,15 +84,15 @@ trait TProvidable
         array $data,
         callable $callback = null,
         array $keyMap      = null,
-        bool $sameKeys     = false,
-        int $skip          = ClosureBuilder::SKIP_MISSING,
+        int $conformity    = ArrayKeyConformity::NONE,
+        int $flags         = 0,
         $parent            = null
     ) {
         $closure = null;
 
         if (!is_null($keyMap))
         {
-            $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
+            $closure = Mapper::getKeyMapClosure($keyMap, $conformity, $flags);
         }
 
         if (!is_null($callback))
@@ -108,17 +112,16 @@ trait TProvidable
      *
      * See {@see TProvidable::fromProvider()} for more information.
      *
-     * @param IProvider $provider
      * @param iterable<array> $list
-     * @param null|callable $callback If set, applied before optionally
+     * @param callable|null $callback If set, applied before optionally
      * remapping each array.
-     * @param null|array<int|string,int|string> $keyMap An array that maps array
-     * keys to names the class will be able to resolve.
-     * @param bool $sameKeys If `true`, improve performance by assuming
-     * `$keyMap` (if set) and every array being traversed have the same keys in
-     * the same order.
-     * @param int $skip A bitmask of `ClosureBuilder::SKIP_*` values.
-     * @param null|static $parent If the class implements
+     * @param array<int|string,int|string|array<int,int|string>>|null $keyMap An
+     * array that maps array keys to names the class will be able to resolve.
+     * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
+     * `COMPLETE` or `PARTIAL` wherever possible to improve performance.
+     * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
+     * values.
+     * @param static|null $parent If the class implements
      * {@see \Lkrms\Contract\INode}, pass `$parent` to each instance via
      * {@see \Lkrms\Contract\INode::setParent()}.
      * @return iterable<static>
@@ -128,8 +131,8 @@ trait TProvidable
         iterable $list,
         callable $callback = null,
         array $keyMap      = null,
-        bool $sameKeys     = false,
-        int $skip          = ClosureBuilder::SKIP_MISSING,
+        int $conformity    = ArrayKeyConformity::NONE,
+        int $flags         = 0,
         $parent            = null
     ): iterable
     {
@@ -137,7 +140,7 @@ trait TProvidable
 
         if (!is_null($keyMap))
         {
-            $closure = ClosureBuilder::getArrayMapper($keyMap, $sameKeys, $skip);
+            $closure = Mapper::getKeyMapClosure($keyMap, $conformity, $flags);
         }
 
         if (!is_null($callback))
@@ -146,7 +149,7 @@ trait TProvidable
         }
 
         $container = self::maybeGetContextContainer($provider);
-        return self::getListFromProvider($container, $provider, $list, $closure, $sameKeys, $parent);
+        return self::getListFromProvider($container, $provider, $list, $closure, $conformity, $parent);
     }
 
     private static function getListFromProvider(
@@ -154,7 +157,7 @@ trait TProvidable
         IProvider $provider,
         iterable $list,
         ? callable $closure,
-        bool $sameKeys,
+        int $conformity,
         $parent
     ): iterable
     {
@@ -167,7 +170,7 @@ trait TProvidable
             }
             if (!$createFromClosure)
             {
-                if ($sameKeys)
+                if (in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE]))
                 {
                     if ($closure)
                     {

@@ -67,7 +67,7 @@ abstract class CliCommand implements IBound
      * @param string ...$params
      * @return int|void
      */
-    abstract protected function _run(string ...$params);
+    abstract protected function run(string ...$params);
 
     /**
      * @var CliAppContainer
@@ -717,7 +717,7 @@ EOF;
      *
      * @param string[] $args
      * @return int
-     * @see CliCommand::_run()
+     * @see CliCommand::run()
      */
     final public function __invoke(array $args): int
     {
@@ -737,7 +737,7 @@ EOF;
 
         $this->HasRun = true;
 
-        $return = $this->_run(...array_slice($this->Arguments, $this->NextArgumentIndex));
+        $return = $this->run(...array_slice($this->Arguments, $this->NextArgumentIndex));
 
         if (is_int($return))
         {
@@ -751,7 +751,7 @@ EOF;
      * Set the command's return value / exit status
      *
      * @param int $status
-     * @see CliCommand::_run()
+     * @see CliCommand::run()
      */
     final protected function setExitStatus(int $status)
     {

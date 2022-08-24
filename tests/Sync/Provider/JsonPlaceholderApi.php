@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Provider;
 
-use Lkrms\Container\Container;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Exception\SyncOperationNotImplementedException;
 use Lkrms\Support\DateFormatter;
@@ -106,4 +105,5 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
     {
         return User::listFromProvider($this, $this->getCurler("/users")->getJson());
     }
+
 }
