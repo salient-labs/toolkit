@@ -88,7 +88,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         return $a === $b ||
             ($a instanceof SyncEntity && $b instanceof SyncEntity &&
                 get_class($a) == get_class($b) &&
-                $a->getProvider() === $b->getProvider() &&
+                $a->provider() === $b->provider() &&
                 $a->Id === $b->Id);
     }
 
@@ -358,7 +358,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         }
         elseif ($node instanceof DateTimeInterface)
         {
-            $node = $this->getProvider()->getDateFormatter()->format($node);
+            $node = $this->provider()->getDateFormatter()->format($node);
         }
         else
         {

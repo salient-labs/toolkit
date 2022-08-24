@@ -12,8 +12,8 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * Base class for enumerations that use reflection to convert the values of
- * their public constants to and from their names
+ * Base class for enumerations that use reflection to convert the integer values
+ * of their public constants to and from their names
  */
 abstract class ConvertibleEnumeration extends Enumeration implements IConvertibleEnumeration
 {

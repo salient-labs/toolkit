@@ -21,7 +21,7 @@ use Lkrms\Container\Container;
  * If the class should be instantiated as a singleton (or "shared instance"),
  * implement {@see IBindableSingleton}, otherwise implement {@see IBindable}.
  */
-interface IBindable extends IBound
+interface IBindable extends IHasContainer
 {
     /**
      * Get a list of services provided by the class
@@ -46,10 +46,5 @@ interface IBindable extends IBound
      * @return array<string,string>
      */
     public static function getBindings(): array;
-
-    /**
-     * @return Container
-     */
-    public function container(): Container;
 
 }

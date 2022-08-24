@@ -14,15 +14,7 @@ use Lkrms\Container\Container;
  */
 trait TBindable
 {
-    /**
-     * @var Container
-     */
-    private $Container;
-
-    public function __construct(Container $container)
-    {
-        $this->Container = $container;
-    }
+    use THasContainer;
 
     public static function getBindable(): array
     {
@@ -34,8 +26,4 @@ trait TBindable
         return [];
     }
 
-    final public function container(): Container
-    {
-        return $this->Container;
-    }
 }

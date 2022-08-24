@@ -44,8 +44,11 @@ final class Legacy extends Utility
         \Lkrms\Console\ConsoleTarget\Logger::class => \Lkrms\Console\ConsoleTarget\LoggerTarget::class,
         \Lkrms\Console\ConsoleTarget\Stream::class => \Lkrms\Console\ConsoleTarget\StreamTarget::class,
 
+        \Lkrms\Contract\IBound::class => \Lkrms\Contract\IHasContainer::class,
+        \Lkrms\Concern\TBound::class  => \Lkrms\Concern\THasContainer::class,
+
         \Lkrms\Core\Contract\IBindable::class               => \Lkrms\Contract\IBindable::class,
-        \Lkrms\Core\Contract\IBound::class                  => \Lkrms\Contract\IBound::class,
+        \Lkrms\Core\Contract\IBound::class                  => \Lkrms\Contract\IHasContainer::class,
         \Lkrms\Core\Contract\IConstructible::class          => \Lkrms\Contract\IConstructible::class,
         \Lkrms\Core\Contract\IConvertibleEnumeration::class => \Lkrms\Contract\IConvertibleEnumeration::class,
         \Lkrms\Core\Contract\IEnumeration::class            => \Lkrms\Contract\IEnumeration::class,
@@ -56,7 +59,7 @@ final class Legacy extends Utility
         \Lkrms\Core\Contract\IResolvable::class             => \Lkrms\Contract\IResolvable::class,
         \Lkrms\Core\Contract\ISettable::class               => \Lkrms\Contract\IWritable::class,
         \Lkrms\Core\Contract\ISingular::class               => \Lkrms\Contract\IFacade::class,
-        \Lkrms\Core\Mixin\TBound::class                     => \Lkrms\Concern\TBound::class,
+        \Lkrms\Core\Mixin\TBound::class                     => \Lkrms\Concern\THasContainer::class,
         \Lkrms\Core\Mixin\TClassCache::class                => \Lkrms\Concern\HasClassCache::class,
         \Lkrms\Core\Mixin\TConstructible::class             => \Lkrms\Concern\TConstructible::class,
         \Lkrms\Core\Mixin\TExtensible::class                => \Lkrms\Concern\TExtensible::class,
