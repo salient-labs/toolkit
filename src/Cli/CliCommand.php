@@ -9,7 +9,7 @@ use Lkrms\Container\CliAppContainer;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IHasContainer;
 use Lkrms\Exception\InvalidCliArgumentException;
-use Lkrms\Util\Convert;
+use Lkrms\Facade\Convert;
 use RuntimeException;
 use UnexpectedValueException;
 

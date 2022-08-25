@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
-use Lkrms\Contract\IReadable;
 use Lkrms\Concern\TFullyReadable;
+use Lkrms\Contract\IReadable;
 
 /**
  * @property-read string $Name

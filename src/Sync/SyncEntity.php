@@ -8,10 +8,10 @@ use DateTimeInterface;
 use JsonSerializable;
 use Lkrms\Concept\ProviderEntity;
 use Lkrms\Concern\HasClassCache;
+use Lkrms\Facade\Convert;
+use Lkrms\Facade\Reflect;
 use Lkrms\Support\ClosureBuilder;
 use Lkrms\Sync\Provider\SyncEntityProvider;
-use Lkrms\Util\Convert;
-use Lkrms\Util\Reflect;
 use UnexpectedValueException;
 
 /**

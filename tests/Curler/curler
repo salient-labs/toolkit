@@ -5,7 +5,7 @@ namespace Lkrms\Tests\Curler;
 
 use Lkrms\Curler\Curler;
 use Lkrms\Err\Err;
-use Lkrms\Util\Env;
+use Lkrms\Facade\Env;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");

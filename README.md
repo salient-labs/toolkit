@@ -12,13 +12,13 @@ composer require lkrms/util
 
 ## Documentation
 
-[API documentation][api-docs] for `lkrms/util` is available online.
+API documentation for `lkrms/util` is [available online][api-docs].
 
-> Courtesy of GitHub Pages and [this workflow][phpdoc-workflow], the online
-> documentation is updated after every commit to the `main` branch.
+To generate your own API documentation, run [`phpdoc`][phpdoc] in the top-level
+directory, then open `build/api/index.html`.
 
-To generate your own API documentation, run [phpDocumentor][phpdoc] in the root
-directory of this repository, then open `build/api/index.html`.
+> [Online API documentation][api-docs] is automatically generated from the
+> `main` branch of the [official GitHub repository][repo].
 
 ## Using the CLI utility
 
@@ -27,7 +27,7 @@ during development by running `lk-util` from your project's `vendor/bin`
 directory.
 
 For a list of available subcommands, run `lk-util` with no arguments. For usage
-information, add `--help` to any command.
+information, use `help` as a subcommand or add the `--help` option.
 
 ### Environment variables
 
@@ -109,6 +109,6 @@ automatically to ensure messages are delivered or logged by default.
 ---
 
 [api-docs]: https://lkrms.github.io/php-util/
-[phpdoc-workflow]: .github/workflows/documentation.yml
 [phpdoc]: https://phpdoc.org/
+[repo]: https://github.com/lkrms/php-util
 [Console.php]: src/Console/Console.php

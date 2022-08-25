@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms\Utility;
 
 use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
-use Lkrms\Concept\Utility;
+use Lkrms\Facade\Convert;
 use RuntimeException;
 
 /**
  * Get information about installed packages
  *
  */
-final class Composer extends Utility
+final class Composer
 {
-    private static function getRootPackageValue(string $value): string
+    private function getRootPackageValue(string $value): string
     {
         $value = InstalledVersions::getRootPackage()[$value] ?? null;
 
@@ -27,24 +27,24 @@ final class Composer extends Utility
         return $value;
     }
 
-    public static function getRootPackageName(): string
+    public function getRootPackageName(): string
     {
-        return self::getRootPackageValue("name");
+        return $this->getRootPackageValue("name");
     }
 
-    public static function getRootPackageVersion(): string
+    public function getRootPackageVersion(): string
     {
-        if (preg_match('/^dev-/', $version = self::getRootPackageValue("version")))
+        if (preg_match('/^dev-/', $version = $this->getRootPackageValue("version")))
         {
-            $version = substr(self::getRootPackageValue("reference"), 0, 7);
+            $version = substr($this->getRootPackageValue("reference"), 0, 7);
         }
 
         return $version;
     }
 
-    public static function getRootPackagePath(): string
+    public function getRootPackagePath(): string
     {
-        $path = self::getRootPackageValue("install_path");
+        $path = $this->getRootPackageValue("install_path");
 
         if (($realpath = realpath($path)) === false)
         {
@@ -54,7 +54,7 @@ final class Composer extends Utility
         return $realpath;
     }
 
-    public static function getPackageVersion(string $name = "lkrms/util"): ?string
+    public function getPackageVersion(string $name = "lkrms/util"): ?string
     {
         if (!InstalledVersions::isInstalled($name))
         {
@@ -69,7 +69,7 @@ final class Composer extends Utility
         return $version;
     }
 
-    public static function getPackagePath(string $name = "lkrms/util"): ?string
+    public function getPackagePath(string $name = "lkrms/util"): ?string
     {
         if (!InstalledVersions::isInstalled($name))
         {
@@ -82,10 +82,11 @@ final class Composer extends Utility
     /**
      * Use ClassLoader to find the file where a class is defined
      *
-     * @param string $class
-     * @return null|string
+     * Returns `null` if `$class` doesn't exist.
+     *
+     * @see Composer::getNamespacePath()
      */
-    public static function getClassPath(string $class): ?string
+    public function getClassPath(string $class): ?string
     {
         $class = trim($class, "\\");
 
@@ -103,26 +104,22 @@ final class Composer extends Utility
     /**
      * Use ClassLoader's PSR-4 prefixes to resolve a namespace to a path
      *
-     * @param string $namespace
-     * @return null|string
+     * Returns `null` if `$namespace` or its base directory aren't configured or
+     * don't exist. The path returned may not exist.
      */
-    public static function getNamespacePath(string $namespace): ?string
+    public function getNamespacePath(string $namespace): ?string
     {
         $namespace = trim($namespace, "\\");
         $prefixes  = [];
 
         foreach (ClassLoader::getRegisteredLoaders() as $loader)
         {
-            $prefixes = array_merge($prefixes, $loader->getPrefixesPsr4());
+            // If multiple loaders return the same prefix, prefer the first one
+            $prefixes = array_merge($loader->getPrefixesPsr4(), $prefixes);
         }
 
-        uksort($prefixes, function ($p1, $p2)
-        {
-            $l1 = strlen($p1);
-            $l2 = strlen($p2);
-
-            return ($l1 === $l2) ? 0 : ($l1 < $l2 ? 1 : - 1);
-        });
+        // Sort prefixes from longest to shortest
+        uksort($prefixes, fn($p1, $p2) => strlen($p2) <=> strlen($p1));
 
         foreach ($prefixes as $prefix => $dirs)
         {

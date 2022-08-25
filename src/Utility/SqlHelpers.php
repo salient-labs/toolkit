@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
-
-use Lkrms\Concept\Utility;
+namespace Lkrms\Utility;
 
 /**
  * Work with SQL queries
  *
  */
-final class Sql extends Utility
+final class SqlHelpers
 {
     /**
      * Add "<name> IN (<value>[,<value>])" unless a list of values is empty
@@ -22,7 +20,7 @@ final class Sql extends Utility
      * @param array $var An associative array of query variables.
      * @param mixed ...$list Zero or more values.
      */
-    public static function valueInList(string $field, callable $param, ?array & $where, ?array & $var, ...$list)
+    public function valueInList(string $field, callable $param, ?array & $where, ?array & $var, ...$list)
     {
         if (is_null($where))
         {

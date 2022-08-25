@@ -7,8 +7,8 @@ namespace Lkrms\LkUtil\Command\Http;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Exception\InvalidCliArgumentException;
+use Lkrms\Facade\Env;
 use Lkrms\Sync\Provider\HttpSyncProvider;
-use Lkrms\Util\Env;
 use UnexpectedValueException;
 
 class SendHttpRequest extends CliCommand

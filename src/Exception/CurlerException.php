@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Exception;
 
 use Lkrms\Curler\Curler;
-use Lkrms\Util\Env;
-use Lkrms\Util\Format;
+use Lkrms\Facade\Env;
+use Lkrms\Facade\Format;
 use Throwable;
 
 /**

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Tests\Runtime;
+namespace Lkrms\Tests\Utility\Debugging;
 
-use Lkrms\Util\Runtime;
+use Lkrms\Facade\Debug;
 
 class GetCallerClass
 {
     private static function getCaller($depth)
     {
-        return Runtime::getCaller($depth);
+        return Debug::getCaller($depth);
     }
 
     public function getCallerViaMethod($depth = 0)

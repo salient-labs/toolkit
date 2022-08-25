@@ -11,7 +11,7 @@ use UnexpectedValueException;
  * Throw an exception if a condition isn't met
  *
  */
-final class AssertionUtility
+final class Assertions
 {
     private function throwUnexpectedValueException(string $message, ?string $name): void
     {
@@ -24,7 +24,7 @@ final class AssertionUtility
     {
         if (empty($value))
         {
-            self::throwUnexpectedValueException("{} cannot be empty", $name);
+            $this->throwUnexpectedValueException("{} cannot be empty", $name);
         }
     }
 
@@ -32,7 +32,7 @@ final class AssertionUtility
     {
         if (is_null($value) || !preg_match($pattern, $value))
         {
-            self::throwUnexpectedValueException("{} must match pattern '$pattern'", $name);
+            $this->throwUnexpectedValueException("{} must match pattern '$pattern'", $name);
         }
     }
 

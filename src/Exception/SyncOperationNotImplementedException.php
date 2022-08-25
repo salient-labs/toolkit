@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Exception;
 
+use Lkrms\Facade\Convert;
 use Lkrms\Sync\SyncOperation;
-use Lkrms\Util\Convert;
 
 /**
  * Thrown when an unimplemented sync operation is attempted

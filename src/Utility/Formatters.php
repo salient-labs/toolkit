@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms\Utility;
 
 use DateTime;
-use Lkrms\Concept\Utility;
 use UnexpectedValueException;
 
 /**
  * Make data human-readable
  *
  */
-final class Format extends Utility
+final class Formatters
 {
     /**
      * Format an array's keys and values
@@ -26,7 +25,7 @@ final class Format extends Utility
      * string conversion specifications (`%s`).
      * @return string
      */
-    public static function array(
+    public function array(
         array $array,
         string $format    = "%s: %s\n",
         int $indentSpaces = 4
@@ -62,7 +61,7 @@ final class Format extends Utility
      * @param bool $value
      * @return string Either `"true"` or `"false"`.
      */
-    public static function bool(bool $value): string
+    public function bool(bool $value): string
     {
         return $value ? "true" : "false";
     }
@@ -73,12 +72,12 @@ final class Format extends Utility
      * @param bool $value
      * @return string Either `"yes"` or `"no"`.
      */
-    public static function yn(bool $value): string
+    public function yn(bool $value): string
     {
         return $value ? "yes" : "no";
     }
 
-    private static function getBetween(string $between): array
+    private function getBetween(string $between): array
     {
         if (strlen($between) % 2)
         {
@@ -91,9 +90,9 @@ final class Format extends Utility
         ];
     }
 
-    public static function date(DateTime $date, string $between = '[]'): string
+    public function date(DateTime $date, string $between = '[]'): string
     {
-        list ($l, $r) = self::getBetween($between);
+        list ($l, $r) = $this->getBetween($between);
 
         $noYear = date('Y') == $date->format('Y');
         $noTime = $date->format('H:i:s') == '00:00:00';
@@ -103,14 +102,14 @@ final class Format extends Utility
         return $l . $date->format($format) . $r;
     }
 
-    public static function dateRange(
+    public function dateRange(
         DateTime $from,
         DateTime $to,
         string $between   = '[]',
         string $delimiter = "\u{2013}"
     ): string
     {
-        list ($l, $r) = self::getBetween($between);
+        list ($l, $r) = $this->getBetween($between);
 
         $sameYear = ($year = $from->format('Y')) == $to->format('Y');
         $sameZone = $from->getTimezone() == $to->getTimezone();

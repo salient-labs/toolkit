@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Sync;
 
 use Lkrms\Console\Console;
+use Lkrms\Facade\Compute;
+use Lkrms\Facade\Convert;
 use Lkrms\Sync\Provider\SyncEntityProvider;
-use Lkrms\Util\Convert;
-use Lkrms\Util\Generate;
 
 /**
  * Uses Levenshtein distances or text similarity to resolve names to entities
@@ -96,12 +96,12 @@ class SyncEntityFuzzyResolver extends SyncEntityResolver
         {
             case self::ALGORITHM_SIMILAR_TEXT:
 
-                return 1 - Generate::textSimilarity($string1, $string2, false);
+                return 1 - Compute::textSimilarity($string1, $string2, false);
 
             case self::ALGORITHM_LEVENSHTEIN:
             default:
 
-                return Generate::textDistance($string1, $string2, false);
+                return Compute::textDistance($string1, $string2, false);
         }
     }
 

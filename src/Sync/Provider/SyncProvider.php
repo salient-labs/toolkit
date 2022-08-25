@@ -6,9 +6,9 @@ namespace Lkrms\Sync\Provider;
 
 use Lkrms\Concern\TBindable;
 use Lkrms\Contract\IBindableSingleton;
+use Lkrms\Facade\Compute;
+use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
-use Lkrms\Util\Convert;
-use Lkrms\Util\Generate;
 
 /**
  * Base class for providers that sync entities to and from third-party backends
@@ -55,7 +55,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     final public function getBackendHash(): string
     {
         return $this->BackendHash
-            ?: ($this->BackendHash = Generate::hash(...$this->getBackendIdentifier()));
+            ?: ($this->BackendHash = Compute::hash(...$this->getBackendIdentifier()));
     }
 
     final public static function getBindable(): array

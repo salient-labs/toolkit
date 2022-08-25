@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms\Utility;
 
 use Closure;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
-use Lkrms\Concept\Utility;
+use Lkrms\Facade\Test;
 use Lkrms\Support\DateFormatter;
 use UnexpectedValueException;
 
@@ -22,7 +22,7 @@ use UnexpectedValueException;
  * - pluralise a singular noun
  * - extract a class name from a FQCN
  */
-final class Convert extends Utility
+final class Conversions
 {
     /**
      * "snake_case"
@@ -52,7 +52,7 @@ final class Convert extends Utility
      * @return array Either `$value`, `[$value]`, or `[]` (only if
      * `$emptyIfNull` is set and `$value` is `null`).
      */
-    public static function toArray($value, bool $emptyIfNull = false): array
+    public function toArray($value, bool $emptyIfNull = false): array
     {
         return is_array($value)
             ? $value
@@ -67,7 +67,7 @@ final class Convert extends Utility
      * @return array Either `$value`, `[$value]`, or `[]` (only if
      * `$emptyIfNull` is set and `$value` is `null`).
      */
-    public static function toList($value, bool $emptyIfNull = false): array
+    public function toList($value, bool $emptyIfNull = false): array
     {
         return Test::isListArray($value, true)
             ? $value
@@ -82,7 +82,7 @@ final class Convert extends Utility
      * @param DateInterval|string $value
      * @return int
      */
-    public static function intervalToSeconds($value): int
+    public function intervalToSeconds($value): int
     {
         if (!($value instanceof DateInterval))
         {
@@ -99,7 +99,7 @@ final class Convert extends Utility
      * @param DateTimeInterface $date
      * @return DateTimeImmutable
      */
-    public static function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
+    public function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
     {
         if ($date instanceof DateTimeImmutable)
         {
@@ -114,7 +114,7 @@ final class Convert extends Utility
      * @param DateTimeZone|string $value
      * @return DateTimeZone
      */
-    public static function toTimezone($value): DateTimeZone
+    public function toTimezone($value): DateTimeZone
     {
         if ($value instanceof DateTimeZone)
         {
@@ -133,7 +133,7 @@ final class Convert extends Utility
      * @param mixed $value
      * @return mixed Either `$value` or `null`.
      */
-    public static function emptyToNull($value)
+    public function emptyToNull($value)
     {
         return !$value ? null : $value;
     }
@@ -144,7 +144,7 @@ final class Convert extends Utility
      * @param iterable $iterable
      * @return array
      */
-    public static function iterableToArray(iterable $iterable): array
+    public function iterableToArray(iterable $iterable): array
     {
         return is_array($iterable) ? $iterable : iterator_to_array($iterable);
     }
@@ -157,7 +157,7 @@ final class Convert extends Utility
      * - `<0`: remove all extensions
      * - `>0`: remove up to the given number of extensions
      */
-    public static function pathToBasename(string $path, int $extLimit = 0): string
+    public function pathToBasename(string $path, int $extLimit = 0): string
     {
         $path = basename($path);
         if ($extLimit)
@@ -175,7 +175,7 @@ final class Convert extends Utility
      * @param string|null $suffix Removed from the end of `$class` if set.
      * @return string
      */
-    public static function classToBasename(string $class, string $suffix = null): string
+    public function classToBasename(string $class, string $suffix = null): string
     {
         $class = substr(strrchr("\\" . $class, "\\"), 1);
         if ($suffix && ($pos = strrpos($class, $suffix)) > 0)
@@ -194,7 +194,7 @@ final class Convert extends Utility
      * @param string $class
      * @return string
      */
-    public static function classToNamespace(string $class): string
+    public function classToNamespace(string $class): string
     {
         return substr($class, 0, max(0, strrpos("\\" . $class, "\\") - 1));
     }
@@ -205,7 +205,7 @@ final class Convert extends Utility
      * @param string $method
      * @return string
      */
-    public static function methodToFunction(string $method): string
+    public function methodToFunction(string $method): string
     {
         return preg_replace('/^.*?([a-z0-9_]*)$/i', '$1', $method);
     }
@@ -228,7 +228,7 @@ final class Convert extends Utility
      * @throws UnexpectedValueException if `$key` already exists in `$array` and
      * merging is not possible
      */
-    public static function arrayValuesToChildArray(
+    public function arrayValuesToChildArray(
         array $array,
         string $key,
         array $map,
@@ -266,7 +266,7 @@ final class Convert extends Utility
      * @param bool $merge Passed to {@see Convert::arrayValuesToChildArray()}.
      * @return array
      */
-    public static function toNestedArrays(
+    public function toNestedArrays(
         array $array,
         array $maps,
         bool $merge = true
@@ -274,7 +274,7 @@ final class Convert extends Utility
     {
         foreach ($maps as $key => $map)
         {
-            $array = self::arrayValuesToChildArray($array, $key, $map, $merge);
+            $array = $this->arrayValuesToChildArray($array, $key, $map, $merge);
         }
         return $array;
     }
@@ -319,7 +319,7 @@ final class Convert extends Utility
      * returns a key for each item in `$list`.
      * @return array
      */
-    public static function listToMap(array $list, $key): array
+    public function listToMap(array $list, $key): array
     {
         if ($key instanceof Closure)
         {
@@ -357,7 +357,7 @@ final class Convert extends Utility
      * @param array $array
      * @return string
      */
-    public static function sparseToString(string $separator, array $array): string
+    public function sparseToString(string $separator, array $array): string
     {
         return implode($separator, array_filter(
             $array,
@@ -371,7 +371,7 @@ final class Convert extends Utility
      * @param mixed $value
      * @return string|false Returns `false` if `$value` is not a scalar
      */
-    public static function scalarToString($value)
+    public function scalarToString($value)
     {
         if (is_scalar($value))
         {
@@ -392,7 +392,7 @@ final class Convert extends Utility
      * @param bool $includeNumber Return `$number $noun` instead of `$noun`
      * @return string
      */
-    public static function numberToNoun(int $number, string $singular, string $plural = null, bool $includeNumber = false): string
+    public function numberToNoun(int $number, string $singular, string $plural = null, bool $includeNumber = false): string
     {
         if ($number == 1)
         {
@@ -417,7 +417,7 @@ final class Convert extends Utility
      * @param string $noun
      * @return string
      */
-    public static function nounToPlural(string $noun): string
+    public function nounToPlural(string $noun): string
     {
         if (preg_match('/(?:(sh?|ch|x|z|(?<!^phot)(?<!^pian)(?<!^hal)o)|([^aeiou]y)|(is)|(on))$/i', $noun, $matches))
         {
@@ -459,7 +459,7 @@ final class Convert extends Utility
      * @param string $regex
      * @return string
      */
-    public static function linesToLists(
+    public function linesToLists(
         string $text,
         string $separator = "\n",
         ?string $marker   = null,
@@ -529,7 +529,7 @@ final class Convert extends Utility
      * case-insensitive."
      * @return int
      */
-    public static function sizeToBytes(string $size): int
+    public function sizeToBytes(string $size): int
     {
         if (!preg_match('/^(.+?)([KMG]?)$/', strtoupper($size), $match) || !is_numeric($match[1]))
         {
@@ -547,7 +547,7 @@ final class Convert extends Utility
      * @param string|\Stringable ...$value
      * @return string[]
      */
-    public static function toStrings(...$value): array
+    public function toStrings(...$value): array
     {
         return array_map(function ($string) { return (string)$string; }, $value);
     }
@@ -559,25 +559,25 @@ final class Convert extends Utility
      * @param int $case
      * @return string
      */
-    public static function toCase(string $text, int $case = self::IDENTIFIER_CASE_SNAKE): string
+    public function toCase(string $text, int $case = self::IDENTIFIER_CASE_SNAKE): string
     {
         switch ($case)
         {
             case self::IDENTIFIER_CASE_SNAKE:
 
-                return self::toSnakeCase($text);
+                return $this->toSnakeCase($text);
 
             case self::IDENTIFIER_CASE_KEBAB:
 
-                return self::toKebabCase($text);
+                return $this->toKebabCase($text);
 
             case self::IDENTIFIER_CASE_PASCAL:
 
-                return self::toPascalCase($text);
+                return $this->toPascalCase($text);
 
             case self::IDENTIFIER_CASE_CAMEL:
 
-                return self::toCamelCase($text);
+                return $this->toCamelCase($text);
         }
 
         throw new UnexpectedValueException("Invalid case: $case");
@@ -589,7 +589,7 @@ final class Convert extends Utility
      * @param string $text The identifier to convert.
      * @return string
      */
-    public static function toSnakeCase(string $text): string
+    public function toSnakeCase(string $text): string
     {
         $text = preg_replace("/[^[:alnum:]]+/", "_", $text);
         $text = preg_replace("/([[:lower:]])([[:upper:]])/", '$1_$2', $text);
@@ -603,7 +603,7 @@ final class Convert extends Utility
      * @param string $text
      * @return string
      */
-    public static function toKebabCase(string $text): string
+    public function toKebabCase(string $text): string
     {
         $text = preg_replace("/[^[:alnum:]]+/", "-", $text);
         $text = preg_replace("/([[:lower:]])([[:upper:]])/", '$1-$2', $text);
@@ -617,7 +617,7 @@ final class Convert extends Utility
      * @param string $text
      * @return string
      */
-    public static function toPascalCase(string $text): string
+    public function toPascalCase(string $text): string
     {
         $text = preg_replace_callback(
             '/([[:upper:]]?[[:lower:][:digit:]]+|([[:upper:]](?![[:lower:]]))+)/',
@@ -634,9 +634,9 @@ final class Convert extends Utility
      * @param string $text
      * @return string
      */
-    public static function toCamelCase(string $text): string
+    public function toCamelCase(string $text): string
     {
-        return lcfirst(self::toPascalCase($text));
+        return lcfirst($this->toPascalCase($text));
     }
 
     /**
@@ -654,7 +654,7 @@ final class Convert extends Utility
      * @param string $text
      * @return string
      */
-    public static function toNormal(string $text)
+    public function toNormal(string $text)
     {
         $replace = [
             "/(?<=[^&])&(?=[^&])/u" => " and ",
@@ -678,12 +678,12 @@ final class Convert extends Utility
      * @param object $object
      * @return array
      */
-    public static function objectToArray(object $object)
+    public function objectToArray(object $object)
     {
         return get_object_vars($object);
     }
 
-    private static function _dataToQuery(
+    private function _dataToQuery(
         array $data,
         bool $forceNumericKeys,
         DateFormatter $dateFormatter,
@@ -725,7 +725,7 @@ final class Convert extends Utility
                 $_format = "[%s]";
             }
 
-            self::_dataToQuery($value, $forceNumericKeys, $dateFormatter, $query, $name . $_name, $_format);
+            $this->_dataToQuery($value, $forceNumericKeys, $dateFormatter, $query, $name . $_name, $_format);
         }
 
         return $query;
@@ -746,13 +746,13 @@ final class Convert extends Utility
      * @param DateFormatter|null $dateFormatter
      * @return string
      */
-    public static function dataToQuery(
+    public function dataToQuery(
         array $data,
         bool $forceNumericKeys       = false,
         DateFormatter $dateFormatter = null
     ): string
     {
-        return self::_dataToQuery(
+        return $this->_dataToQuery(
             $data,
             $forceNumericKeys,
             $dateFormatter ?: new DateFormatter()
@@ -762,11 +762,11 @@ final class Convert extends Utility
     /**
      * @deprecated Use {@see Convert::linesToLists()} instead
      */
-    public static function mergeLists(
+    public function mergeLists(
         string $text,
         string $regex = '/^\h*[-*] /'
     ): string
     {
-        return self::linesToLists($text, "\n", $regex);
+        return $this->linesToLists($text, "\n", $regex);
     }
 }

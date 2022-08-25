@@ -2,18 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms\Utility;
 
 use Countable;
 use Iterator;
 use IteratorAggregate;
-use Lkrms\Concept\Utility;
 
 /**
  * Perform a true/false test on a value
  *
  */
-final class Test extends Utility
+final class Tests
 {
     /**
      * Return true for integers and integer strings
@@ -21,7 +20,7 @@ final class Test extends Utility
      * @param mixed $value
      * @return bool
      */
-    public static function isIntValue($value): bool
+    public function isIntValue($value): bool
     {
         return (is_int($value) ||
             (is_string($value) && preg_match('/^[0-9]+$/', $value)));
@@ -41,7 +40,7 @@ final class Test extends Utility
      * @param null|int $mask The mask being applied to `$value` and `$flag`.
      * @return bool
      */
-    public static function isFlagSet(int $value, int $flag, ?int $mask = null): bool
+    public function isFlagSet(int $value, int $flag, ?int $mask = null): bool
     {
         return ($value & ($mask ?? $flag)) === $flag;
     }
@@ -55,7 +54,7 @@ final class Test extends Utility
      * @param int $mask The mask being applied to `$value`.
      * @return bool
      */
-    public static function isOneFlagSet(int $value, int $mask): bool
+    public function isOneFlagSet(int $value, int $mask): bool
     {
         return substr_count(decbin($value & $mask), "1") === 1;
     }
@@ -67,7 +66,7 @@ final class Test extends Utility
      * @param bool $allowEmpty
      * @return bool
      */
-    public static function isListArray($value, bool $allowEmpty = false): bool
+    public function isListArray($value, bool $allowEmpty = false): bool
     {
         return is_array($value) &&
             (empty($value) ? $allowEmpty : array_keys($value) === range(0, count($value) - 1));
@@ -80,7 +79,7 @@ final class Test extends Utility
      * @param bool $allowEmpty
      * @return bool
      */
-    public static function isAssociativeArray($value, bool $allowEmpty = false): bool
+    public function isAssociativeArray($value, bool $allowEmpty = false): bool
     {
         if (is_array($value))
         {
@@ -108,10 +107,10 @@ final class Test extends Utility
      * @param bool $allowEmpty
      * @return bool
      */
-    public static function isIndexedArray($value, bool $allowEmpty = false): bool
+    public function isIndexedArray($value, bool $allowEmpty = false): bool
     {
         return is_array($value) &&
-            (empty($value) ? $allowEmpty : !self::isAssociativeArray($value));
+            (empty($value) ? $allowEmpty : !$this->isAssociativeArray($value));
     }
 
     /**
@@ -120,7 +119,7 @@ final class Test extends Utility
      * @param string $path
      * @return bool
      */
-    public static function isAbsolutePath(string $path): bool
+    public function isAbsolutePath(string $path): bool
     {
         return (bool)preg_match('/^(\\/|\\\\|[a-z]:\\\\)/i', $path);
     }
@@ -132,7 +131,7 @@ final class Test extends Utility
      * @param string $interface
      * @return bool
      */
-    public static function classImplements($class, string $interface): bool
+    public function classImplements($class, string $interface): bool
     {
         return in_array($interface, class_implements($class) ?: []);
     }
@@ -144,7 +143,7 @@ final class Test extends Utility
      * @param string $path2
      * @return bool
      */
-    public static function areSameFile(string $path1, string $path2): bool
+    public function areSameFile(string $path1, string $path2): bool
     {
         return file_exists($path1) && file_exists($path2) &&
             is_int($inode = fileinode($path1)) &&
@@ -160,7 +159,7 @@ final class Test extends Utility
      * @param array|Countable|Iterator|IteratorAggregate $value
      * @return bool
      */
-    public static function isEmpty($value): bool
+    public function isEmpty($value): bool
     {
         if (is_array($value) || $value instanceof Countable)
         {
@@ -176,5 +175,20 @@ final class Test extends Utility
         {
             return false;
         }
+    }
+
+    /**
+     * Return true for PHP reserved words
+     *
+     * @link https://www.php.net/manual/en/reserved.php
+     */
+    public function isPhpReservedWord(string $name): bool
+    {
+        return in_array(strtolower($name), [
+            "array", "bool", "callable", "enum", "false",
+            "float", "int", "iterable", "mixed", "never",
+            "null", "numeric", "object", "parent", "resource",
+            "self", "static", "string", "true", "void",
+        ]);
     }
 }

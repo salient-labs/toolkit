@@ -8,12 +8,12 @@ use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
+use Lkrms\Facade\Composer;
+use Lkrms\Facade\Convert;
+use Lkrms\Facade\Env;
+use Lkrms\Facade\Test;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 use Lkrms\Sync\SyncEntity;
-use Lkrms\Util\Composer;
-use Lkrms\Util\Convert;
-use Lkrms\Util\Env;
-use Lkrms\Util\Test;
 use RuntimeException;
 
 /**

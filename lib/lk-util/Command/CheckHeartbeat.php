@@ -8,7 +8,7 @@ use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Contract\IProvider;
 use Lkrms\Exception\InvalidCliArgumentException;
-use Lkrms\Util\Env;
+use Lkrms\Facade\Env;
 
 class CheckHeartbeat extends CliCommand
 {

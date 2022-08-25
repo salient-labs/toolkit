@@ -7,9 +7,9 @@ namespace Lkrms\Db;
 use ADOConnection;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Util\Env;
-use Lkrms\Util\Format;
-use Lkrms\Util\Test;
+use Lkrms\Facade\Env;
+use Lkrms\Facade\Format;
+use Lkrms\Facade\Test;
 use UnexpectedValueException;
 
 /**

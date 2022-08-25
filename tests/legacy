@@ -7,7 +7,7 @@ use Lkrms\Assert;
 use Lkrms\Console;
 use Lkrms\Console\ConsoleTarget\Stream;
 use Lkrms\Err;
-use Lkrms\Util\Legacy;
+use Lkrms\Facade\Legacy;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);

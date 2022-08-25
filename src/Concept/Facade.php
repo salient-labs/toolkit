@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Concept;
 
 use Lkrms\Container\Container;
+use Lkrms\Contract\HasFacade;
 use Lkrms\Contract\IFacade;
 use RuntimeException;
 
@@ -39,7 +40,12 @@ abstract class Facade implements IFacade
         }
         $container = Container::getGlobal();
 
-        return self::$Instances[static::class] = $container->get($service, ...func_get_args());
+        if (($instance = self::$Instances[static::class] = $container->get($service, ...func_get_args())) instanceof HasFacade)
+        {
+            $instance->setFacade(static::class);
+        }
+
+        return $instance;
     }
 
     /**

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms\Utility;
 
 use Closure;
-use Lkrms\Concept\Utility;
+use Lkrms\Facade\Convert;
 use ReflectionFunction;
 
 /**
  * Generate values like hashes and secure UUIDs
  *
  */
-final class Generate extends Utility
+final class Computations
 {
     /**
      * Generate a cryptographically secure random UUID
@@ -21,7 +21,7 @@ final class Generate extends Utility
      *
      * @return string
      */
-    public static function uuid(): string
+    public function uuid(): string
     {
         $bytes  = random_bytes(16);
         $uuid   = [];
@@ -40,7 +40,7 @@ final class Generate extends Utility
      * @param string|\Stringable ...$value One or more values to hash.
      * @return string
      */
-    public static function hash(...$value): string
+    public function hash(...$value): string
     {
         // xxHash isn't supported until PHP 8.1, so MD5 is the best fit
         return hash("md5", implode("\000", Convert::toStrings(...$value)));
@@ -53,7 +53,7 @@ final class Generate extends Utility
      * @param callable $closure
      * @return string
      */
-    public static function closureHash(callable $closure): string
+    public function closureHash(callable $closure): string
     {
         if (!($closure instanceof Closure))
         {
@@ -63,7 +63,7 @@ final class Generate extends Utility
         $closure = new ReflectionFunction($closure);
 
         // ReflectionFunction::__toString() is unambiguous and consistent
-        return self::hash((string)$closure);
+        return $this->hash((string)$closure);
     }
 
     /**
@@ -77,7 +77,7 @@ final class Generate extends Utility
      * @return float A value between `0` and `1`, where `0` means the strings
      * are identical, and `1` means they have no similarities.
      */
-    public static function textDistance(
+    public function textDistance(
         string $string1,
         string $string2,
         bool $normalise = true
@@ -108,7 +108,7 @@ final class Generate extends Utility
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no similarities, and `1` means they are identical.
      */
-    public static function textSimilarity(
+    public function textSimilarity(
         string $string1,
         string $string2,
         bool $normalise = true

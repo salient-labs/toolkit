@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Concept;
 
 use Lkrms\Contract\IConvertibleEnumeration;
-use Lkrms\Util\Convert;
+use Lkrms\Facade\Convert;
 use ReflectionClass;
 use ReflectionClassConstant;
 use RuntimeException;

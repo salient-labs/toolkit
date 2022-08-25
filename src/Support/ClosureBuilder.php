@@ -20,7 +20,7 @@ use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\IWritable;
-use Lkrms\Util\Reflect;
+use Lkrms\Facade\Reflect;
 use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
 use ReflectionMethod;

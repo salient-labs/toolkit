@@ -6,8 +6,8 @@ namespace Lkrms\Tests;
 use DateTime;
 use DateTimeInterface;
 use Lkrms\Err\Err;
+use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
-use Lkrms\Util\Convert;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
