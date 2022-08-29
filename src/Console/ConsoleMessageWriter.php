@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
-use Lkrms\Concept\Utility;
 use Lkrms\Console\ConsoleTarget\ConsoleTarget;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Debug;
@@ -14,7 +13,7 @@ use Throwable;
  * Base class for Console
  *
  */
-abstract class ConsoleMessageWriter extends Utility
+abstract class ConsoleMessageWriter
 {
     /**
      * @var int

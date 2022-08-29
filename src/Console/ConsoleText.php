@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 use Lkrms\Console\ConsoleColour as Colour;
-use Lkrms\Concept\Utility;
 
 /**
  * Format text for console output
  *
  */
-final class ConsoleText extends Utility
+class ConsoleText
 {
     private const TAG_HEADING      = 0;
     private const TAG_SUBHEADING   = 1;
@@ -26,11 +25,11 @@ final class ConsoleText extends Utility
 # The end of the previous match
 \G
 # Text before a preformatted block or span, including recognised escapes
-(?P<text> (?: \\ [\\`] | [^`] )*? )
+(?P<text> (?: [^\\`]+ | \\ [\\`] | \\ )* )
 # A preformatted block
 (?: (?<= \n | ^) ``` \n (?P<pre> .*? ) \n ``` (?= \n | $) |
   # ...or span
-  ` (?P<code> (?: \\ [\\`] | [^`] )*? ) ` |
+  ` (?P<code> (?: [^\\`]+ | \\ [\\`] | \\ )* ) ` |
   # ...or the end of the subject
   $)
 REGEX;
@@ -76,9 +75,6 @@ REGEX;
      * | Low priority | `~~`                     | Dim                 | `~~/path/to/script.php:42~~`                                                            |
      * | Preformatted | `` ` `` or ```` ``` ```` | `Unchanged`         | `` `<untrusted text>` `` or<br><pre>\`\`\`&#10;&lt;untrusted block&gt;&#10;\`\`\`</pre> |
      *
-     * @param string $string
-     * @param bool $colour
-     * @return string
      */
     public static function format(string $string, bool $colour): string
     {
@@ -115,8 +111,6 @@ REGEX;
     /**
      * Equivalent to ConsoleText::format($string, true)
      *
-     * @param string $string
-     * @return string
      * @see ConsoleText::format()
      */
     public static function formatColour(string $string): string
@@ -127,8 +121,6 @@ REGEX;
     /**
      * Equivalent to ConsoleText::format($string, false)
      *
-     * @param string $string
-     * @return string
      * @see ConsoleText::format()
      */
     public static function formatPlain(string $string): string
@@ -139,8 +131,6 @@ REGEX;
     /**
      * Return true if a string contains inline bold formatting
      *
-     * @param string $string
-     * @return bool
      * @see ConsoleText::format()
      */
     public static function hasBold(string $string): bool
@@ -166,8 +156,6 @@ REGEX;
      * Console::info("Message:", "`" . ConsoleText::escape($message) . "`");
      * ```
      *
-     * @param string $string
-     * @return string
      */
     public static function escape(string $string): string
     {
