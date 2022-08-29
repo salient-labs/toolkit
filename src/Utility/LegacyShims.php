@@ -82,7 +82,6 @@ final class LegacyShims
         \Lkrms\Core\Enumeration::class                      => \Lkrms\Concept\Enumeration::class,
         \Lkrms\Core\Facade::class                           => \Lkrms\Concept\Facade::class,
         \Lkrms\Core\TypedCollection::class                  => \Lkrms\Concept\TypedCollection::class,
-        \Lkrms\Core\Utility::class                          => \Lkrms\Concept\Utility::class,
 
         \Lkrms\Core\Contract\ConstructorHasNoRequiredParameters::class => \Lkrms\Contract\HasNoRequiredConstructorParameters::class,
     ];
