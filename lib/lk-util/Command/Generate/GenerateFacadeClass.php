@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Concept\Facade;
 use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
+use Lkrms\Facade\Composer;
+use Lkrms\Facade\Convert;
+use Lkrms\Facade\Env;
+use Lkrms\Facade\Reflect;
+use Lkrms\Facade\Test;
 use Lkrms\Support\PhpDocParser;
 use Lkrms\Support\TokenExtractor;
-use Lkrms\Util\Composer;
-use Lkrms\Util\Convert;
-use Lkrms\Util\Env;
-use Lkrms\Util\Reflect;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -23,7 +23,7 @@ use ReflectionMethod;
  * Generates static interfaces for underlying singletons
  *
  */
-class GenerateFacadeClass extends CliCommand
+class GenerateFacadeClass extends GenerateCommand
 {
     protected function _getDescription(): string
     {
@@ -110,13 +110,17 @@ class GenerateFacadeClass extends CliCommand
         $facadeFqcn      = $facadeNamespace ? $facadeNamespace . "\\" . $facade : $facade;
         $classPrefix     = $facadeNamespace ? "\\" : "";
 
+        $this->OutputClass     = $facade;
+        $this->OutputNamespace = $facadeNamespace;
+        $this->ClassPrefix     = $classPrefix;
+
+        $extends = $this->getFqcnAlias(ltrim(Facade::class, "\\"), "Facade");
+        $service = $this->getFqcnAlias($fqcn, $class);
+
         $package  = $this->getOptionValue("package");
         $desc     = $this->getOptionValue("desc");
-        $desc     = is_null($desc) ? "A facade for $class" : $desc;
+        $desc     = is_null($desc) ? "A facade for $service" : $desc;
         $declared = $this->getOptionValue("declared");
-
-        $extends = trim(Facade::class, "\\");
-        $service = $fqcn;
 
         if (!$fqcn)
         {
@@ -159,37 +163,41 @@ class GenerateFacadeClass extends CliCommand
             $maybeAddFile($_method->getFileName());
         }
 
-        $useMap = [];
+        $useMap  = [];
+        $typeMap = [];
         foreach ($files as $file)
         {
-            $useMap = array_merge((new TokenExtractor($file))->getUseMap(), $useMap);
+            $useMap[$file]  = (new TokenExtractor($file))->getUseMap();
+            $typeMap[$file] = array_change_key_case(array_flip($useMap[$file]), CASE_LOWER);
         }
-        $useMap  = array_merge(["Facade" => ltrim(Facade::class, "\\"), $class => $fqcn], $useMap);
-        $typeMap = array_change_key_case(array_flip($useMap), CASE_LOWER);
-        $useMap  = [];
 
-        $typeNameCallback = function (string $name) use ($facadeNamespace, $typeMap, &$useMap): ?string
+        $typeNameCallback = function (string $name, bool $returnFqcn = false) use ($typeMap, &$methodFile): ?string
         {
-            $name = trim($name, "\\");
-            $ns   = Convert::classToNamespace($name);
-            if (!strcasecmp($ns, $facadeNamespace))
-            {
-                return Convert::classToBasename($name);
-            }
-            if ($alias = $typeMap[strtolower($name)] ?? null)
-            {
-                $useMap[$alias] = $name;
-                return $alias;
-            }
-            return null;
+            $name  = trim($name, "\\");
+            $alias = $typeMap[$methodFile][strtolower($name)] ?? null;
+            return ($alias ? $this->getFqcnAlias($name, $alias, $returnFqcn) : null)
+                ?: (!Test::isPhpReservedWord($name) ? $this->getFqcnAlias($name, null, $returnFqcn) : null);
         };
-        $typeCallback = function (string $name) use ($typeNameCallback): string
+        $phpDocTypeCallback = function (string $type) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback): string
         {
-            return $typeNameCallback($name) ?: $name;
+            return preg_replace_callback(
+                '/(?<!\$)\b' . PhpDocParser::TYPE_PATTERN . '\b/',
+                function ($match) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback)
+                {
+                    if (preg_match('/^\\\\/', $match[0]) ||
+                        Test::isPhpReservedWord($match[0]))
+                    {
+                        return $match[0];
+                    }
+                    return $typeNameCallback(
+                        $useMap[$methodFile][$match[0]]
+                        ?? "\\" . $methodNamespace . "\\" . $match[0],
+                        true
+                    );
+                },
+                $type
+            );
         };
-
-        $extends = $typeCallback("$classPrefix$extends");
-        $service = $typeCallback("$classPrefix$service");
 
         $returnTypeMap = [
             'static' => $service,
@@ -207,6 +215,8 @@ class GenerateFacadeClass extends CliCommand
             $phpDoc = (($docBlock = $_method->getDocComment())
                 ? new PhpDocParser($docBlock)
                 : null);
+            $methodFile      = $_method->getFileName();
+            $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
 
             if ($_method->isConstructor())
             {
@@ -223,9 +233,12 @@ class GenerateFacadeClass extends CliCommand
                 {
                     continue;
                 }
-                $type = ($phpDoc->Return["type"] ?? null) ?: ($_method->hasReturnType()
-                    ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
-                    : "mixed");
+
+                $type = (($_type = $phpDoc->Return["type"] ?? null)
+                    ? $phpDocTypeCallback($_type)
+                    : ($_method->hasReturnType()
+                        ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
+                        : "mixed"));
                 $type    = $returnTypeMap[$type] ?? $type;
                 $summary = $phpDoc->Summary ?? null;
 
@@ -245,7 +258,9 @@ class GenerateFacadeClass extends CliCommand
                     $classPrefix,
                     $typeNameCallback,
                     // Override the declared type if defined in the PHPDoc
-                    $phpDoc->Params[$_param->getName()]["type"] ?? null
+                    (($_type = $phpDoc->Params[$_param->getName()]["type"] ?? null)
+                        ? $phpDocTypeCallback($_type)
+                        : null)
                 );
             }
 
@@ -262,14 +277,15 @@ class GenerateFacadeClass extends CliCommand
         $methods = implode(PHP_EOL, $methods);
 
         $imports = [];
-        foreach ($useMap as $from => $to)
+        foreach ($this->ImportMap as $alias)
         {
-            if (!strcasecmp($from, Convert::classToBasename($to)))
+            $import = $this->AliasMap[strtolower($alias)];
+            if (!strcasecmp($alias, Convert::classToBasename($import)))
             {
-                $imports[] = "use $to;";
+                $imports[] = "use $import;";
                 continue;
             }
-            $imports[] = "use $to as $from;";
+            $imports[] = "use $import as $alias;";
         }
         sort($imports);
 

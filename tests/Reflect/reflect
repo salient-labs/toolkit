@@ -6,7 +6,7 @@ namespace Lkrms\Tests\Reflect;
 use ArrayAccess;
 use Countable;
 use Lkrms\Err\Err;
-use Lkrms\Util\Reflect;
+use Lkrms\Facade\Reflect;
 use ReflectionClass;
 use Throwable;
 

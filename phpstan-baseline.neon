@@ -66,12 +66,12 @@ parameters:
 		-
 			message: "#^Call to an undefined method ReflectionType\\:\\:isBuiltin\\(\\)\\.$#"
 			count: 1
-			path: src/Util/Reflect.php
+			path: src/Utility/Reflection.php
 
 		-
 			message: "#^Casting class ReflectionType to string is deprecated\\.$#"
 			count: 1
-			path: src/Util/Reflect.php
+			path: src/Utility/Reflection.php
 
 		-
 			message: """

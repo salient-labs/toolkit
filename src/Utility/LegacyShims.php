@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
-
-use Lkrms\Concept\Utility;
+namespace Lkrms\Utility;
 
 /**
  * Use the previous names of renamed classes
  *
  */
-final class Legacy extends Utility
+final class LegacyShims
 {
     private const CLASS_ALIASES = [
         \Lkrms\App::class              => \Lkrms\Facade\App::class,
@@ -31,21 +29,32 @@ final class Legacy extends Utility
         \Lkrms\Generate::class         => \Lkrms\Util\Generate::class,
         \Lkrms\Ioc\Ioc::class          => \Lkrms\Facade\DI::class,
         \Lkrms\Reflect::class          => \Lkrms\Util\Reflect::class,
-        \Lkrms\Runtime::class          => \Lkrms\Util\Runtime::class,
         \Lkrms\Sql::class              => \Lkrms\Util\Sql::class,
         \Lkrms\Store\Cache::class      => \Lkrms\Facade\Cache::class,
         \Lkrms\Store\Trash::class      => \Lkrms\Facade\Trash::class,
         \Lkrms\Test::class             => \Lkrms\Util\Test::class,
         \Lkrms\Trash::class            => \Lkrms\Facade\Trash::class,
         \Lkrms\Util\Assert::class      => \Lkrms\Facade\Assert::class,
+        \Lkrms\Util\Composer::class    => \Lkrms\Facade\Composer::class,
+        \Lkrms\Util\Convert::class     => \Lkrms\Facade\Convert::class,
+        \Lkrms\Util\Env::class         => \Lkrms\Facade\Env::class,
+        \Lkrms\Util\File::class        => \Lkrms\Facade\File::class,
+        \Lkrms\Util\Format::class      => \Lkrms\Facade\Format::class,
+        \Lkrms\Util\Generate::class    => \Lkrms\Facade\Compute::class,
+        \Lkrms\Util\Reflect::class     => \Lkrms\Facade\Reflect::class,
+        \Lkrms\Util\Sql::class         => \Lkrms\Facade\Sql::class,
+        \Lkrms\Util\Test::class        => \Lkrms\Facade\Test::class,
 
         \Lkrms\Console\ConsoleTarget::class        => \Lkrms\Console\ConsoleTarget\ConsoleTarget::class,
         \Lkrms\Console\ConsoleTarget\Analog::class => \Lkrms\Console\ConsoleTarget\AnalogTarget::class,
         \Lkrms\Console\ConsoleTarget\Logger::class => \Lkrms\Console\ConsoleTarget\LoggerTarget::class,
         \Lkrms\Console\ConsoleTarget\Stream::class => \Lkrms\Console\ConsoleTarget\StreamTarget::class,
 
+        \Lkrms\Contract\IBound::class => \Lkrms\Contract\IHasContainer::class,
+        \Lkrms\Concern\TBound::class  => \Lkrms\Concern\THasContainer::class,
+
         \Lkrms\Core\Contract\IBindable::class               => \Lkrms\Contract\IBindable::class,
-        \Lkrms\Core\Contract\IBound::class                  => \Lkrms\Contract\IBound::class,
+        \Lkrms\Core\Contract\IBound::class                  => \Lkrms\Contract\IHasContainer::class,
         \Lkrms\Core\Contract\IConstructible::class          => \Lkrms\Contract\IConstructible::class,
         \Lkrms\Core\Contract\IConvertibleEnumeration::class => \Lkrms\Contract\IConvertibleEnumeration::class,
         \Lkrms\Core\Contract\IEnumeration::class            => \Lkrms\Contract\IEnumeration::class,
@@ -56,7 +65,7 @@ final class Legacy extends Utility
         \Lkrms\Core\Contract\IResolvable::class             => \Lkrms\Contract\IResolvable::class,
         \Lkrms\Core\Contract\ISettable::class               => \Lkrms\Contract\IWritable::class,
         \Lkrms\Core\Contract\ISingular::class               => \Lkrms\Contract\IFacade::class,
-        \Lkrms\Core\Mixin\TBound::class                     => \Lkrms\Concern\TBound::class,
+        \Lkrms\Core\Mixin\TBound::class                     => \Lkrms\Concern\THasContainer::class,
         \Lkrms\Core\Mixin\TClassCache::class                => \Lkrms\Concern\HasClassCache::class,
         \Lkrms\Core\Mixin\TConstructible::class             => \Lkrms\Concern\TConstructible::class,
         \Lkrms\Core\Mixin\TExtensible::class                => \Lkrms\Concern\TExtensible::class,
@@ -81,7 +90,7 @@ final class Legacy extends Utility
     /**
      * @var bool
      */
-    private static $AutoloaderIsRegistered;
+    private $AutoloaderIsRegistered;
 
     /**
      * Register an autoloader for renamed classes
@@ -92,19 +101,19 @@ final class Legacy extends Utility
      *
      * @return void
      */
-    public static function registerAutoloader(): void
+    public function registerAutoloader(): void
     {
-        if (self::$AutoloaderIsRegistered)
+        if ($this->AutoloaderIsRegistered)
         {
             return;
         }
 
-        spl_autoload_register([self::class, "autoloader"]);
+        spl_autoload_register([$this, "autoloader"]);
 
-        self::$AutoloaderIsRegistered = true;
+        $this->AutoloaderIsRegistered = true;
     }
 
-    private static function autoloader(string $className): void
+    private function autoloader(string $className): void
     {
         if ($class = self::CLASS_ALIASES[$className] ?? null)
         {

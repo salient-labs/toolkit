@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Support;
 
-use Lkrms\Contract\IReadable;
 use Lkrms\Concern\TFullyReadable;
+use Lkrms\Contract\IReadable;
 use Lkrms\Curler\CurlerHeaders;
 
 /**

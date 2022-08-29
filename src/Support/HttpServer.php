@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Lkrms\Support;
 
+use Lkrms\Concern\TFullyReadable;
 use Lkrms\Console\Console;
 use Lkrms\Contract\IReadable;
-use Lkrms\Concern\TFullyReadable;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Support\HttpRequest;
 use Lkrms\Support\HttpResponse;

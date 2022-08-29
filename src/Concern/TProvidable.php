@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
+use Lkrms\Container\Container;
 use Lkrms\Contract\IProvider;
 use Lkrms\Facade\Mapper;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ClosureBuilder;
-use Psr\Container\ContainerInterface as Container;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -46,7 +46,7 @@ trait TProvidable
         return $this;
     }
 
-    public function getProvider(): ?IProvider
+    public function provider(): ?IProvider
     {
         return $this->_ProvidedBy;
     }

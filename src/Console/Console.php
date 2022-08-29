@@ -7,9 +7,9 @@ namespace Lkrms\Console;
 use Lkrms\Console\ConsoleColour as C;
 use Lkrms\Console\ConsoleTarget\ConsoleTarget;
 use Lkrms\Console\ConsoleTarget\StreamTarget;
-use Lkrms\Util\Env;
-use Lkrms\Util\File;
-use Lkrms\Util\Generate;
+use Lkrms\Facade\Compute;
+use Lkrms\Facade\Env;
+use Lkrms\Facade\File;
 use Throwable;
 
 /**
@@ -128,7 +128,7 @@ final class Console extends ConsoleMessageWriter
         ?string $msg2
     ): int
     {
-        $hash = Generate::hash($method, $msg1, $msg2);
+        $hash = Compute::hash($method, $msg1, $msg2);
 
         if (!array_key_exists($hash, self::$LoggedOnce))
         {

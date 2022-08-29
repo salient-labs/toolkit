@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Lkrms\Concept;
 
 use Lkrms\Contract\IConvertibleEnumeration;
-use Lkrms\Util\Convert;
+use Lkrms\Facade\Convert;
 use ReflectionClass;
 use ReflectionClassConstant;
 use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * Base class for enumerations that use reflection to convert the values of
- * their public constants to and from their names
+ * Base class for enumerations that use reflection to convert the integer values
+ * of their public constants to and from their names
  */
 abstract class ConvertibleEnumeration extends Enumeration implements IConvertibleEnumeration
 {

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms\Utility;
 
-use Composer\Autoload\ClassLoader;
-use Lkrms\Concept\Utility;
+use Lkrms\Facade\Composer;
+use Lkrms\Facade\Compute;
 use RuntimeException;
 
 /**
  * Work with files, directories and paths
  *
  */
-final class File extends Utility
+final class Filesystem
 {
     /**
      * Get a file's end-of-line sequence
@@ -21,7 +21,7 @@ final class File extends Utility
      * @return string|false `"\r\n"` or `"\n"` on success, or `false` if the
      * file's line endings couldn't be determined.
      */
-    public static function getEol(string $filename)
+    public function getEol(string $filename)
     {
         if (($handle = fopen($filename, "r")) === false ||
             ($line   = fgets($handle)) === false ||
@@ -50,7 +50,7 @@ final class File extends Utility
      * needs to be created.
      * @return bool `true` on success or `false` on failure.
      */
-    public static function maybeCreate(
+    public function maybeCreate(
         string $filename,
         int $permissions    = 0777,
         int $dirPermissions = 0777
@@ -74,7 +74,7 @@ final class File extends Utility
      * @param int $permissions Only used if `$filename` needs to be created.
      * @return bool `true` on success or `false` on failure.
      */
-    public static function maybeCreateDirectory(
+    public function maybeCreateDirectory(
         string $filename,
         int $permissions = 0777
     ): bool
@@ -94,7 +94,7 @@ final class File extends Utility
      * `pfsockopen()` or `stream_socket_client()`.
      * @return null|string `null` if `$stream` is not an open stream resource.
      */
-    public static function getStreamUri($stream): ?string
+    public function getStreamUri($stream): ?string
     {
         if (is_resource($stream) && get_resource_type($stream) == "stream")
         {
@@ -116,7 +116,7 @@ final class File extends Utility
      * @return string|false|void
      * @throws RuntimeException
      */
-    public static function writeCsv(
+    public function writeCsv(
         array $data,
         string $filename  = null,
         bool $headerRow   = true,
@@ -185,10 +185,10 @@ final class File extends Utility
      * @param string|null $dir If null, `sys_get_temp_dir()` is used.
      * @return string
      */
-    public static function getStablePath(string $suffix = ".log", string $dir = null)
+    public function getStablePath(string $suffix = ".log", string $dir = null)
     {
         $basename = basename($_SERVER["SCRIPT_FILENAME"]);
-        $hash     = Generate::hash(realpath($_SERVER["SCRIPT_FILENAME"]));
+        $hash     = Compute::hash(realpath($_SERVER["SCRIPT_FILENAME"]));
         $euid     = posix_geteuid();
 
         return (is_null($dir)
@@ -200,7 +200,7 @@ final class File extends Utility
     /**
      * @deprecated Use {@see Composer::getClassPath()} instead
      */
-    public static function getClassPath(string $class): ?string
+    public function getClassPath(string $class): ?string
     {
         return Composer::getClassPath($class);
     }
@@ -208,7 +208,7 @@ final class File extends Utility
     /**
      * @deprecated Use {@see Composer::getNamespacePath()} instead
      */
-    public static function getNamespacePath(string $namespace): ?string
+    public function getNamespacePath(string $namespace): ?string
     {
         return Composer::getNamespacePath($namespace);
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Curler;
 
 use Lkrms\Facade\Cache;
-use Lkrms\Util\Generate;
+use Lkrms\Facade\Compute;
 
 /**
  * Adds GET request caching to Curler
@@ -81,7 +81,7 @@ class CachingCurler extends Curler
                 $url       = "{$this->Method}:$url";
                 $headers[] = $this->Data;
             }
-            $key    = "curler/$url/" . Generate::hash(...$headers);
+            $key    = "curler/$url/" . Compute::hash(...$headers);
             $result = Cache::get($key);
 
             if ($result === false)

@@ -6,9 +6,10 @@ namespace Lkrms\Cli;
 
 use Lkrms\Console\Console;
 use Lkrms\Container\CliAppContainer;
-use Lkrms\Contract\IBound;
+use Lkrms\Container\Container;
+use Lkrms\Contract\IHasContainer;
 use Lkrms\Exception\InvalidCliArgumentException;
-use Lkrms\Util\Convert;
+use Lkrms\Facade\Convert;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -16,7 +17,7 @@ use UnexpectedValueException;
  * Base class for CLI commands
  *
  */
-abstract class CliCommand implements IBound
+abstract class CliCommand implements IHasContainer
 {
     /**
      * Return a short description of the command
@@ -142,6 +143,16 @@ abstract class CliCommand implements IBound
     final public function container(): CliAppContainer
     {
         return $this->Container;
+    }
+
+    final public function setContainer(Container $container)
+    {
+        throw new RuntimeException("Container already set");
+    }
+
+    final public function isContainerSet(): bool
+    {
+        return true;
     }
 
     /**

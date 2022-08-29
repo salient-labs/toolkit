@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Tests;
+namespace Lkrms\Tests\Utility;
 
-use Lkrms\Tests\Runtime\GetCallerClass;
-use function Lkrms\Tests\Runtime\getCallerViaFunction;
-use function Lkrms\Tests\Runtime\getFunctionCallback;
+use Lkrms\Tests\Utility\Debugging\GetCallerClass;
+use function Lkrms\Tests\Utility\Debugging\getCallerViaFunction;
+use function Lkrms\Tests\Utility\Debugging\getFunctionCallback;
 
-final class RuntimeTest extends \Lkrms\Tests\TestCase
+final class DebuggingTest extends \Lkrms\Tests\TestCase
 {
     public function testGetCaller()
     {
@@ -72,7 +72,7 @@ final class RuntimeTest extends \Lkrms\Tests\TestCase
         $this->assertArrayHasSubArrayAndKeys($thisMethod, ["line"], ($class::getStaticCallback())(2));
 
         $expected = [
-            "namespace" => "Lkrms\\Tests\\Runtime\\",
+            "namespace" => "Lkrms\\Tests\\Utility\\Debugging\\",
             "function"  => "getCallerViaFunction",
             1           => ":",
         ];
@@ -80,7 +80,7 @@ final class RuntimeTest extends \Lkrms\Tests\TestCase
         $this->assertArrayHasSubArrayAndKeys($thisMethod, ["line"], getCallerViaFunction(1));
         $this->assertArrayHasSubArrayAndKeys($expected, ["line"], (getFunctionCallback())());
         $expected = [
-            "namespace" => "Lkrms\\Tests\\Runtime\\",
+            "namespace" => "Lkrms\\Tests\\Utility\\Debugging\\",
             "function"  => "{closure}",
             1           => ":",
         ];
@@ -88,7 +88,7 @@ final class RuntimeTest extends \Lkrms\Tests\TestCase
         $this->assertArrayHasSubArrayAndKeys($thisMethod, ["line"], (getFunctionCallback())(2));
 
         $expected = [
-            "file"     => __DIR__ . "/Runtime/GetCallerFile.php",
+            "file"     => __DIR__ . "/Debugging/GetCallerFile.php",
             0          => "::",
             "function" => "Lkrms_Tests_Runtime_getCallerViaFunction",
             1          => ":",
@@ -97,7 +97,7 @@ final class RuntimeTest extends \Lkrms\Tests\TestCase
         $this->assertArrayHasSubArrayAndKeys($thisMethod, ["line"], Lkrms_Tests_Runtime_getCallerViaFunction(1));
         $this->assertArrayHasSubArrayAndKeys($expected, ["line"], (Lkrms_Tests_Runtime_getFunctionCallback())());
         $expected = [
-            "file"     => __DIR__ . "/Runtime/GetCallerFile.php",
+            "file"     => __DIR__ . "/Debugging/GetCallerFile.php",
             0          => "::",
             "function" => "{closure}",
             1          => ":",
@@ -107,4 +107,4 @@ final class RuntimeTest extends \Lkrms\Tests\TestCase
     }
 }
 
-require (__DIR__ . "/Runtime/GetCallerFile.php");
+require (__DIR__ . "/Debugging/GetCallerFile.php");

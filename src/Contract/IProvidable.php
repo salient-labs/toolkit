@@ -16,7 +16,7 @@ interface IProvidable
      * Get the provider servicing this entity
      *
      */
-    public function getProvider(): ?IProvider;
+    public function provider(): ?IProvider;
 
     /**
      * Bind the entity to its provider

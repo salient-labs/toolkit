@@ -8,6 +8,7 @@ namespace Lkrms\Contract;
  * Provides a static interface for an underlying singleton
  *
  * @see \Lkrms\Concept\Facade
+ * @see \Lkrms\Contract\HasFacade
  */
 interface IFacade
 {
@@ -20,11 +21,13 @@ interface IFacade
     /**
      * Create and return the underlying instance
      *
-     * If called with arguments, they should be passed to the constructor of the
+     * If called with arguments, they are passed to the constructor of the
      * underlying class.
      *
-     * If the underlying instance already exists, the implementing class should
-     * throw a `RuntimeException`.
+     * If the underlying class implements {@see HasFacade}, the name of the
+     * facade is passed to its {@see HasFacade::setFacade()} method.
+     *
+     * @throws \RuntimeException if the underlying instance already exists
      */
     public static function load();
 

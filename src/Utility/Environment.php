@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms\Utility;
 
 use DateTimeZone;
 use Lkrms\Console\Console;
-use Lkrms\Concept\Utility;
 use RuntimeException;
 use Throwable;
 use UnexpectedValueException;
@@ -15,7 +14,7 @@ use UnexpectedValueException;
  * Work with .env files and environment variables
  *
  */
-final class Env extends Utility
+final class Environment
 {
     /**
      * Load environment variables
@@ -37,7 +36,7 @@ final class Env extends Utility
      * @throws RuntimeException if `$filename` cannot be opened
      * @throws UnexpectedValueException if `$filename` cannot be parsed
      */
-    public static function load(string $filename, bool $apply = true): void
+    public function load(string $filename, bool $apply = true): void
     {
         if (($lines = file($filename, FILE_IGNORE_NEW_LINES)) === false)
         {
@@ -81,11 +80,11 @@ final class Env extends Utility
             $queue[$name] = $value;
         }
 
-        array_walk($queue, fn($value, $name) => self::set($name, $value));
+        array_walk($queue, fn($value, $name) => $this->set($name, $value));
 
         if ($apply)
         {
-            self::apply();
+            $this->apply();
         }
     }
 
@@ -95,9 +94,9 @@ final class Env extends Utility
      * Specifically:
      * - If `TZ` is a valid timezone, pass it to `date_default_timezone_set`.
      */
-    public static function apply(): void
+    public function apply(): void
     {
-        if ($tz = preg_replace("/^:?(.*\/zoneinfo\/)?/", "", self::get("TZ", "")))
+        if ($tz = preg_replace("/^:?(.*\/zoneinfo\/)?/", "", $this->get("TZ", "")))
         {
             try
             {
@@ -119,7 +118,7 @@ final class Env extends Utility
      * @param string $name
      * @param string $value
      */
-    public static function set(string $name, string $value): void
+    public function set(string $name, string $value): void
     {
         putenv($name . "=" . $value);
         $_ENV[$name]    = $value;
@@ -133,7 +132,7 @@ final class Env extends Utility
      *
      * @param string $name
      */
-    public static function unset(string $name): void
+    public function unset(string $name): void
     {
         putenv($name);
         unset($_ENV[$name]);
@@ -143,7 +142,7 @@ final class Env extends Utility
     /**
      * @return string|false
      */
-    private static function _get(string $name)
+    private function _get(string $name)
     {
         return ($_ENV[$name]
             ?? $_SERVER[$name]
@@ -158,9 +157,9 @@ final class Env extends Utility
      * @param string $name
      * @return bool
      */
-    public static function has(string $name): bool
+    public function has(string $name): bool
     {
-        return self::_get($name) !== false;
+        return $this->_get($name) !== false;
     }
 
     /**
@@ -174,9 +173,9 @@ final class Env extends Utility
      * @return null|string
      * @throws RuntimeException if `$name` is not set and no `$default` is given
      */
-    public static function get(string $name, string $default = null): ?string
+    public function get(string $name, string $default = null): ?string
     {
-        $value = self::_get($name);
+        $value = $this->_get($name);
 
         if ($value === false)
         {
@@ -204,16 +203,16 @@ final class Env extends Utility
      * @return null|int
      * @throws RuntimeException if `$name` is not set and no `$default` is given
      */
-    public static function getInt(string $name, int $default = null): ?int
+    public function getInt(string $name, int $default = null): ?int
     {
         if (func_num_args() < 2)
         {
-            $value = self::get($name);
+            $value = $this->get($name);
         }
         else
         {
             // Passes "" if `$default` is `null`, "0" if `$default` is `0`
-            $value = self::get($name, (string)$default);
+            $value = $this->get($name, (string)$default);
         }
         return ($value === "") ? null : (int)$default;
     }
@@ -229,7 +228,7 @@ final class Env extends Utility
      * @return string[]|null
      * @throws RuntimeException if `$name` is not set and no `$default` is given
      */
-    public static function getList(string $name, array $default = null, string $delimiter = ","): ?array
+    public function getList(string $name, array $default = null, string $delimiter = ","): ?array
     {
         if (!$delimiter)
         {
@@ -238,11 +237,11 @@ final class Env extends Utility
 
         if (func_num_args() < 2)
         {
-            $value = self::get($name);
+            $value = $this->get($name);
         }
         else
         {
-            $value = self::get($name, null);
+            $value = $this->get($name, null);
 
             if (is_null($value))
             {
@@ -253,21 +252,21 @@ final class Env extends Utility
         return $value ? explode($delimiter, $value) : [];
     }
 
-    private static function getOrSetBool(string $name, bool $newState = null): bool
+    private function getOrSetBool(string $name, bool $newState = null): bool
     {
         if (func_num_args() > 1 && !is_null($newState))
         {
             if ($newState)
             {
-                self::set($name, "1");
+                $this->set($name, "1");
             }
             else
             {
-                self::unset($name);
+                $this->unset($name);
             }
         }
 
-        return (bool)self::get($name, "");
+        return (bool)$this->get($name, "");
     }
 
     /**
@@ -279,9 +278,9 @@ final class Env extends Utility
      * @param bool|null $newState
      * @return bool
      */
-    public static function dryRun(bool $newState = null): bool
+    public function dryRun(bool $newState = null): bool
     {
-        return self::getOrSetBool("DRY_RUN", ...func_get_args());
+        return $this->getOrSetBool("DRY_RUN", ...func_get_args());
     }
 
     /**
@@ -293,8 +292,8 @@ final class Env extends Utility
      * @param bool|null $newState
      * @return bool
      */
-    public static function debug(bool $newState = null): bool
+    public function debug(bool $newState = null): bool
     {
-        return self::getOrSetBool("DEBUG", ...func_get_args());
+        return $this->getOrSetBool("DEBUG", ...func_get_args());
     }
 }

@@ -9,8 +9,8 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IConstructible;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Assert;
-use Lkrms\Util\Convert;
-use Lkrms\Util\Env;
+use Lkrms\Facade\Convert;
+use Lkrms\Facade\Env;
 use RuntimeException;
 use UnexpectedValueException;
 

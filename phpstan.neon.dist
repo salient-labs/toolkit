@@ -41,7 +41,7 @@ parameters:
     - "# has unknown class Curl(Multi)?Handle as its type\\.$#"
     -
       message: "#^Class Lkrms\\\\[^\\s]+ not found\\.$#"
-      path: src/Util/Legacy.php
+      path: src/Utility/LegacyShims.php
     -
       message: "#^(Closure|Callable.+) invoked with [1234] parameters?, 1 required\\.$#"
       path: src/Support/ClosureBuilder.php

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
-use Lkrms\Console\ConsoleTarget\ConsoleTarget;
 use Lkrms\Concept\Utility;
-use Lkrms\Util\Convert;
-use Lkrms\Util\Runtime;
+use Lkrms\Console\ConsoleTarget\ConsoleTarget;
+use Lkrms\Facade\Convert;
+use Lkrms\Facade\Debug;
 use Throwable;
 
 /**
@@ -286,13 +286,13 @@ abstract class ConsoleMessageWriter extends Utility
      * @param string $msg1
      * @param string|null $msg2
      * @param Throwable|null $ex
-     * @param int $depth Passed to {@see Runtime::getCaller()}. To print your
+     * @param int $depth Passed to {@see Debug::getCaller()}. To print your
      * caller's name instead of your own, set `$depth` to 1.
      * @see ConsoleLevel::DEBUG
      */
     public static function debug(string $msg1, string $msg2 = null, Throwable $ex = null, int $depth = 0)
     {
-        $caller = implode("", Runtime::getCaller($depth));
+        $caller = implode("", Debug::getCaller($depth));
         static::write(ConsoleLevel::DEBUG, "{{$caller}} __" . $msg1 . "__", $msg2, "--- ", $ex);
     }
 
@@ -302,7 +302,7 @@ abstract class ConsoleMessageWriter extends Utility
      * @param string $msg1
      * @param string|null $msg2
      * @param Throwable|null $ex
-     * @param int $depth Passed to {@see Runtime::getCaller()}. To print your
+     * @param int $depth Passed to {@see Debug::getCaller()}. To print your
      * caller's name instead of your own, set `$depth` to 1.
      * @see ConsoleLevel::DEBUG
      */
@@ -310,7 +310,7 @@ abstract class ConsoleMessageWriter extends Utility
     {
         if (! static::logWrite(__METHOD__, $msg1, $msg2))
         {
-            $caller = implode("", Runtime::getCaller($depth));
+            $caller = implode("", Debug::getCaller($depth));
             static::write(ConsoleLevel::DEBUG, "{{$caller}} __" . $msg1 . "__", $msg2, "--- ", $ex);
         }
     }

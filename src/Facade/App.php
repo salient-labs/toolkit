@@ -6,6 +6,7 @@ namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
 use Lkrms\Container\AppContainer;
+use Lkrms\Container\Container;
 use Lkrms\Container\ContextContainer;
 
 /**

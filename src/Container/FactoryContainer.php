@@ -17,7 +17,6 @@ final class FactoryContainer implements ContainerInterface
     /**
      * Get an instance of the given class
      *
-     * @return mixed
      */
     public function get(string $id, ...$params)
     {

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Tests\Runtime
+namespace Lkrms\Tests\Utility\Debugging
 {
-    use Lkrms\Util\Runtime;
+    use Lkrms\Facade\Debug;
 
     function getCaller($depth)
     {
-        return Runtime::getCaller($depth);
+        return Debug::getCaller($depth);
     }
 
     function getCallerViaFunction($depth = 0)
@@ -24,7 +24,7 @@ namespace Lkrms\Tests\Runtime
 
 namespace
 {
-    use function Lkrms\Tests\Runtime\getCaller;
+    use function Lkrms\Tests\Utility\Debugging\getCaller;
 
     function Lkrms_Tests_Runtime_getCallerViaFunction($depth = 0)
     {

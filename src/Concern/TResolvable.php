@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-use Lkrms\Util\Convert;
+use Lkrms\Facade\Convert;
 
 /**
  * Implements IResolvable to normalise property names

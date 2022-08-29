@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
-use Lkrms\Utility\AssertionUtility;
+use Lkrms\Utility\Assertions;
 
 /**
- * A facade for AssertionUtility
+ * A facade for Assertions
  *
  * @method static void argvIsRegistered()
  * @method static void localeIsUtf8()
@@ -16,8 +16,8 @@ use Lkrms\Utility\AssertionUtility;
  * @method static void patternMatches(?string $value, string $pattern, ?string $name = null)
  * @method static void sapiIsCli()
  *
- * @uses AssertionUtility
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\AssertionUtility' --generate='Lkrms\Facade\Assert'
+ * @uses Assertions
+ * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\Assertions' --generate='Lkrms\Facade\Assert'
  */
 final class Assert extends Facade
 {
@@ -26,6 +26,6 @@ final class Assert extends Facade
      */
     protected static function getServiceName(): string
     {
-        return AssertionUtility::class;
+        return Assertions::class;
     }
 }

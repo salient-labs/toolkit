@@ -27,12 +27,13 @@ class PhpDocParser implements IReadable
     /**
      * @link https://github.com/php-fig/fig-standards/blob/master/proposed/phpdoc.md#53-tags
      */
-    private const TAG_REGEX = '/^@(?P<tag>[[:alpha:]\\\\][[:alnum:]\\\\_-]*)(?:\h|[(:]|$)/';
+    public const TAG_REGEX = '/^@(?P<tag>[[:alpha:]\\\\][[:alnum:]\\\\_-]*)(?:\h|[(:]|$)/';
 
     /**
      * @link https://github.com/php-fig/fig-standards/blob/master/proposed/phpdoc.md#appendix-a-types
      */
-    private const TYPE_REGEX = '/^(?:\\\\?[[:alpha:]_\x80-\xff][[:alnum:]_\x80-\xff]*)+$/';
+    public const TYPE_PATTERN = '(?:\\\\?[[:alpha:]_\x80-\xff][[:alnum:]_\x80-\xff]*)+';
+    public const TYPE_REGEX   = '/^' . self::TYPE_PATTERN . '$/';
 
     /**
      * The summary, if provided

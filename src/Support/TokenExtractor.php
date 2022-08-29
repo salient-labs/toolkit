@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Support;
 
-use Lkrms\Util\Convert;
+use Lkrms\Facade\Convert;
 use UnexpectedValueException;
 
 defined("T_NAME_QUALIFIED") || define("T_NAME_QUALIFIED", 10001);

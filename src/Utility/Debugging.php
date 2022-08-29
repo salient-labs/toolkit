@@ -2,17 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms\Utility;
 
-use Lkrms\Concept\Utility;
-use Lkrms\Util\Convert;
+use Lkrms\Contract\HasFacade;
 
 /**
- * Get information about the runtime environment
+ * Get information about code that's currently running
  *
  */
-final class Runtime extends Utility
+final class Debugging implements HasFacade
 {
+    /**
+     * @var int
+     */
+    private $Depth = 0;
+
+    public function setFacade(string $name)
+    {
+        $this->Depth = 1;
+
+        return $this;
+    }
+
     /**
      * Use debug_backtrace to get information about the (caller's) caller
      *
@@ -26,13 +37,13 @@ final class Runtime extends Utility
      * - `line`
      *
      * The return values below, for example, would implode to:
-     * - `Lkrms\Tests\Runtime\GetCallerClass->getCallerViaMethod:18`
-     * - `/path/to/tests/Runtime/GetCallerFile.php::{closure}:38`
+     * - `Lkrms\Tests\Utility\Debugging\GetCallerClass->getCallerViaMethod:18`
+     * - `/path/to/tests/Utility/Debugging/GetCallerFile.php::{closure}:38`
      *
      * ```
      * Array
      * (
-     *     [class] => Lkrms\Tests\Runtime\GetCallerClass
+     *     [class] => Lkrms\Tests\Utility\Debugging\GetCallerClass
      *     [0] => ->
      *     [function] => getCallerViaMethod
      *     [1] => :
@@ -41,7 +52,7 @@ final class Runtime extends Utility
      *
      * Array
      * (
-     *     [file] => /path/to/tests/Runtime/GetCallerFile.php
+     *     [file] => /path/to/tests/Utility/Debugging/GetCallerFile.php
      *     [0] => ::
      *     [function] => {closure}
      *     [1] => :
@@ -55,8 +66,10 @@ final class Runtime extends Utility
      * @param int $depth
      * @return array
      */
-    public static function getCaller(int $depth = 0): array
+    public function getCaller(int $depth = 0): array
     {
+        $depth += $this->Depth;
+
         // 0. called us (function = getCaller)
         // 1. called them (function = ourCaller)
         // 2. used the name of their caller (function = callsOurCaller)
@@ -98,26 +111,4 @@ final class Runtime extends Utility
         return [];
     }
 
-    public static function getMemoryLimit(): int
-    {
-        return Convert::sizeToBytes(ini_get("memory_limit") ?: "0");
-    }
-
-    public static function getMemoryUsage(): int
-    {
-        return memory_get_usage(true);
-    }
-
-    public static function getMemoryUsagePercent(): int
-    {
-        $limit = self::getMemoryLimit();
-        if ($limit <= 0)
-        {
-            return 0;
-        }
-        else
-        {
-            return (int)round(memory_get_usage(true) * 100 / $limit);
-        }
-    }
 }

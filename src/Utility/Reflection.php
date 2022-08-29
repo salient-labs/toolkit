@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Util;
+namespace Lkrms\Utility;
 
-use Lkrms\Concept\Utility;
 use ReflectionClass;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
@@ -18,7 +17,7 @@ use UnexpectedValueException;
  * Work with PHP's Reflector classes
  *
  */
-final class Reflect extends Utility
+final class Reflection
 {
     /**
      * Return the names of the given Reflection objects
@@ -26,7 +25,7 @@ final class Reflect extends Utility
      * @param array<int,\ReflectionClass|\ReflectionClassConstant|\ReflectionFunctionAbstract|\ReflectionParameter|\ReflectionProperty> $reflections
      * @return string[]
      */
-    public static function getNames(array $reflections): array
+    public function getNames(array $reflections): array
     {
         return array_map(function ($r) { return $r->name; }, $reflections);
     }
@@ -40,10 +39,10 @@ final class Reflect extends Utility
      * included.
      * @return string[]
      */
-    public static function getClassNamesBetween($child, $parent, bool $instantiable = false): array
+    public function getClassNamesBetween($child, $parent, bool $instantiable = false): array
     {
-        $child  = self::toReflectionClass($child);
-        $parent = self::toReflectionClass($parent);
+        $child  = $this->toReflectionClass($child);
+        $parent = $this->toReflectionClass($parent);
 
         if (!is_a($child->name, $parent->name, true) || $parent->isInterface())
         {
@@ -84,7 +83,7 @@ final class Reflect extends Utility
      * @return ReflectionType[]
      * @see Reflect::getAllTypeNames()
      */
-    public static function getAllTypes(?ReflectionType $type): array
+    public function getAllTypes(?ReflectionType $type): array
     {
         if ($type instanceof ReflectionUnionType ||
             $type instanceof ReflectionIntersectionType)
@@ -103,10 +102,10 @@ final class Reflect extends Utility
      * @return string[]
      * @see Reflect::getAllTypes()
      */
-    public static function getAllTypeNames(?ReflectionType $type): array
+    public function getAllTypeNames(?ReflectionType $type): array
     {
-        return array_map(fn(ReflectionType $t) => self::getTypeName($t),
-            self::getAllTypes($type));
+        return array_map(fn(ReflectionType $t) => $this->getTypeName($t),
+            $this->getAllTypes($type));
     }
 
     /**
@@ -115,7 +114,7 @@ final class Reflect extends Utility
      * @param ReflectionType $type
      * @return string
      */
-    public static function getTypeName(ReflectionType $type): string
+    public function getTypeName(ReflectionType $type): string
     {
         return $type instanceof ReflectionNamedType ? $type->getName() : (string)$type;
     }
@@ -133,7 +132,7 @@ final class Reflect extends Utility
      * ```
      * @return string
      */
-    public static function getTypeDeclaration(
+    public function getTypeDeclaration(
         ?ReflectionType $type,
         string $classPrefix          = "\\",
         ? callable $typeNameCallback = null
@@ -161,7 +160,7 @@ final class Reflect extends Utility
         /** @var ReflectionNamedType|ReflectionType $type */
         foreach ($types as $type)
         {
-            $name    = self::getTypeName($type);
+            $name    = $this->getTypeName($type);
             $alias   = $typeNameCallback ? $typeNameCallback($name) : null;
             $parts[] = (($type->allowsNull() && strcasecmp($name, "null") ? "?" : "")
                 . ($alias || $type->isBuiltin() ? "" : $classPrefix)
@@ -185,7 +184,7 @@ final class Reflect extends Utility
      * from a trusted source.
      * @return string
      */
-    public static function getParameterDeclaration(
+    public function getParameterDeclaration(
         ReflectionParameter $parameter,
         string $classPrefix          = "\\",
         ? callable $typeNameCallback = null,
@@ -193,7 +192,7 @@ final class Reflect extends Utility
     ): string
     {
         // If getTypeDeclaration isn't called, neither is $typeNameCallback
-        $param  = self::getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
+        $param  = $this->getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
         $param  = is_null($type) ? ($param ?: "mixed") : $type;
         $param .= (($param ? " " : "")
             . ($parameter->isPassedByReference() ? "&" : "")
@@ -207,11 +206,22 @@ final class Reflect extends Utility
         if (!$parameter->isDefaultValueConstant())
         {
             $value = $parameter->getDefaultValue();
-            $value = is_null($value) ? "null" : var_export($value, true);
-            /** @todo Flatten arrays properly */
-            if ($value == "array (\n)")
+            if (is_null($value))
             {
+                $value = "null";
+            }
+            elseif (is_string($value) && preg_match('/\v/', $value))
+            {
+                $value = '"' . addcslashes($value, "\n\r\t\v\e\f\\\$\"") . '"';
+            }
+            elseif (is_array($value) && empty($value))
+            {
+                /** @todo Flatten arrays properly */
                 $value = "[]";
+            }
+            else
+            {
+                $value = var_export($value, true);
             }
             return $param . $value;
         }
@@ -233,7 +243,7 @@ final class Reflect extends Utility
      * @return array<string,ReflectionClass> An array that maps trait names to
      * `ReflectionClass` instances.
      */
-    public static function getAllTraits(ReflectionClass $class): array
+    public function getAllTraits(ReflectionClass $class): array
     {
         $allTraits = [];
 
@@ -251,7 +261,7 @@ final class Reflect extends Utility
         return $allTraits;
     }
 
-    private static function toReflectionClass($class): ReflectionClass
+    private function toReflectionClass($class): ReflectionClass
     {
         return $class instanceof ReflectionClass ? $class : new ReflectionClass($class);
     }
