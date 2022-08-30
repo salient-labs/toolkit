@@ -53,8 +53,9 @@ abstract class GenerateCommand extends CliCommand
      * Otherwise, `use $fqcn[ as $alias];` will be queued for output and
      * `$alias` will be returned.
      *
-     * @param $alias If `null`, the basename of `$fqcn` will be used.
-     * @param $returnFqcn If `false`, return `null` instead of the FQCN if
+     * @param null|string $alias If `null`, the basename of `$fqcn` will be
+     * used.
+     * @param bool $returnFqcn If `false`, return `null` instead of the FQCN if
      * `$alias` has already been claimed.
      */
     protected function getFqcnAlias(string $fqcn, ?string $alias = null, bool $returnFqcn = true): ?string

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-use Lkrms\Container\Container;
-
 /**
  * Implements IBindable to provide services that can be bound to a container
  *
@@ -14,8 +12,6 @@ use Lkrms\Container\Container;
  */
 trait TBindable
 {
-    use THasContainer;
-
     public static function getBindable(): array
     {
         return [];

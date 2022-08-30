@@ -13,13 +13,13 @@ use Lkrms\Contract\HasFacade;
 final class Debugging implements HasFacade
 {
     /**
-     * @var int
+     * @var string|null
      */
-    private $Depth = 0;
+    private $Facade;
 
     public function setFacade(string $name)
     {
-        $this->Depth = 1;
+        $this->Facade = $name;
 
         return $this;
     }
@@ -68,7 +68,10 @@ final class Debugging implements HasFacade
      */
     public function getCaller(int $depth = 0): array
     {
-        $depth += $this->Depth;
+        if ($this->Facade)
+        {
+            $depth++;
+        }
 
         // 0. called us (function = getCaller)
         // 1. called them (function = ourCaller)

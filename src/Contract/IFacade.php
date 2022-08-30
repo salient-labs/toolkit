@@ -43,8 +43,8 @@ interface IFacade
     /**
      * Return the underlying instance
      *
-     * If an underlying instance has not been loaded, the implementing class
-     * may either:
+     * If an underlying instance has not been loaded, the implementing class may
+     * either:
      * 1. throw a `RuntimeException`, or
      * 2. load an instance of the underlying class and return it
      *

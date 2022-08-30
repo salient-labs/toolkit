@@ -3,9 +3,10 @@
 
 namespace Lkrms\Tests;
 
+use Lkrms\Concern\TBindable;
+use Lkrms\Contract\IBindable;
 use Lkrms\Err\Err;
 use Lkrms\Facade\DI;
-use RuntimeException;
 use UnexpectedValueException;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
@@ -70,8 +71,10 @@ class Department
     }
 }
 
-class DepartmentStaff
+class DepartmentStaff implements IBindable
 {
+    use TBindable;
+
     public $user;
 
     public $department;
@@ -86,6 +89,12 @@ class DepartmentStaff
         $this->department     = $department;
         $this->departmentHead = $departmentHead;
     }
+
+    public static function getBindings(): array
+    {
+        // Create 'Staff' instead of 'User' instances when creating 'DepartmentStaff'
+        return [User::class => Staff::class];
+    }
 }
 
 $exceptions = [];
@@ -94,6 +103,9 @@ DI::singleton(IdGenerator::class);
 
 // Create one 'Department' per 'DepartmentStaff'
 DI::bind(DepartmentStaff::class, null, null, [Department::class]);
+
+// Register 'DepartmentStaff' bindings
+DI::service(DepartmentStaff::class);
 
 // Give 'Department' instances a default name
 DI::bind(Department::class, null, ["<auto>"]);
@@ -111,29 +123,11 @@ catch (UnexpectedValueException $ex)
     $exceptions[] = $ex;
 }
 
-try
-{
-    // Should throw an exception for trying to pop from an empty stack
-    DI::pop();
-}
-catch (RuntimeException $ex)
-{
-    $exceptions[] = $ex;
-}
-
-// Create 'Staff' instead of 'User' instances when creating 'DepartmentStaff'
-DI::bind(DepartmentStaff::class, null, null, null, [
-    "substitutions" => [User::class => Staff::class]
-]);
-
 // $user1 should be a 'User' instance
 $user1 = DI::get(User::class);
 
 // $user2 should be a 'Staff' instance
-DI::push();
-DI::bind(User::class, Staff::class);
-$user2 = DI::get(User::class);
-DI::pop();
+$user2 = DI::inContextOf(DepartmentStaff::class)->get(User::class);
 
 // $user3 should be a 'User' instance
 $user3 = DI::get(User::class);

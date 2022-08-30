@@ -118,7 +118,7 @@ class SendHttpRequest extends CliCommand
             throw new InvalidCliArgumentException("class does not exist: $providerClass");
         }
 
-        $provider = $this->container()->get($providerClass);
+        $provider = $this->app()->get($providerClass);
 
         if (!($provider instanceof HttpSyncProvider))
         {

@@ -21,7 +21,7 @@ use Lkrms\Container\Container;
  * If the class should be instantiated as a singleton (or "shared instance"),
  * implement {@see IBindableSingleton}, otherwise implement {@see IBindable}.
  */
-interface IBindable extends IHasContainer
+interface IBindable
 {
     /**
      * Get a list of services provided by the class
@@ -39,9 +39,8 @@ interface IBindable extends IHasContainer
      *
      * These bindings only apply:
      * - when the class's dependencies are being resolved, and
-     * - when using a {@see \Lkrms\Container\ContextContainer} to work with a
-     *   container in the context of the class (see
-     *   {@see Container::context()}).
+     * - when using {@see Container::inContextOf()} to work with a container in
+     *   the context of the class.
      *
      * @return array<string,string>
      */

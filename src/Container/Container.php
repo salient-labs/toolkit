@@ -5,201 +5,102 @@ declare(strict_types=1);
 namespace Lkrms\Container;
 
 use Dice\Dice;
-use Lkrms\Container\ContextContainer;
-use Lkrms\Contract\HasNoRequiredConstructorParameters;
 use Lkrms\Contract\IBindable;
 use Lkrms\Contract\IBindableSingleton;
-use Lkrms\Contract\IHasContainer;
+use Lkrms\Contract\IContainer;
+use Lkrms\Contract\ReceivesContainer;
 use Psr\Container\ContainerInterface;
-use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * A stackable service container
+ * A service container
  *
  * Uses Dice under the hood.
  *
  * @link https://r.je/dice Dice home page
  * @link https://github.com/Level-2/Dice Dice repository on GitHub
  */
-class Container implements ContainerInterface, HasNoRequiredConstructorParameters
+class Container implements IContainer, ContainerInterface
 {
     /**
-     * @var bool|null
+     * @var IContainer|null
      */
-    private static $CreatingGlobal;
-
-    /**
-     * @var Container|null
-     */
-    private static $Global;
-
-    /**
-     * @var Container|null
-     */
-    protected $BackingContainer;
+    private static $GlobalContainer;
 
     /**
      * @var Dice|null
      */
     private $Dice;
 
-    /**
-     * @var Dice[]
-     */
-    private $DiceStack = [];
-
     public function __construct()
     {
-        if (self::$CreatingGlobal)
-        {
-            self::$CreatingGlobal = null;
-            self::$Global         = $this;
-        }
-
-        if (!($this instanceof ContextContainer))
-        {
-            $this->bindTo($this);
-        }
+        $this->load();
     }
 
-    public function __clone()
+    private function __clone()
     {
-        $this->bindTo($this);
     }
 
-    /**
-     * @internal
-     */
-    protected function bindTo(Container $container): void
+    private function load(): void
     {
-        $subs  = [ContainerInterface::class => ($me = $this->me())];
+        $dice  = & $this->dice();
+        $dice  = $dice->addShared(ContainerInterface::class, $this);
         $class = static::class;
         do
         {
-            $subs[$class] = $me;
+            $dice = $dice->addShared($class, $this);
         }
         while (self::class != $class && ($class = get_parent_class($class)));
-        $container->addRule("*", ["substitutions" => $subs]);
     }
 
-    /**
-     * Returns true if a global container exists
-     *
-     * @return bool
-     */
     final public static function hasGlobalContainer(): bool
     {
-        return !is_null(self::$Global);
+        return !is_null(self::$GlobalContainer);
     }
 
-    /**
-     * Get the current global container, creating one if necessary
-     *
-     * @return Container
-     */
-    final public static function getGlobalContainer(): Container
+    final public static function getGlobalContainer(): IContainer
     {
-        if (!is_null(self::$Global))
+        if (!is_null(self::$GlobalContainer))
         {
-            return self::$Global;
+            return self::$GlobalContainer;
         }
 
-        $class = static::class;
-        if ($class === ContextContainer::class)
-        {
-            $class = self::class;
-        }
-
-        self::$CreatingGlobal = true;
-        $instance             = new $class(...func_get_args());
-
-        if ($instance !== self::$Global)
-        {
-            throw new RuntimeException("Error creating global container");
-        }
-
-        return $instance;
+        return self::$GlobalContainer = new static(...func_get_args());
     }
 
-    private function me(): Container
+    final public static function setGlobalContainer(?IContainer $container): ?IContainer
     {
-        return $this->BackingContainer ?: $this;
+        return self::$GlobalContainer = $container;
     }
 
-    protected function dice(): Dice
+    private function & dice(): Dice
     {
-        return $this->me()->Dice ?: ($this->me()->Dice = new Dice());
+        if (!$this->Dice)
+        {
+            $this->Dice = new Dice();
+        }
+        return $this->Dice;
     }
 
-    /**
-     * Create a new instance of the given class or interface, or retrieve a
-     * singleton created earlier
-     *
-     * @template T
-     * @psalm-param class-string<T> $id
-     * @psalm-return T
-     * @param ...$params Values to pass to the constructor of the concrete class
-     * bound to `$id`. Ignored if `$id` resolves to an existing singleton.
-     */
     public function get(string $id, ...$params)
     {
         $shared   = $this->dice()->hasShared($id);
         $instance = $this->dice()->create($id, $params);
-        if (!$shared && $instance instanceof IHasContainer && !$instance->isContainerSet())
+        if (!$shared && $instance instanceof ReceivesContainer)
         {
-            $instance->setContainer($this->me());
+            $instance->setContainer($this);
         }
         return $instance;
     }
 
-    /**
-     * Get a concrete class name for the given identifier
-     *
-     * Returns `$id` if no entries for it are bound to the container.
-     *
-     * @param string $id Class or interface to resolve.
-     * @return string
-     */
-    public function name(string $id): string
+    public function getName(string $id): string
     {
         return $this->dice()->getRule($id)["instanceOf"] ?? $id;
     }
 
-    /**
-     * Returns true if the given identifier can be resolved to a concrete class
-     */
     public function has(string $id): bool
     {
-        return class_exists($this->name($id));
-    }
-
-    /**
-     * Push a copy of the container onto the stack
-     *
-     * @return $this
-     */
-    public function push()
-    {
-        $this->me()->DiceStack[] = clone $this->dice();
-        return $this;
-    }
-
-    /**
-     * Pop the most recently pushed container off the stack and activate it
-     *
-     * @return $this
-     * @throws RuntimeException if the container stack is empty
-     */
-    public function pop()
-    {
-        if (is_null($dice = array_pop($this->me()->DiceStack)))
-        {
-            throw new RuntimeException("Container stack is empty");
-        }
-
-        $this->me()->Dice = $dice;
-        return $this;
+        return class_exists($this->getName($id));
     }
 
     private function checkRule(array $rule): void
@@ -215,42 +116,93 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
         }
     }
 
-    protected function addRule(string $id, array $rule): void
+    private function addRule(string $id, array $rule, Dice & $dice = null): void
     {
-        $dice = $this->dice()->addRule($id, $rule);
-        self::checkRule($dice->getRule($id));
-        $this->me()->Dice = $dice;
+        if (is_null($dice))
+        {
+            $dice = & $this->dice();
+        }
+
+        // Propagating rules to subclasses makes contextual bindings difficult
+        // to apply and debug, so disable inheritance
+        $rule["inherit"] = false;
+
+        $_dice = $dice->addRule($id, $rule);
+        $this->checkRule($_dice->getRule($id));
+        $dice = $_dice;
+    }
+
+    private function applyBindings(array $subs, Dice & $dice = null): void
+    {
+        if (is_null($dice))
+        {
+            $dice = & $this->dice();
+        }
+
+        $defaultRule = [];
+        foreach ($subs as $key => $value)
+        {
+            if (is_string($value))
+            {
+                if (strcasecmp($dice->getRule($key)["instanceOf"] ?? "", $value))
+                {
+                    $this->addRule($key, ["instanceOf" => $value], $dice);
+                }
+            }
+            elseif (is_object($value))
+            {
+                if (!$dice->hasShared($key) || $dice->create($key) !== $value)
+                {
+                    $dice = $dice->addShared($key, $value);
+                }
+            }
+            elseif (($dice->getDefaultRule()["substitutions"][ltrim($key, '\\')] ?? null) !== $value)
+            {
+                // If this substitution can't be converted to a rule, copy it to
+                // the default rule and force Dice to use it for the given
+                // identifier
+                $defaultRule["substitutions"][$key] = $value;
+                $dice = $dice->removeRule($key);
+            }
+        }
+        if (!empty($defaultRule))
+        {
+            /**
+             * @todo Patch Dice to apply substitutions in `create()`, not just
+             * when resolving dependencies
+             */
+            $this->addRule("*", $defaultRule, $dice);
+        }
+    }
+
+    public function inContextOf(string $id): Container
+    {
+        $dice = $this->dice();
+        if (!$dice->hasRule($id) ||
+            empty($subs = $dice->getRule($id)["substitutions"] ?? null))
+        {
+            return $this;
+        }
+
+        $this->applyBindings($subs, $dice);
+
+        if ($dice === $this->dice())
+        {
+            return $this;
+        }
+
+        $instance       = clone $this;
+        $instance->Dice = $dice;
+        $instance->load();
+        return $instance;
     }
 
     /**
-     * Get a context-specific facade for the container
-     *
-     * Returns a {@see ContextContainer} that surfaces the container's usual
-     * methods in the context of the given identifier, allowing contextual
-     * bindings to be applied in scenarios other than dependency injection.
-     */
-    public function context(string $id): ContextContainer
-    {
-        return ContextContainer::create($this->me(), $id);
-    }
-
-    /**
-     * Bind a class to the given identifier
-     *
-     * When the container needs an instance of `$id`, create a new `$instanceOf`
-     * (default: `$id`), passing any `$constructParams` to its constructor and
-     * only creating one instance of any classes named in `$shareInstances`.
-     *
      * @param array $customRule Dice-compatible rules may be given here.
      * @return $this
      */
-    public function bind(
-        string $id,
-        string $instanceOf     = null,
-        array $constructParams = null,
-        array $shareInstances  = null,
-        array $customRule      = []
-    ) {
+    public function bind(string $id, string $instanceOf = null, array $constructParams = null, array $shareInstances = null, array $customRule = [])
+    {
         $rule = $customRule;
         if (!is_null($instanceOf))
         {
@@ -269,22 +221,11 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
     }
 
     /**
-     * Bind a class to the given identifier as a shared instance
-     *
-     * When the container needs an instance of `$id`, use a previously created
-     * instance if possible, otherwise create a new `$instanceOf` as per
-     * {@see Container::bind()}, and store it for use with subsequent requests.
-     *
      * @param array $customRule Dice-compatible rules may be given here.
      * @return $this
      */
-    public function singleton(
-        string $id,
-        string $instanceOf     = null,
-        array $constructParams = null,
-        array $shareInstances  = null,
-        array $customRule      = []
-    ) {
+    public function singleton(string $id, string $instanceOf = null, array $constructParams = null, array $shareInstances = null, array $customRule = [])
+    {
         $customRule["shared"] = true;
         $this->bind(
             $id,
@@ -297,14 +238,8 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
     }
 
     /**
-     * Bind an IBindable and its services, optionally specifying the services to
-     * bind or exclude
-     *
-     * If `$id` implements {@see IBindableSingleton}, bind it as a shared
-     * instance.
-     *
-     * @param string[] $services
-     * @param string[] $exceptServices
+     * @param null|string[] $services
+     * @param null|string[] $exceptServices
      * @return $this
      */
     public function service(string $id, ?array $services = null, ?array $exceptServices = null)

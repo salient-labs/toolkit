@@ -14,11 +14,11 @@ use Lkrms\Concern\TWritable;
 use Lkrms\Container\FactoryContainer;
 use Lkrms\Contract\IConstructible;
 use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\ITreeNode;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IResolvable;
+use Lkrms\Contract\ITreeNode;
 use Lkrms\Contract\IWritable;
 use Lkrms\Facade\Reflect;
 use Psr\Container\ContainerInterface as Container;
@@ -203,7 +203,7 @@ class ClosureBuilder
         }
         elseif ($container instanceof \Lkrms\Container\Container)
         {
-            return self::get($container->name($class));
+            return self::get($container->getName($class));
         }
         return self::get(get_class($container->get($class)));
     }

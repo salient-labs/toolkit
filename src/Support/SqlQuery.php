@@ -70,8 +70,8 @@ class SqlQuery implements IReadable
     }
 
     /**
-     * @param $paramCallback Applied to the name of each parameter added to the
-     * query.
+     * @param callable $paramCallback Applied to the name of each parameter
+     * added to the query.
      * ```php
      * function (string $name): string
      * ```

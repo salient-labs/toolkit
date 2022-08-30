@@ -33,8 +33,8 @@ final class Environment
      * @param string $filename The `.env` file to load.
      * @param bool $apply If `true` (the default), {@see Environment::apply()}
      * will be called before the function returns.
-     * @throws RuntimeException if `$filename` cannot be opened
-     * @throws UnexpectedValueException if `$filename` cannot be parsed
+     * @throws RuntimeException if `$filename` cannot be opened.
+     * @throws UnexpectedValueException if `$filename` cannot be parsed.
      */
     public function loadFile(string $filename, bool $apply = true): void
     {
@@ -171,7 +171,8 @@ final class Environment
      * @param string $name The environment variable to retrieve.
      * @param string|null $default The value to return if `$name` is not set.
      * @return null|string
-     * @throws RuntimeException if `$name` is not set and no `$default` is given
+     * @throws RuntimeException if `$name` is not set and no `$default` is
+     * given.
      */
     public function get(string $name, string $default = null): ?string
     {
@@ -201,7 +202,8 @@ final class Environment
      * @param string $name The environment variable to retrieve.
      * @param int|null $default The value to return if `$name` is not set.
      * @return null|int
-     * @throws RuntimeException if `$name` is not set and no `$default` is given
+     * @throws RuntimeException if `$name` is not set and no `$default` is
+     * given.
      */
     public function getInt(string $name, int $default = null): ?int
     {
@@ -226,7 +228,8 @@ final class Environment
      * @param string[]|null $default The value to return if `$name` is not set.
      * @param string $delimiter The character used between items.
      * @return string[]|null
-     * @throws RuntimeException if `$name` is not set and no `$default` is given
+     * @throws RuntimeException if `$name` is not set and no `$default` is
+     * given.
      */
     public function getList(string $name, array $default = null, string $delimiter = ","): ?array
     {

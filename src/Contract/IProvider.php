@@ -4,25 +4,30 @@ declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
+use Lkrms\Container\Container;
 use Lkrms\Support\DateFormatter;
 
 /**
  * Creates objects from backend data
  *
  */
-interface IProvider extends IHasContainer
+interface IProvider
 {
+    /**
+     * Get the container used to instantiate objects
+     *
+     */
+    public function container(): Container;
+
     /**
      * Get a stable hash that uniquely identifies the backend instance
      *
-     * @return string
      */
     public function getBackendHash(): string;
 
     /**
      * Get a DateFormatter for the backend's date format and timezone
      *
-     * @return DateFormatter
      */
     public function getDateFormatter(): DateFormatter;
 

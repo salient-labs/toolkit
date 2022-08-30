@@ -29,15 +29,7 @@ abstract class Facade implements IFacade
 
     private static function _load()
     {
-        if (is_a($service = static::getServiceName(), Container::class, true))
-        {
-            $container = $service::getGlobalContainer(...func_get_args());
-            if (is_a($container, $service))
-            {
-                return self::$Instances[static::class] = $container;
-            }
-            throw new RuntimeException("Global container already exists");
-        }
+        $service = static::getServiceName();
 
         if (Container::hasGlobalContainer())
         {
@@ -94,8 +86,6 @@ abstract class Facade implements IFacade
     }
 
     /**
-     * Pass static method calls to the instance behind the facade
-     *
      * @internal
      */
     final public static function __callStatic(string $name, array $arguments)

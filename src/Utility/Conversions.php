@@ -152,7 +152,7 @@ final class Conversions
     /**
      * Remove the directory and up to the given number of extensions from a path
      *
-     * @param $extLimit If set, remove extensions matching the regular
+     * @param int $extLimit If set, remove extensions matching the regular
      * expression `\.[^.\s]+$` unless `""`, `"."`, or `".."` would remain:
      * - `<0`: remove all extensions
      * - `>0`: remove up to the given number of extensions
@@ -226,7 +226,7 @@ final class Conversions
      * if `$array[$key]` is already set.
      * @return array
      * @throws UnexpectedValueException if `$key` already exists in `$array` and
-     * merging is not possible
+     * merging is not possible.
      */
     public function arrayValuesToChildArray(
         array $array,
