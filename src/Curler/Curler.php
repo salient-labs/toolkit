@@ -561,7 +561,7 @@ class Curler implements IReadable, IWritable
     }
 
     /**
-     * @deprecated Use {@see Env::debug()}
+     * @deprecated Use {@see \Lkrms\Utility\Environment::debug()}
      */
     public function getDebug(): bool
     {
@@ -646,7 +646,7 @@ class Curler implements IReadable, IWritable
     }
 
     /**
-     * @deprecated Use {@see Env::debug()}
+     * @deprecated Use {@see \Lkrms\Utility\Environment::debug()}
      */
     public function enableDebug()
     {
@@ -654,7 +654,7 @@ class Curler implements IReadable, IWritable
     }
 
     /**
-     * @deprecated Use {@see Env::debug()}
+     * @deprecated Use {@see \Lkrms\Utility\Environment::debug()}
      */
     public function disableDebug()
     {

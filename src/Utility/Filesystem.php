@@ -198,7 +198,7 @@ final class Filesystem
     }
 
     /**
-     * @deprecated Use {@see Composer::getClassPath()} instead
+     * @deprecated Use {@see \Lkrms\Utility\Composer::getClassPath()} instead
      */
     public function getClassPath(string $class): ?string
     {
@@ -206,7 +206,8 @@ final class Filesystem
     }
 
     /**
-     * @deprecated Use {@see Composer::getNamespacePath()} instead
+     * @deprecated Use {@see \Lkrms\Utility\Composer::getNamespacePath()}
+     * instead
      */
     public function getNamespacePath(string $namespace): ?string
     {

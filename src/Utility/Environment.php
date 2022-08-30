@@ -31,8 +31,8 @@ final class Environment
      * starting with `#` are ignored.
      *
      * @param string $filename The `.env` file to load.
-     * @param bool $apply If `true` (the default), {@see Env::apply()} will be
-     * called before the function returns.
+     * @param bool $apply If `true` (the default), {@see Environment::apply()}
+     * will be called before the function returns.
      * @throws RuntimeException if `$filename` cannot be opened
      * @throws UnexpectedValueException if `$filename` cannot be parsed
      */
@@ -195,8 +195,8 @@ final class Environment
     /**
      * Return an environment variable as an integer
      *
-     * Casts the return value of {@see Env::get()} as an `int`, returning `null`
-     * if `$name` is set but empty.
+     * Casts the return value of {@see Environment::get()} as an `int`,
+     * returning `null` if `$name` is set but empty.
      *
      * @param string $name The environment variable to retrieve.
      * @param int|null $default The value to return if `$name` is not set.
@@ -220,7 +220,7 @@ final class Environment
     /**
      * Return an environment variable as a list of strings
      *
-     * See {@see Env::get()} for details.
+     * See {@see Environment::get()} for details.
      *
      * @param string $name The environment variable to retrieve.
      * @param string[]|null $default The value to return if `$name` is not set.
