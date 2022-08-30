@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8a69a3e9cefadbb94d38e5ef4f5e6ae4",
+    "content-hash": "4ffd458c7d4060c21c5efcc098319447",
     "packages": [
         {
             "name": "adodb/adodb-php",
@@ -140,16 +140,16 @@
         },
         {
             "name": "lkrms/dice",
-            "version": "v4.0.3.2",
+            "version": "v4.0.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/Dice.git",
-                "reference": "8c0c13a017b0c1b4b279a85e7c2eeb485ff8c72b"
+                "reference": "66e1372115381f1c6d3831235216ac38c4e0b9e3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/Dice/zipball/8c0c13a017b0c1b4b279a85e7c2eeb485ff8c72b",
-                "reference": "8c0c13a017b0c1b4b279a85e7c2eeb485ff8c72b",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/66e1372115381f1c6d3831235216ac38c4e0b9e3",
+                "reference": "66e1372115381f1c6d3831235216ac38c4e0b9e3",
                 "shasum": ""
             },
             "require": {
@@ -177,9 +177,9 @@
                 "ioc"
             ],
             "support": {
-                "source": "https://github.com/lkrms/Dice/tree/v4.0.3.2"
+                "source": "https://github.com/lkrms/Dice/tree/v4.0.3.3"
             },
-            "time": "2022-08-21T15:59:52+00:00"
+            "time": "2022-08-30T01:16:04+00:00"
         },
         {
             "name": "psr/container",
@@ -2078,16 +2078,16 @@
         },
         {
             "name": "sebastian/type",
-            "version": "3.0.0",
+            "version": "3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/type.git",
-                "reference": "b233b84bc4465aff7b57cf1c4bc75c86d00d6dad"
+                "reference": "fb44e1cc6e557418387ad815780360057e40753e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/type/zipball/b233b84bc4465aff7b57cf1c4bc75c86d00d6dad",
-                "reference": "b233b84bc4465aff7b57cf1c4bc75c86d00d6dad",
+                "url": "https://api.github.com/repos/sebastianbergmann/type/zipball/fb44e1cc6e557418387ad815780360057e40753e",
+                "reference": "fb44e1cc6e557418387ad815780360057e40753e",
                 "shasum": ""
             },
             "require": {
@@ -2099,7 +2099,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.0-dev"
+                    "dev-master": "3.1-dev"
                 }
             },
             "autoload": {
@@ -2122,7 +2122,7 @@
             "homepage": "https://github.com/sebastianbergmann/type",
             "support": {
                 "issues": "https://github.com/sebastianbergmann/type/issues",
-                "source": "https://github.com/sebastianbergmann/type/tree/3.0.0"
+                "source": "https://github.com/sebastianbergmann/type/tree/3.1.0"
             },
             "funding": [
                 {
@@ -2130,7 +2130,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-03-15T09:54:48+00:00"
+            "time": "2022-08-29T06:55:37+00:00"
         },
         {
             "name": "sebastian/version",
