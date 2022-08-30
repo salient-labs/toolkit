@@ -75,8 +75,8 @@ trait TProvidable
      * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
      * values.
      * @param static|null $parent If the class implements
-     * {@see \Lkrms\Contract\INode}, pass `$parent` to the instance via
-     * {@see \Lkrms\Contract\INode::setParent()}.
+     * {@see \Lkrms\Contract\ITreeNode}, pass `$parent` to the instance via
+     * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return static
      */
     public static function fromProvider(
@@ -122,8 +122,8 @@ trait TProvidable
      * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
      * values.
      * @param static|null $parent If the class implements
-     * {@see \Lkrms\Contract\INode}, pass `$parent` to each instance via
-     * {@see \Lkrms\Contract\INode::setParent()}.
+     * {@see \Lkrms\Contract\ITreeNode}, pass `$parent` to each instance via
+     * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return iterable<static>
      */
     public static function listFromProvider(
@@ -198,6 +198,6 @@ trait TProvidable
         {
             return $container->context(get_class($provider));
         }
-        return $container ?? \Lkrms\Container\Container::getGlobal();
+        return $container ?? \Lkrms\Container\Container::getGlobalContainer();
     }
 }

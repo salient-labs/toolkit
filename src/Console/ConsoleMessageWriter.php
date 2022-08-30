@@ -285,8 +285,8 @@ abstract class ConsoleMessageWriter
      * @param string $msg1
      * @param string|null $msg2
      * @param Throwable|null $ex
-     * @param int $depth Passed to {@see Debug::getCaller()}. To print your
-     * caller's name instead of your own, set `$depth` to 1.
+     * @param int $depth Passed to {@see \Lkrms\Utility\Debugging::getCaller()}.
+     * To print your caller's name instead of your own, set `$depth` to 1.
      * @see ConsoleLevel::DEBUG
      */
     public static function debug(string $msg1, string $msg2 = null, Throwable $ex = null, int $depth = 0)
@@ -301,8 +301,8 @@ abstract class ConsoleMessageWriter
      * @param string $msg1
      * @param string|null $msg2
      * @param Throwable|null $ex
-     * @param int $depth Passed to {@see Debug::getCaller()}. To print your
-     * caller's name instead of your own, set `$depth` to 1.
+     * @param int $depth Passed to {@see \Lkrms\Utility\Debugging::getCaller()}.
+     * To print your caller's name instead of your own, set `$depth` to 1.
      * @see ConsoleLevel::DEBUG
      */
     public static function debugOnce(string $msg1, string $msg2 = null, Throwable $ex = null, int $depth = 0)

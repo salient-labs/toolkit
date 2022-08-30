@@ -9,9 +9,9 @@ use Lkrms\Facade\Env;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::handleErrors();
+Err::load();
 
-Env::load(__DIR__ . "/.env");
+Env::loadFile(__DIR__ . "/.env");
 
 $debugMode1 = Env::debug();
 $debugMode2 = Env::debug(false);

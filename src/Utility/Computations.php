@@ -73,7 +73,7 @@ final class Computations
      * @param string $string1
      * @param string $string2
      * @param bool $normalise If true, normalise the strings with
-     * {@see Convert::toNormal()} before comparing them.
+     * {@see Conversions::toNormal()} before comparing them.
      * @return float A value between `0` and `1`, where `0` means the strings
      * are identical, and `1` means they have no similarities.
      */
@@ -104,7 +104,7 @@ final class Computations
      * @param string $string1
      * @param string $string2
      * @param bool $normalise If true, normalise the strings with
-     * {@see Convert::toNormal()} before comparing them.
+     * {@see Conversions::toNormal()} before comparing them.
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no similarities, and `1` means they are identical.
      */

@@ -14,7 +14,7 @@ use Lkrms\Concern\TWritable;
 use Lkrms\Container\FactoryContainer;
 use Lkrms\Contract\IConstructible;
 use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\INode;
+use Lkrms\Contract\ITreeNode;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IReadable;
@@ -59,7 +59,7 @@ class ClosureBuilder
     /**
      * @var bool
      */
-    protected $IsNode;
+    protected $IsTreeNode;
 
     /**
      * Property names
@@ -252,7 +252,7 @@ class ClosureBuilder
         $this->IsWritable   = $writable;
         $this->IsExtensible = $extensible;
         $this->IsProvidable = $providable;
-        $this->IsNode       = $class->implementsInterface(INode::class);
+        $this->IsTreeNode   = $class->implementsInterface(ITreeNode::class);
 
         $propertyFilter = 0;
         $methodFilter   = 0;
@@ -410,9 +410,9 @@ class ClosureBuilder
      * @return Closure
      * ```php
      * // If the class implements IProvidable:
-     * closure(\Psr\Container\ContainerInterface $container, \Lkrms\Contract\IProvider $provider, array $array, callable $callback = null, \Lkrms\Contract\INode $parent = null)
+     * closure(\Psr\Container\ContainerInterface $container, \Lkrms\Contract\IProvider $provider, array $array, callable $callback = null, \Lkrms\Contract\ITreeNode $parent = null)
      * // Otherwise:
-     * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null, \Lkrms\Contract\INode $parent = null)
+     * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null, \Lkrms\Contract\ITreeNode $parent = null)
      * ```
      */
     public function getCreateFromSignatureClosure(array $keys): Closure
@@ -560,11 +560,11 @@ class ClosureBuilder
             };
         }
 
-        if ($this->IsNode)
+        if ($this->IsTreeNode)
         {
-            $closure = static function (Container $container, array $array, ?IProvider $provider, ?INode $parent) use ($closure)
+            $closure = static function (Container $container, array $array, ?IProvider $provider, ?ITreeNode $parent) use ($closure)
             {
-                /** @var INode */
+                /** @var ITreeNode */
                 $obj = $closure($container, $array, $provider);
 
                 if ($parent)
@@ -576,7 +576,7 @@ class ClosureBuilder
             };
         }
 
-        $closure = function (array $array, callable $callback = null, Container $container = null, IProvider $provider = null, INode $parent = null) use ($closure)
+        $closure = function (array $array, callable $callback = null, Container $container = null, IProvider $provider = null, ITreeNode $parent = null) use ($closure)
         {
             if (!$container)
             {
@@ -594,7 +594,7 @@ class ClosureBuilder
         if ($this->IsProvidable)
         {
             // Return a closure where $container and $provider are not optional
-            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null, INode $parent = null) use ($closure)
+            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null, ITreeNode $parent = null) use ($closure)
             {
                 return $closure($array, $callback, $container, $provider, $parent);
             };
@@ -609,9 +609,9 @@ class ClosureBuilder
      * @return Closure
      * ```php
      * // If the class implements IProvidable:
-     * closure(\Psr\Container\ContainerInterface $container, \Lkrms\Contract\IProvider $provider, array $array, callable $callback = null, \Lkrms\Contract\INode $parent = null)
+     * closure(\Psr\Container\ContainerInterface $container, \Lkrms\Contract\IProvider $provider, array $array, callable $callback = null, \Lkrms\Contract\ITreeNode $parent = null)
      * // Otherwise:
-     * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null, \Lkrms\Contract\INode $parent = null)
+     * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null, \Lkrms\Contract\ITreeNode $parent = null)
      * ```
      */
     public function getCreateFromClosure(): Closure
@@ -623,7 +623,7 @@ class ClosureBuilder
 
         if ($this->IsProvidable)
         {
-            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null, INode $parent = null)
+            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null, ITreeNode $parent = null)
             {
                 if ($callback)
                 {
@@ -637,7 +637,7 @@ class ClosureBuilder
         }
         else
         {
-            $closure = function (array $array, callable $callback = null, Container $container = null, INode $parent = null)
+            $closure = function (array $array, callable $callback = null, Container $container = null, ITreeNode $parent = null)
             {
                 if ($callback)
                 {

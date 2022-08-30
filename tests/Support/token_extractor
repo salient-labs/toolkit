@@ -20,7 +20,7 @@ use const some\namespace\ { ConstA, ConstB, ConstC };
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", dirname(__DIR__));
 
-Err::handleErrors();
+Err::load();
 
 $extractor = new TokenExtractor(__FILE__);
 print_r($extractor->getUseMap());

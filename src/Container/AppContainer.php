@@ -119,7 +119,7 @@ class AppContainer extends Container implements IReadable
 
         if (file_exists($env = $this->BasePath . "/.env"))
         {
-            Env::load($env);
+            Env::loadFile($env);
         }
         else
         {

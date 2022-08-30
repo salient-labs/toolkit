@@ -9,7 +9,7 @@ use Lkrms\Facade\Compute;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::handleErrors();
+Err::load();
 
 $distances = [
     "DELIVERY,milk delivery,false"  => Compute::textDistance("DELIVERY", "milk delivery", false),

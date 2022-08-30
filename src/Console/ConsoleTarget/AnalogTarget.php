@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Console\ConsoleTarget;
 
 /**
- * Write to Analog
+ * Write console messages to Analog
  *
  */
 class AnalogTarget extends ConsoleTarget

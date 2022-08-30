@@ -12,7 +12,7 @@ use Throwable;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::handleErrors();
+Err::load();
 
 $in = [
     "A_mapped"          => "value 1",

@@ -262,8 +262,9 @@ final class Conversions
      *
      * @param array $array The array to transform.
      * @param array $maps An array that maps `$key` to `$map`, where `$key` and
-     * `$map` are passed to {@see Convert::arrayValuesToChildArray()}.
-     * @param bool $merge Passed to {@see Convert::arrayValuesToChildArray()}.
+     * `$map` are passed to {@see Conversions::arrayValuesToChildArray()}.
+     * @param bool $merge Passed to
+     * {@see Conversions::arrayValuesToChildArray()}.
      * @return array
      */
     public function toNestedArrays(
@@ -760,7 +761,7 @@ final class Conversions
     }
 
     /**
-     * @deprecated Use {@see Convert::linesToLists()} instead
+     * @deprecated Use {@see Conversions::linesToLists()} instead
      */
     public function mergeLists(
         string $text,

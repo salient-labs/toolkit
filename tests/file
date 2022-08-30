@@ -10,7 +10,7 @@ use Lkrms\Facade\Test;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::handleErrors();
+Err::load();
 
 $file = fopen(__FILE__, "r");
 $url  = fopen("https://1.1.1.1/", "r");

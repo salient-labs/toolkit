@@ -17,7 +17,7 @@ use UnexpectedValueException;
 final class Environment
 {
     /**
-     * Load environment variables
+     * Load environment variables from a file
      *
      * Variables are loaded from the given .env file to `getenv()`, `$_ENV` and
      * `$_SERVER`. Variables already present in the environment are never
@@ -31,12 +31,12 @@ final class Environment
      * starting with `#` are ignored.
      *
      * @param string $filename The `.env` file to load.
-     * @param bool $apply If `true` (the default), {@see Env::apply()} will be
-     * called before the function returns.
+     * @param bool $apply If `true` (the default), {@see Environment::apply()}
+     * will be called before the function returns.
      * @throws RuntimeException if `$filename` cannot be opened
      * @throws UnexpectedValueException if `$filename` cannot be parsed
      */
-    public function load(string $filename, bool $apply = true): void
+    public function loadFile(string $filename, bool $apply = true): void
     {
         if (($lines = file($filename, FILE_IGNORE_NEW_LINES)) === false)
         {
@@ -195,8 +195,8 @@ final class Environment
     /**
      * Return an environment variable as an integer
      *
-     * Casts the return value of {@see Env::get()} as an `int`, returning `null`
-     * if `$name` is set but empty.
+     * Casts the return value of {@see Environment::get()} as an `int`,
+     * returning `null` if `$name` is set but empty.
      *
      * @param string $name The environment variable to retrieve.
      * @param int|null $default The value to return if `$name` is not set.
@@ -220,7 +220,7 @@ final class Environment
     /**
      * Return an environment variable as a list of strings
      *
-     * See {@see Env::get()} for details.
+     * See {@see Environment::get()} for details.
      *
      * @param string $name The environment variable to retrieve.
      * @param string[]|null $default The value to return if `$name` is not set.

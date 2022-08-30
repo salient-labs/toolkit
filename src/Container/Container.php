@@ -9,6 +9,7 @@ use Lkrms\Container\ContextContainer;
 use Lkrms\Contract\HasNoRequiredConstructorParameters;
 use Lkrms\Contract\IBindable;
 use Lkrms\Contract\IBindableSingleton;
+use Lkrms\Contract\IHasContainer;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 use UnexpectedValueException;
@@ -26,12 +27,12 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
     /**
      * @var bool|null
      */
-    private static $CreatingInstance;
+    private static $CreatingGlobal;
 
     /**
      * @var Container|null
      */
-    private static $Instance;
+    private static $Global;
 
     /**
      * @var Container|null
@@ -50,13 +51,16 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
 
     public function __construct()
     {
-        if (self::$CreatingInstance)
+        if (self::$CreatingGlobal)
         {
-            self::$CreatingInstance = null;
-            self::$Instance         = $this;
+            self::$CreatingGlobal = null;
+            self::$Global         = $this;
         }
 
-        $this->bindTo($this);
+        if (!($this instanceof ContextContainer))
+        {
+            $this->bindTo($this);
+        }
     }
 
     public function __clone()
@@ -69,11 +73,11 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
      */
     protected function bindTo(Container $container): void
     {
-        $subs  = [ContainerInterface::class => $this];
+        $subs  = [ContainerInterface::class => ($me = $this->me())];
         $class = static::class;
         do
         {
-            $subs[$class] = $this;
+            $subs[$class] = $me;
         }
         while (self::class != $class && ($class = get_parent_class($class)));
         $container->addRule("*", ["substitutions" => $subs]);
@@ -84,9 +88,9 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
      *
      * @return bool
      */
-    final public static function hasGlobal(): bool
+    final public static function hasGlobalContainer(): bool
     {
-        return !is_null(self::$Instance);
+        return !is_null(self::$Global);
     }
 
     /**
@@ -94,11 +98,11 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
      *
      * @return Container
      */
-    final public static function getGlobal(): Container
+    final public static function getGlobalContainer(): Container
     {
-        if (!is_null(self::$Instance))
+        if (!is_null(self::$Global))
         {
-            return self::$Instance;
+            return self::$Global;
         }
 
         $class = static::class;
@@ -107,10 +111,10 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
             $class = self::class;
         }
 
-        self::$CreatingInstance = true;
-        $instance = new $class(...func_get_args());
+        self::$CreatingGlobal = true;
+        $instance             = new $class(...func_get_args());
 
-        if ($instance !== self::$Instance)
+        if ($instance !== self::$Global)
         {
             throw new RuntimeException("Error creating global container");
         }
@@ -140,7 +144,13 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
      */
     public function get(string $id, ...$params)
     {
-        return $this->dice()->create($id, $params);
+        $shared   = $this->dice()->hasShared($id);
+        $instance = $this->dice()->create($id, $params);
+        if (!$shared && $instance instanceof IHasContainer && !$instance->isContainerSet())
+        {
+            $instance->setContainer($this->me());
+        }
+        return $instance;
     }
 
     /**
@@ -297,7 +307,7 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
      * @param string[] $exceptServices
      * @return $this
      */
-    public function bindable(string $id, ?array $services = null, ?array $exceptServices = null)
+    public function service(string $id, ?array $services = null, ?array $exceptServices = null)
     {
         if (!is_subclass_of($id, IBindable::class))
         {
@@ -334,16 +344,4 @@ class Container implements ContainerInterface, HasNoRequiredConstructorParameter
         return $this;
     }
 
-    /**
-     * Identical to bindable()
-     *
-     * @param string[] $services
-     * @param string[] $exceptServices
-     * @return $this
-     * @see Container::bindable()
-     */
-    public function service(string $id, ?array $services = null, ?array $exceptServices = null)
-    {
-        return $this->bindable($id, $services, $exceptServices);
-    }
 }

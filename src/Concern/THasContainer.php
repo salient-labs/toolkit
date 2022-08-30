@@ -21,7 +21,7 @@ trait THasContainer
 
     public function container(): Container
     {
-        return $this->Container ?: Container::getGlobal();
+        return $this->Container ?: Container::getGlobalContainer();
     }
 
     /**
