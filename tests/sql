@@ -5,14 +5,16 @@ namespace Lkrms\Tests;
 
 use Lkrms\Err\Err;
 use Lkrms\Facade\Sql;
+use Lkrms\Support\SqlQuery;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::handleErrors();
+Err::load();
 
-Sql::valueInList("record_id", function () { return "?"; }, $where, $var);
-Sql::valueInList("user_id", function () { return "?"; }, $where, $var, 12, 36, 7, 32);
-Sql::valueInList("session_id", function () { return "?"; }, $where, $var, '1000', '1001', '1002');
+$query = new SqlQuery(function () { return "?"; });
+Sql::valueInList($query, "record_id");
+Sql::valueInList($query, "user_id", 12, 36, 7, 32);
+Sql::valueInList($query, "session_id", '1000', '1001', '1002');
 
-var_dump([$where, $var]);
+var_dump($query);

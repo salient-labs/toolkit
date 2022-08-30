@@ -12,7 +12,7 @@ use Lkrms\Support\DateFormatter;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::handleErrors();
+Err::load();
 
 $data = [
     "user_id"       => 7654,

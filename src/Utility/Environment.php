@@ -17,7 +17,7 @@ use UnexpectedValueException;
 final class Environment
 {
     /**
-     * Load environment variables
+     * Load environment variables from a file
      *
      * Variables are loaded from the given .env file to `getenv()`, `$_ENV` and
      * `$_SERVER`. Variables already present in the environment are never
@@ -36,7 +36,7 @@ final class Environment
      * @throws RuntimeException if `$filename` cannot be opened
      * @throws UnexpectedValueException if `$filename` cannot be parsed
      */
-    public function load(string $filename, bool $apply = true): void
+    public function loadFile(string $filename, bool $apply = true): void
     {
         if (($lines = file($filename, FILE_IGNORE_NEW_LINES)) === false)
         {

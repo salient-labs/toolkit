@@ -23,7 +23,6 @@ parameters:
     - tests/file
     - tests/generate
     - tests/ioc
-    - tests/legacy
     - tests/lk-util
     - tests/Reflect/property_resolver
     - tests/Reflect/reflect
@@ -40,17 +39,8 @@ parameters:
   ignoreErrors:
     - "# has unknown class Curl(Multi)?Handle as its type\\.$#"
     -
-      message: "#^Class Lkrms\\\\[^\\s]+ not found\\.$#"
-      path: src/Utility/LegacyShims.php
-    -
       message: "#^(Closure|Callable.+) invoked with [1234] parameters?, 1 required\\.$#"
       path: src/Support/ClosureBuilder.php
-    -
-      message: "#^(Class |Instantiated class )Lkrms(\\\\[^\\s]+)+ not found\\.$#"
-      path: tests/legacy
-    -
-      message: "#^Call to static method [^\\s]+\\(\\) on an unknown class Lkrms\\\\[^\\s]+\\.$#"
-      path: tests/legacy
     -
       message: "#^Used (constant|function) [^\\s]+ not found\\.$#"
       path: tests/Support/token_extractor

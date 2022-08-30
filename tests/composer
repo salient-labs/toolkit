@@ -9,7 +9,7 @@ use Lkrms\Facade\Composer;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::handleErrors();
+Err::load();
 
 print_r([
     'Composer::getRootPackagePath()'    => Composer::getRootPackagePath(),

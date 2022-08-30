@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
-use Lkrms\Utility\SqlHelpers;
+use Lkrms\Support\SqlQuery;
 
 /**
- * A facade for SqlHelpers
+ * A facade for \Lkrms\Utility\Sql
  *
- * @method static mixed valueInList(string $field, callable $param, array &$where, array &$var, mixed ...$list) Add "<name> IN (<value>[,<value>])" unless a list of values is empty
+ * @method static void valueInList(SqlQuery $query, string $name, mixed ...$value) Add "<name> IN (<value>[,<value>])" to a SQL query unless a list of values is empty
  *
- * @uses SqlHelpers
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\SqlHelpers' --generate='Lkrms\Facade\Sql'
+ * @uses \Lkrms\Utility\Sql
+ * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\Sql' --generate='Lkrms\Facade\Sql'
  */
 final class Sql extends Facade
 {
@@ -22,6 +22,6 @@ final class Sql extends Facade
      */
     protected static function getServiceName(): string
     {
-        return SqlHelpers::class;
+        return \Lkrms\Utility\Sql::class;
     }
 }

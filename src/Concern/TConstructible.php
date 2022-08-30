@@ -11,7 +11,7 @@ use Psr\Container\ContainerInterface as Container;
 use UnexpectedValueException;
 
 /**
- * Implements IConstructible to convert arrays to instances
+ * Implements IConstructible to create instances of itself from arrays
  *
  * @see \Lkrms\Contract\IConstructible
  */
@@ -42,8 +42,8 @@ trait TConstructible
      * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
      * values.
      * @param static|null $parent If the class implements
-     * {@see \Lkrms\Contract\INode}, pass `$parent` to the instance via
-     * {@see \Lkrms\Contract\INode::setParent()}.
+     * {@see \Lkrms\Contract\ITreeNode}, pass `$parent` to the instance via
+     * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return static
      */
     public static function from(
@@ -89,8 +89,8 @@ trait TConstructible
      * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
      * values.
      * @param static|null $parent If the class implements
-     * {@see \Lkrms\Contract\INode}, pass `$parent` to each instance via
-     * {@see \Lkrms\Contract\INode::setParent()}.
+     * {@see \Lkrms\Contract\ITreeNode}, pass `$parent` to each instance via
+     * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return iterable<static>
      */
     public static function listFrom(

@@ -8,7 +8,7 @@ use Lkrms\Console\ConsoleColour;
 use Lkrms\Console\ConsoleLevel;
 
 /**
- * Base class for console targets
+ * Base class for console message targets
  *
  */
 abstract class ConsoleTarget

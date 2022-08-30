@@ -11,7 +11,7 @@ use Lkrms\Facade\File;
 use RuntimeException;
 
 /**
- * Write to a stream (e.g. a file or TTY)
+ * Write console messages to a stream (e.g. a file or TTY)
  *
  */
 class StreamTarget extends ConsoleTarget

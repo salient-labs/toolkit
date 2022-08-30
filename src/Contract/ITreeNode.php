@@ -8,7 +8,7 @@ namespace Lkrms\Contract;
  * May have children or a parent of the same type
  *
  */
-interface INode
+interface ITreeNode
 {
     /**
      * Set or unset the parent from which the instance descends

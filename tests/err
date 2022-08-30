@@ -9,8 +9,7 @@ use UnexpectedValueException;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-Err::handleErrors();
-
-Err::silenceErrorsInPaths('@^' . preg_quote(dirname(__DIR__), "@") . '/vendor/adodb/adodb-php/@');
+Err::load();
+Err::silencePaths(__DIR__ . '/../vendor/adodb/adodb-php');
 
 throw new UnexpectedValueException("Well, this was unexpected");

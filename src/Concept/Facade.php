@@ -10,13 +10,13 @@ use Lkrms\Contract\IFacade;
 use RuntimeException;
 
 /**
- * Base class for facades
+ * A static interface to an instance of the underlying class
  *
  */
 abstract class Facade implements IFacade
 {
     /**
-     * Return the class or interface to instantiate behind the facade
+     * Get the name of the underlying class
      *
      * @return string
      */
@@ -31,21 +31,29 @@ abstract class Facade implements IFacade
     {
         if (is_a($service = static::getServiceName(), Container::class, true))
         {
-            $container = $service::getGlobal(...func_get_args());
+            $container = $service::getGlobalContainer(...func_get_args());
             if (is_a($container, $service))
             {
                 return self::$Instances[static::class] = $container;
             }
             throw new RuntimeException("Global container already exists");
         }
-        $container = Container::getGlobal();
 
-        if (($instance = self::$Instances[static::class] = $container->get($service, ...func_get_args())) instanceof HasFacade)
+        if (Container::hasGlobalContainer())
+        {
+            $instance = Container::getGlobalContainer()->get($service, ...func_get_args());
+        }
+        else
+        {
+            $instance = new $service(...func_get_args());
+        }
+
+        if ($instance instanceof HasFacade)
         {
             $instance->setFacade(static::class);
         }
 
-        return $instance;
+        return self::$Instances[static::class] = $instance;
     }
 
     /**
@@ -67,6 +75,14 @@ abstract class Facade implements IFacade
         }
 
         return self::_load(...func_get_args());
+    }
+
+    /**
+     * @internal
+     */
+    final public static function unload(): void
+    {
+        unset(self::$Instances[static::class]);
     }
 
     /**

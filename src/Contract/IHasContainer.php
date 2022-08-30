@@ -18,7 +18,7 @@ interface IHasContainer
      * If the instance wasn't created by a container, the current global
      * container will be returned instead.
      *
-     * @see Container::getGlobal()
+     * @see Container::getGlobalContainer()
      */
     public function container(): Container;
 

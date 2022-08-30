@@ -10,7 +10,7 @@ use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
 
 /**
- * A facade for Whoops
+ * A static interface to an instance of Whoops\Run
  *
  */
 final class Err implements IFacade
@@ -20,70 +20,70 @@ final class Err implements IFacade
      */
     private static $Whoops;
 
+    /**
+     * @var bool|null
+     */
+    private static $WhoopsIsRegistered;
+
     public static function isLoaded(): bool
     {
-        return !is_null(self::$Whoops);
+        return self::$Whoops && self::$WhoopsIsRegistered;
     }
 
     /**
-     * Create the underlying Whoops\Run instance and register it as the error
-     * and exception handler for PHP
+     * Register Whoops as the error and exception handler for PHP
      *
-     * @param string|string[]|null $silenceErrorsInPaths
      * @return Run
-     * @see Err::silenceErrorsInPaths()
      */
-    public static function load($silenceErrorsInPaths = null)
+    public static function load()
     {
-        if (self::$Whoops)
+        if (self::$Whoops && self::$WhoopsIsRegistered)
         {
             throw new RuntimeException(static::class . " already loaded");
         }
-
-        self::$Whoops = new Run();
-
-        if (PHP_SAPI == "cli")
+        elseif (!self::$Whoops)
         {
-            self::$Whoops->pushHandler(new CliHandler());
+            self::$Whoops = new Run();
+            if (PHP_SAPI == "cli")
+            {
+                self::$Whoops->pushHandler(new CliHandler());
+            }
+            else
+            {
+                self::$Whoops->pushHandler(new PrettyPageHandler());
+            }
         }
-        else
-        {
-            /** @todo Extend PrettyPageHandler */
-            self::$Whoops->pushHandler(new PrettyPageHandler());
-        }
-
-        if ($silenceErrorsInPaths)
-        {
-            self::silenceErrorsInPaths($silenceErrorsInPaths);
-        }
-
         self::$Whoops->register();
+        self::$WhoopsIsRegistered = true;
         return self::$Whoops;
     }
 
+    public static function unload(): void
+    {
+        if (self::$Whoops && self::$WhoopsIsRegistered)
+        {
+            self::$Whoops->unregister();
+            self::$WhoopsIsRegistered = false;
+        }
+    }
+
     /**
-     * @return Run|null
+     * @return Run
      */
     public static function getInstance()
     {
-        self::assertIsLoaded();
-        return self::$Whoops;
+        if (self::$Whoops && self::$WhoopsIsRegistered)
+        {
+            return self::$Whoops;
+        }
+        return self::load();
     }
 
     /**
-     * @param string|string[]|null $patterns One or multiple regex patterns for
-     * files where `E_STRICT`, `E_DEPRECATED` and `E_USER_DEPRECATED` errors
-     * will be silenced (e.g. your project's `vendor` directory).
-     * @return void
-     * @deprecated Use {@see Err::silencePaths()}
+     * @param ...$paths One or more paths where `E_STRICT`, `E_DEPRECATED` and
+     * `E_USER_DEPRECATED` errors will be silenced (e.g. your project's `vendor`
+     * directory).
      */
-    public static function silenceErrorsInPaths($patterns): void
-    {
-        self::assertIsLoaded();
-        self::$Whoops->silenceErrorsInPaths($patterns,
-            E_STRICT | E_DEPRECATED | E_USER_DEPRECATED);
-    }
-
     public static function silencePaths(string ...$paths): void
     {
         self::assertIsLoaded();
@@ -108,7 +108,7 @@ final class Err implements IFacade
 
     private static function assertIsLoaded(): void
     {
-        if (!self::$Whoops)
+        if (!self::$Whoops || !self::$WhoopsIsRegistered)
         {
             throw new RuntimeException(static::class . " not loaded");
         }
@@ -116,30 +116,6 @@ final class Err implements IFacade
 
     private function __construct()
     {
-    }
-
-    /**
-     * Similar to load(), but can be called after the underlying Whoops\Run
-     * instance has been registered
-     *
-     * @param string|string[]|null $silenceInPaths
-     * @return Run
-     * @see Err::load()
-     * @see Err::silenceErrorsInPaths()
-     */
-    public static function handleErrors($silenceInPaths = null)
-    {
-        if (!self::$Whoops)
-        {
-            return self::load($silenceInPaths);
-        }
-
-        if ($silenceInPaths)
-        {
-            self::silenceErrorsInPaths($silenceInPaths);
-        }
-
-        return self::$Whoops;
     }
 
 }
