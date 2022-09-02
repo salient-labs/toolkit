@@ -337,4 +337,22 @@ class Container implements IContainer, ContainerInterface
         return $this;
     }
 
+    public function call(callable $callback)
+    {
+        $container = null;
+        if (self::hasGlobalContainer())
+        {
+            $container = self::getGlobalContainer();
+        }
+        self::setGlobalContainer($this);
+        try
+        {
+            return $callback($this);
+        }
+        finally
+        {
+            self::setGlobalContainer($container);
+        }
+    }
+
 }

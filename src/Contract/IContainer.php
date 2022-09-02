@@ -120,4 +120,14 @@ interface IContainer extends ContainerInterface
      */
     public function instance(string $id, $instance);
 
+    /**
+     * Make this the global container while running the given callback
+     *
+     * Even if `$callback` throws an exception, the previous global container
+     * will be restored before this method returns.
+     *
+     * @return mixed The callback's return value.
+     */
+    public function call(callable $callback);
+
 }
