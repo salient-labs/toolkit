@@ -32,6 +32,27 @@ class Container implements IContainer, ContainerInterface
      */
     private $Dice;
 
+    /**
+     * @var null|string
+     */
+    private $Context;
+
+    /**
+     * Whenever `inContextOf($id)` clones the container, `$id` is pushed onto
+     * the end
+     *
+     * @var string[]
+     */
+    private $ContextStack = [];
+
+    /**
+     * When an IBindable class is bound to the container,
+     * `$this->ServiceStack[$name] = true` is applied
+     *
+     * @var array<string,true>
+     */
+    private $ServiceStack = [];
+
     public function __construct()
     {
         $this->load();
@@ -51,6 +72,17 @@ class Container implements IContainer, ContainerInterface
             $dice = $dice->addShared($class, $this);
         }
         while (self::class != $class && ($class = get_parent_class($class)));
+        $dice = $dice->addCallback(
+            "*",
+            function (object $instance)
+            {
+                if ($instance instanceof ReceivesContainer)
+                {
+                    $instance->setContainer($this);
+                }
+                return $instance;
+            }
+        );
     }
 
     final public static function hasGlobalContainer(): bool
@@ -84,13 +116,7 @@ class Container implements IContainer, ContainerInterface
 
     public function get(string $id, ...$params)
     {
-        $shared   = $this->dice()->hasShared($id);
-        $instance = $this->dice()->create($id, $params);
-        if (!$shared && $instance instanceof ReceivesContainer)
-        {
-            $instance->setContainer($this);
-        }
-        return $instance;
+        return $this->dice()->create($id, $params);
     }
 
     public function getName(string $id): string
@@ -122,10 +148,6 @@ class Container implements IContainer, ContainerInterface
         {
             $dice = & $this->dice();
         }
-
-        // Propagating rules to subclasses makes contextual bindings difficult
-        // to apply and debug, so disable inheritance
-        $rule["inherit"] = false;
 
         $_dice = $dice->addRule($id, $rule);
         $this->checkRule($_dice->getRule($id));
@@ -177,7 +199,27 @@ class Container implements IContainer, ContainerInterface
 
     public function inContextOf(string $id): Container
     {
-        $dice = $this->dice();
+        $dice = $cleanDice = $this->dice();
+
+        // If $id implements IBindable and hasn't been bound to the container
+        // yet, add bindings for everything except its services, which may
+        // resolve to another provider
+        $serviceApplied = false;
+        if (is_subclass_of($id, IBindable::class) && !($this->ServiceStack[$id] ?? null))
+        {
+            $this->applyService($id, [], null, $dice);
+            // If nothing changed, add $id to the current service stack,
+            // otherwise add it to the new container's stack
+            if ($dice === $cleanDice)
+            {
+                $this->ServiceStack[$id] = true;
+            }
+            else
+            {
+                $serviceApplied = true;
+            }
+        }
+
         if (!$dice->hasRule($id) ||
             empty($subs = $dice->getRule($id)["substitutions"] ?? null))
         {
@@ -186,24 +228,21 @@ class Container implements IContainer, ContainerInterface
 
         $this->applyBindings($subs, $dice);
 
-        if ($dice === $this->dice())
+        if ($dice === $cleanDice)
         {
             return $this;
         }
 
-        $instance       = clone $this;
-        $instance->Dice = $dice;
+        $instance          = clone $this;
+        $instance->Dice    = $dice;
+        $instance->Context = $instance->ContextStack[] = $id;
+        if ($serviceApplied) { $instance->ServiceStack[$id] = true; }
         $instance->load();
         return $instance;
     }
 
-    /**
-     * @param array $customRule Dice-compatible rules may be given here.
-     * @return $this
-     */
-    public function bind(string $id, string $instanceOf = null, array $constructParams = null, array $shareInstances = null, array $customRule = [])
+    private function _bind(string $id, ?string $instanceOf, ?array $constructParams, ?array $shareInstances, array $rule = []): void
     {
-        $rule = $customRule;
         if (!is_null($instanceOf))
         {
             $rule["instanceOf"] = $instanceOf;
@@ -217,23 +256,23 @@ class Container implements IContainer, ContainerInterface
             $rule["shareInstances"] = array_merge($rule["shareInstances"] ?? [], $shareInstances);
         }
         $this->addRule($id, $rule);
+    }
+
+    /**
+     * @return $this
+     */
+    public function bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
+    {
+        $this->_bind($id, $instanceOf, $constructParams, $shareInstances);
         return $this;
     }
 
     /**
-     * @param array $customRule Dice-compatible rules may be given here.
      * @return $this
      */
-    public function singleton(string $id, string $instanceOf = null, array $constructParams = null, array $shareInstances = null, array $customRule = [])
+    public function singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
     {
-        $customRule["shared"] = true;
-        $this->bind(
-            $id,
-            $instanceOf,
-            $constructParams,
-            $shareInstances,
-            $customRule
-        );
+        $this->_bind($id, $instanceOf, $constructParams, $shareInstances, ["shared" => true]);
         return $this;
     }
 
@@ -242,16 +281,27 @@ class Container implements IContainer, ContainerInterface
      * @param null|string[] $exceptServices
      * @return $this
      */
-    public function service(string $id, ?array $services = null, ?array $exceptServices = null)
+    public function service(string $id, ?array $services = null, ?array $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null)
     {
         if (!is_subclass_of($id, IBindable::class))
         {
             throw new UnexpectedValueException($id . " does not implement " . IBindable::class);
         }
+        $this->applyService($id, $services, $exceptServices);
+        $this->ServiceStack[$id] = true;
+        return $this;
+    }
+
+    private function applyService(string $id, ?array $services = null, ?array $exceptServices = null, Dice & $dice = null): void
+    {
+        if (is_null($dice))
+        {
+            $dice = & $this->dice();
+        }
 
         if (is_subclass_of($id, IBindableSingleton::class))
         {
-            $this->singleton($id);
+            $this->addRule($id, ["shared" => true], $dice);
         }
 
         $bindable = $id::getBindable();
@@ -268,14 +318,22 @@ class Container implements IContainer, ContainerInterface
         }
         foreach ($bindable as $service)
         {
-            $this->bind($service, $id);
+            $this->addRule($service, ["instanceOf" => $id], $dice);
         }
 
         if ($subs = $id::getBindings())
         {
-            $this->addRule($id, ["substitutions" => $subs]);
+            $this->addRule($id, ["substitutions" => $subs], $dice);
         }
+    }
 
+    /**
+     * @return $this
+     */
+    public function instance(string $id, $instance)
+    {
+        $dice = & $this->dice();
+        $dice = $dice->addShared($id, $instance);
         return $this;
     }
 

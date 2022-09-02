@@ -6,6 +6,10 @@ namespace Lkrms\Contract;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * Provides a PSR-11 service container with support for contextual binding
+ *
+ */
 interface IContainer extends ContainerInterface
 {
     public function __construct();
@@ -26,7 +30,7 @@ interface IContainer extends ContainerInterface
      * Set (or unset) the global container
      *
      */
-    public static function setGlobalContainer(?IContainer $container);
+    public static function setGlobalContainer(?IContainer $container): ?IContainer;
 
     /**
      * Get a copy of the container where the contextual bindings of the given
@@ -81,7 +85,7 @@ interface IContainer extends ContainerInterface
      *
      * @return $this
      */
-    public function bind(string $id, string $instanceOf = null, array $constructParams = null, array $shareInstances = null);
+    public function bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
 
     /**
      * Add a shared binding to the container
@@ -94,7 +98,7 @@ interface IContainer extends ContainerInterface
      *
      * @return $this
      */
-    public function singleton(string $id, string $instanceOf = null, array $constructParams = null, array $shareInstances = null);
+    public function singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
 
     /**
      * Add bindings to the container for an IBindable implementation and its
@@ -107,6 +111,13 @@ interface IContainer extends ContainerInterface
      * @param null|string[] $exceptServices
      * @return $this
      */
-    public function service(string $id, ?array $services = null, ?array $exceptServices = null);
+    public function service(string $id, ?array $services = null, ?array $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null);
+
+    /**
+     * Register an existing instance as a shared binding
+     *
+     * @return $this
+     */
+    public function instance(string $id, $instance);
 
 }

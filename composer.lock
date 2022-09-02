@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4ffd458c7d4060c21c5efcc098319447",
+    "content-hash": "49f24e1bbc1f7b85730419cf96ca0fea",
     "packages": [
         {
             "name": "adodb/adodb-php",
@@ -140,16 +140,16 @@
         },
         {
             "name": "lkrms/dice",
-            "version": "v4.0.3.3",
+            "version": "v4.0.3.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/Dice.git",
-                "reference": "66e1372115381f1c6d3831235216ac38c4e0b9e3"
+                "reference": "d3518521da2304e32e2e42ee7688a7cd6fc7dd97"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/Dice/zipball/66e1372115381f1c6d3831235216ac38c4e0b9e3",
-                "reference": "66e1372115381f1c6d3831235216ac38c4e0b9e3",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/d3518521da2304e32e2e42ee7688a7cd6fc7dd97",
+                "reference": "d3518521da2304e32e2e42ee7688a7cd6fc7dd97",
                 "shasum": ""
             },
             "require": {
@@ -177,9 +177,9 @@
                 "ioc"
             ],
             "support": {
-                "source": "https://github.com/lkrms/Dice/tree/v4.0.3.3"
+                "source": "https://github.com/lkrms/Dice/tree/v4.0.3.5"
             },
-            "time": "2022-08-30T01:16:04+00:00"
+            "time": "2022-09-02T06:43:54+00:00"
         },
         {
             "name": "psr/container",

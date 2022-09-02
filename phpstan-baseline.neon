@@ -21,7 +21,12 @@ parameters:
 			path: src/Container/CliAppContainer.php
 
 		-
-			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			message: "#^Property Lkrms\\\\Container\\\\Container\\:\\:\\$Context is never read, only written\\.$#"
+			count: 1
+			path: src/Container/Container.php
+
+		-
+			message: "#^Property Lkrms\\\\Container\\\\Container\\:\\:\\$ContextStack is never read, only written\\.$#"
 			count: 1
 			path: src/Container/Container.php
 
