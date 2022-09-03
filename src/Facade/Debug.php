@@ -11,7 +11,7 @@ use Lkrms\Utility\Debugging;
  * A facade for Debugging
  *
  * @method static array getCaller(int $depth = 0) Use debug_backtrace to get information about the (caller's) caller
- * @method static mixed setFacade(string $name)
+ * @method static Debugging setFacade(string $name) Called immediately after instantiation by a facade
  *
  * @uses Debugging
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\Debugging' --generate='Lkrms\Facade\Debug'
