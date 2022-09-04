@@ -78,6 +78,14 @@ abstract class Facade implements IFacade
     }
 
     /**
+     * Clear the underlying instances of all facades
+     */
+    final public static function unloadAll(): void
+    {
+        self::$Instances = [];
+    }
+
+    /**
      * @internal
      */
     final public static function getInstance()
