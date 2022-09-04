@@ -74,11 +74,11 @@ class Container implements IContainer, ContainerInterface
         while (self::class != $class && ($class = get_parent_class($class)));
         $dice = $dice->addCallback(
             "*",
-            function (object $instance)
+            function (object $instance, string $name)
             {
                 if ($instance instanceof ReceivesContainer)
                 {
-                    $instance->setContainer($this);
+                    $instance->setContainer($this, $name);
                 }
                 return $instance;
             }
