@@ -112,7 +112,7 @@ class GenerateSyncEntityClass extends CliCommand
 
     protected function run(string ...$args)
     {
-        $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
+        $namespace  = explode("\\", ltrim($this->getOptionValue("class"), "\\"));
         $class      = array_pop($namespace);
         $namespace  = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
         $fqcn       = $namespace ? $namespace . "\\" . $class : $class;

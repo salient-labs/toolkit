@@ -8,7 +8,7 @@ use Lkrms\Concept\Facade;
 use Lkrms\Utility\Computations;
 
 /**
- * A facade for Computations
+ * A facade for \Lkrms\Utility\Computations
  *
  * @method static Computations load() Load and return an instance of the underlying `Computations` class
  * @method static Computations getInstance() Return the underlying `Computations` instance

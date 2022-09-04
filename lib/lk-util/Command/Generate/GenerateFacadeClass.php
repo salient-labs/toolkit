@@ -101,12 +101,12 @@ class GenerateFacadeClass extends GenerateCommand
 
     protected function run(string ...$args)
     {
-        $namespace = explode("\\", trim($this->getOptionValue("class"), "\\"));
+        $namespace = explode("\\", ltrim($this->getOptionValue("class"), "\\"));
         $class     = array_pop($namespace);
         $namespace = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
         $fqcn      = $namespace ? $namespace . "\\" . $class : $class;
 
-        $facadeNamespace = explode("\\", trim($this->getOptionValue("generate"), "\\"));
+        $facadeNamespace = explode("\\", ltrim($this->getOptionValue("generate"), "\\"));
         $facade          = array_pop($facadeNamespace);
         $facadeNamespace = implode("\\", $facadeNamespace) ?: Env::get("FACADE_NAMESPACE", $namespace);
         $facadeFqcn      = $facadeNamespace ? $facadeNamespace . "\\" . $facade : $facade;
@@ -116,12 +116,12 @@ class GenerateFacadeClass extends GenerateCommand
         $this->OutputNamespace = $facadeNamespace;
         $this->ClassPrefix     = $classPrefix;
 
-        $extends = $this->getFqcnAlias(ltrim(Facade::class, "\\"), "Facade");
+        $extends = $this->getFqcnAlias(Facade::class, "Facade");
         $service = $this->getFqcnAlias($fqcn, $class);
 
         $package  = $this->getOptionValue("package");
         $desc     = $this->getOptionValue("desc");
-        $desc     = is_null($desc) ? "A facade for $service" : $desc;
+        $desc     = is_null($desc) ? "A facade for $classPrefix$fqcn" : $desc;
         $declared = $this->getOptionValue("declared");
 
         if (!$fqcn)
@@ -175,10 +175,11 @@ class GenerateFacadeClass extends GenerateCommand
 
         $typeNameCallback = function (string $name, bool $returnFqcn = false) use ($typeMap, &$methodFile): ?string
         {
-            $name  = trim($name, "\\");
-            $alias = $typeMap[$methodFile][strtolower($name)] ?? null;
+            $alias = $typeMap[$methodFile][ltrim(strtolower($name), "\\")] ?? null;
             return ($alias ? $this->getFqcnAlias($name, $alias, $returnFqcn) : null)
-                ?: (!Test::isPhpReservedWord($name) ? $this->getFqcnAlias($name, null, $returnFqcn) : null);
+                ?: (Test::isPhpReservedWord($name)
+                    ? ($returnFqcn ? $name : null)
+                    : $this->getFqcnAlias($name, null, $returnFqcn));
         };
         $phpDocTypeCallback = function (string $type) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback): string
         {
@@ -247,7 +248,7 @@ class GenerateFacadeClass extends GenerateCommand
                         $type = $service;
                         break;
                     case 'self':
-                        $type = $typeNameCallback($_method->getDeclaringClass()->getName());
+                        $type = $typeNameCallback($_method->getDeclaringClass()->getName(), true);
                         break;
                 }
                 $summary = $phpDoc->Summary ?? null;
@@ -284,8 +285,8 @@ class GenerateFacadeClass extends GenerateCommand
                 . ($_method->isConstructor()
                     ? " $summary"
                     : ($summary
-                        ? " $summary (see {@see $service::$method()})"
-                        : " See {@see $service::$method()}")));
+                        ? " $summary (see {@see " . $typeNameCallback($_method->getDeclaringClass()->getName(), true) . "::$method()})"
+                        : " See {@see " . $typeNameCallback($_method->getDeclaringClass()->getName(), true) . "::$method()}")));
 
             if ($_method->isConstructor())
             {

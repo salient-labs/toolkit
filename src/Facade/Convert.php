@@ -14,7 +14,7 @@ use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Conversions;
 
 /**
- * A facade for Conversions
+ * A facade for \Lkrms\Utility\Conversions
  *
  * @method static Conversions load() Load and return an instance of the underlying `Conversions` class
  * @method static Conversions getInstance() Return the underlying `Conversions` instance

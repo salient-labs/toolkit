@@ -8,7 +8,7 @@ use Lkrms\Concept\Facade;
 use Lkrms\Utility\System;
 
 /**
- * A facade for System
+ * A facade for \Lkrms\Utility\System
  *
  * @method static System load() Load and return an instance of the underlying `System` class
  * @method static System getInstance() Return the underlying `System` instance

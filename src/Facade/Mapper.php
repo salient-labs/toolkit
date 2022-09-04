@@ -10,7 +10,7 @@ use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ArrayMapper;
 
 /**
- * A facade for ArrayMapper
+ * A facade for \Lkrms\Support\ArrayMapper
  *
  * @method static ArrayMapper load() Load and return an instance of the underlying `ArrayMapper` class
  * @method static ArrayMapper getInstance() Return the underlying `ArrayMapper` instance

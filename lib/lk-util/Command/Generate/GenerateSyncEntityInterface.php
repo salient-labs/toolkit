@@ -118,7 +118,7 @@ class GenerateSyncEntityInterface extends CliCommand
             "delete-list" => SyncOperation::DELETE_LIST,
         ];
 
-        $namespace  = explode("\\", trim($this->getOptionValue("class"), "\\"));
+        $namespace  = explode("\\", ltrim($this->getOptionValue("class"), "\\"));
         $class      = array_pop($namespace);
         $namespace  = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
         $fqcn       = $namespace ? $namespace . "\\" . $class : $class;

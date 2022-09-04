@@ -88,7 +88,7 @@ final class Composer
      */
     public function getClassPath(string $class): ?string
     {
-        $class = trim($class, "\\");
+        $class = ltrim($class, "\\");
 
         foreach (ClassLoader::getRegisteredLoaders() as $loader)
         {
@@ -109,7 +109,7 @@ final class Composer
      */
     public function getNamespacePath(string $namespace): ?string
     {
-        $namespace = trim($namespace, "\\");
+        $namespace = ltrim($namespace, "\\");
         $prefixes  = [];
 
         foreach (ClassLoader::getRegisteredLoaders() as $loader)
