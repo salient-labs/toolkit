@@ -8,7 +8,7 @@ namespace Lkrms\Contract;
  * Provides a static interface to an instance of an underlying class
  *
  * @see \Lkrms\Concept\Facade
- * @see \Lkrms\Contract\HasFacade
+ * @see \Lkrms\Contract\ReceivesFacade
  */
 interface IFacade
 {
@@ -24,8 +24,8 @@ interface IFacade
      * If called with arguments, they are passed to the constructor of the
      * underlying class.
      *
-     * If the underlying class implements {@see HasFacade}, the name of the
-     * facade is passed to its {@see HasFacade::setFacade()} method.
+     * If the underlying class implements {@see ReceivesFacade}, the name of the
+     * facade is passed to its {@see ReceivesFacade::setFacade()} method.
      *
      * @throws \RuntimeException if an underlying instance has already been
      * loaded.

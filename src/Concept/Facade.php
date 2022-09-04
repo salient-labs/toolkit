@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Lkrms\Concept;
 
 use Lkrms\Container\Container;
-use Lkrms\Contract\HasFacade;
 use Lkrms\Contract\IFacade;
+use Lkrms\Contract\ReceivesFacade;
 use RuntimeException;
 
 /**
- * A static interface to an instance of the underlying class
+ * A static interface to an instance of an underlying class
  *
  */
 abstract class Facade implements IFacade
@@ -40,7 +40,7 @@ abstract class Facade implements IFacade
             $instance = new $service(...func_get_args());
         }
 
-        if ($instance instanceof HasFacade)
+        if ($instance instanceof ReceivesFacade)
         {
             $instance->setFacade(static::class);
         }

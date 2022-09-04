@@ -13,7 +13,7 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * Implements IProvidable to represent the state of an external entity
+ * Implements IProvidable to represent an external entity
  *
  * @see \Lkrms\Contract\IProvidable
  */
@@ -24,26 +24,18 @@ trait TProvidable
      */
     private $_ProvidedBy;
 
-    /**
-     * @return $this
-     */
     protected function clearProvider()
     {
         $this->_ProvidedBy = null;
-        return $this;
     }
 
-    /**
-     * @return $this
-     */
-    public function setProvider(IProvider $provider)
+    public function setProvider(IProvider $provider): void
     {
         if ($this->_ProvidedBy)
         {
             throw new RuntimeException("Provider already set");
         }
         $this->_ProvidedBy = $provider;
-        return $this;
     }
 
     public function provider(): ?IProvider

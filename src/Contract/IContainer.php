@@ -7,7 +7,7 @@ namespace Lkrms\Contract;
 use Psr\Container\ContainerInterface;
 
 /**
- * Provides a PSR-11 service container with support for contextual binding
+ * A service container with support for contextual bindings
  *
  */
 interface IContainer extends ContainerInterface
@@ -34,13 +34,13 @@ interface IContainer extends ContainerInterface
 
     /**
      * Get a copy of the container where the contextual bindings of the given
-     * class or interface are applied
+     * class or interface have been applied to the default context
      *
      */
     public function inContextOf(string $id): IContainer;
 
     /**
-     * Create a new instance of the given class or interface, or retrieve a
+     * Create a new instance of the given class or interface, or return a
      * shared instance created earlier
      *
      * @template T
@@ -54,7 +54,7 @@ interface IContainer extends ContainerInterface
     public function get(string $id, ...$params);
 
     /**
-     * Resolve the given class or interface to a concrete class
+     * Resolve the given class or interface to a concrete class name
      *
      * Returns `$id` if nothing has been bound to it in the container.
      *
@@ -62,7 +62,7 @@ interface IContainer extends ContainerInterface
     public function getName(string $id): string;
 
     /**
-     * Return true if the given class or interface can be resolved to a concrete
+     * Return true if the given class or interface resolves to a concrete
      * class that actually exists
      *
      * If `has($id)` returns `false`, `get($id)` must throw a
@@ -107,6 +107,8 @@ interface IContainer extends ContainerInterface
      * A shared binding will be added for `$id` if it implements
      * {@see IBindableSingleton}.
      *
+     * @param string $id The name of a class that implements {@see IBindable} or
+     * {@see IBindableSingleton}.
      * @param null|string[] $services
      * @param null|string[] $exceptServices
      * @return $this
@@ -114,7 +116,7 @@ interface IContainer extends ContainerInterface
     public function service(string $id, ?array $services = null, ?array $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null);
 
     /**
-     * Register an existing instance as a shared binding
+     * Add an existing instance to the container as a shared binding
      *
      * @return $this
      */

@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Contract;
 
 /**
- * Represents the state of an external entity
+ * Can be created by an IProvider to represent an external entity
  *
- * Instances are bound to their {@see IProvider} after being instantiated by its
- * service container.
  */
 interface IProvidable
 {
@@ -19,14 +17,12 @@ interface IProvidable
     public function provider(): ?IProvider;
 
     /**
-     * Bind the entity to its provider
+     * Called immediately after instantiation by a provider's service container
      *
-     * Calling this method more than once per instance should raise a
-     * `RuntimeException`.
-     *
-     * @return $this
+     * @throws \RuntimeException if the provider has already been set for this
+     * instance.
      */
-    public function setProvider(IProvider $provider);
+    public function setProvider(IProvider $provider): void;
 
     /**
      * @param array<int|string,int|string|array<int,int|string>>|null $keyMap
