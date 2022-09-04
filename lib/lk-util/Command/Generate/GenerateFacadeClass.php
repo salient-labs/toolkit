@@ -212,9 +212,7 @@ class GenerateFacadeClass extends GenerateCommand
         $methods = [];
         foreach ($_methods as $_method)
         {
-            $phpDoc = (($docBlock = $_method->getDocComment())
-                ? new PhpDocParser($docBlock)
-                : null);
+            $phpDoc          = PhpDocParser::fromDocBlocks(Reflect::getAllMethodDocComments($_method));
             $methodFile      = $_method->getFileName();
             $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
 
@@ -289,7 +287,6 @@ class GenerateFacadeClass extends GenerateCommand
         }
         sort($imports);
 
-        unset($docBlock);
         $docBlock[] = "/**";
         if ($desc)
         {

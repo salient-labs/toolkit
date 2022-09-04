@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-use Lkrms\Container\Container;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Facade\Mapper;
 use Lkrms\Support\ArrayKeyConformity;
@@ -153,7 +153,7 @@ trait TProvidable
     }
 
     private static function getListFromProvider(
-        Container $container,
+        IContainer $container,
         IProvider $provider,
         iterable $list,
         ? callable $closure,
@@ -191,12 +191,12 @@ trait TProvidable
         }
     }
 
-    protected static function maybeGetContextContainer(?IProvider $provider): Container
+    protected static function maybeGetContextContainer(?IProvider $provider): IContainer
     {
         if ($provider && ($container = $provider->container()) &&
-            $container instanceof \Lkrms\Container\Container)
+            $container instanceof IContainer)
         {
-            return $container->context(get_class($provider));
+            return $container->inContextOf(get_class($provider));
         }
         return $container ?? \Lkrms\Container\Container::getGlobalContainer();
     }

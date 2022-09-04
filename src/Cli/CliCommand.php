@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
+use Lkrms\Concern\HasCliAppContainer;
 use Lkrms\Console\Console;
-use Lkrms\Container\CliAppContainer;
-use Lkrms\Container\Container;
-use Lkrms\Contract\IHasContainer;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Convert;
 use RuntimeException;
@@ -17,8 +15,10 @@ use UnexpectedValueException;
  * Base class for CLI commands
  *
  */
-abstract class CliCommand implements IHasContainer
+abstract class CliCommand
 {
+    use HasCliAppContainer;
+
     /**
      * Return a short description of the command
      *
@@ -69,11 +69,6 @@ abstract class CliCommand implements IHasContainer
      * @return int|void
      */
     abstract protected function run(string ...$params);
-
-    /**
-     * @var CliAppContainer
-     */
-    private $Container;
 
     /**
      * @var int
@@ -135,26 +130,6 @@ abstract class CliCommand implements IHasContainer
      */
     private $HasRun = false;
 
-    public function __construct(CliAppContainer $container)
-    {
-        $this->Container = $container;
-    }
-
-    final public function container(): CliAppContainer
-    {
-        return $this->Container;
-    }
-
-    final public function setContainer(Container $container)
-    {
-        throw new RuntimeException("Container already set");
-    }
-
-    final public function isContainerSet(): bool
-    {
-        return true;
-    }
-
     /**
      * @internal
      * @param string[] $name
@@ -208,7 +183,7 @@ abstract class CliCommand implements IHasContainer
     final public function getLongName(): array
     {
         $name = $this->getName();
-        array_unshift($name, $this->container()->getProgramName());
+        array_unshift($name, $this->app()->getProgramName());
 
         return $name;
     }
@@ -233,7 +208,7 @@ abstract class CliCommand implements IHasContainer
     {
         if (!($option instanceof CliOption))
         {
-            $option = CliOption::from($this->container(), $option);
+            $option = CliOption::from($this->app(), $option);
         }
 
         $option->validate();

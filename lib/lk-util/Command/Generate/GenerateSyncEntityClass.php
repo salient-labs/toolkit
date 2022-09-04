@@ -139,7 +139,7 @@ class GenerateSyncEntityClass extends CliCommand
                 throw new InvalidCliArgumentException("class does not exist: $providerClass");
             }
 
-            $provider = $this->container()->get($providerClass);
+            $provider = $this->app()->get($providerClass);
 
             if ($provider instanceof HttpSyncProvider)
             {
@@ -164,9 +164,9 @@ class GenerateSyncEntityClass extends CliCommand
                 {
                     throw new InvalidCliArgumentException("file not found: " . $this->getOptionValue("json"));
                 }
-                elseif (strpos($json, $this->container()->BasePath) === 0)
+                elseif (strpos($json, $this->app()->BasePath) === 0)
                 {
-                    $entityUri = "./" . ltrim(str_replace($this->container()->BasePath, "", $json), "/");
+                    $entityUri = "./" . ltrim(str_replace($this->app()->BasePath, "", $json), "/");
                 }
                 else
                 {

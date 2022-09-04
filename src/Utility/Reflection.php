@@ -6,6 +6,7 @@ namespace Lkrms\Utility;
 
 use ReflectionClass;
 use ReflectionIntersectionType;
+use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionType;
@@ -120,6 +121,35 @@ final class Reflection
     }
 
     /**
+     * Get an array of doc comments for the given ReflectionMethod and its
+     * prototypes
+     *
+     * Returns an empty array if no doc comments are found for the method in its
+     * declaring class or in any parent classes or interfaces.
+     *
+     * @return string[]
+     */
+    public function getAllMethodDocComments(ReflectionMethod $method): array
+    {
+        $comments = [];
+        try
+        {
+            do
+            {
+                if (($comment = $method->getDocComment()) !== false)
+                {
+                    $comments[] = $comment;
+                }
+            }
+            while ($method = $method->getPrototype());
+        }
+        finally
+        {
+            return $comments;
+        }
+    }
+
+    /**
      * Convert the given ReflectionType to a PHP type declaration
      *
      * @param null|ReflectionType $type e.g. the return value of
@@ -228,6 +258,15 @@ final class Reflection
         $const = $parameter->getDefaultValueConstantName();
         if (!preg_match('/^(self|parent|static)::/i', $const))
         {
+            if ($typeNameCallback &&
+                ($_const = preg_replace_callback(
+                    '/^[^:\\\\]+(?:\\\\[^:\\\\]+)+(?=::)/',
+                    fn($matches) => $typeNameCallback($matches[0]) ?: $matches[0],
+                    $const
+                )) !== $const)
+            {
+                return "$param$_const";
+            }
             return "$param$classPrefix$const";
         }
         return "$param$const";

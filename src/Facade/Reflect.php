@@ -10,12 +10,14 @@ use Lkrms\Utility\ReflectionClassConstant;
 use Lkrms\Utility\ReflectionFunctionAbstract;
 use Lkrms\Utility\ReflectionProperty;
 use ReflectionClass;
+use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionType;
 
 /**
  * A facade for Reflection
  *
+ * @method static string[] getAllMethodDocComments(ReflectionMethod $method) Get an array of doc comments for the given ReflectionMethod and its prototypes
  * @method static array<string,ReflectionClass> getAllTraits(ReflectionClass $class) Return an array of traits used by this class and its parent classes
  * @method static string[] getAllTypeNames(?ReflectionType $type) Return the names of all types included in the given ReflectionType
  * @method static ReflectionType[] getAllTypes(?ReflectionType $type) Return all types included in the given ReflectionType

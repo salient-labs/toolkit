@@ -20,7 +20,7 @@ use Lkrms\Facade\Test;
 use RuntimeException;
 
 /**
- * A stackable service container for self-contained applications
+ * A service container for applications
  *
  * Typically accessed via the {@see \Lkrms\Facade\App} facade.
  *
@@ -106,6 +106,14 @@ class AppContainer extends Container implements IReadable
     {
         parent::__construct();
 
+        if (self::hasGlobalContainer() &&
+            ($global = get_class(self::getGlobalContainer())) !== Container::class)
+        {
+            throw new RuntimeException("Global container already loaded: " . $global);
+        }
+
+        self::setGlobalContainer($this);
+
         if (is_null($basePath))
         {
             $basePath = Env::get("app_base_path", "") ?: Composer::getRootPackagePath();
@@ -168,7 +176,7 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
-     * @param $name Defaults to the name used to run the script.
+     * @param null|string $name Defaults to the name used to run the script.
      * @return $this
      */
     public function enableMessageLog(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG)

@@ -246,4 +246,77 @@ class PhpDocParser implements IReadable
 
         return implode($unwrap ? " " : PHP_EOL, $lines);
     }
+
+    private function mergeValue(?string & $ours, ?string $theirs): void
+    {
+        // Do nothing if there's nothing to merge
+        if (is_null($theirs) || !trim($theirs))
+        {
+            return;
+        }
+
+        // If we have nothing to keep, use the incoming value
+        if (is_null($ours) || !trim($ours))
+        {
+            $ours = $theirs;
+            return;
+        }
+    }
+
+    private function mergeLines(?array & $ours, ?array $theirs): void
+    {
+        // Add unique incoming lines
+        array_push($ours, ...array_diff($theirs, $ours));
+    }
+
+    private function mergeType(?array & $ours, ?array $theirs): void
+    {
+        $this->mergeValue($ours["type"], $theirs["type"] ?? null);
+        $this->mergeValue($ours["description"], $theirs["description"] ?? null);
+    }
+
+    /**
+     * Add missing values from a PhpDocParser representing the same structural
+     * element in a parent class or interface
+     *
+     */
+    public function mergeInherited(PhpDocParser $parent)
+    {
+        $this->mergeValue($this->Summary, $parent->Summary);
+        $this->mergeValue($this->Description, $parent->Description);
+        $this->mergeLines($this->TagLines, $parent->TagLines);
+        foreach ($parent->Tags as $tag => $content)
+        {
+            if (!is_array($this->Tags[$tag] ?? null))
+            {
+                $this->Tags[$tag] = $content;
+            }
+            elseif (is_array($content))
+            {
+                $this->mergeLines($this->Tags[$tag], $content);
+            }
+        }
+        foreach ($parent->Params as $name => $data)
+        {
+            $this->mergeType($this->Params[$name], $data);
+        }
+        $this->mergeType($this->Return, $parent->Return);
+    }
+
+    /**
+     * @param string[] $docBlocks
+     */
+    public static function fromDocBlocks(array $docBlocks, bool $legacyNullable = true): ?self
+    {
+        if (!$docBlocks)
+        {
+            return null;
+        }
+        $parser = new self(array_shift($docBlocks), $legacyNullable);
+        while ($docBlocks)
+        {
+            $parser->mergeInherited(new self(array_shift($docBlocks), $legacyNullable));
+        }
+        return $parser;
+    }
 }

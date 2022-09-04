@@ -12,7 +12,7 @@ use Iterator;
  * Implements Iterator, ArrayAccess and Countable to provide simple array-like
  * collection objects
  *
- * - A `RuntimeException` should be thrown if an item is added by key
+ * @throws \RuntimeException if an item is added by key.
  */
 interface ICollection extends Iterator, ArrayAccess, Countable
 {

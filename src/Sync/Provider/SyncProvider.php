@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Provider;
 
+use Lkrms\Concern\HasContainer;
 use Lkrms\Concern\TBindable;
 use Lkrms\Contract\IBindableSingleton;
 use Lkrms\Facade\Compute;
@@ -17,7 +18,7 @@ use Lkrms\Support\DateFormatter;
  */
 abstract class SyncProvider implements ISyncProvider, IBindableSingleton
 {
-    use TBindable;
+    use HasContainer, TBindable;
 
     /**
      * Return a stable identifier that uniquely identifies the connected backend

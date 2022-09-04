@@ -3,9 +3,11 @@
 
 namespace Lkrms\Tests;
 
+use Dice\Dice;
+use Lkrms\Concern\TBindable;
+use Lkrms\Contract\IBindable;
 use Lkrms\Err\Err;
 use Lkrms\Facade\DI;
-use RuntimeException;
 use UnexpectedValueException;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
@@ -20,18 +22,37 @@ class IdGenerator
     public function getNext(string $type)
     {
         $this->counters[$type] = $this->counters[$type] ?? 100 * (count($this->counters) + 1);
-
         return $this->counters[$type]++;
     }
+}
+
+class Office
+{
+    public $id;
+
+    public $name;
+
+    public function __construct(IdGenerator $idGenerator, string $name = null)
+    {
+        $this->id   = $idGenerator->getNext(__CLASS__);
+        $this->name = $name;
+    }
+}
+
+class FancyOffice extends Office
+{
 }
 
 class User
 {
     public $id;
 
-    public function __construct(IdGenerator $idGenerator)
+    public $office;
+
+    public function __construct(IdGenerator $idGenerator, Office $office)
     {
-        $this->id = $idGenerator->getNext(__CLASS__);
+        $this->id     = $idGenerator->getNext(__CLASS__);
+        $this->office = $office;
     }
 }
 
@@ -39,52 +60,70 @@ class Staff extends User
 {
     public $staffId;
 
-    public function __construct(IdGenerator $idGenerator)
+    public function __construct(IdGenerator $idGenerator, Office $office)
     {
-        parent::__construct($idGenerator);
+        parent::__construct($idGenerator, $office);
         $this->staffId = $idGenerator->getNext(__CLASS__);
     }
 }
 
-class DepartmentHead extends Staff
+class DepartmentStaff extends Staff
 {
     public $department;
 
-    public function __construct(IdGenerator $idGenerator, Department $department)
+    public function __construct(IdGenerator $idGenerator, Office $office, Department $department)
     {
-        parent::__construct($idGenerator);
+        parent::__construct($idGenerator, $office);
         $this->department = $department;
     }
 }
 
 class Department
 {
+    use TBindable;
+
     public $id;
+
+    public $mainOffice;
 
     public $name;
 
-    public function __construct(IdGenerator $idGenerator, $name = null)
+    public function __construct(IdGenerator $idGenerator, Office $mainOffice, $name = null)
     {
-        $this->id   = $idGenerator->getNext(__CLASS__);
-        $this->name = $name;
+        $this->id         = $idGenerator->getNext(__CLASS__);
+        $this->mainOffice = $mainOffice;
+        $this->name       = $name;
     }
 }
 
-class DepartmentStaff
+class OrgUnit implements IBindable
 {
-    public $user;
+    use TBindable;
+
+    public $mainOffice;
 
     public $department;
 
-    public $departmentHead;
+    public $manager;
 
-    // Parameter order is a workaround for
-    // https://github.com/Level-2/Dice/issues/200
-    public function __construct(User $user, DepartmentHead $departmentHead, Department $department)
+    public $admin;
+
+    public function __construct(Office $mainOffice, Department $department, Staff $manager, User $admin)
     {
-        $this->user           = $user;
-        $this->department     = $department;
-        $this->departmentHead = $departmentHead;
+        $this->mainOffice = $mainOffice;
+        $this->department = $department;
+        $this->manager    = $manager;
+        $this->admin      = $admin;
+    }
+
+    public static function getBindings(): array
+    {
+        // Resolve 'Office' to 'FancyOffice', etc.
+        return [
+            Office::class => FancyOffice::class,
+            User::class   => DepartmentStaff::class,
+            Staff::class  => DepartmentStaff::class,
+        ];
     }
 }
 
@@ -92,63 +131,49 @@ $exceptions = [];
 
 DI::singleton(IdGenerator::class);
 
-// Create one 'Department' per 'DepartmentStaff'
-DI::bind(DepartmentStaff::class, null, null, [Department::class]);
+// Give 'Office' instances a sequential name
+$offices = 0;
+DI::bind(Office::class, null, [Dice::INSTANCE => function () use (&$offices) { return ["Office #" . (++$offices)]; } ]);
 
-// Give 'Department' instances a default name
-DI::bind(Department::class, null, ["<auto>"]);
+// Create one 'Office' per 'User' and give each 'Department' the same name
+DI::bind(User::class, null, null, [Office::class]);
+DI::bind(Department::class, null, ["They Who Shall Not Be Named"]);
+
+// Register 'OrgUnit' bindings and create one 'Department' per 'OrgUnit'
+DI::service(OrgUnit::class);
+DI::bind(OrgUnit::class, null, null, [Department::class]);
 
 try
 {
-    // Should throw an exception for trying to substitute a 'shareInstances'
-    // dependency
-    DI::bind(DepartmentStaff::class, null, null, null, [
-        "substitutions" => [Department::class => "SpecialDepartment"],
-    ]);
+    // Should throw an exception because we're trying to add a substituted class
+    // to $shareInstances
+    DI::bind(OrgUnit::class, null, null, [Office::class]);
 }
 catch (UnexpectedValueException $ex)
 {
     $exceptions[] = $ex;
 }
 
-try
-{
-    // Should throw an exception for trying to pop from an empty stack
-    DI::pop();
-}
-catch (RuntimeException $ex)
-{
-    $exceptions[] = $ex;
-}
-
-// Create 'Staff' instead of 'User' instances when creating 'DepartmentStaff'
-DI::bind(DepartmentStaff::class, null, null, null, [
-    "substitutions" => [User::class => Staff::class]
-]);
-
 // $user1 should be a 'User' instance
 $user1 = DI::get(User::class);
 
-// $user2 should be a 'Staff' instance
-DI::push();
-DI::bind(User::class, Staff::class);
-$user2 = DI::get(User::class);
-DI::pop();
+// $user2 should be a 'DepartmentStaff' instance and 1 office should be created
+$user2 = DI::inContextOf(OrgUnit::class)->get(User::class);
 
 // $user3 should be a 'User' instance
 $user3 = DI::get(User::class);
 
 // User, Staff and Department IDs should all increment
-$exec1 = DI::get(DepartmentHead::class);
-$exec2 = DI::get(DepartmentHead::class);
+$staff1 = DI::get(DepartmentStaff::class);
+$staff2 = DI::get(DepartmentStaff::class);
 
 // Department names should be applied to separate instances
 $dept1 = DI::get(Department::class, "English");
 $dept2 = DI::get(Department::class, "Mathematics");
 
 // One department instance should be created per object tree
-$deptStaff1 = DI::get(DepartmentStaff::class);
-$deptStaff2 = DI::get(DepartmentStaff::class);
+$orgUnit1 = DI::get(OrgUnit::class);
+$orgUnit2 = DI::get(OrgUnit::class);
 
 print_r([
     "exceptions"  => $exceptions,
@@ -156,10 +181,10 @@ print_r([
     "user1"       => $user1,
     "user2"       => $user2,
     "user3"       => $user3,
-    "exec1"       => $exec1,
-    "exec2"       => $exec2,
+    "staff1"      => $staff1,
+    "staff2"      => $staff2,
     "dept1"       => $dept1,
     "dept2"       => $dept2,
-    "deptStaff1"  => $deptStaff1,
-    "deptStaff2"  => $deptStaff2,
+    "orgUnit1"    => $orgUnit1,
+    "orgUnit2"    => $orgUnit2,
 ]);

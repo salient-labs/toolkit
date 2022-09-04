@@ -11,7 +11,7 @@ use Lkrms\Facade\Assert;
 use UnexpectedValueException;
 
 /**
- * A stackable service container for CLI apps
+ * A service container for CLI applications
  *
  * Typically accessed via the {@see \Lkrms\Facade\Cli} facade.
  *
@@ -155,7 +155,7 @@ class CliAppContainer extends AppContainer
      * container when an instance is required.
      * @return $this
      * @throws UnexpectedValueException if `$name` is invalid or has already
-     * been used
+     * been used.
      */
     public function command(array $name, string $id)
     {
@@ -340,7 +340,8 @@ EOF;
     /**
      * Exit after actioning command-line arguments
      *
-     * The value returned by {@see CliAppContainer::run()} is used as the exit status.
+     * The value returned by {@see CliAppContainer::run()} is used as the exit
+     * status.
      *
      * @return never
      */
