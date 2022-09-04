@@ -91,10 +91,12 @@ class GenerateFacadeClass extends GenerateCommand
         "getReadable",
         "getWritable",
 
-        // IFacade displaces these if the underlying class has them
+        // These are displaced by Facade if the underlying class has them
         "getInstance",
         "isLoaded",
         "load",
+        "unload",
+        "unloadAll",
     ];
 
     protected function run(string ...$args)
@@ -199,16 +201,16 @@ class GenerateFacadeClass extends GenerateCommand
             );
         };
 
-        $returnTypeMap = [
-            'static' => $service,
-            'self'   => $service,
-            '$this'  => $service,
-        ];
-
         usort($_methods,
             fn(ReflectionMethod $a, ReflectionMethod $b) => $a->isConstructor()
             ? -1 : ($b->isConstructor()
                 ? 1 : $a->getName() <=> $b->getName()));
+        $facadeMethods = [
+            " * @method static $service load() Load and return an instance of the underlying `$class` class",
+            " * @method static $service getInstance() Return the underlying `$class` instance",
+            " * @method static bool isLoaded() Return true if an underlying `$class` instance has been loaded",
+            " * @method static void unload() Clear the underlying `$class` instance",
+        ];
         $methods = [];
         foreach ($_methods as $_method)
         {
@@ -220,7 +222,8 @@ class GenerateFacadeClass extends GenerateCommand
             {
                 $method  = "load";
                 $type    = $service;
-                $summary = "Create and return the underlying $class";
+                $summary = "Load and return an instance of the underlying `$class` class";
+                unset($facadeMethods[0]);
             }
             else
             {
@@ -237,7 +240,16 @@ class GenerateFacadeClass extends GenerateCommand
                     : ($_method->hasReturnType()
                         ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
                         : "mixed"));
-                $type    = $returnTypeMap[$type] ?? $type;
+                switch ($type)
+                {
+                    case 'static':
+                    case '$this':
+                        $type = $service;
+                        break;
+                    case 'self':
+                        $type = $typeNameCallback($_method->getDeclaringClass()->getName());
+                        break;
+                }
                 $summary = $phpDoc->Summary ?? null;
 
                 // Work around phpDocumentor's inability to parse "?<type>"
@@ -262,14 +274,22 @@ class GenerateFacadeClass extends GenerateCommand
                 );
             }
 
+            if (!$methods && !$_method->isConstructor())
+            {
+                array_push($methods, ...$facadeMethods);
+            }
+
             $methods[] = (" * @method static $type $method("
                 . str_replace("\n", "\n * ", implode(", ", $params)) . ")"
-                . ($summary ? " $summary" : ""));
+                . ($_method->isConstructor()
+                    ? " $summary"
+                    : ($summary
+                        ? " $summary (see {@see $service::$method()})"
+                        : " See {@see $service::$method()}")));
 
             if ($_method->isConstructor())
             {
-                $methods[] = " * @method static $type getInstance() Return the underlying $class";
-                $methods[] = " * @method static bool isLoaded() Return true if the underlying $class has been created";
+                array_push($methods, ...$facadeMethods);
             }
         }
         $methods = implode(PHP_EOL, $methods);
