@@ -8,7 +8,7 @@ use Lkrms\Concept\Facade;
 use Lkrms\Utility\Debugging;
 
 /**
- * A facade for Debugging
+ * A facade for \Lkrms\Utility\Debugging
  *
  * @method static Debugging load() Load and return an instance of the underlying `Debugging` class
  * @method static Debugging getInstance() Return the underlying `Debugging` instance

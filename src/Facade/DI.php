@@ -9,7 +9,7 @@ use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 
 /**
- * A facade for Container
+ * A facade for \Lkrms\Container\Container
  *
  * @method static Container load() Load and return an instance of the underlying `Container` class
  * @method static Container getInstance() Return the underlying `Container` instance

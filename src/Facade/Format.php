@@ -9,7 +9,7 @@ use Lkrms\Concept\Facade;
 use Lkrms\Utility\Formatters;
 
 /**
- * A facade for Formatters
+ * A facade for \Lkrms\Utility\Formatters
  *
  * @method static Formatters load() Load and return an instance of the underlying `Formatters` class
  * @method static Formatters getInstance() Return the underlying `Formatters` instance

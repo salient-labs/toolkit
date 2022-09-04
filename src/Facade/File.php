@@ -8,7 +8,7 @@ use Lkrms\Concept\Facade;
 use Lkrms\Utility\Filesystem;
 
 /**
- * A facade for Filesystem
+ * A facade for \Lkrms\Utility\Filesystem
  *
  * @method static Filesystem load() Load and return an instance of the underlying `Filesystem` class
  * @method static Filesystem getInstance() Return the underlying `Filesystem` instance

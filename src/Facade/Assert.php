@@ -8,7 +8,7 @@ use Lkrms\Concept\Facade;
 use Lkrms\Utility\Assertions;
 
 /**
- * A facade for Assertions
+ * A facade for \Lkrms\Utility\Assertions
  *
  * @method static Assertions load() Load and return an instance of the underlying `Assertions` class
  * @method static Assertions getInstance() Return the underlying `Assertions` instance

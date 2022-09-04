@@ -11,7 +11,7 @@ use Lkrms\Concept\Facade;
 use Lkrms\Utility\Tests;
 
 /**
- * A facade for Tests
+ * A facade for \Lkrms\Utility\Tests
  *
  * @method static Tests load() Load and return an instance of the underlying `Tests` class
  * @method static Tests getInstance() Return the underlying `Tests` instance

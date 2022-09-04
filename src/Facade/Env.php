@@ -8,7 +8,7 @@ use Lkrms\Concept\Facade;
 use Lkrms\Utility\Environment;
 
 /**
- * A facade for Environment
+ * A facade for \Lkrms\Utility\Environment
  *
  * @method static Environment load() Load and return an instance of the underlying `Environment` class
  * @method static Environment getInstance() Return the underlying `Environment` instance

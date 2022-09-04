@@ -15,7 +15,7 @@ use ReflectionParameter;
 use ReflectionType;
 
 /**
- * A facade for Reflection
+ * A facade for \Lkrms\Utility\Reflection
  *
  * @method static Reflection load() Load and return an instance of the underlying `Reflection` class
  * @method static Reflection getInstance() Return the underlying `Reflection` instance

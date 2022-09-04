@@ -60,7 +60,7 @@ abstract class GenerateCommand extends CliCommand
      */
     protected function getFqcnAlias(string $fqcn, ?string $alias = null, bool $returnFqcn = true): ?string
     {
-        $fqcn  = trim($fqcn, "\\");
+        $fqcn  = ltrim($fqcn, "\\");
         $_fqcn = strtolower($fqcn);
 
         // If $fqcn already has an alias, use it
