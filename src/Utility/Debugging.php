@@ -4,24 +4,22 @@ declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
-use Lkrms\Contract\HasFacade;
+use Lkrms\Contract\ReceivesFacade;
 
 /**
  * Get information about code that's currently running
  *
  */
-final class Debugging implements HasFacade
+final class Debugging implements ReceivesFacade
 {
     /**
      * @var string|null
      */
     private $Facade;
 
-    public function setFacade(string $name)
+    public function setFacade(string $name): void
     {
         $this->Facade = $name;
-
-        return $this;
     }
 
     /**

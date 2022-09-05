@@ -41,7 +41,7 @@ class SendHttpRequest extends CliCommand
                 "description" => "The HttpSyncProvider class to use",
                 "optionType"  => CliOptionType::VALUE,
                 "required"    => true,
-                "env"         => "DEFAULT_PROVIDER",
+                "envVariable" => "DEFAULT_PROVIDER",
             ],
             [
                 "long"        => "endpoint",

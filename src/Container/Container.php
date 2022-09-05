@@ -13,7 +13,7 @@ use Psr\Container\ContainerInterface;
 use UnexpectedValueException;
 
 /**
- * A service container
+ * A service container with support for contextual bindings
  *
  * Uses Dice under the hood.
  *

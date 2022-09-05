@@ -5,14 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Support;
 
 use Closure;
-use Lkrms\Concern\TConstructible;
-use Lkrms\Concern\TExtensible;
-use Lkrms\Concern\TProvidable;
-use Lkrms\Concern\TReadable;
-use Lkrms\Concern\TResolvable;
-use Lkrms\Concern\TWritable;
 use Lkrms\Container\FactoryContainer;
-use Lkrms\Contract\IConstructible;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
@@ -172,9 +165,9 @@ class ClosureBuilder
     private $PropertyActionClosures = [];
 
     /**
-     * @var Closure|null
+     * @var array<int,Closure>
      */
-    private $CreateFromClosure;
+    private $CreateFromClosures = [];
 
     /**
      * @var array<string,Closure>
@@ -213,150 +206,110 @@ class ClosureBuilder
      */
     public static function get(string $class): ClosureBuilder
     {
-        if ($instance = self::$Instances[$class] ?? null)
-        {
-            return $instance;
-        }
-
-        $instance = new self($class);
-        self::$Instances[$class] = $instance;
-
-        return $instance;
+        return self::$Instances[$class]
+            ?? (self::$Instances[$class] = new self($class));
     }
 
     protected function __construct(string $class)
     {
-        $class         = new ReflectionClass($class);
-        $providable    = $class->implementsInterface(IProvidable::class);
-        $constructible = $providable || $class->implementsInterface(IConstructible::class);
-        $extensible    = $class->implementsInterface(IExtensible::class);
-        $readable      = $class->implementsInterface(IReadable::class);
-        $writable      = $class->implementsInterface(IWritable::class);
-        $resolvable    = $class->implementsInterface(IResolvable::class);
-
-        // If the class hasn't implemented any of these interfaces, perform a
-        // (slower) check using traits
-        if (!($constructible || $extensible || $readable || $writable || $resolvable))
-        {
-            $traits        = Reflect::getAllTraits($class);
-            $providable    = array_key_exists(TProvidable::class, $traits);
-            $constructible = $providable || array_key_exists(TConstructible::class, $traits);
-            $extensible    = array_key_exists(TExtensible::class, $traits);
-            $readable      = array_key_exists(TReadable::class, $traits);
-            $writable      = array_key_exists(TWritable::class, $traits);
-            $resolvable    = array_key_exists(TResolvable::class, $traits);
-        }
-
+        $class              = new ReflectionClass($class);
         $this->Class        = $class->name;
-        $this->IsReadable   = $readable;
-        $this->IsWritable   = $writable;
-        $this->IsExtensible = $extensible;
-        $this->IsProvidable = $providable;
+        $this->IsReadable   = $class->implementsInterface(IReadable::class);
+        $this->IsWritable   = $class->implementsInterface(IWritable::class);
+        $this->IsExtensible = $class->implementsInterface(IExtensible::class);
+        $this->IsProvidable = $class->implementsInterface(IProvidable::class);
         $this->IsTreeNode   = $class->implementsInterface(ITreeNode::class);
 
-        $propertyFilter = 0;
+        // IResolvable provides access to properties via alternative names
+        if ($class->implementsInterface(IResolvable::class))
+        {
+            $this->Normaliser = Closure::fromCallable("{$this->Class}::normaliseProperty");
+        }
+
+        $propertyFilter = ReflectionProperty::IS_PUBLIC;
         $methodFilter   = 0;
 
         // IReadable and IWritable provide access to protected and "magic"
-        // properties
-        if ($readable || $writable)
+        // property methods
+        if ($this->IsReadable || $this->IsWritable)
         {
             $propertyFilter |= ReflectionProperty::IS_PROTECTED;
             $methodFilter   |= ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED;
         }
 
-        // IResolvable provides access to properties via alternative names
-        if ($resolvable)
+        // Get instance properties
+        $properties = array_values(array_filter(
+            $class->getProperties($propertyFilter),
+            fn(ReflectionProperty $prop) => !$prop->isStatic()
+        ));
+        $this->Properties = Reflect::getNames($properties);
+
+        if ($propertyFilter & ReflectionProperty::IS_PROTECTED)
         {
-            $propertyFilter  |= ReflectionProperty::IS_PUBLIC;
-            $this->Normaliser = Closure::fromCallable("{$this->Class}::normaliseProperty");
+            $this->PublicProperties = Reflect::getNames(
+                array_values(array_filter(
+                    $properties,
+                    fn(ReflectionProperty $prop) => $prop->isPublic()
+                ))
+            );
+        }
+        else
+        {
+            $this->PublicProperties = $this->Properties;
         }
 
-        // Get [non-static] declared properties
-        if ($propertyFilter)
+        if ($this->IsReadable)
         {
-            $properties = array_values(array_filter(
-                $class->getProperties($propertyFilter),
-                function (ReflectionProperty $prop) { return !$prop->isStatic(); }
-            ));
-            $this->Properties = Reflect::getNames($properties);
-
-            if ($propertyFilter & ReflectionProperty::IS_PUBLIC)
-            {
-                if ($propertyFilter & ReflectionProperty::IS_PROTECTED)
-                {
-                    $this->PublicProperties = Reflect::getNames(array_values(array_filter(
-                        $properties,
-                        function (ReflectionProperty $prop) { return $prop->isPublic(); }
-                    )));
-                }
-                else
-                {
-                    $this->PublicProperties = $this->Properties;
-                }
-            }
-
-            if ($readable)
-            {
-                $properties = $class->getMethod("getReadable")->invoke(null);
-                $properties = array_merge(
-                    ["*"] === $properties ? $this->Properties : ($properties ?: []),
-                    $this->PublicProperties
-                );
-                $this->ReadableProperties = array_intersect($this->Properties, $properties);
-            }
-
-            if ($writable)
-            {
-                $properties = $class->getMethod("getWritable")->invoke(null);
-                $properties = array_merge(
-                    ["*"] === $properties ? $this->Properties : ($properties ?: []),
-                    $this->PublicProperties
-                );
-                $this->WritableProperties = array_intersect($this->Properties, $properties);
-            }
+            $readable = $class->getMethod("getReadable")->invoke(null);
+            $readable = array_merge(
+                ["*"] === $readable ? $this->Properties : ($readable ?: []),
+                $this->PublicProperties
+            );
+            $this->ReadableProperties = array_intersect($this->Properties, $readable);
         }
 
-        // Get [non-static] "magic" properties, e.g. _get<Property>()
+        if ($this->IsWritable)
+        {
+            $writable = $class->getMethod("getWritable")->invoke(null);
+            $writable = array_merge(
+                ["*"] === $writable ? $this->Properties : ($writable ?: []),
+                $this->PublicProperties
+            );
+            $this->WritableProperties = array_intersect($this->Properties, $writable);
+        }
+
+        // Get "magic" property methods, e.g. _get<Property>()
         if ($methodFilter)
         {
             $actions = [];
-            if ($readable)
+            if ($this->IsReadable)
             {
-                array_push($actions, "get", "isset");
+                $actions[] = "get";
+                $actions[] = "isset";
             }
-            if ($writable)
+            if ($this->IsWritable)
             {
-                array_push($actions, "set", "unset");
+                $actions[] = "set";
+                $actions[] = "unset";
             }
-            $regex = '/^_(' . implode("|", $actions) . ')(.+)$/i';
+            $regex = '/^_(?P<action>' . implode("|", $actions) . ')(?P<property>.+)$/i';
 
             foreach ($class->getMethods($methodFilter) as $method)
             {
-                if ($method->isStatic() || !preg_match($regex, $method->name, $matches))
+                if (!$method->isStatic() && preg_match($regex, $method->name, $match))
                 {
-                    continue;
+                    $this->Methods[$match["property"]][strtolower($match["action"])] = $method->name;
                 }
-
-                list ($property, $action) = [$matches[2], strtolower($matches[1])];
-
-                if (!array_key_exists($property, $this->Methods))
-                {
-                    $this->Methods[$property] = [];
-                }
-
-                $this->Methods[$property][$action] = $method->name;
             }
         }
 
         // Get constructor parameters
-        if ($constructible && ($constructor = $class->getConstructor()))
+        if (($constructor = $class->getConstructor()) && $constructor->isPublic())
         {
             foreach ($constructor->getParameters() as $param)
             {
                 $normalised   = $this->maybeNormaliseProperty($param->name);
                 $defaultValue = null;
-
                 if ($param->isOptional())
                 {
                     $defaultValue = $param->getDefaultValue();
@@ -364,31 +317,26 @@ class ClosureBuilder
                 elseif (!$param->allowsNull())
                 {
                     $this->RequiredParameters[] = $this->RequiredMap[$normalised] = $param->name;
-
                     if (($type = $param->getType()) &&
                         $type instanceof ReflectionNamedType && !$type->isBuiltin())
                     {
                         $this->ServiceMap[$normalised] = $type->getName();
                     }
                 }
-
                 $this->Parameters[]       = $this->ParameterMap[$normalised] = $param->name;
                 $this->DefaultArguments[] = $defaultValue;
             }
-
             $this->ParametersIndex = array_flip($this->Parameters);
         }
 
         // Create normalised property and parameter name maps
         $methodProperties = array_keys($this->Methods);
-
         if ($this->Normaliser)
         {
             $this->PropertyMap = array_combine(
                 array_map($this->Normaliser, $this->Properties),
                 $this->Properties
             );
-
             $this->MethodMap = array_combine(
                 array_map($this->Normaliser, $methodProperties),
                 $methodProperties
@@ -407,6 +355,8 @@ class ClosureBuilder
     }
 
     /**
+     * @param bool $strict If set, throw an exception instead of discarding
+     * unusable data.
      * @return Closure
      * ```php
      * // If the class implements IProvidable:
@@ -415,7 +365,7 @@ class ClosureBuilder
      * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null, \Lkrms\Contract\ITreeNode $parent = null)
      * ```
      */
-    public function getCreateFromSignatureClosure(array $keys): Closure
+    public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\000", $keys);
 
@@ -477,6 +427,10 @@ class ClosureBuilder
             {
                 $metaKeys[] = $key;
             }
+            elseif ($strict)
+            {
+                throw new UnexpectedValueException("No matching property or constructor parameter found in {$this->Class} for '$key'");
+            }
         }
 
         // 4. Build the smallest possible chain of closures
@@ -485,12 +439,10 @@ class ClosureBuilder
             $closure = function (Container $container, array $array) use ($parameterKeys)
             {
                 $args = $this->DefaultArguments;
-
                 foreach ($parameterKeys as $key => $index)
                 {
                     $args[$index] = $array[$key];
                 }
-
                 return $container->get($this->Class, ...$args);
             };
         }
@@ -507,14 +459,14 @@ class ClosureBuilder
             $closure = static function (Container $container, array $array) use ($closure, $propertyKeys)
             {
                 $obj = $closure($container, $array);
-
                 foreach ($propertyKeys as $key => $property)
                 {
                     $obj->$property = $array[$key];
                 }
-
                 return $obj;
             };
+            // We've already checked property access, so bypass
+            // IWritable::__set() to speed things up
             $closure = $closure->bindTo(null, $this->Class);
         }
 
@@ -534,12 +486,10 @@ class ClosureBuilder
             $closure = static function (Container $container, array $array, ?IProvider $provider) use ($closure, $methodKeys)
             {
                 $obj = $closure($container, $array, $provider);
-
                 foreach ($methodKeys as $key => $method)
                 {
                     $obj->$method($array[$key]);
                 }
-
                 return $obj;
             };
             $closure = $closure->bindTo(null, $this->Class);
@@ -550,12 +500,10 @@ class ClosureBuilder
             $closure = static function (Container $container, array $array, ?IProvider $provider) use ($closure, $metaKeys)
             {
                 $obj = $closure($container, $array, $provider);
-
                 foreach ($metaKeys as $key)
                 {
                     $obj->setMetaProperty((string)$key, $array[$key]);
                 }
-
                 return $obj;
             };
         }
@@ -564,31 +512,23 @@ class ClosureBuilder
         {
             $closure = static function (Container $container, array $array, ?IProvider $provider, ?ITreeNode $parent) use ($closure)
             {
-                /** @var ITreeNode */
+                /** @var ITreeNode $obj */
                 $obj = $closure($container, $array, $provider);
-
                 if ($parent)
                 {
                     $obj->setParent($parent);
                 }
-
                 return $obj;
             };
         }
 
         $closure = function (array $array, callable $callback = null, Container $container = null, IProvider $provider = null, ITreeNode $parent = null) use ($closure)
         {
-            if (!$container)
-            {
-                $container = new FactoryContainer();
-            }
-
             if ($callback)
             {
                 $array = $callback($array);
             }
-
-            return $closure($container, $array, $provider, $parent);
+            return $closure($container ?: new FactoryContainer(), $array, $provider, $parent);
         };
 
         if ($this->IsProvidable)
@@ -600,12 +540,12 @@ class ClosureBuilder
             };
         }
 
-        $this->CreateFromSignatureClosures[$sig] = $closure;
-
-        return $closure;
+        return $this->CreateFromSignatureClosures[$sig] = $closure;
     }
 
     /**
+     * @param bool $strict If set, throw an exception instead of discarding
+     * unusable data.
      * @return Closure
      * ```php
      * // If the class implements IProvidable:
@@ -614,45 +554,38 @@ class ClosureBuilder
      * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null, \Lkrms\Contract\ITreeNode $parent = null)
      * ```
      */
-    public function getCreateFromClosure(): Closure
+    public function getCreateFromClosure(bool $strict = false): Closure
     {
-        if ($closure = $this->CreateFromClosure)
+        if ($closure = $this->CreateFromClosures[(int)$strict] ?? null)
         {
             return $closure;
         }
-
         if ($this->IsProvidable)
         {
-            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null, ITreeNode $parent = null)
+            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null, ITreeNode $parent = null) use ($strict)
             {
                 if ($callback)
                 {
                     $array = $callback($array);
                 }
-
                 $keys = array_keys($array);
-
-                return ($this->getCreateFromSignatureClosure($keys))($container, $provider, $array, null, $parent);
+                return ($this->getCreateFromSignatureClosure($keys, $strict))($container, $provider, $array, null, $parent);
             };
         }
         else
         {
-            $closure = function (array $array, callable $callback = null, Container $container = null, ITreeNode $parent = null)
+            $closure = function (array $array, callable $callback = null, Container $container = null, ITreeNode $parent = null) use ($strict)
             {
                 if ($callback)
                 {
                     $array = $callback($array);
                 }
-
                 $keys = array_keys($array);
-
-                return ($this->getCreateFromSignatureClosure($keys))($array, null, $container, $parent);
+                return ($this->getCreateFromSignatureClosure($keys, $strict))($array, null, $container, $parent);
             };
         }
 
-        $this->CreateFromClosure = $closure;
-
-        return $closure;
+        return $this->CreateFromClosures[(int)$strict] = $closure;
     }
 
     /**

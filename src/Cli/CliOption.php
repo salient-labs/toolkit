@@ -154,8 +154,8 @@ class CliOption implements IConstructible, IReadable
      * @param bool $required
      * @param bool $multipleAllowed
      * @param string|string[]|bool|int|null $defaultValue
-     * @param string|null $env Use the value of environment variable `$env`, if
-     * set, instead of `$defaultValue`.
+     * @param string|null $envVariable Use the value of environment variable
+     * `$envVariable`, if set, instead of `$defaultValue`.
      * @param string|null $delimiter If `$multipleAllowed` is set, use
      * `$delimiter` to split one value into multiple values.
      * @see \Lkrms\Concern\TConstructible::from()
@@ -170,7 +170,7 @@ class CliOption implements IConstructible, IReadable
         bool $required        = false,
         bool $multipleAllowed = false,
         $defaultValue         = null,
-        string $env           = null,
+        string $envVariable   = null,
         ?string $delimiter    = ","
     ) {
         $this->Long            = $long ?: null;
@@ -199,10 +199,10 @@ class CliOption implements IConstructible, IReadable
         $this->ValueName       = $valueName ?: "VALUE";
         $this->DefaultValue    = $this->IsRequired ? null : $defaultValue;
 
-        if (($this->EnvironmentVariable = $env) && Env::has($env))
+        if (($this->EnvironmentVariable = $envVariable) && Env::has($envVariable))
         {
             $this->IsRequired   = false;
-            $this->DefaultValue = Env::get($env);
+            $this->DefaultValue = Env::get($envVariable);
         }
 
         if ($this->MultipleAllowed &&

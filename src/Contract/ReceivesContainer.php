@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Contract;
 
 /**
- * Instances receive the container that created them
+ * Receives the container it was created by
  *
  */
 interface ReceivesContainer
