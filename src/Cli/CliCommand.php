@@ -27,29 +27,21 @@ abstract class CliCommand
     abstract protected function _getDescription(): string;
 
     /**
-     * Return a list of CliOption objects and/or arrays to create them from
+     * Return a list of CliOption objects
      *
-     * The following return values are equivalent:
+     * Example:
      *
      * ```php
-     * // 1.
-     * [
-     *   new CliOption(
-     *     "dest", "d", "DIR", "Sync files to DIR", CliOptionType::VALUE, null, true
-     *   ),
-     * ]
-     *
-     * // 2.
-     * [
-     *   [
-     *     "long"        => "dest",
-     *     "short"       => "d",
-     *     "valueName"   => "DIR",
-     *     "description" => "Sync files to DIR",
-     *     "optionType"  => CliOptionType::VALUE,
-     *     "required"    => true,
-     *   ],
-     * ]
+     * return [
+     *     CliOption::build()
+     *         ->long("dest")
+     *         ->short("d")
+     *         ->valueName("DIR")
+     *         ->description("Sync files to DIR")
+     *         ->optionType(CliOptionType::VALUE)
+     *         ->required(true)
+     *         ->get(),
+     * ];
      * ```
      *
      * @return array<int,CliOption|array>

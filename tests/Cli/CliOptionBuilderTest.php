@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Cli;
 
-use Lkrms\Cli\CliOptionBuilder;
+use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use UnexpectedValueException;
 
@@ -12,7 +12,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
 {
     public function testBuild()
     {
-        $option = (CliOptionBuilder::build()
+        $option = (CliOption::build()
             ->long("dest")
             ->short("d")
             ->valueName("DIR")
@@ -40,7 +40,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
     public function testInvalidBuild()
     {
         $this->expectException(UnexpectedValueException::class);
-        (CliOptionBuilder::build()
+        (CliOption::build()
             ->long("dest")
             ->short("d")
             ->value("DIR")
