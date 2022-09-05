@@ -15,7 +15,7 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * A command-line option accepted by a CliCommand
+ * A command-line option provided by a CliCommand
  *
  * See {@see CliCommand::_getOptions()} for more information.
  *
@@ -37,7 +37,7 @@ use UnexpectedValueException;
  * @property-read string|string[]|bool|int|null $Value
  * @property-read bool $IsValueSet
  */
-class CliOption implements IConstructible, IReadable
+final class CliOption implements IConstructible, IReadable
 {
     use TConstructible, TFullyReadable;
 
@@ -158,7 +158,6 @@ class CliOption implements IConstructible, IReadable
      * `$envVariable`, if set, instead of `$defaultValue`.
      * @param string|null $delimiter If `$multipleAllowed` is set, use
      * `$delimiter` to split one value into multiple values.
-     * @see \Lkrms\Concern\TConstructible::from()
      */
     public function __construct(
         ?string $long,
@@ -281,5 +280,17 @@ class CliOption implements IConstructible, IReadable
 
         $this->Value      = $value;
         $this->IsValueSet = true;
+    }
+
+    /**
+     * Use a fluent interface to create a new `CliOption`
+     *
+     * See {@see CliCommand::_getOptions()} for more information.
+     *
+     * @return CliOptionBuilder
+     */
+    public static function build(): CliOptionBuilder
+    {
+        return new CliOptionBuilder();
     }
 }
