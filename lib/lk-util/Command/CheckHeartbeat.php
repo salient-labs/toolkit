@@ -27,7 +27,7 @@ class CheckHeartbeat extends CliCommand
                 "description" => "The provider to check (must implement IProvider)",
                 "optionType"  => CliOptionType::VALUE,
                 "required"    => true,
-                "env"         => "DEFAULT_PROVIDER",
+                "envVariable" => "DEFAULT_PROVIDER",
             ],
             [
                 "long"         => "ttl",

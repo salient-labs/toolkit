@@ -52,7 +52,7 @@ class GenerateSyncEntityClass extends CliCommand
                 "valueName"   => "PACKAGE",
                 "description" => "The PHPDoc package",
                 "optionType"  => CliOptionType::VALUE,
-                "env"         => "PHPDOC_PACKAGE",
+                "envVariable" => "PHPDOC_PACKAGE",
             ],
             [
                 "long"        => "desc",
@@ -98,7 +98,7 @@ class GenerateSyncEntityClass extends CliCommand
                 "valueName"   => "CLASS",
                 "description" => "The HttpSyncProvider class to retrieve a sample entity from",
                 "optionType"  => CliOptionType::VALUE,
-                "env"         => "DEFAULT_PROVIDER",
+                "envVariable" => "DEFAULT_PROVIDER",
             ],
             [
                 "long"        => "endpoint",

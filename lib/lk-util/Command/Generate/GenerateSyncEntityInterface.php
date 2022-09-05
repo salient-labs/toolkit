@@ -56,7 +56,7 @@ class GenerateSyncEntityInterface extends CliCommand
                 "valueName"   => "PACKAGE",
                 "description" => "The PHPDoc package",
                 "optionType"  => CliOptionType::VALUE,
-                "env"         => "PHPDOC_PACKAGE",
+                "envVariable" => "PHPDOC_PACKAGE",
             ],
             [
                 "long"        => "desc",
