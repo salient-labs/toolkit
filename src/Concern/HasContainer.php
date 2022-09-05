@@ -18,6 +18,11 @@ trait HasContainer
         $this->Container = $container;
     }
 
+    public function app(): Container
+    {
+        return $this->Container;
+    }
+
     public function container(): Container
     {
         return $this->Container;

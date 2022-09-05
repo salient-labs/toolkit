@@ -96,4 +96,31 @@ class SqlQuery implements IReadable
         return $_name;
     }
 
+    private function buildWhere(array $where)
+    {
+        $glue = $where["__"] ?? self::AND;
+        unset($where["__"]);
+        foreach ($where as $i => $clause)
+        {
+            if (is_array($clause))
+            {
+                if (!($clause = $this->buildWhere($clause)))
+                {
+                    unset($where[$i]);
+                    continue;
+                }
+                $where[$i] = "($clause)";
+            }
+        }
+        return implode(" $glue ", $where);
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getWhere(): ?string
+    {
+        return $this->buildWhere($this->Where) ?: null;
+    }
+
 }

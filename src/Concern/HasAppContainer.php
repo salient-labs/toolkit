@@ -25,4 +25,9 @@ trait HasAppContainer
         return $this->Container;
     }
 
+    public function container(): AppContainer
+    {
+        return $this->Container;
+    }
+
 }

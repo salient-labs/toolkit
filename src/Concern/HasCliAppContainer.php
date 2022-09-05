@@ -25,4 +25,9 @@ trait HasCliAppContainer
         return $this->Container;
     }
 
+    public function container(): CliAppContainer
+    {
+        return $this->Container;
+    }
+
 }
