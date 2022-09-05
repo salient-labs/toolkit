@@ -7,6 +7,7 @@ namespace Lkrms\Sync\Provider;
 use ADOConnection;
 use Lkrms\Db\DbConnector;
 use Lkrms\Facade\Assert;
+use Lkrms\Support\SqlQuery;
 use Lkrms\Sync\Provider\SyncProvider;
 use RuntimeException;
 use Throwable;
@@ -55,6 +56,11 @@ abstract class DbSyncProvider extends SyncProvider
             return $this->Db = $this->getDbConnector()->getConnection();
         }
         return $this->Db;
+    }
+
+    final public function getSqlQuery(ADOConnection $db): SqlQuery
+    {
+        return new SqlQuery(fn($name) => $db->Param($name));
     }
 
     public function checkHeartbeat(int $ttl = 300): void

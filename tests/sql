@@ -3,6 +3,7 @@
 
 namespace Lkrms\Tests;
 
+use DateTime;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Sql;
 use Lkrms\Support\SqlQuery;
@@ -13,8 +14,27 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 Err::load();
 
 $query = new SqlQuery(function () { return "?"; });
+
+$sql1 = $query->getWhere();
+
 Sql::valueInList($query, "record_id");
 Sql::valueInList($query, "user_id", 12, 36, 7, 32);
 Sql::valueInList($query, "session_id", '1000', '1001', '1002');
 
-var_dump($query);
+$sql2 = $query->getWhere();
+
+$query->Where[] = [
+    '__' => SqlQuery::OR,
+    'Expiry IS NULL',
+    'Expiry > ?',
+];
+$query->addParam("Expiry", new DateTime());
+
+$sql3 = $query->getWhere();
+
+var_dump([
+    'sql1'  => $sql1,
+    'sql2'  => $sql2,
+    'sql3'  => $sql3,
+    'query' => $query,
+]);
