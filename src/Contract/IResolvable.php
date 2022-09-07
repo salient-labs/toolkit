@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
+use Closure;
+
 /**
  * Normalises property names
  *
@@ -11,10 +13,13 @@ namespace Lkrms\Contract;
 interface IResolvable
 {
     /**
-     * Normalise the given property name
+     * Returns a closure to normalise a given property name
      *
-     * @param string $name
-     * @return string
+     * @return Closure
+     * ```php
+     * function (string $name): string
+     * ```
      */
-    public static function normaliseProperty(string $name): string;
+    public static function getPropertyNormaliser(): Closure;
+
 }

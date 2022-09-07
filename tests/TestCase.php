@@ -13,7 +13,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      */
     public function assertArrayHasSubArray(array $subArray, array $array, string $message = '')
     {
-        $this->assertEquals(
+        $this->assertSame(
             $subArray,
             array_intersect_key($array, $subArray),
             $message
@@ -29,7 +29,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         // Improve diff readability by adding "<value>" where missing keys
         // should be
         $expected = array_combine($keys, array_map(fn($key) => $array[$key] ?? "<value>", $keys)) ?: [];
-        $this->assertEquals(
+        $this->assertSame(
             $expected,
             $array,
             $message

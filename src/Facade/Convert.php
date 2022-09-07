@@ -16,10 +16,11 @@ use Lkrms\Utility\Conversions;
 /**
  * A facade for \Lkrms\Utility\Conversions
  *
- * @method static Conversions load() Load and return an instance of the underlying `Conversions` class
- * @method static Conversions getInstance() Return the underlying `Conversions` instance
- * @method static bool isLoaded() Return true if an underlying `Conversions` instance has been loaded
- * @method static void unload() Clear the underlying `Conversions` instance
+ * @method static Conversions load() Load and return an instance of the underlying Conversions class
+ * @method static Conversions getInstance() Return the underlying Conversions instance
+ * @method static bool isLoaded() Return true if an underlying Conversions instance has been loaded
+ * @method static void unload() Clear the underlying Conversions instance
+ * @method static string arrayToCode(array $array, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::arrayToCode()}
  * @method static array arrayValuesToChildArray(array $array, string $key, array $map, bool $merge = true) Move array values to a nested array (see {@see Conversions::arrayValuesToChildArray()})
  * @method static string classToBasename(string $class, ?string $suffix = null) Remove the namespace and an optional suffix from a class name (see {@see Conversions::classToBasename()})
  * @method static string classToNamespace(string $class) Return the namespace of a class (see {@see Conversions::classToNamespace()})
@@ -50,6 +51,7 @@ use Lkrms\Utility\Conversions;
  * @method static string toSnakeCase(string $text) Convert an identifier to snake_case (see {@see Conversions::toSnakeCase()})
  * @method static string[] toStrings(mixed ...$value) Convert the given strings and Stringables to an array of strings (see {@see Conversions::toStrings()})
  * @method static DateTimeZone toTimezone(DateTimeZone|string $value) Convert a value to a DateTimeZone instance (see {@see Conversions::toTimezone()})
+ * @method static string valueToCode(mixed $value, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::valueToCode()}
  *
  * @uses Conversions
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\Conversions' --generate='Lkrms\Facade\Convert'

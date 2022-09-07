@@ -770,4 +770,49 @@ final class Conversions
     {
         return $this->linesToLists($text, "\n", $regex);
     }
+
+    public function valueToCode($value, string $delimiter = ", ", string $arrow = " => "): string
+    {
+        if (is_null($value))
+        {
+            return "null";
+        }
+        elseif (is_string($value) && preg_match('/\v/', $value))
+        {
+            return '"' . addcslashes($value, "\n\r\t\v\e\f\\\$\"") . '"';
+        }
+        elseif (is_array($value))
+        {
+            return $this->arrayToCode($value, $delimiter, $arrow);
+        }
+        return var_export($value, true);
+    }
+
+    public function arrayToCode(array $array, string $delimiter = ", ", string $arrow = " => "): string
+    {
+        if (empty($array))
+        {
+            return "[]";
+        }
+        $code = "";
+        if (Test::isListArray($array))
+        {
+            foreach ($array as $value)
+            {
+                $code .= ($code ? $delimiter : "[")
+                    . $this->valueToCode($value, $delimiter, $arrow);
+            }
+        }
+        else
+        {
+            foreach ($array as $key => $value)
+            {
+                $code .= ($code ? $delimiter : "[")
+                    . $this->valueToCode($key)
+                    . $arrow
+                    . $this->valueToCode($value, $delimiter, $arrow);
+            }
+        }
+        return $code . "]";
+    }
 }

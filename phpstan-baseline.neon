@@ -61,6 +61,30 @@ parameters:
 			path: src/Sync/Provider/SyncEntityProvider.php
 
 		-
+			message: """
+				#^Call to deprecated method getDoNotSerialize\\(\\) of class Lkrms\\\\Sync\\\\SyncEntity\\:
+				Override \\{@see SyncEntity\\:\\:getSerializeRules\\(\\)\\} instead$#
+			"""
+			count: 1
+			path: src/Sync/SyncEntity.php
+
+		-
+			message: """
+				#^Call to deprecated method getOnlySerializeId\\(\\) of class Lkrms\\\\Sync\\\\SyncEntity\\:
+				Override \\{@see SyncEntity\\:\\:getSerializeRules\\(\\)\\} instead$#
+			"""
+			count: 1
+			path: src/Sync/SyncEntity.php
+
+		-
+			message: """
+				#^Call to deprecated method getSerializedIdKey\\(\\) of class Lkrms\\\\Sync\\\\SyncEntity\\:
+				Override \\{@see SyncEntity\\:\\:getSerializeRules\\(\\)\\} instead$#
+			"""
+			count: 1
+			path: src/Sync/SyncEntity.php
+
+		-
 			message: "#^Call to an undefined method ReflectionType\\:\\:isBuiltin\\(\\)\\.$#"
 			count: 1
 			path: src/Utility/Reflection.php

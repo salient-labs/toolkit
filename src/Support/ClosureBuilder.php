@@ -223,7 +223,7 @@ class ClosureBuilder
         // IResolvable provides access to properties via alternative names
         if ($class->implementsInterface(IResolvable::class))
         {
-            $this->Normaliser = Closure::fromCallable("{$this->Class}::normaliseProperty");
+            $this->Normaliser = $class->getMethod("getPropertyNormaliser")->invoke(null);
         }
 
         $propertyFilter = ReflectionProperty::IS_PUBLIC;
@@ -703,7 +703,6 @@ class ClosureBuilder
         }
 
         $props = $this->ReadableProperties ?: $this->PublicProperties;
-
         if ($this->Normaliser)
         {
             $props = array_combine(
@@ -719,18 +718,14 @@ class ClosureBuilder
         $closure = static function ($instance) use ($props)
         {
             $arr = [];
-
             foreach ($props as $key => $prop)
             {
                 $arr[$key] = $instance->$prop;
             }
-
             return $arr;
         };
 
-        $this->SerializeClosure = $closure;
-
-        return $closure;
+        return $this->SerializeClosure = $closure;
     }
 
     private function checkReadable(string $property, string $action): bool

@@ -13,10 +13,10 @@ use Lkrms\Contract\IContainer;
 /**
  * A facade for \Lkrms\Container\AppContainer
  *
- * @method static AppContainer load(?string $basePath = null) Load and return an instance of the underlying `AppContainer` class
- * @method static AppContainer getInstance() Return the underlying `AppContainer` instance
- * @method static bool isLoaded() Return true if an underlying `AppContainer` instance has been loaded
- * @method static void unload() Clear the underlying `AppContainer` instance
+ * @method static AppContainer load(?string $basePath = null) Load and return an instance of the underlying AppContainer class
+ * @method static AppContainer getInstance() Return the underlying AppContainer instance
+ * @method static bool isLoaded() Return true if an underlying AppContainer instance has been loaded
+ * @method static void unload() Clear the underlying AppContainer instance
  * @method static AppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static mixed call(callable $callback) Make this the global container while running the given callback (see {@see Container::call()})
  * @method static AppContainer enableCache() See {@see AppContainer::enableCache()}
