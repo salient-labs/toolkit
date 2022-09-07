@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync;
 
+use Closure;
 use DateTimeInterface;
 use JsonSerializable;
 use Lkrms\Concept\ProviderEntity;
-use Lkrms\Concern\HasClassCache;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Support\ClosureBuilder;
+use Lkrms\Support\SerializeRules;
 use Lkrms\Sync\Provider\SyncEntityProvider;
 use UnexpectedValueException;
 
@@ -24,39 +25,27 @@ use UnexpectedValueException;
  *   and/or {@see \Lkrms\Concern\TWritable::getWritable()}.
  *
  * - {@see SyncEntity::serialize()} returns an associative array of `public`
- *   property values.
- *
- * - No `DoNotSerialize` or `OnlySerializeId` rules are applied. See
- *   {@see SyncEntity::getDoNotSerialize()} and
- *   {@see SyncEntity::getOnlySerializeId()} for more information.
- *
- * - {@see SyncEntity::getSerializedIdKey()} appends `_id` to the names of
- *   fields replaced with their {@see SyncEntity::$Id} during serialization.
+ *   properties with property names converted to snake_case.
  *
  */
 abstract class SyncEntity extends ProviderEntity implements JsonSerializable
 {
-    use HasClassCache;
-
     /**
      * @var int|string|null
      */
     public $Id;
 
     /**
-     * @var array<string,array<string,int>>
+     * @var array<string,Closure>
      */
-    private $DoNotSerialize;
+    private static $Normalisers = [];
 
     /**
-     * @var array<string,string[]>
+     * Class name => [ Property name => normalised property name ]
+     *
+     * @var array<string,array<string,string>>
      */
-    private $OnlySerializeId;
-
-    /**
-     * @var bool
-     */
-    private $DetectRecursion;
+    private static $Normalised = [];
 
     public function __clone()
     {
@@ -106,12 +95,10 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     /**
      * Return prefixes to remove when normalising field/property names
      *
-     * Instantiable entity names are removed by default, e.g. for an `AdminUser`
-     * class that extends a {@see SyncEntity} subclass called `User`, prefixes
-     * "AdminUser" and "User" are removed to ensure fields like "USER_ID" and
-     * "ADMIN_USER_FULL_NAME" match with properties like "Id" and "FullName",
-     * but if `User` were an `abstract` class, the only prefix removed would be
-     * "AdminUser", because classes that can't be instantiated are ignored.
+     * Entity names are removed by default, e.g. for an `AdminUser` class that
+     * extends a {@see SyncEntity} subclass called `User`, prefixes "AdminUser"
+     * and "User" are removed to ensure fields like "USER_ID" and
+     * "ADMIN_USER_FULL_NAME" match with properties like "Id" and "FullName".
      *
      * Return `null` to suppress prefix removal.
      *
@@ -121,37 +108,44 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     {
         return array_map(
             function (string $name) { return Convert::classToBasename($name); },
-            Reflect::getClassNamesBetween(static::class, self::class, true)
+            Reflect::getClassNamesBetween(static::class, self::class, false)
         );
     }
 
-    final public static function normaliseProperty(string $name): string
+    final public static function getPropertyNormaliser(): Closure
     {
-        if (!($closure = self::getClassCache(__METHOD__)))
+        if ($closure = self::$Normalisers[static::class] ?? null)
         {
-            if ($prefixes = static::getRemovablePrefixes())
-            {
-                $prefixes = array_unique(array_map(
-                    function (string $prefix) { return Convert::toCamelCase($prefix); },
-                    $prefixes
-                ));
-                $regex   = implode("|", $prefixes);
-                $regex   = count($prefixes) > 1 ? "($regex)" : $regex;
-                $regex   = "/^{$regex}_/";
-                $closure = function (string $name) use ($regex)
-                {
-                    return preg_replace($regex, "", Convert::toSnakeCase($name));
-                };
-            }
-            else
-            {
-                $closure = function (string $name) { return Convert::toSnakeCase($name); };
-            }
-
-            self::setClassCache(__METHOD__, $closure);
+            return $closure;
         }
 
-        return $closure($name);
+        if ($prefixes = static::getRemovablePrefixes())
+        {
+            $prefixes = array_unique(array_map(
+                fn(string $prefix) => Convert::toSnakeCase($prefix),
+                $prefixes
+            ));
+            $regex   = implode("|", $prefixes);
+            $regex   = count($prefixes) > 1 ? "($regex)" : $regex;
+            $regex   = "/^{$regex}_/";
+            $closure = static function (string $name) use ($regex)
+            {
+                return self::$Normalised[static::class][$name]
+                    ?? (self::$Normalised[static::class][$name]
+                        = preg_replace($regex, "", Convert::toSnakeCase($name)));
+            };
+        }
+        else
+        {
+            $closure = static function (string $name)
+            {
+                return self::$Normalised[static::class][$name]
+                    ?? (self::$Normalised[static::class][$name]
+                        = Convert::toSnakeCase($name));
+            };
+        }
+
+        return self::$Normalisers[static::class] = $closure;
     }
 
     /**
@@ -161,12 +155,30 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * except the entity itself.
      *
      * @return array
-     * @see SyncEntity::getDoNotSerialize()
-     * @see SyncEntity::getOnlySerializeId()
+     * @see SyncEntity::getSerializeRules()
      */
     protected function serialize(): array
     {
         return (ClosureBuilder::get(static::class)->getSerializeClosure())($this);
+    }
+
+    /**
+     * Specify how nested objects should be serialized
+     *
+     * To prevent infinite recursion when `json_encode()` or similar is used to
+     * serialize instances of the class, return a {@see SerializeRules} object
+     * configured to remove or replace values that add circular references to
+     * the object graph.
+     *
+     */
+    protected function getSerializeRules(): SerializeRules
+    {
+        $rules = new SerializeRules();
+        $rules->DoNotSerialize     = $this->getDoNotSerialize() ?: [];
+        $rules->OnlySerializeId    = $this->getOnlySerializeId() ?: [];
+        $rules->GetSerializedIdKey = fn(string $key): string => $this->getSerializedIdKey($key);
+        $rules->DetectRecursion    = !($rules->DoNotSerialize || $rules->OnlySerializeId);
+        return $rules;
     }
 
     /**
@@ -192,9 +204,8 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * }
      * ```
      *
+     * @deprecated Override {@see SyncEntity::getSerializeRules()} instead
      * @return null|array
-     * @see SyncEntity::getOnlySerializeId()
-     * @see SyncEntity::serialize()
      */
     protected function getDoNotSerialize(): ?array
     {
@@ -225,10 +236,8 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * }
      * ```
      *
+     * @deprecated Override {@see SyncEntity::getSerializeRules()} instead
      * @return null|array
-     * @see SyncEntity::getSerializedIdKey()
-     * @see SyncEntity::getDoNotSerialize()
-     * @see SyncEntity::serialize()
      */
     protected function getOnlySerializeId(): ?array
     {
@@ -242,105 +251,86 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * The default implementation appends `_id` to the key being replaced.
      * `user`, for example, would be replaced with `user_id`.
      *
+     * @deprecated Override {@see SyncEntity::getSerializeRules()} instead
      * @param string $key The key of the object being replaced in the entity's
      * serialized form.
      * @return string
-     * @see SyncEntity::serialize()
-     * @see SyncEntity::getOnlySerializeId()
      */
     protected function getSerializedIdKey(string $key): string
     {
         return $key . "_id";
     }
 
-    private function getInstanceKey(): string
+    private function getObjectId(): int
     {
-        return static::class . "::{$this->Id}";
+        return spl_object_id($this);
     }
 
-    private function _serializeId(
-        &$node,
-        ?SyncEntity $parentEntity,
-        array & $parentArray,
-        $parentKey
-    ) {
+    private function getPlaceholder(): array
+    {
+        return [
+            "@sync.type" => static::class,
+            "@sync.id"   => $this->Id,
+        ];
+    }
+
+    private function _serializeId(&$node, SerializeRules $rules, ?SyncEntity $parentEntity, array & $parentArray, $parentKey)
+    {
         // Rename $node to `<parent_key>_id` or similar if:
-        // - its parent was a SyncEntity ($parentEntity)
-        // - $parentEntity->getSerializedIdKey($parentKey) returns a new name
-        // - the new name hasn't already been used in $parentArray
+        // - its original parent was a SyncEntity (it can't belong to a list)
+        // - `($rules->GetSerializedIdKey)($parentKey)` returns a new key, and
+        // - the new key hasn't already been used in $parentArray
         if (!is_null($parentEntity) &&
-            ($newParentKey = $parentEntity->getSerializedIdKey($parentKey)) &&
+            ($newParentKey = ($rules->getSerializedIdKeyCallback())($parentKey)) &&
             $newParentKey != $parentKey)
         {
             if (array_key_exists($newParentKey, $parentArray))
             {
                 throw new UnexpectedValueException("Array key '$newParentKey' already exists");
             }
-
             $parentArray[$newParentKey] = $node->Id;
             unset($parentArray[$parentKey]);
+            return;
         }
-
         $node = $node->Id;
     }
 
-    private function _serialize(
-        &$node,
-        SyncEntity $root,
-        $parents = [],
-        SyncEntity $parentEntity = null,
-        array & $parentArray     = null,
-        $parentKey               = null
-    ) {
-        $entityNode = null;
-
+    private function _serialize(&$node, SerializeRules $rules, $parents = [], ?SyncEntity $parentEntity = null, array & $parentArray = null, $parentKey = null)
+    {
         if ($node instanceof SyncEntity)
         {
-            $entityNode = $node;
-
-            // Prevent recursion by replacing each $node descended from itself
-            // with $node->Id
-            if ($root->DetectRecursion && ($parents[$node->getInstanceKey()] ?? false))
+            if ($rules->OnlySerializePlaceholders)
             {
-                $this->_serializeId($node, $parentEntity, $parentArray, $parentKey);
+                $node = $this->getPlaceholder();
+                return;
             }
-            else
+
+            $entity = $node;
+
+            if ($rules->DetectRecursion)
             {
-                if ($root->DetectRecursion)
+                // Prevent infinite recursion by replacing each $node descended
+                // from itself with $node->Id
+                if ($parents[$node->getObjectId()] ?? false)
                 {
-                    $parents[$node->getInstanceKey()] = true;
+                    $this->_serializeId($node, $rules, $parentEntity, $parentArray, $parentKey);
+                    return;
                 }
+                $parents[$node->getObjectId()] = true;
+            }
 
-                $delete = $replace = [];
-                $class  = get_class($node);
+            $class   = get_class($node);
+            $delete  = $rules->getDoNotSerialize($class, parent::class);
+            $replace = $rules->getOnlySerializeId($class, parent::class);
 
-                do
-                {
-                    if ($keys = $root->DoNotSerialize[$class] ?? null)
-                    {
-                        array_push($delete, ...$keys);
-                    }
-
-                    if ($keys = $root->OnlySerializeId[$class] ?? null)
-                    {
-                        array_push($replace, ...$keys);
-                    }
-                }
-                while (($class = get_parent_class($class)) && $class != SyncEntity::class);
-
-                if ($delete)
-                {
-                    $node = array_diff_key($node->serialize(), array_flip($delete));
-                }
-                else
-                {
-                    $node = $node->serialize();
-                }
-
-                foreach ($replace as $key)
-                {
-                    $this->_serializeId($node[$key], $entityNode, $node, $key);
-                }
+            $node = $node->serialize();
+            if ($delete)
+            {
+                $node = array_diff_key($node, array_flip($delete));
+            }
+            foreach ($replace as $key)
+            {
+                $this->_serializeId($node[$key], $rules, $entity, $node, $key);
             }
         }
 
@@ -353,7 +343,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
                     continue;
                 }
 
-                $this->_serialize($child, $root, $parents, $entityNode, $node, $key);
+                $this->_serialize($child, $rules, $parents, $entity ?? null, $node, $key);
             }
         }
         elseif ($node instanceof DateTimeInterface)
@@ -369,24 +359,18 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     /**
      * Serialize the entity and its nested entities
      *
-     * The entity's `DoNotSerialize` and `OnlySerializeId` rules are applied to
-     * each `SyncEntity` encountered during this recursive operation.
+     * The entity's {@see SerializeRules} are applied to each `SyncEntity`
+     * encountered during this recursive operation.
      *
      * @return array
      * @see SyncEntity::serialize()
-     * @see SyncEntity::getDoNotSerialize()
-     * @see SyncEntity::getOnlySerializeId()
+     * @see SyncEntity::getSerializeRules()
      */
     final public function toArray(): array
     {
-        $this->DoNotSerialize  = $this->getDoNotSerialize() ?: [];
-        $this->OnlySerializeId = $this->getOnlySerializeId() ?: [];
-        $this->DetectRecursion = !$this->DoNotSerialize && !$this->OnlySerializeId;
-
+        $rules = $this->getSerializeRules();
         $array = $this;
-        $this->_serialize($array, $this);
-        unset($this->DoNotSerialize, $this->OnlySerializeId, $this->DetectRecursion);
-
+        $this->_serialize($array, $rules);
         return (array)$array;
     }
 

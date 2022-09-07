@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
+use Lkrms\Facade\Convert;
 use ReflectionClass;
 use ReflectionIntersectionType;
 use ReflectionMethod;
@@ -11,7 +12,6 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionType;
 use ReflectionUnionType;
-use RuntimeException;
 use UnexpectedValueException;
 
 /**
@@ -32,36 +32,36 @@ final class Reflection
     }
 
     /**
-     * Return the names of a class and its parents, up to and including $parent
+     * Return the names of a class and its parents, up to and optionally
+     * including $parent
      *
      * @param string|ReflectionClass $child
      * @param string|ReflectionClass $parent
-     * @param bool $instantiable If set, only instantiable classes will be
-     * included.
+     * @param bool $includeParent If `true`, include `$parent` in the returned
+     * array.
      * @return string[]
      */
-    public function getClassNamesBetween($child, $parent, bool $instantiable = false): array
+    public function getClassNamesBetween($child, $parent, bool $includeParent = true): array
     {
         $child  = $this->toReflectionClass($child);
         $parent = $this->toReflectionClass($parent);
 
         if (!is_a($child->name, $parent->name, true) || $parent->isInterface())
         {
-            throw new RuntimeException("{$child->name} is not a subclass of {$parent->name}");
+            throw new UnexpectedValueException("{$child->name} is not a subclass of {$parent->name}");
         }
 
         $names = [];
-
         do
         {
-            if ($instantiable && !$child->isInstantiable())
+            if ($child == $parent && !$includeParent)
             {
-                continue;
+                break;
             }
 
             $names[] = $child->name;
         }
-        while ($child->name != $parent->name && $child = $child->getParentClass());
+        while ($child != $parent && $child = $child->getParentClass());
 
         return $names;
     }
@@ -79,6 +79,7 @@ final class Reflection
      * Depending on the PHP version, `getAllTypes` returns an array of
      * `ReflectionNamedType` and/or `ReflectionType` instances.
      *
+     * @phpstan-return ReflectionNamedType[]
      * @param null|ReflectionType $type e.g. the return value of
      * `ReflectionParameter::getType()`.
      * @return ReflectionType[]
@@ -235,25 +236,7 @@ final class Reflection
         $param .= " = ";
         if (!$parameter->isDefaultValueConstant())
         {
-            $value = $parameter->getDefaultValue();
-            if (is_null($value))
-            {
-                $value = "null";
-            }
-            elseif (is_string($value) && preg_match('/\v/', $value))
-            {
-                $value = '"' . addcslashes($value, "\n\r\t\v\e\f\\\$\"") . '"';
-            }
-            elseif (is_array($value) && empty($value))
-            {
-                /** @todo Flatten arrays properly */
-                $value = "[]";
-            }
-            else
-            {
-                $value = var_export($value, true);
-            }
-            return $param . $value;
+            return $param . Convert::valueToCode($parameter->getDefaultValue(), ",", "=>");
         }
         $const = $parameter->getDefaultValueConstantName();
         if (!preg_match('/^(self|parent|static)::/i', $const))

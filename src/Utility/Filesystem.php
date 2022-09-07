@@ -58,8 +58,8 @@ final class Filesystem
     {
         $dir = dirname($filename);
 
-        if ((file_exists($dir) || mkdir($dir, $dirPermissions, true)) &&
-            (file_exists($filename) || (touch($filename) && chmod($filename, $permissions))))
+        if ((is_dir($dir) || mkdir($dir, $dirPermissions, true)) &&
+            (is_file($filename) || (touch($filename) && chmod($filename, $permissions))))
         {
             return true;
         }
@@ -79,7 +79,7 @@ final class Filesystem
         int $permissions = 0777
     ): bool
     {
-        if (file_exists($filename) || mkdir($filename, $permissions, true))
+        if (is_dir($filename) || mkdir($filename, $permissions, true))
         {
             return true;
         }

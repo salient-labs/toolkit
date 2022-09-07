@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
+use Closure;
 use Lkrms\Facade\Convert;
 
 /**
@@ -13,8 +14,8 @@ use Lkrms\Facade\Convert;
  */
 trait TResolvable
 {
-    public static function normaliseProperty(string $name): string
+    public static function getPropertyNormaliser(): Closure
     {
-        return Convert::toSnakeCase($name);
+        return fn(string $name) => Convert::toSnakeCase($name);
     }
 }

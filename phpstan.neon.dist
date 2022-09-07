@@ -25,7 +25,6 @@ parameters:
     - tests/ioc
     - tests/lk-util
     - tests/Reflect/property_resolver
-    - tests/Reflect/reflect
     - tests/sql
     - tests/Support/http_server
     - tests/Support/token_extractor

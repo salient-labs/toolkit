@@ -10,10 +10,10 @@ use Lkrms\Utility\Environment;
 /**
  * A facade for \Lkrms\Utility\Environment
  *
- * @method static Environment load() Load and return an instance of the underlying `Environment` class
- * @method static Environment getInstance() Return the underlying `Environment` instance
- * @method static bool isLoaded() Return true if an underlying `Environment` instance has been loaded
- * @method static void unload() Clear the underlying `Environment` instance
+ * @method static Environment load() Load and return an instance of the underlying Environment class
+ * @method static Environment getInstance() Return the underlying Environment instance
+ * @method static bool isLoaded() Return true if an underlying Environment instance has been loaded
+ * @method static void unload() Clear the underlying Environment instance
  * @method static void apply() Apply values from the environment to the running script (see {@see Environment::apply()})
  * @method static bool debug(?bool $newState = null) Optionally turn debug mode on or off, then return its current state (see {@see Environment::debug()})
  * @method static bool dryRun(?bool $newState = null) Optionally turn dry-run mode on or off, then return its current state (see {@see Environment::dryRun()})

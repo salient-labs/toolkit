@@ -207,10 +207,10 @@ class GenerateFacadeClass extends GenerateCommand
             ? -1 : ($b->isConstructor()
                 ? 1 : $a->getName() <=> $b->getName()));
         $facadeMethods = [
-            " * @method static $service load() Load and return an instance of the underlying `$class` class",
-            " * @method static $service getInstance() Return the underlying `$class` instance",
-            " * @method static bool isLoaded() Return true if an underlying `$class` instance has been loaded",
-            " * @method static void unload() Clear the underlying `$class` instance",
+            " * @method static $service load() Load and return an instance of the underlying $class class",
+            " * @method static $service getInstance() Return the underlying $class instance",
+            " * @method static bool isLoaded() Return true if an underlying $class instance has been loaded",
+            " * @method static void unload() Clear the underlying $class instance",
         ];
         $methods = [];
         foreach ($_methods as $_method)
@@ -223,7 +223,7 @@ class GenerateFacadeClass extends GenerateCommand
             {
                 $method  = "load";
                 $type    = $service;
-                $summary = "Load and return an instance of the underlying `$class` class";
+                $summary = "Load and return an instance of the underlying $class class";
                 unset($facadeMethods[0]);
             }
             else

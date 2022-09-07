@@ -10,10 +10,10 @@ use Lkrms\Utility\Filesystem;
 /**
  * A facade for \Lkrms\Utility\Filesystem
  *
- * @method static Filesystem load() Load and return an instance of the underlying `Filesystem` class
- * @method static Filesystem getInstance() Return the underlying `Filesystem` instance
- * @method static bool isLoaded() Return true if an underlying `Filesystem` instance has been loaded
- * @method static void unload() Clear the underlying `Filesystem` instance
+ * @method static Filesystem load() Load and return an instance of the underlying Filesystem class
+ * @method static Filesystem getInstance() Return the underlying Filesystem instance
+ * @method static bool isLoaded() Return true if an underlying Filesystem instance has been loaded
+ * @method static void unload() Clear the underlying Filesystem instance
  * @method static string|null getClassPath(string $class) See {@see Filesystem::getClassPath()}
  * @method static string|false getEol(string $filename) Get a file's end-of-line sequence (see {@see Filesystem::getEol()})
  * @method static string|null getNamespacePath(string $namespace) See {@see Filesystem::getNamespacePath()}

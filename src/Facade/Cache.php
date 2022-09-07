@@ -11,10 +11,10 @@ use Lkrms\Store\SqliteStore;
 /**
  * A facade for \Lkrms\Store\CacheStore
  *
- * @method static CacheStore load(string $filename = ':memory:', bool $autoFlush = true) Load and return an instance of the underlying `CacheStore` class
- * @method static CacheStore getInstance() Return the underlying `CacheStore` instance
- * @method static bool isLoaded() Return true if an underlying `CacheStore` instance has been loaded
- * @method static void unload() Clear the underlying `CacheStore` instance
+ * @method static CacheStore load(string $filename = ':memory:', bool $autoFlush = true) Load and return an instance of the underlying CacheStore class
+ * @method static CacheStore getInstance() Return the underlying CacheStore instance
+ * @method static bool isLoaded() Return true if an underlying CacheStore instance has been loaded
+ * @method static void unload() Clear the underlying CacheStore instance
  * @method static CacheStore close() If a database is open, close it (see {@see SqliteStore::close()})
  * @method static CacheStore delete(string $key) Delete an item (see {@see CacheStore::delete()})
  * @method static CacheStore flush() Delete all items (see {@see CacheStore::flush()})

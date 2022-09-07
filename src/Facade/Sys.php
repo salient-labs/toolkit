@@ -10,10 +10,10 @@ use Lkrms\Utility\System;
 /**
  * A facade for \Lkrms\Utility\System
  *
- * @method static System load() Load and return an instance of the underlying `System` class
- * @method static System getInstance() Return the underlying `System` instance
- * @method static bool isLoaded() Return true if an underlying `System` instance has been loaded
- * @method static void unload() Clear the underlying `System` instance
+ * @method static System load() Load and return an instance of the underlying System class
+ * @method static System getInstance() Return the underlying System instance
+ * @method static bool isLoaded() Return true if an underlying System instance has been loaded
+ * @method static void unload() Clear the underlying System instance
  * @method static int getMemoryLimit() See {@see System::getMemoryLimit()}
  * @method static int getMemoryUsage() See {@see System::getMemoryUsage()}
  * @method static int getMemoryUsagePercent() See {@see System::getMemoryUsagePercent()}

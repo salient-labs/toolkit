@@ -210,12 +210,13 @@ class GenerateSyncEntityClass extends CliCommand
             };
 
             self::$EntityName = $class;
+            $normaliser       = $entityClass::getPropertyNormaliser();
 
             foreach ($entity as $key => $value)
             {
                 if (is_string($key) && preg_match('/^[[:alpha:]]/', $key))
                 {
-                    $key = $entityClass::normaliseProperty($key);
+                    $key = $normaliser($key);
                     $key = Convert::toPascalCase($key);
 
                     // Don't limit `Id` to one type
