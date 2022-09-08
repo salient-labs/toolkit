@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Provider;
 
 use Lkrms\Concern\HasContainer;
-use Lkrms\Concern\TBindable;
 use Lkrms\Contract\IBindableSingleton;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
+use ReflectionClass;
 
 /**
  * Base class for providers that sync entities to and from third-party backends
@@ -18,11 +18,11 @@ use Lkrms\Support\DateFormatter;
  */
 abstract class SyncProvider implements ISyncProvider, IBindableSingleton
 {
-    use HasContainer, TBindable;
+    use HasContainer;
 
     /**
-     * Return a stable identifier that uniquely identifies the connected backend
-     * instance
+     * Return a stable identifier that, together with the name of the class,
+     * uniquely identifies the connected backend instance
      *
      * This method must be idempotent for each backend instance the provider
      * connects to. The return value should correspond to the smallest possible
@@ -46,9 +46,51 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     abstract protected function getBackendIdentifier(): array;
 
     /**
+     * Specify how to encode dates for the backend, and which timezone to apply
+     * (optional)
+     *
+     * The {@see DateFormatter} returned will be cached for the lifetime of the
+     * {@see SyncProvider} instance.
+     *
+     */
+    abstract protected function _getDateFormatter(): DateFormatter;
+
+    /**
+     * {@inheritdoc}
+     *
+     * Bind any {@see \Lkrms\Sync\SyncEntity} classes customised for this
+     * provider to their generic parent classes by overriding this method, e.g.:
+     *
+     * ```php
+     * public static function getBindings(): array
+     * {
+     *     return [
+     *         Post::class => CustomPost::class,
+     *         User::class => CustomUser::class,
+     *     ];
+     * }
+     * ```
+     *
+     */
+    public static function getBindings(): array
+    {
+        return [];
+    }
+
+    /**
      * @var string|null
      */
     private $BackendHash;
+
+    /**
+     * @var DateFormatter|null
+     */
+    private $DateFormatter;
+
+    /**
+     * @var array<string,string[]>
+     */
+    private static $SyncProviderInterfaces = [];
 
     /**
      * @see SyncProvider::getBackendIdentifier()
@@ -59,34 +101,28 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
             ?: ($this->BackendHash = Compute::hash(...$this->getBackendIdentifier()));
     }
 
-    final public static function getBindable(): array
-    {
-        return ClosureBuilder::get(static::class)->getSyncProviderInterfaces();
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * If particular {@see \Lkrms\Sync\SyncEntity} subclasses should be used
-     * when the provider is instantiating those entities, they should be mapped
-     * here.
-     */
-    public static function getBindings(): array
-    {
-        return [];
-    }
-
-    abstract protected function _getDateFormatter(): DateFormatter;
-
-    /**
-     * @var DateFormatter|null
-     */
-    private $DateFormatter;
-
     final public function getDateFormatter(): DateFormatter
     {
         return $this->DateFormatter
             ?: ($this->DateFormatter = $this->_getDateFormatter());
+    }
+
+    final public static function getBindable(): array
+    {
+        if (!is_null($interfaces = self::$SyncProviderInterfaces[static::class] ?? null))
+        {
+            return $interfaces;
+        }
+        $class      = new ReflectionClass(static::class);
+        $interfaces = [];
+        foreach ($class->getInterfaces() as $name => $interface)
+        {
+            if ($interface->isSubclassOf(ISyncProvider::class))
+            {
+                $interfaces[] = $name;
+            }
+        }
+        return self::$SyncProviderInterfaces[static::class] = $interfaces;
     }
 
     /**
