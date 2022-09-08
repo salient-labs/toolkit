@@ -20,13 +20,14 @@ interface IProvider
     public function container(): Container;
 
     /**
-     * Get a stable hash that uniquely identifies the backend instance
+     * Get a stable hash that, together with the name of the class, uniquely
+     * identifies the backend instance
      *
      */
     public function getBackendHash(): string;
 
     /**
-     * Get a DateFormatter for the backend's date format and timezone
+     * Get a DateFormatter to work with the backend's date format and timezone
      *
      */
     public function getDateFormatter(): DateFormatter;
