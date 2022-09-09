@@ -15,17 +15,23 @@ interface IPipeline
     /**
      * Set the payload
      *
-     * If values in `$payload` can be traversed with `foreach` and the pipeline
-     * is terminated with {@see IPipeline::thenStream()}, each value will be
-     * sent through the pipeline as an individual payload, and results will be
-     * returned via a forward-only iterator.
-     *
      * @return $this
      */
     public function send($payload);
 
     /**
-     * Set the pipes in the pipeline, removing any existing pipes
+     * Provide a payload source
+     *
+     * Call {@see IPipeline::start()} to run the pipeline with each value in
+     * `$payload` and `yield` the results via a generator.
+     *
+     * @param iterable $payload Must be traversable with `foreach`.
+     * @return $this
+     */
+    public function stream(iterable $payload);
+
+    /**
+     * Add pipes to the pipeline
      *
      * A pipe must be one of the following:
      * - an instance of a class that implements {@see IPipe}
@@ -36,11 +42,10 @@ interface IPipeline
      * function ($payload, Closure $next)
      * ```
      *
-     * Whichever form it takes, a pipe:
-     * - SHOULD use `$payload` to perform an action
-     * - MUST either:
-     *   - return the value of `$next($payload)`, or
-     *   - throw an exception
+     * Whichever form it takes, a pipe should perform an action that uses,
+     * changes and/or replaces `$payload`, then either:
+     * - return the value of `$next($payload)`, or
+     * - throw an exception
      *
      * @param IPipe|callable|string ...$pipes
      * @return $this
@@ -79,10 +84,11 @@ interface IPipeline
     public function map(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = 0);
 
     /**
-     * Run the pipeline and pass the result to a callback
+     * Set a callback that will be applied to each result
      *
-     * Returns the callback's return value
+     * This method can only be called once per pipeline.
      *
+     * @return $this
      */
     public function then(callable $callback);
 
@@ -90,13 +96,15 @@ interface IPipeline
      * Run the pipeline and return the result
      *
      */
-    public function thenReturn();
+    public function run();
 
     /**
-     * Run the pipeline and yield the result for each of the payload's values as
-     * they are read by the caller
+     * Run the pipeline with each of the payload's values and return the results
+     * via a forward-only iterator
      *
+     * {@see IPipeline::stream()} must be called before
+     * {@see IPipeline::start()} can be used to run the pipeline.
      */
-    public function thenStream(): iterable;
+    public function start(): iterable;
 
 }
