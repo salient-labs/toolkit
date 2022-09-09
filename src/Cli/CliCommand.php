@@ -33,14 +33,14 @@ abstract class CliCommand
      *
      * ```php
      * return [
-     *     CliOption::build()
+     *     CliOption::getBuilder()
      *         ->long("dest")
      *         ->short("d")
      *         ->valueName("DIR")
      *         ->description("Sync files to DIR")
      *         ->optionType(CliOptionType::VALUE)
      *         ->required(true)
-     *         ->get(),
+     *         ->go(),
      * ];
      * ```
      *

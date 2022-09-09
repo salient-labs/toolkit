@@ -283,13 +283,13 @@ final class CliOption implements IConstructible, IReadable
     }
 
     /**
-     * Use a fluent interface to create a new `CliOption`
+     * Use a fluent interface to create a new CliOption object
      *
      * See {@see CliCommand::_getOptions()} for more information.
      *
      * @return CliOptionBuilder
      */
-    public static function build(): CliOptionBuilder
+    public static function getBuilder(): CliOptionBuilder
     {
         return new CliOptionBuilder();
     }
