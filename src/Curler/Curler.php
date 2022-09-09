@@ -474,7 +474,7 @@ class Curler implements IReadable, IWritable
             }
 
             // Save transfer information
-            $this->ResponseHeadersByName = $this->ResponseHeaders->getHeadersByName();
+            $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE_REPEATED);
 
             if (is_null($error))
             {

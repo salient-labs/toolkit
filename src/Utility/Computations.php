@@ -17,7 +17,7 @@ final class Computations
     /**
      * Generate a cryptographically secure random UUID
      *
-     * Compliant with RFC4122.
+     * Compliant with [RFC4122].
      *
      * @return string
      */

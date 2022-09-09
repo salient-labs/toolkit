@@ -9,7 +9,7 @@ namespace Lkrms\Tests\Sync\Entity;
  *
  * @lkrms-generate-command lk-util generate sync provider --class='Lkrms\Tests\Sync\Entity\User' --op='create,get,update,delete,get-list'
  */
-interface UserProvider extends \Lkrms\Sync\Provider\ISyncProvider
+interface UserProvider extends \Lkrms\Sync\Contract\ISyncProvider
 {
     /**
      * @param User $user

@@ -31,7 +31,7 @@ parameters:
 			path: src/Container/Container.php
 
 		-
-			message: "#^Property Lkrms\\\\Curler\\\\CurlerHeaders\\:\\:\\$Trailers is never read, only written\\.$#"
+			message: "#^Argument of an invalid type Lkrms\\\\Curler\\\\CurlerHeaders supplied for foreach, only iterables are supported\\.$#"
 			count: 1
 			path: src/Curler/CurlerHeaders.php
 

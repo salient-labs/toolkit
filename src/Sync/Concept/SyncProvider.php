@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Sync\Provider;
+namespace Lkrms\Sync\Concept;
 
 use Lkrms\Concern\HasContainer;
 use Lkrms\Contract\IBindableSingleton;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Sync\Contract\ISyncProvider;
 use ReflectionClass;
 
 /**

@@ -8,6 +8,8 @@ use Lkrms\Console\Console;
 use Lkrms\Curler\CachingCurler;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerHeaders;
+use Lkrms\Sync\Concept\SyncProvider;
+use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
 
 /**
  * Base class for HTTP-based RESTful API providers
@@ -80,27 +82,6 @@ abstract class HttpSyncProvider extends SyncProvider
     }
 
     /**
-     * @var int|null
-     */
-    private $TemporaryCacheExpiry;
-
-    /**
-     * @var bool|null
-     */
-    private $HasTemporaryCacheExpiry;
-
-    final public function setTemporaryCacheExpiry(?int $expiry): void
-    {
-        $this->TemporaryCacheExpiry    = $expiry;
-        $this->HasTemporaryCacheExpiry = true;
-    }
-
-    final public function clearTemporaryCacheExpiry(): void
-    {
-        $this->HasTemporaryCacheExpiry = false;
-    }
-
-    /**
      * Get the URL of an API endpoint
      *
      * @param string $path
@@ -122,9 +103,7 @@ abstract class HttpSyncProvider extends SyncProvider
     {
         if (func_num_args() < 2)
         {
-            $expiry = ($this->HasTemporaryCacheExpiry
-                ? $this->TemporaryCacheExpiry
-                : $this->getCacheExpiry());
+            $expiry = $this->getCacheExpiry();
         }
 
         if (!is_null($expiry))
@@ -153,5 +132,12 @@ abstract class HttpSyncProvider extends SyncProvider
     {
         Console::debugOnce("Not implemented:",
             static::class . "::" . __FUNCTION__);
+    }
+
+    public function getBuilderFor(string $entity): HttpSyncDefinitionBuilder
+    {
+        return (new HttpSyncDefinitionBuilder())
+            ->entity($entity)
+            ->provider($this);
     }
 }

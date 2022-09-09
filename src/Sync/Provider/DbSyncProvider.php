@@ -8,7 +8,7 @@ use ADOConnection;
 use Lkrms\Db\DbConnector;
 use Lkrms\Facade\Assert;
 use Lkrms\Support\SqlQuery;
-use Lkrms\Sync\Provider\SyncProvider;
+use Lkrms\Sync\Concept\SyncProvider;
 use RuntimeException;
 use Throwable;
 
