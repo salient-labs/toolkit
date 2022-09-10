@@ -3,11 +3,11 @@
         configVersion="3"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="https://www.phpdoc.org"
-        xsi:noNamespaceSchemaLocation="https://docs.phpdoc.org/latest/phpdoc.xsd">
+        xsi:schemaLocation="https://www.phpdoc.org https://raw.githubusercontent.com/phpDocumentor/phpDocumentor/master/data/xsd/phpdoc.xsd">
     <title>lkrms/util</title>
     <paths>
         <output>build/api</output>
-        <cache>build/cache</cache>
+        <cache>build/cache/api</cache>
     </paths>
     <version number="latest">
         <api>
