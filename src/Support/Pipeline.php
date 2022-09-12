@@ -5,18 +5,22 @@ declare(strict_types=1);
 namespace Lkrms\Support;
 
 use Closure;
-use Lkrms\Concern\HasContainer;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IPipe;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Facade\Mapper;
+use RuntimeException;
+use Throwable;
 use UnexpectedValueException;
 
 class Pipeline implements IPipeline
 {
-    use HasContainer;
-
     private $Payload;
+
+    /**
+     * @var bool|null
+     */
+    private $Stream;
 
     /**
      * @var array<int,IPipe|Closure|string>
@@ -29,30 +33,41 @@ class Pipeline implements IPipeline
     private $PipeStack;
 
     /**
-     * @var Closure
+     * @var Closure|null
      */
-    private $Destination;
+    private $Then;
+
+    final public function __construct()
+    {
+    }
 
     /**
      * @return static
      */
-    final public static function create(?Container $container = null)
+    final public static function create()
     {
-        return ($container ?: (Container::hasGlobalContainer()
-            ? Container::getGlobalContainer()
-            : new Container()))->get(static::class);
+        return new static();
     }
 
     public function send($payload)
     {
         $this->Payload = $payload;
+        $this->Stream  = false;
+
+        return $this;
+    }
+
+    public function stream(iterable $payload)
+    {
+        $this->Payload = $payload;
+        $this->Stream  = true;
 
         return $this;
     }
 
     public function through(...$pipes)
     {
-        $this->Pipes     = $pipes;
+        array_push($this->Pipes, ...$pipes);
         $this->PipeStack = null;
 
         return $this;
@@ -68,42 +83,80 @@ class Pipeline implements IPipeline
 
     public function apply(callable $callback)
     {
-        $this->Pipes[]   = fn($payload, Closure $next) => $next($callback($payload));
-        $this->PipeStack = null;
-
-        return $this;
+        return $this->pipe(fn($payload, Closure $next) => $next($callback($payload)));
     }
 
     public function map(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = 0)
     {
-        $this->Pipes[] = fn($payload, Closure $next) => $next(
+        return $this->pipe(fn($payload, Closure $next) => $next(
             (Mapper::getKeyMapClosure($keyMap, $conformity, $flags))($payload)
-        );
-        $this->PipeStack = null;
-
-        return $this;
+        ));
     }
 
     public function then(callable $callback)
     {
-        $this->Destination = $callback;
+        if ($this->Then)
+        {
+            throw new RuntimeException(static::class . "::then() has already been applied");
+        }
+        $this->Then = $callback;
+
+        return $this;
+    }
+
+    public function run()
+    {
+        if ($this->Stream)
+        {
+            throw new RuntimeException(static::class . "::run() cannot be called after " . static::class . "::stream()");
+        }
+        $this->checkThen();
 
         return ($this->getPipeStack())($this->Payload);
     }
 
-    public function thenReturn()
+    public function start(): iterable
     {
-        return $this->then(fn($result) => $result);
-    }
-
-    public function thenStream(): iterable
-    {
-        $this->Destination = fn($result) => $result;
+        if (!$this->Stream)
+        {
+            throw new RuntimeException(static::class . "::stream() must be called before " . static::class . "::start()");
+        }
+        $this->checkThen();
 
         $pipeStack = $this->getPipeStack();
         foreach ($this->Payload as $payload)
         {
             yield ($pipeStack)($payload);
+        }
+    }
+
+    /**
+     * Run the pipeline
+     *
+     * If {@see Pipeline::stream()} has been called, use
+     * {@see Pipeline::start()} to run the pipeline and return an iterator,
+     * otherwise call {@see Pipeline::run()} and return the result.
+     */
+    public function go()
+    {
+        if ($this->Stream)
+        {
+            return $this->start();
+        }
+
+        return $this->run();
+    }
+
+    protected function handleException($payload, Throwable $ex)
+    {
+        throw $ex;
+    }
+
+    private function checkThen(): void
+    {
+        if (!$this->Then)
+        {
+            $this->Then = fn($result) => $result;
         }
     }
 
@@ -115,24 +168,34 @@ class Pipeline implements IPipeline
             {
                 if (is_callable($pipe))
                 {
-                    return fn($payload) => $pipe($payload, $next);
+                    $closure = fn($payload) => $pipe($payload, $next);
                 }
-                elseif (is_string($pipe))
+                else
                 {
-                    if (!is_a($pipe, IPipe::class, true))
+                    $pipe = (!is_string($pipe)
+                        ? $pipe
+                        : (Container::hasGlobalContainer()
+                            ? Container::getGlobalContainer()->get($pipe)
+                            : new $pipe()));
+                    if (!($pipe instanceof IPipe))
                     {
-                        throw new UnexpectedValueException($pipe . " does not implement " . IPipe::class);
+                        throw new UnexpectedValueException("Pipe does not implement " . IPipe::class);
                     }
-                    $pipe = $this->container()->get($pipe);
+                    $closure = fn($payload) => $pipe->handle($payload, $next);
                 }
-                elseif (!($pipe instanceof IPipe))
+                return function ($payload) use ($closure)
                 {
-                    throw new UnexpectedValueException("Invalid pipe");
-                }
-                /** @var IPipe $pipe */
-                return fn($payload) => $pipe->handle($payload, $next);
+                    try
+                    {
+                        return $closure($payload);
+                    }
+                    catch (Throwable $ex)
+                    {
+                        return $this->handleException($payload, $ex);
+                    }
+                };
             },
-            fn($result) => ($this->Destination)($result)
+            fn($result) => ($this->Then)($result)
         ));
     }
 

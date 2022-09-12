@@ -168,11 +168,26 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     }
 
     /**
+     * @return int[]
+     */
+    public static function getAll(): array
+    {
+        return [
+            self::CREATE,
+            self::READ,
+            self::UPDATE,
+            self::DELETE,
+            self::CREATE_LIST,
+            self::READ_LIST,
+            self::UPDATE_LIST,
+            self::DELETE_LIST,
+        ];
+    }
+
+    /**
      * Return true if the SyncOperation is CREATE_LIST, READ_LIST, UPDATE_LIST
      * or DELETE_LIST
      *
-     * @param int $operation
-     * @return bool
      * @throws UnexpectedValueException
      */
     public static function isList(int $operation): bool

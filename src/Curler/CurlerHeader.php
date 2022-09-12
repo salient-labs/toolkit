@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Lkrms\Curler;
 
 use Lkrms\Concern\TFullyReadable;
+use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 
 /**
+ * An immutable HTTP header
+ *
  * @property-read string $Name
  * @property-read string $Value
+ * @property-read int $Index
  */
-final class CurlerHeader implements IReadable
+final class CurlerHeader implements IReadable, IImmutable
 {
     use TFullyReadable;
 
@@ -27,19 +31,30 @@ final class CurlerHeader implements IReadable
      */
     protected $Value;
 
-    public function __construct(string $name, string $value)
+    /**
+     * @internal
+     * @var int
+     */
+    protected $Index;
+
+    public function __construct(string $name, string $value, int $index)
     {
         $this->Name  = $name;
         $this->Value = $value;
+        $this->Index = $index;
     }
 
-    public function extendValue(string $value)
+    public function extendValue(string $value): self
     {
-        $this->Value .= $value;
+        $clone         = clone $this;
+        $clone->Value .= $value;
+
+        return $clone;
     }
 
     public function getHeader(): string
     {
         return "{$this->Name}:{$this->Value}";
     }
+
 }

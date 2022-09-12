@@ -7,7 +7,7 @@ namespace Lkrms\Cli;
 use Lkrms\Concept\Enumeration;
 
 /**
- * Command-line option types
+ * Command line option types
  *
  * See {@see CliCommand::_getOptions()} for more information.
  *
@@ -58,4 +58,11 @@ final class CliOptionType extends Enumeration
      * - `--force=(yes|no|ask)`
      */
     public const ONE_OF_OPTIONAL = 4;
+
+    /**
+     * Set the value of a positional parameter
+     *
+     */
+    public const VALUE_POSITIONAL = 5;
+
 }

@@ -11,7 +11,7 @@ use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
-use Lkrms\Sync\Provider\ISyncProvider;
+use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\SyncEntity;
 use Lkrms\Sync\SyncOperation;
 

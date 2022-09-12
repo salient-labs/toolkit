@@ -7,10 +7,11 @@ namespace Lkrms\Concept;
 use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Support\ClosureBuilder;
+use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * Provides a fluent interface for creating instances of an underlying class
+ * A fluent interface for creating instances of an underlying class
  *
  */
 abstract class Builder
@@ -20,6 +21,29 @@ abstract class Builder
      *
      */
     abstract protected static function getClassName(): string;
+
+    /**
+     * Get the name of the static method that returns a new builder
+     *
+     * The default method name is "build". Override
+     * {@see Builder::getStaticBuilder()} to change it.
+     */
+    protected static function getStaticBuilder(): string
+    {
+        return "build";
+    }
+
+    /**
+     * Get the name of the method that returns a new instance of the underlying
+     * class and terminates the fluent interface
+     *
+     * The default method name is "go". Override {@see Builder::getTerminator()}
+     * to change it.
+     */
+    protected static function getTerminator(): string
+    {
+        return "go";
+    }
 
     /**
      * @var ClosureBuilder
@@ -50,33 +74,33 @@ abstract class Builder
     }
 
     /**
-     * @return static
+     * @internal
      */
-    final public static function build()
+    final public static function __callStatic(string $name, array $arguments)
     {
-        return new static();
+        if (static::getStaticBuilder() === $name)
+        {
+            return new static();
+        }
+        throw new RuntimeException("Invalid method: $name");
     }
 
     /**
      * @internal
-     * @return $this
      */
     final public function __call(string $name, array $arguments)
     {
+        if (static::getTerminator() === $name)
+        {
+            return ($this->Closure)($this->Data);
+        }
         if (count($arguments) !== 1)
         {
             throw new UnexpectedValueException("Invalid arguments");
         }
         $this->Data[$this->ClosureBuilder->maybeNormaliseProperty($name)] = $arguments[0];
-        return $this;
-    }
 
-    /**
-     * @internal
-     */
-    final public function get()
-    {
-        return ($this->Closure)($this->Data);
+        return $this;
     }
 
 }

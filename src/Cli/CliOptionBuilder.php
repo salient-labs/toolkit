@@ -7,9 +7,9 @@ namespace Lkrms\Cli;
 use Lkrms\Concept\Builder;
 
 /**
- * Provides a fluent interface for `CliOption` creation
+ * A fluent interface for creating CliOption objects
  *
- * @method CliOption get()
+ * @method CliOption go() Return a new CliOption object
  * @method $this long(string|null $value)
  * @method $this short(string|null $value)
  * @method $this valueName(string|null $value)

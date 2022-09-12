@@ -22,7 +22,7 @@ class SendHttpRequest extends CliCommand
             return $this->Method;
         }
 
-        $name = $this->getName();
+        $name = $this->getNameParts();
         return $this->Method = strtoupper(array_pop($name));
     }
 

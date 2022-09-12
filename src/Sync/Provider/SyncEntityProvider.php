@@ -7,6 +7,7 @@ namespace Lkrms\Sync\Provider;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\DI;
 use Lkrms\Facade\Reflect;
+use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\SyncEntity;
 use Lkrms\Sync\SyncOperation;
 use ReflectionClass;

@@ -17,16 +17,14 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
     {
         $in  = [12, 23, 34, 45, 56, 67, 78, 89, 91];
         $out = [];
-        foreach (
-            (new Container())
-            ->get(Pipeline::class)
-            ->send($in)
+        foreach ((new Pipeline())
+            ->stream($in)
             ->through(
                 fn($payload, Closure $next) => $next($payload * 3),
                 fn($payload, Closure $next) => $next($payload / 23),
                 fn($payload, Closure $next) => $next(round($payload, 3)),
-            )->thenStream() as $_out
-        ) {
+            )->start() as $_out)
+        {
             $out[] = $_out;
         }
 
@@ -65,31 +63,31 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         $pipeline = Pipeline::create()->map($map);
         foreach ($in as $_in)
         {
-            $out[] = $pipeline->send($_in)->thenReturn();
+            $out[] = $pipeline->send($_in)->run();
         }
 
         $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING);
         foreach ($in as $_in)
         {
-            $out[] = $pipeline->send($_in)->thenReturn();
+            $out[] = $pipeline->send($_in)->run();
         }
 
         $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED);
         foreach ($in as $_in)
         {
-            $out[] = $pipeline->send($_in)->thenReturn();
+            $out[] = $pipeline->send($_in)->run();
         }
 
         $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, ArrayMapperFlag::REMOVE_NULL);
         foreach ($in as $_in)
         {
-            $out[] = $pipeline->send($_in)->thenReturn();
+            $out[] = $pipeline->send($_in)->run();
         }
 
         $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING | ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL);
         foreach ($in as $_in)
         {
-            $out[] = $pipeline->send($_in)->thenReturn();
+            $out[] = $pipeline->send($_in)->run();
         }
 
         $this->assertSame([
@@ -118,7 +116,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         $this->expectException(UnexpectedValueException::class);
         foreach ($in as $_in)
         {
-            $out[] = $pipeline->send($_in)->thenReturn();
+            $pipeline->send($_in)->run();
         }
     }
 }

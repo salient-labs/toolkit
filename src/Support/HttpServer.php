@@ -8,6 +8,7 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Console\Console;
 use Lkrms\Contract\IReadable;
 use Lkrms\Curler\CurlerHeaders;
+use Lkrms\Curler\CurlerHeadersFlag;
 use Lkrms\Support\HttpRequest;
 use Lkrms\Support\HttpResponse;
 use RuntimeException;
@@ -160,7 +161,7 @@ final class HttpServer implements IReadable
             while (true);
 
             /** @todo Add support for Transfer-Encoding */
-            if ($length = $headers->getHeadersByName(false)["Content-Length"] ?? null)
+            if ($length = $headers->getHeaderValue("Content-Length", CurlerHeadersFlag::DISCARD_REPEATED))
             {
                 if (($body = fread($socket, (int)$length)) === false)
                 {

@@ -46,15 +46,8 @@ trait TConstructible
      * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return static
      */
-    public static function from(
-        ?Container $container,
-        array $data,
-        callable $callback = null,
-        array $keyMap      = null,
-        int $conformity    = ArrayKeyConformity::NONE,
-        int $flags         = 0,
-        $parent            = null
-    ) {
+    public static function from(?Container $container, array $data, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = 0, $parent = null)
+    {
         $closure = null;
 
         if (!is_null($keyMap))
@@ -93,15 +86,7 @@ trait TConstructible
      * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return iterable<static>
      */
-    public static function listFrom(
-        ?Container $container,
-        iterable $list,
-        callable $callback = null,
-        array $keyMap      = null,
-        int $conformity    = ArrayKeyConformity::NONE,
-        int $flags         = 0,
-        $parent            = null
-    ): iterable
+    public static function listFrom(?Container $container, iterable $list, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = 0, $parent = null): iterable
     {
         $closure = null;
 

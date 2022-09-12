@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
+use Lkrms\Curler\CurlerHeadersFlag as Flag;
+
 /**
  * A collection of HTTP headers
  *
@@ -18,6 +20,11 @@ class CurlerHeaders
     private $Headers = [];
 
     /**
+     * @var int
+     */
+    private $NextHeader = 0;
+
+    /**
      * Lowercase header names => $Headers keys
      *
      * @var array<string,int[]>
@@ -25,14 +32,14 @@ class CurlerHeaders
     private $HeaderKeysByName = [];
 
     /**
-     * @var CurlerHeader|null
+     * @var int|null
      */
-    private $LastRawHeader;
+    private $LastRawHeaderKey;
 
     /**
-     * @var bool
+     * @var bool|null
      */
-    private $RawHeadersClosed = false;
+    private $RawHeadersClosed;
 
     /**
      * @var string[]
@@ -49,21 +56,52 @@ class CurlerHeaders
 
     /**
      * @internal
-     * @param string $line
      */
-    public function addRawHeader(string $line): void
+    public function addRawHeader(string $line): self
+    {
+        return $this->getMutable()->_addRawHeader($line);
+    }
+
+    public function addHeader(string $name, string $value, bool $private = false): self
+    {
+        return $this->getMutable()->_addHeader($name, $value, $private);
+    }
+
+    public function unsetHeader(string $name): self
+    {
+        return $this->getMutable()->_unsetHeader($name);
+    }
+
+    public function setHeader(string $name, string $value, bool $private = false): self
+    {
+        return $this->unsetHeader($name)->_addHeader($name, $value, $private);
+    }
+
+    public function addPrivateHeaderName(string $name): self
+    {
+        return $this->getMutable()->_addPrivateHeaderName($name);
+    }
+
+    protected function getMutable(): self
+    {
+        return $this;
+    }
+
+    private function _addRawHeader(string $line): self
     {
         if ($this->RawHeadersClosed)
         {
             $this->Trailers[] = $line;
-            return;
+
+            return $this;
         }
 
         if (!trim($line))
         {
-            $this->LastRawHeader    = null;
+            $this->LastRawHeaderKey = null;
             $this->RawHeadersClosed = true;
-            return;
+
+            return $this;
         }
 
         // Remove trailing newlines, but keep other whitespace
@@ -74,55 +112,40 @@ class CurlerHeaders
         // HTAB, add it to the previous header
         if (strpos(" \t", $line[0]) !== false)
         {
-            if ($this->LastRawHeader)
+            if (!is_null($key = $this->LastRawHeaderKey))
             {
-                $this->LastRawHeader->extendValue($line);
+                $this->Headers[$key] = $this->Headers[$key]->extendValue($line);
             }
-            return;
+
+            return $this;
         }
 
-        // A less forgiving alternative to the below:
-        //
-        //     if (preg_match('/^([!#$%&\'*+-.^_`|~0-9a-z]+):\h*(.*)(\h|$)/i', $line, $matches))
-        //     {
-        //         $this->LastRawHeader = $this->_addHeader($matches[1], $matches[2]);
-        //     }
         if (count($split = explode(":", $line, 2)) == 2)
         {
             // The header name will only need trimming if there is whitespace
-            // between it and ":", which is not allowed since RFC 7230 (see
+            // between it and ":", which is not allowed since [RFC7230] (see
             // Section 3.2.4) and should be removed from upstream responses
-            $this->LastRawHeader = $this->_addHeader(trim($split[0]), ltrim($split[1]));
+            $this->LastRawHeaderKey = $this->NextHeader;
+            $this->_addHeader(rtrim($split[0]), ltrim($split[1]), false);
         }
+
+        return $this;
     }
 
-    private function _addHeader(string $name, string $value): CurlerHeader
+    private function _addHeader(string $name, string $value, bool $private): self
     {
-        $lower = strtolower($name);
-        if (!array_key_exists($lower, $this->HeaderKeysByName))
+        $i = $this->NextHeader++;
+        $this->Headers[$i] = new CurlerHeader($name, $value, $i);
+        $this->HeaderKeysByName[strtolower($name)][] = $i;
+        if ($private)
         {
-            $this->HeaderKeysByName[$lower] = [];
+            return $this->_addPrivateHeaderName($name);
         }
 
-        $this->Headers[] = $header = new CurlerHeader($name, $value);
-        end($this->Headers);
-        $this->HeaderKeysByName[$lower][] = key($this->Headers);
-
-        return $header;
+        return $this;
     }
 
-    public function addHeader(string $name, string $value): void
-    {
-        $this->_addHeader($name, $value);
-    }
-
-    public function setHeader(string $name, string $value): void
-    {
-        $this->unsetHeader($name);
-        $this->_addHeader($name, $value);
-    }
-
-    public function unsetHeader(string $name): void
+    private function _unsetHeader(string $name): self
     {
         $lower = strtolower($name);
         foreach (($this->HeaderKeysByName[$lower] ?? []) as $key)
@@ -130,6 +153,19 @@ class CurlerHeaders
             unset($this->Headers[$key]);
         }
         unset($this->HeaderKeysByName[$lower]);
+
+        return $this;
+    }
+
+    private function _addPrivateHeaderName(string $name): self
+    {
+        $lower = strtolower($name);
+        if (!in_array($lower, $this->PrivateHeaderNames))
+        {
+            $this->PrivateHeaderNames[] = $lower;
+        }
+
+        return $this;
     }
 
     public function hasHeader(string $name): bool
@@ -149,36 +185,64 @@ class CurlerHeaders
     }
 
     /**
-     * Get an array that maps header names to values
+     * Get the value of a header
      *
-     * @param bool $joinMultiple If `true`, multiple headers with the same name
-     * will be combined into one header with comma-separated values. If `false`,
-     * only the last of these headers will be returned.
-     * @return array<string,string>
+     * @param int $flags A bitmask of {@see Flag} values.
+     * @return string[]|string|null If {@see Flag::COMBINE_REPEATED} or
+     * {@see Flag::DISCARD_REPEATED} are set:
+     * - a `string` containing one or more comma-separated values, or
+     * - `null` if there are no matching headers
+     *
+     * Otherwise:
+     * - a `string[]` containing one or more values, or
+     * - an empty `array` if there are no matching headers
      */
-    public function getHeadersByName($joinMultiple = true): array
+    public function getHeaderValue(string $name, int $flags = 0)
     {
-        return array_combine(
-            array_keys($this->HeaderKeysByName),
-            array_map(
-                fn(array $keys) => $joinMultiple
-                ? implode(", ", array_map(
-                    fn(CurlerHeader $header) => $header->Value,
-                    array_intersect_key($this->Headers, array_flip($keys))
-                ))
-                : $this->Headers[array_pop($keys)]->Value,
-                $this->HeaderKeysByName
-            )
+        $values = array_map(
+            fn(CurlerHeader $header) => $header->Value,
+            array_intersect_key($this->Headers, array_flip($this->HeaderKeysByName[strtolower($name)] ?? []))
         );
+        if (!($flags & (Flag::COMBINE_REPEATED | Flag::DISCARD_REPEATED)))
+        {
+            return $values;
+        }
+        if (!$values)
+        {
+            return null;
+        }
+        if ($flags & Flag::DISCARD_REPEATED)
+        {
+            return end($values);
+        }
+        return implode(", ", $values);
     }
 
-    public function addPrivateHeaderName(string $name): void
+    /**
+     * Get the values of all headers
+     *
+     * @param int $flags A bitmask of {@see Flag} values.
+     * @return array<string,string[]|string> An array that maps lowercase header
+     * names to values returned by {@see CurlerHeaders::getHeaderValue()},
+     * sorted to maintain the position of each header's last appearance if
+     * {@see Flag::SORT_BY_LAST} is set.
+     */
+    public function getHeaderValues(int $flags = 0): array
     {
-        $lower = strtolower($name);
-        if (!in_array($lower, $this->PrivateHeaderNames))
+        if ($flags & Flag::SORT_BY_LAST)
         {
-            $this->PrivateHeaderNames[] = $lower;
+            $keysByName = $this->HeaderKeysByName;
+            uasort($keysByName, fn(array $a, array $b) => end($a) <=> end($b));
         }
+        $names = array_keys($keysByName ?? $this->HeaderKeysByName);
+
+        return array_combine(
+            $names,
+            array_map(
+                fn($name) => $this->getHeaderValue($name, $flags),
+                $names
+            )
+        );
     }
 
     /**
@@ -197,4 +261,16 @@ class CurlerHeaders
             )
         ));
     }
+
+    protected function toImmutable(): CurlerHeadersImmutable
+    {
+        $immutable = new CurlerHeadersImmutable();
+        foreach ($this as $property => $value)
+        {
+            $immutable->$property = $value;
+        }
+
+        return $immutable;
+    }
+
 }
