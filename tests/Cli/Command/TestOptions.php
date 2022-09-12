@@ -29,6 +29,18 @@ class TestOptions extends CliCommand
         //     "defaultValue"    => null,
         return [
             [
+                "long"            => "source",
+                "description"     => "One or more sources",
+                "optionType"      => CliOptionType::VALUE_POSITIONAL,
+                "multipleAllowed" => true,
+            ],
+            [
+                "long"        => "target",
+                "valueName"   => "targetDir",
+                "description" => "Target directory",
+                "optionType"  => CliOptionType::VALUE_POSITIONAL,
+            ],
+            [
                 "long"            => "verbose",
                 "short"           => "v",
                 "description"     => "Increase verbosity",
@@ -92,7 +104,7 @@ class TestOptions extends CliCommand
 
     protected function run(string ...$args)
     {
-        var_dump($this->getAllOptionValues());
+        var_dump($this->getOptionValues());
         var_dump($args);
     }
 }

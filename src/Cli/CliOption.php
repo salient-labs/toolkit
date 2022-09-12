@@ -7,15 +7,17 @@ namespace Lkrms\Cli;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IConstructible;
+use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
-use RuntimeException;
+use Lkrms\Support\ArrayKeyConformity;
+use Psr\Container\ContainerInterface as Container;
 use UnexpectedValueException;
 
 /**
- * A command-line option provided by a CliCommand
+ * A getopt-style command line option
  *
  * See {@see CliCommand::_getOptions()} for more information.
  *
@@ -25,6 +27,7 @@ use UnexpectedValueException;
  * @property-read string $DisplayName
  * @property-read int $OptionType
  * @property-read bool $IsFlag
+ * @property-read bool $IsPositional
  * @property-read bool $IsRequired
  * @property-read bool $IsValueRequired
  * @property-read bool $MultipleAllowed
@@ -35,11 +38,14 @@ use UnexpectedValueException;
  * @property-read string|string[]|bool|int|null $DefaultValue
  * @property-read string|null $EnvironmentVariable
  * @property-read string|string[]|bool|int|null $Value
- * @property-read bool $IsValueSet
  */
-final class CliOption implements IConstructible, IReadable
+final class CliOption implements IConstructible, IReadable, IImmutable
 {
-    use TConstructible, TFullyReadable;
+    use TConstructible, TFullyReadable
+    {
+        TConstructible::from as private _from;
+        TConstructible::listFrom as private _listFrom;
+    }
 
     /**
      * @internal
@@ -75,7 +81,13 @@ final class CliOption implements IConstructible, IReadable
      * @internal
      * @var bool
      */
-    protected $IsFlag;
+    protected $IsFlag = false;
+
+    /**
+     * @internal
+     * @var bool
+     */
+    protected $IsPositional = false;
 
     /**
      * @internal
@@ -138,75 +150,62 @@ final class CliOption implements IConstructible, IReadable
     protected $Value;
 
     /**
-     * @internal
-     * @var bool
-     */
-    protected $IsValueSet = false;
-
-    /**
-     * @param string|null $long
-     * @param string|null $short
-     * @param string|null $valueName
-     * @param string|null $description
-     * @param int $optionType The value of a {@see CliOptionType} constant.
+     * @param int $optionType A {@see CliOptionType} value.
      * @param string[]|null $allowedValues Ignored unless `$optionType` is
      * {@see CliOptionType::ONE_OF} or {@see CliOptionType::ONE_OF_OPTIONAL}.
-     * @param bool $required
-     * @param bool $multipleAllowed
      * @param string|string[]|bool|int|null $defaultValue
      * @param string|null $envVariable Use the value of environment variable
      * `$envVariable`, if set, instead of `$defaultValue`.
      * @param string|null $delimiter If `$multipleAllowed` is set, use
      * `$delimiter` to split one value into multiple values.
      */
-    public function __construct(
-        ?string $long,
-        ?string $short,
-        ?string $valueName,
-        ?string $description,
-        int $optionType       = CliOptionType::FLAG,
-        array $allowedValues  = null,
-        bool $required        = false,
-        bool $multipleAllowed = false,
-        $defaultValue         = null,
-        string $envVariable   = null,
-        ?string $delimiter    = ","
-    ) {
+    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $optionType = CliOptionType::FLAG, ?array $allowedValues = null, bool $required = false, bool $multipleAllowed = false, $defaultValue = null, ?string $envVariable = null, ?string $delimiter = ",")
+    {
         $this->Long            = $long ?: null;
-        $this->Short           = $short ?: null;
-        $this->Key             = $this->Short . "|" . $this->Long;
-        $this->DisplayName     = $this->Long ? "--" . $this->Long : "-" . $this->Short;
         $this->OptionType      = $optionType;
         $this->MultipleAllowed = $multipleAllowed;
+        $this->Delimiter       = $multipleAllowed ? $delimiter : null;
         $this->Description     = $description;
 
-        if ($this->IsFlag = ($optionType == CliOptionType::FLAG))
+        switch ($optionType)
         {
-            $this->IsRequired      = false;
-            $this->IsValueRequired = false;
-            $this->DefaultValue    = $this->MultipleAllowed ? 0 : false;
-
-            return;
+            case CliOptionType::FLAG:
+                $this->IsFlag  = true;
+                $required      = false;
+                $valueRequired = false;
+                $defaultValue  = $this->MultipleAllowed ? 0 : false;
+                break;
+            case CliOptionType::VALUE_POSITIONAL:
+                $this->IsPositional = true;
+                $short         = null;
+                $key           = $this->Long;
+                $displayName   = $this->Long;
+                $required      = true;
+                $valueRequired = true;
+                $valueName     = $valueName ?: strtoupper(Convert::toSnakeCase($this->Long));
+                break;
+            case CliOptionType::ONE_OF:
+            case CliOptionType::ONE_OF_OPTIONAL:
+                $this->AllowedValues = $allowedValues;
+            default:
+                $this->EnvironmentVariable = $envVariable ?: null;
+                if ($this->EnvironmentVariable && Env::has($envVariable))
+                {
+                    $required     = false;
+                    $defaultValue = Env::get($envVariable);
+                }
+                break;
         }
-        elseif (in_array($optionType, [CliOptionType::ONE_OF, CliOptionType::ONE_OF_OPTIONAL]))
-        {
-            $this->AllowedValues = $allowedValues;
-        }
 
+        $this->Short           = $short ?: null;
+        $this->Key             = $key ?? ($this->Short . "|" . $this->Long);
+        $this->DisplayName     = $displayName ?? ($this->Long ? "--" . $this->Long : "-" . $this->Short);
         $this->IsRequired      = $required;
-        $this->IsValueRequired = !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
+        $this->IsValueRequired = $valueRequired ?? !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
         $this->ValueName       = $valueName ?: "VALUE";
         $this->DefaultValue    = $this->IsRequired ? null : $defaultValue;
 
-        if (($this->EnvironmentVariable = $envVariable) && Env::has($envVariable))
-        {
-            $this->IsRequired   = false;
-            $this->DefaultValue = Env::get($envVariable);
-        }
-
-        if ($this->MultipleAllowed &&
-            ($this->Delimiter = $delimiter) &&
-            $this->DefaultValue && is_string($this->DefaultValue))
+        if ($this->Delimiter && $this->DefaultValue && is_string($this->DefaultValue))
         {
             $this->DefaultValue = explode($this->Delimiter, $this->DefaultValue);
         }
@@ -214,11 +213,15 @@ final class CliOption implements IConstructible, IReadable
 
     /**
      * @internal
-     * @see CliCommand::addOption()
+     * @see CliCommand::applyOption()
      */
     public function validate(): void
     {
-        if (is_null($this->Long) && is_null($this->Short))
+        if ($this->IsPositional && is_null($this->Long))
+        {
+            throw new UnexpectedValueException("long must be set");
+        }
+        elseif (!$this->IsPositional && is_null($this->Long) && is_null($this->Short))
         {
             throw new UnexpectedValueException("At least one must be set: long, short");
         }
@@ -271,15 +274,12 @@ final class CliOption implements IConstructible, IReadable
      * @param string|string[]|bool|int|null $value
      * @see CliCommand::loadOptionValues()
      */
-    public function setValue($value): void
+    public function withValue($value): self
     {
-        if ($this->IsValueSet)
-        {
-            throw new RuntimeException("Value already set: {$this->DisplayName}");
-        }
+        $clone        = clone $this;
+        $clone->Value = $value;
 
-        $this->Value      = $value;
-        $this->IsValueSet = true;
+        return $clone;
     }
 
     /**
@@ -287,10 +287,26 @@ final class CliOption implements IConstructible, IReadable
      *
      * See {@see CliCommand::_getOptions()} for more information.
      *
-     * @return CliOptionBuilder
      */
     public static function getBuilder(): CliOptionBuilder
     {
         return new CliOptionBuilder();
     }
+
+    /**
+     * @deprecated
+     */
+    public static function from(?Container $container, array $data, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = 0, $parent = null)
+    {
+        return self::_from($container, $data, $callback, $keyMap, $conformity, $flags, $parent);
+    }
+
+    /**
+     * @deprecated
+     */
+    public static function listFrom(?Container $container, iterable $list, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = 0, $parent = null): iterable
+    {
+        return self::_listFrom($container, $list, $callback, $keyMap, $conformity, $flags, $parent);
+    }
+
 }

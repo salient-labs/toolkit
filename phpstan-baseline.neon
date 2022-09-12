@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Call to deprecated method from\\(\\) of class Lkrms\\\\Cli\\\\CliOption\\.$#"
+			count: 1
+			path: src/Cli/CliCommand.php
+
+		-
 			message: "#^If condition is always false\\.$#"
 			count: 1
 			path: src/Cli/CliCommand.php

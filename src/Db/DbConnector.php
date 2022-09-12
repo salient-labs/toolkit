@@ -99,8 +99,8 @@ final class DbConnector implements IReadable
      * - `<name>_password`
      * - `<name>_database`
      * - `<name>_schema`
-     * @param int|null $driver The value of a {@see DbDriver} constant, or
-     * `null` to use environment variable `<name>_driver`.
+     * @param int|null $driver A {@see DbDriver} value, or `null` to use
+     * environment variable `<name>_driver`.
      */
     public function __construct(
         string $name,

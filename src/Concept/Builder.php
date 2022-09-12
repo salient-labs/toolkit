@@ -11,7 +11,7 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * Provides a fluent interface for creating instances of an underlying class
+ * A fluent interface for creating instances of an underlying class
  *
  */
 abstract class Builder
@@ -35,7 +35,7 @@ abstract class Builder
 
     /**
      * Get the name of the method that returns a new instance of the underlying
-     * class, terminating the fluent interface
+     * class and terminates the fluent interface
      *
      * The default method name is "go". Override {@see Builder::getTerminator()}
      * to change it.
