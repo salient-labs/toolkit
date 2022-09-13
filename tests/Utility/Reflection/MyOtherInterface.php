@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Utility\Reflection;
 
-interface MyBaseInterface
+interface MyOtherInterface
 {
     /**
-     * MyBaseInterface::MyDocumentedMethod() PHPDoc
+     * MyOtherInterface::MyDocumentedMethod() PHPDoc
      */
     public function MyDocumentedMethod();
 

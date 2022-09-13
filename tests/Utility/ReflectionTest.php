@@ -121,6 +121,61 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
         ], $names);
     }
 
+    public function testGetAllMethodDocComments()
+    {
+        $method      = (new ReflectionClass(MySubclass::class))->getMethod("MyDocumentedMethod");
+        $docComments = Reflect::getAllMethodDocComments($method);
+        $this->assertSame([
+            "/**
+     * MySubclass::MyDocumentedMethod() PHPDoc
+     */",
+            "/**
+     * MyClass::MyDocumentedMethod() PHPDoc
+     */",
+            "/**
+     * MyTrait::MyDocumentedMethod() PHPDoc
+     */",
+            "/**
+     * MyBaseTrait::MyDocumentedMethod() PHPDoc
+     */",
+            "/**
+     * MyBaseClass::MyDocumentedMethod() PHPDoc
+     */",
+            "/**
+     * MyInterface::MyDocumentedMethod() PHPDoc
+     */",
+            "/**
+     * MyBaseInterface::MyDocumentedMethod() PHPDoc
+     */",
+            "/**
+     * MyOtherInterface::MyDocumentedMethod() PHPDoc
+     */",
+        ], $docComments);
+    }
+
+    public function testGetAllPropertyDocComments()
+    {
+        $property    = (new ReflectionClass(MySubclass::class))->getProperty("MyDocumentedProperty");
+        $docComments = Reflect::getAllPropertyDocComments($property);
+        $this->assertSame([
+            "/**
+     * MySubclass::\$MyDocumentedProperty PHPDoc
+     */",
+            "/**
+     * MyClass::\$MyDocumentedProperty PHPDoc
+     */",
+            "/**
+     * MyTrait::\$MyDocumentedProperty PHPDoc
+     */",
+            "/**
+     * MyBaseTrait::\$MyDocumentedProperty PHPDoc
+     */",
+            "/**
+     * MyBaseClass::\$MyDocumentedProperty PHPDoc
+     */",
+        ], $docComments);
+    }
+
     public function testGetTypeDeclaration()
     {
         $method = (new ReflectionClass(MyClass::class))->getMethod("MyMethod");

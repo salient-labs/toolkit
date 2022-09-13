@@ -45,7 +45,7 @@ trait TExtensible
     {
         if (is_null($normalised = $this->MetaPropertyMap[$name] ?? null))
         {
-            $normalised = ClosureBuilder::get(static::class)->maybeNormaliseProperty($name);
+            $normalised = ClosureBuilder::get(static::class)->maybeNormalise($name);
             $this->MetaPropertyMap[$name] = $normalised;
         }
 

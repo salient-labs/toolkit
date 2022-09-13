@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+/**
+ * @package Lkrms\LkUtil
+ */
+
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\CliCommand;
@@ -96,6 +100,50 @@ abstract class GenerateCommand extends CliCommand
         // Otherwise, import $fqcn
         $this->ImportMap[$_fqcn] = $alias;
         return $alias;
+    }
+
+    /**
+     * Get a list of `use $fqcn[ as $alias];` statements
+     *
+     * @return string[]
+     * @see GenerateCommand::getFqcnAlias()
+     */
+    protected function getImports(): array
+    {
+        $imports = [];
+        foreach ($this->ImportMap as $alias)
+        {
+            $import = $this->AliasMap[strtolower($alias)];
+            if (!strcasecmp($alias, Convert::classToBasename($import)))
+            {
+                $imports[] = "use $import;";
+                continue;
+            }
+            $imports[] = "use $import as $alias;";
+        }
+        sort($imports);
+
+        return $imports;
+    }
+
+    /**
+     * Generate a `protected static function` that returns a fixed value
+     *
+     * @return string[]
+     */
+    protected function getStaticGetter(string $name, string $rawValue, string $returnType = "string", int $tabs = 1, string $tab = "    "): array
+    {
+        $lines = [
+            "/**",
+            " * @internal",
+            " */",
+            "protected static function {$name}(): {$returnType}",
+            "{",
+            "{$tab}return {$rawValue};",
+            "}"
+        ];
+
+        return array_map(fn($line) => str_repeat($tab, $tabs) . $line, $lines);
     }
 
 }

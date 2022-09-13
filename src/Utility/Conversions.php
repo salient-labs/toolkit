@@ -75,6 +75,28 @@ final class Conversions
     }
 
     /**
+     * A faster array_unique with reindexing
+     *
+     * @param string[] $array
+     * @return string[]
+     */
+    public function stringsToUniqueList(array $array): array
+    {
+        $list = [];
+        $seen = [];
+        foreach ($array as $value)
+        {
+            if ($seen[$value] ?? null)
+            {
+                continue;
+            }
+            $list[]       = $value;
+            $seen[$value] = true;
+        }
+        return $list;
+    }
+
+    /**
      * Convert an interval to the equivalent number of seconds
      *
      * Works with ISO 8601 durations like `PT48M`.

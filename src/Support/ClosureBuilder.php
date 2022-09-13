@@ -308,7 +308,7 @@ class ClosureBuilder
         {
             foreach ($constructor->getParameters() as $param)
             {
-                $normalised   = $this->maybeNormaliseProperty($param->name);
+                $normalised   = $this->maybeNormalise($param->name);
                 $defaultValue = null;
                 if ($param->isOptional())
                 {
@@ -349,9 +349,42 @@ class ClosureBuilder
         }
     }
 
-    public function maybeNormaliseProperty(string $name): string
+    /**
+     * @param string|string[] $value
+     * @return string|string[]
+     */
+    public function maybeNormalise($value)
     {
-        return $this->Normaliser ? ($this->Normaliser)($name) : $name;
+        if (!$this->Normaliser)
+        {
+            return $value;
+        }
+        if (is_array($value))
+        {
+            return array_map($this->Normaliser, $value);
+        }
+        return ($this->Normaliser)($value);
+    }
+
+    public function hasNormaliser(): bool
+    {
+        return !is_null($this->Normaliser);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getReadableProperties(): array
+    {
+        return $this->ReadableProperties ?: $this->PublicProperties;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getWritableProperties(): array
+    {
+        return $this->WritableProperties ?: $this->PublicProperties;
     }
 
     /**
@@ -612,7 +645,7 @@ class ClosureBuilder
      */
     public function getPropertyActionClosure(string $name, string $action): Closure
     {
-        $_name = $this->maybeNormaliseProperty($name);
+        $_name = $this->maybeNormalise($name);
 
         if ($closure = $this->PropertyActionClosures[$_name][$action] ?? null)
         {

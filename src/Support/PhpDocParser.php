@@ -89,6 +89,14 @@ class PhpDocParser implements IReadable
     protected $Return;
 
     /**
+     * Property or constant metadata, if provided
+     *
+     * @internal
+     * @var array{type:string,description:string|null}|null
+     */
+    protected $Var;
+
+    /**
      * @var bool
      */
     private $LegacyNullable;
@@ -177,6 +185,13 @@ class PhpDocParser implements IReadable
                     $type  = $token;
                     $meta++;
                     $this->Return = $this->getValue($type, $lines, $meta);
+                    break;
+
+                case "var":
+                    $token = strtok($lines, " \t\n\r");
+                    $type  = $token;
+                    $meta++;
+                    $this->Var = $this->getValue($type, $lines, $meta);
                     break;
             }
         }

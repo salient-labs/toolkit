@@ -9,6 +9,8 @@ use Countable;
 
 class MyClass extends MyBaseClass implements MyInterface
 {
+    use MyTrait;
+
     public const MY_CONSTANT = "my constant";
 
     public $Id;
@@ -54,4 +56,17 @@ class MyClass extends MyBaseClass implements MyInterface
     {
         return null;
     }
+
+    /**
+     * MyClass::$MyDocumentedProperty PHPDoc
+     */
+    public $MyDocumentedProperty;
+
+    /**
+     * MyClass::MyDocumentedMethod() PHPDoc
+     */
+    public function MyDocumentedMethod()
+    {
+    }
+
 }
