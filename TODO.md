@@ -10,11 +10,11 @@
     - [ ] Add support for parallel downloads
   - [x] `Cli` -> `CliAppContainer`, with `Cli` as a facade
     - [x] Reimplement `Cli::registerCommand()`
-  - [ ] `Util` -> `Utility`, with facades in `Facade`
+  - [x] `Util` -> `Utility`, with facades in `Facade`
   - [ ] Reimplement `Convert::arrayValuesToChildArray()` and `Convert::toNestedArrays()` as a closure builder
-  - [ ] Refactor Dice
+  - [ ] Finalise Dice refactor
   - ~~Adopt PHP's built-in `DateFormatter` alternative?~~
-- [ ] Implement a generic fluent interface (`TFluent`?) with instance creation and property getting/setting
+- [x] Implement a generic fluent interface (`Builder`) with instance creation ~~and property getting/setting~~
 - [ ] Throw custom exceptions
 - [ ] Formalise tests
   - [ ] Convert informal tests to PHPUnit tests
@@ -25,8 +25,8 @@
 
 ### Container
 - [x] Make `singleton`, `bind` etc. fluent?
-- [ ] Initialise `Console` targets during `App::load`
-- [ ] Add `App::bindProviders(...$provider)` or similar (`bindServices`?)
+- [x] Initialise `Console` targets during `App::load`
+- [x] Add `App::bindProviders(...$provider)` or similar (`bindServices`?)
 - ~~Absorb `Err` into `App`~~
   - [x] Automatically create regular expressions for paths where non-critical errors should be suppressed
 

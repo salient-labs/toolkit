@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Utility\Reflection;
 
-abstract class MyBaseClass
+trait MyTrait
 {
+    use MyBaseTrait;
+
     /**
-     * MyBaseClass::$MyDocumentedProperty PHPDoc
+     * MyTrait::$MyDocumentedProperty PHPDoc
      */
     public $MyDocumentedProperty;
 
     /**
-     * MyBaseClass::MyDocumentedMethod() PHPDoc
+     * MyTrait::MyDocumentedMethod() PHPDoc
      */
     public function MyDocumentedMethod()
     {

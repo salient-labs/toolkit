@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+/**
+ * @package Lkrms\LkUtil
+ */
+
 namespace Lkrms\LkUtil\Command;
 
 use Lkrms\Cli\CliCommand;

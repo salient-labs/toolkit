@@ -39,6 +39,7 @@ use Lkrms\Utility\Conversions;
  * @method static string|false scalarToString(mixed $value) Convert a scalar to a string (see {@see Conversions::scalarToString()})
  * @method static int sizeToBytes(string $size) Convert php.ini values like "128M" to bytes (see {@see Conversions::sizeToBytes()})
  * @method static string sparseToString(string $separator, array $array) Remove zero-width values from an array before imploding it (see {@see Conversions::sparseToString()})
+ * @method static string[] stringsToUniqueList(string[] $array) A faster array_unique with reindexing (see {@see Conversions::stringsToUniqueList()})
  * @method static array toArray(mixed $value, bool $emptyIfNull = false) If a value isn't an array, make it the first element of one (see {@see Conversions::toArray()})
  * @method static string toCamelCase(string $text) Convert an identifier to camelCase (see {@see Conversions::toCamelCase()})
  * @method static string toCase(string $text, int $case = self::IDENTIFIER_CASE_SNAKE) Perform the given case conversion (see {@see Conversions::toCase()})

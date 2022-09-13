@@ -25,12 +25,12 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer enableCache() See {@see AppContainer::enableCache()}
  * @method static CliAppContainer enableExistingCache() See {@see AppContainer::enableExistingCache()}
  * @method static CliAppContainer enableMessageLog(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG) See {@see AppContainer::enableMessageLog()}
- * @method static mixed get(string $id, mixed ...$params) Finds an entry of the container by its identifier and returns it. (see {@see Container::get()})
+ * @method static mixed get(string $id, mixed ...$params) Create a new instance of the given class or interface, or return a shared instance created earlier (see {@see Container::get()})
  * @method static IContainer getGlobalContainer() Get the current global container, loading it if necessary (see {@see Container::getGlobalContainer()})
  * @method static string getName(string $id) Resolve the given class or interface to a concrete class name (see {@see Container::getName()})
  * @method static string getProgramName() Return the name used to run the script (see {@see CliAppContainer::getProgramName()})
  * @method static CliCommand|null getRunningCommand() Return the CliCommand started from the command line (see {@see CliAppContainer::getRunningCommand()})
- * @method static bool has(string $id) Returns true if the container can return an entry for the given identifier. Returns false otherwise. (see {@see Container::has()})
+ * @method static bool has(string $id) Return true if the given class or interface resolves to a concrete class that actually exists (see {@see Container::has()})
  * @method static bool hasGlobalContainer() Return true if a global container has been loaded (see {@see Container::hasGlobalContainer()})
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of the given class or interface have been applied to the default context (see {@see Container::inContextOf()})
  * @method static CliAppContainer instance(string $id, mixed $instance) Add an existing instance to the container as a shared binding (see {@see Container::instance()})

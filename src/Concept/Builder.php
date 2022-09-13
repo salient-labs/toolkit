@@ -98,7 +98,7 @@ abstract class Builder
         {
             throw new UnexpectedValueException("Invalid arguments");
         }
-        $this->Data[$this->ClosureBuilder->maybeNormaliseProperty($name)] = $arguments[0];
+        $this->Data[$this->ClosureBuilder->maybeNormalise($name)] = $arguments[0];
 
         return $this;
     }

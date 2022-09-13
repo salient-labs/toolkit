@@ -9,28 +9,31 @@ declare(strict_types=1);
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\CliOptionType;
-use Lkrms\Concept\Facade;
+use Lkrms\Concept\Builder;
 use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Composer;
+use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Test;
+use Lkrms\Support\ClosureBuilder;
 use Lkrms\Support\PhpDocParser;
 use Lkrms\Support\TokenExtractor;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionMethod;
+use ReflectionParameter;
+use ReflectionProperty;
 
 /**
- * Generates static interfaces to underlying classes
+ * Generates fluent interfaces that create instances of a class
  *
  */
-class GenerateFacadeClass extends GenerateCommand
+class GenerateBuilderClass extends GenerateCommand
 {
     protected function _getDescription(): string
     {
-        return "Generate a static interface to a class";
+        return "Generate a fluent interface that creates instances of a class";
     }
 
     protected function _getOptions(): array
@@ -40,7 +43,7 @@ class GenerateFacadeClass extends GenerateCommand
                 "long"        => "class",
                 "short"       => "c",
                 "valueName"   => "CLASS",
-                "description" => "The class to generate a facade for",
+                "description" => "The class to generate a builder for",
                 "optionType"  => CliOptionType::VALUE,
                 "required"    => true,
             ],
@@ -50,7 +53,22 @@ class GenerateFacadeClass extends GenerateCommand
                 "valueName"   => "CLASS",
                 "description" => "The class to generate",
                 "optionType"  => CliOptionType::VALUE,
-                "required"    => true,
+            ],
+            [
+                "long"         => "static-builder",
+                "short"        => "b",
+                "valueName"    => "METHOD",
+                "description"  => "The static method that returns a new builder",
+                "optionType"   => CliOptionType::VALUE,
+                "defaultValue" => "build",
+            ],
+            [
+                "long"         => "terminator",
+                "short"        => "t",
+                "valueName"    => "METHOD",
+                "description"  => "The method that terminates the interface",
+                "optionType"   => CliOptionType::VALUE,
+                "defaultValue" => "go",
             ],
             [
                 "long"        => "package",
@@ -64,7 +82,7 @@ class GenerateFacadeClass extends GenerateCommand
                 "long"        => "desc",
                 "short"       => "d",
                 "valueName"   => "DESCRIPTION",
-                "description" => "A short description of the facade",
+                "description" => "A short description of the builder",
                 "optionType"  => CliOptionType::VALUE,
             ],
             [
@@ -85,22 +103,12 @@ class GenerateFacadeClass extends GenerateCommand
             [
                 "long"        => "declared",
                 "short"       => "e",
-                "description" => "Ignore inherited methods",
+                "description" => "Ignore inherited properties",
             ],
         ];
     }
 
-    public $SkipMethods = [
-        "getReadable",
-        "getWritable",
-
-        // These are displaced by Facade if the underlying class has them
-        "isLoaded",
-        "load",
-        "unload",
-        "unloadAll",
-        "getInstance",
-    ];
+    public $SkipProperties = [];
 
     protected function run(string ...$args)
     {
@@ -109,22 +117,26 @@ class GenerateFacadeClass extends GenerateCommand
         $namespace = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
         $fqcn      = $namespace ? $namespace . "\\" . $class : $class;
 
-        $facadeNamespace = explode("\\", ltrim($this->getOptionValue("generate"), "\\"));
-        $facadeClass     = array_pop($facadeNamespace);
-        $facadeNamespace = implode("\\", $facadeNamespace) ?: Env::get("FACADE_NAMESPACE", $namespace);
-        $facadeFqcn      = $facadeNamespace ? $facadeNamespace . "\\" . $facadeClass : $facadeClass;
-        $classPrefix     = $facadeNamespace ? "\\" : "";
+        $builderNamespace = explode("\\", ltrim($this->getOptionValue("generate") ?: $fqcn . "Builder", "\\"));
+        $builderClass     = array_pop($builderNamespace);
+        $builderNamespace = implode("\\", $builderNamespace) ?: Env::get("BUILDER_NAMESPACE", $namespace);
+        $builderFqcn      = $builderNamespace ? $builderNamespace . "\\" . $builderClass : $builderClass;
+        $classPrefix      = $builderNamespace ? "\\" : "";
 
-        $this->OutputClass     = $facadeClass;
-        $this->OutputNamespace = $facadeNamespace;
+        $this->OutputClass     = $builderClass;
+        $this->OutputNamespace = $builderNamespace;
         $this->ClassPrefix     = $classPrefix;
 
-        $extends = $this->getFqcnAlias(Facade::class, "Facade");
+        $extends = $this->getFqcnAlias(Builder::class, "Builder");
         $service = $this->getFqcnAlias($fqcn, $class);
+
+        $staticBuilder = Convert::toCamelCase($this->getOptionValue("static-builder"));
+        $terminator    = Convert::toCamelCase($this->getOptionValue("terminator"));
+        array_push($this->SkipProperties, $staticBuilder, $terminator);
 
         $package  = $this->getOptionValue("package");
         $desc     = $this->getOptionValue("desc");
-        $desc     = is_null($desc) ? "A facade for $classPrefix$fqcn" : $desc;
+        $desc     = is_null($desc) ? "A fluent interface for creating $class objects" : $desc;
         $declared = $this->getOptionValue("declared");
 
         if (!$fqcn)
@@ -132,9 +144,9 @@ class GenerateFacadeClass extends GenerateCommand
             throw new InvalidCliArgumentException("invalid class: $fqcn");
         }
 
-        if (!$facadeFqcn)
+        if (!$builderFqcn)
         {
-            throw new InvalidCliArgumentException("invalid facade: $facadeFqcn");
+            throw new InvalidCliArgumentException("invalid builder: $builderFqcn");
         }
 
         try
@@ -162,10 +174,34 @@ class GenerateFacadeClass extends GenerateCommand
             }
         );
 
-        $maybeAddFile($_class->getFileName());
-        foreach (($_methods = $_class->getMethods(ReflectionMethod::IS_PUBLIC)) as $_method)
+        $writable = ClosureBuilder::get($_class->getName())->getWritableProperties();
+        $writable = array_combine(
+            array_map(
+                fn(string $name) => Convert::toCamelCase($name),
+                $writable
+            ),
+            $writable
+        );
+
+        /** @var ReflectionParameter[] */
+        $_params          = [];
+        if ($_constructor = $_class->getConstructor())
         {
-            $maybeAddFile($_method->getFileName());
+            foreach ($_constructor->getParameters() as $_param)
+            {
+                $name = Convert::toCamelCase($_param->getName());
+                unset($writable[$name]);
+                $_params[$name] = $_param;
+            }
+        }
+
+        /** @var ReflectionProperty[] */
+        $_properties = [];
+        $maybeAddFile($_class->getFileName());
+        foreach ($writable as $name => $property)
+        {
+            $_properties[$name] = $_property = $_class->getProperty($property);
+            $maybeAddFile($_property->getDeclaringClass()->getFileName());
         }
 
         $useMap  = [];
@@ -176,19 +212,19 @@ class GenerateFacadeClass extends GenerateCommand
             $typeMap[$file] = array_change_key_case(array_flip($useMap[$file]), CASE_LOWER);
         }
 
-        $typeNameCallback = function (string $name, bool $returnFqcn = false) use ($typeMap, &$methodFile): ?string
+        $typeNameCallback = function (string $name, bool $returnFqcn = false) use ($typeMap, &$propertyFile): ?string
         {
-            $alias = $typeMap[$methodFile][ltrim(strtolower($name), "\\")] ?? null;
+            $alias = $typeMap[$propertyFile][ltrim(strtolower($name), "\\")] ?? null;
             return ($alias ? $this->getFqcnAlias($name, $alias, $returnFqcn) : null)
                 ?: (Test::isPhpReservedWord($name)
                     ? ($returnFqcn ? $name : null)
                     : $this->getFqcnAlias($name, null, $returnFqcn));
         };
-        $phpDocTypeCallback = function (string $type) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback): string
+        $phpDocTypeCallback = function (string $type) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback): string
         {
             return preg_replace_callback(
                 '/(?<!\$)\b' . PhpDocParser::TYPE_PATTERN . '\b/',
-                function ($match) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback)
+                function ($match) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback)
                 {
                     if (preg_match('/^\\\\/', $match[0]) ||
                         Test::isPhpReservedWord($match[0]))
@@ -196,8 +232,8 @@ class GenerateFacadeClass extends GenerateCommand
                         return $match[0];
                     }
                     return $typeNameCallback(
-                        $useMap[$methodFile][$match[0]]
-                        ?? "\\" . $methodNamespace . "\\" . $match[0],
+                        $useMap[$propertyFile][$match[0]]
+                        ?? "\\" . $propertyNamespace . "\\" . $match[0],
                         true
                     );
                 },
@@ -205,44 +241,34 @@ class GenerateFacadeClass extends GenerateCommand
             );
         };
 
-        usort($_methods,
-            fn(ReflectionMethod $a, ReflectionMethod $b) => $a->isConstructor()
-            ? -1 : ($b->isConstructor()
-                ? 1 : $a->getName() <=> $b->getName()));
-        $facadeMethods = [
-            " * @method static $service load() Load and return an instance of the underlying $class class",
-            " * @method static $service getInstance() Return the underlying $class instance",
-            " * @method static bool isLoaded() Return true if an underlying $class instance has been loaded",
-            " * @method static void unload() Clear the underlying $class instance",
+        $names = array_keys($_params + $_properties);
+        //sort($names);
+        $methods = [
+            " * @method $service $terminator() Return a new $class object",
+            " * @method static \$this $staticBuilder() Create a new $builderClass",
         ];
-        $methods = [];
-        foreach ($_methods as $_method)
+        foreach ($names as $name)
         {
-            $phpDoc          = PhpDocParser::fromDocBlocks(Reflect::getAllMethodDocComments($_method));
-            $methodFile      = $_method->getFileName();
-            $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
-
-            if ($_method->isConstructor())
+            if (in_array($name, $this->SkipProperties))
             {
-                $method  = "load";
-                $type    = $service;
-                $summary = "Load and return an instance of the underlying $class class";
-                unset($facadeMethods[0]);
+                continue;
             }
-            else
+
+            if ($_property = $_properties[$name] ?? null)
             {
-                $method = $_method->getName();
-                if (strpos($method, "__") === 0 ||
-                    in_array($method, $this->SkipMethods) ||
-                    ($declared && $_method->getDeclaringClass() != $_class))
+                if ($declared && $_property->getDeclaringClass() != $_class)
                 {
                     continue;
                 }
 
-                $type = (($_type = $phpDoc->Return["type"] ?? null) && strpbrk($_type, "<>") === false
+                $phpDoc            = PhpDocParser::fromDocBlocks(Reflect::getAllPropertyDocComments($_property));
+                $propertyFile      = $_property->getDeclaringClass()->getFileName();
+                $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
+
+                $type = (($_type = $phpDoc->Var["type"] ?? null) && strpbrk($_type, "<>") === false
                     ? $phpDocTypeCallback($_type)
-                    : ($_method->hasReturnType()
-                        ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
+                    : ($_property->hasType()
+                        ? Reflect::getTypeDeclaration($_property->getType(), $classPrefix, $typeNameCallback)
                         : "mixed"));
                 switch ($type)
                 {
@@ -251,50 +277,45 @@ class GenerateFacadeClass extends GenerateCommand
                         $type = $service;
                         break;
                     case 'self':
-                        $type = $typeNameCallback($_method->getDeclaringClass()->getName(), true);
+                        $type = $typeNameCallback($_property->getDeclaringClass()->getName(), true);
                         break;
                 }
                 $summary = $phpDoc->Summary ?? null;
 
-                // Work around phpDocumentor's inability to parse "?<type>"
-                // return types
-                if (strpos($type, "?") === 0)
-                {
-                    $type = substr($type, 1) . "|null";
-                }
+                $methods[] = " * @method \$this $name($type \$value)" .
+                    ($summary
+                        ? " $summary (see {@see " . $typeNameCallback($_property->getDeclaringClass()->getName(), true) . "::\$" . $_property->getName() . "})"
+                        : " See {@see " . $typeNameCallback($_property->getDeclaringClass()->getName(), true) . "::\$" . $_property->getName() . "}");
+
+                continue;
             }
 
-            $params = [];
-            foreach ($_method->getParameters() as $_param)
+            $phpDoc            = PhpDocParser::fromDocBlocks(Reflect::getAllMethodDocComments($_constructor));
+            $propertyFile      = $_constructor->getFileName();
+            $propertyNamespace = $_constructor->getDeclaringClass()->getNamespaceName();
+
+            $_param = $_params[$name];
+            $_name  = $_param->getName();
+
+            $type = (($_type = $phpDoc->Params[$_name]["type"] ?? null) && strpbrk($_type, "<>") === false
+                ? $phpDocTypeCallback($_type)
+                : ($_param->hasType()
+                    ? Reflect::getTypeDeclaration($_param->getType(), $classPrefix, $typeNameCallback)
+                    : "mixed"));
+            switch ($type)
             {
-                $params[] = Reflect::getParameterDeclaration(
-                    $_param,
-                    $classPrefix,
-                    $typeNameCallback,
-                    // Override the declared type if defined in the PHPDoc
-                    (($_type = $phpDoc->Params[$_param->getName()]["type"] ?? null) && strpbrk($_type, "<>") === false
-                        ? $phpDocTypeCallback($_type)
-                        : null)
-                );
+                case 'static':
+                case '$this':
+                    $type = $service;
+                    break;
+                case 'self':
+                    $type = $typeNameCallback($_constructor->getDeclaringClass()->getName(), true);
+                    break;
             }
+            $summary = $phpDoc->Summary ?? null;
 
-            if (!$methods && !$_method->isConstructor())
-            {
-                array_push($methods, ...$facadeMethods);
-            }
-
-            $methods[] = (" * @method static $type $method("
-                . str_replace("\n", "\n * ", implode(", ", $params)) . ")"
-                . ($_method->isConstructor()
-                    ? " $summary"
-                    : ($summary
-                        ? " $summary (see {@see " . $typeNameCallback($_method->getDeclaringClass()->getName(), true) . "::$method()})"
-                        : " See {@see " . $typeNameCallback($_method->getDeclaringClass()->getName(), true) . "::$method()}")));
-
-            if ($_method->isConstructor())
-            {
-                array_push($methods, ...$facadeMethods);
-            }
+            $methods[] = " * @method \$this $name($type \$value)" .
+                ($summary ? " $summary" : "");
         }
         $methods = implode(PHP_EOL, $methods);
 
@@ -327,10 +348,10 @@ class GenerateFacadeClass extends GenerateCommand
         $blocks = [
             "<?php",
             "declare(strict_types=1);",
-            "namespace $facadeNamespace;",
+            "namespace $builderNamespace;",
             implode(PHP_EOL, $imports),
             implode(PHP_EOL, $docBlock) . PHP_EOL .
-            "final class $facadeClass extends $extends" . PHP_EOL .
+            "final class $builderClass extends $extends" . PHP_EOL .
             "{"
         ];
 
@@ -339,7 +360,7 @@ class GenerateFacadeClass extends GenerateCommand
             unset($blocks[3]);
         }
 
-        if (!$facadeNamespace)
+        if (!$builderNamespace)
         {
             unset($blocks[2]);
         }
@@ -347,7 +368,19 @@ class GenerateFacadeClass extends GenerateCommand
         $lines = [implode(PHP_EOL . PHP_EOL, $blocks)];
 
         array_push($lines,
-            ...$this->getStaticGetter("getServiceName", "$service::class"));
+            ...$this->getStaticGetter("getClassName", "$service::class"));
+
+        if ($this->getoption("static-builder")->DefaultValue !== $staticBuilder)
+        {
+            array_push($lines, "",
+                ...$this->getStaticGetter("getStaticBuilder", var_export($staticBuilder, true)));
+        }
+
+        if ($this->getoption("terminator")->DefaultValue !== $terminator)
+        {
+            array_push($lines, "",
+                ...$this->getStaticGetter("getTerminator", var_export($terminator, true)));
+        }
 
         $lines[] = "}";
 
@@ -360,9 +393,9 @@ class GenerateFacadeClass extends GenerateCommand
         }
         else
         {
-            $file = "$facadeClass.php";
+            $file = "$builderClass.php";
 
-            if ($dir = Composer::getNamespacePath($facadeNamespace))
+            if ($dir = Composer::getNamespacePath($builderNamespace))
             {
                 if (!is_dir($dir))
                 {

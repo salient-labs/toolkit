@@ -13,7 +13,11 @@
         <api>
             <source dsn=".">
                 <path>src</path>
+                <!--<path>lib/lk-util</path>-->
             </source>
+            <ignore>
+                <path>**/*.generated.*</path>
+            </ignore>
             <visibility>public</visibility>
             <visibility>protected</visibility>
             <default-package-name>Lkrms</default-package-name>

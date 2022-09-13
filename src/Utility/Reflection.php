@@ -10,6 +10,7 @@ use ReflectionIntersectionType;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionProperty;
 use ReflectionType;
 use ReflectionUnionType;
 use UnexpectedValueException;
@@ -64,6 +65,20 @@ final class Reflection
         while ($child != $parent && $child = $child->getParentClass());
 
         return $names;
+    }
+
+    /**
+     * Follow ReflectionClass->getParentClass() until an ancestor with no parent
+     * is found
+     *
+     */
+    public function getBaseClass(ReflectionClass $class): ReflectionClass
+    {
+        while ($parent = $class->getParentClass())
+        {
+            $class = $parent;
+        }
+        return $class;
     }
 
     /**
@@ -122,32 +137,94 @@ final class Reflection
     }
 
     /**
-     * Get an array of doc comments for the given ReflectionMethod and its
-     * prototypes
+     * Get an array of doc comments for a ReflectionMethod from its declaring
+     * class and any ancestors that declare the same method
      *
-     * Returns an empty array if no doc comments are found for the method in its
-     * declaring class or in any parent classes or interfaces.
+     * Returns an empty array if no doc comments are found in the declaring
+     * class or in any inherited classes, traits or interfaces.
      *
      * @return string[]
      */
     public function getAllMethodDocComments(ReflectionMethod $method): array
     {
-        $comments = [];
-        try
+        $name       = $method->getName();
+        $interfaces = $method->getDeclaringClass()->getInterfaces();
+        $comments   = [];
+        do
         {
-            do
+            if (($comment = $method->getDocComment()) !== false)
             {
-                if (($comment = $method->getDocComment()) !== false)
+                $comments[] = $comment;
+            }
+            if ($method->getDeclaringClass()->isInterface())
+            {
+                continue;
+            }
+            foreach ($method->getDeclaringClass()->getTraits() as $trait)
+            {
+                if ($trait->hasMethod($name))
                 {
-                    $comments[] = $comment;
+                    array_push($comments, ...$this->getAllMethodDocComments($trait->getMethod($name)));
                 }
             }
-            while ($method = $method->getPrototype());
         }
-        finally
+        while (($parent = $method->getDeclaringClass()->getParentClass()) &&
+            $parent->hasMethod($name) &&
+            ($method = $parent->getMethod($name)));
+
+        // Group by base interface, then sort children before parents
+        usort($interfaces,
+            fn(ReflectionClass $a, ReflectionClass $b) => (
+                $a->isSubclassOf($b) ? -1 : (
+                    $b->isSubclassOf($a) ? 1 :
+                    $this->getBaseClass($a)->getName() <=> $this->getBaseClass($b)->getName()
+                )
+            ));
+
+        foreach ($interfaces as $interface)
         {
-            return $comments;
+            if ($interface->hasMethod($name))
+            {
+                array_push($comments, ...$this->getAllMethodDocComments($interface->getMethod($name)));
+            }
         }
+
+        return Convert::stringsToUniqueList($comments);
+    }
+
+    /**
+     * Get an array of doc comments for a ReflectionProperty from its declaring
+     * class and any ancestors that declare the same property
+     *
+     * Returns an empty array if no doc comments are found in the declaring
+     * class or in any inherited classes or traits.
+     *
+     * @return string[]
+     */
+    public function getAllPropertyDocComments(ReflectionProperty $property): array
+    {
+        $name     = $property->getName();
+        $comments = [];
+        do
+        {
+            if (($comment = $property->getDocComment()) !== false)
+            {
+                $comments[] = $comment;
+            }
+            foreach ($property->getDeclaringClass()->getTraits() as $trait)
+            {
+                if ($trait->hasProperty($name))
+                {
+                    array_push($comments, ...$this->getAllPropertyDocComments($trait->getProperty($name)));
+                }
+            }
+
+        }
+        while (($parent = $property->getDeclaringClass()->getParentClass()) &&
+            $parent->hasProperty($name) &&
+            ($property = $parent->getProperty($name)));
+
+        return Convert::stringsToUniqueList($comments);
     }
 
     /**

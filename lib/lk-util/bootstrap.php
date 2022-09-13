@@ -1,9 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * @package Lkrms\LkUtil
+ */
+
 namespace Lkrms\LkUtil;
 
 use Lkrms\Facade\Cli;
 use Lkrms\LkUtil\Command\CheckHeartbeat;
+use Lkrms\LkUtil\Command\Generate\GenerateBuilderClass;
 use Lkrms\LkUtil\Command\Generate\GenerateFacadeClass;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityClass;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntityInterface;
@@ -15,6 +22,7 @@ $loader->addPsr4("Lkrms\\LkUtil\\", __DIR__);
 (Cli::load()
     ->enableExistingCache()
     ->enableMessageLog()
+    ->command(["generate", "builder"], GenerateBuilderClass::class)
     ->command(["generate", "facade"], GenerateFacadeClass::class)
     ->command(["generate", "sync", "entity"], GenerateSyncEntityClass::class)
     ->command(["generate", "sync", "provider"], GenerateSyncEntityInterface::class)
