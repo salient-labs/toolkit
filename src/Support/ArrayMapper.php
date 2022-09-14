@@ -31,7 +31,7 @@ class ArrayMapper
      * static function (array $in): array
      * ```
      */
-    public function getKeyMapClosure(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = 0): Closure
+    public function getKeyMapClosure(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED): Closure
     {
         $sig = implode("\000", array_map(
             fn($v) => is_array($v) ? implode("\001", $v) : $v,

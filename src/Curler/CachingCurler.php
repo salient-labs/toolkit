@@ -82,7 +82,7 @@ class CachingCurler extends Curler
                 $headers[] = $this->Data;
             }
             $key    = "curler/$url/" . Compute::hash(...$headers);
-            $result = Cache::get($key);
+            $result = Cache::get($key, $this->Expiry);
 
             if ($result === false)
             {

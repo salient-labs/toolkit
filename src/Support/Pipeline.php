@@ -86,7 +86,7 @@ class Pipeline implements IPipeline
         return $this->pipe(fn($payload, Closure $next) => $next($callback($payload)));
     }
 
-    public function map(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = 0)
+    public function map(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED)
     {
         return $this->pipe(fn($payload, Closure $next) => $next(
             (Mapper::getKeyMapClosure($keyMap, $conformity, $flags))($payload)

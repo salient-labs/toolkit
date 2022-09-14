@@ -75,6 +75,24 @@ final class Conversions
     }
 
     /**
+     * A type-agnostic array_unique with reindexing
+     *
+     */
+    public function toUniqueList(array $array): array
+    {
+        $list = [];
+        foreach ($array as $value)
+        {
+            if (in_array($value, $list, true))
+            {
+                continue;
+            }
+            $list[] = $value;
+        }
+        return $list;
+    }
+
+    /**
      * A faster array_unique with reindexing
      *
      * @param string[] $array

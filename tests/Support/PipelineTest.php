@@ -60,7 +60,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         ];
         $out = [];
 
-        $pipeline = Pipeline::create()->map($map);
+        $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, 0);
         foreach ($in as $_in)
         {
             $out[] = $pipeline->send($_in)->run();
