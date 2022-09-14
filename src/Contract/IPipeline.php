@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Contract;
 
 use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Support\ArrayMapperFlag;
 
 /**
  * Sends a payload through a series of pipes to a destination
@@ -81,7 +82,7 @@ interface IPipeline
      *
      * @return $this
      */
-    public function map(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = 0);
+    public function map(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED);
 
     /**
      * Set a callback that will be applied to each result

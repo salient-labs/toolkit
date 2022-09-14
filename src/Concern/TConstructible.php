@@ -6,6 +6,7 @@ namespace Lkrms\Concern;
 
 use Lkrms\Facade\Mapper;
 use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Support\ArrayMapperFlag;
 use Lkrms\Support\ClosureBuilder;
 use Psr\Container\ContainerInterface as Container;
 use UnexpectedValueException;
@@ -46,7 +47,7 @@ trait TConstructible
      * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return static
      */
-    public static function from(?Container $container, array $data, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = 0, $parent = null)
+    public static function from(?Container $container, array $data, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null)
     {
         $closure = null;
 
@@ -86,7 +87,7 @@ trait TConstructible
      * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return iterable<static>
      */
-    public static function listFrom(?Container $container, iterable $list, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = 0, $parent = null): iterable
+    public static function listFrom(?Container $container, iterable $list, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null): iterable
     {
         $closure = null;
 

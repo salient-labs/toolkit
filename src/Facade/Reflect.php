@@ -24,7 +24,7 @@ use ReflectionType;
  * @method static array getAllTraits(ReflectionClass $class) Return an array of traits used by this class and its parent classes (see {@see Reflection::getAllTraits()})
  * @method static string[] getAllTypeNames(?ReflectionType $type) Return the names of all types included in the given ReflectionType (see {@see Reflection::getAllTypeNames()})
  * @method static ReflectionType[] getAllTypes(?ReflectionType $type) Return all types included in the given ReflectionType (see {@see Reflection::getAllTypes()})
- * @method static mixed getBaseClass(ReflectionClass $class) Follow ReflectionClass->getParentClass() and return the ancestor with no parent (see {@see Reflection::getBaseClass()})
+ * @method static ReflectionClass getBaseClass(ReflectionClass $class) Follow ReflectionClass->getParentClass() until an ancestor with no parent is found (see {@see Reflection::getBaseClass()})
  * @method static string[] getClassNamesBetween(string|ReflectionClass $child, string|ReflectionClass $parent, bool $includeParent = true) Return the names of a class and its parents, up to and optionally including $parent (see {@see Reflection::getClassNamesBetween()})
  * @method static string[] getNames(array $reflections) Return the names of the given Reflection objects (see {@see Reflection::getNames()})
  * @method static string getParameterDeclaration(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, ?string $type = null) Convert the given ReflectionParameter to a PHP parameter declaration (see {@see Reflection::getParameterDeclaration()})

@@ -8,6 +8,7 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Facade\Mapper;
 use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Support\ArrayMapperFlag;
 use Lkrms\Support\ClosureBuilder;
 use RuntimeException;
 use UnexpectedValueException;
@@ -77,7 +78,7 @@ trait TProvidable
         callable $callback = null,
         array $keyMap      = null,
         int $conformity    = ArrayKeyConformity::NONE,
-        int $flags         = 0,
+        int $flags         = ArrayMapperFlag::ADD_UNMAPPED,
         $parent            = null
     ) {
         $closure = null;
@@ -124,7 +125,7 @@ trait TProvidable
         callable $callback = null,
         array $keyMap      = null,
         int $conformity    = ArrayKeyConformity::NONE,
-        int $flags         = 0,
+        int $flags         = ArrayMapperFlag::ADD_UNMAPPED,
         $parent            = null
     ): iterable
     {
