@@ -6,10 +6,14 @@ namespace Lkrms\Sync\Concept;
 
 use Lkrms\Concern\HasContainer;
 use Lkrms\Contract\IBindableSingleton;
+use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Provider\SyncEntityProvider;
+use Lkrms\Sync\Support\SyncDefinitionBuilder;
 use ReflectionClass;
 
 /**
@@ -20,6 +24,13 @@ use ReflectionClass;
 abstract class SyncProvider implements ISyncProvider, IBindableSingleton
 {
     use HasContainer;
+
+    /**
+     * Surface the provider's implementation of sync operations for an entity
+     * via an ISyncDefinition object
+     *
+     */
+    abstract protected function getDefinition(string $entity): ?ISyncDefinition;
 
     /**
      * Return a stable identifier that, together with the name of the class,
@@ -79,6 +90,17 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     }
 
     /**
+     * Use a fluent interface to create a new SyncDefinition object
+     *
+     */
+    protected function getDefinitionBuilder(string $entity): SyncDefinitionBuilder
+    {
+        return (new SyncDefinitionBuilder())
+            ->entity($entity)
+            ->provider($this);
+    }
+
+    /**
      * @var string|null
      */
     private $BackendHash;
@@ -124,6 +146,21 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
             }
         }
         return self::$SyncProviderInterfaces[static::class] = $interfaces;
+    }
+
+    /**
+     * Use an entity-agnostic interface to the provider's implementation of sync
+     * operations for an entity
+     *
+     */
+    public function with(string $syncEntity, ?IContainer $app = null): SyncEntityProvider
+    {
+        return ($app ?: $this->app())->get(
+            SyncEntityProvider::class,
+            $syncEntity,
+            $this,
+            $this->getDefinition($syncEntity)
+        );
     }
 
     /**

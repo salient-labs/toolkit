@@ -6,6 +6,7 @@ namespace Lkrms\Concept;
 
 use Closure;
 use Lkrms\Container\Container;
+use Lkrms\Contract\IContainer;
 use Lkrms\Support\ClosureBuilder;
 use RuntimeException;
 use UnexpectedValueException;
@@ -13,12 +14,20 @@ use UnexpectedValueException;
 /**
  * A fluent interface for creating instances of an underlying class
  *
+ * If a global container has been loaded, it will be used to instantiate the
+ * underlying class unless another container is passed to the builder, e.g.:
+ *
+ * ```php
+ * $instance      = MyClassBuilder::build()->go();
+ * $boundInstance = MyClassBuilder::build($this->container())->go();
+ * ```
+ *
+ * If no service container is located, instances are created directly.
  */
 abstract class Builder
 {
     /**
-     * Get the name of the underlying class
-     *
+     * Return the name of the underlying class
      */
     abstract protected static function getClassName(): string;
 
@@ -46,6 +55,11 @@ abstract class Builder
     }
 
     /**
+     * @var IContainer|null
+     */
+    private $Container;
+
+    /**
      * @var ClosureBuilder
      */
     private $ClosureBuilder;
@@ -60,16 +74,13 @@ abstract class Builder
      */
     private $Data = [];
 
-    final public function __construct()
+    final public function __construct(?IContainer $container = null)
     {
-        if (Container::hasGlobalContainer())
-        {
-            $this->ClosureBuilder = ClosureBuilder::getBound(Container::getGlobalContainer(), static::getClassName());
-        }
-        else
-        {
-            $this->ClosureBuilder = ClosureBuilder::get(static::getClassName());
-        }
+        $this->Container      = $container;
+        $this->ClosureBuilder = ClosureBuilder::maybeGetBound(
+            $container ?: Container::maybeGetGlobalContainer(),
+            static::getClassName()
+        );
         $this->Closure = $this->ClosureBuilder->getCreateFromClosure(true);
     }
 
@@ -80,7 +91,15 @@ abstract class Builder
     {
         if (static::getStaticBuilder() === $name)
         {
-            return new static();
+            if (count($arguments) > 1)
+            {
+                throw new UnexpectedValueException("Invalid arguments");
+            }
+            if ($arguments && !($arguments[0] instanceof IContainer))
+            {
+                throw new UnexpectedValueException(get_class($arguments[0]) . " does not implement " . IContainer::class);
+            }
+            return new static($arguments[0] ?? null);
         }
         throw new RuntimeException("Invalid method: $name");
     }
@@ -92,13 +111,16 @@ abstract class Builder
     {
         if (static::getTerminator() === $name)
         {
-            return ($this->Closure)($this->Data);
+            return ($this->Closure)(
+                $this->Data,
+                $this->Container ?: Container::maybeGetGlobalContainer()
+            );
         }
-        if (count($arguments) !== 1)
+        if (count($arguments) > 1)
         {
             throw new UnexpectedValueException("Invalid arguments");
         }
-        $this->Data[$this->ClosureBuilder->maybeNormalise($name)] = $arguments[0];
+        $this->Data[$this->ClosureBuilder->maybeNormalise($name)] = $arguments[0] ?? true;
 
         return $this;
     }

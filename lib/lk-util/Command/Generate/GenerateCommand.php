@@ -131,13 +131,13 @@ abstract class GenerateCommand extends CliCommand
      *
      * @return string[]
      */
-    protected function getStaticGetter(string $name, string $rawValue, string $returnType = "string", int $tabs = 1, string $tab = "    "): array
+    protected function getStaticGetter(string $name, string $rawValue, string $rawParams = "", string $returnType = "string", int $tabs = 1, string $tab = "    "): array
     {
         $lines = [
             "/**",
             " * @internal",
             " */",
-            "protected static function {$name}(): {$returnType}",
+            "protected static function {$name}({$rawParams}): {$returnType}",
             "{",
             "{$tab}return {$rawValue};",
             "}"

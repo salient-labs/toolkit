@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Support;
 
 use Closure;
+use Lkrms\Concept\FluentInterface;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IPipe;
 use Lkrms\Contract\IPipeline;
@@ -13,7 +14,7 @@ use RuntimeException;
 use Throwable;
 use UnexpectedValueException;
 
-class Pipeline implements IPipeline
+class Pipeline extends FluentInterface implements IPipeline
 {
     private $Payload;
 
@@ -36,6 +37,11 @@ class Pipeline implements IPipeline
      * @var Closure|null
      */
     private $Then;
+
+    /**
+     * @var array
+     */
+    private $ThenArgs = [];
 
     final public function __construct()
     {
@@ -93,13 +99,14 @@ class Pipeline implements IPipeline
         ));
     }
 
-    public function then(callable $callback)
+    public function then(callable $callback, ...$args)
     {
         if ($this->Then)
         {
             throw new RuntimeException(static::class . "::then() has already been applied");
         }
-        $this->Then = $callback;
+        $this->Then     = $callback;
+        $this->ThenArgs = $args;
 
         return $this;
     }
@@ -195,7 +202,7 @@ class Pipeline implements IPipeline
                     }
                 };
             },
-            fn($result) => ($this->Then)($result)
+            fn($result) => ($this->Then)($result, ...$this->ThenArgs)
         ));
     }
 

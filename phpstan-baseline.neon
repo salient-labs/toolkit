@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^If condition is always true\\.$#"
+			count: 1
+			path: lib/lk-util/Command/Generate/GenerateBuilderClass.php
+
+		-
 			message: "#^Call to deprecated method from\\(\\) of class Lkrms\\\\Cli\\\\CliOption\\.$#"
 			count: 1
 			path: src/Cli/CliCommand.php
@@ -57,6 +62,16 @@ parameters:
 
 		-
 			message: "#^Call to function is_null\\(\\) with ReflectionMethod\\|null will always evaluate to false\\.$#"
+			count: 1
+			path: src/Sync/Provider/SyncEntityProvider.php
+
+		-
+			message: "#^Property Lkrms\\\\Sync\\\\Provider\\\\SyncEntityProvider\\:\\:\\$Container is never read, only written\\.$#"
+			count: 1
+			path: src/Sync/Provider/SyncEntityProvider.php
+
+		-
+			message: "#^Property Lkrms\\\\Sync\\\\Provider\\\\SyncEntityProvider\\:\\:\\$SyncDefinition is never read, only written\\.$#"
 			count: 1
 			path: src/Sync/Provider/SyncEntityProvider.php
 

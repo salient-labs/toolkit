@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
-use Lkrms\Facade\Mapper;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ArrayMapperFlag;
 use Lkrms\Support\ClosureBuilder;
+use Lkrms\Support\Pipeline;
 use RuntimeException;
-use UnexpectedValueException;
 
 /**
  * Implements IProvidable to represent an external entity
@@ -72,31 +70,15 @@ trait TProvidable
      * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return static
      */
-    public static function fromProvider(
-        IProvider $provider,
-        array $data,
-        callable $callback = null,
-        array $keyMap      = null,
-        int $conformity    = ArrayKeyConformity::NONE,
-        int $flags         = ArrayMapperFlag::ADD_UNMAPPED,
-        $parent            = null
-    ) {
-        $closure = null;
-
-        if (!is_null($keyMap))
-        {
-            $closure = Mapper::getKeyMapClosure($keyMap, $conformity, $flags);
-        }
-
-        if (!is_null($callback))
-        {
-            $closure = !$closure ? $callback : fn(array $in) => $closure($callback($in));
-        }
-
-        $container = self::maybeGetContextContainer($provider);
-        return ClosureBuilder::getBound(
-            $container, static::class
-        )->getCreateFromClosure()($container, $provider, $data, $closure, $parent);
+    public static function fromProvider(IProvider $provider, array $data, callable $callback = null, array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null)
+    {
+        $container = $provider->container()->inContextOf(get_class($provider));
+        return (Pipeline::create()
+            ->send($data)
+            ->if(!is_null($callback), fn(Pipeline $p) => $p->apply($callback))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->map($keyMap, $conformity, $flags))
+            ->then(ClosureBuilder::getBound($container, static::class)->getCreateProvidableFromClosure(), $provider, $container, $parent)
+            ->run());
     }
 
     /**
@@ -119,78 +101,26 @@ trait TProvidable
      * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return iterable<static>
      */
-    public static function listFromProvider(
-        IProvider $provider,
-        iterable $list,
-        callable $callback = null,
-        array $keyMap      = null,
-        int $conformity    = ArrayKeyConformity::NONE,
-        int $flags         = ArrayMapperFlag::ADD_UNMAPPED,
-        $parent            = null
-    ): iterable
+    public static function listFromProvider(IProvider $provider, iterable $list, callable $callback = null, array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null): iterable
     {
-        $closure = null;
-
-        if (!is_null($keyMap))
-        {
-            $closure = Mapper::getKeyMapClosure($keyMap, $conformity, $flags);
-        }
-
-        if (!is_null($callback))
-        {
-            $closure = !$closure ? $callback : fn(array $in) => $closure($callback($in));
-        }
-
-        $container = self::maybeGetContextContainer($provider);
-        return self::getListFromProvider($container, $provider, $list, $closure, $conformity, $parent);
-    }
-
-    private static function getListFromProvider(
-        IContainer $container,
-        IProvider $provider,
-        iterable $list,
-        ? callable $closure,
-        int $conformity,
-        $parent
-    ): iterable
-    {
-        $createFromClosure = null;
-        foreach ($list as $index => $array)
-        {
-            if (!is_array($array))
-            {
-                throw new UnexpectedValueException("Array expected at index $index");
-            }
-            if (!$createFromClosure)
-            {
-                if (in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE]))
+        $container = $provider->container()->inContextOf(get_class($provider));
+        return (Pipeline::create()
+            ->stream($list)
+            ->if(!is_null($callback), fn(Pipeline $p) => $p->apply($callback))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->map($keyMap, $conformity, $flags))
+            ->then(
+                function (array $data) use (&$closure, $container, $provider, $conformity, $parent)
                 {
-                    if ($closure)
+                    if (!$closure)
                     {
-                        $closureArray = $closure($array);
+                        $builder = ClosureBuilder::getBound($container, static::class);
+                        $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                            ? $builder->getCreateProvidableFromSignatureClosure(array_keys($data))
+                            : $builder->getCreateProvidableFromClosure();
                     }
-                    $createFromClosure = ClosureBuilder::getBound(
-                        $container, static::class
-                    )->getCreateFromSignatureClosure(array_keys($closureArray ?? $array));
+                    return $closure($data, $provider, $container, $parent);
                 }
-                else
-                {
-                    $createFromClosure = ClosureBuilder::getBound(
-                        $container, static::class
-                    )->getCreateFromClosure();
-                }
-            }
-            yield $createFromClosure($container, $provider, $array, $closure, $parent);
-        }
+            )->start());
     }
 
-    protected static function maybeGetContextContainer(?IProvider $provider): IContainer
-    {
-        if ($provider && ($container = $provider->container()) &&
-            $container instanceof IContainer)
-        {
-            return $container->inContextOf(get_class($provider));
-        }
-        return $container ?? \Lkrms\Container\Container::getGlobalContainer();
-    }
 }

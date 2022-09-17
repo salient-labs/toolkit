@@ -7,6 +7,7 @@ namespace Lkrms\Cli;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IConstructible;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Assert;
@@ -14,7 +15,6 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ArrayMapperFlag;
-use Psr\Container\ContainerInterface as Container;
 use UnexpectedValueException;
 
 /**
@@ -297,7 +297,7 @@ final class CliOption implements IConstructible, IReadable, IImmutable
     /**
      * @deprecated
      */
-    public static function from(?Container $container, array $data, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null)
+    public static function from(?IContainer $container, array $data, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null)
     {
         return self::_from($container, $data, $callback, $keyMap, $conformity, $flags, $parent);
     }
@@ -305,7 +305,7 @@ final class CliOption implements IConstructible, IReadable, IImmutable
     /**
      * @deprecated
      */
-    public static function listFrom(?Container $container, iterable $list, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null): iterable
+    public static function listFrom(?IContainer $container, iterable $list, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null): iterable
     {
         return self::_listFrom($container, $list, $callback, $keyMap, $conformity, $flags, $parent);
     }

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Provider;
 
+use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\DI;
 use Lkrms\Facade\Reflect;
 use Lkrms\Sync\Concept\SyncProvider;
+use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\SyncEntity;
 use Lkrms\Sync\SyncOperation;
 use ReflectionClass;
@@ -15,37 +17,29 @@ use ReflectionMethod;
 use UnexpectedValueException;
 
 /**
- * Provides an entity-agnostic interface with a SyncEntity's current provider
+ * Provides an entity-agnostic interface to a SyncEntity's current provider
  *
  * So you can do this:
+ *
+ * ```php
+ * $faculties = $provider->with(Faculty::class)->getList();
+ * ```
+ *
+ * or this, assuming a `Faculty` provider is bound to the current global
+ * container:
  *
  * ```php
  * $faculties = Faculty::backend()->getList();
  * ```
  *
- * or this:
- *
- * ```php
- * $genericProvider = new SyncEntityProvider(Faculty::class);
- * $faculties       = $genericProvider->getList();
- * ```
- *
- * instead of this:
- *
- * ```php
- * $facultyProvider = DI::get(Faculty::class . "Provider");
- * $faculties       = $facultyProvider->getFaculties();
- * ```
- *
- * When a new `SyncEntityProvider` is created, it is bound to the
- * {@see SyncProvider} currently registered for the given {@see SyncEntity}.
- *
- * Registering a different provider for an entity has no effect on existing
- * `SyncEntityProvider` instances.
- *
  */
 class SyncEntityProvider
 {
+    /**
+     * @var IContainer
+     */
+    private $Container;
+
     /**
      * @var string
      */
@@ -67,23 +61,30 @@ class SyncEntityProvider
     private $SyncProvider;
 
     /**
+     * @var ISyncDefinition
+     */
+    private $SyncDefinition;
+
+    /**
      * @var ReflectionClass
      */
     private $SyncProviderClass;
 
     private $Callbacks = [];
 
-    public function __construct(string $name)
+    public function __construct(IContainer $app, string $entity, SyncProvider $provider, ?ISyncDefinition $definition)
     {
-        if (!is_subclass_of($name, SyncEntity::class))
+        if (!is_subclass_of($entity, SyncEntity::class))
         {
-            throw new UnexpectedValueException("Not a subclass of SyncEntity: " . $name);
+            throw new UnexpectedValueException("Not a subclass of SyncEntity: " . $entity);
         }
 
-        $this->SyncEntity        = $name;
-        $this->SyncEntityNoun    = Convert::classToBasename($name);
-        $this->SyncEntityPlural  = $name::getPluralClassName();
-        $this->SyncProvider      = DI::get($name . "Provider");
+        $this->Container         = $app;
+        $this->SyncEntity        = $entity;
+        $this->SyncEntityNoun    = Convert::classToBasename($entity);
+        $this->SyncEntityPlural  = $entity::getPluralClassName();
+        $this->SyncProvider      = $provider;
+        $this->SyncDefinition    = $definition;
         $this->SyncProviderClass = new ReflectionClass($this->SyncProvider);
     }
 

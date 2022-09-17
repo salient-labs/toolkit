@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Sync\Concept;
+namespace Lkrms\Sync\Support;
 
+use Closure;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IReadable;
@@ -15,7 +16,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * entity
  *
  */
-abstract class SyncDefinition implements ISyncDefinition, IReadable
+class SyncDefinition implements ISyncDefinition, IReadable
 {
     use TFullyReadable;
 
@@ -55,6 +56,11 @@ abstract class SyncDefinition implements ISyncDefinition, IReadable
     final public function getSyncProvider(): ISyncProvider
     {
         return $this->SyncProvider;
+    }
+
+    public function getSyncOperationClosure(int $operation): ?Closure
+    {
+        return null;
     }
 
     final public function getDataToEntityPipeline(): ?IPipeline

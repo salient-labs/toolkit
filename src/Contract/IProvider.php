@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
-use Lkrms\Container\Container;
 use Lkrms\Support\DateFormatter;
 
 /**
@@ -17,7 +16,7 @@ interface IProvider
      * Get the container used to instantiate objects
      *
      */
-    public function container(): Container;
+    public function container(): IContainer;
 
     /**
      * Get a stable hash that, together with the name of the class, uniquely

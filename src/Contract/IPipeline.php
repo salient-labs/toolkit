@@ -58,7 +58,12 @@ interface IPipeline
      *
      * See {@see IPipeline::through()} for more information.
      *
-     * @param IPipe|callable|string $pipe
+     * @param IPipe|callable|string $pipe Either an {@see IPipe} object, the
+     * name of an {@see IPipe} class to instantiate, or a closure with the
+     * following signature:
+     * ```php
+     * function ($payload, Closure $next)
+     * ```
      * @return $this
      */
     public function pipe($pipe);
@@ -91,7 +96,7 @@ interface IPipeline
      *
      * @return $this
      */
-    public function then(callable $callback);
+    public function then(callable $callback, ...$args);
 
     /**
      * Run the pipeline and return the result

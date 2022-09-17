@@ -24,7 +24,7 @@ $app = (App::load(dirname(__DIR__))
     ->enableCache()
     ->service(JsonPlaceholderApi::class));
 
-$userApi = new SyncEntityProvider(User::class);
+$userApi = User::backend($app);
 
 $posts = iterator_to_array(Post::backend()->getList());
 Console::info("Posts retrieved:", (string)count($posts));

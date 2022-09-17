@@ -11,6 +11,7 @@ namespace Lkrms\LkUtil\Command\Generate;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Concept\Builder;
 use Lkrms\Console\Console;
+use Lkrms\Contract\IContainer;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Convert;
@@ -71,6 +72,18 @@ class GenerateBuilderClass extends GenerateCommand
                 "defaultValue" => "go",
             ],
             [
+                "long"        => "extend",
+                "short"       => "x",
+                "valueName"   => "CLASS",
+                "description" => "The Builder subclass to extend",
+                "optionType"  => CliOptionType::VALUE,
+            ],
+            [
+                "long"        => "no-final",
+                "short"       => "a",
+                "description" => "Do not declare the generated class 'final'",
+            ],
+            [
                 "long"        => "package",
                 "short"       => "p",
                 "valueName"   => "PACKAGE",
@@ -123,12 +136,18 @@ class GenerateBuilderClass extends GenerateCommand
         $builderFqcn      = $builderNamespace ? $builderNamespace . "\\" . $builderClass : $builderClass;
         $classPrefix      = $builderNamespace ? "\\" : "";
 
+        $extendsNamespace = explode("\\", ltrim($this->getOptionValue("extend") ?: Builder::class, "\\"));
+        $extendsClass     = array_pop($extendsNamespace);
+        $extendsNamespace = implode("\\", $extendsNamespace) ?: Env::get("BUILDER_NAMESPACE", $namespace);
+        $extendsFqcn      = $extendsNamespace ? $extendsNamespace . "\\" . $extendsClass : $extendsClass;
+
         $this->OutputClass     = $builderClass;
         $this->OutputNamespace = $builderNamespace;
         $this->ClassPrefix     = $classPrefix;
 
-        $extends = $this->getFqcnAlias(Builder::class, "Builder");
-        $service = $this->getFqcnAlias($fqcn, $class);
+        $extends   = $this->getFqcnAlias($extendsFqcn, $extendsClass);
+        $service   = $this->getFqcnAlias($fqcn, $class);
+        $container = $this->getFqcnAlias(IContainer::class);
 
         $staticBuilder = Convert::toCamelCase($this->getOptionValue("static-builder"));
         $terminator    = Convert::toCamelCase($this->getOptionValue("terminator"));
@@ -147,6 +166,16 @@ class GenerateBuilderClass extends GenerateCommand
         if (!$builderFqcn)
         {
             throw new InvalidCliArgumentException("invalid builder: $builderFqcn");
+        }
+
+        if (!$extendsFqcn)
+        {
+            throw new InvalidCliArgumentException("invalid builder subclass: $extendsFqcn");
+        }
+
+        if (!is_a($extendsFqcn, Builder::class, true))
+        {
+            throw new InvalidCliArgumentException("not a subclass of Builder: $extendsClass");
         }
 
         try
@@ -244,8 +273,7 @@ class GenerateBuilderClass extends GenerateCommand
         $names = array_keys($_params + $_properties);
         //sort($names);
         $methods = [
-            " * @method $service $terminator() Return a new $class object",
-            " * @method static \$this $staticBuilder() Create a new $builderClass",
+            " * @method static \$this $staticBuilder(?$container \$container = null) Create a new $builderClass (syntactic sugar for 'new $builderClass()')",
         ];
         foreach ($names as $name)
         {
@@ -302,6 +330,7 @@ class GenerateBuilderClass extends GenerateCommand
                 : ($_param->hasType()
                     ? Reflect::getTypeDeclaration($_param->getType(), $classPrefix, $typeNameCallback)
                     : "mixed"));
+            $default = "";
             switch ($type)
             {
                 case 'static':
@@ -311,13 +340,17 @@ class GenerateBuilderClass extends GenerateCommand
                 case 'self':
                     $type = $typeNameCallback($_constructor->getDeclaringClass()->getName(), true);
                     break;
+                case 'bool':
+                    $default = " = true";
+                    break;
             }
             $summary = $phpDoc->Summary ?? null;
 
-            $methods[] = " * @method \$this $name($type \$value)" .
+            $methods[] = " * @method \$this $name($type \$value$default)" .
                 ($summary ? " $summary" : "");
         }
-        $methods = implode(PHP_EOL, $methods);
+        $methods[] = " * @method $service $terminator() Return a new $class object";
+        $methods   = implode(PHP_EOL, $methods);
 
         $imports = $this->getImports();
 
@@ -351,7 +384,8 @@ class GenerateBuilderClass extends GenerateCommand
             "namespace $builderNamespace;",
             implode(PHP_EOL, $imports),
             implode(PHP_EOL, $docBlock) . PHP_EOL .
-            "final class $builderClass extends $extends" . PHP_EOL .
+            ($this->getOptionValue("no-final") ? "" : "final ") .
+            "class $builderClass extends $extends" . PHP_EOL .
             "{"
         ];
 

@@ -9,6 +9,7 @@ use Lkrms\Curler\CachingCurler;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Sync\Concept\SyncProvider;
+use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
 
 /**
@@ -23,7 +24,7 @@ abstract class HttpSyncProvider extends SyncProvider
      * `$path` should be ignored unless the provider uses endpoint-specific base
      * URLs to connect to the API. It should never be added to the return value.
      *
-     * @param null|string $path The endpoint requested via
+     * @param string|null $path The endpoint requested via
      * {@see HttpSyncProvider::getCurler()}.
      * @return string
      */
@@ -34,11 +35,11 @@ abstract class HttpSyncProvider extends SyncProvider
      *
      * Called once per {@see HttpSyncProvider::getCurler()} call.
      *
-     * @param null|string $path The endpoint requested via
+     * @param string|null $path The endpoint requested via
      * {@see HttpSyncProvider::getCurler()}.
      * @return null|CurlerHeaders
      */
-    abstract protected function getHeaders(?string $path): ?CurlerHeaders;
+    abstract protected function getCurlerHeaders(?string $path): ?CurlerHeaders;
 
     /**
      * The time, in seconds, before upstream responses expire
@@ -49,11 +50,12 @@ abstract class HttpSyncProvider extends SyncProvider
      * The `$expiry` parameter of {@see HttpSyncProvider::getCurler()} takes
      * precedence.
      *
-     * @return null|int
+     * @param string|null $path The endpoint requested via
+     * {@see HttpSyncProvider::getCurler()}.
      * @see \Lkrms\Store\CacheStore::set() for more information about `$expiry`
      * values
      */
-    protected function getCacheExpiry(): ?int
+    protected function getCurlerCacheExpiry(?string $path): ?int
     {
         return null;
     }
@@ -63,10 +65,10 @@ abstract class HttpSyncProvider extends SyncProvider
      *
      * Called once per {@see HttpSyncProvider::getCurler()} call.
      *
-     * @param Curler $curler
      */
-    protected function prepareCurler(Curler $curler): void
+    protected function prepareCurler(Curler $curler): Curler
     {
+        return $curler;
     }
 
     /**
@@ -79,6 +81,18 @@ abstract class HttpSyncProvider extends SyncProvider
     protected function getCurlerCacheKey(CurlerHeaders $headers): array
     {
         return $headers->getPublicHeaders();
+    }
+
+    protected function getDefinition(string $entity): ?ISyncDefinition
+    {
+        return null;
+    }
+
+    protected function getDefinitionBuilder(string $entity): HttpSyncDefinitionBuilder
+    {
+        return (new HttpSyncDefinitionBuilder())
+            ->entity($entity)
+            ->provider($this);
     }
 
     /**
@@ -95,22 +109,19 @@ abstract class HttpSyncProvider extends SyncProvider
     /**
      * Get a Curler or CachingCurler instance bound to an API endpoint
      *
-     * @param string $path
-     * @param int|null $expiry
-     * @return Curler
      */
-    final public function getCurler(string $path, int $expiry = null): Curler
+    final public function getCurler(string $path, ?int $expiry = null): Curler
     {
         if (func_num_args() < 2)
         {
-            $expiry = $this->getCacheExpiry();
+            $expiry = $this->getCurlerCacheExpiry($path);
         }
 
         if (!is_null($expiry))
         {
             $curler = new CachingCurler(
                 $this->getEndpointUrl($path),
-                $this->getHeaders($path),
+                $this->getCurlerHeaders($path),
                 $expiry,
                 fn(CurlerHeaders $headers) => $this->getCurlerCacheKey($headers)
             );
@@ -119,7 +130,7 @@ abstract class HttpSyncProvider extends SyncProvider
         {
             $curler = new Curler(
                 $this->getEndpointUrl($path),
-                $this->getHeaders($path)
+                $this->getCurlerHeaders($path)
             );
         }
 
@@ -134,10 +145,4 @@ abstract class HttpSyncProvider extends SyncProvider
             static::class . "::" . __FUNCTION__);
     }
 
-    public function getBuilderFor(string $entity): HttpSyncDefinitionBuilder
-    {
-        return (new HttpSyncDefinitionBuilder())
-            ->entity($entity)
-            ->provider($this);
-    }
 }

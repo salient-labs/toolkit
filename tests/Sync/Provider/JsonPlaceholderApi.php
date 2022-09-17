@@ -23,7 +23,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return self::JSON_PLACEHOLDER_BASE_URL;
     }
 
-    protected function getHeaders(?string $path): ?CurlerHeaders
+    protected function getCurlerHeaders(?string $path): ?CurlerHeaders
     {
         return null;
     }
@@ -38,7 +38,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return new DateFormatter();
     }
 
-    protected function getCacheExpiry(): ?int
+    protected function getCurlerCacheExpiry(?string $path): ?int
     {
         return 24 * 60 * 60;
     }
