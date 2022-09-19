@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Support;
 
 use Closure;
-use Lkrms\Container\FactoryContainer;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
@@ -14,7 +14,6 @@ use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\ITreeNode;
 use Lkrms\Contract\IWritable;
 use Lkrms\Facade\Reflect;
-use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -167,12 +166,27 @@ class ClosureBuilder
     /**
      * @var array<int,Closure>
      */
-    private $CreateFromClosures = [];
+    private $CreateProviderlessFromClosures = [];
+
+    /**
+     * @var array<int,Closure>
+     */
+    private $CreateProvidableFromClosures = [];
 
     /**
      * @var array<string,Closure>
      */
     private $CreateFromSignatureClosures = [];
+
+    /**
+     * @var array<string,array<int,Closure>>
+     */
+    private $CreateProviderlessFromSignatureClosures = [];
+
+    /**
+     * @var array<string,array<int,Closure>>
+     */
+    private $CreateProvidableFromSignatureClosures = [];
 
     /**
      * @var Closure|null
@@ -185,24 +199,27 @@ class ClosureBuilder
     private static $Instances = [];
 
     /**
-     * Return a ClosureBuilder for $class after using $container to resolve it
-     * to a concrete class
+     * Get a ClosureBuilder for $class after optionally using a container to
+     * resolve it to a concrete class
      */
-    public static function getBound(?Container $container, string $class): ClosureBuilder
+    public static function maybeGetBound(?IContainer $container, string $class): ClosureBuilder
     {
-        if (is_null($container))
-        {
-            return self::get($class);
-        }
-        elseif ($container instanceof \Lkrms\Container\Container)
-        {
-            return self::get($container->getName($class));
-        }
-        return self::get(get_class($container->get($class)));
+        return is_null($container)
+            ? self::get($class)
+            : self::getBound($container, $class);
     }
 
     /**
-     * Return a ClosureBuilder for $class
+     * Get a ClosureBuilder for $class after using a container to resolve it to
+     * a concrete class
+     */
+    public static function getBound(IContainer $container, string $class): ClosureBuilder
+    {
+        return self::get($container->getName($class));
+    }
+
+    /**
+     * Get a ClosureBuilder for $class
      */
     public static function get(string $class): ClosureBuilder
     {
@@ -262,7 +279,7 @@ class ClosureBuilder
         {
             $readable = $class->getMethod("getReadable")->invoke(null);
             $readable = array_merge(
-                ["*"] === $readable ? $this->Properties : ($readable ?: []),
+                ["*"] === $readable ? $this->Properties : $readable,
                 $this->PublicProperties
             );
             $this->ReadableProperties = array_intersect($this->Properties, $readable);
@@ -272,7 +289,7 @@ class ClosureBuilder
         {
             $writable = $class->getMethod("getWritable")->invoke(null);
             $writable = array_merge(
-                ["*"] === $writable ? $this->Properties : ($writable ?: []),
+                ["*"] === $writable ? $this->Properties : $writable,
                 $this->PublicProperties
             );
             $this->WritableProperties = array_intersect($this->Properties, $writable);
@@ -388,22 +405,79 @@ class ClosureBuilder
     }
 
     /**
-     * @param bool $strict If set, throw an exception instead of discarding
-     * unusable data.
+     * @param bool $strict If `true`, throw an exception if the closure would
+     * discard unusable data.
      * @return Closure
      * ```php
-     * // If the class implements IProvidable:
-     * closure(\Psr\Container\ContainerInterface $container, \Lkrms\Contract\IProvider $provider, array $array, callable $callback = null, \Lkrms\Contract\ITreeNode $parent = null)
-     * // Otherwise:
-     * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null, \Lkrms\Contract\ITreeNode $parent = null)
+     * closure(array $array, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
      * ```
      */
     public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\000", $keys);
 
-        // Use a cached closure if this array signature has already been
-        // resolved, otherwise create a closure for this and future runs
+        if ($closure = $this->CreateProviderlessFromSignatureClosures[$sig][(int)$strict] ?? null)
+        {
+            return $closure;
+        }
+
+        $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
+        $closure = static function (array $array, ?IContainer $container = null, ?ITreeNode $parent = null) use ($closure)
+        {
+            return $closure($container, $array, null, $parent);
+        };
+
+        $this->CreateProviderlessFromSignatureClosures[$sig][(int)$strict] = $closure;
+        if ($strict)
+        {
+            $this->CreateProviderlessFromSignatureClosures[$sig][(int)false] = $closure;
+        }
+
+        return $closure;
+    }
+
+    /**
+     * @param bool $strict If `true`, throw an exception if the closure would
+     * discard unusable data.
+     * @return Closure
+     * ```php
+     * closure(array $array, \Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
+     * ```
+     */
+    public function getCreateProvidableFromSignatureClosure(array $keys, bool $strict = false): Closure
+    {
+        $sig = implode("\000", $keys);
+
+        if ($closure = $this->CreateProvidableFromSignatureClosures[$sig][(int)$strict] ?? null)
+        {
+            return $closure;
+        }
+
+        $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
+        $closure = static function (array $array, IProvider $provider, ?IContainer $container = null, ?ITreeNode $parent = null) use ($closure)
+        {
+            return $closure($container ?: $provider->container(), $array, $provider, $parent);
+        };
+
+        $this->CreateProvidableFromSignatureClosures[$sig][(int)$strict] = $closure;
+        if ($strict)
+        {
+            $this->CreateProvidableFromSignatureClosures[$sig][(int)false] = $closure;
+        }
+
+        return $closure;
+    }
+
+    /**
+     * @return Closure
+     * ```
+     * closure(?\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\ITreeNode $parent)
+     * ```
+     */
+    private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
+    {
+        $sig = implode("\000", $keys);
+
         if ($closure = $this->CreateFromSignatureClosures[$sig] ?? null)
         {
             return $closure;
@@ -469,27 +543,35 @@ class ClosureBuilder
         // 4. Build the smallest possible chain of closures
         if ($parameterKeys)
         {
-            $closure = function (Container $container, array $array) use ($parameterKeys)
+            $closure = function (?IContainer $container, array $array) use ($parameterKeys)
             {
                 $args = $this->DefaultArguments;
                 foreach ($parameterKeys as $key => $index)
                 {
                     $args[$index] = $array[$key];
                 }
-                return $container->get($this->Class, ...$args);
+                if ($container)
+                {
+                    return $container->get($this->Class, ...$args);
+                }
+                return new $this->Class(...$args);
             };
         }
         else
         {
-            $closure = function (Container $container)
+            $closure = function (?IContainer $container)
             {
-                return $container->get($this->Class, ...$this->DefaultArguments);
+                if ($container)
+                {
+                    return $container->get($this->Class, ...$this->DefaultArguments);
+                }
+                return new $this->Class(...$this->DefaultArguments);
             };
         }
 
         if ($propertyKeys)
         {
-            $closure = static function (Container $container, array $array) use ($closure, $propertyKeys)
+            $closure = static function (?IContainer $container, array $array) use ($closure, $propertyKeys)
             {
                 $obj = $closure($container, $array);
                 foreach ($propertyKeys as $key => $property)
@@ -498,44 +580,20 @@ class ClosureBuilder
                 }
                 return $obj;
             };
-            // We've already checked property access, so bypass
-            // IWritable::__set() to speed things up
             $closure = $closure->bindTo(null, $this->Class);
         }
 
-        // Call `setProvider()` early because property methods might need it
+        // Call `setProvider()` and/or `setParent()` early in case property
+        // methods need them
         if ($this->IsProvidable)
         {
-            $closure = static function (Container $container, array $array, IProvider $provider) use ($closure)
+            $closure = static function (?IContainer $container, array $array, ?IProvider $provider) use ($closure)
             {
+                /** @var IProvidable $obj */
                 $obj = $closure($container, $array);
-                $obj->setProvider($provider);
-                return $obj;
-            };
-        }
-
-        if ($methodKeys)
-        {
-            $closure = static function (Container $container, array $array, ?IProvider $provider) use ($closure, $methodKeys)
-            {
-                $obj = $closure($container, $array, $provider);
-                foreach ($methodKeys as $key => $method)
+                if ($provider)
                 {
-                    $obj->$method($array[$key]);
-                }
-                return $obj;
-            };
-            $closure = $closure->bindTo(null, $this->Class);
-        }
-
-        if ($metaKeys)
-        {
-            $closure = static function (Container $container, array $array, ?IProvider $provider) use ($closure, $metaKeys)
-            {
-                $obj = $closure($container, $array, $provider);
-                foreach ($metaKeys as $key)
-                {
-                    $obj->setMetaProperty((string)$key, $array[$key]);
+                    $obj->setProvider($provider);
                 }
                 return $obj;
             };
@@ -543,7 +601,7 @@ class ClosureBuilder
 
         if ($this->IsTreeNode)
         {
-            $closure = static function (Container $container, array $array, ?IProvider $provider, ?ITreeNode $parent) use ($closure)
+            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?ITreeNode $parent) use ($closure)
             {
                 /** @var ITreeNode $obj */
                 $obj = $closure($container, $array, $provider);
@@ -555,21 +613,30 @@ class ClosureBuilder
             };
         }
 
-        $closure = function (array $array, callable $callback = null, Container $container = null, IProvider $provider = null, ITreeNode $parent = null) use ($closure)
+        if ($methodKeys)
         {
-            if ($callback)
+            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?ITreeNode $parent) use ($closure, $methodKeys)
             {
-                $array = $callback($array);
-            }
-            return $closure($container ?: new FactoryContainer(), $array, $provider, $parent);
-        };
+                $obj = $closure($container, $array, $provider, $parent);
+                foreach ($methodKeys as $key => $method)
+                {
+                    $obj->$method($array[$key]);
+                }
+                return $obj;
+            };
+            $closure = $closure->bindTo(null, $this->Class);
+        }
 
-        if ($this->IsProvidable)
+        if ($metaKeys)
         {
-            // Return a closure where $container and $provider are not optional
-            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null, ITreeNode $parent = null) use ($closure)
+            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?ITreeNode $parent) use ($closure, $metaKeys)
             {
-                return $closure($array, $callback, $container, $provider, $parent);
+                $obj = $closure($container, $array, $provider, $parent);
+                foreach ($metaKeys as $key)
+                {
+                    $obj->setMetaProperty((string)$key, $array[$key]);
+                }
+                return $obj;
             };
         }
 
@@ -577,48 +644,51 @@ class ClosureBuilder
     }
 
     /**
-     * @param bool $strict If set, throw an exception instead of discarding
-     * unusable data.
+     * @param bool $strict If `true`, return a closure that throws an exception
+     * if `$array` contains unusable values.
      * @return Closure
      * ```php
-     * // If the class implements IProvidable:
-     * closure(\Psr\Container\ContainerInterface $container, \Lkrms\Contract\IProvider $provider, array $array, callable $callback = null, \Lkrms\Contract\ITreeNode $parent = null)
-     * // Otherwise:
-     * closure(array $array, callable $callback = null, \Psr\Container\ContainerInterface $container = null, \Lkrms\Contract\ITreeNode $parent = null)
+     * closure(array $array, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
      * ```
      */
     public function getCreateFromClosure(bool $strict = false): Closure
     {
-        if ($closure = $this->CreateFromClosures[(int)$strict] ?? null)
+        if ($closure = $this->CreateProviderlessFromClosures[(int)$strict] ?? null)
         {
             return $closure;
         }
-        if ($this->IsProvidable)
+
+        $closure = function (array $array, ?IContainer $container = null, ?ITreeNode $parent = null) use ($strict)
         {
-            $closure = function (Container $container, IProvider $provider, array $array, callable $callback = null, ITreeNode $parent = null) use ($strict)
-            {
-                if ($callback)
-                {
-                    $array = $callback($array);
-                }
-                $keys = array_keys($array);
-                return ($this->getCreateFromSignatureClosure($keys, $strict))($container, $provider, $array, null, $parent);
-            };
-        }
-        else
+            $keys = array_keys($array);
+            return ($this->getCreateFromSignatureClosure($keys, $strict))($array, $container, $parent);
+        };
+
+        return $this->CreateProviderlessFromClosures[(int)$strict] = $closure;
+    }
+
+    /**
+     * @param bool $strict If `true`, return a closure that throws an exception
+     * if `$array` contains unusable values.
+     * @return Closure
+     * ```php
+     * closure(array $array, \Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
+     * ```
+     */
+    public function getCreateProvidableFromClosure(bool $strict = false): Closure
+    {
+        if ($closure = $this->CreateProvidableFromClosures[(int)$strict] ?? null)
         {
-            $closure = function (array $array, callable $callback = null, Container $container = null, ITreeNode $parent = null) use ($strict)
-            {
-                if ($callback)
-                {
-                    $array = $callback($array);
-                }
-                $keys = array_keys($array);
-                return ($this->getCreateFromSignatureClosure($keys, $strict))($array, null, $container, $parent);
-            };
+            return $closure;
         }
 
-        return $this->CreateFromClosures[(int)$strict] = $closure;
+        $closure = function (array $array, IProvider $provider, ?IContainer $container = null, ?ITreeNode $parent = null) use ($strict)
+        {
+            $keys = array_keys($array);
+            return ($this->getCreateProvidableFromSignatureClosure($keys, $strict))($array, $provider, $container, $parent);
+        };
+
+        return $this->CreateProvidableFromClosures[(int)$strict] = $closure;
     }
 
     /**
@@ -672,29 +742,21 @@ class ClosureBuilder
                 switch ($action)
                 {
                     case "set":
-
                         $closure = static function ($instance, $value) use ($property) { $instance->$property = $value; };
-
                         break;
 
                     case "get":
-
                         $closure = static function ($instance) use ($property) { return $instance->$property; };
-
                         break;
 
                     case "isset":
-
                         $closure = static function ($instance) use ($property) { return isset($instance->$property); };
-
                         break;
 
                     case "unset":
-
                         // Removal of a declared property is unlikely to be the
                         // intended outcome, so assign null instead of unsetting
                         $closure = static function ($instance) use ($property) { $instance->$property = null; };
-
                         break;
                 }
             }
@@ -708,24 +770,14 @@ class ClosureBuilder
             };
         }
 
-        if ($closure)
-        {
-            $closure = $closure->bindTo(null, $this->Class);
-        }
-
         if (!$closure)
         {
             throw new RuntimeException("Unable to perform '$action' on property '$name'");
         }
 
-        if (!array_key_exists($_name, $this->PropertyActionClosures))
-        {
-            $this->PropertyActionClosures[$_name] = [];
-        }
+        $closure = $closure->bindTo(null, $this->Class);
 
-        $this->PropertyActionClosures[$_name][$action] = $closure;
-
-        return $closure;
+        return $this->PropertyActionClosures[$_name][$action] = $closure;
     }
 
     public function getSerializeClosure(): Closure
@@ -736,17 +788,10 @@ class ClosureBuilder
         }
 
         $props = $this->ReadableProperties ?: $this->PublicProperties;
-        if ($this->Normaliser)
-        {
-            $props = array_combine(
-                array_map($this->Normaliser, $props),
-                $props
-            );
-        }
-        else
-        {
-            $props = array_combine($props, $props);
-        }
+        $props = array_combine(
+            $this->maybeNormalise($props),
+            $props
+        );
 
         $closure = static function ($instance) use ($props)
         {

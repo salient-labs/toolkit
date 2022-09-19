@@ -9,7 +9,6 @@ use Lkrms\Contract\IBindable;
 use Lkrms\Contract\IBindableSingleton;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\ReceivesContainer;
-use Psr\Container\ContainerInterface;
 use UnexpectedValueException;
 
 /**
@@ -20,7 +19,7 @@ use UnexpectedValueException;
  * @link https://r.je/dice Dice home page
  * @link https://github.com/Level-2/Dice Dice repository on GitHub
  */
-class Container implements IContainer, ContainerInterface
+class Container implements IContainer
 {
     /**
      * @var IContainer|null
@@ -65,7 +64,8 @@ class Container implements IContainer, ContainerInterface
     private function load(): void
     {
         $dice  = & $this->dice();
-        $dice  = $dice->addShared(ContainerInterface::class, $this);
+        $dice  = $dice->addShared(\Psr\Container\ContainerInterface::class, $this);
+        $dice  = $dice->addShared(IContainer::class, $this);
         $class = static::class;
         do
         {
@@ -98,6 +98,15 @@ class Container implements IContainer, ContainerInterface
         }
 
         return self::$GlobalContainer = new static(...func_get_args());
+    }
+
+    /**
+     * Similar to getGlobalContainer(), but return null if no global container
+     * has been loaded
+     */
+    final public static function maybeGetGlobalContainer(): ?IContainer
+    {
+        return self::$GlobalContainer;
     }
 
     final public static function setGlobalContainer(?IContainer $container): ?IContainer

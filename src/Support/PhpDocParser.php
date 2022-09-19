@@ -19,6 +19,7 @@ use UnexpectedValueException;
  * @property-read array<string,string[]|true> $Tags
  * @property-read array<string,array{type:string|null,description:string|null}> $Params
  * @property-read array{type:string,description:string|null}|null $Return
+ * @property-read array<int,array{name:string|null,type:string,description:string|null}> $Var
  */
 class PhpDocParser implements IReadable
 {
@@ -92,9 +93,9 @@ class PhpDocParser implements IReadable
      * Property or constant metadata, if provided
      *
      * @internal
-     * @var array{type:string,description:string|null}|null
+     * @var array<int,array{name:string|null,type:string,description:string|null}>
      */
-    protected $Var;
+    protected $Var = [];
 
     /**
      * @var bool
@@ -188,10 +189,19 @@ class PhpDocParser implements IReadable
                     break;
 
                 case "var":
-                    $token = strtok($lines, " \t\n\r");
+                    unset($name);
+                    $token = strtok($lines, " \t");
                     $type  = $token;
                     $meta++;
-                    $this->Var = $this->getValue($type, $lines, $meta);
+                    $token = strtok(" \t");
+                    if ($token !== false && preg_match('/^\$/', $token))
+                    {
+                        $name = $token;
+                        $meta++;
+                    }
+                    $var = $this->getValue($type, $lines, $meta, ["name" => $name ?? null]);
+                    $var["description"] = $var["description"] ?: $this->Summary;
+                    $this->Var[]        = $var;
                     break;
             }
         }
@@ -206,7 +216,7 @@ class PhpDocParser implements IReadable
         );
     }
 
-    private function getValue(?string $type, string $lines, int $meta): array
+    private function getValue(?string $type, string $lines, int $meta, array $initial = []): array
     {
         if ($this->LegacyNullable && !is_null($type))
         {
@@ -216,7 +226,7 @@ class PhpDocParser implements IReadable
                 $type = "?$nullable";
             }
         }
-        return [
+        return $initial + [
             "type"        => $type,
             "description" => preg_split('/\s+/', $lines, $meta + 1)[$meta] ?? null
         ];

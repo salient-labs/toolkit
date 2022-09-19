@@ -92,4 +92,40 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
             'description' => 'Description from ClassC',
         ]);
     }
+
+    public function testVarTags()
+    {
+        $docBlocks = [
+            '/** @var int $int This is a counter. */',
+            '/**
+     * Full docblock with a summary.
+     *
+     * @var int
+     */',
+            '/** @var string|null Short docblock, should contain a description. */',
+            '/**
+      * @var string $name        Should contain a description
+      * @var string $description Should contain a description
+      */',
+            '/** @var int */',
+            '/** @var */',
+        ];
+
+        foreach ($docBlocks as $docBlock)
+        {
+            $phpDocs[] = (new PhpDocParser($docBlock))->Var;
+        }
+
+        $this->assertEquals([
+            [['name' => '$int', 'type' => 'int', 'description' => 'This is a counter.']],
+            [['name' => null, 'type' => 'int', 'description' => 'Full docblock with a summary.']],
+            [['name' => null, 'type' => '?string', 'description' => 'Short docblock, should contain a description.']],
+            [
+                ['name' => '$name', 'type' => 'string', 'description' => 'Should contain a description'],
+                ['name' => '$description', 'type' => 'string', 'description' => 'Should contain a description'],
+            ],
+            [['name' => null, 'type' => 'int', 'description' => null]],
+            [],
+        ], $phpDocs);
+    }
 }

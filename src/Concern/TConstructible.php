@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-use Lkrms\Facade\Mapper;
+use Lkrms\Contract\IContainer;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ArrayMapperFlag;
 use Lkrms\Support\ClosureBuilder;
-use Psr\Container\ContainerInterface as Container;
-use UnexpectedValueException;
+use Lkrms\Support\Pipeline;
 
 /**
  * Implements IConstructible to create instances of itself from arrays
@@ -31,7 +30,7 @@ trait TConstructible
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.
      *
-     * @param null|Container $container Used to create the instance if set.
+     * @param IContainer|null $container Used to create the instance if set.
      * @param callable|null $callback If set, applied before optionally
      * remapping `$data`.
      * @param array<int|string,int|string|array<int,int|string>>|null $keyMap An
@@ -47,23 +46,14 @@ trait TConstructible
      * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return static
      */
-    public static function from(?Container $container, array $data, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null)
+    public static function from(?IContainer $container, array $data, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null)
     {
-        $closure = null;
-
-        if (!is_null($keyMap))
-        {
-            $closure = Mapper::getKeyMapClosure($keyMap, $conformity, $flags);
-        }
-
-        if (!is_null($callback))
-        {
-            $closure = !$closure ? $callback : fn(array $in) => $closure($callback($in));
-        }
-
-        return (ClosureBuilder::getBound(
-            $container, static::class
-        )->getCreateFromClosure())($data, $closure, $container, $parent);
+        return (Pipeline::create()
+            ->send($data)
+            ->if(!is_null($callback), fn(Pipeline $p) => $p->apply($callback))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->map($keyMap, $conformity, $flags))
+            ->then(ClosureBuilder::maybeGetBound($container, static::class)->getCreateFromClosure(), $container, $parent)
+            ->run());
     }
 
     /**
@@ -72,7 +62,7 @@ trait TConstructible
      *
      * See {@see TConstructible::from()} for more information.
      *
-     * @param null|Container $container Used to create each instance if set.
+     * @param IContainer|null $container Used to create each instance if set.
      * @param iterable<array> $list
      * @param callable|null $callback If set, applied before optionally
      * remapping each array.
@@ -87,58 +77,25 @@ trait TConstructible
      * {@see \Lkrms\Contract\ITreeNode::setParent()}.
      * @return iterable<static>
      */
-    public static function listFrom(?Container $container, iterable $list, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null): iterable
+    public static function listFrom(?IContainer $container, iterable $list, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null): iterable
     {
-        $closure = null;
-
-        if (!is_null($keyMap))
-        {
-            $closure = Mapper::getKeyMapClosure($keyMap, $conformity, $flags);
-        }
-
-        if (!is_null($callback))
-        {
-            $closure = !$closure ? $callback : fn(array $in) => $closure($callback($in));
-        }
-
-        return self::getListFrom($container, $list, $closure, $conformity, $parent);
-    }
-
-    private static function getListFrom(
-        ?Container $container,
-        iterable $list,
-        ? callable $closure,
-        int $conformity,
-        $parent
-    ): iterable
-    {
-        $createFromClosure = null;
-        foreach ($list as $index => $array)
-        {
-            if (!is_array($array))
-            {
-                throw new UnexpectedValueException("Array expected at index $index");
-            }
-            if (!$createFromClosure)
-            {
-                if (in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE]))
+        return (Pipeline::create()
+            ->stream($list)
+            ->if(!is_null($callback), fn(Pipeline $p) => $p->apply($callback))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->map($keyMap, $conformity, $flags))
+            ->then(
+                function (array $data) use (&$closure, $container, $conformity, $parent)
                 {
-                    if ($closure)
+                    if (!$closure)
                     {
-                        $closureArray = $closure($array);
+                        $builder = ClosureBuilder::maybeGetBound($container, static::class);
+                        $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                            ? $builder->getCreateFromSignatureClosure(array_keys($data))
+                            : $builder->getCreateFromClosure();
                     }
-                    $createFromClosure = ClosureBuilder::getBound(
-                        $container, static::class
-                    )->getCreateFromSignatureClosure(array_keys($closureArray ?? $array));
+                    return $closure($data, $container, $parent);
                 }
-                else
-                {
-                    $createFromClosure = ClosureBuilder::getBound(
-                        $container, static::class
-                    )->getCreateFromClosure();
-                }
-            }
-            yield $createFromClosure($array, $closure, $container, $parent);
-        }
+            )->start());
     }
+
 }

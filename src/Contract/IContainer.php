@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
-use Psr\Container\ContainerInterface;
-
 /**
  * A service container with support for contextual bindings
  *
  */
-interface IContainer extends ContainerInterface
+interface IContainer extends \Psr\Container\ContainerInterface
 {
     public function __construct();
 

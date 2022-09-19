@@ -8,11 +8,15 @@ use Closure;
 use DateTimeInterface;
 use JsonSerializable;
 use Lkrms\Concept\ProviderEntity;
+use Lkrms\Container\Container;
+use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Support\ClosureBuilder;
 use Lkrms\Support\SerializeRules;
+use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Provider\SyncEntityProvider;
+use RuntimeException;
 use UnexpectedValueException;
 
 /**
@@ -82,14 +86,24 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     }
 
     /**
-     * Return an entity-agnostic interface with the SyncEntity's current
+     * Return an entity-agnostic interface to the SyncEntity's current
      * provider
      *
      * @return SyncEntityProvider
      */
-    final public static function backend(): SyncEntityProvider
+    final public static function backend(?IContainer $app = null): SyncEntityProvider
     {
-        return new SyncEntityProvider(static::class);
+        if (!$app)
+        {
+            if (!Container::hasGlobalContainer())
+            {
+                throw new RuntimeException("No container");
+            }
+            $app = Container::getGlobalContainer();
+        }
+        /** @var SyncProvider */
+        $provider = $app->get(static::class . "Provider");
+        return $provider->with(static::class, $app);
     }
 
     /**

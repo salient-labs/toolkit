@@ -6,7 +6,6 @@ namespace Lkrms\Sync\Support;
 
 use Closure;
 use Lkrms\Contract\IPipeline;
-use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 use Lkrms\Sync\SyncOperation;
 
