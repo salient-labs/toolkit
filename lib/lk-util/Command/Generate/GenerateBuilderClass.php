@@ -293,7 +293,7 @@ class GenerateBuilderClass extends GenerateCommand
                 $propertyFile      = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
 
-                $type = (($_type = $phpDoc->Var["type"] ?? null) && strpbrk($_type, "<>") === false
+                $type = (($_type = $phpDoc->Var[0]["type"] ?? null) && strpbrk($_type, "<>") === false
                     ? $phpDocTypeCallback($_type)
                     : ($_property->hasType()
                         ? Reflect::getTypeDeclaration($_property->getType(), $classPrefix, $typeNameCallback)

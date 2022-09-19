@@ -90,6 +90,40 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
             $out[] = $pipeline->send($_in)->run();
         }
 
+        $mapToMultiple = [
+            "USER_ID"   => "Id",
+            "FULL_NAME" => "Name",
+            "MAIL"      => ["Email", "UPN"],
+        ];
+        $pipeline = Pipeline::create()->map($mapToMultiple, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING);
+        foreach ($in as $_in)
+        {
+            $out[] = $pipeline->send($_in)->run();
+        }
+
+        $compliantIn = [
+            [
+                "USER_ID"   => 32,
+                "FULL_NAME" => "Greta",
+                "MAIL"      => "greta@domain.test",
+            ],
+            [
+                "USER_ID"   => 53,
+                "FULL_NAME" => "Amir",
+                "MAIL"      => "amir@domain.test",
+            ],
+            [
+                "USER_ID"   => 71,
+                "FULL_NAME" => "Terry",
+                "MAIL"      => null,
+            ],
+        ];
+        $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::COMPLETE, 0);
+        foreach ($compliantIn as $_in)
+        {
+            $out[] = $pipeline->send($_in)->run();
+        }
+
         $this->assertSame([
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Name' => 'Amir', 'Email' => 'amir@domain.test'],
@@ -109,7 +143,15 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
 
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Name' => 'Amir', 'Email' => 'amir@domain.test', 'URI' => 'https://domain.test/~amir'],
-            ['Id' => 71, 'Name' => 'Terry']
+            ['Id' => 71, 'Name' => 'Terry'],
+
+            ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test', 'UPN' => 'greta@domain.test'],
+            ['Id' => null, 'Name' => 'Amir', 'Email' => 'amir@domain.test', 'UPN' => 'amir@domain.test'],
+            ['Id' => 71, 'Name' => 'Terry', 'Email' => null, 'UPN' => null],
+
+            ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
+            ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
+            ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
         ], $out);
 
         $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, ArrayMapperFlag::REQUIRE_MAPPED);

@@ -16,11 +16,6 @@ parameters:
 			path: src/Cli/CliCommand.php
 
 		-
-			message: "#^Right side of && is always true\\.$#"
-			count: 1
-			path: src/Concept/ProviderEntity.php
-
-		-
 			message: "#^Ternary operator condition is always true\\.$#"
 			count: 1
 			path: src/Console/Console.php
