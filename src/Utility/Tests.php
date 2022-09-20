@@ -37,7 +37,7 @@ final class Tests
      *
      * @param int $value The bitmask being checked.
      * @param int $flag The value of the flag.
-     * @param null|int $mask The mask being applied to `$value` and `$flag`.
+     * @param int|null $mask The mask being applied to `$value` and `$flag`.
      * @return bool
      */
     public function isFlagSet(int $value, int $flag, ?int $mask = null): bool

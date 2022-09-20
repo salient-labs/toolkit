@@ -55,7 +55,7 @@ class SyncEntityFuzzyResolver extends SyncEntityResolver
      *
      * @param SyncEntityProvider $entityProvider
      * @param string $nameField
-     * @param null|string $weightField If multiple entities are equally similar
+     * @param string|null $weightField If multiple entities are equally similar
      * to a given name, the one with the highest weight is preferred.
      * @param int|null $algorithm Overrides the default string comparison
      * algorithm. Either {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}

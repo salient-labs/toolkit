@@ -44,9 +44,9 @@ SQL
      * Add a deleted object to the store
      *
      * @param string $type The object's canonical type.
-     * @param null|string $key The object's original identifier.
+     * @param string|null $key The object's original identifier.
      * @param array|object $object Must be JSON-serializable. No `resource`s.
-     * @param null|string $deletedFrom Where was the object before it was deleted?
+     * @param string|null $deletedFrom Where was the object before it was deleted?
      * @param int|null $createdAt When was the object originally created?
      * @param int|null $modifiedAt When was the object most recently changed?
      * @return $this

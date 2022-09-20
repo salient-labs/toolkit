@@ -214,7 +214,7 @@ class Curler implements IReadable, IWritable
      * Returns `null` if no `CurlHandle` instance has been created.
      *
      * @param int|null $option
-     * @return null|array
+     * @return array|null
      */
     public function getCurlInfo(int $option = null): ?array
     {

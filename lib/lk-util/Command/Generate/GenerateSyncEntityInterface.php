@@ -253,7 +253,7 @@ class GenerateSyncEntityInterface extends CliCommand
 
                 case SyncOperation::DELETE:
                 case SyncOperation::DELETE_LIST:
-                    $returnDoc  = "null|" . $returnDoc;
+                    $returnDoc  = $returnDoc . "|null";
                     $returnCode = "?" . $returnCode;
                     break;
 

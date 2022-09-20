@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Support;
 
 use Closure;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 use Lkrms\Sync\SyncOperation;
@@ -30,9 +31,9 @@ class HttpSyncDefinition extends SyncDefinition
      * @param int[] $operations
      * @param array<int,Closure> $overrides
      */
-    public function __construct(string $entity, HttpSyncProvider $provider, string $path, array $operations, array $overrides = [], ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
+    public function __construct(string $entity, HttpSyncProvider $provider, string $path, array $operations, array $overrides = [], ?IContainer $container = null, ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
     {
-        parent::__construct($entity, $provider, $dataToEntityPipeline, $entityToDataPipeline);
+        parent::__construct($entity, $provider, $container, $dataToEntityPipeline, $entityToDataPipeline);
         $this->Path       = $path;
         $this->Operations = array_intersect(
             SyncOperation::getAll(),

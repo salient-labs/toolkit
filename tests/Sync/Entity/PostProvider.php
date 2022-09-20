@@ -31,7 +31,7 @@ interface PostProvider extends \Lkrms\Sync\Contract\ISyncProvider
 
     /**
      * @param Post $post
-     * @return null|Post
+     * @return Post|null
      */
     public function deletePost(Post $post): ?Post;
 

@@ -16,7 +16,7 @@ abstract class DbSyncProvider extends SyncProvider
 {
     abstract protected function getNewDbConnector(): DbConnector;
 
-    protected function getBackendIdentifier(): array
+    protected function _getBackendIdentifier(): array
     {
         $connector = $this->getDbConnector();
         if ($connector->Dsn)

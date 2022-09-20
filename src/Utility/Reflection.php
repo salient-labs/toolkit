@@ -95,7 +95,7 @@ final class Reflection
      * `ReflectionNamedType` and/or `ReflectionType` instances.
      *
      * @phpstan-return ReflectionNamedType[]
-     * @param null|ReflectionType $type e.g. the return value of
+     * @param ReflectionType|null $type e.g. the return value of
      * `ReflectionParameter::getType()`.
      * @return ReflectionType[]
      * @see Reflection::getAllTypeNames()
@@ -114,7 +114,7 @@ final class Reflection
     /**
      * Return the names of all types included in the given ReflectionType
      *
-     * @param null|ReflectionType $type e.g. the return value of
+     * @param ReflectionType|null $type e.g. the return value of
      * `ReflectionParameter::getType()`.
      * @return string[]
      * @see Reflection::getAllTypes()
@@ -230,10 +230,10 @@ final class Reflection
     /**
      * Convert the given ReflectionType to a PHP type declaration
      *
-     * @param null|ReflectionType $type e.g. the return value of
+     * @param ReflectionType|null $type e.g. the return value of
      * `ReflectionParameter::getType()`.
      * @param string $classPrefix
-     * @param null|callable $typeNameCallback Applied to qualified class names
+     * @param callable|null $typeNameCallback Applied to qualified class names
      * if set. Must return `null` or an unqualified alias:
      * ```php
      * callback(string $name): ?string
@@ -282,12 +282,12 @@ final class Reflection
      *
      * @param ReflectionParameter $parameter
      * @param string $classPrefix
-     * @param null|callable $typeNameCallback Applied to qualified class names
+     * @param callable|null $typeNameCallback Applied to qualified class names
      * if set. Must return `null` or an unqualified alias:
      * ```php
      * callback(string $name): ?string
      * ```
-     * @param null|string $type If set, ignore the parameter's declared type and
+     * @param string|null $type If set, ignore the parameter's declared type and
      * use `$type` instead. Do not use when generating code unless `$type` is
      * from a trusted source.
      * @return string

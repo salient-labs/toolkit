@@ -72,14 +72,14 @@ class SyncEntityProvider
 
     private $Callbacks = [];
 
-    public function __construct(IContainer $app, string $entity, SyncProvider $provider, ?ISyncDefinition $definition)
+    public function __construct(IContainer $container, string $entity, SyncProvider $provider, ?ISyncDefinition $definition)
     {
         if (!is_subclass_of($entity, SyncEntity::class))
         {
             throw new UnexpectedValueException("Not a subclass of SyncEntity: " . $entity);
         }
 
-        $this->Container         = $app;
+        $this->Container         = $container;
         $this->SyncEntity        = $entity;
         $this->SyncEntityNoun    = Convert::classToBasename($entity);
         $this->SyncEntityPlural  = $entity::getPluralClassName();
@@ -341,7 +341,7 @@ class SyncEntityProvider
      *
      * @param SyncEntity $entity
      * @param mixed ...$params Additional parameters to pass to the provider.
-     * @return null|SyncEntity
+     * @return SyncEntity|null
      */
     public function delete(SyncEntity $entity, ...$params): ?SyncEntity
     {
@@ -491,7 +491,7 @@ class SyncEntityProvider
      *
      * @param iterable<SyncEntity> $entities
      * @param mixed ...$params Additional parameters to pass to the provider.
-     * @return null|iterable<SyncEntity>
+     * @return iterable<SyncEntity>|null
      */
     public function deleteList(iterable $entities, ...$params): ?iterable
     {

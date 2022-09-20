@@ -8,8 +8,6 @@ use Lkrms\Container\CliAppContainer;
 
 trait HasCliAppContainer
 {
-    use HasContainer;
-
     /**
      * @var CliAppContainer
      */

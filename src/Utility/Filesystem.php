@@ -92,7 +92,7 @@ final class Filesystem
      *
      * @param resource $stream Any stream created by `fopen()`, `fsockopen()`,
      * `pfsockopen()` or `stream_socket_client()`.
-     * @return null|string `null` if `$stream` is not an open stream resource.
+     * @return string|null `null` if `$stream` is not an open stream resource.
      */
     public function getStreamUri($stream): ?string
     {

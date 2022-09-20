@@ -104,7 +104,7 @@ abstract class ConsoleMessageWriter
      *
      * @param int $level
      * @param string $msg1
-     * @param null|string $msg2
+     * @param string|null $msg2
      * @param string $prefix
      * @param Throwable|null $ex
      * @param bool $ttyOnly
@@ -137,7 +137,7 @@ abstract class ConsoleMessageWriter
      *
      * @param string $method
      * @param string $msg1
-     * @param null|string $msg2
+     * @param string|null $msg2
      * @return int
      */
     abstract protected static function logWrite(

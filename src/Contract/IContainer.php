@@ -107,8 +107,8 @@ interface IContainer extends \Psr\Container\ContainerInterface
      *
      * @param string $id The name of a class that implements {@see IBindable} or
      * {@see IBindableSingleton}.
-     * @param null|string[] $services
-     * @param null|string[] $exceptServices
+     * @param string[]|null $services
+     * @param string[]|null $exceptServices
      * @return $this
      */
     public function service(string $id, ?array $services = null, ?array $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null);

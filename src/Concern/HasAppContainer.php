@@ -8,8 +8,6 @@ use Lkrms\Container\AppContainer;
 
 trait HasAppContainer
 {
-    use HasContainer;
-
     /**
      * @var AppContainer
      */

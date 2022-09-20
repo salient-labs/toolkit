@@ -55,7 +55,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      *
      * @return string[]
      */
-    abstract protected function getBackendIdentifier(): array;
+    abstract protected function _getBackendIdentifier(): array;
 
     /**
      * Specify how to encode dates for the backend, and which timezone to apply
@@ -116,12 +116,12 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     private static $SyncProviderInterfaces = [];
 
     /**
-     * @see SyncProvider::getBackendIdentifier()
+     * @see SyncProvider::_getBackendIdentifier()
      */
     final public function getBackendHash(): string
     {
         return $this->BackendHash
-            ?: ($this->BackendHash = Compute::hash(...$this->getBackendIdentifier()));
+            ?: ($this->BackendHash = Compute::hash(...$this->_getBackendIdentifier()));
     }
 
     final public function getDateFormatter(): DateFormatter
@@ -153,9 +153,9 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      * operations for an entity
      *
      */
-    public function with(string $syncEntity, ?IContainer $app = null): SyncEntityProvider
+    public function with(string $syncEntity, ?IContainer $container = null): SyncEntityProvider
     {
-        return ($app ?: $this->app())->get(
+        return ($container ?: $this->app())->get(
             SyncEntityProvider::class,
             $syncEntity,
             $this,
