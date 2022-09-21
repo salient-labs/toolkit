@@ -32,7 +32,7 @@ class Container implements IContainer
     private $Dice;
 
     /**
-     * @var null|string
+     * @var string|null
      */
     private $Context;
 
@@ -286,8 +286,8 @@ class Container implements IContainer
     }
 
     /**
-     * @param null|string[] $services
-     * @param null|string[] $exceptServices
+     * @param string[]|null $services
+     * @param string[]|null $exceptServices
      * @return $this
      */
     public function service(string $id, ?array $services = null, ?array $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null)

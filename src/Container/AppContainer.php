@@ -176,7 +176,7 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
-     * @param null|string $name Defaults to the name used to run the script.
+     * @param string|null $name Defaults to the name used to run the script.
      * @return $this
      */
     public function enableMessageLog(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG)

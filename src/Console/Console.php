@@ -142,7 +142,7 @@ final class Console extends ConsoleMessageWriter
      *
      * @param int $level
      * @param string $msg1 Message.
-     * @param null|string $msg2 Secondary message.
+     * @param string|null $msg2 Secondary message.
      * @param string $prefix Prefix.
      * @param Throwable|null $ex Associated exception.
      * @param bool $ttyOnly
@@ -211,7 +211,7 @@ final class Console extends ConsoleMessageWriter
     /**
      *
      * @param string $plain
-     * @param null|string $tty
+     * @param string|null $tty
      * @param int $level
      * @param array $context
      * @param bool $ttyOnly

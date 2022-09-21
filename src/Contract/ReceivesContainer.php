@@ -17,6 +17,6 @@ interface ReceivesContainer
      * the container.
      * @return $this
      */
-    public function setContainer(\Lkrms\Container\Container $container, string $id);
+    public function setContainer(IContainer $container, string $id);
 
 }

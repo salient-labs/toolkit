@@ -170,7 +170,7 @@ final class Environment
      *
      * @param string $name The environment variable to retrieve.
      * @param string|null $default The value to return if `$name` is not set.
-     * @return null|string
+     * @return string|null
      * @throws RuntimeException if `$name` is not set and no `$default` is
      * given.
      */
@@ -201,7 +201,7 @@ final class Environment
      *
      * @param string $name The environment variable to retrieve.
      * @param int|null $default The value to return if `$name` is not set.
-     * @return null|int
+     * @return int|null
      * @throws RuntimeException if `$name` is not set and no `$default` is
      * given.
      */

@@ -31,7 +31,7 @@ interface UserProvider extends \Lkrms\Sync\Contract\ISyncProvider
 
     /**
      * @param User $user
-     * @return null|User
+     * @return User|null
      */
     public function deleteUser(User $user): ?User;
 

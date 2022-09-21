@@ -7,6 +7,7 @@ namespace Lkrms\Support;
 use Closure;
 use Lkrms\Concept\FluentInterface;
 use Lkrms\Container\Container;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipe;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Facade\Mapper;
@@ -14,8 +15,17 @@ use RuntimeException;
 use Throwable;
 use UnexpectedValueException;
 
+/**
+ * Sends a payload through a series of pipes to a destination
+ *
+ */
 class Pipeline extends FluentInterface implements IPipeline
 {
+    /**
+     * @var IContainer|null
+     */
+    private $Container;
+
     private $Payload;
 
     /**
@@ -43,16 +53,17 @@ class Pipeline extends FluentInterface implements IPipeline
      */
     private $ThenArgs = [];
 
-    final public function __construct()
+    final public function __construct(?IContainer $container = null)
     {
+        $this->Container = $container;
     }
 
     /**
      * @return static
      */
-    final public static function create()
+    final public static function create(?IContainer $container = null)
     {
-        return new static();
+        return new static($container);
     }
 
     public function send($payload)
@@ -179,11 +190,11 @@ class Pipeline extends FluentInterface implements IPipeline
                 }
                 else
                 {
-                    $pipe = (!is_string($pipe)
-                        ? $pipe
-                        : (Container::hasGlobalContainer()
-                            ? Container::getGlobalContainer()->get($pipe)
-                            : new $pipe()));
+                    if (is_string($pipe))
+                    {
+                        $container = $this->Container ?: Container::maybeGetGlobalContainer();
+                        $pipe      = $container ? $container->get($pipe) : new $pipe();
+                    }
                     if (!($pipe instanceof IPipe))
                     {
                         throw new UnexpectedValueException("Pipe does not implement " . IPipe::class);

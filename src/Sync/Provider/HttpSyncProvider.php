@@ -10,6 +10,7 @@ use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
+use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
 
 /**
@@ -24,6 +25,8 @@ abstract class HttpSyncProvider extends SyncProvider
      * `$path` should be ignored unless the provider uses endpoint-specific base
      * URLs to connect to the API. It should never be added to the return value.
      *
+     * Called once per {@see HttpSyncProvider::getCurler()} call.
+     *
      * @param string|null $path The endpoint requested via
      * {@see HttpSyncProvider::getCurler()}.
      * @return string
@@ -37,7 +40,7 @@ abstract class HttpSyncProvider extends SyncProvider
      *
      * @param string|null $path The endpoint requested via
      * {@see HttpSyncProvider::getCurler()}.
-     * @return null|CurlerHeaders
+     * @return CurlerHeaders|null
      */
     abstract protected function getCurlerHeaders(?string $path): ?CurlerHeaders;
 
@@ -47,8 +50,8 @@ abstract class HttpSyncProvider extends SyncProvider
      * Return `null` to disable response caching (the default) or `0` to cache
      * upstream responses indefinitely.
      *
-     * The `$expiry` parameter of {@see HttpSyncProvider::getCurler()} takes
-     * precedence.
+     * Called whenever {@see HttpSyncProvider::getCurler()} is called without an
+     * explicit `$expiry`.
      *
      * @param string|null $path The endpoint requested via
      * {@see HttpSyncProvider::getCurler()}.
@@ -83,9 +86,21 @@ abstract class HttpSyncProvider extends SyncProvider
         return $headers->getPublicHeaders();
     }
 
-    protected function getDefinition(string $entity): ?ISyncDefinition
+    /**
+     * Surface the provider's implementation of sync operations for an entity
+     * via an HttpSyncDefinition object
+     *
+     */
+    protected function getHttpDefinition(string $entity): ?HttpSyncDefinition
     {
         return null;
+    }
+
+    final protected function getDefinition(string $entity): ?ISyncDefinition
+    {
+        $def = $this->getHttpDefinition($entity);
+
+        return $def;
     }
 
     protected function getDefinitionBuilder(string $entity): HttpSyncDefinitionBuilder

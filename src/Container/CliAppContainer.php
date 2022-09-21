@@ -29,7 +29,7 @@ class CliAppContainer extends AppContainer
     private $CommandTree = [];
 
     /**
-     * @var null|CliCommand
+     * @var CliCommand|null
      */
     private $RunningCommand;
 
@@ -75,7 +75,7 @@ class CliAppContainer extends AppContainer
      *
      * @param string $name The name of the node as a space-delimited list of
      * subcommands.
-     * @param array<string,array|string>|string|null|false $node The node as
+     * @param array<string,array|string>|string|false|null $node The node as
      * returned by {@see CliAppContainer::getCommandTree()}.
      */
     protected function getNodeCommand(string $name, $node): ?CliCommand
@@ -107,7 +107,7 @@ class CliAppContainer extends AppContainer
      * {@see CliCommand} class names (leaves).
      *
      * @param string[] $name
-     * @return array<string,array|string>|string|null|false
+     * @return array<string,array|string>|string|false|null
      */
     protected function getCommandTree(array $name = [])
     {
@@ -202,7 +202,7 @@ class CliAppContainer extends AppContainer
      *
      * @param string $name
      * @param array|string $node
-     * @return null|string
+     * @return string|null
      */
     private function getUsage(string $name, $node): ?string
     {

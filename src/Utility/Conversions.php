@@ -493,7 +493,7 @@ final class Conversions
      *
      * @param string $text
      * @param string $separator Used between top-level lines and sections.
-     * @param null|string $marker Added before each section name. The equivalent
+     * @param string|null $marker Added before each section name. The equivalent
      * number of spaces are added before each list item. To add a leading `"- "`
      * to top-level lines and indent others with two spaces, set `$marker` to
      * `"-"`.

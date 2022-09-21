@@ -26,137 +26,137 @@ class ClosureBuilder
     /**
      * @var string
      */
-    protected $Class;
+    private $Class;
 
     /**
      * @var bool
      */
-    protected $IsReadable;
+    private $IsReadable;
 
     /**
      * @var bool
      */
-    protected $IsWritable;
+    private $IsWritable;
 
     /**
      * @var bool
      */
-    protected $IsExtensible;
+    private $IsExtensible;
 
     /**
      * @var bool
      */
-    protected $IsProvidable;
+    private $IsProvidable;
 
     /**
      * @var bool
      */
-    protected $IsTreeNode;
+    private $IsTreeNode;
 
     /**
      * Property names
      *
      * @var string[]
      */
-    protected $Properties = [];
+    private $Properties = [];
 
     /**
      * Public property names
      *
      * @var string[]
      */
-    protected $PublicProperties = [];
+    private $PublicProperties = [];
 
     /**
      * Readable property names
      *
      * @var string[]
      */
-    protected $ReadableProperties = [];
+    private $ReadableProperties = [];
 
     /**
      * Writable property names
      *
      * @var string[]
      */
-    protected $WritableProperties = [];
+    private $WritableProperties = [];
 
     /**
      * "Magic" property names => supported actions => method names
      *
      * @var array<string,array<string,string>>
      */
-    protected $Methods = [];
+    private $Methods = [];
 
     /**
      * Constructor parameter names, in order of appearance
      *
      * @var string[]
      */
-    protected $Parameters = [];
+    private $Parameters = [];
 
     /**
      * Parameters that aren't nullable and don't have a default value
      *
      * @var string[]
      */
-    protected $RequiredParameters = [];
+    private $RequiredParameters = [];
 
     /**
      * Default constructor arguments
      *
      * @var array
      */
-    protected $DefaultArguments = [];
+    private $DefaultArguments = [];
 
     /**
      * Normalised property names => declared property names
      *
      * @var array<string,string>
      */
-    protected $PropertyMap = [];
+    private $PropertyMap = [];
 
     /**
      * Normalised property names => "magic" property names
      *
      * @var array<string,string>
      */
-    protected $MethodMap = [];
+    private $MethodMap = [];
 
     /**
      * Normalised constructor parameter names => constructor parameter names
      *
      * @var array<string,string>
      */
-    protected $ParameterMap = [];
+    private $ParameterMap = [];
 
     /**
      * Normalised constructor parameter names => constructor parameter names
      *
      * @var array<string,string>
      */
-    protected $RequiredMap = [];
+    private $RequiredMap = [];
 
     /**
      * Normalised constructor parameter names => class names
      *
      * @var array<string,string>
      */
-    protected $ServiceMap = [];
+    private $ServiceMap = [];
 
     /**
      * Constructor parameter names => constructor argument indices
      *
      * @var array<string,int>
      */
-    protected $ParametersIndex = [];
+    private $ParametersIndex = [];
 
     /**
      * Converts property names to normalised property names
      *
      * @var callable|null
      */
-    protected $Normaliser;
+    private $Normaliser;
 
     /**
      * @var array<string,array<string,Closure>>
@@ -194,42 +194,53 @@ class ClosureBuilder
     private $SerializeClosure;
 
     /**
-     * @var array<string,ClosureBuilder>
+     * @var array<string,array<string,static>>
      */
     private static $Instances = [];
 
     /**
      * Get a ClosureBuilder for $class after optionally using a container to
      * resolve it to a concrete class
+     *
+     * @return static
      */
-    public static function maybeGetBound(?IContainer $container, string $class): ClosureBuilder
+    final public static function maybeGetBound(?IContainer $container, string $class)
     {
         return is_null($container)
-            ? self::get($class)
-            : self::getBound($container, $class);
+            ? static::get($class)
+            : static::getBound($container, $class);
     }
 
     /**
      * Get a ClosureBuilder for $class after using a container to resolve it to
      * a concrete class
+     *
+     * @return static
      */
-    public static function getBound(IContainer $container, string $class): ClosureBuilder
+    final public static function getBound(IContainer $container, string $class)
     {
-        return self::get($container->getName($class));
+        return static::get($container->getName($class));
     }
 
     /**
      * Get a ClosureBuilder for $class
+     *
+     * @return static
      */
-    public static function get(string $class): ClosureBuilder
+    final public static function get(string $class)
     {
-        return self::$Instances[$class]
-            ?? (self::$Instances[$class] = new self($class));
+        return self::$Instances[static::class][$class]
+            ?? (self::$Instances[static::class][$class] = new static($class));
     }
 
-    protected function __construct(string $class)
+    final private function __construct(string $class)
     {
-        $class              = new ReflectionClass($class);
+        $class = new ReflectionClass($class);
+        $this->load($class);
+    }
+
+    protected function load(ReflectionClass $class): void
+    {
         $this->Class        = $class->name;
         $this->IsReadable   = $class->implementsInterface(IReadable::class);
         $this->IsWritable   = $class->implementsInterface(IWritable::class);
@@ -370,7 +381,7 @@ class ClosureBuilder
      * @param string|string[] $value
      * @return string|string[]
      */
-    public function maybeNormalise($value)
+    final public function maybeNormalise($value)
     {
         if (!$this->Normaliser)
         {
@@ -383,7 +394,7 @@ class ClosureBuilder
         return ($this->Normaliser)($value);
     }
 
-    public function hasNormaliser(): bool
+    final public function hasNormaliser(): bool
     {
         return !is_null($this->Normaliser);
     }
@@ -391,7 +402,7 @@ class ClosureBuilder
     /**
      * @return string[]
      */
-    public function getReadableProperties(): array
+    final public function getReadableProperties(): array
     {
         return $this->ReadableProperties ?: $this->PublicProperties;
     }
@@ -399,7 +410,7 @@ class ClosureBuilder
     /**
      * @return string[]
      */
-    public function getWritableProperties(): array
+    final public function getWritableProperties(): array
     {
         return $this->WritableProperties ?: $this->PublicProperties;
     }
@@ -412,7 +423,7 @@ class ClosureBuilder
      * closure(array $array, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
      * ```
      */
-    public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
+    final public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\000", $keys);
 
@@ -444,7 +455,7 @@ class ClosureBuilder
      * closure(array $array, \Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
      * ```
      */
-    public function getCreateProvidableFromSignatureClosure(array $keys, bool $strict = false): Closure
+    final public function getCreateProvidableFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\000", $keys);
 
@@ -651,7 +662,7 @@ class ClosureBuilder
      * closure(array $array, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
      * ```
      */
-    public function getCreateFromClosure(bool $strict = false): Closure
+    final public function getCreateFromClosure(bool $strict = false): Closure
     {
         if ($closure = $this->CreateProviderlessFromClosures[(int)$strict] ?? null)
         {
@@ -675,7 +686,7 @@ class ClosureBuilder
      * closure(array $array, \Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
      * ```
      */
-    public function getCreateProvidableFromClosure(bool $strict = false): Closure
+    final public function getCreateProvidableFromClosure(bool $strict = false): Closure
     {
         if ($closure = $this->CreateProvidableFromClosures[(int)$strict] ?? null)
         {
@@ -713,7 +724,7 @@ class ClosureBuilder
      * @param string $action Either `"set"`, `"get"`, `"isset"` or `"unset"`.
      * @return Closure
      */
-    public function getPropertyActionClosure(string $name, string $action): Closure
+    final public function getPropertyActionClosure(string $name, string $action): Closure
     {
         $_name = $this->maybeNormalise($name);
 
@@ -780,7 +791,7 @@ class ClosureBuilder
         return $this->PropertyActionClosures[$_name][$action] = $closure;
     }
 
-    public function getSerializeClosure(): Closure
+    final public function getSerializeClosure(): Closure
     {
         if ($closure = $this->SerializeClosure)
         {

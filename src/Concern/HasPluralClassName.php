@@ -6,7 +6,7 @@ namespace Lkrms\Concern;
 
 use Lkrms\Facade\Convert;
 
-trait ClassNameHasPluralForm
+trait HasPluralClassName
 {
     /**
      * Get the plural form of the class name

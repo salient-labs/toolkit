@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Lkrms\Tests\Support;
 
 use Closure;
-use Lkrms\Container\Container;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ArrayMapperFlag;
 use Lkrms\Support\Pipeline;

@@ -6,6 +6,7 @@ namespace Lkrms\Cli;
 
 use Lkrms\Concern\HasCliAppContainer;
 use Lkrms\Console\Console;
+use Lkrms\Contract\ReturnsContainer;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Convert;
 use RuntimeException;
@@ -15,7 +16,7 @@ use UnexpectedValueException;
  * Base class for CLI commands
  *
  */
-abstract class CliCommand
+abstract class CliCommand implements ReturnsContainer
 {
     use HasCliAppContainer;
 

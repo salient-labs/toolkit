@@ -91,19 +91,19 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      *
      * @return SyncEntityProvider
      */
-    final public static function backend(?IContainer $app = null): SyncEntityProvider
+    final public static function backend(?IContainer $container = null): SyncEntityProvider
     {
-        if (!$app)
+        if (!$container)
         {
             if (!Container::hasGlobalContainer())
             {
                 throw new RuntimeException("No container");
             }
-            $app = Container::getGlobalContainer();
+            $container = Container::getGlobalContainer();
         }
         /** @var SyncProvider */
-        $provider = $app->get(static::class . "Provider");
-        return $provider->with(static::class, $app);
+        $provider = $container->get(static::class . "Provider");
+        return $provider->with(static::class, $container);
     }
 
     /**
@@ -219,7 +219,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * ```
      *
      * @deprecated Override {@see SyncEntity::getSerializeRules()} instead
-     * @return null|array
+     * @return array|null
      */
     protected function getDoNotSerialize(): ?array
     {
@@ -251,7 +251,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * ```
      *
      * @deprecated Override {@see SyncEntity::getSerializeRules()} instead
-     * @return null|array
+     * @return array|null
      */
     protected function getOnlySerializeId(): ?array
     {

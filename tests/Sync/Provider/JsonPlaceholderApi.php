@@ -28,7 +28,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return null;
     }
 
-    protected function getBackendIdentifier(): array
+    protected function _getBackendIdentifier(): array
     {
         return [self::JSON_PLACEHOLDER_BASE_URL];
     }

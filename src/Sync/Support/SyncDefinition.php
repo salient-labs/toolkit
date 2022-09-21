@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Support;
 
 use Closure;
-use Lkrms\Concern\TFullyReadable;
+use Lkrms\Container\Container;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
-use Lkrms\Contract\IReadable;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
 
@@ -16,10 +16,8 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * entity
  *
  */
-class SyncDefinition implements ISyncDefinition, IReadable
+class SyncDefinition implements ISyncDefinition
 {
-    use TFullyReadable;
-
     /**
      * @var string
      */
@@ -31,6 +29,11 @@ class SyncDefinition implements ISyncDefinition, IReadable
     protected $SyncProvider;
 
     /**
+     * @var IContainer|null
+     */
+    protected $Container;
+
+    /**
      * @var IPipeline|null
      */
     protected $DataToEntityPipeline;
@@ -40,12 +43,27 @@ class SyncDefinition implements ISyncDefinition, IReadable
      */
     protected $EntityToDataPipeline;
 
-    public function __construct(string $entity, ISyncProvider $provider, ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
+    /**
+     * @var SyncClosureBuilder
+     */
+    protected $EntityClosureBuilder;
+
+    /**
+     * @var SyncClosureBuilder
+     */
+    protected $ProviderClosureBuilder;
+
+    public function __construct(string $entity, ISyncProvider $provider, ?IContainer $container = null, ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
     {
         $this->SyncEntity           = $entity;
         $this->SyncProvider         = $provider;
+        $this->Container            = $container;
         $this->DataToEntityPipeline = $dataToEntityPipeline;
         $this->EntityToDataPipeline = $entityToDataPipeline;
+
+        $container = $container ?: Container::maybeGetGlobalContainer();
+        $this->EntityClosureBuilder   = SyncClosureBuilder::maybeGetBound($container, $entity);
+        $this->ProviderClosureBuilder = SyncClosureBuilder::maybeGetBound($container, get_class($provider));
     }
 
     final public function getSyncEntity(): string
