@@ -53,18 +53,25 @@ class HttpSyncDefinition extends SyncDefinition
         {
             case SyncOperation::CREATE:
                 break;
+
             case SyncOperation::READ:
                 break;
+
             case SyncOperation::UPDATE:
                 break;
+
             case SyncOperation::DELETE:
                 break;
+
             case SyncOperation::CREATE_LIST:
                 break;
+
             case SyncOperation::READ_LIST:
                 break;
+
             case SyncOperation::UPDATE_LIST:
                 break;
+
             case SyncOperation::DELETE_LIST:
                 break;
         }

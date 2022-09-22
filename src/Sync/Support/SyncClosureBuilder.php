@@ -56,8 +56,8 @@ class SyncClosureBuilder extends ClosureBuilder
         if ($this->IsEntity)
         {
             $this->EntityNoun = Convert::classToBasename($this->Class);
-            if (strcasecmp($this->EntityNoun,
-                $plural = $class->getMethod("getPluralClassName")->invoke(null)))
+            $plural = $class->getMethod("getPluralClassName")->invoke(null);
+            if (strcasecmp($this->EntityNoun, $plural))
             {
                 $this->EntityPlural = $plural;
             }
@@ -87,16 +87,24 @@ class SyncClosureBuilder extends ClosureBuilder
      * - `$entityClosureBuilder` was not created for a {@see SyncEntity}
      *   subclass, or
      * - the {@see ISyncProvider} class doesn't implement the given
-     *   SyncOperation
+     *   {@see SyncOperation} via a method
+     *
+     * @param int $operation A {@see SyncOperation} value.
+     * @param string|SyncClosureBuilder $entity
      */
-    final public function getSyncOperationMethod(int $operation, SyncClosureBuilder $entityClosureBuilder): ?string
+    final public function getSyncOperationMethod(int $operation, $entity): ?string
     {
-        if (!$this->IsProvider || !$entityClosureBuilder->IsEntity)
+        if (!($entity instanceof SyncClosureBuilder))
+        {
+            $entity = static::get($entity);
+        }
+
+        if (!$this->IsProvider || !$entity->IsEntity)
         {
             return null;
         }
 
-        [$noun, $plural] = [$entityClosureBuilder->EntityNoun, $entityClosureBuilder->EntityPlural];
+        [$noun, $plural] = [$entity->EntityNoun, $entity->EntityPlural];
 
         if ($plural)
         {

@@ -21,25 +21,37 @@ trait TProvidable
     /**
      * @var IProvider|null
      */
-    private $_ProvidedBy;
+    private $_Provider;
+
+    /**
+     * @var string|null
+     */
+    private $_Providable;
 
     protected function clearProvider()
     {
-        $this->_ProvidedBy = null;
+        $this->_Provider = null;
     }
 
-    public function setProvider(IProvider $provider): void
+    public function setProvider(IProvider $provider, string $providable)
     {
-        if ($this->_ProvidedBy)
+        if ($this->_Provider)
         {
             throw new RuntimeException("Provider already set");
         }
-        $this->_ProvidedBy = $provider;
+        $this->_Provider   = $provider;
+        $this->_Providable = $providable;
+        return $this;
     }
 
     public function provider(): ?IProvider
     {
-        return $this->_ProvidedBy;
+        return $this->_Provider;
+    }
+
+    public function providable(): ?string
+    {
+        return $this->_Providable;
     }
 
     /**
