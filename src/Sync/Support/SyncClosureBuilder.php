@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
+use Closure;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\ClosureBuilder;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -45,6 +46,11 @@ class SyncClosureBuilder extends ClosureBuilder
      */
     private $SyncOperationMethods = [];
 
+    /**
+     * @var array<string,array<int,Closure>>
+     */
+    private $SyncOperationClosures = [];
+
     protected function load(ReflectionClass $class): void
     {
         parent::load($class);
@@ -56,8 +62,8 @@ class SyncClosureBuilder extends ClosureBuilder
         if ($this->IsEntity)
         {
             $this->EntityNoun = Convert::classToBasename($this->Class);
-            if (strcasecmp($this->EntityNoun,
-                $plural = $class->getMethod("getPluralClassName")->invoke(null)))
+            $plural = $class->getMethod("getPluralClassName")->invoke(null);
+            if (strcasecmp($this->EntityNoun, $plural))
             {
                 $this->EntityPlural = $plural;
             }
@@ -87,16 +93,39 @@ class SyncClosureBuilder extends ClosureBuilder
      * - `$entityClosureBuilder` was not created for a {@see SyncEntity}
      *   subclass, or
      * - the {@see ISyncProvider} class doesn't implement the given
-     *   SyncOperation
+     *   {@see SyncOperation} via a method
+     *
+     * @param int $operation A {@see SyncOperation} value.
+     * @param string|SyncClosureBuilder $entity
      */
-    final public function getSyncOperationMethod(int $operation, SyncClosureBuilder $entityClosureBuilder): ?string
+    final public function getSyncOperationClosure(int $operation, $entity, ISyncProvider $provider): ?Closure
     {
-        if (!$this->IsProvider || !$entityClosureBuilder->IsEntity)
+        if (!($entity instanceof SyncClosureBuilder))
+        {
+            $entity = static::get($entity);
+        }
+
+        if (!$this->IsProvider || !$entity->IsEntity)
         {
             return null;
         }
 
-        [$noun, $plural] = [$entityClosureBuilder->EntityNoun, $entityClosureBuilder->EntityPlural];
+        if (($closure = $this->SyncOperationClosures[$entity->Class][$operation] ?? false) === false)
+        {
+            if ($method = $this->getSyncOperationMethod($operation, $entity))
+            {
+                $closure = fn(...$args) => $this->$method(...$args);
+            }
+
+            $this->SyncOperationClosures[$entity->Class][$operation] = $closure ?: null;
+        }
+
+        return $closure ? $closure->bindTo($provider) : null;
+    }
+
+    private function getSyncOperationMethod(int $operation, SyncClosureBuilder $entity): ?string
+    {
+        [$noun, $plural] = [$entity->EntityNoun, $entity->EntityPlural];
 
         if ($plural)
         {

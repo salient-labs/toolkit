@@ -59,31 +59,31 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         ];
         $out = [];
 
-        $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, 0);
+        $pipeline = Pipeline::create()->throughKeyMap($map, ArrayKeyConformity::NONE, 0);
         foreach ($in as $_in)
         {
             $out[] = $pipeline->send($_in)->run();
         }
 
-        $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING);
+        $pipeline = Pipeline::create()->throughKeyMap($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING);
         foreach ($in as $_in)
         {
             $out[] = $pipeline->send($_in)->run();
         }
 
-        $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED);
+        $pipeline = Pipeline::create()->throughKeyMap($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED);
         foreach ($in as $_in)
         {
             $out[] = $pipeline->send($_in)->run();
         }
 
-        $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, ArrayMapperFlag::REMOVE_NULL);
+        $pipeline = Pipeline::create()->throughKeyMap($map, ArrayKeyConformity::NONE, ArrayMapperFlag::REMOVE_NULL);
         foreach ($in as $_in)
         {
             $out[] = $pipeline->send($_in)->run();
         }
 
-        $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING | ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL);
+        $pipeline = Pipeline::create()->throughKeyMap($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING | ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL);
         foreach ($in as $_in)
         {
             $out[] = $pipeline->send($_in)->run();
@@ -94,7 +94,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
             "FULL_NAME" => "Name",
             "MAIL"      => ["Email", "UPN"],
         ];
-        $pipeline = Pipeline::create()->map($mapToMultiple, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING);
+        $pipeline = Pipeline::create()->throughKeyMap($mapToMultiple, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING);
         foreach ($in as $_in)
         {
             $out[] = $pipeline->send($_in)->run();
@@ -117,7 +117,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
                 "MAIL"      => null,
             ],
         ];
-        $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::COMPLETE, 0);
+        $pipeline = Pipeline::create()->throughKeyMap($map, ArrayKeyConformity::COMPLETE, 0);
         foreach ($compliantIn as $_in)
         {
             $out[] = $pipeline->send($_in)->run();
@@ -153,7 +153,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
         ], $out);
 
-        $pipeline = Pipeline::create()->map($map, ArrayKeyConformity::NONE, ArrayMapperFlag::REQUIRE_MAPPED);
+        $pipeline = Pipeline::create()->throughKeyMap($map, ArrayKeyConformity::NONE, ArrayMapperFlag::REQUIRE_MAPPED);
         $this->expectException(UnexpectedValueException::class);
         foreach ($in as $_in)
         {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
+use Lkrms\Concern\TImmutable;
 use Lkrms\Contract\IImmutable;
 
 /**
@@ -12,14 +13,6 @@ use Lkrms\Contract\IImmutable;
  */
 class CurlerHeadersImmutable extends CurlerHeaders implements IImmutable
 {
-    public static function fromMutable(CurlerHeaders $headers): CurlerHeadersImmutable
-    {
-        return $headers->toImmutable();
-    }
-
-    protected function getMutable(): self
-    {
-        return clone $this;
-    }
+    use TImmutable;
 
 }

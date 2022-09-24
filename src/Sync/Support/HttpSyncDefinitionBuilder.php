@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IPipeline;
+use Lkrms\Contract\IPipelineImmutable;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 
 /**
@@ -14,11 +14,14 @@ use Lkrms\Sync\Provider\HttpSyncProvider;
  * @method static $this build(?IContainer $container = null) Create a new HttpSyncDefinitionBuilder (syntactic sugar for 'new HttpSyncDefinitionBuilder()')
  * @method $this entity(string $value)
  * @method $this provider(HttpSyncProvider $value)
- * @method $this path(string $value)
  * @method $this operations(int[] $value)
+ * @method $this path(?string $value)
+ * @method $this conformity(int $value)
+ * @method $this expiry(?int $value)
+ * @method $this methodMap(array $value)
  * @method $this overrides(array $value)
- * @method $this dataToEntityPipeline(?IPipeline $value)
- * @method $this entityToDataPipeline(?IPipeline $value)
+ * @method $this dataToEntityPipeline(?IPipelineImmutable $value)
+ * @method $this entityToDataPipeline(?IPipelineImmutable $value)
  * @method HttpSyncDefinition go() Return a new HttpSyncDefinition object
  *
  * @uses HttpSyncDefinition

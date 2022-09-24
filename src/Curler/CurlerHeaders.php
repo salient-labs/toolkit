@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
+use Lkrms\Concern\TMutable;
 use Lkrms\Curler\CurlerHeadersFlag as Flag;
 
 /**
@@ -12,6 +13,8 @@ use Lkrms\Curler\CurlerHeadersFlag as Flag;
  */
 class CurlerHeaders
 {
+    use TMutable;
+
     /**
      * Headers in their original order, case preserved, duplicates allowed
      *
@@ -80,11 +83,6 @@ class CurlerHeaders
     public function addPrivateHeaderName(string $name): self
     {
         return $this->getMutable()->_addPrivateHeaderName($name);
-    }
-
-    protected function getMutable(): self
-    {
-        return $this;
     }
 
     private function _addRawHeader(string $line): self
@@ -262,7 +260,7 @@ class CurlerHeaders
         ));
     }
 
-    protected function toImmutable(): CurlerHeadersImmutable
+    final protected function toImmutable(): CurlerHeadersImmutable
     {
         $immutable = new CurlerHeadersImmutable();
         foreach ($this as $property => $value)

@@ -103,7 +103,7 @@ abstract class HttpSyncProvider extends SyncProvider
         return $def;
     }
 
-    protected function getDefinitionBuilder(string $entity): HttpSyncDefinitionBuilder
+    protected function define(string $entity): HttpSyncDefinitionBuilder
     {
         return (new HttpSyncDefinitionBuilder())
             ->entity($entity)
@@ -124,10 +124,13 @@ abstract class HttpSyncProvider extends SyncProvider
     /**
      * Get a Curler or CachingCurler instance bound to an API endpoint
      *
+     * If `$expiry` is an integer less than `0`, the return value of
+     * {@see HttpSyncProvider::getCurlerCacheExpiry()} will be used as the
+     * response expiry time.
      */
-    final public function getCurler(string $path, ?int $expiry = null): Curler
+    final public function getCurler(string $path, ?int $expiry = -1): Curler
     {
-        if (func_num_args() < 2)
+        if (!is_null($expiry) && $expiry < 0)
         {
             $expiry = $this->getCurlerCacheExpiry($path);
         }

@@ -21,25 +21,37 @@ trait TProvidable
     /**
      * @var IProvider|null
      */
-    private $_ProvidedBy;
+    private $_Provider;
+
+    /**
+     * @var string|null
+     */
+    private $_Providable;
 
     protected function clearProvider()
     {
-        $this->_ProvidedBy = null;
+        $this->_Provider = null;
     }
 
-    public function setProvider(IProvider $provider): void
+    public function setProvider(IProvider $provider, string $providable)
     {
-        if ($this->_ProvidedBy)
+        if ($this->_Provider)
         {
             throw new RuntimeException("Provider already set");
         }
-        $this->_ProvidedBy = $provider;
+        $this->_Provider   = $provider;
+        $this->_Providable = $providable;
+        return $this;
     }
 
     public function provider(): ?IProvider
     {
-        return $this->_ProvidedBy;
+        return $this->_Provider;
+    }
+
+    public function providable(): ?string
+    {
+        return $this->_Providable;
     }
 
     /**
@@ -75,8 +87,8 @@ trait TProvidable
         $container = $provider->container()->inContextOf(get_class($provider));
         return (Pipeline::create()
             ->send($data)
-            ->if(!is_null($callback), fn(Pipeline $p) => $p->apply($callback))
-            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->map($keyMap, $conformity, $flags))
+            ->if(!is_null($callback), fn(Pipeline $p) => $p->throughCallback($callback))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->throughKeyMap($keyMap, $conformity, $flags))
             ->then(ClosureBuilder::getBound($container, static::class)->getCreateProvidableFromClosure(), $provider, $container, $parent)
             ->run());
     }
@@ -106,8 +118,8 @@ trait TProvidable
         $container = $provider->container()->inContextOf(get_class($provider));
         return (Pipeline::create()
             ->stream($list)
-            ->if(!is_null($callback), fn(Pipeline $p) => $p->apply($callback))
-            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->map($keyMap, $conformity, $flags))
+            ->if(!is_null($callback), fn(Pipeline $p) => $p->throughCallback($callback))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->throughKeyMap($keyMap, $conformity, $flags))
             ->then(
                 function (array $data) use (&$closure, $container, $provider, $conformity, $parent)
                 {

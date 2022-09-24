@@ -6,6 +6,7 @@ namespace Lkrms\Support;
 
 use Closure;
 use Lkrms\Concept\FluentInterface;
+use Lkrms\Concern\TMutable;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipe;
@@ -21,12 +22,19 @@ use UnexpectedValueException;
  */
 class Pipeline extends FluentInterface implements IPipeline
 {
+    use TMutable;
+
     /**
      * @var IContainer|null
      */
     private $Container;
 
     private $Payload;
+
+    /**
+     * @var array|null
+     */
+    private $Args;
 
     /**
      * @var bool|null
@@ -66,46 +74,45 @@ class Pipeline extends FluentInterface implements IPipeline
         return new static($container);
     }
 
-    public function send($payload)
+    public function send($payload, ...$args)
     {
-        $this->Payload = $payload;
-        $this->Stream  = false;
+        $_this = $this->getMutable();
+        $_this->Payload = $payload;
+        $_this->Args    = $args;
+        $_this->Stream  = false;
 
-        return $this;
+        return $_this;
     }
 
-    public function stream(iterable $payload)
+    public function stream(iterable $payload, ...$args)
     {
-        $this->Payload = $payload;
-        $this->Stream  = true;
+        $_this = $this->getMutable();
+        $_this->Payload = $payload;
+        $_this->Args    = $args;
+        $_this->Stream  = true;
 
-        return $this;
+        return $_this;
     }
 
     public function through(...$pipes)
     {
-        array_push($this->Pipes, ...$pipes);
-        $this->PipeStack = null;
+        $_this = $this->getMutable();
+        array_push($_this->Pipes, ...$pipes);
+        $_this->PipeStack = null;
 
-        return $this;
+        return $_this;
     }
 
-    public function pipe($pipe)
+    public function throughCallback(callable $callback, bool $suppressArgs = false)
     {
-        $this->Pipes[]   = $pipe;
-        $this->PipeStack = null;
-
-        return $this;
+        return $suppressArgs
+            ? $this->through(fn($payload, Closure $next) => $next($callback($payload)))
+            : $this->through(fn($payload, Closure $next, ...$args) => $next($callback($payload, ...$args)));
     }
 
-    public function apply(callable $callback)
+    public function throughKeyMap(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED)
     {
-        return $this->pipe(fn($payload, Closure $next) => $next($callback($payload)));
-    }
-
-    public function map(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED)
-    {
-        return $this->pipe(fn($payload, Closure $next) => $next(
+        return $this->through(fn($payload, Closure $next) => $next(
             (Mapper::getKeyMapClosure($keyMap, $conformity, $flags))($payload)
         ));
     }
@@ -116,10 +123,11 @@ class Pipeline extends FluentInterface implements IPipeline
         {
             throw new RuntimeException(static::class . "::then() has already been applied");
         }
-        $this->Then     = $callback;
-        $this->ThenArgs = $args;
+        $_this           = $this->getMutable();
+        $_this->Then     = $callback;
+        $_this->ThenArgs = $args;
 
-        return $this;
+        return $_this;
     }
 
     public function run()
@@ -140,7 +148,6 @@ class Pipeline extends FluentInterface implements IPipeline
             throw new RuntimeException(static::class . "::stream() must be called before " . static::class . "::start()");
         }
         $this->checkThen();
-
         $pipeStack = $this->getPipeStack();
         foreach ($this->Payload as $payload)
         {
@@ -186,7 +193,7 @@ class Pipeline extends FluentInterface implements IPipeline
             {
                 if (is_callable($pipe))
                 {
-                    $closure = fn($payload) => $pipe($payload, $next);
+                    $closure = fn($payload) => $pipe($payload, $next, ...$this->Args);
                 }
                 else
                 {
@@ -199,7 +206,7 @@ class Pipeline extends FluentInterface implements IPipeline
                     {
                         throw new UnexpectedValueException("Pipe does not implement " . IPipe::class);
                     }
-                    $closure = fn($payload) => $pipe->handle($payload, $next);
+                    $closure = fn($payload) => $pipe->handle($payload, $next, ...$this->Args);
                 }
                 return function ($payload) use ($closure)
                 {
@@ -213,8 +220,19 @@ class Pipeline extends FluentInterface implements IPipeline
                     }
                 };
             },
-            fn($result) => ($this->Then)($result, ...$this->ThenArgs)
+            fn($result) => ($this->Then)($result, ...$this->ThenArgs, ...$this->Args)
         ));
+    }
+
+    final protected function toImmutable(): PipelineImmutable
+    {
+        $immutable = new PipelineImmutable();
+        foreach ($this as $property => $value)
+        {
+            $immutable->$property = $value;
+        }
+
+        return $immutable;
     }
 
 }

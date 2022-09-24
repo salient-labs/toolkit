@@ -5,19 +5,17 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Provider;
 
 use Lkrms\Contract\IContainer;
-use Lkrms\Facade\Convert;
-use Lkrms\Facade\DI;
-use Lkrms\Facade\Reflect;
+use Lkrms\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
+use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\SyncEntity;
 use Lkrms\Sync\SyncOperation;
-use ReflectionClass;
-use ReflectionMethod;
 use UnexpectedValueException;
 
 /**
- * Provides an entity-agnostic interface to a SyncEntity's current provider
+ * Provides an entity-agnostic interface to a provider's implementation of sync
+ * operations for an entity
  *
  * So you can do this:
  *
@@ -25,8 +23,7 @@ use UnexpectedValueException;
  * $faculties = $provider->with(Faculty::class)->getList();
  * ```
  *
- * or this, assuming a `Faculty` provider is bound to the current global
- * container:
+ * or, if a `Faculty` provider is bound to the current global container:
  *
  * ```php
  * $faculties = Faculty::backend()->getList();
@@ -43,162 +40,56 @@ class SyncEntityProvider
     /**
      * @var string
      */
-    private $SyncEntity;
-
-    /**
-     * @var string
-     */
-    private $SyncEntityNoun;
-
-    /**
-     * @var string
-     */
-    private $SyncEntityPlural;
+    private $Entity;
 
     /**
      * @var SyncProvider
      */
-    private $SyncProvider;
+    private $Provider;
 
     /**
-     * @var ISyncDefinition
+     * @var ISyncDefinition|null
      */
-    private $SyncDefinition;
+    private $Definition;
 
     /**
-     * @var ReflectionClass
+     * @var SyncContext
      */
-    private $SyncProviderClass;
+    private $Context;
 
-    private $Callbacks = [];
-
-    public function __construct(IContainer $container, string $entity, SyncProvider $provider, ?ISyncDefinition $definition)
+    public function __construct(IContainer $container, string $entity, SyncProvider $provider, ?ISyncDefinition $definition, ?SyncContext $context = null)
     {
         if (!is_subclass_of($entity, SyncEntity::class))
         {
             throw new UnexpectedValueException("Not a subclass of SyncEntity: " . $entity);
         }
 
-        $this->Container         = $container;
-        $this->SyncEntity        = $entity;
-        $this->SyncEntityNoun    = Convert::classToBasename($entity);
-        $this->SyncEntityPlural  = $entity::getPluralClassName();
-        $this->SyncProvider      = $provider;
-        $this->SyncDefinition    = $definition;
-        $this->SyncProviderClass = new ReflectionClass($this->SyncProvider);
+        $entityProvider = $entity . "Provider";
+        if (!($provider instanceof $entityProvider))
+        {
+            throw new UnexpectedValueException(get_class($provider) . " does not implement " . $entityProvider);
+        }
+
+        $this->Container  = $container;
+        $this->Entity     = $entity;
+        $this->Provider   = $provider;
+        $this->Definition = $definition;
+        $this->Context    = $context ?: new SyncContext($container);
     }
 
-    private function getProviderMethod(string $methodName): ?ReflectionMethod
+    private function run(int $operation, ...$args)
     {
-        return $this->SyncProviderClass->hasMethod($methodName)
-            ? $this->SyncProviderClass->getMethod($methodName)
-            : null;
-    }
-
-    private function checkProviderMethod(
-        string $method,
-        string $altMethod,
-        bool $entityParam,
-        bool $idParam,
-        bool $paramRequired,
-        string $entityParamType
-    ): ?string
-    {
-        if (is_null($method = $this->getProviderMethod($method)) &&
-            is_null($method = $this->getProviderMethod($altMethod)))
+        if (!$this->Definition ||
+            !($closure = $this->Definition->getSyncOperationClosure($operation)))
         {
-            return null;
+            throw new SyncOperationNotImplementedException($this->Provider, $this->Entity, $operation);
         }
 
-        $required = 0;
-
-        if ($entityParam || $idParam)
-        {
-            $required = 1;
-
-            if (is_null($param = $method->getParameters()[0] ?? null))
-            {
-                return null;
-            }
-
-            if ($paramRequired && $param->allowsNull())
-            {
-                return null;
-            }
-
-            $type = Reflect::getAllTypeNames($param->getType());
-
-            if (($entityParam && $type != [$entityParamType]) ||
-                ($idParam && !empty(array_diff($type, ["int", "string"]))))
-            {
-                return null;
-            }
-        }
-
-        if ($method->getNumberOfRequiredParameters() != $required)
-        {
-            return null;
-        }
-
-        return $method->getName();
-    }
-
-    private function run(
-        int $operation,
-        string $method,
-        string $altMethod,
-        bool $entityParam,
-        bool $idParam,
-        bool $paramRequired,
-        ...$params
-    ) {
-        $isList = SyncOperation::isList($operation);
-
-        if (is_null($callback = $this->Callbacks[$operation] ?? null))
-        {
-            if ($providerMethod = $this->checkProviderMethod(
-                $method,
-                $altMethod,
-                $entityParam,
-                $idParam,
-                $paramRequired,
-                $isList ? "array" : $this->SyncEntity
-            ))
-            {
-                $callback = function (...$params) use ($providerMethod)
-                {
-                    return $this->SyncProvider->$providerMethod(...$params);
-                };
-
-                $this->Callbacks[$operation] = $callback;
-            }
-            else
-            {
-                throw new UnexpectedValueException("Invalid or missing method: " .
-                    get_class($this->SyncProvider) . "::$method");
-            }
-        }
-
-        $param = $params[0] ?? null;
-
-        if ($entityParam && !is_null($param) && !($isList ? is_array($param) : is_a($param, $this->SyncEntity)))
-        {
-            throw new UnexpectedValueException($this->SyncEntity . ($isList ? "[]" : "") . ' required: $param[0]');
-        }
-        elseif ($idParam && !is_null($param) && !is_int($param) && !is_string($param))
-        {
-            throw new UnexpectedValueException('Not an identifier: $param[0]');
-        }
-        elseif ($paramRequired && is_null($param))
-        {
-            throw new UnexpectedValueException('Value required: $param[0]');
-        }
-
-        return $callback(...$params);
+        return $closure($this->Context, ...$args);
     }
 
     /**
-     * Adds an entity to the backend
+     * Add an entity to the backend
      *
      * The underlying {@see SyncProvider} must implement the
      * {@see SyncOperation::CREATE} operation, e.g. one of the following for a
@@ -224,20 +115,11 @@ class SyncEntityProvider
      */
     public function create(SyncEntity $entity, ...$params): SyncEntity
     {
-        return $this->run(
-            SyncOperation::CREATE,
-            "create" . $this->SyncEntityNoun,
-            "create_" . $this->SyncEntityNoun,
-            true,
-            false,
-            true,
-            $entity,
-            ...$params
-        );
+        return $this->run(SyncOperation::CREATE, $entity, ...$params);
     }
 
     /**
-     * Returns an entity from the backend
+     * Return an entity from the backend
      *
      * The underlying {@see SyncProvider} must implement the
      * {@see SyncOperation::READ} operation, e.g. one of the following for a
@@ -263,20 +145,11 @@ class SyncEntityProvider
      */
     public function get($id = null, ...$params): SyncEntity
     {
-        return $this->run(
-            SyncOperation::READ,
-            "get" . $this->SyncEntityNoun,
-            "get_" . $this->SyncEntityNoun,
-            false,
-            true,
-            false,
-            $id,
-            ...$params
-        );
+        return $this->run(SyncOperation::READ, $id, ...$params);
     }
 
     /**
-     * Updates an entity in the backend
+     * Update an entity in the backend
      *
      * The underlying {@see SyncProvider} must implement the
      * {@see SyncOperation::UPDATE} operation, e.g. one of the following for a
@@ -302,20 +175,11 @@ class SyncEntityProvider
      */
     public function update(SyncEntity $entity, ...$params): SyncEntity
     {
-        return $this->run(
-            SyncOperation::UPDATE,
-            "update" . $this->SyncEntityNoun,
-            "update_" . $this->SyncEntityNoun,
-            true,
-            false,
-            true,
-            $entity,
-            ...$params
-        );
+        return $this->run(SyncOperation::UPDATE, $entity, ...$params);
     }
 
     /**
-     * Deletes an entity from the backend
+     * Delete an entity from the backend
      *
      * The underlying {@see SyncProvider} must implement the
      * {@see SyncOperation::DELETE} operation, e.g. one of the following for a
@@ -345,20 +209,11 @@ class SyncEntityProvider
      */
     public function delete(SyncEntity $entity, ...$params): ?SyncEntity
     {
-        return $this->run(
-            SyncOperation::DELETE,
-            "delete" . $this->SyncEntityNoun,
-            "delete_" . $this->SyncEntityNoun,
-            true,
-            false,
-            true,
-            $entity,
-            ...$params
-        );
+        return $this->run(SyncOperation::DELETE, $entity, ...$params);
     }
 
     /**
-     * Adds a list of entities to the backend
+     * Add a list of entities to the backend
      *
      * The underlying {@see SyncProvider} must implement the
      * {@see SyncOperation::CREATE_LIST} operation, e.g. one of the following
@@ -383,20 +238,11 @@ class SyncEntityProvider
      */
     public function createList(iterable $entities, ...$params): iterable
     {
-        return $this->run(
-            SyncOperation::CREATE_LIST,
-            "create" . $this->SyncEntityPlural,
-            "createList_" . $this->SyncEntityNoun,
-            true,
-            false,
-            true,
-            $entities,
-            ...$params
-        );
+        return $this->run(SyncOperation::CREATE_LIST, $entities, ...$params);
     }
 
     /**
-     * Returns a list of entities from the backend
+     * Return a list of entities from the backend
      *
      * The underlying {@see SyncProvider} must implement the
      * {@see SyncOperation::READ_LIST} operation, e.g. one of the following for
@@ -415,19 +261,11 @@ class SyncEntityProvider
      */
     public function getList(...$params): iterable
     {
-        return $this->run(
-            SyncOperation::READ_LIST,
-            "get" . $this->SyncEntityPlural,
-            "getList_" . $this->SyncEntityNoun,
-            false,
-            false,
-            false,
-            ...$params
-        );
+        return $this->run(SyncOperation::READ_LIST, ...$params);
     }
 
     /**
-     * Updates a list of entities in the backend
+     * Update a list of entities in the backend
      *
      * The underlying {@see SyncProvider} must implement the
      * {@see SyncOperation::UPDATE_LIST} operation, e.g. one of the following
@@ -452,20 +290,11 @@ class SyncEntityProvider
      */
     public function updateList(iterable $entities, ...$params): iterable
     {
-        return $this->run(
-            SyncOperation::UPDATE_LIST,
-            "update" . $this->SyncEntityPlural,
-            "updateList_" . $this->SyncEntityNoun,
-            true,
-            false,
-            true,
-            $entities,
-            ...$params
-        );
+        return $this->run(SyncOperation::UPDATE_LIST, $entities, ...$params);
     }
 
     /**
-     * Deletes a list of entities from the backend
+     * Delete a list of entities from the backend
      *
      * The underlying {@see SyncProvider} must implement the
      * {@see SyncOperation::DELETE_LIST} operation, e.g. one of the following
@@ -495,15 +324,7 @@ class SyncEntityProvider
      */
     public function deleteList(iterable $entities, ...$params): ?iterable
     {
-        return $this->run(
-            SyncOperation::DELETE_LIST,
-            "delete" . $this->SyncEntityPlural,
-            "deleteList_" . $this->SyncEntityNoun,
-            true,
-            false,
-            true,
-            $entities,
-            ...$params
-        );
+        return $this->run(SyncOperation::DELETE_LIST, $entities, ...$params);
     }
+
 }

@@ -21,6 +21,7 @@ use Lkrms\Contract\IContainer;
  * @method static void unload() Clear the underlying CliAppContainer instance
  * @method static CliAppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static mixed call(callable $callback) Make this the global container while running the given callback (see {@see Container::call()})
+ * @method static IContainer|null coalesce(?IContainer $container, bool $returnNull = true, bool $load = false) Return the first available container (see {@see Container::coalesce()})
  * @method static CliAppContainer command(string[] $name, string $id) Register a CliCommand with the container (see {@see CliAppContainer::command()})
  * @method static CliAppContainer enableCache() See {@see AppContainer::enableCache()}
  * @method static CliAppContainer enableExistingCache() See {@see AppContainer::enableExistingCache()}
@@ -35,6 +36,7 @@ use Lkrms\Contract\IContainer;
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of the given class or interface have been applied to the default context (see {@see Container::inContextOf()})
  * @method static CliAppContainer instance(string $id, mixed $instance) Add an existing instance to the container as a shared binding (see {@see Container::instance()})
  * @method static IContainer|null maybeGetGlobalContainer() Similar to getGlobalContainer(), but return null if no global container has been loaded (see {@see Container::maybeGetGlobalContainer()})
+ * @method static IContainer requireGlobalContainer() Similar to getGlobalContainer(), but throw an exception if no global container has been loaded (see {@see Container::requireGlobalContainer()})
  * @method static int run() Process command-line arguments and take appropriate action (see {@see CliAppContainer::run()})
  * @method static never runAndExit() Exit after actioning command-line arguments (see {@see CliAppContainer::runAndExit()})
  * @method static CliAppContainer service(string $id, string[]|null $services = null, string[]|null $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null) Add bindings to the container for an IBindable implementation and its services, optionally specifying services to bind or exclude (see {@see Container::service()})

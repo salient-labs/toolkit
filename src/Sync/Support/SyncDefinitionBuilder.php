@@ -6,7 +6,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IPipeline;
+use Lkrms\Contract\IPipelineImmutable;
 use Lkrms\Sync\Contract\ISyncProvider;
 
 /**
@@ -15,14 +15,15 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @method static $this build(?IContainer $container = null) Create a new SyncDefinitionBuilder (syntactic sugar for 'new SyncDefinitionBuilder()')
  * @method $this entity(string $value)
  * @method $this provider(ISyncProvider $value)
- * @method $this dataToEntityPipeline(?IPipeline $value)
- * @method $this entityToDataPipeline(?IPipeline $value)
+ * @method $this conformity(int $value)
+ * @method $this dataToEntityPipeline(?IPipelineImmutable $value)
+ * @method $this entityToDataPipeline(?IPipelineImmutable $value)
  * @method SyncDefinition go() Return a new SyncDefinition object
  *
  * @uses SyncDefinition
  * @lkrms-generate-command lk-util generate builder --class='Lkrms\Sync\Support\SyncDefinition' --static-builder='build' --terminator='go' --no-final
  */
-class SyncDefinitionBuilder extends Builder
+abstract class SyncDefinitionBuilder extends Builder
 {
     /**
      * @internal

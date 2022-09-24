@@ -29,6 +29,11 @@ class ClosureBuilder
     private $Class;
 
     /**
+     * @var string|null
+     */
+    private $BaseClass;
+
+    /**
      * @var bool
      */
     private $IsReadable;
@@ -219,7 +224,10 @@ class ClosureBuilder
      */
     final public static function getBound(IContainer $container, string $class)
     {
-        return static::get($container->getName($class));
+        $instance = static::get($container->getName($class));
+        $instance->BaseClass = $class;
+
+        return $instance;
     }
 
     /**
@@ -598,13 +606,13 @@ class ClosureBuilder
         // methods need them
         if ($this->IsProvidable)
         {
-            $closure = static function (?IContainer $container, array $array, ?IProvider $provider) use ($closure)
+            $closure = function (?IContainer $container, array $array, ?IProvider $provider) use ($closure)
             {
                 /** @var IProvidable $obj */
                 $obj = $closure($container, $array);
                 if ($provider)
                 {
-                    $obj->setProvider($provider);
+                    $obj->setProvider($provider, $this->BaseClass ?: $this->Class);
                 }
                 return $obj;
             };
