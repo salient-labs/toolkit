@@ -13,12 +13,6 @@ use Lkrms\Support\DateFormatter;
 interface IProvider extends ReturnsContainer
 {
     /**
-     * Get the container used to instantiate objects
-     *
-     */
-    public function container(): IContainer;
-
-    /**
      * Get a stable hash that, together with the name of the class, uniquely
      * identifies the backend instance
      *

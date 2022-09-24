@@ -66,9 +66,9 @@ class HttpSyncDefinition extends SyncDefinition
      * @param int[] $operations
      * @param array<int,Closure> $overrides
      */
-    public function __construct(string $entity, HttpSyncProvider $provider, array $operations = [], ?string $path = null, int $conformity = ArrayKeyConformity::NONE, ?int $expiry = -1, array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP, array $overrides = [], ?IContainer $container = null, ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
+    public function __construct(string $entity, HttpSyncProvider $provider, array $operations = [], ?string $path = null, int $conformity = ArrayKeyConformity::NONE, ?int $expiry = -1, array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP, array $overrides = [], ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
     {
-        parent::__construct($entity, $provider, $conformity, $container, $dataToEntityPipeline, $entityToDataPipeline);
+        parent::__construct($entity, $provider, $conformity, $dataToEntityPipeline, $entityToDataPipeline);
 
         // Combine overridden operations with $operations and remove invalid
         // values
@@ -112,7 +112,7 @@ class HttpSyncDefinition extends SyncDefinition
 
         $toCurler  = $this->getCurlerOperationClosure($operation);
         $toBackend = $this->getPipelineToBackend()->through(
-            fn($payload, Closure $next) => $next($toCurler($this->getPath(), $payload))
+            fn($payload, Closure $next, ...$args) => $next($toCurler($this->getPath(), $payload))
         );
         $toEntity = $this->getPipelineToEntity();
 
@@ -121,29 +121,29 @@ class HttpSyncDefinition extends SyncDefinition
             case SyncOperation::CREATE:
             case SyncOperation::UPDATE:
             case SyncOperation::DELETE:
-                $closure = fn(SyncEntity $entity, ...$args): SyncEntity =>
+                $closure = fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity =>
                     ($toBackend->send($entity->toArray(), ...$args)
-                        ->then(fn($result) => $toEntity->send($result)->run())
+                        ->then(fn($result) => $toEntity->send($result, $ctx)->run())
                         ->run());
                 break;
 
             case SyncOperation::READ:
-                $closure = fn(int $id = null, ...$args): SyncEntity =>
-                    $toEntity->send($toCurler($this->getPath()), $id, ...$args)->run();
+                $closure = fn(SyncContext $ctx, ?int $id = null, ...$args): SyncEntity =>
+                    $toEntity->send($toCurler($this->getPath()), $ctx, $id, ...$args)->run();
                     break;
 
             case SyncOperation::CREATE_LIST:
             case SyncOperation::UPDATE_LIST:
             case SyncOperation::DELETE_LIST:
-                $closure = fn(iterable $entities, ...$args): iterable =>
+                $closure = fn(SyncContext $ctx, iterable $entities, ...$args): iterable =>
                     ($toBackend->stream($entities, ...$args)
-                        ->then(fn($result) => $toEntity->send($result)->run())
+                        ->then(fn($result) => $toEntity->send($result, $ctx)->run())
                         ->start());
                 break;
 
             case SyncOperation::READ_LIST:
-                $closure = fn(...$args): iterable =>
-                    $toEntity->stream($toCurler($this->getPath()), ...$args)->run();
+                $closure = fn(SyncContext $ctx, ...$args): iterable =>
+                    $toEntity->stream($toCurler($this->getPath()), $ctx, ...$args)->start();
                     break;
 
             default:

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Support;
 
 use Closure;
-use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipelineImmutable;
+use Lkrms\Contract\ITreeNode;
 use Lkrms\Contract\ReturnsContainer;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\PipelineImmutable;
@@ -19,8 +19,10 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * entity
  *
  */
-abstract class SyncDefinition implements ISyncDefinition, ReturnsContainer
+abstract class SyncDefinition implements ISyncDefinition
 {
+    abstract public function getSyncOperationClosure(int $operation): ?Closure;
+
     /**
      * @var string
      */
@@ -35,11 +37,6 @@ abstract class SyncDefinition implements ISyncDefinition, ReturnsContainer
      * @var int
      */
     protected $Conformity;
-
-    /**
-     * @var IContainer
-     */
-    protected $Container;
 
     /**
      * @var IPipelineImmutable|null
@@ -61,50 +58,26 @@ abstract class SyncDefinition implements ISyncDefinition, ReturnsContainer
      */
     protected $ProviderClosureBuilder;
 
-    public function __construct(string $entity, ISyncProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IContainer $container = null, ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
+    /**
+     * @param IPipelineImmutable|null $dataToEntityPipeline A pipeline that
+     * converts data received from the provider to an associative array from
+     * which the entity can be instantiated, or `null` if the entity is not
+     * supported or conversion is not required.
+     * @param IPipelineImmutable|null $entityToDataPipeline A pipeline that
+     * converts a serialized instance of the entity to data compatible with the
+     * provider, or `null` if the entity is not supported or conversion is not
+     * required.
+     */
+    public function __construct(string $entity, ISyncProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
     {
         $this->Entity     = $entity;
         $this->Provider   = $provider;
         $this->Conformity = $conformity;
-        $this->Container  = $container ?: $provider->container();
         $this->DataToEntityPipeline = $dataToEntityPipeline;
         $this->EntityToDataPipeline = $entityToDataPipeline;
 
-        $container = $container ?: Container::maybeGetGlobalContainer();
-        $this->EntityClosureBuilder   = SyncClosureBuilder::maybeGetBound($container, $entity);
-        $this->ProviderClosureBuilder = SyncClosureBuilder::maybeGetBound($container, get_class($provider));
-    }
-
-    final public function app(): IContainer
-    {
-        return $this->Container;
-    }
-
-    final public function container(): IContainer
-    {
-        return $this->Container;
-    }
-
-    final public function getSyncEntity(): string
-    {
-        return $this->Entity;
-    }
-
-    final public function getSyncProvider(): ISyncProvider
-    {
-        return $this->Provider;
-    }
-
-    abstract public function getSyncOperationClosure(int $operation): ?Closure;
-
-    final public function getDataToEntityPipeline(): ?IPipelineImmutable
-    {
-        return $this->DataToEntityPipeline;
-    }
-
-    final public function getEntityToDataPipeline(): ?IPipelineImmutable
-    {
-        return $this->EntityToDataPipeline;
+        $this->EntityClosureBuilder   = SyncClosureBuilder::get($entity);
+        $this->ProviderClosureBuilder = SyncClosureBuilder::get(get_class($provider));
     }
 
     protected function getPipelineToBackend(): IPipelineImmutable
@@ -115,16 +88,16 @@ abstract class SyncDefinition implements ISyncDefinition, ReturnsContainer
     protected function getPipelineToEntity(): IPipelineImmutable
     {
         return ($this->DataToEntityPipeline ?: PipelineImmutable::create())
-            ->then(function (array $entity) use (&$closure)
+            ->then(function (array $entity, SyncContext $ctx) use (&$closure)
             {
                 if (!$closure)
                 {
                     $closure = in_array($this->Conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                        ? $this->EntityClosureBuilder->getCreateFromSignatureClosure(array_keys($entity))
-                        : $this->EntityClosureBuilder->getCreateFromClosure();
+                        ? SyncClosureBuilder::getBound($ctx->Container, $this->Entity)->getCreateFromSignatureClosure(array_keys($entity))
+                        : SyncClosureBuilder::getBound($ctx->Container, $this->Entity)->getCreateFromClosure();
                 }
-                /** @todo Add parent from context */
-                return $closure($entity, $this->Container);
+
+                return $closure($entity, $ctx->Container, $ctx->Parent);
             });
     }
 

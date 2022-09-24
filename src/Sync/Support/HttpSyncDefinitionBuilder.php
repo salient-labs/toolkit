@@ -20,7 +20,6 @@ use Lkrms\Sync\Provider\HttpSyncProvider;
  * @method $this expiry(?int $value)
  * @method $this methodMap(array $value)
  * @method $this overrides(array $value)
- * @method $this container(?IContainer $value)
  * @method $this dataToEntityPipeline(?IPipelineImmutable $value)
  * @method $this entityToDataPipeline(?IPipelineImmutable $value)
  * @method HttpSyncDefinition go() Return a new HttpSyncDefinition object

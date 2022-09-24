@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Contract;
 
 /**
- * Returns a service container or dies trying
+ * Returns a service container, creating one if necessary
  *
  */
 interface ReturnsContainer

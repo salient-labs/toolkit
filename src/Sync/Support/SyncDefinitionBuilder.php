@@ -16,7 +16,6 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @method $this entity(string $value)
  * @method $this provider(ISyncProvider $value)
  * @method $this conformity(int $value)
- * @method $this container(?IContainer $value)
  * @method $this dataToEntityPipeline(?IPipelineImmutable $value)
  * @method $this entityToDataPipeline(?IPipelineImmutable $value)
  * @method SyncDefinition go() Return a new SyncDefinition object

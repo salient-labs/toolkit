@@ -220,7 +220,7 @@ class Pipeline extends FluentInterface implements IPipeline
                     }
                 };
             },
-            fn($result) => ($this->Then)($result, ...$this->ThenArgs)
+            fn($result) => ($this->Then)($result, ...$this->ThenArgs, ...$this->Args)
         ));
     }
 

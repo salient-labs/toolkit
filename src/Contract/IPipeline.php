@@ -88,6 +88,10 @@ interface IPipeline
      *
      * This method can only be called once per pipeline.
      *
+     * Arguments added after `$callback` will be passed to the callback
+     * **before** any arguments added after `$payload` in
+     * {@see IPipeline::send()} or {@see IPipeline::stream()}.
+     *
      * @return $this
      */
     public function then(callable $callback, ...$args);

@@ -19,6 +19,7 @@ use Lkrms\Contract\IContainer;
  * @method static void unload() Clear the underlying AppContainer instance
  * @method static AppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static mixed call(callable $callback) Make this the global container while running the given callback (see {@see Container::call()})
+ * @method static IContainer|null coalesce(?IContainer $container, bool $returnNull = true, bool $load = false) Return the first available container (see {@see Container::coalesce()})
  * @method static AppContainer enableCache() See {@see AppContainer::enableCache()}
  * @method static AppContainer enableExistingCache() See {@see AppContainer::enableExistingCache()}
  * @method static AppContainer enableMessageLog(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG) See {@see AppContainer::enableMessageLog()}
@@ -30,6 +31,7 @@ use Lkrms\Contract\IContainer;
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of the given class or interface have been applied to the default context (see {@see Container::inContextOf()})
  * @method static AppContainer instance(string $id, mixed $instance) Add an existing instance to the container as a shared binding (see {@see Container::instance()})
  * @method static IContainer|null maybeGetGlobalContainer() Similar to getGlobalContainer(), but return null if no global container has been loaded (see {@see Container::maybeGetGlobalContainer()})
+ * @method static IContainer requireGlobalContainer() Similar to getGlobalContainer(), but throw an exception if no global container has been loaded (see {@see Container::requireGlobalContainer()})
  * @method static AppContainer service(string $id, string[]|null $services = null, string[]|null $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null) Add bindings to the container for an IBindable implementation and its services, optionally specifying services to bind or exclude (see {@see Container::service()})
  * @method static IContainer|null setGlobalContainer(?IContainer $container) Set (or unset) the global container (see {@see Container::setGlobalContainer()})
  * @method static AppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})

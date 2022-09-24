@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Contract;
 
 use Closure;
-use Lkrms\Contract\IPipelineImmutable;
 
 /**
  * Provides access to an ISyncProvider's implementation of sync operations for
@@ -15,23 +14,19 @@ use Lkrms\Contract\IPipelineImmutable;
 interface ISyncDefinition
 {
     /**
-     * Get the name of the entity class
-     *
-     */
-    public function getSyncEntity(): string;
-
-    /**
-     * Get the provider servicing the entity
-     *
-     */
-    public function getSyncProvider(): ISyncProvider;
-
-    /**
      * Return a closure that uses the provider to perform a sync operation on
      * the entity
      *
-     * Closure signatures vary by operation, and optional parameters may be
-     * accepted after required ones:
+     * Closure signatures vary by operation, but the first value passed is
+     * always the current {@see \Lkrms\Sync\Support\SyncContext}, and optional
+     * parameters may be added after required ones. A full signature might be:
+     *
+     * ```php
+     * fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity
+     * ```
+     *
+     * For clarity, the {@see \Lkrms\Sync\Support\SyncContext} and variadic
+     * `$args` parameters have been removed here:
      *
      * | Operation[^op] | Signature                            | Equivalent `SyncProvider` method[^1]        | Alternative `SyncProvider` method[^2][^3]         |
      * | -------------- | ------------------------------------ | ------------------------------------------- | ------------------------------------------------- |
@@ -46,40 +41,20 @@ interface ISyncDefinition
      *
      * [^op]: See {@see \Lkrms\Sync\SyncOperation}.
      *
-     * [^1]: Examples only. For a {@see SyncEntity} subclass called `User`.
-     * Method names must match the unqualified name of the entity they operate
-     * on.
+     * [^1]: Examples only. For a {@see \Lkrms\Sync\SyncEntity} subclass called
+     * `User`. Method names must match the unqualified name of the entity they
+     * operate on.
      *
      * [^2]: Recommended when the singular and plural forms of a class name are
      * the same.
      *
-     * [^3]: Examples only. For a {@see SyncEntity} subclass called `Series`.
-     * Method names must match the unqualified name of the entity they operate
-     * on.
+     * [^3]: Examples only. For a {@see \Lkrms\Sync\SyncEntity} subclass called
+     * `Series`. Method names must match the unqualified name of the entity they
+     * operate on.
      *
      * @return Closure|null `null` if `$operation` is not supported, otherwise a
      * closure with the correct signature for the sync operation.
      */
     public function getSyncOperationClosure(int $operation): ?Closure;
-
-    /**
-     * Return a pipeline that converts data received from the provider to an
-     * associative array from which the entity's class can be instantiated
-     *
-     * If the entity is not supported or conversion is not required, return
-     * `null`.
-     *
-     */
-    public function getDataToEntityPipeline(): ?IPipelineImmutable;
-
-    /**
-     * Return a pipeline that converts a serialized instance of the entity to
-     * data compatible with the provider
-     *
-     * If the entity is not supported or conversion is not required, return
-     * `null`.
-     *
-     */
-    public function getEntityToDataPipeline(): ?IPipelineImmutable;
 
 }

@@ -103,7 +103,7 @@ abstract class HttpSyncProvider extends SyncProvider
         return $def;
     }
 
-    protected function getDefinitionBuilder(string $entity): HttpSyncDefinitionBuilder
+    protected function define(string $entity): HttpSyncDefinitionBuilder
     {
         return (new HttpSyncDefinitionBuilder())
             ->entity($entity)
