@@ -87,8 +87,8 @@ trait TProvidable
         $container = $provider->container()->inContextOf(get_class($provider));
         return (Pipeline::create()
             ->send($data)
-            ->if(!is_null($callback), fn(Pipeline $p) => $p->apply($callback))
-            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->map($keyMap, $conformity, $flags))
+            ->if(!is_null($callback), fn(Pipeline $p) => $p->throughCallback($callback))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->throughKeyMap($keyMap, $conformity, $flags))
             ->then(ClosureBuilder::getBound($container, static::class)->getCreateProvidableFromClosure(), $provider, $container, $parent)
             ->run());
     }
@@ -118,8 +118,8 @@ trait TProvidable
         $container = $provider->container()->inContextOf(get_class($provider));
         return (Pipeline::create()
             ->stream($list)
-            ->if(!is_null($callback), fn(Pipeline $p) => $p->apply($callback))
-            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->map($keyMap, $conformity, $flags))
+            ->if(!is_null($callback), fn(Pipeline $p) => $p->throughCallback($callback))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->throughKeyMap($keyMap, $conformity, $flags))
             ->then(
                 function (array $data) use (&$closure, $container, $provider, $conformity, $parent)
                 {

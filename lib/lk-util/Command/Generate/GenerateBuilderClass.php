@@ -182,7 +182,7 @@ class GenerateBuilderClass extends GenerateCommand
         {
             $_class = new ReflectionClass($fqcn);
 
-            if (!$_class->isInstantiable())
+            if (!$_class->isInstantiable() && !$_class->isAbstract())
             {
                 throw new InvalidCliArgumentException("not an instantiable class: $fqcn");
             }
@@ -213,7 +213,7 @@ class GenerateBuilderClass extends GenerateCommand
         );
 
         /** @var ReflectionParameter[] */
-        $_params          = [];
+        $_params = [];
         if ($_constructor = $_class->getConstructor())
         {
             foreach ($_constructor->getParameters() as $_param)
@@ -384,7 +384,7 @@ class GenerateBuilderClass extends GenerateCommand
             "namespace $builderNamespace;",
             implode(PHP_EOL, $imports),
             implode(PHP_EOL, $docBlock) . PHP_EOL .
-            ($this->getOptionValue("no-final") ? "" : "final ") .
+            ($_class->isAbstract() ? "abstract " : ($this->getOptionValue("no-final") ? "" : "final ")) .
             "class $builderClass extends $extends" . PHP_EOL .
             "{"
         ];

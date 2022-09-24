@@ -50,8 +50,8 @@ trait TConstructible
     {
         return (Pipeline::create()
             ->send($data)
-            ->if(!is_null($callback), fn(Pipeline $p) => $p->apply($callback))
-            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->map($keyMap, $conformity, $flags))
+            ->if(!is_null($callback), fn(Pipeline $p) => $p->throughCallback($callback))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->throughKeyMap($keyMap, $conformity, $flags))
             ->then(ClosureBuilder::maybeGetBound($container, static::class)->getCreateFromClosure(), $container, $parent)
             ->run());
     }
@@ -81,8 +81,8 @@ trait TConstructible
     {
         return (Pipeline::create()
             ->stream($list)
-            ->if(!is_null($callback), fn(Pipeline $p) => $p->apply($callback))
-            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->map($keyMap, $conformity, $flags))
+            ->if(!is_null($callback), fn(Pipeline $p) => $p->throughCallback($callback))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->throughKeyMap($keyMap, $conformity, $flags))
             ->then(
                 function (array $data) use (&$closure, $container, $conformity, $parent)
                 {

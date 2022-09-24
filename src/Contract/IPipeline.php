@@ -16,9 +16,11 @@ interface IPipeline
     /**
      * Set the payload
      *
+     * Arguments added after `$payload` will be passed to each pipe.
+     *
      * @return $this
      */
-    public function send($payload);
+    public function send($payload, ...$args);
 
     /**
      * Provide a payload source
@@ -26,10 +28,12 @@ interface IPipeline
      * Call {@see IPipeline::start()} to run the pipeline with each value in
      * `$payload` and `yield` the results via a generator.
      *
+     * Arguments added after `$payload` will be passed to each pipe.
+     *
      * @param iterable $payload Must be traversable with `foreach`.
      * @return $this
      */
-    public function stream(iterable $payload);
+    public function stream(iterable $payload, ...$args);
 
     /**
      * Add pipes to the pipeline
@@ -40,7 +44,7 @@ interface IPipeline
      *   created), or
      * - a callback with the same signature as {@see IPipe::handle()}:
      * ```php
-     * function ($payload, Closure $next)
+     * function ($payload, Closure $next, ...$args)
      * ```
      *
      * Whichever form it takes, a pipe should perform an action that uses,
@@ -48,32 +52,22 @@ interface IPipeline
      * - return the value of `$next($payload)`, or
      * - throw an exception
      *
-     * @param IPipe|callable|string ...$pipes
-     * @return $this
-     */
-    public function through(...$pipes);
-
-    /**
-     * Add a pipe to the pipeline
-     *
-     * See {@see IPipeline::through()} for more information.
-     *
-     * @param IPipe|callable|string $pipe Either an {@see IPipe} object, the
-     * name of an {@see IPipe} class to instantiate, or a closure with the
-     * following signature:
+     * @param IPipe|callable|string ...$pipes Each pipe must be an {@see IPipe}
+     * object, the name of an {@see IPipe} class to instantiate, or a closure
+     * with the following signature:
      * ```php
-     * function ($payload, Closure $next)
+     * function ($payload, Closure $next, ...$args)
      * ```
      * @return $this
      */
-    public function pipe($pipe);
+    public function through(...$pipes);
 
     /**
      * Add a simple callback to the pipeline
      *
      * @return $this
      */
-    public function apply(callable $callback);
+    public function throughCallback(callable $callback, bool $suppressArgs = false);
 
     /**
      * Add an array key mapper to the pipeline
@@ -87,7 +81,7 @@ interface IPipeline
      *
      * @return $this
      */
-    public function map(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED);
+    public function throughKeyMap(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED);
 
     /**
      * Set a callback that will be applied to each result

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Contract;
 
 use Closure;
-use Lkrms\Contract\IPipeline;
+use Lkrms\Contract\IPipelineImmutable;
 
 /**
  * Provides access to an ISyncProvider's implementation of sync operations for
@@ -30,9 +30,35 @@ interface ISyncDefinition
      * Return a closure that uses the provider to perform a sync operation on
      * the entity
      *
-     * If the sync operation is not supported, return `null`.
+     * Closure signatures vary by operation, and optional parameters may be
+     * accepted after required ones:
      *
-     * @see \Lkrms\Sync\SyncOperation
+     * | Operation[^op] | Signature                            | Equivalent `SyncProvider` method[^1]        | Alternative `SyncProvider` method[^2][^3]         |
+     * | -------------- | ------------------------------------ | ------------------------------------------- | ------------------------------------------------- |
+     * | `CREATE`       | `fn(SyncEntity $entity): SyncEntity` | `createUser(User $entity): User`            | `create_Series(Series $entity): Series`           |
+     * | `READ`         | `fn(int $id = null): SyncEntity`     | `getUser(int $id = null): User`             | `get_Series(int $id = null): Series`              |
+     * | `UPDATE`       | `fn(SyncEntity $entity): SyncEntity` | `updateUser(User $entity): User`            | `update_Series(Series $entity): Series`           |
+     * | `DELETE`       | `fn(SyncEntity $entity): SyncEntity` | `deleteUser(User $entity): User`            | `delete_Series(Series $entity): Series`           |
+     * | `CREATE_LIST`  | `fn(iterable $entities): iterable`   | `createUsers(iterable $entities): iterable` | `createList_Series(iterable $entities): iterable` |
+     * | `READ_LIST`    | `fn(): iterable`                     | `getUsers(): iterable`                      | `getList_Series(): iterable`                      |
+     * | `UPDATE_LIST`  | `fn(iterable $entities): iterable`   | `updateUsers(iterable $entities): iterable` | `updateList_Series(iterable $entities): iterable` |
+     * | `DELETE_LIST`  | `fn(iterable $entities): iterable`   | `deleteUsers(iterable $entities): iterable` | `deleteList_Series(iterable $entities): iterable` |
+     *
+     * [^op]: See {@see \Lkrms\Sync\SyncOperation}.
+     *
+     * [^1]: Examples only. For a {@see SyncEntity} subclass called `User`.
+     * Method names must match the unqualified name of the entity they operate
+     * on.
+     *
+     * [^2]: Recommended when the singular and plural forms of a class name are
+     * the same.
+     *
+     * [^3]: Examples only. For a {@see SyncEntity} subclass called `Series`.
+     * Method names must match the unqualified name of the entity they operate
+     * on.
+     *
+     * @return Closure|null `null` if `$operation` is not supported, otherwise a
+     * closure with the correct signature for the sync operation.
      */
     public function getSyncOperationClosure(int $operation): ?Closure;
 
@@ -44,7 +70,7 @@ interface ISyncDefinition
      * `null`.
      *
      */
-    public function getDataToEntityPipeline(): ?IPipeline;
+    public function getDataToEntityPipeline(): ?IPipelineImmutable;
 
     /**
      * Return a pipeline that converts a serialized instance of the entity to
@@ -54,6 +80,6 @@ interface ISyncDefinition
      * `null`.
      *
      */
-    public function getEntityToDataPipeline(): ?IPipeline;
+    public function getEntityToDataPipeline(): ?IPipelineImmutable;
 
 }

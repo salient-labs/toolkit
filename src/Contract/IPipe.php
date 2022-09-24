@@ -13,6 +13,6 @@ use Closure;
  */
 interface IPipe
 {
-    public function handle($payload, Closure $next);
+    public function handle($payload, Closure $next, ...$args);
 
 }

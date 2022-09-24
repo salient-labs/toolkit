@@ -92,13 +92,11 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     /**
      * Use a fluent interface to create a new SyncDefinition object
      *
+     * {@see SyncDefinitionBuilder::entity()} and
+     * {@see SyncDefinitionBuilder::provider()} are applied before the builder
+     * is returned.
      */
-    protected function getDefinitionBuilder(string $entity): SyncDefinitionBuilder
-    {
-        return (new SyncDefinitionBuilder())
-            ->entity($entity)
-            ->provider($this);
-    }
+    abstract protected function getDefinitionBuilder(string $entity): SyncDefinitionBuilder;
 
     /**
      * @var string|null
