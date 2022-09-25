@@ -68,6 +68,8 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     abstract protected function _getDateFormatter(): DateFormatter;
 
     /**
+     * Get an array that maps concrete classes to more specific subclasses
+     *
      * {@inheritdoc}
      *
      * Bind any {@see \Lkrms\Sync\SyncEntity} classes customised for this
