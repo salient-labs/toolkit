@@ -34,4 +34,9 @@ final class System
             return (int)round(memory_get_usage(true) * 100 / $limit);
         }
     }
+
+    public function getProgramName(): string
+    {
+        return $_SERVER["SCRIPT_FILENAME"];
+    }
 }

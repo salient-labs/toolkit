@@ -20,8 +20,8 @@ $loader = require ($GLOBALS["_composer_autoload_path"] ?? __DIR__ . "/../../vend
 $loader->addPsr4("Lkrms\\LkUtil\\", __DIR__);
 
 (Cli::load()
-    ->enableExistingCache()
-    ->enableMessageLog()
+    ->loadCacheIfExists()
+    ->logConsoleMessages()
     ->command(["generate", "builder"], GenerateBuilderClass::class)
     ->command(["generate", "facade"], GenerateFacadeClass::class)
     ->command(["generate", "sync", "entity"], GenerateSyncEntityClass::class)

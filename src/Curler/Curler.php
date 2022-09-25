@@ -1160,7 +1160,7 @@ class Curler implements IReadable, IWritable
                 if ($page[0]["pageInfo"]["hasNextPage"])
                 {
                     $variables["after"] = $page[0]["pageInfo"]["endCursor"];
-                    $nextQuery          = [
+                    $nextQuery = [
                         "query"     => $query,
                         "variables" => $variables,
                     ];

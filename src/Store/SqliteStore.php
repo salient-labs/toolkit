@@ -159,7 +159,7 @@ abstract class SqliteStore
         $this->IsTransactionOpen = false;
     }
 
-    final protected function invokeInTransaction(callable $callback)
+    final protected function callInTransaction(callable $callback)
     {
         if ($this->isTransactionOpen())
         {

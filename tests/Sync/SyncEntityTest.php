@@ -37,20 +37,20 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
             'company'  => null,
             'posts'    => [
                 [
-                    'id'                  => 101,
-                    'title'               => null,
-                    'body'                => null,
+                    'id'    => 101,
+                    'title' => null,
+                    'body'  => null,
                     'meta_properties'     => [],
                     'meta_property_names' => [],
-                    'user_id'             => 1
+                    'user_id' => 1
                 ],
                 [
-                    'id'                  => 102,
-                    'title'               => null,
-                    'body'                => null,
+                    'id'    => 102,
+                    'title' => null,
+                    'body'  => null,
                     'meta_properties'     => [],
                     'meta_property_names' => [],
-                    'user_id'             => 1
+                    'user_id' => 1
                 ]
             ],
             'meta_properties'     => [],
@@ -68,20 +68,20 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
                 'company'  => null,
                 'posts'    => [
                     [
-                        'id'                  => 101,
-                        'title'               => null,
-                        'body'                => null,
+                        'id'    => 101,
+                        'title' => null,
+                        'body'  => null,
                         'meta_properties'     => [],
                         'meta_property_names' => [],
-                        'user_id'             => 1
+                        'user_id' => 1
                     ],
                     102
                 ],
                 'meta_properties'     => [],
                 'meta_property_names' => []
             ],
-            'title'               => null,
-            'body'                => null,
+            'title' => null,
+            'body'  => null,
             'meta_properties'     => [],
             'meta_property_names' => []
         ], $_post);

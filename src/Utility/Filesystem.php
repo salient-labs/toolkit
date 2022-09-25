@@ -6,6 +6,7 @@ namespace Lkrms\Utility;
 
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Compute;
+use Lkrms\Facade\Sys;
 use RuntimeException;
 
 /**
@@ -187,8 +188,9 @@ final class Filesystem
      */
     public function getStablePath(string $suffix = ".log", string $dir = null)
     {
-        $basename = basename($_SERVER["SCRIPT_FILENAME"]);
-        $hash     = Compute::hash(realpath($_SERVER["SCRIPT_FILENAME"]));
+        $program  = Sys::getProgramName();
+        $basename = basename($program);
+        $hash     = Compute::hash(realpath($program));
         $euid     = posix_geteuid();
 
         return (is_null($dir)

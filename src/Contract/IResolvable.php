@@ -20,6 +20,6 @@ interface IResolvable
      * function (string $name): string
      * ```
      */
-    public static function getPropertyNormaliser(): Closure;
+    public static function getNormaliser(): Closure;
 
 }

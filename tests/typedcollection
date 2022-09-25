@@ -65,10 +65,10 @@ catch (Throwable $ex)
 $sorted = (clone $collection)->sort();
 
 print_r([
-    '$collection'             => $collection,
+    '$collection' => $collection,
     '$collection->toList()'   => iterator_to_array($collection->toList()),
     '$sorted (longest first)' => $sorted,
-    '$exceptions'             => $exceptions,
+    '$exceptions' => $exceptions,
 ]);
 
 echo "\nKey is now: " . $collection->key() . "\n\n";

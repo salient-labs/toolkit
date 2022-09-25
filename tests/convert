@@ -171,15 +171,15 @@ print_r([
         $paths
     )),
     "pathToBasename(,1)" => array_combine($paths, array_map(
-        fn($i)           => Convert::pathToBasename($i, 1),
+        fn($i) => Convert::pathToBasename($i, 1),
         $paths
     )),
     "pathToBasename(,2)" => array_combine($paths, array_map(
-        fn($i)           => Convert::pathToBasename($i, 2),
+        fn($i) => Convert::pathToBasename($i, 2),
         $paths
     )),
     "pathToBasename(,-1)" => array_combine($paths, array_map(
-        fn($i)            => Convert::pathToBasename($i, -1),
+        fn($i) => Convert::pathToBasename($i, -1),
         $paths
     )),
 ]);
@@ -200,7 +200,7 @@ print_r([
         $fqcn
     )),
     "basename_sans_suffix" => array_combine($fqcn, array_map(
-        fn($i)             => Convert::classToBasename($i, "Command"),
+        fn($i) => Convert::classToBasename($i, "Command"),
         $fqcn
     )),
     "namespace" => array_combine($fqcn, array_map(

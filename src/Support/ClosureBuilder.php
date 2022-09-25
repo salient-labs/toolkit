@@ -259,7 +259,7 @@ class ClosureBuilder
         // IResolvable provides access to properties via alternative names
         if ($class->implementsInterface(IResolvable::class))
         {
-            $this->Normaliser = $class->getMethod("getPropertyNormaliser")->invoke(null);
+            $this->Normaliser = $class->getMethod("getNormaliser")->invoke(null);
         }
 
         $propertyFilter = ReflectionProperty::IS_PUBLIC;

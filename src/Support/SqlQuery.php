@@ -9,7 +9,7 @@ use Lkrms\Contract\IReadable;
 use UnexpectedValueException;
 
 /**
- * Represents a SQL query
+ * A simple representation of a SQL query
  *
  * @property-read array<string,mixed> $Values Parameter name => value
  */
