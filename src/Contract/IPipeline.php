@@ -52,9 +52,9 @@ interface IPipeline
      * - return the value of `$next($payload)`, or
      * - throw an exception
      *
-     * @param IPipe|callable|string ...$pipes Each pipe must be an {@see IPipe}
-     * object, the name of an {@see IPipe} class to instantiate, or a closure
-     * with the following signature:
+     * @param IPipe|callable|string ...$pipes Each pipe must be an `IPipe`
+     * object, the name of an `IPipe` class to instantiate, or a closure with
+     * the following signature:
      * ```php
      * function ($payload, Closure $next, ...$args)
      * ```
