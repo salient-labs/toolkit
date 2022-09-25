@@ -21,6 +21,7 @@
             <visibility>public</visibility>
             <visibility>protected</visibility>
             <default-package-name>Lkrms</default-package-name>
+            <include-source>true</include-source>
             <ignore-tags>
                 <ignore-tag>lkrms-generate-command</ignore-tag>
                 <ignore-tag>lkrms-sample-entity</ignore-tag>
