@@ -8,7 +8,7 @@ use Lkrms\Console\ConsoleLevel;
 use Psr\Log\LoggerInterface;
 
 /**
- * Write console messages to any PSR-3 implementor
+ * Write console messages to a PSR-3 implementor
  *
  */
 class LoggerTarget extends ConsoleTarget

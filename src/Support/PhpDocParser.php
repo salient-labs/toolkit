@@ -234,7 +234,7 @@ class PhpDocParser implements IReadable
 
     private function getLine(): string
     {
-        $line           = array_shift($this->Lines);
+        $line = array_shift($this->Lines);
         $this->NextLine = reset($this->Lines);
         return $line;
     }

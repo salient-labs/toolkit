@@ -9,6 +9,8 @@ use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use Iterator;
+use IteratorIterator;
 use Lkrms\Facade\Test;
 use Lkrms\Support\DateFormatter;
 use UnexpectedValueException;
@@ -181,12 +183,24 @@ final class Conversions
     /**
      * If an iterable isn't already an array, make it one
      *
-     * @param iterable $iterable
-     * @return array
      */
     public function iterableToArray(iterable $iterable): array
     {
         return is_array($iterable) ? $iterable : iterator_to_array($iterable);
+    }
+
+    /**
+     * If an iterable isn't already an Iterator, enclose it in one
+     *
+     */
+    public function iterableToIterator(iterable $iterable): Iterator
+    {
+        if ($iterable instanceof Iterator)
+        {
+            return $iterable;
+        }
+
+        return new IteratorIterator($iterable);
     }
 
     /**
@@ -354,41 +368,70 @@ final class Conversions
      * )
      * ```
      *
-     * @param array $list
      * @param string|Closure $key Either the index or property name to use when
      * retrieving keys from arrays or objects in `$list`, or a closure that
      * returns a key for each item in `$list`.
-     * @return array
      */
     public function listToMap(array $list, $key): array
     {
-        if ($key instanceof Closure)
-        {
-            $callback = $key;
-        }
-        else
-        {
-            $callback = function ($item) use ($key)
-            {
-                if (is_array($item))
-                {
-                    return $item[$key];
-                }
-                elseif (is_object($item))
-                {
-                    return $item->$key;
-                }
-                else
-                {
-                    throw new UnexpectedValueException("Item is not an array or object");
-                }
-            };
-        }
-
         return array_combine(
-            array_map($callback, $list),
+            array_map($this->_keyToClosure($key), $list),
             $list
         );
+    }
+
+    /**
+     * Return the first item in $list where the value at $key is $value
+     *
+     * @param string|Closure $key Either the index or property name to use when
+     * retrieving values from arrays or objects in `$list`, or a closure that
+     * returns a value for each item in `$list`.
+     * @return array|object|false `false` if no item was found in `$list` with
+     * `$value` at `$key`.
+     */
+    public function iterableToItem(iterable $list, $key, $value)
+    {
+        $list    = $this->iterableToIterator($list);
+        $closure = $this->_keyToClosure($key);
+
+        while ($list->valid())
+        {
+            $item = $list->current();
+            $list->next();
+            if ($closure($item) === $value)
+            {
+                return $item;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string|Closure $key
+     */
+    private function _keyToClosure($key): Closure
+    {
+        if ($key instanceof Closure)
+        {
+            return $key;
+        }
+
+        return function ($item) use ($key)
+        {
+            if (is_array($item))
+            {
+                return $item[$key];
+            }
+            elseif (is_object($item))
+            {
+                return $item->$key;
+            }
+            else
+            {
+                throw new UnexpectedValueException("Item is not an array or object");
+            }
+        };
     }
 
     /**
@@ -699,7 +742,7 @@ final class Conversions
     {
         $replace = [
             "/(?<=[^&])&(?=[^&])/u" => " and ",
-            "/\.+/u"           => "",
+            "/\.+/u" => "",
             "/[^[:alnum:]]+/u" => " ",
         ];
 

@@ -8,6 +8,7 @@ use Lkrms\Cli\CliCommand;
 use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Assert;
+use Lkrms\Facade\Sys;
 use UnexpectedValueException;
 
 /**
@@ -56,7 +57,7 @@ class CliAppContainer extends AppContainer
      */
     public function getProgramName(): string
     {
-        return basename($_SERVER["argv"][0]);
+        return basename(Sys::getProgramName());
     }
 
     /**
@@ -73,6 +74,7 @@ class CliAppContainer extends AppContainer
      *
      * Returns `null` if no command is registered at the given node.
      *
+     * @internal
      * @param string $name The name of the node as a space-delimited list of
      * subcommands.
      * @param array<string,array|string>|string|false|null $node The node as
@@ -87,8 +89,10 @@ class CliAppContainer extends AppContainer
                 throw new UnexpectedValueException("Not a subclass of CliCommand: $node");
             }
             $command->setName($name ? explode(" ", $name) : []);
+
             return $command;
         }
+
         return null;
     }
 
@@ -106,10 +110,11 @@ class CliAppContainer extends AppContainer
      * Nodes in the command tree are either subcommand arrays (branches) or
      * {@see CliCommand} class names (leaves).
      *
+     * @internal
      * @param string[] $name
      * @return array<string,array|string>|string|false|null
      */
-    protected function getCommandTree(array $name = [])
+    protected function getNode(array $name = [])
     {
         $tree = $this->CommandTree;
 
@@ -164,7 +169,7 @@ class CliAppContainer extends AppContainer
             Assert::patternMatches($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
         }
 
-        if (!is_null($this->getCommandTree($name)))
+        if (!is_null($this->getNode($name)))
         {
             throw new UnexpectedValueException("Another command has been registered at '" . implode(" ", $name) . "'");
         }

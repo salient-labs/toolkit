@@ -14,7 +14,7 @@ use Lkrms\Facade\Convert;
  */
 trait TResolvable
 {
-    public static function getPropertyNormaliser(): Closure
+    public static function getNormaliser(): Closure
     {
         return fn(string $name) => Convert::toSnakeCase($name);
     }

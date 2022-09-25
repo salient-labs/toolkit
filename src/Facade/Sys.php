@@ -17,6 +17,7 @@ use Lkrms\Utility\System;
  * @method static int getMemoryLimit() See {@see System::getMemoryLimit()}
  * @method static int getMemoryUsage() See {@see System::getMemoryUsage()}
  * @method static int getMemoryUsagePercent() See {@see System::getMemoryUsagePercent()}
+ * @method static string getProgramName() See {@see System::getProgramName()}
  *
  * @uses System
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\System' --generate='Lkrms\Facade\Sys'

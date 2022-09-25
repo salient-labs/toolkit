@@ -16,6 +16,7 @@ use Lkrms\Facade\Composer;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
+use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
 use RuntimeException;
 
@@ -146,7 +147,7 @@ class AppContainer extends Container implements IReadable
     /**
      * @return $this
      */
-    public function enableCache()
+    public function loadCache()
     {
         $cacheDb = $this->CachePath . "/cache.db";
 
@@ -165,11 +166,11 @@ class AppContainer extends Container implements IReadable
     /**
      * @return $this
      */
-    public function enableExistingCache()
+    public function loadCacheIfExists()
     {
         if (file_exists($this->CachePath . "/cache.db"))
         {
-            $this->enableCache();
+            $this->loadCache();
         }
 
         return $this;
@@ -179,13 +180,14 @@ class AppContainer extends Container implements IReadable
      * @param string|null $name Defaults to the name used to run the script.
      * @return $this
      */
-    public function enableMessageLog(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG)
+    public function logConsoleMessages(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG)
     {
         $name = ($name
             ? basename($name, ".log")
-            : Convert::pathToBasename($_SERVER["SCRIPT_FILENAME"], 1));
+            : Convert::pathToBasename(Sys::getProgramName(), 1));
         Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log", $levels));
 
         return $this;
     }
+
 }

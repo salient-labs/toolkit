@@ -16,7 +16,7 @@ $distances = [
     "DELIVERY,milk deliverer"       => Compute::textDistance("DELIVERY", "milk deliverer"),
     "DELIVERY,milk delivery"        => Compute::textDistance("DELIVERY", "milk delivery"),
     "DELIVERY - MILK,milk delivery" => Compute::textDistance("DELIVERY - MILK", "milk delivery"),
-    "DELIVERY,delivery"             => Compute::textDistance("DELIVERY", "delivery"),
+    "DELIVERY,delivery" => Compute::textDistance("DELIVERY", "delivery"),
 ];
 
 print_r($distances);
@@ -26,7 +26,7 @@ $similarities = [
     "DELIVERY,milk deliverer"       => Compute::textSimilarity("DELIVERY", "milk deliverer"),
     "DELIVERY,milk delivery"        => Compute::textSimilarity("DELIVERY", "milk delivery"),
     "DELIVERY - MILK,milk delivery" => Compute::textSimilarity("DELIVERY - MILK", "milk delivery"),
-    "DELIVERY,delivery"             => Compute::textSimilarity("DELIVERY", "delivery"),
+    "DELIVERY,delivery" => Compute::textSimilarity("DELIVERY", "delivery"),
 ];
 
 print_r($similarities);

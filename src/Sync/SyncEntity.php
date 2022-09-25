@@ -126,7 +126,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         );
     }
 
-    final public static function getPropertyNormaliser(): Closure
+    final public static function getNormaliser(): Closure
     {
         if ($closure = self::$Normalisers[static::class] ?? null)
         {

@@ -214,7 +214,7 @@ class GenerateSyncEntityClass extends CliCommand
             };
 
             self::$EntityName = $class;
-            $normaliser       = $entityClass::getPropertyNormaliser();
+            $normaliser       = $entityClass::getNormaliser();
 
             foreach ($entity as $key => $value)
             {

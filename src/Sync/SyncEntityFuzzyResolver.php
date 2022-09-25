@@ -70,8 +70,8 @@ class SyncEntityFuzzyResolver extends SyncEntityResolver
         float $uncertaintyThreshold = null
     ) {
         parent::__construct($entityProvider, $nameField);
-        $this->WeightField          = $weightField;
-        $this->Algorithm            = $algorithm;
+        $this->WeightField = $weightField;
+        $this->Algorithm   = $algorithm;
         $this->UncertaintyThreshold = $uncertaintyThreshold;
     }
 

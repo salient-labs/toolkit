@@ -9,7 +9,7 @@ use Lkrms\Facade\Cache;
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
 
-$app = App::load(__DIR__)->enableCache();
+$app = App::load(__DIR__)->loadCache();
 
 print_r([
     'App::getInstance()->CachePath' => App::getInstance()->CachePath,

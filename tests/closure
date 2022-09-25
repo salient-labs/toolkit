@@ -60,11 +60,11 @@ $map2 = [
 
 $exceptions = [];
 
-$skipNone              = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
-$skipNone2             = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
-$skipMissing           = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED);
-$skipNull              = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL);
-$skipUnmapped          = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING);
+$skipNone     = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
+$skipNone2    = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
+$skipMissing  = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED);
+$skipNull     = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL);
+$skipUnmapped = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING);
 $skipMissingOrUnmapped = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, 0);
 
 $sameKeys         = Mapper::getKeyMapClosure($map2, ArrayKeyConformity::COMPLETE, 0);
@@ -80,14 +80,14 @@ catch (Throwable $ex)
 }
 
 print_r([
-    "skipNone"              => $skipNone($in),
-    "skipMissing"           => $skipMissing($in),
-    "skipNull"              => $skipNull($in),
-    "skipUnmapped"          => $skipUnmapped($in),
+    "skipNone"     => $skipNone($in),
+    "skipMissing"  => $skipMissing($in),
+    "skipNull"     => $skipNull($in),
+    "skipUnmapped" => $skipUnmapped($in),
     "skipMissingOrUnmapped" => $skipMissingOrUnmapped($in),
-    "sameKeys2"             => $sameKeys($in2),
-    "sameKeys4"             => $sameKeys($in4),
-    "sameKeysSkipNull4"     => $sameKeysSkipNull($in4),
-    "skipNone===skipNone2"  => $skipNone === $skipNone2,
-    "exceptions"            => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
+    "sameKeys2"            => $sameKeys($in2),
+    "sameKeys4"            => $sameKeys($in4),
+    "sameKeysSkipNull4"    => $sameKeysSkipNull($in4),
+    "skipNone===skipNone2" => $skipNone === $skipNone2,
+    "exceptions" => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
 ]);

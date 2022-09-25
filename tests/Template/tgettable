@@ -189,10 +189,10 @@ print_r([
     'b_set' => $b,
     'c_set' => $c,
 
-    'b_get'             => [
-        'id'            => $b_id,
-        'name'          => $b_name,
-        'data'          => $b_data,
+    'b_get'    => [
+        'id'   => $b_id,
+        'name' => $b_name,
+        'data' => $b_data,
         'data_modified' => $b_data_modified,
         'b_meta1'       => $b_meta1,
         'b_meta2'       => $b_meta2,

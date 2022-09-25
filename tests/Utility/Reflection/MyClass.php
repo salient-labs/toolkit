@@ -46,10 +46,10 @@ class MyClass extends MyBaseClass implements MyInterface
         ?MyClass $nullableClass,
         ?MyClass & $nullableClassByRef,
         ?MyClass $nullableAndOptionalClass = null,
-        string $optionalString             = MyClass::MY_CONSTANT,
-        string | MyClass $union            = SELF::MY_CONSTANT,
-        string | MyClass | null $nullableUnion        = "literal",
-        array | MyClass $optionalArrayUnion           = ["key" => "value"],
+        string $optionalString  = MyClass::MY_CONSTANT,
+        string | MyClass $union = SELF::MY_CONSTANT,
+        string | MyClass | null $nullableUnion = "literal",
+        array | MyClass $optionalArrayUnion    = ["key" => "value"],
         string | MyClass | null & $nullableUnionByRef = null,
         string & ...$variadicByRef
     ): MyClass | string | null

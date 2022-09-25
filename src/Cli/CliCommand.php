@@ -452,7 +452,7 @@ EOF;
         $this->loadOptions();
         $this->OptionErrors      = 0;
         $this->NextArgumentIndex = null;
-        $this->IsHelp            = false;
+        $this->IsHelp = false;
 
         $args   = $this->Arguments;
         $merged = [];
@@ -655,13 +655,19 @@ EOF;
         $values = [];
         foreach ($this->Options as $option)
         {
-            $name          = $option->Long ?: $option->Short;
+            $name = $option->Long ?: $option->Short;
             $values[$name] = $option->Value;
         }
         return $values;
     }
 
     /**
+     * Get the value of an option in its command line form
+     *
+     * Returns `null` if the option is unset, otherwise returns its current
+     * value as it would be given on the command line.
+     *
+     * @internal
      * @param string|CliOption $option
      */
     final public function getEffectiveArgument($option, bool $shellEscape = false): ?string
@@ -675,18 +681,22 @@ EOF;
                 throw new UnexpectedValueException("No option with name '$option'");
             }
         }
+
         if (is_null($option->Value) || $option->Value === false || $option->Value === 0)
         {
             return null;
         }
+
         if (is_int($option->Value))
         {
             if ($option->Short)
             {
                 return "-" . str_repeat($option->Short, $option->Value);
             }
+
             return implode(" ", array_fill(0, $option->Value, "--{$option->Long}"));
         }
+
         $value = null;
         if (is_array($option->Value))
         {
@@ -700,12 +710,16 @@ EOF;
         {
             $value = escapeshellarg($value);
         }
-        return $option->Long
+
+        return $option->IsPositional ? $value : ($option->Long
             ? "--{$option->Long}" . (is_null($value) ? "" : "=$value")
-            : "-{$option->Short}" . $value;
+            : "-{$option->Short}" . $value);
     }
 
     /**
+     * Get a command line that would unambiguously repeat the current invocation
+     *
+     * @internal
      * @return string[]
      */
     final public function getEffectiveCommandLine(bool $shellEscape = false): array
@@ -716,8 +730,16 @@ EOF;
         array_unshift($args, $this->app()->getProgramName());
         foreach ($this->Options as $option)
         {
-            $args[] = $this->getEffectiveArgument($option, $shellEscape);
+            $arg = $this->getEffectiveArgument($option, $shellEscape);
+            if ($option->IsPositional)
+            {
+                $positional[] = $arg;
+                continue;
+            }
+            $args[] = $arg;
         }
+        array_push($args, ...($positional ?? []));
+
         return array_values(array_filter($args, fn($arg) => !is_null($arg)));
     }
 

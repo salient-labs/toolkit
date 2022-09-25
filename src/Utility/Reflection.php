@@ -242,7 +242,7 @@ final class Reflection
      */
     public function getTypeDeclaration(
         ?ReflectionType $type,
-        string $classPrefix          = "\\",
+        string $classPrefix = "\\",
         ? callable $typeNameCallback = null
     ): string
     {
@@ -294,7 +294,7 @@ final class Reflection
      */
     public function getParameterDeclaration(
         ReflectionParameter $parameter,
-        string $classPrefix          = "\\",
+        string $classPrefix = "\\",
         ? callable $typeNameCallback = null,
         string $type = null
     ): string
