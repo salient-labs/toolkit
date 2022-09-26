@@ -88,16 +88,16 @@ abstract class SyncDefinition implements ISyncDefinition
     protected function getPipelineToEntity(): IPipelineImmutable
     {
         return ($this->DataToEntityPipeline ?: PipelineImmutable::create())
-            ->then(function (array $entity, SyncContext $ctx) use (&$closure)
+            ->then(function (array $entity, int $operation, SyncContext $ctx) use (&$closure)
             {
                 if (!$closure)
                 {
                     $closure = in_array($this->Conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                        ? SyncClosureBuilder::getBound($ctx->Container, $this->Entity)->getCreateFromSignatureClosure(array_keys($entity))
-                        : SyncClosureBuilder::getBound($ctx->Container, $this->Entity)->getCreateFromClosure();
+                        ? SyncClosureBuilder::getBound($ctx->Container, $this->Entity)->getCreateProvidableFromSignatureClosure(array_keys($entity))
+                        : SyncClosureBuilder::getBound($ctx->Container, $this->Entity)->getCreateProvidableFromClosure();
                 }
 
-                return $closure($entity, $ctx->Container, $ctx->Parent);
+                return $closure($entity, $this->Provider, $ctx);
             });
     }
 

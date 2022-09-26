@@ -39,7 +39,7 @@ parameters:
     - "# has unknown class Curl(Multi)?Handle as its type\\.$#"
     - "#^Argument of an invalid type Lkrms\\\\[^\\s]+ supplied for foreach, only iterables are supported\\.$#"
     -
-      message: "#^(Closure|Callable.+) invoked with [1234] parameters?, 1 required\\.$#"
+      message: "#^(Closure|Callable.+) invoked with [1-5] parameters?, 1 required\\.$#"
       path: src/Support/ClosureBuilder.php
     -
       message: "#^Used (constant|function) [^\\s]+ not found\\.$#"

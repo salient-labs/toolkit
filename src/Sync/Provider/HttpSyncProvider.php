@@ -90,24 +90,29 @@ abstract class HttpSyncProvider extends SyncProvider
      * Surface the provider's implementation of sync operations for an entity
      * via an HttpSyncDefinition object
      *
+     * Return `null` if no sync operations are implemented for the entity.
+     *
+     * @param HttpSyncDefinitionBuilder $define A definition builder with
+     * `entity()` and `provider()` already applied.
+     * @return HttpSyncDefinition|HttpSyncDefinitionBuilder|null
      */
-    protected function getHttpDefinition(string $entity): ?HttpSyncDefinition
+    protected function getHttpDefinition(string $entity, HttpSyncDefinitionBuilder $define)
     {
         return null;
     }
 
     final protected function getDefinition(string $entity): ?ISyncDefinition
     {
-        $def = $this->getHttpDefinition($entity);
+        $def = $this->getHttpDefinition($entity, (new HttpSyncDefinitionBuilder())
+            ->entity($entity)
+            ->provider($this));
+
+        if ($def instanceof HttpSyncDefinitionBuilder)
+        {
+            return $def->go();
+        }
 
         return $def;
-    }
-
-    protected function define(string $entity): HttpSyncDefinitionBuilder
-    {
-        return (new HttpSyncDefinitionBuilder())
-            ->entity($entity)
-            ->provider($this);
     }
 
     /**

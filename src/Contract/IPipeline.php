@@ -36,6 +36,19 @@ interface IPipeline
     public function stream(iterable $payload, ...$args);
 
     /**
+     * Set a callback that will be applied to each payload before it is sent
+     *
+     * This method can only be called once per pipeline.
+     *
+     * Arguments added after `$callback` will be passed to the callback
+     * **before** any arguments added after `$payload` in
+     * {@see IPipeline::send()} or {@see IPipeline::stream()}.
+     *
+     * @return $this
+     */
+    public function after(callable $callback, ...$args);
+
+    /**
      * Add pipes to the pipeline
      *
      * A pipe must be one of the following:

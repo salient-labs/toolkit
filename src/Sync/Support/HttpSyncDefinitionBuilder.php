@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
+use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipelineImmutable;
 use Lkrms\Sync\Provider\HttpSyncProvider;
@@ -25,9 +26,9 @@ use Lkrms\Sync\Provider\HttpSyncProvider;
  * @method HttpSyncDefinition go() Return a new HttpSyncDefinition object
  *
  * @uses HttpSyncDefinition
- * @lkrms-generate-command lk-util generate builder --class='Lkrms\Sync\Support\HttpSyncDefinition' --static-builder='build' --terminator='go' --extend='Lkrms\Sync\Support\SyncDefinitionBuilder'
+ * @lkrms-generate-command lk-util generate builder --class='Lkrms\Sync\Support\HttpSyncDefinition' --static-builder='build' --terminator='go'
  */
-final class HttpSyncDefinitionBuilder extends SyncDefinitionBuilder
+final class HttpSyncDefinitionBuilder extends Builder
 {
     /**
      * @internal

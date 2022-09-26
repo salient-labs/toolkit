@@ -8,6 +8,7 @@ use Closure;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IProvidable;
+use Lkrms\Contract\IProvidableContext;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IResolvable;
@@ -443,7 +444,7 @@ class ClosureBuilder
         $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
         $closure = static function (array $array, ?IContainer $container = null, ?ITreeNode $parent = null) use ($closure)
         {
-            return $closure($container, $array, null, $parent);
+            return $closure($container, $array, null, null, $parent);
         };
 
         $this->CreateProviderlessFromSignatureClosures[$sig][(int)$strict] = $closure;
@@ -460,7 +461,7 @@ class ClosureBuilder
      * discard unusable data.
      * @return Closure
      * ```php
-     * closure(array $array, \Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
+     * closure(array $array, \Lkrms\Contract\IProvider $provider, \Lkrms\Contract\IContainer|\Lkrms\Contract\IProvidableContext|null $context = null)
      * ```
      */
     final public function getCreateProvidableFromSignatureClosure(array $keys, bool $strict = false): Closure
@@ -473,9 +474,15 @@ class ClosureBuilder
         }
 
         $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
-        $closure = static function (array $array, IProvider $provider, ?IContainer $container = null, ?ITreeNode $parent = null) use ($closure)
+        $closure = static function (array $array, IProvider $provider, $context = null) use ($closure)
         {
-            return $closure($container ?: $provider->container(), $array, $provider, $parent);
+            [$container, $parent] = ($context instanceof IProvidableContext
+                ? [$context->container(), $context->getParent()]
+                : [$context ?: $provider->container(), null]);
+
+            return $closure($container, $array, $provider,
+                $context ?: new ProvidableContext($container, $parent),
+                $parent);
         };
 
         $this->CreateProvidableFromSignatureClosures[$sig][(int)$strict] = $closure;
@@ -490,7 +497,7 @@ class ClosureBuilder
     /**
      * @return Closure
      * ```
-     * closure(?\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\ITreeNode $parent)
+     * closure(?\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\ITreeNode $parent)
      * ```
      */
     private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
@@ -606,13 +613,14 @@ class ClosureBuilder
         // methods need them
         if ($this->IsProvidable)
         {
-            $closure = function (?IContainer $container, array $array, ?IProvider $provider) use ($closure)
+            $closure = function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context) use ($closure)
             {
                 /** @var IProvidable $obj */
                 $obj = $closure($container, $array);
                 if ($provider)
                 {
                     $obj->setProvider($provider, $this->BaseClass ?: $this->Class);
+                    $obj->setProvidableContext($context);
                 }
                 return $obj;
             };
@@ -620,10 +628,10 @@ class ClosureBuilder
 
         if ($this->IsTreeNode)
         {
-            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?ITreeNode $parent) use ($closure)
+            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?ITreeNode $parent) use ($closure)
             {
                 /** @var ITreeNode $obj */
-                $obj = $closure($container, $array, $provider);
+                $obj = $closure($container, $array, $provider, $context);
                 if ($parent)
                 {
                     $obj->setParent($parent);
@@ -634,9 +642,9 @@ class ClosureBuilder
 
         if ($methodKeys)
         {
-            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?ITreeNode $parent) use ($closure, $methodKeys)
+            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?ITreeNode $parent) use ($closure, $methodKeys)
             {
-                $obj = $closure($container, $array, $provider, $parent);
+                $obj = $closure($container, $array, $provider, $context, $parent);
                 foreach ($methodKeys as $key => $method)
                 {
                     $obj->$method($array[$key]);
@@ -648,9 +656,9 @@ class ClosureBuilder
 
         if ($metaKeys)
         {
-            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?ITreeNode $parent) use ($closure, $metaKeys)
+            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?ITreeNode $parent) use ($closure, $metaKeys)
             {
-                $obj = $closure($container, $array, $provider, $parent);
+                $obj = $closure($container, $array, $provider, $context, $parent);
                 foreach ($metaKeys as $key)
                 {
                     $obj->setMetaProperty((string)$key, $array[$key]);
@@ -691,7 +699,7 @@ class ClosureBuilder
      * if `$array` contains unusable values.
      * @return Closure
      * ```php
-     * closure(array $array, \Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
+     * closure(array $array, \Lkrms\Contract\IProvider $provider, \Lkrms\Contract\IContainer|\Lkrms\Contract\IProvidableContext|null $context = null)
      * ```
      */
     final public function getCreateProvidableFromClosure(bool $strict = false): Closure
@@ -701,10 +709,10 @@ class ClosureBuilder
             return $closure;
         }
 
-        $closure = function (array $array, IProvider $provider, ?IContainer $container = null, ?ITreeNode $parent = null) use ($strict)
+        $closure = function (array $array, IProvider $provider, $context = null) use ($strict)
         {
             $keys = array_keys($array);
-            return ($this->getCreateProvidableFromSignatureClosure($keys, $strict))($array, $provider, $container, $parent);
+            return ($this->getCreateProvidableFromSignatureClosure($keys, $strict))($array, $provider, $context);
         };
 
         return $this->CreateProvidableFromClosures[(int)$strict] = $closure;

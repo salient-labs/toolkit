@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
+use Lkrms\Support\ArrayKeyConformity;
+
 /**
  * Can be created by an IProvider to represent an external entity
  *
@@ -59,16 +61,36 @@ interface IProvidable
     public function setProvider(IProvider $provider, string $providable);
 
     /**
+     * Called immediately after instantiation and when subsequently refreshed
+     *
+     * @return $this
+     */
+    public function setProvidableContext(?IProvidableContext $context);
+
+    /**
+     * @deprecated Use {@see IProvidable::provide()} instead
      * @param array<int|string,int|string|array<int,int|string>>|null $keyMap
      * @return static
      */
     public static function fromProvider(IProvider $provider, array $data, callable $callback = null, array $keyMap = null);
 
     /**
+     * @return static
+     */
+    public static function provide(array $data, IProvider $provider, ?IProvidableContext $context = null);
+
+    /**
+     * @deprecated Use {@see IProvidable::provideList()} instead
      * @param iterable<array> $list
      * @param array<int|string,int|string|array<int,int|string>>|null $keyMap
      * @return iterable<static>
      */
     public static function listFromProvider(IProvider $provider, iterable $list, callable $callback = null, array $keyMap = null): iterable;
+
+    /**
+     * @param iterable<array> $dataList
+     * @return iterable<static>
+     */
+    public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProvidableContext $context = null): iterable;
 
 }
