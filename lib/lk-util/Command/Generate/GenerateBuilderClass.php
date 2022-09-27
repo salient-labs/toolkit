@@ -8,12 +8,11 @@ declare(strict_types=1);
 
 namespace Lkrms\LkUtil\Command\Generate;
 
+use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Concept\Builder;
-use Lkrms\Console\Console;
 use Lkrms\Contract\IContainer;
 use Lkrms\Exception\InvalidCliArgumentException;
-use Lkrms\Facade\Composer;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
@@ -40,84 +39,87 @@ class GenerateBuilderClass extends GenerateCommand
     protected function _getOptions(): array
     {
         return [
-            [
-                "long"        => "class",
-                "short"       => "c",
-                "valueName"   => "CLASS",
-                "description" => "The class to generate a builder for",
-                "optionType"  => CliOptionType::VALUE,
-                "required"    => true,
-            ],
-            [
-                "long"        => "generate",
-                "short"       => "g",
-                "valueName"   => "CLASS",
-                "description" => "The class to generate",
-                "optionType"  => CliOptionType::VALUE,
-            ],
-            [
-                "long"         => "static-builder",
-                "short"        => "b",
-                "valueName"    => "METHOD",
-                "description"  => "The static method that returns a new builder",
-                "optionType"   => CliOptionType::VALUE,
-                "defaultValue" => "build",
-            ],
-            [
-                "long"         => "terminator",
-                "short"        => "t",
-                "valueName"    => "METHOD",
-                "description"  => "The method that terminates the interface",
-                "optionType"   => CliOptionType::VALUE,
-                "defaultValue" => "go",
-            ],
-            [
-                "long"        => "extend",
-                "short"       => "x",
-                "valueName"   => "CLASS",
-                "description" => "The Builder subclass to extend",
-                "optionType"  => CliOptionType::VALUE,
-            ],
-            [
-                "long"        => "no-final",
-                "short"       => "a",
-                "description" => "Do not declare the generated class 'final'",
-            ],
-            [
-                "long"        => "package",
-                "short"       => "p",
-                "valueName"   => "PACKAGE",
-                "description" => "The PHPDoc package",
-                "optionType"  => CliOptionType::VALUE,
-                "envVariable" => "PHPDOC_PACKAGE",
-            ],
-            [
-                "long"        => "desc",
-                "short"       => "d",
-                "valueName"   => "DESCRIPTION",
-                "description" => "A short description of the builder",
-                "optionType"  => CliOptionType::VALUE,
-            ],
-            [
-                "long"        => "stdout",
-                "short"       => "s",
-                "description" => "Write to standard output",
-            ],
-            [
-                "long"        => "force",
-                "short"       => "f",
-                "description" => "Overwrite the class file if it already exists",
-            ],
-            [
-                "long"        => "no-meta",
-                "short"       => "m",
-                "description" => "Suppress '@lkrms-*' metadata tags",
-            ],
-            [
-                "long"        => "declared",
-                "short"       => "e",
-                "description" => "Ignore inherited properties",
-            ],
+            (CliOption::build()
+                ->long("class")
+                ->short("c")
+                ->valueName("CLASS")
+                ->description("The class to generate a builder for")
+                ->optionType(CliOptionType::VALUE)
+                ->required()
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->go()),
+            (CliOption::build()
+                ->long("generate")
+                ->short("g")
+                ->valueName("CLASS")
+                ->description("The class to generate")
+                ->optionType(CliOptionType::VALUE)
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->go()),
+            (CliOption::build()
+                ->long("static-builder")
+                ->short("b")
+                ->valueName("METHOD")
+                ->description("The static method that returns a new builder")
+                ->optionType(CliOptionType::VALUE)
+                ->defaultValue("build")
+                ->go()),
+            (CliOption::build()
+                ->long("terminator")
+                ->short("t")
+                ->valueName("METHOD")
+                ->description("The method that terminates the interface")
+                ->optionType(CliOptionType::VALUE)
+                ->defaultValue("go")
+                ->go()),
+            (CliOption::build()
+                ->long("extend")
+                ->short("x")
+                ->valueName("CLASS")
+                ->description("The Builder subclass to extend")
+                ->optionType(CliOptionType::VALUE)
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->go()),
+            (CliOption::build()
+                ->long("no-final")
+                ->short("a")
+                ->description("Do not declare the generated class 'final'")
+                ->go()),
+            (CliOption::build()
+                ->long("package")
+                ->short("p")
+                ->valueName("PACKAGE")
+                ->description("The PHPDoc package")
+                ->optionType(CliOptionType::VALUE)
+                ->envVariable("PHPDOC_PACKAGE")
+                ->go()),
+            (CliOption::build()
+                ->long("desc")
+                ->short("d")
+                ->valueName("DESCRIPTION")
+                ->description("A short description of the builder")
+                ->optionType(CliOptionType::VALUE)
+                ->go()),
+            (CliOption::build()
+                ->long("stdout")
+                ->short("s")
+                ->description("Write to standard output")
+                ->go()),
+            (CliOption::build()
+                ->long("force")
+                ->short("f")
+                ->description("Overwrite the class file if it already exists")
+                ->go()),
+            (CliOption::build()
+                ->long("no-meta")
+                ->short("m")
+                ->description("Suppress '@lkrms-*' metadata tags")
+                ->go()),
+            (CliOption::build()
+                ->long("declared")
+                ->short("e")
+                ->description("Ignore inherited properties")
+                ->go()),
         ];
     }
 
@@ -418,45 +420,6 @@ class GenerateBuilderClass extends GenerateCommand
 
         $lines[] = "}";
 
-        $verb = "Creating";
-
-        if ($this->getOptionValue("stdout"))
-        {
-            $file = "php://stdout";
-            $verb = null;
-        }
-        else
-        {
-            $file = "$builderClass.php";
-
-            if ($dir = Composer::getNamespacePath($builderNamespace))
-            {
-                if (!is_dir($dir))
-                {
-                    mkdir($dir, 0777, true);
-                }
-                $file = $dir . DIRECTORY_SEPARATOR . $file;
-            }
-
-            if (file_exists($file))
-            {
-                if (!$this->getOptionValue("force"))
-                {
-                    Console::warn("File already exists:", $file);
-                    $file = preg_replace('/\.php$/', ".generated.php", $file);
-                }
-                if (file_exists($file))
-                {
-                    $verb = "Replacing";
-                }
-            }
-        }
-
-        if ($verb)
-        {
-            Console::info($verb, $file);
-        }
-
-        file_put_contents($file, implode(PHP_EOL, $lines) . PHP_EOL);
+        $this->handleOutput($builderClass, $builderNamespace, $lines);
     }
 }

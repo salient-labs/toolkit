@@ -8,11 +8,10 @@ declare(strict_types=1);
 
 namespace Lkrms\LkUtil\Command\Generate;
 
+use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Concept\Facade;
-use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
-use Lkrms\Facade\Composer;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Test;
@@ -36,57 +35,59 @@ class GenerateFacadeClass extends GenerateCommand
     protected function _getOptions(): array
     {
         return [
-            [
-                "long"        => "class",
-                "short"       => "c",
-                "valueName"   => "CLASS",
-                "description" => "The class to generate a facade for",
-                "optionType"  => CliOptionType::VALUE,
-                "required"    => true,
-            ],
-            [
-                "long"        => "generate",
-                "short"       => "g",
-                "valueName"   => "CLASS",
-                "description" => "The class to generate",
-                "optionType"  => CliOptionType::VALUE,
-                "required"    => true,
-            ],
-            [
-                "long"        => "package",
-                "short"       => "p",
-                "valueName"   => "PACKAGE",
-                "description" => "The PHPDoc package",
-                "optionType"  => CliOptionType::VALUE,
-                "envVariable" => "PHPDOC_PACKAGE",
-            ],
-            [
-                "long"        => "desc",
-                "short"       => "d",
-                "valueName"   => "DESCRIPTION",
-                "description" => "A short description of the facade",
-                "optionType"  => CliOptionType::VALUE,
-            ],
-            [
-                "long"        => "stdout",
-                "short"       => "s",
-                "description" => "Write to standard output",
-            ],
-            [
-                "long"        => "force",
-                "short"       => "f",
-                "description" => "Overwrite the class file if it already exists",
-            ],
-            [
-                "long"        => "no-meta",
-                "short"       => "m",
-                "description" => "Suppress '@lkrms-*' metadata tags",
-            ],
-            [
-                "long"        => "declared",
-                "short"       => "e",
-                "description" => "Ignore inherited methods",
-            ],
+            (CliOption::build()
+                ->long("class")
+                ->short("c")
+                ->valueName("CLASS")
+                ->description("The class to generate a facade for")
+                ->optionType(CliOptionType::VALUE)
+                ->required()
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->go()),
+            (CliOption::build()
+                ->long("generate")
+                ->short("g")
+                ->valueName("CLASS")
+                ->description("The class to generate")
+                ->optionType(CliOptionType::VALUE)
+                ->required()
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->go()),
+            (CliOption::build()
+                ->long("package")
+                ->short("p")
+                ->valueName("PACKAGE")
+                ->description("The PHPDoc package")
+                ->optionType(CliOptionType::VALUE)
+                ->envVariable("PHPDOC_PACKAGE")
+                ->go()),
+            (CliOption::build()
+                ->long("desc")
+                ->short("d")
+                ->valueName("DESCRIPTION")
+                ->description("A short description of the facade")
+                ->optionType(CliOptionType::VALUE)
+                ->go()),
+            (CliOption::build()
+                ->long("stdout")
+                ->short("s")
+                ->description("Write to standard output")
+                ->go()),
+            (CliOption::build()
+                ->long("force")
+                ->short("f")
+                ->description("Overwrite the class file if it already exists")
+                ->go()),
+            (CliOption::build()
+                ->long("no-meta")
+                ->short("m")
+                ->description("Suppress '@lkrms-*' metadata tags")
+                ->go()),
+            (CliOption::build()
+                ->long("declared")
+                ->short("e")
+                ->description("Ignore inherited methods")
+                ->go()),
         ];
     }
 
@@ -351,45 +352,6 @@ class GenerateFacadeClass extends GenerateCommand
 
         $lines[] = "}";
 
-        $verb = "Creating";
-
-        if ($this->getOptionValue("stdout"))
-        {
-            $file = "php://stdout";
-            $verb = null;
-        }
-        else
-        {
-            $file = "$facadeClass.php";
-
-            if ($dir = Composer::getNamespacePath($facadeNamespace))
-            {
-                if (!is_dir($dir))
-                {
-                    mkdir($dir, 0777, true);
-                }
-                $file = $dir . DIRECTORY_SEPARATOR . $file;
-            }
-
-            if (file_exists($file))
-            {
-                if (!$this->getOptionValue("force"))
-                {
-                    Console::warn("File already exists:", $file);
-                    $file = preg_replace('/\.php$/', ".generated.php", $file);
-                }
-                if (file_exists($file))
-                {
-                    $verb = "Replacing";
-                }
-            }
-        }
-
-        if ($verb)
-        {
-            Console::info($verb, $file);
-        }
-
-        file_put_contents($file, implode(PHP_EOL, $lines) . PHP_EOL);
+        $this->handleOutput($facadeClass, $facadeNamespace, $lines);
     }
 }

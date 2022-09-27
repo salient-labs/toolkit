@@ -12,7 +12,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
 {
     public function testBuild()
     {
-        $option = (CliOption::getBuilder()
+        $option = (CliOption::build()
             ->long("dest")
             ->short("d")
             ->valueName("DIR")
@@ -40,7 +40,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
     public function testInvalidBuild()
     {
         $this->expectException(UnexpectedValueException::class);
-        (CliOption::getBuilder()
+        (CliOption::build()
             ->long("dest")
             ->short("d")
             ->value("DIR")

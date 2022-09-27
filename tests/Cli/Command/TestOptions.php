@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Tests\Cli\Command;
 
 use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 
 class TestOptions extends CliCommand
@@ -28,77 +29,70 @@ class TestOptions extends CliCommand
         //     "multipleAllowed" => false,
         //     "defaultValue"    => null,
         return [
-            [
-                "long"            => "source",
-                "description"     => "One or more sources",
-                "optionType"      => CliOptionType::VALUE_POSITIONAL,
-                "multipleAllowed" => true,
-            ],
-            [
-                "long"        => "target",
-                "valueName"   => "targetDir",
-                "description" => "Target directory",
-                "optionType"  => CliOptionType::VALUE_POSITIONAL,
-            ],
-            [
-                "long"            => "verbose",
-                "short"           => "v",
-                "description"     => "Increase verbosity",
-                "multipleAllowed" => true,
-            ],
-            [
-                "long"        => "archive",
-                "short"       => "a",
-                "description" => "Archive mode",
-            ],
-            [
-                "long"          => "stderr",
-                "description"   => "Change stderr output mode",
-                "valueName"     => "MODE",
-                "optionType"    => CliOptionType::ONE_OF,
-                "allowedValues" => [
-                    "errors",
-                    "all"
-                ],
-                "defaultValue" => "errors",
-            ],
-            [
-                "long"        => "backup-dir",
-                "description" => "Make backups into hierarchy based in DIR",
-                "valueName"   => "DIR",
-                "optionType"  => CliOptionType::VALUE,
-            ],
-            [
-                "long"        => "links",
-                "short"       => "l",
-                "description" => "Copy symlinks as symlinks",
-            ],
-            [
-                "long"        => "copy-links",
-                "short"       => "L",
-                "description" => "Transform symlink into referent file/dir",
-            ],
-            [
-                "long"        => "in-place",
-                "short"       => "i",
-                "valueName"   => "SUFFIX",
-                "description" => "Edit files in place",
-                "optionType"  => CliOptionType::VALUE_OPTIONAL,
-            ],
-            [
-                "long"          => "refresh",
-                "short"         => "r",
-                "valueName"     => "CACHE",
-                "description"   => "Ignore locally cached data",
-                "optionType"    => CliOptionType::ONE_OF_OPTIONAL,
-                "allowedValues" => [
-                    "all",
-                    "hosts",
-                    "users"
-                ],
-                "multipleAllowed" => true,
-                "defaultValue"    => ["all"],
-            ],
+            (CliOption::build()
+                ->long("source")
+                ->description("One or more sources")
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->multipleAllowed()
+                ->go()),
+            (CliOption::build()
+                ->long("target")
+                ->valueName("targetDir")
+                ->description("Target directory")
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->go()),
+            (CliOption::build()
+                ->long("verbose")
+                ->short("v")
+                ->description("Increase verbosity")
+                ->multipleAllowed()
+                ->go()),
+            (CliOption::build()
+                ->long("archive")
+                ->short("a")
+                ->description("Archive mode")
+                ->go()),
+            (CliOption::build()
+                ->long("stderr")
+                ->description("Change stderr output mode")
+                ->valueName("MODE")
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(["errors", "all"])
+                ->defaultValue("errors")
+                ->go()),
+            (CliOption::build()
+                ->long("backup-dir")
+                ->description("Make backups into hierarchy based in DIR")
+                ->valueName("DIR")
+                ->optionType(CliOptionType::VALUE)
+                ->go()),
+            (CliOption::build()
+                ->long("links")
+                ->short("l")
+                ->description("Copy symlinks as symlinks")
+                ->go()),
+            (CliOption::build()
+                ->long("copy-links")
+                ->short("L")
+                ->description("Transform symlink into referent file/dir")
+                ->go()),
+            (CliOption::build()
+                ->long("in-place")
+                ->short("i")
+                ->valueName("SUFFIX")
+                ->description("Edit files in place")
+                ->optionType(CliOptionType::VALUE_OPTIONAL)
+                ->go()),
+            (CliOption::build()
+                ->long("refresh")
+                ->short("r")
+                ->valueName("CACHE")
+                ->description("Ignore locally cached data")
+                ->optionType(CliOptionType::ONE_OF_OPTIONAL)
+                ->allowedValues(["all", "hosts", "users"])
+                ->multipleAllowed()
+                ->defaultValue(["all"])
+                ->go()),
         ];
     }
 

@@ -34,7 +34,7 @@ abstract class CliCommand implements ReturnsContainer
      *
      * ```php
      * return [
-     *     CliOption::getBuilder()
+     *     CliOption::build()
      *         ->long("dest")
      *         ->short("d")
      *         ->valueName("DIR")
@@ -45,8 +45,7 @@ abstract class CliCommand implements ReturnsContainer
      * ];
      * ```
      *
-     * @return array<int,CliOption|array>
-     * @see \Lkrms\Concern\TConstructible::from()
+     * @return CliOption[]
      */
     abstract protected function _getOptions(): array;
 
@@ -185,16 +184,8 @@ abstract class CliCommand implements ReturnsContainer
         return $this->_getDescription();
     }
 
-    /**
-     * @param CliOption|array $option
-     */
-    private function addOption($option, array & $options, bool $hide = false)
+    private function addOption(CliOption $option, array & $options, bool $hide = false)
     {
-        if (!($option instanceof CliOption))
-        {
-            $option = CliOption::from($this->app(), $option);
-        }
-
         $this->applyOption($option, true, $options, $hide);
     }
 
@@ -258,7 +249,7 @@ abstract class CliCommand implements ReturnsContainer
 
         if (!array_key_exists("help", $this->OptionsByName))
         {
-            $this->addOption(CliOption::getBuilder()
+            $this->addOption(CliOption::build()
                 ->long("help")
                 ->short(array_key_exists("h", $this->OptionsByName) ? null : "h")
                 ->go(), $options, true);

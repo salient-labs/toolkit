@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Lkrms\LkUtil\Command;
 
 use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Contract\IProvider;
 use Lkrms\Exception\InvalidCliArgumentException;
@@ -24,23 +25,23 @@ class CheckHeartbeat extends CliCommand
     protected function _getOptions(): array
     {
         return [
-            [
-                "long"        => "provider",
-                "short"       => "i",
-                "valueName"   => "CLASS",
-                "description" => "The provider to check (must implement IProvider)",
-                "optionType"  => CliOptionType::VALUE,
-                "required"    => true,
-                "envVariable" => "DEFAULT_PROVIDER",
-            ],
-            [
-                "long"         => "ttl",
-                "short"        => "t",
-                "valueName"    => "SECONDS",
-                "description"  => "The time-to-live of a positive result",
-                "optionType"   => CliOptionType::VALUE,
-                "defaultValue" => "300",
-            ],
+            (CliOption::build()
+                ->long("provider")
+                ->short("i")
+                ->valueName("CLASS")
+                ->description("The provider to check (must implement IProvider)")
+                ->optionType(CliOptionType::VALUE)
+                ->required()
+                ->envVariable("DEFAULT_PROVIDER")
+                ->go()),
+            (CliOption::build()
+                ->long("ttl")
+                ->short("t")
+                ->valueName("SECONDS")
+                ->description("The time-to-live of a positive result")
+                ->optionType(CliOptionType::VALUE)
+                ->defaultValue("300")
+                ->go()),
         ];
     }
 

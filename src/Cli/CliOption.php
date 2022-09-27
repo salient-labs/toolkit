@@ -4,17 +4,12 @@ declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
-use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TFullyReadable;
-use Lkrms\Contract\IConstructible;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
-use Lkrms\Support\ArrayKeyConformity;
-use Lkrms\Support\ArrayMapperFlag;
 use UnexpectedValueException;
 
 /**
@@ -40,13 +35,9 @@ use UnexpectedValueException;
  * @property-read string|null $EnvironmentVariable
  * @property-read string|string[]|bool|int|null $Value
  */
-final class CliOption implements IConstructible, IReadable, IImmutable
+final class CliOption implements IReadable, IImmutable
 {
-    use TConstructible, TFullyReadable
-    {
-        TConstructible::from as private _from;
-        TConstructible::listFrom as private _listFrom;
-    }
+    use TFullyReadable;
 
     /**
      * @internal
@@ -151,6 +142,11 @@ final class CliOption implements IConstructible, IReadable, IImmutable
     protected $Value;
 
     /**
+     * @var callable|null
+     */
+    protected $ValueCallback;
+
+    /**
      * @param int $optionType A {@see CliOptionType} value.
      * @param string[]|null $allowedValues Ignored unless `$optionType` is
      * {@see CliOptionType::ONE_OF} or {@see CliOptionType::ONE_OF_OPTIONAL}.
@@ -160,7 +156,7 @@ final class CliOption implements IConstructible, IReadable, IImmutable
      * @param string|null $delimiter If `$multipleAllowed` is set, use
      * `$delimiter` to split one value into multiple values.
      */
-    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $optionType = CliOptionType::FLAG, ?array $allowedValues = null, bool $required = false, bool $multipleAllowed = false, $defaultValue = null, ?string $envVariable = null, ?string $delimiter = ",")
+    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $optionType = CliOptionType::FLAG, ?array $allowedValues = null, bool $required = false, bool $multipleAllowed = false, $defaultValue = null, ?string $envVariable = null, ?string $delimiter = ",", ? callable $valueCallback = null)
     {
         $this->Long            = $long ?: null;
         $this->OptionType      = $optionType;
@@ -205,6 +201,7 @@ final class CliOption implements IConstructible, IReadable, IImmutable
         $this->IsValueRequired = $valueRequired ?? !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
         $this->ValueName       = $valueName ?: "VALUE";
         $this->DefaultValue    = $this->IsRequired ? null : $defaultValue;
+        $this->ValueCallback   = $valueCallback;
 
         if ($this->Delimiter && $this->DefaultValue && is_string($this->DefaultValue))
         {
@@ -278,7 +275,7 @@ final class CliOption implements IConstructible, IReadable, IImmutable
     public function withValue($value): self
     {
         $clone        = clone $this;
-        $clone->Value = $value;
+        $clone->Value = $this->ValueCallback && !is_null($value) ? ($this->ValueCallback)($value) : $value;
 
         return $clone;
     }
@@ -289,25 +286,9 @@ final class CliOption implements IConstructible, IReadable, IImmutable
      * See {@see CliCommand::_getOptions()} for more information.
      *
      */
-    public static function getBuilder(): CliOptionBuilder
+    public static function build(): CliOptionBuilder
     {
         return new CliOptionBuilder();
-    }
-
-    /**
-     * @deprecated
-     */
-    public static function from(?IContainer $container, array $data, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null)
-    {
-        return self::_from($container, $data, $callback, $keyMap, $conformity, $flags, $parent);
-    }
-
-    /**
-     * @deprecated
-     */
-    public static function listFrom(?IContainer $container, iterable $list, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null): iterable
-    {
-        return self::_listFrom($container, $list, $callback, $keyMap, $conformity, $flags, $parent);
     }
 
 }

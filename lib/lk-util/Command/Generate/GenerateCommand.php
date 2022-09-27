@@ -9,7 +9,10 @@ declare(strict_types=1);
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\CliCommand;
+use Lkrms\Console\Console;
+use Lkrms\Facade\Composer;
 use Lkrms\Facade\Convert;
+use Lkrms\Facade\File;
 
 /**
  * Base class for code generation commands
@@ -146,4 +149,59 @@ abstract class GenerateCommand extends CliCommand
         return array_map(fn($line) => str_repeat($tab, $tabs) . $line, $lines);
     }
 
+    /**
+     *
+     * @param string[] $lines
+     */
+    protected function handleOutput(string $class, string $namespace, array $lines): void
+    {
+        $output = implode(PHP_EOL, $lines) . PHP_EOL;
+
+        $verb = "Creating";
+
+        if ($this->getOptionValue("stdout"))
+        {
+            $file = "php://stdout";
+            $verb = null;
+        }
+        else
+        {
+            $file = "$class.php";
+
+            if ($dir = Composer::getNamespacePath($namespace))
+            {
+                File::maybeCreateDirectory($dir);
+                $file = $dir . DIRECTORY_SEPARATOR . $file;
+            }
+            if (file_exists($file))
+            {
+                if (rtrim(file_get_contents($file)) == rtrim($output))
+                {
+                    Console::log("Unchanged:", $file);
+                    return;
+                }
+                if (!$this->getOptionValue("force"))
+                {
+                    Console::warn("File already exists:", $file);
+                    $file = substr($file, 0, -4) . ".generated.php";
+                }
+                if (file_exists($file))
+                {
+                    $verb = "Replacing";
+                }
+            }
+        }
+
+        if ($verb)
+        {
+            Console::info($verb, $file);
+        }
+
+        file_put_contents($file, $output);
+    }
+
+    protected function getFqcnOptionValue(string $value): string
+    {
+        return ltrim($value, "\\");
+    }
 }

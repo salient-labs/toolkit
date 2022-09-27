@@ -8,11 +8,9 @@ declare(strict_types=1);
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
-use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
-use Lkrms\Facade\Composer;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Test;
@@ -30,110 +28,150 @@ use RuntimeException;
  * - `PROVIDER_NAMESPACE`
  *
  */
-class GenerateSyncEntityClass extends CliCommand
+class GenerateSyncEntityClass extends GenerateCommand
 {
-    public static $EntityName;
-
     protected function _getDescription(): string
     {
-        return "Generate an entity class";
+        return "Generate a sync entity class";
     }
 
     protected function _getOptions(): array
     {
         return [
-            [
-                "long"        => "class",
-                "short"       => "c",
-                "valueName"   => "CLASS",
-                "description" => "The fully-qualified class name",
-                "optionType"  => CliOptionType::VALUE,
-                "required"    => true,
-            ],
-            [
-                "long"        => "package",
-                "short"       => "p",
-                "valueName"   => "PACKAGE",
-                "description" => "The PHPDoc package",
-                "optionType"  => CliOptionType::VALUE,
-                "envVariable" => "PHPDOC_PACKAGE",
-            ],
-            [
-                "long"        => "desc",
-                "short"       => "d",
-                "valueName"   => "DESCRIPTION",
-                "description" => "A short description of the entity",
-                "optionType"  => CliOptionType::VALUE,
-            ],
-            [
-                "long"        => "stdout",
-                "short"       => "s",
-                "description" => "Write to standard output",
-            ],
-            [
-                "long"        => "force",
-                "short"       => "f",
-                "description" => "Overwrite the class file if it already exists",
-            ],
-            [
-                "long"        => "no-meta",
-                "short"       => "m",
-                "description" => "Suppress '@lkrms-*' metadata tags",
-            ],
-            [
-                "long"          => "visibility",
-                "short"         => "v",
-                "valueName"     => "KEYWORD",
-                "description"   => "The visibility of the entity's properties",
-                "optionType"    => CliOptionType::ONE_OF,
-                "allowedValues" => ["public", "protected", "private"],
-                "defaultValue"  => "public",
-            ],
-            [
-                "long"        => "json",
-                "short"       => "j",
-                "valueName"   => "FILE",
-                "description" => "The path to a JSON-serialized sample entity",
-                "optionType"  => CliOptionType::VALUE,
-            ],
-            [
-                "long"        => "provider",
-                "short"       => "i",
-                "valueName"   => "CLASS",
-                "description" => "The HttpSyncProvider class to retrieve a sample entity from",
-                "optionType"  => CliOptionType::VALUE,
-                "envVariable" => "DEFAULT_PROVIDER",
-            ],
-            [
-                "long"        => "endpoint",
-                "short"       => "e",
-                "valueName"   => "PATH",
-                "description" => "The endpoint to retrieve a sample entity from, e.g. '/user'",
-                "optionType"  => CliOptionType::VALUE,
-            ],
+            (CliOption::build()
+                ->long("generate")
+                ->short("g")
+                ->valueName("CLASS")
+                ->description("The class to generate")
+                ->optionType(CliOptionType::VALUE)
+                ->required()
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->go()),
+            (CliOption::build()
+                ->long("package")
+                ->short("p")
+                ->valueName("PACKAGE")
+                ->description("The PHPDoc package")
+                ->optionType(CliOptionType::VALUE)
+                ->envVariable("PHPDOC_PACKAGE")
+                ->go()),
+            (CliOption::build()
+                ->long("desc")
+                ->short("d")
+                ->valueName("DESCRIPTION")
+                ->description("A short description of the entity")
+                ->optionType(CliOptionType::VALUE)
+                ->go()),
+            (CliOption::build()
+                ->long("stdout")
+                ->short("s")
+                ->description("Write to standard output")
+                ->go()),
+            (CliOption::build()
+                ->long("force")
+                ->short("f")
+                ->description("Overwrite the class file if it already exists")
+                ->go()),
+            (CliOption::build()
+                ->long("no-meta")
+                ->short("m")
+                ->description("Suppress '@lkrms-*' metadata tags")
+                ->go()),
+            (CliOption::build()
+                ->long("visibility")
+                ->short("v")
+                ->valueName("KEYWORD")
+                ->description("The visibility of the entity's properties")
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(["public", "protected", "private"])
+                ->defaultValue("public")
+                ->go()),
+            (CliOption::build()
+                ->long("json")
+                ->short("j")
+                ->valueName("FILE")
+                ->description("The path to a JSON-serialized sample entity")
+                ->optionType(CliOptionType::VALUE)
+                ->go()),
+            (CliOption::build()
+                ->long("provider")
+                ->short("i")
+                ->valueName("CLASS")
+                ->description("The HttpSyncProvider class to retrieve a sample entity from")
+                ->optionType(CliOptionType::VALUE)
+                ->envVariable("DEFAULT_PROVIDER")
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->go()),
+            (CliOption::build()
+                ->long("endpoint")
+                ->short("e")
+                ->valueName("PATH")
+                ->description("The endpoint to retrieve a sample entity from, e.g. '/user'")
+                ->optionType(CliOptionType::VALUE)
+                ->go()),
         ];
     }
 
     protected function run(string ...$args)
     {
-        $namespace  = explode("\\", ltrim($this->getOptionValue("class"), "\\"));
-        $class      = array_pop($namespace);
-        $namespace  = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
-        $fqcn       = $namespace ? $namespace . "\\" . $class : $class;
+        $namespace   = explode("\\", ltrim($this->getOptionValue("generate"), "\\"));
+        $class       = array_pop($namespace);
+        $namespace   = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
+        $fqcn        = $namespace ? $namespace . "\\" . $class : $class;
+        $classPrefix = $namespace ? "\\" : "";
+
+        $extendsFqcn = SyncEntity::class;
+
+        $this->OutputClass     = $class;
+        $this->OutputNamespace = $namespace;
+        $this->ClassPrefix     = $classPrefix;
+
+        $extends = $this->getFqcnAlias($extendsFqcn);
+
         $package    = $this->getOptionValue("package");
         $desc       = $this->getOptionValue("desc");
-        $extends    = SyncEntity::class;
-        $props      = ["Id" => "int|string|null"];
         $visibility = $this->getOptionValue("visibility");
-        $entity     = null;
-        $entityUri  = null;
+        $json       = $this->getOptionValue("json");
+        $providerClass = $this->getOptionValue("provider");
+        $props         = ["Id" => "int|string|null"];
+        $entity        = null;
+        $entityUri     = null;
 
         if (!$fqcn)
         {
             throw new InvalidCliArgumentException("invalid class: $fqcn");
         }
 
-        if (!($json = $this->getOptionValue("json")) && ($providerClass = $this->getOptionValue("provider")))
+        if ($json)
+        {
+            if ($json == "-")
+            {
+                $json = "php://stdin";
+            }
+            else
+            {
+                if (($json = realpath($json)) === false)
+                {
+                    throw new InvalidCliArgumentException("file not found: " . $this->getOptionValue("json"));
+                }
+                elseif (strpos($json, $this->app()->BasePath) === 0)
+                {
+                    $entityUri = "./" . ltrim(substr($json, strlen($this->app()->BasePath)), "/");
+                }
+                else
+                {
+                    $entityUri = $json;
+                }
+            }
+
+            $entity = json_decode(file_get_contents($json), true);
+
+            if (is_null($entity))
+            {
+                throw new RuntimeException("Could not decode $json");
+            }
+        }
+        elseif ($providerClass)
         {
             if (!class_exists($providerClass) &&
                 !(strpos($providerClass, "\\") === false &&
@@ -154,35 +192,6 @@ class GenerateSyncEntityClass extends CliCommand
             else
             {
                 throw new InvalidCliArgumentException("not a subclass of HttpSyncProvider: $providerClass");
-            }
-        }
-        elseif ($json)
-        {
-            if ($json == "-")
-            {
-                $json = "php://stdin";
-            }
-            else
-            {
-                if (($json = realpath($json)) === false)
-                {
-                    throw new InvalidCliArgumentException("file not found: " . $this->getOptionValue("json"));
-                }
-                elseif (strpos($json, $this->app()->BasePath) === 0)
-                {
-                    $entityUri = "./" . ltrim(str_replace($this->app()->BasePath, "", $json), "/");
-                }
-                else
-                {
-                    $entityUri = $json;
-                }
-            }
-
-            $entity = json_decode(file_get_contents($json), true);
-
-            if (is_null($entity))
-            {
-                throw new RuntimeException("Could not decode $json");
             }
         }
 
@@ -207,14 +216,19 @@ class GenerateSyncEntityClass extends CliCommand
 
             $entityClass = new class extends SyncEntity
             {
+                /**
+                 * @var string
+                 */
+                public static $EntityName;
+
                 protected static function getRemovablePrefixes(): ?array
                 {
-                    return [GenerateSyncEntityClass::$EntityName];
+                    return [self::$EntityName];
                 }
             };
 
-            self::$EntityName = $class;
-            $normaliser       = $entityClass::getNormaliser();
+            $entityClass::$EntityName = $class;
+            $normaliser = $entityClass::getNormaliser();
 
             foreach ($entity as $key => $value)
             {
@@ -237,6 +251,8 @@ class GenerateSyncEntityClass extends CliCommand
                 }
             }
         }
+
+        $imports = $this->getImports();
 
         $docBlock[] = "/**";
         if ($desc)
@@ -262,25 +278,20 @@ class GenerateSyncEntityClass extends CliCommand
             {
                 $docBlock[] = " * @lkrms-sample-entity $entityUri";
             }
-            $ignore  = ["--stdout", "--force"];
-            $replace = [];
-            $with    = [];
+            $ignore = ["--stdout", "--force", $this->getEffectiveArgument("json", true)];
+            $add    = [];
             if ($json)
             {
-                $ignore[]  = $this->getEffectiveArgument("provider", true);
-                $ignore[]  = $this->getEffectiveArgument("endpoint", true);
-                $replace[] = '/^--json=.*/';
-                $with[]    = "--json=" . escapeshellarg(basename($entityUri ?: $this->getOptionValue("json")));
+                $ignore[] = $this->getEffectiveArgument("provider", true);
+                $ignore[] = $this->getEffectiveArgument("endpoint", true);
+                $add[]    = "--json=" . escapeshellarg(basename($entityUri ?: $this->getOptionValue("json")));
             }
-            else
-            {
-                $ignore[] = $this->getEffectiveArgument("json", true);
-            }
-            $ignore     = array_filter($ignore, fn($arg) => !is_null($arg));
-            $docBlock[] = " * @lkrms-generate-command " . implode(" ", array_map(
-                fn($arg) => preg_replace($replace, $with, $arg),
-                array_diff($this->getEffectiveCommandLine(true), $ignore)
-            ));
+            $ignore     = array_filter($ignore);
+            $docBlock[] = " * @lkrms-generate-command " . implode(" ",
+                array_merge(
+                    array_diff($this->getEffectiveCommandLine(true), $ignore),
+                    $add
+                ));
         }
         $docBlock[] = " */";
         if (count($docBlock) == 2)
@@ -292,10 +303,16 @@ class GenerateSyncEntityClass extends CliCommand
             "<?php",
             "declare(strict_types=1);",
             "namespace $namespace;",
+            implode(PHP_EOL, $imports),
             ($docBlock ? implode(PHP_EOL, $docBlock) . PHP_EOL : "") .
-            "class $class extends \\$extends" . PHP_EOL .
+            "class $class extends $extends" . PHP_EOL .
             "{"
         ];
+
+        if (!$imports)
+        {
+            unset($blocks[3]);
+        }
 
         if (!$namespace)
         {
@@ -304,62 +321,24 @@ class GenerateSyncEntityClass extends CliCommand
 
         $lines = [implode(PHP_EOL . PHP_EOL, $blocks)];
 
-        $indent = "    ";
-
         foreach ($props as $prop => $type)
         {
-            $lines[] = $indent . "/**";
-            if ($visibility == "protected")
+            $_lines = [
+                "/**",
+                " * @internal",
+                " * @var $type",
+                " */",
+                "$visibility \$$prop;",
+            ];
+            if ($visibility != "protected")
             {
-                $lines[] = $indent . " * @internal";
+                unset($_lines[1]);
             }
-            $lines[] = $indent . " * @var $type";
-            $lines[] = $indent . " */";
-            $lines[] = $indent . "$visibility \$$prop;";
-            $lines[] = "";
+            array_push($lines, ...array_map(fn($line) => "    " . $line, $_lines), ... [""]);
         }
 
         $lines[] = "}";
 
-        $verb = "Creating";
-
-        if ($this->getOptionValue("stdout"))
-        {
-            $file = "php://stdout";
-            $verb = null;
-        }
-        else
-        {
-            $file = "$class.php";
-
-            if ($dir = Composer::getNamespacePath($namespace))
-            {
-                if (!is_dir($dir))
-                {
-                    mkdir($dir, 0777, true);
-                }
-                $file = $dir . DIRECTORY_SEPARATOR . $file;
-            }
-
-            if (file_exists($file))
-            {
-                if (!$this->getOptionValue("force"))
-                {
-                    Console::warn("File already exists:", $file);
-                    $file = preg_replace('/\.php$/', ".generated.php", $file);
-                }
-                if (file_exists($file))
-                {
-                    $verb = "Replacing";
-                }
-            }
-        }
-
-        if ($verb)
-        {
-            Console::info($verb, $file);
-        }
-
-        file_put_contents($file, implode(PHP_EOL, $lines) . PHP_EOL);
+        $this->handleOutput($class, $namespace, $lines);
     }
 }
