@@ -54,6 +54,16 @@ class Pipeline extends FluentInterface implements IPipeline
     /**
      * @var Closure|null
      */
+    private $After;
+
+    /**
+     * @var array
+     */
+    private $AfterArgs = [];
+
+    /**
+     * @var Closure|null
+     */
     private $Then;
 
     /**
@@ -90,6 +100,19 @@ class Pipeline extends FluentInterface implements IPipeline
         $_this->Payload = $payload;
         $_this->Args    = $args;
         $_this->Stream  = true;
+
+        return $_this;
+    }
+
+    public function after(callable $callback, ...$args)
+    {
+        if ($this->After)
+        {
+            throw new RuntimeException(static::class . "::after() has already been applied");
+        }
+        $_this            = $this->getMutable();
+        $_this->After     = $callback;
+        $_this->AfterArgs = $args;
 
         return $_this;
     }
@@ -138,7 +161,9 @@ class Pipeline extends FluentInterface implements IPipeline
         }
         $this->checkThen();
 
-        return ($this->getPipeStack())($this->Payload);
+        return ($this->getPipeStack())($this->After
+            ? $this->After($this->Payload, ...$this->AfterArgs, ...$this->Args)
+            : $this->Payload);
     }
 
     public function start(): iterable
@@ -151,7 +176,9 @@ class Pipeline extends FluentInterface implements IPipeline
         $pipeStack = $this->getPipeStack();
         foreach ($this->Payload as $payload)
         {
-            yield ($pipeStack)($payload);
+            yield ($pipeStack)($this->After
+                ? $this->After($payload, ...$this->AfterArgs, ...$this->Args)
+                : $payload);
         }
     }
 

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Lkrms\Tests\Sync\Provider;
 
 use Lkrms\Curler\CurlerHeaders;
-use Lkrms\Exception\SyncOperationNotImplementedException;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Provider\HttpSyncProvider;
-use Lkrms\Sync\SyncOperation;
+use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
+use Lkrms\Sync\SyncOperation as OP;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\PostProvider;
 use Lkrms\Tests\Sync\Entity\User;
@@ -51,24 +51,20 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         ];
     }
 
-    public function createPost(Post $post): Post
+    protected function getHttpDefinition(string $entity, HttpSyncDefinitionBuilder $define)
     {
-        throw new SyncOperationNotImplementedException(self::class, Post::class, SyncOperation::CREATE);
-    }
+        switch ($entity)
+        {
+            case Post::class:
+                return $define->operations([OP::READ, OP::READ_LIST])
+                    ->path("/posts");
 
-    public function getPost($id): Post
-    {
-        return Post::fromProvider($this, $this->getCurler("/posts/" . $id)->getJson());
-    }
+            case User::class:
+                return $define->operations([OP::READ, OP::READ_LIST])
+                    ->path("/users");
+        }
 
-    public function updatePost(Post $post): Post
-    {
-        throw new SyncOperationNotImplementedException(self::class, Post::class, SyncOperation::UPDATE);
-    }
-
-    public function deletePost(Post $post): ?Post
-    {
-        throw new SyncOperationNotImplementedException(self::class, Post::class, SyncOperation::DELETE);
+        return null;
     }
 
     public function getPosts(): iterable
@@ -76,34 +72,9 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         $filter   = $this->getListFilter(func_get_args());
         if ($user = $filter["user"] ?? null)
         {
-            return Post::listFromProvider($this, $this->getCurler("/users/$user/posts")->getJson());
+            return Post::provideList($this->getCurler("/users/$user/posts")->getJson(), $this);
         }
-        return Post::listFromProvider($this, $this->getCurler("/posts")->getJson());
-    }
-
-    public function createUser(User $user): User
-    {
-        throw new SyncOperationNotImplementedException(self::class, User::class, SyncOperation::CREATE);
-    }
-
-    public function getUser($id): User
-    {
-        return User::fromProvider($this, $this->getCurler("/users/" . $id)->getJson());
-    }
-
-    public function updateUser(User $user): User
-    {
-        throw new SyncOperationNotImplementedException(self::class, User::class, SyncOperation::UPDATE);
-    }
-
-    public function deleteUser(User $user): ?User
-    {
-        throw new SyncOperationNotImplementedException(self::class, User::class, SyncOperation::DELETE);
-    }
-
-    public function getUsers(): iterable
-    {
-        return User::listFromProvider($this, $this->getCurler("/users")->getJson());
+        return Post::provideList($this->getCurler("/posts")->getJson(), $this);
     }
 
 }

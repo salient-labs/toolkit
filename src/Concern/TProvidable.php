@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\IProvidableContext;
 use Lkrms\Contract\IProvider;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ArrayMapperFlag;
 use Lkrms\Support\ClosureBuilder;
 use Lkrms\Support\Pipeline;
+use Lkrms\Support\ProvidableContext;
 use RuntimeException;
 
 /**
@@ -28,6 +30,11 @@ trait TProvidable
      */
     private $_Providable;
 
+    /**
+     * @var IProvidableContext|null
+     */
+    private $_ProvidableContext;
+
     protected function clearProvider()
     {
         $this->_Provider = null;
@@ -41,6 +48,14 @@ trait TProvidable
         }
         $this->_Provider   = $provider;
         $this->_Providable = $providable;
+
+        return $this;
+    }
+
+    public function setProvidableContext(?IProvidableContext $context)
+    {
+        $this->_ProvidableContext = $context;
+
         return $this;
     }
 
@@ -52,6 +67,11 @@ trait TProvidable
     public function providable(): ?string
     {
         return $this->_Providable;
+    }
+
+    protected function providableContext(): ?IProvidableContext
+    {
+        return $this->_ProvidableContext;
     }
 
     /**
@@ -67,6 +87,8 @@ trait TProvidable
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.
      *
+     * @deprecated Use {@see TProvidable::provide()} instead
+     * @psalm-param \Lkrms\Contract\ITreeNode|null $parent
      * @param callable|null $callback If set, applied before optionally
      * remapping `$data`.
      * @param array<int|string,int|string|array<int,int|string>>|null $keyMap An
@@ -89,8 +111,30 @@ trait TProvidable
             ->send($data)
             ->if(!is_null($callback), fn(Pipeline $p) => $p->throughCallback($callback))
             ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->throughKeyMap($keyMap, $conformity, $flags))
-            ->then(ClosureBuilder::getBound($container, static::class)->getCreateProvidableFromClosure(), $provider, $container, $parent)
+            ->then(ClosureBuilder::getBound($container, static::class)->getCreateProvidableFromClosure(), $provider, new ProvidableContext($container, $parent))
             ->run());
+    }
+
+    /**
+     * Create an instance of the class from an array on behalf of a provider
+     *
+     * The constructor (if any) is invoked with values from `$data`. If `$data`
+     * values remain, they are assigned to writable properties. If further
+     * values remain and the class implements
+     * {@see \Lkrms\Contract\IExtensible}, they are assigned via
+     * {@see \Lkrms\Contract\IExtensible::setMetaProperty()}.
+     *
+     * `$data` keys, constructor parameters and writable properties are
+     * normalised for comparison.
+     *
+     * @return static
+     */
+    public static function provide(array $data, IProvider $provider, ?IProvidableContext $context = null)
+    {
+        $container = ($context ?: $provider)->container()->inContextOf(get_class($provider));
+        $context   = $context ? $context->withContainer($container) : new ProvidableContext($container);
+
+        return (ClosureBuilder::getBound($container, static::class)->getCreateProvidableFromClosure())($data, $provider, $context);
     }
 
     /**
@@ -99,6 +143,8 @@ trait TProvidable
      *
      * See {@see TProvidable::fromProvider()} for more information.
      *
+     * @deprecated Use {@see TProvidable::provideList()} instead
+     * @psalm-param \Lkrms\Contract\ITreeNode|null $parent
      * @param iterable<array> $list
      * @param callable|null $callback If set, applied before optionally
      * remapping each array.
@@ -130,9 +176,36 @@ trait TProvidable
                             ? $builder->getCreateProvidableFromSignatureClosure(array_keys($data))
                             : $builder->getCreateProvidableFromClosure();
                     }
-                    return $closure($data, $provider, $container, $parent);
+                    return $closure($data, $provider, new ProvidableContext($container, $parent));
                 }
             )->start());
+    }
+
+    /**
+     * Create instances of the class from arrays on behalf of a provider
+     *
+     * See {@see TProvidable::provide()} for more information.
+     *
+     * @param iterable<array> $dataList
+     * @return iterable<static>
+     */
+    public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProvidableContext $context = null): iterable
+    {
+        $container = ($context ?: $provider)->container()->inContextOf(get_class($provider));
+        $context   = $context ? $context->withContainer($container) : new ProvidableContext($container);
+
+        foreach ($dataList as $data)
+        {
+            if (!isset($closure))
+            {
+                $builder = ClosureBuilder::getBound($container, static::class);
+                $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                    ? $builder->getCreateProvidableFromSignatureClosure(array_keys($data))
+                    : $builder->getCreateProvidableFromClosure();
+            }
+
+            yield $closure($data, $provider, $context);
+        }
     }
 
 }

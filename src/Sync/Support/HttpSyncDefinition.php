@@ -111,10 +111,8 @@ class HttpSyncDefinition extends SyncDefinition
         }
 
         $toCurler  = $this->getCurlerOperationClosure($operation);
-        $toBackend = $this->getPipelineToBackend()->through(
-            fn($payload, Closure $next, ...$args) => $next($toCurler($this->getPath(), $payload))
-        );
-        $toEntity = $this->getPipelineToEntity();
+        $toBackend = $this->getPipelineToBackend();
+        $toEntity  = $this->getPipelineToEntity();
 
         switch ($operation)
         {
@@ -122,28 +120,34 @@ class HttpSyncDefinition extends SyncDefinition
             case SyncOperation::UPDATE:
             case SyncOperation::DELETE:
                 $closure = fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity =>
-                    ($toBackend->send($entity->toArray(), ...$args)
-                        ->then(fn($result) => $toEntity->send($result, $ctx)->run())
+                    ($toBackend->send($entity->toArray(), $operation, $ctx, $entity, ...$args)
+                        ->through(fn($payload, Closure $next, ...$args) => $next($toCurler($this->getPath($operation, $ctx, $entity, ...$args), $payload)))
+                        ->then(fn($result) => $toEntity->send($result, $operation, $ctx, $entity, ...$args)->run())
                         ->run());
                 break;
 
             case SyncOperation::READ:
                 $closure = fn(SyncContext $ctx, ?int $id = null, ...$args): SyncEntity =>
-                    $toEntity->send($toCurler($this->getPath()), $ctx, $id, ...$args)->run();
+                    $toEntity->send($toCurler($this->getPath($operation, $ctx, $id, ...$args)), $operation, $ctx, $id, ...$args)->run();
                     break;
 
             case SyncOperation::CREATE_LIST:
             case SyncOperation::UPDATE_LIST:
             case SyncOperation::DELETE_LIST:
-                $closure = fn(SyncContext $ctx, iterable $entities, ...$args): iterable =>
-                    ($toBackend->stream($entities, ...$args)
-                        ->then(fn($result) => $toEntity->send($result, $ctx)->run())
+                $_entity = null;
+                $closure = function (SyncContext $ctx, iterable $entities, ...$args) use (&$_entity, $operation, $toCurler, $toBackend, $toEntity): iterable
+                {
+                    return ($toBackend->stream($entities, $operation, $ctx, $_entity, ...$args)
+                        ->after(function (SyncEntity $entity) use (&$_entity) { $_entity = $entity; })
+                        ->through(fn($payload, Closure $next, ...$args) => $next($toCurler($this->getPath($operation, $ctx, $_entity, ...$args), $payload)))
+                        ->then(fn($result) => $toEntity->send($result, $operation, $ctx, $_entity, ...$args)->run())
                         ->start());
+                };
                 break;
 
             case SyncOperation::READ_LIST:
                 $closure = fn(SyncContext $ctx, ...$args): iterable =>
-                    $toEntity->stream($toCurler($this->getPath()), $ctx, ...$args)->start();
+                    $toEntity->stream($toCurler($this->getPath($operation, $ctx, ...$args)), $operation, $ctx, ...$args)->start();
                     break;
 
             default:
@@ -153,8 +157,13 @@ class HttpSyncDefinition extends SyncDefinition
         return $this->Closures[$operation] = $closure;
     }
 
-    private function getPath(...$args): string
+    private function getPath(int $operation, SyncContext $ctx, ...$args): string
     {
+        if ($operation === SyncOperation::READ && !is_null($args[0]))
+        {
+            return $this->Path . "/" . $args[0];
+        }
+
         return $this->Path;
     }
 

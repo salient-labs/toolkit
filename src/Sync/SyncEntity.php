@@ -93,14 +93,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      */
     final public static function backend(?IContainer $container = null): SyncEntityProvider
     {
-        if (!$container)
-        {
-            if (!Container::hasGlobalContainer())
-            {
-                throw new RuntimeException("No container");
-            }
-            $container = Container::getGlobalContainer();
-        }
+        $container = Container::coalesce($container, false, false);
         /** @var SyncProvider */
         $provider = $container->get(static::class . "Provider");
         return $provider->with(static::class, $container);

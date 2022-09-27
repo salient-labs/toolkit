@@ -8,8 +8,8 @@ use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\SyncOperation;
-use Lkrms\Tests\Sync\CustomEntity\User;
-use Lkrms\Tests\Sync\Entity\UserProvider;
+use Lkrms\Tests\Sync\CustomEntity\Post;
+use Lkrms\Tests\Sync\Entity\PostProvider;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use ReflectionFunction;
 
@@ -17,18 +17,24 @@ final class SyncClosureBuilderTest extends \Lkrms\Tests\TestCase
 {
     public function testGetSyncOperationMethod()
     {
-        $provider = new JsonPlaceholderApi(new Container());
-        $entityClosureBuilder   = SyncClosureBuilder::get(User::class);
-        $providerClosureBuilder = SyncClosureBuilder::get(UserProvider::class);
+        $container = new Container();
+        $container->service(JsonPlaceholderApi::class);
+        $provider = $container->get(PostProvider::class);
+        $entityClosureBuilder   = SyncClosureBuilder::get(Post::class);
+        $providerClosureBuilder = SyncClosureBuilder::getBound($container, PostProvider::class);
 
-        $this->assertEquals("getUser", $this->getMethodVar($providerClosureBuilder->getSyncOperationClosure(SyncOperation::READ, $entityClosureBuilder, $provider)));
-        $this->assertEquals("getUsers", $this->getMethodVar($providerClosureBuilder->getSyncOperationClosure(SyncOperation::READ_LIST, $entityClosureBuilder, $provider)));
-        $this->assertEquals("createUser", $this->getMethodVar($providerClosureBuilder->getSyncOperationClosure(SyncOperation::CREATE, $entityClosureBuilder, $provider)));
-        $this->assertEquals(null, $providerClosureBuilder->getSyncOperationClosure(SyncOperation::CREATE_LIST, $entityClosureBuilder, $provider));
+        $this->assertEquals(null, $this->getMethodVar($providerClosureBuilder->getSyncOperationClosure(SyncOperation::READ, $entityClosureBuilder, $provider)));
+        $this->assertEquals("getPosts", $this->getMethodVar($providerClosureBuilder->getSyncOperationClosure(SyncOperation::READ_LIST, $entityClosureBuilder, $provider)));
+        $this->assertEquals(null, $this->getMethodVar($providerClosureBuilder->getSyncOperationClosure(SyncOperation::CREATE, $entityClosureBuilder, $provider)));
     }
 
-    private function getMethodVar(Closure $closure): string
+    private function getMethodVar(?Closure $closure): ?string
     {
+        if (!$closure)
+        {
+            return null;
+        }
+
         return (new ReflectionFunction($closure))->getStaticVariables()["method"];
     }
 

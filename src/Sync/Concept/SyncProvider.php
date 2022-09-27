@@ -6,14 +6,13 @@ namespace Lkrms\Sync\Concept;
 
 use Lkrms\Concern\HasContainer;
 use Lkrms\Contract\IBindableSingleton;
-use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Provider\SyncEntityProvider;
-use Lkrms\Sync\Support\SyncDefinitionBuilder;
+use Lkrms\Sync\Support\SyncContext;
 use ReflectionClass;
 
 /**
@@ -29,6 +28,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      * Surface the provider's implementation of sync operations for an entity
      * via an ISyncDefinition object
      *
+     * Return `null` if no sync operations are implemented for the entity.
      */
     abstract protected function getDefinition(string $entity): ?ISyncDefinition;
 
@@ -92,13 +92,6 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     }
 
     /**
-     * Use a fluent interface to create a new SyncDefinition object
-     *
-     * `entity()` and `provider()` are applied before the builder is returned.
-     */
-    abstract protected function define(string $entity): SyncDefinitionBuilder;
-
-    /**
      * @var string|null
      */
     private $BackendHash;
@@ -146,13 +139,21 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
         return self::$SyncProviderInterfaces[static::class] = $interfaces;
     }
 
-    public function with(string $syncEntity, ?IContainer $container = null): SyncEntityProvider
+    public function with(string $syncEntity, $context = null): SyncEntityProvider
     {
-        return ($container ?: $this->app())->get(
+        $container = ($context instanceof SyncContext
+            ? $context->container()
+            : ($context ?: $this->container()))->inContextOf(static::class);
+        $context = ($context instanceof SyncContext
+            ? $context->withContainer($container)
+            : new SyncContext($container));
+
+        return $container->get(
             SyncEntityProvider::class,
             $syncEntity,
             $this,
-            $this->getDefinition($syncEntity)
+            $this->getDefinition($syncEntity),
+            $context
         );
     }
 
@@ -173,7 +174,8 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      * }
      * ```
      *
-     * The following signatures are recognised:
+     * The following signatures are recognised (after removing the leading
+     * {@see SyncContext} argument):
      *
      * ```php
      * // 1. An array at index 0 (subsequent arguments are ignored)
@@ -202,6 +204,11 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      */
     protected function getListFilter(array $args): array
     {
+        if (($args[0] ?? null) instanceof SyncContext)
+        {
+            array_shift($args);
+        }
+
         if (empty($args))
         {
             return [];
