@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Lkrms\LkUtil\Command\Http;
 
 use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Env;
@@ -38,31 +39,31 @@ class SendHttpRequest extends CliCommand
     protected function _getOptions(): array
     {
         $options = [
-            [
-                "long"        => "provider",
-                "short"       => "i",
-                "valueName"   => "CLASS",
-                "description" => "The HttpSyncProvider class to use",
-                "optionType"  => CliOptionType::VALUE,
-                "required"    => true,
-                "envVariable" => "DEFAULT_PROVIDER",
-            ],
-            [
-                "long"        => "endpoint",
-                "short"       => "e",
-                "valueName"   => "ENDPOINT",
-                "description" => "The endpoint to {$this->getMethod()}, e.g. '/posts'",
-                "optionType"  => CliOptionType::VALUE,
-                "required"    => true,
-            ],
-            [
-                "long"            => "query",
-                "short"           => "q",
-                "valueName"       => "FIELD=VALUE",
-                "description"     => "A query parameter (may be used more than once)",
-                "optionType"      => CliOptionType::VALUE,
-                "multipleAllowed" => true,
-            ],
+            (CliOption::build()
+                ->long("provider")
+                ->short("i")
+                ->valueName("CLASS")
+                ->description("The HttpSyncProvider class to use")
+                ->optionType(CliOptionType::VALUE)
+                ->required()
+                ->envVariable("DEFAULT_PROVIDER")
+                ->go()),
+            (CliOption::build()
+                ->long("endpoint")
+                ->short("e")
+                ->valueName("ENDPOINT")
+                ->description("The endpoint to {$this->getMethod()}, e.g. '/posts'")
+                ->optionType(CliOptionType::VALUE)
+                ->required()
+                ->go()),
+            (CliOption::build()
+                ->long("query")
+                ->short("q")
+                ->valueName("FIELD=VALUE")
+                ->description("A query parameter (may be used more than once)")
+                ->optionType(CliOptionType::VALUE)
+                ->multipleAllowed()
+                ->go()),
         ];
 
         switch ($this->getMethod())
@@ -72,13 +73,13 @@ class SendHttpRequest extends CliCommand
                 break;
 
             default:
-                $options[] = [
-                    "long"        => "json",
-                    "short"       => "j",
-                    "valueName"   => "FILE",
-                    "description" => "The path to JSON-serialized data to submit with the request",
-                    "optionType"  => CliOptionType::VALUE,
-                ];
+                $options[] = (CliOption::build()
+                    ->long("json")
+                    ->short("j")
+                    ->valueName("FILE")
+                    ->description("The path to JSON-serialized data to submit with the request")
+                    ->optionType(CliOptionType::VALUE)
+                    ->go());
                 break;
         }
 

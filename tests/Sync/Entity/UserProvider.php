@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
+use Lkrms\Sync\Contract\ISyncProvider;
+
 /**
  * Syncs User objects with a backend
  *
@@ -13,8 +15,8 @@ namespace Lkrms\Tests\Sync\Entity;
  * @method User|null deleteUser(User $user)
  * @method iterable<User> getUsers()
  *
- * @lkrms-generate-command lk-util generate sync provider --class='Lkrms\Tests\Sync\Entity\User' --op='create,get,update,delete,get-list'
+ * @lkrms-generate-command lk-util generate sync provider --class='Lkrms\Tests\Sync\Entity\User' --magic --op='create,get,update,delete,get-list'
  */
-interface UserProvider extends \Lkrms\Sync\Contract\ISyncProvider
+interface UserProvider extends ISyncProvider
 {
 }

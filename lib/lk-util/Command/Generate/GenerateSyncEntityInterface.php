@@ -8,11 +8,9 @@ declare(strict_types=1);
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
-use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
-use Lkrms\Facade\Composer;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -27,7 +25,7 @@ use Lkrms\Sync\SyncOperation;
  * - `PHPDOC_PACKAGE`
  *
  */
-class GenerateSyncEntityInterface extends CliCommand
+class GenerateSyncEntityInterface extends GenerateCommand
 {
     private const OPERATIONS = [
         "create", "get", "update", "delete",
@@ -40,72 +38,78 @@ class GenerateSyncEntityInterface extends CliCommand
 
     protected function _getDescription(): string
     {
-        return "Generate a provider interface for an entity class";
+        return "Generate a provider interface for a sync entity class";
     }
 
     protected function _getOptions(): array
     {
         return [
-            [
-                "long"        => "class",
-                "short"       => "c",
-                "valueName"   => "CLASS",
-                "description" => "The SyncEntity subclass to generate a provider for",
-                "optionType"  => CliOptionType::VALUE,
-                "required"    => true,
-            ],
-            [
-                "long"        => "package",
-                "short"       => "p",
-                "valueName"   => "PACKAGE",
-                "description" => "The PHPDoc package",
-                "optionType"  => CliOptionType::VALUE,
-                "envVariable" => "PHPDOC_PACKAGE",
-            ],
-            [
-                "long"        => "desc",
-                "short"       => "d",
-                "valueName"   => "DESCRIPTION",
-                "description" => "A short description of the interface",
-                "optionType"  => CliOptionType::VALUE,
-            ],
-            [
-                "long"        => "stdout",
-                "short"       => "s",
-                "description" => "Write to standard output",
-            ],
-            [
-                "long"        => "force",
-                "short"       => "f",
-                "description" => "Overwrite the class file if it already exists",
-            ],
-            [
-                "long"        => "no-meta",
-                "short"       => "m",
-                "description" => "Suppress '@lkrms-*' metadata tags",
-            ],
-            [
-                "long"            => "op",
-                "short"           => "o",
-                "valueName"       => "OPERATION",
-                "description"     => "A sync operation to include in the interface (may be used more than once)",
-                "optionType"      => CliOptionType::ONE_OF,
-                "allowedValues"   => self::OPERATIONS,
-                "multipleAllowed" => true,
-                "defaultValue"    => self::DEFAULT_OPERATIONS,
-            ],
-            [
-                "long"        => "nullable-get",
-                "short"       => "n",
-                "description" => "Allow passing null identifiers to the 'get' operation",
-            ],
-            [
-                "long"        => "plural",
-                "short"       => "l",
-                "valueName"   => "PLURAL",
-                "description" => "Specify the plural form of CLASS",
-                "optionType"  => CliOptionType::VALUE,
-            ],
+            (CliOption::build()
+                ->long("class")
+                ->short("c")
+                ->valueName("CLASS")
+                ->description("The SyncEntity subclass to generate a provider for")
+                ->optionType(CliOptionType::VALUE)
+                ->required()
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->go()),
+            (CliOption::build()
+                ->long("magic")
+                ->short("v")
+                ->description("Generate @method tags instead of declarations")
+                ->go()),
+            (CliOption::build()
+                ->long("package")
+                ->short("p")
+                ->valueName("PACKAGE")
+                ->description("The PHPDoc package")
+                ->optionType(CliOptionType::VALUE)
+                ->envVariable("PHPDOC_PACKAGE")
+                ->go()),
+            (CliOption::build()
+                ->long("desc")
+                ->short("d")
+                ->valueName("DESCRIPTION")
+                ->description("A short description of the interface")
+                ->optionType(CliOptionType::VALUE)
+                ->go()),
+            (CliOption::build()
+                ->long("stdout")
+                ->short("s")
+                ->description("Write to standard output")
+                ->go()),
+            (CliOption::build()
+                ->long("force")
+                ->short("f")
+                ->description("Overwrite the class file if it already exists")
+                ->go()),
+            (CliOption::build()
+                ->long("no-meta")
+                ->short("m")
+                ->description("Suppress '@lkrms-*' metadata tags")
+                ->go()),
+            (CliOption::build()
+                ->long("op")
+                ->short("o")
+                ->valueName("OPERATION")
+                ->description("A sync operation to include in the interface (may be used more than once)")
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(self::OPERATIONS)
+                ->multipleAllowed()
+                ->defaultValue(self::DEFAULT_OPERATIONS)
+                ->go()),
+            (CliOption::build()
+                ->long("nullable-get")
+                ->short("n")
+                ->description("Allow passing null identifiers to the 'get' operation")
+                ->go()),
+            (CliOption::build()
+                ->long("plural")
+                ->short("l")
+                ->valueName("PLURAL")
+                ->description("Specify the plural form of CLASS")
+                ->optionType(CliOptionType::VALUE)
+                ->go()),
         ];
     }
 
@@ -122,16 +126,28 @@ class GenerateSyncEntityInterface extends CliCommand
             "delete-list" => SyncOperation::DELETE_LIST,
         ];
 
-        $namespace  = explode("\\", ltrim($this->getOptionValue("class"), "\\"));
-        $class      = array_pop($namespace);
-        $namespace  = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
-        $fqcn       = $namespace ? $namespace . "\\" . $class : $class;
+        $namespace   = explode("\\", ltrim($this->getOptionValue("class"), "\\"));
+        $class       = array_pop($namespace);
+        $namespace   = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
+        $fqcn        = $namespace ? $namespace . "\\" . $class : $class;
+        $classPrefix = $namespace ? "\\" : "";
+
+        $interface   = $class . "Provider";
+        $extendsFqcn = ISyncProvider::class;
+
+        $this->OutputClass     = $interface;
+        $this->OutputNamespace = $namespace;
+        $this->ClassPrefix     = $classPrefix;
+
+        $service = $this->getFqcnAlias($fqcn, $class);
+        $extends = $this->getFqcnAlias($extendsFqcn);
+
+        $camelClass = Convert::toCamelCase($class);
+
+        $magic      = $this->getOptionValue("magic");
         $package    = $this->getOptionValue("package");
         $desc       = $this->getOptionValue("desc");
         $desc       = is_null($desc) ? "Syncs $class objects with a backend" : $desc;
-        $interface  = $class . "Provider";
-        $extends    = ISyncProvider::class;
-        $camelClass = Convert::toCamelCase($class);
         $operations = array_map(
             function ($op) use ($operationMap) { return $operationMap[$op]; },
             array_intersect(self::OPERATIONS, $this->getOptionValue("op"))
@@ -178,62 +194,24 @@ class GenerateSyncEntityInterface extends CliCommand
             ];
         }
 
-        $docBlock[] = "/**";
-        if ($desc)
-        {
-            $docBlock[] = " * $desc";
-            $docBlock[] = " *";
-        }
-        if ($package)
-        {
-            $docBlock[] = " * @package $package";
-        }
-        if (!$this->getOptionValue("no-meta"))
-        {
-            $docBlock[] = " * @lkrms-generate-command " . implode(" ",
-                array_diff($this->getEffectiveCommandLine(true),
-                    ["--stdout", "--force"]));
-        }
-        $docBlock[] = " */";
-        if (count($docBlock) == 2)
-        {
-            $docBlock = null;
-        }
-
-        $blocks = [
-            "<?php",
-            "declare(strict_types=1);",
-            "namespace $namespace;",
-            ($docBlock ? implode(PHP_EOL, $docBlock) . PHP_EOL : "") .
-            "interface $interface extends \\$extends" . PHP_EOL .
-            "{"
-        ];
-
-        if (!$namespace)
-        {
-            unset($blocks[2]);
-        }
-
-        $lines = [implode(PHP_EOL . PHP_EOL, $blocks)];
-
-        $indent = "    ";
-
+        $methods = [];
+        $lines   = [];
         foreach ($operations as $op)
         {
             // CREATE and UPDATE have the same signature, so it's a good default
             if (SyncOperation::isList($op))
             {
-                $paramDoc   = "iterable<" . $class . '> $' . $camelPlural;
+                $paramDoc   = "iterable<" . $service . '> $' . $camelPlural;
                 $paramCode  = 'iterable $' . $camelPlural;
-                $returnDoc  = "iterable<" . $class . ">";
+                $returnDoc  = "iterable<" . $service . ">";
                 $returnCode = "iterable";
             }
             else
             {
-                $paramDoc   = $class . ' $' . $camelClass;
+                $paramDoc   = $service . ' $' . $camelClass;
                 $paramCode  = $paramDoc;
-                $returnDoc  = $class;
-                $returnCode = $class;
+                $returnDoc  = $service;
+                $returnCode = $service;
             }
 
             switch ($op)
@@ -262,56 +240,80 @@ class GenerateSyncEntityInterface extends CliCommand
                     break;
             }
 
-            $lines[] = $indent . "/**";
-
-            if ($paramDoc)
+            if (!$magic)
             {
-                $lines[] = $indent . " * @param $paramDoc";
+                $_lines = [
+                    "/**",
+                    " * @param $paramDoc",
+                    " * @return $returnDoc",
+                    " */",
+                    "public function {$opMethod[$op]}($paramCode): $returnCode;",
+                ];
+                if (!$paramDoc)
+                {
+                    unset($_lines[1]);
+                }
+                array_push($lines, ...array_map(fn($line) => "    " . $line, $_lines), ... [""]);
             }
-
-            $lines[] = $indent . " * @return $returnDoc";
-            $lines[] = $indent . " */";
-            $lines[] = $indent . "public function {$opMethod[$op]}($paramCode): $returnCode;";
-            $lines[] = "";
+            else
+            {
+                $methods[] = " * @method $returnDoc {$opMethod[$op]}($paramDoc)";
+            }
         }
-
         $lines[] = "}";
+        $methods = implode(PHP_EOL, $methods);
 
-        $verb = "Creating";
+        $imports = $this->getImports();
 
-        if ($this->getOptionValue("stdout"))
+        $docBlock[] = "/**";
+        if ($desc)
         {
-            $file = "php://stdout";
-            $verb = null;
+            $docBlock[] = " * $desc";
+            $docBlock[] = " *";
         }
-        else
+        if ($methods)
         {
-            $file = "$interface.php";
-
-            if ($classFile = Composer::getClassPath($fqcn))
-            {
-                $file = dirname($classFile) . DIRECTORY_SEPARATOR . $file;
-            }
-
-            if (file_exists($file))
-            {
-                if (!$this->getOptionValue("force"))
-                {
-                    Console::warn("File already exists:", $file);
-                    $file = preg_replace('/\.php$/', ".generated.php", $file);
-                }
-                if (file_exists($file))
-                {
-                    $verb = "Replacing";
-                }
-            }
+            $docBlock[] = $methods;
+            $docBlock[] = " *";
         }
-
-        if ($verb)
+        if ($package)
         {
-            Console::info($verb, $file);
+            $docBlock[] = " * @package $package";
+        }
+        if (!$this->getOptionValue("no-meta"))
+        {
+            $docBlock[] = " * @lkrms-generate-command " . implode(" ",
+                array_diff($this->getEffectiveCommandLine(true),
+                    ["--stdout", "--force"]));
+        }
+        $docBlock[] = " */";
+        if (count($docBlock) == 2)
+        {
+            $docBlock = null;
         }
 
-        file_put_contents($file, implode(PHP_EOL, $lines) . PHP_EOL);
+        $blocks = [
+            "<?php",
+            "declare(strict_types=1);",
+            "namespace $namespace;",
+            implode(PHP_EOL, $imports),
+            ($docBlock ? implode(PHP_EOL, $docBlock) . PHP_EOL : "") .
+            "interface $interface extends $extends" . PHP_EOL .
+            "{"
+        ];
+
+        if (!$imports)
+        {
+            unset($blocks[3]);
+        }
+
+        if (!$namespace)
+        {
+            unset($blocks[2]);
+        }
+
+        array_unshift($lines, implode(PHP_EOL . PHP_EOL, $blocks));
+
+        $this->handleOutput($interface, $namespace, $lines);
     }
 }

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
+use Lkrms\Sync\SyncEntity;
+
 /**
  * @lkrms-sample-entity https://jsonplaceholder.typicode.com/users
- * @lkrms-generate-command lk-util generate sync entity --class='Lkrms\Tests\Sync\Entity\User' --visibility='public' --provider='\Lkrms\Tests\Sync\Provider\JsonPlaceholderApi' --endpoint='/users'
+ * @lkrms-generate-command lk-util generate sync entity --generate='\Lkrms\Tests\Sync\Entity\User' --visibility='public' --provider='\Lkrms\Tests\Sync\Provider\JsonPlaceholderApi' --endpoint='/users'
  */
-class User extends \Lkrms\Sync\SyncEntity
+class User extends SyncEntity
 {
     /**
      * @var int|string|null

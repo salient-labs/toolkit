@@ -22,6 +22,7 @@ use Lkrms\Contract\IContainer;
  * @method $this defaultValue(string|string[]|bool|int|null $value)
  * @method $this envVariable(?string $value)
  * @method $this delimiter(?string $value)
+ * @method $this valueCallback(?callable $value)
  * @method CliOption go() Return a new CliOption object
  *
  * @uses CliOption
