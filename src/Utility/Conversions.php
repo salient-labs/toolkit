@@ -843,17 +843,6 @@ final class Conversions
         );
     }
 
-    /**
-     * @deprecated Use {@see Conversions::linesToLists()} instead
-     */
-    public function mergeLists(
-        string $text,
-        string $regex = '/^\h*[-*] /'
-    ): string
-    {
-        return $this->linesToLists($text, "\n", $regex);
-    }
-
     public function valueToCode($value, string $delimiter = ", ", string $arrow = " => "): string
     {
         if (is_null($value))

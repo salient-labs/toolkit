@@ -70,7 +70,7 @@ abstract class GenerateCommand extends CliCommand
         $fqcn  = ltrim($fqcn, "\\");
         $_fqcn = strtolower($fqcn);
 
-        // If $fqcn already has an alias, use it
+        // If $fqcn has already been imported, use its alias
         if ($_alias = $this->ImportMap[$_fqcn] ?? null)
         {
             return $_alias;
@@ -82,6 +82,13 @@ abstract class GenerateCommand extends CliCommand
         }
 
         $_alias = strtolower($alias);
+
+        // Use $alias if it already maps to $fqcn
+        if (($aliasFqcn = $this->AliasMap[$_alias] ?? null) &&
+            !strcasecmp($aliasFqcn, $fqcn))
+        {
+            return $alias;
+        }
 
         // Don't allow a conflict with the name of the generated class
         if (!strcasecmp($alias, $this->OutputClass) ||

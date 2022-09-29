@@ -40,103 +40,86 @@ final class CliOption implements IReadable, IImmutable
     use TFullyReadable;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Long;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Short;
 
     /**
-     * @internal
      * @var string
      */
     protected $Key;
 
     /**
-     * @internal
      * @var string
      */
     protected $DisplayName;
 
     /**
-     * @internal
      * @var int
      */
     protected $OptionType;
 
     /**
-     * @internal
      * @var bool
      */
     protected $IsFlag = false;
 
     /**
-     * @internal
      * @var bool
      */
     protected $IsPositional = false;
 
     /**
-     * @internal
      * @var bool
      */
     protected $IsRequired;
 
     /**
-     * @internal
      * @var bool
      */
     protected $IsValueRequired;
 
     /**
-     * @internal
      * @var bool
      */
     protected $MultipleAllowed;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Delimiter;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $ValueName;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Description;
 
     /**
-     * @internal
      * @var string[]|null
      */
     protected $AllowedValues;
 
     /**
-     * @internal
      * @var string|string[]|bool|int|null
      */
     protected $DefaultValue;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $EnvironmentVariable;
 
     /**
-     * @internal
      * @var string|string[]|bool|int|null
      */
     protected $Value;

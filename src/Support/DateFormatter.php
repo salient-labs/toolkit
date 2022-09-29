@@ -21,13 +21,11 @@ final class DateFormatter implements IReadable
     public const DEFAULT = DateTimeInterface::ATOM;
 
     /**
-     * @internal
      * @var string
      */
     protected $Format;
 
     /**
-     * @internal
      * @var DateTimeZone|null
      */
     protected $Timezone;

@@ -128,4 +128,46 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
             [],
         ], $phpDocs);
     }
+
+    public function testFences()
+    {
+        $docBlock = '/**
+ * Summary
+ *
+ * Description with multiple code blocks:
+ *
+ * ```php
+ * $this->doSomething();
+ * ```
+ *
+ * Three, to be precise (including within the `@var`):
+ *
+ * ```php
+ * $this->doSomethingElse();
+ * ```
+ *
+ * @var callable|null
+ * ```php
+ * callback(string $value): string
+ * ```
+ */';
+        $phpDoc = new PhpDocParser($docBlock);
+        $this->assertEquals($phpDoc->Summary, 'Summary');
+        $this->assertEquals($phpDoc->Description, 'Description with multiple code blocks:
+
+```php
+$this->doSomething();
+```
+
+Three, to be precise (including within the `@var`):
+
+```php
+$this->doSomethingElse();
+```
+
+```php
+callback(string $value): string
+```');
+        $this->assertEquals($phpDoc->Var, [['name' => null, 'type' => '?callable', 'description' => 'Summary']]);
+    }
 }

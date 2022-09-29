@@ -325,15 +325,10 @@ class GenerateSyncEntityClass extends GenerateCommand
         {
             $_lines = [
                 "/**",
-                " * @internal",
                 " * @var $type",
                 " */",
                 "$visibility \$$prop;",
             ];
-            if ($visibility != "protected")
-            {
-                unset($_lines[1]);
-            }
             array_push($lines, ...array_map(fn($line) => "    " . $line, $_lines), ... [""]);
         }
 

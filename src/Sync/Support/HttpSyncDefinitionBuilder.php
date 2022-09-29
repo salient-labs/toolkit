@@ -13,16 +13,16 @@ use Lkrms\Sync\Provider\HttpSyncProvider;
  * A fluent interface for creating HttpSyncDefinition objects
  *
  * @method static $this build(?IContainer $container = null) Create a new HttpSyncDefinitionBuilder (syntactic sugar for 'new HttpSyncDefinitionBuilder()')
- * @method $this entity(string $value)
- * @method $this provider(HttpSyncProvider $value)
- * @method $this operations(int[] $value)
- * @method $this path(?string $value)
- * @method $this conformity(int $value)
- * @method $this expiry(?int $value)
- * @method $this methodMap(array $value)
- * @method $this overrides(array $value)
- * @method $this dataToEntityPipeline(?IPipelineImmutable $value)
- * @method $this entityToDataPipeline(?IPipelineImmutable $value)
+ * @method $this entity(string $value) See {@see SyncDefinition::$Entity}
+ * @method $this provider(HttpSyncProvider $value) See {@see HttpSyncDefinition::$Provider}
+ * @method $this operations(int[] $value) See {@see HttpSyncDefinition::$Operations}
+ * @method $this path(?string $value) See {@see HttpSyncDefinition::$Path}
+ * @method $this conformity(int $value) See {@see SyncDefinition::$Conformity}
+ * @method $this expiry(?int $value) See {@see HttpSyncDefinition::$Expiry}
+ * @method $this methodMap(array $value) See {@see HttpSyncDefinition::$MethodMap}
+ * @method $this overrides(array $value) See {@see HttpSyncDefinition::$Overrides}
+ * @method $this dataToEntityPipeline(?IPipelineImmutable $value) A pipeline that converts data received from the provider to an associative array from which the entity can be instantiated, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$DataToEntityPipeline})
+ * @method $this entityToDataPipeline(?IPipelineImmutable $value) A pipeline that converts a serialized instance of the entity to data compatible with the provider, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$EntityToDataPipeline})
  * @method HttpSyncDefinition go() Return a new HttpSyncDefinition object
  *
  * @uses HttpSyncDefinition

@@ -23,6 +23,9 @@
             <default-package-name>Lkrms</default-package-name>
             <include-source>true</include-source>
             <ignore-tags>
+                <ignore-tag>property</ignore-tag>
+                <ignore-tag>property-read</ignore-tag>
+                <ignore-tag>property-write</ignore-tag>
                 <ignore-tag>lkrms-generate-command</ignore-tag>
                 <ignore-tag>lkrms-sample-entity</ignore-tag>
                 <ignore-tag>psalm-param</ignore-tag>

@@ -22,31 +22,26 @@ final class HttpResponse implements IReadable
     use TFullyReadable;
 
     /**
-     * @internal
      * @var string
      */
     protected $Version;
 
     /**
-     * @internal
      * @var int
      */
     protected $StatusCode;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $ReasonPhrase;
 
     /**
-     * @internal
      * @var CurlerHeaders
      */
     protected $Headers;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Body;

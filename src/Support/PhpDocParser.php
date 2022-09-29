@@ -41,7 +41,6 @@ class PhpDocParser implements IReadable
      *
      * Newlines are removed.
      *
-     * @internal
      * @var string|null
      */
     protected $Summary;
@@ -49,7 +48,6 @@ class PhpDocParser implements IReadable
     /**
      * The description, if provided
      *
-     * @internal
      * @var string|null
      */
     protected $Description;
@@ -57,7 +55,6 @@ class PhpDocParser implements IReadable
     /**
      * The full text of each tag, in order of appearance
      *
-     * @internal
      * @var string[]
      */
     protected $TagLines = [];
@@ -68,7 +65,6 @@ class PhpDocParser implements IReadable
      * Tags that only appear by themselves (i.e. without a description or any
      * other metadata) are added with the boolean value `true`.
      *
-     * @internal
      * @var array<string,string[]|true>
      */
     protected $Tags = [];
@@ -76,7 +72,6 @@ class PhpDocParser implements IReadable
     /**
      * Parameter name => parameter metadata
      *
-     * @internal
      * @var array<string,array{type:string|null,description:string|null}>
      */
     protected $Params = [];
@@ -84,7 +79,6 @@ class PhpDocParser implements IReadable
     /**
      * Return value metadata, if provided
      *
-     * @internal
      * @var array{type:string,description:string|null}|null
      */
     protected $Return;
@@ -92,7 +86,6 @@ class PhpDocParser implements IReadable
     /**
      * Property or constant metadata, if provided
      *
-     * @internal
      * @var array<int,array{name:string|null,type:string,description:string|null}>
      */
     protected $Var = [];
@@ -190,7 +183,7 @@ class PhpDocParser implements IReadable
 
                 case "var":
                     unset($name);
-                    $token = strtok($lines, " \t");
+                    $token = strtok($lines, " \t\n\r");
                     $type  = $token;
                     $meta++;
                     $token = strtok(" \t");
@@ -200,8 +193,16 @@ class PhpDocParser implements IReadable
                         $meta++;
                     }
                     $var = $this->getValue($type, $lines, $meta, ["name" => $name ?? null]);
-                    $var["description"] = $var["description"] ?: $this->Summary;
-                    $this->Var[]        = $var;
+                    if ($var["description"] && $this->Summary)
+                    {
+                        $this->Description .= ($this->Description ? str_repeat(PHP_EOL, 2) : "") . $var["description"];
+                        $var["description"] = $this->Summary;
+                    }
+                    else
+                    {
+                        $var["description"] = $var["description"] ?: $this->Summary;
+                    }
+                    $this->Var[] = $var;
                     break;
             }
         }
@@ -270,6 +271,11 @@ class PhpDocParser implements IReadable
         while ($this->Lines);
 
         return implode($unwrap ? " " : PHP_EOL, $lines);
+    }
+
+    public function unwrap(?string $value): ?string
+    {
+        return is_null($value) ? null : str_replace(PHP_EOL, " ", $value);
     }
 
     private function mergeValue(?string & $ours, ?string $theirs): void

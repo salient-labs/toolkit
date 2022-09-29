@@ -54,7 +54,6 @@ class SqlQuery implements IReadable
     /**
      * Parameter name => value
      *
-     * @internal
      * @var array<string,mixed>
      */
     protected $Values = [];
