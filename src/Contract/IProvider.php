@@ -28,9 +28,9 @@ interface IProvider extends ReturnsContainer
     /**
      * Throw an exception if the backend isn't reachable
      *
-     * This method MAY emit a {@see ConsoleLevel::DEBUG} message after
-     * confirming a successful handshake. Positive results SHOULD be cached for
-     * up to `$ttl` seconds.
+     * This method MAY emit a {@see \Lkrms\Console\ConsoleLevel::DEBUG} message
+     * after confirming a successful handshake. Positive results SHOULD be
+     * cached for up to `$ttl` seconds.
      */
     public function checkHeartbeat(int $ttl = 300): void;
 

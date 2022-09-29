@@ -22,37 +22,31 @@ final class HttpRequest implements IReadable
     use TFullyReadable;
 
     /**
-     * @internal
      * @var string
      */
     protected $Method;
 
     /**
-     * @internal
      * @var string
      */
     protected $Target;
 
     /**
-     * @internal
      * @var string
      */
     protected $Version;
 
     /**
-     * @internal
      * @var CurlerHeaders
      */
     protected $Headers;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Body;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Client;

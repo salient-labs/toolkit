@@ -20,19 +20,16 @@ final class CurlerHeader implements IReadable, IImmutable
     use TFullyReadable;
 
     /**
-     * @internal
      * @var string
      */
     protected $Name;
 
     /**
-     * @internal
      * @var string
      */
     protected $Value;
 
     /**
-     * @internal
      * @var int
      */
     protected $Index;

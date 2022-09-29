@@ -30,55 +30,46 @@ final class DbConnector implements IReadable
     use TFullyReadable;
 
     /**
-     * @internal
      * @var string
      */
     protected $Name;
 
     /**
-     * @internal
      * @var int
      */
     protected $Driver;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Dsn;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Hostname;
 
     /**
-     * @internal
      * @var int|null
      */
     protected $Port;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Username;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Password;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Database;
 
     /**
-     * @internal
      * @var string|null
      */
     protected $Schema;

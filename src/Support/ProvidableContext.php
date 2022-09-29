@@ -10,6 +10,8 @@ use Lkrms\Contract\IProvidableContext;
 use Lkrms\Contract\ITreeNode;
 
 /**
+ * The context within which an IProvidable is instantiated
+ *
  * @property-read IContainer $Container
  * @property-read ITreeNode $Parent
  */
@@ -18,13 +20,11 @@ class ProvidableContext implements IProvidableContext
     use TFullyReadable;
 
     /**
-     * @internal
      * @var IContainer
      */
     protected $Container;
 
     /**
-     * @internal
      * @var ITreeNode|null
      */
     protected $Parent;

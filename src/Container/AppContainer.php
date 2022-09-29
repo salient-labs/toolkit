@@ -36,7 +36,6 @@ class AppContainer extends Container implements IReadable
     use TReadable;
 
     /**
-     * @internal
      * @var string
      */
     protected $BasePath;

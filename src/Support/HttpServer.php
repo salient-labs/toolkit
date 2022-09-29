@@ -26,19 +26,16 @@ final class HttpServer implements IReadable
     use TFullyReadable;
 
     /**
-     * @internal
      * @var string
      */
     protected $Address;
 
     /**
-     * @internal
      * @var int
      */
     protected $Port;
 
     /**
-     * @internal
      * @var int
      */
     protected $Timeout;

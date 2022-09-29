@@ -31,7 +31,6 @@ final class SerializeRules implements IReadable, IImmutable
      * {@see SerializeRules::$OnlySerializeId}, disable recursion detection to
      * improve performance and reduce memory consumption.
      *
-     * @internal
      * @var bool
      */
     protected $DetectRecursion;
@@ -46,7 +45,6 @@ final class SerializeRules implements IReadable, IImmutable
      * $rules->DoNotSerialize[OrgUnit::class][] = 'users';
      * ```
      *
-     * @internal
      * @var array<string,string[]>
      */
     protected $DoNotSerialize = [];
@@ -65,7 +63,6 @@ final class SerializeRules implements IReadable, IImmutable
      * Use {@see SerializeRules::$IdKeyCallback} to customise the name of the
      * replacement key.
      *
-     * @internal
      * @var array<string,string[]>
      */
     protected $OnlySerializeId = [];
@@ -83,7 +80,6 @@ final class SerializeRules implements IReadable, IImmutable
      * The default is to append `_id` to the key being replaced, e.g. `user`
      * becomes `user_id`.
      *
-     * @internal
      * @var callable|null
      * ```php
      * callback(string $key): string
@@ -103,7 +99,6 @@ final class SerializeRules implements IReadable, IImmutable
      * ]
      * ```
      *
-     * @internal
      * @var bool
      */
     protected $OnlySerializePlaceholders = false;

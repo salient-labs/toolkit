@@ -51,6 +51,9 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      */
     private static $Normalised = [];
 
+    /**
+     * @internal
+     */
     public function __clone()
     {
         parent::__clone();
