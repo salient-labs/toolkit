@@ -199,20 +199,4 @@ final class Filesystem
         . "$basename-$hash-$euid$suffix";
     }
 
-    /**
-     * @deprecated Use {@see \Lkrms\Utility\Composer::getClassPath()} instead
-     */
-    public function getClassPath(string $class): ?string
-    {
-        return Composer::getClassPath($class);
-    }
-
-    /**
-     * @deprecated Use {@see \Lkrms\Utility\Composer::getNamespacePath()}
-     * instead
-     */
-    public function getNamespacePath(string $namespace): ?string
-    {
-        return Composer::getNamespacePath($namespace);
-    }
 }

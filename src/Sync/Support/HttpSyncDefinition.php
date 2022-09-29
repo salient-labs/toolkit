@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Support;
 
 use Closure;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipelineImmutable;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\HttpRequestMethod;

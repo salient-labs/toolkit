@@ -14,9 +14,7 @@ use Lkrms\Utility\Filesystem;
  * @method static Filesystem getInstance() Return the underlying Filesystem instance
  * @method static bool isLoaded() Return true if an underlying Filesystem instance has been loaded
  * @method static void unload() Clear the underlying Filesystem instance
- * @method static string|null getClassPath(string $class) See {@see Filesystem::getClassPath()}
  * @method static string|false getEol(string $filename) Get a file's end-of-line sequence (see {@see Filesystem::getEol()})
- * @method static string|null getNamespacePath(string $namespace) See {@see Filesystem::getNamespacePath()}
  * @method static string getStablePath(string $suffix = '.log', ?string $dir = null) Return the name of a file unique to the current script and user (see {@see Filesystem::getStablePath()})
  * @method static string|null getStreamUri(resource $stream) Get the URI or filename associated with a stream (see {@see Filesystem::getStreamUri()})
  * @method static bool maybeCreate(string $filename, int $permissions = 511, int $dirPermissions = 511) Create a file if it doesn't exist (see {@see Filesystem::maybeCreate()})

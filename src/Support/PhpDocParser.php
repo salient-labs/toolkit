@@ -190,7 +190,7 @@ class PhpDocParser implements IReadable
 
                 case "var":
                     unset($name);
-                    $token = strtok($lines, " \t");
+                    $token = strtok($lines, " \t\n\r");
                     $type  = $token;
                     $meta++;
                     $token = strtok(" \t");
@@ -200,8 +200,16 @@ class PhpDocParser implements IReadable
                         $meta++;
                     }
                     $var = $this->getValue($type, $lines, $meta, ["name" => $name ?? null]);
-                    $var["description"] = $var["description"] ?: $this->Summary;
-                    $this->Var[]        = $var;
+                    if ($var["description"] && $this->Summary)
+                    {
+                        $this->Description .= ($this->Description ? str_repeat(PHP_EOL, 2) : "") . $var["description"];
+                        $var["description"] = $this->Summary;
+                    }
+                    else
+                    {
+                        $var["description"] = $var["description"] ?: $this->Summary;
+                    }
+                    $this->Var[] = $var;
                     break;
             }
         }
@@ -270,6 +278,11 @@ class PhpDocParser implements IReadable
         while ($this->Lines);
 
         return implode($unwrap ? " " : PHP_EOL, $lines);
+    }
+
+    public function unwrap(?string $value): ?string
+    {
+        return is_null($value) ? null : str_replace(PHP_EOL, " ", $value);
     }
 
     private function mergeValue(?string & $ours, ?string $theirs): void

@@ -33,7 +33,6 @@ use Lkrms\Utility\Conversions;
  * @method static Iterator iterableToIterator(iterable $iterable) If an iterable isn't already an Iterator, enclose it in one (see {@see Conversions::iterableToIterator()})
  * @method static string linesToLists(string $text, string $separator = "\n", ?string $marker = null, string $regex = '/^\\h*[-*] /') Remove duplicates in a string where 'top-level' lines ("section names") are grouped with any subsequent 'child' lines ("list items") (see {@see Conversions::linesToLists()})
  * @method static array listToMap(array $list, string|Closure $key) Create a map from a list (see {@see Conversions::listToMap()})
- * @method static string mergeLists(string $text, string $regex = '/^\\h*[-*] /') See {@see Conversions::mergeLists()}
  * @method static string methodToFunction(string $method) Remove the class from a method name (see {@see Conversions::methodToFunction()})
  * @method static string nounToPlural(string $noun) Return the plural of a singular noun (see {@see Conversions::nounToPlural()})
  * @method static string numberToNoun(int $number, string $singular, ?string $plural = null, bool $includeNumber = false) If a number is 1, return $singular, otherwise return $plural (see {@see Conversions::numberToNoun()})

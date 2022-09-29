@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Lkrms\LkUtil\Command\Generate;
 
+use Closure;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Concept\Builder;
@@ -227,11 +228,24 @@ class GenerateBuilderClass extends GenerateCommand
         }
 
         /** @var ReflectionProperty[] */
+        $_allProperties = [];
+        foreach ($_class->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED) as $_property)
+        {
+            if ($_property->isStatic())
+            {
+                continue;
+            }
+            $_name = $_property->getName();
+            $name  = Convert::toCamelCase($_name);
+            $_allProperties[$name] = $_property;
+        }
+
+        /** @var ReflectionProperty[] */
         $_properties = [];
         $maybeAddFile($_class->getFileName());
-        foreach ($writable as $name => $property)
+        foreach (array_keys($writable) as $name)
         {
-            $_properties[$name] = $_property = $_class->getProperty($property);
+            $_properties[$name] = $_property = $_allProperties[$name];
             $maybeAddFile($_property->getDeclaringClass()->getFileName());
         }
 
@@ -272,6 +286,8 @@ class GenerateBuilderClass extends GenerateCommand
             );
         };
 
+        $_phpDoc = PhpDocParser::fromDocBlocks(Reflect::getAllMethodDocComments($_constructor));
+
         $names = array_keys($_params + $_properties);
         //sort($names);
         $methods = [
@@ -311,23 +327,25 @@ class GenerateBuilderClass extends GenerateCommand
                         break;
                 }
                 $summary = $phpDoc->Summary ?? null;
+                if (!$summary && ($_param = $_params[$name] ?? null))
+                {
+                    $summary = $_phpDoc->unwrap($_phpDoc->Params[$_param->getName()]["description"] ?? null);
+                }
 
-                $methods[] = " * @method \$this $name($type \$value)" .
-                    ($summary
-                        ? " $summary (see {@see " . $typeNameCallback($_property->getDeclaringClass()->getName(), true) . "::\$" . $_property->getName() . "})"
-                        : " See {@see " . $typeNameCallback($_property->getDeclaringClass()->getName(), true) . "::\$" . $_property->getName() . "}");
+                $methods[] = " * @method \$this $name($type \$value)" . $this->getSummary(
+                    $summary, $_property, $typeNameCallback
+                );
 
                 continue;
             }
 
-            $phpDoc            = PhpDocParser::fromDocBlocks(Reflect::getAllMethodDocComments($_constructor));
             $propertyFile      = $_constructor->getFileName();
             $propertyNamespace = $_constructor->getDeclaringClass()->getNamespaceName();
 
             $_param = $_params[$name];
             $_name  = $_param->getName();
 
-            $type = (($_type = $phpDoc->Params[$_name]["type"] ?? null) && strpbrk($_type, "<>") === false
+            $type = (($_type = $_phpDoc->Params[$_name]["type"] ?? null) && strpbrk($_type, "<>") === false
                 ? $phpDocTypeCallback($_type)
                 : ($_param->hasType()
                     ? Reflect::getTypeDeclaration($_param->getType(), $classPrefix, $typeNameCallback)
@@ -346,10 +364,17 @@ class GenerateBuilderClass extends GenerateCommand
                     $default = " = true";
                     break;
             }
-            $summary = $phpDoc->Summary ?? null;
+            $summary        = $_phpDoc->unwrap($_phpDoc->Params[$_name]["description"] ?? null);
+            if (($_property = $_allProperties[$name] ?? null) &&
+                !$summary &&
+                ($phpDoc = PhpDocParser::fromDocBlocks(Reflect::getAllPropertyDocComments($_property))))
+            {
+                $summary = $phpDoc->Summary;
+            }
 
-            $methods[] = " * @method \$this $name($type \$value$default)" .
-                ($summary ? " $summary" : "");
+            $methods[] = " * @method \$this $name($type \$value$default)" . $this->getSummary(
+                $summary, $_property, $typeNameCallback
+            );
         }
         $methods[] = " * @method $service $terminator() Return a new $class object";
         $methods   = implode(PHP_EOL, $methods);
@@ -421,5 +446,23 @@ class GenerateBuilderClass extends GenerateCommand
         $lines[] = "}";
 
         $this->handleOutput($builderClass, $builderNamespace, $lines);
+    }
+
+    private function getSummary(?string $summary, ?ReflectionProperty $property, Closure $typeNameCallback): ?string
+    {
+        if ($summary)
+        {
+            $summary = rtrim($summary, ".");
+        }
+        if (!$property)
+        {
+            return $summary ? " $summary" : $summary;
+        }
+        $class    = $typeNameCallback($property->getDeclaringClass()->getName(), true);
+        $property = $property->getName();
+
+        return ($summary
+            ? " $summary (see {@see $class::\$$property})"
+            : " See {@see $class::\$$property}");
     }
 }
