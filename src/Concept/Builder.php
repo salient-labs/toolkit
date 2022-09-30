@@ -7,6 +7,7 @@ namespace Lkrms\Concept;
 use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IImmutable;
 use Lkrms\Support\ClosureBuilder;
 use RuntimeException;
 use UnexpectedValueException;
@@ -24,7 +25,7 @@ use UnexpectedValueException;
  *
  * If no service container is located, instances are created directly.
  */
-abstract class Builder
+abstract class Builder implements IImmutable
 {
     /**
      * Return the name of the underlying class
@@ -120,9 +121,10 @@ abstract class Builder
         {
             throw new UnexpectedValueException("Invalid arguments");
         }
-        $this->Data[$this->ClosureBuilder->maybeNormalise($name)] = $arguments[0] ?? true;
+        $clone = clone $this;
+        $clone->Data[$clone->ClosureBuilder->maybeNormalise($name)] = $arguments[0] ?? true;
 
-        return $this;
+        return $clone;
     }
 
 }

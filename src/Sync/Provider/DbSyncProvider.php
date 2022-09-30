@@ -9,6 +9,9 @@ use Lkrms\Db\DbConnector;
 use Lkrms\Facade\Assert;
 use Lkrms\Support\SqlQuery;
 use Lkrms\Sync\Concept\SyncProvider;
+use Lkrms\Sync\Contract\ISyncDefinition;
+use Lkrms\Sync\Support\DbSyncDefinition;
+use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
 use RuntimeException;
 use Throwable;
 
@@ -31,6 +34,36 @@ abstract class DbSyncProvider extends SyncProvider
             $connector->Database ?: "",
             $connector->Schema ?: "",
         ]);
+    }
+
+    /**
+     * Surface the provider's implementation of sync operations for an entity
+     * via a DbSyncDefinition object
+     *
+     * Return `null` if no sync operations are implemented for the entity.
+     *
+     * @param DbSyncDefinitionBuilder $define A definition builder with
+     * `entity()` and `provider()` already applied.
+     * @return DbSyncDefinition|DbSyncDefinitionBuilder|null
+     */
+    protected function getDbDefinition(string $entity, DbSyncDefinitionBuilder $define)
+    {
+        return null;
+    }
+
+    final protected function getDefinition(string $entity): ISyncDefinition
+    {
+        $builder = ((new DbSyncDefinitionBuilder())
+            ->entity($entity)
+            ->provider($this));
+        $def = $this->getDbDefinition($entity, $builder) ?: $builder->go();
+
+        if ($def instanceof DbSyncDefinitionBuilder)
+        {
+            return $def->go();
+        }
+
+        return $def;
     }
 
     /**

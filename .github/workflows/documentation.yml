@@ -30,16 +30,16 @@ jobs:
         id: phpdocumentor-cache
         uses: actions/cache@v3
         with:
-          path: .phpdoc/cache
+          path: .cache/phpdoc
           key: ${{ runner.os }}-phpdocumentor-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-phpdocumentor-
       - name: Build with phpDocumentor
-        run: docker run --rm --volume "$(pwd):/data" phpdoc/phpdoc:3 -vv --target docs --cache-folder .phpdoc/cache --template default --sourcecode
+        run: docker run --rm --volume "$(pwd):/data" phpdoc/phpdoc:3 -vv --target docs/api --cache-folder .cache/phpdoc --template default --sourcecode
       - name: Upload artifact to GitHub Pages
         uses: actions/upload-pages-artifact@v1
         with:
-          path: docs
+          path: docs/api
 
   deploy:
     needs: build

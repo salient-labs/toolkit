@@ -57,10 +57,10 @@ class ProvidableContext implements IProvidableContext
             return $this;
         }
 
-        $_this = clone $this;
-        $_this->Container = $container;
+        $clone = clone $this;
+        $clone->Container = $container;
 
-        return $_this;
+        return $clone;
     }
 
     /**
@@ -73,10 +73,10 @@ class ProvidableContext implements IProvidableContext
             return $this;
         }
 
-        $_this         = clone $this;
-        $_this->Parent = $parent;
+        $clone         = clone $this;
+        $clone->Parent = $parent;
 
-        return $_this;
+        return $clone;
     }
 
 }

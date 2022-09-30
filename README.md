@@ -1,6 +1,8 @@
 # lkrms/util
 
-A PHP toolkit with opinionated defaults and a small footprint.
+A lightweight PHP toolkit for elegant backend/CLI apps. Opinionated but not
+presumptuous. PSR-friendly but not always compliant. *May contain traces of
+Laravel.*
 
 ## Installation
 
@@ -12,13 +14,13 @@ composer require lkrms/util
 
 ## Documentation
 
-API documentation for `lkrms/util` is [available online][api-docs].
+[Online API documentation][api-docs] for `lkrms/util` tracks the `main` branch
+of the [official GitHub repository][repo].
 
 To generate your own API documentation, run [`phpdoc`][phpdoc] in the top-level
-directory, then open `build/api/index.html`.
+directory, then open `docs/api/index.html`.
 
-> [Online API documentation][api-docs] is automatically generated from the
-> `main` branch of the [official GitHub repository][repo].
+Other documentation is available in this README and under [docs][docs].
 
 ## Using the CLI utility
 
@@ -31,22 +33,25 @@ information, use `help` as a subcommand or add the `--help` option.
 
 ### Environment variables
 
-To make it easier to work with fully-qualified class names in a terminal,
-`lk-util` allows fallback namespaces and classes to be specified via environment
-variables. The following Visual Studio Code settings illustrate how they can be
-used:
+To make it easier to work with PHP namespaces in a terminal, `lk-util` allows
+default namespaces and classes to be specified via environment variables. The
+following Visual Studio Code settings illustrate how they can be used:
 
 ```jsonc
 {
   "settings": {
     "terminal.integrated.env.linux": {
-      // Added to unqualified '--class' names
+      // Added to unqualified classes
       "DEFAULT_NAMESPACE": "Lkrms\\Tests\\Sync\\Entity",
+      // Overrides DEFAULT_NAMESPACE when generating builder classes
+      "BUILDER_NAMESPACE": "Lkrms\\Tests\\Builder",
+      // Overrides DEFAULT_NAMESPACE when generating facade classes
+      "FACADE_NAMESPACE": "Lkrms\\Tests\\Facade",
       // Used if '--package' is not specified
       "PHPDOC_PACKAGE": "Lkrms\\Tests",
       // Used if '--provider' is not specified
       "DEFAULT_PROVIDER": "JsonPlaceholderApi",
-      // Added to unqualified '--provider' names (e.g. "JsonPlaceholderApi")
+      // Added to unqualified '--provider' classes
       "PROVIDER_NAMESPACE": "Lkrms\\Tests\\Sync\\Provider"
     }
   }
@@ -109,6 +114,7 @@ automatically to ensure messages are delivered or logged by default.
 ---
 
 [api-docs]: https://lkrms.github.io/php-util/
+[docs]: docs/
 [phpdoc]: https://phpdoc.org/
 [repo]: https://github.com/lkrms/php-util
 [Console.php]: src/Console/Console.php

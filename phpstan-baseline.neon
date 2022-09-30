@@ -6,11 +6,6 @@ parameters:
 			path: lib/lk-util/Command/Generate/GenerateBuilderClass.php
 
 		-
-			message: "#^Call to deprecated method from\\(\\) of class Lkrms\\\\Cli\\\\CliOption\\.$#"
-			count: 1
-			path: src/Cli/CliCommand.php
-
-		-
 			message: "#^If condition is always false\\.$#"
 			count: 1
 			path: src/Cli/CliCommand.php
@@ -56,28 +51,9 @@ parameters:
 			path: src/Sync/Provider/SyncEntityProvider.php
 
 		-
-			message: """
-				#^Call to deprecated method getDoNotSerialize\\(\\) of class Lkrms\\\\Sync\\\\SyncEntity\\:
-				Override \\{@see SyncEntity\\:\\:getSerializeRules\\(\\)\\} instead$#
-			"""
+			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\DeferredSyncEntity\\:\\:\\$Replace is never read, only written\\.$#"
 			count: 1
-			path: src/Sync/SyncEntity.php
-
-		-
-			message: """
-				#^Call to deprecated method getOnlySerializeId\\(\\) of class Lkrms\\\\Sync\\\\SyncEntity\\:
-				Override \\{@see SyncEntity\\:\\:getSerializeRules\\(\\)\\} instead$#
-			"""
-			count: 1
-			path: src/Sync/SyncEntity.php
-
-		-
-			message: """
-				#^Call to deprecated method getSerializedIdKey\\(\\) of class Lkrms\\\\Sync\\\\SyncEntity\\:
-				Override \\{@see SyncEntity\\:\\:getSerializeRules\\(\\)\\} instead$#
-			"""
-			count: 1
-			path: src/Sync/SyncEntity.php
+			path: src/Sync/Support/DeferredSyncEntity.php
 
 		-
 			message: "#^Call to an undefined method ReflectionType\\:\\:isBuiltin\\(\\)\\.$#"

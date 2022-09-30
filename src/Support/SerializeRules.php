@@ -167,10 +167,10 @@ final class SerializeRules implements IReadable, IImmutable
      */
     public function apply(SerializeRules $rules)
     {
-        $_this = clone $this;
-        $_this->_apply($rules);
+        $clone = clone $this;
+        $clone->_apply($rules);
 
-        return $_this;
+        return $clone;
     }
 
     private function _apply(SerializeRules $rules, bool $inherit = false)

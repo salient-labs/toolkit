@@ -253,9 +253,10 @@ final class CliOption implements IReadable, IImmutable
     /**
      * @internal
      * @param string|string[]|bool|int|null $value
+     * @return $this
      * @see CliCommand::loadOptionValues()
      */
-    public function withValue($value): self
+    public function withValue($value)
     {
         $clone        = clone $this;
         $clone->Value = $this->ValueCallback && !is_null($value) ? ($this->ValueCallback)($value) : $value;

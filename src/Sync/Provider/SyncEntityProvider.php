@@ -48,7 +48,7 @@ class SyncEntityProvider
     private $Provider;
 
     /**
-     * @var ISyncDefinition|null
+     * @var ISyncDefinition
      */
     private $Definition;
 
@@ -57,7 +57,7 @@ class SyncEntityProvider
      */
     private $Context;
 
-    public function __construct(IContainer $container, string $entity, SyncProvider $provider, ?ISyncDefinition $definition, ?SyncContext $context = null)
+    public function __construct(IContainer $container, string $entity, SyncProvider $provider, ISyncDefinition $definition, ?SyncContext $context = null)
     {
         if (!is_subclass_of($entity, SyncEntity::class))
         {
@@ -79,8 +79,7 @@ class SyncEntityProvider
 
     private function run(int $operation, ...$args)
     {
-        if (!$this->Definition ||
-            !($closure = $this->Definition->getSyncOperationClosure($operation)))
+        if (!($closure = $this->Definition->getSyncOperationClosure($operation)))
         {
             throw new SyncOperationNotImplementedException($this->Provider, $this->Entity, $operation);
         }
