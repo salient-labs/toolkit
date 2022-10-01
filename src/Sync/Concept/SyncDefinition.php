@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Lkrms\Sync\Concept;
 
 use Closure;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipelineImmutable;
-use Lkrms\Contract\ITreeNode;
-use Lkrms\Contract\ReturnsContainer;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\PipelineImmutable;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Support\SyncClosureBuilder;
+use Lkrms\Sync\Support\SyncContext;
 
 /**
  * Provides access to a SyncProvider's implementation of sync operations for an

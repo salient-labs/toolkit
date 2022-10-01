@@ -28,9 +28,8 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      * Surface the provider's implementation of sync operations for an entity
      * via an ISyncDefinition object
      *
-     * Return `null` if no sync operations are implemented for the entity.
      */
-    abstract protected function getDefinition(string $entity): ?ISyncDefinition;
+    abstract protected function getDefinition(string $entity): ISyncDefinition;
 
     /**
      * Return a stable identifier that, together with the name of the class,

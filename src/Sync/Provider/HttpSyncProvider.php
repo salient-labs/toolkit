@@ -101,11 +101,12 @@ abstract class HttpSyncProvider extends SyncProvider
         return null;
     }
 
-    final protected function getDefinition(string $entity): ?ISyncDefinition
+    final protected function getDefinition(string $entity): ISyncDefinition
     {
-        $def = $this->getHttpDefinition($entity, (new HttpSyncDefinitionBuilder())
+        $builder = ((new HttpSyncDefinitionBuilder())
             ->entity($entity)
             ->provider($this));
+        $def = $this->getHttpDefinition($entity, $builder) ?: $builder->go();
 
         if ($def instanceof HttpSyncDefinitionBuilder)
         {

@@ -7,6 +7,7 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipelineImmutable;
+use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 
 /**

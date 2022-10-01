@@ -8,6 +8,7 @@ use Closure;
 use Lkrms\Contract\IPipelineImmutable;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\HttpRequestMethod;
+use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Provider\HttpSyncProvider;
 use Lkrms\Sync\SyncEntity;
 use Lkrms\Sync\SyncOperation;

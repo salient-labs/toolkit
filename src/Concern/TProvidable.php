@@ -69,7 +69,7 @@ trait TProvidable
         return $this->_Providable;
     }
 
-    protected function providableContext(): ?IProvidableContext
+    protected function context(): ?IProvidableContext
     {
         return $this->_ProvidableContext;
     }

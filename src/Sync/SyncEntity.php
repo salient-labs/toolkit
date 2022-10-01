@@ -14,9 +14,11 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Support\SerializeRules;
 use Lkrms\Support\SerializeRulesBuilder;
-use Lkrms\Sync\Concept\SyncProvider;
+use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Provider\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncClosureBuilder;
+use RuntimeException;
 use UnexpectedValueException;
 
 /**
@@ -60,6 +62,34 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         $this->Id = null;
     }
 
+    public function provider(): ?ISyncProvider
+    {
+        if (is_null($provider = parent::provider()))
+        {
+            return null;
+        }
+        if (!($provider instanceof ISyncProvider))
+        {
+            throw new RuntimeException(get_class($provider) . " does not implement " . ISyncProvider::class);
+        }
+
+        return $provider;
+    }
+
+    protected function context(): ?ISyncContext
+    {
+        if (is_null($ctx = parent::context()))
+        {
+            return null;
+        }
+        if (!($ctx instanceof ISyncContext))
+        {
+            throw new RuntimeException(get_class($ctx) . " does not implement " . ISyncContext::class);
+        }
+
+        return $ctx;
+    }
+
     /**
      * Return true if the value of a property is the same between this and
      * another instance of the same class
@@ -96,7 +126,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     final public static function backend(?IContainer $container = null): SyncEntityProvider
     {
         $container = Container::coalesce($container, false, false);
-        /** @var SyncProvider */
+        /** @var ISyncProvider */
         $provider = $container->get(static::class . "Provider");
         return $provider->with(static::class, $container);
     }
