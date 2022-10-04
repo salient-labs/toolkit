@@ -61,7 +61,7 @@ can be called, preferably while bootstrapping your application.
 [Console]: https://lkrms.github.io/php-util/classes/Lkrms-Facade-Console.html
 [ConsoleWriter]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html
 [logMessages]: https://lkrms.github.io/php-util/classes/Lkrms-Container-AppContainer.html#method_logConsoleMessages
-[registerStdio]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html#method_registerStdio
+[registerStdio]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html#method_registerStdioTargets
 [registerTarget]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html#method_registerTarget
 [Console-API]: https://developer.mozilla.org/en-US/docs/Web/API/console
 
