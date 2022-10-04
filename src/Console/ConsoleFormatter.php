@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
-use Lkrms\Console\ConsoleColour as Colour;
+use Lkrms\Console\ConsoleTag as Tag;
+use Lkrms\Console\Target\ConsoleTarget;
 
 /**
- * Format text for console output
+ * Formats console messages
  *
  */
-class ConsoleText
+final class ConsoleFormatter
 {
-    private const TAG_HEADING      = 0;
-    private const TAG_SUBHEADING   = 1;
-    private const TAG_TITLE        = 2;
-    private const TAG_LOW_PRIORITY = 3;
-
     /**
      * Matches a preformatted block or span and the text before it
      */
@@ -43,20 +39,22 @@ REGEX;
 REGEX;
 
     private const REGEX_MAP = [
-        self::TAG_HEADING      => '(?|\b___(?!\s)(.+?)(?<!\s)___\b|\*\*\*(?!\s)(.+?)(?<!\s)\*\*\*)',
-        self::TAG_SUBHEADING   => '(?|\b__(?!\s)(.+?)(?<!\s)__\b|\*\*(?!\s)(.+?)(?<!\s)\*\*)',
-        self::TAG_TITLE        => '(?|\b_(?!\s)(.+?)(?<!\s)_\b|\*(?!\s)(.+?)(?<!\s)\*)',
-        self::TAG_LOW_PRIORITY => '~~(.+?)~~',
+        Tag::HEADING      => '(?|\b___(?!\s)(.+?)(?<!\s)___\b|\*\*\*(?!\s)(.+?)(?<!\s)\*\*\*)',
+        Tag::SUBHEADING   => '(?|\b__(?!\s)(.+?)(?<!\s)__\b|\*\*(?!\s)(.+?)(?<!\s)\*\*)',
+        Tag::TITLE        => '(?|\b_(?!\s)(.+?)(?<!\s)_\b|\*(?!\s)(.+?)(?<!\s)\*)',
+        Tag::LOW_PRIORITY => '~~(.+?)~~',
     ];
 
-    private const COLOUR_MAP = [
-        self::TAG_HEADING      => [Colour::BOLD . Colour::CYAN, Colour::DEFAULT . Colour::UNBOLD],
-        self::TAG_SUBHEADING   => [Colour::BOLD, Colour::UNBOLD],
-        self::TAG_TITLE        => [Colour::YELLOW, Colour::DEFAULT],
-        self::TAG_LOW_PRIORITY => [Colour::DIM, Colour::UNDIM],
-    ];
+    private $PregReplace = [];
 
-    private static $PregReplace;
+    public function __construct(ConsoleTarget $target)
+    {
+        foreach (self::REGEX_MAP as $tag => $regex)
+        {
+            $this->PregReplace[0][] = "/" . $regex . "/u";
+            $this->PregReplace[1][] = $target->getTagFormat($tag)->apply('$1');
+        }
+    }
 
     /**
      * Apply inline formatting to a string
@@ -76,94 +74,39 @@ REGEX;
      * | Preformatted | `` ` `` or ```` ``` ```` | `Unchanged`         | `` `<untrusted text>` `` or<br><pre>\`\`\`&#10;&lt;untrusted block&gt;&#10;\`\`\`</pre> |
      *
      */
-    public static function format(string $string, bool $colour): string
+    public function format(string $string): string
     {
-        if (is_null(self::$PregReplace))
-        {
-            self::$PregReplace = [[], [], []];
-
-            foreach (self::REGEX_MAP as $tag => $regex)
-            {
-                $colours = self::COLOUR_MAP[$tag];
-                self::$PregReplace[0][] = "/" . $regex . "/u";
-                self::$PregReplace[1][] = '$1';
-                self::$PregReplace[2][] = $colours[0] . '$1' . $colours[1];
-            }
-        }
-
-        return preg_replace_callback(
-            "/" . self::REGEX_PREFORMATTED . "/u",
-            function (array $matches) use ($colour)
+        return preg_replace_callback("/" . self::REGEX_PREFORMATTED . "/u",
+            function (array $matches)
             {
                 $text = preg_replace(
-                    self::$PregReplace[0],
-                    self::$PregReplace[$colour ? 2 : 1],
-                    self::unescape($matches["text"])
+                    $this->PregReplace[0],
+                    $this->PregReplace[1],
+                    $this->unescape($matches["text"])
                 );
-                $pre = ($matches["pre"] ?? "") ?: self::unescape($matches["code"] ?? "");
+                $pre = ($matches["pre"] ?? "") ?: $this->unescape($matches["code"] ?? "");
 
                 return $text . $pre;
-            },
-            $string
-        );
+            }, $string);
     }
 
-    /**
-     * Equivalent to ConsoleText::format($string, true)
-     *
-     * @see ConsoleText::format()
-     */
-    public static function formatColour(string $string): string
+    private function unescape(string $string): string
     {
-        return self::format($string, true);
-    }
-
-    /**
-     * Equivalent to ConsoleText::format($string, false)
-     *
-     * @see ConsoleText::format()
-     */
-    public static function formatPlain(string $string): string
-    {
-        return self::format($string, false);
-    }
-
-    /**
-     * Return true if a string contains inline bold formatting
-     *
-     * @see ConsoleText::format()
-     */
-    public static function hasBold(string $string): bool
-    {
-        $string = preg_replace_callback(
-            "/" . self::REGEX_PREFORMATTED . "/u",
-            function (array $matches) { return $matches["text"]; },
-            $string
-        );
-
-        return (bool)preg_match("/" . implode("|", [
-            self::REGEX_MAP[self::TAG_HEADING],
-            self::REGEX_MAP[self::TAG_SUBHEADING],
-        ]) . "/u", $string);
+        return preg_replace("/" . self::REGEX_ESCAPED . "/u", '$1', $string);
     }
 
     /**
      * Escape backslashes and backticks in a string
      *
-     * Usage suggestion:
+     * Example:
      *
      * ```php
-     * Console::info("Message:", "`" . ConsoleText::escape($message) . "`");
+     * Console::info("Message:", "`" . ConsoleFormatter::escape($message) . "`");
      * ```
-     *
      */
     public static function escape(string $string): string
     {
         return str_replace(["\\", "`"], ["\\\\", "\\`"], $string);
     }
 
-    private static function unescape(string $string): string
-    {
-        return preg_replace("/" . self::REGEX_ESCAPED . "/u", '$1', $string);
-    }
 }

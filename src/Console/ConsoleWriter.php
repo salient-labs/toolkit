@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
-use Lkrms\Console\ConsoleTarget\ConsoleTarget;
+use Lkrms\Console\ConsoleLevel as Level;
+use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Facade\Compute;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Debug;
 use Throwable;
@@ -13,305 +15,264 @@ use Throwable;
  * Base class for Console
  *
  */
-abstract class ConsoleMessageWriter
+abstract class ConsoleWriter implements ReceivesFacade
 {
     /**
      * @var int
      */
-    protected static $GroupLevel = -1;
+    protected $GroupLevel = -1;
 
     /**
      * @var int
      */
-    protected static $Errors = 0;
+    protected $Errors = 0;
 
     /**
      * @var int
      */
-    protected static $Warnings = 0;
+    protected $Warnings = 0;
+
+    /**
+     * Message hash => counter
+     *
+     * @var array<string,int>
+     */
+    protected $Written = [];
+
+    /**
+     * @var string|null
+     */
+    private $Facade;
+
+    final public function setFacade(string $name): void
+    {
+        $this->Facade = $name;
+    }
 
     /**
      * Get the number of errors reported so far
      *
-     * @return int
      */
-    public static function getErrors(): int
+    final public function getErrors(): int
     {
-        return self::$Errors;
+        return $this->Errors;
     }
 
     /**
      * Get the number of warnings reported so far
      *
-     * @return int
      */
-    public static function getWarnings(): int
+    final public function getWarnings(): int
     {
-        return self::$Warnings;
+        return $this->Warnings;
     }
 
     /**
-     * Get a "command finished" message with error and/or warning tallies
+     * Print a "command finished" message with a summary of errors and warnings
      *
-     * Returns `"$finishedText $successText"` (default: `"Command finished
-     * without errors"`) if no errors or warnings have been reported, otherwise
-     * `"$finishedText with X errors[ and Y warnings]"` (example: `"Command
-     * finished with 1 error and 2 warnings"`).
+     * Prints " // $finishedText $successText" with level INFO if no errors or
+     * warnings have been reported (default: " // Command finished without
+     * errors").
      *
-     * Usage suggestion:
+     * Otherwise, prints one of the following with level ERROR or WARNING:
+     * - " !! $finishedText with $errors errors[ and $warnings warnings]"
+     * - "  ! $finishedText with 0 errors and $warnings warnings"
      *
-     * ```php
-     * Console::info(Console::getSummary("Sync completed"));
-     * ```
-     *
-     * @param string $finishedText
-     * @param string $successText
-     * @param bool $reset Reset error and warning counters? (default: `true`)
-     * @return string
+     * @return $this
      */
-    public static function getSummary(
-        string $finishedText = "Command finished",
-        string $successText  = "without errors",
-        bool $reset          = true
-    ): string
+    final public function summary(string $finishedText = "Command finished", string $successText = "without errors")
     {
-        $msg = trim($finishedText) . " ";
-
-        if (self::$Warnings + self::$Errors)
+        $msg1 = trim($finishedText);
+        if (!($this->Warnings || $this->Errors))
         {
-            $msg .= "with " . Convert::numberToNoun(self::$Errors, "error", "errors", true);
-
-            if (self::$Warnings)
-            {
-                $msg .= " and " . Convert::numberToNoun(self::$Warnings, "warning", "warnings", true);
-            }
-
-            if ($reset)
-            {
-                self::$Warnings = self::$Errors = 0;
-            }
-
-            return $msg;
+            return $this->write(Level::INFO, $msg1, $successText, " // ");
         }
-        else
+
+        $msg2 = "with " . Convert::numberToNoun($this->Errors, "error", "errors", true);
+        if ($this->Warnings)
         {
-            return $msg . trim($successText);
+            $msg2 .= " and " . Convert::numberToNoun($this->Warnings, "warning", "warnings", true);
         }
+        return $this->write(
+            $this->Errors ? Level::ERROR : Level::WARNING,
+            $msg1,
+            $msg2,
+            $this->Errors ? " !! " : "  ! "
+        );
     }
 
     /**
-     * Forward a message to registered targets
+     * Send a message to registered targets
      *
-     * @param int $level
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param string $prefix
-     * @param Throwable|null $ex
-     * @param bool $ttyOnly
+     * @return $this
      */
-    abstract protected static function write(
-        int $level,
-        string $msg1,
-        ?string $msg2,
-        string $prefix,
-        Throwable $ex = null,
-        bool $ttyOnly = false
-    );
+    abstract protected function write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null);
 
     /**
-     * Print "$msg" with level INFO to particular targets
+     * Send a message to registered TTY targets
      *
-     * If no targets are specified, print to every registered target.
-     *
-     * @param string $msg
-     * @param ConsoleTarget ...$targets
-     * @see ConsoleLevel::INFO
+     * @return $this
      */
-    abstract public static function printTo(
-        string $msg,
-        ConsoleTarget ...$targets
-    );
+    abstract protected function writeTty(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null);
 
     /**
-     * Increment a counter for a specific message and return its previous value
+     * Send a message to registered targets once per run
      *
-     * @param string $method
-     * @param string $msg1
-     * @param string|null $msg2
-     * @return int
+     * @return $this
      */
-    abstract protected static function logWrite(
-        string $method,
-        string $msg1,
-        ?string $msg2
-    ): int;
+    final protected function writeOnce(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null)
+    {
+        $hash = Compute::hash($level, $msg1, $msg2, $prefix);
+        if (($this->Written[$hash] = ($this->Written[$hash] ?? 0) + 1) < 2)
+        {
+            return $this->write($level, $msg1, $msg2, $prefix, $ex);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Print "$msg" to I/O stream targets (STDOUT or STDERR)
+     *
+     * @return $this
+     */
+    abstract public function out(string $msg, int $level = Level::INFO);
+
+    /**
+     * Print "$msg" to TTY targets
+     *
+     * @return $this
+     */
+    abstract public function tty(string $msg, int $level = Level::INFO);
 
     /**
      * Print " !! $msg1 $msg2" with level ERROR
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @see ConsoleLevel::ERROR
+     * @return $this
      */
-    public static function error(string $msg1, string $msg2 = null, Throwable $ex = null)
+    final public function error(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
-        self::$Errors++;
-        static::write(ConsoleLevel::ERROR, $msg1, $msg2, " !! ", $ex);
+        $this->Errors++;
+        return $this->write(Level::ERROR, $msg1, $msg2, " !! ", $ex);
     }
 
     /**
-     * Print " !! $msg1 $msg2" with level ERROR unless already printed
+     * Print " !! $msg1 $msg2" with level ERROR once per run
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @see ConsoleLevel::ERROR
+     * @return $this
      */
-    public static function errorOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    final public function errorOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
-        if (! static::logWrite(__METHOD__, $msg1, $msg2))
-        {
-            self::$Errors++;
-            static::write(ConsoleLevel::ERROR, $msg1, $msg2, " !! ", $ex);
-        }
+        $this->Errors++;
+        return $this->writeOnce(Level::ERROR, $msg1, $msg2, " !! ", $ex);
     }
 
     /**
      * Print "  ! $msg1 $msg2" with level WARNING
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @see ConsoleLevel::WARNING
+     * @return $this
      */
-    public static function warn(string $msg1, string $msg2 = null, Throwable $ex = null)
+    final public function warn(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
-        self::$Warnings++;
-        static::write(ConsoleLevel::WARNING, $msg1, $msg2, "  ! ", $ex);
+        $this->Warnings++;
+        return $this->write(Level::WARNING, $msg1, $msg2, "  ! ", $ex);
     }
 
     /**
-     * Print "  ! $msg1 $msg2" with level WARNING unless already printed
+     * Print "  ! $msg1 $msg2" with level WARNING once per run
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @see ConsoleLevel::WARNING
+     * @return $this
      */
-    public static function warnOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    final public function warnOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
-        if (! static::logWrite(__METHOD__, $msg1, $msg2))
-        {
-            self::$Warnings++;
-            static::write(ConsoleLevel::WARNING, $msg1, $msg2, "  ! ", $ex);
-        }
+        $this->Warnings++;
+        return $this->writeOnce(Level::WARNING, $msg1, $msg2, "  ! ", $ex);
     }
 
     /**
      * Print "==> $msg1 $msg2" with level NOTICE
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @see ConsoleLevel::NOTICE
+     * @return $this
      */
-    public static function info(string $msg1, string $msg2 = null, Throwable $ex = null)
+    final public function info(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
-        static::write(ConsoleLevel::NOTICE, $msg1, $msg2, "==> ", $ex);
+        return $this->write(Level::NOTICE, $msg1, $msg2, "==> ", $ex);
     }
 
     /**
-     * Print "==> $msg1 $msg2" with level NOTICE unless already printed
+     * Print "==> $msg1 $msg2" with level NOTICE once per run
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @see ConsoleLevel::NOTICE
+     * @return $this
      */
-    public static function infoOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    final public function infoOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
-        if (! static::logWrite(__METHOD__, $msg1, $msg2))
-        {
-            static::write(ConsoleLevel::NOTICE, $msg1, $msg2, "==> ", $ex);
-        }
+        return $this->writeOnce(Level::NOTICE, $msg1, $msg2, "==> ", $ex);
     }
 
     /**
      * Print " -> $msg1 $msg2" with level INFO
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @see ConsoleLevel::INFO
+     * @return $this
      */
-    public static function log(string $msg1, string $msg2 = null, Throwable $ex = null)
+    final public function log(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
-        static::write(ConsoleLevel::INFO, $msg1, $msg2, " -> ", $ex);
+        return $this->write(Level::INFO, $msg1, $msg2, " -> ", $ex);
     }
 
     /**
-     * Print " -> $msg1 $msg2" with level INFO unless already printed
+     * Print " -> $msg1 $msg2" with level INFO once per run
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @see ConsoleLevel::INFO
+     * @return $this
      */
-    public static function logOnce(string $msg1, string $msg2 = null, Throwable $ex = null)
+    final public function logOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
-        if (! static::logWrite(__METHOD__, $msg1, $msg2))
-        {
-            static::write(ConsoleLevel::INFO, $msg1, $msg2, " -> ", $ex);
-        }
+        return $this->writeOnce(Level::INFO, $msg1, $msg2, " -> ", $ex);
     }
 
     /**
-     * Print " -> $msg1 $msg2" with level INFO (TTY targets only)
+     * Print " -> $msg1 $msg2" with level INFO to TTY targets
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @see ConsoleLevel::INFO
+     * @return $this
      */
-    public static function logProgress(string $msg1, string $msg2 = null, Throwable $ex = null)
+    final public function logProgress(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
-        static::write(ConsoleLevel::INFO, $msg1, $msg2, " -> ", $ex, true);
+        return $this->writeTty(Level::INFO, $msg1, $msg2, " -> ", $ex);
     }
 
     /**
      * Print "--- {CALLER} $msg1 $msg2" with level DEBUG
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
      * @param int $depth Passed to {@see \Lkrms\Utility\Debugging::getCaller()}.
      * To print your caller's name instead of your own, set `$depth` to 1.
-     * @see ConsoleLevel::DEBUG
+     * @return $this
      */
-    public static function debug(string $msg1, string $msg2 = null, Throwable $ex = null, int $depth = 0)
+    final public function debug(string $msg1, string $msg2 = null, ?Throwable $ex = null, int $depth = 0)
     {
+        if ($this->Facade)
+        {
+            $depth++;
+        }
+
         $caller = implode("", Debug::getCaller($depth));
-        static::write(ConsoleLevel::DEBUG, "{{$caller}} __" . $msg1 . "__", $msg2, "--- ", $ex);
+        return $this->write(Level::DEBUG, "{{$caller}} __" . $msg1 . "__", $msg2, "--- ", $ex);
     }
 
     /**
-     * Print "--- {CALLER} $msg1 $msg2" with level DEBUG unless already printed
+     * Print "--- {CALLER} $msg1 $msg2" with level DEBUG once per run
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
      * @param int $depth Passed to {@see \Lkrms\Utility\Debugging::getCaller()}.
      * To print your caller's name instead of your own, set `$depth` to 1.
-     * @see ConsoleLevel::DEBUG
+     * @return $this
      */
-    public static function debugOnce(string $msg1, string $msg2 = null, Throwable $ex = null, int $depth = 0)
+    final public function debugOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null, int $depth = 0)
     {
-        if (! static::logWrite(__METHOD__, $msg1, $msg2))
+        if ($this->Facade)
         {
-            $caller = implode("", Debug::getCaller($depth));
-            static::write(ConsoleLevel::DEBUG, "{{$caller}} __" . $msg1 . "__", $msg2, "--- ", $ex);
+            $depth++;
         }
+
+        $caller = implode("", Debug::getCaller($depth));
+        return $this->writeOnce(Level::DEBUG, "{{$caller}} __" . $msg1 . "__", $msg2, "--- ", $ex);
     }
 
     /**
@@ -320,85 +281,66 @@ abstract class ConsoleMessageWriter
      * The message group will remain open, and subsequent messages will be
      * indented, until {@see ConsoleMessageWriter::groupEnd()} is called.
      *
-     * @param string $msg1
-     * @param string|null $msg2
-     * @param Throwable|null $ex
-     * @see ConsoleLevel::NOTICE
+     * @return $this
      */
-    public static function group(string $msg1, string $msg2 = null, Throwable $ex = null)
+    final public function group(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
-        self::$GroupLevel++;
-        static::write(ConsoleLevel::NOTICE, $msg1, $msg2, ">>> ", $ex);
+        $this->GroupLevel++;
+        return $this->write(Level::NOTICE, $msg1, $msg2, ">>> ", $ex);
     }
 
     /**
      * Close the most recently created message group
      *
+     * @return $this
      * @see ConsoleMessageWriter::group()
      */
-    public static function groupEnd()
+    final public function groupEnd()
     {
-        if (self::$GroupLevel > -1)
+        if ($this->GroupLevel > -1)
         {
-            self::$GroupLevel--;
+            $this->GroupLevel--;
         }
+
+        return $this;
     }
 
     /**
      * Report an uncaught exception
      *
-     * Print " !! Uncaught <exception>: <message> in <file>:<line>" with level
-     * ERROR, then print the exception's stack trace with level DEBUG.
+     * Prints " !! Uncaught <exception>: <message> in <file>:<line>" with level
+     * ERROR, followed by the exception's stack trace with level DEBUG.
      *
-     * @param Throwable $exception
-     * @see ConsoleLevel::ERROR
-     * @see ConsoleLevel::DEBUG
+     * @return $this
      */
-    public static function exception(Throwable $exception)
+    final public function exception(Throwable $exception)
     {
         $ex = $exception;
         $i  = 0;
-
         do
         {
-            $msg2 = ($msg2 ?? "") . (($i ? "\nCaused by __" . get_class($ex) . "__: " : "") . sprintf(
-                "`%s` ~~in %s:%d~~",
-                ConsoleText::escape($ex->getMessage()),
-                $ex->getFile(),
-                $ex->getLine()
-            ));
+            $msg2 = ($msg2 ?? "") . (($i++ ? "\nCaused by __" . get_class($ex) . "__: " : "")
+                . sprintf("`%s` ~~in %s:%d~~",
+                    ConsoleFormatter::escape($ex->getMessage()),
+                    $ex->getFile(), $ex->getLine()));
             $ex = $ex->getPrevious();
-            $i++;
         }
         while ($ex);
 
-        self::$Errors++;
-        static::write(
-            ConsoleLevel::ERROR,
-            "Uncaught __" . get_class($exception) . "__:",
-            $msg2,
-            " !! ",
-            $exception
-        );
-        static::write(
-            ConsoleLevel::DEBUG,
-            "__Stack trace:__",
-            "\n`" . ConsoleText::escape($exception->getTraceAsString()) . "`",
-            "--- ",
-            $exception
-        );
+        $this->Errors++;
+        $this->write(Level::ERROR,
+            "Uncaught __" . get_class($exception) . "__:", $msg2, " !! ", $exception);
+        $this->write(Level::DEBUG,
+            "__Stack trace:__", "\n`" . ConsoleFormatter::escape($exception->getTraceAsString()) . "`", "--- ");
         if ($exception instanceof \Lkrms\Exception\Exception)
         {
             foreach ($exception->getDetail() as $section => $text)
             {
-                static::write(
-                    ConsoleLevel::DEBUG,
-                    "__{$section}:__",
-                    "\n`" . ConsoleText::escape($text) . "`",
-                    "--- ",
-                    $exception
-                );
+                $this->write(Level::DEBUG,
+                    "__{$section}:__", "\n`" . ConsoleFormatter::escape($text) . "`", "--- ");
             }
         }
+
+        return $this;
     }
 }

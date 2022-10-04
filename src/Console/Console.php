@@ -4,266 +4,162 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
-use Lkrms\Console\ConsoleColour as C;
-use Lkrms\Console\ConsoleTarget\ConsoleTarget;
-use Lkrms\Console\ConsoleTarget\StreamTarget;
-use Lkrms\Facade\Compute;
+use Lkrms\Console\ConsoleLevel as Level;
+use Lkrms\Console\Target\ConsoleTarget;
+use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Throwable;
 
 /**
- * Log various message types to various targets
+ * Log messages of various types to various targets
  *
  */
-final class Console extends ConsoleMessageWriter
+final class Console extends ConsoleWriter
 {
     /**
-     * @var ConsoleTarget[]
-     */
-    private static $OutputTargets = [];
-
-    /**
-     * @var ConsoleTarget[]
-     */
-    private static $Targets = [];
-
-    /**
-     * @var array<string,int>
-     */
-    private static $LoggedOnce = [];
-
-    /**
-     * message level => [$msg1 colour, $msg2 colour, prefix colour]
-     */
-    protected const COLOUR_MAP = [
-        ConsoleLevel::ERROR   => [C::BOLD . C::RED, "", C::BOLD . C::RED],
-        ConsoleLevel::WARNING => [C::BOLD . C::YELLOW, "", C::BOLD . C::YELLOW],
-        ConsoleLevel::NOTICE  => [C::BOLD, C::CYAN, null],
-        ConsoleLevel::INFO    => ["", C::YELLOW, null],
-        ConsoleLevel::DEBUG   => [C::DIM, C::DIM, null],
-    ];
-
-    private static function registerTargets()
-    {
-        // Log output to `{TMPDIR}/<basename>-<realpath_hash>-<user_id>.log`
-        self::registerTarget(StreamTarget::fromPath(File::getStablePath(".log")));
-        self::registerOutputStreams();
-    }
-
-    /**
-     * Register output streams as targets if running on the command line
+     * Message level => ConsoleTarget[]
      *
-     * @param bool $ignoreSapi If set, send {@see Console} messages to STDERR
-     * and/or STDOUT even if not running on the command line
+     * @var array<int,ConsoleTarget[]>
      */
-    public static function registerOutputStreams(bool $ignoreSapi = false)
-    {
-        // Return if STDOUT or STDERR targets have already been registered
-        if ((!$ignoreSapi && PHP_SAPI != "cli") || self::$OutputTargets)
-        {
-            return;
-        }
-
-        // If one, and only one, of STDOUT and STDERR is an interactive terminal
-        // (e.g. STDOUT has been redirected to a file, or STDERR is being piped
-        // to another process), send Console messages to STDERR only
-        if (posix_isatty(STDOUT) xor posix_isatty(STDERR))
-        {
-            self::registerTarget(new StreamTarget(STDERR,
-                Env::debug() ? ConsoleLevels::ALL_DEBUG : ConsoleLevels::ALL));
-            return;
-        }
-
-        // Otherwise, send errors and warnings to STDERR, everything else to
-        // STDOUT
-        self::registerTarget(new StreamTarget(STDERR, ConsoleLevels::ERRORS));
-        self::registerTarget(new StreamTarget(STDOUT,
-            Env::debug() ? ConsoleLevels::INFO_DEBUG : ConsoleLevels::INFO));
-    }
+    private $StdioTargets = [];
 
     /**
-     * Get registered targets backed by STDOUT or STDERR
+     * Message level => ConsoleTarget[]
      *
-     * @return ConsoleTarget[]
+     * @var array<int,ConsoleTarget[]>
      */
-    public static function getOutputTargets(): array
-    {
-        if (!self::$Targets)
-        {
-            self::registerTargets();
-        }
-
-        return self::$OutputTargets;
-    }
+    private $TtyTargets = [];
 
     /**
-     * Get registered targets
+     * Message level => ConsoleTarget[]
      *
-     * @return ConsoleTarget[]
+     * @var array<int,ConsoleTarget[]>
      */
-    public static function getTargets(): array
-    {
-        if (!self::$Targets)
-        {
-            self::registerTargets();
-        }
+    private $Targets = [];
 
-        return self::$Targets;
-    }
-
-    public static function registerTarget(ConsoleTarget $target)
+    /**
+     * @return $this
+     */
+    public function registerTarget(ConsoleTarget $target, array $levels = ConsoleLevels::ALL_DEBUG)
     {
         if ($target->isStdout() || $target->isStderr())
         {
-            self::$OutputTargets[] = $target;
+            $this->addTarget($target, $levels, $this->StdioTargets);
         }
+        if ($target->isTty())
+        {
+            $this->addTarget($target, $levels, $this->TtyTargets);
+        }
+        $this->addTarget($target, $levels, $this->Targets);
 
-        self::$Targets[] = $target;
+        return $this;
     }
 
-    protected static function logWrite(
-        string $method,
-        string $msg1,
-        ?string $msg2
-    ): int
+    private function addTarget(ConsoleTarget $target, array $levels, array & $targets)
     {
-        $hash = Compute::hash($method, $msg1, $msg2);
-
-        if (!array_key_exists($hash, self::$LoggedOnce))
+        foreach ($levels as $level)
         {
-            self::$LoggedOnce[$hash] = 0;
+            $targets[$level][] = $target;
         }
+    }
 
-        return self::$LoggedOnce[$hash]++;
+    private function registerDefaultTargets()
+    {
+        // Log output to `{TMPDIR}/<script_basename>-<realpath_hash>-<user_id>.log`
+        $this->registerTarget(StreamTarget::fromPath(File::getStablePath(".log")), ConsoleLevels::ALL_DEBUG);
+        $this->registerStdioTargets();
     }
 
     /**
+     * Register STDOUT and STDERR as targets if running on the command line
      *
-     * @param int $level
-     * @param string $msg1 Message.
-     * @param string|null $msg2 Secondary message.
-     * @param string $prefix Prefix.
-     * @param Throwable|null $ex Associated exception.
-     * @param bool $ttyOnly
+     * Returns without taking any action if a target backed by STDOUT or STDERR
+     * has already been registered.
+     *
+     * @return $this
      */
-    protected static function write(
-        int $level,
-        string $msg1,
-        ?string $msg2,
-        string $prefix,
-        Throwable $ex = null,
-        bool $ttyOnly = false
-    ) {
-        list ($clr1, $clr2, $clrP) = self::COLOUR_MAP[$level];
+    public function registerStdioTargets()
+    {
+        if (PHP_SAPI != "cli" || $this->StdioTargets)
+        {
+            return $this;
+        }
 
-        $clr1    = !ConsoleText::hasBold($msg1) ? $clr1 : str_replace(ConsoleColour::BOLD, "", $clr1);
-        $clrP    = !is_null($clrP) ? $clrP : ConsoleColour::BOLD . $clr2;
-        $ttyMsg1 = ConsoleText::formatColour($msg1);
-        $msg1    = ConsoleText::formatPlain($msg1);
-        $ttyMsg2 = null;
+        // Send errors and warnings to STDERR, everything else to STDOUT
+        $stderrLevels = ConsoleLevels::ERRORS;
+        $stdoutLevels = (Env::debug()
+            ? ConsoleLevels::INFO_DEBUG
+            : ConsoleLevels::INFO);
+        $this->registerTarget(new StreamTarget(STDERR), $stderrLevels);
+        $this->registerTarget(new StreamTarget(STDOUT), $stdoutLevels);
 
-        $margin = max(0, self::$GroupLevel) * 4;
+        return $this;
+    }
+
+    protected function write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null)
+    {
+        return $this->_write($level, $msg1, $msg2, $prefix, $ex, $this->Targets);
+    }
+
+    protected function writeTty(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null)
+    {
+        return $this->_write($level, $msg1, $msg2, $prefix, $ex, $this->TtyTargets);
+    }
+
+    public function out(string $msg, int $level = Level::INFO)
+    {
+        return $this->_write($level, $msg, null, "", null, $this->StdioTargets);
+    }
+
+    public function tty(string $msg, int $level = Level::INFO)
+    {
+        return $this->_write($level, $msg, null, "", null, $this->TtyTargets);
+    }
+
+    /**
+     * @return $this
+     */
+    private function _write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex, array & $targets)
+    {
+        if (!$this->Targets)
+        {
+            $this->registerDefaultTargets();
+        }
+
+        $margin = max(0, $this->GroupLevel) * 4;
         $indent = strlen($prefix);
         $indent = max(0, strpos($msg1, "\n") !== false ? $indent : $indent - 4);
-
-        if ($margin + $indent)
-        {
-            foreach ([&$msg1, &$ttyMsg1] as &$msgRef)
-            {
-                $msgRef = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent), $msgRef);
-            }
-        }
-
-        if (!is_null($msg2))
-        {
-            $ttyMsg2 = ConsoleText::formatColour($msg2);
-            $msg2    = ConsoleText::formatPlain($msg2);
-
-            foreach ([&$msg2, &$ttyMsg2] as &$msgRef)
-            {
-                if (strpos($msgRef, "\n") !== false)
-                {
-                    $msgRef = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent + 2), "\n" . ltrim($msgRef));
-                }
-                else
-                {
-                    $msgRef = " " . $msgRef;
-                }
-            }
-        }
-
-        unset($msgRef);
-        $msg    = str_repeat(" ", $margin) . $prefix . $msg1 . ($msg2 ?: "");
-        $ttyMsg = (str_repeat(" ", $margin)
-            . $clrP . $prefix . ($clrP ? ConsoleColour::RESET : "")
-            . $clr1 . $ttyMsg1 . ($clr1 ? ConsoleColour::RESET : "")
-            . ($msg2 ? $clr2 . $ttyMsg2 . ($clr2 ? ConsoleColour::RESET : "") : ""));
 
         if ($ex)
         {
             $context = ["exception" => $ex];
         }
 
-        self::print($msg, $ttyMsg, $level, $context ?? [], $ttyOnly);
-    }
-
-    /**
-     *
-     * @param string $plain
-     * @param string|null $tty
-     * @param int $level
-     * @param array $context
-     * @param bool $ttyOnly
-     * @param ConsoleTarget[]|null $targets
-     */
-    private static function print(
-        string $plain,
-        ?string $tty,
-        int $level,
-        array $context,
-        bool $ttyOnly,
-        array $targets = null
-    ) {
-        if (is_null($tty))
+        /** @var ConsoleTarget $target */
+        foreach ($targets[$level] ?? [] as $target)
         {
-            $tty = $plain;
+            $formatter = $target->getFormatter();
+            $_msg1     = $formatter->format($msg1);
+            $_msg2     = $msg2 ? $formatter->format($msg2) : null;
+
+            if ($margin + $indent && strpos($msg1, "\n") !== false)
+            {
+                $_msg1 = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent), $_msg1);
+            }
+
+            if ($_msg2)
+            {
+                $_msg2 = (strpos($msg2, "\n") !== false
+                    ? str_replace("\n", "\n" . str_repeat(" ", $margin + $indent + 2), "\n" . ltrim($_msg2))
+                    : " " . $_msg2);
+            }
+
+            $message = $target->getMessageFormat($level)->apply($_msg1, $_msg2, $prefix);
+            $target->write($level, str_repeat(" ", $margin) . $message, $context ?? []);
         }
 
-        if (is_null($targets))
-        {
-            if (!self::$Targets)
-            {
-                self::registerTargets();
-            }
-            $targets = self::$Targets;
-        }
-
-        foreach ($targets as $target)
-        {
-            if ($ttyOnly && !$target->isTty())
-            {
-                continue;
-            }
-
-            if ($target->supportsColour())
-            {
-                $target->write($tty, $context, $level);
-            }
-            else
-            {
-                $target->write($plain, $context, $level);
-            }
-        }
+        return $this;
     }
 
-    public static function printTo(
-        string $msg,
-        ConsoleTarget ...$targets
-    ) {
-        $ttyMsg = ConsoleText::formatColour($msg);
-        $msg    = ConsoleText::formatPlain($msg);
-
-        self::print($msg, $ttyMsg, ConsoleLevel::INFO, [], false, $targets ?: null);
-    }
 }

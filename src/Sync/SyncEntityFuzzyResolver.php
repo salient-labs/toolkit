@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync;
 
-use Lkrms\Console\Console;
 use Lkrms\Facade\Compute;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Sync\Provider\SyncEntityProvider;
 

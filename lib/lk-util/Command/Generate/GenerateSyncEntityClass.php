@@ -21,12 +21,6 @@ use RuntimeException;
 /**
  * Generates SyncEntity subclasses from sample entities
  *
- * Environment variables:
- * - `DEFAULT_NAMESPACE`
- * - `PHPDOC_PACKAGE`
- * - `DEFAULT_PROVIDER`
- * - `PROVIDER_NAMESPACE`
- *
  */
 class GenerateSyncEntityClass extends GenerateCommand
 {

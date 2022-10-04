@@ -20,10 +20,6 @@ use Lkrms\Sync\SyncOperation;
 /**
  * Generates provider interfaces for SyncEntity subclasses
  *
- * Environment variables:
- * - `DEFAULT_NAMESPACE`
- * - `PHPDOC_PACKAGE`
- *
  */
 class GenerateSyncEntityInterface extends GenerateCommand
 {

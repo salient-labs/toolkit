@@ -6,13 +6,17 @@
     "require": {
         "php": ">=7.4,<8.2",
         "composer-runtime-api": "^2.2",
-        "adodb/adodb-php": "^5.22",
         "filp/whoops": "^2",
         "lkrms/dice": "^4.1",
         "psr/container": "^2",
         "psr/log": "^1"
     },
+    "suggest": {
+        "adodb/adodb-php": "Required for access to databases",
+        "analog/analog": "Allows Analog handlers to be used as Lkrms\\Console\\Console message targets"
+    },
     "require-dev": {
+        "adodb/adodb-php": "^5.22",
         "analog/analog": "^1",
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
