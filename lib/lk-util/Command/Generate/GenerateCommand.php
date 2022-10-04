@@ -9,8 +9,8 @@ declare(strict_types=1);
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\CliCommand;
-use Lkrms\Console\Console;
 use Lkrms\Facade\Composer;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 

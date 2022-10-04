@@ -3,10 +3,10 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Console\Console;
-use Lkrms\Console\ConsoleTarget\StreamTarget;
-use Lkrms\Console\ConsoleText;
+use Lkrms\Console\ConsoleFormatter;
+use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Err\Err;
+use Lkrms\Facade\Console;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__);
@@ -93,5 +93,5 @@ TestClass::callDebugLogger();
 TestClass::callDebugLogger(1);
 TestClass::callDebugLogger(2);
 
-var_dump($escaped = ConsoleText::escape("Backticks (`) and backslashes (\\) should be escaped (`, \\)"));
+var_dump($escaped = ConsoleFormatter::escape("Backticks (`) and backslashes (\\) should be escaped (`, \\)"));
 Console::info($escaped);

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Provider;
 
-use Lkrms\Console\Console;
 use Lkrms\Curler\CachingCurler;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerHeaders;
+use Lkrms\Facade\Console;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinition;

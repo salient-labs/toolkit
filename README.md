@@ -33,83 +33,18 @@ information, use `help` as a subcommand or add the `--help` option.
 
 ### Environment variables
 
-To make it easier to work with PHP namespaces in a terminal, `lk-util` allows
-default namespaces and classes to be specified via environment variables. The
-following Visual Studio Code settings illustrate how they can be used:
+To make it easier to work with PHP namespaces on the command line, the following
+defaults are taken from the environment:
 
-```jsonc
-{
-  "settings": {
-    "terminal.integrated.env.linux": {
-      // Added to unqualified classes
-      "DEFAULT_NAMESPACE": "Lkrms\\Tests\\Sync\\Entity",
-      // Overrides DEFAULT_NAMESPACE when generating builder classes
-      "BUILDER_NAMESPACE": "Lkrms\\Tests\\Builder",
-      // Overrides DEFAULT_NAMESPACE when generating facade classes
-      "FACADE_NAMESPACE": "Lkrms\\Tests\\Facade",
-      // Used if '--package' is not specified
-      "PHPDOC_PACKAGE": "Lkrms\\Tests",
-      // Used if '--provider' is not specified
-      "DEFAULT_PROVIDER": "JsonPlaceholderApi",
-      // Added to unqualified '--provider' classes
-      "PROVIDER_NAMESPACE": "Lkrms\\Tests\\Sync\\Provider"
-    }
-  }
-}
-```
+| Variable             | Description                                         | Example                     |
+| -------------------- | --------------------------------------------------- | --------------------------- |
+| `DEFAULT_NAMESPACE`  | Applied to unqualified class names                  | `Lkrms\Tests\Sync\Entity`   |
+| `BUILDER_NAMESPACE`  | Overrides `DEFAULT_NAMESPACE` for `Builder` classes | `Lkrms\Tests\Builder`       |
+| `FACADE_NAMESPACE`   | Overrides `DEFAULT_NAMESPACE` for `Facade` classes  | `Lkrms\Tests\Facade`        |
+| `PHPDOC_PACKAGE`     | Used if `--package` is not specified                | `Lkrms\Tests`               |
+| `DEFAULT_PROVIDER`   | Used if `--provider` is not specified               | `JsonPlaceholderApi`        |
+| `PROVIDER_NAMESPACE` | Applied to unqualified `--provider` class names     | `Lkrms\Tests\Sync\Provider` |
 
-## Using `Console` for terminal output and logging
-
-To make it easier to create readable terminal output and log entries, the
-[`Lkrms\Console\Console`][Console.php] class provides:
-
-- Familiar methods like `Console::log()` and `Console::error()`
-- Variants like `Console::logOnce()` and `Console::errorOnce()` to output
-  messages once per run
-- Output to an arbitrary number of registered targets
-- Filtering of messages delivered to each target by log level
-- Terminal-friendly message formatting
-
-### Default targets
-
-If a `Console` [output method](#output-methods) is called and no targets have
-been registered via `Console::registerTarget()`, one or more targets are created
-automatically to ensure messages are delivered or logged by default.
-
-1. If PHP is running on the command line:
-   - Warnings and errors are written to `STDERR`
-   - If one, and only one, of `STDERR` and `STDOUT` is an interactive terminal,
-     informational messages are also written to `STDERR`, otherwise they are
-     written to `STDOUT`
-   - If the `DEBUG` environment variable is set, debug messages are written to
-     the same output stream as informational messages
-
-   > This configuration can also be applied by calling:
-   >
-   > ```php
-   > Console::registerOutputStreams();
-   > ```
-
-2. Warnings, errors, informational messages and debug messages are written to a
-   temporary log file, readable only by the owner:
-   ```
-   {TMPDIR}/<basename>-<realpath_hash>-<user_id>.log
-   ```
-
-### Output methods
-
-| `Console` method  | `ConsoleLevel`  | Message prefix | Default output target |
-| ----------------- | --------------- | -------------- | --------------------- |
-| `error[Once]()`   | `ERROR` = `3`   | ` !! `         | `STDERR`              |
-| `warn[Once]()`    | `WARNING` = `4` | `  ! `         | `STDERR`              |
-| `info[Once]()`    | `NOTICE` = `5`  | `==> `         | `STDOUT`              |
-| `log[Once]()`     | `INFO` = `6`    | ` -> `         | `STDOUT`              |
-| `debug[Once]()`   | `DEBUG` = `7`   | `--- `         | none                  |
-| `group()`[^group] | `NOTICE` = `5`  | `>>> `         | `STDOUT`              |
-| `logProgress()`   | `INFO` = `6`    | ` -> `         | `STDOUT`              |
-
-[^group]: `Console::group()` adds a level of indentation to all `Console` output
-    until `Console::groupEnd()` is called.
 
 ---
 
@@ -117,4 +52,4 @@ automatically to ensure messages are delivered or logged by default.
 [docs]: docs/
 [phpdoc]: https://phpdoc.org/
 [repo]: https://github.com/lkrms/php-util
-[Console.php]: src/Console/Console.php
+

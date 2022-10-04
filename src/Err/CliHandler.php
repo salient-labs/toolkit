@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Err;
 
-use Lkrms\Console\Console;
+use Lkrms\Facade\Console;
 use Whoops\Handler\Handler;
 use Whoops\Handler\PlainTextHandler;
 

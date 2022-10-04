@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Console\ConsoleTarget;
+namespace Lkrms\Console\Target;
 
 use DateTime;
-use DateTimeZone;
-use Lkrms\Console\ConsoleLevels;
+use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use RuntimeException;
 
@@ -22,11 +21,6 @@ class StreamTarget extends ConsoleTarget
     private $Stream;
 
     /**
-     * @var int[]
-     */
-    private $Levels;
-
-    /**
      * @var bool
      */
     private $AddTimestamp;
@@ -37,7 +31,7 @@ class StreamTarget extends ConsoleTarget
     private $Timestamp = "[d M y H:i:s.vO] ";
 
     /**
-     * @var DateTimeZone
+     * @var \DateTimeZone|null
      */
     private $Timezone;
 
@@ -65,24 +59,17 @@ class StreamTarget extends ConsoleTarget
      * Use an open stream as a console output target
      *
      * @param resource $stream
-     * @param int[] $levels
      * @param bool|null $addTimestamp If `null`, timestamps will be added unless
      * `$stream` is a TTY
      * @param string|null $timestamp Default: `[d M y H:i:s.vO] `
-     * @param string|null $timezone Default: as per `date_default_timezone_set`
-     * or INI setting `date.timezone`
+     * @param \DateTimeZone|string|null $timezone Default: as per
+     * `date_default_timezone_set` or INI setting `date.timezone`
      */
-    public function __construct(
-        $stream,
-        array $levels      = ConsoleLevels::ALL,
-        bool $addTimestamp = null,
-        string $timestamp  = null,
-        string $timezone   = null
-    ) {
+    public function __construct($stream, bool $addTimestamp = null, string $timestamp = null, $timezone = null)
+    {
         stream_set_write_buffer($stream, 0);
 
         $this->Stream       = $stream;
-        $this->Levels       = $levels;
         $this->IsStdout     = File::getStreamUri($stream) == "php://stdout";
         $this->IsStderr     = File::getStreamUri($stream) == "php://stderr";
         $this->IsTty        = stream_isatty($stream);
@@ -95,7 +82,7 @@ class StreamTarget extends ConsoleTarget
 
         if (!is_null($timezone))
         {
-            $this->Timezone = new DateTimeZone($timezone);
+            $this->Timezone = Convert::toTimezone($timezone);
         }
     }
 
@@ -135,29 +122,20 @@ class StreamTarget extends ConsoleTarget
     /**
      * Open a file in append mode and return a console output target for it
      *
-     * @param string $path
-     * @param int[] $levels
      * @param bool|null $addTimestamp If `null`, timestamps will be added unless
-     * `$stream` is a TTY
+     * `$path` is a TTY
      * @param string|null $timestamp Default: `[d M y H:i:s.vO] `
-     * @param string|null $timezone Default: as per `date_default_timezone_set`
-     * or INI setting `date.timezone`
-     * @return StreamTarget
+     * @param \DateTimeZone|string|null $timezone Default: as per
+     * `date_default_timezone_set` or INI setting `date.timezone`
      */
-    public static function fromPath(
-        string $path,
-        array $levels      = ConsoleLevels::ALL,
-        bool $addTimestamp = null,
-        string $timestamp  = null,
-        string $timezone   = null
-    ): StreamTarget
+    public static function fromPath(string $path, bool $addTimestamp = null, string $timestamp = null, $timezone = null): StreamTarget
     {
         if (!File::maybeCreate($path, 0600) || ($stream = fopen($path, "a")) === false)
         {
             throw new RuntimeException("Could not open $path");
         }
 
-        $stream       = new StreamTarget($stream, $levels, $addTimestamp, $timestamp, $timezone);
+        $stream       = new StreamTarget($stream, $addTimestamp, $timestamp, $timezone);
         $stream->Path = $path;
 
         return $stream;
@@ -165,18 +143,15 @@ class StreamTarget extends ConsoleTarget
 
     protected function writeToTarget(int $level, string $message, array $context)
     {
-        if (in_array($level, $this->Levels))
+        if ($this->AddTimestamp)
         {
-            if ($this->AddTimestamp)
-            {
-                $now     = (new DateTime("now", $this->Timezone))->format($this->Timestamp);
-                $message = $now . str_replace("\n", "\n" . $now, $message);
-            }
-
-            // Don't add a newline if $message has a trailing carriage return
-            // (e.g. when a progress bar is being displayed)
-            fwrite($this->Stream, $message . (substr($message, -1) == "\r" ? "" : "\n"));
+            $now     = (new DateTime("now", $this->Timezone))->format($this->Timestamp);
+            $message = $now . str_replace("\n", "\n" . $now, $message);
         }
+
+        // Don't add a newline if $message has a trailing carriage return (e.g.
+        // when a progress bar is being displayed)
+        fwrite($this->Stream, $message . (substr($message, -1) == "\r" ? "" : "\n"));
     }
 
     public function getPath(): string

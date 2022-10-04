@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Lkrms\Container;
 
 use Lkrms\Concern\TReadable;
-use Lkrms\Console\Console;
 use Lkrms\Console\ConsoleLevels;
-use Lkrms\Console\ConsoleTarget\StreamTarget;
+use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IReadable;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Composer;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
@@ -134,7 +134,7 @@ class AppContainer extends Container implements IReadable
             Env::apply();
         }
 
-        Console::registerOutputStreams();
+        Console::registerStdioTargets();
 
         Err::load();
         if ($path = Composer::getPackagePath("adodb/adodb-php"))
@@ -184,7 +184,7 @@ class AppContainer extends Container implements IReadable
         $name = ($name
             ? basename($name, ".log")
             : Convert::pathToBasename(Sys::getProgramName(), 1));
-        Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log", $levels));
+        Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log"), $levels);
 
         return $this;
     }

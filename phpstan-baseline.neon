@@ -11,11 +11,6 @@ parameters:
 			path: src/Cli/CliCommand.php
 
 		-
-			message: "#^Ternary operator condition is always true\\.$#"
-			count: 1
-			path: src/Console/Console.php
-
-		-
 			message: "#^Property Lkrms\\\\Container\\\\CliAppContainer\\:\\:\\$Commands is never read, only written\\.$#"
 			count: 1
 			path: src/Container/CliAppContainer.php

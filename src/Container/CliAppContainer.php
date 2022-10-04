@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Container;
 
 use Lkrms\Cli\CliCommand;
-use Lkrms\Console\Console;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Assert;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
 use UnexpectedValueException;
 
@@ -308,7 +308,7 @@ EOF;
                 }
                 elseif ($arg == "--help" && empty($args))
                 {
-                    Console::printTo($this->getUsage($name, $node), ...Console::getOutputTargets());
+                    Console::out($this->getUsage($name, $node));
 
                     return 0;
                 }
@@ -335,7 +335,7 @@ EOF;
 
             if ($node && $usage = $this->getUsage($name, $node))
             {
-                Console::printTo($usage, ...Console::getOutputTargets());
+                Console::out($usage);
             }
 
             return 1;

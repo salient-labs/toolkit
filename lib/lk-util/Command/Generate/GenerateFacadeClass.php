@@ -94,6 +94,7 @@ class GenerateFacadeClass extends GenerateCommand
     public $SkipMethods = [
         "getReadable",
         "getWritable",
+        "setFacade",
 
         // These are displaced by Facade if the underlying class has them
         "isLoaded",

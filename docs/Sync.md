@@ -35,6 +35,8 @@ and **optional** arguments may be accepted after mandatory parameters.
     same. Method names must match the entity's unqualified name.
 
 
+---
+
 [getDefinition]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncProvider.html#method_getDefinition
 [SyncContext]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Support-SyncContext.html
 [SyncEntity]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-SyncEntity.html

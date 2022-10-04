@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Console\ConsoleTarget;
+namespace Lkrms\Console\Target;
 
 use Lkrms\Console\ConsoleLevel;
 use Psr\Log\LoggerInterface;
