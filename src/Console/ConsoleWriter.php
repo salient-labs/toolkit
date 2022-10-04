@@ -5,46 +5,130 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 use Lkrms\Console\ConsoleLevel as Level;
+use Lkrms\Console\Target\ConsoleTarget;
+use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Debug;
+use Lkrms\Facade\Env;
+use Lkrms\Facade\File;
 use Throwable;
 
 /**
- * Base class for Console
+ * Log messages of various types to various targets
  *
  */
-abstract class ConsoleWriter implements ReceivesFacade
+final class ConsoleWriter implements ReceivesFacade
 {
     /**
-     * @var int
+     * Message level => ConsoleTarget[]
+     *
+     * @var array<int,ConsoleTarget[]>
      */
-    protected $GroupLevel = -1;
+    private $StdioTargets = [];
+
+    /**
+     * Message level => ConsoleTarget[]
+     *
+     * @var array<int,ConsoleTarget[]>
+     */
+    private $TtyTargets = [];
+
+    /**
+     * Message level => ConsoleTarget[]
+     *
+     * @var array<int,ConsoleTarget[]>
+     */
+    private $Targets = [];
 
     /**
      * @var int
      */
-    protected $Errors = 0;
+    private $GroupLevel = -1;
 
     /**
      * @var int
      */
-    protected $Warnings = 0;
+    private $Errors = 0;
+
+    /**
+     * @var int
+     */
+    private $Warnings = 0;
 
     /**
      * Message hash => counter
      *
      * @var array<string,int>
      */
-    protected $Written = [];
+    private $Written = [];
 
     /**
      * @var string|null
      */
     private $Facade;
 
-    final public function setFacade(string $name): void
+    /**
+     * @return $this
+     */
+    public function registerTarget(ConsoleTarget $target, array $levels = ConsoleLevels::ALL_DEBUG)
+    {
+        if ($target->isStdout() || $target->isStderr())
+        {
+            $this->addTarget($target, $levels, $this->StdioTargets);
+        }
+        if ($target->isTty())
+        {
+            $this->addTarget($target, $levels, $this->TtyTargets);
+        }
+        $this->addTarget($target, $levels, $this->Targets);
+
+        return $this;
+    }
+
+    private function addTarget(ConsoleTarget $target, array $levels, array & $targets)
+    {
+        foreach ($levels as $level)
+        {
+            $targets[$level][] = $target;
+        }
+    }
+
+    private function registerDefaultTargets()
+    {
+        // Log output to `{TMPDIR}/<script_basename>-<realpath_hash>-<user_id>.log`
+        $this->registerTarget(StreamTarget::fromPath(File::getStablePath(".log")), ConsoleLevels::ALL_DEBUG);
+        $this->registerStdioTargets();
+    }
+
+    /**
+     * Register STDOUT and STDERR as targets if running on the command line
+     *
+     * Returns without taking any action if a target backed by STDOUT or STDERR
+     * has already been registered.
+     *
+     * @return $this
+     */
+    public function registerStdioTargets()
+    {
+        if (PHP_SAPI != "cli" || $this->StdioTargets)
+        {
+            return $this;
+        }
+
+        // Send errors and warnings to STDERR, everything else to STDOUT
+        $stderrLevels = ConsoleLevels::ERRORS;
+        $stdoutLevels = (Env::debug()
+            ? ConsoleLevels::INFO_DEBUG
+            : ConsoleLevels::INFO);
+        $this->registerTarget(new StreamTarget(STDERR), $stderrLevels);
+        $this->registerTarget(new StreamTarget(STDOUT), $stdoutLevels);
+
+        return $this;
+    }
+
+    public function setFacade(string $name): void
     {
         $this->Facade = $name;
     }
@@ -53,7 +137,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      * Get the number of errors reported so far
      *
      */
-    final public function getErrors(): int
+    public function getErrors(): int
     {
         return $this->Errors;
     }
@@ -62,7 +146,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      * Get the number of warnings reported so far
      *
      */
-    final public function getWarnings(): int
+    public function getWarnings(): int
     {
         return $this->Warnings;
     }
@@ -80,7 +164,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    final public function summary(string $finishedText = "Command finished", string $successText = "without errors")
+    public function summary(string $finishedText = "Command finished", string $successText = "without errors")
     {
         $msg1 = trim($finishedText);
         if (!($this->Warnings || $this->Errors))
@@ -106,21 +190,27 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    abstract protected function write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null);
+    private function write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null)
+    {
+        return $this->_write($level, $msg1, $msg2, $prefix, $ex, $this->Targets);
+    }
 
     /**
      * Send a message to registered TTY targets
      *
      * @return $this
      */
-    abstract protected function writeTty(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null);
+    private function writeTty(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null)
+    {
+        return $this->_write($level, $msg1, $msg2, $prefix, $ex, $this->TtyTargets);
+    }
 
     /**
      * Send a message to registered targets once per run
      *
      * @return $this
      */
-    final protected function writeOnce(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null)
+    private function writeOnce(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null)
     {
         $hash = Compute::hash($level, $msg1, $msg2, $prefix);
         if (($this->Written[$hash] = ($this->Written[$hash] ?? 0) + 1) < 2)
@@ -136,21 +226,27 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    abstract public function out(string $msg, int $level = Level::INFO);
+    public function out(string $msg, int $level = Level::INFO)
+    {
+        return $this->_write($level, $msg, null, "", null, $this->StdioTargets);
+    }
 
     /**
      * Print "$msg" to TTY targets
      *
      * @return $this
      */
-    abstract public function tty(string $msg, int $level = Level::INFO);
+    public function tty(string $msg, int $level = Level::INFO)
+    {
+        return $this->_write($level, $msg, null, "", null, $this->TtyTargets);
+    }
 
     /**
      * Print " !! $msg1 $msg2" with level ERROR
      *
      * @return $this
      */
-    final public function error(string $msg1, string $msg2 = null, ?Throwable $ex = null)
+    public function error(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
         $this->Errors++;
         return $this->write(Level::ERROR, $msg1, $msg2, " !! ", $ex);
@@ -161,7 +257,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    final public function errorOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
+    public function errorOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
         $this->Errors++;
         return $this->writeOnce(Level::ERROR, $msg1, $msg2, " !! ", $ex);
@@ -172,7 +268,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    final public function warn(string $msg1, string $msg2 = null, ?Throwable $ex = null)
+    public function warn(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
         $this->Warnings++;
         return $this->write(Level::WARNING, $msg1, $msg2, "  ! ", $ex);
@@ -183,7 +279,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    final public function warnOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
+    public function warnOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
         $this->Warnings++;
         return $this->writeOnce(Level::WARNING, $msg1, $msg2, "  ! ", $ex);
@@ -194,7 +290,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    final public function info(string $msg1, string $msg2 = null, ?Throwable $ex = null)
+    public function info(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
         return $this->write(Level::NOTICE, $msg1, $msg2, "==> ", $ex);
     }
@@ -204,7 +300,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    final public function infoOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
+    public function infoOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
         return $this->writeOnce(Level::NOTICE, $msg1, $msg2, "==> ", $ex);
     }
@@ -214,7 +310,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    final public function log(string $msg1, string $msg2 = null, ?Throwable $ex = null)
+    public function log(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
         return $this->write(Level::INFO, $msg1, $msg2, " -> ", $ex);
     }
@@ -224,7 +320,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    final public function logOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
+    public function logOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
         return $this->writeOnce(Level::INFO, $msg1, $msg2, " -> ", $ex);
     }
@@ -234,7 +330,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    final public function logProgress(string $msg1, string $msg2 = null, ?Throwable $ex = null)
+    public function logProgress(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
         return $this->writeTty(Level::INFO, $msg1, $msg2, " -> ", $ex);
     }
@@ -246,7 +342,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      * To print your caller's name instead of your own, set `$depth` to 1.
      * @return $this
      */
-    final public function debug(string $msg1, string $msg2 = null, ?Throwable $ex = null, int $depth = 0)
+    public function debug(string $msg1, string $msg2 = null, ?Throwable $ex = null, int $depth = 0)
     {
         if ($this->Facade)
         {
@@ -264,7 +360,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      * To print your caller's name instead of your own, set `$depth` to 1.
      * @return $this
      */
-    final public function debugOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null, int $depth = 0)
+    public function debugOnce(string $msg1, string $msg2 = null, ?Throwable $ex = null, int $depth = 0)
     {
         if ($this->Facade)
         {
@@ -283,7 +379,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    final public function group(string $msg1, string $msg2 = null, ?Throwable $ex = null)
+    public function group(string $msg1, string $msg2 = null, ?Throwable $ex = null)
     {
         $this->GroupLevel++;
         return $this->write(Level::NOTICE, $msg1, $msg2, ">>> ", $ex);
@@ -295,7 +391,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      * @return $this
      * @see ConsoleMessageWriter::group()
      */
-    final public function groupEnd()
+    public function groupEnd()
     {
         if ($this->GroupLevel > -1)
         {
@@ -313,7 +409,7 @@ abstract class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    final public function exception(Throwable $exception)
+    public function exception(Throwable $exception)
     {
         $ex = $exception;
         $i  = 0;
@@ -343,4 +439,50 @@ abstract class ConsoleWriter implements ReceivesFacade
 
         return $this;
     }
+
+    /**
+     * @return $this
+     */
+    private function _write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex, array & $targets)
+    {
+        if (!$this->Targets)
+        {
+            $this->registerDefaultTargets();
+        }
+
+        $margin = max(0, $this->GroupLevel) * 4;
+        $indent = strlen($prefix);
+        $indent = max(0, strpos($msg1, "\n") !== false ? $indent : $indent - 4);
+
+        if ($ex)
+        {
+            $context = ["exception" => $ex];
+        }
+
+        /** @var ConsoleTarget $target */
+        foreach ($targets[$level] ?? [] as $target)
+        {
+            $formatter = $target->getFormatter();
+            $_msg1     = $formatter->format($msg1);
+            $_msg2     = $msg2 ? $formatter->format($msg2) : null;
+
+            if ($margin + $indent && strpos($msg1, "\n") !== false)
+            {
+                $_msg1 = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent), $_msg1);
+            }
+
+            if ($_msg2)
+            {
+                $_msg2 = (strpos($msg2, "\n") !== false
+                    ? str_replace("\n", "\n" . str_repeat(" ", $margin + $indent + 2), "\n" . ltrim($_msg2))
+                    : " " . $_msg2);
+            }
+
+            $message = $target->getMessageFormat($level)->apply($_msg1, $_msg2, $prefix);
+            $target->write($level, str_repeat(" ", $margin) . $message, $context ?? []);
+        }
+
+        return $this;
+    }
+
 }
