@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 use Lkrms\Concept\Enumeration;
+use Psr\Log\LogLevel;
 use UnexpectedValueException;
 
 /**
@@ -25,14 +26,14 @@ final class ConsoleLevel extends Enumeration
     public const DEBUG     = 7;
 
     private const LOG_LEVEL_MAP = [
-        self::EMERGENCY => \Psr\Log\LogLevel::EMERGENCY,
-        self::ALERT     => \Psr\Log\LogLevel::ALERT,
-        self::CRITICAL  => \Psr\Log\LogLevel::CRITICAL,
-        self::ERROR     => \Psr\Log\LogLevel::ERROR,
-        self::WARNING   => \Psr\Log\LogLevel::WARNING,
-        self::NOTICE    => \Psr\Log\LogLevel::NOTICE,
-        self::INFO      => \Psr\Log\LogLevel::INFO,
-        self::DEBUG     => \Psr\Log\LogLevel::DEBUG,
+        self::EMERGENCY => LogLevel::EMERGENCY,
+        self::ALERT     => LogLevel::ALERT,
+        self::CRITICAL  => LogLevel::CRITICAL,
+        self::ERROR     => LogLevel::ERROR,
+        self::WARNING   => LogLevel::WARNING,
+        self::NOTICE    => LogLevel::NOTICE,
+        self::INFO      => LogLevel::INFO,
+        self::DEBUG     => LogLevel::DEBUG,
     ];
 
     public static function toPsrLogLevel(int $level): string
@@ -43,5 +44,22 @@ final class ConsoleLevel extends Enumeration
         }
 
         return $logLevel;
+    }
+
+    /**
+     * @return int[]
+     */
+    public static function getAll(): array
+    {
+        return [
+            self::EMERGENCY,
+            self::ALERT,
+            self::CRITICAL,
+            self::ERROR,
+            self::WARNING,
+            self::NOTICE,
+            self::INFO,
+            self::DEBUG,
+        ];
     }
 }

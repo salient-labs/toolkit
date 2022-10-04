@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Console;
-
-use Lkrms\Concept\Enumeration;
+namespace Lkrms\Support;
 
 /**
  * Escape sequences to set and clear terminal display attributes
  *
  */
-final class ConsoleColour extends Enumeration
+final class TtyControlSequence
 {
     public const BLACK      = "\033[30m";
     public const RED        = "\033[31m";
@@ -37,4 +35,5 @@ final class ConsoleColour extends Enumeration
     public const DIM        = "\033[2m";
     public const UNDIM      = "\033[22m";
     public const RESET      = "\033[m";
+
 }

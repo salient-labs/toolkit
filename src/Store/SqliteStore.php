@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Store;
 
 use Exception;
-use Lkrms\Console\Console;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
 use RuntimeException;
 use SQLite3;

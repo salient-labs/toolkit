@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Utility;
 
 use DateTimeZone;
-use Lkrms\Console\Console;
+use Lkrms\Facade\Console;
 use RuntimeException;
 use Throwable;
 use UnexpectedValueException;

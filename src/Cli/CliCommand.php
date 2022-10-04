@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Cli;
 
 use Lkrms\Concern\HasCliAppContainer;
-use Lkrms\Console\Console;
 use Lkrms\Contract\ReturnsContainer;
 use Lkrms\Exception\InvalidCliArgumentException;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use RuntimeException;
 use UnexpectedValueException;
@@ -759,7 +759,7 @@ EOF;
 
         if ($this->IsHelp)
         {
-            Console::printTo($this->getUsage(), ...Console::getOutputTargets());
+            Console::out($this->getUsage());
             return 0;
         }
 
