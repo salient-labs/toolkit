@@ -13,7 +13,7 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Env;
-use Lkrms\Sync\Provider\HttpSyncProvider;
+use Lkrms\Sync\Concept\HttpSyncProvider;
 use UnexpectedValueException;
 
 class SendHttpRequest extends CliCommand

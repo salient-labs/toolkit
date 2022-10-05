@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Sync\Provider;
+namespace Lkrms\Sync\Concept;
 
 use ADOConnection;
 use Lkrms\Db\DbConnector;

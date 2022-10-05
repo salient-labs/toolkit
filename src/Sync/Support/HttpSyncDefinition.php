@@ -8,10 +8,10 @@ use Closure;
 use Lkrms\Contract\IPipelineImmutable;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\HttpRequestMethod;
+use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
-use Lkrms\Sync\Provider\HttpSyncProvider;
-use Lkrms\Sync\SyncEntity;
-use Lkrms\Sync\SyncOperation;
+use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Support\SyncOperation;
 use UnexpectedValueException;
 
 class HttpSyncDefinition extends SyncDefinition

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Sync;
+namespace Lkrms\Sync\Concept;
 
 use Closure;
 use DateTimeInterface;
@@ -16,8 +16,8 @@ use Lkrms\Support\SerializeRules;
 use Lkrms\Support\SerializeRulesBuilder;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Provider\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncClosureBuilder;
+use Lkrms\Sync\Support\SyncEntityProvider;
 use RuntimeException;
 use UnexpectedValueException;
 
