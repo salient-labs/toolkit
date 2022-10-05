@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
-use Lkrms\Sync\SyncEntity;
+use Lkrms\Sync\Concept\SyncEntity;
 
 /**
  * @lkrms-sample-entity https://jsonplaceholder.typicode.com/users

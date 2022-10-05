@@ -11,8 +11,8 @@ use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Provider\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncContext;
+use Lkrms\Sync\Support\SyncEntityProvider;
 use ReflectionClass;
 
 /**

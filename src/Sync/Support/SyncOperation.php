@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Sync;
+namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Enumeration;
 use Lkrms\Contract\IConvertibleEnumeration;
@@ -29,8 +29,8 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * Read an entity from the connected system
      *
      * Typically corresponds to:
-     * - `<provider>::get<entity_name>([int|string $id])`
-     * - `<provider>::get_<entity_name>([int|string $id])`
+     * - `<provider>::get<entity_name>(int|string|null $id = null)`
+     * - `<provider>::get_<entity_name>(int|string|null $id = null)`
      * - `GET /<entity_name>/<id>`
      * - `GET /<entity_name>`
      * - `SELECT ... FROM <entity_name> WHERE <id_field> = <id>`

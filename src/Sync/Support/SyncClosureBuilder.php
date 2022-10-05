@@ -7,14 +7,14 @@ namespace Lkrms\Sync\Support;
 use Closure;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\ClosureBuilder;
+use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\SyncEntity;
-use Lkrms\Sync\SyncOperation;
+use Lkrms\Sync\Support\SyncOperation;
 use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
 
-class SyncClosureBuilder extends ClosureBuilder
+final class SyncClosureBuilder extends ClosureBuilder
 {
     /**
      * @var string

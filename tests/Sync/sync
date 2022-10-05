@@ -5,9 +5,9 @@ namespace Lkrms\Tests\Sync;
 
 use Lkrms\Facade\App;
 use Lkrms\Facade\Console;
-use Lkrms\Sync\SyncEntityFuzzyResolver;
-use Lkrms\Sync\SyncEntityResolver;
-use Lkrms\Sync\SyncOperation;
+use Lkrms\Sync\Support\SyncEntityFuzzyResolver;
+use Lkrms\Sync\Support\SyncEntityResolver;
+use Lkrms\Sync\Support\SyncOperation;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;

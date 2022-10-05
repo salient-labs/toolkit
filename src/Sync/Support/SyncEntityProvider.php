@@ -2,20 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Sync\Provider;
+namespace Lkrms\Sync\Support;
 
 use Lkrms\Contract\IContainer;
 use Lkrms\Exception\SyncOperationNotImplementedException;
+use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
+use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Support\SyncContext;
-use Lkrms\Sync\SyncEntity;
-use Lkrms\Sync\SyncOperation;
+use Lkrms\Sync\Support\SyncOperation;
 use UnexpectedValueException;
 
 /**
- * Provides an entity-agnostic interface to a provider's implementation of sync
- * operations for an entity
+ * Provides an entity-agnostic interface to a SyncProvider's implementation of
+ * sync operations for an entity
  *
  * So you can do this:
  *
@@ -30,7 +31,7 @@ use UnexpectedValueException;
  * ```
  *
  */
-class SyncEntityProvider
+class SyncEntityProvider implements ISyncEntityProvider
 {
     /**
      * @var IContainer
@@ -96,25 +97,21 @@ class SyncEntityProvider
      *
      * ```php
      * // 1.
-     * public function createFaculty(Faculty $entity): Faculty;
+     * public function createFaculty(SyncContext $ctx, Faculty $entity): Faculty;
      *
      * // 2.
-     * public function create_Faculty(Faculty $entity): Faculty;
+     * public function create_Faculty(SyncContext $ctx, Faculty $entity): Faculty;
      * ```
      *
      * The first parameter:
-     * - MUST be defined
-     * - MUST have a type declaration, which MUST be the class of the entity
+     * - must be defined
+     * - must have a type declaration, which must be the class of the entity
      *   being created
-     * - MUST be required
-     *
-     * @param SyncEntity $entity
-     * @param mixed ...$params Additional parameters to pass to the provider.
-     * @return SyncEntity
+     * - must be required
      */
-    public function create(SyncEntity $entity, ...$params): SyncEntity
+    public function create(SyncEntity $entity, ...$args): SyncEntity
     {
-        return $this->run(SyncOperation::CREATE, $entity, ...$params);
+        return $this->run(SyncOperation::CREATE, $entity, ...$args);
     }
 
     /**
@@ -126,25 +123,23 @@ class SyncEntityProvider
      *
      * ```php
      * // 1.
-     * public function getFaculty(int $id = null): Faculty;
+     * public function getFaculty(SyncContext $ctx, int $id = null): Faculty;
      *
      * // 2.
-     * public function get_Faculty(int $id = null): Faculty;
+     * public function get_Faculty(SyncContext $ctx, int $id = null): Faculty;
      * ```
      *
      * The first parameter:
-     * - MUST be defined
-     * - MAY have a type declaration, which MUST be one of `int`, `string`, or
-     *   `int|string` if included
-     * - MAY be nullable
+     * - must be defined
+     * - may have a type declaration, which must be `int`, `string`, or
+     *   `int|string` if specified
+     * - may be nullable
      *
      * @param int|string|null $id
-     * @param mixed ...$params Additional parameters to pass to the provider.
-     * @return SyncEntity
      */
-    public function get($id = null, ...$params): SyncEntity
+    public function get($id = null, ...$args): SyncEntity
     {
-        return $this->run(SyncOperation::READ, $id, ...$params);
+        return $this->run(SyncOperation::READ, $id, ...$args);
     }
 
     /**
@@ -156,25 +151,21 @@ class SyncEntityProvider
      *
      * ```php
      * // 1.
-     * public function updateFaculty(Faculty $entity): Faculty;
+     * public function updateFaculty(SyncContext $ctx, Faculty $entity): Faculty;
      *
      * // 2.
-     * public function update_Faculty(Faculty $entity): Faculty;
+     * public function update_Faculty(SyncContext $ctx, Faculty $entity): Faculty;
      * ```
      *
      * The first parameter:
-     * - MUST be defined
-     * - MUST have a type declaration, which MUST be the class of the entity
+     * - must be defined
+     * - must have a type declaration, which must be the class of the entity
      *   being updated
-     * - MUST be required
-     *
-     * @param SyncEntity $entity
-     * @param mixed ...$params Additional parameters to pass to the provider.
-     * @return SyncEntity
+     * - must be required
      */
-    public function update(SyncEntity $entity, ...$params): SyncEntity
+    public function update(SyncEntity $entity, ...$args): SyncEntity
     {
-        return $this->run(SyncOperation::UPDATE, $entity, ...$params);
+        return $this->run(SyncOperation::UPDATE, $entity, ...$args);
     }
 
     /**
@@ -186,29 +177,24 @@ class SyncEntityProvider
      *
      * ```php
      * // 1.
-     * public function deleteFaculty(Faculty $entity): Faculty;
+     * public function deleteFaculty(SyncContext $ctx, Faculty $entity): Faculty;
      *
      * // 2.
-     * public function delete_Faculty(Faculty $entity): Faculty;
+     * public function delete_Faculty(SyncContext $ctx, Faculty $entity): Faculty;
      * ```
      *
      * The first parameter:
-     * - MUST be defined
-     * - MUST have a type declaration, which MUST be the class of the entity
+     * - must be defined
+     * - must have a type declaration, which must be the class of the entity
      *   being deleted
-     * - MUST be required
+     * - must be required
      *
      * The return value:
-     * - SHOULD represent the final state of the entity before it was deleted
-     * - MAY be `null`
-     *
-     * @param SyncEntity $entity
-     * @param mixed ...$params Additional parameters to pass to the provider.
-     * @return SyncEntity|null
+     * - must represent the final state of the entity before it was deleted
      */
-    public function delete(SyncEntity $entity, ...$params): ?SyncEntity
+    public function delete(SyncEntity $entity, ...$args): SyncEntity
     {
-        return $this->run(SyncOperation::DELETE, $entity, ...$params);
+        return $this->run(SyncOperation::DELETE, $entity, ...$args);
     }
 
     /**
@@ -220,24 +206,23 @@ class SyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function createFaculties(iterable $entities): iterable;
+     * public function createFaculties(SyncContext $ctx, iterable $entities): iterable;
      *
      * // 2. With a singular name
-     * public function createList_Faculty(iterable $entities): iterable;
+     * public function createList_Faculty(SyncContext $ctx, iterable $entities): iterable;
      * ```
      *
      * The first parameter:
-     * - MUST be defined
-     * - MUST have a type declaration, which MUST be `array`
-     * - MUST be required
+     * - must be defined
+     * - must have a type declaration, which must be `iterable`
+     * - must be required
      *
      * @param iterable<SyncEntity> $entities
-     * @param mixed ...$params Additional parameters to pass to the provider.
      * @return iterable<SyncEntity>
      */
-    public function createList(iterable $entities, ...$params): iterable
+    public function createList(iterable $entities, ...$args): iterable
     {
-        return $this->run(SyncOperation::CREATE_LIST, $entities, ...$params);
+        return $this->run(SyncOperation::CREATE_LIST, $entities, ...$args);
     }
 
     /**
@@ -249,18 +234,17 @@ class SyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function getFaculties(): iterable;
+     * public function getFaculties(SyncContext $ctx): iterable;
      *
      * // 2. With a singular name
-     * public function getList_Faculty(): iterable;
+     * public function getList_Faculty(SyncContext $ctx): iterable;
      * ```
      *
-     * @param mixed ...$params Parameters to pass to the provider.
      * @return iterable<SyncEntity>
      */
-    public function getList(...$params): iterable
+    public function getList(...$args): iterable
     {
-        return $this->run(SyncOperation::READ_LIST, ...$params);
+        return $this->run(SyncOperation::READ_LIST, ...$args);
     }
 
     /**
@@ -272,24 +256,23 @@ class SyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function updateFaculties(iterable $entities): iterable;
+     * public function updateFaculties(SyncContext $ctx, iterable $entities): iterable;
      *
      * // 2. With a singular name
-     * public function updateList_Faculty(iterable $entities): iterable;
+     * public function updateList_Faculty(SyncContext $ctx, iterable $entities): iterable;
      * ```
      *
      * The first parameter:
-     * - MUST be defined
-     * - MUST have a type declaration, which MUST be `array`
-     * - MUST be required
+     * - must be defined
+     * - must have a type declaration, which must be `iterable`
+     * - must be required
      *
      * @param iterable<SyncEntity> $entities
-     * @param mixed ...$params Additional parameters to pass to the provider.
      * @return iterable<SyncEntity>
      */
-    public function updateList(iterable $entities, ...$params): iterable
+    public function updateList(iterable $entities, ...$args): iterable
     {
-        return $this->run(SyncOperation::UPDATE_LIST, $entities, ...$params);
+        return $this->run(SyncOperation::UPDATE_LIST, $entities, ...$args);
     }
 
     /**
@@ -301,29 +284,26 @@ class SyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function deleteFaculties(iterable $entities): ?iterable;
+     * public function deleteFaculties(SyncContext $ctx, iterable $entities): iterable;
      *
      * // 2. With a singular name
-     * public function deleteList_Faculty(iterable $entities): ?iterable;
+     * public function deleteList_Faculty(SyncContext $ctx, iterable $entities): iterable;
      * ```
      *
      * The first parameter:
-     * - MUST be defined
-     * - MUST have a type declaration, which MUST be `array`
-     * - MUST be required
+     * - must be defined
+     * - must have a type declaration, which must be `iterable`
+     * - must be required
      *
      * The return value:
-     * - SHOULD represent the final state of the entities before they were
-     *   deleted
-     * - MAY be `null`
+     * - must represent the final state of the entities before they were deleted
      *
      * @param iterable<SyncEntity> $entities
-     * @param mixed ...$params Additional parameters to pass to the provider.
-     * @return iterable<SyncEntity>|null
+     * @return iterable<SyncEntity>
      */
-    public function deleteList(iterable $entities, ...$params): ?iterable
+    public function deleteList(iterable $entities, ...$args): iterable
     {
-        return $this->run(SyncOperation::DELETE_LIST, $entities, ...$params);
+        return $this->run(SyncOperation::DELETE_LIST, $entities, ...$args);
     }
 
 }

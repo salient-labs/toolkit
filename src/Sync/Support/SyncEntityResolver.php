@@ -2,59 +2,47 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Sync;
+namespace Lkrms\Sync\Support;
 
-use Lkrms\Sync\Provider\SyncEntityProvider;
-use UnexpectedValueException;
+use Lkrms\Facade\Convert;
+use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Contract\ISyncEntityResolver;
+use Lkrms\Sync\Support\SyncEntityProvider;
 
 /**
  * Resolves names to entities
  *
  */
-class SyncEntityResolver
+final class SyncEntityResolver implements ISyncEntityResolver
 {
     /**
      * @var SyncEntityProvider
      */
-    protected $EntityProvider;
+    private $EntityProvider;
 
     /**
      * @var string
      */
-    protected $NameField;
+    private $NameField;
 
-    /**
-     *
-     * @param SyncEntityProvider $entityProvider
-     * @param string $nameField
-     */
-    public function __construct(
-        SyncEntityProvider $entityProvider,
-        string $nameField
-    ) {
+    public function __construct(SyncEntityProvider $entityProvider, string $nameField)
+    {
         $this->EntityProvider = $entityProvider;
         $this->NameField      = $nameField;
     }
 
     public function getByName(string $name): ?SyncEntity
     {
-        $nameField = $this->NameField;
-        $matches   = array_filter(
-            iterator_to_array($this->EntityProvider->getList([$nameField => $name])),
-            function ($entity) use ($nameField, $name) { return ($entity->$nameField ?? null) == $name; }
+        $match = Convert::iterableToItem(
+            $this->EntityProvider->getList([$this->NameField => $name]),
+            $this->NameField,
+            $name
         );
-
-        if (count($matches) === 1)
-        {
-            return reset($matches);
-        }
-        elseif (empty($matches))
+        if ($match === false)
         {
             return null;
         }
-        else
-        {
-            throw new UnexpectedValueException("More than one entity matched the criteria");
-        }
+
+        return $match;
     }
 }

@@ -41,14 +41,14 @@ parameters:
 			path: src/Support/PhpDocParser.php
 
 		-
-			message: "#^Property Lkrms\\\\Sync\\\\Provider\\\\SyncEntityProvider\\:\\:\\$Container is never read, only written\\.$#"
-			count: 1
-			path: src/Sync/Provider/SyncEntityProvider.php
-
-		-
 			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\DeferredSyncEntity\\:\\:\\$Replace is never read, only written\\.$#"
 			count: 1
 			path: src/Sync/Support/DeferredSyncEntity.php
+
+		-
+			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$Container is never read, only written\\.$#"
+			count: 1
+			path: src/Sync/Support/SyncEntityProvider.php
 
 		-
 			message: "#^Call to an undefined method ReflectionType\\:\\:isBuiltin\\(\\)\\.$#"

@@ -6,9 +6,9 @@ namespace Lkrms\Tests\Sync\Provider;
 
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Support\DateFormatter;
-use Lkrms\Sync\Provider\HttpSyncProvider;
+use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
-use Lkrms\Sync\SyncOperation as OP;
+use Lkrms\Sync\Support\SyncOperation as OP;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\PostProvider;
 use Lkrms\Tests\Sync\Entity\User;

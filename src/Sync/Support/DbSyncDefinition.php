@@ -7,9 +7,9 @@ namespace Lkrms\Sync\Support;
 use Closure;
 use Lkrms\Contract\IPipelineImmutable;
 use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
-use Lkrms\Sync\Provider\DbSyncProvider;
-use Lkrms\Sync\SyncOperation;
+use Lkrms\Sync\Support\SyncOperation;
 use UnexpectedValueException;
 
 class DbSyncDefinition extends SyncDefinition

@@ -14,8 +14,8 @@ use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Test;
-use Lkrms\Sync\Provider\HttpSyncProvider;
-use Lkrms\Sync\SyncEntity;
+use Lkrms\Sync\Concept\HttpSyncProvider;
+use Lkrms\Sync\Concept\SyncEntity;
 use RuntimeException;
 
 /**
