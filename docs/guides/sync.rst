@@ -1,0 +1,62 @@
+Syncing data between backends
+=============================
+
+SyncProvider
+------------
+
+Operation signatures
+~~~~~~~~~~~~~~~~~~~~
+
+To perform a sync operation, a `SyncProvider`_ must implement an `entity`_’s
+provider interface (e.g. ``UserProvider`` for a ``User`` entity) and either:
+
+1. return a closure for the `SyncOperation`_ and entity via `getDefinition()`_,
+   or
+2. declare a method using the naming convention below.
+
+In either case, the correct signature for the implemented operation must be
+used. The first value passed is always the current `SyncContext`_ and
+**optional** arguments may be accepted after mandatory parameters.
+
++----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
+| Operation [1]_       | Closure signature                                                  | Equivalent method [2]_     | Alternative method [3]_ |
++======================+====================================================================+============================+=========================+
+| ``CREATE``           | ``fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity`` | ``create<EntitySingular>`` | ``create_<Entity>``     |
++----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
+| ``READ``             | ``fn(SyncContext $ctx, ?int $id = null, ...$args): SyncEntity``    | ``get<EntitySingular>``    | ``get_<Entity>``        |
++----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
+| ``UPDATE``           | ``fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity`` | ``update<EntitySingular>`` | ``update_<Entity>``     |
++----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
+| ``DELETE``           | ``fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity`` | ``delete<EntitySingular>`` | ``delete_<Entity>``     |
++----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
+| ``CREATE_LIST``      | ``fn(SyncContext $ctx, iterable $entities, ...$args): iterable``   | ``create<EntityPlural>``   | ``createList_<Entity>`` |
++----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
+| ``READ_LIST``\  [4]_ | ``fn(SyncContext $ctx, ...$args): iterable``                       | ``get<EntityPlural>``      | ``getList_<Entity>``    |
++----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
+| ``UPDATE_LIST``      | ``fn(SyncContext $ctx, iterable $entities, ...$args): iterable``   | ``update<EntityPlural>``   | ``updateList_<Entity>`` |
++----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
+| ``DELETE_LIST``      | ``fn(SyncContext $ctx, iterable $entities, ...$args): iterable``   | ``delete<EntityPlural>``   | ``deleteList_<Entity>`` |
++----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
+
+
+.. [1]
+   See `SyncOperation`_.
+
+.. [2]
+   Method names must match either the singular or plural form of the entity’s
+   unqualified name.
+
+.. [3]
+   Recommended when the singular and plural forms of a class name are the same.
+   Method names must match the entity’s unqualified name.
+
+.. [4]
+   See `SyncProvider::argsToFilter()`_ for filter argument recommendations,
+   including recognised signatures.
+
+.. _SyncProvider: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncProvider.html
+.. _entity: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncEntity.html
+.. _SyncOperation: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Support-SyncOperation.html
+.. _getDefinition(): https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncProvider.html#method_getDefinition
+.. _SyncContext: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Support-SyncContext.html
+.. _`SyncProvider::argsToFilter()`: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncProvider.html#method_argsToFilter

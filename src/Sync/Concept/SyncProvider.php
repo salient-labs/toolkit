@@ -72,8 +72,8 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      *
      * {@inheritdoc}
      *
-     * Bind any {@see \Lkrms\Sync\SyncEntity} classes customised for this
-     * provider to their generic parent classes by overriding this method, e.g.:
+     * Bind any {@see SyncEntity} classes customised for this provider to their
+     * generic parent classes by overriding this method, e.g.:
      *
      * ```php
      * public static function getBindings(): array
@@ -161,9 +161,10 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      * Convert arguments to a normalised filter array
      *
      * A {@see SyncProvider} may accept **optional** arguments after a
-     * {@see SyncOperation}'s mandatory parameters, but using them to declare a
-     * filtering API, e.g. to filter {@see SyncOperation::READ_LIST} results, is
-     * not recommended. Create filters by passing undeclared arguments to
+     * {@see \Lkrms\Sync\Support\SyncOperation}'s mandatory parameters, but
+     * using them to declare a filtering API, e.g. to filter
+     * {@see \Lkrms\Sync\Support\SyncOperation::READ_LIST} results, is not
+     * recommended. Create filters by passing undeclared arguments to
      * {@see SyncProvider::argsToFilter()} instead.
      *
      * Here's a typical invocation:
@@ -189,8 +190,9 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      *
      * 3. A list of entities: `fn(SyncEntity ...$entities)`
      *    - Converted to an array that maps the normalised name of each entity's
-     *      unqualified {@see IProvidable::providable() base class} to an array
-     *      of entities
+     *      unqualified
+     *      {@see \Lkrms\Contract\IProvidable::providable() base class} to an
+     *      array of entities
      *
      * @param bool $replaceWithId If `true`, {@see SyncEntity} objects are
      * replaced with the value of their {@see SyncEntity::$Id Id} when `$args`

@@ -4,15 +4,16 @@
 
 #### Operation signatures
 
-To perform a sync operation, a [`SyncProvider`][SyncProvider] must implement an
+To perform a sync operation, a [SyncProvider][SyncProvider] must implement an
 [entity][SyncEntity]'s provider interface (e.g. `UserProvider` for a `User`
 entity) and either:
-1. return a closure for the [`SyncOperation`][SyncOperation] and entity via
-   [`getDefinition()`][getDefinition], or
+
+1. return a closure for the [SyncOperation][SyncOperation] and entity via
+   [getDefinition()][getDefinition], or
 2. declare a method using the naming convention below.
 
 In either case, the correct signature for the implemented operation must be
-used. The first value passed is always the current [`SyncContext`][SyncContext]
+used. The first value passed is always the current [SyncContext][SyncContext]
 and **optional** arguments may be accepted after mandatory parameters.
 
 | Operation[^op]  | Closure signature                                                | Equivalent method[^1]    | Alternative method[^2] |
@@ -26,7 +27,7 @@ and **optional** arguments may be accepted after mandatory parameters.
 | `UPDATE_LIST`   | `fn(SyncContext $ctx, iterable $entities, ...$args): iterable`   | `update<EntityPlural>`   | `updateList_<Entity>`  |
 | `DELETE_LIST`   | `fn(SyncContext $ctx, iterable $entities, ...$args): iterable`   | `delete<EntityPlural>`   | `deleteList_<Entity>`  |
 
-[^op]: See [`SyncOperation`][SyncOperation].
+[^op]: See [SyncOperation][SyncOperation].
 
 [^1]: Method names must match either the singular or plural form of the entity's
     unqualified name.

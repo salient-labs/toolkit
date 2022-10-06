@@ -97,7 +97,8 @@ final class ConsoleWriter implements ReceivesFacade
 
     private function registerDefaultTargets()
     {
-        // Log output to `{TMPDIR}/<script_basename>-<realpath_hash>-<user_id>.log`
+        // Log output to
+        // `{TMPDIR}/<script_basename>-<realpath_hash>-<user_id>.log`
         $this->registerTarget(StreamTarget::fromPath(File::getStablePath(".log")), ConsoleLevels::ALL_DEBUG);
         $this->registerStdioTargets();
     }
@@ -377,7 +378,7 @@ final class ConsoleWriter implements ReceivesFacade
      * Create a new message group and print "<<< $msg1 $msg2" with level NOTICE
      *
      * The message group will remain open, and subsequent messages will be
-     * indented, until {@see ConsoleMessageWriter::groupEnd()} is called.
+     * indented, until {@see ConsoleWriter::groupEnd()} is called.
      *
      * @return $this
      */
@@ -391,7 +392,7 @@ final class ConsoleWriter implements ReceivesFacade
      * Close the most recently created message group
      *
      * @return $this
-     * @see ConsoleMessageWriter::group()
+     * @see ConsoleWriter::group()
      */
     public function groupEnd()
     {
