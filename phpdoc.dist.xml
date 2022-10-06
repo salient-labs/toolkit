@@ -34,8 +34,14 @@
                 <ignore-tag>template</ignore-tag>
             </ignore-tags>
         </api>
+        <guide>
+            <source>
+                <path>docs</path>
+            </source>
+            <output>guide</output>
+        </guide>
     </version>
     <setting
-            name="graphs.enabled"
+            name="guides.enabled"
             value="true" />
 </phpdocumentor>
