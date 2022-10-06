@@ -103,10 +103,10 @@ class SyncEntityProvider implements ISyncEntityProvider
      * public function create_Faculty(SyncContext $ctx, Faculty $entity): Faculty;
      * ```
      *
-     * The first parameter:
+     * The first parameter after `SyncContext $ctx`:
      * - must be defined
-     * - must have a type declaration, which must be the class of the entity
-     *   being created
+     * - must have a native type declaration, which must be the class of the
+     *   entity being created
      * - must be required
      */
     public function create(SyncEntity $entity, ...$args): SyncEntity
@@ -129,11 +129,11 @@ class SyncEntityProvider implements ISyncEntityProvider
      * public function get_Faculty(SyncContext $ctx, int $id = null): Faculty;
      * ```
      *
-     * The first parameter:
+     * The first parameter after `SyncContext $ctx`:
      * - must be defined
-     * - may have a type declaration, which must be `int`, `string`, or
-     *   `int|string` if specified
-     * - may be nullable
+     * - must not have a native type declaration, but may be tagged as an
+     *   `int|string|null` parameter for static analysis purposes
+     * - must be nullable
      *
      * @param int|string|null $id
      */
@@ -157,10 +157,10 @@ class SyncEntityProvider implements ISyncEntityProvider
      * public function update_Faculty(SyncContext $ctx, Faculty $entity): Faculty;
      * ```
      *
-     * The first parameter:
+     * The first parameter after `SyncContext $ctx`:
      * - must be defined
-     * - must have a type declaration, which must be the class of the entity
-     *   being updated
+     * - must have a native type declaration, which must be the class of the
+     *   entity being updated
      * - must be required
      */
     public function update(SyncEntity $entity, ...$args): SyncEntity
@@ -183,10 +183,10 @@ class SyncEntityProvider implements ISyncEntityProvider
      * public function delete_Faculty(SyncContext $ctx, Faculty $entity): Faculty;
      * ```
      *
-     * The first parameter:
+     * The first parameter after `SyncContext $ctx`:
      * - must be defined
-     * - must have a type declaration, which must be the class of the entity
-     *   being deleted
+     * - must have a native type declaration, which must be the class of the
+     *   entity being deleted
      * - must be required
      *
      * The return value:
@@ -212,9 +212,9 @@ class SyncEntityProvider implements ISyncEntityProvider
      * public function createList_Faculty(SyncContext $ctx, iterable $entities): iterable;
      * ```
      *
-     * The first parameter:
+     * The first parameter after `SyncContext $ctx`:
      * - must be defined
-     * - must have a type declaration, which must be `iterable`
+     * - must have a native type declaration, which must be `iterable`
      * - must be required
      *
      * @param iterable<SyncEntity> $entities
@@ -262,9 +262,9 @@ class SyncEntityProvider implements ISyncEntityProvider
      * public function updateList_Faculty(SyncContext $ctx, iterable $entities): iterable;
      * ```
      *
-     * The first parameter:
+     * The first parameter after `SyncContext $ctx`:
      * - must be defined
-     * - must have a type declaration, which must be `iterable`
+     * - must have a native type declaration, which must be `iterable`
      * - must be required
      *
      * @param iterable<SyncEntity> $entities
@@ -290,9 +290,9 @@ class SyncEntityProvider implements ISyncEntityProvider
      * public function deleteList_Faculty(SyncContext $ctx, iterable $entities): iterable;
      * ```
      *
-     * The first parameter:
+     * The first parameter after `SyncContext $ctx`:
      * - must be defined
-     * - must have a type declaration, which must be `iterable`
+     * - must have a native type declaration, which must be `iterable`
      * - must be required
      *
      * The return value:

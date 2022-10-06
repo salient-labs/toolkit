@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Lkrms\Tests\Sync\Entity;
 
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Support\SyncContext;
 
 /**
  * Syncs Post objects with a backend
  *
- * @method Post createPost(Post $post)
- * @method Post getPost(int|string $id)
- * @method Post updatePost(Post $post)
- * @method Post|null deletePost(Post $post)
- * @method iterable<Post> getPosts()
+ * @method Post createPost(SyncContext $ctx, Post $post)
+ * @method Post getPost(SyncContext $ctx, int|string|null $id)
+ * @method Post updatePost(SyncContext $ctx, Post $post)
+ * @method Post deletePost(SyncContext $ctx, Post $post)
+ * @method iterable<Post> getPosts(SyncContext $ctx)
  *
  * @lkrms-generate-command lk-util generate sync provider --class='Lkrms\Tests\Sync\Entity\Post' --magic --op='create,get,update,delete,get-list'
  */

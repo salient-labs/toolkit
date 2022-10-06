@@ -69,7 +69,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 
     public function getPosts(): iterable
     {
-        $filter   = $this->getListFilter(func_get_args());
+        $filter   = $this->argsToFilter(func_get_args());
         if ($user = $filter["user"] ?? null)
         {
             return Post::provideList($this->getCurler("/users/$user/posts")->getJson(), $this);

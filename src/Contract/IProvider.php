@@ -31,7 +31,9 @@ interface IProvider extends ReturnsContainer
      * This method MAY emit a {@see \Lkrms\Console\ConsoleLevel::DEBUG} message
      * after confirming a successful handshake. Positive results SHOULD be
      * cached for up to `$ttl` seconds.
+     *
+     * @return $this
      */
-    public function checkHeartbeat(int $ttl = 300): void;
+    public function checkHeartbeat(int $ttl = 300);
 
 }

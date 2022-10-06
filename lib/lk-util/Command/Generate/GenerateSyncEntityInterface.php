@@ -15,6 +15,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncOperation;
 
 /**
@@ -93,11 +94,6 @@ class GenerateSyncEntityInterface extends GenerateCommand
                 ->allowedValues(self::OPERATIONS)
                 ->multipleAllowed()
                 ->defaultValue(self::DEFAULT_OPERATIONS)
-                ->go()),
-            (CliOption::build()
-                ->long("nullable-get")
-                ->short("n")
-                ->description("Allow passing null identifiers to the 'get' operation")
                 ->go()),
             (CliOption::build()
                 ->long("plural")
@@ -213,22 +209,8 @@ class GenerateSyncEntityInterface extends GenerateCommand
             switch ($op)
             {
                 case SyncOperation::READ:
-                    if ($this->getOptionValue("nullable-get"))
-                    {
-                        $paramDoc  = 'int|string|null $id';
-                        $paramCode = '$id = null';
-                    }
-                    else
-                    {
-                        $paramDoc  = 'int|string $id';
-                        $paramCode = '$id';
-                    }
-                    break;
-
-                case SyncOperation::DELETE:
-                case SyncOperation::DELETE_LIST:
-                    $returnDoc  = $returnDoc . "|null";
-                    $returnCode = "?" . $returnCode;
+                    $paramDoc  = 'int|string|null $id';
+                    $paramCode = '$id = null';
                     break;
 
                 case SyncOperation::READ_LIST:
@@ -236,10 +218,14 @@ class GenerateSyncEntityInterface extends GenerateCommand
                     break;
             }
 
+            $context   = $this->getFqcnAlias(SyncContext::class) . ' $ctx';
+            $paramCode = "$context, $paramCode";
+
             if (!$magic)
             {
                 $_lines = [
                     "/**",
+                    " * @param $context",
                     " * @param $paramDoc",
                     " * @return $returnDoc",
                     " */",
@@ -247,13 +233,14 @@ class GenerateSyncEntityInterface extends GenerateCommand
                 ];
                 if (!$paramDoc)
                 {
-                    unset($_lines[1]);
+                    unset($_lines[2]);
                 }
                 array_push($lines, ...array_map(fn($line) => "    " . $line, $_lines), ... [""]);
             }
             else
             {
-                $methods[] = " * @method $returnDoc {$opMethod[$op]}($paramDoc)";
+                $separator = $paramDoc ? ", " : "";
+                $methods[] = " * @method $returnDoc {$opMethod[$op]}($context$separator$paramDoc)";
             }
         }
         $lines[] = "}";

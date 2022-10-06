@@ -96,7 +96,7 @@ abstract class DbSyncProvider extends SyncProvider
         return new SqlQuery(fn($name) => $db->Param($name));
     }
 
-    public function checkHeartbeat(int $ttl = 300): void
+    public function checkHeartbeat(int $ttl = 300)
     {
         $connector = $this->getDbConnector();
         try
@@ -111,5 +111,7 @@ abstract class DbSyncProvider extends SyncProvider
                 $ex
             );
         }
+
+        return $this;
     }
 }
