@@ -7,13 +7,13 @@ namespace Lkrms\Support;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidableContext;
-use Lkrms\Contract\ITreeNode;
+use Lkrms\Contract\IHierarchy;
 
 /**
  * The context within which an IProvidable is instantiated
  *
  * @property-read IContainer $Container
- * @property-read ITreeNode $Parent
+ * @property-read IHierarchy $Parent
  */
 class ProvidableContext implements IProvidableContext
 {
@@ -25,11 +25,11 @@ class ProvidableContext implements IProvidableContext
     protected $Container;
 
     /**
-     * @var ITreeNode|null
+     * @var IHierarchy|null
      */
     protected $Parent;
 
-    public function __construct(IContainer $container, ?ITreeNode $parent = null)
+    public function __construct(IContainer $container, ?IHierarchy $parent = null)
     {
         $this->Container = $container;
         $this->Parent    = $parent;
@@ -45,7 +45,7 @@ class ProvidableContext implements IProvidableContext
         return $this->Container;
     }
 
-    public function getParent(): ?ITreeNode
+    public function getParent(): ?IHierarchy
     {
         return $this->Parent;
     }
@@ -66,7 +66,7 @@ class ProvidableContext implements IProvidableContext
     /**
      * @return $this
      */
-    public function withParent(?ITreeNode $parent)
+    public function withParent(?IHierarchy $parent)
     {
         if ($this->Parent === $parent)
         {

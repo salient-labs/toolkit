@@ -42,8 +42,8 @@ trait TConstructible
      * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
      * values.
      * @param static|null $parent If the class implements
-     * {@see \Lkrms\Contract\ITreeNode}, pass `$parent` to the instance via
-     * {@see \Lkrms\Contract\ITreeNode::setParent()}.
+     * {@see \Lkrms\Contract\IHierarchy}, pass `$parent` to the instance via
+     * {@see \Lkrms\Contract\IHierarchy::setParent()}.
      * @return static
      */
     public static function from(?IContainer $container, array $data, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null)
@@ -73,8 +73,8 @@ trait TConstructible
      * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
      * values.
      * @param static|null $parent If the class implements
-     * {@see \Lkrms\Contract\ITreeNode}, pass `$parent` to each instance via
-     * {@see \Lkrms\Contract\ITreeNode::setParent()}.
+     * {@see \Lkrms\Contract\IHierarchy}, pass `$parent` to each instance via
+     * {@see \Lkrms\Contract\IHierarchy::setParent()}.
      * @return iterable<static>
      */
     public static function listFrom(?IContainer $container, iterable $list, ? callable $callback = null, ?array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null): iterable
