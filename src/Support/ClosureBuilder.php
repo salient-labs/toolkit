@@ -12,7 +12,7 @@ use Lkrms\Contract\IProvidableContext;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IResolvable;
-use Lkrms\Contract\ITreeNode;
+use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IWritable;
 use Lkrms\Facade\Reflect;
 use ReflectionClass;
@@ -255,7 +255,7 @@ class ClosureBuilder
         $this->IsWritable   = $class->implementsInterface(IWritable::class);
         $this->IsExtensible = $class->implementsInterface(IExtensible::class);
         $this->IsProvidable = $class->implementsInterface(IProvidable::class);
-        $this->IsTreeNode   = $class->implementsInterface(ITreeNode::class);
+        $this->IsTreeNode   = $class->implementsInterface(IHierarchy::class);
 
         // IResolvable provides access to properties via alternative names
         if ($class->implementsInterface(IResolvable::class))
@@ -429,7 +429,7 @@ class ClosureBuilder
      * discard unusable data.
      * @return Closure
      * ```php
-     * closure(array $array, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
+     * closure(array $array, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\IHierarchy $parent = null)
      * ```
      */
     final public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
@@ -442,7 +442,7 @@ class ClosureBuilder
         }
 
         $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
-        $closure = static function (array $array, ?IContainer $container = null, ?ITreeNode $parent = null) use ($closure)
+        $closure = static function (array $array, ?IContainer $container = null, ?IHierarchy $parent = null) use ($closure)
         {
             return $closure($container, $array, null, null, $parent);
         };
@@ -497,7 +497,7 @@ class ClosureBuilder
     /**
      * @return Closure
      * ```
-     * closure(?\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\ITreeNode $parent)
+     * closure(?\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent)
      * ```
      */
     private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
@@ -628,9 +628,9 @@ class ClosureBuilder
 
         if ($this->IsTreeNode)
         {
-            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?ITreeNode $parent) use ($closure)
+            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?IHierarchy $parent) use ($closure)
             {
-                /** @var ITreeNode $obj */
+                /** @var IHierarchy $obj */
                 $obj = $closure($container, $array, $provider, $context);
                 if ($parent)
                 {
@@ -642,7 +642,7 @@ class ClosureBuilder
 
         if ($methodKeys)
         {
-            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?ITreeNode $parent) use ($closure, $methodKeys)
+            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?IHierarchy $parent) use ($closure, $methodKeys)
             {
                 $obj = $closure($container, $array, $provider, $context, $parent);
                 foreach ($methodKeys as $key => $method)
@@ -656,7 +656,7 @@ class ClosureBuilder
 
         if ($metaKeys)
         {
-            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?ITreeNode $parent) use ($closure, $metaKeys)
+            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?IHierarchy $parent) use ($closure, $metaKeys)
             {
                 $obj = $closure($container, $array, $provider, $context, $parent);
                 foreach ($metaKeys as $key)
@@ -675,7 +675,7 @@ class ClosureBuilder
      * if `$array` contains unusable values.
      * @return Closure
      * ```php
-     * closure(array $array, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\ITreeNode $parent = null)
+     * closure(array $array, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\IHierarchy $parent = null)
      * ```
      */
     final public function getCreateFromClosure(bool $strict = false): Closure
@@ -685,7 +685,7 @@ class ClosureBuilder
             return $closure;
         }
 
-        $closure = function (array $array, ?IContainer $container = null, ?ITreeNode $parent = null) use ($strict)
+        $closure = function (array $array, ?IContainer $container = null, ?IHierarchy $parent = null) use ($strict)
         {
             $keys = array_keys($array);
             return ($this->getCreateFromSignatureClosure($keys, $strict))($array, $container, $parent);

@@ -88,7 +88,7 @@ trait TProvidable
      * normalised for comparison.
      *
      * @deprecated Use {@see TProvidable::provide()} instead
-     * @psalm-param \Lkrms\Contract\ITreeNode|null $parent
+     * @psalm-param \Lkrms\Contract\IHierarchy|null $parent
      * @param callable|null $callback If set, applied before optionally
      * remapping `$data`.
      * @param array<int|string,int|string|array<int,int|string>>|null $keyMap An
@@ -100,8 +100,8 @@ trait TProvidable
      * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
      * values.
      * @param static|null $parent If the class implements
-     * {@see \Lkrms\Contract\ITreeNode}, pass `$parent` to the instance via
-     * {@see \Lkrms\Contract\ITreeNode::setParent()}.
+     * {@see \Lkrms\Contract\IHierarchy}, pass `$parent` to the instance via
+     * {@see \Lkrms\Contract\IHierarchy::setParent()}.
      * @return static
      */
     public static function fromProvider(IProvider $provider, array $data, callable $callback = null, array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null)
@@ -144,7 +144,7 @@ trait TProvidable
      * See {@see TProvidable::fromProvider()} for more information.
      *
      * @deprecated Use {@see TProvidable::provideList()} instead
-     * @psalm-param \Lkrms\Contract\ITreeNode|null $parent
+     * @psalm-param \Lkrms\Contract\IHierarchy|null $parent
      * @param iterable<array> $list
      * @param callable|null $callback If set, applied before optionally
      * remapping each array.
@@ -155,8 +155,8 @@ trait TProvidable
      * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
      * values.
      * @param static|null $parent If the class implements
-     * {@see \Lkrms\Contract\ITreeNode}, pass `$parent` to each instance via
-     * {@see \Lkrms\Contract\ITreeNode::setParent()}.
+     * {@see \Lkrms\Contract\IHierarchy}, pass `$parent` to each instance via
+     * {@see \Lkrms\Contract\IHierarchy::setParent()}.
      * @return iterable<static>
      */
     public static function listFromProvider(IProvider $provider, iterable $list, callable $callback = null, array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null): iterable

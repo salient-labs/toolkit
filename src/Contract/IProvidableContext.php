@@ -10,7 +10,7 @@ namespace Lkrms\Contract;
  */
 interface IProvidableContext extends IReadable, IImmutable, ReturnsContainer
 {
-    public function getParent(): ?ITreeNode;
+    public function getParent(): ?IHierarchy;
 
     /**
      * @return $this
