@@ -11,9 +11,10 @@ use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Provider\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncContext;
+use Lkrms\Sync\Support\SyncEntityProvider;
 use ReflectionClass;
+use UnexpectedValueException;
 
 /**
  * Base class for providers that sync entities to and from third-party backends
@@ -157,51 +158,46 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     }
 
     /**
-     * Normalise arguments commonly passed to getList methods
+     * Convert arguments to a normalised filter array
      *
-     * A {@see SyncProvider} MUST NOT add mandatory arguments to any of its
-     * {@see \Lkrms\Sync\SyncOperation::READ_LIST} implementations, but a caller
-     * MAY pass undeclared arguments, and a provider MAY take them into account
-     * when performing the requested operation.
+     * A {@see SyncProvider} may accept **optional** arguments after a
+     * {@see SyncOperation}'s mandatory parameters, but using them to declare a
+     * filtering API, e.g. to filter {@see SyncOperation::READ_LIST} results, is
+     * not recommended. Create filters by passing undeclared arguments to
+     * {@see SyncProvider::argsToFilter()} instead.
      *
-     * `getListFilter` returns an associative filter array based on `$args`.
      * Here's a typical invocation:
      *
      * ```php
-     * public function getFaculties(): array {
-     *   $filter = $this->getListFilter(func_get_args());
+     * public function getFaculties(SyncContext $ctx): array {
+     *   $filter = $this->argsToFilter(func_get_args());
      * }
      * ```
      *
-     * The following signatures are recognised (after removing the leading
-     * {@see SyncContext} argument):
+     * After {@see SyncContext} is removed (if present), `$args` must be empty
+     * or correspond to one of the following signatures, otherwise an exception
+     * will be thrown.
      *
-     * ```php
-     * // 1. An array at index 0 (subsequent arguments are ignored)
-     * getList(array $filter);
+     * 1. An associative array: `fn(array $filter)`
+     *    - Alphanumeric keys are converted to snake_case
+     *    - Keys containing characters other than letters, numbers, hyphens and
+     *      underscores, e.g. `'$orderby'`, are returned as-is
      *
-     * // 2. A list of entity IDs (where every argument is an integer or string)
-     * getList(...$ids);
-     * ```
+     * 2. A list of entity IDs: `fn(int|string ...$ids)`
+     *    - Converted to `[ "id" => $ids ]`
+     *    - See {@see SyncProvider::argsToIds()}
      *
-     * If an array is found at `$args[0]`, a copy of the array with each
-     * alphanumeric key converted to `snake_case` is returned. Keys containing
-     * characters other than letters, numbers, hyphens and underscores--e.g.
-     * `$orderby`--are copied as-is.
+     * 3. A list of entities: `fn(SyncEntity ...$entities)`
+     *    - Converted to an array that maps the normalised name of each entity's
+     *      unqualified {@see IProvidable::providable() base class} to an array
+     *      of entities
      *
-     * If every value in `$args` is either an `int` or a `string`, a filter
-     * similar to the following is returned:
-     *
-     * ```php
-     * ["id" => [39, 237, 239, 240, 316, 344, 357, 361, 370, 380]]
-     * ```
-     *
-     * Otherwise, an empty array is returned.
-     *
-     * @param array $args
-     * @return array
+     * @param bool $replaceWithId If `true`, {@see SyncEntity} objects are
+     * replaced with the value of their {@see SyncEntity::$Id Id} when `$args`
+     * contains an associative array or a list of entities. This operation is
+     * not recursive.
      */
-    protected function getListFilter(array $args): array
+    protected function argsToFilter(array $args, bool $replaceWithId = true): array
     {
         if (($args[0] ?? null) instanceof SyncContext)
         {
@@ -213,45 +209,52 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
             return [];
         }
 
-        if (!is_array($args[0]))
+        if (is_array($args[0]) && count($args) === 1)
         {
-            if (!empty(array_filter(
-                $args,
-                function ($arg) { return !is_int($arg) && !is_string($arg); }
-            )))
-            {
-                return [];
-            }
+            return array_combine(array_map(
+                fn($key) => preg_match('/[^[:alnum:]_-]/', $key) ? $key : Convert::toSnakeCase($key),
+                array_keys($args[0])
+            ), $replaceWithId ? array_map(
+                fn($value) => $value instanceof SyncEntity ? $value->Id : $value,
+                $args[0]
+            ) : $args[0]);
+        }
 
+        if (empty(array_filter(
+            $args,
+            fn($arg) => !(is_int($arg) || is_string($arg))
+        )))
+        {
             return ["id" => $args];
         }
 
-        $filter = [];
-
-        foreach ($args[0] as $field => $value)
+        if (empty(array_filter(
+            $args,
+            fn($arg) => !($arg instanceof SyncEntity)
+        )))
         {
-            if (preg_match('/[^[:alnum:]_-]/', $field))
-            {
-                $filter[$field] = $value;
-                continue;
-            }
-            $filter[Convert::toSnakeCase($field)] = $value;
+            return array_merge_recursive(...array_map(
+                fn(SyncEntity $entity): array => [
+                    Convert::toSnakeCase(Convert::classToBasename(
+                        $entity->providable() ?: get_class($entity)
+                    )) => [$replaceWithId ? $entity->Id : $entity]
+                ],
+                $args
+            ));
         }
 
-        return $filter;
+        throw new UnexpectedValueException("Invalid arguments");
     }
 
     /**
-     * Return a list of entity IDs passed to a getList method
+     * Convert arguments to a filter and return the values at $filter["id"]
      *
-     * `getListIds` uses {@see SyncProvider::getListFilter()} to normalise
-     * `$args`. Returns an empty array if no entity IDs are passed.
+     * Calls {@see SyncProvider::argsToFilter()} to normalise `$args`.
      *
-     * @param array $args
-     * @return array
+     * @return array Empty if no IDs were passed.
      */
-    protected function getListIds(array $args): array
+    protected function argsToIds(array $args): array
     {
-        return Convert::toList($this->getListFilter($args)["id"] ?? []);
+        return Convert::toList($this->argsToFilter($args)["id"] ?? []);
     }
 }

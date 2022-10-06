@@ -7,7 +7,7 @@ namespace Lkrms\Tests\Sync\Support;
 use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Sync\Support\SyncClosureBuilder;
-use Lkrms\Sync\SyncOperation;
+use Lkrms\Sync\Support\SyncOperation;
 use Lkrms\Tests\Sync\CustomEntity\Post;
 use Lkrms\Tests\Sync\Entity\PostProvider;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;

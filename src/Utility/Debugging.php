@@ -17,9 +17,11 @@ final class Debugging implements ReceivesFacade
      */
     private $Facade;
 
-    public function setFacade(string $name): void
+    public function setFacade(string $name)
     {
         $this->Facade = $name;
+
+        return $this;
     }
 
     /**

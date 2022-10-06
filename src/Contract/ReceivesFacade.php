@@ -14,7 +14,8 @@ interface ReceivesFacade
     /**
      * Called immediately after instantiation by a facade
      *
+     * @return $this
      */
-    public function setFacade(string $name): void;
+    public function setFacade(string $name);
 
 }

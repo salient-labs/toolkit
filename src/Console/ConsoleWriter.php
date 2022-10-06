@@ -128,9 +128,11 @@ final class ConsoleWriter implements ReceivesFacade
         return $this;
     }
 
-    public function setFacade(string $name): void
+    public function setFacade(string $name)
     {
         $this->Facade = $name;
+
+        return $this;
     }
 
     /**
