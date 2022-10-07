@@ -34,6 +34,7 @@ use UnexpectedValueException;
  * @property-read string|string[]|bool|int|null $DefaultValue
  * @property-read string|null $EnvironmentVariable
  * @property-read string|string[]|bool|int|null $Value
+ * @property-read callable|null $ValueCallback
  */
 final class CliOption implements IReadable, IImmutable
 {

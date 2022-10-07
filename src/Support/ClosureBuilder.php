@@ -57,7 +57,7 @@ class ClosureBuilder
     /**
      * @var bool
      */
-    private $IsTreeNode;
+    private $IsHierarchy;
 
     /**
      * Property names
@@ -255,7 +255,7 @@ class ClosureBuilder
         $this->IsWritable   = $class->implementsInterface(IWritable::class);
         $this->IsExtensible = $class->implementsInterface(IExtensible::class);
         $this->IsProvidable = $class->implementsInterface(IProvidable::class);
-        $this->IsTreeNode   = $class->implementsInterface(IHierarchy::class);
+        $this->IsHierarchy  = $class->implementsInterface(IHierarchy::class);
 
         // IResolvable provides access to properties via alternative names
         if ($class->implementsInterface(IResolvable::class))
@@ -619,14 +619,14 @@ class ClosureBuilder
                 $obj = $closure($container, $array);
                 if ($provider)
                 {
-                    $obj->setProvider($provider, $this->BaseClass ?: $this->Class);
-                    $obj->setProvidableContext($context);
+                    return $obj->setProvider($provider, $this->BaseClass ?: $this->Class)
+                        ->setProvidableContext($context);
                 }
                 return $obj;
             };
         }
 
-        if ($this->IsTreeNode)
+        if ($this->IsHierarchy)
         {
             $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?IHierarchy $parent) use ($closure)
             {
@@ -634,7 +634,7 @@ class ClosureBuilder
                 $obj = $closure($container, $array, $provider, $context);
                 if ($parent)
                 {
-                    $obj->setParent($parent);
+                    return $obj->setParent($parent);
                 }
                 return $obj;
             };

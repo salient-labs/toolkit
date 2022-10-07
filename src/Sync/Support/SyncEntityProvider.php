@@ -123,10 +123,10 @@ class SyncEntityProvider implements ISyncEntityProvider
      *
      * ```php
      * // 1.
-     * public function getFaculty(SyncContext $ctx, int $id = null): Faculty;
+     * public function getFaculty(SyncContext $ctx, $id): Faculty;
      *
      * // 2.
-     * public function get_Faculty(SyncContext $ctx, int $id = null): Faculty;
+     * public function get_Faculty(SyncContext $ctx, $id): Faculty;
      * ```
      *
      * The first parameter after `SyncContext $ctx`:
@@ -137,7 +137,7 @@ class SyncEntityProvider implements ISyncEntityProvider
      *
      * @param int|string|null $id
      */
-    public function get($id = null, ...$args): SyncEntity
+    public function get($id, ...$args): SyncEntity
     {
         return $this->run(SyncOperation::READ, $id, ...$args);
     }

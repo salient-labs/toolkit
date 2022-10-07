@@ -24,7 +24,7 @@ interface ISyncEntityProvider
      *
      * @param int|string|null $id
      */
-    public function get($id = null, ...$args): SyncEntity;
+    public function get($id, ...$args): SyncEntity;
 
     /**
      * Update an entity in the backend

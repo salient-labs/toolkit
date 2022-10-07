@@ -19,7 +19,7 @@ and **optional** arguments may be accepted after mandatory parameters.
 | Operation[^op]  | Closure signature                                                | Equivalent method[^1]    | Alternative method[^2] |
 | --------------- | ---------------------------------------------------------------- | ------------------------ | ---------------------- |
 | `CREATE`        | `fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity` | `create<EntitySingular>` | `create_<Entity>`      |
-| `READ`          | `fn(SyncContext $ctx, ?int $id = null, ...$args): SyncEntity`    | `get<EntitySingular>`    | `get_<Entity>`         |
+| `READ`          | `fn(SyncContext $ctx, ?int $id, ...$args): SyncEntity`           | `get<EntitySingular>`    | `get_<Entity>`         |
 | `UPDATE`        | `fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity` | `update<EntitySingular>` | `update_<Entity>`      |
 | `DELETE`        | `fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity` | `delete<EntitySingular>` | `delete_<Entity>`      |
 | `CREATE_LIST`   | `fn(SyncContext $ctx, iterable $entities, ...$args): iterable`   | `create<EntityPlural>`   | `createList_<Entity>`  |

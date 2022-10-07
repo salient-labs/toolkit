@@ -48,7 +48,15 @@ class GenerateSyncEntityInterface extends GenerateCommand
                 ->description("The SyncEntity subclass to generate a provider for")
                 ->optionType(CliOptionType::VALUE)
                 ->required()
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get("DEFAULT_NAMESPACE", "")))
+                ->go()),
+            (CliOption::build()
+                ->long("extend")
+                ->short("x")
+                ->valueName("CLASS")
+                ->description("The interface to extend (must extend ISyncProvider)")
+                ->optionType(CliOptionType::VALUE)
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get("DEFAULT_NAMESPACE", "")))
                 ->go()),
             (CliOption::build()
                 ->long("magic")
@@ -94,6 +102,7 @@ class GenerateSyncEntityInterface extends GenerateCommand
                 ->allowedValues(self::OPERATIONS)
                 ->multipleAllowed()
                 ->defaultValue(self::DEFAULT_OPERATIONS)
+                ->valueCallback(fn(array $value) => array_intersect(self::OPERATIONS, $value))
                 ->go()),
             (CliOption::build()
                 ->long("plural")
@@ -118,14 +127,17 @@ class GenerateSyncEntityInterface extends GenerateCommand
             "delete-list" => SyncOperation::DELETE_LIST,
         ];
 
-        $namespace   = explode("\\", ltrim($this->getOptionValue("class"), "\\"));
+        $namespace   = explode("\\", $this->getOptionValue("class"));
         $class       = array_pop($namespace);
-        $namespace   = implode("\\", $namespace) ?: Env::get("DEFAULT_NAMESPACE", "");
+        $interface   = $class . "Provider";
+        $namespace   = implode("\\", $namespace);
         $fqcn        = $namespace ? $namespace . "\\" . $class : $class;
         $classPrefix = $namespace ? "\\" : "";
 
-        $interface   = $class . "Provider";
-        $extendsFqcn = ISyncProvider::class;
+        $extendsNamespace = explode("\\", $this->getOptionValue("extend") ?: ISyncProvider::class);
+        $extendsClass     = array_pop($extendsNamespace);
+        $extendsNamespace = implode("\\", $extendsNamespace);
+        $extendsFqcn      = $extendsNamespace ? $extendsNamespace . "\\" . $extendsClass : $extendsClass;
 
         $this->OutputClass     = $interface;
         $this->OutputNamespace = $namespace;
@@ -142,7 +154,7 @@ class GenerateSyncEntityInterface extends GenerateCommand
         $desc       = is_null($desc) ? "Syncs $class objects with a backend" : $desc;
         $operations = array_map(
             function ($op) use ($operationMap) { return $operationMap[$op]; },
-            array_intersect(self::OPERATIONS, $this->getOptionValue("op"))
+            $this->getOptionValue("op")
         );
 
         if (!$fqcn)
@@ -188,6 +200,7 @@ class GenerateSyncEntityInterface extends GenerateCommand
 
         $methods = [];
         $lines   = [];
+        /** @var int $op */
         foreach ($operations as $op)
         {
             // CREATE and UPDATE have the same signature, so it's a good default
@@ -210,7 +223,7 @@ class GenerateSyncEntityInterface extends GenerateCommand
             {
                 case SyncOperation::READ:
                     $paramDoc  = 'int|string|null $id';
-                    $paramCode = '$id = null';
+                    $paramCode = '$id';
                     break;
 
                 case SyncOperation::READ_LIST:
@@ -219,7 +232,8 @@ class GenerateSyncEntityInterface extends GenerateCommand
             }
 
             $context   = $this->getFqcnAlias(SyncContext::class) . ' $ctx';
-            $paramCode = "$context, $paramCode";
+            $separator = $paramCode ? ", " : "";
+            $paramCode = "$context$separator$paramCode";
 
             if (!$magic)
             {
@@ -239,7 +253,6 @@ class GenerateSyncEntityInterface extends GenerateCommand
             }
             else
             {
-                $separator = $paramDoc ? ", " : "";
                 $methods[] = " * @method $returnDoc {$opMethod[$op]}($context$separator$paramDoc)";
             }
         }

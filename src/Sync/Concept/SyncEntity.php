@@ -90,6 +90,16 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         return $ctx;
     }
 
+    protected function requireContext(): ISyncContext
+    {
+        if (is_null($ctx = $this->context()))
+        {
+            throw new RuntimeException("Context required");
+        }
+
+        return $ctx;
+    }
+
     /**
      * Return true if the value of a property is the same between this and
      * another instance of the same class

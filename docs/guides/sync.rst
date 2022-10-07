@@ -23,7 +23,7 @@ used. The first value passed is always the current `SyncContext`_ and
 +======================+====================================================================+============================+=========================+
 | ``CREATE``           | ``fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity`` | ``create<EntitySingular>`` | ``create_<Entity>``     |
 +----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
-| ``READ``             | ``fn(SyncContext $ctx, ?int $id = null, ...$args): SyncEntity``    | ``get<EntitySingular>``    | ``get_<Entity>``        |
+| ``READ``             | ``fn(SyncContext $ctx, ?int $id, ...$args): SyncEntity``           | ``get<EntitySingular>``    | ``get_<Entity>``        |
 +----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
 | ``UPDATE``           | ``fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity`` | ``update<EntitySingular>`` | ``update_<Entity>``     |
 +----------------------+--------------------------------------------------------------------+----------------------------+-------------------------+
