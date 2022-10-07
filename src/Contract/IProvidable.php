@@ -68,16 +68,24 @@ interface IProvidable
     public function setProvidableContext(?IProvidableContext $context);
 
     /**
+     * @return static
+     */
+    public static function provide(array $data, IProvider $provider, ?IProvidableContext $context = null);
+
+    /**
+     * @param iterable<array> $dataList
+     * @return iterable<static>
+     */
+    public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProvidableContext $context = null): iterable;
+
+    #### Deprecated ####
+
+    /**
      * @deprecated Use {@see IProvidable::provide()} instead
      * @param array<int|string,int|string|array<int,int|string>>|null $keyMap
      * @return static
      */
     public static function fromProvider(IProvider $provider, array $data, callable $callback = null, array $keyMap = null);
-
-    /**
-     * @return static
-     */
-    public static function provide(array $data, IProvider $provider, ?IProvidableContext $context = null);
 
     /**
      * @deprecated Use {@see IProvidable::provideList()} instead
@@ -86,11 +94,5 @@ interface IProvidable
      * @return iterable<static>
      */
     public static function listFromProvider(IProvider $provider, iterable $list, callable $callback = null, array $keyMap = null): iterable;
-
-    /**
-     * @param iterable<array> $dataList
-     * @return iterable<static>
-     */
-    public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProvidableContext $context = null): iterable;
 
 }

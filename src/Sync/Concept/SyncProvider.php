@@ -58,8 +58,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     abstract protected function _getBackendIdentifier(): array;
 
     /**
-     * Specify how to encode dates for the backend, and which timezone to apply
-     * (optional)
+     * Specify how to encode dates for the backend and/or the timezone to apply
      *
      * The {@see DateFormatter} returned will be cached for the lifetime of the
      * {@see SyncProvider} instance.
