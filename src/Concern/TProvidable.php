@@ -75,6 +75,20 @@ trait TProvidable
     }
 
     /**
+     * Throw an exception if the instance was created with no
+     * IProvidableContext, otherwise return it
+     */
+    protected function requireContext(): IProvidableContext
+    {
+        if (!$this->_ProvidableContext)
+        {
+            throw new RuntimeException("Context required");
+        }
+
+        return $this->_ProvidableContext;
+    }
+
+    /**
      * Create an instance of the class from an array on behalf of a provider
      *
      * The constructor (if any) is invoked with values from `$data`. If `$data`

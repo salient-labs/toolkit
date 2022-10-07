@@ -92,8 +92,8 @@ abstract class SyncDefinition implements ISyncDefinition
                 if (!$closure)
                 {
                     $closure = in_array($this->Conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                        ? SyncClosureBuilder::getBound($ctx->Container, $this->Entity)->getCreateProvidableFromSignatureClosure(array_keys($entity))
-                        : SyncClosureBuilder::getBound($ctx->Container, $this->Entity)->getCreateProvidableFromClosure();
+                        ? SyncClosureBuilder::getBound($ctx->container(), $this->Entity)->getCreateProvidableFromSignatureClosure(array_keys($entity))
+                        : SyncClosureBuilder::getBound($ctx->container(), $this->Entity)->getCreateProvidableFromClosure();
                 }
 
                 return $closure($entity, $this->Provider, $ctx);

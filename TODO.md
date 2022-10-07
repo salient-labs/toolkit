@@ -11,7 +11,7 @@
   - [x] `Cli` -> `CliAppContainer`, with `Cli` as a facade
     - [x] Reimplement `Cli::registerCommand()`
   - [x] `Util` -> `Utility`, with facades in `Facade`
-  - [ ] Reimplement `Convert::arrayValuesToChildArray()` and `Convert::toNestedArrays()` as a closure builder
+  - [ ] Remove `Convert::arrayValuesToChildArray()` and `Convert::toNestedArrays()`
   - [ ] Finalise Dice refactor
   - ~~Adopt PHP's built-in `DateFormatter` alternative?~~
 - [x] Implement a generic fluent interface (`Builder`) with instance creation ~~and property getting/setting~~
@@ -37,23 +37,35 @@
 - [ ] Establish mechanism for resolving `$<entity>Id` properties to `$Entity` and vice-versa
 - [ ] Implement automatic local storage of entities
   - [ ] When a `SyncEntity` is created, load a local instance before applying provider state
-  - [ ] Add `static` methods like `getFrom($provider)` and `syncFrom($provider)` to `SyncEntity`
+  - ~~Add `static` methods like `getFrom($provider)` and `syncFrom($provider)` to `SyncEntity`~~
   - [ ] Generate and store deltas while applying provider state
-  - [ ] Track "deltas in" and "deltas out" in local store?
+    - [ ] Retain audit log
+    - [ ] Track "deltas in" and "deltas out"
+  - [ ] Track foreign keys between backends
 - [ ] Add `SyncException` as a base class
+- [ ] Add `SyncEntityProvider::resolve()` and `fuzzyResolve()`
 
 ### Cli
 - [x] Allow commands to be chained and/or invoked as functions
   - [x] Receive arguments via `CliCommand::__invoke()` instead of reading from `$GLOBALS["argv"]`
 - [ ] Implement shared/default command options
 - [ ] Add `ALL` as a `ONE_OF` option if `MultipleAllowed` is set
-- [ ] Implement `CliOption` types, e.g. DateTime, file, stream, JsonData
+- [ ] Implement `CliOptionDataType`
+  - [ ] `BOOLEAN` (flag)
+  - [ ] `INTEGER` (flag + multiple allowed)
+  - [ ] `STRING` (default otherwise)
+  - [ ] `DATE`
+  - [ ] `PATH` (must exist)
+  - [ ] `FILE`, incl. stream support (must exist)
+  - [ ] `DIRECTORY` (must exist)
+  - [ ] `JSON`?
 - [ ] Add `ENVIRONMENT VARIABLES` section to help
 - [ ] Allow ad-hoc help sections
 - [ ] Allow documentation-only nodes
 
 ### Console
 - [x] Improve default targets so console messages aren't included in redirected output
+- [ ] Validate `ConsoleLevel` values where necessary
 
 ### CLI utility
 - [ ] `generate sync`:
