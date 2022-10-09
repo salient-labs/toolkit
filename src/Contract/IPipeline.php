@@ -16,7 +16,7 @@ interface IPipeline
     /**
      * Set the payload
      *
-     * Arguments added after `$payload` will be passed to each pipe.
+     * Arguments added after `$payload` are passed to each pipe.
      *
      * @return $this
      */
@@ -28,7 +28,7 @@ interface IPipeline
      * Call {@see IPipeline::start()} to run the pipeline with each value in
      * `$payload` and `yield` the results via a generator.
      *
-     * Arguments added after `$payload` will be passed to each pipe.
+     * Arguments added after `$payload` are passed to each pipe.
      *
      * @param iterable $payload Must be traversable with `foreach`.
      * @return $this
@@ -36,13 +36,13 @@ interface IPipeline
     public function stream(iterable $payload, ...$args);
 
     /**
-     * Set a callback that will be applied to each payload before it is sent
+     * Apply a callback to each payload before it is sent
      *
      * This method can only be called once per pipeline.
      *
-     * Arguments added after `$callback` will be passed to the callback
-     * **before** any arguments added after `$payload` in
-     * {@see IPipeline::send()} or {@see IPipeline::stream()}.
+     * Arguments added after `$callback` are passed to the callback **before**
+     * any arguments given after `$payload` in {@see IPipeline::send()} or
+     * {@see IPipeline::stream()}.
      *
      * @return $this
      */
@@ -60,10 +60,13 @@ interface IPipeline
      * function ($payload, Closure $next, ...$args)
      * ```
      *
-     * Whichever form it takes, a pipe should perform an action that uses,
-     * changes and/or replaces `$payload`, then either:
-     * - return the value of `$next($payload)`, or
-     * - throw an exception
+     * Whichever form it takes, a pipe should use, mutate and/or replace
+     * `$payload`, then either:
+     * - return the value of `$next($payload)`,
+     * - throw an exception, or
+     * - return a value the {@see IPipeline::unless()} callback will discard
+     *   (this bypasses any remaining pipes and the callback passed to
+     *   {@see IPipeline::then()}, if applicable)
      *
      * @param IPipe|callable|string ...$pipes Each pipe must be an `IPipe`
      * object, the name of an `IPipe` class to instantiate, or a closure with
@@ -97,17 +100,39 @@ interface IPipeline
     public function throughKeyMap(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED);
 
     /**
-     * Set a callback that will be applied to each result
+     * Apply a callback to each result
      *
      * This method can only be called once per pipeline.
      *
-     * Arguments added after `$callback` will be passed to the callback
-     * **before** any arguments added after `$payload` in
-     * {@see IPipeline::send()} or {@see IPipeline::stream()}.
+     * Arguments added after `$callback` are passed to the callback **before**
+     * any arguments given after `$payload` in {@see IPipeline::send()} or
+     * {@see IPipeline::stream()}.
      *
      * @return $this
      */
     public function then(callable $callback, ...$args);
+
+    /**
+     * Apply a filter to each result
+     *
+     * This method can only be called once per pipeline.
+     *
+     * Analogous to `array_filter()`. If `$filter` returns `true`, `$result` is
+     * returned to the caller, otherwise:
+     * - if {@see IPipeline::stream()} was called, the result is discarded
+     * - if {@see IPipeline::send()} was called, an exception is thrown
+     *
+     * Arguments added after `$filter` are passed to the filter **before** any
+     * arguments given after `$payload` in {@see IPipeline::send()} or
+     * {@see IPipeline::stream()}.
+     *
+     * @param callable $filter
+     * ```php
+     * fn($result, ...$args): bool
+     * ```
+     * @return $this
+     */
+    public function unless(callable $filter, ...$args);
 
     /**
      * Run the pipeline and return the result
