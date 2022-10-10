@@ -135,7 +135,7 @@ class SendHttpRequest extends CliCommand
         switch ($this->getMethod())
         {
             case "GET":
-                $result = $curler->getJson($query);
+                $result = $curler->get($query);
                 break;
 
             case "HEAD":
@@ -143,19 +143,19 @@ class SendHttpRequest extends CliCommand
                 break;
 
             case "POST":
-                $result = $curler->postJson($data ?? null, $query);
+                $result = $curler->post($data ?? null, $query);
                 break;
 
             case "PUT":
-                $result = $curler->putJson($data ?? null, $query);
+                $result = $curler->put($data ?? null, $query);
                 break;
 
             case "DELETE":
-                $result = $curler->deleteJson($data ?? null, $query);
+                $result = $curler->delete($data ?? null, $query);
                 break;
 
             case "PATCH":
-                $result = $curler->patchJson($data ?? null, $query);
+                $result = $curler->patch($data ?? null, $query);
                 break;
 
             default:

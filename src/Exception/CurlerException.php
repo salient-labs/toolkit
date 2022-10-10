@@ -16,83 +16,53 @@ use Throwable;
 class CurlerException extends \Lkrms\Exception\Exception
 {
     /**
-     * @var array|null
+     * @var Curler
      */
-    protected $CurlInfo;
+    protected $Curler;
 
-    /**
-     * @var string|array|null
-     */
-    protected $RequestData;
-
-    /**
-     * @var array|null
-     */
-    protected $ResponseHeaders;
-
-    /**
-     * @var string|null
-     */
-    protected $ResponseData;
-
-    /**
-     * @var int|null
-     */
-    protected $ResponseCode;
-
-    /**
-     * @var string|null
-     */
-    protected $ResponseStatus;
-
-    public function __construct(
-        Curler $curler,
-        string $message,
-        int $code = 0,
-        Throwable $previous = null
-    ) {
-        $this->CurlInfo        = $curler->getCurlInfo();
-        $this->RequestData     = $curler->Data;
-        $this->ResponseHeaders = $curler->ResponseHeadersByName;
-        $this->ResponseData    = $curler->ResponseData;
-        $this->ResponseCode    = $curler->ResponseCode;
-        $this->ResponseStatus  = $curler->ResponseStatus;
-
+    public function __construct(Curler $curler, string $message, int $code = 0, ?Throwable $previous = null)
+    {
         parent::__construct($message, $code, $previous);
+
+        $this->Curler = $curler->withCurlInfo();
     }
 
     public function getDetail(): array
     {
         $detail = [
             "Response" => implode("\n", [
-                Format::array($this->ResponseHeaders) ?: "<no headers>",
-                (is_null($this->ResponseData)
-                    ? "<no response body>"
-                    : ($this->ResponseData ?: "<empty response body>")),
+                Format::array($this->Curler->ResponseHeadersByName) ?: "<no headers>",
+                (is_null($this->Curler->ResponseBody)
+                    ? "<no body>"
+                    : ($this->Curler->ResponseBody ?: "<empty body>")),
             ]),
         ];
+
         if (Env::debug())
         {
-            $detail["Request"] = (is_array($this->RequestData)
-                ? Format::array($this->RequestData)
-                : (string)$this->RequestData);
-            $detail["curl_getinfo"] = (is_null($this->CurlInfo)
+            $detail["Request"] = (is_array($this->Curler->Body)
+                ? Format::array($this->Curler->Body)
+                : (string)$this->Curler->Body);
+
+            $detail["curl_getinfo"] = (is_null($this->Curler->CurlInfo)
                 ? ""
                 : Format::array(array_map(
                     fn($value) => is_string($value) ? trim($value) : $value,
-                    $this->CurlInfo
+                    $this->Curler->CurlInfo
                 )));
         }
+
         return $detail;
     }
 
-    public function getResponseCode(): ?int
+    public function getStatusCode(): ?int
     {
-        return $this->ResponseCode;
+        return $this->Curler->StatusCode;
     }
 
-    public function getResponseStatus(): ?string
+    public function getReasonPhrase(): ?string
     {
-        return $this->ResponseStatus;
+        return $this->Curler->ReasonPhrase;
     }
+
 }

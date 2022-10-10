@@ -139,7 +139,7 @@ class HttpSyncDefinition extends SyncDefinition
                 break;
 
             case SyncOperation::READ:
-                $closure = fn(SyncContext $ctx, ?int $id, ...$args): SyncEntity => $toEntity->send(
+                $closure = fn(SyncContext $ctx, $id, ...$args): SyncEntity => $toEntity->send(
                     $toCurler($this->getPath($operation, $ctx, $id, ...$args), $this->getQuery($operation, $ctx, $id, ...$args)),
                     $operation, $ctx, $id, ...$args
                 )->run();
@@ -213,23 +213,23 @@ class HttpSyncDefinition extends SyncDefinition
         {
             case HttpRequestMethod::GET:
                 return fn(string $path, ?array $query): array =>
-                    $this->Provider->getCurler($path, $this->Expiry)->getJson($query);
+                    $this->Provider->getCurler($path, $this->Expiry)->get($query);
 
             case HttpRequestMethod::POST:
                 return fn(string $path, ?array $query, ?array $payload): array =>
-                    $this->Provider->getCurler($path, $this->Expiry)->postJson($payload, $query);
+                    $this->Provider->getCurler($path, $this->Expiry)->post($payload, $query);
 
             case HttpRequestMethod::PUT:
                 return fn(string $path, ?array $query, ?array $payload): array =>
-                    $this->Provider->getCurler($path, $this->Expiry)->putJson($payload, $query);
+                    $this->Provider->getCurler($path, $this->Expiry)->put($payload, $query);
 
             case HttpRequestMethod::PATCH:
                 return fn(string $path, ?array $query, ?array $payload): array =>
-                    $this->Provider->getCurler($path, $this->Expiry)->patchJson($payload, $query);
+                    $this->Provider->getCurler($path, $this->Expiry)->patch($payload, $query);
 
             case HttpRequestMethod::DELETE:
                 return fn(string $path, ?array $query, ?array $payload): array =>
-                    $this->Provider->getCurler($path, $this->Expiry)->deleteJson($payload, $query);
+                    $this->Provider->getCurler($path, $this->Expiry)->delete($payload, $query);
 
             default:
                 throw new UnexpectedValueException("Invalid SyncOperation or method map: $operation");

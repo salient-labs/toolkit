@@ -41,7 +41,10 @@ final class CurlerHeader implements IReadable, IImmutable
         $this->Index = $index;
     }
 
-    public function extendValue(string $value): self
+    /**
+     * @return $this
+     */
+    public function extendValue(string $value)
     {
         $clone         = clone $this;
         $clone->Value .= $value;

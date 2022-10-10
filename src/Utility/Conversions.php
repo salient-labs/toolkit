@@ -117,6 +117,26 @@ final class Conversions
     }
 
     /**
+     * Explode a string, trim each substring, remove empty strings
+     *
+     * @return string[]
+     */
+    public function stringToList(string $separator, string $string, ?string $trim = null): array
+    {
+        if (!$separator)
+        {
+            throw new UnexpectedValueException("Invalid separator: $separator");
+        }
+
+        return array_values(array_filter(array_map(
+            (is_null($trim)
+                ? fn(string $item) => trim($item)
+                : fn(string $item) => trim($item, $trim)),
+            explode($separator, $string)
+        )));
+    }
+
+    /**
      * Convert an interval to the equivalent number of seconds
      *
      * Works with ISO 8601 durations like `PT48M`.
@@ -767,14 +787,7 @@ final class Conversions
         return get_object_vars($object);
     }
 
-    private function _dataToQuery(
-        array $data,
-        bool $forceNumericKeys,
-        DateFormatter $dateFormatter,
-        string & $query = null,
-        string $name    = "",
-        string $format  = "%s"
-    ): string
+    private function _dataToQuery(array $data, bool $preserveKeys, DateFormatter $dateFormatter, ?string & $query = null, string $name = "", string $format = "%s"): string
     {
         if (is_null($query))
         {
@@ -800,7 +813,7 @@ final class Conversions
 
                 continue;
             }
-            elseif (!$forceNumericKeys && Test::isListArray($value, true))
+            elseif (!$preserveKeys && Test::isListArray($value, true))
             {
                 $_format = "[]";
             }
@@ -809,7 +822,7 @@ final class Conversions
                 $_format = "[%s]";
             }
 
-            $this->_dataToQuery($value, $forceNumericKeys, $dateFormatter, $query, $name . $_name, $_format);
+            $this->_dataToQuery($value, $preserveKeys, $dateFormatter, $query, $name . $_name, $_format);
         }
 
         return $query;
@@ -823,22 +836,14 @@ final class Conversions
      *
      * Arrays with consecutive integer keys numbered from 0 are considered to be
      * lists. By default, keys are not included when adding lists to query
-     * strings. Set `$forceNumericKeys` to override this behaviour.
+     * strings. Set `$preserveKeys` to override this behaviour.
      *
-     * @param array $data
-     * @param bool $forceNumericKeys
-     * @param DateFormatter|null $dateFormatter
-     * @return string
      */
-    public function dataToQuery(
-        array $data,
-        bool $forceNumericKeys       = false,
-        DateFormatter $dateFormatter = null
-    ): string
+    public function dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null): string
     {
         return $this->_dataToQuery(
             $data,
-            $forceNumericKeys,
+            $preserveKeys,
             $dateFormatter ?: new DateFormatter()
         );
     }
