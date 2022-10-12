@@ -42,7 +42,7 @@ class ProvidableContext implements IProvidableContext
         $this->Parent    = $parent;
     }
 
-    private function maybeMutate(string $property, $value, ?string $key = null)
+    protected function maybeMutate(string $property, $value, ?string $key = null)
     {
         if ($key)
         {

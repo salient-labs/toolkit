@@ -209,6 +209,29 @@ class HttpSyncDefinition extends SyncDefinition
      */
     private function getCurlerOperationClosure(int $operation): Closure
     {
+        // Pagination with operations other than READ_LIST via GET or POST is
+        // too risky to implement here, but providers can add their own support
+        // for pagination with other operations and/or HTTP methods
+        if ($operation === SyncOperation::READ_LIST)
+        {
+            switch ($this->MethodMap[$operation] ?? null)
+            {
+                case HttpRequestMethod::GET:
+                    return function (string $path, ?array $query)
+                    {
+                        $curler = $this->Provider->getCurler($path, $this->Expiry);
+                        return $curler->Pager ? $curler->getP($query) : $curler->get($query);
+                    };
+
+                case HttpRequestMethod::POST:
+                    return function (string $path, ?array $query, ?array $payload)
+                    {
+                        $curler = $this->Provider->getCurler($path, $this->Expiry);
+                        return $curler->Pager ? $curler->postP($payload, $query) : $curler->post($payload, $query);
+                    };
+            }
+        }
+
         switch ($this->MethodMap[$operation] ?? null)
         {
             case HttpRequestMethod::GET:

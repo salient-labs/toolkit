@@ -13,6 +13,7 @@ use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncEntityProvider;
+use Lkrms\Sync\Support\SyncOperation;
 use ReflectionClass;
 use UnexpectedValueException;
 
@@ -198,11 +199,18 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      * contains an associative array or a list of entities. This operation is
      * not recursive.
      */
-    protected function argsToFilter(array $args, bool $replaceWithId = true): array
+    protected function argsToFilter(array $args, bool $replaceWithId = true, int $operation = SyncOperation::READ_LIST): array
     {
         if (($args[0] ?? null) instanceof SyncContext)
         {
             array_shift($args);
+
+            // READ_LIST is the only operation with no mandatory argument after
+            // `SyncContext $ctx`
+            if ($operation !== SyncOperation::READ_LIST)
+            {
+                array_shift($args);
+            }
         }
 
         if (empty($args))
@@ -254,8 +262,9 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      *
      * @return array Empty if no IDs were passed.
      */
-    protected function argsToIds(array $args): array
+    protected function argsToIds(array $args, int $operation = SyncOperation::READ_LIST): array
     {
-        return Convert::toList($this->argsToFilter($args)["id"] ?? []);
+        return Convert::toList($this->argsToFilter($args, true, $operation)["id"] ?? []);
     }
+
 }

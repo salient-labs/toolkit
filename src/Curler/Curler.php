@@ -350,6 +350,11 @@ class Curler implements IReadable, IWritable
 
     final protected function close(): void
     {
+        if (is_null($this->Handle))
+        {
+            return;
+        }
+
         curl_close($this->Handle);
         $this->Handle = null;
     }
@@ -358,10 +363,16 @@ class Curler implements IReadable, IWritable
     {
         $this->createHandle($this->BaseUrl
             . ($this->QueryString = $this->getQueryString($query)));
-        if ($method != HttpRequestMethod::GET)
+
+        if ($method === HttpRequestMethod::GET)
+        {
+            $this->Method = $method;
+        }
+        else
         {
             $this->applyMethod($method);
         }
+
         $this->clearResponse();
         $this->setContentType(null);
         $this->Body = null;
@@ -437,7 +448,7 @@ class Curler implements IReadable, IWritable
         {
             $this->ResponseHeaders = $this->ResponseHeaders->addRawHeader($header);
         }
-        elseif (count($split = explode(" ", $header, 2)) == 2 && explode("/", $split[0])[0] == "HTTP")
+        elseif (count($split = explode(" ", $header, 2)) === 2 && explode("/", $split[0])[0] === "HTTP")
         {
             $this->ReasonPhrase = trim($split[1]);
         }
@@ -592,7 +603,7 @@ class Curler implements IReadable, IWritable
 
                 if ($active)
                 {
-                    if (curl_multi_select($this->MultiHandle) == -1)
+                    if (curl_multi_select($this->MultiHandle) === -1)
                     {
                         // 100 milliseconds, as suggested here:
                         // https://curl.se/libcurl/c/curl_multi_fdset.html
@@ -635,11 +646,11 @@ class Curler implements IReadable, IWritable
                 throw new CurlerException($this, "cURL error: " . curl_strerror($error));
             }
 
-            if ($this->StatusCode == 429 &&
+            if ($this->StatusCode === 429 &&
                 $this->RetryAfterTooManyRequests &&
-                $attempt == 0 &&
+                $attempt === 0 &&
                 !is_null($after = $this->getRetryAfter()) &&
-                ($this->RetryAfterMaxSeconds == 0 || $after <= $this->RetryAfterMaxSeconds))
+                ($this->RetryAfterMaxSeconds === 0 || $after <= $this->RetryAfterMaxSeconds))
             {
                 // Sleep for at least one second
                 $after = max(1, $after);
@@ -761,7 +772,7 @@ class Curler implements IReadable, IWritable
 
         $this->execute();
 
-        if ($method == HttpRequestMethod::HEAD)
+        if ($method === HttpRequestMethod::HEAD)
         {
             return $this->ResponseHeaders;
         }
@@ -1054,7 +1065,7 @@ class Curler implements IReadable, IWritable
 
             if (is_null($prefix))
             {
-                if ($this->ResponseHeadersByName["odata-version"] == "4.0")
+                if ($this->ResponseHeadersByName["odata-version"] === "4.0")
                 {
                     $prefix = "@odata.";
                 }
@@ -1121,7 +1132,7 @@ class Curler implements IReadable, IWritable
 
         foreach (array_keys($data) as $key)
         {
-            if (substr($key, -10) == "Connection" &&
+            if (substr($key, -10) === "Connection" &&
                 is_array($data[$key]["nodes"] ?? null) &&
                 !array_key_exists($newKey = substr($key, 0, -10), $data))
             {
@@ -1161,7 +1172,7 @@ class Curler implements IReadable, IWritable
         {
             if (!is_null($requestLimit))
             {
-                if ($requestLimit == 0)
+                if ($requestLimit === 0)
                 {
                     break;
                 }

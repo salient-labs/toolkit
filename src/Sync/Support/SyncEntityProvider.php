@@ -34,11 +34,6 @@ use UnexpectedValueException;
 class SyncEntityProvider implements ISyncEntityProvider
 {
     /**
-     * @var IContainer
-     */
-    private $Container;
-
-    /**
      * @var string
      */
     private $Entity;
@@ -71,7 +66,6 @@ class SyncEntityProvider implements ISyncEntityProvider
             throw new UnexpectedValueException(get_class($provider) . " does not implement " . $entityProvider);
         }
 
-        $this->Container  = $container;
         $this->Entity     = $entity;
         $this->Provider   = $provider;
         $this->Definition = $definition;
@@ -85,7 +79,7 @@ class SyncEntityProvider implements ISyncEntityProvider
             throw new SyncOperationNotImplementedException($this->Provider, $this->Entity, $operation);
         }
 
-        return $closure($this->Context, ...$args);
+        return $closure($this->Context->withArgs(...$args), ...$args);
     }
 
     /**
