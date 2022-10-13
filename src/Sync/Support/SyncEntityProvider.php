@@ -72,14 +72,30 @@ class SyncEntityProvider implements ISyncEntityProvider
         $this->Context    = $context ?: new SyncContext($container);
     }
 
-    private function run(int $operation, ...$args)
+    /**
+     * @internal
+     */
+    public function run(int $operation, ...$args)
     {
         if (!($closure = $this->Definition->getSyncOperationClosure($operation)))
         {
             throw new SyncOperationNotImplementedException($this->Provider, $this->Entity, $operation);
         }
 
-        return $closure($this->Context->withArgs(...$args), ...$args);
+        $result = $closure($this->Context->withArgs($operation, $this->Context, ...$args), ...$args);
+
+        if (SyncOperation::isList($operation) && $this->Context->getListToArray() && !is_array($result))
+        {
+            $entities = [];
+            foreach ($result as $entity)
+            {
+                $entities[] = $entity;
+            }
+
+            return $entities;
+        }
+
+        return $result;
     }
 
     /**

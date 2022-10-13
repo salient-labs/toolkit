@@ -28,7 +28,7 @@ use Lkrms\Utility\Conversions;
  * @method static string dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null) A more API-friendly http_build_query (see {@see Conversions::dataToQuery()})
  * @method static mixed emptyToNull(mixed $value) If a value is 'falsey', make it null (see {@see Conversions::emptyToNull()})
  * @method static int intervalToSeconds(DateInterval|string $value) Convert an interval to the equivalent number of seconds (see {@see Conversions::intervalToSeconds()})
- * @method static array iterableToArray(iterable $iterable) If an iterable isn't already an array, make it one (see {@see Conversions::iterableToArray()})
+ * @method static array iterableToArray(iterable $iterable, bool $preserveKeys = false) If an iterable isn't already an array, make it one (see {@see Conversions::iterableToArray()})
  * @method static array|object|false iterableToItem(iterable $list, string|Closure $key, mixed $value) Return the first item in $list where the value at $key is $value (see {@see Conversions::iterableToItem()})
  * @method static Iterator iterableToIterator(iterable $iterable) If an iterable isn't already an Iterator, enclose it in one (see {@see Conversions::iterableToIterator()})
  * @method static string linesToLists(string $text, string $separator = "\n", ?string $marker = null, string $regex = '/^\\h*[-*] /') Remove duplicates in a string where 'top-level' lines ("section names") are grouped with any subsequent 'child' lines ("list items") (see {@see Conversions::linesToLists()})

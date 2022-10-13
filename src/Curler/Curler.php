@@ -801,7 +801,7 @@ class Curler implements IReadable, IWritable
                 $this->applyData($data);
             }
 
-            $this->execute();
+            $this->execute(false);
 
             if ($this->responseContentTypeIs(MimeType::JSON))
             {

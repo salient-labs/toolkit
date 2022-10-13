@@ -204,9 +204,9 @@ final class Conversions
      * If an iterable isn't already an array, make it one
      *
      */
-    public function iterableToArray(iterable $iterable): array
+    public function iterableToArray(iterable $iterable, bool $preserveKeys = false): array
     {
-        return is_array($iterable) ? $iterable : iterator_to_array($iterable);
+        return is_array($iterable) ? $iterable : iterator_to_array($iterable, $preserveKeys);
     }
 
     /**

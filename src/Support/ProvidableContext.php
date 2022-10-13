@@ -19,22 +19,22 @@ class ProvidableContext implements IProvidableContext
     /**
      * @var IContainer
      */
-    private $Container;
+    protected $Container;
 
     /**
      * @var array<string,mixed>
      */
-    private $Values = [];
+    protected $Values = [];
 
     /**
      * @var IProvidable[]
      */
-    private $Stack = [];
+    protected $Stack = [];
 
     /**
      * @var IHierarchy|null
      */
-    private $Parent;
+    protected $Parent;
 
     public function __construct(IContainer $container, ?IHierarchy $parent = null)
     {

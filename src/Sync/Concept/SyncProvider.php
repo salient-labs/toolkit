@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Concept;
 
+use Closure;
 use Lkrms\Concern\HasContainer;
 use Lkrms\Contract\IBindableSingleton;
 use Lkrms\Facade\Compute;
@@ -11,10 +12,12 @@ use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncOperation;
 use ReflectionClass;
+use RuntimeException;
 use UnexpectedValueException;
 
 /**
@@ -105,6 +108,11 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      * @var array<string,string[]>
      */
     private static $SyncProviderInterfaces = [];
+
+    /**
+     * @var array<string,Closure>
+     */
+    private $MagicMethodClosures = [];
 
     /**
      * @see SyncProvider::_getBackendIdentifier()
@@ -265,6 +273,21 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     protected function argsToIds(array $args, int $operation = SyncOperation::READ_LIST): array
     {
         return Convert::toList($this->argsToFilter($args, true, $operation)["id"] ?? []);
+    }
+
+    final public function __call(string $name, array $arguments)
+    {
+        if (($closure = $this->MagicMethodClosures[$name = strtolower($name)] ?? false) === false)
+        {
+            $closure = SyncClosureBuilder::get(static::class)->getSyncOperationFromMethodClosure($name, $this);
+            $this->MagicMethodClosures[$name] = $closure;
+        }
+        if ($closure)
+        {
+            return $closure(...$arguments);
+        }
+
+        throw new RuntimeException("Call to undefined method: " . static::class . "::$name()");
     }
 
 }

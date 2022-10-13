@@ -17,9 +17,24 @@ use Lkrms\Sync\Contract\ISyncContext;
 final class SyncContext extends ProvidableContext implements ISyncContext
 {
     /**
+     * @var bool|null
+     */
+    protected $ListToArray;
+
+    /**
      * @var array|null
      */
-    private $Filter;
+    protected $Filter;
+
+    public function withListArrays()
+    {
+        return $this->maybeMutate("ListToArray", true);
+    }
+
+    public function withGenerators()
+    {
+        return $this->maybeMutate("ListToArray", false);
+    }
 
     public function withArgs(int $operation, ...$args)
     {
@@ -69,6 +84,11 @@ final class SyncContext extends ProvidableContext implements ISyncContext
         }
 
         return $this->maybeMutate("Filter", null);
+    }
+
+    public function getListToArray(): bool
+    {
+        return $this->ListToArray ?: false;
     }
 
     public function getFilter(): ?array

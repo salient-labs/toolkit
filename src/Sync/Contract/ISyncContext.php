@@ -13,6 +13,25 @@ use Lkrms\Contract\IProvidableContext;
 interface ISyncContext extends IProvidableContext
 {
     /**
+     * Request arrays instead of generators from sync operations that return
+     * lists
+     *
+     * {@see ISyncContext::getListToArray()} returns `true` until
+     * {@see ISyncContext::withGenerators()} is called.
+     *
+     * @return $this
+     */
+    public function withListArrays();
+
+    /**
+     * Request generators (instead of arrays) from sync operations that return
+     * lists
+     *
+     * @return $this
+     */
+    public function withGenerators();
+
+    /**
      * Convert non-mandatory sync operation arguments to a normalised filter and
      * add it to the context
      *
@@ -46,6 +65,13 @@ interface ISyncContext extends IProvidableContext
      * @return $this
      */
     public function withArgs(int $operation, ...$args);
+
+    /**
+     * Return true if list operations should return arrays instead of generators
+     *
+     * @return bool
+     */
+    public function getListToArray(): bool;
 
     /**
      * Get the filter most recently passed via optional sync operation arguments
