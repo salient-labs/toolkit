@@ -22,7 +22,6 @@ use Lkrms\Utility\Conversions;
  * @method static bool isLoaded() Return true if an underlying Conversions instance has been loaded
  * @method static void unload() Clear the underlying Conversions instance
  * @method static string arrayToCode(array $array, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::arrayToCode()}
- * @method static array arrayValuesToChildArray(array $array, string $key, array $map, bool $merge = true) Move array values to a nested array (see {@see Conversions::arrayValuesToChildArray()})
  * @method static string classToBasename(string $class, ?string $suffix = null) Remove the namespace and an optional suffix from a class name (see {@see Conversions::classToBasename()})
  * @method static string classToNamespace(string $class) Return the namespace of a class (see {@see Conversions::classToNamespace()})
  * @method static string dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null) A more API-friendly http_build_query (see {@see Conversions::dataToQuery()})
@@ -49,7 +48,6 @@ use Lkrms\Utility\Conversions;
  * @method static DateTimeImmutable toDateTimeImmutable(DateTimeInterface $date) A shim for DateTimeImmutable::createFromInterface() (PHP 8+) (see {@see Conversions::toDateTimeImmutable()})
  * @method static string toKebabCase(string $text) Convert an identifier to kebab-case (see {@see Conversions::toKebabCase()})
  * @method static array toList(mixed $value, bool $emptyIfNull = false) If a value isn't a list, make it the first element of one (see {@see Conversions::toList()})
- * @method static array toNestedArrays(array $array, array $maps, bool $merge = true) Apply multiple arrayValuesToChildArray transformations to an array (see {@see Conversions::toNestedArrays()})
  * @method static string toNormal(string $text) Clean up a string for comparison with other strings (see {@see Conversions::toNormal()})
  * @method static string toPascalCase(string $text) Convert an identifier to PascalCase (see {@see Conversions::toPascalCase()})
  * @method static string toSnakeCase(string $text) Convert an identifier to snake_case (see {@see Conversions::toSnakeCase()})
