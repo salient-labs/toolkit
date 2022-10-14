@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Store;
 
+use Lkrms\Store\Concept\SqliteStore;
+
 /**
  * A SQLite store for deleted JSON objects
  *

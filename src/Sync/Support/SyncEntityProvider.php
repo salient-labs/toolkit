@@ -31,7 +31,7 @@ use UnexpectedValueException;
  * ```
  *
  */
-class SyncEntityProvider implements ISyncEntityProvider
+final class SyncEntityProvider implements ISyncEntityProvider
 {
     /**
      * @var string

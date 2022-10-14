@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Console\Target;
 
+use Lkrms\Console\Concept\ConsoleTarget;
 use Lkrms\Console\ConsoleLevel;
 use Psr\Log\LoggerInterface;
 
@@ -11,7 +12,7 @@ use Psr\Log\LoggerInterface;
  * Write console messages to a PSR-3 implementor
  *
  */
-class LoggerTarget extends ConsoleTarget
+final class LoggerTarget extends ConsoleTarget
 {
     /**
      * @var LoggerInterface

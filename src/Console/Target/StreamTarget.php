@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Console\Target;
 
 use DateTime;
+use Lkrms\Console\Concept\ConsoleTarget;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use RuntimeException;
@@ -13,7 +14,7 @@ use RuntimeException;
  * Write console messages to a stream (e.g. a file or TTY)
  *
  */
-class StreamTarget extends ConsoleTarget
+final class StreamTarget extends ConsoleTarget
 {
     /**
      * @var resource

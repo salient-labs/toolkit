@@ -73,25 +73,25 @@ class AppContainer extends Container implements IReadable
         return $path;
     }
 
-    protected function _getCachePath(): string
+    final protected function _getCachePath(): string
     {
         return $this->_CachePath
             ?: ($this->_CachePath = $this->getPath("app_cache_path", "var/cache"));
     }
 
-    protected function _getDataPath(): string
+    final protected function _getDataPath(): string
     {
         return $this->_DataPath
             ?: ($this->_DataPath = $this->getPath("app_data_path", "var/lib"));
     }
 
-    protected function _getLogPath(): string
+    final protected function _getLogPath(): string
     {
         return $this->_LogPath
             ?: ($this->_LogPath = $this->getPath("app_log_path", "var/log"));
     }
 
-    protected function _getTempPath(): string
+    final protected function _getTempPath(): string
     {
         return $this->_TempPath
             ?: ($this->_TempPath = $this->getPath("app_temp_path", "var/tmp"));
@@ -146,7 +146,7 @@ class AppContainer extends Container implements IReadable
     /**
      * @return $this
      */
-    public function loadCache()
+    final public function loadCache()
     {
         $cacheDb = $this->CachePath . "/cache.db";
 
@@ -165,7 +165,7 @@ class AppContainer extends Container implements IReadable
     /**
      * @return $this
      */
-    public function loadCacheIfExists()
+    final public function loadCacheIfExists()
     {
         if (file_exists($this->CachePath . "/cache.db"))
         {
@@ -179,7 +179,7 @@ class AppContainer extends Container implements IReadable
      * @param string|null $name Defaults to the name used to run the script.
      * @return $this
      */
-    public function logConsoleMessages(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG)
+    final public function logConsoleMessages(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG)
     {
         $name = ($name
             ? basename($name, ".log")

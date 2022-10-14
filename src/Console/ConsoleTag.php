@@ -7,8 +7,9 @@ namespace Lkrms\Console;
 use Lkrms\Concept\Enumeration;
 
 /**
- * Console message tags
+ * Inline formatting tags for console messages
  *
+ * A tiny subset of Markdown syntax.
  */
 final class ConsoleTag extends Enumeration
 {

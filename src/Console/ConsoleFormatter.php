@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
+use Lkrms\Console\Concept\ConsoleTarget;
 use Lkrms\Console\ConsoleTag as Tag;
-use Lkrms\Console\Target\ConsoleTarget;
 
 /**
  * Formats console messages

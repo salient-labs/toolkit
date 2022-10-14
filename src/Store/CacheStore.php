@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Store;
 
+use Lkrms\Store\Concept\SqliteStore;
 use SQLite3;
 use Throwable;
 

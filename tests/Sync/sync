@@ -29,24 +29,7 @@ Console::info("Posts retrieved:", (string)count($posts));
 /** @var Post */
 $post = reset($posts);
 /** @var User */
-$user      = User::backend()->get($post->User->Id);
-$postClone = clone $post;
-$userClone = clone $user;
-
-// Nested objects aren't cloned. Arrays, on the other hand...
-$post->User->Name    = "New Name Who Dis";
-$user->Company["bs"] = "no-bs-here";
-
-print_r([
-    '$post == $postClone (FALSE)' => $post == $postClone,
-    '$post->User == $postClone->User (TRUE)'  => $post->User == $postClone->User,
-    '$post->User === $postClone->User (TRUE)' => $post->User === $postClone->User,
-    '$user == $userClone (FALSE)' => $user == $userClone,
-    '$user->Company == $userClone->Company (FALSE)'  => $user->Company == $userClone->Company,
-    '$user->Company === $userClone->Company (FALSE)' => $user->Company === $userClone->Company,
-    // @phpstan-ignore-next-line
-    '$user->Website == $userClone->Website (FALSE)' => $user->Website == $userClone->Website,
-]);
+$user = User::backend()->get($post->User->Id);
 
 $resolver       = new SyncEntityResolver($userApi, "Name");
 $fuzzyResolver  = new SyncEntityFuzzyResolver($userApi, "Name", null, null, 0.6);

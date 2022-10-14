@@ -15,10 +15,8 @@ use UnexpectedValueException;
 /**
  * A service container with support for contextual bindings
  *
- * Uses Dice under the hood.
+ * Typically accessed via the {@see \Lkrms\Facade\DI} facade.
  *
- * @link https://r.je/dice Dice home page
- * @link https://github.com/Level-2/Dice Dice repository on GitHub
  */
 class Container implements IContainer
 {
@@ -56,10 +54,6 @@ class Container implements IContainer
     public function __construct()
     {
         $this->load();
-    }
-
-    private function __clone()
-    {
     }
 
     private function load(): void
@@ -154,20 +148,21 @@ class Container implements IContainer
         {
             $this->Dice = new Dice();
         }
+
         return $this->Dice;
     }
 
-    public function get(string $id, ...$params)
+    final public function get(string $id, ...$params)
     {
         return $this->dice()->create($id, $params);
     }
 
-    public function getName(string $id): string
+    final public function getName(string $id): string
     {
         return $this->dice()->getRule($id)["instanceOf"] ?? $id;
     }
 
-    public function has(string $id): bool
+    final public function has(string $id): bool
     {
         return class_exists($this->getName($id));
     }
@@ -240,7 +235,7 @@ class Container implements IContainer
         }
     }
 
-    public function inContextOf(string $id): Container
+    final public function inContextOf(string $id): Container
     {
         $dice = $cleanDice = $this->dice();
 
@@ -304,7 +299,7 @@ class Container implements IContainer
     /**
      * @return $this
      */
-    public function bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
+    final public function bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
     {
         $this->_bind($id, $instanceOf, $constructParams, $shareInstances);
         return $this;
@@ -313,7 +308,7 @@ class Container implements IContainer
     /**
      * @return $this
      */
-    public function singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
+    final public function singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
     {
         $this->_bind($id, $instanceOf, $constructParams, $shareInstances, ["shared" => true]);
         return $this;
@@ -324,7 +319,7 @@ class Container implements IContainer
      * @param string[]|null $exceptServices
      * @return $this
      */
-    public function service(string $id, ?array $services = null, ?array $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null)
+    final public function service(string $id, ?array $services = null, ?array $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null)
     {
         if (!is_subclass_of($id, IBindable::class))
         {
@@ -373,14 +368,14 @@ class Container implements IContainer
     /**
      * @return $this
      */
-    public function instance(string $id, $instance)
+    final public function instance(string $id, $instance)
     {
         $dice = & $this->dice();
         $dice = $dice->addShared($id, $instance);
         return $this;
     }
 
-    public function call(callable $callback)
+    final public function call(callable $callback)
     {
         $container = null;
         if (self::hasGlobalContainer())

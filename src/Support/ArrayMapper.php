@@ -11,7 +11,7 @@ use UnexpectedValueException;
  * Creates closures that rearrange arrays
  *
  */
-class ArrayMapper
+final class ArrayMapper
 {
     /**
      * @var Closure[]

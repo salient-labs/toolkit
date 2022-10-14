@@ -79,12 +79,12 @@ abstract class SyncDefinition implements ISyncDefinition
         $this->ProviderClosureBuilder = SyncClosureBuilder::get(get_class($provider));
     }
 
-    protected function getPipelineToBackend(): IPipelineImmutable
+    final protected function getPipelineToBackend(): IPipelineImmutable
     {
         return $this->EntityToDataPipeline ?: PipelineImmutable::create();
     }
 
-    protected function getPipelineToEntity(): IPipelineImmutable
+    final protected function getPipelineToEntity(): IPipelineImmutable
     {
         return ($this->DataToEntityPipeline ?: PipelineImmutable::create())
             ->then(function (array $entity, int $operation, SyncContext $ctx) use (&$closure)

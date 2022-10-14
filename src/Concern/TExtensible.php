@@ -34,7 +34,7 @@ trait TExtensible
      */
     private $MetaPropertyMap = [];
 
-    public function clearMetaProperties(): void
+    final public function clearMetaProperties(): void
     {
         $this->MetaProperties    = [];
         $this->MetaPropertyNames = [];
@@ -52,29 +52,29 @@ trait TExtensible
         return $normalised;
     }
 
-    public function setMetaProperty(string $name, $value): void
+    final public function setMetaProperty(string $name, $value): void
     {
         $normalised = $this->normaliseMetaProperty($name);
         $this->MetaProperties[$normalised]    = $value;
         $this->MetaPropertyNames[$normalised] = $name;
     }
 
-    public function getMetaProperty(string $name)
+    final public function getMetaProperty(string $name)
     {
         return $this->MetaProperties[$this->normaliseMetaProperty($name)] ?? null;
     }
 
-    public function isMetaPropertySet(string $name): bool
+    final public function isMetaPropertySet(string $name): bool
     {
         return isset($this->MetaProperties[$this->normaliseMetaProperty($name)]);
     }
 
-    public function unsetMetaProperty(string $name): void
+    final public function unsetMetaProperty(string $name): void
     {
         unset($this->MetaProperties[$this->normaliseMetaProperty($name)]);
     }
 
-    public function getMetaProperties(): array
+    final public function getMetaProperties(): array
     {
         $names = array_map(
             function ($name) { return $this->MetaPropertyNames[$name]; },

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Console\Target;
+namespace Lkrms\Console\Concept;
 
 use Lkrms\Console\ConsoleFormat;
 use Lkrms\Console\ConsoleFormatter;

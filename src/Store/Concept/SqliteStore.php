@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Store;
+namespace Lkrms\Store\Concept;
 
 use Exception;
 use Lkrms\Facade\Console;
@@ -59,7 +59,7 @@ abstract class SqliteStore
      *
      * @return $this
      */
-    public function close()
+    final public function close()
     {
         if (!$this->isOpen())
         {
@@ -76,7 +76,7 @@ abstract class SqliteStore
      * Check if a database is open
      *
      */
-    public function isOpen(): bool
+    final public function isOpen(): bool
     {
         return !is_null($this->Db);
     }

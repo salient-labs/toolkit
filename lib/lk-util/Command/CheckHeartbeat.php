@@ -8,9 +8,9 @@ declare(strict_types=1);
 
 namespace Lkrms\LkUtil\Command;
 
-use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
+use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Contract\IProvider;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Env;

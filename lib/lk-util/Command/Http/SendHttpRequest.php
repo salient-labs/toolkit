@@ -8,9 +8,9 @@ declare(strict_types=1);
 
 namespace Lkrms\LkUtil\Command\Http;
 
-use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
+use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Env;
 use Lkrms\Sync\Concept\HttpSyncProvider;

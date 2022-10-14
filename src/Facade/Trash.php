@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
-use Lkrms\Store\SqliteStore;
+use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Store\TrashStore;
 
 /**

@@ -141,7 +141,7 @@ final class Tests
         return is_array($value) &&
             (empty($value) ? $allowEmpty :
                 empty(array_filter($value, $strict
-                    ? fn($val) => strcasecmp(get_class($val), $class)
+                    ? fn($val) => !is_object($val) || strcasecmp(get_class($val), $class)
                     : fn($val) => !is_a($val, $class))));
     }
 

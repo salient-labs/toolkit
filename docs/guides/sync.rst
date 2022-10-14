@@ -51,7 +51,7 @@ used. The first value passed is always the current `SyncContext`_ and
    Method names must match the entity’s unqualified name.
 
 .. [4]
-   See `SyncProvider::argsToFilter()`_ for filter argument recommendations,
+   See `ISyncContext::withArgs()`_ for filter argument recommendations,
    including recognised signatures.
 
 .. _SyncProvider: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncProvider.html
@@ -59,4 +59,4 @@ used. The first value passed is always the current `SyncContext`_ and
 .. _SyncOperation: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Support-SyncOperation.html
 .. _getDefinition(): https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncProvider.html#method_getDefinition
 .. _SyncContext: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Support-SyncContext.html
-.. _`SyncProvider::argsToFilter()`: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncProvider.html#method_argsToFilter
+.. _`ISyncContext::withArgs()`: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Contract-ISyncContext.html#method_withArgs

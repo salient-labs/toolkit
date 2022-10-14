@@ -16,16 +16,4 @@ abstract class ProviderEntity extends Entity implements IProvidable
 {
     use TProvidable;
 
-    /**
-     * @internal
-     */
-    public function __clone()
-    {
-        // Detach from the provider servicing the original instance
-        $this->clearProvider();
-
-        // Undeclared properties are typically provider-specific
-        $this->clearMetaProperties();
-    }
-
 }

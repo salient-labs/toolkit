@@ -6,7 +6,7 @@ namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
 use Lkrms\Store\CacheStore;
-use Lkrms\Store\SqliteStore;
+use Lkrms\Store\Concept\SqliteStore;
 
 /**
  * A facade for \Lkrms\Store\CacheStore

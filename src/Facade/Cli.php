@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Lkrms\Facade;
 
-use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\CliAppContainer;
+use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Concept\Facade;
 use Lkrms\Console\ConsoleLevels;
 use Lkrms\Container\AppContainer;
-use Lkrms\Container\CliAppContainer;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 
 /**
- * A facade for \Lkrms\Container\CliAppContainer
+ * A facade for \Lkrms\Cli\CliAppContainer
  *
  * @method static CliAppContainer load(?string $basePath = null) Load and return an instance of the underlying CliAppContainer class
  * @method static CliAppContainer getInstance() Return the underlying CliAppContainer instance
@@ -44,7 +44,7 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})
  *
  * @uses CliAppContainer
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Container\CliAppContainer' --generate='Lkrms\Facade\Cli'
+ * @lkrms-generate-command lk-util generate facade --class='Lkrms\Cli\CliAppContainer' --generate='Lkrms\Facade\Cli'
  */
 final class Cli extends Facade
 {

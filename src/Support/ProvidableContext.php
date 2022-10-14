@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Support;
 
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IProvidableContext;
 use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvidable;
+use Lkrms\Contract\IProvidableContext;
 use RuntimeException;
 
 /**
@@ -42,7 +42,7 @@ class ProvidableContext implements IProvidableContext
         $this->Parent    = $parent;
     }
 
-    protected function maybeMutate(string $property, $value, ?string $key = null)
+    final protected function maybeMutate(string $property, $value, ?string $key = null)
     {
         if ($key)
         {
@@ -64,22 +64,22 @@ class ProvidableContext implements IProvidableContext
         return $clone;
     }
 
-    public function app(): IContainer
+    final public function app(): IContainer
     {
         return $this->Container;
     }
 
-    public function container(): IContainer
+    final public function container(): IContainer
     {
         return $this->Container;
     }
 
-    public function set(string $key, $value)
+    final public function set(string $key, $value)
     {
         return $this->maybeMutate("Values", $value, $key);
     }
 
-    public function push(IProvidable $entity)
+    final public function push(IProvidable $entity)
     {
         $clone = clone $this;
         $clone->Stack[] = $entity;
@@ -87,27 +87,27 @@ class ProvidableContext implements IProvidableContext
         return $clone;
     }
 
-    public function withContainer(IContainer $container)
+    final public function withContainer(IContainer $container)
     {
         return $this->maybeMutate("Container", $container);
     }
 
-    public function withParent(?IHierarchy $parent)
+    final public function withParent(?IHierarchy $parent)
     {
         return $this->maybeMutate("Parent", $parent);
     }
 
-    public function get(string $key)
+    final public function get(string $key)
     {
         return $this->Values[$key] ?? false;
     }
 
-    public function getStack(): array
+    final public function getStack(): array
     {
         return $this->Stack;
     }
 
-    public function getParent(): ?IHierarchy
+    final public function getParent(): ?IHierarchy
     {
         return $this->Parent;
     }

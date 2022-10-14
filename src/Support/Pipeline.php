@@ -95,7 +95,7 @@ class Pipeline extends FluentInterface implements IPipeline
         return new static($container);
     }
 
-    public function send($payload, ...$args)
+    final public function send($payload, ...$args)
     {
         $_this = $this->getMutable();
         $_this->Payload = $payload;
@@ -105,7 +105,7 @@ class Pipeline extends FluentInterface implements IPipeline
         return $_this;
     }
 
-    public function stream(iterable $payload, ...$args)
+    final public function stream(iterable $payload, ...$args)
     {
         $_this = $this->getMutable();
         $_this->Payload = $payload;
@@ -115,7 +115,7 @@ class Pipeline extends FluentInterface implements IPipeline
         return $_this;
     }
 
-    public function after(callable $callback, ...$args)
+    final public function after(callable $callback, ...$args)
     {
         if ($this->After)
         {
@@ -128,7 +128,7 @@ class Pipeline extends FluentInterface implements IPipeline
         return $_this;
     }
 
-    public function through(...$pipes)
+    final public function through(...$pipes)
     {
         $_this = $this->getMutable();
         array_push($_this->Pipes, ...$pipes);
@@ -137,21 +137,21 @@ class Pipeline extends FluentInterface implements IPipeline
         return $_this;
     }
 
-    public function throughCallback(callable $callback, bool $suppressArgs = false)
+    final public function throughCallback(callable $callback, bool $suppressArgs = false)
     {
         return $suppressArgs
             ? $this->through(fn($payload, Closure $next) => $next($callback($payload)))
             : $this->through(fn($payload, Closure $next, ...$args) => $next($callback($payload, ...$args)));
     }
 
-    public function throughKeyMap(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED)
+    final public function throughKeyMap(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED)
     {
         return $this->through(fn($payload, Closure $next) => $next(
             (Mapper::getKeyMapClosure($keyMap, $conformity, $flags))($payload)
         ));
     }
 
-    public function then(callable $callback, ...$args)
+    final public function then(callable $callback, ...$args)
     {
         if ($this->Then)
         {
@@ -164,7 +164,7 @@ class Pipeline extends FluentInterface implements IPipeline
         return $_this;
     }
 
-    public function unless(callable $filter, ...$args)
+    final public function unless(callable $filter, ...$args)
     {
         if ($this->Unless)
         {
@@ -177,7 +177,7 @@ class Pipeline extends FluentInterface implements IPipeline
         return $_this;
     }
 
-    public function run()
+    final public function run()
     {
         if ($this->Stream)
         {
@@ -196,7 +196,7 @@ class Pipeline extends FluentInterface implements IPipeline
         return $result;
     }
 
-    public function start(): iterable
+    final public function start(): iterable
     {
         if (!$this->Stream)
         {
@@ -226,7 +226,7 @@ class Pipeline extends FluentInterface implements IPipeline
      * {@see Pipeline::start()} to run the pipeline and return an iterator,
      * otherwise call {@see Pipeline::run()} and return the result.
      */
-    public function go()
+    final public function go()
     {
         if ($this->Stream)
         {

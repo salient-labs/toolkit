@@ -6,14 +6,14 @@ parameters:
 			path: lib/lk-util/Command/Generate/GenerateBuilderClass.php
 
 		-
-			message: "#^If condition is always false\\.$#"
+			message: "#^Property Lkrms\\\\Cli\\\\CliAppContainer\\:\\:\\$Commands is never read, only written\\.$#"
 			count: 1
-			path: src/Cli/CliCommand.php
+			path: src/Cli/CliAppContainer.php
 
 		-
-			message: "#^Property Lkrms\\\\Container\\\\CliAppContainer\\:\\:\\$Commands is never read, only written\\.$#"
+			message: "#^If condition is always false\\.$#"
 			count: 1
-			path: src/Container/CliAppContainer.php
+			path: src/Cli/Concept/CliCommand.php
 
 		-
 			message: "#^Property Lkrms\\\\Container\\\\Container\\:\\:\\$Context is never read, only written\\.$#"
