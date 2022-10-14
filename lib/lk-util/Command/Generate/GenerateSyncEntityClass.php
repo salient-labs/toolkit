@@ -180,7 +180,7 @@ class GenerateSyncEntityClass extends GenerateCommand
             if ($provider instanceof HttpSyncProvider)
             {
                 $endpoint  = $this->getOptionValue("endpoint") ?: "/" . Convert::toKebabCase($class);
-                $entity    = $provider->getCurler($endpoint)->getJson();
+                $entity    = $provider->getCurler($endpoint)->get();
                 $entityUri = $provider->getEndpointUrl($endpoint);
             }
             else

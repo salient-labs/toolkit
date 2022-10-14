@@ -207,8 +207,13 @@ abstract class GenerateCommand extends CliCommand
         file_put_contents($file, $output);
     }
 
-    protected function getFqcnOptionValue(string $value): string
+    protected function getFqcnOptionValue(string $value, ?string $defaultNamespace = null): string
     {
+        if ($defaultNamespace && trim($value) && strpos($value, "\\") === false)
+        {
+            return trim($defaultNamespace, "\\") . "\\$value";
+        }
+
         return ltrim($value, "\\");
     }
 }

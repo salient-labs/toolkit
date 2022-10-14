@@ -59,33 +59,49 @@ class CurlerHeaders
 
     /**
      * @internal
+     * @return $this
      */
-    public function addRawHeader(string $line): self
+    public function addRawHeader(string $line)
     {
         return $this->getMutable()->_addRawHeader($line);
     }
 
-    public function addHeader(string $name, string $value, bool $private = false): self
+    /**
+     * @return $this
+     */
+    public function addHeader(string $name, string $value, bool $private = false)
     {
         return $this->getMutable()->_addHeader($name, $value, $private);
     }
 
-    public function unsetHeader(string $name): self
+    /**
+     * @return $this
+     */
+    public function unsetHeader(string $name)
     {
         return $this->getMutable()->_unsetHeader($name);
     }
 
-    public function setHeader(string $name, string $value, bool $private = false): self
+    /**
+     * @return $this
+     */
+    public function setHeader(string $name, string $value, bool $private = false)
     {
         return $this->unsetHeader($name)->_addHeader($name, $value, $private);
     }
 
-    public function addPrivateHeaderName(string $name): self
+    /**
+     * @return $this
+     */
+    public function addPrivateHeaderName(string $name)
     {
         return $this->getMutable()->_addPrivateHeaderName($name);
     }
 
-    private function _addRawHeader(string $line): self
+    /**
+     * @return $this
+     */
+    private function _addRawHeader(string $line)
     {
         if ($this->RawHeadersClosed)
         {
@@ -130,7 +146,10 @@ class CurlerHeaders
         return $this;
     }
 
-    private function _addHeader(string $name, string $value, bool $private): self
+    /**
+     * @return $this
+     */
+    private function _addHeader(string $name, string $value, bool $private)
     {
         $i = $this->NextHeader++;
         $this->Headers[$i] = new CurlerHeader($name, $value, $i);
@@ -143,7 +162,10 @@ class CurlerHeaders
         return $this;
     }
 
-    private function _unsetHeader(string $name): self
+    /**
+     * @return $this
+     */
+    private function _unsetHeader(string $name)
     {
         $lower = strtolower($name);
         foreach (($this->HeaderKeysByName[$lower] ?? []) as $key)
@@ -155,7 +177,10 @@ class CurlerHeaders
         return $this;
     }
 
-    private function _addPrivateHeaderName(string $name): self
+    /**
+     * @return $this
+     */
+    private function _addPrivateHeaderName(string $name)
     {
         $lower = strtolower($name);
         if (!in_array($lower, $this->PrivateHeaderNames))

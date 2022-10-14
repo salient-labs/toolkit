@@ -46,11 +46,6 @@ parameters:
 			path: src/Sync/Support/DeferredSyncEntity.php
 
 		-
-			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$Container is never read, only written\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncEntityProvider.php
-
-		-
 			message: "#^Call to an undefined method ReflectionType\\:\\:isBuiltin\\(\\)\\.$#"
 			count: 1
 			path: src/Utility/Reflection.php

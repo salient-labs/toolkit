@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Tests\Support;
 
 use Closure;
+use Lkrms\Exception\PipelineException;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ArrayMapperFlag;
 use Lkrms\Support\Pipeline;
@@ -14,7 +15,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
 {
     public function testStream()
     {
-        $in  = [12, 23, 34, 45, 56, 67, 78, 89, 91];
+        $in  = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
         foreach ((new Pipeline())
             ->stream($in)
@@ -28,9 +29,41 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         }
 
         $this->assertSame(
-            [1.565, 3.0, 4.435, 5.87, 7.304, 8.739, 10.174, 11.609, 11.87],
+            [1.565, 3.0, 4.435, 5.87, 7.304, 8.739, 10.174, 11.609, 11.739],
             $out
         );
+    }
+
+    public function testUnless()
+    {
+        $in  = [12, 23, 34, 45, 56, 67, 78, 89, 90];
+        $out = [];
+        foreach ((new Pipeline())
+            ->stream($in)
+            ->through(
+                fn($payload, Closure $next) => $payload % 2 ? null : $next($payload * 3),
+                fn($payload, Closure $next) => $next($payload / 23),
+                fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null,
+            )->unless(fn($result) => !is_null($result))
+            ->start() as $_out)
+        {
+            $out[] = $_out;
+        }
+
+        $this->assertSame(
+            [1.565, 4.435, 7.304, 10.174],
+            $out
+        );
+
+        $this->expectException(PipelineException::class);
+        (new Pipeline())
+            ->send(23)
+            ->through(
+                fn($payload, Closure $next) => $payload % 2 ? null : $next($payload * 3),
+                fn($payload, Closure $next) => $next($payload / 23),
+                fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null,
+            )->unless(fn($result) => !is_null($result))
+            ->go();
     }
 
     public function testMap()

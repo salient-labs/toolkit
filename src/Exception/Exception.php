@@ -10,7 +10,7 @@ use RuntimeException;
  * Base class for exceptions
  *
  */
-class Exception extends RuntimeException
+abstract class Exception extends RuntimeException
 {
     /**
      * Return an array that maps section names to content
@@ -27,10 +27,12 @@ class Exception extends RuntimeException
     public function __toString(): string
     {
         $detail = $this->getDetail();
+
         return parent::__toString() . implode("", array_map(
             fn(string $key, string $value) => "\n\n$key:\n$value",
             array_keys($detail),
             $detail
         ));
     }
+
 }

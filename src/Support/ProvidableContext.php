@@ -4,25 +4,32 @@ declare(strict_types=1);
 
 namespace Lkrms\Support;
 
-use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidableContext;
 use Lkrms\Contract\IHierarchy;
+use Lkrms\Contract\IProvidable;
+use RuntimeException;
 
 /**
  * The context within which an IProvidable is instantiated
  *
- * @property-read IContainer $Container
- * @property-read IHierarchy $Parent
  */
 class ProvidableContext implements IProvidableContext
 {
-    use TFullyReadable;
-
     /**
      * @var IContainer
      */
     protected $Container;
+
+    /**
+     * @var array<string,mixed>
+     */
+    protected $Values = [];
+
+    /**
+     * @var IProvidable[]
+     */
+    protected $Stack = [];
 
     /**
      * @var IHierarchy|null
@@ -35,6 +42,28 @@ class ProvidableContext implements IProvidableContext
         $this->Parent    = $parent;
     }
 
+    protected function maybeMutate(string $property, $value, ?string $key = null)
+    {
+        if ($key)
+        {
+            if (!is_array($this->{$property}))
+            {
+                throw new RuntimeException("\$this->{$property} is not an array");
+            }
+            $_value       = $this->{$property};
+            $_value[$key] = $value;
+            $value        = $_value;
+        }
+        if ($value === $this->{$property})
+        {
+            return $this;
+        }
+        $clone = clone $this;
+        $clone->{$property} = $value;
+
+        return $clone;
+    }
+
     public function app(): IContainer
     {
         return $this->Container;
@@ -45,38 +74,42 @@ class ProvidableContext implements IProvidableContext
         return $this->Container;
     }
 
-    public function getParent(): ?IHierarchy
+    public function set(string $key, $value)
     {
-        return $this->Parent;
+        return $this->maybeMutate("Values", $value, $key);
+    }
+
+    public function push(IProvidable $entity)
+    {
+        $clone = clone $this;
+        $clone->Stack[] = $entity;
+
+        return $clone;
     }
 
     public function withContainer(IContainer $container)
     {
-        if ($this->Container === $container)
-        {
-            return $this;
-        }
-
-        $clone = clone $this;
-        $clone->Container = $container;
-
-        return $clone;
+        return $this->maybeMutate("Container", $container);
     }
 
-    /**
-     * @return $this
-     */
     public function withParent(?IHierarchy $parent)
     {
-        if ($this->Parent === $parent)
-        {
-            return $this;
-        }
+        return $this->maybeMutate("Parent", $parent);
+    }
 
-        $clone         = clone $this;
-        $clone->Parent = $parent;
+    public function get(string $key)
+    {
+        return $this->Values[$key] ?? false;
+    }
 
-        return $clone;
+    public function getStack(): array
+    {
+        return $this->Stack;
+    }
+
+    public function getParent(): ?IHierarchy
+    {
+        return $this->Parent;
     }
 
 }

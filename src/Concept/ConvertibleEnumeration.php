@@ -18,7 +18,7 @@ use UnexpectedValueException;
 abstract class ConvertibleEnumeration extends Enumeration implements IConvertibleEnumeration
 {
     /**
-     * Class names => [ lower-case constant names => values ]
+     * Class names => [ lowercase constant names => values ]
      *
      * @var array<string,array<string,int>>
      */

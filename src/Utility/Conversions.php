@@ -117,6 +117,26 @@ final class Conversions
     }
 
     /**
+     * Explode a string, trim each substring, remove empty strings
+     *
+     * @return string[]
+     */
+    public function stringToList(string $separator, string $string, ?string $trim = null): array
+    {
+        if (!$separator)
+        {
+            throw new UnexpectedValueException("Invalid separator: $separator");
+        }
+
+        return array_values(array_filter(array_map(
+            (is_null($trim)
+                ? fn(string $item) => trim($item)
+                : fn(string $item) => trim($item, $trim)),
+            explode($separator, $string)
+        )));
+    }
+
+    /**
      * Convert an interval to the equivalent number of seconds
      *
      * Works with ISO 8601 durations like `PT48M`.
@@ -184,9 +204,9 @@ final class Conversions
      * If an iterable isn't already an array, make it one
      *
      */
-    public function iterableToArray(iterable $iterable): array
+    public function iterableToArray(iterable $iterable, bool $preserveKeys = false): array
     {
-        return is_array($iterable) ? $iterable : iterator_to_array($iterable);
+        return is_array($iterable) ? $iterable : iterator_to_array($iterable, $preserveKeys);
     }
 
     /**
@@ -262,76 +282,6 @@ final class Conversions
     public function methodToFunction(string $method): string
     {
         return preg_replace('/^.*?([a-z0-9_]*)$/i', '$1', $method);
-    }
-
-    /**
-     * Move array values to a nested array
-     *
-     * @param array $array The array to transform.
-     * @param string $key The key in `$array` where the child array should be
-     * created.
-     * @param array $map An array that maps child array keys to `$array` keys.
-     * For example, to move `$data['userId']` to `$data['user']['id']`:
-     * ```php
-     * $data = Convert::arrayEntriesToChildArray($data, 'user', ['id' => 'userId']);
-     * ```
-     * @param bool $merge If `true` (the default), merge values from `$array`
-     * with an existing array at `$array[$key]`. If `false`, throw an exception
-     * if `$array[$key]` is already set.
-     * @return array
-     * @throws UnexpectedValueException if `$key` already exists in `$array` and
-     * merging is not possible.
-     */
-    public function arrayValuesToChildArray(
-        array $array,
-        string $key,
-        array $map,
-        bool $merge = true
-    ): array
-    {
-        if (array_key_exists($key, $array) &&
-            (!$merge || !is_array($array[$key])))
-        {
-            throw new UnexpectedValueException("'$key' is already set");
-        }
-        $child = $array[$key] ?? [];
-        foreach ($map as $to => $from)
-        {
-            if (array_key_exists($from, $array))
-            {
-                $child[$to] = $array[$from];
-                unset($array[$from]);
-            }
-        }
-        if (empty(array_filter($child, fn($value) => !is_null($value))))
-        {
-            $child = null;
-        }
-        $array[$key] = $child;
-        return $array;
-    }
-
-    /**
-     * Apply multiple arrayValuesToChildArray transformations to an array
-     *
-     * @param array $array The array to transform.
-     * @param array $maps An array that maps `$key` to `$map`, where `$key` and
-     * `$map` are passed to {@see Conversions::arrayValuesToChildArray()}.
-     * @param bool $merge Passed to
-     * {@see Conversions::arrayValuesToChildArray()}.
-     * @return array
-     */
-    public function toNestedArrays(
-        array $array,
-        array $maps,
-        bool $merge = true
-    ): array
-    {
-        foreach ($maps as $key => $map)
-        {
-            $array = $this->arrayValuesToChildArray($array, $key, $map, $merge);
-        }
-        return $array;
     }
 
     /**
@@ -767,14 +717,7 @@ final class Conversions
         return get_object_vars($object);
     }
 
-    private function _dataToQuery(
-        array $data,
-        bool $forceNumericKeys,
-        DateFormatter $dateFormatter,
-        string & $query = null,
-        string $name    = "",
-        string $format  = "%s"
-    ): string
+    private function _dataToQuery(array $data, bool $preserveKeys, DateFormatter $dateFormatter, ?string & $query = null, string $name = "", string $format = "%s"): string
     {
         if (is_null($query))
         {
@@ -800,7 +743,7 @@ final class Conversions
 
                 continue;
             }
-            elseif (!$forceNumericKeys && Test::isListArray($value, true))
+            elseif (!$preserveKeys && Test::isListArray($value, true))
             {
                 $_format = "[]";
             }
@@ -809,7 +752,7 @@ final class Conversions
                 $_format = "[%s]";
             }
 
-            $this->_dataToQuery($value, $forceNumericKeys, $dateFormatter, $query, $name . $_name, $_format);
+            $this->_dataToQuery($value, $preserveKeys, $dateFormatter, $query, $name . $_name, $_format);
         }
 
         return $query;
@@ -823,22 +766,14 @@ final class Conversions
      *
      * Arrays with consecutive integer keys numbered from 0 are considered to be
      * lists. By default, keys are not included when adding lists to query
-     * strings. Set `$forceNumericKeys` to override this behaviour.
+     * strings. Set `$preserveKeys` to override this behaviour.
      *
-     * @param array $data
-     * @param bool $forceNumericKeys
-     * @param DateFormatter|null $dateFormatter
-     * @return string
      */
-    public function dataToQuery(
-        array $data,
-        bool $forceNumericKeys       = false,
-        DateFormatter $dateFormatter = null
-    ): string
+    public function dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null): string
     {
         return $this->_dataToQuery(
             $data,
-            $forceNumericKeys,
+            $preserveKeys,
             $dateFormatter ?: new DateFormatter()
         );
     }

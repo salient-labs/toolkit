@@ -114,6 +114,38 @@ final class Tests
     }
 
     /**
+     * Return true for string[] and int[]
+     *
+     * Returns `false` unless `$value` is an array where all values are integers
+     * or where all values are strings.
+     */
+    public function isArrayOfIntOrString($value, bool $allowEmpty = false): bool
+    {
+        return is_array($value) &&
+            (empty($value) ? $allowEmpty :
+                (count(array_filter($value, fn($item)    => is_string($item))) === count($value) ||
+                    count(array_filter($value, fn($item) => is_int($item))) === count($value)));
+    }
+
+    /**
+     * Return true for arrays of a class
+     *
+     * Returns `false` unless `$value` is an array where every element is an
+     * instance of `$class`.
+     *
+     * @param bool $strict If `true`, subclasses of `$class` are not allowed in
+     * `$value`.
+     */
+    public function isArrayOf($value, string $class, bool $strict = false, bool $allowEmpty = false): bool
+    {
+        return is_array($value) &&
+            (empty($value) ? $allowEmpty :
+                empty(array_filter($value, $strict
+                    ? fn($val) => strcasecmp(get_class($val), $class)
+                    : fn($val) => !is_a($val, $class))));
+    }
+
+    /**
      * Return true for absolute paths
      *
      * @param string $path

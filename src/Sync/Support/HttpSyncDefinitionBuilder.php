@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
+use Closure;
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipelineImmutable;
@@ -17,7 +18,8 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method $this entity(string $value) See {@see SyncDefinition::$Entity}
  * @method $this provider(HttpSyncProvider $value) See {@see HttpSyncDefinition::$Provider}
  * @method $this operations(int[] $value) See {@see HttpSyncDefinition::$Operations}
- * @method $this path(?string $value) See {@see HttpSyncDefinition::$Path}
+ * @method $this path(Closure|string|null $value) Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): string` (see {@see HttpSyncDefinition::$Path})
+ * @method $this query(Closure|array|null $value) Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): ?array` (see {@see HttpSyncDefinition::$Query})
  * @method $this conformity(int $value) See {@see SyncDefinition::$Conformity}
  * @method $this expiry(?int $value) See {@see HttpSyncDefinition::$Expiry}
  * @method $this methodMap(array $value) See {@see HttpSyncDefinition::$MethodMap}

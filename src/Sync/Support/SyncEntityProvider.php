@@ -34,11 +34,6 @@ use UnexpectedValueException;
 class SyncEntityProvider implements ISyncEntityProvider
 {
     /**
-     * @var IContainer
-     */
-    private $Container;
-
-    /**
      * @var string
      */
     private $Entity;
@@ -71,21 +66,36 @@ class SyncEntityProvider implements ISyncEntityProvider
             throw new UnexpectedValueException(get_class($provider) . " does not implement " . $entityProvider);
         }
 
-        $this->Container  = $container;
         $this->Entity     = $entity;
         $this->Provider   = $provider;
         $this->Definition = $definition;
         $this->Context    = $context ?: new SyncContext($container);
     }
 
-    private function run(int $operation, ...$args)
+    /**
+     * @internal
+     */
+    public function run(int $operation, ...$args)
     {
         if (!($closure = $this->Definition->getSyncOperationClosure($operation)))
         {
             throw new SyncOperationNotImplementedException($this->Provider, $this->Entity, $operation);
         }
 
-        return $closure($this->Context, ...$args);
+        $result = $closure($this->Context->withArgs($operation, $this->Context, ...$args), ...$args);
+
+        if (SyncOperation::isList($operation) && $this->Context->getListToArray() && !is_array($result))
+        {
+            $entities = [];
+            foreach ($result as $entity)
+            {
+                $entities[] = $entity;
+            }
+
+            return $entities;
+        }
+
+        return $result;
     }
 
     /**
@@ -123,10 +133,10 @@ class SyncEntityProvider implements ISyncEntityProvider
      *
      * ```php
      * // 1.
-     * public function getFaculty(SyncContext $ctx, int $id = null): Faculty;
+     * public function getFaculty(SyncContext $ctx, $id): Faculty;
      *
      * // 2.
-     * public function get_Faculty(SyncContext $ctx, int $id = null): Faculty;
+     * public function get_Faculty(SyncContext $ctx, $id): Faculty;
      * ```
      *
      * The first parameter after `SyncContext $ctx`:
@@ -137,7 +147,7 @@ class SyncEntityProvider implements ISyncEntityProvider
      *
      * @param int|string|null $id
      */
-    public function get($id = null, ...$args): SyncEntity
+    public function get($id, ...$args): SyncEntity
     {
         return $this->run(SyncOperation::READ, $id, ...$args);
     }

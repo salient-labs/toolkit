@@ -11,6 +11,7 @@ use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipe;
 use Lkrms\Contract\IPipeline;
+use Lkrms\Exception\PipelineException;
 use Lkrms\Facade\Mapper;
 use RuntimeException;
 use Throwable;
@@ -70,6 +71,16 @@ class Pipeline extends FluentInterface implements IPipeline
      * @var array
      */
     private $ThenArgs = [];
+
+    /**
+     * @var Closure|null
+     */
+    private $Unless;
+
+    /**
+     * @var array
+     */
+    private $UnlessArgs = [];
 
     final public function __construct(?IContainer $container = null)
     {
@@ -153,17 +164,36 @@ class Pipeline extends FluentInterface implements IPipeline
         return $_this;
     }
 
+    public function unless(callable $filter, ...$args)
+    {
+        if ($this->Unless)
+        {
+            throw new RuntimeException(static::class . "::unless() has already been applied");
+        }
+        $_this             = $this->getMutable();
+        $_this->Unless     = $filter;
+        $_this->UnlessArgs = $args;
+
+        return $_this;
+    }
+
     public function run()
     {
         if ($this->Stream)
         {
             throw new RuntimeException(static::class . "::run() cannot be called after " . static::class . "::stream()");
         }
-        $this->checkThen();
 
-        return ($this->getPipeStack())($this->After
+        $result = ($this->getPipeStack())($this->After
             ? $this->After($this->Payload, ...$this->AfterArgs, ...$this->Args)
             : $this->Payload);
+
+        if ($this->Unless && ($this->Unless)($result, ...$this->UnlessArgs, ...$this->Args) !== true)
+        {
+            throw new PipelineException("Result rejected by filter");
+        }
+
+        return $result;
     }
 
     public function start(): iterable
@@ -172,13 +202,20 @@ class Pipeline extends FluentInterface implements IPipeline
         {
             throw new RuntimeException(static::class . "::stream() must be called before " . static::class . "::start()");
         }
-        $this->checkThen();
+
         $pipeStack = $this->getPipeStack();
         foreach ($this->Payload as $payload)
         {
-            yield ($pipeStack)($this->After
+            $result = ($pipeStack)($this->After
                 ? $this->After($payload, ...$this->AfterArgs, ...$this->Args)
                 : $payload);
+
+            if ($this->Unless && ($this->Unless)($result, ...$this->UnlessArgs, ...$this->Args) !== true)
+            {
+                continue;
+            }
+
+            yield $result;
         }
     }
 
@@ -202,14 +239,6 @@ class Pipeline extends FluentInterface implements IPipeline
     protected function handleException($payload, Throwable $ex)
     {
         throw $ex;
-    }
-
-    private function checkThen(): void
-    {
-        if (!$this->Then)
-        {
-            $this->Then = fn($result) => $result;
-        }
     }
 
     private function getPipeStack(): Closure
@@ -247,7 +276,7 @@ class Pipeline extends FluentInterface implements IPipeline
                     }
                 };
             },
-            fn($result) => ($this->Then)($result, ...$this->ThenArgs, ...$this->Args)
+            fn($result) => ($this->Then ?: fn($result) => $result)($result, ...$this->ThenArgs, ...$this->Args)
         ));
     }
 

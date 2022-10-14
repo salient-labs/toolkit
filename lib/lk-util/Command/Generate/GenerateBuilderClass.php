@@ -329,7 +329,7 @@ class GenerateBuilderClass extends GenerateCommand
                 $summary = $phpDoc->Summary ?? null;
                 if (!$summary && ($_param = $_params[$name] ?? null))
                 {
-                    $summary = $_phpDoc->unwrap($_phpDoc->Params[$_param->getName()]["description"] ?? null);
+                    $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_param->getName()]["description"] ?? null) : null;
                 }
 
                 $methods[] = " * @method \$this $name($type \$value)" . $this->getSummary(
@@ -364,7 +364,7 @@ class GenerateBuilderClass extends GenerateCommand
                     $default = " = true";
                     break;
             }
-            $summary        = $_phpDoc->unwrap($_phpDoc->Params[$_name]["description"] ?? null);
+            $summary        = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_name]["description"] ?? null) : null;
             if (($_property = $_allProperties[$name] ?? null) &&
                 !$summary &&
                 ($phpDoc = PhpDocParser::fromDocBlocks(Reflect::getAllPropertyDocComments($_property))))

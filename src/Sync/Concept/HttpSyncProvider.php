@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Concept;
 
 use Lkrms\Curler\CachingCurler;
+use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Facade\Console;
@@ -29,7 +30,6 @@ abstract class HttpSyncProvider extends SyncProvider
      *
      * @param string|null $path The endpoint requested via
      * {@see HttpSyncProvider::getCurler()}.
-     * @return string
      */
     abstract protected function getBaseUrl(?string $path): string;
 
@@ -43,6 +43,17 @@ abstract class HttpSyncProvider extends SyncProvider
      * @return CurlerHeaders|null
      */
     abstract protected function getCurlerHeaders(?string $path): ?CurlerHeaders;
+
+    /**
+     * Return a pager to use with paginated data from the upstream API
+     *
+     * @param string|null $path The endpoint requested via
+     * {@see HttpSyncProvider::getCurler()}.
+     */
+    protected function getCurlerPager(?string $path): ?ICurlerPager
+    {
+        return null;
+    }
 
     /**
      * The time, in seconds, before upstream responses expire
@@ -69,15 +80,13 @@ abstract class HttpSyncProvider extends SyncProvider
      * Called once per {@see HttpSyncProvider::getCurler()} call.
      *
      */
-    protected function prepareCurler(Curler $curler): Curler
+    protected function prepareCurler(Curler $curler): void
     {
-        return $curler;
     }
 
     /**
      * Used by CachingCurler when adding request headers to cache keys
      *
-     * @param CurlerHeaders $headers
      * @return string[]
      * @see CachingCurler::__construct()
      */
@@ -119,8 +128,6 @@ abstract class HttpSyncProvider extends SyncProvider
     /**
      * Get the URL of an API endpoint
      *
-     * @param string $path
-     * @return string
      */
     final public function getEndpointUrl(string $path): string
     {
@@ -146,6 +153,7 @@ abstract class HttpSyncProvider extends SyncProvider
             $curler = new CachingCurler(
                 $this->getEndpointUrl($path),
                 $this->getCurlerHeaders($path),
+                $this->getCurlerPager($path),
                 $expiry,
                 fn(CurlerHeaders $headers) => $this->getCurlerCacheKey($headers)
             );
@@ -154,7 +162,8 @@ abstract class HttpSyncProvider extends SyncProvider
         {
             $curler = new Curler(
                 $this->getEndpointUrl($path),
-                $this->getCurlerHeaders($path)
+                $this->getCurlerHeaders($path),
+                $this->getCurlerPager($path)
             );
         }
 

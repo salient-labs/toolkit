@@ -122,7 +122,9 @@ abstract class Builder implements IImmutable
             throw new UnexpectedValueException("Invalid arguments");
         }
         $clone = clone $this;
-        $clone->Data[$clone->ClosureBuilder->maybeNormalise($name)] = $arguments[0] ?? true;
+        $clone->Data[$clone->ClosureBuilder->maybeNormalise($name)] = (array_key_exists(0, $arguments)
+            ? $arguments[0]
+            : true);
 
         return $clone;
     }

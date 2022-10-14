@@ -29,8 +29,8 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * Read an entity from the connected system
      *
      * Typically corresponds to:
-     * - `<provider>::get<entity_name>(int|string|null $id = null)`
-     * - `<provider>::get_<entity_name>(int|string|null $id = null)`
+     * - `<provider>::get<entity_name>(int|string|null $id)`
+     * - `<provider>::get_<entity_name>(int|string|null $id)`
      * - `GET /<entity_name>/<id>`
      * - `GET /<entity_name>`
      * - `SELECT ... FROM <entity_name> WHERE <id_field> = <id>`

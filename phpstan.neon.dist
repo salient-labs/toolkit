@@ -17,7 +17,6 @@ parameters:
     - tests/composer
     - tests/console
     - tests/convert
-    - tests/Curler/curler
     - tests/env
     - tests/err
     - tests/file

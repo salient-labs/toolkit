@@ -86,7 +86,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         {
             $this->Entities[] = [
                 $entity,
-                Convert::toNormal($entity-> { $this->NameField })
+                Convert::toNormal($entity->{$this->NameField})
             ];
         }
     }
@@ -127,7 +127,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 
         $sort = $this->Entities;
         usort($sort, fn($e1, $e2) => $this->compareUncertainty($_name, $e1, $e2)
-            ?: ($e2[0]-> { $this->WeightField } <=> $e1[0]-> { $this->WeightField }));
+            ?: ($e2[0]->{$this->WeightField} <=> $e1[0]->{$this->WeightField}));
         $cache = $match = reset($sort);
 
         if ($match !== false)
@@ -137,7 +137,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
             {
                 Console::debugOnce(sprintf(
                     "Match with '%s' exceeds uncertainty threshold (%.2f >= %.2f):",
-                    $match[0]-> { $this->NameField },
+                    $match[0]->{$this->NameField},
                     $uncertainty,
                     $this->UncertaintyThreshold
                 ), $name);

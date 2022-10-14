@@ -14,6 +14,11 @@ trait TImmutable
 {
     final public static function fromMutable(parent $mutable): self
     {
+        if ($mutable instanceof self)
+        {
+            return $mutable;
+        }
+
         return $mutable->toImmutable();
     }
 

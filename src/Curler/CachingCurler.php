@@ -4,25 +4,34 @@ declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
+use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Compute;
+use Lkrms\Support\HttpRequestMethod;
 
 /**
- * Adds GET request caching to Curler
+ * Adds GET and optional POST request caching to Curler
  *
  * @property bool $CachePostRequests
+ * @property-read int $Expiry
  */
 class CachingCurler extends Curler
 {
     /**
+     * Cache eligible POST requests?
+     *
      * @var bool
      */
     protected $CachePostRequests = false;
 
     /**
+     * Seconds before each request expires
+     *
+     * `0` = no expiry.
+     *
      * @var int
      */
-    private $Expiry;
+    protected $Expiry;
 
     /**
      * @var callable|null
@@ -32,22 +41,19 @@ class CachingCurler extends Curler
     public static function getReadable(): array
     {
         return array_merge(parent::getReadable(), [
-            "CachePostRequests"
+            "CachePostRequests",
+            "Expiry",
         ]);
     }
 
     public static function getWritable(): array
     {
         return array_merge(parent::getWritable(), [
-            "CachePostRequests"
+            "CachePostRequests",
         ]);
     }
 
     /**
-     *
-     * @param string $baseUrl
-     * @param CurlerHeaders|null $headers
-     * @param int $expiry
      * @param callable|null $callback Provide a callback to use instead of
      * `$headers->getPublicHeaders()` when adding request headers to cache keys.
      * ```php
@@ -55,53 +61,51 @@ class CachingCurler extends Curler
      * ```
      * @return void
      */
-    public function __construct(string $baseUrl, CurlerHeaders $headers = null,
-        int $expiry = 3600, callable $callback = null)
+    public function __construct(string $baseUrl, ?CurlerHeaders $headers = null, ?ICurlerPager $pager = null, int $expiry = 3600, ? callable $callback = null)
     {
+        parent::__construct($baseUrl, $headers, $pager);
+
         $this->Expiry   = $expiry;
         $this->Callback = $callback;
-
-        parent::__construct($baseUrl, $headers);
     }
 
-    protected function execute($close = true): string
+    protected function execute(bool $close = true, int $depth = 0): string
     {
-        $this->StackDepth += 1;
-
-        if (Cache::isLoaded() && ($this->Method == "GET" ||
-            ($this->CachePostRequests && $this->Method == "POST" &&
-                !is_array($this->Data))))
+        if (Cache::isLoaded() &&
+            ($this->Method == HttpRequestMethod::GET ||
+                ($this->CachePostRequests && $this->Method == HttpRequestMethod::POST && !is_array($this->Body))))
         {
-            $url     = curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL);
+            $url     = $this->getEffectiveUrl();
             $headers = (is_null($this->Callback)
                 ? $this->Headers->getPublicHeaders()
                 : ($this->Callback)($this->Headers));
-            if ($this->Method != "GET")
+            if ($this->Method != HttpRequestMethod::GET)
             {
                 $url       = "{$this->Method}:$url";
-                $headers[] = $this->Data;
+                $headers[] = $this->Body;
             }
-            $key    = "curler/$url/" . Compute::hash(...$headers);
-            $result = Cache::get($key, $this->Expiry);
+            $key  = "curler/$url/" . Compute::hash(...$headers);
+            $last = Cache::get($key, $this->Expiry);
 
-            if ($result === false)
+            if ($last === false)
             {
-                $result = parent::execute($close);
-                Cache::set($key, [$this->ResponseHeadersByName, $result], $this->Expiry);
+                parent::execute($close, $depth + 1);
+                Cache::set($key, [$this->ResponseHeadersByName, $this->ResponseBody], $this->Expiry);
             }
             else
             {
                 if ($close)
                 {
-                    curl_close($this->Handle);
+                    $this->close();
                 }
-
-                list ($this->ResponseHeadersByName, $result) = $result;
+                [$this->ResponseHeadersByName, $this->ResponseBody] = $last;
             }
 
-            return $result;
+            return $this->ResponseBody;
         }
 
-        return parent::execute($close);
+        parent::execute($close, $depth + 1);
+
+        return $this->ResponseBody;
     }
 }
