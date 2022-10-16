@@ -17,21 +17,29 @@ final class Computations
     /**
      * Generate a cryptographically secure random UUID
      *
+     * Of the 128 bits returned, 122 are random.
+     *
      * Compliant with [RFC4122].
      *
-     * @return string
+     * @param bool $binary If `true`, 16 bytes of raw binary data are returned
+     * instead of a 36-byte hexadecimal representation.
      */
-    public function uuid(): string
+    public function uuid(bool $binary = false): string
     {
-        $bytes  = random_bytes(16);
-        $uuid   = [];
-        $uuid[] = bin2hex(substr($bytes, 0, 4));
-        $uuid[] = bin2hex(substr($bytes, 4, 2));
-        $uuid[] = bin2hex(chr(ord(substr($bytes, 6, 1)) & 0xf | 0x40) . substr($bytes, 7, 1));
-        $uuid[] = bin2hex(chr(ord(substr($bytes, 8, 1)) & 0x3f | 0x80) . substr($bytes, 9, 1));
-        $uuid[] = bin2hex(substr($bytes, 10, 6));
+        $uuid[] = random_bytes(4);
+        $uuid[] = random_bytes(2);
+        // Version 4 (most significant 4 bits = 0b0100)
+        $uuid[] = chr(ord(random_bytes(1)) & 0xf | 0x40) . random_bytes(1);
+        // Variant 1 (most significant 2 bits = 0b10)
+        $uuid[] = chr(ord(random_bytes(1)) & 0x3f | 0x80) . random_bytes(1);
+        $uuid[] = random_bytes(6);
 
-        return implode("-", $uuid);
+        if ($binary)
+        {
+            return implode("", $uuid);
+        }
+
+        return implode("-", array_map(fn(string $bin): string => bin2hex($bin), $uuid));
     }
 
     /**
