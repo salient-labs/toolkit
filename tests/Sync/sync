@@ -5,6 +5,7 @@ namespace Lkrms\Tests\Sync;
 
 use Lkrms\Facade\App;
 use Lkrms\Facade\Console;
+use Lkrms\Facade\Sync;
 use Lkrms\Sync\Support\SyncEntityFuzzyResolver;
 use Lkrms\Sync\Support\SyncEntityResolver;
 use Lkrms\Sync\Support\SyncOperation;
@@ -19,6 +20,7 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 // Register JsonPlaceholderApi as the provider for Post and User objects
 $app = (App::load(dirname(__DIR__))
     ->loadCache()
+    ->loadSync()
     ->service(JsonPlaceholderApi::class));
 
 $userApi = User::backend($app);
@@ -30,6 +32,11 @@ Console::info("Posts retrieved:", (string)count($posts));
 $post = reset($posts);
 /** @var User */
 $user = User::backend()->get($post->User->Id);
+
+print_r([
+    'Sync::getRunId()'   => Sync::getRunId(),
+    'Sync::getRunUuid()' => Sync::getRunUuid(),
+]);
 
 $resolver       = new SyncEntityResolver($userApi, "Name");
 $fuzzyResolver  = new SyncEntityFuzzyResolver($userApi, "Name", null, null, 0.6);
@@ -98,3 +105,5 @@ print_r([
     "ops"        => $ops,
     "exceptions" => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
 ]);
+
+Sync::close(1);

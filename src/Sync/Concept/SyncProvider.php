@@ -5,20 +5,17 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Concept;
 
 use Closure;
-use Lkrms\Concern\HasContainer;
+use Lkrms\Container\Container;
 use Lkrms\Contract\IBindableSingleton;
-use Lkrms\Facade\Compute;
-use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncEntityProvider;
-use Lkrms\Sync\Support\SyncOperation;
+use Lkrms\Sync\Support\SyncStore;
 use ReflectionClass;
 use RuntimeException;
-use UnexpectedValueException;
 
 /**
  * Base class for providers that sync entities to and from third-party backends
@@ -27,8 +24,6 @@ use UnexpectedValueException;
  */
 abstract class SyncProvider implements ISyncProvider, IBindableSingleton
 {
-    use HasContainer;
-
     /**
      * Surface the provider's implementation of sync operations for an entity
      * via an ISyncDefinition object
@@ -38,7 +33,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
 
     /**
      * Return a stable identifier that, together with the name of the class,
-     * uniquely identifies the connected backend instance
+     * uniquely identifies the backend instance
      *
      * This method must be idempotent for each backend instance the provider
      * connects to. The return value should correspond to the smallest possible
@@ -57,7 +52,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      * - values that aren't unique to the connected data source
      * - case-insensitive values (unless normalised first)
      *
-     * @return string[]
+     * @return array<string|\Stringable>
      */
     abstract protected function _getBackendIdentifier(): array;
 
@@ -95,9 +90,19 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     }
 
     /**
-     * @var string|null
+     * @var Container
      */
-    private $BackendHash;
+    private $Container;
+
+    /**
+     * @var SyncStore
+     */
+    private $Store;
+
+    /**
+     * @var array<string|\Stringable>|null
+     */
+    private $BackendIdentifier;
 
     /**
      * @var DateFormatter|null
@@ -114,13 +119,29 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      */
     private $MagicMethodClosures = [];
 
+    public function __construct(Container $container, SyncStore $store)
+    {
+        $this->Container = $container;
+        $this->Store     = $store;
+    }
+
+    final public function app(): Container
+    {
+        return $this->Container;
+    }
+
+    final public function container(): Container
+    {
+        return $this->Container;
+    }
+
     /**
      * @see SyncProvider::_getBackendIdentifier()
      */
-    final public function getBackendHash(): string
+    final public function getBackendIdentifier(): array
     {
-        return $this->BackendHash
-            ?: ($this->BackendHash = Compute::hash(...$this->_getBackendIdentifier()));
+        return $this->BackendIdentifier
+            ?: ($this->BackendIdentifier = $this->_getBackendIdentifier());
     }
 
     final public function getDateFormatter(): DateFormatter

@@ -41,6 +41,11 @@ parameters:
 			path: src/Support/PhpDocParser.php
 
 		-
+			message: "#^Property Lkrms\\\\Sync\\\\Concept\\\\SyncProvider\\:\\:\\$Store is never read, only written\\.$#"
+			count: 1
+			path: src/Sync/Concept/SyncProvider.php
+
+		-
 			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\DeferredSyncEntity\\:\\:\\$Replace is never read, only written\\.$#"
 			count: 1
 			path: src/Sync/Support/DeferredSyncEntity.php

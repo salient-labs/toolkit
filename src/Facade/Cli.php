@@ -7,7 +7,6 @@ namespace Lkrms\Facade;
 use Lkrms\Cli\CliAppContainer;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Concept\Facade;
-use Lkrms\Console\ConsoleLevels;
 use Lkrms\Container\AppContainer;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
@@ -34,7 +33,8 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer instance(string $id, mixed $instance) Add an existing instance to the container as a shared binding (see {@see Container::instance()})
  * @method static CliAppContainer loadCache() See {@see AppContainer::loadCache()}
  * @method static CliAppContainer loadCacheIfExists() See {@see AppContainer::loadCacheIfExists()}
- * @method static CliAppContainer logConsoleMessages(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG) See {@see AppContainer::logConsoleMessages()}
+ * @method static CliAppContainer loadSync(?string $command = null, ?array $arguments = null) See {@see AppContainer::loadSync()}
+ * @method static CliAppContainer logConsoleMessages(?string $name = null, ?bool $debug = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Similar to getGlobalContainer(), but return null if no global container has been loaded (see {@see Container::maybeGetGlobalContainer()})
  * @method static IContainer requireGlobalContainer() Similar to getGlobalContainer(), but throw an exception if no global container has been loaded (see {@see Container::requireGlobalContainer()})
  * @method static int run() Process command-line arguments and take appropriate action (see {@see CliAppContainer::run()})

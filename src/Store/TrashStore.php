@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Lkrms\Store;
 
 use Lkrms\Store\Concept\SqliteStore;
+use UnexpectedValueException;
 
 /**
- * A SQLite store for deleted JSON objects
+ * A SQLite store for deleted objects
  *
  */
 final class TrashStore extends SqliteStore
@@ -20,46 +21,57 @@ final class TrashStore extends SqliteStore
     /**
      * Create or open a storage database
      *
-     * @param string $filename The SQLite database to use.
      * @return $this
      */
     public function open(string $filename = ":memory:")
     {
-        parent::open($filename);
-        $this->db()->exec(
+        $this->openDb($filename);
+
+        $db = $this->db();
+        $db->exec(
 <<<SQL
-CREATE TABLE IF NOT EXISTS _trash_item (
-  item_type TEXT NOT NULL,
-  item_key TEXT,
-  item_json TEXT NOT NULL,
-  deleted_from TEXT,
-  deleted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  created_at DATETIME,
-  modified_at DATETIME
-)
+CREATE TABLE IF NOT EXISTS
+  _trash_item (
+    item_type TEXT NOT NULL,
+    item_key TEXT,
+    item_json TEXT NOT NULL,
+    deleted_from TEXT,
+    deleted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME,
+    modified_at DATETIME
+  );
 SQL
         );
+
         return $this;
     }
 
     /**
      * Add a deleted object to the store
      *
-     * @param string $type The object's canonical type.
-     * @param string|null $key The object's original identifier.
-     * @param array|object $object Must be JSON-serializable. No `resource`s.
-     * @param string|null $deletedFrom Where was the object before it was deleted?
-     * @param int|null $createdAt When was the object originally created?
-     * @param int|null $modifiedAt When was the object most recently changed?
+     * @param string|null $key The object's identifier, if known.
+     * @param array|object $object
+     * @param string|null $type The object's canonical type, or `null` to use
+     * its FQCN.
+     * @param string|null $deletedFrom The canonical location of the object
+     * before it was deleted. Need not be unique.
+     * @param int|null $createdAt A Unix timestamp representing the object's
+     * original creation time.
+     * @param int|null $modifiedAt A Unix timestamp representing the object's
+     * last modification time (before it was deleted, preferably).
      * @return $this
      */
-    public function put(string $type, ?string $key, $object,
-        ?string $deletedFrom, int $createdAt = null, int $modifiedAt = null)
+    public function put(?string $key, $object, ?string $type = null, ?string $deletedFrom = null, ?int $createdAt = null, ?int $modifiedAt = null)
     {
-        $this->assertIsOpen();
-        $stmt = $this->db()->prepare(
-<<<SQL
-INSERT INTO _trash_item(
+        if (!$type && !is_object($object))
+        {
+            throw new UnexpectedValueException('When argument #3 ($type) is null, argument #2 ($object) must be an object');
+        }
+
+        $db  = $this->db();
+        $sql = <<<SQL
+INSERT INTO
+  _trash_item (
     item_type,
     item_key,
     item_json,
@@ -67,17 +79,18 @@ INSERT INTO _trash_item(
     created_at,
     modified_at
   )
-VALUES (
+VALUES
+  (
     :item_type,
     :item_key,
     :item_json,
     :deleted_from,
-    datetime(:created_at, 'unixepoch'),
-    datetime(:modified_at, 'unixepoch')
+    DATETIME(:created_at, 'unixepoch'),
+    DATETIME(:modified_at, 'unixepoch')
   )
-SQL
-        );
-        $stmt->bindValue(":item_type", $type, SQLITE3_TEXT);
+SQL;
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(":item_type", $type ?: get_class($object), SQLITE3_TEXT);
         $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
         $stmt->bindValue(":item_json", json_encode($object), SQLITE3_TEXT);
         $stmt->bindValue(":deleted_from", $deletedFrom, SQLITE3_TEXT);
@@ -85,6 +98,7 @@ SQL
         $stmt->bindValue(":modified_at", $modifiedAt, SQLITE3_INTEGER);
         $stmt->execute();
         $stmt->close();
+
         return $this;
     }
 
@@ -95,13 +109,15 @@ SQL
      */
     public function empty()
     {
-        $this->assertIsOpen();
-        $this->db()->exec(
+        $db = $this->db();
+        $db->exec(
 <<<SQL
-DELETE
-FROM _trash_item
+DELETE FROM
+  _trash_item
 SQL
         );
+
         return $this;
     }
+
 }
