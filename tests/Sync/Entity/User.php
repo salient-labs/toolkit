@@ -42,7 +42,7 @@ class User extends SyncEntity
      */
     public $Phone;
 
-    // Commented out for IExtensible / __clone() testing
+    // Commented out for IExtensible testing
 
     ///**
     // * @var string|null

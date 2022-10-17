@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-use Lkrms\Container\CliAppContainer;
+use Lkrms\Cli\CliAppContainer;
 
 trait HasCliAppContainer
 {
@@ -18,12 +18,12 @@ trait HasCliAppContainer
         $this->Container = $container;
     }
 
-    public function app(): CliAppContainer
+    final public function app(): CliAppContainer
     {
         return $this->Container;
     }
 
-    public function container(): CliAppContainer
+    final public function container(): CliAppContainer
     {
         return $this->Container;
     }

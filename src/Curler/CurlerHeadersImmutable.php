@@ -11,7 +11,7 @@ use Lkrms\Contract\IImmutable;
  * An immutable collection of HTTP headers
  *
  */
-class CurlerHeadersImmutable extends CurlerHeaders implements IImmutable
+final class CurlerHeadersImmutable extends CurlerHeaders implements IImmutable
 {
     use TImmutable;
 

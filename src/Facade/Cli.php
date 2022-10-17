@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Lkrms\Facade;
 
-use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\CliAppContainer;
+use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Concept\Facade;
-use Lkrms\Console\ConsoleLevels;
 use Lkrms\Container\AppContainer;
-use Lkrms\Container\CliAppContainer;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 
 /**
- * A facade for \Lkrms\Container\CliAppContainer
+ * A facade for \Lkrms\Cli\CliAppContainer
  *
  * @method static CliAppContainer load(?string $basePath = null) Load and return an instance of the underlying CliAppContainer class
  * @method static CliAppContainer getInstance() Return the underlying CliAppContainer instance
@@ -34,7 +33,8 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer instance(string $id, mixed $instance) Add an existing instance to the container as a shared binding (see {@see Container::instance()})
  * @method static CliAppContainer loadCache() See {@see AppContainer::loadCache()}
  * @method static CliAppContainer loadCacheIfExists() See {@see AppContainer::loadCacheIfExists()}
- * @method static CliAppContainer logConsoleMessages(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG) See {@see AppContainer::logConsoleMessages()}
+ * @method static CliAppContainer loadSync(?string $command = null, ?array $arguments = null) See {@see AppContainer::loadSync()}
+ * @method static CliAppContainer logConsoleMessages(?string $name = null, ?bool $debug = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Similar to getGlobalContainer(), but return null if no global container has been loaded (see {@see Container::maybeGetGlobalContainer()})
  * @method static IContainer requireGlobalContainer() Similar to getGlobalContainer(), but throw an exception if no global container has been loaded (see {@see Container::requireGlobalContainer()})
  * @method static int run() Process command-line arguments and take appropriate action (see {@see CliAppContainer::run()})
@@ -44,7 +44,7 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})
  *
  * @uses CliAppContainer
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Container\CliAppContainer' --generate='Lkrms\Facade\Cli'
+ * @lkrms-generate-command lk-util generate facade --class='Lkrms\Cli\CliAppContainer' --generate='Lkrms\Facade\Cli'
  */
 final class Cli extends Facade
 {

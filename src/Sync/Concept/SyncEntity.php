@@ -53,16 +53,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      */
     private static $Normalised = [];
 
-    /**
-     * @internal
-     */
-    public function __clone()
-    {
-        parent::__clone();
-        $this->Id = null;
-    }
-
-    public function provider(): ?ISyncProvider
+    final public function provider(): ?ISyncProvider
     {
         if (is_null($provider = parent::provider()))
         {
@@ -76,7 +67,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         return $provider;
     }
 
-    protected function context(): ?ISyncContext
+    final protected function context(): ?ISyncContext
     {
         if (is_null($ctx = parent::context()))
         {
@@ -90,7 +81,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         return $ctx;
     }
 
-    protected function requireContext(): ISyncContext
+    final protected function requireContext(): ISyncContext
     {
         if (is_null($ctx = $this->context()))
         {

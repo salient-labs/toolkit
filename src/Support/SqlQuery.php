@@ -14,7 +14,7 @@ use UnexpectedValueException;
  *
  * @property-read array<string,mixed> $Values Parameter name => value
  */
-class SqlQuery extends FluentInterface implements IReadable
+final class SqlQuery extends FluentInterface implements IReadable
 {
     use TReadable;
 

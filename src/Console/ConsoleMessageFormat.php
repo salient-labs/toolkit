@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 /**
- * A format that can be applied to a console message
+ * A collection of character sequences that can be used to apply formatting to
+ * the components of a console message
  *
  */
 final class ConsoleMessageFormat

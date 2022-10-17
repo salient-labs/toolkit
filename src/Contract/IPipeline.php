@@ -30,10 +30,30 @@ interface IPipeline
      *
      * Arguments added after `$payload` are passed to each pipe.
      *
+     * If payloads are associative arrays, call
+     * {@see IPipeline::withConformity()} to improve performance.
+     *
      * @param iterable $payload Must be traversable with `foreach`.
      * @return $this
      */
     public function stream(iterable $payload, ...$args);
+
+    /**
+     * Specify the payload's array key conformity
+     *
+     * `$conformity` is passed to any array key mappers added to the pipeline
+     * with {@see IPipeline::throughKeyMap()}. It has no effect otherwise.
+     *
+     * Calls to {@see IPipeline::send()} and {@see IPipeline::stream()} reset
+     * the pipeline to conformity level {@see ArrayKeyConformity::NONE}, so this
+     * method must be called **after** providing the payload to which it
+     * applies.
+     *
+     * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
+     * `COMPLETE` wherever possible to improve performance.
+     * @return $this
+     */
+    public function withConformity(int $conformity = ArrayKeyConformity::PARTIAL);
 
     /**
      * Apply a callback to each payload before it is sent
@@ -44,6 +64,10 @@ interface IPipeline
      * any arguments given after `$payload` in {@see IPipeline::send()} or
      * {@see IPipeline::stream()}.
      *
+     * @param callable $callback
+     * ```php
+     * fn($payload, IPipeline $pipeline, ...$args): mixed
+     * ```
      * @return $this
      */
     public function after(callable $callback, ...$args);
@@ -57,7 +81,7 @@ interface IPipeline
      *   created), or
      * - a callback with the same signature as {@see IPipe::handle()}:
      * ```php
-     * function ($payload, Closure $next, ...$args)
+     * function ($payload, Closure $next, IPipeline $pipeline, ...$args)
      * ```
      *
      * Whichever form it takes, a pipe should use, mutate and/or replace
@@ -72,7 +96,7 @@ interface IPipeline
      * object, the name of an `IPipe` class to instantiate, or a closure with
      * the following signature:
      * ```php
-     * function ($payload, Closure $next, ...$args)
+     * function ($payload, Closure $next, IPipeline $pipeline, ...$args)
      * ```
      * @return $this
      */
@@ -80,6 +104,12 @@ interface IPipeline
 
     /**
      * Add a simple callback to the pipeline
+     *
+     * If `$suppressArgs` is set, the only argument passed to `$callback` is the
+     * payload. Otherwise, `$callback` is invoked as follows:
+     * ```php
+     * fn($payload, IPipeline $pipeline, ...$args)
+     * ```
      *
      * @return $this
      */
@@ -90,14 +120,12 @@ interface IPipeline
      *
      * @param array<int|string,int|string|array<int,int|string>> $keyMap An
      * array that maps input keys to one or more output keys.
-     * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
-     * `COMPLETE` wherever possible to improve performance.
      * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
      * values.
      *
      * @return $this
      */
-    public function throughKeyMap(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED);
+    public function throughKeyMap(array $keyMap, int $flags = ArrayMapperFlag::ADD_UNMAPPED);
 
     /**
      * Apply a callback to each result
@@ -108,6 +136,10 @@ interface IPipeline
      * any arguments given after `$payload` in {@see IPipeline::send()} or
      * {@see IPipeline::stream()}.
      *
+     * @param callable $callback
+     * ```php
+     * fn($result, IPipeline $pipeline, ...$args): mixed
+     * ```
      * @return $this
      */
     public function then(callable $callback, ...$args);
@@ -128,7 +160,7 @@ interface IPipeline
      *
      * @param callable $filter
      * ```php
-     * fn($result, ...$args): bool
+     * fn($result, IPipeline $pipeline, ...$args): bool
      * ```
      * @return $this
      */
@@ -148,5 +180,13 @@ interface IPipeline
      * {@see IPipeline::start()} can be used to run the pipeline.
      */
     public function start(): iterable;
+
+    /**
+     * Get the payload's array key conformity
+     *
+     * @return int One of the {@see ArrayKeyConformity} values.
+     * @see IPipeline::withConformity()
+     */
+    public function getConformity(): int;
 
 }

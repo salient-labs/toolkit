@@ -18,12 +18,12 @@ trait HasAppContainer
         $this->Container = $container;
     }
 
-    public function app(): AppContainer
+    final public function app(): AppContainer
     {
         return $this->Container;
     }
 
-    public function container(): AppContainer
+    final public function container(): AppContainer
     {
         return $this->Container;
     }

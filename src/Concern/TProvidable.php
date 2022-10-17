@@ -35,12 +35,12 @@ trait TProvidable
      */
     private $_ProvidableContext;
 
-    protected function clearProvider()
+    final protected function clearProvider()
     {
         $this->_Provider = null;
     }
 
-    public function setProvider(IProvider $provider, string $providable)
+    final public function setProvider(IProvider $provider, string $providable)
     {
         if ($this->_Provider)
         {
@@ -52,7 +52,7 @@ trait TProvidable
         return $this;
     }
 
-    public function setProvidableContext(?IProvidableContext $context)
+    final public function setProvidableContext(?IProvidableContext $context)
     {
         $this->_ProvidableContext = $context;
 
@@ -64,7 +64,7 @@ trait TProvidable
         return $this->_Provider;
     }
 
-    public function providable(): ?string
+    final public function providable(): ?string
     {
         return $this->_Providable;
     }
@@ -102,7 +102,7 @@ trait TProvidable
      *
      * @return static
      */
-    public static function provide(array $data, IProvider $provider, ?IProvidableContext $context = null)
+    final public static function provide(array $data, IProvider $provider, ?IProvidableContext $context = null)
     {
         $container = ($context ?: $provider)->container()->inContextOf(get_class($provider));
         $context   = $context ? $context->withContainer($container) : new ProvidableContext($container);
@@ -118,7 +118,7 @@ trait TProvidable
      * @param iterable<array> $dataList
      * @return iterable<static>
      */
-    public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProvidableContext $context = null): iterable
+    final public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProvidableContext $context = null): iterable
     {
         $container = ($context ?: $provider)->container()->inContextOf(get_class($provider));
         $context   = $context ? $context->withContainer($container) : new ProvidableContext($container);
@@ -169,13 +169,14 @@ trait TProvidable
      * {@see \Lkrms\Contract\IHierarchy::setParent()}.
      * @return static
      */
-    public static function fromProvider(IProvider $provider, array $data, callable $callback = null, array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null)
+    final public static function fromProvider(IProvider $provider, array $data, callable $callback = null, array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null)
     {
         $container = $provider->container()->inContextOf(get_class($provider));
         return (Pipeline::create()
             ->send($data)
+            ->withConformity($conformity)
             ->if(!is_null($callback), fn(Pipeline $p) => $p->throughCallback($callback))
-            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->throughKeyMap($keyMap, $conformity, $flags))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->throughKeyMap($keyMap, $flags))
             ->then(ClosureBuilder::getBound($container, static::class)->getCreateProvidableFromClosure(), $provider, new ProvidableContext($container, $parent))
             ->run());
     }
@@ -202,13 +203,14 @@ trait TProvidable
      * {@see \Lkrms\Contract\IHierarchy::setParent()}.
      * @return iterable<static>
      */
-    public static function listFromProvider(IProvider $provider, iterable $list, callable $callback = null, array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null): iterable
+    final public static function listFromProvider(IProvider $provider, iterable $list, callable $callback = null, array $keyMap = null, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED, $parent = null): iterable
     {
         $container = $provider->container()->inContextOf(get_class($provider));
         return (Pipeline::create()
             ->stream($list)
+            ->withConformity($conformity)
             ->if(!is_null($callback), fn(Pipeline $p) => $p->throughCallback($callback))
-            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->throughKeyMap($keyMap, $conformity, $flags))
+            ->if(!is_null($keyMap), fn(Pipeline $p)   => $p->throughKeyMap($keyMap, $flags))
             ->then(
                 function (array $data) use (&$closure, $container, $provider, $conformity, $parent)
                 {

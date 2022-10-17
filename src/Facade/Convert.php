@@ -54,6 +54,7 @@ use Lkrms\Utility\Conversions;
  * @method static string[] toStrings(mixed ...$value) Convert the given strings and Stringables to an array of strings (see {@see Conversions::toStrings()})
  * @method static DateTimeZone toTimezone(DateTimeZone|string $value) Convert a value to a DateTimeZone instance (see {@see Conversions::toTimezone()})
  * @method static array toUniqueList(array $array) A type-agnostic array_unique with reindexing (see {@see Conversions::toUniqueList()})
+ * @method static string uuidToHex(string $bytes) Convert a 16-byte UUID to its 36-byte hexadecimal representation (see {@see Conversions::uuidToHex()})
  * @method static string valueToCode(mixed $value, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::valueToCode()}
  *
  * @uses Conversions

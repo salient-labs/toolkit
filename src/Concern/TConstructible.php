@@ -33,7 +33,7 @@ trait TConstructible
      * {@see \Lkrms\Contract\IHierarchy::setParent()}.
      * @return static
      */
-    public static function construct(array $data, ?IContainer $container = null, $parent = null)
+    final public static function construct(array $data, ?IContainer $container = null, $parent = null)
     {
         return ClosureBuilder::maybeGetBound(
             $container, static::class
@@ -54,7 +54,7 @@ trait TConstructible
      * {@see \Lkrms\Contract\IHierarchy::setParent()}.
      * @return iterable<static>
      */
-    public static function constructList(iterable $dataList, int $conformity = ArrayKeyConformity::NONE, ?IContainer $container = null, $parent = null): iterable
+    final public static function constructList(iterable $dataList, int $conformity = ArrayKeyConformity::NONE, ?IContainer $container = null, $parent = null): iterable
     {
         $closure = null;
         foreach ($dataList as $data)

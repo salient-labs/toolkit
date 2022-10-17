@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Support;
 
 use Closure;
+use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IPipelineImmutable;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\HttpRequestMethod;
@@ -128,7 +129,7 @@ class HttpSyncDefinition extends SyncDefinition
             case SyncOperation::UPDATE:
             case SyncOperation::DELETE:
                 // $_args = [$operation, $ctx, $entity, ...$args]
-                $endpointPipe = fn($payload, Closure $next, ...$_args) => $next(
+                $endpointPipe = fn($payload, Closure $next, IPipeline $pipeline, ...$_args) => $next(
                     $toCurler($this->getPath(...$_args), $this->getQuery(...$_args), $payload)
                 );
                 $closure = fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity =>
@@ -149,7 +150,7 @@ class HttpSyncDefinition extends SyncDefinition
             case SyncOperation::UPDATE_LIST:
             case SyncOperation::DELETE_LIST:
                 // $_args = [$operation, $ctx, $_entity, ...$args]
-                $endpointPipe = fn($payload, Closure $next, ...$_args) => $next(
+                $endpointPipe = fn($payload, Closure $next, IPipeline $pipeline, ...$_args) => $next(
                     $toCurler($this->getPath(...$_args), $this->getQuery(...$_args), $payload)
                 );
                 $_entity = null;

@@ -5,6 +5,7 @@ namespace Lkrms\Tests\Sync;
 
 use Lkrms\Facade\App;
 use Lkrms\Facade\Console;
+use Lkrms\Facade\Sync;
 use Lkrms\Sync\Support\SyncEntityFuzzyResolver;
 use Lkrms\Sync\Support\SyncEntityResolver;
 use Lkrms\Sync\Support\SyncOperation;
@@ -19,6 +20,7 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 // Register JsonPlaceholderApi as the provider for Post and User objects
 $app = (App::load(dirname(__DIR__))
     ->loadCache()
+    ->loadSync()
     ->service(JsonPlaceholderApi::class));
 
 $userApi = User::backend($app);
@@ -29,23 +31,11 @@ Console::info("Posts retrieved:", (string)count($posts));
 /** @var Post */
 $post = reset($posts);
 /** @var User */
-$user      = User::backend()->get($post->User->Id);
-$postClone = clone $post;
-$userClone = clone $user;
-
-// Nested objects aren't cloned. Arrays, on the other hand...
-$post->User->Name    = "New Name Who Dis";
-$user->Company["bs"] = "no-bs-here";
+$user = User::backend()->get($post->User->Id);
 
 print_r([
-    '$post == $postClone (FALSE)' => $post == $postClone,
-    '$post->User == $postClone->User (TRUE)'  => $post->User == $postClone->User,
-    '$post->User === $postClone->User (TRUE)' => $post->User === $postClone->User,
-    '$user == $userClone (FALSE)' => $user == $userClone,
-    '$user->Company == $userClone->Company (FALSE)'  => $user->Company == $userClone->Company,
-    '$user->Company === $userClone->Company (FALSE)' => $user->Company === $userClone->Company,
-    // @phpstan-ignore-next-line
-    '$user->Website == $userClone->Website (FALSE)' => $user->Website == $userClone->Website,
+    'Sync::getRunId()'   => Sync::getRunId(),
+    'Sync::getRunUuid()' => Sync::getRunUuid(),
 ]);
 
 $resolver       = new SyncEntityResolver($userApi, "Name");
@@ -115,3 +105,5 @@ print_r([
     "ops"        => $ops,
     "exceptions" => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
 ]);
+
+Sync::close(1);

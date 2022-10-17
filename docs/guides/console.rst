@@ -70,6 +70,6 @@ Output methods
 .. _registerStdioTargets(): https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html#method_registerStdioTargets
 .. _registerTarget(): https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html#method_registerTarget
 .. _AppContainer: https://lkrms.github.io/php-util/classes/Lkrms-Container-AppContainer.html
-.. _CliAppContainer: https://lkrms.github.io/php-util/classes/Lkrms-Container-CliAppContainer.html
+.. _CliAppContainer: https://lkrms.github.io/php-util/classes/Lkrms-Cli-CliAppContainer.html
 .. _logConsoleMessages(): https://lkrms.github.io/php-util/classes/Lkrms-Container-AppContainer.html#method_logConsoleMessages
 .. _ConsoleWriter: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html

@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Cli;
+namespace Lkrms\Cli\Concept;
 
+use Lkrms\Cli\CliOption;
 use Lkrms\Concern\HasCliAppContainer;
 use Lkrms\Contract\ReturnsContainer;
 use Lkrms\Exception\InvalidCliArgumentException;

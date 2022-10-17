@@ -8,12 +8,26 @@ use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
+use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncOperation as OP;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\PostProvider;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Entity\UserProvider;
 
+/**
+ *
+ * @method Post createPost(SyncContext $ctx, Post $post)
+ * @method Post getPost(SyncContext $ctx, int|string|null $id)
+ * @method Post updatePost(SyncContext $ctx, Post $post)
+ * @method Post deletePost(SyncContext $ctx, Post $post)
+ * @method iterable<Post> getPosts(SyncContext $ctx)
+ * @method User createUser(SyncContext $ctx, User $user)
+ * @method User getUser(SyncContext $ctx, int|string|null $id)
+ * @method User updateUser(SyncContext $ctx, User $user)
+ * @method User deleteUser(SyncContext $ctx, User $user)
+ * @method iterable<User> getUsers(SyncContext $ctx)
+ */
 class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserProvider
 {
     private const JSON_PLACEHOLDER_BASE_URL = "https://jsonplaceholder.typicode.com";
@@ -67,9 +81,9 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return null;
     }
 
-    public function getPosts(): iterable
+    public function getPosts(SyncContext $ctx): iterable
     {
-        $filter   = $this->argsToFilter(func_get_args());
+        $filter   = $ctx->getFilter();
         if ($user = $filter["user"] ?? null)
         {
             return Post::provideList($this->getCurler("/users/$user/posts")->get(), $this);

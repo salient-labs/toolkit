@@ -678,77 +678,77 @@ class Curler implements IReadable, IWritable
         return $this->ResponseBody;
     }
 
-    public function head(?array $query = null): CurlerHeadersImmutable
+    final public function head(?array $query = null): CurlerHeadersImmutable
     {
         return $this->process(HttpRequestMethod::HEAD, $query);
     }
 
-    public function get(?array $query = null)
+    final public function get(?array $query = null)
     {
         return $this->process(HttpRequestMethod::GET, $query);
     }
 
-    public function post(?array $data = null, ?array $query = null)
+    final public function post(?array $data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::POST, $query, $data);
     }
 
-    public function put(?array $data = null, ?array $query = null)
+    final public function put(?array $data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PUT, $query, $data);
     }
 
-    public function patch(?array $data = null, ?array $query = null)
+    final public function patch(?array $data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PATCH, $query, $data);
     }
 
-    public function delete(?array $data = null, ?array $query = null)
+    final public function delete(?array $data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::DELETE, $query, $data);
     }
 
-    public function getP(?array $query = null): iterable
+    final public function getP(?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::GET, $query);
     }
 
-    public function postP(?array $data = null, ?array $query = null): iterable
+    final public function postP(?array $data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::POST, $query, $data);
     }
 
-    public function putP(?array $data = null, ?array $query = null): iterable
+    final public function putP(?array $data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::PUT, $query, $data);
     }
 
-    public function patchP(?array $data = null, ?array $query = null): iterable
+    final public function patchP(?array $data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::PATCH, $query, $data);
     }
 
-    public function deleteP(?array $data = null, ?array $query = null): iterable
+    final public function deleteP(?array $data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::DELETE, $query, $data);
     }
 
-    public function rawPost(string $data, string $mimeType, ?array $query = null)
+    final public function rawPost(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::POST, $query, $data, $mimeType);
     }
 
-    public function rawPut(string $data, string $mimeType, ?array $query = null)
+    final public function rawPut(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PUT, $query, $data, $mimeType);
     }
 
-    public function rawPatch(string $data, string $mimeType, ?array $query = null)
+    final public function rawPatch(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PATCH, $query, $data, $mimeType);
     }
 
-    public function rawDelete(string $data, string $mimeType, ?array $query = null)
+    final public function rawDelete(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::DELETE, $query, $data, $mimeType);
     }
@@ -917,7 +917,7 @@ class Curler implements IReadable, IWritable
      * - `$result[$selector]` if `$selector` is a string
      * @return iterable
      */
-    public function getAllByPage(array $query, $selector = null): iterable
+    final public function getAllByPage(array $query, $selector = null): iterable
     {
         if (!is_int(reset($query)) ||
             is_null($pageKey = key($query)))
@@ -982,7 +982,7 @@ class Curler implements IReadable, IWritable
      * @param array $query
      * @return array All returned entities.
      */
-    public function getAllLinked(?array $query = null): array
+    final public function getAllLinked(?array $query = null): array
     {
         $this->initialise(HttpRequestMethod::GET, $query);
         $entities = [];
@@ -1019,7 +1019,7 @@ class Curler implements IReadable, IWritable
      * @param array $query
      * @return array All returned entities.
      */
-    public function getAllLinkedByEntity($entityName, ?array $query = null): array
+    final public function getAllLinkedByEntity($entityName, ?array $query = null): array
     {
         $this->initialise(HttpRequestMethod::GET, $query);
         $entities = [];
@@ -1047,7 +1047,7 @@ class Curler implements IReadable, IWritable
     /**
      * @deprecated Use {@see \Lkrms\Curler\Pager\ODataPager} instead
      */
-    public function getAllLinkedByOData(?array $query = null, string $prefix = null)
+    final public function getAllLinkedByOData(?array $query = null, string $prefix = null)
     {
         $this->initialise(HttpRequestMethod::GET, $query);
         $entities = [];
@@ -1110,7 +1110,7 @@ class Curler implements IReadable, IWritable
         }
     }
 
-    public static function walkGraphQL(array & $data, callable $filter = null)
+    final public static function walkGraphQL(array & $data, callable $filter = null)
     {
         if (Test::isListArray($data, true))
         {
@@ -1148,7 +1148,7 @@ class Curler implements IReadable, IWritable
         }
     }
 
-    public function getByGraphQL(
+    final public function getByGraphQL(
         string $query,
         array $variables   = null,
         string $entityPath = null,
@@ -1225,7 +1225,7 @@ class Curler implements IReadable, IWritable
     /**
      * @deprecated
      */
-    public function rawPostJson(string $data, string $mimeType, ?array $query = null)
+    final public function rawPostJson(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::POST, $query, $data, $mimeType);
     }
@@ -1233,7 +1233,7 @@ class Curler implements IReadable, IWritable
     /**
      * @deprecated
      */
-    public function getJson(?array $query = null)
+    final public function getJson(?array $query = null)
     {
         return $this->process(HttpRequestMethod::GET, $query);
     }
@@ -1241,7 +1241,7 @@ class Curler implements IReadable, IWritable
     /**
      * @deprecated
      */
-    public function postJson(?array $data = null, ?array $query = null)
+    final public function postJson(?array $data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::POST, $query, $data);
     }
@@ -1249,7 +1249,7 @@ class Curler implements IReadable, IWritable
     /**
      * @deprecated
      */
-    public function putJson(?array $data = null, ?array $query = null)
+    final public function putJson(?array $data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PUT, $query, $data);
     }
@@ -1257,7 +1257,7 @@ class Curler implements IReadable, IWritable
     /**
      * @deprecated
      */
-    public function patchJson(?array $data = null, ?array $query = null)
+    final public function patchJson(?array $data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PATCH, $query, $data);
     }
@@ -1265,7 +1265,7 @@ class Curler implements IReadable, IWritable
     /**
      * @deprecated
      */
-    public function deleteJson(?array $data = null, ?array $query = null)
+    final public function deleteJson(?array $data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::DELETE, $query, $data);
     }

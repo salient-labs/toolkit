@@ -13,11 +13,12 @@ use Lkrms\Support\DateFormatter;
 interface IProvider extends ReturnsContainer
 {
     /**
-     * Get a stable hash that, together with the name of the class, uniquely
-     * identifies the backend instance
+     * Get a stable identifier that, together with the name of the class,
+     * uniquely identifies the backend instance
      *
+     * @return array<string|\Stringable>
      */
-    public function getBackendHash(): string;
+    public function getBackendIdentifier(): array;
 
     /**
      * Get a DateFormatter to work with the backend's date format and timezone

@@ -35,16 +35,16 @@ and **optional** arguments may be accepted after mandatory parameters.
 [^2]: Recommended when the singular and plural forms of a class name are the
     same. Method names must match the entity's unqualified name.
 
-[^3]: See [SyncProvider::argsToFilter()][argsToFilter] for filter argument
+[^3]: See [ISyncContext::withArgs()][withArgs] for filter argument
     recommendations, including recognised signatures.
 
 
 ---
 
-[argsToFilter]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncProvider.html#method_argsToFilter
 [getDefinition]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncProvider.html#method_getDefinition
 [SyncContext]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Support-SyncContext.html
 [SyncEntity]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncEntity.html
 [SyncOperation]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Support-SyncOperation.html
 [SyncProvider]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncProvider.html
+[withArgs]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Contract-ISyncContext.html#method_withArgs
 

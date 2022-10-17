@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Container;
+namespace Lkrms\Cli;
 
-use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\Concept\CliCommand;
+use Lkrms\Container\AppContainer;
 use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Console;
@@ -17,7 +18,7 @@ use UnexpectedValueException;
  * Typically accessed via the {@see \Lkrms\Facade\Cli} facade.
  *
  */
-class CliAppContainer extends AppContainer
+final class CliAppContainer extends AppContainer
 {
     /**
      * @var array<string,string>

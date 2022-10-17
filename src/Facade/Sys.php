@@ -17,7 +17,8 @@ use Lkrms\Utility\System;
  * @method static int getMemoryLimit() See {@see System::getMemoryLimit()}
  * @method static int getMemoryUsage() See {@see System::getMemoryUsage()}
  * @method static int getMemoryUsagePercent() See {@see System::getMemoryUsagePercent()}
- * @method static string getProgramName() See {@see System::getProgramName()}
+ * @method static string getProgramName(?string $relativeTo = null) See {@see System::getProgramName()}
+ * @method static bool sqliteHasUpsert() Return true if the SQLite3 library supports UPSERT syntax (see {@see System::sqliteHasUpsert()})
  *
  * @uses System
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\System' --generate='Lkrms\Facade\Sys'

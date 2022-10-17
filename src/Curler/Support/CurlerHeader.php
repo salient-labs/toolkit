@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Curler;
+namespace Lkrms\Curler\Support;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IImmutable;
@@ -44,7 +44,7 @@ final class CurlerHeader implements IReadable, IImmutable
     /**
      * @return $this
      */
-    public function extendValue(string $value)
+    public function withValueExtended(string $value)
     {
         $clone         = clone $this;
         $clone->Value .= $value;

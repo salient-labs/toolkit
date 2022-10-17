@@ -21,7 +21,7 @@ use UnexpectedValueException;
  * @property-read array{type:string,description:string|null}|null $Return
  * @property-read array<int,array{name:string|null,type:string,description:string|null}> $Var
  */
-class PhpDocParser implements IReadable
+final class PhpDocParser implements IReadable
 {
     use TFullyReadable;
 

@@ -1,8 +1,11 @@
 # TODO
 
+## Tasks
+
 ### General
 - [ ] Review namespaces and classes before making a v1.0.0 release
-  - [ ] Make classes `final` where appropriate
+  - [ ] Make classes and methods `final` where appropriate
+    - Useful regex: `^(.(?!//)(?!abstract )(?!final )(?!private ))*((public|protected|static) )+function`
   - [ ] Replace instantiation via `new` or `DI` with `ContainerInterface->get` where appropriate
   - [ ] Adopt generators and iterators where appropriate
   - [ ] Clean up `Exception` namespace
@@ -55,3 +58,21 @@
 - [ ] `http`:
   - [ ] Allow headers to be specified
   - [ ] `--query` should handle duplicate fields
+
+## Snippets
+
+Reinstate when duplicating `ProviderEntity`:
+
+```php
+// Detach from the provider servicing the original instance
+$this->clearProvider();
+
+// Undeclared properties are typically provider-specific
+$this->clearMetaProperties();
+```
+
+And when duplicating `SyncEntity`:
+
+```php
+$this->Id = null;
+```

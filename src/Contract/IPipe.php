@@ -7,12 +7,12 @@ namespace Lkrms\Contract;
 use Closure;
 
 /**
- * Can form part of a pipeline
+ * Forms part of a pipeline
  *
  * @see IPipeline
  */
 interface IPipe
 {
-    public function handle($payload, Closure $next, ...$args);
+    public function handle($payload, Closure $next, IPipeline $pipeline, ...$args);
 
 }

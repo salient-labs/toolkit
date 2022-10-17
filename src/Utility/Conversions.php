@@ -556,6 +556,22 @@ final class Conversions
     }
 
     /**
+     * Convert a 16-byte UUID to its 36-byte hexadecimal representation
+     *
+     */
+    function uuidToHex(string $bytes): string
+    {
+        $uuid   = [];
+        $uuid[] = substr($bytes, 0, 4);
+        $uuid[] = substr($bytes, 4, 2);
+        $uuid[] = substr($bytes, 6, 2);
+        $uuid[] = substr($bytes, 8, 2);
+        $uuid[] = substr($bytes, 10, 6);
+
+        return implode("-", array_map(fn(string $bin): string => bin2hex($bin), $uuid));
+    }
+
+    /**
      * Convert php.ini values like "128M" to bytes
      *
      * @param string $size From the PHP FAQ: "The available options are K (for

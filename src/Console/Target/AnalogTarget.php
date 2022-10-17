@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Lkrms\Console\Target;
 
+use Lkrms\Console\Concept\ConsoleTarget;
+
 /**
  * Write console messages to Analog
  *
  */
-class AnalogTarget extends ConsoleTarget
+final class AnalogTarget extends ConsoleTarget
 {
     protected function writeToTarget(int $level, string $message, array $context)
     {

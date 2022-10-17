@@ -33,6 +33,11 @@ class Pipeline extends FluentInterface implements IPipeline
     private $Payload;
 
     /**
+     * @var int
+     */
+    private $PayloadConformity;
+
+    /**
      * @var array|null
      */
     private $Args;
@@ -46,11 +51,6 @@ class Pipeline extends FluentInterface implements IPipeline
      * @var array<int,IPipe|Closure|string>
      */
     private $Pipes = [];
-
-    /**
-     * @var Closure|null
-     */
-    private $PipeStack;
 
     /**
      * @var Closure|null
@@ -95,27 +95,37 @@ class Pipeline extends FluentInterface implements IPipeline
         return new static($container);
     }
 
-    public function send($payload, ...$args)
+    final public function send($payload, ...$args)
     {
         $_this = $this->getMutable();
         $_this->Payload = $payload;
-        $_this->Args    = $args;
-        $_this->Stream  = false;
+        $_this->PayloadConformity = ArrayKeyConformity::NONE;
+        $_this->Args   = $args;
+        $_this->Stream = false;
 
         return $_this;
     }
 
-    public function stream(iterable $payload, ...$args)
+    final public function stream(iterable $payload, ...$args)
     {
         $_this = $this->getMutable();
         $_this->Payload = $payload;
-        $_this->Args    = $args;
-        $_this->Stream  = true;
+        $_this->PayloadConformity = ArrayKeyConformity::NONE;
+        $_this->Args   = $args;
+        $_this->Stream = true;
 
         return $_this;
     }
 
-    public function after(callable $callback, ...$args)
+    final public function withConformity(int $conformity = ArrayKeyConformity::PARTIAL)
+    {
+        $_this = $this->getMutable();
+        $_this->PayloadConformity = $conformity;
+
+        return $_this;
+    }
+
+    final public function after(callable $callback, ...$args)
     {
         if ($this->After)
         {
@@ -128,30 +138,29 @@ class Pipeline extends FluentInterface implements IPipeline
         return $_this;
     }
 
-    public function through(...$pipes)
+    final public function through(...$pipes)
     {
         $_this = $this->getMutable();
         array_push($_this->Pipes, ...$pipes);
-        $_this->PipeStack = null;
 
         return $_this;
     }
 
-    public function throughCallback(callable $callback, bool $suppressArgs = false)
+    final public function throughCallback(callable $callback, bool $suppressArgs = false)
     {
         return $suppressArgs
             ? $this->through(fn($payload, Closure $next) => $next($callback($payload)))
-            : $this->through(fn($payload, Closure $next, ...$args) => $next($callback($payload, ...$args)));
+            : $this->through(fn($payload, Closure $next, IPipeline $pipeline, ...$args) => $next($callback($payload, $pipeline, ...$args)));
     }
 
-    public function throughKeyMap(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED)
+    final public function throughKeyMap(array $keyMap, int $flags = ArrayMapperFlag::ADD_UNMAPPED)
     {
-        return $this->through(fn($payload, Closure $next) => $next(
-            (Mapper::getKeyMapClosure($keyMap, $conformity, $flags))($payload)
+        return $this->through(fn($payload, Closure $next, IPipeline $pipeline) => $next(
+            (Mapper::getKeyMapClosure($keyMap, $pipeline->getConformity(), $flags))($payload)
         ));
     }
 
-    public function then(callable $callback, ...$args)
+    final public function then(callable $callback, ...$args)
     {
         if ($this->Then)
         {
@@ -164,7 +173,7 @@ class Pipeline extends FluentInterface implements IPipeline
         return $_this;
     }
 
-    public function unless(callable $filter, ...$args)
+    final public function unless(callable $filter, ...$args)
     {
         if ($this->Unless)
         {
@@ -177,18 +186,18 @@ class Pipeline extends FluentInterface implements IPipeline
         return $_this;
     }
 
-    public function run()
+    final public function run()
     {
         if ($this->Stream)
         {
             throw new RuntimeException(static::class . "::run() cannot be called after " . static::class . "::stream()");
         }
 
-        $result = ($this->getPipeStack())($this->After
-            ? $this->After($this->Payload, ...$this->AfterArgs, ...$this->Args)
+        $result = ($this->getClosure())($this->After
+            ? $this->After($this->Payload, $this, ...$this->AfterArgs, ...$this->Args)
             : $this->Payload);
 
-        if ($this->Unless && ($this->Unless)($result, ...$this->UnlessArgs, ...$this->Args) !== true)
+        if ($this->Unless && ($this->Unless)($result, $this, ...$this->UnlessArgs, ...$this->Args) !== true)
         {
             throw new PipelineException("Result rejected by filter");
         }
@@ -196,27 +205,32 @@ class Pipeline extends FluentInterface implements IPipeline
         return $result;
     }
 
-    public function start(): iterable
+    final public function start(): iterable
     {
         if (!$this->Stream)
         {
             throw new RuntimeException(static::class . "::stream() must be called before " . static::class . "::start()");
         }
 
-        $pipeStack = $this->getPipeStack();
+        $closure = $this->getClosure();
         foreach ($this->Payload as $payload)
         {
-            $result = ($pipeStack)($this->After
-                ? $this->After($payload, ...$this->AfterArgs, ...$this->Args)
+            $result = ($closure)($this->After
+                ? $this->After($payload, $this, ...$this->AfterArgs, ...$this->Args)
                 : $payload);
 
-            if ($this->Unless && ($this->Unless)($result, ...$this->UnlessArgs, ...$this->Args) !== true)
+            if ($this->Unless && ($this->Unless)($result, $this, ...$this->UnlessArgs, ...$this->Args) !== true)
             {
                 continue;
             }
 
             yield $result;
         }
+    }
+
+    final public function getConformity(): int
+    {
+        return $this->PayloadConformity;
     }
 
     /**
@@ -226,7 +240,7 @@ class Pipeline extends FluentInterface implements IPipeline
      * {@see Pipeline::start()} to run the pipeline and return an iterator,
      * otherwise call {@see Pipeline::run()} and return the result.
      */
-    public function go()
+    final public function go()
     {
         if ($this->Stream)
         {
@@ -241,15 +255,15 @@ class Pipeline extends FluentInterface implements IPipeline
         throw $ex;
     }
 
-    private function getPipeStack(): Closure
+    private function getClosure(): Closure
     {
-        return $this->PipeStack ?: ($this->PipeStack = array_reduce(
+        return array_reduce(
             array_reverse($this->Pipes),
             function (Closure $next, $pipe): Closure
             {
                 if (is_callable($pipe))
                 {
-                    $closure = fn($payload) => $pipe($payload, $next, ...$this->Args);
+                    $closure = fn($payload) => $pipe($payload, $next, $this, ...$this->Args);
                 }
                 else
                 {
@@ -262,7 +276,7 @@ class Pipeline extends FluentInterface implements IPipeline
                     {
                         throw new UnexpectedValueException("Pipe does not implement " . IPipe::class);
                     }
-                    $closure = fn($payload) => $pipe->handle($payload, $next, ...$this->Args);
+                    $closure = fn($payload) => $pipe->handle($payload, $next, $this, ...$this->Args);
                 }
                 return function ($payload) use ($closure)
                 {
@@ -276,8 +290,8 @@ class Pipeline extends FluentInterface implements IPipeline
                     }
                 };
             },
-            fn($result) => ($this->Then ?: fn($result) => $result)($result, ...$this->ThenArgs, ...$this->Args)
-        ));
+            fn($result) => ($this->Then ?: fn($result) => $result)($result, $this, ...$this->ThenArgs, ...$this->Args)
+        );
     }
 
     final protected function toImmutable(): PipelineImmutable

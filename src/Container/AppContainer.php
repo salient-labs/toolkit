@@ -16,6 +16,7 @@ use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
+use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
 use RuntimeException;
@@ -73,25 +74,25 @@ class AppContainer extends Container implements IReadable
         return $path;
     }
 
-    protected function _getCachePath(): string
+    final protected function _getCachePath(): string
     {
         return $this->_CachePath
             ?: ($this->_CachePath = $this->getPath("app_cache_path", "var/cache"));
     }
 
-    protected function _getDataPath(): string
+    final protected function _getDataPath(): string
     {
         return $this->_DataPath
             ?: ($this->_DataPath = $this->getPath("app_data_path", "var/lib"));
     }
 
-    protected function _getLogPath(): string
+    final protected function _getLogPath(): string
     {
         return $this->_LogPath
             ?: ($this->_LogPath = $this->getPath("app_log_path", "var/log"));
     }
 
-    protected function _getTempPath(): string
+    final protected function _getTempPath(): string
     {
         return $this->_TempPath
             ?: ($this->_TempPath = $this->getPath("app_temp_path", "var/tmp"));
@@ -146,7 +147,7 @@ class AppContainer extends Container implements IReadable
     /**
      * @return $this
      */
-    public function loadCache()
+    final public function loadCache()
     {
         $cacheDb = $this->CachePath . "/cache.db";
 
@@ -165,7 +166,7 @@ class AppContainer extends Container implements IReadable
     /**
      * @return $this
      */
-    public function loadCacheIfExists()
+    final public function loadCacheIfExists()
     {
         if (file_exists($this->CachePath . "/cache.db"))
         {
@@ -176,15 +177,55 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
+     * Log console messages to a file in the application's log directory
+     *
+     * Registers a {@see StreamTarget} to log subsequent
+     * {@see ConsoleLevels::ALL} messages to `<name>.log` in
+     * {@see AppContainer::$LogPath}.
+     *
+     * {@see ConsoleLevels::ALL_DEBUG} messages are simultaneously logged to
+     * `<name>.debug.log` in the same location if:
+     * - `$debug` is `true`, or
+     * - `$debug` is `null` and {@see Env::debug() debug mode is enabled}
+     *
      * @param string|null $name Defaults to the name used to run the script.
      * @return $this
      */
-    public function logConsoleMessages(?string $name = null, array $levels = ConsoleLevels::ALL_DEBUG)
+    final public function logConsoleMessages(?string $name = null, ?bool $debug = null)
     {
         $name = ($name
             ? basename($name, ".log")
             : Convert::pathToBasename(Sys::getProgramName(), 1));
-        Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log"), $levels);
+        Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log"), ConsoleLevels::ALL);
+        if ($debug || (is_null($debug) && Env::debug()))
+        {
+            Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.debug.log"), ConsoleLevels::ALL_DEBUG);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    final public function loadSync(?string $command = null, ?array $arguments = null)
+    {
+        $syncDb = $this->DataPath . "/sync.db";
+
+        if (!Sync::isLoaded())
+        {
+            Sync::load($syncDb,
+                is_null($command) ? Sys::getProgramName($this->BasePath) : $command,
+                (is_null($arguments)
+                    ? (PHP_SAPI == "cli"
+                        ? array_slice($_SERVER["argv"], 1)
+                        : ["_GET" => $_GET, "_POST" => $_POST])
+                    : $arguments));
+        }
+        elseif (!Test::areSameFile($syncDb, $file = Sync::getFilename() ?: ""))
+        {
+            throw new RuntimeException("Sync database already loaded: $file");
+        }
 
         return $this;
     }

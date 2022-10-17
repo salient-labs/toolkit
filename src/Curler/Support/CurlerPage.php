@@ -53,12 +53,12 @@ class CurlerPage implements ICurlerPage
         }
     }
 
-    public function entities(): array
+    final public function entities(): array
     {
         return $this->Entities;
     }
 
-    public function isLastPage(): bool
+    final public function isLastPage(): bool
     {
         return $this->IsLastPage;
     }
@@ -71,21 +71,21 @@ class CurlerPage implements ICurlerPage
         }
     }
 
-    public function nextUrl(): string
+    final public function nextUrl(): string
     {
         $this->assertHasNextPage();
 
         return $this->NextUrl;
     }
 
-    public function nextData(): ?array
+    final public function nextData(): ?array
     {
         $this->assertHasNextPage();
 
         return $this->NextData;
     }
 
-    public function nextHeaders(): ?CurlerHeaders
+    final public function nextHeaders(): ?CurlerHeaders
     {
         $this->assertHasNextPage();
 

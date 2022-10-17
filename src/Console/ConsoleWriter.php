@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Console;
 
+use Lkrms\Console\Concept\ConsoleTarget;
 use Lkrms\Console\ConsoleLevel as Level;
-use Lkrms\Console\Target\ConsoleTarget;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\Compute;
@@ -17,6 +17,8 @@ use Throwable;
 
 /**
  * Log messages of various types to various targets
+ *
+ * Typically accessed via the {@see \Lkrms\Facade\Console} facade.
  *
  */
 final class ConsoleWriter implements ReceivesFacade

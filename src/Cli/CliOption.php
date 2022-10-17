@@ -15,7 +15,7 @@ use UnexpectedValueException;
 /**
  * A getopt-style command line option
  *
- * See {@see CliCommand::_getOptions()} for more information.
+ * See {@see \Lkrms\Cli\Concept\CliCommand::_getOptions()} for more information.
  *
  * @property-read string|null $Long
  * @property-read string|null $Short
@@ -195,7 +195,7 @@ final class CliOption implements IReadable, IImmutable
 
     /**
      * @internal
-     * @see CliCommand::applyOption()
+     * @see \Lkrms\Cli\Concept\CliCommand::applyOption()
      */
     public function validate(): void
     {
@@ -255,7 +255,7 @@ final class CliOption implements IReadable, IImmutable
      * @internal
      * @param string|string[]|bool|int|null $value
      * @return $this
-     * @see CliCommand::loadOptionValues()
+     * @see \Lkrms\Cli\Concept\CliCommand::loadOptionValues()
      */
     public function withValue($value)
     {
@@ -268,7 +268,8 @@ final class CliOption implements IReadable, IImmutable
     /**
      * Use a fluent interface to create a new CliOption object
      *
-     * See {@see CliCommand::_getOptions()} for more information.
+     * See {@see \Lkrms\Cli\Concept\CliCommand::_getOptions()} for more
+     * information.
      *
      */
     public static function build(): CliOptionBuilder

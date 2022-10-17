@@ -18,7 +18,7 @@ use Lkrms\Utility\Computations;
  * @method static string hash(mixed ...$value) Generate a unique non-crypto hash (see {@see Computations::hash()})
  * @method static float textDistance(string $string1, string $string2, bool $normalise = true) Returns the Levenshtein distance between two strings relative to the length of the longest string (see {@see Computations::textDistance()})
  * @method static float textSimilarity(string $string1, string $string2, bool $normalise = true) Returns the similarity of two strings relative to the length of the longest string (see {@see Computations::textSimilarity()})
- * @method static string uuid() Generate a cryptographically secure random UUID (see {@see Computations::uuid()})
+ * @method static string uuid(bool $binary = false) Generate a cryptographically secure random UUID (see {@see Computations::uuid()})
  *
  * @uses Computations
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\Computations' --generate='Lkrms\Facade\Compute'

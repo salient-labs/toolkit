@@ -6,6 +6,7 @@ namespace Lkrms\Curler;
 
 use Lkrms\Concern\TMutable;
 use Lkrms\Curler\CurlerHeadersFlag as Flag;
+use Lkrms\Curler\Support\CurlerHeader;
 
 /**
  * A collection of HTTP headers
@@ -61,7 +62,7 @@ class CurlerHeaders
      * @internal
      * @return $this
      */
-    public function addRawHeader(string $line)
+    final public function addRawHeader(string $line)
     {
         return $this->getMutable()->_addRawHeader($line);
     }
@@ -69,7 +70,7 @@ class CurlerHeaders
     /**
      * @return $this
      */
-    public function addHeader(string $name, string $value, bool $private = false)
+    final public function addHeader(string $name, string $value, bool $private = false)
     {
         return $this->getMutable()->_addHeader($name, $value, $private);
     }
@@ -77,7 +78,7 @@ class CurlerHeaders
     /**
      * @return $this
      */
-    public function unsetHeader(string $name)
+    final public function unsetHeader(string $name)
     {
         return $this->getMutable()->_unsetHeader($name);
     }
@@ -85,7 +86,7 @@ class CurlerHeaders
     /**
      * @return $this
      */
-    public function setHeader(string $name, string $value, bool $private = false)
+    final public function setHeader(string $name, string $value, bool $private = false)
     {
         return $this->unsetHeader($name)->_addHeader($name, $value, $private);
     }
@@ -93,7 +94,7 @@ class CurlerHeaders
     /**
      * @return $this
      */
-    public function addPrivateHeaderName(string $name)
+    final public function addPrivateHeaderName(string $name)
     {
         return $this->getMutable()->_addPrivateHeaderName($name);
     }
@@ -128,7 +129,7 @@ class CurlerHeaders
         {
             if (!is_null($key = $this->LastRawHeaderKey))
             {
-                $this->Headers[$key] = $this->Headers[$key]->extendValue($line);
+                $this->Headers[$key] = $this->Headers[$key]->withValueExtended($line);
             }
 
             return $this;
@@ -191,7 +192,7 @@ class CurlerHeaders
         return $this;
     }
 
-    public function hasHeader(string $name): bool
+    final public function hasHeader(string $name): bool
     {
         return array_key_exists(strtolower($name), $this->HeaderKeysByName);
     }
@@ -199,7 +200,7 @@ class CurlerHeaders
     /**
      * @return string[]
      */
-    public function getHeaders(): array
+    final public function getHeaders(): array
     {
         return array_values(array_map(
             fn(CurlerHeader $header) => $header->getHeader(),
@@ -220,7 +221,7 @@ class CurlerHeaders
      * - a `string[]` containing one or more values, or
      * - an empty `array` if there are no matching headers
      */
-    public function getHeaderValue(string $name, int $flags = 0)
+    final public function getHeaderValue(string $name, int $flags = 0)
     {
         $values = array_map(
             fn(CurlerHeader $header) => $header->Value,
@@ -250,7 +251,7 @@ class CurlerHeaders
      * sorted to maintain the position of each header's last appearance if
      * {@see Flag::SORT_BY_LAST} is set.
      */
-    public function getHeaderValues(int $flags = 0): array
+    final public function getHeaderValues(int $flags = 0): array
     {
         if ($flags & Flag::SORT_BY_LAST)
         {
@@ -271,7 +272,7 @@ class CurlerHeaders
     /**
      * @return string[]
      */
-    public function getPublicHeaders(): array
+    final public function getPublicHeaders(): array
     {
         return array_values(array_map(
             fn(CurlerHeader $header) => $header->getHeader(),

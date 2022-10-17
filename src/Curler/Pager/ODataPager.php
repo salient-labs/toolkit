@@ -9,7 +9,7 @@ use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\Support\CurlerPageBuilder;
 
-class ODataPager implements ICurlerPager
+final class ODataPager implements ICurlerPager
 {
     /**
      * @var string|null

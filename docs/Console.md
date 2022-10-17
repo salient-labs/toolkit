@@ -57,7 +57,7 @@ called, preferably while bootstrapping your application.
 ---
 
 [AppContainer]: https://lkrms.github.io/php-util/classes/Lkrms-Container-AppContainer.html
-[CliAppContainer]: https://lkrms.github.io/php-util/classes/Lkrms-Container-CliAppContainer.html
+[CliAppContainer]: https://lkrms.github.io/php-util/classes/Lkrms-Cli-CliAppContainer.html
 [Console]: https://lkrms.github.io/php-util/classes/Lkrms-Facade-Console.html
 [ConsoleWriter]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html
 [logConsoleMessages]: https://lkrms.github.io/php-util/classes/Lkrms-Container-AppContainer.html#method_logConsoleMessages

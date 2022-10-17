@@ -16,7 +16,7 @@ abstract class FluentInterface
      *
      * @return $this
      */
-    public function if(bool $condition, callable $callback)
+    final public function if(bool $condition, callable $callback)
     {
         if (!$condition)
         {

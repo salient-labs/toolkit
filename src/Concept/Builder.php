@@ -98,8 +98,9 @@ abstract class Builder implements IImmutable
             }
             if ($arguments && !($arguments[0] instanceof IContainer))
             {
-                throw new UnexpectedValueException(get_class($arguments[0]) . " does not implement " . IContainer::class);
+                throw new UnexpectedValueException('Argument #1 ($container) does not implement ' . IContainer::class);
             }
+
             return new static($arguments[0] ?? null);
         }
         throw new RuntimeException("Invalid method: $name");
