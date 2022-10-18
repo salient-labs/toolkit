@@ -17,6 +17,7 @@ use Lkrms\Contract\IContainer;
  * @method static bool isLoaded() Return true if an underlying AppContainer instance has been loaded
  * @method static void unload() Clear the underlying AppContainer instance
  * @method static AppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
+ * @method static AppContainer bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})
  * @method static mixed call(callable $callback) Make this the global container while running the given callback (see {@see Container::call()})
  * @method static IContainer|null coalesce(?IContainer $container, bool $returnNull = true, bool $load = false) Return the first available container (see {@see Container::coalesce()})
  * @method static mixed get(string $id, mixed ...$params) Create a new instance of the given class or interface, or return a shared instance created earlier (see {@see Container::get()})
@@ -26,6 +27,7 @@ use Lkrms\Contract\IContainer;
  * @method static bool hasGlobalContainer() Return true if a global container has been loaded (see {@see Container::hasGlobalContainer()})
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of the given class or interface have been applied to the default context (see {@see Container::inContextOf()})
  * @method static AppContainer instance(string $id, mixed $instance) Add an existing instance to the container as a shared binding (see {@see Container::instance()})
+ * @method static AppContainer instanceIf(string $id, mixed $instance) Add an existing instance to the container as a shared binding if it hasn't already been bound (see {@see Container::instanceIf()})
  * @method static AppContainer loadCache() See {@see AppContainer::loadCache()}
  * @method static AppContainer loadCacheIfExists() See {@see AppContainer::loadCacheIfExists()}
  * @method static AppContainer loadSync(?string $command = null, ?array $arguments = null) See {@see AppContainer::loadSync()}
@@ -35,6 +37,7 @@ use Lkrms\Contract\IContainer;
  * @method static AppContainer service(string $id, string[]|null $services = null, string[]|null $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null) Add bindings to the container for an IBindable implementation and its services, optionally specifying services to bind or exclude (see {@see Container::service()})
  * @method static IContainer|null setGlobalContainer(?IContainer $container) Set (or unset) the global container (see {@see Container::setGlobalContainer()})
  * @method static AppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})
+ * @method static AppContainer singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})
  *
  * @uses AppContainer
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Container\AppContainer' --generate='Lkrms\Facade\App'

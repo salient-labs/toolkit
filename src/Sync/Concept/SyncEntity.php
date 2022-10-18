@@ -42,6 +42,13 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     public $Id;
 
     /**
+     * Entity class => entity type ID
+     *
+     * @var array<string,int>
+     */
+    private static $EntityTypeIds = [];
+
+    /**
      * @var array<string,Closure>
      */
     private static $Normalisers = [];
@@ -52,6 +59,24 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * @var array<string,array<string,string>>
      */
     private static $Normalised = [];
+
+    /**
+     * Called when the class is registered with an entity store
+     *
+     * See {@see \Lkrms\Sync\Support\SyncStore::entityType()} for more
+     * information.
+     *
+     * @throws \RuntimeException if the class already has an entity type ID.
+     */
+    final public static function setEntityTypeId(int $entityTypeId): void
+    {
+        self::$EntityTypeIds[static::class] = $entityTypeId;
+    }
+
+    final public function entityTypeId(): ?int
+    {
+        return self::$EntityTypeIds[static::class] ?? null;
+    }
 
     final public function provider(): ?ISyncProvider
     {

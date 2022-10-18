@@ -180,13 +180,13 @@ class AppContainer extends Container implements IReadable
      * Log console messages to a file in the application's log directory
      *
      * Registers a {@see StreamTarget} to log subsequent
-     * {@see ConsoleLevels::ALL} messages to `<name>.log` in
-     * {@see AppContainer::$LogPath}.
+     * {@see ConsoleLevels::ALL} messages to `<name>.log`.
      *
      * {@see ConsoleLevels::ALL_DEBUG} messages are simultaneously logged to
      * `<name>.debug.log` in the same location if:
      * - `$debug` is `true`, or
-     * - `$debug` is `null` and {@see Env::debug() debug mode is enabled}
+     * - `$debug` is `null` and {@see \Lkrms\Utility\Environment::debug()}
+     *   returns `true`
      *
      * @param string|null $name Defaults to the name used to run the script.
      * @return $this

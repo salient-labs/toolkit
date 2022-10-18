@@ -43,35 +43,24 @@ final class Computations
     }
 
     /**
-     * Generate a unique non-crypto hash
+     * Generate a unique non-crypto hash and return raw binary data
      *
-     * @param string|\Stringable ...$value One or more values to hash.
-     * @return string
+     * @param string|\Stringable ...$value
      */
-    public function hash(...$value): string
+    public function binaryHash(...$value): string
     {
         // xxHash isn't supported until PHP 8.1, so MD5 is the best fit
-        return hash("md5", implode("\000", Convert::toStrings(...$value)));
+        return hash("md5", implode("\000", Convert::toStrings(...$value)), true);
     }
 
     /**
-     * Generate a hash that uniquely identifies a Closure (or any other
-     * callable)
+     * Generate a unique non-crypto hash and return a hexadecimal string
      *
-     * @param callable $closure
-     * @return string
+     * @param string|\Stringable ...$value
      */
-    public function closureHash(callable $closure): string
+    public function hash(...$value): string
     {
-        if (!($closure instanceof Closure))
-        {
-            $closure = Closure::fromCallable($closure);
-        }
-
-        $closure = new ReflectionFunction($closure);
-
-        // ReflectionFunction::__toString() is unambiguous and consistent
-        return $this->hash((string)$closure);
+        return hash("md5", implode("\000", Convert::toStrings(...$value)));
     }
 
     /**

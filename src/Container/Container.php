@@ -53,21 +53,21 @@ class Container implements IContainer
 
     public function __construct()
     {
+        $this->Dice = new Dice();
         $this->load();
     }
 
     private function load(): void
     {
-        $dice  = & $this->dice();
-        $dice  = $dice->addShared(\Psr\Container\ContainerInterface::class, $this);
-        $dice  = $dice->addShared(IContainer::class, $this);
-        $class = static::class;
+        $this->Dice = $this->Dice->addShared(\Psr\Container\ContainerInterface::class, $this);
+        $this->Dice = $this->Dice->addShared(IContainer::class, $this);
+        $class      = static::class;
         do
         {
-            $dice = $dice->addShared($class, $this);
+            $this->Dice = $this->Dice->addShared($class, $this);
         }
         while (self::class != $class && ($class = get_parent_class($class)));
-        $dice = $dice->addCallback(
+        $this->Dice = $this->Dice->addCallback(
             "*",
             function (object $instance, string $name)
             {
@@ -142,24 +142,14 @@ class Container implements IContainer
         return self::$GlobalContainer = $container;
     }
 
-    private function & dice(): Dice
-    {
-        if (!$this->Dice)
-        {
-            $this->Dice = new Dice();
-        }
-
-        return $this->Dice;
-    }
-
     final public function get(string $id, ...$params)
     {
-        return $this->dice()->create($id, $params);
+        return $this->Dice->create($id, $params);
     }
 
     final public function getName(string $id): string
     {
-        return $this->dice()->getRule($id)["instanceOf"] ?? $id;
+        return $this->Dice->getRule($id)["instanceOf"] ?? $id;
     }
 
     final public function has(string $id): bool
@@ -180,49 +170,39 @@ class Container implements IContainer
         }
     }
 
-    private function addRule(string $id, array $rule, Dice & $dice = null): void
+    private function addRule(string $id, array $rule): void
     {
-        if (is_null($dice))
-        {
-            $dice = & $this->dice();
-        }
-
-        $_dice = $dice->addRule($id, $rule);
+        $_dice = $this->Dice->addRule($id, $rule);
         $this->checkRule($_dice->getRule($id));
-        $dice = $_dice;
+        $this->Dice = $_dice;
     }
 
-    private function applyBindings(array $subs, Dice & $dice = null): void
+    private function applyBindings(array $subs): void
     {
-        if (is_null($dice))
-        {
-            $dice = & $this->dice();
-        }
-
         $defaultRule = [];
         foreach ($subs as $key => $value)
         {
             if (is_string($value))
             {
-                if (strcasecmp($dice->getRule($key)["instanceOf"] ?? "", $value))
+                if (strcasecmp($this->Dice->getRule($key)["instanceOf"] ?? "", $value))
                 {
-                    $this->addRule($key, ["instanceOf" => $value], $dice);
+                    $this->addRule($key, ["instanceOf" => $value]);
                 }
             }
             elseif (is_object($value))
             {
-                if (!$dice->hasShared($key) || $dice->create($key) !== $value)
+                if (!$this->Dice->hasShared($key) || $this->Dice->create($key) !== $value)
                 {
-                    $dice = $dice->addShared($key, $value);
+                    $this->Dice = $this->Dice->addShared($key, $value);
                 }
             }
-            elseif (($dice->getDefaultRule()["substitutions"][ltrim($key, '\\')] ?? null) !== $value)
+            elseif (($this->Dice->getDefaultRule()["substitutions"][ltrim($key, '\\')] ?? null) !== $value)
             {
                 // If this substitution can't be converted to a rule, copy it to
                 // the default rule and force Dice to use it for the given
                 // identifier
                 $defaultRule["substitutions"][$key] = $value;
-                $dice = $dice->removeRule($key);
+                $this->Dice = $this->Dice->removeRule($key);
             }
         }
         if (!empty($defaultRule))
@@ -231,55 +211,53 @@ class Container implements IContainer
              * @todo Patch Dice to apply substitutions in `create()`, not just
              * when resolving dependencies
              */
-            $this->addRule("*", $defaultRule, $dice);
+            $this->addRule("*", $defaultRule);
         }
     }
 
     final public function inContextOf(string $id): Container
     {
-        $dice = $cleanDice = $this->dice();
+        $clone = clone $this;
 
         // If $id implements IBindable and hasn't been bound to the container
         // yet, add bindings for everything except its services, which may
         // resolve to another provider
-        $serviceApplied = false;
-        if (is_subclass_of($id, IBindable::class) && !($this->ServiceStack[$id] ?? null))
+        if (is_subclass_of($id, IBindable::class) && !($clone->ServiceStack[$id] ?? null))
         {
-            $this->applyService($id, [], null, $dice);
-            // If nothing changed, add $id to the current service stack,
-            // otherwise add it to the new container's stack
-            if ($dice === $cleanDice)
+            $clone->applyService($id, []);
+            $clone->ServiceStack[$id] = true;
+
+            // If nothing changed, skip `applyService()` in future by setting
+            // `$this->ServiceStack[$id]`
+            if ($clone->Dice === $this->Dice)
             {
                 $this->ServiceStack[$id] = true;
             }
-            else
-            {
-                $serviceApplied = true;
-            }
         }
 
-        if (!$dice->hasRule($id) ||
-            empty($subs = $dice->getRule($id)["substitutions"] ?? null))
+        if (!$clone->Dice->hasRule($id) ||
+            empty($subs = $clone->Dice->getRule($id)["substitutions"] ?? null))
         {
             return $this;
         }
 
-        $this->applyBindings($subs, $dice);
+        $clone->applyBindings($subs);
 
-        if ($dice === $cleanDice)
+        if ($clone->Dice === $this->Dice)
         {
             return $this;
         }
 
-        $instance          = clone $this;
-        $instance->Dice    = $dice;
-        $instance->Context = $instance->ContextStack[] = $id;
-        if ($serviceApplied) { $instance->ServiceStack[$id] = true; }
-        $instance->load();
-        return $instance;
+        $clone->Context = $clone->ContextStack[] = $id;
+        $clone->load();
+
+        return $clone;
     }
 
-    private function _bind(string $id, ?string $instanceOf, ?array $constructParams, ?array $shareInstances, array $rule = []): void
+    /**
+     * @return $this
+     */
+    private function _bind(string $id, ?string $instanceOf, ?array $constructParams, ?array $shareInstances, array $rule = [])
     {
         if (!is_null($instanceOf))
         {
@@ -294,6 +272,8 @@ class Container implements IContainer
             $rule["shareInstances"] = array_merge($rule["shareInstances"] ?? [], $shareInstances);
         }
         $this->addRule($id, $rule);
+
+        return $this;
     }
 
     /**
@@ -301,7 +281,19 @@ class Container implements IContainer
      */
     final public function bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
     {
-        $this->_bind($id, $instanceOf, $constructParams, $shareInstances);
+        return $this->_bind($id, $instanceOf, $constructParams, $shareInstances);
+    }
+
+    /**
+     * @return $this
+     */
+    final public function bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
+    {
+        if (!$this->Dice->hasRule($id))
+        {
+            return $this->_bind($id, $instanceOf, $constructParams, $shareInstances);
+        }
+
         return $this;
     }
 
@@ -310,7 +302,19 @@ class Container implements IContainer
      */
     final public function singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
     {
-        $this->_bind($id, $instanceOf, $constructParams, $shareInstances, ["shared" => true]);
+        return $this->_bind($id, $instanceOf, $constructParams, $shareInstances, ["shared" => true]);
+    }
+
+    /**
+     * @return $this
+     */
+    final public function singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
+    {
+        if (!$this->Dice->hasRule($id))
+        {
+            return $this->_bind($id, $instanceOf, $constructParams, $shareInstances, ["shared" => true]);
+        }
+
         return $this;
     }
 
@@ -327,19 +331,15 @@ class Container implements IContainer
         }
         $this->applyService($id, $services, $exceptServices);
         $this->ServiceStack[$id] = true;
+
         return $this;
     }
 
-    private function applyService(string $id, ?array $services = null, ?array $exceptServices = null, Dice & $dice = null): void
+    private function applyService(string $id, ?array $services = null, ?array $exceptServices = null): void
     {
-        if (is_null($dice))
-        {
-            $dice = & $this->dice();
-        }
-
         if (is_subclass_of($id, IBindableSingleton::class))
         {
-            $this->addRule($id, ["shared" => true], $dice);
+            $this->addRule($id, ["shared" => true]);
         }
 
         $bindable = $id::getBindable();
@@ -356,12 +356,12 @@ class Container implements IContainer
         }
         foreach ($bindable as $service)
         {
-            $this->addRule($service, ["instanceOf" => $id], $dice);
+            $this->addRule($service, ["instanceOf" => $id]);
         }
 
         if ($subs = $id::getBindings())
         {
-            $this->addRule($id, ["substitutions" => $subs], $dice);
+            $this->addRule($id, ["substitutions" => $subs]);
         }
     }
 
@@ -370,26 +370,35 @@ class Container implements IContainer
      */
     final public function instance(string $id, $instance)
     {
-        $dice = & $this->dice();
-        $dice = $dice->addShared($id, $instance);
+        $this->Dice = $this->Dice->addShared($id, $instance);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    final public function instanceIf(string $id, $instance)
+    {
+        if (!$this->Dice->hasRule($id))
+        {
+            return $this->instance($id, $instance);
+        }
+
         return $this;
     }
 
     final public function call(callable $callback)
     {
-        $container = null;
-        if (self::hasGlobalContainer())
-        {
-            $container = self::getGlobalContainer();
-        }
-        self::setGlobalContainer($this);
+        $container = self::$GlobalContainer;
+        self::$GlobalContainer = $this;
         try
         {
             return $callback($this);
         }
         finally
         {
-            self::setGlobalContainer($container);
+            self::$GlobalContainer = $container;
         }
     }
 
