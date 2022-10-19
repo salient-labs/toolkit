@@ -6,6 +6,7 @@ namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
 use Lkrms\Store\Concept\SqliteStore;
+use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncStore;
 
 /**
@@ -16,10 +17,12 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static bool isLoaded() Return true if an underlying SyncStore instance has been loaded
  * @method static void unload() Clear the underlying SyncStore instance
  * @method static SyncStore close(?int $exitStatus = 0) Close the database (see {@see SyncStore::close()})
+ * @method static SyncStore entityType(string $entity) Register a sync entity type and set its ID unless already registered (see {@see SyncStore::entityType()})
  * @method static string|null getFilename() Get the filename of the database (see {@see SqliteStore::getFilename()})
  * @method static int getRunId() Get the run ID of the current run (see {@see SyncStore::getRunId()})
  * @method static string getRunUuid(bool $binary = false) Get the UUID of the current run (see {@see SyncStore::getRunUuid()})
  * @method static bool isOpen() Check if a database is open (see {@see SqliteStore::isOpen()})
+ * @method static SyncStore provider(ISyncProvider $provider) Register a sync provider and set its provider ID (see {@see SyncStore::provider()})
  *
  * @uses SyncStore
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Sync\Support\SyncStore' --generate='Lkrms\Facade\Sync'

@@ -57,7 +57,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     {
         if (!is_subclass_of($entity, SyncEntity::class))
         {
-            throw new UnexpectedValueException("Not a subclass of SyncEntity: " . $entity);
+            throw new UnexpectedValueException("Not a subclass of SyncEntity: $entity");
         }
 
         $entityProvider = $entity . "Provider";

@@ -38,8 +38,8 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function inContextOf(string $id): IContainer;
 
     /**
-     * Create a new instance of the given class or interface, or return a
-     * shared instance created earlier
+     * Create a new instance of the given class or interface, or return a shared
+     * instance created earlier
      *
      * @template T
      * @psalm-param class-string<T> $id
@@ -60,8 +60,8 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function getName(string $id): string;
 
     /**
-     * Return true if the given class or interface resolves to a concrete
-     * class that actually exists
+     * Return true if the given class or interface resolves to a concrete class
+     * that actually exists
      *
      * If `has($id)` returns `false`, `get($id)` must throw a
      * {@see \Psr\Container\NotFoundExceptionInterface}.
@@ -86,6 +86,15 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
 
     /**
+     * Add a binding to the container if it hasn't already been bound
+     *
+     * See {@see IContainer::bind()} for more information.
+     *
+     * @return $this
+     */
+    public function bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
+
+    /**
      * Add a shared binding to the container
      *
      * The container will subsequently resolve requests for `$id` to a shared
@@ -97,6 +106,15 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * @return $this
      */
     public function singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
+
+    /**
+     * Add a shared binding to the container if it hasn't already been bound
+     *
+     * See {@see IContainer::singleton()} for more information.
+     *
+     * @return $this
+     */
+    public function singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
 
     /**
      * Add bindings to the container for an IBindable implementation and its
@@ -119,6 +137,14 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * @return $this
      */
     public function instance(string $id, $instance);
+
+    /**
+     * Add an existing instance to the container as a shared binding if it
+     * hasn't already been bound
+     *
+     * @return $this
+     */
+    public function instanceIf(string $id, $instance);
 
     /**
      * Make this the global container while running the given callback

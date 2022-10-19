@@ -100,9 +100,14 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     private $Store;
 
     /**
-     * @var array<string|\Stringable>|null
+     * @var int
      */
-    private $BackendIdentifier;
+    private $Id;
+
+    /**
+     * @var string
+     */
+    private $Hash;
 
     /**
      * @var DateFormatter|null
@@ -123,6 +128,15 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     {
         $this->Container = $container;
         $this->Store     = $store;
+
+        $this->Store->provider($this);
+    }
+
+    final public function setProviderId(int $providerId, string $providerHash)
+    {
+        [$this->Id, $this->Hash] = [$providerId, $providerHash];
+
+        return $this;
     }
 
     final public function app(): Container
@@ -140,8 +154,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      */
     final public function getBackendIdentifier(): array
     {
-        return $this->BackendIdentifier
-            ?: ($this->BackendIdentifier = $this->_getBackendIdentifier());
+        return $this->_getBackendIdentifier();
     }
 
     final public function getDateFormatter(): DateFormatter
@@ -170,6 +183,8 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
 
     final public function with(string $syncEntity, $context = null): SyncEntityProvider
     {
+        $this->Store->entityType($syncEntity);
+
         $container = ($context instanceof SyncContext
             ? $context->container()
             : ($context ?: $this->container()))->inContextOf(static::class);

@@ -7,7 +7,7 @@
         "php": ">=7.4,<8.2",
         "composer-runtime-api": "^2.2",
         "filp/whoops": "^2",
-        "lkrms/dice": "^4.1",
+        "lkrms/dice": "^4.1.2",
         "psr/container": "^2",
         "psr/log": "^1"
     },

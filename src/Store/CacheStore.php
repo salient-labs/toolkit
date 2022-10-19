@@ -121,7 +121,6 @@ WHERE
   item_value IS NOT excluded.item_value
   OR expires_at IS NOT excluded.expires_at;
 SQL;
-
         $stmt = $db->prepare($sql);
         $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
         $stmt->bindValue(":item_value", serialize($value), SQLITE3_BLOB);
@@ -203,7 +202,6 @@ DELETE FROM
 WHERE
   item_key = :item_key;
 SQL;
-
         $stmt = $db->prepare($sql);
         $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
         $stmt->execute();

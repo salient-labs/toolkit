@@ -33,7 +33,9 @@ abstract class Facade implements IFacade
 
         if (Container::hasGlobalContainer())
         {
-            $instance = Container::getGlobalContainer()->get($service, ...func_get_args());
+            $container = Container::getGlobalContainer();
+            $instance  = $container->singletonIf($service)
+                ->get($service, ...func_get_args());
         }
         else
         {
@@ -98,7 +100,7 @@ abstract class Facade implements IFacade
      */
     final public static function __callStatic(string $name, array $arguments)
     {
-        return static::getInstance()->$name(...$arguments);
+        return (self::$Instances[static::class] ?? self::_load())->$name(...$arguments);
     }
 
 }
