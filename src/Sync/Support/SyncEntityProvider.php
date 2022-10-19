@@ -99,6 +99,32 @@ final class SyncEntityProvider implements ISyncEntityProvider
     }
 
     /**
+     * Defer retrieval of an entity from the backend
+     *
+     * @param int|string $id
+     * @param mixed $replace A reference to the variable, property or array
+     * element to replace when the entity is resolved. Do not assign anything
+     * else to it after calling this method.
+     */
+    public function defer($id, &$replace): void
+    {
+        DeferredSyncEntity::defer($this->Provider, $this->Context, $this->Entity, $id, $replace);
+    }
+
+    /**
+     * Defer retrieval of a list of entities from the backend
+     *
+     * @param int[]|string[] $idList
+     * @param mixed $replace A reference to the variable, property or array
+     * element to replace when the list is resolved. Do not assign anything else
+     * to it after calling this method.
+     */
+    public function deferList(array $idList, &$replace): void
+    {
+        DeferredSyncEntity::deferList($this->Provider, $this->Context, $this->Entity, $idList, $replace);
+    }
+
+    /**
      * Add an entity to the backend
      *
      * The underlying {@see SyncProvider} must implement the

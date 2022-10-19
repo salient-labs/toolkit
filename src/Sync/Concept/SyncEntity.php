@@ -16,6 +16,7 @@ use Lkrms\Support\SerializeRules;
 use Lkrms\Support\SerializeRulesBuilder;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncEntityProvider;
 use RuntimeException;
@@ -240,6 +241,25 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     protected function _getSerializeRules(SerializeRulesBuilder $build)
     {
         return $build->go();
+    }
+
+    /**
+     * Defer instantiation of an entity or list of entities
+     *
+     * @param int|string|int[]|string[] $deferred An entity ID or list thereof.
+     * @param mixed $replace A reference to the variable to replace when the
+     * entity or list is resolved. Do not assign anything else to it after
+     * calling this method.
+     */
+    final protected function defer($deferred, &$replace, ?string $entity = null): void
+    {
+        $ctx = $this->requireContext();
+        if (is_array($deferred))
+        {
+            $ctx = $ctx->withListArrays();
+        }
+
+        DeferredSyncEntity::defer($this->provider(), $ctx->push($this), $entity ?: static::class, $deferred, $replace);
     }
 
     private function getObjectId(): int
