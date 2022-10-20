@@ -84,4 +84,19 @@ trait HasParent
         return $this;
     }
 
+    final public function getDepth(): int
+    {
+        [$_parent] = self::getHierarchyProperties();
+
+        $depth  = 0;
+        $parent = $this->{$_parent};
+        while (!is_null($parent))
+        {
+            $depth++;
+            $parent = $parent->{$_parent};
+        }
+
+        return $depth;
+    }
+
 }
