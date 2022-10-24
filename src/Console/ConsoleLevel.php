@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Console;
 
 use Lkrms\Concept\Enumeration;
+use Lkrms\Concern\IsConvertibleEnumeration;
+use Lkrms\Contract\IConvertibleEnumeration;
 use Psr\Log\LogLevel;
 use UnexpectedValueException;
 
@@ -14,8 +16,10 @@ use UnexpectedValueException;
  * Constants have the same values as their syslog / journalctl counterparts.
  *
  */
-final class ConsoleLevel extends Enumeration
+final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
 {
+    use IsConvertibleEnumeration;
+
     public const EMERGENCY = 0;
     public const ALERT     = 1;
     public const CRITICAL  = 2;
@@ -35,6 +39,38 @@ final class ConsoleLevel extends Enumeration
         self::INFO      => LogLevel::INFO,
         self::DEBUG     => LogLevel::DEBUG,
     ];
+
+    protected static $NameMap = [
+        self::EMERGENCY => "EMERGENCY",
+        self::ALERT     => "ALERT",
+        self::CRITICAL  => "CRITICAL",
+        self::ERROR     => "ERROR",
+        self::WARNING   => "WARNING",
+        self::NOTICE    => "NOTICE",
+        self::INFO      => "INFO",
+        self::DEBUG     => "DEBUG",
+    ];
+
+    protected static $ValueMap = [
+        "emergency" => self::EMERGENCY,
+        "alert"     => self::ALERT,
+        "critical"  => self::CRITICAL,
+        "error"     => self::ERROR,
+        "warning"   => self::WARNING,
+        "notice"    => self::NOTICE,
+        "info"      => self::INFO,
+        "debug"     => self::DEBUG,
+    ];
+
+    public static function toCode(int $level, int $width = 1): string
+    {
+        if (!array_key_exists($level, self::$NameMap))
+        {
+            throw new UnexpectedValueException("Invalid ConsoleLevel: $level");
+        }
+
+        return sprintf("%0{$width}d", $level);
+    }
 
     public static function toPsrLogLevel(int $level): string
     {

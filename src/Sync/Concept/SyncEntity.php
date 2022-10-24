@@ -112,6 +112,16 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         return $ctx;
     }
 
+    final public function getResourceName(): string
+    {
+        return Convert::classToBasename(static::class) . "({$this->Id})";
+    }
+
+    final public function getResourcePath(): string
+    {
+        return str_replace("\\", "/", static::class) . "({$this->Id})";
+    }
+
     /**
      * Return true if the value of a property is the same between this and
      * another instance of the same class
@@ -365,7 +375,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
 
     private function toPlaceholder(): array
     {
-        return ["@id" => static::class . "({$this->Id})"];
+        return ["@id" => $this->getResourcePath()];
     }
 
     final protected function getSerializeRules(): SerializeRules

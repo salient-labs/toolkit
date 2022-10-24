@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Enumeration;
+use Lkrms\Concern\IsConvertibleEnumeration;
 use Lkrms\Contract\IConvertibleEnumeration;
 use UnexpectedValueException;
 
@@ -14,6 +15,8 @@ use UnexpectedValueException;
  */
 final class SyncOperation extends Enumeration implements IConvertibleEnumeration
 {
+    use IsConvertibleEnumeration;
+
     /**
      * Add an entity to the connected system
      *
@@ -105,10 +108,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      */
     public const DELETE_LIST = 7;
 
-    /**
-     * @var array<int,string>
-     */
-    private const NAME_MAP = [
+    protected static $NameMap = [
         self::CREATE      => "CREATE",
         self::READ        => "READ",
         self::UPDATE      => "UPDATE",
@@ -119,10 +119,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
         self::DELETE_LIST => "DELETE_LIST",
     ];
 
-    /**
-     * @var array<string,int>
-     */
-    private const VALUE_MAP = [
+    protected static $ValueMap = [
         "create"      => self::CREATE,
         "read"        => self::READ,
         "update"      => self::UPDATE,
@@ -146,26 +143,6 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
         self::UPDATE_LIST => true,
         self::DELETE_LIST => true,
     ];
-
-    public static function fromName(string $name): int
-    {
-        if (is_null($value = self::VALUE_MAP[strtolower($name)] ?? null))
-        {
-            throw new UnexpectedValueException("Invalid SyncOperation name: $name");
-        }
-
-        return $value;
-    }
-
-    public static function toName(int $value): string
-    {
-        if (is_null($name = self::NAME_MAP[$value] ?? null))
-        {
-            throw new UnexpectedValueException("Invalid SyncOperation: $value");
-        }
-
-        return $name;
-    }
 
     /**
      * @return int[]

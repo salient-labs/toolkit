@@ -341,7 +341,7 @@ class GenerateBuilderClass extends GenerateCommand
                     $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_param->getName()]["description"] ?? null) : null;
                 }
 
-                $methods[] = " * @method \$this $name($type \$value)" . $this->getSummary(
+                $methods[] = " * @method static \$this $name($type \$value)" . $this->getSummary(
                     $summary, $_property, $typeNameCallback
                 );
 
@@ -381,11 +381,11 @@ class GenerateBuilderClass extends GenerateCommand
                 $summary = $phpDoc->Summary;
             }
 
-            $methods[] = " * @method \$this $name($type \$value$default)" . $this->getSummary(
+            $methods[] = " * @method static \$this $name($type \$value$default)" . $this->getSummary(
                 $summary, $_property, $typeNameCallback
             );
         }
-        $methods[] = " * @method $service $terminator() Return a new $class object";
+        $methods[] = " * @method static $service $terminator() Return a new $class object";
         $methods[] = " * @method static $service $staticResolver($service|$builderClass \$object) Resolve a $builderClass or $class object to a $class object";
         $methods   = implode(PHP_EOL, $methods);
 

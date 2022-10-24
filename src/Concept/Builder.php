@@ -9,7 +9,6 @@ use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Support\ClosureBuilder;
-use RuntimeException;
 use UnexpectedValueException;
 
 /**
@@ -132,7 +131,7 @@ abstract class Builder implements IImmutable
             }
             return $obj;
         }
-        throw new RuntimeException("Invalid method: $name");
+        return (new static())->{$name}(...$arguments);
     }
 
     /**

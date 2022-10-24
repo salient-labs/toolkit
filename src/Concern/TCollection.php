@@ -41,6 +41,15 @@ trait TCollection
         return array_values($this->Items);
     }
 
+    /**
+     * Return true if an item is in the collection
+     *
+     */
+    final public function has($item, bool $strict = false): bool
+    {
+        return in_array($item, $this->Items, $strict);
+    }
+
     // Partial implementation of `Iterator`:
 
     final public function next(): void
