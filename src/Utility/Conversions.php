@@ -77,6 +77,20 @@ final class Conversions
     }
 
     /**
+     * Get the first nested value that isn't a single-element array
+     *
+     */
+    public function toInner($value)
+    {
+        if (!is_array($value) || count($value) !== 1)
+        {
+            return $value;
+        }
+
+        return $this->toInner(reset($value));
+    }
+
+    /**
      * A type-agnostic array_unique with reindexing
      *
      */
@@ -91,6 +105,7 @@ final class Conversions
             }
             $list[] = $value;
         }
+
         return $list;
     }
 
@@ -113,7 +128,27 @@ final class Conversions
             $list[]       = $value;
             $seen[$value] = true;
         }
+
         return $list;
+    }
+
+    /**
+     * JSON-encode non-scalar values in an array
+     *
+     * @return array<int,int|float|string|bool|null>
+     */
+    public function toScalarArray(array $array): array
+    {
+        foreach ($array as &$value)
+        {
+            if (is_scalar($value) || is_null($value))
+            {
+                continue;
+            }
+            $value = json_encode($value);
+        }
+
+        return $array;
     }
 
     /**

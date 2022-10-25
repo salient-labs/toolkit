@@ -74,6 +74,14 @@ class GenerateBuilderClass extends GenerateCommand
                 ->defaultValue("go")
                 ->go()),
             (CliOption::build()
+                ->long("static-resolver")
+                ->short("r")
+                ->valueName("METHOD")
+                ->description("The static method that resolves unterminated builders")
+                ->optionType(CliOptionType::VALUE)
+                ->defaultValue("resolve")
+                ->go()),
+            (CliOption::build()
                 ->long("extend")
                 ->short("x")
                 ->valueName("CLASS")
@@ -152,9 +160,10 @@ class GenerateBuilderClass extends GenerateCommand
         $service   = $this->getFqcnAlias($fqcn, $class);
         $container = $this->getFqcnAlias(IContainer::class);
 
-        $staticBuilder = Convert::toCamelCase($this->getOptionValue("static-builder"));
-        $terminator    = Convert::toCamelCase($this->getOptionValue("terminator"));
-        array_push($this->SkipProperties, $staticBuilder, $terminator);
+        $staticBuilder  = Convert::toCamelCase($this->getOptionValue("static-builder"));
+        $terminator     = Convert::toCamelCase($this->getOptionValue("terminator"));
+        $staticResolver = Convert::toCamelCase($this->getOptionValue("static-resolver"));
+        array_push($this->SkipProperties, $staticBuilder, $terminator, $staticResolver);
 
         $package  = $this->getOptionValue("package");
         $desc     = $this->getOptionValue("desc");
@@ -332,7 +341,7 @@ class GenerateBuilderClass extends GenerateCommand
                     $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_param->getName()]["description"] ?? null) : null;
                 }
 
-                $methods[] = " * @method \$this $name($type \$value)" . $this->getSummary(
+                $methods[] = " * @method static \$this $name($type \$value)" . $this->getSummary(
                     $summary, $_property, $typeNameCallback
                 );
 
@@ -372,11 +381,12 @@ class GenerateBuilderClass extends GenerateCommand
                 $summary = $phpDoc->Summary;
             }
 
-            $methods[] = " * @method \$this $name($type \$value$default)" . $this->getSummary(
+            $methods[] = " * @method static \$this $name($type \$value$default)" . $this->getSummary(
                 $summary, $_property, $typeNameCallback
             );
         }
-        $methods[] = " * @method $service $terminator() Return a new $class object";
+        $methods[] = " * @method static $service $terminator() Return a new $class object";
+        $methods[] = " * @method static $service $staticResolver($service|$builderClass \$object) Resolve a $builderClass or $class object to a $class object";
         $methods   = implode(PHP_EOL, $methods);
 
         $imports = $this->getImports();
@@ -431,16 +441,22 @@ class GenerateBuilderClass extends GenerateCommand
         array_push($lines,
             ...$this->getStaticGetter("getClassName", "$service::class"));
 
-        if ($this->getoption("static-builder")->DefaultValue !== $staticBuilder)
+        if ($this->getOption("static-builder")->DefaultValue !== $staticBuilder)
         {
             array_push($lines, "",
                 ...$this->getStaticGetter("getStaticBuilder", var_export($staticBuilder, true)));
         }
 
-        if ($this->getoption("terminator")->DefaultValue !== $terminator)
+        if ($this->getOption("terminator")->DefaultValue !== $terminator)
         {
             array_push($lines, "",
                 ...$this->getStaticGetter("getTerminator", var_export($terminator, true)));
+        }
+
+        if ($this->getOption("static-resolver")->DefaultValue !== $staticResolver)
+        {
+            array_push($lines, "",
+                ...$this->getStaticGetter("getStaticResolver", var_export($staticResolver, true)));
         }
 
         $lines[] = "}";

@@ -151,6 +151,13 @@ class ClosureBuilder
     private $ServiceMap = [];
 
     /**
+     * Normalised property names, whether declared or "magic"
+     *
+     * @var string[]
+     */
+    private $NormalisedProperties = [];
+
+    /**
      * Constructor parameter names => constructor argument indices
      *
      * @var array<string,int>
@@ -163,6 +170,20 @@ class ClosureBuilder
      * @var callable|null
      */
     private $Normaliser;
+
+    /**
+     * Normalises property names with $aggressive = false
+     *
+     * @var callable|null
+     */
+    private $GentleNormaliser;
+
+    /**
+     * Normalises property names with $hints = $this->NormalisedProperties
+     *
+     * @var callable|null
+     */
+    private $CarefulNormaliser;
 
     /**
      * @var array<string,array<string,Closure>>
@@ -260,7 +281,9 @@ class ClosureBuilder
         // IResolvable provides access to properties via alternative names
         if ($class->implementsInterface(IResolvable::class))
         {
-            $this->Normaliser = $class->getMethod("getNormaliser")->invoke(null);
+            $this->Normaliser        = $class->getMethod("getNormaliser")->invoke(null);
+            $this->GentleNormaliser  = fn(string $name): string => ($this->Normaliser)($name, false);
+            $this->CarefulNormaliser = fn(string $name): string => ($this->Normaliser)($name, true, ...$this->NormalisedProperties);
         }
 
         $propertyFilter = ReflectionProperty::IS_PUBLIC;
@@ -345,7 +368,7 @@ class ClosureBuilder
         {
             foreach ($constructor->getParameters() as $param)
             {
-                $normalised   = $this->maybeNormalise($param->name);
+                $normalised   = $this->maybeNormalise($param->name, true);
                 $defaultValue = null;
                 if ($param->isOptional())
                 {
@@ -366,16 +389,16 @@ class ClosureBuilder
             $this->ParametersIndex = array_flip($this->Parameters);
         }
 
-        // Create normalised property and parameter name maps
+        // Create normalised property name maps
         $methodProperties = array_keys($this->Methods);
         if ($this->Normaliser)
         {
             $this->PropertyMap = array_combine(
-                array_map($this->Normaliser, $this->Properties),
+                array_map($this->GentleNormaliser, $this->Properties),
                 $this->Properties
             );
             $this->MethodMap = array_combine(
-                array_map($this->Normaliser, $methodProperties),
+                array_map($this->GentleNormaliser, $methodProperties),
                 $methodProperties
             );
         }
@@ -384,23 +407,32 @@ class ClosureBuilder
             $this->PropertyMap = array_combine($this->Properties, $this->Properties);
             $this->MethodMap   = array_combine($methodProperties, $methodProperties);
         }
+
+        // And a list of unique normalised property names
+        $this->NormalisedProperties = array_keys($this->PropertyMap + $this->MethodMap);
     }
 
     /**
      * @param string|string[] $value
      * @return string|string[]
      */
-    final public function maybeNormalise($value)
+    final public function maybeNormalise($value, bool $gentle = false, bool $careful = false)
     {
         if (!$this->Normaliser)
         {
             return $value;
         }
+
+        $normaliser = ($gentle
+            ? $this->GentleNormaliser
+            : ($careful ? $this->CarefulNormaliser : $this->Normaliser));
+
         if (is_array($value))
         {
-            return array_map($this->Normaliser, $value);
+            return array_map($normaliser, $value);
         }
-        return ($this->Normaliser)($value);
+
+        return ($normaliser)($value);
     }
 
     final public function hasNormaliser(): bool
@@ -513,7 +545,7 @@ class ClosureBuilder
         if ($this->Normaliser)
         {
             $keys = array_combine(
-                array_map($this->Normaliser, $keys),
+                array_map($this->CarefulNormaliser, $keys),
                 $keys
             );
         }
@@ -742,7 +774,7 @@ class ClosureBuilder
      */
     final public function getPropertyActionClosure(string $name, string $action): Closure
     {
-        $_name = $this->maybeNormalise($name);
+        $_name = $this->maybeNormalise($name, false, true);
 
         if ($closure = $this->PropertyActionClosures[$_name][$action] ?? null)
         {
@@ -816,7 +848,7 @@ class ClosureBuilder
 
         $props = $this->ReadableProperties ?: $this->PublicProperties;
         $props = array_combine(
-            $this->maybeNormalise($props),
+            $this->maybeNormalise($props, false, true),
             $props
         );
 

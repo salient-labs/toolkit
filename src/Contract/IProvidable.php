@@ -13,30 +13,39 @@ use Lkrms\Support\ArrayKeyConformity;
 interface IProvidable
 {
     /**
-     * Get the provider servicing this entity
+     * Get the provider servicing the entity
      *
      */
     public function provider(): ?IProvider;
 
     /**
-     * Get the base class of this entity
+     * Get the base class of the entity
+     *
+     * Consider the following scenario:
+     *
+     * - `Faculty` is a `SyncEntity` subclass
+     * - `CustomFaculty` is a subclass of `Faculty`
+     * - `CustomFaculty` is bound to the service container as `Faculty`:
+     *   ```php
+     *   $this->app()->bind(Faculty::class, CustomFaculty::class);
+     *   ```
+     * - `$provider` implements `FacultyProvider`
+     * - A `Faculty` object is requested from `$provider` for faculty #1:
+     *   ```php
+     *   $faculty = $provider->with(Faculty::class)->get(1);
+     *   ```
+     *
+     * `$faculty` is now an instance of `CustomFaculty` with a base type of
+     * `Faculty`, so this code:
      *
      * ```php
-     * // First:
-     * $this->app()->bind(Faculty::class, CustomFaculty::class);
-     *
-     * // Then, in an IProvider:
-     * $faculty = $this->app()->get(Faculty::class)->setProvider($this, Faculty::class);
-     *
-     * // Finally:
      * print_r([
-     *     "class"      => get_class($faculty),
-     *     "base_class" => $faculty->providable(),
+     *     'class'      => get_class($faculty),
+     *     'base_class' => $faculty->providable(),
      * ]);
      * ```
      *
-     * Because `$faculty` is a `CustomFaculty` created to satisfy a `Faculty`
-     * request, the example above will output:
+     * will produce the following output:
      *
      * ```
      * Array
@@ -45,7 +54,6 @@ interface IProvidable
      *     [base_class] => Faculty
      * )
      * ```
-     *
      */
     public function providable(): ?string;
 

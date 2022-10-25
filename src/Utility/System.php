@@ -23,6 +23,35 @@ final class System
         return memory_get_usage(true);
     }
 
+    public function getPeakMemoryUsage(): int
+    {
+        return memory_get_peak_usage(true);
+    }
+
+    /**
+     * Get user and system CPU times for the current run, in microseconds
+     *
+     * @return array{0:int,1:int}
+     * ```php
+     * [$userMicroseconds, $systemMicroseconds]
+     * ```
+     */
+    public function getCpuUsage(): array
+    {
+        if (($usage = getrusage()) === false)
+        {
+            return [
+                0,
+                0,
+            ];
+        }
+
+        return [
+            ($usage["ru_utime.tv_sec"] ?? 0) * 1000000 + ($usage["ru_utime.tv_usec"] ?? 0),
+            ($usage["ru_stime.tv_sec"] ?? 0) * 1000000 + ($usage["ru_stime.tv_usec"] ?? 0),
+        ];
+    }
+
     public function getMemoryUsagePercent(): int
     {
         $limit = $this->getMemoryLimit();

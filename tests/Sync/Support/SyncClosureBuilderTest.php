@@ -17,9 +17,10 @@ final class SyncClosureBuilderTest extends \Lkrms\Tests\TestCase
 {
     public function testGetSyncOperationMethod()
     {
-        $container = new Container();
-        $container->service(JsonPlaceholderApi::class);
+        $container = ((new Container())
+            ->service(JsonPlaceholderApi::class));
         $provider = $container->get(PostProvider::class);
+
         $entityClosureBuilder   = SyncClosureBuilder::get(Post::class);
         $providerClosureBuilder = SyncClosureBuilder::getBound($container, PostProvider::class);
 

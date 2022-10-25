@@ -216,7 +216,7 @@ final class Environment
             // Passes "" if `$default` is `null`, "0" if `$default` is `0`
             $value = $this->get($name, (string)$default);
         }
-        return ($value === "") ? null : (int)$default;
+        return ($value === "") ? null : (int)$value;
     }
 
     /**

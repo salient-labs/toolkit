@@ -16,6 +16,6 @@ trait TResolvable
 {
     public static function getNormaliser(): Closure
     {
-        return fn(string $name) => Convert::toSnakeCase($name);
+        return fn(string $name): string => Convert::toSnakeCase($name);
     }
 }

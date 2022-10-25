@@ -49,6 +49,11 @@ class HttpSyncDefinition extends SyncDefinition
     protected $Query;
 
     /**
+     * @var Closure|HttpSyncDefinitionRequest|null
+     */
+    protected $Request;
+
+    /**
      * @var int|null
      */
     protected $Expiry;
@@ -72,9 +77,10 @@ class HttpSyncDefinition extends SyncDefinition
      * @param int[] $operations
      * @param Closure|string|null $path Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): string`
      * @param Closure|array|null $query Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): ?array`
+     * @param Closure|HttpSyncDefinitionRequest|null $request If set, `$path` and `$query` are ignored. Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): HttpSyncDefinitionRequest`
      * @param array<int,Closure> $overrides
      */
-    public function __construct(string $entity, HttpSyncProvider $provider, array $operations = [], $path = null, $query = null, int $conformity = ArrayKeyConformity::NONE, ?int $expiry = -1, array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP, array $overrides = [], ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
+    public function __construct(string $entity, HttpSyncProvider $provider, array $operations = [], $path = null, $query = null, $request = null, int $conformity = ArrayKeyConformity::NONE, ?int $expiry = -1, array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP, array $overrides = [], ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
     {
         parent::__construct($entity, $provider, $conformity, $dataToEntityPipeline, $entityToDataPipeline);
 
@@ -86,6 +92,7 @@ class HttpSyncDefinition extends SyncDefinition
         );
         $this->Path      = $path;
         $this->Query     = $query;
+        $this->Request   = $request;
         $this->Expiry    = $expiry;
         $this->MethodMap = $methodMap;
         $this->Overrides = array_intersect_key($overrides, array_flip($this->Operations));
@@ -114,7 +121,7 @@ class HttpSyncDefinition extends SyncDefinition
 
         // Return null if the operation doesn't appear in $this->Operations, or
         // if no endpoint path has been provided
-        if (!array_key_exists($operation, $this->Operations) || is_null($this->Path))
+        if (!array_key_exists($operation, $this->Operations) || is_null($this->Request ?: $this->Path))
         {
             return $this->Closures[$operation] = null;
         }
@@ -130,7 +137,7 @@ class HttpSyncDefinition extends SyncDefinition
             case SyncOperation::DELETE:
                 // $_args = [$operation, $ctx, $entity, ...$args]
                 $endpointPipe = fn($payload, Closure $next, IPipeline $pipeline, ...$_args) => $next(
-                    $toCurler($this->getPath(...$_args), $this->getQuery(...$_args), $payload)
+                    $toCurler(... [ ...$this->getCurlerArgs(...$_args), $payload])
                 );
                 $closure = fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity =>
                     ($toBackend->send($entity->toArray(), $operation, $ctx, $entity, ...$args)
@@ -141,7 +148,7 @@ class HttpSyncDefinition extends SyncDefinition
 
             case SyncOperation::READ:
                 $closure = fn(SyncContext $ctx, $id, ...$args): SyncEntity => $toEntity->send(
-                    $toCurler($this->getPath($operation, $ctx, $id, ...$args), $this->getQuery($operation, $ctx, $id, ...$args)),
+                    $toCurler(...$this->getCurlerArgs($operation, $ctx, $id, ...$args)),
                     $operation, $ctx, $id, ...$args
                 )->run();
                 break;
@@ -151,7 +158,7 @@ class HttpSyncDefinition extends SyncDefinition
             case SyncOperation::DELETE_LIST:
                 // $_args = [$operation, $ctx, $_entity, ...$args]
                 $endpointPipe = fn($payload, Closure $next, IPipeline $pipeline, ...$_args) => $next(
-                    $toCurler($this->getPath(...$_args), $this->getQuery(...$_args), $payload)
+                    $toCurler(... [ ...$this->getCurlerArgs(...$_args), $payload])
                 );
                 $_entity = null;
                 $closure = function (SyncContext $ctx, iterable $entities, ...$args) use (&$_entity, $endpointPipe, $operation, $toBackend, $toEntity): iterable
@@ -166,7 +173,7 @@ class HttpSyncDefinition extends SyncDefinition
 
             case SyncOperation::READ_LIST:
                 $closure = fn(SyncContext $ctx, ...$args): iterable => $toEntity->stream(
-                    $toCurler($this->getPath($operation, $ctx, ...$args), $this->getQuery($operation, $ctx, ...$args)),
+                    $toCurler(...$this->getCurlerArgs($operation, $ctx, ...$args)),
                     $operation, $ctx, ...$args
                 )->start();
                 break;
@@ -176,6 +183,22 @@ class HttpSyncDefinition extends SyncDefinition
         }
 
         return $this->Closures[$operation] = $closure;
+    }
+
+    private function getCurlerArgs(int $operation, SyncContext $ctx, ...$args): array
+    {
+        if (($request = $this->Request) instanceof Closure)
+        {
+            $request = $request($operation, $ctx, ...$args);
+        }
+
+        return $request instanceof HttpSyncDefinitionRequest ? [
+            $request->Path,
+            $request->Query
+        ] : [
+            $this->getPath($operation, $ctx, ...$args),
+            $this->getQuery($operation, $ctx, ...$args),
+        ];
     }
 
     private function getPath(int $operation, SyncContext $ctx, ...$args): string

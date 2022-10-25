@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Facade\Compute;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Concept\SyncEntity;
@@ -52,6 +53,11 @@ final class SyncStore extends SqliteStore
     private $EntityTypes = [];
 
     /**
+     * @var SyncErrorCollection
+     */
+    private $Errors;
+
+    /**
      * Initiate a "run" of sync operations
      *
      * @param string $command The canonical name of the command performing sync
@@ -64,6 +70,8 @@ final class SyncStore extends SqliteStore
 
         $this->open($filename);
         $this->startRun($command, $arguments);
+
+        $this->Errors = new SyncErrorCollection();
     }
 
     /**
@@ -270,6 +278,36 @@ SQL;
         $this->EntityTypes[$entity] = $row[0];
 
         return $this;
+    }
+
+    /**
+     * Report an error that occurred during a sync operation
+     *
+     * @param SyncError|SyncErrorBuilder $error
+     * @return $this
+     */
+    public function error($error, bool $deduplicate = false, bool $toConsole = false)
+    {
+        $error = SyncErrorBuilder::resolve($error);
+        if (!$deduplicate || !$this->Errors->has($error))
+        {
+            $this->Errors[] = $error;
+        }
+        if ($toConsole)
+        {
+            $error->toConsole($deduplicate);
+        }
+        else
+        {
+            Console::count($error->Level);
+        }
+
+        return $this;
+    }
+
+    public function getErrors(): SyncErrorCollection
+    {
+        return clone $this->Errors;
     }
 
     private function startRun(string $command, array $arguments)

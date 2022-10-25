@@ -16,6 +16,7 @@ use Lkrms\Support\SerializeRules;
 use Lkrms\Support\SerializeRulesBuilder;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncEntityProvider;
 use RuntimeException;
@@ -42,16 +43,11 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     public $Id;
 
     /**
-     * Entity class => entity type ID
+     * Class name => entity type ID
      *
      * @var array<string,int>
      */
-    private static $EntityTypeIds = [];
-
-    /**
-     * @var array<string,Closure>
-     */
-    private static $Normalisers = [];
+    private static $TypeId = [];
 
     /**
      * Class name => [ Property name => normalised property name ]
@@ -70,12 +66,12 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      */
     final public static function setEntityTypeId(int $entityTypeId): void
     {
-        self::$EntityTypeIds[static::class] = $entityTypeId;
+        self::$TypeId[static::class] = $entityTypeId;
     }
 
-    final public function entityTypeId(): ?int
+    final public static function entityTypeId(): ?int
     {
-        return self::$EntityTypeIds[static::class] ?? null;
+        return self::$TypeId[static::class] ?? null;
     }
 
     final public function provider(): ?ISyncProvider
@@ -114,6 +110,16 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         }
 
         return $ctx;
+    }
+
+    final public function getResourceName(): string
+    {
+        return Convert::classToBasename(static::class) . "({$this->Id})";
+    }
+
+    final public function getResourcePath(): string
+    {
+        return str_replace("\\", "/", static::class) . "({$this->Id})";
     }
 
     /**
@@ -172,45 +178,61 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     protected static function getRemovablePrefixes(): ?array
     {
         return array_map(
-            function (string $name) { return Convert::classToBasename($name); },
+            fn(string $name): string => Convert::classToBasename($name),
             Reflect::getClassNamesBetween(static::class, self::class, false)
         );
     }
 
+    /**
+     * Returns a closure to normalise a property name
+     *
+     * {@inheritdoc}
+     *
+     * If `$aggressive` is `false`, prefixes returned by
+     * {@see SyncEntity::getRemovablePrefixes()} are not removed from `$name`.
+     * Otherwise, if `$hints` are provided and `$name` matches one of them after
+     * snake_case conversion, prefix removal is skipped.
+     *
+     * @return Closure
+     * ```php
+     * function (string $name, bool $aggressive = true, string ...$hints): string
+     * ```
+     */
     final public static function getNormaliser(): Closure
     {
-        if ($closure = self::$Normalisers[static::class] ?? null)
-        {
-            return $closure;
-        }
-
         if ($prefixes = static::getRemovablePrefixes())
         {
             $prefixes = array_unique(array_map(
-                fn(string $prefix) => Convert::toSnakeCase($prefix),
+                fn(string $prefix): string => Convert::toSnakeCase($prefix),
                 $prefixes
             ));
-            $regex   = implode("|", $prefixes);
-            $regex   = count($prefixes) > 1 ? "($regex)" : $regex;
-            $regex   = "/^{$regex}_/";
-            $closure = static function (string $name) use ($regex)
+            $regex = implode("|", $prefixes);
+            $regex = count($prefixes) > 1 ? "($regex)" : $regex;
+            $regex = "/^{$regex}_/";
+            return static function (string $name, bool $aggressive = true, string ...$hints) use ($regex): string
             {
-                return self::$Normalised[static::class][$name]
-                    ?? (self::$Normalised[static::class][$name]
-                        = preg_replace($regex, "", Convert::toSnakeCase($name)));
-            };
-        }
-        else
-        {
-            $closure = static function (string $name)
-            {
-                return self::$Normalised[static::class][$name]
-                    ?? (self::$Normalised[static::class][$name]
-                        = Convert::toSnakeCase($name));
+                if ($aggressive && !$hints)
+                {
+                    return self::$Normalised[static::class][$name]
+                        ?? (self::$Normalised[static::class][$name]
+                            = preg_replace($regex, "", Convert::toSnakeCase($name)));
+                }
+                $_name = Convert::toSnakeCase($name);
+                if (!$aggressive || in_array($_name, $hints))
+                {
+                    return $_name;
+                }
+
+                return preg_replace($regex, "", $_name);
             };
         }
 
-        return self::$Normalisers[static::class] = $closure;
+        return static function (string $name): string
+        {
+            return self::$Normalised[static::class][$name]
+                ?? (self::$Normalised[static::class][$name]
+                    = Convert::toSnakeCase($name));
+        };
     }
 
     /**
@@ -242,17 +264,28 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         return $build->go();
     }
 
+    /**
+     * Defer instantiation of an entity or list of entities
+     *
+     * @param int|string|int[]|string[] $deferred An entity ID or list thereof.
+     * @param mixed $replace A reference to the variable to replace when the
+     * entity or list is resolved. Do not assign anything else to it after
+     * calling this method.
+     */
+    final protected function defer($deferred, &$replace, ?string $entity = null): void
+    {
+        $ctx = $this->requireContext();
+        if (is_array($deferred))
+        {
+            $ctx = $ctx->withListArrays();
+        }
+
+        DeferredSyncEntity::defer($this->provider(), $ctx->push($this), $entity ?: static::class, $deferred, $replace);
+    }
+
     private function getObjectId(): int
     {
         return spl_object_id($this);
-    }
-
-    private function getPlaceholder(): array
-    {
-        return [
-            "@sync.type" => static::class,
-            "@sync.id"   => $this->Id,
-        ];
     }
 
     private function _serializeId(&$node, SerializeRules $rules, ?SyncEntity $parentEntity, array & $parentArray, $parentKey)
@@ -269,11 +302,13 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
             {
                 throw new UnexpectedValueException("Array key '$newParentKey' already exists");
             }
-            $parentArray[$newParentKey] = $node->Id;
+            $parentArray[$newParentKey] = $node->Id ?? null;
             unset($parentArray[$parentKey]);
+
             return;
         }
-        $node = $node->Id;
+
+        $node = $node->Id ?? null;
     }
 
     private function _serialize(&$node, SerializeRules $rules, $parents = [], ?SyncEntity $parentEntity = null, array & $parentArray = null, $parentKey = null)
@@ -283,7 +318,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
             // If $parentArray is null, $node is the top-level entity
             if ($rules->OnlySerializePlaceholders && !is_null($parentArray))
             {
-                $node = $this->getPlaceholder();
+                $node = $node->toPlaceholder();
                 return;
             }
 
@@ -336,6 +371,11 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         {
             throw new UnexpectedValueException("Array or SyncEntity expected: " . print_r($node, true));
         }
+    }
+
+    private function toPlaceholder(): array
+    {
+        return ["@id" => $this->getResourcePath()];
     }
 
     final protected function getSerializeRules(): SerializeRules

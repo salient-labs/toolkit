@@ -90,6 +90,12 @@ abstract class GenerateCommand extends CliCommand
             return $alias;
         }
 
+        // Use the canonical basename of the generated class
+        if (!strcasecmp($fqcn, "{$this->OutputNamespace}\\{$this->OutputClass}"))
+        {
+            return $this->OutputClass;
+        }
+
         // Don't allow a conflict with the name of the generated class
         if (!strcasecmp($alias, $this->OutputClass) ||
             array_key_exists($_alias, $this->AliasMap))

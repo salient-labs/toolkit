@@ -9,7 +9,6 @@ use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Support\ClosureBuilder;
-use RuntimeException;
 use UnexpectedValueException;
 
 /**
@@ -53,6 +52,18 @@ abstract class Builder implements IImmutable
     protected static function getTerminator(): string
     {
         return "go";
+    }
+
+    /**
+     * Get the name of the static method that resolves a builder or an instance
+     * of the underlying class to an instance of the underlying class
+     *
+     * The default method name is "resolve". Override
+     * {@see Builder::getStaticResolver()} to change it.
+     */
+    protected static function getStaticResolver(): string
+    {
+        return "resolve";
     }
 
     /**
@@ -103,7 +114,24 @@ abstract class Builder implements IImmutable
 
             return new static($arguments[0] ?? null);
         }
-        throw new RuntimeException("Invalid method: $name");
+        if (static::getStaticResolver() === $name)
+        {
+            if (count($arguments) !== 1 || !is_object($arguments[0]))
+            {
+                throw new UnexpectedValueException("Invalid arguments");
+            }
+            $obj = $arguments[0];
+            if ($obj instanceof self)
+            {
+                $obj = $obj->{$obj->getTerminator()}();
+            }
+            if (!is_a($obj, static::getClassName()))
+            {
+                throw new UnexpectedValueException('Argument #1 ($object) does not resolve to a ' . static::getClassName());
+            }
+            return $obj;
+        }
+        return (new static())->{$name}(...$arguments);
     }
 
     /**
