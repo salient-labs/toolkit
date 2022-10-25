@@ -106,10 +106,11 @@ final class SerializeRules implements IReadable, IImmutable
     private $RuleCache = [];
 
     /**
+     * @param SerializeRules|SerializeRulesBuilder|null $inherit
      * @param array<string,string[]> $doNotSerialize
      * @param array<string,string[]> $onlySerializeId
      */
-    public function __construct(?SerializeRules $inherit = null, bool $detectRecursion = true, array $doNotSerialize = [], array $onlySerializeId = [], ? callable $idKeyCallback = null, bool $onlySerializePlaceholders = false)
+    public function __construct($inherit = null, bool $detectRecursion = true, array $doNotSerialize = [], array $onlySerializeId = [], ? callable $idKeyCallback = null, bool $onlySerializePlaceholders = false)
     {
         $this->DetectRecursion = $detectRecursion;
         $this->DoNotSerialize  = $doNotSerialize;
@@ -119,7 +120,7 @@ final class SerializeRules implements IReadable, IImmutable
 
         if ($inherit)
         {
-            $this->_apply($inherit, true);
+            $this->_apply(SerializeRulesBuilder::resolve($inherit), true);
         }
     }
 

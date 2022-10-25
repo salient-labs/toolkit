@@ -16,6 +16,7 @@ use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
+use Lkrms\Facade\Format;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
@@ -137,6 +138,13 @@ class AppContainer extends Container implements IReadable
 
         Console::registerStdioTargets();
 
+        register_shutdown_function(
+            function ()
+            {
+                $this->writeResourceUsage();
+            }
+        );
+
         Err::load();
         if ($path = Composer::getPackagePath("adodb/adodb-php"))
         {
@@ -226,6 +234,22 @@ class AppContainer extends Container implements IReadable
         {
             throw new RuntimeException("Sync database already loaded: $file");
         }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    final public function writeResourceUsage()
+    {
+        [$peakMemory, $userTime, $systemTime] = [Sys::getPeakMemoryUsage(), ...Sys::getCpuUsage()];
+        Console::debug("", sprintf(
+            "CPU time: %01.3fs user, %01.3fs system; memory: %s peak",
+            $userTime / 1000000,
+            $systemTime / 1000000,
+            Format::bytes($peakMemory, 3)
+        ));
 
         return $this;
     }

@@ -20,9 +20,10 @@ use Lkrms\Curler\CurlerHeaders;
  * @method $this nextData(?array $value)
  * @method $this nextHeaders(?CurlerHeaders $value)
  * @method CurlerPage go() Return a new CurlerPage object
+ * @method static CurlerPage resolve(CurlerPage|CurlerPageBuilder $object) Resolve a CurlerPageBuilder or CurlerPage object to a CurlerPage object
  *
  * @uses CurlerPage
- * @lkrms-generate-command lk-util generate builder --class='Lkrms\Curler\Support\CurlerPage' --static-builder='build' --terminator='go'
+ * @lkrms-generate-command lk-util generate builder --class='Lkrms\Curler\Support\CurlerPage' --static-builder='build' --terminator='go' --static-resolver='resolve'
  */
 final class CurlerPageBuilder extends Builder
 {

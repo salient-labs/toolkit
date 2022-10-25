@@ -27,9 +27,10 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method $this dataToEntityPipeline(?IPipelineImmutable $value) A pipeline that converts data received from the provider to an associative array from which the entity can be instantiated, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$DataToEntityPipeline})
  * @method $this entityToDataPipeline(?IPipelineImmutable $value) A pipeline that converts a serialized instance of the entity to data compatible with the provider, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$EntityToDataPipeline})
  * @method HttpSyncDefinition go() Return a new HttpSyncDefinition object
+ * @method static HttpSyncDefinition resolve(HttpSyncDefinition|HttpSyncDefinitionBuilder $object) Resolve a HttpSyncDefinitionBuilder or HttpSyncDefinition object to a HttpSyncDefinition object
  *
  * @uses HttpSyncDefinition
- * @lkrms-generate-command lk-util generate builder --class='Lkrms\Sync\Support\HttpSyncDefinition' --static-builder='build' --terminator='go'
+ * @lkrms-generate-command lk-util generate builder --class='Lkrms\Sync\Support\HttpSyncDefinition' --static-builder='build' --terminator='go' --static-resolver='resolve'
  */
 final class HttpSyncDefinitionBuilder extends Builder
 {

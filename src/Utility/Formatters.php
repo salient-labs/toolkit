@@ -121,4 +121,17 @@ final class Formatters
 
         return $l . $from->format($fromFormat) . "$r$delimiter$l" . $to->format($toFormat) . $r;
     }
+
+    public function bytes(int $bytes, int $precision = 0)
+    {
+        $units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+        $bytes = max(0, $bytes);
+        $power = min(count($units) - 1, floor(($bytes ? log($bytes) : 0) / log(1024)));
+        $power = max(0, $precision ? $power : $power - 1);
+
+        return sprintf($precision ? "%01.{$precision}f%s" : "%d%s",
+            $bytes / pow(1024, $power),
+            $units[$power]);
+    }
+
 }

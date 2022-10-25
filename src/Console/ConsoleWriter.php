@@ -355,7 +355,8 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         $caller = implode("", Debug::getCaller($depth));
-        return $this->write(Level::DEBUG, "{{$caller}} __" . $msg1 . "__", $msg2, "--- ", $ex);
+        $msg1   = $msg1 ? " __" . $msg1 . "__" : "";
+        return $this->write(Level::DEBUG, "{{$caller}}{$msg1}", $msg2, "--- ", $ex);
     }
 
     /**

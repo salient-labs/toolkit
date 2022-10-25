@@ -45,6 +45,7 @@ use Lkrms\Contract\IContainer;
  * @method static IContainer|null setGlobalContainer(?IContainer $container) Set (or unset) the global container (see {@see Container::setGlobalContainer()})
  * @method static CliAppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})
  * @method static CliAppContainer singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})
+ * @method static CliAppContainer writeResourceUsage() See {@see AppContainer::writeResourceUsage()}
  *
  * @uses CliAppContainer
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Cli\CliAppContainer' --generate='Lkrms\Facade\Cli'
