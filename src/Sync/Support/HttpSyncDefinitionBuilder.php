@@ -20,6 +20,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method static $this operations(int[] $value) See {@see HttpSyncDefinition::$Operations}
  * @method static $this path(Closure|string|null $value) Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): string` (see {@see HttpSyncDefinition::$Path})
  * @method static $this query(Closure|array|null $value) Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): ?array` (see {@see HttpSyncDefinition::$Query})
+ * @method static $this headersCallback(?Closure $value) Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?CurlerHeaders` (see {@see HttpSyncDefinition::$HeadersCallback})
  * @method static $this request(Closure|HttpSyncDefinitionRequest|null $value) If set, `$path` and `$query` are ignored. Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): HttpSyncDefinitionRequest` (see {@see HttpSyncDefinition::$Request})
  * @method static $this conformity(int $value) See {@see SyncDefinition::$Conformity}
  * @method static $this expiry(?int $value) See {@see HttpSyncDefinition::$Expiry}

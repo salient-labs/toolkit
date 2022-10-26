@@ -23,6 +23,7 @@ interface ICurlerPage
     /**
      * Return the URL of the next page
      *
+     * If the URL has a query string, it should be included.
      */
     public function nextUrl(): string;
 

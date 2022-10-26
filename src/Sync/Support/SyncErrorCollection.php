@@ -42,7 +42,7 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
                     ],
                 ];
             }
-            $summary[$key]["meta"]["values"][] = Convert::toInner($error->Values);
+            $summary[$key]["meta"]["values"][] = Convert::flatten($error->Values);
             $summary[$key]["meta"]["count"]++;
         }
         ksort($summary);

@@ -199,7 +199,7 @@ class AppContainer extends Container implements IReadable
      * @param string|null $name Defaults to the name used to run the script.
      * @return $this
      */
-    final public function logConsoleMessages(?string $name = null, ?bool $debug = null)
+    final public function logConsoleMessages(?bool $debug = true, ?string $name = null)
     {
         $name = ($name
             ? basename($name, ".log")

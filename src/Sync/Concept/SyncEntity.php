@@ -38,9 +38,22 @@ use UnexpectedValueException;
 abstract class SyncEntity extends ProviderEntity implements JsonSerializable
 {
     /**
+     * The unique identifier assigned to the entity by its provider
+     *
      * @var int|string|null
      */
     public $Id;
+
+    /**
+     * The unique identifier assigned to the entity by its canonical backend
+     *
+     * A {@see SyncEntity}'s canonical backend is the provider regarded as the
+     * "single source of truth" for its base type and any properties that aren't
+     * "owned" by another provider.
+     *
+     * @var int|string|null
+     */
+    public $CanonicalId;
 
     /**
      * Class name => entity type ID
@@ -236,12 +249,12 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     }
 
     /**
-     * Convert the entity to an export-ready associative array
+     * Convert the entity to an associative array
      *
-     * Nested objects and lists must be returned as-is. Don't serialize anything
-     * except the entity itself.
+     * Nested objects and lists are returned as-is. Only the top-level entity is
+     * converted.
      *
-     * @return array
+     * @internal
      * @see SyncEntity::_getSerializeRules()
      */
     final protected function serialize(): array

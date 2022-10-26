@@ -233,6 +233,10 @@ class GenerateFacadeClass extends GenerateCommand
             }
             else
             {
+                if ($phpDoc->Tags["deprecated"] ?? null)
+                {
+                    continue;
+                }
                 $method = $_method->getName();
                 if (strpos($method, "__") === 0 ||
                     in_array($method, $this->SkipMethods) ||

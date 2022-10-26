@@ -14,21 +14,21 @@ use Lkrms\Support\ClosureBuilder;
 trait TExtensible
 {
     /**
-     * Normalised property names => values
+     * Normalised property name => value
      *
      * @var array<string,mixed>
      */
-    protected $MetaProperties = [];
+    private $MetaProperties = [];
 
     /**
-     * Normalised property names => last names passed to setMetaProperty
+     * Normalised property name => first name passed to setMetaProperty
      *
      * @var array<string,string>
      */
-    protected $MetaPropertyNames = [];
+    private $MetaPropertyNames = [];
 
     /**
-     * Property names => normalised property names
+     * Property name => normalised property name
      *
      * @var array<string,string>
      */
@@ -55,8 +55,11 @@ trait TExtensible
     final public function setMetaProperty(string $name, $value): void
     {
         $normalised = $this->normaliseMetaProperty($name);
-        $this->MetaProperties[$normalised]    = $value;
-        $this->MetaPropertyNames[$normalised] = $name;
+        $this->MetaProperties[$normalised] = $value;
+        if (!array_key_exists($normalised, $this->MetaPropertyNames))
+        {
+            $this->MetaPropertyNames[$normalised] = $name;
+        }
     }
 
     final public function getMetaProperty(string $name)
@@ -76,11 +79,12 @@ trait TExtensible
 
     final public function getMetaProperties(): array
     {
-        $names = array_map(
-            function ($name) { return $this->MetaPropertyNames[$name]; },
-            array_keys($this->MetaProperties)
+        return array_combine(
+            array_map(
+                fn($name) => $this->MetaPropertyNames[$name],
+                array_keys($this->MetaProperties)
+            ),
+            $this->MetaProperties
         );
-
-        return array_combine($names, $this->MetaProperties);
     }
 }

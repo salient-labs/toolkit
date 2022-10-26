@@ -229,10 +229,10 @@ final class ConsoleWriter implements ReceivesFacade
             return $this->write(Level::INFO, $msg1, $successText, " // ");
         }
 
-        $msg2 = "with " . Convert::numberToNoun($this->Errors, "error", "errors", true);
+        $msg2 = "with " . Convert::plural($this->Errors, "error", "errors", true);
         if ($this->Warnings)
         {
-            $msg2 .= " and " . Convert::numberToNoun($this->Warnings, "warning", "warnings", true);
+            $msg2 .= " and " . Convert::plural($this->Warnings, "warning", "warnings", true);
         }
         return $this->write(
             $this->Errors ? Level::ERROR : Level::WARNING,

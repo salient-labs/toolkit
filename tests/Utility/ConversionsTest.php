@@ -8,6 +8,28 @@ use Lkrms\Facade\Convert;
 
 final class ConversionsTest extends \Lkrms\Tests\TestCase
 {
+    public function testFlatten()
+    {
+        $data = [
+            [[['id' => 1]]],
+            ['nested scalar'],
+            ['nested associative' => 1],
+            [[1, 'links' => [2, 3]]],
+            'plain scalar',
+        ];
+
+        $flattened = array_map(fn($value) => Convert::flatten($value), $data);
+
+        $this->assertEquals([
+            ['id' => 1],
+            'nested scalar',
+            ['nested associative' => 1],
+            [1, 'links' => [2, 3]],
+            'plain scalar',
+        ], $flattened);
+
+    }
+
     public function testIterableToValue()
     {
         $data = [

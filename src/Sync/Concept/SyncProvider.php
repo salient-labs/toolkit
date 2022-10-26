@@ -8,6 +8,7 @@ use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IBindableSingleton;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Support\PipelineImmutable;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncClosureBuilder;
@@ -147,6 +148,16 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     final public function container(): Container
     {
         return $this->Container;
+    }
+
+    /**
+     * Get a new pipeline bound to the provider's container
+     *
+     * @return PipelineImmutable
+     */
+    final protected function pipeline(): PipelineImmutable
+    {
+        return PipelineImmutable::create($this->Container);
     }
 
     /**

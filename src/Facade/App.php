@@ -31,7 +31,7 @@ use Lkrms\Contract\IContainer;
  * @method static AppContainer loadCache() See {@see AppContainer::loadCache()}
  * @method static AppContainer loadCacheIfExists() See {@see AppContainer::loadCacheIfExists()}
  * @method static AppContainer loadSync(?string $command = null, ?array $arguments = null) See {@see AppContainer::loadSync()}
- * @method static AppContainer logConsoleMessages(?string $name = null, ?bool $debug = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
+ * @method static AppContainer logConsoleMessages(?bool $debug = true, ?string $name = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Similar to getGlobalContainer(), but return null if no global container has been loaded (see {@see Container::maybeGetGlobalContainer()})
  * @method static IContainer requireGlobalContainer() Similar to getGlobalContainer(), but throw an exception if no global container has been loaded (see {@see Container::requireGlobalContainer()})
  * @method static AppContainer service(string $id, string[]|null $services = null, string[]|null $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null) Add bindings to the container for an IBindable implementation and its services, optionally specifying services to bind or exclude (see {@see Container::service()})

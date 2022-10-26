@@ -40,31 +40,37 @@ final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
         self::DEBUG     => LogLevel::DEBUG,
     ];
 
-    protected static $NameMap = [
-        self::EMERGENCY => "EMERGENCY",
-        self::ALERT     => "ALERT",
-        self::CRITICAL  => "CRITICAL",
-        self::ERROR     => "ERROR",
-        self::WARNING   => "WARNING",
-        self::NOTICE    => "NOTICE",
-        self::INFO      => "INFO",
-        self::DEBUG     => "DEBUG",
-    ];
+    protected static function getNameMap(): array
+    {
+        return [
+            self::EMERGENCY => "EMERGENCY",
+            self::ALERT     => "ALERT",
+            self::CRITICAL  => "CRITICAL",
+            self::ERROR     => "ERROR",
+            self::WARNING   => "WARNING",
+            self::NOTICE    => "NOTICE",
+            self::INFO      => "INFO",
+            self::DEBUG     => "DEBUG",
+        ];
+    }
 
-    protected static $ValueMap = [
-        "emergency" => self::EMERGENCY,
-        "alert"     => self::ALERT,
-        "critical"  => self::CRITICAL,
-        "error"     => self::ERROR,
-        "warning"   => self::WARNING,
-        "notice"    => self::NOTICE,
-        "info"      => self::INFO,
-        "debug"     => self::DEBUG,
-    ];
+    protected static function getValueMap(): array
+    {
+        return [
+            "emergency" => self::EMERGENCY,
+            "alert"     => self::ALERT,
+            "critical"  => self::CRITICAL,
+            "error"     => self::ERROR,
+            "warning"   => self::WARNING,
+            "notice"    => self::NOTICE,
+            "info"      => self::INFO,
+            "debug"     => self::DEBUG,
+        ];
+    }
 
     public static function toCode(int $level, int $width = 1): string
     {
-        if (!array_key_exists($level, self::$NameMap))
+        if (!array_key_exists($level, self::getNameMap()))
         {
             throw new UnexpectedValueException("Invalid ConsoleLevel: $level");
         }

@@ -554,7 +554,7 @@ EOF;
                 !empty($invalid = array_diff(Convert::toArray($value), $option->AllowedValues)))
             {
                 $this->optionError("invalid {$option->DisplayName} "
-                    . Convert::numberToNoun(count($invalid), "value") . ": " . implode(", ", $invalid));
+                    . Convert::plural(count($invalid), "value") . ": " . implode(", ", $invalid));
             }
         }
 
