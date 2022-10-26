@@ -20,7 +20,7 @@ use Lkrms\Curler\CurlerHeaders;
  * @method static $this nextData(?array $value) Data to send in the body of the next request
  * @method static $this nextHeaders(?CurlerHeaders $value) Replaces the next request's HTTP headers
  * @method static CurlerPage go() Return a new CurlerPage object
- * @method static CurlerPage resolve(CurlerPage|CurlerPageBuilder $object) Resolve a CurlerPageBuilder or CurlerPage object to a CurlerPage object
+ * @method static CurlerPage|null resolve(CurlerPage|CurlerPageBuilder|null $object) Resolve a CurlerPageBuilder or CurlerPage object to a CurlerPage object
  *
  * @uses CurlerPage
  * @lkrms-generate-command lk-util generate builder --class='Lkrms\Curler\Support\CurlerPage' --static-builder='build' --terminator='go' --static-resolver='resolve'

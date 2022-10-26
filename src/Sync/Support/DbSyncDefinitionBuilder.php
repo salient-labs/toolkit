@@ -23,7 +23,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method static $this dataToEntityPipeline(?IPipelineImmutable $value) A pipeline that converts data received from the provider to an associative array from which the entity can be instantiated, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$DataToEntityPipeline})
  * @method static $this entityToDataPipeline(?IPipelineImmutable $value) A pipeline that converts a serialized instance of the entity to data compatible with the provider, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$EntityToDataPipeline})
  * @method static DbSyncDefinition go() Return a new DbSyncDefinition object
- * @method static DbSyncDefinition resolve(DbSyncDefinition|DbSyncDefinitionBuilder $object) Resolve a DbSyncDefinitionBuilder or DbSyncDefinition object to a DbSyncDefinition object
+ * @method static DbSyncDefinition|null resolve(DbSyncDefinition|DbSyncDefinitionBuilder|null $object) Resolve a DbSyncDefinitionBuilder or DbSyncDefinition object to a DbSyncDefinition object
  *
  * @uses DbSyncDefinition
  * @lkrms-generate-command lk-util generate builder --class='Lkrms\Sync\Support\DbSyncDefinition' --static-builder='build' --terminator='go' --static-resolver='resolve'

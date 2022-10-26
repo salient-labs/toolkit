@@ -21,7 +21,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method static $this path(Closure|string|null $value) Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): string` (see {@see HttpSyncDefinition::$Path})
  * @method static $this query(Closure|array|null $value) Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): ?array` (see {@see HttpSyncDefinition::$Query})
  * @method static $this headersCallback(?Closure $value) Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?CurlerHeaders` (see {@see HttpSyncDefinition::$HeadersCallback})
- * @method static $this request(Closure|HttpSyncDefinitionRequest|null $value) If set, `$path` and `$query` are ignored. Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): HttpSyncDefinitionRequest` (see {@see HttpSyncDefinition::$Request})
+ * @method static $this request(Closure|HttpSyncDefinitionRequest|null $value) If set, `$path`, `$query` and `$headersCallback` are ignored. Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): HttpSyncDefinitionRequest` (see {@see HttpSyncDefinition::$Request})
  * @method static $this conformity(int $value) See {@see SyncDefinition::$Conformity}
  * @method static $this expiry(?int $value) See {@see HttpSyncDefinition::$Expiry}
  * @method static $this methodMap(array $value) See {@see HttpSyncDefinition::$MethodMap}
@@ -29,7 +29,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method static $this dataToEntityPipeline(?IPipelineImmutable $value) A pipeline that converts data received from the provider to an associative array from which the entity can be instantiated, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$DataToEntityPipeline})
  * @method static $this entityToDataPipeline(?IPipelineImmutable $value) A pipeline that converts a serialized instance of the entity to data compatible with the provider, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$EntityToDataPipeline})
  * @method static HttpSyncDefinition go() Return a new HttpSyncDefinition object
- * @method static HttpSyncDefinition resolve(HttpSyncDefinition|HttpSyncDefinitionBuilder $object) Resolve a HttpSyncDefinitionBuilder or HttpSyncDefinition object to a HttpSyncDefinition object
+ * @method static HttpSyncDefinition|null resolve(HttpSyncDefinition|HttpSyncDefinitionBuilder|null $object) Resolve a HttpSyncDefinitionBuilder or HttpSyncDefinition object to a HttpSyncDefinition object
  *
  * @uses HttpSyncDefinition
  * @lkrms-generate-command lk-util generate builder --class='Lkrms\Sync\Support\HttpSyncDefinition' --static-builder='build' --terminator='go' --static-resolver='resolve'

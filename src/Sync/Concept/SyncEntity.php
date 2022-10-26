@@ -125,6 +125,24 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         return $ctx;
     }
 
+    /**
+     * @param int|string|null $id
+     */
+    final public static function getEntityResourceName($id = null): string
+    {
+        return Convert::classToBasename(static::class)
+            . (is_null($id) ? "" : "($id)");
+    }
+
+    /**
+     * @param int|string|null $id
+     */
+    final public static function getEntityResourcePath($id = null): string
+    {
+        return str_replace("\\", "/", static::class)
+            . (is_null($id) ? "" : "($id)");
+    }
+
     final public function getResourceName(): string
     {
         return Convert::classToBasename(static::class) . "({$this->Id})";
@@ -393,14 +411,9 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
 
     final protected function getSerializeRules(): SerializeRules
     {
-        $rules = $this->_getSerializeRules(SerializeRules::build());
-
-        if ($rules instanceof SerializeRulesBuilder)
-        {
-            return $rules->go();
-        }
-
-        return $rules;
+        return SerializeRulesBuilder::resolve(
+            $this->_getSerializeRules(SerializeRules::build())
+        );
     }
 
     /**

@@ -319,4 +319,13 @@ class HttpSyncDefinition extends SyncDefinition
         return $curler;
     }
 
+    /**
+     * Use a fluent interface to create a new HttpSyncDefinition object
+     *
+     */
+    public static function build(): HttpSyncDefinitionBuilder
+    {
+        return new HttpSyncDefinitionBuilder();
+    }
+
 }

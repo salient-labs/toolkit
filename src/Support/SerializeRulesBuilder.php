@@ -18,7 +18,7 @@ use Lkrms\Contract\IContainer;
  * @method static $this idKeyCallback(?callable $value) A callback that returns the key to use when a nested object is replaced with its identifier during serialization (see {@see SerializeRules::$IdKeyCallback})
  * @method static $this onlySerializePlaceholders(bool $value = true) Replace nested objects with placeholders? (see {@see SerializeRules::$OnlySerializePlaceholders})
  * @method static SerializeRules go() Return a new SerializeRules object
- * @method static SerializeRules resolve(SerializeRules|SerializeRulesBuilder $object) Resolve a SerializeRulesBuilder or SerializeRules object to a SerializeRules object
+ * @method static SerializeRules|null resolve(SerializeRules|SerializeRulesBuilder|null $object) Resolve a SerializeRulesBuilder or SerializeRules object to a SerializeRules object
  *
  * @uses SerializeRules
  * @lkrms-generate-command lk-util generate builder --class='Lkrms\Support\SerializeRules' --static-builder='build' --terminator='go' --static-resolver='resolve'

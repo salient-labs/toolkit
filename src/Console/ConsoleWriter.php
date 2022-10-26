@@ -50,6 +50,11 @@ final class ConsoleWriter implements ReceivesFacade
     private $GroupLevel = -1;
 
     /**
+     * @var string[]
+     */
+    private $GroupMessageStack = [];
+
+    /**
      * @var int
      */
     private $Errors = 0;
@@ -375,9 +380,9 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function error(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function error(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true)
     {
-        $this->Errors++;
+        !$count || $this->Errors++;
         return $this->write(Level::ERROR, $msg1, $msg2, " !! ", $ex);
     }
 
@@ -386,9 +391,9 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function errorOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function errorOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true)
     {
-        $this->Errors++;
+        !$count || $this->Errors++;
         return $this->writeOnce(Level::ERROR, $msg1, $msg2, " !! ", $ex);
     }
 
@@ -397,9 +402,9 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function warn(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function warn(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true)
     {
-        $this->Warnings++;
+        !$count || $this->Warnings++;
         return $this->write(Level::WARNING, $msg1, $msg2, "  ! ", $ex);
     }
 
@@ -408,9 +413,9 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function warnOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function warnOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true)
     {
-        $this->Warnings++;
+        !$count || $this->Warnings++;
         return $this->writeOnce(Level::WARNING, $msg1, $msg2, "  ! ", $ex);
     }
 
@@ -512,6 +517,7 @@ final class ConsoleWriter implements ReceivesFacade
     public function group(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
     {
         $this->GroupLevel++;
+        $this->GroupMessageStack[] = Convert::sparseToString(" ", [$msg1, $msg2]);
         return $this->write(Level::NOTICE, $msg1, $msg2, ">>> ", $ex);
     }
 
@@ -521,8 +527,15 @@ final class ConsoleWriter implements ReceivesFacade
      * @return $this
      * @see ConsoleWriter::group()
      */
-    public function groupEnd()
+    public function groupEnd(bool $printMessage = false)
     {
+        if (($msg = array_pop($this->GroupMessageStack)) && $printMessage)
+        {
+            $msg = ConsoleFormatter::removeTags($msg);
+            $this->write(Level::NOTICE, "", $msg ? "{ $msg } complete" : null, "<<< ");
+        }
+        $this->out("", Level::NOTICE);
+
         if ($this->GroupLevel > -1)
         {
             $this->GroupLevel--;
@@ -605,7 +618,7 @@ final class ConsoleWriter implements ReceivesFacade
             {
                 $_msg2 = (strpos($msg2, "\n") !== false
                     ? str_replace("\n", "\n" . str_repeat(" ", $margin + $indent + 2), "\n" . ltrim($_msg2))
-                    : " " . $_msg2);
+                    : ($_msg1 ? " " : "") . $_msg2);
             }
 
             $message = $target->getMessageFormat($level)->apply($_msg1, $_msg2, $prefix);

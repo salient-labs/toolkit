@@ -105,4 +105,13 @@ class DbSyncDefinition extends SyncDefinition
         return $this->Closures[$operation] = $closure;
     }
 
+    /**
+     * Use a fluent interface to create a new DbSyncDefinition object
+     *
+     */
+    public static function build(): DbSyncDefinitionBuilder
+    {
+        return new DbSyncDefinitionBuilder();
+    }
+
 }

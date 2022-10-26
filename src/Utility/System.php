@@ -20,12 +20,12 @@ final class System
 
     public function getMemoryUsage(): int
     {
-        return memory_get_usage(true);
+        return memory_get_usage();
     }
 
     public function getPeakMemoryUsage(): int
     {
-        return memory_get_peak_usage(true);
+        return memory_get_peak_usage();
     }
 
     /**
@@ -76,6 +76,15 @@ final class System
         }
 
         return $_SERVER["SCRIPT_FILENAME"];
+    }
+
+    /**
+     * @param int $extLimit If set, remove up to `$extLimit` extensions from the
+     * program's basename as per {@see Conversions::pathToBasename()}.
+     */
+    public function getProgramBasename(int $extLimit = 0): string
+    {
+        return Convert::pathToBasename($_SERVER["SCRIPT_FILENAME"], $extLimit);
     }
 
     /**

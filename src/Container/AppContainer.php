@@ -201,9 +201,7 @@ class AppContainer extends Container implements IReadable
      */
     final public function logConsoleMessages(?bool $debug = true, ?string $name = null)
     {
-        $name = ($name
-            ? basename($name, ".log")
-            : Convert::pathToBasename(Sys::getProgramName(), 1));
+        $name = ($name ? basename($name, ".log") : Sys::getProgramBasename(1));
         Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log"), ConsoleLevels::ALL);
         if ($debug || (is_null($debug) && Env::debug()))
         {
@@ -234,6 +232,40 @@ class AppContainer extends Container implements IReadable
         {
             throw new RuntimeException("Sync database already loaded: $file");
         }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    final public function unloadSync(bool $silent = false)
+    {
+        if (!Sync::isLoaded())
+        {
+            return $this;
+        }
+
+        Sync::close();
+
+        if ($silent)
+        {
+            return $this;
+        }
+
+        if ($count = count($errors = Sync::getErrors()))
+        {
+            // Print an error message without incrementing `Console`'s error
+            // counter
+            Console::error(
+                Convert::plural($count, "sync error", null, true) . " recorded:",
+                "\n" . $errors, null, false
+            );
+
+            return $this;
+        }
+
+        Console::info("No sync errors recorded");
 
         return $this;
     }

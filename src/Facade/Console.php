@@ -21,13 +21,13 @@ use Throwable;
  * @method static ConsoleWriter count(int $level) Increment the message counter for $level without printing anything (see {@see ConsoleWriter::count()})
  * @method static ConsoleWriter debug(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, int $depth = 0) Print "--- {CALLER} $msg1 $msg2" with level DEBUG (see {@see ConsoleWriter::debug()})
  * @method static ConsoleWriter debugOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, int $depth = 0) Print "--- {CALLER} $msg1 $msg2" with level DEBUG once per run (see {@see ConsoleWriter::debugOnce()})
- * @method static ConsoleWriter error(string $msg1, ?string $msg2 = null, ?Throwable $ex = null) Print " !! $msg1 $msg2" with level ERROR (see {@see ConsoleWriter::error()})
- * @method static ConsoleWriter errorOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null) Print " !! $msg1 $msg2" with level ERROR once per run (see {@see ConsoleWriter::errorOnce()})
+ * @method static ConsoleWriter error(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print " !! $msg1 $msg2" with level ERROR (see {@see ConsoleWriter::error()})
+ * @method static ConsoleWriter errorOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print " !! $msg1 $msg2" with level ERROR once per run (see {@see ConsoleWriter::errorOnce()})
  * @method static ConsoleWriter exception(Throwable $exception) Report an uncaught exception (see {@see ConsoleWriter::exception()})
  * @method static int getErrors() Get the number of errors reported so far (see {@see ConsoleWriter::getErrors()})
  * @method static int getWarnings() Get the number of warnings reported so far (see {@see ConsoleWriter::getWarnings()})
  * @method static ConsoleWriter group(string $msg1, ?string $msg2 = null, ?Throwable $ex = null) Create a new message group and print "<<< $msg1 $msg2" with level NOTICE (see {@see ConsoleWriter::group()})
- * @method static ConsoleWriter groupEnd() Close the most recently created message group (see {@see ConsoleWriter::groupEnd()})
+ * @method static ConsoleWriter groupEnd(bool $printMessage = false) Close the most recently created message group (see {@see ConsoleWriter::groupEnd()})
  * @method static ConsoleWriter info(string $msg1, ?string $msg2 = null, ?Throwable $ex = null) Print "==> $msg1 $msg2" with level NOTICE (see {@see ConsoleWriter::info()})
  * @method static ConsoleWriter infoOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null) Print "==> $msg1 $msg2" with level NOTICE once per run (see {@see ConsoleWriter::infoOnce()})
  * @method static ConsoleWriter log(string $msg1, ?string $msg2 = null, ?Throwable $ex = null) Print " -> $msg1 $msg2" with level INFO (see {@see ConsoleWriter::log()})
@@ -41,8 +41,8 @@ use Throwable;
  * @method static ConsoleWriter registerTarget(ConsoleTarget $target, array $levels = ConsoleLevels::ALL_DEBUG) See {@see ConsoleWriter::registerTarget()}
  * @method static ConsoleWriter summary(string $finishedText = 'Command finished', string $successText = 'without errors') Print a "command finished" message with a summary of errors and warnings (see {@see ConsoleWriter::summary()})
  * @method static ConsoleWriter tty(string $msg, int $level = Level::INFO) Print "$msg" to TTY targets (see {@see ConsoleWriter::tty()})
- * @method static ConsoleWriter warn(string $msg1, ?string $msg2 = null, ?Throwable $ex = null) Print "  ! $msg1 $msg2" with level WARNING (see {@see ConsoleWriter::warn()})
- * @method static ConsoleWriter warnOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null) Print "  ! $msg1 $msg2" with level WARNING once per run (see {@see ConsoleWriter::warnOnce()})
+ * @method static ConsoleWriter warn(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print "  ! $msg1 $msg2" with level WARNING (see {@see ConsoleWriter::warn()})
+ * @method static ConsoleWriter warnOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print "  ! $msg1 $msg2" with level WARNING once per run (see {@see ConsoleWriter::warnOnce()})
  *
  * @uses ConsoleWriter
  * @lkrms-generate-command lk-util generate facade --class='Lkrms\Console\ConsoleWriter' --generate='Lkrms\Facade\Console'
