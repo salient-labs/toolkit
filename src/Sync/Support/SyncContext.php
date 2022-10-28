@@ -96,4 +96,17 @@ final class SyncContext extends ProvidableContext implements ISyncContext
         return $this->Filter;
     }
 
+    public function claimFilterValue(string $key)
+    {
+        if (array_key_exists($key, $this->Filter ?: []))
+        {
+            $value = $this->Filter[$key];
+            unset($this->Filter[$key]);
+
+            return $value;
+        }
+
+        return null;
+    }
+
 }

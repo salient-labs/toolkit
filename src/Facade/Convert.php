@@ -22,7 +22,7 @@ use Lkrms\Utility\Conversions;
  * @method static bool isLoaded() Return true if an underlying Conversions instance has been loaded
  * @method static void unload() Clear the underlying Conversions instance
  * @method static string arrayToCode(array $array, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::arrayToCode()}
- * @method static string classToBasename(string $class, ?string $suffix = null) Remove the namespace and an optional suffix from a class name (see {@see Conversions::classToBasename()})
+ * @method static string classToBasename(string $class, string ...$suffixes) Remove the namespace and the first matched suffix from a class name (see {@see Conversions::classToBasename()})
  * @method static string classToNamespace(string $class) Return the namespace of a class (see {@see Conversions::classToNamespace()})
  * @method static string dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null) A more API-friendly http_build_query (see {@see Conversions::dataToQuery()})
  * @method static mixed emptyToNull(mixed $value) If a value is 'falsey', make it null (see {@see Conversions::emptyToNull()})

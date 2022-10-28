@@ -19,6 +19,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method static $this operations(int[] $value) See {@see DbSyncDefinition::$Operations}
  * @method static $this table(?string $value) See {@see DbSyncDefinition::$Table}
  * @method static $this conformity(int $value) See {@see SyncDefinition::$Conformity}
+ * @method static $this filterPolicy(int $value) One of the {@see SyncFilterPolicy} values.  To prevent, say, a filtered {@see SyncOperation::READ_LIST} request returning every entity of that type when a provider doesn't use the filter, the default policy is {@see SyncFilterPolicy::THROW_EXCEPTION}.  See {@see \Lkrms\Sync\Contract\ISyncContext::withArgs()} for more information (see {@see SyncDefinition::$FilterPolicy})
  * @method static $this overrides(array $value) See {@see DbSyncDefinition::$Overrides}
  * @method static $this dataToEntityPipeline(?IPipelineImmutable $value) A pipeline that converts data received from the provider to an associative array from which the entity can be instantiated, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$DataToEntityPipeline})
  * @method static $this entityToDataPipeline(?IPipelineImmutable $value) A pipeline that converts a serialized instance of the entity to data compatible with the provider, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$EntityToDataPipeline})

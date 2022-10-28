@@ -314,19 +314,20 @@ final class Conversions
     }
 
     /**
-     * Remove the namespace and an optional suffix from a class name
+     * Remove the namespace and the first matched suffix from a class name
      *
-     * @param string $class
-     * @param string|null $suffix Removed from the end of `$class` if set.
-     * @return string
      */
-    public function classToBasename(string $class, string $suffix = null): string
+    public function classToBasename(string $class, string ...$suffixes): string
     {
         $class = substr(strrchr("\\" . $class, "\\"), 1);
-        if ($suffix && ($pos = strrpos($class, $suffix)) > 0)
+        while (!is_null($suffix = array_shift($suffixes)))
         {
-            return substr($class, 0, $pos);
+            if ($suffix && ($pos = strrpos($class, $suffix)) > 0)
+            {
+                return substr($class, 0, $pos);
+            }
         }
+
         return $class;
     }
 

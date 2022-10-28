@@ -14,6 +14,7 @@ use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\SyncOperation;
+use RuntimeException;
 use UnexpectedValueException;
 
 class HttpSyncDefinition extends SyncDefinition
@@ -87,9 +88,9 @@ class HttpSyncDefinition extends SyncDefinition
      * @param Closure|HttpSyncDefinitionRequest|null $request If set, `$path`, `$query` and `$headersCallback` are ignored. Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): HttpSyncDefinitionRequest`
      * @param array<int,Closure> $overrides
      */
-    public function __construct(string $entity, HttpSyncProvider $provider, array $operations = [], $path = null, $query = null, ?Closure $headersCallback = null, $request = null, int $conformity = ArrayKeyConformity::NONE, ?int $expiry = -1, array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP, array $overrides = [], ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
+    public function __construct(string $entity, HttpSyncProvider $provider, array $operations = [], $path = null, $query = null, ?Closure $headersCallback = null, $request = null, int $conformity = ArrayKeyConformity::NONE, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, ?int $expiry = -1, array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP, array $overrides = [], ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
     {
-        parent::__construct($entity, $provider, $conformity, $dataToEntityPipeline, $entityToDataPipeline);
+        parent::__construct($entity, $provider, $conformity, $filterPolicy, $dataToEntityPipeline, $entityToDataPipeline);
 
         // Combine overridden operations with $operations and remove invalid
         // values
@@ -207,10 +208,12 @@ class HttpSyncDefinition extends SyncDefinition
         }
 
         $args = $request instanceof HttpSyncDefinitionRequest ? [
+            $ctx,
             $request->Path,
             $request->Query,
             $request->HeadersCallback,
         ] : [
+            $ctx,
             $this->getPath($operation, $ctx, ...$args),
             $this->getQuery($operation, $ctx, ...$args),
             $this->HeadersCallback,
@@ -218,9 +221,9 @@ class HttpSyncDefinition extends SyncDefinition
 
         // If HeadersCallback is set, wrap it in a closure to preserve
         // $operation, $ctx and $args
-        if ($args[2])
+        if ($args[3])
         {
-            $args[2] = fn(Curler $curler) => ($args[2])($curler, $operation, $ctx, ...$args);
+            $args[3] = fn(Curler $curler) => ($args[3])($curler, $operation, $ctx, ...$args);
         }
 
         return $args;
@@ -253,7 +256,7 @@ class HttpSyncDefinition extends SyncDefinition
     /**
      * @return Closure
      * ```php
-     * fn(string $path, ?array $query, ?Closure $headersCallback, ?array $payload)
+     * fn(SyncContext $ctx, string $path, ?array $query, ?Closure $headersCallback, ?array $payload)
      * ```
      */
     private function getCurlerOperationClosure(int $operation): Closure
@@ -261,54 +264,45 @@ class HttpSyncDefinition extends SyncDefinition
         // Pagination with operations other than READ_LIST via GET or POST is
         // too risky to implement here, but providers can add their own support
         // for pagination with other operations and/or HTTP methods
-        if ($operation === SyncOperation::READ_LIST)
+        switch ([$operation, $this->MethodMap[$operation] ?? null])
         {
-            switch ($this->MethodMap[$operation] ?? null)
-            {
-                case HttpRequestMethod::GET:
-                    return function (string $path, ?array $query, ?Closure $headers)
-                    {
-                        $curler = $this->getCurler($path, $headers);
-                        return $curler->Pager ? $curler->getP($query) : $curler->get($query);
-                    };
+            case [SyncOperation::READ_LIST, HttpRequestMethod::GET] :
+                    $runner = fn(Curler $curler, ?array $query) => $curler->Pager ? $curler->getP($query) : $curler->get($query);
+                    break;
 
-                case HttpRequestMethod::POST:
-                    return function (string $path, ?array $query, ?Closure $headers, ?array $payload)
-                    {
-                        $curler = $this->getCurler($path, $headers);
-                        return $curler->Pager ? $curler->postP($payload, $query) : $curler->post($payload, $query);
-                    };
-            }
-        }
+            case [SyncOperation::READ_LIST, HttpRequestMethod::POST] :
+                    $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->Pager ? $curler->postP($payload, $query) : $curler->post($payload, $query);
+                    break;
 
-        switch ($this->MethodMap[$operation] ?? null)
-        {
-            case HttpRequestMethod::GET:
-                return fn(string $path, ?array $query, ?Closure $headers): array =>
-                    $this->getCurler($path, $headers)->get($query);
+            case [$operation, HttpRequestMethod::GET] :
+                    $runner = fn(Curler $curler, ?array $query) => $curler->get($query);
+                    break;
 
-            case HttpRequestMethod::POST:
-                return fn(string $path, ?array $query, ?Closure $headers, ?array $payload): array =>
-                    $this->getCurler($path, $headers)->post($payload, $query);
+            case [$operation, HttpRequestMethod::POST] :
+                    $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->post($payload, $query);
+                    break;
 
-            case HttpRequestMethod::PUT:
-                return fn(string $path, ?array $query, ?Closure $headers, ?array $payload): array =>
-                    $this->getCurler($path, $headers)->put($payload, $query);
+            case [$operation, HttpRequestMethod::PUT] :
+                    $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->put($payload, $query);
+                    break;
 
-            case HttpRequestMethod::PATCH:
-                return fn(string $path, ?array $query, ?Closure $headers, ?array $payload): array =>
-                    $this->getCurler($path, $headers)->patch($payload, $query);
+            case [$operation, HttpRequestMethod::PATCH] :
+                    $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->patch($payload, $query);
+                    break;
 
-            case HttpRequestMethod::DELETE:
-                return fn(string $path, ?array $query, ?Closure $headers, ?array $payload): array =>
-                    $this->getCurler($path, $headers)->delete($payload, $query);
+            case [$operation, HttpRequestMethod::DELETE] :
+                    $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->delete($payload, $query);
+                    break;
 
             default:
                 throw new UnexpectedValueException("Invalid SyncOperation or method map: $operation");
         }
+
+        return fn(SyncContext $ctx, string $path, ?array $query, ?Closure $headersCallback, ?array $payload = null) =>
+            $this->runCurlerOperation($runner, $operation, $ctx, $path, $query, $headersCallback, $payload);
     }
 
-    private function getCurler(string $path, ?Closure $headers): Curler
+    private function runCurlerOperation(Closure $runner, int $operation, SyncContext $ctx, string $path, ?array $query, ?Closure $headers, ?array $payload)
     {
         $curler = $this->Provider->getCurler($path, $this->Expiry);
         if ($headers && ($headers = $headers($curler)))
@@ -316,7 +310,28 @@ class HttpSyncDefinition extends SyncDefinition
             $curler->replaceHeaders($headers);
         }
 
-        return $curler;
+        // $this->HeadersCallback may claim values from the filter, so this is
+        // the last and only place to enforce the unclaimed value policy
+        if (SyncFilterPolicy::IGNORE === $this->FilterPolicy || !($filter = $ctx->getFilter()))
+        {
+            return $runner($curler, $query, $payload);
+        }
+
+        switch ($this->FilterPolicy)
+        {
+            case SyncFilterPolicy::THROW_EXCEPTION:
+                throw new RuntimeException(get_class($this->Provider)
+                    . " did not claim '" . implode("', '", array_keys($filter))
+                    . "' from {$this->Entity} filter");
+
+            case SyncFilterPolicy::RETURN_EMPTY:
+                return SyncOperation::isList($operation) ? [] : null;
+
+            case SyncFilterPolicy::FILTER_LOCALLY:
+                throw new RuntimeException("SyncFilterPolicy::FILTER_LOCALLY is not implemented yet");
+        }
+
+        throw new UnexpectedValueException("Invalid SyncFilterPolicy: {$this->FilterPolicy}");
     }
 
     /**

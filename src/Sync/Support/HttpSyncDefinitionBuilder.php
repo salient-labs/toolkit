@@ -23,6 +23,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method static $this headersCallback(?Closure $value) Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?CurlerHeaders` (see {@see HttpSyncDefinition::$HeadersCallback})
  * @method static $this request(Closure|HttpSyncDefinitionRequest|null $value) If set, `$path`, `$query` and `$headersCallback` are ignored. Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): HttpSyncDefinitionRequest` (see {@see HttpSyncDefinition::$Request})
  * @method static $this conformity(int $value) See {@see SyncDefinition::$Conformity}
+ * @method static $this filterPolicy(int $value) One of the {@see SyncFilterPolicy} values.  To prevent, say, a filtered {@see SyncOperation::READ_LIST} request returning every entity of that type when a provider doesn't use the filter, the default policy is {@see SyncFilterPolicy::THROW_EXCEPTION}.  See {@see \Lkrms\Sync\Contract\ISyncContext::withArgs()} for more information (see {@see SyncDefinition::$FilterPolicy})
  * @method static $this expiry(?int $value) See {@see HttpSyncDefinition::$Expiry}
  * @method static $this methodMap(array $value) See {@see HttpSyncDefinition::$MethodMap}
  * @method static $this overrides(array $value) See {@see HttpSyncDefinition::$Overrides}

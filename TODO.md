@@ -29,6 +29,7 @@
   - [ ] Track foreign keys between backends
 - [ ] Add `SyncException` as a base class
 - [ ] Add `SyncEntityProvider::resolve()` and `fuzzyResolve()`
+- [ ] Add `SyncStore::checkHeartbeats()`
 
 ### Cli
 - [ ] Implement shared/default command options
