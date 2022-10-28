@@ -13,7 +13,7 @@ use RuntimeException;
  * Implements ICurlerPage
  *
  */
-class CurlerPage implements ICurlerPage
+final class CurlerPage implements ICurlerPage
 {
     /**
      * @var array
@@ -40,6 +40,14 @@ class CurlerPage implements ICurlerPage
      */
     private $NextHeaders;
 
+    /**
+     * @param array $entities Data extracted from the upstream response
+     * @param Curler $curler The Curler instance that retrieved the page
+     * @param null|string $nextUrl The URL of the next page, including the query component (if any)
+     * @param null|bool $isLastPage Set if no more data is available
+     * @param null|array $nextData Data to send in the body of the next request
+     * @param null|CurlerHeaders $nextHeaders Replaces the next request's HTTP headers
+     */
     public function __construct(array $entities, Curler $curler, ?string $nextUrl = null, ?bool $isLastPage = null, ?array $nextData = null, ?CurlerHeaders $nextHeaders = null)
     {
         $this->Entities   = $entities;

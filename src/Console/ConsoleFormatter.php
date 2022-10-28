@@ -47,21 +47,22 @@ REGEX;
 
     private $PregReplace = [];
 
-    public function __construct(ConsoleTarget $target)
+    /**
+     * @var ConsoleFormatter|null
+     */
+    private static $DefaultInstance;
+
+    public function __construct(?ConsoleTarget $target)
     {
         foreach (self::REGEX_MAP as $tag => $regex)
         {
             $this->PregReplace[0][] = "/" . $regex . "/u";
-            $this->PregReplace[1][] = $target->getTagFormat($tag)->apply('$1');
+            $this->PregReplace[1][] = ($target ? $target->getTagFormat($tag) : new ConsoleFormat())->apply('$1');
         }
     }
 
     /**
      * Apply inline formatting to a string
-     *
-     * If `$colour` is `true`, replace inline formatting with escape sequences
-     * to set and subsequently clear the relevant terminal display attributes,
-     * otherwise remove inline formatting.
      *
      * The following Markdown-like syntax is supported:
      *
@@ -109,4 +110,18 @@ REGEX;
         return str_replace(["\\", "`"], ["\\\\", "\\`"], $string);
     }
 
+    /**
+     * Remove inline formatting from a string
+     *
+     */
+    public static function removeTags(string $string): string
+    {
+        return self::getDefaultInstance()->format($string);
+    }
+
+    private static function getDefaultInstance(): self
+    {
+        return self::$DefaultInstance
+            ?: (self::$DefaultInstance = new self(null));
+    }
 }

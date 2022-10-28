@@ -47,6 +47,15 @@ final class Conversions
     public const IDENTIFIER_CASE_CAMEL = 3;
 
     /**
+     * Cast a value to an integer, preserving null
+     *
+     */
+    public function toIntOrNull($value): ?int
+    {
+        return is_null($value) ? null : (int)$value;
+    }
+
+    /**
      * If a value isn't an array, make it the first element of one
      *
      * @param mixed $value
@@ -77,17 +86,44 @@ final class Conversions
     }
 
     /**
-     * Get the first nested value that isn't a single-element array
+     * Recursively remove outer single-element arrays
      *
+     * Example:
+     *
+     * ```php
+     * var_export([
+     *     Convert::flatten([[['id' => 1]]]),
+     *     Convert::flatten(['nested scalar']),
+     *     Convert::flatten(['nested associative' => 1]),
+     *     Convert::flatten('plain scalar'),
+     * ]);
+     * ```
+     *
+     * Output:
+     *
+     * ```php
+     * array (
+     *   0 =>
+     *   array (
+     *     'id' => 1,
+     *   ),
+     *   1 => 'nested scalar',
+     *   2 =>
+     *   array (
+     *     'nested associative' => 1,
+     *   ),
+     *   3 => 'plain scalar',
+     * )
+     * ```
      */
-    public function toInner($value)
+    public function flatten($value)
     {
-        if (!is_array($value) || count($value) !== 1)
+        if (!is_array($value) || count($value) !== 1 || array_key_first($value) !== 0)
         {
             return $value;
         }
 
-        return $this->toInner(reset($value));
+        return $this->flatten(reset($value));
     }
 
     /**
@@ -278,19 +314,20 @@ final class Conversions
     }
 
     /**
-     * Remove the namespace and an optional suffix from a class name
+     * Remove the namespace and the first matched suffix from a class name
      *
-     * @param string $class
-     * @param string|null $suffix Removed from the end of `$class` if set.
-     * @return string
      */
-    public function classToBasename(string $class, string $suffix = null): string
+    public function classToBasename(string $class, string ...$suffixes): string
     {
         $class = substr(strrchr("\\" . $class, "\\"), 1);
-        if ($suffix && ($pos = strrpos($class, $suffix)) > 0)
+        while (!is_null($suffix = array_shift($suffixes)))
         {
-            return substr($class, 0, $pos);
+            if ($suffix && ($pos = strrpos($class, $suffix)) > 0)
+            {
+                return substr($class, 0, $pos);
+            }
         }
+
         return $class;
     }
 
@@ -453,31 +490,22 @@ final class Conversions
     }
 
     /**
-     * If a number is 1, return $singular, otherwise return $plural
+     * If $number is 1, return $singular, otherwise return $plural
      *
-     * @param int $number
-     * @param string $singular
-     * @param string|null $plural If `null`, `{$singular}s` will be used instead
-     * @param bool $includeNumber Return `$number $noun` instead of `$noun`
-     * @return string
+     * @param string|null $plural `"{$singular}s"` is used if `$plural` is
+     * `null`.
+     * @param bool $includeNumber If `true`, `"$number $noun"` is returned
+     * instead of `"$noun"`.
      */
-    public function numberToNoun(int $number, string $singular, string $plural = null, bool $includeNumber = false): string
+    public function plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false): string
     {
-        if ($number == 1)
-        {
-            $noun = $singular;
-        }
-        else
-        {
-            $noun = is_null($plural) ? $singular . "s" : $plural;
-        }
+        $noun = ($number == 1
+            ? $singular
+            : (is_null($plural) ? $singular . "s" : $plural));
 
-        if ($includeNumber)
-        {
-            return "$number $noun";
-        }
-
-        return $noun;
+        return $includeNumber
+            ? "$number $noun"
+            : $noun;
     }
 
     /**
@@ -873,4 +901,13 @@ final class Conversions
         }
         return $code . "]";
     }
+
+    /**
+     * @deprecated Use {@see Conversions::plural()} instead
+     */
+    public function numberToNoun(int $number, string $singular, ?string $plural = null, bool $includeNumber = false): string
+    {
+        return $this->plural($number, $singular, $plural, $includeNumber);
+    }
+
 }

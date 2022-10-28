@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
+use Lkrms\Console\ConsoleLevel as Level;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
@@ -22,12 +23,12 @@ use UnexpectedValueException;
 final class SyncStore extends SqliteStore
 {
     /**
-     * @var int
+     * @var int|null
      */
     private $RunId;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $RunUuid;
 
@@ -58,20 +59,46 @@ final class SyncStore extends SqliteStore
     private $Errors;
 
     /**
+     * @var int
+     */
+    private $ErrorCount = 0;
+
+    /**
+     * @var int
+     */
+    private $WarningCount = 0;
+
+    /**
+     * @var bool
+     */
+    private $IsLoaded = false;
+
+    /**
+     * @var string|null
+     */
+    private $Command;
+
+    /**
+     * @var string[]|null
+     */
+    private $Arguments;
+
+    /**
      * Initiate a "run" of sync operations
      *
      * @param string $command The canonical name of the command performing sync
      * operations (e.g. a qualified class and/or method name).
-     * @param array $arguments Arguments passed to the command.
+     * @param string[] $arguments Arguments passed to the command.
      */
     public function __construct(string $filename = ":memory:", string $command = "", array $arguments = [])
     {
         $this->requireUpsert();
 
-        $this->open($filename);
-        $this->startRun($command, $arguments);
+        $this->Errors    = new SyncErrorCollection();
+        $this->Command   = $command;
+        $this->Arguments = $arguments;
 
-        $this->Errors = new SyncErrorCollection();
+        $this->open($filename);
     }
 
     /**
@@ -94,7 +121,10 @@ CREATE TABLE IF NOT EXISTS
     run_arguments_json TEXT NOT NULL,
     started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     finished_at DATETIME,
-    exit_status INTEGER
+    exit_status INTEGER,
+    error_count INTEGER,
+    warning_count INTEGER,
+    errors_json TEXT
   );
 
 CREATE TABLE IF NOT EXISTS
@@ -117,6 +147,8 @@ CREATE TABLE IF NOT EXISTS
 SQL
         );
 
+        $this->IsLoaded = true;
+
         return $this;
     }
 
@@ -127,17 +159,32 @@ SQL
             return $this;
         }
 
+        // Don't start a run now
+        if (is_null($this->RunId))
+        {
+            return parent::close();
+        }
+
         $db  = $this->db();
         $sql = <<<SQL
-UPDATE _sync_run
-SET finished_at = CURRENT_TIMESTAMP,
-  exit_status = :exit_status
-WHERE run_uuid = :run_uuid;
+UPDATE
+  _sync_run
+SET
+  finished_at = CURRENT_TIMESTAMP,
+  exit_status = :exit_status,
+  error_count = :error_count,
+  warning_count = :warning_count,
+  errors_json = :errors_json
+WHERE
+  run_uuid = :run_uuid;
 SQL;
 
         $stmt = $db->prepare($sql);
         $stmt->bindValue(":exit_status", $exitStatus, SQLITE3_INTEGER);
         $stmt->bindValue(":run_uuid", $this->RunUuid, SQLITE3_BLOB);
+        $stmt->bindValue(":error_count", $this->ErrorCount, SQLITE3_INTEGER);
+        $stmt->bindValue(":warning_count", $this->WarningCount, SQLITE3_INTEGER);
+        $stmt->bindValue(":errors_json", json_encode($this->Errors), SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
@@ -150,6 +197,8 @@ SQL;
      */
     public function getRunId(): int
     {
+        $this->check();
+
         return $this->RunId;
     }
 
@@ -161,6 +210,8 @@ SQL;
      */
     public function getRunUuid(bool $binary = false): string
     {
+        $this->check();
+
         return $binary ? $this->RunUuid : Convert::uuidToHex($this->RunUuid);
     }
 
@@ -292,6 +343,19 @@ SQL;
         if (!$deduplicate || !$this->Errors->has($error))
         {
             $this->Errors[] = $error;
+
+            switch ($error->Level)
+            {
+                case Level::EMERGENCY:
+                case Level::ALERT:
+                case Level::CRITICAL:
+                case Level::ERROR:
+                    $this->ErrorCount++;
+                    break;
+                case Level::WARNING:
+                    $this->WarningCount++;
+                    break;
+            }
         }
         if ($toConsole)
         {
@@ -310,9 +374,16 @@ SQL;
         return clone $this->Errors;
     }
 
-    private function startRun(string $command, array $arguments)
+    protected function check(): void
     {
-        $db  = $this->db();
+        // Don't check anything until `open()` returns, otherwise tables etc.
+        // won't be created because the query below will fail, and every
+        // invocation will initiate a run, whether sync is used or not
+        if (!$this->IsLoaded || !is_null($this->RunId))
+        {
+            return;
+        }
+
         $sql = <<<SQL
 INSERT INTO _sync_run (run_uuid, run_command, run_arguments_json)
 VALUES (
@@ -322,16 +393,24 @@ VALUES (
   );
 SQL;
 
+        $db   = $this->db(true);
         $stmt = $db->prepare($sql);
         $stmt->bindValue(":run_uuid", $uuid = Compute::uuid(true), SQLITE3_BLOB);
-        $stmt->bindValue(":run_command", $command, SQLITE3_TEXT);
-        $stmt->bindValue(":run_arguments_json", json_encode($arguments), SQLITE3_TEXT);
+        $stmt->bindValue(":run_command", $this->Command, SQLITE3_TEXT);
+        $stmt->bindValue(":run_arguments_json", json_encode($this->Arguments), SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
         $id = $db->lastInsertRowID();
         $this->RunId   = $id;
         $this->RunUuid = $uuid;
+        unset($this->Command, $this->Arguments);
+    }
+
+    public function __destruct()
+    {
+        // If not closed explicitly, assume something went wrong
+        $this->close(1);
     }
 
 }

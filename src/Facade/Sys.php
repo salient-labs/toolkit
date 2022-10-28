@@ -19,6 +19,7 @@ use Lkrms\Utility\System;
  * @method static int getMemoryUsage() See {@see System::getMemoryUsage()}
  * @method static int getMemoryUsagePercent() See {@see System::getMemoryUsagePercent()}
  * @method static int getPeakMemoryUsage() See {@see System::getPeakMemoryUsage()}
+ * @method static string getProgramBasename(int $extLimit = 0) See {@see System::getProgramBasename()}
  * @method static string getProgramName(?string $relativeTo = null) See {@see System::getProgramName()}
  * @method static bool sqliteHasUpsert() Return true if the SQLite3 library supports UPSERT syntax (see {@see System::sqliteHasUpsert()})
  *

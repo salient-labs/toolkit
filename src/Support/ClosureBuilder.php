@@ -851,6 +851,7 @@ class ClosureBuilder
             $this->maybeNormalise($props, false, true),
             $props
         );
+        ksort($props);
 
         $closure = static function ($instance) use ($props)
         {
@@ -861,6 +862,15 @@ class ClosureBuilder
             }
             return $arr;
         };
+
+        if ($this->IsExtensible)
+        {
+            $closure = static function (IExtensible $instance) use ($closure)
+            {
+                $meta = $instance->getMetaProperties();
+                return ($meta ? ["@meta" => $meta] : []) + $closure($instance);
+            };
+        }
 
         return $this->SerializeClosure = $closure;
     }

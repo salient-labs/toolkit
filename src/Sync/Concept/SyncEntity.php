@@ -8,6 +8,8 @@ use Closure;
 use DateTimeInterface;
 use JsonSerializable;
 use Lkrms\Concept\ProviderEntity;
+use Lkrms\Concern\TReadable;
+use Lkrms\Concern\TWritable;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Convert;
@@ -25,22 +27,39 @@ use UnexpectedValueException;
 /**
  * Represents the state of an entity in an external system
  *
- * By default:
- * - All `protected` properties are readable and writable.
+ * The `protected` properties of a {@see SyncEntity} subclass are readable and
+ * writable by default. Override {@see TReadable::getReadable()} and/or
+ * {@see TWritable::getWritable()} to change this.
  *
- *   To change this, override {@see \Lkrms\Concern\TReadable::getReadable()}
- *   and/or {@see \Lkrms\Concern\TWritable::getWritable()}.
+ * "Magic" property methods `protected function _get<PropertyName>()` and/or
+ * `protected function _set<PropertyName>($value)` are discovered automatically
+ * and need not be returned by {@see TReadable::getReadable()} or
+ * {@see TWritable::getWritable()}.
  *
- * - {@see SyncEntity::serialize()} returns an associative array of `public`
- *   properties with property names converted to snake_case.
+ * Instances serialize to associative arrays of accessible properties with
+ * snake_case keys. Override {@see SyncEntity::_getSerializeRules()} to specify
+ * how nested entities should be serialized.
  *
  */
 abstract class SyncEntity extends ProviderEntity implements JsonSerializable
 {
     /**
+     * The unique identifier assigned to the entity by its provider
+     *
      * @var int|string|null
      */
     public $Id;
+
+    /**
+     * The unique identifier assigned to the entity by its canonical backend
+     *
+     * A {@see SyncEntity}'s canonical backend is the provider regarded as the
+     * "single source of truth" for its base type and any properties that aren't
+     * "owned" by another provider.
+     *
+     * @var int|string|null
+     */
+    public $CanonicalId;
 
     /**
      * Class name => entity type ID
@@ -110,6 +129,24 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         }
 
         return $ctx;
+    }
+
+    /**
+     * @param int|string|null $id
+     */
+    final public static function getEntityResourceName($id = null): string
+    {
+        return Convert::classToBasename(static::class)
+            . (is_null($id) ? "" : "($id)");
+    }
+
+    /**
+     * @param int|string|null $id
+     */
+    final public static function getEntityResourcePath($id = null): string
+    {
+        return str_replace("\\", "/", static::class)
+            . (is_null($id) ? "" : "($id)");
     }
 
     final public function getResourceName(): string
@@ -236,12 +273,12 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     }
 
     /**
-     * Convert the entity to an export-ready associative array
+     * Convert the entity to an associative array
      *
-     * Nested objects and lists must be returned as-is. Don't serialize anything
-     * except the entity itself.
+     * Nested objects and lists are returned as-is. Only the top-level entity is
+     * converted.
      *
-     * @return array
+     * @internal
      * @see SyncEntity::_getSerializeRules()
      */
     final protected function serialize(): array
@@ -380,14 +417,9 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
 
     final protected function getSerializeRules(): SerializeRules
     {
-        $rules = $this->_getSerializeRules(SerializeRules::build());
-
-        if ($rules instanceof SerializeRulesBuilder)
-        {
-            return $rules->go();
-        }
-
-        return $rules;
+        return SerializeRulesBuilder::resolve(
+            $this->_getSerializeRules(SerializeRules::build())
+        );
     }
 
     /**
@@ -396,7 +428,6 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * The entity's {@see SerializeRules} are applied to each `SyncEntity`
      * encountered during this recursive operation.
      *
-     * @see SyncEntity::serialize()
      * @see SyncEntity::_getSerializeRules()
      */
     final public function toArray(): array

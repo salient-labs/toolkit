@@ -24,7 +24,7 @@ use Lkrms\Contract\IContainer;
  * @method static $this delimiter(?string $value) If `$multipleAllowed` is set, use `$delimiter` to split one value into multiple values (see {@see CliOption::$Delimiter})
  * @method static $this valueCallback(?callable $value) See {@see CliOption::$ValueCallback}
  * @method static CliOption go() Return a new CliOption object
- * @method static CliOption resolve(CliOption|CliOptionBuilder $object) Resolve a CliOptionBuilder or CliOption object to a CliOption object
+ * @method static CliOption|null resolve(CliOption|CliOptionBuilder|null $object) Resolve a CliOptionBuilder or CliOption object to a CliOption object
  *
  * @uses CliOption
  * @lkrms-generate-command lk-util generate builder --class='Lkrms\Cli\CliOption' --static-builder='build' --terminator='go' --static-resolver='resolve'

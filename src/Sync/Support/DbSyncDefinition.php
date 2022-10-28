@@ -43,9 +43,9 @@ class DbSyncDefinition extends SyncDefinition
      * @param int[] $operations
      * @param array<int,Closure> $overrides
      */
-    public function __construct(string $entity, DbSyncProvider $provider, array $operations = [], ?string $table = null, int $conformity = ArrayKeyConformity::PARTIAL, array $overrides = [], ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
+    public function __construct(string $entity, DbSyncProvider $provider, array $operations = [], ?string $table = null, int $conformity = ArrayKeyConformity::PARTIAL, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, array $overrides = [], ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
     {
-        parent::__construct($entity, $provider, $conformity, $dataToEntityPipeline, $entityToDataPipeline);
+        parent::__construct($entity, $provider, $conformity, $filterPolicy, $dataToEntityPipeline, $entityToDataPipeline);
 
         // Combine overridden operations with $operations and remove invalid
         // values
@@ -103,6 +103,15 @@ class DbSyncDefinition extends SyncDefinition
         }
 
         return $this->Closures[$operation] = $closure;
+    }
+
+    /**
+     * Use a fluent interface to create a new DbSyncDefinition object
+     *
+     */
+    public static function build(): DbSyncDefinitionBuilder
+    {
+        return new DbSyncDefinitionBuilder();
     }
 
 }

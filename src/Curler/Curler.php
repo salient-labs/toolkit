@@ -47,6 +47,7 @@ use UnexpectedValueException;
  * @property bool $PreserveKeys Suppress removal of numeric indices from serialized lists?
  * @property DateFormatter|null $DateFormatter Specify the date format and timezone used upstream
  * @property string|null $UserAgent Override the default User-Agent header
+ * @property bool $AlwaysPaginate Pass every response to the pager?
  * @property bool $ObjectAsArray Return deserialized objects as associative arrays?
  */
 class Curler implements IReadable, IWritable
@@ -221,6 +222,13 @@ class Curler implements IReadable, IWritable
     protected $UserAgent;
 
     /**
+     * Pass every response to the pager?
+     *
+     * @var bool
+     */
+    protected $AlwaysPaginate = false;
+
+    /**
      * Return deserialized objects as associative arrays?
      *
      * @var bool
@@ -308,6 +316,16 @@ class Curler implements IReadable, IWritable
         return $this;
     }
 
+    /**
+     * @return $this
+     */
+    final public function replaceHeaders(CurlerHeaders $headers)
+    {
+        $this->Headers = CurlerHeadersImmutable::fromMutable($headers);
+
+        return $this;
+    }
+
     final public function responseContentTypeIs(string $mimeType): bool
     {
         $contentType = $this->ResponseHeaders->getHeaderValue(
@@ -361,8 +379,13 @@ class Curler implements IReadable, IWritable
 
     private function initialise(string $method, ?array $query): void
     {
-        $this->createHandle($this->BaseUrl
-            . ($this->QueryString = $this->getQueryString($query)));
+        if ($this->Pager && !is_null($_query = $this->Pager->prepareQuery($query)))
+        {
+            $_query = "?" . $_query;
+        }
+        $this->QueryString = ($_query ?? null) ?: $this->getQueryString($query);
+
+        $this->createHandle($this->BaseUrl . $this->QueryString);
 
         if ($method === HttpRequestMethod::GET)
         {
@@ -379,7 +402,7 @@ class Curler implements IReadable, IWritable
 
         if ($this->Pager)
         {
-            $this->Pager->prepare($this);
+            $this->Pager->prepareCurler($this);
         }
 
         if ($this->ExpectJson)
@@ -758,6 +781,11 @@ class Curler implements IReadable, IWritable
      */
     private function process(string $method, ?array $query, $data = null, ?string $mimeType = null)
     {
+        if ($this->AlwaysPaginate && !$this->Pager)
+        {
+            throw new UnexpectedValueException(static::class . '::$Pager is not set');
+        }
+
         $this->initialise($method, $query);
 
         if (is_array($data))
@@ -779,7 +807,18 @@ class Curler implements IReadable, IWritable
 
         if ($this->responseContentTypeIs(MimeType::JSON))
         {
-            return json_decode($this->ResponseBody, $this->ObjectAsArray);
+            $response = json_decode($this->ResponseBody, $this->ObjectAsArray);
+
+            if ($this->AlwaysPaginate)
+            {
+                $response = $this->Pager->getPage($response, $this)->entities();
+                if (array_keys($response) === [0] && is_array($response[0]))
+                {
+                    return $response[0];
+                }
+            }
+
+            return $response;
         }
 
         return $this->ResponseBody ?: "";
@@ -812,7 +851,7 @@ class Curler implements IReadable, IWritable
                 throw new CurlerException($this, "Unable to deserialize response");
             }
 
-            $page = $this->Pager->page($response, $this);
+            $page = $this->Pager->getPage($response, $this);
 
             foreach ($page->entities() as $entity)
             {
@@ -879,6 +918,7 @@ class Curler implements IReadable, IWritable
             "PreserveKeys",
             "DateFormatter",
             "UserAgent",
+            "AlwaysPaginate",
             "ObjectAsArray",
         ];
     }
@@ -899,6 +939,7 @@ class Curler implements IReadable, IWritable
             "PreserveKeys",
             "DateFormatter",
             "UserAgent",
+            "AlwaysPaginate",
             "ObjectAsArray",
         ];
     }

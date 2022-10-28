@@ -6,6 +6,7 @@ namespace Lkrms\Sync\Support;
 
 use JsonSerializable;
 use Lkrms\Concept\TypedCollection;
+use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Console\ConsoleLevel as Level;
 use Lkrms\Facade\Convert;
 use Lkrms\Sync\Support\SyncErrorType as ErrorType;
@@ -42,12 +43,36 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
                     ],
                 ];
             }
-            $summary[$key]["meta"]["values"][] = Convert::toInner($error->Values);
+            $summary[$key]["meta"]["values"][] = Convert::flatten($error->Values);
             $summary[$key]["meta"]["count"]++;
         }
         ksort($summary);
 
         return array_values($summary);
+    }
+
+    public function __toString(): string
+    {
+        $summary   = $this->toSummary();
+        $lines     = [];
+        $separator = PHP_EOL . "  ";
+        foreach ($summary as $error)
+        {
+            $lines[] = sprintf(
+                '___%s___ ~~[~~__%s__~~]~~ ~~(~~_\'%s\'_~~)~~:',
+                $error["title"],
+                $error["meta"]["level"],
+                $error["detail"]
+            ) . $separator . implode(
+                $separator,
+                array_map(
+                    fn($v) => "`" . Formatter::escape(json_encode($v)) . "`",
+                    $error["meta"]["values"]
+                )
+            );
+        }
+
+        return implode(PHP_EOL, $lines);
     }
 
     public function jsonSerialize(): array

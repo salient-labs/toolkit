@@ -386,7 +386,7 @@ class GenerateBuilderClass extends GenerateCommand
             );
         }
         $methods[] = " * @method static $service $terminator() Return a new $class object";
-        $methods[] = " * @method static $service $staticResolver($service|$builderClass \$object) Resolve a $builderClass or $class object to a $class object";
+        $methods[] = " * @method static $service|null $staticResolver($service|$builderClass|null \$object) Resolve a $builderClass or $class object to a $class object";
         $methods   = implode(PHP_EOL, $methods);
 
         $imports = $this->getImports();

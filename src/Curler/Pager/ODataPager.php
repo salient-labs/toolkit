@@ -31,17 +31,20 @@ final class ODataPager implements ICurlerPager
         $this->MaxPageSize = $maxPageSize;
     }
 
-    public function prepare(Curler $curler): Curler
+    public function prepareQuery(?array $query): ?string
+    {
+        return null;
+    }
+
+    public function prepareCurler(Curler $curler): void
     {
         if (!is_null($this->MaxPageSize))
         {
             $curler->Headers->addHeader("Prefer", "odata.maxpagesize={$this->MaxPageSize}");
         }
-
-        return $curler;
     }
 
-    public function page(array $data, Curler $curler): ICurlerPage
+    public function getPage(array $data, Curler $curler): ICurlerPage
     {
         $prefix = $this->Prefix ?: (($curler->ResponseHeadersByName["odata-version"] ?? null) == "4.0"
             ? "@odata."

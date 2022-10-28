@@ -28,62 +28,56 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
         $_post = $post->toArray();
 
         $this->assertSame([
-            'id'       => 1,
-            'name'     => null,
-            'username' => null,
-            'email'    => null,
-            'address'  => null,
-            'phone'    => null,
-            'company'  => null,
-            'posts'    => [
+            'address'      => null,
+            'canonical_id' => null,
+            'company'      => null,
+            'email'        => null,
+            'id'           => 1,
+            'name'         => null,
+            'phone'        => null,
+            'posts'        => [
                 [
-                    'id'    => 101,
-                    'title' => null,
-                    'body'  => null,
-                    'meta_properties'     => [],
-                    'meta_property_names' => [],
+                    'body'         => null,
+                    'canonical_id' => null,
+                    'id'      => 101,
+                    'title'   => null,
                     'user_id' => 1
                 ],
                 [
-                    'id'    => 102,
-                    'title' => null,
-                    'body'  => null,
-                    'meta_properties'     => [],
-                    'meta_property_names' => [],
+                    'body'         => null,
+                    'canonical_id' => null,
+                    'id'      => 102,
+                    'title'   => null,
                     'user_id' => 1
                 ]
             ],
-            'meta_properties'     => [],
-            'meta_property_names' => []
+            'username' => null,
         ], $_user);
         $this->assertSame([
-            'id'           => 102,
-            'user'         => [
-                'id'       => 1,
-                'name'     => null,
-                'username' => null,
-                'email'    => null,
-                'address'  => null,
-                'phone'    => null,
-                'company'  => null,
-                'posts'    => [
+            'body'         => null,
+            'canonical_id' => null,
+            'id'               => 102,
+            'title'            => null,
+            'user'             => [
+                'address'      => null,
+                'canonical_id' => null,
+                'company'      => null,
+                'email'        => null,
+                'id'           => 1,
+                'name'         => null,
+                'phone'        => null,
+                'posts'        => [
                     [
-                        'id'    => 101,
-                        'title' => null,
-                        'body'  => null,
-                        'meta_properties'     => [],
-                        'meta_property_names' => [],
+                        'body'         => null,
+                        'canonical_id' => null,
+                        'id'      => 101,
+                        'title'   => null,
                         'user_id' => 1
                     ],
                     102
                 ],
-                'meta_properties'     => [],
-                'meta_property_names' => []
+                'username' => null,
             ],
-            'title' => null,
-            'body'  => null,
-            'meta_properties'     => [],
-            'meta_property_names' => []
         ], $_post);
     }
 

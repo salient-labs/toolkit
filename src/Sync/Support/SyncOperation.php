@@ -108,27 +108,33 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      */
     public const DELETE_LIST = 7;
 
-    protected static $NameMap = [
-        self::CREATE      => "CREATE",
-        self::READ        => "READ",
-        self::UPDATE      => "UPDATE",
-        self::DELETE      => "DELETE",
-        self::CREATE_LIST => "CREATE_LIST",
-        self::READ_LIST   => "READ_LIST",
-        self::UPDATE_LIST => "UPDATE_LIST",
-        self::DELETE_LIST => "DELETE_LIST",
-    ];
+    protected static function getNameMap(): array
+    {
+        return [
+            self::CREATE      => "CREATE",
+            self::READ        => "READ",
+            self::UPDATE      => "UPDATE",
+            self::DELETE      => "DELETE",
+            self::CREATE_LIST => "CREATE_LIST",
+            self::READ_LIST   => "READ_LIST",
+            self::UPDATE_LIST => "UPDATE_LIST",
+            self::DELETE_LIST => "DELETE_LIST",
+        ];
+    }
 
-    protected static $ValueMap = [
-        "create"      => self::CREATE,
-        "read"        => self::READ,
-        "update"      => self::UPDATE,
-        "delete"      => self::DELETE,
-        "create_list" => self::CREATE_LIST,
-        "read_list"   => self::READ_LIST,
-        "update_list" => self::UPDATE_LIST,
-        "delete_list" => self::DELETE_LIST,
-    ];
+    protected static function getValueMap(): array
+    {
+        return [
+            "create"      => self::CREATE,
+            "read"        => self::READ,
+            "update"      => self::UPDATE,
+            "delete"      => self::DELETE,
+            "create_list" => self::CREATE_LIST,
+            "read_list"   => self::READ_LIST,
+            "update_list" => self::UPDATE_LIST,
+            "delete_list" => self::DELETE_LIST,
+        ];
+    }
 
     /**
      * @var array<int,bool>

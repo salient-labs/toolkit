@@ -13,6 +13,8 @@ use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncContext;
+use Lkrms\Sync\Support\SyncFilterPolicy;
+use Lkrms\Sync\Support\SyncOperation;
 
 /**
  * Provides access to a SyncProvider's implementation of sync operations for an
@@ -39,6 +41,11 @@ abstract class SyncDefinition implements ISyncDefinition
     protected $Conformity;
 
     /**
+     * @var int
+     */
+    protected $FilterPolicy;
+
+    /**
      * @var IPipelineImmutable|null
      */
     protected $DataToEntityPipeline;
@@ -59,6 +66,14 @@ abstract class SyncDefinition implements ISyncDefinition
     protected $ProviderClosureBuilder;
 
     /**
+     * @param int $filterPolicy One of the {@see SyncFilterPolicy} values.
+     *
+     * To prevent, say, a filtered {@see SyncOperation::READ_LIST} request
+     * returning every entity of that type when a provider doesn't use the
+     * filter, the default policy is {@see SyncFilterPolicy::THROW_EXCEPTION}.
+     *
+     * See {@see \Lkrms\Sync\Contract\ISyncContext::withArgs()} for more
+     * information.
      * @param IPipelineImmutable|null $dataToEntityPipeline A pipeline that
      * converts data received from the provider to an associative array from
      * which the entity can be instantiated, or `null` if the entity is not
@@ -68,11 +83,12 @@ abstract class SyncDefinition implements ISyncDefinition
      * provider, or `null` if the entity is not supported or conversion is not
      * required.
      */
-    public function __construct(string $entity, ISyncProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
+    public function __construct(string $entity, ISyncProvider $provider, int $conformity = ArrayKeyConformity::NONE, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
     {
-        $this->Entity     = $entity;
-        $this->Provider   = $provider;
-        $this->Conformity = $conformity;
+        $this->Entity               = $entity;
+        $this->Provider             = $provider;
+        $this->Conformity           = $conformity;
+        $this->FilterPolicy         = $filterPolicy;
         $this->DataToEntityPipeline = $dataToEntityPipeline;
         $this->EntityToDataPipeline = $entityToDataPipeline;
 

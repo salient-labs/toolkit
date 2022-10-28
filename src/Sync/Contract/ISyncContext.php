@@ -58,6 +58,11 @@ interface ISyncContext extends IProvidableContext
      * `null`. {@see ISyncContext::getFilter()} returns an empty array (`[]`) if
      * no non-mandatory arguments were provided.
      *
+     * Using {@see ISyncContext::claimFilterValue()} to "claim" values from the
+     * filter is recommended. Depending on the provider's
+     * {@see \Lkrms\Sync\Support\SyncFilterPolicy}, unclaimed values may cause
+     * requests to fail.
+     *
      * {@see \Lkrms\Sync\Concept\SyncEntity} objects are replaced with the value
      * of their {@see \Lkrms\Sync\Concept\SyncEntity::$Id Id} when `$args`
      * contains an array or a list of entities. This operation is not recursive.
@@ -81,5 +86,19 @@ interface ISyncContext extends IProvidableContext
      * @see ISyncContext::withArgs()
      */
     public function getFilter(): ?array;
+
+    /**
+     * Get a value from the filter most recently passed via optional sync
+     * operation arguments
+     *
+     * Unlike other {@see ISyncContext} methods,
+     * {@see ISyncContext::claimFilterValue()} modifies the object it is called
+     * on instead of returning a modified clone.
+     *
+     * @return mixed `null` if the value has already been claimed or wasn't
+     * passed to the operation.
+     * @see ISyncContext::withArgs()
+     */
+    public function claimFilterValue(string $key);
 
 }

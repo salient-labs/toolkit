@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Lkrms\Store\Concept;
 
+use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
+use ReflectionClass;
 use RuntimeException;
 use SQLite3;
 use Throwable;
@@ -14,7 +16,7 @@ use Throwable;
  * Base class for SQLite-backed stores
  *
  */
-abstract class SqliteStore
+abstract class SqliteStore implements ReceivesFacade
 {
     /**
      * @var SQLite3|null
@@ -30,6 +32,18 @@ abstract class SqliteStore
      * @var bool
      */
     private $IsTransactionOpen;
+
+    /**
+     * @var string|null
+     */
+    private $Facade;
+
+    final public function setFacade(string $name)
+    {
+        $this->Facade = $name;
+
+        return $this;
+    }
 
     /**
      * Create or open a database
@@ -63,17 +77,28 @@ abstract class SqliteStore
      *
      * @return $this
      */
-    final protected function closeDb()
+    final protected function closeDb(bool $unloadFacade = true)
     {
-        if (!$this->Db)
+        try
         {
+            if (!$this->Db)
+            {
+                return $this;
+            }
+
+            $this->Db->close();
+            [$this->Db, $this->Filename] = [null, null];
+
             return $this;
         }
-
-        $this->Db->close();
-        [$this->Db, $this->Filename] = [null, null];
-
-        return $this;
+        finally
+        {
+            if ($unloadFacade && $this->Facade)
+            {
+                (new ReflectionClass($this->Facade))->getMethod("unload")->invoke(null);
+                $this->Facade = null;
+            }
+        }
     }
 
     /**
@@ -83,9 +108,21 @@ abstract class SqliteStore
      */
     public function close()
     {
-        $this->closeDb();
+        return $this->closeDb();
+    }
 
-        return $this;
+    /**
+     * Override to perform an action whenever the open SQLite3 instance is
+     * accessed
+     *
+     * To prevent infinite recursion, subclasses must not call
+     * {@see SqliteStore::db()} from this method unless `$noCheck` is `true`.
+     *
+     * Called once per call to {@see SqliteStore::db()}.
+     *
+     */
+    protected function check(): void
+    {
     }
 
     /**
@@ -111,10 +148,12 @@ abstract class SqliteStore
      *
      * @throws RuntimeException if no database is open.
      */
-    final protected function db(): SQLite3
+    final protected function db(bool $noCheck = false): SQLite3
     {
         if ($this->Db)
         {
+            $noCheck || $this->check();
+
             return $this->Db;
         }
 
