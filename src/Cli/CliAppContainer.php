@@ -52,13 +52,13 @@ final class CliAppContainer extends AppContainer
     }
 
     /**
-     * Return the name used to run the script
+     * Return the basename of the file used to run the script
      *
      * @return string
      */
     public function getProgramName(): string
     {
-        return basename(Sys::getProgramName());
+        return Sys::getProgramBasename();
     }
 
     /**
@@ -251,7 +251,7 @@ EOF;
     }
 
     /**
-     * Process command-line arguments and take appropriate action
+     * Process the command line
      *
      * One of the following actions will be taken:
      * - if `--help` is the only remaining argument after processing any
@@ -344,7 +344,7 @@ EOF;
     }
 
     /**
-     * Exit after actioning command-line arguments
+     * Process the command line and exit
      *
      * The value returned by {@see CliAppContainer::run()} is used as the exit
      * status.

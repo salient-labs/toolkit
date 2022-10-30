@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Utility;
 
 use Lkrms\Facade\Convert;
+use RuntimeException;
 use SQLite3;
 
 /**
@@ -13,25 +14,51 @@ use SQLite3;
  */
 final class System
 {
+    /**
+     * Get the configured memory_limit in bytes
+     *
+     */
     public function getMemoryLimit(): int
     {
         return Convert::sizeToBytes(ini_get("memory_limit") ?: "0");
     }
 
+    /**
+     * Get the current memory usage of the script in bytes
+     *
+     */
     public function getMemoryUsage(): int
     {
         return memory_get_usage();
     }
 
+    /**
+     * Get the peak memory usage of the script in bytes
+     *
+     */
     public function getPeakMemoryUsage(): int
     {
         return memory_get_peak_usage();
     }
 
     /**
+     * Get the current memory usage of the script as a percentage of the
+     * memory_limit
+     *
+     */
+    public function getMemoryUsagePercent(): int
+    {
+        $limit = $this->getMemoryLimit();
+
+        return ($limit <= 0
+            ? 0
+            : (int)round(memory_get_usage() * 100 / $limit));
+    }
+
+    /**
      * Get user and system CPU times for the current run, in microseconds
      *
-     * @return array{0:int,1:int}
+     * @return int[]
      * ```php
      * [$userMicroseconds, $systemMicroseconds]
      * ```
@@ -52,39 +79,38 @@ final class System
         ];
     }
 
-    public function getMemoryUsagePercent(): int
+    /**
+     * Get the filename used to run the script
+     *
+     * @param string|null $basePath If set, `"{$basePath}/"` is removed from the
+     * beginning of the filename, and if the filename does not start with
+     * `$basePath`, a `RuntimeException` is thrown.
+     */
+    public function getProgramName(?string $basePath = null): string
     {
-        $limit = $this->getMemoryLimit();
-        if ($limit <= 0)
+        $filename = $_SERVER["SCRIPT_FILENAME"];
+        if (is_null($basePath))
         {
-            return 0;
+            return $filename;
         }
-        else
+        if (($basePath = realpath($basePath)) !== false &&
+            ($filename = realpath($filename)) !== false &&
+            strpos($filename, $basePath) === 0)
         {
-            return (int)round(memory_get_usage(true) * 100 / $limit);
-        }
-    }
-
-    public function getProgramName(?string $relativeTo = null): string
-    {
-        if (!is_null($relativeTo) &&
-            ($relativeTo = realpath($relativeTo)) !== false &&
-            ($scriptPath = realpath($_SERVER["SCRIPT_FILENAME"])) !== false &&
-            strpos($scriptPath, $relativeTo) === 0)
-        {
-            return substr($scriptPath, strlen($relativeTo) + 1);
+            return substr($filename, strlen($basePath) + 1);
         }
 
-        return $_SERVER["SCRIPT_FILENAME"];
+        throw new RuntimeException('SCRIPT_FILENAME is not in $basePath');
     }
 
     /**
-     * @param int $extLimit If set, remove up to `$extLimit` extensions from the
-     * program's basename as per {@see Conversions::pathToBasename()}.
+     * Return the basename of the file used to run the script
+     *
+     * @param string $suffix Removed from the end of the filename if set.
      */
-    public function getProgramBasename(int $extLimit = 0): string
+    public function getProgramBasename(string $suffix = ""): string
     {
-        return Convert::pathToBasename($_SERVER["SCRIPT_FILENAME"], $extLimit);
+        return basename($_SERVER["SCRIPT_FILENAME"], $suffix);
     }
 
     /**

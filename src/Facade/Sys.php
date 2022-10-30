@@ -14,13 +14,13 @@ use Lkrms\Utility\System;
  * @method static System getInstance() Return the underlying System instance
  * @method static bool isLoaded() Return true if an underlying System instance has been loaded
  * @method static void unload() Clear the underlying System instance
- * @method static array{0:int,1:int} getCpuUsage() Get user and system CPU times for the current run, in microseconds (see {@see System::getCpuUsage()})
- * @method static int getMemoryLimit() See {@see System::getMemoryLimit()}
- * @method static int getMemoryUsage() See {@see System::getMemoryUsage()}
- * @method static int getMemoryUsagePercent() See {@see System::getMemoryUsagePercent()}
- * @method static int getPeakMemoryUsage() See {@see System::getPeakMemoryUsage()}
- * @method static string getProgramBasename(int $extLimit = 0) See {@see System::getProgramBasename()}
- * @method static string getProgramName(?string $relativeTo = null) See {@see System::getProgramName()}
+ * @method static int[] getCpuUsage() Get user and system CPU times for the current run, in microseconds (see {@see System::getCpuUsage()})
+ * @method static int getMemoryLimit() Get the configured memory_limit in bytes (see {@see System::getMemoryLimit()})
+ * @method static int getMemoryUsage() Get the current memory usage of the script in bytes (see {@see System::getMemoryUsage()})
+ * @method static int getMemoryUsagePercent() Get the current memory usage of the script as a percentage of the memory_limit (see {@see System::getMemoryUsagePercent()})
+ * @method static int getPeakMemoryUsage() Get the peak memory usage of the script in bytes (see {@see System::getPeakMemoryUsage()})
+ * @method static string getProgramBasename(string $suffix = '') Return the basename of the file used to run the script (see {@see System::getProgramBasename()})
+ * @method static string getProgramName(?string $basePath = null) Get the filename used to run the script (see {@see System::getProgramName()})
  * @method static bool sqliteHasUpsert() Return true if the SQLite3 library supports UPSERT syntax (see {@see System::sqliteHasUpsert()})
  *
  * @uses System
