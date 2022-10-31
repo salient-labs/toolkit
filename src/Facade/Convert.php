@@ -21,6 +21,8 @@ use Lkrms\Utility\Conversions;
  * @method static Conversions getInstance() Return the underlying Conversions instance
  * @method static bool isLoaded() Return true if an underlying Conversions instance has been loaded
  * @method static void unload() Clear the underlying Conversions instance
+ * @method static int|null arrayKeyToOffset(string|int $key, array $array) Get the offset of a key in an array (see {@see Conversions::arrayKeyToOffset()})
+ * @method static array arraySpliceAtKey(array &$array, string|int $key, ?int $length = null, array $replacement = []) array_splice for associative arrays (see {@see Conversions::arraySpliceAtKey()})
  * @method static string arrayToCode(array $array, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::arrayToCode()}
  * @method static string classToBasename(string $class, string ...$suffixes) Remove the namespace and the first matched suffix from a class name (see {@see Conversions::classToBasename()})
  * @method static string classToNamespace(string $class) Return the namespace of a class (see {@see Conversions::classToNamespace()})
@@ -38,6 +40,7 @@ use Lkrms\Utility\Conversions;
  * @method static array objectToArray(object $object) A wrapper for get_object_vars (see {@see Conversions::objectToArray()})
  * @method static string pathToBasename(string $path, int $extLimit = 0) Remove the directory and up to the given number of extensions from a path (see {@see Conversions::pathToBasename()})
  * @method static string plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false) If $number is 1, return $singular, otherwise return $plural (see {@see Conversions::plural()})
+ * @method static array renameArrayKey(string|int $key, string|int $newKey, array $array) Rename an array key without changing the order of values in the array (see {@see Conversions::renameArrayKey()})
  * @method static string|false scalarToString(mixed $value) Convert a scalar to a string (see {@see Conversions::scalarToString()})
  * @method static int sizeToBytes(string $size) Convert php.ini values like "128M" to bytes (see {@see Conversions::sizeToBytes()})
  * @method static string sparseToString(string $separator, array $array) Remove zero-width values from an array before imploding it (see {@see Conversions::sparseToString()})
