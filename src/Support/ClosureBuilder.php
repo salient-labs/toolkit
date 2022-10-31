@@ -24,6 +24,11 @@ use UnexpectedValueException;
 
 class ClosureBuilder
 {
+    private const ACTION_GET   = "get";
+    private const ACTION_ISSET = "isset";
+    private const ACTION_SET   = "set";
+    private const ACTION_UNSET = "unset";
+
     /**
      * @var string
      */
@@ -62,6 +67,10 @@ class ClosureBuilder
     /**
      * Property names
      *
+     * - `public` properties
+     * - `protected` properties if the class implements {@see IReadable} or
+     *   {@see IWritable}
+     *
      * @var string[]
      */
     private $Properties = [];
@@ -76,12 +85,24 @@ class ClosureBuilder
     /**
      * Readable property names
      *
+     * Empty if the class does not implement {@see IReadable}, otherwise:
+     * - `public` properties
+     * - `protected` properties returned by {@see IReadable::getReadable()}
+     *
+     * Does not include "magic" property names.
+     *
      * @var string[]
      */
     private $ReadableProperties = [];
 
     /**
      * Writable property names
+     *
+     * Empty if the class does not implement {@see IWritable}, otherwise:
+     * - `public` properties
+     * - `protected` properties returned by {@see IWritable::getWritable()}
+     *
+     * Does not include "magic" property names.
      *
      * @var string[]
      */
@@ -93,6 +114,13 @@ class ClosureBuilder
      * @var array<string,array<string,string>>
      */
     private $Methods = [];
+
+    /**
+     * Actions => normalised property names => "magic" method names
+     *
+     * @var array<string,array<string,string>>
+     */
+    private $Actions = [];
 
     /**
      * Constructor parameter names, in order of appearance
@@ -344,13 +372,13 @@ class ClosureBuilder
             $actions = [];
             if ($this->IsReadable)
             {
-                $actions[] = "get";
-                $actions[] = "isset";
+                $actions[] = self::ACTION_GET;
+                $actions[] = self::ACTION_ISSET;
             }
             if ($this->IsWritable)
             {
-                $actions[] = "set";
-                $actions[] = "unset";
+                $actions[] = self::ACTION_SET;
+                $actions[] = self::ACTION_UNSET;
             }
             $regex = '/^_(?P<action>' . implode("|", $actions) . ')(?P<property>.+)$/i';
 
@@ -358,7 +386,9 @@ class ClosureBuilder
             {
                 if (!$method->isStatic() && preg_match($regex, $method->name, $match))
                 {
-                    $this->Methods[$match["property"]][strtolower($match["action"])] = $method->name;
+                    [$action, $property] = [strtolower($match["action"]), $match["property"]];
+                    $this->Methods[$property][$action] = $method->name;
+                    $this->Actions[$action][$this->maybeNormalise($property, true)] = $method->name;
                 }
             }
         }
@@ -526,6 +556,80 @@ class ClosureBuilder
         return $closure;
     }
 
+    final protected function getProperties(array $keys, bool $withParameters, bool $strict): ClosureBuilderProperties
+    {
+        // Normalise array keys (i.e. field/property names)
+        if ($this->Normaliser)
+        {
+            $keys = array_combine(
+                array_map($this->CarefulNormaliser, $keys),
+                $keys
+            );
+        }
+        else
+        {
+            $keys = array_combine($keys, $keys);
+        }
+
+        // Check for missing constructor parameters if preparing an
+        // instantiator, otherwise check for readonly properties
+        if ($withParameters)
+        {
+            if ($missing = array_diff_key($this->RequiredMap, $this->ServiceMap, $keys))
+            {
+                throw new UnexpectedValueException("{$this->Class} constructor requires values for: " . implode(", ", $missing));
+            }
+        }
+        else
+        {
+            // Get keys that correspond to constructor parameters and isolate
+            // any that don't also match a writable property or "magic" method
+            $parameters = array_intersect_key($this->ParameterMap, $keys);
+            $writable   = array_intersect($this->PropertyMap, $this->WritableProperties ?: $this->PublicProperties);
+
+            if ($readonly = array_diff_key($parameters, $writable, $this->Actions[self::ACTION_SET] ?? []))
+            {
+                throw new UnexpectedValueException("Cannot set readonly properties of {$this->Class}: " . implode(", ", $readonly));
+            }
+        }
+
+        // Resolve $keys to:
+        // - constructor parameters ($parameterKeys)
+        // - "magic" property methods ($methodKeys)
+        // - properties ($propertyKeys)
+        // - arbitrary properties ($metaKeys)
+        $parameterKeys = $methodKeys = $propertyKeys = $metaKeys = [];
+
+        foreach ($keys as $normalisedKey => $key)
+        {
+            if ($withParameters && ($param = $this->ParameterMap[$normalisedKey] ?? null))
+            {
+                $parameterKeys[$key] = $this->ParametersIndex[$param];
+            }
+            elseif ($method = $this->Actions[self::ACTION_SET][$normalisedKey] ?? null)
+            {
+                $methodKeys[$key] = $method;
+            }
+            elseif ($property = $this->PropertyMap[$normalisedKey] ?? null)
+            {
+                if ($this->checkWritable($property, self::ACTION_SET))
+                {
+                    $propertyKeys[$key] = $property;
+                }
+            }
+            elseif ($this->IsExtensible)
+            {
+                $metaKeys[] = $key;
+            }
+            elseif ($strict)
+            {
+                throw new UnexpectedValueException("No matching property or constructor parameter found in {$this->Class} for '$key'");
+            }
+        }
+
+        return new ClosureBuilderProperties($parameterKeys, $methodKeys, $propertyKeys, $metaKeys);
+    }
+
     /**
      * @return Closure
      * ```
@@ -541,64 +645,15 @@ class ClosureBuilder
             return $closure;
         }
 
-        // 1. Normalise array keys (i.e. field/property names)
-        if ($this->Normaliser)
-        {
-            $keys = array_combine(
-                array_map($this->CarefulNormaliser, $keys),
-                $keys
-            );
-        }
-        else
-        {
-            $keys = array_combine($keys, $keys);
-        }
+        $properties = $this->getProperties($keys, true, $strict);
+        [$parameterKeys, $propertyKeys, $methodKeys, $metaKeys] = [
+            $properties->Parameters,
+            $properties->Properties,
+            $properties->Methods,
+            $properties->MetaProperties,
+        ];
 
-        // 2. Check for required parameters that haven't been provided
-        if (!empty($missing = array_diff_key(
-            $this->RequiredMap,
-            $this->ServiceMap,
-            $keys
-        )))
-        {
-            throw new UnexpectedValueException("{$this->Class} constructor requires " . implode(", ", $missing));
-        }
-
-        // 3. Resolve $keys to:
-        // - constructor parameters ($parameterKeys)
-        // - "magic" property methods ($methodKeys)
-        // - properties ($propertyKeys)
-        // - arbitrary properties ($metaKeys)
-        $parameterKeys = $methodKeys = $propertyKeys = $metaKeys = [];
-
-        foreach ($keys as $normalisedKey => $key)
-        {
-            if ($param = $this->ParameterMap[$normalisedKey] ?? null)
-            {
-                $parameterKeys[$key] = $this->ParametersIndex[$param];
-            }
-            elseif ($method = $this->Methods[$this->MethodMap[$normalisedKey] ?? $key]["set"] ?? null)
-            {
-                $methodKeys[$key] = $method;
-            }
-            elseif ($property = $this->PropertyMap[$normalisedKey] ?? null)
-            {
-                if ($this->checkWritable($property, "set"))
-                {
-                    $propertyKeys[$key] = $property;
-                }
-            }
-            elseif ($this->IsExtensible)
-            {
-                $metaKeys[] = $key;
-            }
-            elseif ($strict)
-            {
-                throw new UnexpectedValueException("No matching property or constructor parameter found in {$this->Class} for '$key'");
-            }
-        }
-
-        // 4. Build the smallest possible chain of closures
+        // Build the smallest possible chain of closures
         if ($parameterKeys)
         {
             $closure = function (?IContainer $container, array $array) use ($parameterKeys)
@@ -769,7 +824,9 @@ class ClosureBuilder
      * ```
      *
      * @param string $name
-     * @param string $action Either `"set"`, `"get"`, `"isset"` or `"unset"`.
+     * @param string $action Either {@see ClosureBuilder::ACTION_SET},
+     * {@see ClosureBuilder::ACTION_GET}, {@see ClosureBuilder::ACTION_ISSET} or
+     * {@see ClosureBuilder::ACTION_UNSET}.
      * @return Closure
      */
     final public function getPropertyActionClosure(string $name, string $action): Closure
@@ -781,7 +838,12 @@ class ClosureBuilder
             return $closure;
         }
 
-        if (!in_array($action, ["set", "get", "isset", "unset"]))
+        if (!in_array($action, [
+            self::ACTION_SET,
+            self::ACTION_GET,
+            self::ACTION_ISSET,
+            self::ACTION_UNSET
+        ]))
         {
             throw new UnexpectedValueException("Invalid action: $action");
         }
@@ -800,19 +862,19 @@ class ClosureBuilder
             {
                 switch ($action)
                 {
-                    case "set":
+                    case self::ACTION_SET:
                         $closure = static function ($instance, $value) use ($property) { $instance->$property = $value; };
                         break;
 
-                    case "get":
+                    case self::ACTION_GET:
                         $closure = static function ($instance) use ($property) { return $instance->$property; };
                         break;
 
-                    case "isset":
+                    case self::ACTION_ISSET:
                         $closure = static function ($instance) use ($property) { return isset($instance->$property); };
                         break;
 
-                    case "unset":
+                    case self::ACTION_UNSET:
                         // Removal of a declared property is unlikely to be the
                         // intended outcome, so assign null instead of unsetting
                         $closure = static function ($instance) use ($property) { $instance->$property = null; };
@@ -822,7 +884,7 @@ class ClosureBuilder
         }
         elseif ($this->IsExtensible)
         {
-            $method  = $action == "isset" ? "isMetaPropertySet" : $action . "MetaProperty";
+            $method  = $action == self::ACTION_ISSET ? "isMetaPropertySet" : $action . "MetaProperty";
             $closure = static function ($instance, ...$params) use ($method, $name)
             {
                 return $instance->$method($name, ...$params);
@@ -877,7 +939,7 @@ class ClosureBuilder
 
     private function checkReadable(string $property, string $action): bool
     {
-        if (!$this->IsReadable || !in_array($action, ["get", "isset"]))
+        if (!$this->IsReadable || !in_array($action, [self::ACTION_GET, self::ACTION_ISSET]))
         {
             return true;
         }
@@ -887,7 +949,7 @@ class ClosureBuilder
 
     private function checkWritable(string $property, string $action): bool
     {
-        if (!$this->IsWritable || !in_array($action, ["set", "unset"]))
+        if (!$this->IsWritable || !in_array($action, [self::ACTION_SET, self::ACTION_UNSET]))
         {
             return true;
         }
