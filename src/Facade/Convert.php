@@ -75,4 +75,9 @@ final class Convert extends Facade
     {
         return Conversions::class;
     }
+
+    public static function arraySpliceAtKey(array &$array, mixed $key, ?int $length = null, array $replacement = []): array
+    {
+        return static::getInstance()->arraySpliceAtKey($array, $key, $length, $replacement);
+    }
 }

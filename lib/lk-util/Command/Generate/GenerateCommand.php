@@ -13,6 +13,9 @@ use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
+use Lkrms\Facade\Reflect;
+use ReflectionParameter;
+use ReflectionType;
 
 /**
  * Base class for code generation commands
@@ -20,6 +23,10 @@ use Lkrms\Facade\File;
  */
 abstract class GenerateCommand extends CliCommand
 {
+    protected const VISIBILITY_PUBLIC    = "public";
+    protected const VISIBILITY_PROTECTED = "protected";
+    protected const VISIBILITY_PRIVATE   = "private";
+
     /**
      * @var string
      */
@@ -156,6 +163,42 @@ abstract class GenerateCommand extends CliCommand
             "protected static function {$name}({$rawParams}): {$returnType}",
             "{",
             "{$tab}return {$rawValue};",
+            "}"
+        ];
+
+        return array_map(fn($line) => str_repeat($tab, $tabs) . $line, $lines);
+    }
+
+    /**
+     * Generate a method
+     *
+     * @param string[] $lines
+     * @param ReflectionParameter[] $params
+     * @return string[]
+     */
+    protected function getMethod(string $name, array $lines, array $params = [], ?ReflectionType $returnType = null, bool $static = true, string $visibility = GenerateCommand::VISIBILITY_PUBLIC, int $tabs = 1, string $tab = "    "): array
+    {
+        $callback  = fn(string $name): ?string => $this->getFqcnAlias($name, null, false);
+        $rawParams = [];
+        /** @var ReflectionParameter $param */
+        foreach ($params as $param)
+        {
+            $rawParams[] = Reflect::getParameterDeclaration($param, $this->ClassPrefix, $callback);
+        }
+        $rawParams  = implode(", ", $rawParams);
+        $returnType = Reflect::getTypeDeclaration($returnType, $this->ClassPrefix, $callback);
+
+        $modifiers = [$visibility];
+        if ($static)
+        {
+            $modifiers[] = "static";
+        }
+        $modifiers = implode(" ", $modifiers);
+
+        $lines = [
+            $modifiers . " function {$name}({$rawParams})" . ($returnType ? ": {$returnType}" : ""),
+            "{",
+            ...array_map(fn($line) => "{$tab}$line", $lines),
             "}"
         ];
 
