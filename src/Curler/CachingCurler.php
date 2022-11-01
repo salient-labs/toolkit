@@ -71,20 +71,19 @@ class CachingCurler extends Curler
 
     protected function execute(bool $close = true, int $depth = 0): string
     {
-        if (Cache::isLoaded() &&
-            ($this->Method == HttpRequestMethod::GET ||
-                ($this->CachePostRequests && $this->Method == HttpRequestMethod::POST && !is_array($this->Body))))
+        if ($this->Method == HttpRequestMethod::GET ||
+            ($this->CachePostRequests &&
+                $this->Method == HttpRequestMethod::POST &&
+                !is_array($this->Body)))
         {
-            $url     = $this->getEffectiveUrl();
-            $headers = (is_null($this->Callback)
-                ? $this->Headers->getPublicHeaders()
-                : ($this->Callback)($this->Headers));
-            if ($this->Method != HttpRequestMethod::GET)
+            $key = is_null($this->Callback) ? $this->Headers->getPublicHeaders() : ($this->Callback)($this->Headers);
+            if ($this->Method == HttpRequestMethod::POST)
             {
-                $url       = "{$this->Method}:$url";
-                $headers[] = $this->Body;
+                $key[] = $this->Body;
             }
-            $key  = "curler/$url/" . Compute::hash(...$headers);
+            $key = self::class . ":response:{$this->Method}:" . rawurlencode(
+                $this->getEffectiveUrl()
+            ) . ":" . Compute::hash(...$key);
             $last = Cache::get($key, $this->Expiry);
 
             if ($last === false)

@@ -179,4 +179,13 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
 
     }
 
+    public function testQueryToData()
+    {
+        $this->assertSame([
+            "key1" => "value1",
+            "key2" => "value2",
+            "key3" => "",
+        ], Convert::queryToData(["key1=value1", "key2=value2", "key3=value3", "key3=", "key4", "=value5"]));
+    }
+
 }

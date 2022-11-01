@@ -462,7 +462,7 @@ final class Conversions
      * @return array|object|false `false` if no item was found in `$list` with
      * `$value` at `$key`.
      */
-    public function iterableToItem(iterable $list, $key, $value)
+    public function iterableToItem(iterable $list, $key, $value, bool $strict = false)
     {
         $list    = $this->iterableToIterator($list);
         $closure = $this->_keyToClosure($key);
@@ -471,7 +471,8 @@ final class Conversions
         {
             $item = $list->current();
             $list->next();
-            if ($closure($item) === $value)
+            if (($strict && ($closure($item) === $value)) ||
+                (!$strict && ($closure($item) == $value)))
             {
                 return $item;
             }
@@ -588,6 +589,30 @@ final class Conversions
         }
 
         return $noun . "s";
+    }
+
+    /**
+     * Convert a list of "key=value" strings to an array like ["key" => "value"]
+     *
+     * @param string[] $query
+     * @return array<string,string>
+     */
+    public function queryToData(array $query): array
+    {
+        // 1. "key=value" to ["key", "value"]
+        // 2. Discard "value", "=value", etc.
+        // 3. ["key", "value"] => ["key" => "value"]
+        return array_column(
+            array_filter(
+                array_map(
+                    fn(string $kv) => explode("=", $kv, 2),
+                    $query
+                ),
+                fn(array $kv) => count($kv) == 2 && trim($kv[0])
+            ),
+            1,
+            0
+        );
     }
 
     /**

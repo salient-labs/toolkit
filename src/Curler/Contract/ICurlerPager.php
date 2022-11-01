@@ -25,9 +25,16 @@ interface ICurlerPager
     public function prepareCurler(Curler $curler): void;
 
     /**
+     * Prepare POST data for the first page request
+     *
+     * Return `$data` if no special handling is required.
+     */
+    public function prepareData(?array $data): ?array;
+
+    /**
      * Convert data returned by an endpoint to a page object
      *
      */
-    public function getPage(array $data, Curler $curler): ICurlerPage;
+    public function getPage($data, Curler $curler, ?ICurlerPage $previous = null): ICurlerPage;
 
 }

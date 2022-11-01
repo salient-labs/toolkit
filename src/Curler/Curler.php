@@ -11,6 +11,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Exception\CurlerException;
+use Lkrms\Facade\Cache;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
@@ -30,6 +31,7 @@ use UnexpectedValueException;
  * @property-read string|null $Method Last request method
  * @property-read string|null $QueryString Query string last added to request URL
  * @property-read string|array|null $Body Request body, as passed to cURL
+ * @property-read string|array|null $Data Request body, before serialization
  * @property-read ICurlerPager|null $Pager Pagination handler
  * @property-read CurlerHeadersImmutable|null $ResponseHeaders Response headers
  * @property-read array<string,string>|null $ResponseHeadersByName An array that maps lowercase response headers to their combined values
@@ -40,6 +42,8 @@ use UnexpectedValueException;
  * @property bool $ThrowHttpErrors Throw an exception if the status code is >= 400?
  * @property bool $FollowRedirects Follow "Location:" headers?
  * @property int|null $MaxRedirects Limit the number of redirections followed when FollowRedirects is set
+ * @property bool $HandleCookies Send and receive cookies?
+ * @property string|null $CookieCacheKey Override the default cache key when saving and loading cookies
  * @property bool $RetryAfterTooManyRequests Retry after receiving "429 Too Many Requests" with a Retry-After header?
  * @property int $RetryAfterMaxSeconds Limit the delay between attempts when RetryAfterTooManyRequests is set
  * @property bool $ExpectJson Request JSON from upstream?
@@ -88,6 +92,13 @@ class Curler implements IReadable, IWritable
      * @var string|array|null
      */
     protected $Body;
+
+    /**
+     * Request body, before serialization
+     *
+     * @var string|array|null
+     */
+    protected $Data;
 
     /**
      * Pagination handler
@@ -163,6 +174,23 @@ class Curler implements IReadable, IWritable
      * @var int|null
      */
     protected $MaxRedirects;
+
+    /**
+     * Send and receive cookies?
+     *
+     * If set, the shared {@see \Lkrms\Store\CacheStore} instance serviced by
+     * {@see \Lkrms\Facade\Cache} will be used for cookie storage.
+     *
+     * @var bool
+     */
+    protected $HandleCookies = false;
+
+    /**
+     * Override the default cache key when saving and loading cookies
+     *
+     * @var string|null
+     */
+    protected $CookieCacheKey;
 
     /**
      * Retry after receiving "429 Too Many Requests" with a Retry-After header?
@@ -249,6 +277,16 @@ class Curler implements IReadable, IWritable
      * @var array[]
      */
     private $MultiInfo = [];
+
+    /**
+     * @var int
+     */
+    private $ExecuteCount = 0;
+
+    /**
+     * @var string|null
+     */
+    private $CookieKey;
 
     /**
      * @var string|null
@@ -373,6 +411,11 @@ class Curler implements IReadable, IWritable
             return;
         }
 
+        if ($this->CookieKey && $this->ExecuteCount)
+        {
+            Cache::set($this->CookieKey, curl_getinfo($this->Handle, CURLINFO_COOKIELIST));
+        }
+
         curl_close($this->Handle);
         $this->Handle = null;
     }
@@ -398,7 +441,7 @@ class Curler implements IReadable, IWritable
 
         $this->clearResponse();
         $this->setContentType(null);
-        $this->Body = null;
+        $this->Body = $this->Data = null;
 
         if ($this->Pager)
         {
@@ -440,6 +483,8 @@ class Curler implements IReadable, IWritable
 
     private function createHandle(string $url): void
     {
+        $this->ExecuteCount = 0;
+
         $this->Handle = curl_init($url);
 
         // Return the transfer as a string
@@ -455,6 +500,21 @@ class Curler implements IReadable, IWritable
             if (!is_null($this->MaxRedirects))
             {
                 curl_setopt($this->Handle, CURLOPT_MAXREDIRS, $this->MaxRedirects);
+            }
+        }
+
+        $this->CookieKey = ($this->HandleCookies
+            ? Convert::sparseToString(":", [self::class, "cookies", $this->CookieCacheKey])
+            : null);
+
+        if ($this->CookieKey)
+        {
+            // Enable cookies without loading them from a file
+            curl_setopt($this->Handle, CURLOPT_COOKIEFILE, "");
+
+            foreach (Cache::get($this->CookieKey) ?: [] as $cookie)
+            {
+                curl_setopt($this->Handle, CURLOPT_COOKIELIST, $cookie);
             }
         }
 
@@ -522,22 +582,17 @@ class Curler implements IReadable, IWritable
         $this->CurlInfo     = null;
     }
 
-    private function applyData(?array $data): void
+    private function applyData(array $data): void
     {
         curl_setopt($this->Handle, CURLOPT_POSTFIELDS,
-            ($this->Body = $this->prepareData($data)) ?: "");
+            ($this->Body = $this->prepareData($data)));
     }
 
     /**
-     * @return string|array|null
+     * @return string|array
      */
-    private function prepareData(?array $data)
+    private function prepareData(array $data)
     {
-        if (is_null($data))
-        {
-            return null;
-        }
-
         $file = false;
         array_walk_recursive($data,
             function (&$value) use (&$file) { $file = $this->prepareDataValue($value) || $file; });
@@ -592,6 +647,8 @@ class Curler implements IReadable, IWritable
 
     protected function execute(bool $close = true, int $depth = 0): string
     {
+        $this->ExecuteCount++;
+
         curl_setopt($this->Handle, CURLOPT_HTTPHEADER, $this->Headers->getHeaders());
 
         // Use a cURL multi handle for upcoming simultaneous request handling
@@ -781,13 +838,22 @@ class Curler implements IReadable, IWritable
      */
     private function process(string $method, ?array $query, $data = null, ?string $mimeType = null)
     {
-        if ($this->AlwaysPaginate && !$this->Pager)
+        $isRaw = !is_null($mimeType);
+        if ($this->AlwaysPaginate && !$isRaw)
         {
-            throw new UnexpectedValueException(static::class . '::$Pager is not set');
+            if (!$this->Pager)
+            {
+                throw new UnexpectedValueException(static::class . '::$Pager is not set');
+            }
+            if ($method !== HttpRequestMethod::GET)
+            {
+                $data = $this->Pager->prepareData($data);
+            }
         }
 
         $this->initialise($method, $query);
 
+        $this->Data = $data;
         if (is_array($data))
         {
             $this->applyData($data);
@@ -812,7 +878,8 @@ class Curler implements IReadable, IWritable
             if ($this->AlwaysPaginate)
             {
                 $response = $this->Pager->getPage($response, $this)->entities();
-                if (array_keys($response) === [0] && is_array($response[0]))
+                if (array_keys($response) === [0] &&
+                    (is_array($response[0]) || is_scalar($response[0])))
                 {
                     return $response[0];
                 }
@@ -830,6 +897,10 @@ class Curler implements IReadable, IWritable
         {
             throw new UnexpectedValueException(static::class . '::$Pager is not set');
         }
+        if ($method !== HttpRequestMethod::GET)
+        {
+            $data = $this->Pager->prepareData($data);
+        }
 
         $this->initialise($method, $query);
 
@@ -837,6 +908,7 @@ class Curler implements IReadable, IWritable
         {
             if (!is_null($data))
             {
+                $this->Data = $data;
                 $this->applyData($data);
             }
 
@@ -851,7 +923,7 @@ class Curler implements IReadable, IWritable
                 throw new CurlerException($this, "Unable to deserialize response");
             }
 
-            $page = $this->Pager->getPage($response, $this);
+            $page = $this->Pager->getPage($response, $this, $page ?? null);
 
             foreach ($page->entities() as $entity)
             {
@@ -901,6 +973,7 @@ class Curler implements IReadable, IWritable
             "Method",
             "QueryString",
             "Body",
+            "Data",
             "Pager",
             "ResponseHeaders",
             "ResponseHeadersByName",
@@ -911,6 +984,8 @@ class Curler implements IReadable, IWritable
             "ThrowHttpErrors",
             "FollowRedirects",
             "MaxRedirects",
+            "HandleCookies",
+            "CookieCacheKey",
             "RetryAfterTooManyRequests",
             "RetryAfterMaxSeconds",
             "ExpectJson",
@@ -932,6 +1007,8 @@ class Curler implements IReadable, IWritable
             "ThrowHttpErrors",
             "FollowRedirects",
             "MaxRedirects",
+            "HandleCookies",
+            "CookieCacheKey",
             "RetryAfterTooManyRequests",
             "RetryAfterMaxSeconds",
             "ExpectJson",

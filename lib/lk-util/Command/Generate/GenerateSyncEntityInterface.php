@@ -239,13 +239,16 @@ class GenerateSyncEntityInterface extends GenerateCommand
             {
                 $_lines = [
                     "/**",
-                    " * @param $context",
                     " * @param $paramDoc",
                     " * @return $returnDoc",
                     " */",
                     "public function {$opMethod[$op]}($paramCode): $returnCode;",
                 ];
-                if (!$paramDoc)
+                if (!$paramDoc || (!SyncOperation::isList($op) && $op !== SyncOperation::READ))
+                {
+                    unset($_lines[1]);
+                }
+                if (!SyncOperation::isList($op))
                 {
                     unset($_lines[2]);
                 }

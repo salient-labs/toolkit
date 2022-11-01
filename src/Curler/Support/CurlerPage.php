@@ -21,6 +21,11 @@ final class CurlerPage implements ICurlerPage
     private $Entities;
 
     /**
+     * @var int
+     */
+    private $EntityCount;
+
+    /**
      * @var bool
      */
     private $IsLastPage;
@@ -48,10 +53,11 @@ final class CurlerPage implements ICurlerPage
      * @param null|array $nextData Data to send in the body of the next request
      * @param null|CurlerHeaders $nextHeaders Replaces the next request's HTTP headers
      */
-    public function __construct(array $entities, Curler $curler, ?string $nextUrl = null, ?bool $isLastPage = null, ?array $nextData = null, ?CurlerHeaders $nextHeaders = null)
+    public function __construct(array $entities, Curler $curler, ?ICurlerPage $previous, ?string $nextUrl = null, ?bool $isLastPage = null, ?array $nextData = null, ?CurlerHeaders $nextHeaders = null)
     {
-        $this->Entities   = $entities;
-        $this->IsLastPage = is_null($isLastPage) ? empty($nextUrl) : $isLastPage;
+        $this->Entities    = $entities;
+        $this->EntityCount = count($entities) + ($previous ? $previous->entityCount() : 0);
+        $this->IsLastPage  = is_null($isLastPage) ? empty($nextUrl) : $isLastPage;
 
         if (!$this->IsLastPage)
         {
@@ -64,6 +70,11 @@ final class CurlerPage implements ICurlerPage
     final public function entities(): array
     {
         return $this->Entities;
+    }
+
+    final public function entityCount(): int
+    {
+        return $this->EntityCount;
     }
 
     final public function isLastPage(): bool

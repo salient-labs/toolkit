@@ -15,6 +15,12 @@ interface ICurlerPage
     public function entities(): array;
 
     /**
+     * Return the number of entities retrieved so far
+     *
+     */
+    public function entityCount(): int;
+
+    /**
      * Return true if no more data is available
      *
      */

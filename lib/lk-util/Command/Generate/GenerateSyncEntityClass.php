@@ -103,6 +103,15 @@ class GenerateSyncEntityClass extends GenerateCommand
                 ->description("The endpoint to retrieve a sample entity from, e.g. '/user'")
                 ->optionType(CliOptionType::VALUE)
                 ->go()),
+            (CliOption::build()
+                ->long("method")
+                ->short("h")
+                ->valueName("METHOD")
+                ->description("The HTTP method to use when requesting a sample entity")
+                ->optionType(CliOptionType::ONE_OF)
+                ->allowedValues(["get", "post"])
+                ->defaultValue("get")
+                ->go()),
         ];
     }
 
@@ -180,7 +189,8 @@ class GenerateSyncEntityClass extends GenerateCommand
             if ($provider instanceof HttpSyncProvider)
             {
                 $endpoint  = $this->getOptionValue("endpoint") ?: "/" . Convert::toKebabCase($class);
-                $entity    = $provider->getCurler($endpoint)->get();
+                $method    = $this->getOptionValue("method");
+                $entity    = $provider->getCurler($endpoint)->{$method}();
                 $entityUri = $provider->getEndpointUrl($endpoint);
             }
             else
@@ -191,9 +201,13 @@ class GenerateSyncEntityClass extends GenerateCommand
 
         if ($entity)
         {
-            if (is_array($entity["data"] ?? null))
+            foreach (["data", "Result"] as $prop)
             {
-                $entity = $entity["data"];
+                if (is_array($entity[$prop] ?? null))
+                {
+                    $entity = $entity[$prop];
+                    break;
+                }
             }
 
             if (Test::isListArray($entity))

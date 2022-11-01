@@ -33,7 +33,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     abstract protected function getDefinition(string $entity): ISyncDefinition;
 
     /**
-     * Return a stable identifier that, together with the name of the class,
+     * Return a stable list of values that, together with the name of the class,
      * uniquely identifies the backend instance
      *
      * This method must be idempotent for each backend instance the provider
@@ -225,6 +225,25 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
         }
 
         throw new RuntimeException("Call to undefined method: " . static::class . "::$name()");
+    }
+
+    /**
+     * Get the provider ID currently assigned to the backend instance by the
+     * sync store
+     *
+     */
+    final public function getProviderId(): int
+    {
+        return $this->Id;
+    }
+
+    /**
+     * Get a stable hash that uniquely identifies the backend instance
+     *
+     */
+    final public function getProviderHash(bool $binary = false): string
+    {
+        return $binary ? $this->Hash : bin2hex($this->Hash);
     }
 
 }
