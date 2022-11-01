@@ -55,7 +55,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      *
      * @return array<string|\Stringable>
      */
-    abstract protected function _getBackendIdentifier(): array;
+    abstract public function getBackendIdentifier(): array;
 
     /**
      * Specify how to encode dates for the backend and/or the timezone to apply
@@ -64,7 +64,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      * {@see SyncProvider} instance.
      *
      */
-    abstract protected function _getDateFormatter(): DateFormatter;
+    abstract protected function createDateFormatter(): DateFormatter;
 
     /**
      * Get an array that maps concrete classes to more specific subclasses
@@ -160,18 +160,11 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
         return PipelineImmutable::create($this->Container);
     }
 
-    /**
-     * @see SyncProvider::_getBackendIdentifier()
-     */
-    final public function getBackendIdentifier(): array
-    {
-        return $this->_getBackendIdentifier();
-    }
 
     final public function getDateFormatter(): DateFormatter
     {
         return $this->DateFormatter
-            ?: ($this->DateFormatter = $this->_getDateFormatter());
+            ?: ($this->DateFormatter = $this->createDateFormatter());
     }
 
     final public static function getBindable(): array

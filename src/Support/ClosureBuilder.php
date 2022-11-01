@@ -24,10 +24,10 @@ use UnexpectedValueException;
 
 class ClosureBuilder
 {
-    private const ACTION_GET   = "get";
-    private const ACTION_ISSET = "isset";
-    private const ACTION_SET   = "set";
-    private const ACTION_UNSET = "unset";
+    public const ACTION_GET   = "get";
+    public const ACTION_ISSET = "isset";
+    public const ACTION_SET   = "set";
+    public const ACTION_UNSET = "unset";
 
     /**
      * @var string

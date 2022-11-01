@@ -28,12 +28,12 @@ use ReflectionParameter;
  */
 class GenerateFacadeClass extends GenerateCommand
 {
-    protected function _getDescription(): string
+    public function getDescription(): string
     {
         return "Generate a static interface to a class";
     }
 
-    protected function _getOptions(): array
+    protected function getOptionList(): array
     {
         return [
             (CliOption::build()

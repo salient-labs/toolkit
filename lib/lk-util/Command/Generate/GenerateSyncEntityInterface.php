@@ -33,12 +33,12 @@ class GenerateSyncEntityInterface extends GenerateCommand
         "create", "get", "update", "delete", "get-list"
     ];
 
-    protected function _getDescription(): string
+    public function getDescription(): string
     {
         return "Generate a provider interface for a sync entity class";
     }
 
-    protected function _getOptions(): array
+    protected function getOptionList(): array
     {
         return [
             (CliOption::build()

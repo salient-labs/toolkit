@@ -22,11 +22,11 @@ abstract class CliCommand implements ReturnsContainer
     use HasCliAppContainer;
 
     /**
-     * Return a short description of the command
+     * Get a short description of the command
      *
      * @return string
      */
-    abstract protected function _getDescription(): string;
+    abstract public function getDescription(): string;
 
     /**
      * Return a list of CliOption objects
@@ -48,7 +48,7 @@ abstract class CliCommand implements ReturnsContainer
      *
      * @return CliOption[]
      */
-    abstract protected function _getOptions(): array;
+    abstract protected function getOptionList(): array;
 
     /**
      * Run the command
@@ -175,16 +175,6 @@ abstract class CliCommand implements ReturnsContainer
         return $this->Name ?: [];
     }
 
-    /**
-     * Get a short description of the command
-     *
-     * @return string
-     */
-    final public function getDescription(): string
-    {
-        return $this->_getDescription();
-    }
-
     private function addOption(CliOption $option, array & $options, bool $hide = false)
     {
         $this->applyOption($option, true, $options, $hide);
@@ -240,7 +230,7 @@ abstract class CliCommand implements ReturnsContainer
             return;
         }
 
-        $_options = $this->_getOptions();
+        $_options = $this->getOptionList();
         $options  = [];
 
         foreach ($_options as $option)

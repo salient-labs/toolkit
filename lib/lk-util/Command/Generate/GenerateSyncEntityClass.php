@@ -24,12 +24,12 @@ use RuntimeException;
  */
 class GenerateSyncEntityClass extends GenerateCommand
 {
-    protected function _getDescription(): string
+    public function getDescription(): string
     {
         return "Generate a sync entity class";
     }
 
-    protected function _getOptions(): array
+    protected function getOptionList(): array
     {
         return [
             (CliOption::build()
