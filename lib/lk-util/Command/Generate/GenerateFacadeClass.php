@@ -20,6 +20,7 @@ use Lkrms\Support\TokenExtractor;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
+use ReflectionParameter;
 
 /**
  * Generates static interfaces to underlying classes
@@ -218,11 +219,13 @@ class GenerateFacadeClass extends GenerateCommand
             " * @method static void unload() Clear the underlying $class instance",
         ];
         $methods = [];
+        $methodsToDeclare = [];
         foreach ($_methods as $_method)
         {
             $phpDoc          = PhpDocParser::fromDocBlocks(Reflect::getAllMethodDocComments($_method));
             $methodFile      = $_method->getFileName();
             $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
+            $_params         = $_method->getParameters();
 
             if ($_method->isConstructor())
             {
@@ -243,6 +246,14 @@ class GenerateFacadeClass extends GenerateCommand
                     ($declared && $_method->getDeclaringClass() != $_class))
                 {
                     continue;
+                }
+
+                // If any parameters are passed by reference, __callStatic won't
+                // work and the method will need its own facade
+                if (array_filter($_params, fn(ReflectionParameter $p) => $p->isPassedByReference()))
+                {
+                    $methodsToDeclare[] = $_method;
+                    //continue;
                 }
 
                 $type = (($_type = $phpDoc->Return["type"] ?? null) && strpbrk($_type, "<>") === false
@@ -271,7 +282,7 @@ class GenerateFacadeClass extends GenerateCommand
             }
 
             $params = [];
-            foreach ($_method->getParameters() as $_param)
+            foreach ($_params as $_param)
             {
                 $params[] = Reflect::getParameterDeclaration(
                     $_param,
@@ -354,6 +365,22 @@ class GenerateFacadeClass extends GenerateCommand
 
         array_push($lines,
             ...$this->getStaticGetter("getServiceName", "$service::class"));
+
+        /** @var ReflectionMethod $_method */
+        foreach ($methodsToDeclare as $_method)
+        {
+            $_params = $_method->getParameters();
+            $code    = [
+                "return static::getInstance()->{$_method->name}("
+                . implode(", ", array_map(
+                    fn(ReflectionParameter $p) => "\${$p->name}",
+                    $_params
+                )) . ");",
+            ];
+
+            array_push($lines, "",
+                ...$this->getMethod($_method->name, $code, $_params, $_method->getReturnType()));
+        }
 
         $lines[] = "}";
 

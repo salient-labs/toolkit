@@ -41,16 +41,6 @@ parameters:
 			path: src/Support/PhpDocParser.php
 
 		-
-			message: "#^Property Lkrms\\\\Sync\\\\Concept\\\\SyncProvider\\:\\:\\$Hash is never read, only written\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncProvider.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Concept\\\\SyncProvider\\:\\:\\$Id is never read, only written\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncProvider.php
-
-		-
 			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncStore\\:\\:\\$Providers is never read, only written\\.$#"
 			count: 1
 			path: src/Sync/Support/SyncStore.php

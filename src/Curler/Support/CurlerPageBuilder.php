@@ -6,6 +6,7 @@ namespace Lkrms\Curler\Support;
 
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
+use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerHeaders;
 
@@ -15,6 +16,7 @@ use Lkrms\Curler\CurlerHeaders;
  * @method static $this build(?IContainer $container = null) Create a new CurlerPageBuilder (syntactic sugar for 'new CurlerPageBuilder()')
  * @method static $this entities(array $value) Data extracted from the upstream response
  * @method static $this curler(Curler $value) The Curler instance that retrieved the page
+ * @method static $this previous(?ICurlerPage $value)
  * @method static $this nextUrl(?string $value) The URL of the next page, including the query component (if any)
  * @method static $this isLastPage(?bool $value) Set if no more data is available
  * @method static $this nextData(?array $value) Data to send in the body of the next request

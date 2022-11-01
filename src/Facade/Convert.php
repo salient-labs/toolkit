@@ -21,6 +21,8 @@ use Lkrms\Utility\Conversions;
  * @method static Conversions getInstance() Return the underlying Conversions instance
  * @method static bool isLoaded() Return true if an underlying Conversions instance has been loaded
  * @method static void unload() Clear the underlying Conversions instance
+ * @method static int|null arrayKeyToOffset(string|int $key, array $array) Get the offset of a key in an array (see {@see Conversions::arrayKeyToOffset()})
+ * @method static array arraySpliceAtKey(array &$array, string|int $key, ?int $length = null, array $replacement = []) array_splice for associative arrays (see {@see Conversions::arraySpliceAtKey()})
  * @method static string arrayToCode(array $array, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::arrayToCode()}
  * @method static string classToBasename(string $class, string ...$suffixes) Remove the namespace and the first matched suffix from a class name (see {@see Conversions::classToBasename()})
  * @method static string classToNamespace(string $class) Return the namespace of a class (see {@see Conversions::classToNamespace()})
@@ -29,7 +31,7 @@ use Lkrms\Utility\Conversions;
  * @method static mixed flatten(mixed $value) Recursively remove outer single-element arrays (see {@see Conversions::flatten()})
  * @method static int intervalToSeconds(DateInterval|string $value) Convert an interval to the equivalent number of seconds (see {@see Conversions::intervalToSeconds()})
  * @method static array iterableToArray(iterable $iterable, bool $preserveKeys = false) If an iterable isn't already an array, make it one (see {@see Conversions::iterableToArray()})
- * @method static array|object|false iterableToItem(iterable $list, string|Closure $key, mixed $value) Return the first item in $list where the value at $key is $value (see {@see Conversions::iterableToItem()})
+ * @method static array|object|false iterableToItem(iterable $list, string|Closure $key, mixed $value, bool $strict = false) Return the first item in $list where the value at $key is $value (see {@see Conversions::iterableToItem()})
  * @method static Iterator iterableToIterator(iterable $iterable) If an iterable isn't already an Iterator, enclose it in one (see {@see Conversions::iterableToIterator()})
  * @method static string linesToLists(string $text, string $separator = "\n", ?string $marker = null, string $regex = '/^\\h*[-*] /') Remove duplicates in a string where 'top-level' lines ("section names") are grouped with any subsequent 'child' lines ("list items") (see {@see Conversions::linesToLists()})
  * @method static array listToMap(array $list, string|Closure $key) Create a map from a list (see {@see Conversions::listToMap()})
@@ -38,6 +40,8 @@ use Lkrms\Utility\Conversions;
  * @method static array objectToArray(object $object) A wrapper for get_object_vars (see {@see Conversions::objectToArray()})
  * @method static string pathToBasename(string $path, int $extLimit = 0) Remove the directory and up to the given number of extensions from a path (see {@see Conversions::pathToBasename()})
  * @method static string plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false) If $number is 1, return $singular, otherwise return $plural (see {@see Conversions::plural()})
+ * @method static array queryToData(string[] $query) Convert a list of "key=value" strings to an array like ["key" => "value"] (see {@see Conversions::queryToData()})
+ * @method static array renameArrayKey(string|int $key, string|int $newKey, array $array) Rename an array key without changing the order of values in the array (see {@see Conversions::renameArrayKey()})
  * @method static string|false scalarToString(mixed $value) Convert a scalar to a string (see {@see Conversions::scalarToString()})
  * @method static int sizeToBytes(string $size) Convert php.ini values like "128M" to bytes (see {@see Conversions::sizeToBytes()})
  * @method static string sparseToString(string $separator, array $array) Remove zero-width values from an array before imploding it (see {@see Conversions::sparseToString()})
@@ -71,5 +75,10 @@ final class Convert extends Facade
     protected static function getServiceName(): string
     {
         return Conversions::class;
+    }
+
+    public static function arraySpliceAtKey(array &$array, mixed $key, ?int $length = null, array $replacement = []): array
+    {
+        return static::getInstance()->arraySpliceAtKey($array, $key, $length, $replacement);
     }
 }

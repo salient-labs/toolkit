@@ -208,6 +208,57 @@ final class Conversions
     }
 
     /**
+     * Get the offset of a key in an array
+     *
+     * @param string|int $key
+     * @return int|null `null` if `$key` is not found in `$array`.
+     */
+    public function arrayKeyToOffset($key, array $array): ?int
+    {
+        return array_flip(array_keys($array))[$key] ?? null;
+    }
+
+    /**
+     * array_splice for associative arrays
+     *
+     * Removes `$length` values from the array, starting with `$array[$key]`,
+     * and replaces the removed portion with the elements of `$replacement`.
+     *
+     * See `array_splice()` for more information.
+     *
+     * @param string|int $key
+     * @return array The removed portion of the array.
+     */
+    public function arraySpliceAtKey(array & $array, $key, ?int $length = null, array $replacement = []): array
+    {
+        $keys   = array_keys($array);
+        $offset = array_flip($keys)[$key] ?? null;
+        if (is_null($offset))
+        {
+            throw new UnexpectedValueException("Array key not found: $key");
+        }
+        $values  = array_values($array);
+        $_keys   = array_splice($keys, $offset, $length, array_keys($replacement));
+        $_values = array_splice($values, $offset, $length, array_values($replacement));
+        $array   = array_combine($keys, $values);
+
+        return array_combine($_keys, $_values);
+    }
+
+    /**
+     * Rename an array key without changing the order of values in the array
+     *
+     * @param string|int $key
+     * @param string|int $newKey
+     */
+    public function renameArrayKey($key, $newKey, array $array): array
+    {
+        $this->arraySpliceAtKey($array, $key, 1, [$newKey => $array[$key] ?? null]);
+
+        return $array;
+    }
+
+    /**
      * Convert an interval to the equivalent number of seconds
      *
      * Works with ISO 8601 durations like `PT48M`.
@@ -411,7 +462,7 @@ final class Conversions
      * @return array|object|false `false` if no item was found in `$list` with
      * `$value` at `$key`.
      */
-    public function iterableToItem(iterable $list, $key, $value)
+    public function iterableToItem(iterable $list, $key, $value, bool $strict = false)
     {
         $list    = $this->iterableToIterator($list);
         $closure = $this->_keyToClosure($key);
@@ -420,7 +471,8 @@ final class Conversions
         {
             $item = $list->current();
             $list->next();
-            if ($closure($item) === $value)
+            if (($strict && ($closure($item) === $value)) ||
+                (!$strict && ($closure($item) == $value)))
             {
                 return $item;
             }
@@ -537,6 +589,30 @@ final class Conversions
         }
 
         return $noun . "s";
+    }
+
+    /**
+     * Convert a list of "key=value" strings to an array like ["key" => "value"]
+     *
+     * @param string[] $query
+     * @return array<string,string>
+     */
+    public function queryToData(array $query): array
+    {
+        // 1. "key=value" to ["key", "value"]
+        // 2. Discard "value", "=value", etc.
+        // 3. ["key", "value"] => ["key" => "value"]
+        return array_column(
+            array_filter(
+                array_map(
+                    fn(string $kv) => explode("=", $kv, 2),
+                    $query
+                ),
+                fn(array $kv) => count($kv) == 2 && trim($kv[0])
+            ),
+            1,
+            0
+        );
     }
 
     /**

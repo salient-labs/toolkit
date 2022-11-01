@@ -201,7 +201,7 @@ class AppContainer extends Container implements IReadable
      */
     final public function logConsoleMessages(?bool $debug = true, ?string $name = null)
     {
-        $name = ($name ? basename($name, ".log") : Sys::getProgramBasename(1));
+        $name = ($name ? basename($name, ".log") : Sys::getProgramBasename(".php"));
         Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log"), ConsoleLevels::ALL);
         if ($debug || (is_null($debug) && Env::debug()))
         {
