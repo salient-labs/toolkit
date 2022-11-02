@@ -265,4 +265,19 @@ abstract class GenerateCommand extends CliCommand
 
         return ltrim($value, "\\");
     }
+
+    /**
+     * @param string[] $values
+     * @return string[]
+     */
+    protected function getMultipleFqcnOptionValue(array $values, ?string $defaultNamespace = null): array
+    {
+        $_values = [];
+        foreach ($values as $value)
+        {
+            $_values[] = $this->getFqcnOptionValue($value, $defaultNamespace);
+        }
+
+        return $_values;
+    }
 }

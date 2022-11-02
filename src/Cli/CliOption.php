@@ -15,7 +15,8 @@ use UnexpectedValueException;
 /**
  * A getopt-style command line option
  *
- * See {@see \Lkrms\Cli\Concept\CliCommand::_getOptions()} for more information.
+ * See {@see \Lkrms\Cli\Concept\CliCommand::getOptionList()} for more
+ * information.
  *
  * @property-read string|null $Long
  * @property-read string|null $Short
@@ -268,7 +269,7 @@ final class CliOption implements IReadable, IImmutable
     /**
      * Use a fluent interface to create a new CliOption object
      *
-     * See {@see \Lkrms\Cli\Concept\CliCommand::_getOptions()} for more
+     * See {@see \Lkrms\Cli\Concept\CliCommand::getOptionList()} for more
      * information.
      *
      */

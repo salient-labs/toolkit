@@ -54,9 +54,10 @@ class GenerateSyncEntityInterface extends GenerateCommand
                 ->long("extend")
                 ->short("x")
                 ->valueName("CLASS")
-                ->description("The interface to extend (must extend ISyncProvider)")
+                ->description("An interface to extend (must extend ISyncProvider)")
                 ->optionType(CliOptionType::VALUE)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get("DEFAULT_NAMESPACE", "")))
+                ->multipleAllowed()
+                ->valueCallback(fn(array $values) => $this->getMultipleFqcnOptionValue($values, Env::get("DEFAULT_NAMESPACE", "")))
                 ->go()),
             (CliOption::build()
                 ->long("magic")
@@ -134,17 +135,26 @@ class GenerateSyncEntityInterface extends GenerateCommand
         $fqcn        = $namespace ? $namespace . "\\" . $class : $class;
         $classPrefix = $namespace ? "\\" : "";
 
-        $extendsNamespace = explode("\\", $this->getOptionValue("extend") ?: ISyncProvider::class);
-        $extendsClass     = array_pop($extendsNamespace);
-        $extendsNamespace = implode("\\", $extendsNamespace);
-        $extendsFqcn      = $extendsNamespace ? $extendsNamespace . "\\" . $extendsClass : $extendsClass;
+        $extendsFqcn = [];
+        foreach ($this->getOptionValue("extend") ?: [ISyncProvider::class] as $_extends)
+        {
+            $extendsNamespace = explode("\\", $_extends);
+            $extendsClass     = array_pop($extendsNamespace);
+            $extendsNamespace = implode("\\", $extendsNamespace);
+            $extendsFqcn[]    = $extendsNamespace ? $extendsNamespace . "\\" . $extendsClass : $extendsClass;
+        }
 
         $this->OutputClass     = $interface;
         $this->OutputNamespace = $namespace;
         $this->ClassPrefix     = $classPrefix;
 
         $service = $this->getFqcnAlias($fqcn, $class);
-        $extends = $this->getFqcnAlias($extendsFqcn);
+        $extends = [];
+        foreach ($extendsFqcn as $_extends)
+        {
+            $extends[] = $this->getFqcnAlias($_extends);
+        }
+        $extends = implode(", ", $extends);
 
         $camelClass = Convert::toCamelCase($class);
 

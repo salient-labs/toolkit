@@ -9,7 +9,8 @@ use Lkrms\Concept\Enumeration;
 /**
  * Command line option types
  *
- * See {@see \Lkrms\Cli\Concept\CliCommand::_getOptions()} for more information.
+ * See {@see \Lkrms\Cli\Concept\CliCommand::getOptionList()} for more
+ * information.
  *
  */
 final class CliOptionType extends Enumeration

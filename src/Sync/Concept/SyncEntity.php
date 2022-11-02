@@ -42,7 +42,7 @@ use UnexpectedValueException;
  *   `_set<PropertyName>(null)` if not declared)
  *
  * Instances serialize to associative arrays of accessible properties with
- * snake_case keys. Override {@see SyncEntity::_getSerializeRules()} to specify
+ * snake_case keys. Override {@see SyncEntity::buildSerializeRules()} to specify
  * how nested entities should be serialized.
  *
  */
@@ -284,7 +284,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * converted.
      *
      * @internal
-     * @see SyncEntity::_getSerializeRules()
+     * @see SyncEntity::buildSerializeRules()
      */
     final protected function serialize(): array
     {
@@ -433,7 +433,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * The entity's {@see SerializeRules} are applied to each `SyncEntity`
      * encountered during this recursive operation.
      *
-     * @see SyncEntity::_getSerializeRules()
+     * @see SyncEntity::buildSerializeRules()
      */
     final public function toArray(): array
     {

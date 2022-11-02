@@ -160,7 +160,6 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
         return PipelineImmutable::create($this->Container);
     }
 
-
     final public function getDateFormatter(): DateFormatter
     {
         return $this->DateFormatter
@@ -220,20 +219,11 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
         throw new RuntimeException("Call to undefined method: " . static::class . "::$name()");
     }
 
-    /**
-     * Get the provider ID currently assigned to the backend instance by the
-     * sync store
-     *
-     */
     final public function getProviderId(): int
     {
         return $this->Id;
     }
 
-    /**
-     * Get a stable hash that uniquely identifies the backend instance
-     *
-     */
     final public function getProviderHash(bool $binary = false): string
     {
         return $binary ? $this->Hash : bin2hex($this->Hash);

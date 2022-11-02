@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
+use Lkrms\Support\ArrayKeyConformity;
+
 /**
  * The context within which an IProvidable is instantiated
  *
@@ -55,6 +57,15 @@ interface IProvidableContext extends IImmutable, ReturnsContainer
     public function withParent(?IHierarchy $parent);
 
     /**
+     * Propagate the current payload's array key conformity
+     *
+     * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
+     * `COMPLETE` wherever possible to improve performance.
+     * @return $this
+     */
+    public function withConformity(int $conformity);
+
+    /**
      * Get the value most recently passed to set($key)
      *
      */
@@ -72,5 +83,11 @@ interface IProvidableContext extends IImmutable, ReturnsContainer
      *
      */
     public function getParent(): ?IHierarchy;
+
+    /**
+     * Get the current payload's array key conformity
+     *
+     */
+    public function getConformity(): int;
 
 }
