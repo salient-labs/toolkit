@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Lkrms\Sync\Exception;
 
 use Lkrms\Facade\Convert;
 use Lkrms\Sync\Contract\ISyncProvider;

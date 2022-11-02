@@ -10,7 +10,7 @@ namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
-use Lkrms\Exception\InvalidCliArgumentException;
+use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Sync\Concept\SyncEntity;
@@ -169,12 +169,12 @@ class GenerateSyncEntityInterface extends GenerateCommand
 
         if (!$fqcn)
         {
-            throw new InvalidCliArgumentException("invalid class: $fqcn");
+            throw new CliArgumentsInvalidException("invalid class: $fqcn");
         }
 
         if (!is_a($fqcn, SyncEntity::class, true))
         {
-            throw new InvalidCliArgumentException("not a subclass of SyncEntity: $fqcn");
+            throw new CliArgumentsInvalidException("not a subclass of SyncEntity: $fqcn");
         }
 
         $plural = $this->getOptionValue("plural") ?: $fqcn::getPluralClassName();

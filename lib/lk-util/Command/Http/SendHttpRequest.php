@@ -11,7 +11,7 @@ namespace Lkrms\LkUtil\Command\Http;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Concept\CliCommand;
-use Lkrms\Exception\InvalidCliArgumentException;
+use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Env;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use UnexpectedValueException;
@@ -110,7 +110,7 @@ class SendHttpRequest extends CliCommand
             }
             elseif (!file_exists($json))
             {
-                throw new InvalidCliArgumentException("file not found: $json");
+                throw new CliArgumentsInvalidException("file not found: $json");
             }
             $data = json_decode(file_get_contents($json), true);
         }
@@ -120,14 +120,14 @@ class SendHttpRequest extends CliCommand
                 ($providerNamespace         = Env::get("PROVIDER_NAMESPACE", "")) &&
                 class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
         {
-            throw new InvalidCliArgumentException("class does not exist: $providerClass");
+            throw new CliArgumentsInvalidException("class does not exist: $providerClass");
         }
 
         $provider = $this->app()->get($providerClass);
 
         if (!($provider instanceof HttpSyncProvider))
         {
-            throw new InvalidCliArgumentException("not a subclass of HttpSyncProvider: $providerClass");
+            throw new CliArgumentsInvalidException("not a subclass of HttpSyncProvider: $providerClass");
         }
 
         $curler = $provider->getCurler($endpointPath);
