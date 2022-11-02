@@ -31,12 +31,12 @@ class SendHttpRequest extends CliCommand
         return $this->Method = strtoupper(array_pop($name));
     }
 
-    protected function _getDescription(): string
+    public function getDescription(): string
     {
         return "Send a {$this->getMethod()} request to an HttpSyncProvider endpoint";
     }
 
-    protected function _getOptions(): array
+    protected function getOptionList(): array
     {
         $options = [
             (CliOption::build()

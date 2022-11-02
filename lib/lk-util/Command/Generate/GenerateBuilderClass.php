@@ -32,12 +32,12 @@ use ReflectionProperty;
  */
 class GenerateBuilderClass extends GenerateCommand
 {
-    protected function _getDescription(): string
+    public function getDescription(): string
     {
         return "Generate a fluent interface that creates instances of a class";
     }
 
-    protected function _getOptions(): array
+    protected function getOptionList(): array
     {
         return [
             (CliOption::build()

@@ -17,12 +17,12 @@ use Lkrms\Facade\Env;
 
 class CheckHeartbeat extends CliCommand
 {
-    protected function _getDescription(): string
+    public function getDescription(): string
     {
         return "Send a heartbeat request to a provider";
     }
 
-    protected function _getOptions(): array
+    protected function getOptionList(): array
     {
         return [
             (CliOption::build()

@@ -15,7 +15,6 @@ use Lkrms\Contract\IReadable;
  * @property-read array<string,string> $Properties Property name => declared property name
  * @property-read string[] $MetaProperties Arbitrary property names
  *
- * @internal
  * @see ClosureBuilder
  */
 final class ClosureBuilderProperties implements IReadable

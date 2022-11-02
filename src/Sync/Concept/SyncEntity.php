@@ -31,13 +31,18 @@ use UnexpectedValueException;
  * writable by default. Override {@see TReadable::getReadable()} and/or
  * {@see TWritable::getWritable()} to change this.
  *
- * "Magic" property methods `protected function _get<PropertyName>()` and/or
- * `protected function _set<PropertyName>($value)` are discovered automatically
- * and need not be returned by {@see TReadable::getReadable()} or
- * {@see TWritable::getWritable()}.
+ * The following "magic" property methods are discovered automatically and don't
+ * need to be returned by {@see TReadable::getReadable()} or
+ * {@see TWritable::getWritable()}:
+ * - `protected function _get<PropertyName>()`
+ * - `protected function _isset<PropertyName>()` (optional; falls back to
+ *   `_get<PropertyName>()` if not declared)
+ * - `protected function _set<PropertyName>($value)`
+ * - `protected function _unset<PropertyName>()` (optional; falls back to
+ *   `_set<PropertyName>(null)` if not declared)
  *
  * Instances serialize to associative arrays of accessible properties with
- * snake_case keys. Override {@see SyncEntity::_getSerializeRules()} to specify
+ * snake_case keys. Override {@see SyncEntity::buildSerializeRules()} to specify
  * how nested entities should be serialized.
  *
  */
@@ -279,7 +284,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * converted.
      *
      * @internal
-     * @see SyncEntity::_getSerializeRules()
+     * @see SyncEntity::buildSerializeRules()
      */
     final protected function serialize(): array
     {
@@ -296,7 +301,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      *
      * @return SerializeRules|SerializeRulesBuilder
      */
-    protected function _getSerializeRules(SerializeRulesBuilder $build)
+    protected function buildSerializeRules(SerializeRulesBuilder $build)
     {
         return $build->go();
     }
@@ -418,7 +423,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     final protected function getSerializeRules(): SerializeRules
     {
         return SerializeRulesBuilder::resolve(
-            $this->_getSerializeRules(SerializeRules::build())
+            $this->buildSerializeRules(SerializeRules::build())
         );
     }
 
@@ -428,7 +433,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * The entity's {@see SerializeRules} are applied to each `SyncEntity`
      * encountered during this recursive operation.
      *
-     * @see SyncEntity::_getSerializeRules()
+     * @see SyncEntity::buildSerializeRules()
      */
     final public function toArray(): array
     {

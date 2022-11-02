@@ -12,6 +12,7 @@ use Lkrms\Contract\IReadable;
  * @property-read string $Path
  * @property-read array|null $Query
  * @property-read Closure|null $HeadersCallback
+ * @property-read Closure|null $PagerCallback
  */
 final class HttpSyncDefinitionRequest implements IReadable
 {
@@ -33,13 +34,20 @@ final class HttpSyncDefinitionRequest implements IReadable
     protected $HeadersCallback;
 
     /**
-     * @param Closure|null $headersCallback Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?CurlerHeaders`
+     * @var Closure|null
      */
-    public function __construct(string $path, ?array $query = null, ?Closure $headersCallback = null)
+    protected $PagerCallback;
+
+    /**
+     * @param Closure|null $headersCallback Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?CurlerHeaders`
+     * @param Closure|null $pagerCallback Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?ICurlerPager`
+     */
+    public function __construct(string $path, ?array $query = null, ?Closure $headersCallback = null, ?Closure $pagerCallback = null)
     {
         $this->Path  = $path;
         $this->Query = $query;
         $this->HeadersCallback = $headersCallback;
+        $this->PagerCallback   = $pagerCallback;
     }
 
 }

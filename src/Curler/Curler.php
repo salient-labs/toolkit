@@ -364,6 +364,16 @@ class Curler implements IReadable, IWritable
         return $this;
     }
 
+    /**
+     * @return $this
+     */
+    final public function replacePager(ICurlerPager $pager)
+    {
+        $this->Pager = $pager;
+
+        return $this;
+    }
+
     final public function responseContentTypeIs(string $mimeType): bool
     {
         $contentType = $this->ResponseHeaders->getHeaderValue(
@@ -465,7 +475,7 @@ class Curler implements IReadable, IWritable
         }
     }
 
-    private function getUrl(?array $query): string
+    final public function getQueryUrl(?array $query): string
     {
         return $this->BaseUrl . $this->getQueryString($query);
     }
@@ -1028,6 +1038,7 @@ class Curler implements IReadable, IWritable
      * Iterates over each item returned by the endpoint. If the endpoint doesn't
      * return a list, iterates over each page.
      *
+     * @deprecated Use {@see \Lkrms\Curler\Pager\QueryPager} instead
      * @param array<string,mixed> $query The first element must be the page
      * number parameter. It will be incremented after each request.
      * @param callable|string|null $selector If set, data will be taken from:
@@ -1083,7 +1094,7 @@ class Curler implements IReadable, IWritable
                 if ($yielded)
                 {
                     $query[$pageKey]++;
-                    $nextUrl = $this->getUrl($query);
+                    $nextUrl = $this->getQueryUrl($query);
                 }
             }
             while ($nextUrl);

@@ -10,12 +10,12 @@ use Lkrms\Cli\Concept\CliCommand;
 
 class TestOptions extends CliCommand
 {
-    protected function _getDescription(): string
+    public function getDescription(): string
     {
         return "Test the available option types";
     }
 
-    protected function _getOptions(): array
+    protected function getOptionList(): array
     {
         // Defaults:
         //

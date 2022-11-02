@@ -9,6 +9,7 @@ use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
 use Lkrms\Sync\Support\SyncContext;
+use Lkrms\Sync\Support\SyncFilterPolicy;
 use Lkrms\Sync\Support\SyncOperation as OP;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\PostProvider;
@@ -42,12 +43,12 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return null;
     }
 
-    protected function _getBackendIdentifier(): array
+    public function getBackendIdentifier(): array
     {
         return [self::JSON_PLACEHOLDER_BASE_URL];
     }
 
-    protected function _getDateFormatter(): DateFormatter
+    protected function createDateFormatter(): DateFormatter
     {
         return new DateFormatter();
     }
@@ -71,11 +72,13 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         {
             case Post::class:
                 return $define->operations([OP::READ, OP::READ_LIST])
-                    ->path("/posts");
+                    ->path("/posts")
+                    ->filterPolicy(SyncFilterPolicy::IGNORE);
 
             case User::class:
                 return $define->operations([OP::READ, OP::READ_LIST])
-                    ->path("/users");
+                    ->path("/users")
+                    ->filterPolicy(SyncFilterPolicy::IGNORE);
         }
 
         return null;

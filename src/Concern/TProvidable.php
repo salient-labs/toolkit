@@ -121,7 +121,9 @@ trait TProvidable
     final public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProvidableContext $context = null): iterable
     {
         $container = ($context ?: $provider)->container()->inContextOf(get_class($provider));
-        $context   = $context ? $context->withContainer($container) : new ProvidableContext($container);
+        $context   = (
+            $context ? $context->withContainer($container) : new ProvidableContext($container)
+        )->withConformity($conformity);
 
         foreach ($dataList as $data)
         {

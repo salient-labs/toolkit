@@ -73,7 +73,7 @@ abstract class ConsoleTarget
         return false;
     }
 
-    protected function _getMessageFormat(int $level): ConsoleMessageFormat
+    protected function createMessageFormat(int $level): ConsoleMessageFormat
     {
         if (!$this->isTty())
         {
@@ -122,7 +122,7 @@ abstract class ConsoleTarget
         throw new UnexpectedValueException("Invalid ConsoleLevel: $level");
     }
 
-    protected function _getTagFormat(int $tag): ConsoleFormat
+    protected function createTagFormat(int $tag): ConsoleFormat
     {
         if (!$this->isTty())
         {
@@ -147,13 +147,13 @@ abstract class ConsoleTarget
     final public function getMessageFormat(int $level): ConsoleMessageFormat
     {
         return $this->MessageFormats[$level]
-            ?? ($this->MessageFormats[$level] = $this->_getMessageFormat($level));
+            ?? ($this->MessageFormats[$level] = $this->createMessageFormat($level));
     }
 
     final public function getTagFormat(int $tag): ConsoleFormat
     {
         return $this->TagFormats[$tag]
-            ?? ($this->TagFormats[$tag] = $this->_getTagFormat($tag));
+            ?? ($this->TagFormats[$tag] = $this->createTagFormat($tag));
     }
 
     final public function getFormatter(): ConsoleFormatter

@@ -36,10 +36,16 @@ class ProvidableContext implements IProvidableContext
      */
     protected $Parent;
 
-    public function __construct(IContainer $container, ?IHierarchy $parent = null)
+    /**
+     * @var int
+     */
+    protected $Conformity;
+
+    public function __construct(IContainer $container, ?IHierarchy $parent = null, int $conformity = ArrayKeyConformity::NONE)
     {
-        $this->Container = $container;
-        $this->Parent    = $parent;
+        $this->Container  = $container;
+        $this->Parent     = $parent;
+        $this->Conformity = $conformity;
     }
 
     final protected function maybeMutate(string $property, $value, ?string $key = null)
@@ -97,6 +103,11 @@ class ProvidableContext implements IProvidableContext
         return $this->maybeMutate("Parent", $parent);
     }
 
+    final public function withConformity(int $conformity)
+    {
+        return $this->maybeMutate("Conformity", $conformity);
+    }
+
     final public function get(string $key)
     {
         return $this->Values[$key] ?? false;
@@ -110,6 +121,11 @@ class ProvidableContext implements IProvidableContext
     final public function getParent(): ?IHierarchy
     {
         return $this->Parent;
+    }
+
+    final public function getConformity(): int
+    {
+        return $this->Conformity;
     }
 
 }

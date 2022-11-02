@@ -12,8 +12,9 @@ use Lkrms\Concept\Enumeration;
  */
 final class HttpHeader extends Enumeration
 {
-    public const ACCEPT       = "Accept";
-    public const CONTENT_TYPE = "Content-Type";
-    public const USER_AGENT   = "User-Agent";
+    public const ACCEPT        = "Accept";
+    public const AUTHORIZATION = "Authorization";
+    public const CONTENT_TYPE  = "Content-Type";
+    public const USER_AGENT    = "User-Agent";
 
 }
