@@ -12,7 +12,9 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
+use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
+use Lkrms\Support\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use UnexpectedValueException;
 
@@ -66,21 +68,24 @@ class SendHttpRequest extends CliCommand
                 ->go()),
         ];
 
-        switch ($this->getMethod())
+        if (in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::POST]))
         {
-            case "GET":
-            case "HEAD":
-                break;
+            $options[] = (CliOption::build()
+                ->long("paginate")
+                ->short("p")
+                ->description("Retrieve every available response page")
+                ->go());
+        }
 
-            default:
-                $options[] = (CliOption::build()
-                    ->long("json")
-                    ->short("j")
-                    ->valueName("FILE")
-                    ->description("The path to JSON-serialized data to submit with the request")
-                    ->optionType(CliOptionType::VALUE)
-                    ->go());
-                break;
+        if (!in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::HEAD]))
+        {
+            $options[] = (CliOption::build()
+                ->long("json")
+                ->short("j")
+                ->valueName("FILE")
+                ->description("The path to JSON-serialized data to submit with the request")
+                ->optionType(CliOptionType::VALUE)
+                ->go());
         }
 
         return $options;
@@ -91,6 +96,7 @@ class SendHttpRequest extends CliCommand
         $providerClass = $this->getOptionValue("provider");
         $endpointPath  = $this->getOptionValue("endpoint");
         $query         = $this->getOptionValue("query");
+        $paginate      = $this->hasOption("paginate") ? $this->getOptionValue("paginate") : false;
         $json          = $this->hasOption("json") ? $this->getOptionValue("json") : null;
 
         $query = array_filter(
@@ -134,32 +140,37 @@ class SendHttpRequest extends CliCommand
 
         switch ($this->getMethod())
         {
-            case "GET":
-                $result = $curler->get($query);
+            case HttpRequestMethod::GET:
+                $result = $paginate ? $curler->getP($query) : $curler->get($query);
                 break;
 
-            case "HEAD":
+            case HttpRequestMethod::HEAD:
                 $result = $curler->head($query);
                 break;
 
-            case "POST":
-                $result = $curler->post($data ?? null, $query);
+            case HttpRequestMethod::POST:
+                $result = $paginate ? $curler->postP($data ?? null, $query) : $curler->post($data ?? null, $query);
                 break;
 
-            case "PUT":
+            case HttpRequestMethod::PUT:
                 $result = $curler->put($data ?? null, $query);
                 break;
 
-            case "DELETE":
+            case HttpRequestMethod::DELETE:
                 $result = $curler->delete($data ?? null, $query);
                 break;
 
-            case "PATCH":
+            case HttpRequestMethod::PATCH:
                 $result = $curler->patch($data ?? null, $query);
                 break;
 
             default:
                 throw new UnexpectedValueException("Invalid method: " . $this->getMethod());
+        }
+
+        if ($paginate)
+        {
+            $result = Convert::iterableToArray($result);
         }
 
         echo json_encode($result);
