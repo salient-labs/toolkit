@@ -664,7 +664,7 @@ EOF;
             }
         }
 
-        if (is_null($option->Value) || $option->Value === false || $option->Value === 0)
+        if (is_null($option->Value) || $option->Value === [] || $option->Value === false || $option->Value === 0)
         {
             return null;
         }

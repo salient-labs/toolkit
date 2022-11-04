@@ -12,9 +12,9 @@ use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncFilterPolicy;
 use Lkrms\Sync\Support\SyncOperation as OP;
 use Lkrms\Tests\Sync\Entity\Post;
-use Lkrms\Tests\Sync\Entity\PostProvider;
+use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
+use Lkrms\Tests\Sync\Entity\Provider\UserProvider;
 use Lkrms\Tests\Sync\Entity\User;
-use Lkrms\Tests\Sync\Entity\UserProvider;
 
 /**
  *

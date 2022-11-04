@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Lkrms\Concept;
 
-use Lkrms\Contract\IEnumeration;
+use Lkrms\Contract\IDictionary;
 
 /**
- * Base class for enumerations
+ * Base class for dictionaries
  *
  */
-abstract class Enumeration implements IEnumeration
+abstract class Dictionary implements IDictionary
 {
     final private function __construct()
     {

@@ -8,7 +8,7 @@ use Lkrms\Sync\Concept\SyncEntity;
 
 /**
  * @lkrms-sample-entity https://jsonplaceholder.typicode.com/posts
- * @lkrms-generate-command lk-util generate sync entity --generate='Lkrms\Tests\Sync\Entity\Post' --visibility='public' --provider='Lkrms\Tests\Sync\Provider\JsonPlaceholderApi' --endpoint='/posts'
+ * @lkrms-generate-command lk-util generate sync entity --generate='Lkrms\Tests\Sync\Entity\Post' --visibility='public' --provider='Lkrms\Tests\Sync\Provider\JsonPlaceholderApi' --endpoint='/posts' --method='get'
  */
 class Post extends SyncEntity
 {

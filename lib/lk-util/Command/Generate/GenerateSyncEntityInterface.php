@@ -15,6 +15,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncOperation;
 
@@ -128,12 +129,25 @@ class GenerateSyncEntityInterface extends GenerateCommand
             "delete-list" => SyncOperation::DELETE_LIST,
         ];
 
-        $namespace   = explode("\\", $this->getOptionValue("class"));
+        $namespace   = explode("\\", $classArg = $this->getOptionValue("class"));
         $class       = array_pop($namespace);
-        $interface   = $class . "Provider";
         $namespace   = implode("\\", $namespace);
-        $fqcn        = $namespace ? $namespace . "\\" . $class : $class;
-        $classPrefix = $namespace ? "\\" : "";
+        $fqcn        = $namespace . "\\" . $class;
+        $classPrefix = "\\";
+
+        if (!$class)
+        {
+            throw new CliArgumentsInvalidException("invalid class: $classArg");
+        }
+
+        if (!is_a($fqcn, SyncEntity::class, true))
+        {
+            throw new CliArgumentsInvalidException("not a subclass of SyncEntity: $classArg");
+        }
+
+        $namespace = explode("\\", SyncClosureBuilder::entityToProvider($fqcn));
+        $interface = array_pop($namespace);
+        $namespace = implode("\\", $namespace);
 
         $extendsFqcn = [];
         foreach ($this->getOptionValue("extend") ?: [ISyncProvider::class] as $_extends)
@@ -141,7 +155,7 @@ class GenerateSyncEntityInterface extends GenerateCommand
             $extendsNamespace = explode("\\", $_extends);
             $extendsClass     = array_pop($extendsNamespace);
             $extendsNamespace = implode("\\", $extendsNamespace);
-            $extendsFqcn[]    = $extendsNamespace ? $extendsNamespace . "\\" . $extendsClass : $extendsClass;
+            $extendsFqcn[]    = $extendsNamespace . "\\" . $extendsClass;
         }
 
         $this->OutputClass     = $interface;
@@ -166,16 +180,6 @@ class GenerateSyncEntityInterface extends GenerateCommand
             function ($op) use ($operationMap) { return $operationMap[$op]; },
             $this->getOptionValue("op")
         );
-
-        if (!$fqcn)
-        {
-            throw new CliArgumentsInvalidException("invalid class: $fqcn");
-        }
-
-        if (!is_a($fqcn, SyncEntity::class, true))
-        {
-            throw new CliArgumentsInvalidException("not a subclass of SyncEntity: $fqcn");
-        }
 
         $plural = $this->getOptionValue("plural") ?: $fqcn::getPluralClassName();
 
@@ -314,11 +318,6 @@ class GenerateSyncEntityInterface extends GenerateCommand
         if (!$imports)
         {
             unset($blocks[3]);
-        }
-
-        if (!$namespace)
-        {
-            unset($blocks[2]);
         }
 
         array_unshift($lines, implode(PHP_EOL . PHP_EOL, $blocks));

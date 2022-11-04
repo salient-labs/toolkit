@@ -5,8 +5,8 @@
 #### Operation signatures
 
 To perform a sync operation, a [SyncProvider][SyncProvider] must implement an
-[entity][SyncEntity]'s provider interface (e.g. `UserProvider` for a `User`
-entity) and either:
+[entity][SyncEntity]'s provider interface (e.g. `\Provider\UserProvider` for a
+`\User` entity) and either:
 
 1. return a closure for the [SyncOperation][SyncOperation] and entity via
    [getDefinition()][getDefinition], or

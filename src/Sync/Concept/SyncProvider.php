@@ -116,11 +116,6 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     private $DateFormatter;
 
     /**
-     * @var array<string,string[]>
-     */
-    private static $SyncProviderInterfaces = [];
-
-    /**
      * @var array<string,Closure>
      */
     private $MagicMethodClosures = [];
@@ -168,20 +163,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
 
     final public static function getBindable(): array
     {
-        if (!is_null($interfaces = self::$SyncProviderInterfaces[static::class] ?? null))
-        {
-            return $interfaces;
-        }
-        $class      = new ReflectionClass(static::class);
-        $interfaces = [];
-        foreach ($class->getInterfaces() as $name => $interface)
-        {
-            if ($interface->isSubclassOf(ISyncProvider::class))
-            {
-                $interfaces[] = $name;
-            }
-        }
-        return self::$SyncProviderInterfaces[static::class] = $interfaces;
+        return SyncClosureBuilder::get(static::class)->getSyncProviderInterfaces();
     }
 
     final public function with(string $syncEntity, $context = null): SyncEntityProvider
@@ -208,7 +190,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     {
         if (($closure = $this->MagicMethodClosures[$name = strtolower($name)] ?? false) === false)
         {
-            $closure = SyncClosureBuilder::get(static::class)->getSyncOperationFromMethodClosure($name, $this);
+            $closure = SyncClosureBuilder::get(static::class)->getMagicSyncOperationClosure($name, $this);
             $this->MagicMethodClosures[$name] = $closure;
         }
         if ($closure)
