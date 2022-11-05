@@ -106,45 +106,47 @@ final class Filesystem
     }
 
     /**
-     * Convert an array to CSV
+     * Convert data to CSV
      *
-     * @param array $data An array of arrays (rows) to convert to CSV.
+     * @param iterable $data A series of arrays (rows) to convert to CSV.
      * @param string|null $filename Path to the output file, or `null` to return
      * the CSV as a string.
-     * @param bool $headerRow If `true`, include `array_keys($data[0])` as a
-     * header row.
+     * @param bool $headerRow If `true`, add `array_keys($row)` before the first
+     * row.
      * @param string $nullValue What should appear in cells that are `null`?
      * @return string|false|void
      * @throws RuntimeException
      */
-    public function writeCsv(
-        array $data,
-        string $filename  = null,
-        bool $headerRow   = true,
-        string $nullValue = null
-    ) {
-        $return = false;
-
+    public function writeCsv(iterable $data, ?string $filename = null, bool $headerRow = true, ?string $nullValue = null, ?int & $count = null, ? callable $callback = null)
+    {
         if (is_null($filename))
         {
             $filename = "php://temp";
             $return   = true;
         }
 
-        $f = fopen($filename, "w");
-
-        if ($f === false)
+        if (($f = fopen($filename, "w")) === false)
         {
             throw new RuntimeException("Could not open $filename");
         }
 
-        if ($headerRow)
-        {
-            array_unshift($data, array_keys($data[array_keys($data)[0]] ?? []));
-        }
-
+        $count = 0;
         foreach ($data as $row)
         {
+            if ($callback)
+            {
+                $row = $callback($row);
+            }
+
+            if ($headerRow)
+            {
+                if (fputcsv($f, array_keys($row)) === false)
+                {
+                    throw new RuntimeException("Could not write to $filename");
+                }
+                $headerRow = false;
+            }
+
             foreach ($row as &$value)
             {
                 if (is_null($value))
@@ -161,9 +163,10 @@ final class Filesystem
             {
                 throw new RuntimeException("Could not write to $filename");
             }
+            $count++;
         }
 
-        if ($return)
+        if ($return ?? false)
         {
             rewind($f);
             $csv = stream_get_contents($f);
