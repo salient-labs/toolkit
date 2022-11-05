@@ -6,6 +6,7 @@ namespace Lkrms\Utility;
 
 use Lkrms\Facade\Convert;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionIntersectionType;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -78,7 +79,25 @@ final class Reflection
         {
             $class = $parent;
         }
+
         return $class;
+    }
+
+    /**
+     * If a method has a prototype, return its declaring class, otherwise return
+     * the method's declaring class
+     *
+     */
+    public function getMethodPrototypeClass(ReflectionMethod $method): ReflectionClass
+    {
+        try
+        {
+            return $method->getPrototype()->getDeclaringClass();
+        }
+        catch (ReflectionException $ex)
+        {
+            return $method->getDeclaringClass();
+        }
     }
 
     /**

@@ -8,6 +8,7 @@ use Dice\Dice;
 use Lkrms\Contract\IBindable;
 use Lkrms\Contract\IBindableSingleton;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\ReceivesService;
 use Lkrms\Contract\ReceivesContainer;
 use RuntimeException;
 use UnexpectedValueException;
@@ -69,15 +70,25 @@ class Container implements IContainer
         while (self::class != $class && ($class = get_parent_class($class)));
         $this->Dice = $this->Dice->addCallback(
             "*",
-            function (object $instance, string $name)
+            function (object $instance, string $name): object
             {
-                if ($instance instanceof ReceivesContainer)
-                {
-                    $instance->setContainer($this, $name);
-                }
-                return $instance;
+                return $this->callback($instance, $name);
             }
         );
+    }
+
+    private function callback(object $instance, string $name): object
+    {
+        if ($instance instanceof ReceivesContainer)
+        {
+            $instance = $instance->setContainer($this);
+        }
+        if ($instance instanceof ReceivesService)
+        {
+            $instance = $instance->setService($name);
+        }
+
+        return $instance;
     }
 
     final public static function hasGlobalContainer(): bool
@@ -145,6 +156,31 @@ class Container implements IContainer
     final public function get(string $id, ...$params)
     {
         return $this->Dice->create($id, $params);
+    }
+
+    /**
+     * Similar to get(), but override the service name passed to
+     * `ReceivesService::setService()`
+     *
+     */
+    final public function getAs(string $id, string $baseId, ...$params)
+    {
+        return $this->Dice->addCallback(
+            "*",
+            function (object $instance, string $name, bool & $continue) use ($id, $baseId): object
+            {
+                if (!strcasecmp(get_class($instance), $id))
+                {
+                    $continue = false;
+
+                    return $this->callback($instance, $baseId);
+                }
+
+                return $this->callback($instance, $name);
+            },
+            null,
+            true
+        )->create($id, $params);
     }
 
     final public function getName(string $id): string

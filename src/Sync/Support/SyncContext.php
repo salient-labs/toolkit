@@ -75,9 +75,7 @@ final class SyncContext extends ProvidableContext implements ISyncContext
         {
             return $this->maybeMutate("Filter", array_merge_recursive(...array_map(
                 fn(SyncEntity $entity): array => [
-                    Convert::toSnakeCase(Convert::classToBasename(
-                        $entity->providable() ?: get_class($entity)
-                    )) => [$entity->Id]
+                    Convert::toSnakeCase(Convert::classToBasename($entity->service())) => [$entity->Id]
                 ],
                 $args
             )));

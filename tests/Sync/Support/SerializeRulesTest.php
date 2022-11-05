@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Support\SerializeRulesBuilder;
+use Lkrms\Sync\Support\SyncSerializeRulesBuilder;
 use Lkrms\Tests\Sync\CustomEntity\Post as CustomPost;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
@@ -13,52 +13,57 @@ final class SerializeRulesTest extends \Lkrms\Tests\TestCase
 {
     public function testApply()
     {
-        $rules1 = (SerializeRulesBuilder::build()
-            ->doNotSerialize([
-                Post::class => ['e1.field1'],
-                User::class => ['e3.field'],
+        $rules1 = (SyncSerializeRulesBuilder::entity(User::class)
+            ->remove([
+                'l1.l2.field1',
+                ['l1.l2.field3', 'field3_id_1'],
+                Post::class => [['e1_field1', 'e1_field1_id']],
+                User::class => ['e3_field', ['e4_field', 'e4_field_id_1']],
             ])
             ->go());
-        $rules2 = (SerializeRulesBuilder::build()
-            ->doNotSerialize([
-                Post::class       => ['e1.field2'],
-                CustomPost::class => ['e2.field2'],
-                User::class       => ['e3.field'],
+        $rules2 = (SyncSerializeRulesBuilder::entity(User::class)
+            ->remove([
+                ['l1.l2.field1', 'field1_id_2'],
+                'l1.l2.field2',
+                ['l1.l2.field2', 'field2_id_2'],
+                Post::class       => [['e1_field2', 'e1_field2_id'], 'e1_field2'],
+                CustomPost::class => ['e2_field2', ['e2_field2', 'e2_field2_id_2']],
+                User::class       => ['e4_field', ['e3_field', 'e3_field_id_2']],
             ])
-            ->idKeyCallback(fn($key) => $key . '_id')
             ->go());
-        $rules3 = (SerializeRulesBuilder::build()
-            ->doNotSerialize([
-                CustomPost::class => ['e2.field3'],
-                User::class       => ['e3.field'],
+        $rules3 = (SyncSerializeRulesBuilder::entity(User::class)
+            ->remove([
+                'l1.l2.field2',
+                ['l1.l2.field3', 'field3_id_3'],
+                CustomPost::class => ['e2_field3', ['e2_field2', 'e2_field2_id_3']],
+                User::class       => ['e3_field', ['e4_field', 'e4_field_id_3']],
             ])
-            ->idKeyCallback([$this, 'getKey'])
             ->go());
 
         $this->assertEquals([
-            Post::class       => ['e1.field1', 'e1.field2'],
-            CustomPost::class => ['e2.field2'],
-            User::class       => ['e3.field', 'e3.field'],
-        ], $rules1->apply($rules2)->DoNotSerialize);
+            ['l1.l2.field1', 'field1_id_2'],
+            ['l1.l2.field3', 'field3_id_1'],
+            ['l1.l2.field2', 'field2_id_2'],
+            Post::class       => [['e1_field1', 'e1_field1_id'], 'e1_field2'],
+            CustomPost::class => [['e2_field2', 'e2_field2_id_2']],
+            User::class       => [['e3_field', 'e3_field_id_2'], 'e4_field'],
+        ], $rules1->apply($rules2)->Remove);
         $this->assertEquals([
-            Post::class       => ['e1.field2', 'e1.field1'],
-            CustomPost::class => ['e2.field2'],
-            User::class       => ['e3.field', 'e3.field'],
-        ], $rules2->apply($rules1)->DoNotSerialize);
+            'l1.l2.field1',
+            ['l1.l2.field2', 'field2_id_2'],
+            ['l1.l2.field3', 'field3_id_1'],
+            Post::class       => ['e1_field2', ['e1_field1', 'e1_field1_id']],
+            CustomPost::class => [['e2_field2', 'e2_field2_id_2']],
+            User::class       => [['e4_field', 'e4_field_id_1'], 'e3_field'],
+        ], $rules2->apply($rules1)->Remove);
         $this->assertEquals([
-            Post::class       => ['e1.field2', 'e1.field1'],
-            CustomPost::class => ['e2.field3', 'e2.field2'],
-            User::class       => ['e3.field', 'e3.field', 'e3.field'],
-        ], $rules3->apply($rules2)->apply($rules1)->DoNotSerialize);
-
-        $this->assertEquals('__field__', ($rules3->apply($rules2)->IdKeyCallback)('field'));
-        $this->assertEquals('field_id', ($rules2->apply($rules3)->IdKeyCallback)('field'));
-        $this->assertEquals('__field__', ($rules1->apply($rules3)->IdKeyCallback)('field'));
-    }
-
-    public function getKey($key)
-    {
-        return "__{$key}__";
+            ['l1.l2.field2', 'field2_id_2'],
+            ['l1.l2.field3', 'field3_id_1'],
+            CustomPost::class => ['e2_field3', ['e2_field2', 'e2_field2_id_2']],
+            User::class       => ['e3_field', ['e4_field', 'e4_field_id_1']],
+            Post::class       => ['e1_field2', ['e1_field1', 'e1_field1_id']],
+            'l1.l2.field1',
+        ], $rules3->apply($rules2)->apply($rules1)->Remove);
     }
 
 }

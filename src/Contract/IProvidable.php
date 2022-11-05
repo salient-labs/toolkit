@@ -10,7 +10,7 @@ use Lkrms\Support\ArrayKeyConformity;
  * Can be created by an IProvider to represent an external entity
  *
  */
-interface IProvidable
+interface IProvidable extends ReceivesService, ReturnsService
 {
     /**
      * Get the provider servicing the entity
@@ -19,7 +19,7 @@ interface IProvidable
     public function provider(): ?IProvider;
 
     /**
-     * Get the base class of the entity
+     * Get the entity the instance was resolved from
      *
      * Consider the following scenario:
      *
@@ -41,7 +41,7 @@ interface IProvidable
      * ```php
      * print_r([
      *     'class'      => get_class($faculty),
-     *     'base_class' => $faculty->providable(),
+     *     'base_class' => $faculty->service(),
      * ]);
      * ```
      *
@@ -55,18 +55,16 @@ interface IProvidable
      * )
      * ```
      */
-    public function providable(): ?string;
+    public function service(): string;
 
     /**
      * Called immediately after instantiation by a provider's service container
      *
-     * @param string $providable The name of the entity resolved to this
-     * instance by the provider.
      * @return $this
      * @throws \RuntimeException if the provider has already been set for this
      * instance.
      */
-    public function setProvider(IProvider $provider, string $providable);
+    public function setProvider(IProvider $provider);
 
     /**
      * Called immediately after instantiation and when subsequently refreshed

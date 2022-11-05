@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Support;
 
 use Closure;
+use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IHierarchy;
@@ -13,6 +14,7 @@ use Lkrms\Contract\IProvidableContext;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IResolvable;
+use Lkrms\Contract\ISerializeRules;
 use Lkrms\Contract\IWritable;
 use Lkrms\Facade\Reflect;
 use ReflectionClass;
@@ -244,9 +246,9 @@ class ClosureBuilder
     private $CreateProvidableFromSignatureClosures = [];
 
     /**
-     * @var Closure|null
+     * @var array<string,Closure>
      */
-    private $SerializeClosure;
+    private $SerializeClosures = [];
 
     /**
      * @var array<string,array<string,static>>
@@ -665,8 +667,14 @@ class ClosureBuilder
                 }
                 if ($container)
                 {
+                    if ($this->BaseClass && $container instanceof Container)
+                    {
+                        return $container->getAs($this->Class, $this->BaseClass, ...$args);
+                    }
+
                     return $container->get($this->Class, ...$args);
                 }
+
                 return new $this->Class(...$args);
             };
         }
@@ -676,8 +684,14 @@ class ClosureBuilder
             {
                 if ($container)
                 {
+                    if ($this->BaseClass && strcasecmp($this->BaseClass, $this->Class) && $container instanceof Container)
+                    {
+                        return $container->getAs($this->Class, $this->BaseClass, ...$this->DefaultArguments);
+                    }
+
                     return $container->get($this->Class, ...$this->DefaultArguments);
                 }
+
                 return new $this->Class(...$this->DefaultArguments);
             };
         }
@@ -706,8 +720,7 @@ class ClosureBuilder
                 $obj = $closure($container, $array);
                 if ($provider)
                 {
-                    return $obj->setProvider($provider, $this->BaseClass ?: $this->Class)
-                        ->setProvidableContext($context);
+                    return $obj->setProvider($provider)->setProvidableContext($context);
                 }
                 return $obj;
             };
@@ -901,19 +914,28 @@ class ClosureBuilder
         return $this->PropertyActionClosures[$_name][$action] = $closure;
     }
 
-    final public function getSerializeClosure(): Closure
+    final public function getSerializeClosure(?ISerializeRules $rules = null): Closure
     {
-        if ($closure = $this->SerializeClosure)
+        $rules = ($rules
+            ? [$rules->getSort(), $this->IsExtensible && $rules->getIncludeMeta()]
+            : [true, true]);
+        $key = implode("\000", $rules);
+
+        if ($closure = $this->SerializeClosures[$key] ?? null)
         {
             return $closure;
         }
 
+        [$sort, $includeMeta] = $rules;
         $props = $this->ReadableProperties ?: $this->PublicProperties;
         $props = array_combine(
             $this->maybeNormalise($props, false, true),
             $props
         );
-        ksort($props);
+        if ($sort)
+        {
+            ksort($props);
+        }
 
         $closure = static function ($instance) use ($props)
         {
@@ -925,7 +947,7 @@ class ClosureBuilder
             return $arr;
         };
 
-        if ($this->IsExtensible)
+        if ($includeMeta)
         {
             $closure = static function (IExtensible $instance) use ($closure)
             {
@@ -934,7 +956,7 @@ class ClosureBuilder
             };
         }
 
-        return $this->SerializeClosure = $closure;
+        return $this->SerializeClosures[$key] = $closure;
     }
 
     private function checkReadable(string $property, string $action): bool

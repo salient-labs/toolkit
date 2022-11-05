@@ -28,7 +28,7 @@ trait TProvidable
     /**
      * @var string|null
      */
-    private $_Providable;
+    private $_Service;
 
     /**
      * @var IProvidableContext|null
@@ -40,14 +40,20 @@ trait TProvidable
         $this->_Provider = null;
     }
 
-    final public function setProvider(IProvider $provider, string $providable)
+    final public function setProvider(IProvider $provider)
     {
         if ($this->_Provider)
         {
             throw new RuntimeException("Provider already set");
         }
-        $this->_Provider   = $provider;
-        $this->_Providable = $providable;
+        $this->_Provider = $provider;
+
+        return $this;
+    }
+
+    public function setService(string $id)
+    {
+        $this->_Service = $id;
 
         return $this;
     }
@@ -64,9 +70,9 @@ trait TProvidable
         return $this->_Provider;
     }
 
-    final public function providable(): ?string
+    final public function service(): string
     {
-        return $this->_Providable;
+        return $this->_Service ?: static::class;
     }
 
     protected function context(): ?IProvidableContext
