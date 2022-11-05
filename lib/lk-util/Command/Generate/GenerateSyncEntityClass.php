@@ -10,7 +10,7 @@ namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
-use Lkrms\Exception\InvalidCliArgumentException;
+use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Test;
@@ -142,7 +142,7 @@ class GenerateSyncEntityClass extends GenerateCommand
 
         if (!$fqcn)
         {
-            throw new InvalidCliArgumentException("invalid class: $fqcn");
+            throw new CliArgumentsInvalidException("invalid class: $fqcn");
         }
 
         if ($json)
@@ -155,7 +155,7 @@ class GenerateSyncEntityClass extends GenerateCommand
             {
                 if (($json = realpath($json)) === false)
                 {
-                    throw new InvalidCliArgumentException("file not found: " . $this->getOptionValue("json"));
+                    throw new CliArgumentsInvalidException("file not found: " . $this->getOptionValue("json"));
                 }
                 elseif (strpos($json, $this->app()->BasePath) === 0)
                 {
@@ -181,7 +181,7 @@ class GenerateSyncEntityClass extends GenerateCommand
                     ($providerNamespace         = Env::get("PROVIDER_NAMESPACE", "")) &&
                     class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
             {
-                throw new InvalidCliArgumentException("class does not exist: $providerClass");
+                throw new CliArgumentsInvalidException("class does not exist: $providerClass");
             }
 
             $provider = $this->app()->get($providerClass);
@@ -195,7 +195,7 @@ class GenerateSyncEntityClass extends GenerateCommand
             }
             else
             {
-                throw new InvalidCliArgumentException("not a subclass of HttpSyncProvider: $providerClass");
+                throw new CliArgumentsInvalidException("not a subclass of HttpSyncProvider: $providerClass");
             }
         }
 

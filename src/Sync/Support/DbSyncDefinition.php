@@ -73,7 +73,7 @@ class DbSyncDefinition extends SyncDefinition
 
         // If a method has been declared for this operation, use it, even if
         // it's not in $this->Operations
-        if ($closure = $this->ProviderClosureBuilder->getSyncOperationClosure($operation, $this->EntityClosureBuilder, $this->Provider))
+        if ($closure = $this->ProviderClosureBuilder->getDeclaredSyncOperationClosure($operation, $this->EntityClosureBuilder, $this->Provider))
         {
             return $this->Closures[$operation] = $closure;
         }

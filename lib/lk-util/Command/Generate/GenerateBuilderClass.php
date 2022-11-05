@@ -11,9 +11,9 @@ namespace Lkrms\LkUtil\Command\Generate;
 use Closure;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
+use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
-use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
@@ -172,22 +172,22 @@ class GenerateBuilderClass extends GenerateCommand
 
         if (!$fqcn)
         {
-            throw new InvalidCliArgumentException("invalid class: $fqcn");
+            throw new CliArgumentsInvalidException("invalid class: $fqcn");
         }
 
         if (!$builderFqcn)
         {
-            throw new InvalidCliArgumentException("invalid builder: $builderFqcn");
+            throw new CliArgumentsInvalidException("invalid builder: $builderFqcn");
         }
 
         if (!$extendsFqcn)
         {
-            throw new InvalidCliArgumentException("invalid builder subclass: $extendsFqcn");
+            throw new CliArgumentsInvalidException("invalid builder subclass: $extendsFqcn");
         }
 
         if (!is_a($extendsFqcn, Builder::class, true))
         {
-            throw new InvalidCliArgumentException("not a subclass of Builder: $extendsClass");
+            throw new CliArgumentsInvalidException("not a subclass of Builder: $extendsClass");
         }
 
         try
@@ -196,12 +196,12 @@ class GenerateBuilderClass extends GenerateCommand
 
             if (!$_class->isInstantiable() && !$_class->isAbstract())
             {
-                throw new InvalidCliArgumentException("not an instantiable class: $fqcn");
+                throw new CliArgumentsInvalidException("not an instantiable class: $fqcn");
             }
         }
         catch (ReflectionException $ex)
         {
-            throw new InvalidCliArgumentException("class does not exist: $fqcn");
+            throw new CliArgumentsInvalidException("class does not exist: $fqcn");
         }
 
         $files        = [];

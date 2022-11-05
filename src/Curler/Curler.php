@@ -10,7 +10,7 @@ use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Curler\Contract\ICurlerPager;
-use Lkrms\Exception\CurlerException;
+use Lkrms\Curler\Exception\CurlerException;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;

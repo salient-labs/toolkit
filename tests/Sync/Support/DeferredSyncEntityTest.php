@@ -8,7 +8,7 @@ use Lkrms\Container\Container;
 use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Tests\Sync\Entity\Post;
-use Lkrms\Tests\Sync\Entity\PostProvider;
+use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 
 final class DeferredSyncEntityTest extends \Lkrms\Tests\TestCase

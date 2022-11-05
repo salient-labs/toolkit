@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Contract\IContainer;
-use Lkrms\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
+use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncOperation;
 use UnexpectedValueException;
@@ -60,7 +60,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
             throw new UnexpectedValueException("Not a subclass of SyncEntity: $entity");
         }
 
-        $entityProvider = $entity . "Provider";
+        $entityProvider = SyncClosureBuilder::entityToProvider($entity);
         if (!($provider instanceof $entityProvider))
         {
             throw new UnexpectedValueException(get_class($provider) . " does not implement " . $entityProvider);

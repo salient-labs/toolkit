@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Tests\Sync\Entity;
+namespace Lkrms\Tests\Sync\Entity\Provider;
 
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
+use Lkrms\Tests\Sync\Entity\User;
 
 /**
  * Syncs User objects with a backend

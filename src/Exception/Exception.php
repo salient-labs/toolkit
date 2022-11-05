@@ -12,10 +12,15 @@ use RuntimeException;
  */
 abstract class Exception extends RuntimeException
 {
+    public function __construct(string $message = "")
+    {
+        parent::__construct($message);
+    }
+
     /**
      * Return an array that maps section names to content
      *
-     * See {@see CurlerException} for an example.
+     * See {@see \Lkrms\Curler\Exception\CurlerException} for an example.
      *
      * @return array<string,string>
      */

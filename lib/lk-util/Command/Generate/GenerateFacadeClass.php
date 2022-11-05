@@ -10,8 +10,8 @@ namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
+use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Concept\Facade;
-use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Test;
@@ -132,12 +132,12 @@ class GenerateFacadeClass extends GenerateCommand
 
         if (!$fqcn)
         {
-            throw new InvalidCliArgumentException("invalid class: $fqcn");
+            throw new CliArgumentsInvalidException("invalid class: $fqcn");
         }
 
         if (!$facadeFqcn)
         {
-            throw new InvalidCliArgumentException("invalid facade: $facadeFqcn");
+            throw new CliArgumentsInvalidException("invalid facade: $facadeFqcn");
         }
 
         try
@@ -146,12 +146,12 @@ class GenerateFacadeClass extends GenerateCommand
 
             if (!$_class->isInstantiable())
             {
-                throw new InvalidCliArgumentException("not an instantiable class: $fqcn");
+                throw new CliArgumentsInvalidException("not an instantiable class: $fqcn");
             }
         }
         catch (ReflectionException $ex)
         {
-            throw new InvalidCliArgumentException("class does not exist: $fqcn");
+            throw new CliArgumentsInvalidException("class does not exist: $fqcn");
         }
 
         $files        = [];

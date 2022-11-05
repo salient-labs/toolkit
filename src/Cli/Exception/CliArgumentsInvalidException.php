@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Lkrms\Cli\Exception;
 
 use Lkrms\Facade\Cli;
 use Lkrms\Facade\Console;
@@ -11,9 +11,9 @@ use Lkrms\Facade\Console;
  * Thrown when invalid command-line arguments are given
  *
  */
-class InvalidCliArgumentException extends \Lkrms\Exception\Exception
+class CliArgumentsInvalidException extends \Lkrms\Exception\Exception
 {
-    public function __construct(string $message = null)
+    public function __construct(string $message = "")
     {
         if ($message)
         {

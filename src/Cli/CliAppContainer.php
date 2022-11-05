@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Cli;
 
 use Lkrms\Cli\Concept\CliCommand;
+use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Container\AppContainer;
-use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
@@ -315,7 +315,7 @@ EOF;
                 }
                 else
                 {
-                    throw new InvalidCliArgumentException("missing or incomplete command" . ($name ? " '$name'" : ""));
+                    throw new CliArgumentsInvalidException("missing or incomplete command" . ($name ? " '$name'" : ""));
                 }
             }
 
@@ -327,10 +327,10 @@ EOF;
             }
             else
             {
-                throw new InvalidCliArgumentException("no command registered at '$name'");
+                throw new CliArgumentsInvalidException("no command registered at '$name'");
             }
         }
-        catch (InvalidCliArgumentException $ex)
+        catch (CliArgumentsInvalidException $ex)
         {
             unset($ex);
 

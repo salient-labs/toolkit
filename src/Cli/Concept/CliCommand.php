@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Cli\Concept;
 
 use Lkrms\Cli\CliOption;
+use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Concern\HasCliAppContainer;
 use Lkrms\Contract\ReturnsContainer;
-use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use RuntimeException;
@@ -599,7 +599,7 @@ EOF;
 
         if ($this->OptionErrors)
         {
-            throw new InvalidCliArgumentException();
+            throw new CliArgumentsInvalidException();
         }
 
         $this->OptionValues = $merged;
@@ -664,7 +664,7 @@ EOF;
             }
         }
 
-        if (is_null($option->Value) || $option->Value === false || $option->Value === 0)
+        if (is_null($option->Value) || $option->Value === [] || $option->Value === false || $option->Value === 0)
         {
             return null;
         }

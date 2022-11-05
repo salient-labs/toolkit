@@ -11,8 +11,8 @@ namespace Lkrms\LkUtil\Command;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Concept\CliCommand;
+use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Contract\IProvider;
-use Lkrms\Exception\InvalidCliArgumentException;
 use Lkrms\Facade\Env;
 
 class CheckHeartbeat extends CliCommand
@@ -54,14 +54,14 @@ class CheckHeartbeat extends CliCommand
                 ($providerNamespace         = Env::get("PROVIDER_NAMESPACE", "")) &&
                 class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
         {
-            throw new InvalidCliArgumentException("class does not exist: $providerClass");
+            throw new CliArgumentsInvalidException("class does not exist: $providerClass");
         }
 
         $provider = $this->app()->get($providerClass);
 
         if (!($provider instanceof IProvider))
         {
-            throw new InvalidCliArgumentException("not a subclass of IProvider: $providerClass");
+            throw new CliArgumentsInvalidException("not a subclass of IProvider: $providerClass");
         }
 
         $provider->checkHeartbeat((int)$this->getOptionValue("ttl"));

@@ -8,7 +8,8 @@ Operation signatures
 ~~~~~~~~~~~~~~~~~~~~
 
 To perform a sync operation, a `SyncProvider`_ must implement an `entity`_’s
-provider interface (e.g. ``UserProvider`` for a ``User`` entity) and either:
+provider interface (e.g. ``\Provider\UserProvider`` for a ``\User`` entity) and
+either:
 
 1. return a closure for the `SyncOperation`_ and entity via `getDefinition()`_,
    or

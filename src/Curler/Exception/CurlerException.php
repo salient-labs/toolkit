@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Lkrms\Curler\Exception;
 
 use Lkrms\Curler\Curler;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Format;
-use Throwable;
 
 /**
  * Thrown when a Curler request fails
@@ -20,10 +19,11 @@ class CurlerException extends \Lkrms\Exception\Exception
      */
     protected $Curler;
 
-    public function __construct(Curler $curler, string $message, int $code = 0, ?Throwable $previous = null)
+    public function __construct(Curler $curler, string $message)
     {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message);
 
+        // Save a clone of the Curler instance
         $this->Curler = $curler->withCurlInfo();
     }
 

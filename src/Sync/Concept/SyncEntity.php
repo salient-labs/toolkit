@@ -201,7 +201,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     {
         $container = Container::coalesce($container, false, false);
         /** @var ISyncProvider */
-        $provider = $container->get(static::class . "Provider");
+        $provider = $container->get(SyncClosureBuilder::entityToProvider(static::class));
         return $provider->with(static::class, $container);
     }
 
