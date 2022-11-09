@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Tests\Sync\Provider;
 
 use Lkrms\Curler\CurlerHeaders;
+use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
@@ -89,9 +90,9 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         $filter   = $ctx->getFilter();
         if ($user = $filter["user"] ?? null)
         {
-            return Post::provideList($this->getCurler("/users/$user/posts")->get(), $this);
+            return Post::provideList($this->getCurler("/users/$user/posts")->get(), $this, ArrayKeyConformity::NONE, $ctx);
         }
-        return Post::provideList($this->getCurler("/posts")->get(), $this);
+        return Post::provideList($this->getCurler("/posts")->get(), $this, ArrayKeyConformity::NONE, $ctx);
     }
 
 }

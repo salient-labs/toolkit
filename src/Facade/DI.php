@@ -20,7 +20,7 @@ use Lkrms\Contract\IContainer;
  * @method static mixed call(callable $callback) Make this the global container while running the given callback (see {@see Container::call()})
  * @method static IContainer|null coalesce(?IContainer $container, bool $returnNull = true, bool $load = false) Return the first available container (see {@see Container::coalesce()})
  * @method static mixed get(string $id, mixed ...$params) Create a new instance of the given class or interface, or return a shared instance created earlier (see {@see Container::get()})
- * @method static mixed getAs(string $id, string $baseId, mixed ...$params) Similar to get(), but override the service name passed to `ReceivesService::setService()` (see {@see Container::getAs()})
+ * @method static mixed getAs(string $id, string $serviceId, mixed ...$params) Similar to get(), but override the service name passed to `ReceivesService::setService()` (see {@see Container::getAs()})
  * @method static IContainer getGlobalContainer() Get the current global container, loading it if necessary (see {@see Container::getGlobalContainer()})
  * @method static string getName(string $id) Resolve the given class or interface to a concrete class name (see {@see Container::getName()})
  * @method static bool has(string $id) Return true if the given class or interface resolves to a concrete class that actually exists (see {@see Container::has()})

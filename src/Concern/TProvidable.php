@@ -23,75 +23,75 @@ trait TProvidable
     /**
      * @var IProvider|null
      */
-    private $_Provider;
+    private $Provider;
 
     /**
      * @var string|null
      */
-    private $_Service;
+    private $Service;
 
     /**
      * @var IProvidableContext|null
      */
-    private $_ProvidableContext;
+    private $Context;
 
     final protected function clearProvider()
     {
-        $this->_Provider = null;
+        $this->Provider = null;
     }
 
     final public function setProvider(IProvider $provider)
     {
-        if ($this->_Provider)
+        if ($this->Provider)
         {
             throw new RuntimeException("Provider already set");
         }
-        $this->_Provider = $provider;
+        $this->Provider = $provider;
 
         return $this;
     }
 
-    public function setService(string $id)
+    final public function setService(string $id)
     {
-        $this->_Service = $id;
+        $this->Service = $id;
 
         return $this;
     }
 
-    final public function setProvidableContext(?IProvidableContext $context)
+    final public function setContext(?IProvidableContext $ctx)
     {
-        $this->_ProvidableContext = $context;
+        $this->Context = $ctx;
 
         return $this;
     }
 
-    public function provider(): ?IProvider
+    final public function provider(): ?IProvider
     {
-        return $this->_Provider;
+        return $this->Provider;
     }
 
     final public function service(): string
     {
-        return $this->_Service ?: static::class;
+        return $this->Service ?: static::class;
     }
 
-    protected function context(): ?IProvidableContext
+    final public function context(): ?IProvidableContext
     {
-        return $this->_ProvidableContext;
+        return $this->Context;
     }
 
     /**
      * Throw an exception if the instance was created with no
      * IProvidableContext, otherwise return it
      */
-    protected function requireContext(): IProvidableContext
+    final protected function requireContext(): IProvidableContext
     {
-        if (!$this->_ProvidableContext)
+        if (!$this->Context)
         {
             throw new RuntimeException("Context required");
         }
 
-        return $this->_ProvidableContext;
+        return $this->Context;
     }
 
     /**

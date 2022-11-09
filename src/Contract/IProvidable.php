@@ -19,6 +19,12 @@ interface IProvidable extends ReceivesService, ReturnsService
     public function provider(): ?IProvider;
 
     /**
+     * Get the context in which the entity is being serviced
+     *
+     */
+    public function context(): ?IProvidableContext;
+
+    /**
      * Get the entity the instance was resolved from
      *
      * Consider the following scenario:
@@ -35,13 +41,13 @@ interface IProvidable extends ReceivesService, ReturnsService
      *   $faculty = $provider->with(Faculty::class)->get(1);
      *   ```
      *
-     * `$faculty` is now an instance of `CustomFaculty` with a base type of
-     * `Faculty`, so this code:
+     * `$faculty` is now a `Faculty` service and an instance of `CustomFaculty`,
+     * so this code:
      *
      * ```php
      * print_r([
-     *     'class'      => get_class($faculty),
-     *     'base_class' => $faculty->service(),
+     *     'class'   => get_class($faculty),
+     *     'service' => $faculty->service(),
      * ]);
      * ```
      *
@@ -51,7 +57,7 @@ interface IProvidable extends ReceivesService, ReturnsService
      * Array
      * (
      *     [class] => CustomFaculty
-     *     [base_class] => Faculty
+     *     [service] => Faculty
      * )
      * ```
      */
@@ -61,17 +67,16 @@ interface IProvidable extends ReceivesService, ReturnsService
      * Called immediately after instantiation by a provider's service container
      *
      * @return $this
-     * @throws \RuntimeException if the provider has already been set for this
-     * instance.
+     * @throws \RuntimeException if the instance already has a provider.
      */
     public function setProvider(IProvider $provider);
 
     /**
-     * Called immediately after instantiation and when subsequently refreshed
+     * Called immediately after instantiation, then as needed by the provider
      *
      * @return $this
      */
-    public function setProvidableContext(?IProvidableContext $context);
+    public function setContext(?IProvidableContext $ctx);
 
     /**
      * @return static

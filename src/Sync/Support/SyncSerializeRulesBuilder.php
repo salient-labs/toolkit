@@ -6,7 +6,6 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
-use Lkrms\Sync\Support\SyncEntitySerializeRulesBuilder as SerializeRulesBuilder;
 
 /**
  * A fluent interface for creating SyncSerializeRules objects
@@ -22,7 +21,7 @@ use Lkrms\Sync\Support\SyncEntitySerializeRulesBuilder as SerializeRulesBuilder;
  * @method static $this replace(array $value) Values to replace with IDs (see {@see SyncSerializeRules::$Replace})
  * @method static $this recurseRules(bool $value = true) Apply path-based rules to every instance of $Entity? (see {@see SyncSerializeRules::$RecurseRules})
  * @method static $this flags(int $value) See {@see SyncSerializeRules::$Flags}
- * @method static $this inherit(SyncSerializeRules|SerializeRulesBuilder|null $value)
+ * @method static $this inherit(SyncSerializeRules|SyncSerializeRulesBuilder|null $value)
  * @method static SyncSerializeRules go() Return a new SyncSerializeRules object
  * @method static SyncSerializeRules|null resolve(SyncSerializeRules|SyncSerializeRulesBuilder|null $object) Resolve a SyncSerializeRulesBuilder or SyncSerializeRules object to a SyncSerializeRules object
  *

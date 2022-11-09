@@ -7,11 +7,15 @@ namespace Lkrms\Sync\Concept;
 use Closure;
 use DateTimeInterface;
 use JsonSerializable;
-use Lkrms\Concept\ProviderEntity;
+use Lkrms\Concept\Entity;
+use Lkrms\Concern\TProvidable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IProvidable;
+use Lkrms\Contract\IProvidableContext;
+use Lkrms\Contract\IProvider;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Test;
@@ -47,8 +51,14 @@ use UnexpectedValueException;
  * how nested entities should be serialized.
  *
  */
-abstract class SyncEntity extends ProviderEntity implements JsonSerializable
+abstract class SyncEntity extends Entity implements IProvidable, JsonSerializable
 {
+    use TProvidable
+    {
+        setProvider as private _setProvider;
+        setContext as private _setContext;
+    }
+
     /**
      * The unique identifier assigned to the entity by its provider
      *
@@ -82,6 +92,16 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     private static $Normalised = [];
 
     /**
+     * @var ISyncProvider|null
+     */
+    private $Provider;
+
+    /**
+     * @var ISyncContext|null
+     */
+    private $Context;
+
+    /**
      * Called when the class is registered with an entity store
      *
      * See {@see \Lkrms\Sync\Support\SyncStore::entityType()} for more
@@ -101,30 +121,32 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
 
     final public function provider(): ?ISyncProvider
     {
-        if (is_null($provider = parent::provider()))
-        {
-            return null;
-        }
+        return $this->Provider;
+    }
+
+    final public function setProvider(IProvider $provider)
+    {
         if (!($provider instanceof ISyncProvider))
         {
             throw new RuntimeException(get_class($provider) . " does not implement " . ISyncProvider::class);
         }
 
-        return $provider;
+        return $this->_setProvider($provider);
     }
 
-    final protected function context(): ?ISyncContext
+    final public function context(): ?ISyncContext
     {
-        if (is_null($ctx = parent::context()))
-        {
-            return null;
-        }
-        if (!($ctx instanceof ISyncContext))
+        return $this->Context;
+    }
+
+    final public function setContext(?IProvidableContext $ctx)
+    {
+        if ($ctx && !($ctx instanceof ISyncContext))
         {
             throw new RuntimeException(get_class($ctx) . " does not implement " . ISyncContext::class);
         }
 
-        return $ctx;
+        return $this->_setContext($ctx);
     }
 
     final protected function requireContext(): ISyncContext
@@ -378,10 +400,10 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
 
         if (Test::isArrayOf($node, SyncEntity::class, false, true, false, true))
         {
-            /** @var SyncEntity $item */
-            foreach ($node as &$item)
+            /** @var SyncEntity $child */
+            foreach ($node as &$child)
             {
-                $item = $item->Id;
+                $child = $child->Id;
             }
 
             return;

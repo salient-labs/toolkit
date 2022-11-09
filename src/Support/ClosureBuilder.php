@@ -720,7 +720,7 @@ class ClosureBuilder
                 $obj = $closure($container, $array);
                 if ($provider)
                 {
-                    return $obj->setProvider($provider)->setProvidableContext($context);
+                    return $obj->setProvider($provider)->setContext($context);
                 }
                 return $obj;
             };
@@ -918,7 +918,7 @@ class ClosureBuilder
     {
         $rules = ($rules
             ? [$rules->getSort(), $this->IsExtensible && $rules->getIncludeMeta()]
-            : [true, true]);
+            : [true, $this->IsExtensible]);
         $key = implode("\000", $rules);
 
         if ($closure = $this->SerializeClosures[$key] ?? null)

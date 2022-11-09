@@ -8,8 +8,8 @@ use Dice\Dice;
 use Lkrms\Contract\IBindable;
 use Lkrms\Contract\IBindableSingleton;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\ReceivesService;
 use Lkrms\Contract\ReceivesContainer;
+use Lkrms\Contract\ReceivesService;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -163,17 +163,17 @@ class Container implements IContainer
      * `ReceivesService::setService()`
      *
      */
-    final public function getAs(string $id, string $baseId, ...$params)
+    final public function getAs(string $id, string $serviceId, ...$params)
     {
         return $this->Dice->addCallback(
             "*",
-            function (object $instance, string $name, bool & $continue) use ($id, $baseId): object
+            function (object $instance, string $name, bool & $continue) use ($id, $serviceId): object
             {
                 if (!strcasecmp(get_class($instance), $id))
                 {
                     $continue = false;
 
-                    return $this->callback($instance, $baseId);
+                    return $this->callback($instance, $serviceId);
                 }
 
                 return $this->callback($instance, $name);
