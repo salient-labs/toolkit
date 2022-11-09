@@ -26,14 +26,14 @@ trait TProvidable
     private $Provider;
 
     /**
-     * @var string|null
-     */
-    private $Service;
-
-    /**
      * @var IProvidableContext|null
      */
     private $Context;
+
+    /**
+     * @var string|null
+     */
+    private $Service;
 
     final protected function clearProvider()
     {
@@ -51,11 +51,9 @@ trait TProvidable
         return $this;
     }
 
-    final public function setService(string $id)
+    final public function provider(): ?IProvider
     {
-        $this->Service = $id;
-
-        return $this;
+        return $this->Provider;
     }
 
     final public function setContext(?IProvidableContext $ctx)
@@ -65,19 +63,21 @@ trait TProvidable
         return $this;
     }
 
-    final public function provider(): ?IProvider
+    final public function context(): ?IProvidableContext
     {
-        return $this->Provider;
+        return $this->Context;
+    }
+
+    final public function setService(string $id)
+    {
+        $this->Service = $id;
+
+        return $this;
     }
 
     final public function service(): string
     {
         return $this->Service ?: static::class;
-    }
-
-    final public function context(): ?IProvidableContext
-    {
-        return $this->Context;
     }
 
     /**

@@ -119,11 +119,6 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         return self::$TypeId[static::class] ?? null;
     }
 
-    final public function provider(): ?ISyncProvider
-    {
-        return $this->Provider;
-    }
-
     final public function setProvider(IProvider $provider)
     {
         if (!($provider instanceof ISyncProvider))
@@ -134,9 +129,9 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         return $this->_setProvider($provider);
     }
 
-    final public function context(): ?ISyncContext
+    final public function provider(): ?ISyncProvider
     {
-        return $this->Context;
+        return $this->Provider;
     }
 
     final public function setContext(?IProvidableContext $ctx)
@@ -147,6 +142,11 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         }
 
         return $this->_setContext($ctx);
+    }
+
+    final public function context(): ?ISyncContext
+    {
+        return $this->Context;
     }
 
     final protected function requireContext(): ISyncContext
