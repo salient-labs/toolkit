@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync;
 
+use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 
@@ -24,57 +25,55 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
         $post->User    = $user;
         $user->Posts[] = $post;
 
-        $_user = $user->toArray();
-        $_post = $post->toArray();
+        $_user = $user->toCustomArray(
+            SerializeRulesBuilder::entity(User::class)->sort(true)->go()
+        );
+        $_post = $post->toCustomArray(
+            SerializeRulesBuilder::entity(Post::class)->sort(true)->go()
+        );
 
         $this->assertSame([
-            'address'      => null,
-            'canonical_id' => null,
-            'company'      => null,
-            'email'        => null,
-            'id'           => 1,
-            'name'         => null,
-            'phone'        => null,
-            'posts'        => [
+            'address' => null,
+            'company' => null,
+            'email'   => null,
+            'id'      => 1,
+            'name'    => null,
+            'phone'   => null,
+            'posts'   => [
                 [
-                    'body'         => null,
-                    'canonical_id' => null,
-                    'id'      => 101,
-                    'title'   => null,
-                    'user_id' => 1
+                    'body'  => null,
+                    'id'    => 101,
+                    'title' => null,
+                    'user'  => ['@id' => 'Lkrms/Tests/Sync/Entity/User(1)'],
                 ],
                 [
-                    'body'         => null,
-                    'canonical_id' => null,
-                    'id'      => 102,
-                    'title'   => null,
-                    'user_id' => 1
+                    'body'  => null,
+                    'id'    => 102,
+                    'title' => null,
+                    'user'  => ['@id' => 'Lkrms/Tests/Sync/Entity/User(1)'],
                 ]
             ],
             'username' => null,
         ], $_user);
         $this->assertSame([
-            'body'         => null,
-            'canonical_id' => null,
-            'id'               => 102,
-            'title'            => null,
-            'user'             => [
-                'address'      => null,
-                'canonical_id' => null,
-                'company'      => null,
-                'email'        => null,
-                'id'           => 1,
-                'name'         => null,
-                'phone'        => null,
-                'posts'        => [
+            'body'        => null,
+            'id'          => 102,
+            'title'       => null,
+            'user'        => [
+                'address' => null,
+                'company' => null,
+                'email'   => null,
+                'id'      => 1,
+                'name'    => null,
+                'phone'   => null,
+                'posts'   => [
                     [
-                        'body'         => null,
-                        'canonical_id' => null,
-                        'id'      => 101,
-                        'title'   => null,
-                        'user_id' => 1
+                        'body'  => null,
+                        'id'    => 101,
+                        'title' => null,
+                        'user'  => ['@id' => 'Lkrms/Tests/Sync/Entity/User(1)'],
                     ],
-                    102
+                    ['@id' => 'Lkrms/Tests/Sync/Entity/Post(102)']
                 ],
                 'username' => null,
             ],

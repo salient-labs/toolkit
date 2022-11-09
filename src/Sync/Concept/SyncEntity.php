@@ -7,20 +7,25 @@ namespace Lkrms\Sync\Concept;
 use Closure;
 use DateTimeInterface;
 use JsonSerializable;
-use Lkrms\Concept\ProviderEntity;
+use Lkrms\Concept\Entity;
+use Lkrms\Concern\TProvidable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IProvidable;
+use Lkrms\Contract\IProvidableContext;
+use Lkrms\Contract\IProvider;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
-use Lkrms\Support\SerializeRules;
-use Lkrms\Support\SerializeRulesBuilder;
+use Lkrms\Facade\Test;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncEntityProvider;
+use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
+use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -46,8 +51,14 @@ use UnexpectedValueException;
  * how nested entities should be serialized.
  *
  */
-abstract class SyncEntity extends ProviderEntity implements JsonSerializable
+abstract class SyncEntity extends Entity implements IProvidable, JsonSerializable
 {
+    use TProvidable
+    {
+        setProvider as private _setProvider;
+        setContext as private _setContext;
+    }
+
     /**
      * The unique identifier assigned to the entity by its provider
      *
@@ -81,6 +92,16 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     private static $Normalised = [];
 
     /**
+     * @var ISyncProvider|null
+     */
+    private $Provider;
+
+    /**
+     * @var ISyncContext|null
+     */
+    private $Context;
+
+    /**
      * Called when the class is registered with an entity store
      *
      * See {@see \Lkrms\Sync\Support\SyncStore::entityType()} for more
@@ -98,32 +119,34 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         return self::$TypeId[static::class] ?? null;
     }
 
-    final public function provider(): ?ISyncProvider
+    final public function setProvider(IProvider $provider)
     {
-        if (is_null($provider = parent::provider()))
-        {
-            return null;
-        }
         if (!($provider instanceof ISyncProvider))
         {
             throw new RuntimeException(get_class($provider) . " does not implement " . ISyncProvider::class);
         }
 
-        return $provider;
+        return $this->_setProvider($provider);
     }
 
-    final protected function context(): ?ISyncContext
+    final public function provider(): ?ISyncProvider
     {
-        if (is_null($ctx = parent::context()))
-        {
-            return null;
-        }
-        if (!($ctx instanceof ISyncContext))
+        return $this->Provider;
+    }
+
+    final public function setContext(?IProvidableContext $ctx)
+    {
+        if ($ctx && !($ctx instanceof ISyncContext))
         {
             throw new RuntimeException(get_class($ctx) . " does not implement " . ISyncContext::class);
         }
 
-        return $ctx;
+        return $this->_setContext($ctx);
+    }
+
+    final public function context(): ?ISyncContext
+    {
+        return $this->Context;
     }
 
     final protected function requireContext(): ISyncContext
@@ -139,29 +162,60 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     /**
      * @param int|string|null $id
      */
-    final public static function getEntityResourceName($id = null): string
+    final public static function getShortResourceId($id = null): string
     {
-        return Convert::classToBasename(static::class)
-            . (is_null($id) ? "" : "($id)");
+        return self::_shortResourceId(static::class, self::getId(...func_get_args()));
     }
 
     /**
      * @param int|string|null $id
      */
-    final public static function getEntityResourcePath($id = null): string
+    final public static function getResourceId($id = null): string
     {
-        return str_replace("\\", "/", static::class)
-            . (is_null($id) ? "" : "($id)");
+        return self::_resourceId(static::class, self::getId(...func_get_args()));
     }
 
-    final public function getResourceName(): string
+    /**
+     * @param int|string|null $id
+     * @return int|string|null
+     */
+    private static function getId($id = null)
     {
-        return Convert::classToBasename(static::class) . "({$this->Id})";
+        return func_num_args() ? (is_null($id) ? "" : $id) : null;
     }
 
-    final public function getResourcePath(): string
+    final public function shortResourceId(): string
     {
-        return str_replace("\\", "/", static::class) . "({$this->Id})";
+        return self::_shortResourceId($this->service(), $this->id());
+    }
+
+    final public function resourceId(): string
+    {
+        return self::_resourceId($this->service(), $this->id());
+    }
+
+    /**
+     * @return int|string
+     */
+    private function id()
+    {
+        return is_null($this->Id) ? $this->objectId() : $this->Id;
+    }
+
+    /**
+     * @param int|string|null $id
+     */
+    private static function _shortResourceId(string $service, $id): string
+    {
+        return Convert::classToBasename($service) . (is_null($id) ? "" : "($id)");
+    }
+
+    /**
+     * @param int|string|null $id
+     */
+    private static function _resourceId(string $service, $id): string
+    {
+        return str_replace("\\", "/", $service) . (is_null($id) ? "" : "($id)");
     }
 
     /**
@@ -286,9 +340,16 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
      * @internal
      * @see SyncEntity::buildSerializeRules()
      */
-    final protected function serialize(): array
+    final protected function serialize(SerializeRules $rules = null): array
     {
-        return (SyncClosureBuilder::get(static::class)->getSerializeClosure())($this);
+        $closureBuilder = SyncClosureBuilder::get(static::class);
+        $array = $closureBuilder->getSerializeClosure($rules)($this);
+        if ($rules->getRemoveCanonicalId())
+        {
+            unset($array[$closureBuilder->maybeNormalise("CanonicalId", false, true)]);
+        }
+
+        return $array;
     }
 
     /**
@@ -325,84 +386,153 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         DeferredSyncEntity::defer($this->provider(), $ctx->push($this), $entity ?: static::class, $deferred, $replace);
     }
 
-    private function getObjectId(): int
+    private function objectId(): int
     {
         return spl_object_id($this);
     }
 
-    private function _serializeId(&$node, SerializeRules $rules, ?SyncEntity $parentEntity, array & $parentArray, $parentKey)
+    private function _serializeId(&$node, array $path): void
     {
-        // Rename $node to `<parent_key>_id` or similar if:
-        // - its original parent was a SyncEntity (it can't belong to a list)
-        // - `($rules->IdKeyCallback)($parentKey)` returns a new key, and
-        // - the new key hasn't already been used in $parentArray
-        if (!is_null($parentEntity) &&
-            ($newParentKey = ($rules->getSerializedIdKeyCallback())($parentKey)) &&
-            $newParentKey != $parentKey)
+        if (is_null($node))
         {
-            if (array_key_exists($newParentKey, $parentArray))
+            return;
+        }
+
+        if (Test::isArrayOf($node, SyncEntity::class, false, true, false, true))
+        {
+            /** @var SyncEntity $child */
+            foreach ($node as &$child)
             {
-                throw new UnexpectedValueException("Array key '$newParentKey' already exists");
+                $child = $child->Id;
             }
-            $parentArray[$newParentKey] = $node->Id ?? null;
-            unset($parentArray[$parentKey]);
 
             return;
         }
 
-        $node = $node->Id ?? null;
+        if (!($node instanceof SyncEntity))
+        {
+            throw new UnexpectedValueException("Cannot replace (not a SyncEntity): " . implode(".", $path));
+        }
+
+        $node = $node->Id;
     }
 
-    private function _serialize(&$node, SerializeRules $rules, $parents = [], ?SyncEntity $parentEntity = null, array & $parentArray = null, $parentKey = null)
+    private function _serialize(&$node, array $path, SerializeRules $rules, array $parents = []): void
     {
+        if (!is_null($maxDepth = $rules->getMaxDepth()) && count($path) > $maxDepth)
+        {
+            throw new RuntimeException("In too deep: " . implode(".", $path));
+        }
+
         if ($node instanceof SyncEntity)
         {
-            // If $parentArray is null, $node is the top-level entity
-            if ($rules->OnlySerializePlaceholders && !is_null($parentArray))
+            if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE)
             {
-                $node = $node->toPlaceholder();
+                $node = $node->toResourceLink();
+
                 return;
             }
 
-            $entity = $node;
-
-            if ($rules->DetectRecursion)
+            if ($rules->getDetectRecursion())
             {
-                // Prevent infinite recursion by replacing each $node descended
-                // from itself with $node->Id
-                if ($parents[$node->getObjectId()] ?? false)
+                // Prevent infinite recursion by replacing each SyncEntity
+                // descended from itself with a resource link
+                if ($parents[$node->objectId()] ?? false)
                 {
-                    $this->_serializeId($node, $rules, $parentEntity, $parentArray, $parentKey);
+                    $node = $node->toResourceLink();
+
                     return;
                 }
-                $parents[$node->getObjectId()] = true;
+                $parents[$node->objectId()] = true;
             }
 
-            $class   = get_class($node);
-            $delete  = $rules->getDoNotSerialize($class, parent::class);
-            $replace = $rules->getOnlySerializeId($class, parent::class);
+            $class = get_class($node);
+            $until = parent::class;
+            $node  = $node->serialize($rules);
+        }
 
-            $node = $node->serialize();
-            if ($delete)
+        $delete  = $rules->getRemove($class ?? null, $until ?? null, $path);
+        $replace = $rules->getReplace($class ?? null, $until ?? null, $path);
+
+        if ($delete)
+        {
+            $node = array_diff_key($node, array_flip($delete));
+        }
+        foreach ($replace as $rule)
+        {
+            if (is_array($rule))
             {
-                $node = array_diff_key($node, array_flip($delete));
+                $_rule    = $rule;
+                $key      = array_shift($rule);
+                $newKey   = $key;
+                $callback = null;
+
+                while ($rule)
+                {
+                    if (is_null($arg = array_shift($rule)))
+                    {
+                        continue;
+                    }
+                    if (is_int($arg) || is_string($arg))
+                    {
+                        $newKey = $arg;
+                        continue;
+                    }
+                    if ($arg instanceof Closure)
+                    {
+                        $callback = $arg;
+                        continue;
+                    }
+                    throw new UnexpectedValueException("Invalid rule: " . var_export($_rule, true));
+                }
+
+                if ($key !== $newKey && array_key_exists($key, $node))
+                {
+                    if (array_key_exists($newKey, $node))
+                    {
+                        throw new UnexpectedValueException("Cannot rename '$key': '$newKey' already set");
+                    }
+                    Convert::arraySpliceAtKey($node, $key, 1, [$newKey => $node[$key]]);
+                    $key = $newKey;
+                }
+
+                if ($callback && array_key_exists($key, $node))
+                {
+                    $node[$key] = $callback($node[$key]);
+
+                    continue;
+                }
             }
-            foreach ($replace as $key)
+            else
             {
-                $this->_serializeId($node[$key], $rules, $entity, $node, $key);
+                $key = $rule;
             }
+
+            $_path   = $path;
+            $_path[] = $key;
+            $this->_serializeId($node[$key], $_path);
         }
 
         if (is_array($node))
         {
+            if (Test::isIndexedArray($node))
+            {
+                $isList  = true;
+                $lastKey = array_pop($path);
+                $path[]  = $lastKey . "[]";
+            }
             foreach ($node as $key => & $child)
             {
                 if (is_null($child) || is_scalar($child))
                 {
                     continue;
                 }
-
-                $this->_serialize($child, $rules, $parents, $entity ?? null, $node, $key);
+                if (!($isList ?? null))
+                {
+                    $_path   = $path;
+                    $_path[] = $key;
+                }
+                $this->_serialize($child, $_path ?? $path, $rules, $parents);
             }
         }
         elseif ($node instanceof DateTimeInterface)
@@ -415,15 +545,15 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
         }
     }
 
-    private function toPlaceholder(): array
+    private function toResourceLink(): array
     {
-        return ["@id" => $this->getResourcePath()];
+        return ["@id" => $this->resourceId()];
     }
 
     final protected function getSerializeRules(): SerializeRules
     {
-        return SerializeRulesBuilder::resolve(
-            $this->buildSerializeRules(SerializeRules::build())
+        return SerializeRules::resolve(
+            $this->buildSerializeRules(SerializeRulesBuilder::entity(static::class))
         );
     }
 
@@ -443,7 +573,7 @@ abstract class SyncEntity extends ProviderEntity implements JsonSerializable
     private function _toArray(SerializeRules $rules): array
     {
         $array = $this;
-        $this->_serialize($array, $rules);
+        $this->_serialize($array, [], $rules);
         return (array)$array;
     }
 

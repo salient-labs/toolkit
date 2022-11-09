@@ -371,9 +371,9 @@ final class Conversions
     public function classToBasename(string $class, string ...$suffixes): string
     {
         $class = substr(strrchr("\\" . $class, "\\"), 1);
-        while (!is_null($suffix = array_shift($suffixes)))
+        while ($suffixes)
         {
-            if ($suffix && ($pos = strrpos($class, $suffix)) > 0)
+            if (($suffix = array_shift($suffixes)) && ($pos = strrpos($class, $suffix)) > 0)
             {
                 return substr($class, 0, $pos);
             }

@@ -10,7 +10,7 @@ use Lkrms\Support\ArrayKeyConformity;
  * Can be created by an IProvider to represent an external entity
  *
  */
-interface IProvidable
+interface IProvidable extends ReceivesService, ReturnsService
 {
     /**
      * Get the provider servicing the entity
@@ -19,7 +19,13 @@ interface IProvidable
     public function provider(): ?IProvider;
 
     /**
-     * Get the base class of the entity
+     * Get the context in which the entity is being serviced
+     *
+     */
+    public function context(): ?IProvidableContext;
+
+    /**
+     * Get the entity the instance was resolved from
      *
      * Consider the following scenario:
      *
@@ -35,13 +41,13 @@ interface IProvidable
      *   $faculty = $provider->with(Faculty::class)->get(1);
      *   ```
      *
-     * `$faculty` is now an instance of `CustomFaculty` with a base type of
-     * `Faculty`, so this code:
+     * `$faculty` is now a `Faculty` service and an instance of `CustomFaculty`,
+     * so this code:
      *
      * ```php
      * print_r([
-     *     'class'      => get_class($faculty),
-     *     'base_class' => $faculty->providable(),
+     *     'class'   => get_class($faculty),
+     *     'service' => $faculty->service(),
      * ]);
      * ```
      *
@@ -51,29 +57,26 @@ interface IProvidable
      * Array
      * (
      *     [class] => CustomFaculty
-     *     [base_class] => Faculty
+     *     [service] => Faculty
      * )
      * ```
      */
-    public function providable(): ?string;
+    public function service(): string;
 
     /**
      * Called immediately after instantiation by a provider's service container
      *
-     * @param string $providable The name of the entity resolved to this
-     * instance by the provider.
      * @return $this
-     * @throws \RuntimeException if the provider has already been set for this
-     * instance.
+     * @throws \RuntimeException if the instance already has a provider.
      */
-    public function setProvider(IProvider $provider, string $providable);
+    public function setProvider(IProvider $provider);
 
     /**
-     * Called immediately after instantiation and when subsequently refreshed
+     * Called immediately after instantiation, then as needed by the provider
      *
      * @return $this
      */
-    public function setProvidableContext(?IProvidableContext $context);
+    public function setContext(?IProvidableContext $ctx);
 
     /**
      * @return static

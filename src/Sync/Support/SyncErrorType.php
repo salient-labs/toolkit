@@ -28,13 +28,18 @@ final class SyncErrorType extends ConvertibleEnumeration
     public const ENTITY_NOT_EXPECTED = 2;
 
     /**
+     * The entity contains invalid data
+     */
+    public const ENTITY_NOT_VALID = 3;
+
+    /**
      * The provider does not implement sync operations for the entity
      */
-    public const ENTITY_NOT_SUPPORTED = 3;
+    public const ENTITY_NOT_SUPPORTED = 4;
 
     /**
      * Hierarchical data contains a circular reference
      */
-    public const HIERARCHY_IS_CIRCULAR = 4;
+    public const HIERARCHY_IS_CIRCULAR = 5;
 
 }

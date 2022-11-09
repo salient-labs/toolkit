@@ -26,6 +26,7 @@ use ReflectionType;
  * @method static ReflectionType[] getAllTypes(?ReflectionType $type) Return all types included in the given ReflectionType (see {@see Reflection::getAllTypes()})
  * @method static ReflectionClass getBaseClass(ReflectionClass $class) Follow ReflectionClass->getParentClass() until an ancestor with no parent is found (see {@see Reflection::getBaseClass()})
  * @method static string[] getClassNamesBetween(string|ReflectionClass $child, string|ReflectionClass $parent, bool $includeParent = true) Return the names of a class and its parents, up to and optionally including $parent (see {@see Reflection::getClassNamesBetween()})
+ * @method static ReflectionClass getMethodPrototypeClass(ReflectionMethod $method) If a method has a prototype, return its declaring class, otherwise return the method's declaring class (see {@see Reflection::getMethodPrototypeClass()})
  * @method static string[] getNames(array $reflections) Return the names of the given Reflection objects (see {@see Reflection::getNames()})
  * @method static string getParameterDeclaration(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, ?string $type = null) Convert the given ReflectionParameter to a PHP parameter declaration (see {@see Reflection::getParameterDeclaration()})
  * @method static string getTypeDeclaration(?ReflectionType $type, string $classPrefix = '\\', ?callable $typeNameCallback = null) Convert the given ReflectionType to a PHP type declaration (see {@see Reflection::getTypeDeclaration()})

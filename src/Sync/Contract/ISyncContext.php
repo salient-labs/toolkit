@@ -50,8 +50,7 @@ interface ISyncContext extends IProvidableContext
      *
      * 3. A list of entities (`fn(SyncEntity ...$entities)`)
      *    - Converted to an array that maps the normalised name of each entity's
-     *      unqualified
-     *      {@see \Lkrms\Contract\IProvidable::providable() base class} to an
+     *      unqualified {@see \Lkrms\Contract\IProvidable::service()} to an
      *      array of entity IDs
      *
      * If none of these match `$args`, {@see ISyncContext::getFilter()} returns

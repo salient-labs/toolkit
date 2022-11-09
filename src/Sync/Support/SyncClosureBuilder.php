@@ -6,6 +6,7 @@ namespace Lkrms\Sync\Support;
 
 use Closure;
 use Lkrms\Facade\Convert;
+use Lkrms\Facade\Reflect;
 use Lkrms\Support\ClosureBuilder;
 use Lkrms\Support\Dictionary\Regex;
 use Lkrms\Sync\Concept\SyncEntity;
@@ -131,8 +132,7 @@ final class SyncClosureBuilder extends ClosureBuilder
 
         if ($this->IsProvider)
         {
-            /** @todo Build out ISyncProvider and use it here instead */
-            $baseProvider = new ReflectionClass(SyncProvider::class);
+            $namespace = (new ReflectionClass(SyncProvider::class))->getNamespaceName();
 
             foreach ($class->getInterfaces() as $name => $interface)
             {
@@ -159,7 +159,7 @@ final class SyncClosureBuilder extends ClosureBuilder
                     array_key_exists($basename, $this->SyncProviderEntityBasenames) ? null : $entity->Class
                 );
 
-                $fn = function (int $operation, string $method) use ($class, $baseProvider, $entity)
+                $fn = function (int $operation, string $method) use ($class, $namespace, $entity)
                 {
                     // If $method has already been processed, the entity it
                     // services is ambiguous and it can't be used
@@ -172,8 +172,8 @@ final class SyncClosureBuilder extends ClosureBuilder
                     }
                     if ($class->hasMethod($method) && ($_method = $class->getMethod($method))->isPublic())
                     {
-                        if ($_method->isStatic()
-                            || ($baseProvider->hasMethod($method) && !$baseProvider->getMethod($method)->isPrivate()))
+                        if ($_method->isStatic() ||
+                            !strcasecmp(Reflect::getMethodPrototypeClass($_method)->getNamespaceName(), $namespace))
                         {
                             $this->SyncOperationMethods[$method] = null;
 

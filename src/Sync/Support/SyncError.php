@@ -78,10 +78,10 @@ final class SyncError implements IReadable, IImmutable
     /**
      * The display name of the entity associated with the error
      *
-     * Used in messages and summaries. Default: `<Entity>->getResourceName()`
+     * Used in messages and summaries. Default: `<Entity>->shortResourceId()`
      *
      * @var string|null
-     * @see SyncEntity::getResourceName()
+     * @see SyncEntity::shortResourceId()
      */
     protected $EntityName;
 
@@ -95,7 +95,7 @@ final class SyncError implements IReadable, IImmutable
     public function __construct(int $errorType, string $message, array $values = [], int $level = ConsoleLevel::ERROR, ?SyncEntity $entity = null, ?string $entityName = null, ?ISyncProvider $provider = null)
     {
         $this->EntityName = ($entityName
-            ?: ($entity ? $entity->getResourceName() : null));
+            ?: ($entity ? $entity->shortResourceId() : null));
         $this->ErrorType = $errorType;
         $this->Message   = $message;
         $this->Values    = $values ?: [$this->EntityName];

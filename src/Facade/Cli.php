@@ -24,6 +24,7 @@ use Lkrms\Contract\IContainer;
  * @method static IContainer|null coalesce(?IContainer $container, bool $returnNull = true, bool $load = false) Return the first available container (see {@see Container::coalesce()})
  * @method static CliAppContainer command(string[] $name, string $id) Register a CliCommand with the container (see {@see CliAppContainer::command()})
  * @method static mixed get(string $id, mixed ...$params) Create a new instance of the given class or interface, or return a shared instance created earlier (see {@see Container::get()})
+ * @method static mixed getAs(string $id, string $serviceId, mixed ...$params) Similar to get(), but override the service name passed to `ReceivesService::setService()` (see {@see Container::getAs()})
  * @method static IContainer getGlobalContainer() Get the current global container, loading it if necessary (see {@see Container::getGlobalContainer()})
  * @method static string getName(string $id) Resolve the given class or interface to a concrete class name (see {@see Container::getName()})
  * @method static string getProgramName() Return the basename of the file used to run the script (see {@see CliAppContainer::getProgramName()})
