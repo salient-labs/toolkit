@@ -18,6 +18,7 @@ use Lkrms\Contract\IProvidableContext;
 use Lkrms\Contract\IProvider;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
+use Lkrms\Facade\Sync;
 use Lkrms\Facade\Test;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -53,6 +54,39 @@ use UnexpectedValueException;
  */
 abstract class SyncEntity extends Entity implements IProvidable, JsonSerializable
 {
+    /**
+     * "@id" only
+     *
+     * ```php
+     * [
+     *   "@id" => "prefix:Entity/1",
+     * ]
+     * ```
+     */
+    public const LINK_MINIMAL = 0;
+
+    /**
+     * "@type" and "@id" (preserves identifier type)
+     *
+     * ```php
+     * [
+     *   "@type" => "prefix:Entity",
+     *   "@id"   => 1,
+     * ]
+     * ```
+     */
+    public const LINK_STANDARD = 1;
+
+    /**
+     *
+     */
+    public const LINK_DETAILED = 2;
+
+    /**
+     *
+     */
+    private const LINK_INTERNAL = -1;
+
     use TProvidable
     {
         setProvider as private _setProvider;
@@ -159,39 +193,19 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         return $ctx;
     }
 
-    /**
-     * @param int|string|null $id
-     */
-    final public static function getShortResourceId($id = null): string
+    final public function uri(bool $compact = true): string
     {
-        return self::_shortResourceId(static::class, self::getId(...func_get_args()));
+        return $this->typeUri($compact) . "/" . $this->id();
     }
 
-    /**
-     * @param int|string|null $id
-     */
-    final public static function getResourceId($id = null): string
+    private function typeUri(bool $compact): string
     {
-        return self::_resourceId(static::class, self::getId(...func_get_args()));
-    }
+        $store = ($this->Provider
+            ? $this->Provider->store()
+            : Sync::getInstance());
 
-    /**
-     * @param int|string|null $id
-     * @return int|string|null
-     */
-    private static function getId($id = null)
-    {
-        return func_num_args() ? (is_null($id) ? "" : $id) : null;
-    }
-
-    final public function shortResourceId(): string
-    {
-        return self::_shortResourceId($this->service(), $this->id());
-    }
-
-    final public function resourceId(): string
-    {
-        return self::_resourceId($this->service(), $this->id());
+        return ($store->getEntityTypeUri($this->service(), $compact)
+            ?: "/" . str_replace("\\", "/", ltrim($this->service(), "\\")));
     }
 
     /**
@@ -199,23 +213,7 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
      */
     private function id()
     {
-        return is_null($this->Id) ? $this->objectId() : $this->Id;
-    }
-
-    /**
-     * @param int|string|null $id
-     */
-    private static function _shortResourceId(string $service, $id): string
-    {
-        return Convert::classToBasename($service) . (is_null($id) ? "" : "($id)");
-    }
-
-    /**
-     * @param int|string|null $id
-     */
-    private static function _resourceId(string $service, $id): string
-    {
-        return str_replace("\\", "/", $service) . (is_null($id) ? "" : "($id)");
+        return is_null($this->Id) ? spl_object_id($this) : $this->Id;
     }
 
     /**
@@ -386,9 +384,13 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         DeferredSyncEntity::defer($this->provider(), $ctx->push($this), $entity ?: static::class, $deferred, $replace);
     }
 
-    private function objectId(): int
+    private function objectId(): string
     {
-        return spl_object_id($this);
+        return implode("\000", [
+            $this->service(),
+            $this->Id ?: spl_object_id($this),
+            $this->Provider ? $this->Provider->getProviderHash() : null,
+        ]);
     }
 
     private function _serializeId(&$node, array $path): void
@@ -428,7 +430,7 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         {
             if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE)
             {
-                $node = $node->toResourceLink();
+                $node = $node->toLink(self::LINK_INTERNAL);
 
                 return;
             }
@@ -436,10 +438,11 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
             if ($rules->getDetectRecursion())
             {
                 // Prevent infinite recursion by replacing each SyncEntity
-                // descended from itself with a resource link
+                // descended from itself with a link
                 if ($parents[$node->objectId()] ?? false)
                 {
-                    $node = $node->toResourceLink();
+                    $node         = $node->toLink(self::LINK_DETAILED);
+                    $node["@why"] = "Circular reference detected";
 
                     return;
                 }
@@ -545,11 +548,6 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         }
     }
 
-    private function toResourceLink(): array
-    {
-        return ["@id" => $this->resourceId()];
-    }
-
     final protected function getSerializeRules(): SerializeRules
     {
         return SerializeRules::resolve(
@@ -585,6 +583,33 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
     final public function toCustomArray(SerializeRules $rules): array
     {
         return $this->_toArray($rules);
+    }
+
+    final public function toLink(int $type = SyncEntity::LINK_MINIMAL, bool $compact = true): array
+    {
+        switch ($type)
+        {
+            case self::LINK_INTERNAL:
+                return [
+                    "@class" => static::class,
+                    "@id"    => $this->Id,
+                    "@_id"   => $this->CanonicalId,
+                ];
+
+            case self::LINK_DETAILED:
+            case self::LINK_STANDARD:
+                return [
+                    "@type" => $this->typeUri($compact),
+                    "@id"   => $this->id(),
+                ];
+
+            case self::LINK_MINIMAL:
+                return [
+                    "@id" => $this->uri($compact),
+                ];
+        }
+
+        throw new UnexpectedValueException("Invalid link type: $type");
     }
 
     /**

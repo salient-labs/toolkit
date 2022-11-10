@@ -239,6 +239,20 @@ class AppContainer extends Container implements IReadable
     /**
      * @return $this
      */
+    final public function syncNamespace(string $prefix, string $uri, string $namespace)
+    {
+        if (!Sync::isLoaded())
+        {
+            throw new RuntimeException("Sync database not loaded");
+        }
+        Sync::namespace($prefix, $uri, $namespace);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
     final public function unloadSync(bool $silent = false)
     {
         if (!Sync::isLoaded())

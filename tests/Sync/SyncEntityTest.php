@@ -41,16 +41,24 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
             'phone'   => null,
             'posts'   => [
                 [
-                    'body'  => null,
-                    'id'    => 101,
-                    'title' => null,
-                    'user'  => ['@id' => 'Lkrms/Tests/Sync/Entity/User(1)'],
+                    'body'      => null,
+                    'id'        => 101,
+                    'title'     => null,
+                    'user'      => [
+                        '@type' => '/Lkrms/Tests/Sync/Entity/User',
+                        '@id'   => 1,
+                        '@why'  => 'Circular reference detected',
+                    ],
                 ],
                 [
-                    'body'  => null,
-                    'id'    => 102,
-                    'title' => null,
-                    'user'  => ['@id' => 'Lkrms/Tests/Sync/Entity/User(1)'],
+                    'body'      => null,
+                    'id'        => 102,
+                    'title'     => null,
+                    'user'      => [
+                        '@type' => '/Lkrms/Tests/Sync/Entity/User',
+                        '@id'   => 1,
+                        '@why'  => 'Circular reference detected',
+                    ],
                 ]
             ],
             'username' => null,
@@ -68,12 +76,20 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
                 'phone'   => null,
                 'posts'   => [
                     [
-                        'body'  => null,
-                        'id'    => 101,
-                        'title' => null,
-                        'user'  => ['@id' => 'Lkrms/Tests/Sync/Entity/User(1)'],
+                        'body'      => null,
+                        'id'        => 101,
+                        'title'     => null,
+                        'user'      => [
+                            '@type' => '/Lkrms/Tests/Sync/Entity/User',
+                            '@id'   => 1,
+                            '@why'  => 'Circular reference detected',
+                        ],
                     ],
-                    ['@id' => 'Lkrms/Tests/Sync/Entity/Post(102)']
+                    [
+                        '@type' => '/Lkrms/Tests/Sync/Entity/Post',
+                        '@id'   => 102,
+                        '@why'  => 'Circular reference detected',
+                    ],
                 ],
                 'username' => null,
             ],
