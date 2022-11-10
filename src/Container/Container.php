@@ -158,13 +158,19 @@ class Container implements IContainer
         return $this->Dice->create($id, $params);
     }
 
-    /**
-     * Similar to get(), but override the service name passed to
-     * `ReceivesService::setService()`
-     *
-     */
     final public function getAs(string $id, string $serviceId, ...$params)
     {
+        if ($this->Dice->hasShared($id))
+        {
+            $instance = $this->Dice->create($id);
+            if ($instance instanceof ReceivesService)
+            {
+                return $instance->setService($serviceId);
+            }
+
+            return $instance;
+        }
+
         return $this->Dice->addCallback(
             "*",
             function (object $instance, string $name, bool & $continue) use ($id, $serviceId): object
@@ -213,44 +219,6 @@ class Container implements IContainer
         $this->Dice = $_dice;
     }
 
-    private function applyBindings(array $subs): void
-    {
-        $defaultRule = [];
-        foreach ($subs as $key => $value)
-        {
-            if (is_string($value))
-            {
-                if (strcasecmp($this->Dice->getRule($key)["instanceOf"] ?? "", $value))
-                {
-                    $this->addRule($key, ["instanceOf" => $value]);
-                }
-            }
-            elseif (is_object($value))
-            {
-                if (!$this->Dice->hasShared($key) || $this->Dice->create($key) !== $value)
-                {
-                    $this->Dice = $this->Dice->addShared($key, $value);
-                }
-            }
-            elseif (($this->Dice->getDefaultRule()["substitutions"][ltrim($key, '\\')] ?? null) !== $value)
-            {
-                // If this substitution can't be converted to a rule, copy it to
-                // the default rule and force Dice to use it for the given
-                // identifier
-                $defaultRule["substitutions"][$key] = $value;
-                $this->Dice = $this->Dice->removeRule($key);
-            }
-        }
-        if (!empty($defaultRule))
-        {
-            /**
-             * @todo Patch Dice to apply substitutions in `create()`, not just
-             * when resolving dependencies
-             */
-            $this->addRule("*", $defaultRule);
-        }
-    }
-
     final public function inContextOf(string $id): Container
     {
         $clone = clone $this;
@@ -288,6 +256,44 @@ class Container implements IContainer
         $clone->load();
 
         return $clone;
+    }
+
+    private function applyBindings(array $subs): void
+    {
+        $defaultRule = [];
+        foreach ($subs as $key => $value)
+        {
+            if (is_string($value))
+            {
+                if (strcasecmp($this->Dice->getRule($key)["instanceOf"] ?? "", $value))
+                {
+                    $this->addRule($key, ["instanceOf" => $value]);
+                }
+            }
+            elseif (is_object($value))
+            {
+                if (!$this->Dice->hasShared($key) || $this->Dice->create($key) !== $value)
+                {
+                    $this->Dice = $this->Dice->addShared($key, $value);
+                }
+            }
+            elseif (($this->Dice->getDefaultRule()["substitutions"][ltrim($key, '\\')] ?? null) !== $value)
+            {
+                // If this substitution can't be converted to a rule, copy it to
+                // the default rule and force Dice to use it for the given
+                // identifier
+                $defaultRule["substitutions"][$key] = $value;
+                $this->Dice = $this->Dice->removeRule($key);
+            }
+        }
+        if (!empty($defaultRule))
+        {
+            /**
+             * @todo Patch Dice to apply substitutions in `create()`, not just
+             * when resolving dependencies
+             */
+            $this->addRule("*", $defaultRule);
+        }
     }
 
     /**
@@ -359,7 +365,7 @@ class Container implements IContainer
      * @param string[]|null $exceptServices
      * @return $this
      */
-    final public function service(string $id, ?array $services = null, ?array $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null)
+    final public function service(string $id, ?array $services = null, ?array $exceptServices = null)
     {
         if (!is_subclass_of($id, IBindable::class))
         {
@@ -381,7 +387,7 @@ class Container implements IContainer
         $bindable = $id::getBindable();
         if (!is_null($services))
         {
-            if (count($bindable = array_intersect($bindable, $services)) < count($services))
+            if (count($bindable = array_intersect($services, $bindable)) < count($services))
             {
                 throw new UnexpectedValueException($id . " does not implement: " . implode(", ", array_diff($services, $bindable)));
             }
@@ -422,20 +428,6 @@ class Container implements IContainer
         }
 
         return $this;
-    }
-
-    final public function call(callable $callback)
-    {
-        $container = self::$GlobalContainer;
-        self::$GlobalContainer = $this;
-        try
-        {
-            return $callback($this);
-        }
-        finally
-        {
-            self::$GlobalContainer = $container;
-        }
     }
 
 }

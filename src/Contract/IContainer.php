@@ -38,18 +38,30 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function inContextOf(string $id): IContainer;
 
     /**
-     * Create a new instance of the given class or interface, or return a shared
+     * Create a new instance of a class or interface, or return a shared
      * instance created earlier
      *
      * @template T
      * @psalm-param class-string<T> $id
      * @psalm-return T
-     * @param string $id
      * @param mixed ...$params Values to pass to the constructor of the
      * instantiated class. Ignored if `$id` resolves to a shared instance.
-     * @return mixed
      */
     public function get(string $id, ...$params);
+
+    /**
+     * Create a new instance of a class or interface with an explicit service
+     * name, or apply a service name to a shared instance created earlier
+     *
+     * @template T
+     * @psalm-param class-string<T> $id
+     * @psalm-return T
+     * @param string $serviceId The service name passed to
+     * `ReceivesService::setService()`.
+     * @param mixed ...$params Values to pass to the constructor of the
+     * instantiated class. Ignored if `$id` resolves to a shared instance.
+     */
+    public function getAs(string $id, string $serviceId, ...$params);
 
     /**
      * Resolve the given class or interface to a concrete class name
@@ -66,8 +78,6 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * If `has($id)` returns `false`, `get($id)` must throw a
      * {@see \Psr\Container\NotFoundExceptionInterface}.
      *
-     * @param string $id
-     * @return bool
      */
     public function has(string $id): bool;
 
@@ -129,7 +139,7 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * @param string[]|null $exceptServices
      * @return $this
      */
-    public function service(string $id, ?array $services = null, ?array $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null);
+    public function service(string $id, ?array $services = null, ?array $exceptServices = null);
 
     /**
      * Add an existing instance to the container as a shared binding
@@ -145,15 +155,5 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * @return $this
      */
     public function instanceIf(string $id, $instance);
-
-    /**
-     * Make this the global container while running the given callback
-     *
-     * Even if `$callback` throws an exception, the previous global container
-     * will be restored before this method returns.
-     *
-     * @return mixed The callback's return value.
-     */
-    public function call(callable $callback);
 
 }
