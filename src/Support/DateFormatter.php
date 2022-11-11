@@ -12,7 +12,7 @@ use Lkrms\Contract\IDateParser;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Convert;
-use Lkrms\Support\DateParser\GenericDateParser;
+use Lkrms\Support\DateParser\CreateFromFormatDateParser;
 
 /**
  * An immutable date formatter and parser that optionally applies a preferred
@@ -48,7 +48,7 @@ final class DateFormatter implements IReadable, IImmutable
     {
         $this->Format   = $format;
         $this->Timezone = is_null($timezone) ? null : Convert::toTimezone($timezone);
-        $this->Parsers  = $parsers ?: [new GenericDateParser()];
+        $this->Parsers  = $parsers ?: [new CreateFromFormatDateParser($format)];
     }
 
     /**

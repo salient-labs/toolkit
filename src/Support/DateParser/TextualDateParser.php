@@ -12,7 +12,7 @@ use Lkrms\Contract\IDateParser;
  * A wrapper around date_create_immutable()
  *
  */
-final class GenericDateParser implements IDateParser
+final class TextualDateParser implements IDateParser
 {
     public function parse(string $value, ?DateTimeZone $timezone = null): ?DateTimeImmutable
     {
