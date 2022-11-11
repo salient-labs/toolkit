@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
+use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ClosureBuilder;
@@ -35,9 +36,13 @@ trait TConstructible
      */
     final public static function construct(array $data, ?IContainer $container = null, $parent = null)
     {
-        return ClosureBuilder::maybeGetBound(
-            $container, static::class
-        )->getCreateFromClosure()($data, $container, $parent);
+        if (!$container)
+        {
+            $container = Container::requireGlobalContainer();
+        }
+
+        return ClosureBuilder::getBound($container, static::class)
+            ->getCreateFromClosure()($data, $container, $parent);
     }
 
     /**
@@ -56,16 +61,22 @@ trait TConstructible
      */
     final public static function constructList(iterable $dataList, int $conformity = ArrayKeyConformity::NONE, ?IContainer $container = null, $parent = null): iterable
     {
+        if (!$container)
+        {
+            $container = Container::requireGlobalContainer();
+        }
+
         $closure = null;
         foreach ($dataList as $data)
         {
             if (!$closure)
             {
-                $builder = ClosureBuilder::maybeGetBound($container, static::class);
+                $builder = ClosureBuilder::getBound($container, static::class);
                 $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
                     ? $builder->getCreateFromSignatureClosure(array_keys($data), true)
                     : $builder->getCreateFromClosure(true);
             }
+
             yield $closure($data, $container, $parent);
         }
     }

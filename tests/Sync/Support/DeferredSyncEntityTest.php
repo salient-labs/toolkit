@@ -31,7 +31,7 @@ final class DeferredSyncEntityTest extends \Lkrms\Tests\TestCase
 
         foreach ($list as $deferred)
         {
-            $deferred->replace(Post::construct(['id' => $deferred->Deferred]));
+            $deferred->replace(Post::construct(['id' => $deferred->Deferred], $container));
         }
 
         $this->assertIsArray($list);

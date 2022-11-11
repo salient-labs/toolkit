@@ -17,7 +17,7 @@ interface HasBuilder
      * Use a fluent interface to create a new instance
      *
      */
-    public static function build(): Builder;
+    public static function build(?IContainer $container = null): Builder;
 
     /**
      * Resolve a builder or an instance to an instance

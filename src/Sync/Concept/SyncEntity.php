@@ -54,6 +54,12 @@ use UnexpectedValueException;
  */
 abstract class SyncEntity extends Entity implements IProvidable, JsonSerializable
 {
+    use TProvidable
+    {
+        setProvider as private _setProvider;
+        setContext as private _setContext;
+    }
+
     /**
      * "@id" only
      *
@@ -86,12 +92,6 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
      *
      */
     private const LINK_INTERNAL = -1;
-
-    use TProvidable
-    {
-        setProvider as private _setProvider;
-        setContext as private _setContext;
-    }
 
     /**
      * The unique identifier assigned to the entity by its provider
@@ -151,6 +151,11 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
     final public static function entityTypeId(): ?int
     {
         return self::$TypeId[static::class] ?? null;
+    }
+
+    public static function getDateProperties(): array
+    {
+        return ["*"];
     }
 
     final public function setProvider(IProvider $provider)

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Support;
 
 use Closure;
+use Lkrms\Contract\HasBuilder;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IPipelineImmutable;
 use Lkrms\Curler\Curler;
@@ -17,7 +19,7 @@ use Lkrms\Sync\Support\SyncOperation;
 use RuntimeException;
 use UnexpectedValueException;
 
-class HttpSyncDefinition extends SyncDefinition
+class HttpSyncDefinition extends SyncDefinition implements HasBuilder
 {
     public const DEFAULT_METHOD_MAP = [
         SyncOperation::CREATE      => HttpRequestMethod::POST,
@@ -354,9 +356,17 @@ class HttpSyncDefinition extends SyncDefinition
      * Use a fluent interface to create a new HttpSyncDefinition object
      *
      */
-    public static function build(): HttpSyncDefinitionBuilder
+    public static function build(?IContainer $container = null): HttpSyncDefinitionBuilder
     {
-        return new HttpSyncDefinitionBuilder();
+        return new HttpSyncDefinitionBuilder($container);
+    }
+
+    /**
+     * @param HttpSyncDefinitionBuilder|HttpSyncDefinition|null $object
+     */
+    public static function resolve($object): HttpSyncDefinition
+    {
+        return HttpSyncDefinitionBuilder::resolve($object);
     }
 
 }

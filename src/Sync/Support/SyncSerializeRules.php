@@ -7,6 +7,7 @@ namespace Lkrms\Sync\Support;
 use Closure;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\HasBuilder;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\ISerializeRules;
@@ -482,14 +483,13 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      * Use a fluent interface to create a new SyncSerializeRules object
      *
      */
-    public static function build(): SerializeRulesBuilder
+    public static function build(?IContainer $container = null): SerializeRulesBuilder
     {
-        return new SerializeRulesBuilder();
+        return new SerializeRulesBuilder($container);
     }
 
     /**
      * @param SerializeRulesBuilder|SyncSerializeRules|null $object
-     * @return SyncSerializeRules
      */
     public static function resolve($object): SyncSerializeRules
     {

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Cli;
 
 use Lkrms\Concern\TFullyReadable;
+use Lkrms\Contract\HasBuilder;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Assert;
@@ -37,7 +39,7 @@ use UnexpectedValueException;
  * @property-read string|string[]|bool|int|null $Value
  * @property-read callable|null $ValueCallback
  */
-final class CliOption implements IReadable, IImmutable
+final class CliOption implements IReadable, IImmutable, HasBuilder
 {
     use TFullyReadable;
 
@@ -273,9 +275,17 @@ final class CliOption implements IReadable, IImmutable
      * information.
      *
      */
-    public static function build(): CliOptionBuilder
+    public static function build(?IContainer $container = null): CliOptionBuilder
     {
-        return new CliOptionBuilder();
+        return new CliOptionBuilder($container);
+    }
+
+    /**
+     * @param CliOptionBuilder|CliOption|null $object
+     */
+    public static function resolve($object): CliOption
+    {
+        return CliOptionBuilder::resolve($object);
     }
 
 }

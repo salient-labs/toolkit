@@ -6,6 +6,8 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Console\ConsoleLevel;
+use Lkrms\Contract\HasBuilder;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
@@ -24,7 +26,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @property-read string|null $EntityName The display name of the entity associated with the error
  * @property-read ISyncProvider|null $Provider The sync provider associated with the error
  */
-final class SyncError implements IReadable, IImmutable
+final class SyncError implements IReadable, IImmutable, HasBuilder
 {
     use TFullyReadable;
 
@@ -134,9 +136,17 @@ final class SyncError implements IReadable, IImmutable
      * Use a fluent interface to create a new SyncError object
      *
      */
-    public static function build(): SyncErrorBuilder
+    public static function build(?IContainer $container = null): SyncErrorBuilder
     {
-        return new SyncErrorBuilder();
+        return new SyncErrorBuilder($container);
+    }
+
+    /**
+     * @param SyncErrorBuilder|SyncError|null $object
+     */
+    public static function resolve($object): SyncError
+    {
+        return SyncErrorBuilder::resolve($object);
     }
 
 }

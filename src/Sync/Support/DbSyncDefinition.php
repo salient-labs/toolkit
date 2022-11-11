@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Sync\Support;
 
 use Closure;
+use Lkrms\Contract\HasBuilder;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipelineImmutable;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Sync\Concept\DbSyncProvider;
@@ -12,7 +14,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Support\SyncOperation;
 use UnexpectedValueException;
 
-class DbSyncDefinition extends SyncDefinition
+class DbSyncDefinition extends SyncDefinition implements HasBuilder
 {
     /**
      * @var DbSyncProvider
@@ -109,9 +111,17 @@ class DbSyncDefinition extends SyncDefinition
      * Use a fluent interface to create a new DbSyncDefinition object
      *
      */
-    public static function build(): DbSyncDefinitionBuilder
+    public static function build(?IContainer $container = null): DbSyncDefinitionBuilder
     {
-        return new DbSyncDefinitionBuilder();
+        return new DbSyncDefinitionBuilder($container);
+    }
+
+    /**
+     * @param DbSyncDefinitionBuilder|DbSyncDefinition|null $object
+     */
+    public static function resolve($object): DbSyncDefinition
+    {
+        return DbSyncDefinitionBuilder::resolve($object);
     }
 
 }

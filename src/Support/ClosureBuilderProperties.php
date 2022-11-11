@@ -14,6 +14,7 @@ use Lkrms\Contract\IReadable;
  * @property-read array<string,string> $Methods Property name => "magic" property method
  * @property-read array<string,string> $Properties Property name => declared property name
  * @property-read string[] $MetaProperties Arbitrary property names
+ * @property-read string[] $DateProperties Date property names
  *
  * @see ClosureBuilder
  */
@@ -49,11 +50,19 @@ final class ClosureBuilderProperties implements IReadable
      */
     protected $MetaProperties;
 
-    public function __construct(array $parameters, array $methods, array $properties, array $metaProperties)
+    /**
+     * Date property names
+     *
+     * @var string[]
+     */
+    protected $DateProperties;
+
+    public function __construct(array $parameters, array $methods, array $properties, array $metaProperties, array $dateProperties)
     {
         $this->Parameters     = $parameters;
         $this->Methods        = $methods;
         $this->Properties     = $properties;
         $this->MetaProperties = $metaProperties;
+        $this->DateProperties = $dateProperties;
     }
 }
