@@ -6,6 +6,7 @@ namespace Lkrms\Sync\Contract;
 
 use Lkrms\Contract\IProvider;
 use Lkrms\Sync\Support\SyncEntityProvider;
+use Lkrms\Sync\Support\SyncStore;
 
 /**
  * Base interface for SyncEntity providers
@@ -37,6 +38,12 @@ interface ISyncProvider extends IProvider
      *
      */
     public function getProviderHash(bool $binary = false): string;
+
+    /**
+     * Get the provider's entity store
+     *
+     */
+    public function store(): SyncStore;
 
     /**
      * Use an entity-agnostic interface to the provider's implementation of sync

@@ -145,6 +145,11 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
         return $this->Container;
     }
 
+    final public function store(): SyncStore
+    {
+        return $this->Store;
+    }
+
     /**
      * Get a new pipeline bound to the provider's container
      *

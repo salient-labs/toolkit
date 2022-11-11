@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Support;
 
+use Lkrms\Container\Container;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder;
 use Lkrms\Tests\Sync\CustomEntity\Post as CustomPost;
 use Lkrms\Tests\Sync\Entity\Post;
@@ -13,7 +14,10 @@ final class SerializeRulesTest extends \Lkrms\Tests\TestCase
 {
     public function testApply()
     {
-        $rules1 = (SyncSerializeRulesBuilder::entity(User::class)
+        $container = new Container();
+
+        $rules1 = (SyncSerializeRulesBuilder::build($container)
+            ->entity(User::class)
             ->remove([
                 'l1.l2.field1',
                 ['l1.l2.field3', 'field3_id_1'],
@@ -21,7 +25,8 @@ final class SerializeRulesTest extends \Lkrms\Tests\TestCase
                 User::class => ['e3_field', ['e4_field', 'e4_field_id_1']],
             ])
             ->go());
-        $rules2 = (SyncSerializeRulesBuilder::entity(User::class)
+        $rules2 = (SyncSerializeRulesBuilder::build($container)
+            ->entity(User::class)
             ->remove([
                 ['l1.l2.field1', 'field1_id_2'],
                 'l1.l2.field2',
@@ -31,7 +36,8 @@ final class SerializeRulesTest extends \Lkrms\Tests\TestCase
                 User::class       => ['e4_field', ['e3_field', 'e3_field_id_2']],
             ])
             ->go());
-        $rules3 = (SyncSerializeRulesBuilder::entity(User::class)
+        $rules3 = (SyncSerializeRulesBuilder::build($container)
+            ->entity(User::class)
             ->remove([
                 'l1.l2.field2',
                 ['l1.l2.field3', 'field3_id_3'],

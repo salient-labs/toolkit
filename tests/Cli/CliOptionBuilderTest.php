@@ -6,13 +6,15 @@ namespace Lkrms\Tests\Cli;
 
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
+use Lkrms\Container\Container;
 use UnexpectedValueException;
 
 final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
 {
     public function testBuild()
     {
-        $option = (CliOption::build()
+        $container = new Container();
+        $option    = (CliOption::build($container)
             ->long("dest")
             ->short("d")
             ->valueName("DIR")
@@ -39,8 +41,9 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
 
     public function testInvalidBuild()
     {
+        $container = new Container();
         $this->expectException(UnexpectedValueException::class);
-        (CliOption::build()
+        (CliOption::build($container)
             ->long("dest")
             ->short("d")
             ->value("DIR")

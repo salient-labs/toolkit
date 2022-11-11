@@ -21,6 +21,7 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 $app = (App::load(dirname(__DIR__))
     ->loadCache()
     ->loadSync()
+    ->syncNamespace("lkrms-tests", "https://lkrms.github.io/php-util/tests/entity", \Lkrms\Tests\Sync\Entity::class)
     ->service(JsonPlaceholderApi::class));
 
 $userApi = User::backend($app);
@@ -34,8 +35,10 @@ $post = reset($posts);
 $user = User::backend()->get($post->User->Id);
 
 print_r([
-    'Sync::getRunId()'   => Sync::getRunId(),
-    'Sync::getRunUuid()' => Sync::getRunUuid(),
+    'Sync::getRunId()'               => Sync::getRunId(),
+    'Sync::getRunUuid()'             => Sync::getRunUuid(),
+    'Sync::getEntityTypeUri()'       => Sync::getEntityTypeUri(User::class),
+    'Sync::getEntityTypeUri(,false)' => Sync::getEntityTypeUri(User::class, false),
 ]);
 
 $resolver       = new SyncEntityResolver($userApi, "Name");

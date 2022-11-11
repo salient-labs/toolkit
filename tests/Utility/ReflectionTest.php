@@ -91,7 +91,11 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
         foreach ($method->getParameters() as $param)
         {
             $types[] = array_map(
-                fn(ReflectionNamedType $type) => $type->getName(),
+                (function ($type): string
+                {
+                    /** @var ReflectionNamedType $type */
+                    return $type->getName();
+                }),
                 (new Reflection())->getAllTypes($param->getType())
             );
         }

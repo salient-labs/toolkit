@@ -31,7 +31,7 @@ $queries = [
     "no_force_numeric_keys" => Convert::dataToQuery($data),
     "force_numeric_keys"    => Convert::dataToQuery($data, true),
     "date_format_rss"       => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::RSS)),
-    "date_format_utc"       => Convert::dataToQuery($data, false, new DateFormatter(DateFormatter::DEFAULT, "UTC")),
+    "date_format_utc"       => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::ATOM, "UTC")),
 ];
 
 $decoded = array_map(fn($q) => urldecode($q), $queries);

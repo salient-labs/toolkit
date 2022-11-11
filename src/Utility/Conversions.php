@@ -280,16 +280,12 @@ final class Conversions
     /**
      * A shim for DateTimeImmutable::createFromInterface() (PHP 8+)
      *
-     * @param DateTimeInterface $date
-     * @return DateTimeImmutable
      */
     public function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
     {
-        if ($date instanceof DateTimeImmutable)
-        {
-            return $date;
-        }
-        return DateTimeImmutable::createFromMutable($date);
+        return $date instanceof DateTimeImmutable
+            ? $date
+            : DateTimeImmutable::createFromMutable($date);
     }
 
     /**

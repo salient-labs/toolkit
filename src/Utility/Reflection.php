@@ -105,7 +105,7 @@ final class Reflection
      *
      * Reflection methods that return a `ReflectionType` may actually return any
      * of the following:
-     * - `ReflectionType` (had `isBuiltin()` until becoming `abstract` in PHP 8)
+     * - `ReflectionType` (became `abstract` in PHP 8)
      * - `ReflectionNamedType` (PHP 7.1+)
      * - `ReflectionUnionType` (PHP 8+)
      * - `ReflectionIntersectionType` (PHP 8.1+)
@@ -113,10 +113,9 @@ final class Reflection
      * Depending on the PHP version, `getAllTypes` returns an array of
      * `ReflectionNamedType` and/or `ReflectionType` instances.
      *
-     * @phpstan-return ReflectionNamedType[]
      * @param ReflectionType|null $type e.g. the return value of
      * `ReflectionParameter::getType()`.
-     * @return ReflectionType[]
+     * @return ReflectionNamedType[]|ReflectionType[]
      * @see Reflection::getAllTypeNames()
      */
     public function getAllTypes(?ReflectionType $type): array

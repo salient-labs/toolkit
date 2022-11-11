@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Lkrms\Support;
 
 use Closure;
+use DateTimeInterface;
 use Lkrms\Container\Container;
+use Lkrms\Contract\HasDateProperties;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IHierarchy;
@@ -39,7 +41,7 @@ class ClosureBuilder
     /**
      * @var string|null
      */
-    private $BaseClass;
+    private $Service;
 
     /**
      * @var bool
@@ -65,6 +67,11 @@ class ClosureBuilder
      * @var bool
      */
     private $IsHierarchy;
+
+    /**
+     * @var bool
+     */
+    private $HasDates;
 
     /**
      * Property names
@@ -109,6 +116,15 @@ class ClosureBuilder
      * @var string[]
      */
     private $WritableProperties = [];
+
+    /**
+     * Normalised date property names
+     *
+     * Includes "magic" property names.
+     *
+     * @var string[]
+     */
+    private $DateProperties = [];
 
     /**
      * "Magic" property names => supported actions => method names
@@ -172,6 +188,13 @@ class ClosureBuilder
      * @var array<string,string>
      */
     private $RequiredMap = [];
+
+    /**
+     * Normalised constructor parameter names => constructor parameter names
+     *
+     * @var array<string,string>
+     */
+    private $DateParameters = [];
 
     /**
      * Normalised constructor parameter names => class names
@@ -277,7 +300,7 @@ class ClosureBuilder
     final public static function getBound(IContainer $container, string $class)
     {
         $instance = static::get($container->getName($class));
-        $instance->BaseClass = $class;
+        $instance->Service = $class;
 
         return $instance;
     }
@@ -307,6 +330,7 @@ class ClosureBuilder
         $this->IsExtensible = $class->implementsInterface(IExtensible::class);
         $this->IsProvidable = $class->implementsInterface(IProvidable::class);
         $this->IsHierarchy  = $class->implementsInterface(IHierarchy::class);
+        $this->HasDates     = $class->implementsInterface(HasDateProperties::class);
 
         // IResolvable provides access to properties via alternative names
         if ($class->implementsInterface(IResolvable::class))
@@ -412,7 +436,11 @@ class ClosureBuilder
                     if (($type = $param->getType()) &&
                         $type instanceof ReflectionNamedType && !$type->isBuiltin())
                     {
-                        $this->ServiceMap[$normalised] = $type->getName();
+                        $this->ServiceMap[$normalised] = $type = $type->getName();
+                        if ($this->HasDates && is_a($type, DateTimeInterface::class, true))
+                        {
+                            $this->DateParameters[] = $normalised;
+                        }
                     }
                 }
                 $this->Parameters[]       = $this->ParameterMap[$normalised] = $param->name;
@@ -442,6 +470,14 @@ class ClosureBuilder
 
         // And a list of unique normalised property names
         $this->NormalisedProperties = array_keys($this->PropertyMap + $this->MethodMap);
+
+        if ($this->HasDates)
+        {
+            $dates = $class->getMethod("getDateProperties")->invoke(null);
+            $this->DateProperties = ["*"] === $dates
+                ? $this->NormalisedProperties
+                : array_intersect($this->NormalisedProperties, $this->maybeNormalise($dates, true));
+        }
     }
 
     /**
@@ -493,7 +529,7 @@ class ClosureBuilder
      * discard unusable data.
      * @return Closure
      * ```php
-     * closure(array $array, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\IHierarchy $parent = null)
+     * closure(array $array, \Lkrms\Contract\IContainer $container, ?\Lkrms\Contract\IHierarchy $parent = null, ?\Lkrms\Support\DateFormatter $dateFormatter = null)
      * ```
      */
     final public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
@@ -506,13 +542,15 @@ class ClosureBuilder
         }
 
         $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
-        $closure = static function (array $array, ?IContainer $container = null, ?IHierarchy $parent = null) use ($closure)
+        $closure = static function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($closure)
         {
-            return $closure($container, $array, null, null, $parent);
+            return $closure($container, $array, null, null, $parent, $dateFormatter);
         };
 
         $this->CreateProviderlessFromSignatureClosures[$sig][(int)$strict] = $closure;
-        if ($strict)
+        // If the closure was created successfully in strict mode, cache it for
+        // `$strict = false` purposes too
+        if ($strict && !($this->CreateProviderlessFromSignatureClosures[$sig][(int)false] ?? null))
         {
             $this->CreateProviderlessFromSignatureClosures[$sig][(int)false] = $closure;
         }
@@ -546,11 +584,13 @@ class ClosureBuilder
 
             return $closure($container, $array, $provider,
                 $context ?: new ProvidableContext($container, $parent),
-                $parent);
+                $parent, $provider->getDateFormatter());
         };
 
         $this->CreateProvidableFromSignatureClosures[$sig][(int)$strict] = $closure;
-        if ($strict)
+        // If the closure was created successfully in strict mode, cache it for
+        // `$strict = false` purposes too
+        if ($strict && !($this->CreateProvidableFromSignatureClosures[$sig][(int)false] ?? null))
         {
             $this->CreateProvidableFromSignatureClosures[$sig][(int)false] = $closure;
         }
@@ -600,13 +640,18 @@ class ClosureBuilder
         // - "magic" property methods ($methodKeys)
         // - properties ($propertyKeys)
         // - arbitrary properties ($metaKeys)
-        $parameterKeys = $methodKeys = $propertyKeys = $metaKeys = [];
+        $parameterKeys = $methodKeys = $propertyKeys = $metaKeys = $dateKeys = [];
 
         foreach ($keys as $normalisedKey => $key)
         {
             if ($withParameters && ($param = $this->ParameterMap[$normalisedKey] ?? null))
             {
                 $parameterKeys[$key] = $this->ParametersIndex[$param];
+                if (in_array($normalisedKey, $this->DateParameters))
+                {
+                    $dateKeys[] = $key;
+                    continue;
+                }
             }
             elseif ($method = $this->Actions[self::ACTION_SET][$normalisedKey] ?? null)
             {
@@ -614,10 +659,11 @@ class ClosureBuilder
             }
             elseif ($property = $this->PropertyMap[$normalisedKey] ?? null)
             {
-                if ($this->checkWritable($property, self::ACTION_SET))
+                if (!$this->checkWritable($property, self::ACTION_SET))
                 {
-                    $propertyKeys[$key] = $property;
+                    continue;
                 }
+                $propertyKeys[$key] = $property;
             }
             elseif ($this->IsExtensible)
             {
@@ -627,15 +673,23 @@ class ClosureBuilder
             {
                 throw new UnexpectedValueException("No matching property or constructor parameter found in {$this->Class} for '$key'");
             }
+            else
+            {
+                continue;
+            }
+            if (in_array($normalisedKey, $this->DateProperties))
+            {
+                $dateKeys[] = $key;
+            }
         }
 
-        return new ClosureBuilderProperties($parameterKeys, $methodKeys, $propertyKeys, $metaKeys);
+        return new ClosureBuilderProperties($parameterKeys, $methodKeys, $propertyKeys, $metaKeys, $dateKeys);
     }
 
     /**
      * @return Closure
-     * ```
-     * closure(?\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent)
+     * ```php
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
      * ```
      */
     private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
@@ -648,126 +702,237 @@ class ClosureBuilder
         }
 
         $properties = $this->getProperties($keys, true, $strict);
-        [$parameterKeys, $propertyKeys, $methodKeys, $metaKeys] = [
+        [$parameterKeys, $propertyKeys, $methodKeys, $metaKeys, $dateKeys] = [
             $properties->Parameters,
             $properties->Properties,
             $properties->Methods,
             $properties->MetaProperties,
+            $properties->DateProperties,
         ];
 
         // Build the smallest possible chain of closures
-        if ($parameterKeys)
-        {
-            $closure = function (?IContainer $container, array $array) use ($parameterKeys)
-            {
-                $args = $this->DefaultArguments;
-                foreach ($parameterKeys as $key => $index)
-                {
-                    $args[$index] = $array[$key];
-                }
-                if ($container)
-                {
-                    if ($this->BaseClass && $container instanceof Container)
-                    {
-                        return $container->getAs($this->Class, $this->BaseClass, ...$args);
-                    }
-
-                    return $container->get($this->Class, ...$args);
-                }
-
-                return new $this->Class(...$args);
-            };
-        }
-        else
-        {
-            $closure = function (?IContainer $container)
-            {
-                if ($container)
-                {
-                    if ($this->BaseClass && strcasecmp($this->BaseClass, $this->Class) && $container instanceof Container)
-                    {
-                        return $container->getAs($this->Class, $this->BaseClass, ...$this->DefaultArguments);
-                    }
-
-                    return $container->get($this->Class, ...$this->DefaultArguments);
-                }
-
-                return new $this->Class(...$this->DefaultArguments);
-            };
-        }
-
+        $closure = ($parameterKeys
+            ? $this->_getConstructor($parameterKeys)
+            : $this->_getDefaultConstructor());
         if ($propertyKeys)
         {
-            $closure = static function (?IContainer $container, array $array) use ($closure, $propertyKeys)
-            {
-                $obj = $closure($container, $array);
-                foreach ($propertyKeys as $key => $property)
-                {
-                    $obj->$property = $array[$key];
-                }
-                return $obj;
-            };
-            $closure = $closure->bindTo(null, $this->Class);
+            $closure = $this->_getPropertyClosure($propertyKeys, $closure);
         }
-
-        // Call `setProvider()` and/or `setParent()` early in case property
+        // Call `setProvider()` and `setContext()` early in case property
         // methods need them
         if ($this->IsProvidable)
         {
-            $closure = function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context) use ($closure)
-            {
-                /** @var IProvidable $obj */
-                $obj = $closure($container, $array);
-                if ($provider)
-                {
-                    return $obj->setProvider($provider)->setContext($context);
-                }
-                return $obj;
-            };
+            $closure = $this->_getProvidableClosure($closure);
         }
-
+        // Ditto for `setParent()`
         if ($this->IsHierarchy)
         {
-            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?IHierarchy $parent) use ($closure)
-            {
-                /** @var IHierarchy $obj */
-                $obj = $closure($container, $array, $provider, $context);
-                if ($parent)
-                {
-                    return $obj->setParent($parent);
-                }
-                return $obj;
-            };
+            $closure = $this->_getHierarchyClosure($closure);
         }
-
         if ($methodKeys)
         {
-            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?IHierarchy $parent) use ($closure, $methodKeys)
-            {
-                $obj = $closure($container, $array, $provider, $context, $parent);
-                foreach ($methodKeys as $key => $method)
-                {
-                    $obj->$method($array[$key]);
-                }
-                return $obj;
-            };
-            $closure = $closure->bindTo(null, $this->Class);
+            $closure = $this->_getMethodClosure($methodKeys, $closure);
         }
-
         if ($metaKeys)
         {
-            $closure = static function (?IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?IHierarchy $parent) use ($closure, $metaKeys)
-            {
-                $obj = $closure($container, $array, $provider, $context, $parent);
-                foreach ($metaKeys as $key)
-                {
-                    $obj->setMetaProperty((string)$key, $array[$key]);
-                }
-                return $obj;
-            };
+            $closure = $this->_getMetaClosure($metaKeys, $closure);
+        }
+        if ($dateKeys)
+        {
+            $closure = $this->_getDateClosure($dateKeys, $closure);
         }
 
         return $this->CreateFromSignatureClosures[$sig] = $closure;
+    }
+
+    /**
+     * @return Closure
+     * ```php
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * ```
+     */
+    protected function _getConstructor(array $parameterKeys): Closure
+    {
+        [$defaultArgs, $service, $class] = [
+            $this->DefaultArguments,
+            $this->Service,
+            $this->Class,
+        ];
+
+        return static function (IContainer $container, array $array) use ($parameterKeys, $defaultArgs, $service, $class)
+        {
+            $args = $defaultArgs;
+            foreach ($parameterKeys as $key => $index)
+            {
+                $args[$index] = $array[$key];
+            }
+            if ($service && strcasecmp($service, $class) && $container instanceof Container)
+            {
+                return $container->getAs($class, $service, ...$args);
+            }
+
+            return $container->get($class, ...$args);
+        };
+    }
+
+    /**
+     * @return Closure
+     * ```php
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * ```
+     */
+    protected function _getDefaultConstructor(): Closure
+    {
+        [$defaultArgs, $service, $class] = [
+            $this->DefaultArguments,
+            $this->Service,
+            $this->Class,
+        ];
+
+        return static function (IContainer $container) use ($defaultArgs, $service, $class)
+        {
+            if ($service && strcasecmp($service, $class) && $container instanceof Container)
+            {
+                return $container->getAs($class, $service, ...$defaultArgs);
+            }
+
+            return $container->get($class, ...$defaultArgs);
+        };
+    }
+
+    /**
+     * @return Closure
+     * ```php
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * ```
+     */
+    protected function _getPropertyClosure(array $propertyKeys, Closure $closure): Closure
+    {
+        return static function (IContainer $container, array $array, ...$args) use ($propertyKeys, $closure)
+        {
+            $obj = $closure($container, $array, ...$args);
+            foreach ($propertyKeys as $key => $property)
+            {
+                $obj->$property = $array[$key];
+            }
+            return $obj;
+        };
+    }
+
+    /**
+     * @return Closure
+     * ```php
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * ```
+     */
+    protected function _getProvidableClosure(Closure $closure): Closure
+    {
+        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ...$args) use ($closure)
+        {
+            /** @var IProvidable $obj */
+            $obj = $closure($container, $array, $provider, $context, ...$args);
+            if ($provider)
+            {
+                return $obj->setProvider($provider)->setContext($context);
+            }
+
+            return $obj;
+        };
+    }
+
+    /**
+     * @return Closure
+     * ```php
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * ```
+     */
+    protected function _getHierarchyClosure(Closure $closure): Closure
+    {
+        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?IHierarchy $parent, ...$args) use ($closure)
+        {
+            /** @var IHierarchy $obj */
+            $obj = $closure($container, $array, $provider, $context, $parent, ...$args);
+            if ($parent)
+            {
+                return $obj->setParent($parent);
+            }
+
+            return $obj;
+        };
+    }
+
+    /**
+     * @return Closure
+     * ```php
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * ```
+     */
+    protected function _getMethodClosure(array $methodKeys, Closure $closure): Closure
+    {
+        return static function (IContainer $container, array $array, ...$args) use ($methodKeys, $closure)
+        {
+            $obj = $closure($container, $array, ...$args);
+            foreach ($methodKeys as $key => $method)
+            {
+                $obj->$method($array[$key]);
+            }
+
+            return $obj;
+        };
+    }
+
+    /**
+     * @return Closure
+     * ```php
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * ```
+     */
+    protected function _getMetaClosure(array $metaKeys, Closure $closure): Closure
+    {
+        return static function (IContainer $container, array $array, ...$args) use ($metaKeys, $closure)
+        {
+            $obj = $closure($container, $array, ...$args);
+            foreach ($metaKeys as $key)
+            {
+                $obj->setMetaProperty((string)$key, $array[$key]);
+            }
+
+            return $obj;
+        };
+    }
+
+    /**
+     * @return Closure
+     * ```php
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * ```
+     */
+    protected function _getDateClosure(array $dateKeys, Closure $closure): Closure
+    {
+        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ...$args) use ($dateKeys, $closure)
+        {
+            if (is_null($dateFormatter))
+            {
+                /** @var DateFormatter $dateFormatter */
+                $dateFormatter = ($provider
+                    ? $provider->getDateFormatter()
+                    : $container->get(DateFormatter::class));
+            }
+
+            foreach ($dateKeys as $key)
+            {
+                if (!is_string($array[$key]))
+                {
+                    continue;
+                }
+                if ($date = $dateFormatter->parse($array[$key]))
+                {
+                    $array[$key] = $date;
+                }
+            }
+
+            return $closure($container, $array, $provider, $context, $parent, $dateFormatter, ...$args);
+        };
     }
 
     /**
@@ -775,7 +940,7 @@ class ClosureBuilder
      * if `$array` contains unusable values.
      * @return Closure
      * ```php
-     * closure(array $array, ?\Lkrms\Contract\IContainer $container = null, ?\Lkrms\Contract\IHierarchy $parent = null)
+     * closure(array $array, \Lkrms\Contract\IContainer $container, ?\Lkrms\Contract\IHierarchy $parent = null, ?\Lkrms\Support\DateFormatter $dateFormatter = null)
      * ```
      */
     final public function getCreateFromClosure(bool $strict = false): Closure
@@ -785,10 +950,10 @@ class ClosureBuilder
             return $closure;
         }
 
-        $closure = function (array $array, ?IContainer $container = null, ?IHierarchy $parent = null) use ($strict)
+        $closure = function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($strict)
         {
             $keys = array_keys($array);
-            return ($this->getCreateFromSignatureClosure($keys, $strict))($array, $container, $parent);
+            return ($this->getCreateFromSignatureClosure($keys, $strict))($array, $container, $parent, $dateFormatter);
         };
 
         return $this->CreateProviderlessFromClosures[(int)$strict] = $closure;

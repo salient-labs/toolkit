@@ -20,11 +20,10 @@ use Lkrms\Contract\IContainer;
  * @method static void unload() Clear the underlying CliAppContainer instance
  * @method static CliAppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static CliAppContainer bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})
- * @method static mixed call(callable $callback) Make this the global container while running the given callback (see {@see Container::call()})
  * @method static IContainer|null coalesce(?IContainer $container, bool $returnNull = true, bool $load = false) Return the first available container (see {@see Container::coalesce()})
  * @method static CliAppContainer command(string[] $name, string $id) Register a CliCommand with the container (see {@see CliAppContainer::command()})
- * @method static mixed get(string $id, mixed ...$params) Create a new instance of the given class or interface, or return a shared instance created earlier (see {@see Container::get()})
- * @method static mixed getAs(string $id, string $serviceId, mixed ...$params) Similar to get(), but override the service name passed to `ReceivesService::setService()` (see {@see Container::getAs()})
+ * @method static mixed get(string $id, mixed ...$params) Create a new instance of a class or interface, or return a shared instance created earlier (see {@see Container::get()})
+ * @method static mixed getAs(string $id, string $serviceId, mixed ...$params) Create a new instance of a class or interface with an explicit service name, or apply a service name to a shared instance created earlier (see {@see Container::getAs()})
  * @method static IContainer getGlobalContainer() Get the current global container, loading it if necessary (see {@see Container::getGlobalContainer()})
  * @method static string getName(string $id) Resolve the given class or interface to a concrete class name (see {@see Container::getName()})
  * @method static string getProgramName() Return the basename of the file used to run the script (see {@see CliAppContainer::getProgramName()})
@@ -42,10 +41,11 @@ use Lkrms\Contract\IContainer;
  * @method static IContainer requireGlobalContainer() Similar to getGlobalContainer(), but throw an exception if no global container has been loaded (see {@see Container::requireGlobalContainer()})
  * @method static int run() Process the command line (see {@see CliAppContainer::run()})
  * @method static never runAndExit() Process the command line and exit (see {@see CliAppContainer::runAndExit()})
- * @method static CliAppContainer service(string $id, string[]|null $services = null, string[]|null $exceptServices = null, ?array $constructParams = null, ?array $shareInstances = null) Add bindings to the container for an IBindable implementation and its services, optionally specifying services to bind or exclude (see {@see Container::service()})
+ * @method static CliAppContainer service(string $id, string[]|null $services = null, string[]|null $exceptServices = null) Add bindings to the container for an IBindable implementation and its services, optionally specifying services to bind or exclude (see {@see Container::service()})
  * @method static IContainer|null setGlobalContainer(?IContainer $container) Set (or unset) the global container (see {@see Container::setGlobalContainer()})
  * @method static CliAppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})
  * @method static CliAppContainer singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})
+ * @method static CliAppContainer syncNamespace(string $prefix, string $uri, string $namespace) See {@see AppContainer::syncNamespace()}
  * @method static CliAppContainer unloadSync(bool $silent = false) See {@see AppContainer::unloadSync()}
  * @method static CliAppContainer writeResourceUsage() See {@see AppContainer::writeResourceUsage()}
  *

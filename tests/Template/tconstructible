@@ -8,6 +8,7 @@ use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TResolvable;
 use Lkrms\Concern\TWritable;
+use Lkrms\Container\Container;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IResolvable;
@@ -56,6 +57,8 @@ $value3 = [
     "DATA"  => [10, 11, 12],
     "DATA2" => [20, 21, 22],
 ];
+
+Container::getGlobalContainer();
 
 $a = A::construct($value1);
 $b = B::construct($value2);

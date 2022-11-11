@@ -14,15 +14,15 @@ use UnexpectedValueException;
 /**
  * A fluent interface for creating instances of an underlying class
  *
- * If a global container has been loaded, it will be used to instantiate the
- * underlying class unless another container is passed to the builder, e.g.:
+ * The global container will be used to instantiate the underlying class unless
+ * another container is passed to the builder, e.g.:
  *
  * ```php
- * $instance      = MyClassBuilder::build()->go();
- * $boundInstance = MyClassBuilder::build($this->container())->go();
+ * $instance        = MyClassBuilder::build()->go();
+ * $anotherInstance = MyClassBuilder::build($this->container())->go();
  * ```
  *
- * If no service container is located, instances are created directly.
+ * A `RuntimeException` will be thrown if no service container is available.
  */
 abstract class Builder implements IImmutable
 {
@@ -67,7 +67,7 @@ abstract class Builder implements IImmutable
     }
 
     /**
-     * @var IContainer|null
+     * @var IContainer
      */
     private $Container;
 
@@ -88,12 +88,9 @@ abstract class Builder implements IImmutable
 
     final public function __construct(?IContainer $container = null)
     {
-        $this->Container      = $container;
-        $this->ClosureBuilder = ClosureBuilder::maybeGetBound(
-            $container ?: Container::maybeGetGlobalContainer(),
-            static::getClassName()
-        );
-        $this->Closure = $this->ClosureBuilder->getCreateFromClosure(true);
+        $this->Container      = $container ?: Container::requireGlobalContainer();
+        $this->ClosureBuilder = ClosureBuilder::getBound($this->Container, static::getClassName());
+        $this->Closure        = $this->ClosureBuilder->getCreateFromClosure(true);
     }
 
     /**
@@ -133,8 +130,10 @@ abstract class Builder implements IImmutable
             {
                 throw new UnexpectedValueException('Argument #1 ($object) does not resolve to a ' . static::getClassName());
             }
+
             return $obj;
         }
+
         return (new static())->{$name}(...$arguments);
     }
 
@@ -145,10 +144,7 @@ abstract class Builder implements IImmutable
     {
         if (static::getTerminator() === $name)
         {
-            return ($this->Closure)(
-                $this->Data,
-                $this->Container ?: Container::maybeGetGlobalContainer()
-            );
+            return ($this->Closure)($this->Data, $this->Container);
         }
         if (count($arguments) > 1)
         {

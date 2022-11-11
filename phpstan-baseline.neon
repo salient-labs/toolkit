@@ -70,3 +70,8 @@ parameters:
 			count: 1
 			path: tests/Cli/CliOptionBuilderTest.php
 
+		-
+			message: "#^Class Lkrms\\\\Tests\\\\Sync\\\\Entity not found\\.$#"
+			count: 1
+			path: tests/Sync/sync
+

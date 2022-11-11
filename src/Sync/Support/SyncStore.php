@@ -54,6 +54,20 @@ final class SyncStore extends SqliteStore
     private $EntityTypes = [];
 
     /**
+     * Prefix => PHP namespace
+     *
+     * @var array<string,string>
+     */
+    private $NamespacesByPrefix = [];
+
+    /**
+     * Prefix => namespace base URI
+     *
+     * @var array<string,string>
+     */
+    private $NamespaceUrisByPrefix = [];
+
+    /**
      * @var SyncErrorCollection
      */
     private $Errors;
@@ -82,6 +96,13 @@ final class SyncStore extends SqliteStore
      * @var string[]|null
      */
     private $Arguments;
+
+    /**
+     * Prefix => [ namespace base URI, PHP namespace ]
+     *
+     * @var array<string,string[]>|null
+     */
+    private $Namespaces = [];
 
     /**
      * Initiate a "run" of sync operations
@@ -140,6 +161,16 @@ CREATE TABLE IF NOT EXISTS
   _sync_entity_type (
     entity_type_id INTEGER NOT NULL PRIMARY KEY,
     entity_type_class TEXT NOT NULL UNIQUE,
+    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+CREATE TABLE IF NOT EXISTS
+  _sync_entity_namespace (
+    entity_namespace_id INTEGER NOT NULL PRIMARY KEY,
+    entity_namespace_prefix TEXT NOT NULL UNIQUE,
+    base_uri TEXT NOT NULL,
+    php_namespace TEXT NOT NULL,
     added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
   );
@@ -332,6 +363,84 @@ SQL;
     }
 
     /**
+     * Register a sync entity namespace
+     *
+     * @return $this
+     */
+    public function namespace(string $prefix, string $uri, string $namespace, bool $reload = true)
+    {
+        // Don't start a run just to register a namespace
+        if (is_null($this->RunId))
+        {
+            $this->Namespaces[$prefix] = [$uri, $namespace];
+
+            return $this;
+        }
+
+        // Update `last_seen` if the namespace is already in the database
+        $db  = $this->db();
+        $sql = <<<SQL
+INSERT INTO
+  _sync_entity_namespace (entity_namespace_prefix, base_uri, php_namespace)
+VALUES
+  (
+    :entity_namespace_prefix,
+    :base_uri,
+    :php_namespace
+  ) ON CONFLICT (entity_namespace_prefix) DO
+UPDATE
+SET
+  base_uri = excluded.base_uri,
+  php_namespace = excluded.php_namespace,
+  last_seen = CURRENT_TIMESTAMP;
+SQL;
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(":entity_namespace_prefix", $prefix, SQLITE3_TEXT);
+        $stmt->bindValue(":base_uri", rtrim($uri, "/") . "/", SQLITE3_TEXT);
+        $stmt->bindValue(":php_namespace", trim($namespace, "\\") . "\\", SQLITE3_TEXT);
+        $stmt->execute();
+        $stmt->close();
+
+        if ($reload)
+        {
+            return $this->reload();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the canonical URI of a sync entity type from its FQCN
+     *
+     * @return string|null `null` if `$entity` is not in a registered sync
+     * entity namespace.
+     * @see SyncStore::namespace()
+     */
+    public function getEntityTypeUri(string $entity, bool $compact = true): ?string
+    {
+        if (!is_a($entity, SyncEntity::class, true))
+        {
+            throw new UnexpectedValueException("Not a subclass of SyncEntity: $entity");
+        }
+
+        $entity = ltrim($entity, "\\");
+        $lower  = strtolower($entity);
+        foreach ($this->NamespacesByPrefix as $prefix => $namespace)
+        {
+            if (strpos($lower, $namespace) === 0)
+            {
+                $entity = str_replace("\\", "/", substr($entity, strlen($namespace)));
+
+                return $compact
+                    ? "{$prefix}:{$entity}"
+                    : "{$this->NamespaceUrisByPrefix[$prefix]}{$entity}";
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Report an error that occurred during a sync operation
      *
      * @param SyncError|SyncErrorBuilder $error
@@ -405,6 +514,45 @@ SQL;
         $this->RunId   = $id;
         $this->RunUuid = $uuid;
         unset($this->Command, $this->Arguments);
+
+        foreach ($this->Namespaces as $prefix => [$uri, $namespace])
+        {
+            $this->namespace($prefix, $uri, $namespace, false);
+        }
+        unset($this->Namespaces);
+
+        $this->reload();
+    }
+
+    /**
+     * @return $this
+     */
+    private function reload()
+    {
+        $db  = $this->db();
+        $sql = <<<SQL
+SELECT
+  entity_namespace_prefix,
+  base_uri,
+  php_namespace
+FROM
+  _sync_entity_namespace
+ORDER BY
+  LENGTH(php_namespace) DESC;
+SQL;
+        $stmt   = $db->prepare($sql);
+        $result = $stmt->execute();
+        $this->NamespacesByPrefix    = [];
+        $this->NamespaceUrisByPrefix = [];
+        while (($row = $result->fetchArray(SQLITE3_NUM)) !== false)
+        {
+            $this->NamespacesByPrefix[$row[0]]    = strtolower($row[2]);
+            $this->NamespaceUrisByPrefix[$row[0]] = $row[1];
+        }
+        $result->finalize();
+        $stmt->close();
+
+        return $this;
     }
 
     public function __destruct()
