@@ -12,7 +12,7 @@ interface ISerializeRules
 {
     public function getIncludeMeta(): bool;
 
-    public function getSort(): bool;
+    public function getSortByKey(): bool;
 
     public function getMaxDepth(): ?int;
 

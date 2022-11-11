@@ -1082,7 +1082,7 @@ class ClosureBuilder
     final public function getSerializeClosure(?ISerializeRules $rules = null): Closure
     {
         $rules = ($rules
-            ? [$rules->getSort(), $this->IsExtensible && $rules->getIncludeMeta()]
+            ? [$rules->getSortByKey(), $this->IsExtensible && $rules->getIncludeMeta()]
             : [true, $this->IsExtensible]);
         $key = implode("\000", $rules);
 

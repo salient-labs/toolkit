@@ -25,6 +25,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncEntityProvider;
+use Lkrms\Sync\Support\SyncSerializeLinkType as SerializeLinkType;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use RuntimeException;
@@ -33,8 +34,8 @@ use UnexpectedValueException;
 /**
  * Represents the state of an entity in an external system
  *
- * The `protected` properties of a {@see SyncEntity} subclass are readable and
- * writable by default. Override {@see TReadable::getReadable()} and/or
+ * The `protected` properties of a {@see SyncEntity} subclass are not readable
+ * or writable by default. Override {@see TReadable::getReadable()} and/or
  * {@see TWritable::getWritable()} to change this.
  *
  * The following "magic" property methods are discovered automatically and don't
@@ -59,39 +60,6 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         setProvider as private _setProvider;
         setContext as private _setContext;
     }
-
-    /**
-     * "@id" only
-     *
-     * ```php
-     * [
-     *   "@id" => "prefix:Entity/1",
-     * ]
-     * ```
-     */
-    public const LINK_MINIMAL = 0;
-
-    /**
-     * "@type" and "@id" (preserves identifier type)
-     *
-     * ```php
-     * [
-     *   "@type" => "prefix:Entity",
-     *   "@id"   => 1,
-     * ]
-     * ```
-     */
-    public const LINK_STANDARD = 1;
-
-    /**
-     *
-     */
-    public const LINK_DETAILED = 2;
-
-    /**
-     *
-     */
-    private const LINK_INTERNAL = -1;
 
     /**
      * The unique identifier assigned to the entity by its provider
@@ -268,7 +236,7 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
      * Entity names are removed by default, e.g. for an `AdminUser` class that
      * extends a {@see SyncEntity} subclass called `User`, prefixes "AdminUser"
      * and "User" are removed to ensure fields like "USER_ID" and
-     * "ADMIN_USER_FULL_NAME" match with properties like "Id" and "FullName".
+     * "ADMIN_USER_NAME" match with properties like "Id" and "Name".
      *
      * Return `null` to suppress prefix removal.
      *
@@ -338,12 +306,10 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
      * Convert the entity to an associative array
      *
      * Nested objects and lists are returned as-is. Only the top-level entity is
-     * converted.
+     * replaced.
      *
-     * @internal
-     * @see SyncEntity::buildSerializeRules()
      */
-    final protected function serialize(SerializeRules $rules = null): array
+    private function serialize(SerializeRules $rules): array
     {
         $closureBuilder = SyncClosureBuilder::get(static::class);
         $array = $closureBuilder->getSerializeClosure($rules)($this);
@@ -356,16 +322,17 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
     }
 
     /**
-     * Specify how nested objects should be serialized
+     * Override to specify how the object graph below this entity type should be
+     * serialized
      *
      * To prevent infinite recursion when `json_encode()` or similar is used to
-     * serialize instances of the class, return a {@see SerializeRules} object
-     * configured to remove or replace values that add circular references to
-     * the object graph.
+     * serialize an instance of this class, return a {@see SerializeRules} or
+     * {@see SerializeRulesBuilder} object configured to remove or replace
+     * circular references.
      *
      * @return SerializeRules|SerializeRulesBuilder
      */
-    protected function buildSerializeRules(SerializeRulesBuilder $build)
+    protected static function buildSerializeRules(SerializeRulesBuilder $build)
     {
         return $build->go();
     }
@@ -435,7 +402,7 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         {
             if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE)
             {
-                $node = $node->toLink(self::LINK_INTERNAL);
+                $node = $node->toLink(SerializeLinkType::INTERNAL);
 
                 return;
             }
@@ -446,7 +413,7 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
                 // descended from itself with a link
                 if ($parents[$node->objectId()] ?? false)
                 {
-                    $node         = $node->toLink(self::LINK_DETAILED);
+                    $node         = $node->toLink(SerializeLinkType::DETAILED);
                     $node["@why"] = "Circular reference detected";
 
                     return;
@@ -553,10 +520,10 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         }
     }
 
-    final protected function getSerializeRules(): SerializeRules
+    final public static function getSerializeRules(): SerializeRules
     {
         return SerializeRules::resolve(
-            $this->buildSerializeRules(SerializeRulesBuilder::entity(static::class))
+            static::buildSerializeRules(SerializeRulesBuilder::entity(static::class))
         );
     }
 
@@ -570,7 +537,7 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
      */
     final public function toArray(): array
     {
-        return $this->_toArray($this->getSerializeRules());
+        return $this->_toArray(static::getSerializeRules());
     }
 
     private function _toArray(SerializeRules $rules): array
@@ -584,31 +551,32 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
      * Serialize the entity and any nested entities, overriding the default
      * SerializeRules
      *
+     * @param SerializeRulesBuilder|SerializeRules $rules
      */
-    final public function toCustomArray(SerializeRules $rules): array
+    final public function toCustomArray($rules): array
     {
-        return $this->_toArray($rules);
+        return $this->_toArray(SerializeRules::resolve($rules));
     }
 
-    final public function toLink(int $type = SyncEntity::LINK_MINIMAL, bool $compact = true): array
+    final public function toLink(int $type = SerializeLinkType::MINIMAL, bool $compact = true): array
     {
         switch ($type)
         {
-            case self::LINK_INTERNAL:
+            case SerializeLinkType::INTERNAL:
                 return [
                     "@class" => static::class,
                     "@id"    => $this->Id,
                     "@_id"   => $this->CanonicalId,
                 ];
 
-            case self::LINK_DETAILED:
-            case self::LINK_STANDARD:
+            case SerializeLinkType::DETAILED:
+            case SerializeLinkType::STANDARD:
                 return [
                     "@type" => $this->typeUri($compact),
                     "@id"   => $this->id(),
                 ];
 
-            case self::LINK_MINIMAL:
+            case SerializeLinkType::MINIMAL:
                 return [
                     "@id" => $this->uri($compact),
                 ];
