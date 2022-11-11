@@ -80,6 +80,16 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
     public $CanonicalId;
 
     /**
+     * @var ISyncProvider|null
+     */
+    private $Provider;
+
+    /**
+     * @var ISyncContext|null
+     */
+    private $Context;
+
+    /**
      * Class name => entity type ID
      *
      * @var array<string,int>
@@ -93,141 +103,25 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
      */
     private static $Normalised = [];
 
-    /**
-     * @var ISyncProvider|null
-     */
-    private $Provider;
-
-    /**
-     * @var ISyncContext|null
-     */
-    private $Context;
-
-    /**
-     * Called when the class is registered with an entity store
-     *
-     * See {@see \Lkrms\Sync\Support\SyncStore::entityType()} for more
-     * information.
-     *
-     * @throws \RuntimeException if the class already has an entity type ID.
-     */
-    final public static function setEntityTypeId(int $entityTypeId): void
-    {
-        self::$TypeId[static::class] = $entityTypeId;
-    }
-
-    final public static function entityTypeId(): ?int
-    {
-        return self::$TypeId[static::class] ?? null;
-    }
-
     public static function getDateProperties(): array
     {
         return ["*"];
     }
 
-    final public function setProvider(IProvider $provider)
-    {
-        if (!($provider instanceof ISyncProvider))
-        {
-            throw new RuntimeException(get_class($provider) . " does not implement " . ISyncProvider::class);
-        }
-
-        return $this->_setProvider($provider);
-    }
-
-    final public function provider(): ?ISyncProvider
-    {
-        return $this->Provider;
-    }
-
-    final public function setContext(?IProvidableContext $ctx)
-    {
-        if ($ctx && !($ctx instanceof ISyncContext))
-        {
-            throw new RuntimeException(get_class($ctx) . " does not implement " . ISyncContext::class);
-        }
-
-        return $this->_setContext($ctx);
-    }
-
-    final public function context(): ?ISyncContext
-    {
-        return $this->Context;
-    }
-
-    final protected function requireContext(): ISyncContext
-    {
-        if (is_null($ctx = $this->context()))
-        {
-            throw new RuntimeException("Context required");
-        }
-
-        return $ctx;
-    }
-
-    final public function uri(bool $compact = true): string
-    {
-        return $this->typeUri($compact) . "/" . $this->id();
-    }
-
-    private function typeUri(bool $compact): string
-    {
-        $store = ($this->Provider
-            ? $this->Provider->store()
-            : Sync::getInstance());
-
-        return ($store->getEntityTypeUri($this->service(), $compact)
-            ?: "/" . str_replace("\\", "/", ltrim($this->service(), "\\")));
-    }
-
     /**
-     * @return int|string
-     */
-    private function id()
-    {
-        return is_null($this->Id) ? spl_object_id($this) : $this->Id;
-    }
-
-    /**
-     * Return true if the value of a property is the same between this and
-     * another instance of the same class
+     * Override to specify how the object graph below this entity type should be
+     * serialized
      *
-     * @param string $property
-     * @param SyncEntity $entity
-     * @return bool
-     */
-    final public function propertyHasSameValueAs(
-        string $property,
-        SyncEntity $entity
-    ): bool
-    {
-        // $entity must be an instance of the same class
-        if (!is_a($entity, static::class))
-        {
-            return false;
-        }
-
-        $a = $this->$property;
-        $b = $entity->$property;
-        return $a === $b ||
-            ($a instanceof SyncEntity && $b instanceof SyncEntity &&
-                get_class($a) == get_class($b) &&
-                $a->provider() === $b->provider() &&
-                $a->Id === $b->Id);
-    }
-
-    /**
-     * Return an entity-agnostic interface to the SyncEntity's current provider
+     * To prevent infinite recursion when `json_encode()` or similar is used to
+     * serialize an instance of this class, return a {@see SerializeRules} or
+     * {@see SerializeRulesBuilder} object configured to remove or replace
+     * circular references.
      *
-     * @return SyncEntityProvider
+     * @return SerializeRules|SerializeRulesBuilder
      */
-    final public static function backend(?IContainer $container = null): SyncEntityProvider
+    protected static function buildSerializeRules(SerializeRulesBuilder $build)
     {
-        $container = Container::coalesce($container, false, false);
-        /** @var ISyncProvider */
-        $provider = $container->get(SyncClosureBuilder::entityToProvider(static::class));
-        return $provider->with(static::class, $container);
+        return $build->go();
     }
 
     /**
@@ -248,6 +142,19 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
             fn(string $name): string => Convert::classToBasename($name),
             Reflect::getClassNamesBetween(static::class, self::class, false)
         );
+    }
+
+    /**
+     * Return an entity-agnostic interface to the SyncEntity's current provider
+     *
+     * @return SyncEntityProvider
+     */
+    final public static function backend(?IContainer $container = null): SyncEntityProvider
+    {
+        $container = Container::coalesce($container, false, false);
+        /** @var ISyncProvider */
+        $provider = $container->get(SyncClosureBuilder::entityToProvider(static::class));
+        return $provider->with(static::class, $container);
     }
 
     /**
@@ -302,39 +209,95 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         };
     }
 
-    /**
-     * Convert the entity to an associative array
-     *
-     * Nested objects and lists are returned as-is. Only the top-level entity is
-     * replaced.
-     *
-     */
-    private function serialize(SerializeRules $rules): array
+    final public static function getSerializeRules(): SerializeRules
     {
-        $closureBuilder = SyncClosureBuilder::get(static::class);
-        $array = $closureBuilder->getSerializeClosure($rules)($this);
-        if ($rules->getRemoveCanonicalId())
-        {
-            unset($array[$closureBuilder->maybeNormalise("CanonicalId", false, true)]);
-        }
-
-        return $array;
+        return SerializeRules::resolve(
+            static::buildSerializeRules(SerializeRulesBuilder::entity(static::class))
+        );
     }
 
     /**
-     * Override to specify how the object graph below this entity type should be
-     * serialized
+     * Serialize the entity and any nested entities
      *
-     * To prevent infinite recursion when `json_encode()` or similar is used to
-     * serialize an instance of this class, return a {@see SerializeRules} or
-     * {@see SerializeRulesBuilder} object configured to remove or replace
-     * circular references.
+     * The entity's {@see SerializeRules} are applied to each `SyncEntity`
+     * encountered during this recursive operation.
      *
-     * @return SerializeRules|SerializeRulesBuilder
+     * @see SyncEntity::buildSerializeRules()
      */
-    protected static function buildSerializeRules(SerializeRulesBuilder $build)
+    final public function toArray(): array
     {
-        return $build->go();
+        return $this->_toArray(static::getSerializeRules());
+    }
+
+    /**
+     * Serialize the entity and any nested entities, overriding the default
+     * SerializeRules
+     *
+     * @param SerializeRulesBuilder|SerializeRules $rules
+     */
+    final public function toCustomArray($rules): array
+    {
+        return $this->_toArray(SerializeRules::resolve($rules));
+    }
+
+    final public function toLink(int $type = SerializeLinkType::MINIMAL, bool $compact = true): array
+    {
+        switch ($type)
+        {
+            case SerializeLinkType::INTERNAL:
+                return [
+                    "@class" => static::class,
+                    "@id"    => $this->Id,
+                    "@_id"   => $this->CanonicalId,
+                ];
+
+            case SerializeLinkType::DETAILED:
+            case SerializeLinkType::STANDARD:
+                return [
+                    "@type" => $this->typeUri($compact),
+                    "@id"   => $this->id(),
+                ];
+
+            case SerializeLinkType::MINIMAL:
+                return [
+                    "@id" => $this->uri($compact),
+                ];
+        }
+
+        throw new UnexpectedValueException("Invalid link type: $type");
+    }
+
+    final public function uri(bool $compact = true): string
+    {
+        return $this->typeUri($compact) . "/" . $this->id();
+    }
+
+    /**
+     * Return true if the value of a property is the same between this and
+     * another instance of the same class
+     *
+     * @param string $property
+     * @param SyncEntity $entity
+     * @return bool
+     */
+    final public function propertyHasSameValueAs(
+        string $property,
+        SyncEntity $entity
+    ): bool
+    {
+        // $entity must be an instance of the same class
+        if (!is_a($entity, static::class))
+        {
+            return false;
+        }
+
+        $a = $this->$property;
+        $b = $entity->$property;
+        return $a === $b ||
+            ($a instanceof SyncEntity && $b instanceof SyncEntity &&
+                get_class($a) == get_class($b) &&
+                $a->provider() === $b->provider() &&
+                $a->Id === $b->Id);
     }
 
     /**
@@ -356,6 +319,24 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         DeferredSyncEntity::defer($this->provider(), $ctx->push($this), $entity ?: static::class, $deferred, $replace);
     }
 
+    /**
+     * @return int|string
+     */
+    private function id()
+    {
+        return is_null($this->Id) ? spl_object_id($this) : $this->Id;
+    }
+
+    private function typeUri(bool $compact): string
+    {
+        $store = ($this->Provider
+            ? $this->Provider->store()
+            : Sync::getInstance());
+
+        return ($store->getEntityTypeUri($this->service(), $compact)
+            ?: "/" . str_replace("\\", "/", ltrim($this->service(), "\\")));
+    }
+
     private function objectId(): string
     {
         return implode("\000", [
@@ -365,30 +346,11 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         ]);
     }
 
-    private function _serializeId(&$node, array $path): void
+    private function _toArray(SerializeRules $rules): array
     {
-        if (is_null($node))
-        {
-            return;
-        }
-
-        if (Test::isArrayOf($node, SyncEntity::class, false, true, false, true))
-        {
-            /** @var SyncEntity $child */
-            foreach ($node as &$child)
-            {
-                $child = $child->Id;
-            }
-
-            return;
-        }
-
-        if (!($node instanceof SyncEntity))
-        {
-            throw new UnexpectedValueException("Cannot replace (not a SyncEntity): " . implode(".", $path));
-        }
-
-        $node = $node->Id;
+        $array = $this;
+        $this->_serialize($array, [], $rules);
+        return (array)$array;
     }
 
     private function _serialize(&$node, array $path, SerializeRules $rules, array $parents = []): void
@@ -520,69 +482,107 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         }
     }
 
-    final public static function getSerializeRules(): SerializeRules
+    private function _serializeId(&$node, array $path): void
     {
-        return SerializeRules::resolve(
-            static::buildSerializeRules(SerializeRulesBuilder::entity(static::class))
-        );
-    }
-
-    /**
-     * Serialize the entity and any nested entities
-     *
-     * The entity's {@see SerializeRules} are applied to each `SyncEntity`
-     * encountered during this recursive operation.
-     *
-     * @see SyncEntity::buildSerializeRules()
-     */
-    final public function toArray(): array
-    {
-        return $this->_toArray(static::getSerializeRules());
-    }
-
-    private function _toArray(SerializeRules $rules): array
-    {
-        $array = $this;
-        $this->_serialize($array, [], $rules);
-        return (array)$array;
-    }
-
-    /**
-     * Serialize the entity and any nested entities, overriding the default
-     * SerializeRules
-     *
-     * @param SerializeRulesBuilder|SerializeRules $rules
-     */
-    final public function toCustomArray($rules): array
-    {
-        return $this->_toArray(SerializeRules::resolve($rules));
-    }
-
-    final public function toLink(int $type = SerializeLinkType::MINIMAL, bool $compact = true): array
-    {
-        switch ($type)
+        if (is_null($node))
         {
-            case SerializeLinkType::INTERNAL:
-                return [
-                    "@class" => static::class,
-                    "@id"    => $this->Id,
-                    "@_id"   => $this->CanonicalId,
-                ];
-
-            case SerializeLinkType::DETAILED:
-            case SerializeLinkType::STANDARD:
-                return [
-                    "@type" => $this->typeUri($compact),
-                    "@id"   => $this->id(),
-                ];
-
-            case SerializeLinkType::MINIMAL:
-                return [
-                    "@id" => $this->uri($compact),
-                ];
+            return;
         }
 
-        throw new UnexpectedValueException("Invalid link type: $type");
+        if (Test::isArrayOf($node, SyncEntity::class, false, true, false, true))
+        {
+            /** @var SyncEntity $child */
+            foreach ($node as &$child)
+            {
+                $child = $child->Id;
+            }
+
+            return;
+        }
+
+        if (!($node instanceof SyncEntity))
+        {
+            throw new UnexpectedValueException("Cannot replace (not a SyncEntity): " . implode(".", $path));
+        }
+
+        $node = $node->Id;
+    }
+
+    /**
+     * Convert the entity to an associative array
+     *
+     * Nested objects and lists are returned as-is. Only the top-level entity is
+     * replaced.
+     *
+     */
+    private function serialize(SerializeRules $rules): array
+    {
+        $closureBuilder = SyncClosureBuilder::get(static::class);
+        $array = $closureBuilder->getSerializeClosure($rules)($this);
+        if ($rules->getRemoveCanonicalId())
+        {
+            unset($array[$closureBuilder->maybeNormalise("CanonicalId", false, true)]);
+        }
+
+        return $array;
+    }
+
+    /**
+     * Called when the class is registered with an entity store
+     *
+     * See {@see \Lkrms\Sync\Support\SyncStore::entityType()} for more
+     * information.
+     *
+     * @throws \RuntimeException if the class already has an entity type ID.
+     */
+    final public static function setEntityTypeId(int $entityTypeId): void
+    {
+        self::$TypeId[static::class] = $entityTypeId;
+    }
+
+    final public static function entityTypeId(): ?int
+    {
+        return self::$TypeId[static::class] ?? null;
+    }
+
+    final public function setProvider(IProvider $provider)
+    {
+        if (!($provider instanceof ISyncProvider))
+        {
+            throw new RuntimeException(get_class($provider) . " does not implement " . ISyncProvider::class);
+        }
+
+        return $this->_setProvider($provider);
+    }
+
+    final public function provider(): ?ISyncProvider
+    {
+        return $this->Provider;
+    }
+
+    final public function setContext(?IProvidableContext $ctx)
+    {
+        if ($ctx && !($ctx instanceof ISyncContext))
+        {
+            throw new RuntimeException(get_class($ctx) . " does not implement " . ISyncContext::class);
+        }
+
+        return $this->_setContext($ctx);
+    }
+
+    final public function context(): ?ISyncContext
+    {
+        return $this->Context;
+    }
+
+    final protected function requireContext(): ISyncContext
+    {
+        if (is_null($ctx = $this->context()))
+        {
+            throw new RuntimeException("Context required");
+        }
+
+        return $ctx;
     }
 
     /**
