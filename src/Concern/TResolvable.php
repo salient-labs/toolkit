@@ -8,14 +8,26 @@ use Closure;
 use Lkrms\Facade\Convert;
 
 /**
- * Implements IResolvable to normalise property names
+ * Implements IResolvable
  *
  * @see \Lkrms\Contract\IResolvable
  */
 trait TResolvable
 {
-    public static function getNormaliser(): Closure
+    /**
+     * @var array<string,Closure>
+     */
+    private static $_Normaliser = [];
+
+    public static function normaliser(): Closure
     {
         return fn(string $name): string => Convert::toSnakeCase($name);
     }
+
+    final public static function normalise(string $name, bool $aggressive = true, string ...$hints): string
+    {
+        return ((self::$_Normaliser[static::class] ?? null)
+            ?: (self::$_Normaliser[static::class] = static::normaliser()))($name, $aggressive, ...$hints);
+    }
+
 }

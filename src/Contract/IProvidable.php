@@ -7,7 +7,7 @@ namespace Lkrms\Contract;
 use Lkrms\Support\ArrayKeyConformity;
 
 /**
- * Can be created by an IProvider to represent an external entity
+ * Can be instantiated by an IProvider
  *
  */
 interface IProvidable extends ReceivesService, ReturnsService
@@ -22,14 +22,15 @@ interface IProvidable extends ReceivesService, ReturnsService
      * Get the context in which the entity is being serviced
      *
      */
-    public function context(): ?IProvidableContext;
+    public function context(): ?IProviderContext;
 
     /**
      * Get the entity the instance was resolved from
      *
      * Consider the following scenario:
      *
-     * - `Faculty` is a `SyncEntity` subclass
+     * - `Faculty` is a `SyncEntity` subclass and therefore implements
+     *   `IProvidable`
      * - `CustomFaculty` is a subclass of `Faculty`
      * - `CustomFaculty` is bound to the service container as `Faculty`:
      *   ```php
@@ -76,34 +77,17 @@ interface IProvidable extends ReceivesService, ReturnsService
      *
      * @return $this
      */
-    public function setContext(?IProvidableContext $ctx);
+    public function setContext(IProviderContext $context);
 
     /**
      * @return static
      */
-    public static function provide(array $data, IProvider $provider, ?IProvidableContext $context = null);
+    public static function provide(array $data, IProvider $provider, ?IProviderContext $context = null);
 
     /**
      * @param iterable<array> $dataList
      * @return iterable<static>
      */
-    public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProvidableContext $context = null): iterable;
-
-    #### Deprecated ####
-
-    /**
-     * @deprecated Use {@see IProvidable::provide()} instead
-     * @param array<int|string,int|string|array<int,int|string>>|null $keyMap
-     * @return static
-     */
-    public static function fromProvider(IProvider $provider, array $data, callable $callback = null, array $keyMap = null);
-
-    /**
-     * @deprecated Use {@see IProvidable::provideList()} instead
-     * @param iterable<array> $list
-     * @param array<int|string,int|string|array<int,int|string>>|null $keyMap
-     * @return iterable<static>
-     */
-    public static function listFromProvider(IProvider $provider, iterable $list, callable $callback = null, array $keyMap = null): iterable;
+    public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProviderContext $context = null): iterable;
 
 }

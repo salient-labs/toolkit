@@ -7,14 +7,14 @@ namespace Lkrms\Support;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IProvidableContext;
+use Lkrms\Contract\IProviderContext;
 use RuntimeException;
 
 /**
  * The context within which an IProvidable is instantiated
  *
  */
-class ProvidableContext implements IProvidableContext
+class ProviderContext implements IProviderContext
 {
     /**
      * @var IContainer

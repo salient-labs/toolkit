@@ -129,25 +129,6 @@ class Container implements IContainer
         return self::$GlobalContainer;
     }
 
-    /**
-     * Return the first available container
-     *
-     * Return `$container` if set, otherwise:
-     * - return the current global container if loaded, or
-     * - return `null` if `$returnNull` is `true`, or
-     * - load and return the global container if `$load` is `true`, or
-     * - throw a `RuntimeException`
-     *
-     */
-    final public static function coalesce(?IContainer $container, bool $returnNull = true, bool $load = false): ?IContainer
-    {
-        return $container ?: ($returnNull
-            ? self::maybeGetGlobalContainer()
-            : ($load
-                ? self::getGlobalContainer()
-                : self::requireGlobalContainer()));
-    }
-
     final public static function setGlobalContainer(?IContainer $container): ?IContainer
     {
         return self::$GlobalContainer = $container;

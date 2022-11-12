@@ -20,7 +20,6 @@ use Lkrms\Contract\IContainer;
  * @method static void unload() Clear the underlying CliAppContainer instance
  * @method static CliAppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static CliAppContainer bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})
- * @method static IContainer|null coalesce(?IContainer $container, bool $returnNull = true, bool $load = false) Return the first available container (see {@see Container::coalesce()})
  * @method static CliAppContainer command(string[] $name, string $id) Register a CliCommand with the container (see {@see CliAppContainer::command()})
  * @method static mixed get(string $id, mixed ...$params) Create a new instance of a class or interface, or return a shared instance created earlier (see {@see Container::get()})
  * @method static mixed getAs(string $id, string $serviceId, mixed ...$params) Create a new instance of a class or interface with an explicit service name, or apply a service name to a shared instance created earlier (see {@see Container::getAs()})

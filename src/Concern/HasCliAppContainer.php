@@ -11,21 +11,21 @@ trait HasCliAppContainer
     /**
      * @var CliAppContainer
      */
-    private $Container;
+    private $_Container;
 
     public function __construct(CliAppContainer $container)
     {
-        $this->Container = $container;
+        $this->_Container = $container;
     }
 
     final public function app(): CliAppContainer
     {
-        return $this->Container;
+        return $this->_Container;
     }
 
     final public function container(): CliAppContainer
     {
-        return $this->Container;
+        return $this->_Container;
     }
 
 }

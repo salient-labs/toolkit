@@ -24,17 +24,25 @@ Err::load();
 
 class A implements IReadable, IWritable, IResolvable
 {
-    use TConstructible, TReadable, TWritable, TResolvable;
+    use TConstructible, TReadable, TWritable, TResolvable, TExtensible;
 
     public $Id;
 
     public $Name;
+
+    public static function getReadable(): array
+    {
+        return [];
+    }
+
+    public static function getWritable(): array
+    {
+        return [];
+    }
 }
 
 class B extends A implements IExtensible
 {
-    use TExtensible;
-
     public $Data = [];
 }
 

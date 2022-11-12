@@ -10,7 +10,7 @@ use Lkrms\Support\ArrayKeyConformity;
  * The context within which an IProvidable is instantiated
  *
  */
-interface IProvidableContext extends IImmutable, ReturnsContainer
+interface IProviderContext extends IImmutable, ReturnsContainer
 {
     /**
      * Apply an arbitrary value to the context
@@ -20,12 +20,12 @@ interface IProvidableContext extends IImmutable, ReturnsContainer
     public function set(string $key, $value);
 
     /**
-     * Add the entity responsible for propagating this context to the stack
+     * Push the entity propagating this context onto the stack
      *
      * Note that although the same entity may be passed to both
-     * {@see IProvidableContext::push()} and
-     * {@see IProvidableContext::withParent()} (e.g. when a hierarchy is being
-     * populated from a root entity), they have completely different purposes.
+     * {@see IProviderContext::push()} and {@see IProviderContext::withParent()}
+     * (e.g. when a hierarchy is being populated from a root entity), they have
+     * completely different purposes.
      *
      * A `Post` object, for example, would `push()` itself onto the entity stack
      * to retrieve a `User` instance for its `Author` property. The `Post` has a
@@ -51,7 +51,7 @@ interface IProvidableContext extends IImmutable, ReturnsContainer
     /**
      * Set the parent of IHierarchy entities instantiated within the context
      *
-     * @see IProvidableContext::push()
+     * @see IProviderContext::push()
      * @return $this
      */
     public function withParent(?IHierarchy $parent);

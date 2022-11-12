@@ -7,15 +7,20 @@ namespace Lkrms\Sync\Concept;
 use Closure;
 use DateTimeInterface;
 use JsonSerializable;
-use Lkrms\Concept\Entity;
+use Lkrms\Concern\RequiresContainer;
+use Lkrms\Concern\TConstructible;
+use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TProvidable;
 use Lkrms\Concern\TReadable;
+use Lkrms\Concern\TResolvable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IProvidableContext;
 use Lkrms\Contract\IProvider;
+use Lkrms\Contract\IProviderContext;
+use Lkrms\Contract\IProviderEntity;
+use Lkrms\Contract\IReadable;
+use Lkrms\Contract\IWritable;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
@@ -28,19 +33,21 @@ use Lkrms\Sync\Support\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncSerializeLinkType as SerializeLinkType;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
+use Lkrms\Sync\Support\SyncStore;
 use RuntimeException;
 use UnexpectedValueException;
 
 /**
  * Represents the state of an entity in an external system
  *
- * The `protected` properties of a {@see SyncEntity} subclass are not readable
- * or writable by default. Override {@see TReadable::getReadable()} and/or
- * {@see TWritable::getWritable()} to change this.
+ * {@see SyncEntity} implements {@see IReadable} and {@see IWritable}, but
+ * `protected` properties are not accessible by default. Override
+ * {@see SyncEntity::getReadable()} and/or {@see SyncEntity::getWritable()} to
+ * change this.
  *
  * The following "magic" property methods are discovered automatically and don't
- * need to be returned by {@see TReadable::getReadable()} or
- * {@see TWritable::getWritable()}:
+ * need to be returned by {@see SyncEntity::getReadable()} or
+ * {@see SyncEntity::getWritable()}:
  * - `protected function _get<PropertyName>()`
  * - `protected function _isset<PropertyName>()` (optional; falls back to
  *   `_get<PropertyName>()` if not declared)
@@ -48,17 +55,18 @@ use UnexpectedValueException;
  * - `protected function _unset<PropertyName>()` (optional; falls back to
  *   `_set<PropertyName>(null)` if not declared)
  *
- * Instances serialize to associative arrays of accessible properties with
- * snake_case keys. Override {@see SyncEntity::buildSerializeRules()} to specify
- * how nested entities should be serialized.
+ * Accessible properties are mapped to associative arrays with snake_case keys
+ * when {@see SyncEntity} objects are serialized. Override
+ * {@see SyncEntity::buildSerializeRules()} to provide serialization rules for
+ * nested entities.
  *
  */
-abstract class SyncEntity extends Entity implements IProvidable, JsonSerializable
+abstract class SyncEntity implements IProviderEntity, JsonSerializable
 {
-    use TProvidable
+    use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer
     {
-        setProvider as private _setProvider;
-        setContext as private _setContext;
+        TProvidable::setProvider as private _setProvider;
+        TProvidable::setContext as private _setContext;
     }
 
     /**
@@ -72,8 +80,12 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
      * The unique identifier assigned to the entity by its canonical backend
      *
      * A {@see SyncEntity}'s canonical backend is the provider regarded as the
-     * "single source of truth" for its base type and any properties that aren't
-     * "owned" by another provider.
+     * "single source of truth" for its underlying {@see TProvidable::service()}
+     * and any properties that aren't "owned" by another provider.
+     *
+     * To improve the accuracy and performance of sync operations, providers
+     * should propagate this value to and from backends capable of storing it,
+     * but this is not strictly required.
      *
      * @var int|string|null
      */
@@ -82,12 +94,12 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
     /**
      * @var ISyncProvider|null
      */
-    private $Provider;
+    private $_Provider;
 
     /**
      * @var ISyncContext|null
      */
-    private $Context;
+    private $_Context;
 
     /**
      * Class name => entity type ID
@@ -102,6 +114,21 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
      * @var array<string,array<string,string>>
      */
     private static $Normalised = [];
+
+    public static function plural(): string
+    {
+        return Convert::nounToPlural(Convert::classToBasename(static::class));
+    }
+
+    public static function getReadable(): array
+    {
+        return [];
+    }
+
+    public static function getWritable(): array
+    {
+        return [];
+    }
 
     public static function getDateProperties(): array
     {
@@ -151,68 +178,70 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
      */
     final public static function backend(?IContainer $container = null): SyncEntityProvider
     {
-        $container = Container::coalesce($container, false, false);
         /** @var ISyncProvider */
-        $provider = $container->get(SyncClosureBuilder::entityToProvider(static::class));
-        return $provider->with(static::class, $container);
+        $provider = self::requireContainer($container)->get(
+            SyncClosureBuilder::entityToProvider(static::class)
+        );
+
+        return $provider->with(static::class);
+    }
+
+    final public static function rulesBuilder(?IContainer $container = null): SerializeRulesBuilder
+    {
+        return (new SerializeRulesBuilder(self::requireContainer($container)))->entity(static::class);
     }
 
     /**
-     * Returns a closure to normalise a property name
-     *
-     * {@inheritdoc}
+     * Get a closure to normalise property names
      *
      * If `$aggressive` is `false`, prefixes returned by
      * {@see SyncEntity::getRemovablePrefixes()} are not removed from `$name`.
      * Otherwise, if `$hints` are provided and `$name` matches one of them after
      * snake_case conversion, prefix removal is skipped.
      *
-     * @return Closure
-     * ```php
-     * function (string $name, bool $aggressive = true, string ...$hints): string
-     * ```
      */
-    final public static function getNormaliser(): Closure
+    final public static function normaliser(): Closure
     {
-        if ($prefixes = static::getRemovablePrefixes())
+        if (!($prefixes = static::getRemovablePrefixes()))
         {
-            $prefixes = array_unique(array_map(
-                fn(string $prefix): string => Convert::toSnakeCase($prefix),
-                $prefixes
-            ));
-            $regex = implode("|", $prefixes);
-            $regex = count($prefixes) > 1 ? "($regex)" : $regex;
-            $regex = "/^{$regex}_/";
-            return static function (string $name, bool $aggressive = true, string ...$hints) use ($regex): string
+            return static function (string $name): string
             {
-                if ($aggressive && !$hints)
-                {
-                    return self::$Normalised[static::class][$name]
-                        ?? (self::$Normalised[static::class][$name]
-                            = preg_replace($regex, "", Convert::toSnakeCase($name)));
-                }
-                $_name = Convert::toSnakeCase($name);
-                if (!$aggressive || in_array($_name, $hints))
-                {
-                    return $_name;
-                }
-
-                return preg_replace($regex, "", $_name);
+                return self::$Normalised[static::class][$name]
+                    ?? (self::$Normalised[static::class][$name]
+                        = Convert::toSnakeCase($name));
             };
         }
 
-        return static function (string $name): string
+        $prefixes = array_unique(array_map(
+            fn(string $prefix): string => Convert::toSnakeCase($prefix),
+            $prefixes
+        ));
+        $regex = implode("|", $prefixes);
+        $regex = count($prefixes) > 1 ? "($regex)" : $regex;
+        $regex = "/^{$regex}_/";
+
+        return static function (string $name, bool $aggressive = true, string ...$hints) use ($regex): string
         {
-            return self::$Normalised[static::class][$name]
-                ?? (self::$Normalised[static::class][$name]
-                    = Convert::toSnakeCase($name));
+            if ($aggressive && !$hints)
+            {
+                return self::$Normalised[static::class][$name]
+                    ?? (self::$Normalised[static::class][$name]
+                        = preg_replace($regex, "", Convert::toSnakeCase($name)));
+            }
+            $_name = Convert::toSnakeCase($name);
+            if (!$aggressive || in_array($_name, $hints))
+            {
+                return $_name;
+            }
+
+            return preg_replace($regex, "", $_name);
         };
     }
 
-    final public static function getSerializeRules(): SerializeRules
+    final public static function getSerializeRules(?IContainer $container = null): SerializeRules
     {
         return SerializeRules::resolve(
-            static::buildSerializeRules(SerializeRulesBuilder::entity(static::class))
+            static::buildSerializeRules(static::rulesBuilder($container))
         );
     }
 
@@ -300,6 +329,13 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
                 $a->Id === $b->Id);
     }
 
+    final protected function store(): SyncStore
+    {
+        return ($this->_Provider
+            ? $this->_Provider->store()
+            : Sync::getInstance());
+    }
+
     /**
      * Defer instantiation of an entity or list of entities
      *
@@ -329,11 +365,7 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
 
     private function typeUri(bool $compact): string
     {
-        $store = ($this->Provider
-            ? $this->Provider->store()
-            : Sync::getInstance());
-
-        return ($store->getEntityTypeUri($this->service(), $compact)
+        return ($this->store()->getEntityTypeUri($this->service(), $compact)
             ?: "/" . str_replace("\\", "/", ltrim($this->service(), "\\")));
     }
 
@@ -342,7 +374,7 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
         return implode("\000", [
             $this->service(),
             $this->Id ?: spl_object_id($this),
-            $this->Provider ? $this->Provider->getProviderHash() : null,
+            $this->_Provider ? $this->_Provider->getProviderHash() : null,
         ]);
     }
 
@@ -384,12 +416,11 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
             }
 
             $class = get_class($node);
-            $until = parent::class;
             $node  = $node->serialize($rules);
         }
 
-        $delete  = $rules->getRemove($class ?? null, $until ?? null, $path);
-        $replace = $rules->getReplace($class ?? null, $until ?? null, $path);
+        $delete  = $rules->getRemove($class ?? null, null, $path);
+        $replace = $rules->getReplace($class ?? null, null, $path);
 
         if ($delete)
         {
@@ -532,8 +563,6 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
      *
      * See {@see \Lkrms\Sync\Support\SyncStore::entityType()} for more
      * information.
-     *
-     * @throws \RuntimeException if the class already has an entity type ID.
      */
     final public static function setEntityTypeId(int $entityTypeId): void
     {
@@ -557,32 +586,32 @@ abstract class SyncEntity extends Entity implements IProvidable, JsonSerializabl
 
     final public function provider(): ?ISyncProvider
     {
-        return $this->Provider;
+        return $this->_Provider;
     }
 
-    final public function setContext(?IProvidableContext $ctx)
+    final public function setContext(IProviderContext $context)
     {
-        if ($ctx && !($ctx instanceof ISyncContext))
+        if (!($context instanceof ISyncContext))
         {
-            throw new RuntimeException(get_class($ctx) . " does not implement " . ISyncContext::class);
+            throw new RuntimeException(get_class($context) . " does not implement " . ISyncContext::class);
         }
 
-        return $this->_setContext($ctx);
+        return $this->_setContext($context);
     }
 
     final public function context(): ?ISyncContext
     {
-        return $this->Context;
+        return $this->_Context;
     }
 
-    final protected function requireContext(): ISyncContext
+    final public function requireContext(): ISyncContext
     {
-        if (is_null($ctx = $this->context()))
+        if (!$this->_Context)
         {
             throw new RuntimeException("Context required");
         }
 
-        return $ctx;
+        return $this->_Context;
     }
 
     /**

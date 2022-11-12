@@ -12,8 +12,8 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IProvidableContext;
 use Lkrms\Contract\IProvider;
+use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\ISerializeRules;
@@ -335,7 +335,7 @@ class ClosureBuilder
         // IResolvable provides access to properties via alternative names
         if ($class->implementsInterface(IResolvable::class))
         {
-            $this->Normaliser        = $class->getMethod("getNormaliser")->invoke(null);
+            $this->Normaliser        = $class->getMethod("normaliser")->invoke(null);
             $this->GentleNormaliser  = fn(string $name): string => ($this->Normaliser)($name, false);
             $this->CarefulNormaliser = fn(string $name): string => ($this->Normaliser)($name, true, ...$this->NormalisedProperties);
         }
@@ -563,7 +563,7 @@ class ClosureBuilder
      * discard unusable data.
      * @return Closure
      * ```php
-     * closure(array $array, \Lkrms\Contract\IProvider $provider, \Lkrms\Contract\IContainer|\Lkrms\Contract\IProvidableContext|null $context = null)
+     * closure(array $array, \Lkrms\Contract\IProvider $provider, \Lkrms\Contract\IContainer|\Lkrms\Contract\IProviderContext|null $context = null)
      * ```
      */
     final public function getCreateProvidableFromSignatureClosure(array $keys, bool $strict = false): Closure
@@ -578,12 +578,12 @@ class ClosureBuilder
         $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
         $closure = static function (array $array, IProvider $provider, $context = null) use ($closure)
         {
-            [$container, $parent] = ($context instanceof IProvidableContext
+            [$container, $parent] = ($context instanceof IProviderContext
                 ? [$context->container(), $context->getParent()]
                 : [$context ?: $provider->container(), null]);
 
             return $closure($container, $array, $provider,
-                $context ?: new ProvidableContext($container, $parent),
+                $context ?: new ProviderContext($container, $parent),
                 $parent, $provider->getDateFormatter());
         };
 
@@ -689,7 +689,7 @@ class ClosureBuilder
     /**
      * @return Closure
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
      * ```
      */
     private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
@@ -748,7 +748,7 @@ class ClosureBuilder
     /**
      * @return Closure
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
      * ```
      */
     protected function _getConstructor(array $parameterKeys): Closure
@@ -778,7 +778,7 @@ class ClosureBuilder
     /**
      * @return Closure
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
      * ```
      */
     protected function _getDefaultConstructor(): Closure
@@ -803,7 +803,7 @@ class ClosureBuilder
     /**
      * @return Closure
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
      * ```
      */
     protected function _getPropertyClosure(array $propertyKeys, Closure $closure): Closure
@@ -822,17 +822,21 @@ class ClosureBuilder
     /**
      * @return Closure
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
      * ```
      */
     protected function _getProvidableClosure(Closure $closure): Closure
     {
-        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ...$args) use ($closure)
+        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ...$args) use ($closure)
         {
             /** @var IProvidable $obj */
             $obj = $closure($container, $array, $provider, $context, ...$args);
             if ($provider)
             {
+                if (!$context)
+                {
+                    throw new UnexpectedValueException('$context cannot be null when $provider is not null');
+                }
                 return $obj->setProvider($provider)->setContext($context);
             }
 
@@ -843,12 +847,12 @@ class ClosureBuilder
     /**
      * @return Closure
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
      * ```
      */
     protected function _getHierarchyClosure(Closure $closure): Closure
     {
-        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?IHierarchy $parent, ...$args) use ($closure)
+        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ...$args) use ($closure)
         {
             /** @var IHierarchy $obj */
             $obj = $closure($container, $array, $provider, $context, $parent, ...$args);
@@ -864,7 +868,7 @@ class ClosureBuilder
     /**
      * @return Closure
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
      * ```
      */
     protected function _getMethodClosure(array $methodKeys, Closure $closure): Closure
@@ -884,7 +888,7 @@ class ClosureBuilder
     /**
      * @return Closure
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
      * ```
      */
     protected function _getMetaClosure(array $metaKeys, Closure $closure): Closure
@@ -904,12 +908,12 @@ class ClosureBuilder
     /**
      * @return Closure
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProvidableContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
      * ```
      */
     protected function _getDateClosure(array $dateKeys, Closure $closure): Closure
     {
-        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProvidableContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ...$args) use ($dateKeys, $closure)
+        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ...$args) use ($dateKeys, $closure)
         {
             if (is_null($dateFormatter))
             {
@@ -964,7 +968,7 @@ class ClosureBuilder
      * if `$array` contains unusable values.
      * @return Closure
      * ```php
-     * closure(array $array, \Lkrms\Contract\IProvider $provider, \Lkrms\Contract\IContainer|\Lkrms\Contract\IProvidableContext|null $context = null)
+     * closure(array $array, \Lkrms\Contract\IProvider $provider, \Lkrms\Contract\IContainer|\Lkrms\Contract\IProviderContext|null $context = null)
      * ```
      */
     final public function getCreateProvidableFromClosure(bool $strict = false): Closure

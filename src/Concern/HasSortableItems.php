@@ -15,7 +15,7 @@ trait HasSortableItems
 
     private function sortItems(): void
     {
-        usort($this->Items, fn($a, $b) => $this->compareItems($a, $b));
+        usort($this->_Items, fn($a, $b) => $this->compareItems($a, $b));
     }
 
     /**

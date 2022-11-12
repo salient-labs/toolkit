@@ -24,7 +24,7 @@ use UnexpectedValueException;
  *
  * A `RuntimeException` will be thrown if no service container is available.
  */
-abstract class Builder implements IImmutable
+abstract class Builder extends FluentInterface implements IImmutable
 {
     /**
      * Return the name of the underlying class

@@ -11,21 +11,21 @@ trait HasAppContainer
     /**
      * @var AppContainer
      */
-    private $Container;
+    private $_Container;
 
     public function __construct(AppContainer $container)
     {
-        $this->Container = $container;
+        $this->_Container = $container;
     }
 
     final public function app(): AppContainer
     {
-        return $this->Container;
+        return $this->_Container;
     }
 
     final public function container(): AppContainer
     {
-        return $this->Container;
+        return $this->_Container;
     }
 
 }

@@ -9,6 +9,6 @@ trait HasItems
     /**
      * @var mixed[]
      */
-    private $Items = [];
+    private $_Items = [];
 
 }

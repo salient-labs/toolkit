@@ -27,7 +27,7 @@ trait TCollection
      */
     final public function toList(): iterable
     {
-        foreach ($this->Items as $item)
+        foreach ($this->_Items as $item)
         {
             yield $item;
         }
@@ -38,7 +38,7 @@ trait TCollection
      */
     final public function toArray(): array
     {
-        return array_values($this->Items);
+        return array_values($this->_Items);
     }
 
     /**
@@ -47,31 +47,31 @@ trait TCollection
      */
     final public function has($item, bool $strict = false): bool
     {
-        return in_array($item, $this->Items, $strict);
+        return in_array($item, $this->_Items, $strict);
     }
 
     // Partial implementation of `Iterator`:
 
     final public function next(): void
     {
-        next($this->Items);
+        next($this->_Items);
     }
 
     final public function rewind(): void
     {
-        reset($this->Items);
+        reset($this->_Items);
     }
 
     final public function valid(): bool
     {
-        return !is_null(key($this->Items));
+        return !is_null(key($this->_Items));
     }
 
     // Partial implementation of `ArrayAccess`:
 
     final public function offsetExists($offset): bool
     {
-        return array_key_exists($offset, $this->Items);
+        return array_key_exists($offset, $this->_Items);
     }
 
     final public function offsetSet($offset, $value): void
@@ -80,19 +80,19 @@ trait TCollection
         {
             throw new RuntimeException("Items cannot be added by key");
         }
-        $this->Items[] = $value;
+        $this->_Items[] = $value;
     }
 
     final public function offsetUnset($offset): void
     {
-        unset($this->Items[$offset]);
+        unset($this->_Items[$offset]);
     }
 
     // Implementation of `Countable`:
 
     final public function count(): int
     {
-        return count($this->Items);
+        return count($this->_Items);
     }
 
 }

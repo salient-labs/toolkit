@@ -25,7 +25,7 @@ if (PHP_VERSION_ID < 80000)
          */
         final public function current()
         {
-            return current($this->Items);
+            return current($this->_Items);
         }
 
         /**
@@ -33,14 +33,14 @@ if (PHP_VERSION_ID < 80000)
          */
         final public function key()
         {
-            return key($this->Items);
+            return key($this->_Items);
         }
 
         // Partial implementation of `ArrayAccess`:
 
         final public function offsetGet($offset)
         {
-            return $this->Items[$offset];
+            return $this->_Items[$offset];
         }
     }
 }
@@ -63,7 +63,7 @@ else
          */
         final public function current(): mixed
         {
-            return current($this->Items);
+            return current($this->_Items);
         }
 
         /**
@@ -71,14 +71,14 @@ else
          */
         final public function key(): mixed
         {
-            return key($this->Items);
+            return key($this->_Items);
         }
 
         // Partial implementation of `ArrayAccess`:
 
         final public function offsetGet($offset): mixed
         {
-            return $this->Items[$offset];
+            return $this->_Items[$offset];
         }
     }
 }
