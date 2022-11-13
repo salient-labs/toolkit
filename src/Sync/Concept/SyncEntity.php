@@ -132,7 +132,7 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
 
     public static function getDateProperties(): array
     {
-        return ["*"];
+        return [];
     }
 
     /**
