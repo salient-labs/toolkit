@@ -410,13 +410,34 @@ SQL;
     }
 
     /**
-     * Get the canonical URI of a sync entity type from its FQCN
+     * Get the canonical URI of a sync entity type
      *
      * @return string|null `null` if `$entity` is not in a registered sync
      * entity namespace.
      * @see SyncStore::namespace()
      */
     public function getEntityTypeUri(string $entity, bool $compact = true): ?string
+    {
+        if (!($prefix = $this->getEntityTypeNamespace($entity)))
+        {
+            return null;
+        }
+        $namespace = $this->NamespacesByPrefix[$prefix];
+        $entity    = str_replace("\\", "/", substr(ltrim($entity, "\\"), strlen($namespace)));
+
+        return $compact
+            ? "{$prefix}:{$entity}"
+            : "{$this->NamespaceUrisByPrefix[$prefix]}{$entity}";
+    }
+
+    /**
+     * Get the namespace of a sync entity type
+     *
+     * @return string|null `null` if `$entity` is not in a registered sync
+     * entity namespace.
+     * @see SyncStore::namespace()
+     */
+    public function getEntityTypeNamespace(string $entity, bool $uri = false): ?string
     {
         if (!is_a($entity, SyncEntity::class, true))
         {
@@ -429,11 +450,9 @@ SQL;
         {
             if (strpos($lower, $namespace) === 0)
             {
-                $entity = str_replace("\\", "/", substr($entity, strlen($namespace)));
-
-                return $compact
-                    ? "{$prefix}:{$entity}"
-                    : "{$this->NamespaceUrisByPrefix[$prefix]}{$entity}";
+                return $uri
+                    ? $this->NamespaceUrisByPrefix[$prefix]
+                    : $prefix;
             }
         }
 

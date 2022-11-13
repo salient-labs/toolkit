@@ -912,7 +912,7 @@ final class Conversions
     /**
      * A more API-friendly http_build_query
      *
-     * Booleans are cast to integers (`0` or `1`), {@see \DateTime}s are
+     * Booleans are cast to integers (`0` or `1`), `DateTime`s are
      * formatted by `$dateFormatter`, and other values are cast to string.
      *
      * Arrays with consecutive integer keys numbered from 0 are considered to be

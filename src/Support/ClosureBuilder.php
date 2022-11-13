@@ -808,7 +808,8 @@ class ClosureBuilder
      */
     protected function _getPropertyClosure(array $propertyKeys, Closure $closure): Closure
     {
-        return static function (IContainer $container, array $array, ...$args) use ($propertyKeys, $closure)
+        // Use bindTo for access to protected properties
+        return (static function (IContainer $container, array $array, ...$args) use ($propertyKeys, $closure)
         {
             $obj = $closure($container, $array, ...$args);
             foreach ($propertyKeys as $key => $property)
@@ -816,7 +817,7 @@ class ClosureBuilder
                 $obj->$property = $array[$key];
             }
             return $obj;
-        };
+        })->bindTo(null, $this->Class);
     }
 
     /**
@@ -873,7 +874,8 @@ class ClosureBuilder
      */
     protected function _getMethodClosure(array $methodKeys, Closure $closure): Closure
     {
-        return static function (IContainer $container, array $array, ...$args) use ($methodKeys, $closure)
+        // Use bindTo for access to protected methods
+        return (static function (IContainer $container, array $array, ...$args) use ($methodKeys, $closure)
         {
             $obj = $closure($container, $array, ...$args);
             foreach ($methodKeys as $key => $method)
@@ -882,7 +884,7 @@ class ClosureBuilder
             }
 
             return $obj;
-        };
+        })->bindTo(null, $this->Class);
     }
 
     /**

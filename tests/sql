@@ -5,7 +5,6 @@ namespace Lkrms\Tests;
 
 use DateTime;
 use Lkrms\Err\Err;
-use Lkrms\Facade\Sql;
 use Lkrms\Support\SqlQuery;
 
 $loader = require (__DIR__ . "/../vendor/autoload.php");
