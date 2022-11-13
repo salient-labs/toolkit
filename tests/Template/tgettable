@@ -17,13 +17,18 @@ $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
 
 Err::load();
 
-class A implements IWritable
+class A implements IWritable, IReadable
 {
-    use TWritable;
+    use TWritable, TReadable;
 
     public static function getWritable(): array
     {
         return ['Id', 'Name'];
+    }
+
+    public static function getReadable(): array
+    {
+        return [];
     }
 
     protected $Id;
@@ -33,9 +38,12 @@ class A implements IWritable
     protected $Unwritable = "can't change me";
 }
 
-class B extends A implements IReadable
+class B extends A
 {
-    use TFullyReadable;
+    public static function getReadable(): array
+    {
+        return ["*"];
+    }
 
     protected function _GetData()
     {
@@ -83,6 +91,11 @@ class C implements IReadable, IWritable
     use TReadable, TWritable;
 
     public static function getReadable(): array
+    {
+        return [];
+    }
+
+    public static function getWritable(): array
     {
         return [];
     }

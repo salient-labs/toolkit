@@ -13,9 +13,6 @@ trait TFullyReadable
 {
     use TReadable;
 
-    /**
-     * @return string[]
-     */
     public static function getReadable(): array
     {
         return ["*"];

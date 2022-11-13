@@ -236,7 +236,7 @@ class GenerateSyncEntityClass extends GenerateCommand
             };
 
             $entityClass::$EntityName = $class;
-            $normaliser = $entityClass::getNormaliser();
+            $normaliser = $entityClass::normaliser();
 
             foreach ($entity as $key => $value)
             {

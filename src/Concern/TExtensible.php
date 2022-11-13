@@ -13,78 +13,63 @@ use Lkrms\Support\ClosureBuilder;
  */
 trait TExtensible
 {
+    use HasIntrospector;
+
     /**
      * Normalised property name => value
      *
      * @var array<string,mixed>
      */
-    private $MetaProperties = [];
+    private $_MetaProperties = [];
 
     /**
      * Normalised property name => first name passed to setMetaProperty
      *
      * @var array<string,string>
      */
-    private $MetaPropertyNames = [];
+    private $_MetaPropertyNames = [];
 
-    /**
-     * Property name => normalised property name
-     *
-     * @var array<string,string>
-     */
-    private $MetaPropertyMap = [];
-
-    final public function clearMetaProperties(): void
+    final public function clearMetaProperties()
     {
-        $this->MetaProperties    = [];
-        $this->MetaPropertyNames = [];
-        $this->MetaPropertyMap   = [];
-    }
+        $this->_MetaProperties    = [];
+        $this->_MetaPropertyNames = [];
 
-    private function normaliseMetaProperty(string $name): string
-    {
-        if (is_null($normalised = $this->MetaPropertyMap[$name] ?? null))
-        {
-            $normalised = ClosureBuilder::get(static::class)->maybeNormalise($name);
-            $this->MetaPropertyMap[$name] = $normalised;
-        }
-
-        return $normalised;
+        return $this;
     }
 
     final public function setMetaProperty(string $name, $value): void
     {
-        $normalised = $this->normaliseMetaProperty($name);
-        $this->MetaProperties[$normalised] = $value;
-        if (!array_key_exists($normalised, $this->MetaPropertyNames))
+        $normalised = $this->introspector()->maybeNormalise($name);
+        $this->_MetaProperties[$normalised] = $value;
+        if (!array_key_exists($normalised, $this->_MetaPropertyNames))
         {
-            $this->MetaPropertyNames[$normalised] = $name;
+            $this->_MetaPropertyNames[$normalised] = $name;
         }
     }
 
     final public function getMetaProperty(string $name)
     {
-        return $this->MetaProperties[$this->normaliseMetaProperty($name)] ?? null;
+        return $this->_MetaProperties[$this->introspector()->maybeNormalise($name)] ?? null;
     }
 
     final public function isMetaPropertySet(string $name): bool
     {
-        return isset($this->MetaProperties[$this->normaliseMetaProperty($name)]);
+        return isset($this->_MetaProperties[$this->introspector()->maybeNormalise($name)]);
     }
 
     final public function unsetMetaProperty(string $name): void
     {
-        unset($this->MetaProperties[$this->normaliseMetaProperty($name)]);
+        unset($this->_MetaProperties[$this->introspector()->maybeNormalise($name)]);
     }
 
     final public function getMetaProperties(): array
     {
         return array_combine(
             array_map(
-                fn($name) => $this->MetaPropertyNames[$name],
-                array_keys($this->MetaProperties)
+                fn(string $name): string => $this->_MetaPropertyNames[$name],
+                array_keys($this->_MetaProperties)
             ),
-            $this->MetaProperties
+            $this->_MetaProperties
         );
     }
 }

@@ -181,7 +181,7 @@ class GenerateSyncEntityInterface extends GenerateCommand
             $this->getOptionValue("op")
         );
 
-        $plural = $this->getOptionValue("plural") ?: $fqcn::getPluralClassName();
+        $plural = $this->getOptionValue("plural") ?: $fqcn::plural();
 
         if (strcasecmp($class, $plural))
         {

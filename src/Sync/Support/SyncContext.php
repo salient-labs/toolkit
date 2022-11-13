@@ -6,7 +6,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Test;
-use Lkrms\Support\ProvidableContext;
+use Lkrms\Support\ProviderContext;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
 
@@ -14,7 +14,7 @@ use Lkrms\Sync\Contract\ISyncContext;
  * The context within which a SyncEntity is instantiated
  *
  */
-final class SyncContext extends ProvidableContext implements ISyncContext
+final class SyncContext extends ProviderContext implements ISyncContext
 {
     /**
      * @var bool|null

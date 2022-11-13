@@ -123,7 +123,7 @@ final class SyncClosureBuilder extends ClosureBuilder
         if ($this->IsEntity)
         {
             $this->EntityNoun = Convert::classToBasename($this->Class);
-            $plural = $class->getMethod("getPluralClassName")->invoke(null);
+            $plural = $class->getMethod("plural")->invoke(null);
             if (strcasecmp($this->EntityNoun, $plural))
             {
                 $this->EntityPlural = $plural;

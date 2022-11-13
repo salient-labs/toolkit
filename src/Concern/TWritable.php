@@ -4,17 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-use Lkrms\Support\ClosureBuilder;
-use RuntimeException;
-
 /**
- * Implements IWritable to write properties that have not been declared or are
- * not visible in the current scope
- *
- * Override {@see TWritable::getWritable()} to provide access to `protected`
- * variables via `__set` and `__unset`.
- *
- * The default is to deny `__set` and `__unset` for all properties.
+ * Implements IWritable (mostly)
  *
  * - If `_set<Property>($value)` is defined, it will be called instead of
  *   assigning `$value` to `<Property>`.
@@ -27,21 +18,13 @@ use RuntimeException;
  */
 trait TWritable
 {
-    /**
-     * Get a list of writable protected properties
-     *
-     * To make all `protected` properties writable, return `["*"]`.
-     *
-     * @return string[]
-     */
-    public static function getWritable(): array
-    {
-        return [];
-    }
+    use HasIntrospector;
+
+    abstract public static function getWritable(): array;
 
     private function setProperty(string $action, string $name, ...$params)
     {
-        return (ClosureBuilder::get(static::class)->getPropertyActionClosure($name, $action))($this, ...$params);
+        return $this->introspector()->getPropertyActionClosure($name, $action)($this, ...$params);
     }
 
     final public function __set(string $name, $value): void

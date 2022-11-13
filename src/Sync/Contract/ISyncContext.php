@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\IProvidableContext;
+use Lkrms\Contract\IProviderContext;
 
 /**
  * The context within which a SyncEntity is instantiated
  *
  */
-interface ISyncContext extends IProvidableContext
+interface ISyncContext extends IProviderContext
 {
     /**
      * Request arrays instead of generators from sync operations that return

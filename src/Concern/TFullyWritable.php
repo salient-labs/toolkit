@@ -13,9 +13,6 @@ trait TFullyWritable
 {
     use TWritable;
 
-    /**
-     * @return string[]
-     */
     public static function getWritable(): array
     {
         return ["*"];

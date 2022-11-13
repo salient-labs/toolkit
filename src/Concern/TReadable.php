@@ -4,17 +4,8 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-use Lkrms\Support\ClosureBuilder;
-use RuntimeException;
-
 /**
- * Implements IReadable to read properties that have not been declared or are
- * not visible in the current scope
- *
- * Override {@see TReadable::getReadable()} to provide access to `protected`
- * variables via `__get` and `__isset`.
- *
- * The default is to deny `__get` and `__isset` for all properties.
+ * Implements IReadable (mostly)
  *
  * - If `_get<Property>()` is defined, `__get` will use its return value instead
  *   of returning the value of `<Property>`.
@@ -27,21 +18,13 @@ use RuntimeException;
  */
 trait TReadable
 {
-    /**
-     * Get a list of readable protected properties
-     *
-     * To make all `protected` properties readable, return `["*"]`.
-     *
-     * @return string[]
-     */
-    public static function getReadable(): array
-    {
-        return [];
-    }
+    use HasIntrospector;
+
+    abstract public static function getReadable(): array;
 
     private function getProperty(string $action, string $name)
     {
-        return (ClosureBuilder::get(static::class)->getPropertyActionClosure($name, $action))($this);
+        return $this->introspector()->getPropertyActionClosure($name, $action)($this);
     }
 
     final public function __get(string $name)

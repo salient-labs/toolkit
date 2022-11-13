@@ -69,7 +69,7 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
  *
  * @property-read string $Entity The class name of the SyncEntity being serialized
  * @property-read bool $IncludeMeta Include undeclared property values?
- * @property-read bool $Sort Sort arrays by key?
+ * @property-read bool $SortByKey Sort arrays by key?
  * @property-read int|null $MaxDepth Throw an exception when values are nested beyond this depth
  * @property-read bool $DetectRecursion Check for recursion?
  * @property-read bool $RemoveCanonicalId Remove CanonicalId from sync entities?
@@ -106,7 +106,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      *
      * @var bool
      */
-    protected $Sort;
+    protected $SortByKey;
 
     /**
      * Throw an exception when values are nested beyond this depth
@@ -206,11 +206,11 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      * @param array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $replace
      * @param SyncSerializeRules|SerializeRulesBuilder|null $inherit
      */
-    public function __construct(string $entity, bool $includeMeta = true, bool $sort = false, ?int $maxDepth = null, bool $detectRecursion = true, bool $removeCanonicalId = true, array $remove = [], array $replace = [], bool $recurseRules = true, int $flags = 0, $inherit = null)
+    public function __construct(string $entity, bool $includeMeta = true, bool $sortByKey = false, ?int $maxDepth = null, bool $detectRecursion = true, bool $removeCanonicalId = true, array $remove = [], array $replace = [], bool $recurseRules = true, int $flags = 0, $inherit = null)
     {
         $this->Entity            = $entity;
         $this->IncludeMeta       = $includeMeta;
-        $this->Sort              = $sort;
+        $this->SortByKey         = $sortByKey;
         $this->MaxDepth          = $maxDepth;
         $this->DetectRecursion   = $detectRecursion;
         $this->RemoveCanonicalId = $removeCanonicalId;
@@ -429,9 +429,9 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
         return $this->IncludeMeta;
     }
 
-    public function getSort(): bool
+    public function getSortByKey(): bool
     {
-        return $this->Sort;
+        return $this->SortByKey;
     }
 
     public function getMaxDepth(): ?int

@@ -24,4 +24,12 @@ interface IExtensible
      * @return array<string,mixed>
      */
     public function getMetaProperties(): array;
+
+    /**
+     * Clear stored properties
+     *
+     * @return $this
+     */
+    public function clearMetaProperties();
+
 }
