@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
-use DateTime;
+use DateTimeInterface;
 use UnexpectedValueException;
 
 /**
@@ -25,11 +25,7 @@ final class Formatters
      * string conversion specifications (`%s`).
      * @return string
      */
-    public function array(
-        array $array,
-        string $format    = "%s: %s\n",
-        int $indentSpaces = 4
-    ): string
+    public function array(array $array, string $format = "%s: %s\n", int $indentSpaces = 4): string
     {
         $indent = str_repeat(" ", $indentSpaces);
         $string = "";
@@ -90,9 +86,9 @@ final class Formatters
         ];
     }
 
-    public function date(DateTime $date, string $between = '[]'): string
+    public function date(DateTimeInterface $date, string $between = '[]'): string
     {
-        list ($l, $r) = $this->getBetween($between);
+        [$l, $r] = $this->getBetween($between);
 
         $noYear = date('Y') == $date->format('Y');
         $noTime = $date->format('H:i:s') == '00:00:00';
@@ -102,14 +98,9 @@ final class Formatters
         return $l . $date->format($format) . $r;
     }
 
-    public function dateRange(
-        DateTime $from,
-        DateTime $to,
-        string $between   = '[]',
-        string $delimiter = "\u{2013}"
-    ): string
+    public function dateRange(DateTimeInterface $from, DateTimeInterface $to, string $between = '[]', string $delimiter = "\u{2013}"): string
     {
-        list ($l, $r) = $this->getBetween($between);
+        [$l, $r] = $this->getBetween($between);
 
         $sameYear = ($year = $from->format('Y')) == $to->format('Y');
         $sameZone = $from->getTimezone() == $to->getTimezone();
