@@ -14,7 +14,6 @@ use Lkrms\Concern\TProvidable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TResolvable;
 use Lkrms\Concern\TWritable;
-use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
@@ -280,7 +279,7 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
      *
      * @param SerializeRulesBuilder|SerializeRules $rules
      */
-    final public function toCustomArray($rules): array
+    final public function toArrayWith($rules): array
     {
         return $this->_toArray(SerializeRules::resolve($rules));
     }
@@ -325,10 +324,7 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
      * @param SyncEntity $entity
      * @return bool
      */
-    final public function propertyHasSameValueAs(
-        string $property,
-        SyncEntity $entity
-    ): bool
+    final public function propertyHasSameValueAs(string $property, SyncEntity $entity): bool
     {
         // $entity must be an instance of the same class
         if (!is_a($entity, static::class))
