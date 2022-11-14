@@ -431,7 +431,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private function normaliseTarget(string $target): string
     {
         return preg_replace_callback('/[^].[]+/',
-            fn($matches) => $this->ClosureBuilder->maybeNormalise($matches[0], false, true), $target);
+            fn($matches) => $this->ClosureBuilder->maybeNormalise($matches[0], true), $target);
     }
 
     public function getIncludeMeta(): bool
