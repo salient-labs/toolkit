@@ -7,6 +7,7 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Console\ConsoleLevel;
 use Lkrms\Contract\HasBuilder;
+use Lkrms\Contract\IComparable;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
@@ -26,7 +27,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @property-read string|null $EntityName The display name of the entity associated with the error
  * @property-read ISyncProvider|null $Provider The sync provider associated with the error
  */
-final class SyncError implements IReadable, IImmutable, HasBuilder
+final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
 {
     use TFullyReadable;
 
@@ -103,6 +104,17 @@ final class SyncError implements IReadable, IImmutable, HasBuilder
         $this->Level      = $level;
         $this->Entity     = $entity;
         $this->Provider   = $provider ?: ($entity ? $entity->provider() : null);
+    }
+
+    public static function compare($a, $b, bool $strict = false): int
+    {
+        return $a->Level <=> $b->Level
+            ?: $a->ErrorType <=> $b->ErrorType
+            ?: $a->Message <=> $b->Message
+            ?: $a->Values <=> $b->Values
+            ?: $a->EntityName <=> $b->EntityName
+            ?: ($a->Provider ? $a->Provider->getProviderId() : null) <=> ($b->Provider ? $b->Provider->getProviderId() : null)
+            ?: ($a->Entity ? $a->Entity->Id : null) <=> ($b->Entity ? $b->Entity->Id : null);
     }
 
     public function getCode(): string

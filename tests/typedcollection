@@ -25,7 +25,7 @@ class Entity
 
 class EntityCollection extends TypedCollection
 {
-    protected function compareItems($a, $b): int
+    protected function compareItems($a, $b, bool $strict = false): int
     {
         return strlen($b->Name) - strlen($a->Name);
     }

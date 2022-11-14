@@ -24,6 +24,7 @@ trait HasSortableItems
     final public function sort()
     {
         $this->sortItems();
+
         return $this;
     }
 
