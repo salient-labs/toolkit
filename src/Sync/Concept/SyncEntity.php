@@ -25,6 +25,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Test;
+use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
@@ -186,9 +187,24 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
         return $provider->with(static::class);
     }
 
-    final public static function rulesBuilder(?IContainer $container = null): SerializeRulesBuilder
+    /**
+     * Get a SyncSerializeRules builder for the SyncEntity, optionally
+     * inheriting the entity's default rules
+     *
+     * @param bool $inherit If `true`, the return value of
+     * {@see SyncEntity::getSerializeRules()} is passed to the builder's
+     * {@see SerializeRulesBuilder::inherit()} method before it is returned.
+     *
+     */
+    final public static function rulesBuilder(?IContainer $container = null, bool $inherit = false): SerializeRulesBuilder
     {
-        return (new SerializeRulesBuilder(self::requireContainer($container)))->entity(static::class);
+        $builder = (new SerializeRulesBuilder(
+            self::requireContainer($container)
+        ))->entity(static::class);
+
+        return $inherit
+            ? $builder->inherit(static::getSerializeRules($container))
+            : $builder;
     }
 
     /**
@@ -505,7 +521,9 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
         }
         elseif ($node instanceof DateTimeInterface)
         {
-            $node = $this->provider()->getDateFormatter()->format($node);
+            $node = ($rules->DateFormatter
+                ?: ($this->provider() ? $this->provider()->getDateFormatter() : null)
+                ?: new DateFormatter())->format($node);
         }
         else
         {

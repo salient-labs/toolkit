@@ -12,6 +12,7 @@ use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\ISerializeRules;
 use Lkrms\Facade\Convert;
+use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 
 /**
@@ -68,6 +69,7 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
  * ```
  *
  * @property-read string $Entity The class name of the SyncEntity being serialized
+ * @property-read DateFormatter|null $DateFormatter Override the default date formatter
  * @property-read bool $IncludeMeta Include undeclared property values?
  * @property-read bool $SortByKey Sort arrays by key?
  * @property-read int|null $MaxDepth Throw an exception when values are nested beyond this depth
@@ -93,6 +95,13 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      * @var string
      */
     protected $Entity;
+
+    /**
+     * Override the default date formatter
+     *
+     * @var DateFormatter|null
+     */
+    protected $DateFormatter;
 
     /**
      * Include undeclared property values?
@@ -206,9 +215,10 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      * @param array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $replace
      * @param SyncSerializeRules|SerializeRulesBuilder|null $inherit
      */
-    public function __construct(string $entity, bool $includeMeta = true, bool $sortByKey = false, ?int $maxDepth = null, bool $detectRecursion = true, bool $removeCanonicalId = true, array $remove = [], array $replace = [], bool $recurseRules = true, int $flags = 0, $inherit = null)
+    public function __construct(string $entity, ?DateFormatter $dateFormatter = null, bool $includeMeta = true, bool $sortByKey = false, ?int $maxDepth = null, bool $detectRecursion = true, bool $removeCanonicalId = true, array $remove = [], array $replace = [], bool $recurseRules = true, int $flags = 0, $inherit = null)
     {
         $this->Entity            = $entity;
+        $this->DateFormatter     = $dateFormatter;
         $this->IncludeMeta       = $includeMeta;
         $this->SortByKey         = $sortByKey;
         $this->MaxDepth          = $maxDepth;
