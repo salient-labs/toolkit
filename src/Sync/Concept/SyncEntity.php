@@ -14,7 +14,6 @@ use Lkrms\Concern\TProvidable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TResolvable;
 use Lkrms\Concern\TWritable;
-use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
@@ -25,6 +24,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Test;
+use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
@@ -186,9 +186,24 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
         return $provider->with(static::class);
     }
 
-    final public static function rulesBuilder(?IContainer $container = null): SerializeRulesBuilder
+    /**
+     * Get a SyncSerializeRules builder for the SyncEntity, optionally
+     * inheriting the entity's default rules
+     *
+     * @param bool $inherit If `true`, the return value of
+     * {@see SyncEntity::getSerializeRules()} is passed to the builder's
+     * {@see SerializeRulesBuilder::inherit()} method before it is returned.
+     *
+     */
+    final public static function rulesBuilder(?IContainer $container = null, bool $inherit = false): SerializeRulesBuilder
     {
-        return (new SerializeRulesBuilder(self::requireContainer($container)))->entity(static::class);
+        $builder = (new SerializeRulesBuilder(
+            self::requireContainer($container)
+        ))->entity(static::class);
+
+        return $inherit
+            ? $builder->inherit(static::getSerializeRules($container))
+            : $builder;
     }
 
     /**
@@ -264,7 +279,7 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
      *
      * @param SerializeRulesBuilder|SerializeRules $rules
      */
-    final public function toCustomArray($rules): array
+    final public function toArrayWith($rules): array
     {
         return $this->_toArray(SerializeRules::resolve($rules));
     }
@@ -309,10 +324,7 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
      * @param SyncEntity $entity
      * @return bool
      */
-    final public function propertyHasSameValueAs(
-        string $property,
-        SyncEntity $entity
-    ): bool
+    final public function propertyHasSameValueAs(string $property, SyncEntity $entity): bool
     {
         // $entity must be an instance of the same class
         if (!is_a($entity, static::class))
@@ -505,7 +517,9 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
         }
         elseif ($node instanceof DateTimeInterface)
         {
-            $node = $this->provider()->getDateFormatter()->format($node);
+            $node = ($rules->DateFormatter
+                ?: ($this->provider() ? $this->provider()->getDateFormatter() : null)
+                ?: new DateFormatter())->format($node);
         }
         else
         {

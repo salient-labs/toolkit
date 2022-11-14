@@ -28,11 +28,11 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
 
         $container = new Container();
 
-        $_user = $user->toCustomArray(
+        $_user = $user->toArrayWith(
             SerializeRulesBuilder::build($container)
             ->entity(User::class)->sortByKey(true)->go()
         );
-        $_post = $post->toCustomArray(
+        $_post = $post->toArrayWith(
             SerializeRulesBuilder::build($container)
             ->entity(Post::class)->sortByKey(true)->go()
         );
