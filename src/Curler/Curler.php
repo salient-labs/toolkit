@@ -675,7 +675,7 @@ class Curler implements IReadable, IWritable
                 // one of Curler's public methods, i.e. not execute(), not
                 // get(), but one frame deeper
                 Console::debug("{$this->Method} "
-                    . curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL),
+                    . rawurldecode(curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)),
                     null, null, $depth + 3);
             }
 

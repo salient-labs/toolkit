@@ -22,7 +22,8 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static SyncStore close(?int $exitStatus = 0) Close the database (see {@see SyncStore::close()})
  * @method static SyncStore entityType(string $entity) Register a sync entity type and set its ID unless already registered (see {@see SyncStore::entityType()})
  * @method static SyncStore error(SyncError|SyncErrorBuilder $error, bool $deduplicate = false, bool $toConsole = false) Report an error that occurred during a sync operation (see {@see SyncStore::error()})
- * @method static string|null getEntityTypeUri(string $entity, bool $compact = true) Get the canonical URI of a sync entity type from its FQCN (see {@see SyncStore::getEntityTypeUri()})
+ * @method static string|null getEntityTypeNamespace(string $entity, bool $uri = false) Get the namespace of a sync entity type (see {@see SyncStore::getEntityTypeNamespace()})
+ * @method static string|null getEntityTypeUri(string $entity, bool $compact = true) Get the canonical URI of a sync entity type (see {@see SyncStore::getEntityTypeUri()})
  * @method static SyncErrorCollection getErrors() See {@see SyncStore::getErrors()}
  * @method static string|null getFilename() Get the filename of the database (see {@see SqliteStore::getFilename()})
  * @method static int getRunId() Get the run ID of the current run (see {@see SyncStore::getRunId()})
