@@ -251,7 +251,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      *
      * @param string[] $path
      * @param array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $allRules
-     * @return array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string>
+     * @return array<string,array<array<int|string|Closure>|string>|array<int|string|Closure>|string>
      */
     private function compile(?string $class, ?string $untilClass, array $path, array $allRules, string $cacheKey): array
     {
@@ -334,7 +334,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
             $rules[$target] = $rule;
         }
 
-        return $this->RuleCache[$cacheKey][$key] = array_values($rules);
+        return $this->RuleCache[$cacheKey][$key] = $rules;
     }
 
     /**
@@ -364,12 +364,16 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
 
     private function getPath(string $path): string
     {
-        return substr($path, 0, max(0, (strrpos("." . $path, ".") - 1)));
+        return ((substr($path, -2) === "[]")
+            ? substr($path, 0, -2)
+            : substr($path, 0, max(0, (strrpos("." . $path, ".") - 1)))) ?: ".";
     }
 
     private function getKey(string $path): string
     {
-        return substr(strrchr("." . $path, "."), 1);
+        return ((substr($path, -2) === "[]")
+            ? "[]"
+            : substr(strrchr("." . $path, "."), 1));
     }
 
     /**
@@ -487,11 +491,11 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      * $path
      *
      * @param string[] $path
-     * @return string[]
+     * @return array<string,string>
      */
     public function getRemove(?string $class, ?string $untilClass, array $path): array
     {
-        return array_map(fn($rule) => is_array($rule) ? array_shift($rule) : $rule,
+        return array_map(fn($rule) => is_array($rule) ? reset($rule) : $rule,
             $this->compile($class, $untilClass, $path, $this->Remove, __FUNCTION__));
     }
 
@@ -500,7 +504,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      * encountered at $path
      *
      * @param string[] $path
-     * @return array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string>
+     * @return array<string,array<array<int|string|Closure>|string>|array<int|string|Closure>|string>
      */
     public function getReplace(?string $class, ?string $untilClass, array $path): array
     {

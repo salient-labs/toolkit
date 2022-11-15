@@ -262,6 +262,11 @@ class Introspector
     private $CreateProvidableFromSignatureClosures = [];
 
     /**
+     * @var Closure|null
+     */
+    private $GetNameClosure;
+
+    /**
      * @var array<string,Closure>
      */
     private $SerializeClosures = [];
@@ -503,7 +508,14 @@ class Introspector
      */
     final public function getReadableProperties(): array
     {
-        return $this->ReadableProperties ?: $this->PublicProperties;
+        return array_keys(
+            array_intersect(
+                $this->PropertyMap,
+                $this->ReadableProperties ?: $this->PublicProperties
+            ) + (
+                $this->Actions[self::ACTION_GET] ?? []
+            )
+        );
     }
 
     /**
@@ -511,7 +523,14 @@ class Introspector
      */
     final public function getWritableProperties(): array
     {
-        return $this->WritableProperties ?: $this->PublicProperties;
+        return array_keys(
+            array_intersect(
+                $this->PropertyMap,
+                $this->WritableProperties ?: $this->PublicProperties
+            ) + (
+                $this->Actions[self::ACTION_SET] ?? []
+            )
+        );
     }
 
     /**
@@ -1073,6 +1092,34 @@ class Introspector
         $closure = $closure->bindTo(null, $this->Class);
 
         return $this->PropertyActionClosures[$_name][$action] = $closure;
+    }
+
+    final public function getGetNameClosure(): Closure
+    {
+        if ($this->GetNameClosure)
+        {
+            return $this->GetNameClosure;
+        }
+
+        $names = $this->maybeNormalise([
+            "display_name",
+            "displayname",
+            "name",
+            "full_name",
+            "fullname",
+            "title",
+            "description",
+            "id",
+        ], false, true);
+
+        if (!($names = array_intersect($names, $this->getReadableProperties())))
+        {
+            return $this->GetNameClosure = static function (): ?string { return null; };
+        }
+
+        return $this->GetNameClosure = $this->getPropertyActionClosure(
+            array_shift($names), self::ACTION_GET
+        );
     }
 
     final public function getSerializeClosure(?ISerializeRules $rules = null): Closure

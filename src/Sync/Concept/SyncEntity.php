@@ -20,6 +20,7 @@ use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
+use Lkrms\Contract\ReturnsDescription;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
@@ -62,7 +63,7 @@ use UnexpectedValueException;
  * nested entities.
  *
  */
-abstract class SyncEntity implements IProviderEntity, JsonSerializable
+abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSerializable
 {
     use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer, HasSyncIntrospector
     {
@@ -135,6 +136,16 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
     public static function getDateProperties(): array
     {
         return [];
+    }
+
+    public function name(?int $maxLength = null): ?string
+    {
+        return $this->introspector()->getGetNameClosure()($this);
+    }
+
+    public function description(?int $maxLength = null): ?string
+    {
+        return null;
     }
 
     /**
@@ -290,15 +301,22 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
                 return [
                     "@class" => static::class,
                     "@id"    => $this->Id,
-                    "@_id"   => $this->CanonicalId,
                 ];
 
             case SerializeLinkType::DETAILED:
+                return array_filter([
+                    "@type"        => $this->typeUri($compact),
+                    "@id"          => $this->id(),
+                    "@name"        => $this->name(),
+                    "@description" => $this->description(),
+                ]);
+
             case SerializeLinkType::STANDARD:
-                return [
+                return array_filter([
                     "@type" => $this->typeUri($compact),
                     "@id"   => $this->id(),
-                ];
+                    "@name" => $this->name(),
+                ]);
 
             case SerializeLinkType::MINIMAL:
                 return [
@@ -417,7 +435,7 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
                 // descended from itself with a link
                 if ($parents[$node->objectId()] ?? false)
                 {
-                    $node         = $node->toLink(SerializeLinkType::DETAILED);
+                    $node         = $node->toLink(SerializeLinkType::STANDARD);
                     $node["@why"] = "Circular reference detected";
 
                     return;
@@ -431,6 +449,9 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
 
         $delete  = $rules->getRemove($class ?? null, null, $path);
         $replace = $rules->getReplace($class ?? null, null, $path);
+
+        // Don't delete values returned in both lists
+        $delete = array_diff_key($delete, $replace);
 
         if ($delete)
         {
@@ -453,7 +474,7 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
                     }
                     if (is_int($arg) || is_string($arg))
                     {
-                        $newKey = $arg;
+                        $newKey = is_string($arg) ? $this->introspector()->maybeNormalise($arg, false, true) : $arg;
                         continue;
                     }
                     if ($arg instanceof Closure)
@@ -464,19 +485,33 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
                     throw new UnexpectedValueException("Invalid rule: " . var_export($_rule, true));
                 }
 
-                if ($key !== $newKey && array_key_exists($key, $node))
+                if ($key !== "[]")
                 {
-                    if (array_key_exists($newKey, $node))
+                    if (!array_key_exists($key, $node))
                     {
-                        throw new UnexpectedValueException("Cannot rename '$key': '$newKey' already set");
+                        continue;
                     }
-                    Convert::arraySpliceAtKey($node, $key, 1, [$newKey => $node[$key]]);
-                    $key = $newKey;
-                }
 
-                if ($callback && array_key_exists($key, $node))
+                    if ($key !== $newKey)
+                    {
+                        if (array_key_exists($newKey, $node))
+                        {
+                            throw new UnexpectedValueException("Cannot rename '$key': '$newKey' already set");
+                        }
+                        Convert::arraySpliceAtKey($node, $key, 1, [$newKey => $node[$key]]);
+                        $key = $newKey;
+                    }
+
+                    if ($callback)
+                    {
+                        $node[$key] = $callback($node[$key]);
+
+                        continue;
+                    }
+                }
+                elseif ($callback)
                 {
-                    $node[$key] = $callback($node[$key]);
+                    $node = array_map($callback, $node);
 
                     continue;
                 }
@@ -484,6 +519,26 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
             else
             {
                 $key = $rule;
+            }
+
+            if ($key === "[]")
+            {
+                $_path   = $path;
+                $lastKey = array_pop($_path);
+                $_path[] = $lastKey . "[]";
+
+                foreach ($node as &$child)
+                {
+                    $this->_serializeId($child, $_path);
+                }
+                unset($child);
+
+                continue;
+            }
+
+            if (!array_key_exists($key, $node))
+            {
+                continue;
             }
 
             $_path   = $path;
