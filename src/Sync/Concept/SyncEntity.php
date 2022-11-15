@@ -193,7 +193,7 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
      * inheriting the entity's default rules
      *
      */
-    final public static function rulesBuilder(?IContainer $container = null, bool $inherit = false): SerializeRulesBuilder
+    final public static function rulesBuilder(?IContainer $container = null, bool $inherit = true): SerializeRulesBuilder
     {
         $builder = (new SerializeRulesBuilder(
             self::requireContainer($container)
@@ -254,7 +254,7 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
     final public static function getSerializeRules(?IContainer $container = null): SerializeRules
     {
         return SerializeRules::resolve(
-            static::buildSerializeRules(static::rulesBuilder($container))
+            static::buildSerializeRules(static::rulesBuilder($container, false))
         );
     }
 
