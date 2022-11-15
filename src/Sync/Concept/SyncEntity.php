@@ -29,8 +29,8 @@ use Lkrms\Sync\Concern\HasSyncIntrospector;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
-use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncEntityProvider;
+use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeLinkType as SerializeLinkType;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
@@ -182,7 +182,7 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
     {
         /** @var ISyncProvider */
         $provider = self::requireContainer($container)->get(
-            SyncClosureBuilder::entityToProvider(static::class)
+            SyncIntrospector::entityToProvider(static::class)
         );
 
         return $provider->with(static::class);

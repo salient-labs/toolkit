@@ -26,7 +26,7 @@ use ReflectionProperty;
 use RuntimeException;
 use UnexpectedValueException;
 
-class ClosureBuilder
+class Introspector
 {
     public const ACTION_GET   = "get";
     public const ACTION_ISSET = "isset";
@@ -272,7 +272,7 @@ class ClosureBuilder
     private static $Instances = [];
 
     /**
-     * Get a ClosureBuilder for $class after optionally using a container to
+     * Get an Introspector for $class after optionally using a container to
      * resolve it to a concrete class
      *
      * @return static
@@ -285,8 +285,8 @@ class ClosureBuilder
     }
 
     /**
-     * Get a ClosureBuilder for $class after using a container to resolve it to
-     * a concrete class
+     * Get an Introspector for $class after using a container to resolve it to a
+     * concrete class
      *
      * @return static
      */
@@ -299,7 +299,7 @@ class ClosureBuilder
     }
 
     /**
-     * Get a ClosureBuilder for $class
+     * Get an Introspector for $class
      *
      * @return static
      */
@@ -588,7 +588,7 @@ class ClosureBuilder
         return $closure;
     }
 
-    final protected function getProperties(array $keys, bool $withParameters, bool $strict): ClosureBuilderProperties
+    final protected function getProperties(array $keys, bool $withParameters, bool $strict): IntrospectorProperties
     {
         // Normalise array keys (i.e. field/property names)
         if ($this->Normaliser)
@@ -673,7 +673,7 @@ class ClosureBuilder
             }
         }
 
-        return new ClosureBuilderProperties($parameterKeys, $methodKeys, $propertyKeys, $metaKeys, $dateKeys);
+        return new IntrospectorProperties($parameterKeys, $methodKeys, $propertyKeys, $metaKeys, $dateKeys);
     }
 
     /**
@@ -998,9 +998,9 @@ class ClosureBuilder
      * ```
      *
      * @param string $name
-     * @param string $action Either {@see ClosureBuilder::ACTION_SET},
-     * {@see ClosureBuilder::ACTION_GET}, {@see ClosureBuilder::ACTION_ISSET} or
-     * {@see ClosureBuilder::ACTION_UNSET}.
+     * @param string $action Either {@see Introspector::ACTION_SET},
+     * {@see Introspector::ACTION_GET}, {@see Introspector::ACTION_ISSET} or
+     * {@see Introspector::ACTION_UNSET}.
      * @return Closure
      */
     final public function getPropertyActionClosure(string $name, string $action): Closure

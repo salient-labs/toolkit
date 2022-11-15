@@ -7,7 +7,7 @@ namespace Lkrms\Concern;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Support\ArrayKeyConformity;
-use Lkrms\Support\ClosureBuilder;
+use Lkrms\Support\Introspector;
 
 /**
  * Implements IConstructible to create instances from associative arrays
@@ -41,7 +41,7 @@ trait TConstructible
             $container = Container::requireGlobalContainer();
         }
 
-        return ClosureBuilder::getBound($container, static::class)
+        return Introspector::getBound($container, static::class)
             ->getCreateFromClosure()($data, $container, $parent);
     }
 
@@ -71,7 +71,7 @@ trait TConstructible
         {
             if (!$closure)
             {
-                $builder = ClosureBuilder::getBound($container, static::class);
+                $builder = Introspector::getBound($container, static::class);
                 $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
                     ? $builder->getCreateFromSignatureClosure(array_keys($data), true)
                     : $builder->getCreateFromClosure(true);

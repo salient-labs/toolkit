@@ -11,9 +11,9 @@ use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\PipelineImmutable;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncFilterPolicy;
+use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncOperation;
 
 /**
@@ -56,14 +56,14 @@ abstract class SyncDefinition implements ISyncDefinition
     protected $EntityToDataPipeline;
 
     /**
-     * @var SyncClosureBuilder
+     * @var SyncIntrospector
      */
-    protected $EntityClosureBuilder;
+    protected $EntityIntrospector;
 
     /**
-     * @var SyncClosureBuilder
+     * @var SyncIntrospector
      */
-    protected $ProviderClosureBuilder;
+    protected $ProviderIntrospector;
 
     /**
      * @param int $filterPolicy One of the {@see SyncFilterPolicy} values.
@@ -92,8 +92,8 @@ abstract class SyncDefinition implements ISyncDefinition
         $this->DataToEntityPipeline = $dataToEntityPipeline;
         $this->EntityToDataPipeline = $entityToDataPipeline;
 
-        $this->EntityClosureBuilder   = SyncClosureBuilder::get($entity);
-        $this->ProviderClosureBuilder = SyncClosureBuilder::get(get_class($provider));
+        $this->EntityIntrospector   = SyncIntrospector::get($entity);
+        $this->ProviderIntrospector = SyncIntrospector::get(get_class($provider));
     }
 
     final protected function getPipelineToBackend(): IPipelineImmutable
@@ -111,8 +111,8 @@ abstract class SyncDefinition implements ISyncDefinition
                     $ctx = $ctx->withConformity($this->Conformity);
 
                     $closure = in_array($this->Conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                        ? SyncClosureBuilder::getBound($ctx->container(), $this->Entity)->getCreateProvidableFromSignatureClosure(array_keys($entity))
-                        : SyncClosureBuilder::getBound($ctx->container(), $this->Entity)->getCreateProvidableFromClosure();
+                        ? SyncIntrospector::getBound($ctx->container(), $this->Entity)->getCreateProvidableFromSignatureClosure(array_keys($entity))
+                        : SyncIntrospector::getBound($ctx->container(), $this->Entity)->getCreateProvidableFromClosure();
                 }
 
                 return $closure($entity, $this->Provider, $ctx);

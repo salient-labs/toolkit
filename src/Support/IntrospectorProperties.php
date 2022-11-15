@@ -16,9 +16,9 @@ use Lkrms\Contract\IReadable;
  * @property-read string[] $MetaProperties Arbitrary property names
  * @property-read string[] $DateProperties Date property names
  *
- * @see ClosureBuilder
+ * @see Introspector
  */
-final class ClosureBuilderProperties implements IReadable
+final class IntrospectorProperties implements IReadable
 {
     use TFullyReadable;
 

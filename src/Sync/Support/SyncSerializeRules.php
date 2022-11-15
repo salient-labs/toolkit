@@ -209,9 +209,9 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private $RootPaths = [];
 
     /**
-     * @var SyncClosureBuilder
+     * @var SyncIntrospector
      */
-    private $ClosureBuilder;
+    private $Introspector;
 
     /**
      * @param array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $remove
@@ -232,7 +232,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
         $this->RecurseRules      = $recurseRules;
         $this->Flags             = $flags;
 
-        $this->ClosureBuilder = SyncClosureBuilder::get($this->Entity);
+        $this->Introspector = SyncIntrospector::get($this->Entity);
 
         if ($inherit)
         {
@@ -449,7 +449,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private function normaliseTarget(string $target): string
     {
         return preg_replace_callback('/[^].[]+/',
-            fn($matches) => $this->ClosureBuilder->maybeNormalise($matches[0], true), $target);
+            fn($matches) => $this->Introspector->maybeNormalise($matches[0], true), $target);
     }
 
     public function getDateFormatter(): ?DateFormatter

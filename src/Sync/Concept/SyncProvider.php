@@ -11,9 +11,9 @@ use Lkrms\Support\DateFormatter;
 use Lkrms\Support\PipelineImmutable;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncEntityProvider;
+use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
 use ReflectionClass;
 use RuntimeException;
@@ -168,7 +168,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
 
     final public static function getBindable(): array
     {
-        return SyncClosureBuilder::get(static::class)->getSyncProviderInterfaces();
+        return SyncIntrospector::get(static::class)->getSyncProviderInterfaces();
     }
 
     final public function with(string $syncEntity, $context = null): SyncEntityProvider
@@ -195,7 +195,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     {
         if (($closure = $this->MagicMethodClosures[$name = strtolower($name)] ?? false) === false)
         {
-            $closure = SyncClosureBuilder::get(static::class)->getMagicSyncOperationClosure($name, $this);
+            $closure = SyncIntrospector::get(static::class)->getMagicSyncOperationClosure($name, $this);
             $this->MagicMethodClosures[$name] = $closure;
         }
         if ($closure)

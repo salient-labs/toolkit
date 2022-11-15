@@ -9,7 +9,7 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Concern\TResolvable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Err\Err;
-use Lkrms\Support\ClosureBuilder;
+use Lkrms\Support\Introspector;
 
 $loader = require (__DIR__ . "/../../vendor/autoload.php");
 $loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
@@ -78,6 +78,6 @@ class B extends A
 }
 
 print_r([
-    "A" => ClosureBuilder::get(A::class),
-    "B" => ClosureBuilder::get(B::class),
+    "A" => Introspector::get(A::class),
+    "B" => Introspector::get(B::class),
 ]);

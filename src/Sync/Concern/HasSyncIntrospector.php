@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Lkrms\Sync\Concern;
 
-use Lkrms\Sync\Support\SyncClosureBuilder;
+use Lkrms\Sync\Support\SyncIntrospector;
 
 trait HasSyncIntrospector
 {
-    final protected function introspector(): SyncClosureBuilder
+    final protected function introspector(): SyncIntrospector
     {
-        return SyncClosureBuilder::get(static::class);
+        return SyncIntrospector::get(static::class);
     }
 }

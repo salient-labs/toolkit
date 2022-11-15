@@ -18,7 +18,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Test;
-use Lkrms\Support\ClosureBuilder;
+use Lkrms\Support\Introspector;
 use Lkrms\Support\PhpDocParser;
 use Lkrms\Support\TokenExtractor;
 use ReflectionClass;
@@ -215,7 +215,7 @@ class GenerateBuilderClass extends GenerateCommand
             }
         );
 
-        $writable = ClosureBuilder::get($_class->getName())->getWritableProperties();
+        $writable = Introspector::get($_class->getName())->getWritableProperties();
         $writable = array_combine(
             array_map(
                 fn(string $name) => Convert::toCamelCase($name),

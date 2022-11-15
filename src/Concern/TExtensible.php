@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-use Lkrms\Support\ClosureBuilder;
+use Lkrms\Support\Introspector;
 
 /**
  * Implements IExtensible to store arbitrary property values

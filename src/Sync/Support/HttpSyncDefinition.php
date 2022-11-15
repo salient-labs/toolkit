@@ -132,7 +132,7 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
 
         // If a method has been declared for this operation, use it, even if
         // it's not in $this->Operations
-        if ($closure = $this->ProviderClosureBuilder->getDeclaredSyncOperationClosure($operation, $this->EntityClosureBuilder, $this->Provider))
+        if ($closure = $this->ProviderIntrospector->getDeclaredSyncOperationClosure($operation, $this->EntityIntrospector, $this->Provider))
         {
             return $this->Closures[$operation] = $closure;
         }
