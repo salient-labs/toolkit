@@ -13,16 +13,12 @@ interface IConvertibleEnumeration extends IEnumeration
     /**
      * Get the value of a constant from its name
      *
-     * @param string $name Case-insensitive.
-     * @return int
      */
     public static function fromName(string $name): int;
 
     /**
      * Get the name of a constant from its value
      *
-     * @param int $value
-     * @return string
      */
     public static function toName(int $value): string;
 }

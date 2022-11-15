@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
-use Lkrms\Support\ClosureBuilder;
+use Lkrms\Support\Introspector;
 
 trait HasIntrospector
 {
-    /**
-     * @var ClosureBuilder|null
-     */
-    private $_Introspector;
-
-    final protected function introspector(): ClosureBuilder
+    final protected function introspector(): Introspector
     {
-        return (($this->_Introspector ?? null)
-            ?: ($this->_Introspector = ClosureBuilder::get(static::class)));
+        return Introspector::get(static::class);
     }
 }

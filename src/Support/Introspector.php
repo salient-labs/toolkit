@@ -26,7 +26,7 @@ use ReflectionProperty;
 use RuntimeException;
 use UnexpectedValueException;
 
-class ClosureBuilder
+class Introspector
 {
     public const ACTION_GET   = "get";
     public const ACTION_ISSET = "isset";
@@ -127,13 +127,6 @@ class ClosureBuilder
     private $DateProperties = [];
 
     /**
-     * "Magic" property names => supported actions => method names
-     *
-     * @var array<string,array<string,string>>
-     */
-    private $Methods = [];
-
-    /**
      * Actions => normalised property names => "magic" method names
      *
      * @var array<string,array<string,string>>
@@ -169,11 +162,11 @@ class ClosureBuilder
     private $PropertyMap = [];
 
     /**
-     * Normalised property names => "magic" property names
+     * Normalised property names
      *
-     * @var array<string,string>
+     * @var string[]
      */
-    private $MethodMap = [];
+    private $MethodProperties = [];
 
     /**
      * Normalised constructor parameter names => constructor parameter names
@@ -279,7 +272,7 @@ class ClosureBuilder
     private static $Instances = [];
 
     /**
-     * Get a ClosureBuilder for $class after optionally using a container to
+     * Get an Introspector for $class after optionally using a container to
      * resolve it to a concrete class
      *
      * @return static
@@ -292,8 +285,8 @@ class ClosureBuilder
     }
 
     /**
-     * Get a ClosureBuilder for $class after using a container to resolve it to
-     * a concrete class
+     * Get an Introspector for $class after using a container to resolve it to a
+     * concrete class
      *
      * @return static
      */
@@ -306,7 +299,7 @@ class ClosureBuilder
     }
 
     /**
-     * Get a ClosureBuilder for $class
+     * Get an Introspector for $class
      *
      * @return static
      */
@@ -412,9 +405,12 @@ class ClosureBuilder
             {
                 if (!$method->isStatic() && preg_match($regex, $method->name, $match))
                 {
-                    [$action, $property] = [strtolower($match["action"]), $match["property"]];
-                    $this->Methods[$property][$action] = $method->name;
-                    $this->Actions[$action][$this->maybeNormalise($property, true)] = $method->name;
+                    [$action, $property] = [
+                        strtolower($match["action"]),
+                        $this->maybeNormalise($match["property"], true),
+                    ];
+                    $this->MethodProperties[] = $property;
+                    $this->Actions[$action][$property] = $method->name;
                 }
             }
         }
@@ -449,27 +445,21 @@ class ClosureBuilder
             $this->ParametersIndex = array_flip($this->Parameters);
         }
 
-        // Create normalised property name maps
-        $methodProperties = array_keys($this->Methods);
+        // Create a normalised property name map
         if ($this->Normaliser)
         {
             $this->PropertyMap = array_combine(
                 array_map($this->GentleNormaliser, $this->Properties),
                 $this->Properties
             );
-            $this->MethodMap = array_combine(
-                array_map($this->GentleNormaliser, $methodProperties),
-                $methodProperties
-            );
         }
         else
         {
             $this->PropertyMap = array_combine($this->Properties, $this->Properties);
-            $this->MethodMap   = array_combine($methodProperties, $methodProperties);
         }
 
         // And a list of unique normalised property names
-        $this->NormalisedProperties = array_keys($this->PropertyMap + $this->MethodMap);
+        $this->NormalisedProperties = array_keys($this->PropertyMap + array_flip($this->MethodProperties));
 
         if ($this->HasDates)
         {
@@ -598,7 +588,7 @@ class ClosureBuilder
         return $closure;
     }
 
-    final protected function getProperties(array $keys, bool $withParameters, bool $strict): ClosureBuilderProperties
+    final protected function getProperties(array $keys, bool $withParameters, bool $strict): IntrospectorProperties
     {
         // Normalise array keys (i.e. field/property names)
         if ($this->Normaliser)
@@ -683,7 +673,7 @@ class ClosureBuilder
             }
         }
 
-        return new ClosureBuilderProperties($parameterKeys, $methodKeys, $propertyKeys, $metaKeys, $dateKeys);
+        return new IntrospectorProperties($parameterKeys, $methodKeys, $propertyKeys, $metaKeys, $dateKeys);
     }
 
     /**
@@ -1008,9 +998,9 @@ class ClosureBuilder
      * ```
      *
      * @param string $name
-     * @param string $action Either {@see ClosureBuilder::ACTION_SET},
-     * {@see ClosureBuilder::ACTION_GET}, {@see ClosureBuilder::ACTION_ISSET} or
-     * {@see ClosureBuilder::ACTION_UNSET}.
+     * @param string $action Either {@see Introspector::ACTION_SET},
+     * {@see Introspector::ACTION_GET}, {@see Introspector::ACTION_ISSET} or
+     * {@see Introspector::ACTION_UNSET}.
      * @return Closure
      */
     final public function getPropertyActionClosure(string $name, string $action): Closure
@@ -1032,7 +1022,7 @@ class ClosureBuilder
             throw new UnexpectedValueException("Invalid action: $action");
         }
 
-        if ($method = $this->Methods[$this->MethodMap[$_name] ?? $name][$action] ?? null)
+        if ($method = $this->Actions[$action][$_name] ?? null)
         {
             $closure = static function ($instance, ...$params) use ($method)
             {
@@ -1089,7 +1079,7 @@ class ClosureBuilder
     {
         $rules = ($rules
             ? [$rules->getSortByKey(), $this->IsExtensible && $rules->getIncludeMeta()]
-            : [true, $this->IsExtensible]);
+            : [false, $this->IsExtensible]);
         $key = implode("\000", $rules);
 
         if ($closure = $this->SerializeClosures[$key] ?? null)
@@ -1098,25 +1088,32 @@ class ClosureBuilder
         }
 
         [$sort, $includeMeta] = $rules;
-        $props = $this->ReadableProperties ?: $this->PublicProperties;
-        $props = array_combine(
-            $this->maybeNormalise($props, false, true),
-            $props
-        );
+        $methods = $this->Actions[self::ACTION_GET] ?? [];
+        $props   = array_intersect($this->PropertyMap,
+            $this->ReadableProperties ?: $this->PublicProperties);
+        $keys = array_keys($props + $methods);
         if ($sort)
         {
-            ksort($props);
+            sort($keys);
         }
 
-        $closure = static function ($instance) use ($props)
+        $closure = (static function ($instance) use ($keys, $methods, $props)
         {
             $arr = [];
-            foreach ($props as $key => $prop)
+            foreach ($keys as $key)
             {
-                $arr[$key] = $instance->$prop;
+                if ($method = $methods[$key] ?? null)
+                {
+                    $arr[$key] = $instance->{$method}();
+                }
+                else
+                {
+                    $arr[$key] = $instance->{$props[$key]};
+                }
             }
+
             return $arr;
-        };
+        })->bindTo(null, $this->Class);
 
         if ($includeMeta)
         {

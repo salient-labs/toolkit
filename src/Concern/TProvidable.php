@@ -7,7 +7,7 @@ namespace Lkrms\Concern;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Support\ArrayKeyConformity;
-use Lkrms\Support\ClosureBuilder;
+use Lkrms\Support\Introspector;
 use Lkrms\Support\ProviderContext;
 use RuntimeException;
 
@@ -106,7 +106,7 @@ trait TProvidable
         $container = ($context ?: $provider)->container()->inContextOf(get_class($provider));
         $context   = $context ? $context->withContainer($container) : new ProviderContext($container);
 
-        return (ClosureBuilder::getBound($container, static::class)->getCreateProvidableFromClosure())($data, $provider, $context);
+        return (Introspector::getBound($container, static::class)->getCreateProvidableFromClosure())($data, $provider, $context);
     }
 
     /**
@@ -128,7 +128,7 @@ trait TProvidable
         {
             if (!isset($closure))
             {
-                $builder = ClosureBuilder::getBound($container, static::class);
+                $builder = Introspector::getBound($container, static::class);
                 $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
                     ? $builder->getCreateProvidableFromSignatureClosure(array_keys($data))
                     : $builder->getCreateProvidableFromClosure();

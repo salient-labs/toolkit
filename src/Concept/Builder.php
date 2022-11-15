@@ -8,7 +8,7 @@ use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
-use Lkrms\Support\ClosureBuilder;
+use Lkrms\Support\Introspector;
 use UnexpectedValueException;
 
 /**
@@ -72,9 +72,9 @@ abstract class Builder extends FluentInterface implements IImmutable
     private $Container;
 
     /**
-     * @var ClosureBuilder
+     * @var Introspector
      */
-    private $ClosureBuilder;
+    private $Introspector;
 
     /**
      * @var Closure
@@ -88,9 +88,9 @@ abstract class Builder extends FluentInterface implements IImmutable
 
     final public function __construct(?IContainer $container = null)
     {
-        $this->Container      = $container ?: Container::requireGlobalContainer();
-        $this->ClosureBuilder = ClosureBuilder::getBound($this->Container, static::getClassName());
-        $this->Closure        = $this->ClosureBuilder->getCreateFromClosure(true);
+        $this->Container    = $container ?: Container::requireGlobalContainer();
+        $this->Introspector = Introspector::getBound($this->Container, static::getClassName());
+        $this->Closure      = $this->Introspector->getCreateFromClosure(true);
     }
 
     /**
@@ -151,7 +151,7 @@ abstract class Builder extends FluentInterface implements IImmutable
             throw new UnexpectedValueException("Invalid arguments");
         }
         $clone = clone $this;
-        $clone->Data[$clone->ClosureBuilder->maybeNormalise($name)] = (array_key_exists(0, $arguments)
+        $clone->Data[$clone->Introspector->maybeNormalise($name)] = (array_key_exists(0, $arguments)
             ? $arguments[0]
             : true);
 

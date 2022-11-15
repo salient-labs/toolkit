@@ -15,8 +15,8 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncClosureBuilder;
 use Lkrms\Sync\Support\SyncContext;
+use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncOperation;
 
 /**
@@ -145,7 +145,7 @@ class GenerateSyncEntityInterface extends GenerateCommand
             throw new CliArgumentsInvalidException("not a subclass of SyncEntity: $classArg");
         }
 
-        $namespace = explode("\\", SyncClosureBuilder::entityToProvider($fqcn));
+        $namespace = explode("\\", SyncIntrospector::entityToProvider($fqcn));
         $interface = array_pop($namespace);
         $namespace = implode("\\", $namespace);
 

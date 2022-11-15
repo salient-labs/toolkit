@@ -7,8 +7,8 @@ namespace Lkrms\Sync\Support;
 use Closure;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
-use Lkrms\Support\ClosureBuilder;
 use Lkrms\Support\Dictionary\Regex;
+use Lkrms\Support\Introspector;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -16,7 +16,7 @@ use Lkrms\Sync\Support\SyncOperation;
 use ReflectionClass;
 use RuntimeException;
 
-final class SyncClosureBuilder extends ClosureBuilder
+final class SyncIntrospector extends Introspector
 {
     /**
      * @var string
@@ -236,17 +236,16 @@ final class SyncClosureBuilder extends ClosureBuilder
      *
      * Returns `null` if:
      * - the closure builder was not created for an {@see ISyncProvider},
-     * - `$entityClosureBuilder` was not created for a {@see SyncEntity}
-     *   subclass, or
+     * - `$entity` was not created for a {@see SyncEntity} subclass, or
      * - the {@see ISyncProvider} class doesn't implement the given
      *   {@see SyncOperation} via a method
      *
      * @param int $operation A {@see SyncOperation} value.
-     * @param string|SyncClosureBuilder $entity
+     * @param string|SyncIntrospector $entity
      */
     final public function getDeclaredSyncOperationClosure(int $operation, $entity, ISyncProvider $provider): ?Closure
     {
-        if (!($entity instanceof SyncClosureBuilder))
+        if (!($entity instanceof SyncIntrospector))
         {
             $entity = static::get($entity);
         }
@@ -311,7 +310,7 @@ final class SyncClosureBuilder extends ClosureBuilder
         return $closure ? $closure->bindTo($provider) : null;
     }
 
-    private function getSyncOperationMethod(int $operation, SyncClosureBuilder $entity): ?string
+    private function getSyncOperationMethod(int $operation, SyncIntrospector $entity): ?string
     {
         [$noun, $plural] = [strtolower($entity->EntityNoun), strtolower($entity->EntityPlural)];
 
