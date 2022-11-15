@@ -264,7 +264,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
             return $rules;
         }
 
-        if ($this->RecurseRules)
+        if ($this->getRecurseRules())
         {
             [$_depth, $_path, $paths] = [$depth, $path, [$path]];
 
@@ -505,6 +505,11 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     public function getReplace(?string $class, ?string $untilClass, array $path): array
     {
         return $this->compile($class, $untilClass, $path, $this->Replace, __FUNCTION__);
+    }
+
+    public function getRecurseRules(): bool
+    {
+        return Convert::coalesce($this->RecurseRules, true);
     }
 
     public function getFlags(): int
