@@ -58,8 +58,6 @@ final class Conversions
     /**
      * If a value isn't an array, make it the first element of one
      *
-     * @param mixed $value
-     * @param bool $emptyIfNull
      * @return array Either `$value`, `[$value]`, or `[]` (only if
      * `$emptyIfNull` is set and `$value` is `null`).
      */
@@ -73,8 +71,6 @@ final class Conversions
     /**
      * If a value isn't a list, make it the first element of one
      *
-     * @param mixed $value
-     * @param bool $emptyIfNull
      * @return array Either `$value`, `[$value]`, or `[]` (only if
      * `$emptyIfNull` is set and `$value` is `null`).
      */
@@ -310,12 +306,28 @@ final class Conversions
     /**
      * If a value is 'falsey', make it null
      *
-     * @param mixed $value
      * @return mixed Either `$value` or `null`.
      */
     public function emptyToNull($value)
     {
         return !$value ? null : $value;
+    }
+
+    /**
+     * Get the first value that is not null
+     *
+     */
+    public function coalesce(...$values)
+    {
+        while ($values)
+        {
+            if (!is_null($value = array_shift($values)))
+            {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -384,8 +396,6 @@ final class Conversions
      * Returns an empty string if `$class` is not namespaced, otherwise returns
      * the namespace without adding or removing the global prefix operator.
      *
-     * @param string $class
-     * @return string
      */
     public function classToNamespace(string $class): string
     {
@@ -395,8 +405,6 @@ final class Conversions
     /**
      * Remove the class from a method name
      *
-     * @param string $method
-     * @return string
      */
     public function methodToFunction(string $method): string
     {
@@ -507,9 +515,6 @@ final class Conversions
     /**
      * Remove zero-width values from an array before imploding it
      *
-     * @param string $separator
-     * @param array $array
-     * @return string
      */
     public function sparseToString(string $separator, array $array): string
     {
@@ -522,7 +527,6 @@ final class Conversions
     /**
      * Convert a scalar to a string
      *
-     * @param mixed $value
      * @return string|false Returns `false` if `$value` is not a scalar
      */
     public function scalarToString($value)
@@ -559,8 +563,6 @@ final class Conversions
     /**
      * Return the plural of a singular noun
      *
-     * @param string $noun
-     * @return string
      */
     public function nounToPlural(string $noun): string
     {
@@ -619,21 +621,13 @@ final class Conversions
      * used as the section name for subsequent list items. Blank lines clear the
      * current section name and are not included in the return value.
      *
-     * @param string $text
      * @param string $separator Used between top-level lines and sections.
      * @param string|null $marker Added before each section name. The equivalent
      * number of spaces are added before each list item. To add a leading `"- "`
      * to top-level lines and indent others with two spaces, set `$marker` to
      * `"-"`.
-     * @param string $regex
-     * @return string
      */
-    public function linesToLists(
-        string $text,
-        string $separator = "\n",
-        ?string $marker   = null,
-        string $regex     = '/^\h*[-*] /'
-    ): string
+    public function linesToLists(string $text, string $separator = "\n", ?string $marker = null, string $regex = '/^\h*[-*] /'): string
     {
         $marker       = $marker ? $marker . " " : null;
         $indent       = $marker ? str_repeat(" ", mb_strlen($marker)) : "";
@@ -694,7 +688,7 @@ final class Conversions
      * Convert a 16-byte UUID to its 36-byte hexadecimal representation
      *
      */
-    function uuidToHex(string $bytes): string
+    public function uuidToHex(string $bytes): string
     {
         $uuid   = [];
         $uuid[] = substr($bytes, 0, 4);
@@ -740,9 +734,6 @@ final class Conversions
     /**
      * Perform the given case conversion
      *
-     * @param string $text
-     * @param int $case
-     * @return string
      */
     public function toCase(string $text, int $case = self::IDENTIFIER_CASE_SNAKE): string
     {
@@ -771,8 +762,6 @@ final class Conversions
     /**
      * Convert an identifier to snake_case
      *
-     * @param string $text The identifier to convert.
-     * @return string
      */
     public function toSnakeCase(string $text): string
     {
@@ -785,8 +774,6 @@ final class Conversions
     /**
      * Convert an identifier to kebab-case
      *
-     * @param string $text
-     * @return string
      */
     public function toKebabCase(string $text): string
     {
@@ -799,8 +786,6 @@ final class Conversions
     /**
      * Convert an identifier to PascalCase
      *
-     * @param string $text
-     * @return string
      */
     public function toPascalCase(string $text): string
     {
@@ -816,8 +801,6 @@ final class Conversions
     /**
      * Convert an identifier to camelCase
      *
-     * @param string $text
-     * @return string
      */
     public function toCamelCase(string $text): string
     {
@@ -836,10 +819,8 @@ final class Conversions
      * 4. Trims leading and trailing spaces
      * 5. Makes letters uppercase
      *
-     * @param string $text
-     * @return string
      */
-    public function toNormal(string $text)
+    public function toNormal(string $text): string
     {
         $replace = [
             "/(?<=[^&])&(?=[^&])/u" => " and ",
@@ -860,10 +841,8 @@ final class Conversions
      * Because you can't exclude `private` and `protected` properties from
      * inside the class. (Not easily, anyway.)
      *
-     * @param object $object
-     * @return array
      */
-    public function objectToArray(object $object)
+    public function objectToArray(object $object): array
     {
         return get_object_vars($object);
     }

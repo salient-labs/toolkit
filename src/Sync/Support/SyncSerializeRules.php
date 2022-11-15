@@ -14,6 +14,7 @@ use Lkrms\Contract\ISerializeRules;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
+use UnexpectedValueException;
 
 /**
  * Instructions for serializing nested sync entities
@@ -68,16 +69,16 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
  * ];
  * ```
  *
- * @property-read string $Entity The class name of the SyncEntity being serialized
- * @property-read DateFormatter|null $DateFormatter Override the default date formatter
- * @property-read bool $IncludeMeta Include undeclared property values?
- * @property-read bool $SortByKey Sort arrays by key?
- * @property-read int|null $MaxDepth Throw an exception when values are nested beyond this depth
- * @property-read bool $DetectRecursion Check for recursion?
- * @property-read bool $RemoveCanonicalId Remove CanonicalId from sync entities?
+ * @property-read string $Entity The class name of the SyncEntity being serialized (required)
+ * @property-read DateFormatter|null $DateFormatter Override the default date formatter (default: null)
+ * @property-read bool|null $IncludeMeta Include undeclared property values? (default: true)
+ * @property-read bool|null $SortByKey Sort arrays by key? (default: false)
+ * @property-read int|null $MaxDepth Throw an exception when values are nested beyond this depth (default: 99)
+ * @property-read bool|null $DetectRecursion Check for recursion? (default: true)
+ * @property-read bool|null $RemoveCanonicalId Remove CanonicalId from sync entities? (default: true)
  * @property-read array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $Remove Values to remove
  * @property-read array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $Replace Values to replace with IDs
- * @property-read bool $RecurseRules Apply path-based rules to every instance of $Entity?
+ * @property-read bool|null $RecurseRules Apply path-based rules to every instance of $Entity? (default: true)
  * @property-read int $Flags
  */
 final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable, HasBuilder
@@ -90,56 +91,58 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     public const SYNC_STORE = 1;
 
     /**
-     * The class name of the SyncEntity being serialized
+     * The class name of the SyncEntity being serialized (required)
      *
      * @var string
      */
     protected $Entity;
 
     /**
-     * Override the default date formatter
+     * Override the default date formatter (default: null)
      *
      * @var DateFormatter|null
      */
     protected $DateFormatter;
 
     /**
-     * Include undeclared property values?
+     * Include undeclared property values? (default: true)
      *
-     * @var bool
+     * @var bool|null
      */
     protected $IncludeMeta;
 
     /**
-     * Sort arrays by key?
+     * Sort arrays by key? (default: false)
      *
-     * @var bool
+     * @var bool|null
      */
     protected $SortByKey;
 
     /**
-     * Throw an exception when values are nested beyond this depth
+     * Throw an exception when values are nested beyond this depth (default: 99)
+     *
+     * Depth checks are not performed if `MaxDepth` is 0.
      *
      * @var int|null
      */
     protected $MaxDepth;
 
     /**
-     * Check for recursion?
+     * Check for recursion? (default: true)
      *
      * If it would be impossible for a circular reference to arise in an object
      * graph after applying {@see SyncSerializeRules::$Remove} and
      * {@see SyncSerializeRules::$Replace}, disable recursion detection to
      * improve performance and reduce memory consumption.
      *
-     * @var bool
+     * @var bool|null
      */
     protected $DetectRecursion;
 
     /**
-     * Remove CanonicalId from sync entities?
+     * Remove CanonicalId from sync entities? (default: true)
      *
-     * @var bool
+     * @var bool|null
      * @see \Lkrms\Sync\Concept\SyncEntity::$CanonicalId
      */
     protected $RemoveCanonicalId;
@@ -182,14 +185,14 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     protected $Replace;
 
     /**
-     * Apply path-based rules to every instance of $Entity?
+     * Apply path-based rules to every instance of $Entity? (default: true)
      *
-     * @var bool
+     * @var bool|null
      */
     protected $RecurseRules;
 
     /**
-     * @var int
+     * @var int|null
      */
     protected $Flags;
 
@@ -215,7 +218,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      * @param array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $replace
      * @param SyncSerializeRules|SerializeRulesBuilder|null $inherit
      */
-    public function __construct(string $entity, ?DateFormatter $dateFormatter = null, bool $includeMeta = true, bool $sortByKey = false, ?int $maxDepth = null, bool $detectRecursion = true, bool $removeCanonicalId = true, array $remove = [], array $replace = [], bool $recurseRules = true, int $flags = 0, $inherit = null)
+    public function __construct(string $entity, ?DateFormatter $dateFormatter = null, ?bool $includeMeta = null, ?bool $sortByKey = null, ?int $maxDepth = null, ?bool $detectRecursion = null, ?bool $removeCanonicalId = null, array $remove = [], array $replace = [], ?bool $recurseRules = null, ?int $flags = null, $inherit = null)
     {
         $this->Entity            = $entity;
         $this->DateFormatter     = $dateFormatter;
@@ -394,8 +397,23 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private function _apply(SyncSerializeRules $rules, bool $inherit = false)
     {
         [$base, $merge] = $inherit ? [$rules, $this] : [$this, $rules];
-        $this->Remove   = $this->flattenRules($base->Remove, $merge->Remove);
-        $this->Replace  = $this->flattenRules($base->Replace, $merge->Replace);
+
+        if (!is_a($merge->Entity, $base->Entity, true))
+        {
+            throw new UnexpectedValueException("Not a subclass of {$base->Entity}: {$merge->Entity}");
+        }
+
+        $this->Entity            = $merge->Entity;
+        $this->DateFormatter     = $merge->DateFormatter ?: $base->DateFormatter;
+        $this->IncludeMeta       = Convert::coalesce($merge->IncludeMeta, $base->IncludeMeta);
+        $this->SortByKey         = Convert::coalesce($merge->SortByKey, $base->SortByKey);
+        $this->MaxDepth          = Convert::coalesce($merge->MaxDepth, $base->MaxDepth);
+        $this->DetectRecursion   = Convert::coalesce($merge->DetectRecursion, $base->DetectRecursion);
+        $this->RemoveCanonicalId = Convert::coalesce($merge->RemoveCanonicalId, $base->RemoveCanonicalId);
+        $this->Remove            = $this->flattenRules($base->Remove, $merge->Remove);
+        $this->Replace           = $this->flattenRules($base->Replace, $merge->Replace);
+        $this->RecurseRules      = Convert::coalesce($merge->RecurseRules, $base->RecurseRules);
+        $this->Flags             = Convert::coalesce($merge->Flags, $base->Flags);
     }
 
     private function flattenRules(array $base, array ...$merge): array
@@ -434,29 +452,34 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
             fn($matches) => $this->ClosureBuilder->maybeNormalise($matches[0], true), $target);
     }
 
+    public function getDateFormatter(): ?DateFormatter
+    {
+        return $this->DateFormatter;
+    }
+
     public function getIncludeMeta(): bool
     {
-        return $this->IncludeMeta;
+        return Convert::coalesce($this->IncludeMeta, true);
     }
 
     public function getSortByKey(): bool
     {
-        return $this->SortByKey;
+        return Convert::coalesce($this->SortByKey, false);
     }
 
     public function getMaxDepth(): ?int
     {
-        return $this->MaxDepth;
+        return Convert::coalesce($this->MaxDepth, 99);
     }
 
     public function getDetectRecursion(): bool
     {
-        return $this->DetectRecursion;
+        return Convert::coalesce($this->DetectRecursion, true);
     }
 
     public function getRemoveCanonicalId(): bool
     {
-        return $this->RemoveCanonicalId;
+        return Convert::coalesce($this->RemoveCanonicalId, true);
     }
 
     /**
@@ -486,7 +509,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
 
     public function getFlags(): int
     {
-        return $this->Flags;
+        return Convert::coalesce($this->Flags, 0);
     }
 
     /**

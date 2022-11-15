@@ -25,6 +25,7 @@ use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Test;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Sync\Concern\HasSyncIntrospector;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
@@ -63,10 +64,11 @@ use UnexpectedValueException;
  */
 abstract class SyncEntity implements IProviderEntity, JsonSerializable
 {
-    use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer
+    use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer, HasSyncIntrospector
     {
         TProvidable::setProvider as private _setProvider;
         TProvidable::setContext as private _setContext;
+        HasSyncIntrospector::introspector insteadof TReadable, TWritable, TExtensible;
     }
 
     /**
@@ -189,10 +191,6 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
     /**
      * Get a SyncSerializeRules builder for the SyncEntity, optionally
      * inheriting the entity's default rules
-     *
-     * @param bool $inherit If `true`, the return value of
-     * {@see SyncEntity::getSerializeRules()} is passed to the builder's
-     * {@see SerializeRulesBuilder::inherit()} method before it is returned.
      *
      */
     final public static function rulesBuilder(?IContainer $container = null, bool $inherit = false): SerializeRulesBuilder
@@ -517,7 +515,7 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
         }
         elseif ($node instanceof DateTimeInterface)
         {
-            $node = ($rules->DateFormatter
+            $node = ($rules->getDateFormatter()
                 ?: ($this->provider() ? $this->provider()->getDateFormatter() : null)
                 ?: new DateFormatter())->format($node);
         }
@@ -562,11 +560,10 @@ abstract class SyncEntity implements IProviderEntity, JsonSerializable
      */
     private function serialize(SerializeRules $rules): array
     {
-        $closureBuilder = SyncClosureBuilder::get(static::class);
-        $array = $closureBuilder->getSerializeClosure($rules)($this);
+        $array = $this->introspector()->getSerializeClosure($rules)($this);
         if ($rules->getRemoveCanonicalId())
         {
-            unset($array[$closureBuilder->maybeNormalise("CanonicalId", false, true)]);
+            unset($array[$this->introspector()->maybeNormalise("CanonicalId", false, true)]);
         }
 
         return $array;

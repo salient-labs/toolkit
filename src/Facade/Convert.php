@@ -26,6 +26,7 @@ use Lkrms\Utility\Conversions;
  * @method static string arrayToCode(array $array, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::arrayToCode()}
  * @method static string classToBasename(string $class, string ...$suffixes) Remove the namespace and the first matched suffix from a class name (see {@see Conversions::classToBasename()})
  * @method static string classToNamespace(string $class) Return the namespace of a class (see {@see Conversions::classToNamespace()})
+ * @method static mixed coalesce(mixed ...$values) Get the first value that is not null (see {@see Conversions::coalesce()})
  * @method static string dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null) A more API-friendly http_build_query (see {@see Conversions::dataToQuery()})
  * @method static mixed emptyToNull(mixed $value) If a value is 'falsey', make it null (see {@see Conversions::emptyToNull()})
  * @method static mixed flatten(mixed $value) Recursively remove outer single-element arrays (see {@see Conversions::flatten()})
