@@ -40,11 +40,13 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
                     "meta"      => [
                         "level" => Level::toName($error->Level),
                         "count" => 0,
+                        "seen"  => 0,
                     ],
                 ];
             }
             $summary[$key]["meta"]["values"][] = Convert::flatten($error->Values);
             $summary[$key]["meta"]["count"]++;
+            $summary[$key]["meta"]["seen"] += $error->Count;
         }
         ksort($summary);
 
@@ -59,7 +61,8 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
         foreach ($summary as $error)
         {
             $lines[] = sprintf(
-                '___%s___ ~~[~~__%s__~~]~~ ~~(~~_\'%s\'_~~)~~:',
+                '~~{~~_%d_~~}~~ ___%s___ ~~[~~__%s__~~]~~ ~~(~~_\'%s\'_~~)~~:',
+                $error["meta"]["seen"],
                 $error["title"],
                 $error["meta"]["level"],
                 $error["detail"]

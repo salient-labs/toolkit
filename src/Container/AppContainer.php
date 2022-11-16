@@ -66,6 +66,11 @@ class AppContainer extends Container implements IReadable
      */
     protected $_TempPath;
 
+    /**
+     * @var int|float
+     */
+    private $StartTime;
+
     private function getPath(string $name, string $default): string
     {
         $path = (($path = Env::get($name, ""))
@@ -106,6 +111,8 @@ class AppContainer extends Container implements IReadable
 
     public function __construct(string $basePath = null)
     {
+        $this->StartTime = hrtime(true);
+
         parent::__construct();
 
         if (self::hasGlobalContainer() &&
@@ -289,9 +296,14 @@ class AppContainer extends Container implements IReadable
      */
     final public function writeResourceUsage()
     {
-        [$peakMemory, $userTime, $systemTime] = [Sys::getPeakMemoryUsage(), ...Sys::getCpuUsage()];
+        [$endTime, $peakMemory, $userTime, $systemTime] = [
+            hrtime(true),
+            Sys::getPeakMemoryUsage(),
+            ...Sys::getCpuUsage(),
+        ];
         Console::debug("", sprintf(
-            "CPU time: %01.3fs user, %01.3fs system; memory: %s peak",
+            "CPU time: %01.3fs real, %01.3fs user, %01.3fs system; memory: %s peak",
+            ($endTime - $this->StartTime) / 1000000000,
             $userTime / 1000000,
             $systemTime / 1000000,
             Format::bytes($peakMemory, 3)

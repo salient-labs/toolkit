@@ -26,6 +26,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @property-read SyncEntity|null $Entity The entity associated with the error
  * @property-read string|null $EntityName The display name of the entity associated with the error
  * @property-read ISyncProvider|null $Provider The sync provider associated with the error
+ * @property-read int $Count How many times the error has been reported
  */
 final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
 {
@@ -95,6 +96,13 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
      */
     protected $Provider;
 
+    /**
+     * How many times the error has been reported
+     *
+     * @var int
+     */
+    protected $Count = 1;
+
     public function __construct(int $errorType, string $message, array $values = [], int $level = ConsoleLevel::ERROR, ?SyncEntity $entity = null, ?string $entityName = null, ?ISyncProvider $provider = null)
     {
         $this->EntityName = ($entityName ?: ($entity ? $entity->uri() : null));
@@ -104,6 +112,16 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
         $this->Level      = $level;
         $this->Entity     = $entity;
         $this->Provider   = $provider ?: ($entity ? $entity->provider() : null);
+    }
+
+    /**
+     * @return $this
+     */
+    public function count()
+    {
+        $this->Count++;
+
+        return $this;
     }
 
     public static function compare($a, $b, bool $strict = false): int
