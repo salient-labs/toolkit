@@ -30,6 +30,12 @@ class TestOptions extends CliCommand
         //     "defaultValue"    => null,
         return [
             (CliOption::build()
+                ->long("operation")
+                ->valueName("jobType")
+                ->description("Task to complete")
+                ->optionType(CliOptionType::ONE_OF_POSITIONAL)
+                ->allowedValues(["compress", "copy"])),
+            (CliOption::build()
                 ->long("source")
                 ->description("One or more sources")
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
@@ -39,50 +45,42 @@ class TestOptions extends CliCommand
                 ->long("target")
                 ->valueName("targetDir")
                 ->description("Target directory")
-                ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->go()),
+                ->optionType(CliOptionType::VALUE_POSITIONAL)),
             (CliOption::build()
                 ->long("verbose")
                 ->short("v")
                 ->description("Increase verbosity")
-                ->multipleAllowed()
-                ->go()),
+                ->multipleAllowed()),
             (CliOption::build()
                 ->long("archive")
                 ->short("a")
-                ->description("Archive mode")
-                ->go()),
+                ->description("Archive mode")),
             (CliOption::build()
                 ->long("stderr")
                 ->description("Change stderr output mode")
                 ->valueName("MODE")
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(["errors", "all"])
-                ->defaultValue("errors")
-                ->go()),
+                ->defaultValue("errors")),
             (CliOption::build()
                 ->long("backup-dir")
                 ->description("Make backups into hierarchy based in DIR")
                 ->valueName("DIR")
-                ->optionType(CliOptionType::VALUE)
-                ->go()),
+                ->optionType(CliOptionType::VALUE)),
             (CliOption::build()
                 ->long("links")
                 ->short("l")
-                ->description("Copy symlinks as symlinks")
-                ->go()),
+                ->description("Copy symlinks as symlinks")),
             (CliOption::build()
                 ->long("copy-links")
                 ->short("L")
-                ->description("Transform symlink into referent file/dir")
-                ->go()),
+                ->description("Transform symlink into referent file/dir")),
             (CliOption::build()
                 ->long("in-place")
                 ->short("i")
                 ->valueName("SUFFIX")
                 ->description("Edit files in place")
-                ->optionType(CliOptionType::VALUE_OPTIONAL)
-                ->go()),
+                ->optionType(CliOptionType::VALUE_OPTIONAL)),
             (CliOption::build()
                 ->long("refresh")
                 ->short("r")
@@ -91,8 +89,7 @@ class TestOptions extends CliCommand
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
                 ->allowedValues(["all", "hosts", "users"])
                 ->multipleAllowed()
-                ->defaultValue(["all"])
-                ->go()),
+                ->defaultValue(["all"])),
         ];
     }
 

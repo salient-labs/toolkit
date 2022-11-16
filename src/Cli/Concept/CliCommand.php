@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Cli\Concept;
 
 use Lkrms\Cli\CliOption;
+use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Concern\HasCliAppContainer;
 use Lkrms\Contract\ReturnsContainer;
@@ -29,7 +30,7 @@ abstract class CliCommand implements ReturnsContainer
     abstract public function getDescription(): string;
 
     /**
-     * Return a list of CliOption objects
+     * Return a list of options for the command
      *
      * Example:
      *
@@ -46,7 +47,7 @@ abstract class CliCommand implements ReturnsContainer
      * ];
      * ```
      *
-     * @return CliOption[]
+     * @return array<CliOption|CliOptionBuilder>
      */
     abstract protected function getOptionList(): array;
 
@@ -153,7 +154,8 @@ abstract class CliCommand implements ReturnsContainer
     }
 
     /**
-     * Get the command name, including the name used to run the script
+     * Get the command name, including the name used to run the script, as a
+     * string of space-delimited subcommands
      *
      * @return string
      */
@@ -235,7 +237,7 @@ abstract class CliCommand implements ReturnsContainer
 
         foreach ($_options as $option)
         {
-            $this->addOption($option, $options);
+            $this->addOption(CliOption::resolve($option), $options);
         }
 
         if (!array_key_exists("help", $this->OptionsByName))
@@ -524,6 +526,28 @@ EOF;
             }
         }
 
+        $pending = count($this->PositionalOptions);
+        foreach ($this->PositionalOptions as $option)
+        {
+            if (!($i < count($args)))
+            {
+                break;
+            }
+            $pending--;
+            if ($option->MultipleAllowed)
+            {
+                do
+                {
+                    $merged[$option->Key][] = $args[$i++];
+                }
+                while (count($args) - $i - $pending > 0);
+                continue;
+            }
+            $merged[$option->Key] = $args[$i++];
+        }
+
+        $this->NextArgumentIndex = $i;
+
         foreach ($merged as $key => $value)
         {
             $option = $this->OptionsByKey[$key];
@@ -547,28 +571,6 @@ EOF;
                     . Convert::plural(count($invalid), "value") . ": " . implode(", ", $invalid));
             }
         }
-
-        $pending = count($this->PositionalOptions);
-        foreach ($this->PositionalOptions as $option)
-        {
-            if (!($i < count($args)))
-            {
-                break;
-            }
-            $pending--;
-            if ($option->MultipleAllowed)
-            {
-                do
-                {
-                    $merged[$option->Key][] = $args[$i++];
-                }
-                while (count($args) - $i - $pending > 0);
-                continue;
-            }
-            $merged[$option->Key] = $args[$i++];
-        }
-
-        $this->NextArgumentIndex = $i;
 
         foreach ($this->Options as &$option)
         {

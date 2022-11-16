@@ -160,6 +160,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
                 $defaultValue  = $this->MultipleAllowed ? 0 : false;
                 break;
             case CliOptionType::VALUE_POSITIONAL:
+            case CliOptionType::ONE_OF_POSITIONAL:
                 $this->IsPositional = true;
                 $short         = null;
                 $key           = $this->Long;
@@ -167,6 +168,10 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
                 $required      = true;
                 $valueRequired = true;
                 $valueName     = $valueName ?: strtoupper(Convert::toSnakeCase($this->Long));
+                if ($optionType === CliOptionType::ONE_OF_POSITIONAL)
+                {
+                    $this->AllowedValues = $allowedValues;
+                }
                 break;
             case CliOptionType::ONE_OF:
             case CliOptionType::ONE_OF_OPTIONAL:
