@@ -468,7 +468,7 @@ SQL;
     public function error($error, bool $deduplicate = false, bool $toConsole = false)
     {
         $error = SyncErrorBuilder::resolve($error);
-        if (!$deduplicate || !$this->Errors->has($error))
+        if (!$deduplicate || !($seen = $this->Errors->get($error)))
         {
             $this->Errors[] = $error;
 
@@ -485,6 +485,12 @@ SQL;
                     break;
             }
         }
+        else
+        {
+            /** @var SyncError $seen */
+            $seen->count();
+        }
+
         if ($toConsole)
         {
             $error->toConsole($deduplicate);

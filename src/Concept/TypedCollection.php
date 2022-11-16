@@ -66,6 +66,34 @@ abstract class TypedCollection implements ICollection
         return false;
     }
 
+    /**
+     * Get a matching item from the collection
+     *
+     * @return object|false
+     */
+    final public function get($item)
+    {
+        if (!$this->HasComparableItems)
+        {
+            if (($key = array_search($item, $this->_Items)) === false)
+            {
+                return false;
+            }
+
+            return $this->_Items[$key];
+        }
+
+        foreach ($this->_Items as $_item)
+        {
+            if (!$this->compareItems($item, $_item))
+            {
+                return $_item;
+            }
+        }
+
+        return false;
+    }
+
     protected function compareItems($a, $b, bool $strict = false): int
     {
         return $this->HasComparableItems
