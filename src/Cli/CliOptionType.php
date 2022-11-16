@@ -43,13 +43,19 @@ final class CliOptionType extends Enumeration
     public const VALUE_OPTIONAL = 2;
 
     /**
+     * Set the value of a positional parameter
+     *
+     */
+    public const VALUE_POSITIONAL = 3;
+
+    /**
      * Choose from a list of values
      *
      * Examples:
      * - `-f (yes|no|ask)`
      * - `--force (yes|no|ask)`
      */
-    public const ONE_OF = 3;
+    public const ONE_OF = 4;
 
     /**
      * Choose from a list of values, or don't
@@ -58,12 +64,12 @@ final class CliOptionType extends Enumeration
      * - `-f(yes|no|ask)`
      * - `--force=(yes|no|ask)`
      */
-    public const ONE_OF_OPTIONAL = 4;
+    public const ONE_OF_OPTIONAL = 5;
 
     /**
-     * Set the value of a positional parameter
+     * Choose the value of a positional parameter from a list
      *
      */
-    public const VALUE_POSITIONAL = 5;
+    public const ONE_OF_POSITIONAL = 6;
 
 }
