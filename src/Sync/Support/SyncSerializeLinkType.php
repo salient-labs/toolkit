@@ -24,19 +24,29 @@ final class SyncSerializeLinkType extends Enumeration
     public const MINIMAL = 0;
 
     /**
-     * "@type" and "@id" (preserves identifier type)
+     * "@type", "@id" and "@name" (preserves identifier type)
      *
      * ```php
      * [
      *   "@type" => "prefix:Entity",
      *   "@id"   => 1,
+     *   "@name" => "My Entity",
      * ]
      * ```
      */
     public const STANDARD = 1;
 
     /**
+     * "@type", "@id", "@name" and "@description"
      *
+     * ```php
+     * [
+     *   "@type"        => "prefix:Entity",
+     *   "@id"          => 1,
+     *   "@name"        => "My Entity",
+     *   "@description" => "A description of my entity.",
+     * ]
+     * ```
      */
     public const DETAILED = 2;
 
