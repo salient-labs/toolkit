@@ -377,7 +377,7 @@ abstract class CliCommand implements ReturnsContainer
                 //     _-o, --option_[=__VALUE__]
                 //       Option description
                 //         default: ___auto___
-                //         options:
+                //         ___Values:___
                 //         - _option1_
                 //         - _option2_
                 //         - _option3_
@@ -386,7 +386,7 @@ abstract class CliCommand implements ReturnsContainer
                     . str_replace($valueName, "__" . $valueName . "__", (array_pop($value) ?: ""))
                     . ($option->Description ? "\n    " . $option->Description : "")
                     . ((!$option->IsFlag && $option->DefaultValue) ? $sep . "default: ___" . implode(",", Convert::toArray($option->DefaultValue)) . "___" : "")
-                    . ($option->AllowedValues ? $sep . "options:" . $sep . "- _" . implode("_" . $sep . "- _", $option->AllowedValues) . "_" : "")) . "\n";
+                    . ($option->AllowedValues ? $sep . "___Values:___" . $sep . "- _" . implode("_" . $sep . "- _", $option->AllowedValues) . "_" : "")) . "\n";
             }
         }
 

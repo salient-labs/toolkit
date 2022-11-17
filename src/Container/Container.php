@@ -46,11 +46,11 @@ class Container implements IContainer
 
     /**
      * When an IBindable class is bound to the container,
-     * `$this->ServiceStack[$name] = true` is applied
+     * `$this->Services[$name] = true` is applied
      *
      * @var array<string,true>
      */
-    private $ServiceStack = [];
+    private $Services = [];
 
     public function __construct()
     {
@@ -207,16 +207,16 @@ class Container implements IContainer
         // If $id implements IBindable and hasn't been bound to the container
         // yet, add bindings for everything except its services, which may
         // resolve to another provider
-        if (is_subclass_of($id, IBindable::class) && !($clone->ServiceStack[$id] ?? null))
+        if (is_subclass_of($id, IBindable::class) && !($clone->Services[$id] ?? null))
         {
             $clone->applyService($id, []);
-            $clone->ServiceStack[$id] = true;
+            $clone->Services[$id] = true;
 
             // If nothing changed, skip `applyService()` in future by setting
-            // `$this->ServiceStack[$id]`
+            // `$this->Services[$id]`
             if ($clone->Dice === $this->Dice)
             {
-                $this->ServiceStack[$id] = true;
+                $this->Services[$id] = true;
             }
         }
 
@@ -353,7 +353,7 @@ class Container implements IContainer
             throw new UnexpectedValueException($id . " does not implement " . IBindable::class);
         }
         $this->applyService($id, $services, $exceptServices);
-        $this->ServiceStack[$id] = true;
+        $this->Services[$id] = true;
 
         return $this;
     }
@@ -409,6 +409,11 @@ class Container implements IContainer
         }
 
         return $this;
+    }
+
+    final public function getServices(): array
+    {
+        return array_keys($this->Services);
     }
 
 }

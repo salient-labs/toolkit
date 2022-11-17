@@ -156,4 +156,11 @@ interface IContainer extends \Psr\Container\ContainerInterface
      */
     public function instanceIf(string $id, $instance);
 
+    /**
+     * Get a list of classes bound to the container by calling service()
+     *
+     * @return string[]
+     */
+    public function getServices(): array;
+
 }

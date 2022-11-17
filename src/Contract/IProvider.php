@@ -10,7 +10,7 @@ use Lkrms\Support\DateFormatter;
  * Creates objects from backend data
  *
  */
-interface IProvider extends ReturnsContainer
+interface IProvider extends ReturnsContainer, ReturnsDescription
 {
     /**
      * Get a stable identifier that, together with the name of the class,
