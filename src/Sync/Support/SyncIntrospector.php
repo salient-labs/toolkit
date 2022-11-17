@@ -232,6 +232,37 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
+     * Get a list of SyncEntity subclasses serviced by the provider
+     *
+     * @return string[]|null
+     */
+    final public function getSyncProviderEntities(): ?array
+    {
+        if (!$this->IsProvider)
+        {
+            return null;
+        }
+
+        return $this->SyncProviderEntities;
+    }
+
+    /**
+     * Get an array that maps unambiguous lowercase entity basenames to
+     * SyncEntity subclasses serviced by the provider
+     *
+     * @return array<string,string>|null
+     */
+    final public function getSyncProviderEntityBasenames(): ?array
+    {
+        if (!$this->IsProvider)
+        {
+            return null;
+        }
+
+        return $this->SyncProviderEntityBasenames;
+    }
+
+    /**
      * Get the SyncProvider method that implements a SyncOperation for an entity
      *
      * Returns `null` if:

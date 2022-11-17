@@ -7,6 +7,8 @@ namespace Lkrms\Sync\Concept;
 use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IBindableSingleton;
+use Lkrms\Contract\ReturnsDescription;
+use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\PipelineImmutable;
 use Lkrms\Sync\Contract\ISyncDefinition;
@@ -15,7 +17,6 @@ use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
-use ReflectionClass;
 use RuntimeException;
 
 /**
@@ -88,6 +89,16 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
     public static function getBindings(): array
     {
         return [];
+    }
+
+    public function name(?int $maxLength = null): ?string
+    {
+        return Convert::classToBasename(static::class, "SyncProvider", "Provider");
+    }
+
+    public function description(?int $maxLength = null): ?string
+    {
+        return null;
     }
 
     /**
