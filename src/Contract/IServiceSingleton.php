@@ -9,6 +9,6 @@ namespace Lkrms\Contract;
  * shared instance
  *
  */
-interface IBindableSingleton extends IBindable
+interface IServiceSingleton extends IService
 {
 }

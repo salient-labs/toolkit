@@ -59,7 +59,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return 24 * 60 * 60;
     }
 
-    public static function getBindings(): array
+    public static function getContextualBindings(): array
     {
         return [
             Post::class => \Lkrms\Tests\Sync\CustomEntity\Post::class,

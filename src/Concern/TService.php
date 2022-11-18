@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Lkrms\Concern;
 
 /**
- * Implements IBindable to provide services that can be bound to a container
+ * Implements IService to provide services that can be bound to a container
  *
- * @see \Lkrms\Contract\IBindable
- * @see \Lkrms\Contract\IBindableSingleton
+ * @see \Lkrms\Contract\IService
+ * @see \Lkrms\Contract\IServiceSingleton
  */
-trait TBindable
+trait TService
 {
-    public static function getBindable(): array
+    public static function getServices(): array
     {
         return [];
     }
 
-    public static function getBindings(): array
+    public static function getContextualBindings(): array
     {
         return [];
     }

@@ -6,7 +6,7 @@ namespace Lkrms\Sync\Concept;
 
 use Closure;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IBindableSingleton;
+use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Contract\ReturnsDescription;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
@@ -24,7 +24,7 @@ use RuntimeException;
  * via their APIs
  *
  */
-abstract class SyncProvider implements ISyncProvider, IBindableSingleton
+abstract class SyncProvider implements ISyncProvider, IServiceSingleton
 {
     /**
      * Surface the provider's implementation of sync operations for an entity
@@ -76,7 +76,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      * generic parent classes by overriding this method, e.g.:
      *
      * ```php
-     * public static function getBindings(): array
+     * public static function getContextualBindings(): array
      * {
      *     return [
      *         Post::class => CustomPost::class,
@@ -86,7 +86,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
      * ```
      *
      */
-    public static function getBindings(): array
+    public static function getContextualBindings(): array
     {
         return [];
     }
@@ -177,7 +177,7 @@ abstract class SyncProvider implements ISyncProvider, IBindableSingleton
             ?: ($this->DateFormatter = $this->createDateFormatter());
     }
 
-    final public static function getBindable(): array
+    final public static function getServices(): array
     {
         return SyncIntrospector::get(static::class)->getSyncProviderInterfaces();
     }

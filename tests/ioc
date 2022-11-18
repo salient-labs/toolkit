@@ -4,8 +4,8 @@
 namespace Lkrms\Tests;
 
 use Dice\Dice;
-use Lkrms\Concern\TBindable;
-use Lkrms\Contract\IBindable;
+use Lkrms\Concern\TService;
+use Lkrms\Contract\IService;
 use Lkrms\Err\Err;
 use Lkrms\Facade\DI;
 use UnexpectedValueException;
@@ -80,7 +80,7 @@ class DepartmentStaff extends Staff
 
 class Department
 {
-    use TBindable;
+    use TService;
 
     public $id;
 
@@ -96,9 +96,9 @@ class Department
     }
 }
 
-class OrgUnit implements IBindable
+class OrgUnit implements IService
 {
-    use TBindable;
+    use TService;
 
     public $mainOffice;
 
@@ -116,7 +116,7 @@ class OrgUnit implements IBindable
         $this->admin      = $admin;
     }
 
-    public static function getBindings(): array
+    public static function getContextualBindings(): array
     {
         // Resolve 'Office' to 'FancyOffice', etc.
         return [

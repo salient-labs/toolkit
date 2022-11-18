@@ -127,14 +127,14 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
 
     /**
-     * Add bindings to the container for an IBindable implementation and its
+     * Add bindings to the container for an IService implementation and its
      * services, optionally specifying services to bind or exclude
      *
      * A shared binding will be added for `$id` if it implements
-     * {@see IBindableSingleton}.
+     * {@see IServiceSingleton}.
      *
-     * @param string $id The name of a class that implements {@see IBindable} or
-     * {@see IBindableSingleton}.
+     * @param string $id The name of a class that implements {@see IService} or
+     * {@see IServiceSingleton}.
      * @param string[]|null $services
      * @param string[]|null $exceptServices
      * @return $this

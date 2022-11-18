@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Lkrms\Container;
 
 use Dice\Dice;
-use Lkrms\Contract\IBindable;
-use Lkrms\Contract\IBindableSingleton;
+use Lkrms\Contract\IService;
+use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\ReceivesContainer;
 use Lkrms\Contract\ReceivesService;
@@ -45,7 +45,7 @@ class Container implements IContainer
     private $ContextStack = [];
 
     /**
-     * When an IBindable class is bound to the container,
+     * When an `IService` class is bound to the container,
      * `$this->Services[$name] = true` is applied
      *
      * @var array<string,true>
@@ -204,10 +204,10 @@ class Container implements IContainer
     {
         $clone = clone $this;
 
-        // If $id implements IBindable and hasn't been bound to the container
+        // If $id implements IService and hasn't been bound to the container
         // yet, add bindings for everything except its services, which may
         // resolve to another provider
-        if (is_subclass_of($id, IBindable::class) && !($clone->Services[$id] ?? null))
+        if (is_subclass_of($id, IService::class) && !($clone->Services[$id] ?? null))
         {
             $clone->applyService($id, []);
             $clone->Services[$id] = true;
@@ -348,9 +348,9 @@ class Container implements IContainer
      */
     final public function service(string $id, ?array $services = null, ?array $exceptServices = null)
     {
-        if (!is_subclass_of($id, IBindable::class))
+        if (!is_subclass_of($id, IService::class))
         {
-            throw new UnexpectedValueException($id . " does not implement " . IBindable::class);
+            throw new UnexpectedValueException($id . " does not implement " . IService::class);
         }
         $this->applyService($id, $services, $exceptServices);
         $this->Services[$id] = true;
@@ -360,12 +360,12 @@ class Container implements IContainer
 
     private function applyService(string $id, ?array $services = null, ?array $exceptServices = null): void
     {
-        if (is_subclass_of($id, IBindableSingleton::class))
+        if (is_subclass_of($id, IServiceSingleton::class))
         {
             $this->addRule($id, ["shared" => true]);
         }
 
-        $bindable = $id::getBindable();
+        $bindable = $id::getServices();
         if (!is_null($services))
         {
             if (count($bindable = array_intersect($services, $bindable)) < count($services))
@@ -382,7 +382,7 @@ class Container implements IContainer
             $this->addRule($service, ["instanceOf" => $id]);
         }
 
-        if ($subs = $id::getBindings())
+        if ($subs = $id::getContextualBindings())
         {
             $this->addRule($id, ["substitutions" => $subs]);
         }
