@@ -16,32 +16,30 @@ namespace Lkrms\Contract;
  * - when they are used as type hints in the constructors of dependencies
  *   encountered while resolving a call to {@see IContainer::get()}.
  *
- * If the class should be instantiated as a singleton (or "shared instance"),
- * implement {@see IBindableSingleton}, otherwise implement {@see IBindable}.
+ * Implement {@see IServiceSingleton} if the class should only be instantiated
+ * once and/or {@see IServiceShared} to request creation of one instance per
+ * service, or {@see IService} to always create a new instance.
  */
-interface IBindable
+interface IService
 {
     /**
      * Get a list of services provided by the class
      *
      * @return string[]
      */
-    public static function getBindable(): array;
+    public static function getServices(): array;
 
     /**
-     * Get an array that maps concrete classes to more specific subclasses
+     * Get a dependency subtitution map for the class
      *
-     * When a container receives a request from an {@see IBindable} for a class
-     * bound to a more specific subclass by {@see IBindable::getBindings()}, it
-     * returns an instance of the subclass.
-     *
-     * These bindings only apply:
-     * - when the class's dependencies are being resolved, and
+     * Return an array that maps class names to compatible replacements. The
+     * container resolves mapped classes to their respective substitutes:
+     * - when resolving the class's dependencies, and
      * - when using {@see IContainer::inContextOf()} to work with a container in
      *   the context of the class.
      *
      * @return array<string,string>
      */
-    public static function getBindings(): array;
+    public static function getContextualBindings(): array;
 
 }

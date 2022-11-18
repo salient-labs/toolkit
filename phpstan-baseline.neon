@@ -41,11 +41,6 @@ parameters:
 			path: src/Support/PhpDocParser.php
 
 		-
-			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector\\:\\:\\$SyncProviderEntities is never read, only written\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncIntrospector.php
-
-		-
 			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncStore\\:\\:\\$Providers is never read, only written\\.$#"
 			count: 1
 			path: src/Sync/Support/SyncStore.php
