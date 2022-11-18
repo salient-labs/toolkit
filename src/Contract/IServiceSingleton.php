@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Contract;
 
 /**
- * Provides services that can be bound to a container and should resolve to a
- * shared instance
+ * Provides services via a shared instance created once per container
  *
  */
 interface IServiceSingleton extends IService

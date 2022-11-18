@@ -6,8 +6,7 @@ namespace Lkrms\Sync\Concept;
 
 use Closure;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IServiceSingleton;
-use Lkrms\Contract\ReturnsDescription;
+use Lkrms\Contract\IService;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\PipelineImmutable;
@@ -24,7 +23,7 @@ use RuntimeException;
  * via their APIs
  *
  */
-abstract class SyncProvider implements ISyncProvider, IServiceSingleton
+abstract class SyncProvider implements ISyncProvider, IService
 {
     /**
      * Surface the provider's implementation of sync operations for an entity

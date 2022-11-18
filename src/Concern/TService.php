@@ -9,6 +9,7 @@ namespace Lkrms\Concern;
  *
  * @see \Lkrms\Contract\IService
  * @see \Lkrms\Contract\IServiceSingleton
+ * @see \Lkrms\Contract\IServiceShared
  */
 trait TService
 {

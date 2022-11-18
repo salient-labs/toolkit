@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Lkrms\Container;
 
 use Dice\Dice;
-use Lkrms\Contract\IService;
-use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IService;
+use Lkrms\Contract\IServiceShared;
+use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Contract\ReceivesContainer;
 use Lkrms\Contract\ReceivesService;
 use RuntimeException;
@@ -346,45 +347,83 @@ class Container implements IContainer
      * @param string[]|null $exceptServices
      * @return $this
      */
-    final public function service(string $id, ?array $services = null, ?array $exceptServices = null)
+    final public function service(string $id, ?array $services = null, ?array $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT)
     {
         if (!is_subclass_of($id, IService::class))
         {
             throw new UnexpectedValueException($id . " does not implement " . IService::class);
         }
-        $this->applyService($id, $services, $exceptServices);
+        $this->applyService($id, $services, $exceptServices, $lifetime);
         $this->Services[$id] = true;
 
         return $this;
     }
 
-    private function applyService(string $id, ?array $services = null, ?array $exceptServices = null): void
+    private function applyService(string $id, ?array $services = null, ?array $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT): void
     {
-        if (is_subclass_of($id, IServiceSingleton::class))
+        if ($lifetime & ServiceLifetime::INHERIT)
         {
-            $this->addRule($id, ["shared" => true]);
+            $lifetime = 0;
+            if (is_a($id, IServiceSingleton::class, true))
+            {
+                $lifetime |= ServiceLifetime::SINGLETON;
+            }
+            if (is_a($id, IServiceShared::class, true))
+            {
+                $lifetime |= ServiceLifetime::SERVICE_SINGLETON;
+            }
         }
 
-        $bindable = $id::getServices();
+        $rule = [];
+        if ($lifetime & ServiceLifetime::SINGLETON)
+        {
+            $rule["shared"] = true;
+
+            // If SINGLETON and SERVICE_SINGLETON are both set, disable
+            // inheritance to keep service instances separate
+            if ($lifetime & ServiceLifetime::SERVICE_SINGLETON)
+            {
+                $rule["inherit"] = false;
+            }
+        }
+        if ($bindings = $id::getContextualBindings())
+        {
+            $rule["substitutions"] = $bindings;
+        }
+        if ($rule)
+        {
+            $this->addRule($id, $rule);
+        }
+
+        $bind = $id::getServices();
         if (!is_null($services))
         {
-            if (count($bindable = array_intersect($services, $bindable)) < count($services))
+            $bind = array_intersect($bind, $services = array_unique($services));
+            if (count($bind) < count($services))
             {
-                throw new UnexpectedValueException($id . " does not implement: " . implode(", ", array_diff($services, $bindable)));
+                throw new UnexpectedValueException($id . " does not implement: " . implode(", ", array_diff($services, $bind)));
             }
         }
         if (!is_null($exceptServices))
         {
-            $bindable = array_diff($bindable, $exceptServices);
-        }
-        foreach ($bindable as $service)
-        {
-            $this->addRule($service, ["instanceOf" => $id]);
+            $bind = array_diff($bind, $exceptServices);
         }
 
-        if ($subs = $id::getContextualBindings())
+        if (!$bind)
         {
-            $this->addRule($id, ["substitutions" => $subs]);
+            return;
+        }
+
+        $rule = [
+            "instanceOf" => $id
+        ];
+        if ($lifetime & ServiceLifetime::SERVICE_SINGLETON)
+        {
+            $rule["shared"] = true;
+        }
+        foreach ($bind as $service)
+        {
+            $this->addRule($service, $rule);
         }
     }
 
@@ -406,6 +445,25 @@ class Container implements IContainer
         if (!$this->Dice->hasRule($id))
         {
             return $this->instance($id, $instance);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    final public function services(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT)
+    {
+        $idMap = [];
+        foreach ($serviceMap as $id => $instanceOf)
+        {
+            $idMap[$instanceOf][] = $id;
+        }
+
+        foreach ($idMap as $instanceOf => $services)
+        {
+            $this->service($instanceOf, $services, null, $lifetime);
         }
 
         return $this;

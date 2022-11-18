@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
+use Lkrms\Container\ServiceLifetime;
+
 /**
  * A service container with support for contextual bindings
  *
  */
 interface IContainer extends \Psr\Container\ContainerInterface
 {
+    /**
+     * @internal
+     */
     public function __construct();
 
     /**
@@ -19,7 +24,7 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public static function hasGlobalContainer(): bool;
 
     /**
-     * Get the current global container, loading it if necessary
+     * Get the global container, loading it if necessary
      *
      */
     public static function getGlobalContainer(): IContainer;
@@ -31,8 +36,8 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public static function setGlobalContainer(?IContainer $container): ?IContainer;
 
     /**
-     * Get a copy of the container where the contextual bindings of the given
-     * class or interface have been applied to the default context
+     * Get a copy of the container where the contextual bindings of a class or
+     * interface have been applied to the default context
      *
      */
     public function inContextOf(string $id): IContainer;
@@ -64,7 +69,7 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function getAs(string $id, string $serviceId, ...$params);
 
     /**
-     * Resolve the given class or interface to a concrete class name
+     * Resolve a class or interface to a concrete class name
      *
      * Returns `$id` if nothing has been bound to it in the container.
      *
@@ -72,8 +77,8 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function getName(string $id): string;
 
     /**
-     * Return true if the given class or interface resolves to a concrete class
-     * that actually exists
+     * Return true if a class or interface resolves to a concrete class that
+     * actually exists
      *
      * If `has($id)` returns `false`, `get($id)` must throw a
      * {@see \Psr\Container\NotFoundExceptionInterface}.
@@ -130,16 +135,22 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * Add bindings to the container for an IService implementation and its
      * services, optionally specifying services to bind or exclude
      *
-     * A shared binding will be added for `$id` if it implements
-     * {@see IServiceSingleton}.
+     * A shared binding is added for `$id` if it implements
+     * {@see IServiceSingleton} or if {@see ServiceLifetime::SINGLETON} is set
+     * in `$lifetime`.
      *
-     * @param string $id The name of a class that implements {@see IService} or
-     * {@see IServiceSingleton}.
+     * A shared instance is created for each service if `$id` implements
+     * {@see IServiceShared} or if {@see ServiceLifetime::SERVICE_SINGLETON} is
+     * set in `$lifetime`.
+     *
+     * @param string $id The name of a class that implements {@see IService},
+     * {@see IServiceSingleton} or {@see IServiceShared}.
      * @param string[]|null $services
      * @param string[]|null $exceptServices
+     * @param int $lifetime A bitmask of {@see ServiceLifetime} values.
      * @return $this
      */
-    public function service(string $id, ?array $services = null, ?array $exceptServices = null);
+    public function service(string $id, ?array $services = null, ?array $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT);
 
     /**
      * Add an existing instance to the container as a shared binding
@@ -155,6 +166,29 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * @return $this
      */
     public function instanceIf(string $id, $instance);
+
+    /**
+     * Consolidate a service map and call service() once per concrete class
+     *
+     * This method simplifies bootstrapping, especially when the same class may
+     * be configured at runtime to provide multiple services.
+     *
+     * @param array<string,string> $serviceMap An array that maps abstract
+     * service names to concrete class names.
+     *
+     * In this example, `MyFactoryClass` must implement {@see IService},
+     * {@see IServiceSingleton} or {@see IServiceShared}, and it should also
+     * implement `MyFactoryInterface`:
+     *
+     * ```php
+     * [
+     *   MyFactoryInterface::class => MyFactoryClass::class,
+     * ]
+     * ```
+     * @param int $lifetime A bitmask of {@see ServiceLifetime} values.
+     * @return $this
+     */
+    public function services(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT);
 
     /**
      * Get a list of classes bound to the container by calling service()
