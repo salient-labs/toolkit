@@ -20,12 +20,20 @@ mode 0600 at:
 sys_get_temp_dir() . '/<script_basename>-<realpath_hash>-<user_id>.log'
 ```
 
-If PHP is running on the command line, errors and warnings are also written to
-`STDERR`, informational messages are written to `STDOUT`, and if environment
-variable `DEBUG` is non-empty, debug messages are also written to `STDOUT`.
+And when running on the command line:
+
+- If `STDERR` is a TTY and `STDOUT` is not, [Console][Console] messages are
+  written to `STDERR` to ensure `STDOUT` isn't tainted
+- Otherwise, errors and warnings are written to `STDERR`, and informational
+  messages are written to `STDOUT`
+- Environment variable `CONSOLE_OUTPUT` may be set to `stderr` or `stdout` to
+  override [Console][Console]'s default output stream(s)
+- Debug messages are suppressed if environment variable `DEBUG` is unset or
+  empty
 
 To override these defaults, register at least one [Console][Console] output
-target by calling [registerStdioTargets()][registerStdioTargets] or
+target by calling [registerStdioTargets()][registerStdioTargets],
+[registerStderrTarget()][registerStderrTarget], or
 [registerTarget()][registerTarget] before any other `Console` methods can be
 called, preferably while bootstrapping your application.
 
@@ -61,6 +69,7 @@ called, preferably while bootstrapping your application.
 [Console]: https://lkrms.github.io/php-util/classes/Lkrms-Facade-Console.html
 [ConsoleWriter]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html
 [logConsoleMessages]: https://lkrms.github.io/php-util/classes/Lkrms-Container-AppContainer.html#method_logConsoleMessages
+[registerStderrTarget]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html#method_registerStderrTarget
 [registerStdioTargets]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html#method_registerStdioTargets
 [registerTarget]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html#method_registerTarget
 
