@@ -67,6 +67,7 @@ abstract class SqliteStore implements ReceivesFacade
         $db->enableExceptions();
         $db->busyTimeout(60000);
         $db->exec('PRAGMA journal_mode=WAL');
+        $db->exec('PRAGMA foreign_keys=ON');
         [$this->Db, $this->Filename] = [$db, $filename];
 
         return $this;
