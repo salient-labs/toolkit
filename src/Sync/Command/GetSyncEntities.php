@@ -79,6 +79,9 @@ final class GetSyncEntities extends CliCommand
         {
             $this->Providers[strtolower(Convert::classToBasename($provider, "SyncProvider", "Provider"))] = $provider;
         }
+
+        natsort($this->Entities);
+        natsort($this->Providers);
     }
 
     public function getDescription(): string
