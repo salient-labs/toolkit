@@ -107,7 +107,34 @@ final class ConsoleWriter implements ReceivesFacade
         // Log output to
         // `{TMPDIR}/<script_basename>-<realpath_hash>-<user_id>.log`
         $this->registerTarget(StreamTarget::fromPath(File::getStablePath(".log")), ConsoleLevels::ALL_DEBUG);
-        $this->registerStdioTargets();
+        $this->registerDefaultStdioTargets();
+    }
+
+    /**
+     * Register STDOUT and/or STDERR as targets in their default configuration
+     *
+     * Returns without taking any action if `$replace` is `false` and a target
+     * backed by STDOUT or STDERR has already been registered.
+     *
+     * @return $this
+     */
+    public function registerDefaultStdioTargets(bool $replace = false)
+    {
+        switch (strtolower(Env::get("CONSOLE_OUTPUT", "")))
+        {
+            case "stderr":
+                return $this->registerStdioTarget($replace, STDERR);
+
+            case "stdout":
+                return $this->registerStdioTarget($replace, STDOUT);
+        }
+
+        if (stream_isatty(STDERR) && !stream_isatty(STDOUT))
+        {
+            return $this->registerStderrTarget($replace);
+        }
+
+        return $this->registerStdioTargets($replace);
     }
 
     /**
@@ -118,7 +145,7 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function registerStdioTargets($replace = false)
+    public function registerStdioTargets(bool $replace = false)
     {
         if (PHP_SAPI != "cli" || ($this->StdioTargets && !$replace))
         {
@@ -145,19 +172,24 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function registerStderrTarget($replace = false)
+    public function registerStderrTarget(bool $replace = false)
+    {
+        // Send everything to STDERR
+        return $this->registerStdioTarget($replace, STDERR);
+    }
+
+    private function registerStdioTarget(bool $replace, $stream)
     {
         if (PHP_SAPI != "cli" || ($this->StdioTargets && !$replace))
         {
             return $this;
         }
 
-        // Send everything to STDERR
         $levels = (Env::debug()
             ? ConsoleLevels::ALL_DEBUG
             : ConsoleLevels::ALL);
         $this->clearStdioTargets();
-        $this->registerTarget(new StreamTarget(STDERR), $levels);
+        $this->registerTarget(new StreamTarget($stream), $levels);
 
         return $this;
     }
