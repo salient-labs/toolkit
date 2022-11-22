@@ -34,18 +34,21 @@ class TestOptions extends CliCommand
                 ->valueName("jobType")
                 ->description("Task to complete")
                 ->optionType(CliOptionType::ONE_OF_POSITIONAL)
-                ->allowedValues(["compress", "copy"])),
+                ->allowedValues(["compress", "copy"])
+                ->required()),
             (CliOption::build()
                 ->long("source")
                 ->description("One or more sources")
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->multipleAllowed()
+                ->required()
                 ->go()),
             (CliOption::build()
                 ->long("target")
                 ->valueName("targetDir")
                 ->description("Target directory")
-                ->optionType(CliOptionType::VALUE_POSITIONAL)),
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->required()),
             (CliOption::build()
                 ->long("verbose")
                 ->short("v")
