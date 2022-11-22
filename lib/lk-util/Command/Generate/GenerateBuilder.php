@@ -18,6 +18,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Test;
+use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\PhpDocParser;
 use Lkrms\Support\TokenExtractor;
@@ -30,7 +31,7 @@ use ReflectionProperty;
  * Generates fluent interfaces that create instances of a class
  *
  */
-class GenerateBuilderClass extends GenerateCommand
+class GenerateBuilder extends GenerateCommand
 {
     public function getDescription(): string
     {

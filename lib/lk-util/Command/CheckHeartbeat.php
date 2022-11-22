@@ -10,6 +10,7 @@ namespace Lkrms\LkUtil\Command;
 
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
+use Lkrms\LkUtil\Command\Concept\Command;
 
 class CheckHeartbeat extends Command
 {

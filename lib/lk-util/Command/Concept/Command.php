@@ -6,7 +6,7 @@ declare(strict_types=1);
  * @package Lkrms\LkUtil
  */
 
-namespace Lkrms\LkUtil\Command;
+namespace Lkrms\LkUtil\Command\Concept;
 
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;

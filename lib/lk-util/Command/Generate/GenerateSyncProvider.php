@@ -13,6 +13,7 @@ use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
+use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
@@ -23,7 +24,7 @@ use Lkrms\Sync\Support\SyncOperation;
  * Generates provider interfaces for SyncEntity subclasses
  *
  */
-class GenerateSyncEntityInterface extends GenerateCommand
+class GenerateSyncProvider extends GenerateCommand
 {
     private const OPERATIONS = [
         "create", "get", "update", "delete",

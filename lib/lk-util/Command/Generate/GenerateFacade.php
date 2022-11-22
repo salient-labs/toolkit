@@ -15,6 +15,7 @@ use Lkrms\Concept\Facade;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Test;
+use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\PhpDocParser;
 use Lkrms\Support\TokenExtractor;
 use ReflectionClass;
@@ -26,7 +27,7 @@ use ReflectionParameter;
  * Generates static interfaces to underlying classes
  *
  */
-final class GenerateFacadeClass extends GenerateCommand
+final class GenerateFacade extends GenerateCommand
 {
     private const SKIP_METHODS = [
         "getReadable",

@@ -10,10 +10,8 @@ namespace Lkrms\LkUtil\Command\Http;
 
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Env;
-use Lkrms\LkUtil\Command\Command;
+use Lkrms\LkUtil\Command\Concept\Command;
 use Lkrms\Support\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use UnexpectedValueException;

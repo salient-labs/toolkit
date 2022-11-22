@@ -6,14 +6,14 @@ declare(strict_types=1);
  * @package Lkrms\LkUtil
  */
 
-namespace Lkrms\LkUtil\Command\Generate;
+namespace Lkrms\LkUtil\Command\Generate\Concept;
 
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Reflect;
-use Lkrms\LkUtil\Command\Command;
+use Lkrms\LkUtil\Command\Concept\Command;
 use ReflectionParameter;
 use ReflectionType;
 

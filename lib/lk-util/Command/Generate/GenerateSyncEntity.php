@@ -15,6 +15,7 @@ use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Test;
+use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
@@ -24,7 +25,7 @@ use RuntimeException;
  * Generates SyncEntity subclasses from reference entities
  *
  */
-class GenerateSyncEntityClass extends GenerateCommand
+class GenerateSyncEntity extends GenerateCommand
 {
     private const METHODS = [
         "get"  => HttpRequestMethod::GET,
