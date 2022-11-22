@@ -37,7 +37,7 @@ use Lkrms\Contract\IContainer;
  * @method static Container singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})
  *
  * @uses Container
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Container\Container' --generate='Lkrms\Facade\DI'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Container\Container' 'Lkrms\Facade\DI'
  */
 final class DI extends Facade
 {

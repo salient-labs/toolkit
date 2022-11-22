@@ -22,7 +22,7 @@ use Lkrms\Utility\Filesystem;
  * @method static string|false|void writeCsv(iterable $data, ?string $filename = null, bool $headerRow = true, string $nullValue = null, ?int &$count = null, ?callable $callback = null) Convert data to CSV (see {@see Filesystem::writeCsv()})
  *
  * @uses Filesystem
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\Filesystem' --generate='Lkrms\Facade\File'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Filesystem' 'Lkrms\Facade\File'
  */
 final class File extends Facade
 {

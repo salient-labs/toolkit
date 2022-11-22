@@ -27,7 +27,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method static DbSyncDefinition|null resolve(DbSyncDefinition|DbSyncDefinitionBuilder|null $object) Resolve a DbSyncDefinitionBuilder or DbSyncDefinition object to a DbSyncDefinition object
  *
  * @uses DbSyncDefinition
- * @lkrms-generate-command lk-util generate builder --class='Lkrms\Sync\Support\DbSyncDefinition' --static-builder='build' --terminator='go' --static-resolver='resolve'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\DbSyncDefinition'
  */
 final class DbSyncDefinitionBuilder extends Builder
 {

@@ -376,8 +376,8 @@ abstract class CliCommand implements ReturnsContainer
                 //
                 //     _-o, --option_[=__VALUE__]
                 //       Option description
-                //         default: ___auto___
-                //         ___Values:___
+                //         __Default:__ ___auto___
+                //         __Values:__
                 //         - _option1_
                 //         - _option2_
                 //         - _option3_
@@ -385,8 +385,8 @@ abstract class CliCommand implements ReturnsContainer
                 $options .= ("\n  _" . implode(", ", $line) . "_"
                     . str_replace($valueName, "__" . $valueName . "__", (array_pop($value) ?: ""))
                     . ($option->Description ? "\n    " . $option->Description : "")
-                    . ((!$option->IsFlag && $option->DefaultValue) ? $sep . "default: ___" . implode(",", Convert::toArray($option->DefaultValue)) . "___" : "")
-                    . ($option->AllowedValues ? $sep . "___Values:___" . $sep . "- _" . implode("_" . $sep . "- _", $option->AllowedValues) . "_" : "")) . "\n";
+                    . ((!$option->IsFlag && $option->DefaultValue) ? $sep . "__Default:__ ___" . implode(",", Convert::toArray($option->DefaultValue)) . "___" : "")
+                    . ($option->AllowedValues ? $sep . "__Values:__" . $sep . "- _" . implode("_" . $sep . "- _", $option->AllowedValues) . "_" : "")) . "\n";
             }
         }
 
@@ -651,10 +651,13 @@ EOF;
      * Returns `null` if the option is unset, otherwise returns its current
      * value as it would be given on the command line.
      *
+     * Set `$value` to override the option's current value.
+     *
      * @internal
      * @param string|CliOption $option
+     * @param string|string[]|bool|int|null $value
      */
-    final public function getEffectiveArgument($option, bool $shellEscape = false): ?string
+    final public function getEffectiveArgument($option, bool $shellEscape = false, $value = null): ?string
     {
         if (is_string($option))
         {
@@ -664,6 +667,11 @@ EOF;
             {
                 throw new UnexpectedValueException("No option with name '$option'");
             }
+        }
+
+        if (func_num_args() > 2)
+        {
+            $option = $option->withValue($value);
         }
 
         if (is_null($option->Value) || $option->Value === [] || $option->Value === false || $option->Value === 0)
@@ -692,7 +700,7 @@ EOF;
         }
         if ($shellEscape && !is_null($value))
         {
-            $value = escapeshellarg($value);
+            $value = Convert::toShellArg($value);
         }
 
         return $option->IsPositional ? $value : ($option->Long
@@ -704,9 +712,10 @@ EOF;
      * Get a command line that would unambiguously repeat the current invocation
      *
      * @internal
+     * @param array<string,string|string[]|bool|int|null> $values
      * @return string[]
      */
-    final public function getEffectiveCommandLine(bool $shellEscape = false): array
+    final public function getEffectiveCommandLine(bool $shellEscape = false, array $values = []): array
     {
         $this->assertHasRun();
 
@@ -714,7 +723,20 @@ EOF;
         array_unshift($args, $this->app()->getProgramName());
         foreach ($this->Options as $option)
         {
-            $arg = $this->getEffectiveArgument($option, $shellEscape);
+            $name = null;
+            foreach (array_filter([$option->Long, $option->Short]) as $key)
+            {
+                if (array_key_exists($key, $values))
+                {
+                    $name = $key;
+                    break;
+                }
+            }
+
+            ($arg = $name
+                ? $this->getEffectiveArgument($option, $shellEscape, $values[$name])
+                : $this->getEffectiveArgument($option, $shellEscape));
+
             if ($option->IsPositional)
             {
                 $positional[] = $arg;

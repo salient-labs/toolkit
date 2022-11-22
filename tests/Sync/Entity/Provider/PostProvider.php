@@ -17,7 +17,7 @@ use Lkrms\Tests\Sync\Entity\Post;
  * @method Post deletePost(SyncContext $ctx, Post $post)
  * @method iterable<Post> getPosts(SyncContext $ctx)
  *
- * @lkrms-generate-command lk-util generate sync provider --class='Lkrms\Tests\Sync\Entity\Post' --magic --op='create,get,update,delete,get-list'
+ * @lkrms-generate-command lk-util generate sync provider --magic --op='create,get,update,delete,get-list' 'Lkrms\Tests\Sync\Entity\Post'
  */
 interface PostProvider extends ISyncProvider
 {

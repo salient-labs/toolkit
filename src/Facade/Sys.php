@@ -24,7 +24,7 @@ use Lkrms\Utility\System;
  * @method static bool sqliteHasUpsert() Return true if the SQLite3 library supports UPSERT syntax (see {@see System::sqliteHasUpsert()})
  *
  * @uses System
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\System' --generate='Lkrms\Facade\Sys'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\System' 'Lkrms\Facade\Sys'
  */
 final class Sys extends Facade
 {

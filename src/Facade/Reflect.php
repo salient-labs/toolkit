@@ -34,7 +34,7 @@ use ReflectionType;
  * @method static string getTypeName(ReflectionType $type) Return the name of the given ReflectionNamedType or ReflectionType (see {@see Reflection::getTypeName()})
  *
  * @uses Reflection
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\Reflection' --generate='Lkrms\Facade\Reflect'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Reflection' 'Lkrms\Facade\Reflect'
  */
 final class Reflect extends Facade
 {

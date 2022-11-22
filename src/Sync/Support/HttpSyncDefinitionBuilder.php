@@ -34,7 +34,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method static HttpSyncDefinition|null resolve(HttpSyncDefinition|HttpSyncDefinitionBuilder|null $object) Resolve a HttpSyncDefinitionBuilder or HttpSyncDefinition object to a HttpSyncDefinition object
  *
  * @uses HttpSyncDefinition
- * @lkrms-generate-command lk-util generate builder --class='Lkrms\Sync\Support\HttpSyncDefinition' --static-builder='build' --terminator='go' --static-resolver='resolve'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\HttpSyncDefinition'
  */
 final class HttpSyncDefinitionBuilder extends Builder
 {

@@ -46,7 +46,7 @@ use Throwable;
  * @method static ConsoleWriter warnOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print "  ! $msg1 $msg2" with level WARNING once per run (see {@see ConsoleWriter::warnOnce()})
  *
  * @uses ConsoleWriter
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Console\ConsoleWriter' --generate='Lkrms\Facade\Console'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Console\ConsoleWriter' 'Lkrms\Facade\Console'
  */
 final class Console extends Facade
 {

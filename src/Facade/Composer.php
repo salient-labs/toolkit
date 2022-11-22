@@ -22,7 +22,7 @@ use Lkrms\Concept\Facade;
  * @method static string getRootPackageVersion() See {@see \Lkrms\Utility\Composer::getRootPackageVersion()}
  *
  * @uses \Lkrms\Utility\Composer
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\Composer' --generate='Lkrms\Facade\Composer'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Composer' 'Lkrms\Facade\Composer'
  */
 final class Composer extends Facade
 {

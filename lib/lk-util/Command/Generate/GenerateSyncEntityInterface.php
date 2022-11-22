@@ -44,13 +44,10 @@ class GenerateSyncEntityInterface extends GenerateCommand
         return [
             (CliOption::build()
                 ->long("class")
-                ->short("c")
-                ->valueName("CLASS")
+                ->valueName("class")
                 ->description("The SyncEntity subclass to generate a provider for")
-                ->optionType(CliOptionType::VALUE)
-                ->required()
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get("DEFAULT_NAMESPACE", "")))
-                ->go()),
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get("DEFAULT_NAMESPACE", "")))),
             (CliOption::build()
                 ->long("extend")
                 ->short("x")
@@ -58,61 +55,52 @@ class GenerateSyncEntityInterface extends GenerateCommand
                 ->description("An interface to extend (must extend ISyncProvider)")
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
-                ->valueCallback(fn(array $values) => $this->getMultipleFqcnOptionValue($values, Env::get("DEFAULT_NAMESPACE", "")))
-                ->go()),
+                ->valueCallback(fn(array $values) => $this->getMultipleFqcnOptionValue($values, Env::get("DEFAULT_NAMESPACE", "")))),
             (CliOption::build()
                 ->long("magic")
                 ->short("v")
-                ->description("Generate @method tags instead of declarations")
-                ->go()),
+                ->description("Generate @method tags instead of declarations")),
             (CliOption::build()
                 ->long("package")
                 ->short("p")
                 ->valueName("PACKAGE")
                 ->description("The PHPDoc package")
                 ->optionType(CliOptionType::VALUE)
-                ->envVariable("PHPDOC_PACKAGE")
-                ->go()),
+                ->envVariable("PHPDOC_PACKAGE")),
             (CliOption::build()
                 ->long("desc")
                 ->short("d")
                 ->valueName("DESCRIPTION")
                 ->description("A short description of the interface")
-                ->optionType(CliOptionType::VALUE)
-                ->go()),
+                ->optionType(CliOptionType::VALUE)),
             (CliOption::build()
                 ->long("stdout")
                 ->short("s")
-                ->description("Write to standard output")
-                ->go()),
+                ->description("Write to standard output")),
             (CliOption::build()
                 ->long("force")
                 ->short("f")
-                ->description("Overwrite the class file if it already exists")
-                ->go()),
+                ->description("Overwrite the class file if it already exists")),
             (CliOption::build()
                 ->long("no-meta")
                 ->short("m")
-                ->description("Suppress '@lkrms-*' metadata tags")
-                ->go()),
+                ->description("Suppress '@lkrms-*' metadata tags")),
             (CliOption::build()
                 ->long("op")
                 ->short("o")
                 ->valueName("OPERATION")
-                ->description("A sync operation to include in the interface (may be used more than once)")
+                ->description("A sync operation to include in the interface")
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(self::OPERATIONS)
                 ->multipleAllowed()
                 ->defaultValue(self::DEFAULT_OPERATIONS)
-                ->valueCallback(fn(array $value) => array_intersect(self::OPERATIONS, $value))
-                ->go()),
+                ->valueCallback(fn(array $value) => array_intersect(self::OPERATIONS, $value))),
             (CliOption::build()
                 ->long("plural")
                 ->short("l")
                 ->valueName("PLURAL")
                 ->description("Specify the plural form of CLASS")
-                ->optionType(CliOptionType::VALUE)
-                ->go()),
+                ->optionType(CliOptionType::VALUE)),
         ];
     }
 
@@ -295,9 +283,11 @@ class GenerateSyncEntityInterface extends GenerateCommand
         }
         if (!$this->getOptionValue("no-meta"))
         {
-            $docBlock[] = " * @lkrms-generate-command " . implode(" ",
-                array_diff($this->getEffectiveCommandLine(true),
-                    ["--stdout", "--force"]));
+            $docBlock[] = " * @lkrms-generate-command "
+                . implode(" ", $this->getEffectiveCommandLine(true, [
+                    "stdout" => null,
+                    "force"  => null,
+                ]));
         }
         $docBlock[] = " */";
         if (count($docBlock) == 2)

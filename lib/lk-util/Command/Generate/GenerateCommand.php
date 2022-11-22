@@ -8,12 +8,12 @@ declare(strict_types=1);
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Reflect;
+use Lkrms\LkUtil\Command\Command;
 use ReflectionParameter;
 use ReflectionType;
 
@@ -21,7 +21,7 @@ use ReflectionType;
  * Base class for code generation commands
  *
  */
-abstract class GenerateCommand extends CliCommand
+abstract class GenerateCommand extends Command
 {
     protected const VISIBILITY_PUBLIC    = "public";
     protected const VISIBILITY_PROTECTED = "protected";
@@ -254,30 +254,5 @@ abstract class GenerateCommand extends CliCommand
         }
 
         file_put_contents($file, $output);
-    }
-
-    protected function getFqcnOptionValue(string $value, ?string $defaultNamespace = null): string
-    {
-        if ($defaultNamespace && trim($value) && strpos($value, "\\") === false)
-        {
-            return trim($defaultNamespace, "\\") . "\\$value";
-        }
-
-        return ltrim($value, "\\");
-    }
-
-    /**
-     * @param string[] $values
-     * @return string[]
-     */
-    protected function getMultipleFqcnOptionValue(array $values, ?string $defaultNamespace = null): array
-    {
-        $_values = [];
-        foreach ($values as $value)
-        {
-            $_values[] = $this->getFqcnOptionValue($value, $defaultNamespace);
-        }
-
-        return $_values;
     }
 }

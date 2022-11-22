@@ -26,7 +26,7 @@ use Lkrms\Utility\Environment;
  * @method static void unset(string $name) Unset an environment variable (see {@see Environment::unset()})
  *
  * @uses Environment
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\Environment' --generate='Lkrms\Facade\Env'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Environment' 'Lkrms\Facade\Env'
  */
 final class Env extends Facade
 {

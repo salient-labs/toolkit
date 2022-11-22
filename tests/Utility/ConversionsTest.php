@@ -130,7 +130,7 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
 
     }
 
-    public function testIterableToValue()
+    public function testIterableToItem()
     {
         $data = [
             [
@@ -186,6 +186,15 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
             "key2" => "value2",
             "key3" => "",
         ], Convert::queryToData(["key1=value1", "key2=value2", "key3=value3", "key3=", "key4", "=value5"]));
+    }
+
+    public function testToShellArg()
+    {
+        $this->assertSame("''", Convert::toShellArg(""));
+        $this->assertSame("abc", Convert::toShellArg("abc"));
+        $this->assertSame("/some/path", Convert::toShellArg("/some/path"));
+        $this->assertSame("'/some/path with spaces'", Convert::toShellArg("/some/path with spaces"));
+        $this->assertSame("''\\''quotable'\\'' \"quotes\"'", Convert::toShellArg("'quotable' \"quotes\""));
     }
 
 }

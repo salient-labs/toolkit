@@ -10,12 +10,8 @@ namespace Lkrms\LkUtil\Command;
 
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
-use Lkrms\Cli\Concept\CliCommand;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
-use Lkrms\Contract\IProvider;
-use Lkrms\Facade\Env;
 
-class CheckHeartbeat extends CliCommand
+class CheckHeartbeat extends Command
 {
     public function getDescription(): string
     {
@@ -27,43 +23,22 @@ class CheckHeartbeat extends CliCommand
         return [
             (CliOption::build()
                 ->long("provider")
-                ->short("i")
-                ->valueName("CLASS")
+                ->valueName("provider")
                 ->description("The provider to check (must implement IProvider)")
-                ->optionType(CliOptionType::VALUE)
-                ->required()
-                ->envVariable("DEFAULT_PROVIDER")
-                ->go()),
+                ->optionType(CliOptionType::VALUE_POSITIONAL)),
             (CliOption::build()
                 ->long("ttl")
                 ->short("t")
                 ->valueName("SECONDS")
                 ->description("The time-to-live of a positive result")
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue("300")
-                ->go()),
+                ->defaultValue("300")),
         ];
     }
 
     protected function run(string ...$args)
     {
-        $providerClass = $this->getOptionValue("provider");
-
-        if (!class_exists($providerClass) &&
-            !(strpos($providerClass, "\\") === false &&
-                ($providerNamespace         = Env::get("PROVIDER_NAMESPACE", "")) &&
-                class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
-        {
-            throw new CliArgumentsInvalidException("class does not exist: $providerClass");
-        }
-
-        $provider = $this->app()->get($providerClass);
-
-        if (!($provider instanceof IProvider))
-        {
-            throw new CliArgumentsInvalidException("not a subclass of IProvider: $providerClass");
-        }
-
-        $provider->checkHeartbeat((int)$this->getOptionValue("ttl"));
+        $this->getProvider($this->getOptionValue("provider"))
+            ->checkHeartbeat((int)$this->getOptionValue("ttl"));
     }
 }

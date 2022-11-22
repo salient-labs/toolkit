@@ -43,7 +43,6 @@ defaults are taken from the environment:
 | `BUILDER_NAMESPACE`  | Overrides `DEFAULT_NAMESPACE` for `Builder` classes | `Lkrms\Tests\Builder`       |
 | `FACADE_NAMESPACE`   | Overrides `DEFAULT_NAMESPACE` for `Facade` classes  | `Lkrms\Tests\Facade`        |
 | `PHPDOC_PACKAGE`     | Used if `--package` is not specified                | `Lkrms\Tests`               |
-| `DEFAULT_PROVIDER`   | Used if `--provider` is not specified               | `JsonPlaceholderApi`        |
 | `PROVIDER_NAMESPACE` | Applied to unqualified `--provider` class names     | `Lkrms\Tests\Sync\Provider` |
 
 

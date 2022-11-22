@@ -58,6 +58,7 @@ use Lkrms\Utility\Conversions;
  * @method static string toNormal(string $text) Clean up a string for comparison with other strings (see {@see Conversions::toNormal()})
  * @method static string toPascalCase(string $text) Convert an identifier to PascalCase (see {@see Conversions::toPascalCase()})
  * @method static array toScalarArray(array $array) JSON-encode non-scalar values in an array (see {@see Conversions::toScalarArray()})
+ * @method static string toShellArg(string $value) A platform-agnostic escapeshellarg that only adds quotes if necessary (see {@see Conversions::toShellArg()})
  * @method static string toSnakeCase(string $text) Convert an identifier to snake_case (see {@see Conversions::toSnakeCase()})
  * @method static string[] toStrings(mixed ...$value) Convert the given strings and Stringables to an array of strings (see {@see Conversions::toStrings()})
  * @method static DateTimeZone toTimezone(DateTimeZone|string $value) Convert a value to a DateTimeZone instance (see {@see Conversions::toTimezone()})
@@ -66,7 +67,7 @@ use Lkrms\Utility\Conversions;
  * @method static string valueToCode(mixed $value, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::valueToCode()}
  *
  * @uses Conversions
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\Conversions' --generate='Lkrms\Facade\Convert'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Conversions' 'Lkrms\Facade\Convert'
  */
 final class Convert extends Facade
 {

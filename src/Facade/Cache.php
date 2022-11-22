@@ -27,7 +27,7 @@ use Lkrms\Store\Concept\SqliteStore;
  * @method static CacheStore set(string $key, mixed $value, int $expiry = 0) Store an item (see {@see CacheStore::set()})
  *
  * @uses CacheStore
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Store\CacheStore' --generate='Lkrms\Facade\Cache'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Store\CacheStore' 'Lkrms\Facade\Cache'
  */
 final class Cache extends Facade
 {
