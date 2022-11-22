@@ -24,7 +24,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @method static SyncError|null resolve(SyncError|SyncErrorBuilder|null $object) Resolve a SyncErrorBuilder or SyncError object to a SyncError object
  *
  * @uses SyncError
- * @lkrms-generate-command lk-util generate builder --class='Lkrms\Sync\Support\SyncError' --static-builder='build' --terminator='go' --static-resolver='resolve'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\SyncError'
  */
 final class SyncErrorBuilder extends Builder
 {

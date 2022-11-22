@@ -28,7 +28,7 @@ use Lkrms\Support\DateFormatter;
  * @method static SyncSerializeRules|null resolve(SyncSerializeRules|SyncSerializeRulesBuilder|null $object) Resolve a SyncSerializeRulesBuilder or SyncSerializeRules object to a SyncSerializeRules object
  *
  * @uses SyncSerializeRules
- * @lkrms-generate-command lk-util generate builder --class='Lkrms\Sync\Support\SyncSerializeRules' --static-builder='build' --terminator='go' --static-resolver='resolve'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\SyncSerializeRules'
  */
 final class SyncSerializeRulesBuilder extends Builder
 {

@@ -17,7 +17,7 @@ use Lkrms\Tests\Sync\Entity\User;
  * @method User deleteUser(SyncContext $ctx, User $user)
  * @method iterable<User> getUsers(SyncContext $ctx)
  *
- * @lkrms-generate-command lk-util generate sync provider --class='Lkrms\Tests\Sync\Entity\User' --magic --op='create,get,update,delete,get-list'
+ * @lkrms-generate-command lk-util generate sync provider --magic --op='create,get,update,delete,get-list' 'Lkrms\Tests\Sync\Entity\User'
  */
 interface UserProvider extends ISyncProvider
 {

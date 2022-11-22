@@ -27,7 +27,7 @@
                 <ignore-tag>property-read</ignore-tag>
                 <ignore-tag>property-write</ignore-tag>
                 <ignore-tag>lkrms-generate-command</ignore-tag>
-                <ignore-tag>lkrms-sample-entity</ignore-tag>
+                <ignore-tag>lkrms-reference-entity</ignore-tag>
                 <ignore-tag>phpstan-param</ignore-tag>
                 <ignore-tag>phpstan-property</ignore-tag>
                 <ignore-tag>phpstan-property-read</ignore-tag>

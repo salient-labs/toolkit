@@ -52,7 +52,7 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer writeResourceUsage() See {@see AppContainer::writeResourceUsage()}
  *
  * @uses CliAppContainer
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Cli\CliAppContainer' --generate='Lkrms\Facade\Cli'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Cli\CliAppContainer' 'Lkrms\Facade\Cli'
  */
 final class Cli extends Facade
 {

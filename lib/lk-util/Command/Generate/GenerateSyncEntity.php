@@ -8,22 +8,32 @@ declare(strict_types=1);
 
 namespace Lkrms\LkUtil\Command\Generate;
 
+use DateTimeImmutable;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Test;
+use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
+use Lkrms\Support\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
 use RuntimeException;
 
 /**
- * Generates SyncEntity subclasses from sample entities
+ * Generates SyncEntity subclasses from reference entities
  *
  */
-class GenerateSyncEntityClass extends GenerateCommand
+class GenerateSyncEntity extends GenerateCommand
 {
+    private const METHODS = [
+        "get"  => HttpRequestMethod::GET,
+        "post" => HttpRequestMethod::POST,
+    ];
+
+    private const DEFAULT_METHOD = "get";
+
     public function getDescription(): string
     {
         return "Generate a sync entity class";
@@ -34,43 +44,35 @@ class GenerateSyncEntityClass extends GenerateCommand
         return [
             (CliOption::build()
                 ->long("generate")
-                ->short("g")
-                ->valueName("CLASS")
+                ->valueName("class")
                 ->description("The class to generate")
-                ->optionType(CliOptionType::VALUE)
-                ->required()
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
-                ->go()),
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
             (CliOption::build()
                 ->long("package")
                 ->short("p")
                 ->valueName("PACKAGE")
                 ->description("The PHPDoc package")
                 ->optionType(CliOptionType::VALUE)
-                ->envVariable("PHPDOC_PACKAGE")
-                ->go()),
+                ->envVariable("PHPDOC_PACKAGE")),
             (CliOption::build()
                 ->long("desc")
                 ->short("d")
                 ->valueName("DESCRIPTION")
                 ->description("A short description of the entity")
-                ->optionType(CliOptionType::VALUE)
-                ->go()),
+                ->optionType(CliOptionType::VALUE)),
             (CliOption::build()
                 ->long("stdout")
                 ->short("s")
-                ->description("Write to standard output")
-                ->go()),
+                ->description("Write to standard output")),
             (CliOption::build()
                 ->long("force")
                 ->short("f")
-                ->description("Overwrite the class file if it already exists")
-                ->go()),
+                ->description("Overwrite the class file if it already exists")),
             (CliOption::build()
                 ->long("no-meta")
                 ->short("m")
-                ->description("Suppress '@lkrms-*' metadata tags")
-                ->go()),
+                ->description("Suppress '@lkrms-*' metadata tags")),
             (CliOption::build()
                 ->long("visibility")
                 ->short("v")
@@ -78,40 +80,47 @@ class GenerateSyncEntityClass extends GenerateCommand
                 ->description("The visibility of the entity's properties")
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(["public", "protected", "private"])
-                ->defaultValue("public")
-                ->go()),
+                ->defaultValue("public")),
             (CliOption::build()
                 ->long("json")
                 ->short("j")
                 ->valueName("FILE")
-                ->description("The path to a JSON-serialized sample entity")
-                ->optionType(CliOptionType::VALUE)
-                ->go()),
+                ->description("The path to a JSON-serialized reference entity")
+                ->optionType(CliOptionType::VALUE)),
             (CliOption::build()
                 ->long("provider")
                 ->short("i")
                 ->valueName("CLASS")
-                ->description("The HttpSyncProvider class to retrieve a sample entity from")
+                ->description("The HttpSyncProvider class to retrieve a reference entity from")
                 ->optionType(CliOptionType::VALUE)
-                ->envVariable("DEFAULT_PROVIDER")
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
-                ->go()),
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
             (CliOption::build()
                 ->long("endpoint")
                 ->short("e")
-                ->valueName("PATH")
-                ->description("The endpoint to retrieve a sample entity from, e.g. '/user'")
-                ->optionType(CliOptionType::VALUE)
-                ->go()),
+                ->valueName("ENDPOINT")
+                ->description("The endpoint to retrieve a reference entity from, e.g. '/user'")
+                ->optionType(CliOptionType::VALUE)),
             (CliOption::build()
                 ->long("method")
                 ->short("h")
                 ->valueName("METHOD")
-                ->description("The HTTP method to use when requesting a sample entity")
+                ->description("The HTTP method to use when requesting a reference entity")
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(["get", "post"])
-                ->defaultValue("get")
-                ->go()),
+                ->allowedValues(array_keys(self::METHODS))
+                ->defaultValue(self::DEFAULT_METHOD)),
+            (CliOption::build()
+                ->long("query")
+                ->short("q")
+                ->valueName("FIELD=VALUE")
+                ->description("A query parameter to use when requesting a reference entity")
+                ->optionType(CliOptionType::VALUE)
+                ->multipleAllowed()),
+            (CliOption::build()
+                ->long("data")
+                ->short("o")
+                ->valueName("FILE")
+                ->description("The path to JSON-serialized data to submit when requesting a reference entity")
+                ->optionType(CliOptionType::VALUE)),
         ];
     }
 
@@ -123,22 +132,23 @@ class GenerateSyncEntityClass extends GenerateCommand
         $fqcn        = $namespace ? $namespace . "\\" . $class : $class;
         $classPrefix = $namespace ? "\\" : "";
 
-        $extendsFqcn = SyncEntity::class;
-
         $this->OutputClass     = $class;
         $this->OutputNamespace = $namespace;
         $this->ClassPrefix     = $classPrefix;
 
-        $extends = $this->getFqcnAlias($extendsFqcn);
+        $extends = $this->getFqcnAlias(SyncEntity::class);
 
         $package    = $this->getOptionValue("package");
         $desc       = $this->getOptionValue("desc");
         $visibility = $this->getOptionValue("visibility");
         $json       = $this->getOptionValue("json");
-        $providerClass = $this->getOptionValue("provider");
-        $props         = ["Id" => "int|string|null"];
-        $entity        = null;
-        $entityUri     = null;
+        $provider   = $this->getOptionValue("provider");
+
+        $props     = ["Id" => "int|string|null"];
+        $entity    = null;
+        $entityUri = null;
+        $data      = null;
+        $dataUri   = null;
 
         if (!$fqcn)
         {
@@ -147,55 +157,36 @@ class GenerateSyncEntityClass extends GenerateCommand
 
         if ($json)
         {
-            if ($json == "-")
-            {
-                $json = "php://stdin";
-            }
-            else
-            {
-                if (($json = realpath($json)) === false)
-                {
-                    throw new CliArgumentsInvalidException("file not found: " . $this->getOptionValue("json"));
-                }
-                elseif (strpos($json, $this->app()->BasePath) === 0)
-                {
-                    $entityUri = "./" . ltrim(substr($json, strlen($this->app()->BasePath)), "/");
-                }
-                else
-                {
-                    $entityUri = $json;
-                }
-            }
-
-            $entity = json_decode(file_get_contents($json), true);
+            $entity = $this->getJson($json, $entityUri);
 
             if (is_null($entity))
             {
                 throw new RuntimeException("Could not decode $json");
             }
         }
-        elseif ($providerClass)
+        elseif ($provider)
         {
-            if (!class_exists($providerClass) &&
-                !(strpos($providerClass, "\\") === false &&
-                    ($providerNamespace         = Env::get("PROVIDER_NAMESPACE", "")) &&
-                    class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
-            {
-                throw new CliArgumentsInvalidException("class does not exist: $providerClass");
-            }
+            /** @var HttpSyncProvider */
+            $provider = $this->getProvider($provider, HttpSyncProvider::class);
+            $endpoint = $this->getOptionValue("endpoint");
+            $query    = Convert::queryToData($this->getOptionValue("query")) ?: null;
+            $data     = $this->getOptionValue("data");
+            $data     = $data ? $this->getJson($data, $dataUri) : null;
+            $method   = $data && $endpoint ? HttpRequestMethod::POST : self::METHODS[$this->getOptionValue("method")];
+            $endpoint = $endpoint ?: "/" . Convert::toKebabCase($class);
 
-            $provider = $this->app()->get($providerClass);
+            $curler    = $provider->getCurler($endpoint);
+            $entityUri = $provider->getEndpointUrl($endpoint);
 
-            if ($provider instanceof HttpSyncProvider)
+            switch ($method)
             {
-                $endpoint  = $this->getOptionValue("endpoint") ?: "/" . Convert::toKebabCase($class);
-                $method    = $this->getOptionValue("method");
-                $entity    = $provider->getCurler($endpoint)->{$method}();
-                $entityUri = $provider->getEndpointUrl($endpoint);
-            }
-            else
-            {
-                throw new CliArgumentsInvalidException("not a subclass of HttpSyncProvider: $providerClass");
+                case HttpRequestMethod::GET:
+                    $entity = $curler->get($query);
+                    break;
+
+                case HttpRequestMethod::POST:
+                    $entity = $curler->post($data, $query);
+                    break;
             }
         }
 
@@ -251,6 +242,13 @@ class GenerateSyncEntityClass extends GenerateCommand
                         continue;
                     }
 
+                    if (is_string($value) &&
+                        !is_null($provider->getDateFormatter()->parse($value)))
+                    {
+                        $props[$key] = $this->getFqcnAlias(DateTimeImmutable::class, "DateTime") . "|null";
+                        continue;
+                    }
+
                     $type  = gettype($value);
                     $type  = $typeMap[$type] ?? $type;
                     $type .= $type == "mixed" ? "" : "|null";
@@ -284,22 +282,30 @@ class GenerateSyncEntityClass extends GenerateCommand
         {
             if ($entityUri)
             {
-                $docBlock[] = " * @lkrms-sample-entity $entityUri";
+                $docBlock[] = " * @lkrms-reference-entity $entityUri";
             }
-            $ignore = ["--stdout", "--force", $this->getEffectiveArgument("json", true)];
-            $add    = [];
+            $values = [
+                "stdout"   => null,
+                "force"    => null,
+                "json"     => null,
+                "provider" => null,
+                "endpoint" => null,
+                "method"   => null,
+                "query"    => null,
+                "data"     => null,
+            ];
             if ($json)
             {
-                $ignore[] = $this->getEffectiveArgument("provider", true);
-                $ignore[] = $this->getEffectiveArgument("endpoint", true);
-                $add[]    = "--json=" . escapeshellarg(basename($entityUri ?: $this->getOptionValue("json")));
+                $values["json"] = $entityUri ?: $this->getOptionValue("json");
             }
-            $ignore     = array_filter($ignore);
-            $docBlock[] = " * @lkrms-generate-command " . implode(" ",
-                array_merge(
-                    array_diff($this->getEffectiveCommandLine(true), $ignore),
-                    $add
-                ));
+            elseif ($provider)
+            {
+                unset($values["provider"], $values["endpoint"], $values["query"]);
+                $values["method"] = array_search($method ?? null, self::METHODS, true) ?: null;
+                $values["data"]   = $dataUri ?: $this->getOptionValue("data");
+            }
+            $docBlock[] = " * @lkrms-generate-command "
+                . implode(" ", $this->getEffectiveCommandLine(true, $values));
         }
         $docBlock[] = " */";
         if (count($docBlock) == 2)

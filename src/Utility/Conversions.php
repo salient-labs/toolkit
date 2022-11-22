@@ -732,6 +732,20 @@ final class Conversions
     }
 
     /**
+     * A platform-agnostic escapeshellarg that only adds quotes if necessary
+     *
+     */
+    public function toShellArg(string $value): string
+    {
+        if (!$value || preg_match('/[^a-z0-9+.\\/@_-]/i', $value))
+        {
+            return "'" . str_replace("'", "'\\''", $value) . "'";
+        }
+
+        return $value;
+    }
+
+    /**
      * Perform the given case conversion
      *
      */

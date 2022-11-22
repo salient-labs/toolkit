@@ -7,8 +7,8 @@ namespace Lkrms\Tests\Sync\Entity;
 use Lkrms\Sync\Concept\SyncEntity;
 
 /**
- * @lkrms-sample-entity https://jsonplaceholder.typicode.com/users
- * @lkrms-generate-command lk-util generate sync entity --generate='Lkrms\Tests\Sync\Entity\User' --visibility='public' --provider='Lkrms\Tests\Sync\Provider\JsonPlaceholderApi' --endpoint='/users' --method='get'
+ * @lkrms-reference-entity https://jsonplaceholder.typicode.com/users
+ * @lkrms-generate-command lk-util generate sync entity --visibility=public --provider='Lkrms\Tests\Sync\Provider\JsonPlaceholderApi' --endpoint=/users --method=get 'Lkrms\Tests\Sync\Entity\User'
  */
 class User extends SyncEntity
 {

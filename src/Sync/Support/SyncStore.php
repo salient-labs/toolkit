@@ -166,6 +166,34 @@ CREATE TABLE IF NOT EXISTS
   );
 
 CREATE TABLE IF NOT EXISTS
+  _sync_entity_type_state (
+    provider_id INTEGER NOT NULL,
+    entity_type_id INTEGER NOT NULL,
+    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_sync DATETIME,
+    PRIMARY KEY (provider_id, entity_type_id),
+    FOREIGN KEY (provider_id) REFERENCES _sync_provider,
+    FOREIGN KEY (entity_type_id) REFERENCES _sync_entity_type
+  );
+
+CREATE TABLE IF NOT EXISTS
+  _sync_entity (
+    provider_id INTEGER NOT NULL,
+    entity_type_id INTEGER NOT NULL,
+    entity_id TEXT NOT NULL,
+    canonical_id TEXT,
+    is_dirty INTEGER NOT NULL DEFAULT 0,
+    is_deleted INTEGER NOT NULL DEFAULT 0,
+    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_sync DATETIME,
+    entity_json TEXT NOT NULL,
+    PRIMARY KEY (provider_id, entity_type_id, entity_id),
+    FOREIGN KEY (provider_id) REFERENCES _sync_provider,
+    FOREIGN KEY (entity_type_id) REFERENCES _sync_entity_type
+  ) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS
   _sync_entity_namespace (
     entity_namespace_id INTEGER NOT NULL PRIMARY KEY,
     entity_namespace_prefix TEXT NOT NULL UNIQUE,

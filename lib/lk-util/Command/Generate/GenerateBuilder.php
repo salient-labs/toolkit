@@ -18,6 +18,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Test;
+use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\PhpDocParser;
 use Lkrms\Support\TokenExtractor;
@@ -30,7 +31,7 @@ use ReflectionProperty;
  * Generates fluent interfaces that create instances of a class
  *
  */
-class GenerateBuilderClass extends GenerateCommand
+class GenerateBuilder extends GenerateCommand
 {
     public function getDescription(): string
     {
@@ -42,93 +43,78 @@ class GenerateBuilderClass extends GenerateCommand
         return [
             (CliOption::build()
                 ->long("class")
-                ->short("c")
-                ->valueName("CLASS")
+                ->valueName("class")
                 ->description("The class to generate a builder for")
-                ->optionType(CliOptionType::VALUE)
-                ->required()
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
-                ->go()),
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
             (CliOption::build()
                 ->long("generate")
                 ->short("g")
                 ->valueName("CLASS")
                 ->description("The class to generate")
                 ->optionType(CliOptionType::VALUE)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
-                ->go()),
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
             (CliOption::build()
                 ->long("static-builder")
                 ->short("b")
                 ->valueName("METHOD")
                 ->description("The static method that returns a new builder")
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue("build")
-                ->go()),
+                ->defaultValue("build")),
             (CliOption::build()
                 ->long("terminator")
                 ->short("t")
                 ->valueName("METHOD")
                 ->description("The method that terminates the interface")
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue("go")
-                ->go()),
+                ->defaultValue("go")),
             (CliOption::build()
                 ->long("static-resolver")
                 ->short("r")
                 ->valueName("METHOD")
                 ->description("The static method that resolves unterminated builders")
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue("resolve")
-                ->go()),
+                ->defaultValue("resolve")),
             (CliOption::build()
                 ->long("extend")
                 ->short("x")
                 ->valueName("CLASS")
                 ->description("The Builder subclass to extend")
                 ->optionType(CliOptionType::VALUE)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
-                ->go()),
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
             (CliOption::build()
                 ->long("no-final")
                 ->short("a")
-                ->description("Do not declare the generated class 'final'")
-                ->go()),
+                ->description("Do not declare the generated class 'final'")),
             (CliOption::build()
                 ->long("package")
                 ->short("p")
                 ->valueName("PACKAGE")
                 ->description("The PHPDoc package")
                 ->optionType(CliOptionType::VALUE)
-                ->envVariable("PHPDOC_PACKAGE")
-                ->go()),
+                ->envVariable("PHPDOC_PACKAGE")),
             (CliOption::build()
                 ->long("desc")
                 ->short("d")
                 ->valueName("DESCRIPTION")
                 ->description("A short description of the builder")
-                ->optionType(CliOptionType::VALUE)
-                ->go()),
+                ->optionType(CliOptionType::VALUE)),
             (CliOption::build()
                 ->long("stdout")
                 ->short("s")
-                ->description("Write to standard output")
-                ->go()),
+                ->description("Write to standard output")),
             (CliOption::build()
                 ->long("force")
                 ->short("f")
-                ->description("Overwrite the class file if it already exists")
-                ->go()),
+                ->description("Overwrite the class file if it already exists")),
             (CliOption::build()
                 ->long("no-meta")
                 ->short("m")
-                ->description("Suppress '@lkrms-*' metadata tags")
-                ->go()),
+                ->description("Suppress '@lkrms-*' metadata tags")),
             (CliOption::build()
                 ->long("declared")
                 ->short("e")
-                ->description("Ignore inherited properties")
-                ->go()),
+                ->description("Ignore inherited properties")),
         ];
     }
 
@@ -409,9 +395,11 @@ class GenerateBuilderClass extends GenerateCommand
         $docBlock[] = " * @uses $service";
         if (!$this->getOptionValue("no-meta"))
         {
-            $docBlock[] = " * @lkrms-generate-command " . implode(" ",
-                array_diff($this->getEffectiveCommandLine(true),
-                    ["--stdout", "--force"]));
+            $docBlock[] = " * @lkrms-generate-command "
+                . implode(" ", $this->getEffectiveCommandLine(true, [
+                    "stdout" => null,
+                    "force"  => null,
+                ]));
         }
         $docBlock[] = " */";
 

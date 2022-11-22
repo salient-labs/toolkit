@@ -3,7 +3,7 @@ parameters:
 		-
 			message: "#^If condition is always true\\.$#"
 			count: 1
-			path: lib/lk-util/Command/Generate/GenerateBuilderClass.php
+			path: lib/lk-util/Command/Generate/GenerateBuilder.php
 
 		-
 			message: "#^Property Lkrms\\\\Cli\\\\CliAppContainer\\:\\:\\$Commands is never read, only written\\.$#"

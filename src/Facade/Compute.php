@@ -21,7 +21,7 @@ use Lkrms\Utility\Computations;
  * @method static string uuid(bool $binary = false) Generate a cryptographically secure random UUID (see {@see Computations::uuid()})
  *
  * @uses Computations
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Utility\Computations' --generate='Lkrms\Facade\Compute'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Computations' 'Lkrms\Facade\Compute'
  */
 final class Compute extends Facade
 {

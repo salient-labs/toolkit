@@ -45,7 +45,7 @@ use Lkrms\Contract\IContainer;
  * @method static AppContainer writeResourceUsage() See {@see AppContainer::writeResourceUsage()}
  *
  * @uses AppContainer
- * @lkrms-generate-command lk-util generate facade --class='Lkrms\Container\AppContainer' --generate='Lkrms\Facade\App'
+ * @lkrms-generate-command lk-util generate facade 'Lkrms\Container\AppContainer' 'Lkrms\Facade\App'
  */
 final class App extends Facade
 {

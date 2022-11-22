@@ -15,6 +15,7 @@ use Lkrms\Concept\Facade;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Test;
+use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\PhpDocParser;
 use Lkrms\Support\TokenExtractor;
 use ReflectionClass;
@@ -26,73 +27,9 @@ use ReflectionParameter;
  * Generates static interfaces to underlying classes
  *
  */
-class GenerateFacadeClass extends GenerateCommand
+final class GenerateFacade extends GenerateCommand
 {
-    public function getDescription(): string
-    {
-        return "Generate a static interface to a class";
-    }
-
-    protected function getOptionList(): array
-    {
-        return [
-            (CliOption::build()
-                ->long("class")
-                ->short("c")
-                ->valueName("CLASS")
-                ->description("The class to generate a facade for")
-                ->optionType(CliOptionType::VALUE)
-                ->required()
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
-                ->go()),
-            (CliOption::build()
-                ->long("generate")
-                ->short("g")
-                ->valueName("CLASS")
-                ->description("The class to generate")
-                ->optionType(CliOptionType::VALUE)
-                ->required()
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
-                ->go()),
-            (CliOption::build()
-                ->long("package")
-                ->short("p")
-                ->valueName("PACKAGE")
-                ->description("The PHPDoc package")
-                ->optionType(CliOptionType::VALUE)
-                ->envVariable("PHPDOC_PACKAGE")
-                ->go()),
-            (CliOption::build()
-                ->long("desc")
-                ->short("d")
-                ->valueName("DESCRIPTION")
-                ->description("A short description of the facade")
-                ->optionType(CliOptionType::VALUE)
-                ->go()),
-            (CliOption::build()
-                ->long("stdout")
-                ->short("s")
-                ->description("Write to standard output")
-                ->go()),
-            (CliOption::build()
-                ->long("force")
-                ->short("f")
-                ->description("Overwrite the class file if it already exists")
-                ->go()),
-            (CliOption::build()
-                ->long("no-meta")
-                ->short("m")
-                ->description("Suppress '@lkrms-*' metadata tags")
-                ->go()),
-            (CliOption::build()
-                ->long("declared")
-                ->short("e")
-                ->description("Ignore inherited methods")
-                ->go()),
-        ];
-    }
-
-    public $SkipMethods = [
+    private const SKIP_METHODS = [
         "getReadable",
         "getWritable",
         "setFacade",
@@ -104,6 +41,58 @@ class GenerateFacadeClass extends GenerateCommand
         "unloadAll",
         "getInstance",
     ];
+
+    public function getDescription(): string
+    {
+        return "Generate a static interface to a class";
+    }
+
+    protected function getOptionList(): array
+    {
+        return [
+            (CliOption::build()
+                ->long("class")
+                ->valueName("class")
+                ->description("The class to generate a facade for")
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
+            (CliOption::build()
+                ->long("generate")
+                ->valueName("facade_class")
+                ->description("The class to generate")
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
+            (CliOption::build()
+                ->long("package")
+                ->short("p")
+                ->valueName("PACKAGE")
+                ->description("The PHPDoc package")
+                ->optionType(CliOptionType::VALUE)
+                ->envVariable("PHPDOC_PACKAGE")),
+            (CliOption::build()
+                ->long("desc")
+                ->short("d")
+                ->valueName("DESCRIPTION")
+                ->description("A short description of the facade")
+                ->optionType(CliOptionType::VALUE)),
+            (CliOption::build()
+                ->long("stdout")
+                ->short("s")
+                ->description("Write to standard output")),
+            (CliOption::build()
+                ->long("force")
+                ->short("f")
+                ->description("Overwrite the class file if it already exists")),
+            (CliOption::build()
+                ->long("no-meta")
+                ->short("m")
+                ->description("Suppress '@lkrms-*' metadata tags")),
+            (CliOption::build()
+                ->long("declared")
+                ->short("e")
+                ->description("Ignore inherited methods")),
+        ];
+    }
 
     protected function run(string ...$args)
     {
@@ -242,7 +231,7 @@ class GenerateFacadeClass extends GenerateCommand
                 }
                 $method = $_method->getName();
                 if (strpos($method, "__") === 0 ||
-                    in_array($method, $this->SkipMethods) ||
+                    in_array($method, self::SKIP_METHODS) ||
                     ($declared && $_method->getDeclaringClass() != $_class))
                 {
                     continue;
@@ -335,9 +324,11 @@ class GenerateFacadeClass extends GenerateCommand
         $docBlock[] = " * @uses $service";
         if (!$this->getOptionValue("no-meta"))
         {
-            $docBlock[] = " * @lkrms-generate-command " . implode(" ",
-                array_diff($this->getEffectiveCommandLine(true),
-                    ["--stdout", "--force"]));
+            $docBlock[] = " * @lkrms-generate-command "
+                . implode(" ", $this->getEffectiveCommandLine(true, [
+                    "stdout" => null,
+                    "force"  => null,
+                ]));
         }
         $docBlock[] = " */";
 

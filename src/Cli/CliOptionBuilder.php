@@ -27,7 +27,7 @@ use Lkrms\Contract\IContainer;
  * @method static CliOption|null resolve(CliOption|CliOptionBuilder|null $object) Resolve a CliOptionBuilder or CliOption object to a CliOption object
  *
  * @uses CliOption
- * @lkrms-generate-command lk-util generate builder --class='Lkrms\Cli\CliOption' --static-builder='build' --terminator='go' --static-resolver='resolve'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --terminator=go --static-resolver=resolve 'Lkrms\Cli\CliOption'
  */
 final class CliOptionBuilder extends Builder
 {

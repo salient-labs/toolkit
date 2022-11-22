@@ -10,15 +10,13 @@ namespace Lkrms\LkUtil\Command\Http;
 
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
-use Lkrms\Cli\Concept\CliCommand;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Env;
+use Lkrms\LkUtil\Command\Concept\Command;
 use Lkrms\Support\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use UnexpectedValueException;
 
-class SendHttpRequest extends CliCommand
+class SendHttpRequest extends Command
 {
     private $Method;
 
@@ -43,49 +41,40 @@ class SendHttpRequest extends CliCommand
         $options = [
             (CliOption::build()
                 ->long("provider")
-                ->short("i")
-                ->valueName("CLASS")
+                ->valueName("provider")
                 ->description("The HttpSyncProvider class to use")
-                ->optionType(CliOptionType::VALUE)
-                ->required()
-                ->envVariable("DEFAULT_PROVIDER")
-                ->go()),
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
             (CliOption::build()
                 ->long("endpoint")
-                ->short("e")
-                ->valueName("ENDPOINT")
+                ->valueName("endpoint")
                 ->description("The endpoint to {$this->getMethod()}, e.g. '/posts'")
-                ->optionType(CliOptionType::VALUE)
-                ->required()
-                ->go()),
+                ->optionType(CliOptionType::VALUE_POSITIONAL)),
             (CliOption::build()
                 ->long("query")
                 ->short("q")
                 ->valueName("FIELD=VALUE")
-                ->description("A query parameter (may be used more than once)")
+                ->description("A query parameter")
                 ->optionType(CliOptionType::VALUE)
-                ->multipleAllowed()
-                ->go()),
+                ->multipleAllowed()),
         ];
+
+        if (!in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::HEAD]))
+        {
+            $options[] = (CliOption::build()
+                ->long("data")
+                ->short("o")
+                ->valueName("FILE")
+                ->description("The path to JSON-serialized data to submit with the request")
+                ->optionType(CliOptionType::VALUE));
+        }
 
         if (in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::POST]))
         {
             $options[] = (CliOption::build()
                 ->long("paginate")
                 ->short("p")
-                ->description("Retrieve every available response page")
-                ->go());
-        }
-
-        if (!in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::HEAD]))
-        {
-            $options[] = (CliOption::build()
-                ->long("json")
-                ->short("j")
-                ->valueName("FILE")
-                ->description("The path to JSON-serialized data to submit with the request")
-                ->optionType(CliOptionType::VALUE)
-                ->go());
+                ->description("Retrieve every available response page"));
         }
 
         return $options;
@@ -93,50 +82,15 @@ class SendHttpRequest extends CliCommand
 
     protected function run(string ...$args)
     {
-        $providerClass = $this->getOptionValue("provider");
-        $endpointPath  = $this->getOptionValue("endpoint");
-        $query         = $this->getOptionValue("query");
-        $paginate      = $this->hasOption("paginate") ? $this->getOptionValue("paginate") : false;
-        $json          = $this->hasOption("json") ? $this->getOptionValue("json") : null;
+        /** @var HttpSyncProvider */
+        $provider = $this->getProvider($this->getOptionValue("provider"), HttpSyncProvider::class);
+        $endpoint = $this->getOptionValue("endpoint");
+        $query    = Convert::queryToData($this->getOptionValue("query")) ?: null;
+        $data     = $this->hasOption("data") ? $this->getOptionValue("data") : null;
+        $data     = $data ? $this->getJson($data) : null;
+        $paginate = $this->hasOption("paginate") ? $this->getOptionValue("paginate") : false;
 
-        $query = array_filter(
-            array_combine(
-                array_map(fn($param) => explode("=", $param, 2)[0], $query),
-                array_map(fn($param) => explode("=", $param, 2)[1] ?? null, $query)
-            ),
-            fn($value, $field) => trim($field) && !is_null($value),
-            ARRAY_FILTER_USE_BOTH
-        ) ?: null;
-
-        if ($json)
-        {
-            if ($json == "-")
-            {
-                $json = "php://stdin";
-            }
-            elseif (!file_exists($json))
-            {
-                throw new CliArgumentsInvalidException("file not found: $json");
-            }
-            $data = json_decode(file_get_contents($json), true);
-        }
-
-        if (!class_exists($providerClass) &&
-            !(strpos($providerClass, "\\") === false &&
-                ($providerNamespace         = Env::get("PROVIDER_NAMESPACE", "")) &&
-                class_exists($providerClass = $providerNamespace . "\\" . $providerClass)))
-        {
-            throw new CliArgumentsInvalidException("class does not exist: $providerClass");
-        }
-
-        $provider = $this->app()->get($providerClass);
-
-        if (!($provider instanceof HttpSyncProvider))
-        {
-            throw new CliArgumentsInvalidException("not a subclass of HttpSyncProvider: $providerClass");
-        }
-
-        $curler = $provider->getCurler($endpointPath);
+        $curler = $provider->getCurler($endpoint);
 
         switch ($this->getMethod())
         {
@@ -149,19 +103,19 @@ class SendHttpRequest extends CliCommand
                 break;
 
             case HttpRequestMethod::POST:
-                $result = $paginate ? $curler->postP($data ?? null, $query) : $curler->post($data ?? null, $query);
+                $result = $paginate ? $curler->postP($data, $query) : $curler->post($data, $query);
                 break;
 
             case HttpRequestMethod::PUT:
-                $result = $curler->put($data ?? null, $query);
+                $result = $curler->put($data, $query);
                 break;
 
             case HttpRequestMethod::DELETE:
-                $result = $curler->delete($data ?? null, $query);
+                $result = $curler->delete($data, $query);
                 break;
 
             case HttpRequestMethod::PATCH:
-                $result = $curler->patch($data ?? null, $query);
+                $result = $curler->patch($data, $query);
                 break;
 
             default:
