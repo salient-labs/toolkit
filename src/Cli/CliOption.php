@@ -162,12 +162,10 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
             case CliOptionType::VALUE_POSITIONAL:
             case CliOptionType::ONE_OF_POSITIONAL:
                 $this->IsPositional = true;
-                $short         = null;
-                $key           = $this->Long;
-                $displayName   = $this->Long;
-                $required      = true;
-                $valueRequired = true;
-                $valueName     = $valueName ?: strtoupper(Convert::toSnakeCase($this->Long));
+                $short       = null;
+                $key         = $this->Long;
+                $displayName = $this->Long;
+                $valueName   = $valueName ?: strtoupper(Convert::toSnakeCase($this->Long));
                 if ($optionType === CliOptionType::ONE_OF_POSITIONAL)
                 {
                     $this->AllowedValues = $allowedValues;

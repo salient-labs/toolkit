@@ -195,10 +195,23 @@ abstract class CliCommand implements ReturnsContainer
                 throw new UnexpectedValueException("Option names must be unique: " . implode(", ", $names));
             }
 
-            if ($option->IsPositional && $option->MultipleAllowed &&
-                !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => $opt->MultipleAllowed)))
+            if ($option->IsPositional)
             {
-                throw new UnexpectedValueException("multipleAllowed cannot be set on more than one positional option");
+                if ($option->IsRequired &&
+                    !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => !$opt->IsRequired && !$opt->MultipleAllowed)))
+                {
+                    throw new UnexpectedValueException("Required positional options must be added before optional ones");
+                }
+                if (!$option->IsRequired &&
+                    !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => $opt->MultipleAllowed)))
+                {
+                    throw new UnexpectedValueException("'multipleAllowed' positional options must be added after optional ones");
+                }
+                if ($option->MultipleAllowed &&
+                    !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => $opt->MultipleAllowed)))
+                {
+                    throw new UnexpectedValueException("'multipleAllowed' cannot be set on more than one positional option");
+                }
             }
         }
 
@@ -338,7 +351,7 @@ abstract class CliCommand implements ReturnsContainer
                 {
                     $list         = $option->MultipleAllowed ? "..." : "";
                     $line[]       = "_{$valueName}{$list}_";
-                    $positional[] = $valueName . $list;
+                    $positional[] = $option->IsRequired ? "$valueName$list" : "[$valueName$list]";
                 }
                 else
                 {
@@ -534,16 +547,18 @@ EOF;
                 break;
             }
             $pending--;
-            if ($option->MultipleAllowed)
+            if ($option->IsRequired || !$option->MultipleAllowed)
             {
-                do
+                $merged[$option->Key] = $option->MultipleAllowed ? [$args[$i++]] : $args[$i++];
+                if (!$option->MultipleAllowed)
                 {
-                    $merged[$option->Key][] = $args[$i++];
+                    continue;
                 }
-                while (count($args) - $i - $pending > 0);
-                continue;
             }
-            $merged[$option->Key] = $args[$i++];
+            while (count($args) - $i - $pending > 0)
+            {
+                $merged[$option->Key][] = $args[$i++];
+            }
         }
 
         $this->NextArgumentIndex = $i;
@@ -580,23 +595,23 @@ EOF;
                 {
                     $this->optionError("{$option->DisplayName} required");
                 }
+
+                continue;
             }
-            else
+
+            $value = $merged[$option->Key] ?? (!$option->IsValueRequired ? null : $option->DefaultValue);
+
+            if ($option->IsFlag && $option->MultipleAllowed)
             {
-                $value = $merged[$option->Key] ?? (!$option->IsValueRequired ? null : $option->DefaultValue);
-
-                if ($option->IsFlag && $option->MultipleAllowed)
-                {
-                    $value = count(Convert::toArray($value, true));
-                }
-                elseif ($option->MultipleAllowed)
-                {
-                    $value = Convert::toArray($value, true);
-                }
-
-                $option = $option->withValue($value);
-                $this->applyOption($option, false);
+                $value = count(Convert::toArray($value, true));
             }
+            elseif ($option->MultipleAllowed)
+            {
+                $value = Convert::toArray($value, true);
+            }
+
+            $option = $option->withValue($value);
+            $this->applyOption($option, false);
         }
 
         if ($this->OptionErrors)
@@ -642,6 +657,7 @@ EOF;
             $name = $option->Long ?: $option->Short;
             $values[$name] = $option->Value;
         }
+
         return $values;
     }
 
