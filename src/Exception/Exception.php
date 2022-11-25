@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Exception;
 
 use RuntimeException;
+use Throwable;
 
 /**
  * Base class for exceptions
@@ -12,9 +13,9 @@ use RuntimeException;
  */
 abstract class Exception extends RuntimeException
 {
-    public function __construct(string $message = "")
+    public function __construct(string $message = "", ?Throwable $previous = null)
     {
-        parent::__construct($message);
+        parent::__construct($message, 0, $previous);
     }
 
     /**
