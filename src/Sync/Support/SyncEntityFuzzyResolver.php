@@ -39,12 +39,12 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     /**
      * @var string
      */
-    private $NameField;
+    private $NameProperty;
 
     /**
      * @var string|null
      */
-    private $WeightField;
+    private $WeightProperty;
 
     /**
      * @var array<int,array{0:SyncEntity,1:string}>|null
@@ -64,17 +64,17 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     private $Cache = [];
 
     /**
-     * @param string|null $weightField If multiple entities are equally similar
-     * to a given name, the one with the highest weight is preferred.
+     * @param string|null $weightProperty If multiple entities are equally
+     * similar to a given name, the one with the highest weight is preferred.
      * @param int|null $algorithm Overrides the default string comparison
      * algorithm. Either {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}
      * or {@see SyncEntityFuzzyResolver::ALGORITHM_SIMILAR_TEXT}.
      */
-    public function __construct(SyncEntityProvider $entityProvider, string $nameField, ?string $weightField, ?int $algorithm = null, ?float $uncertaintyThreshold = null)
+    public function __construct(SyncEntityProvider $entityProvider, string $nameProperty, ?string $weightProperty, ?int $algorithm = null, ?float $uncertaintyThreshold = null)
     {
         $this->EntityProvider = $entityProvider;
-        $this->NameField      = $nameField;
-        $this->WeightField    = $weightField;
+        $this->NameProperty   = $nameProperty;
+        $this->WeightProperty = $weightProperty;
         $this->Algorithm      = $algorithm;
         $this->UncertaintyThreshold = $uncertaintyThreshold;
     }
@@ -86,7 +86,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         {
             $this->Entities[] = [
                 $entity,
-                Convert::toNormal($entity->{$this->NameField})
+                Convert::toNormal($entity->{$this->NameProperty})
             ];
         }
     }
@@ -127,7 +127,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 
         $sort = $this->Entities;
         usort($sort, fn($e1, $e2) => $this->compareUncertainty($_name, $e1, $e2)
-            ?: ($e2[0]->{$this->WeightField} <=> $e1[0]->{$this->WeightField}));
+            ?: ($e2[0]->{$this->WeightProperty} <=> $e1[0]->{$this->WeightProperty}));
         $cache = $match = reset($sort);
 
         if ($match !== false)
@@ -137,7 +137,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
             {
                 Console::debugOnce(sprintf(
                     "Match with '%s' exceeds uncertainty threshold (%.2f >= %.2f):",
-                    $match[0]->{$this->NameField},
+                    $match[0]->{$this->NameProperty},
                     $uncertainty,
                     $this->UncertaintyThreshold
                 ), $name);

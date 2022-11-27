@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
+use ArrayIterator;
 use Closure;
 use DateInterval;
 use DateTimeImmutable;
@@ -349,6 +350,10 @@ final class Conversions
         {
             return $iterable;
         }
+        if (is_array($iterable))
+        {
+            return new ArrayIterator($iterable);
+        }
 
         return new IteratorIterator($iterable);
     }
@@ -370,6 +375,138 @@ final class Conversions
             $path  = preg_replace("/(?<=.)(?<!^\\.|^\\.\\.)(\\.[^.\\s]+){$range}\$/", "", $path);
         }
         return $path;
+    }
+
+    /**
+     * Get the absolute form of a URL relative to a base URL, as per [RFC1808]
+     */
+    public function resolveRelativeUrl(string $embeddedUrl, string $baseUrl): string
+    {
+        // Step 1
+        if (!$baseUrl)
+        {
+            return $embeddedUrl;
+        }
+        // Step 2a
+        if (!$embeddedUrl)
+        {
+            return $baseUrl;
+        }
+        $url = $this->parseUrl($embeddedUrl);
+        // Step 2b
+        if ($url["scheme"] ?? null)
+        {
+            return $embeddedUrl;
+        }
+        $base = $this->parseUrl($baseUrl);
+        // Step 2c
+        $url["scheme"] = $base["scheme"] ?? null;
+        // Step 3
+        if ($this->netLoc($url))
+        {
+            return $this->unparseUrl($url);
+        }
+        $url = $this->netLoc($base) + $url;
+        // Step 4
+        if (substr($path = $url["path"] ?? "", 0, 1) === "/")
+        {
+            return $this->unparseUrl($url);
+        }
+        // Step 5
+        if (!$path)
+        {
+            $url["path"] = $base["path"] ?? null;
+            // Step 5a
+            if (!($url["params"] ?? null))
+            {
+                $url["params"] = $base["params"] ?? null;
+                // Step 5b
+                if (!($url["query"] ?? null))
+                {
+                    $url["query"] = $base["query"] ?? null;
+                }
+            }
+
+            return $this->unparseUrl($url);
+        }
+        $base["path"] = $base["path"] ?? "";
+        // Step 6
+        $path = substr($base["path"], 0, strrpos("/{$base["path"]}", "/")) . $path;
+        // Steps 6a and 6b
+        $path = preg_replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
+        // Step 6c
+        do
+        {
+            $path = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\./@', '', $path, 1, $count);
+        }
+        while ($count);
+        // Step 6d
+        $url["path"] = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\.$@', '', $path, 1, $count);
+
+        return $this->unparseUrl($url);
+    }
+
+    private function netLoc(array $url): array
+    {
+        return array_intersect_key($url, array_flip(["host", "port", "user", "pass"]));
+    }
+
+    /**
+     * Parse a URL and return its components, including "params" if FTP
+     * parameters are present
+     *
+     * Other components are as per `parse_url`.
+     *
+     * @return array|false `false` if `$url` cannot be parsed.
+     */
+    public function parseUrl(string $url)
+    {
+        // Extract "params" early because parse_url doesn't accept URLs where
+        // "path" has a leading ";"
+        if (strpos($url, ";") !== false)
+        {
+            preg_match('/;([^?]*)/', $url, $matches);
+            $params = $matches[1];
+            $url    = preg_replace('/;[^?]*/', "", $url, 1);
+        }
+        if (($url = parse_url($url)) === false)
+        {
+            return false;
+        }
+        if (isset($params))
+        {
+            $url["params"] = $params;
+        }
+
+        return $url;
+    }
+
+    /**
+     * Convert a parse_url array to a string
+     *
+     * Arrays returned by {@see Conversions::parseUrl()} are also converted.
+     *
+     * @param array<string,string|int> $url
+     */
+    public function unparseUrl(array $url): string
+    {
+        [$u, $url] = [$url, ""];
+        !($u["scheme"] ?? null) || $url .= "{$u["scheme"]}:";
+        if ($u["host"] ?? null)
+        {
+            $url .= "//";
+            !array_key_exists("user", $u) || $auth = $u["user"];
+            !array_key_exists("pass", $u) || $auth = ($auth ?? "") . ":{$u["pass"]}";
+            is_null($auth ?? null) || $url        .= "$auth@";
+            $url .= $u["host"];
+            !array_key_exists("port", $u) || $url .= ":{$u["port"]}";
+        }
+        !($u["path"] ?? null) || $url .= $u["path"];
+        !array_key_exists("params", $u) || $url   .= ";{$u["params"]}";
+        !array_key_exists("query", $u) || $url    .= "?{$u["query"]}";
+        !array_key_exists("fragment", $u) || $url .= "#{$u["fragment"]}";
+
+        return $url;
     }
 
     /**
@@ -905,8 +1042,8 @@ final class Conversions
     /**
      * A more API-friendly http_build_query
      *
-     * Booleans are cast to integers (`0` or `1`), `DateTime`s are
-     * formatted by `$dateFormatter`, and other values are cast to string.
+     * Booleans are cast to integers (`0` or `1`), `DateTime`s are formatted by
+     * `$dateFormatter`, and other values are cast to string.
      *
      * Arrays with consecutive integer keys numbered from 0 are considered to be
      * lists. By default, keys are not included when adding lists to query

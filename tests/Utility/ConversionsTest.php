@@ -9,6 +9,18 @@ use UnexpectedValueException;
 
 final class ConversionsTest extends \Lkrms\Tests\TestCase
 {
+    /*
+    public function testToIntOrNull()
+    {
+    }
+    public function testToArray()
+    {
+    }
+    public function testToList()
+    {
+    }
+    */
+
     public function testFlatten()
     {
         $data = [
@@ -31,6 +43,21 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
 
     }
 
+    /*
+    public function testToUniqueList()
+    {
+    }
+    public function testStringsToUniqueList()
+    {
+    }
+    public function testToScalarArray()
+    {
+    }
+    public function testStringToList()
+    {
+    }
+    */
+
     public function testArrayKeyToOffset()
     {
         $data = [
@@ -48,7 +75,7 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
 
     }
 
-    public function testArraySpliceByKey()
+    public function testArraySpliceAtKey()
     {
         $data1 = $data2 = $data3 = $data4 = $data5 = [
             "a" => "value0",
@@ -130,6 +157,298 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
 
     }
 
+    /*
+    public function testIntervalToSeconds()
+    {
+    }
+    public function testToDateTimeImmutable()
+    {
+    }
+    public function testToTimezone()
+    {
+    }
+    public function testEmptyToNull()
+    {
+    }
+    public function testCoalesce()
+    {
+    }
+    public function testIterableToArray()
+    {
+    }
+    public function testIterableToIterator()
+    {
+    }
+    public function testPathToBasename()
+    {
+    }
+    */
+
+    public function testResolveRelativeUrl()
+    {
+        // From [RFC1808] Section 5
+        $baseUrl = "http://a/b/c/d;p?q#f";
+        // "Normal Examples"
+        $relativeUrls = [
+            "g:h"     => "g:h",
+            "g"       => "http://a/b/c/g",
+            "./g"     => "http://a/b/c/g",
+            "g/"      => "http://a/b/c/g/",
+            "/g"      => "http://a/g",
+            "//g"     => "http://g",
+            "?y"      => "http://a/b/c/d;p?y",
+            "g?y"     => "http://a/b/c/g?y",
+            "g?y/./x" => "http://a/b/c/g?y/./x",
+            "#s"      => "http://a/b/c/d;p?q#s",
+            "g#s"     => "http://a/b/c/g#s",
+            "g#s/./x" => "http://a/b/c/g#s/./x",
+            "g?y#s"   => "http://a/b/c/g?y#s",
+            ";x"      => "http://a/b/c/d;x",
+            "g;x"     => "http://a/b/c/g;x",
+            "g;x?y#s" => "http://a/b/c/g;x?y#s",
+            "."       => "http://a/b/c/",
+            "./"      => "http://a/b/c/",
+            ".."      => "http://a/b/",
+            "../"     => "http://a/b/",
+            "../g"    => "http://a/b/g",
+            "../.."   => "http://a/",
+            "../../"  => "http://a/",
+            "../../g" => "http://a/g",
+
+            // "Abnormal Examples"
+            "" => "http://a/b/c/d;p?q#f",
+            "../../../g"    => "http://a/../g",
+            "../../../../g" => "http://a/../../g",
+            "/./g"   => "http://a/./g",
+            "/../g"  => "http://a/../g",
+            "g."     => "http://a/b/c/g.",
+            ".g"     => "http://a/b/c/.g",
+            "g.."    => "http://a/b/c/g..",
+            "..g"    => "http://a/b/c/..g",
+            "./../g" => "http://a/b/g",
+            "./g/."  => "http://a/b/c/g/",
+            "g/./h"  => "http://a/b/c/g/h",
+            "g/../h" => "http://a/b/c/h",
+            "http:g" => "http:g",
+            "http:"  => "http:",
+        ];
+        foreach ($relativeUrls as $url => $expected)
+        {
+            $this->assertSame($expected, Convert::resolveRelativeUrl($url, $baseUrl));
+        }
+    }
+
+    public function testParseUrl()
+    {
+        $expected = [
+            [
+                'scheme'   => 'https',
+                'host'     => 'host',
+                'port'     => 8443,
+                'user'     => 'user',
+                'pass'     => 'pass',
+                'path'     => '/path/',
+                'query'    => 'query',
+                'fragment' => 'fragment',
+                'params'   => 'params',
+            ],
+            [
+                'scheme'   => 'https',
+                'host'     => 'host',
+                'port'     => 8443,
+                'user'     => 'user',
+                'pass'     => '',
+                'path'     => '/path/',
+                'query'    => 'query',
+                'fragment' => 'fragment',
+                'params'   => 'params',
+            ],
+            [
+                'scheme'   => 'https',
+                'host'     => 'host',
+                'port'     => 8443,
+                'user'     => '',
+                'pass'     => 'pass',
+                'path'     => '/path/',
+                'query'    => 'query',
+                'fragment' => 'fragment',
+                'params'   => 'params',
+            ],
+            [
+                'scheme'   => 'https',
+                'host'     => 'host',
+                'port'     => 8443,
+                'user'     => '',
+                'pass'     => '',
+                'path'     => '/path/',
+                'query'    => 'query',
+                'fragment' => 'fragment',
+                'params'   => 'params',
+            ],
+            [
+                'scheme'   => 'https',
+                'host'     => 'host',
+                'port'     => 8443,
+                'user'     => '',
+                'path'     => '/path/',
+                'query'    => 'query',
+                'fragment' => 'fragment',
+                'params'   => 'params',
+            ],
+            [
+                'scheme'   => 'https',
+                'host'     => 'host',
+                'port'     => 8443,
+                'path'     => '/path/',
+                'query'    => 'query',
+                'fragment' => 'fragment',
+                'params'   => 'params',
+            ],
+            [
+                'scheme' => 'https',
+                'host'   => 'host',
+                'port'   => 8443,
+                'params' => 'params',
+            ],
+            [
+                'scheme' => 'https',
+                'host'   => 'host',
+                'params' => 'params',
+            ],
+            [
+                'scheme' => 'https',
+                'host'   => 'host',
+                'port'   => 8443,
+                'query'  => 'query',
+            ],
+            [
+                'scheme' => 'https',
+                'host'   => 'host',
+                'query'  => 'query',
+            ],
+            [
+                'scheme'   => 'https',
+                'host'     => 'host',
+                'port'     => 8443,
+                'fragment' => 'fragment',
+            ],
+            [
+                'scheme'   => 'https',
+                'host'     => 'host',
+                'fragment' => 'fragment',
+            ],
+            [
+                'scheme' => 'https',
+                'host'   => 'host',
+                'port'   => 8443,
+            ],
+            [
+                'scheme' => 'https',
+                'host'   => 'host',
+            ],
+            [
+                'scheme'   => 'https',
+                'host'     => 'www.example.com',
+                'port'     => 123,
+                'user'     => 'john.doe',
+                'path'     => '/forum/questions/',
+                'query'    => 'tag=networking&order=newest',
+                'fragment' => 'top',
+            ],
+            [
+                'scheme' => 'ldap',
+                'host'   => '[2001:db8::7]',
+                'path'   => '/c=GB',
+                'query'  => 'objectClass?one',
+            ],
+            [
+                'scheme' => 'mailto',
+                'path'   => 'John.Doe@example.com',
+            ],
+            [
+                'scheme' => 'news',
+                'path'   => 'comp.infosystems.www.servers.unix',
+            ],
+            [
+                'scheme' => 'tel',
+                'path'   => '+1-816-555-1212',
+            ],
+            [
+                'scheme' => 'telnet',
+                'host'   => '192.0.2.16',
+                'port'   => 80,
+                'path'   => '/',
+            ],
+            [
+                'scheme' => 'urn',
+                'path'   => 'oasis:names:specification:docbook:dtd:xml:4.1.2',
+            ],
+        ];
+        foreach ($this->getUrls(true) as $i => $url)
+        {
+            $this->assertSame($expected[$i], Convert::parseUrl($url));
+        }
+    }
+
+    public function testUnparseUrl()
+    {
+        foreach ($this->getUrls() as $url)
+        {
+            $this->assertSame($url, Convert::unparseUrl(parse_url($url)));
+        }
+        foreach ($this->getUrls(true) as $url)
+        {
+            $this->assertSame($url, Convert::unparseUrl(Convert::parseUrl($url)));
+        }
+    }
+
+    private function getUrls(bool $withParams = false): array
+    {
+        $params = $withParams ? ";params" : "";
+        return [
+            "https://user:pass@host:8443/path/$params?query#fragment",
+            "https://user:@host:8443/path/$params?query#fragment",
+            "https://:pass@host:8443/path/$params?query#fragment",
+            "https://:@host:8443/path/$params?query#fragment",
+            "https://@host:8443/path/$params?query#fragment",
+            "https://host:8443/path/$params?query#fragment",
+            ...(!$withParams ? [] : [
+                "https://host:8443;params",
+                "https://host;params",
+            ]),
+            "https://host:8443?query",
+            "https://host?query",
+            "https://host:8443#fragment",
+            "https://host#fragment",
+            "https://host:8443",
+            "https://host",
+
+            // From https://en.wikipedia.org/wiki/Uniform_Resource_Identifier:
+            "https://john.doe@www.example.com:123/forum/questions/?tag=networking&order=newest#top",
+            "ldap://[2001:db8::7]/c=GB?objectClass?one",
+            "mailto:John.Doe@example.com",
+            "news:comp.infosystems.www.servers.unix",
+            "tel:+1-816-555-1212",
+            "telnet://192.0.2.16:80/",
+            "urn:oasis:names:specification:docbook:dtd:xml:4.1.2",
+        ];
+    }
+
+    /*
+    public function testClassToBasename()
+    {
+    }
+    public function testClassToNamespace()
+    {
+    }
+    public function testMethodToFunction()
+    {
+    }
+    public function testListToMap()
+    {
+    }
+    */
+
     public function testIterableToItem()
     {
         $data = [
@@ -179,6 +498,21 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
 
     }
 
+    /*
+    public function testSparseToString()
+    {
+    }
+    public function testScalarToString()
+    {
+    }
+    public function testPlural()
+    {
+    }
+    public function testNounToPlural()
+    {
+    }
+    */
+
     public function testQueryToData()
     {
         $this->assertSame([
@@ -188,6 +522,21 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
         ], Convert::queryToData(["key1=value1", "key2=value2", "key3=value3", "key3=", "key4", "=value5"]));
     }
 
+    /*
+    public function testLinesToLists()
+    {
+    }
+    public function testUuidToHex()
+    {
+    }
+    public function testSizeToBytes()
+    {
+    }
+    public function testToStrings()
+    {
+    }
+    */
+
     public function testToShellArg()
     {
         $this->assertSame("''", Convert::toShellArg(""));
@@ -196,5 +545,41 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
         $this->assertSame("'/some/path with spaces'", Convert::toShellArg("/some/path with spaces"));
         $this->assertSame("''\\''quotable'\\'' \"quotes\"'", Convert::toShellArg("'quotable' \"quotes\""));
     }
+
+    /*
+    public function testToCase()
+    {
+    }
+    public function testToSnakeCase()
+    {
+    }
+    public function testToKebabCase()
+    {
+    }
+    public function testToPascalCase()
+    {
+    }
+    public function testToCamelCase()
+    {
+    }
+    public function testToNormal()
+    {
+    }
+    public function testObjectToArray()
+    {
+    }
+    public function testDataToQuery()
+    {
+    }
+    public function testValueToCode()
+    {
+    }
+    public function testArrayToCode()
+    {
+    }
+    public function testNumberToNoun()
+    {
+    }
+    */
 
 }

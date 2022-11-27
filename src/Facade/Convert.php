@@ -39,10 +39,12 @@ use Lkrms\Utility\Conversions;
  * @method static string methodToFunction(string $method) Remove the class from a method name (see {@see Conversions::methodToFunction()})
  * @method static string nounToPlural(string $noun) Return the plural of a singular noun (see {@see Conversions::nounToPlural()})
  * @method static array objectToArray(object $object) A wrapper for get_object_vars (see {@see Conversions::objectToArray()})
+ * @method static array|false parseUrl(string $url) Parse a URL and return its components, including "params" if FTP parameters are present (see {@see Conversions::parseUrl()})
  * @method static string pathToBasename(string $path, int $extLimit = 0) Remove the directory and up to the given number of extensions from a path (see {@see Conversions::pathToBasename()})
  * @method static string plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false) If $number is 1, return $singular, otherwise return $plural (see {@see Conversions::plural()})
  * @method static array queryToData(string[] $query) Convert a list of "key=value" strings to an array like ["key" => "value"] (see {@see Conversions::queryToData()})
  * @method static array renameArrayKey(string|int $key, string|int $newKey, array $array) Rename an array key without changing the order of values in the array (see {@see Conversions::renameArrayKey()})
+ * @method static string resolveRelativeUrl(string $embeddedUrl, string $baseUrl) Get the absolute form of a URL relative to a base URL, as per [RFC1808] (see {@see Conversions::resolveRelativeUrl()})
  * @method static string|false scalarToString(mixed $value) Convert a scalar to a string (see {@see Conversions::scalarToString()})
  * @method static int sizeToBytes(string $size) Convert php.ini values like "128M" to bytes (see {@see Conversions::sizeToBytes()})
  * @method static string sparseToString(string $separator, array $array) Remove zero-width values from an array before imploding it (see {@see Conversions::sparseToString()})
@@ -63,6 +65,7 @@ use Lkrms\Utility\Conversions;
  * @method static string[] toStrings(mixed ...$value) Convert the given strings and Stringables to an array of strings (see {@see Conversions::toStrings()})
  * @method static DateTimeZone toTimezone(DateTimeZone|string $value) Convert a value to a DateTimeZone instance (see {@see Conversions::toTimezone()})
  * @method static array toUniqueList(array $array) A type-agnostic array_unique with reindexing (see {@see Conversions::toUniqueList()})
+ * @method static string unparseUrl(array $url) Convert a parse_url array to a string (see {@see Conversions::unparseUrl()})
  * @method static string uuidToHex(string $bytes) Convert a 16-byte UUID to its 36-byte hexadecimal representation (see {@see Conversions::uuidToHex()})
  * @method static string valueToCode(mixed $value, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::valueToCode()}
  *
