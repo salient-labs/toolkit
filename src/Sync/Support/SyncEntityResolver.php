@@ -23,19 +23,19 @@ final class SyncEntityResolver implements ISyncEntityResolver
     /**
      * @var string
      */
-    private $NameField;
+    private $NameProperty;
 
-    public function __construct(SyncEntityProvider $entityProvider, string $nameField)
+    public function __construct(SyncEntityProvider $entityProvider, string $nameProperty)
     {
         $this->EntityProvider = $entityProvider;
-        $this->NameField      = $nameField;
+        $this->NameProperty   = $nameProperty;
     }
 
     public function getByName(string $name): ?SyncEntity
     {
         $match = Convert::iterableToItem(
-            $this->EntityProvider->getList([$this->NameField => $name]),
-            $this->NameField,
+            $this->EntityProvider->getList([$this->NameProperty => $name]),
+            $this->NameProperty,
             $name
         );
         if ($match === false)

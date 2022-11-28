@@ -342,4 +342,21 @@ final class SyncEntityProvider implements ISyncEntityProvider
         return $this->run(SyncOperation::DELETE_LIST, $entities, ...$args);
     }
 
+    public function getResolver(string $nameProperty): SyncEntityResolver
+    {
+        return new SyncEntityResolver($this, $nameProperty);
+    }
+
+    /**
+     * @param string|null $weightProperty If multiple entities are equally
+     * similar to a given name, the one with the highest weight is preferred.
+     * @param int|null $algorithm Overrides the default string comparison
+     * algorithm. Either {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}
+     * or {@see SyncEntityFuzzyResolver::ALGORITHM_SIMILAR_TEXT}.
+     */
+    public function getFuzzyResolver(string $nameProperty, ?string $weightProperty, ?int $algorithm = null, ?float $uncertaintyThreshold = null): SyncEntityFuzzyResolver
+    {
+        return new SyncEntityFuzzyResolver($this, $nameProperty, $weightProperty, $algorithm, $uncertaintyThreshold);
+    }
+
 }

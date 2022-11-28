@@ -8,7 +8,7 @@
     - Useful regex: `^(.(?!//)(?!abstract )(?!final )(?!private ))*((public|protected|static) )+function`
   - [ ] Replace instantiation via `new` or `DI` with `ContainerInterface->get` where appropriate
   - [ ] Adopt generators and iterators where appropriate
-  - [ ] Clean up `Exception` namespace
+  - [x] Clean up `Exception` namespace
 - [ ] Add support for simultaneous requests to `Curler`
 - [ ] Finalise `Dice` refactor
 - [ ] Convert informal tests to PHPUnit tests
@@ -27,8 +27,8 @@
     - [ ] Retain audit log
     - [ ] Track "deltas in" and "deltas out"
   - [ ] Track foreign keys between backends
-- [ ] Add `SyncException` as a base class
-- [ ] Add `SyncEntityProvider::resolve()` and `fuzzyResolve()`
+- ~~Add `SyncException` as a base class~~
+- [x] Add `SyncEntityProvider::getResolver()` and `getFuzzyResolver()`
 - [ ] Add `SyncStore::checkHeartbeats()`
 
 ### Cli

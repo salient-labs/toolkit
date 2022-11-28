@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Container;
 
 use Dice\Dice;
+use Lkrms\Concept\FluentInterface;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 use Lkrms\Contract\IServiceShared;
@@ -20,7 +21,7 @@ use UnexpectedValueException;
  * Typically accessed via the {@see \Lkrms\Facade\DI} facade.
  *
  */
-class Container implements IContainer
+class Container extends FluentInterface implements IContainer
 {
     /**
      * @var IContainer|null

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
+use Lkrms\Concept\FluentInterface;
 use Lkrms\Container\AppContainer;
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
@@ -19,6 +20,7 @@ use Lkrms\Contract\IContainer;
  * @method static void unload() Clear the underlying AppContainer instance
  * @method static AppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static AppContainer bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})
+ * @method static AppContainer forEach(array|object $array, callable $callback) Move to the next method in the chain after iterating over an array and passing the object to a callback with each key-value pair in the array (see {@see FluentInterface::forEach()})
  * @method static mixed get(string $id, mixed ...$params) Create a new instance of a class or interface, or return a shared instance created earlier (see {@see Container::get()})
  * @method static mixed getAs(string $id, string $serviceId, mixed ...$params) Create a new instance of a class or interface with an explicit service name, or apply a service name to a shared instance created earlier (see {@see Container::getAs()})
  * @method static IContainer getGlobalContainer() Get the global container, loading it if necessary (see {@see Container::getGlobalContainer()})
@@ -26,6 +28,7 @@ use Lkrms\Contract\IContainer;
  * @method static string[] getServices() Get a list of classes bound to the container by calling service() (see {@see Container::getServices()})
  * @method static bool has(string $id) Return true if a class or interface resolves to a concrete class that actually exists (see {@see Container::has()})
  * @method static bool hasGlobalContainer() Return true if a global container has been loaded (see {@see Container::hasGlobalContainer()})
+ * @method static AppContainer if(bool $condition, callable $callback) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of a class or interface have been applied to the default context (see {@see Container::inContextOf()})
  * @method static AppContainer instance(string $id, mixed $instance) Add an existing instance to the container as a shared binding (see {@see Container::instance()})
  * @method static AppContainer instanceIf(string $id, mixed $instance) Add an existing instance to the container as a shared binding if it hasn't already been bound (see {@see Container::instanceIf()})

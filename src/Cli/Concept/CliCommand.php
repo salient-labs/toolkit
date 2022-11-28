@@ -350,7 +350,7 @@ abstract class CliCommand implements ReturnsContainer
                 if ($option->IsPositional)
                 {
                     $list         = $option->MultipleAllowed ? "..." : "";
-                    $line[]       = "_{$valueName}{$list}_";
+                    $line[]       = $valueName . $list;
                     $positional[] = $option->IsRequired ? "$valueName$list" : "[$valueName$list]";
                 }
                 else
