@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
+use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 use UnexpectedValueException;
 
 /**
@@ -86,9 +88,23 @@ final class Formatters
         ];
     }
 
+    private function maybeSetTimezone(DateTimeInterface $date): DateTimeInterface
+    {
+        if ($date->getOffset() || date_default_timezone_get() === "UTC")
+        {
+            return $date;
+        }
+        return (
+            $date instanceof DateTimeImmutable ? $date : DateTimeImmutable::createFromMutable($date)
+        )->setTimezone(new DateTimeZone(date_default_timezone_get()));
+    }
+
     public function date(DateTimeInterface $date, string $between = '[]'): string
     {
-        [$l, $r] = $this->getBetween($between);
+        [$date, $l, $r] = [
+            $this->maybeSetTimezone($date),
+            ...$this->getBetween($between),
+        ];
 
         $noYear = date('Y') == $date->format('Y');
         $noTime = $date->format('H:i:s') == '00:00:00';
@@ -100,7 +116,11 @@ final class Formatters
 
     public function dateRange(DateTimeInterface $from, DateTimeInterface $to, string $between = '[]', string $delimiter = "\u{2013}"): string
     {
-        [$l, $r] = $this->getBetween($between);
+        [$from, $to, $l, $r] = [
+            $this->maybeSetTimezone($from),
+            $this->maybeSetTimezone($to),
+            ...$this->getBetween($between),
+        ];
 
         $sameYear = ($year = $from->format('Y')) == $to->format('Y');
         $sameZone = $from->getTimezone() == $to->getTimezone();
