@@ -24,12 +24,11 @@ use Lkrms\Utility\Tests;
  * @method static bool isArrayOfArray(mixed $value, bool $allowEmpty = false, bool $requireList = false, bool $requireIndexed = false) Return true for array[] (see {@see Tests::isArrayOfArray()})
  * @method static bool isArrayOfIntOrString(mixed $value, bool $allowEmpty = false, bool $requireList = false, bool $requireIndexed = false) Return true for string[] and int[] (see {@see Tests::isArrayOfIntOrString()})
  * @method static bool isAssociativeArray(mixed $value, bool $allowEmpty = false) Return true for arrays with one or more string keys (see {@see Tests::isAssociativeArray()})
+ * @method static bool isBetween(int|float $value, int|float $min, int|float $max) Return true for numbers within a range (see {@see Tests::isBetween()})
  * @method static bool isEmpty(array|Countable|Iterator|IteratorAggregate $value) Return true if an array, iterable or Countable is empty (see {@see Tests::isEmpty()})
- * @method static bool isFlagSet(int $value, int $flag, ?int $mask = null) Check if a flag is set in a bitmask (see {@see Tests::isFlagSet()})
  * @method static bool isIndexedArray(mixed $value, bool $allowEmpty = false) Return true for arrays with no string keys (see {@see Tests::isIndexedArray()})
  * @method static bool isIntValue(mixed $value) Return true for integers and integer strings (see {@see Tests::isIntValue()})
  * @method static bool isListArray(mixed $value, bool $allowEmpty = false) Return true for arrays with consecutive integer keys numbered from 0 (see {@see Tests::isListArray()})
- * @method static bool isOneFlagSet(int $value, int $mask) Check if only one flag is set in a bitmask (see {@see Tests::isOneFlagSet()})
  * @method static bool isPhpReservedWord(string $name) Return true for PHP reserved words (see {@see Tests::isPhpReservedWord()})
  *
  * @uses Tests
