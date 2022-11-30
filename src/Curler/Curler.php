@@ -374,6 +374,19 @@ class Curler implements IReadable, IWritable
         return $this;
     }
 
+    /**
+     * @return $this
+     */
+    final public function flushCookies()
+    {
+        if ($cookieKey = $this->getCookieKey())
+        {
+            Cache::delete($cookieKey);
+        }
+
+        return $this;
+    }
+
     final public function responseContentTypeIs(string $mimeType): bool
     {
         $contentType = $this->ResponseHeaders->getHeaderValue(
@@ -401,7 +414,7 @@ class Curler implements IReadable, IWritable
         $clone = clone $this;
         if ($clone->Handle)
         {
-            $clone->CurlInfo = curl_getinfo($clone->Handle);
+            $clone->CurlInfo = $clone->CurlInfo ?: curl_getinfo($clone->Handle);
         }
 
         return $clone;
@@ -513,11 +526,7 @@ class Curler implements IReadable, IWritable
             }
         }
 
-        $this->CookieKey = ($this->HandleCookies
-            ? Convert::sparseToString(":", [self::class, "cookies", $this->CookieCacheKey])
-            : null);
-
-        if ($this->CookieKey)
+        if ($this->CookieKey = $this->getCookieKey())
         {
             // Enable cookies without loading them from a file
             curl_setopt($this->Handle, CURLOPT_COOKIEFILE, "");
@@ -541,9 +550,9 @@ class Curler implements IReadable, IWritable
         {
             $this->ResponseHeaders = $this->ResponseHeaders->addRawHeader($header);
         }
-        elseif (count($split = explode(" ", $header, 2)) === 2 && explode("/", $split[0])[0] === "HTTP")
+        elseif (count($split = explode(" ", $header, 3)) > 1 && explode("/", $split[0])[0] === "HTTP")
         {
-            $this->ReasonPhrase = trim($split[1]);
+            $this->ReasonPhrase = trim($split[2] ?? "");
         }
         else
         {
@@ -639,6 +648,13 @@ class Curler implements IReadable, IWritable
         return false;
     }
 
+    private function getCookieKey(): ?string
+    {
+        return $this->HandleCookies
+            ? Convert::sparseToString(":", [self::class, "cookies", $this->CookieCacheKey])
+            : null;
+    }
+
     private function getDateFormatter(): DateFormatter
     {
         return $this->DateFormatter
@@ -730,6 +746,11 @@ class Curler implements IReadable, IWritable
                 $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE_REPEATED);
                 $this->StatusCode   = (int)curl_getinfo($this->Handle, CURLINFO_RESPONSE_CODE);
                 $this->ResponseBody = curl_multi_getcontent($this->Handle);
+
+                if (Env::debug())
+                {
+                    $this->CurlInfo = curl_getinfo($this->Handle);
+                }
             }
             else
             {
@@ -757,7 +778,7 @@ class Curler implements IReadable, IWritable
 
         if ($this->StatusCode >= 400 && $this->ThrowHttpErrors)
         {
-            throw new CurlerException($this, "HTTP error " . $this->ReasonPhrase);
+            throw new CurlerException($this, sprintf("HTTP error %d %s", $this->StatusCode, $this->ReasonPhrase));
         }
 
         if ($close)

@@ -31,7 +31,7 @@ class CurlerException extends \Lkrms\Exception\Exception
     {
         $detail = [
             "Response" => implode("\n", [
-                Format::array($this->Curler->ResponseHeadersByName) ?: "<no headers>",
+                Format::array($this->Curler->ResponseHeadersByName ?: []) ?: "<no headers>",
                 (is_null($this->Curler->ResponseBody)
                     ? "<no body>"
                     : ($this->Curler->ResponseBody ?: "<empty body>")),
