@@ -10,7 +10,7 @@ use Lkrms\Facade\Compute;
 use Lkrms\Support\HttpRequestMethod;
 
 /**
- * Adds GET and optional POST request caching to Curler
+ * Adds GET, HEAD, and optional POST request caching to Curler
  *
  * @property bool $CachePostRequests
  * @property-read int $Expiry
@@ -71,7 +71,7 @@ class CachingCurler extends Curler
 
     protected function execute(bool $close = true, int $depth = 0): string
     {
-        if ($this->Method == HttpRequestMethod::GET ||
+        if (in_array($this->Method, [HttpRequestMethod::GET, HttpRequestMethod::HEAD]) ||
             ($this->CachePostRequests &&
                 $this->Method == HttpRequestMethod::POST &&
                 !is_array($this->Body)))
