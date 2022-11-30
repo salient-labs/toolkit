@@ -86,10 +86,10 @@ class CachingCurler extends Curler
             ) . ":" . Compute::hash(...$key);
             $last = Cache::get($key, $this->Expiry);
 
-            if ($last === false)
+            if ($last === false || count($last) !== 4)
             {
                 parent::execute($close, $depth + 1);
-                Cache::set($key, [$this->ResponseHeadersByName, $this->ResponseBody], $this->Expiry);
+                Cache::set($key, [$this->StatusCode, $this->ReasonPhrase, $this->ResponseHeaders, $this->ResponseBody], $this->Expiry);
             }
             else
             {
@@ -97,7 +97,8 @@ class CachingCurler extends Curler
                 {
                     $this->close();
                 }
-                [$this->ResponseHeadersByName, $this->ResponseBody] = $last;
+                [$this->StatusCode, $this->ReasonPhrase, $this->ResponseHeaders, $this->ResponseBody] = $last;
+                $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE_REPEATED);
             }
 
             return $this->ResponseBody;
