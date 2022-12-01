@@ -11,6 +11,9 @@ use Lkrms\Console\ConsoleLevel as Level;
 use Lkrms\Facade\Convert;
 use Lkrms\Sync\Support\SyncErrorType as ErrorType;
 
+/**
+ * @extends TypedCollection<SyncError>
+ */
 final class SyncErrorCollection extends TypedCollection implements JsonSerializable
 {
     protected function getItemClass(): string

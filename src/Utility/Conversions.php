@@ -822,6 +822,16 @@ final class Conversions
     }
 
     /**
+     * Undo wordwrap()
+     *
+     */
+    public function unwrap(string $string, string $break = "\n"): string
+    {
+        $break = preg_quote($break, "/");
+        return preg_replace("/(?<!{$break}|^)(${break})(?!{$break}|\$)/", " ", $string);
+    }
+
+    /**
      * Convert a 16-byte UUID to its 36-byte hexadecimal representation
      *
      */

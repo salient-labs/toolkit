@@ -4,10 +4,20 @@ declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
+/**
+ * @template T
+ */
 trait HasSortableItems
 {
+    /**
+     * @use HasItems<T>
+     */
     use HasItems;
 
+    /**
+     * @psalm-param T $a
+     * @psalm-param T $b
+     */
     protected function compareItems($a, $b): int
     {
         return $a <=> $b;
@@ -23,9 +33,21 @@ trait HasSortableItems
      */
     final public function sort()
     {
-        $this->sortItems();
+        $clone = clone $this;
+        $clone->sortItems();
 
-        return $this;
+        return $clone;
+    }
+
+    /**
+     * @return $this
+     */
+    final public function reverse()
+    {
+        $clone         = clone $this;
+        $clone->_Items = array_reverse($clone->_Items);
+
+        return $clone;
     }
 
 }

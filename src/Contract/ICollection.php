@@ -13,16 +13,15 @@ use Iterator;
  * collection objects
  *
  * @throws \RuntimeException if an item is added by key.
+ * @template T
+ * @extends Iterator<int,T>
+ * @extends ArrayAccess<int,T>
  */
 interface ICollection extends Iterator, ArrayAccess, Countable
 {
     /**
-     * @return iterable<mixed>
-     */
-    public function toList(): iterable;
-
-    /**
      * @return mixed[]
+     * @psalm-return T[]
      */
     public function toArray(): array;
 

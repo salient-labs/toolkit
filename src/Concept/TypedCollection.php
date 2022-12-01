@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lkrms\Concept;
 
 use Lkrms\Concern\HasSortableItems;
@@ -11,9 +13,15 @@ use UnexpectedValueException;
 /**
  * Base class for collections of objects of a particular type
  *
+ * @template T of object
+ * @implements ICollection<T>
  */
 abstract class TypedCollection implements ICollection
 {
+    /**
+     * @use TCollection<T>
+     * @use HasSortableItems<T>
+     */
     use TCollection, HasSortableItems
     {
         TCollection::offsetSet as private _offsetSet;
@@ -70,8 +78,10 @@ abstract class TypedCollection implements ICollection
      * Get a matching item from the collection
      *
      * @return object|false
+     * @psalm-param T $item
+     * @psalm-return T|false
      */
-    final public function get($item)
+    final public function get(object $item)
     {
         if (!$this->HasComparableItems)
         {
@@ -94,6 +104,10 @@ abstract class TypedCollection implements ICollection
         return false;
     }
 
+    /**
+     * @psalm-param T $a
+     * @psalm-param T $b
+     */
     protected function compareItems($a, $b, bool $strict = false): int
     {
         return $this->HasComparableItems
