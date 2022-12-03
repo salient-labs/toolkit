@@ -89,6 +89,21 @@ final class Filesystem
     }
 
     /**
+     * Delete a file if it exists
+     *
+     * @return bool `true` on success or `false` on failure.
+     */
+    public function maybeDelete(string $filename): bool
+    {
+        if (!is_file($filename))
+        {
+            return true;
+        }
+
+        return unlink($filename);
+    }
+
+    /**
      * Get the URI or filename associated with a stream
      *
      * @param resource $stream Any stream created by `fopen()`, `fsockopen()`,

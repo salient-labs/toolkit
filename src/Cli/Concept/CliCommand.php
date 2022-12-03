@@ -397,7 +397,7 @@ abstract class CliCommand implements ReturnsContainer
                 $sep      = ($option->Description ? "\n      " : "\n    ");
                 $options .= ("\n  _" . implode(", ", $line) . "_"
                     . str_replace($valueName, "__" . $valueName . "__", (array_pop($value) ?: ""))
-                    . ($option->Description ? "\n    " . $option->Description : "")
+                    . ($option->Description ? $this->prepareDescription("\n" . $option->Description, "    ", 76) : "")
                     . ((!$option->IsFlag && $option->DefaultValue) ? $sep . "__Default:__ ___" . implode(",", Convert::toArray($option->DefaultValue)) . "___" : "")
                     . ($option->AllowedValues ? $sep . "__Values:__" . $sep . "- _" . implode("_" . $sep . "- _", $option->AllowedValues) . "_" : "")) . "\n";
             }
@@ -410,7 +410,7 @@ abstract class CliCommand implements ReturnsContainer
             . ($positional ? " " . implode(" ", $positional) : ""));
 
         $name        = $this->getNameWithProgram();
-        $desc        = $this->getDescription();
+        $desc        = $this->prepareDescription($this->getDescription(), "  ", 78);
         if ($options = trim($options, "\n"))
         {
             $options = <<<EOF
@@ -431,6 +431,16 @@ ___DESCRIPTION___
 ___SYNOPSIS___
   __{$name}__{$synopsis}${options}
 EOF;
+    }
+
+    private function prepareDescription(string $description, string $indent, int $width): string
+    {
+        return str_replace("\n", "\n" . $indent,
+            wordwrap(
+                str_replace("{{command}}", $this->getNameWithProgram(),
+                    Convert::unwrap($description)),
+                $width
+            ));
     }
 
     private function optionError(string $message)

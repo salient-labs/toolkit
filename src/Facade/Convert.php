@@ -66,6 +66,7 @@ use Lkrms\Utility\Conversions;
  * @method static DateTimeZone toTimezone(DateTimeZone|string $value) Convert a value to a DateTimeZone instance (see {@see Conversions::toTimezone()})
  * @method static array toUniqueList(array $array) A type-agnostic array_unique with reindexing (see {@see Conversions::toUniqueList()})
  * @method static string unparseUrl(array $url) Convert a parse_url array to a string (see {@see Conversions::unparseUrl()})
+ * @method static string unwrap(string $string, string $break = "\n") Undo wordwrap() (see {@see Conversions::unwrap()})
  * @method static string uuidToHex(string $bytes) Convert a 16-byte UUID to its 36-byte hexadecimal representation (see {@see Conversions::uuidToHex()})
  * @method static string valueToCode(mixed $value, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::valueToCode()}
  *

@@ -495,6 +495,7 @@ SQL;
      */
     public function error($error, bool $deduplicate = false, bool $toConsole = false)
     {
+        /** @var SyncError $error */
         $error = SyncErrorBuilder::resolve($error);
         if (!$deduplicate || !($seen = $this->Errors->get($error)))
         {

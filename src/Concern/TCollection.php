@@ -5,36 +5,27 @@ declare(strict_types=1);
 namespace Lkrms\Concern;
 
 use Lkrms\Concern\HasItems;
+use ReturnTypeWillChange;
 use RuntimeException;
 
 /**
  * Implements ICollection to provide simple array-like collection objects
  *
- * To maintain support for PHP 7.4 when PHP 9 enforces compatible return types,
- * `Iterator` and `ArrayAccess` methods with backward-incompatible return types
- * are provided by a separate version-specific trait.
- *
  * @see \Lkrms\Contract\ICollection
- * @see \Lkrms\Concern\Partial\TCollection
  * @see \Lkrms\Concept\TypedCollection
+ * @template T
+ * @psalm-require-implements \Lkrms\Contract\ICollection<T>
  */
 trait TCollection
 {
-    use HasItems, \Lkrms\Concern\Partial\TCollection;
-
     /**
-     * @return iterable<mixed>
+     * @use HasItems<T>
      */
-    final public function toList(): iterable
-    {
-        foreach ($this->_Items as $item)
-        {
-            yield $item;
-        }
-    }
+    use HasItems;
 
     /**
      * @return mixed[]
+     * @psalm-return T[]
      */
     final public function toArray(): array
     {
@@ -44,13 +35,33 @@ trait TCollection
     /**
      * Return true if an item is in the collection
      *
+     * @psalm-param T $item
      */
     final public function has($item, bool $strict = false): bool
     {
         return in_array($item, $this->_Items, $strict);
     }
 
-    // Partial implementation of `Iterator`:
+    // Implementation of `Iterator`:
+
+    /**
+     * @return mixed|false
+     * @psalm-return T|false
+     */
+    #[ReturnTypeWillChange]
+    final public function current()
+    {
+        return current($this->_Items);
+    }
+
+    /**
+     * @return int|string|null
+     */
+    #[ReturnTypeWillChange]
+    final public function key()
+    {
+        return key($this->_Items);
+    }
 
     final public function next(): void
     {
@@ -67,11 +78,20 @@ trait TCollection
         return !is_null(key($this->_Items));
     }
 
-    // Partial implementation of `ArrayAccess`:
+    // Implementation of `ArrayAccess`:
 
     final public function offsetExists($offset): bool
     {
         return array_key_exists($offset, $this->_Items);
+    }
+
+    /**
+     * @psalm-return T
+     */
+    #[ReturnTypeWillChange]
+    final public function offsetGet($offset)
+    {
+        return $this->_Items[$offset];
     }
 
     final public function offsetSet($offset, $value): void

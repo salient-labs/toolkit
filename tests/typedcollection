@@ -23,6 +23,9 @@ class Entity
     }
 }
 
+/**
+ * @extends TypedCollection<Entity>
+ */
 class EntityCollection extends TypedCollection
 {
     protected function compareItems($a, $b, bool $strict = false): int
@@ -44,6 +47,7 @@ $collection[] = new Entity("charlie");
 
 try
 {
+    // @phpstan-ignore-next-line
     $collection["f"] = new Entity("foxtrot");
     throw new RuntimeException("ERROR: added an item to a collection by key!");
 }
@@ -54,6 +58,7 @@ catch (Throwable $ex)
 
 try
 {
+    // @phpstan-ignore-next-line
     $collection[] = "romeo";
     throw new RuntimeException("ERROR: added a string to an EntityCollection!");
 }
@@ -62,11 +67,10 @@ catch (Throwable $ex)
     $exceptions[] = $ex;
 }
 
-$sorted = (clone $collection)->sort();
+$sorted = $collection->sort();
 
 print_r([
     '$collection' => $collection,
-    '$collection->toList()'   => iterator_to_array($collection->toList()),
     '$sorted (longest first)' => $sorted,
     '$exceptions' => $exceptions,
 ]);
