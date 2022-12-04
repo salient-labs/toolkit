@@ -80,12 +80,16 @@ trait TCollection
 
     // Implementation of `ArrayAccess`:
 
+    /**
+     * @param int|string|null $offset
+     */
     final public function offsetExists($offset): bool
     {
         return array_key_exists($offset, $this->_Items);
     }
 
     /**
+     * @param int|string|null $offset
      * @psalm-return T
      */
     #[ReturnTypeWillChange]
@@ -94,6 +98,10 @@ trait TCollection
         return $this->_Items[$offset];
     }
 
+    /**
+     * @param int|string|null $offset
+     * @psalm-param T $value
+     */
     final public function offsetSet($offset, $value): void
     {
         if (!is_null($offset))
@@ -103,6 +111,9 @@ trait TCollection
         $this->_Items[] = $value;
     }
 
+    /**
+     * @param int|string|null $offset
+     */
     final public function offsetUnset($offset): void
     {
         unset($this->_Items[$offset]);
