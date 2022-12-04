@@ -46,6 +46,10 @@ abstract class TypedCollection implements ICollection
         $this->HasComparableItems = is_a($this->ItemClass, IComparable::class, true);
     }
 
+    /**
+     * @param int|string|null $offset
+     * @psalm-param T $value
+     */
     final public function offsetSet($offset, $value): void
     {
         if (!is_a($value, $this->ItemClass))
@@ -56,6 +60,11 @@ abstract class TypedCollection implements ICollection
         $this->_offsetSet($offset, $value);
     }
 
+    /**
+     * Return true if an item is in the collection
+     *
+     * @psalm-param T $item
+     */
     final public function has($item, bool $strict = false): bool
     {
         if (!$this->HasComparableItems)
@@ -81,7 +90,7 @@ abstract class TypedCollection implements ICollection
      * @psalm-param T $item
      * @psalm-return T|false
      */
-    final public function get(object $item)
+    final public function get($item)
     {
         if (!$this->HasComparableItems)
         {

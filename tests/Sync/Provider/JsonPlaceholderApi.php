@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Provider;
 
+use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\DateFormatter;
@@ -30,7 +31,7 @@ use Lkrms\Tests\Sync\Entity\User;
  * @method User deleteUser(SyncContext $ctx, User $user)
  * @method iterable<User> getUsers(SyncContext $ctx)
  */
-class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserProvider
+class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserProvider, IServiceSingleton
 {
     private const JSON_PLACEHOLDER_BASE_URL = "https://jsonplaceholder.typicode.com";
 
