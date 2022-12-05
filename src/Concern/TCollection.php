@@ -33,6 +33,26 @@ trait TCollection
     }
 
     /**
+     * @return mixed|false
+     * @psalm-return T|false
+     */
+    final public function first()
+    {
+        $copy = $this->_Items;
+        return reset($copy);
+    }
+
+    /**
+     * @return mixed|false
+     * @psalm-return T|false
+     */
+    final public function last()
+    {
+        $copy = $this->_Items;
+        return end($copy);
+    }
+
+    /**
      * Return true if an item is in the collection
      *
      * @psalm-param T $item

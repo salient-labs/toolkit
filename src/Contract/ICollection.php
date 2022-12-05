@@ -25,4 +25,15 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      */
     public function toArray(): array;
 
+    /**
+     * @return mixed|false
+     * @psalm-return T|false
+     */
+    public function first();
+
+    /**
+     * @return mixed|false
+     * @psalm-return T|false
+     */
+    public function last();
 }

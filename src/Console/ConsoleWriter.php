@@ -608,7 +608,7 @@ final class ConsoleWriter implements ReceivesFacade
             foreach ($exception->getDetail() as $section => $text)
             {
                 $this->write(Level::DEBUG,
-                    "__{$section}:__", "\n`" . ConsoleFormatter::escape($text) . "`", "--- ");
+                    "__{$section}:__", "\n`" . ConsoleFormatter::escape($text ?: "") . "`", "--- ");
             }
         }
 
