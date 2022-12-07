@@ -10,7 +10,7 @@
   </testsuites>
   <coverage
       cacheDirectory="build/cache/coverage"
-      pathCoverage="true">
+      pathCoverage="false">
     <include>
       <directory suffix=".php">src</directory>
     </include>
