@@ -24,8 +24,10 @@ abstract class TypedCollection implements ICollection
      */
     use TCollection, HasSortableItems
     {
-        TCollection::offsetSet as private _offsetSet;
         TCollection::has as private _has;
+        TCollection::keyOf as private _keyOf;
+        TCollection::get as private _get;
+        TCollection::offsetSet as private _offsetSet;
     }
 
     /**
@@ -60,11 +62,6 @@ abstract class TypedCollection implements ICollection
         $this->_offsetSet($offset, $value);
     }
 
-    /**
-     * Return true if an item is in the collection
-     *
-     * @psalm-param T $item
-     */
     final public function has($item, bool $strict = false): bool
     {
         if (!$this->HasComparableItems)
@@ -83,23 +80,29 @@ abstract class TypedCollection implements ICollection
         return false;
     }
 
-    /**
-     * Get a matching item from the collection
-     *
-     * @return object|false
-     * @psalm-param T $item
-     * @psalm-return T|false
-     */
+    final public function keyOf($item, bool $strict = false)
+    {
+        if (!$this->HasComparableItems)
+        {
+            return $this->_keyOf($item, $strict);
+        }
+
+        foreach ($this->_Items as $key => $_item)
+        {
+            if (!$this->compareItems($item, $_item, $strict))
+            {
+                return $key;
+            }
+        }
+
+        return false;
+    }
+
     final public function get($item)
     {
         if (!$this->HasComparableItems)
         {
-            if (($key = array_search($item, $this->_Items)) === false)
-            {
-                return false;
-            }
-
-            return $this->_Items[$key];
+            return $this->_get($item);
         }
 
         foreach ($this->_Items as $_item)
