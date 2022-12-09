@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Console;
 
@@ -43,35 +41,34 @@ final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
     protected static function getNameMap(): array
     {
         return [
-            self::EMERGENCY => "EMERGENCY",
-            self::ALERT     => "ALERT",
-            self::CRITICAL  => "CRITICAL",
-            self::ERROR     => "ERROR",
-            self::WARNING   => "WARNING",
-            self::NOTICE    => "NOTICE",
-            self::INFO      => "INFO",
-            self::DEBUG     => "DEBUG",
+            self::EMERGENCY => 'EMERGENCY',
+            self::ALERT     => 'ALERT',
+            self::CRITICAL  => 'CRITICAL',
+            self::ERROR     => 'ERROR',
+            self::WARNING   => 'WARNING',
+            self::NOTICE    => 'NOTICE',
+            self::INFO      => 'INFO',
+            self::DEBUG     => 'DEBUG',
         ];
     }
 
     protected static function getValueMap(): array
     {
         return [
-            "emergency" => self::EMERGENCY,
-            "alert"     => self::ALERT,
-            "critical"  => self::CRITICAL,
-            "error"     => self::ERROR,
-            "warning"   => self::WARNING,
-            "notice"    => self::NOTICE,
-            "info"      => self::INFO,
-            "debug"     => self::DEBUG,
+            'emergency' => self::EMERGENCY,
+            'alert'     => self::ALERT,
+            'critical'  => self::CRITICAL,
+            'error'     => self::ERROR,
+            'warning'   => self::WARNING,
+            'notice'    => self::NOTICE,
+            'info'      => self::INFO,
+            'debug'     => self::DEBUG,
         ];
     }
 
     public static function toCode(int $level, int $width = 1): string
     {
-        if (!array_key_exists($level, self::getNameMap()))
-        {
+        if (!array_key_exists($level, self::getNameMap())) {
             throw new UnexpectedValueException("Invalid ConsoleLevel: $level");
         }
 
@@ -80,8 +77,7 @@ final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
 
     public static function toPsrLogLevel(int $level): string
     {
-        if (is_null($logLevel = self::LOG_LEVEL_MAP[$level] ?? null))
-        {
+        if (is_null($logLevel = self::LOG_LEVEL_MAP[$level] ?? null)) {
             throw new UnexpectedValueException("Invalid ConsoleLevel: $level");
         }
 

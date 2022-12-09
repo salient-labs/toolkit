@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler\Contract;
 
@@ -45,5 +43,4 @@ interface ICurlerPage
      * Return `null` to use the same headers sent with the last request.
      */
     public function nextHeaders(): ?CurlerHeaders;
-
 }

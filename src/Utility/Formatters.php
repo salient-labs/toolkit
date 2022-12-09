@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
@@ -29,21 +27,18 @@ final class Formatters
      */
     public function array(array $array, string $format = "%s: %s\n", int $indentSpaces = 4): string
     {
-        $indent = str_repeat(" ", $indentSpaces);
-        $string = "";
+        $indent = str_repeat(' ', $indentSpaces);
+        $string = '';
 
-        foreach ($array as $key => $value)
-        {
-            if (!is_scalar($value))
-            {
+        foreach ($array as $key => $value) {
+            if (!is_scalar($value)) {
                 $value = json_encode($value);
             }
 
-            $value = str_replace("\r\n", "\n", (string)$value);
+            $value = str_replace("\r\n", "\n", (string) $value);
             $value = str_replace("\n", PHP_EOL . $indent, $value, $count);
 
-            if ($count)
-            {
+            if ($count) {
                 $value = PHP_EOL . $indent . $value;
             }
 
@@ -61,7 +56,7 @@ final class Formatters
      */
     public function bool(bool $value): string
     {
-        return $value ? "true" : "false";
+        return $value ? 'true' : 'false';
     }
 
     /**
@@ -72,13 +67,12 @@ final class Formatters
      */
     public function yn(bool $value): string
     {
-        return $value ? "yes" : "no";
+        return $value ? 'yes' : 'no';
     }
 
     private function getBetween(string $between): array
     {
-        if (strlen($between) % 2)
-        {
+        if (strlen($between) % 2) {
             throw new UnexpectedValueException('String length is not even: ' . $between);
         }
 
@@ -90,10 +84,10 @@ final class Formatters
 
     private function maybeSetTimezone(DateTimeInterface $date): DateTimeInterface
     {
-        if ($date->getOffset() || date_default_timezone_get() === "UTC")
-        {
+        if ($date->getOffset() || date_default_timezone_get() === 'UTC') {
             return $date;
         }
+
         return (
             $date instanceof DateTimeImmutable ? $date : DateTimeImmutable::createFromMutable($date)
         )->setTimezone(new DateTimeZone(date_default_timezone_get()));
@@ -114,7 +108,7 @@ final class Formatters
         return $l . $date->format($format) . $r;
     }
 
-    public function dateRange(DateTimeInterface $from, DateTimeInterface $to, string $between = '[]', string $delimiter = "\u{2013}"): string
+    public function dateRange(DateTimeInterface $from, DateTimeInterface $to, string $between = '[]', string $delimiter = "\xe2\x80\x93"): string
     {
         [$from, $to, $l, $r] = [
             $this->maybeSetTimezone($from),
@@ -135,14 +129,13 @@ final class Formatters
 
     public function bytes(int $bytes, int $precision = 0)
     {
-        $units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+        $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
         $bytes = max(0, $bytes);
         $power = min(count($units) - 1, floor(($bytes ? log($bytes) : 0) / log(1024)));
         $power = max(0, $precision ? $power : $power - 1);
 
-        return sprintf($precision ? "%01.{$precision}f%s" : "%d%s",
+        return sprintf($precision ? "%01.{$precision}f%s" : '%d%s',
             $bytes / pow(1024, $power),
             $units[$power]);
     }
-
 }

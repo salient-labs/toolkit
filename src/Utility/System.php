@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
@@ -20,7 +18,7 @@ final class System
      */
     public function getMemoryLimit(): int
     {
-        return Convert::sizeToBytes(ini_get("memory_limit") ?: "0");
+        return Convert::sizeToBytes(ini_get('memory_limit') ?: '0');
     }
 
     /**
@@ -52,7 +50,7 @@ final class System
 
         return ($limit <= 0
             ? 0
-            : (int)round(memory_get_usage() * 100 / $limit));
+            : (int) round(memory_get_usage() * 100 / $limit));
     }
 
     /**
@@ -65,8 +63,7 @@ final class System
      */
     public function getCpuUsage(): array
     {
-        if (($usage = getrusage()) === false)
-        {
+        if (($usage = getrusage()) === false) {
             return [
                 0,
                 0,
@@ -74,8 +71,8 @@ final class System
         }
 
         return [
-            ($usage["ru_utime.tv_sec"] ?? 0) * 1000000 + ($usage["ru_utime.tv_usec"] ?? 0),
-            ($usage["ru_stime.tv_sec"] ?? 0) * 1000000 + ($usage["ru_stime.tv_usec"] ?? 0),
+            ($usage['ru_utime.tv_sec'] ?? 0) * 1000000 + ($usage['ru_utime.tv_usec'] ?? 0),
+            ($usage['ru_stime.tv_sec'] ?? 0) * 1000000 + ($usage['ru_stime.tv_usec'] ?? 0),
         ];
     }
 
@@ -88,15 +85,13 @@ final class System
      */
     public function getProgramName(?string $basePath = null): string
     {
-        $filename = $_SERVER["SCRIPT_FILENAME"];
-        if (is_null($basePath))
-        {
+        $filename = $_SERVER['SCRIPT_FILENAME'];
+        if (is_null($basePath)) {
             return $filename;
         }
         if (($basePath = realpath($basePath)) !== false &&
-            ($filename = realpath($filename)) !== false &&
-            strpos($filename, $basePath) === 0)
-        {
+                ($filename = realpath($filename)) !== false &&
+                strpos($filename, $basePath) === 0) {
             return substr($filename, strlen($basePath) + 1);
         }
 
@@ -108,9 +103,9 @@ final class System
      *
      * @param string $suffix Removed from the end of the filename if set.
      */
-    public function getProgramBasename(string $suffix = ""): string
+    public function getProgramBasename(string $suffix = ''): string
     {
-        return basename($_SERVER["SCRIPT_FILENAME"], $suffix);
+        return basename($_SERVER['SCRIPT_FILENAME'], $suffix);
     }
 
     /**
@@ -125,7 +120,6 @@ final class System
 
     private function getSQLite3Version(): int
     {
-        return SQLite3::version()["versionNumber"];
+        return SQLite3::version()['versionNumber'];
     }
-
 }

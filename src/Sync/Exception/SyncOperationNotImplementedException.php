@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Exception;
 
@@ -19,13 +17,12 @@ class SyncOperationNotImplementedException extends \Lkrms\Exception\Exception
      */
     public function __construct($provider, string $entity, int $operation)
     {
-        if ($provider instanceof ISyncProvider)
-        {
+        if ($provider instanceof ISyncProvider) {
             $provider = get_class($provider);
         }
 
         parent::__construct(sprintf(
-            "%s has not implemented SyncOperation::%s for %s",
+            '%s has not implemented SyncOperation::%s for %s',
             Convert::classToBasename($provider),
             SyncOperation::toName($operation),
             $entity

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concept;
 
@@ -23,8 +21,7 @@ abstract class FluentInterface
      */
     final public function if(bool $condition, callable $callback)
     {
-        if (!$condition)
-        {
+        if (!$condition) {
             return $this;
         }
 
@@ -46,12 +43,10 @@ abstract class FluentInterface
     final public function forEach($array, callable $callback)
     {
         $_this = $this;
-        foreach ($array as $key => $value)
-        {
+        foreach ($array as $key => $value) {
             $_this = $callback($_this, $value, $key);
         }
 
         return $_this;
     }
-
 }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -31,5 +29,4 @@ interface ReturnsDescription
      * truncated to `$maxLength` bytes if set.
      */
     public function description(?int $maxLength = null): ?string;
-
 }

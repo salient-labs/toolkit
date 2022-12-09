@@ -7,8 +7,8 @@ use Lkrms\Facade\Cli;
 use Lkrms\Tests\Cli\Command\TestOptions;
 use Throwable;
 
-$loader = require (__DIR__ . "/../../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
+$loader = require (__DIR__ . '/../../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
 
 $app = Cli::load(dirname(__DIR__));
 
@@ -17,19 +17,16 @@ $exceptions = [];
 // Register TestOptions as the only command
 $app->command([], TestOptions::class);
 
-try
-{
+try {
     // Try to register it under another name
-    $app->command(["test", "options"], TestOptions::class);
-}
-catch (Throwable $ex)
-{
+    $app->command(['test', 'options'], TestOptions::class);
+} catch (Throwable $ex) {
     $exceptions[] = $ex;
 }
 
 print_r([
-    'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
+    'exceptions' => array_map(function (Throwable $ex) {return $ex->getMessage();}, $exceptions),
 ]);
 
 $status = $app->run();
-exit ($status);
+exit($status);

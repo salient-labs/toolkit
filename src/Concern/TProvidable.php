@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
@@ -35,9 +33,8 @@ trait TProvidable
 
     final public function setProvider(IProvider $provider)
     {
-        if ($this->_Provider)
-        {
-            throw new RuntimeException("Provider already set");
+        if ($this->_Provider) {
+            throw new RuntimeException('Provider already set');
         }
         $this->_Provider = $provider;
 
@@ -79,9 +76,8 @@ trait TProvidable
      */
     final public function requireContext(): IProviderContext
     {
-        if (!$this->_Context)
-        {
-            throw new RuntimeException("Context required");
+        if (!$this->_Context) {
+            throw new RuntimeException('Context required');
         }
 
         return $this->_Context;
@@ -124,10 +120,8 @@ trait TProvidable
             $context ? $context->withContainer($container) : new ProviderContext($container)
         )->withConformity($conformity);
 
-        foreach ($dataList as $data)
-        {
-            if (!isset($closure))
-            {
+        foreach ($dataList as $data) {
+            if (!isset($closure)) {
                 $builder = Introspector::getBound($container, static::class);
                 $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
                     ? $builder->getCreateProvidableFromSignatureClosure(array_keys($data))
@@ -137,5 +131,4 @@ trait TProvidable
             yield $closure($data, $provider, $context);
         }
     }
-
 }

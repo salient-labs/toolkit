@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -234,8 +232,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
 
         $this->Introspector = SyncIntrospector::get($this->Entity);
 
-        if ($inherit)
-        {
+        if ($inherit) {
             $this->_apply(self::resolve($inherit), true);
 
             return;
@@ -256,37 +253,30 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private function compile(?string $class, ?string $untilClass, array $path, array $allRules, string $cacheKey): array
     {
         $depth = count($path);
-        $path  = "." . implode(".", $path);
-        $key   = Convert::sparseToString("\0", [$class, $untilClass, $path]);
+        $path  = '.' . implode('.', $path);
+        $key   = Convert::sparseToString("\x00", [$class, $untilClass, $path]);
 
-        if (!is_null($rules = $this->RuleCache[$cacheKey][$key] ?? null))
-        {
+        if (!is_null($rules = $this->RuleCache[$cacheKey][$key] ?? null)) {
             return $rules;
         }
 
-        if ($this->getRecurseRules())
-        {
+        if ($this->getRecurseRules()) {
             [$_depth, $_path, $paths] = [$depth, $path, [$path]];
 
-            while ($_depth-- > 1)
-            {
-                $_path = substr($_path, 0, strrpos($_path, "."));
-                foreach (array_keys($this->RootPaths[$_depth] ?? []) as $root)
-                {
-                    if ($_path === $root)
-                    {
+            while ($_depth--> 1) {
+                $_path = substr($_path, 0, strrpos($_path, '.'));
+                foreach (array_keys($this->RootPaths[$_depth] ?? []) as $root) {
+                    if ($_path === $root) {
                         $paths[] = substr($path, strlen($root));
                     }
                 }
             }
 
-            if ($depth && $class === $this->Entity)
-            {
-                if (!($this->RootPaths[$depth][$path] ?? false))
-                {
+            if ($depth && $class === $this->Entity) {
+                if (!($this->RootPaths[$depth][$path] ?? false)) {
                     $this->RootPaths[$depth][$path] = true;
                 }
-                $paths[] = ".";
+                $paths[] = '.';
             }
         }
 
@@ -309,26 +299,20 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
         // - [<Entity>::class => "key"]
         // - [<Entity>::class => ["key", "key_id", fn($value) => $value["id"]]]
         $classRules = [];
-        if ($class)
-        {
-            do
-            {
-                if (!($_rules = $allRules[$class] ?? null))
-                {
+        if ($class) {
+            do {
+                if (!($_rules = $allRules[$class] ?? null)) {
                     continue;
                 }
                 array_push($classRules, ...$_rules);
-            }
-            while (($class = get_parent_class($class)) && (!$untilClass || $class != $untilClass));
+            } while (($class = get_parent_class($class)) && (!$untilClass || $class != $untilClass));
         }
 
         // Only return the highest-precedence rule for each key
         $rules = [];
-        foreach (array_reverse([...$classRules, ...$pathRules]) as $rule)
-        {
+        foreach (array_reverse([...$classRules, ...$pathRules]) as $rule) {
             $target = $this->getRuleTarget($rule);
-            if (array_key_exists($target, $rules))
-            {
+            if (array_key_exists($target, $rules)) {
                 continue;
             }
             $rules[$target] = $rule;
@@ -351,8 +335,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      */
     private function setRuleTarget($rule, string $target)
     {
-        if (is_array($rule))
-        {
+        if (is_array($rule)) {
             $rule    = array_values($rule);
             $rule[0] = $target;
 
@@ -364,16 +347,16 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
 
     private function getPath(string $path): string
     {
-        return ((substr($path, -2) === "[]")
+        return ((substr($path, -2) === '[]')
             ? substr($path, 0, -2)
-            : substr($path, 0, max(0, (strrpos("." . $path, ".") - 1)))) ?: ".";
+            : substr($path, 0, max(0, (strrpos('.' . $path, '.') - 1)))) ?: '.';
     }
 
     private function getKey(string $path): string
     {
-        return ((substr($path, -2) === "[]")
-            ? "[]"
-            : substr(strrchr("." . $path, "."), 1));
+        return ((substr($path, -2) === '[]')
+            ? '[]'
+            : substr(strrchr('.' . $path, '.'), 1));
     }
 
     /**
@@ -402,8 +385,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     {
         [$base, $merge] = $inherit ? [$rules, $this] : [$this, $rules];
 
-        if (!is_a($merge->Entity, $base->Entity, true))
-        {
+        if (!is_a($merge->Entity, $base->Entity, true)) {
             throw new UnexpectedValueException("Not a subclass of {$base->Entity}: {$merge->Entity}");
         }
 
@@ -423,12 +405,9 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private function flattenRules(array $base, array ...$merge): array
     {
         $paths = $classes = [];
-        foreach ([$base, ...$merge] as $array)
-        {
-            foreach ($array as $key => $rule)
-            {
-                if (is_int($key))
-                {
+        foreach ([$base, ...$merge] as $array) {
+            foreach ($array as $key => $rule) {
+                if (is_int($key)) {
                     $target = $this->normaliseTarget($this->getRuleTarget($rule));
                     $rule   = $this->setRuleTarget($rule, $target);
 
@@ -436,8 +415,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
 
                     continue;
                 }
-                foreach ($rule as $_rule)
-                {
+                foreach ($rule as $_rule) {
                     $target = $this->normaliseTarget($this->getRuleTarget($_rule));
                     $_rule  = $this->setRuleTarget($_rule, $target);
 
@@ -446,8 +424,8 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
             }
         }
 
-        return array_values($paths) +
-            array_map(fn(array $rules) => array_values($rules), $classes);
+        return array_values($paths)
+            + array_map(fn(array $rules) => array_values($rules), $classes);
     }
 
     private function normaliseTarget(string $target): string

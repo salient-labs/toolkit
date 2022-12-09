@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -44,10 +42,9 @@ final class HttpSyncDefinitionRequest implements IReadable
      */
     public function __construct(string $path, ?array $query = null, ?Closure $headersCallback = null, ?Closure $pagerCallback = null)
     {
-        $this->Path  = $path;
-        $this->Query = $query;
+        $this->Path            = $path;
+        $this->Query           = $query;
         $this->HeadersCallback = $headersCallback;
         $this->PagerCallback   = $pagerCallback;
     }
-
 }

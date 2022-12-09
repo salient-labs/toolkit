@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -19,5 +17,4 @@ interface ISerializeRules
     public function getDetectRecursion(): bool;
 
     public function getFlags(): int;
-
 }

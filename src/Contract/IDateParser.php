@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -20,5 +18,4 @@ interface IDateParser
      * `null` on failure.
      */
     public function parse(string $value, ?DateTimeZone $timezone = null): ?DateTimeImmutable;
-
 }

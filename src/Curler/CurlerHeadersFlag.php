@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
@@ -29,5 +27,4 @@ final class CurlerHeadersFlag extends Enumeration
      * Sort headers to maintain the position of their last appearance
      */
     public const SORT_BY_LAST = 4;
-
 }

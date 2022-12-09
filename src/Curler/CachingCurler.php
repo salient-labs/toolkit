@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
@@ -41,15 +39,15 @@ class CachingCurler extends Curler
     public static function getReadable(): array
     {
         return array_merge(parent::getReadable(), [
-            "CachePostRequests",
-            "Expiry",
+            'CachePostRequests',
+            'Expiry',
         ]);
     }
 
     public static function getWritable(): array
     {
         return array_merge(parent::getWritable(), [
-            "CachePostRequests",
+            'CachePostRequests',
         ]);
     }
 
@@ -61,7 +59,7 @@ class CachingCurler extends Curler
      * ```
      * @return void
      */
-    public function __construct(string $baseUrl, ?CurlerHeaders $headers = null, ?ICurlerPager $pager = null, int $expiry = 3600, ? callable $callback = null)
+    public function __construct(string $baseUrl, ?CurlerHeaders $headers = null, ?ICurlerPager $pager = null, int $expiry = 3600, ?callable $callback = null)
     {
         parent::__construct($baseUrl, $headers, $pager);
 
@@ -72,33 +70,27 @@ class CachingCurler extends Curler
     protected function execute(bool $close = true, int $depth = 0): string
     {
         if (in_array($this->Method, [HttpRequestMethod::GET, HttpRequestMethod::HEAD]) ||
-            ($this->CachePostRequests &&
-                $this->Method == HttpRequestMethod::POST &&
-                !is_array($this->Body)))
-        {
+                ($this->CachePostRequests &&
+                    $this->Method == HttpRequestMethod::POST &&
+                    !is_array($this->Body))) {
             $key = is_null($this->Callback) ? $this->Headers->getPublicHeaders() : ($this->Callback)($this->Headers);
-            if ($this->Method == HttpRequestMethod::POST)
-            {
+            if ($this->Method == HttpRequestMethod::POST) {
                 $key[] = $this->Body;
             }
             $key = self::class . ":response:{$this->Method}:" . rawurlencode(
                 $this->getEffectiveUrl()
-            ) . ":" . Compute::hash(...$key);
+            ) . ':' . Compute::hash(...$key);
             $last = Cache::get($key, $this->Expiry);
 
-            if ($last === false || count($last) !== 4)
-            {
+            if ($last === false || count($last) !== 4) {
                 parent::execute($close, $depth + 1);
                 Cache::set($key, [$this->StatusCode, $this->ReasonPhrase, $this->ResponseHeaders, $this->ResponseBody], $this->Expiry);
-            }
-            else
-            {
-                if ($close)
-                {
+            } else {
+                if ($close) {
                     $this->close();
                 }
                 [$this->StatusCode, $this->ReasonPhrase, $this->ResponseHeaders, $this->ResponseBody] = $last;
-                $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE_REPEATED);
+                $this->ResponseHeadersByName                                                          = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE_REPEATED);
             }
 
             return $this->ResponseBody;

@@ -10,8 +10,8 @@ use Lkrms\Err\Err;
 use Lkrms\Facade\DI;
 use UnexpectedValueException;
 
-$loader = require (__DIR__ . "/../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();
 
@@ -22,6 +22,7 @@ class IdGenerator
     public function getNext(string $type)
     {
         $this->counters[$type] = $this->counters[$type] ?? 100 * (count($this->counters) + 1);
+
         return $this->counters[$type]++;
     }
 }
@@ -133,24 +134,21 @@ DI::singleton(IdGenerator::class);
 
 // Give 'Office' instances a sequential name
 $offices = 0;
-DI::bind(Office::class, null, [Dice::INSTANCE => function () use (&$offices) { return ["Office #" . (++$offices)]; } ]);
+DI::bind(Office::class, null, [Dice::INSTANCE => function () use (&$offices) {return ['Office #' . (++$offices)];}]);
 
 // Create one 'Office' per 'User' and give each 'Department' the same name
 DI::bind(User::class, null, null, [Office::class]);
-DI::bind(Department::class, null, ["They Who Shall Not Be Named"]);
+DI::bind(Department::class, null, ['They Who Shall Not Be Named']);
 
 // Register 'OrgUnit' bindings and create one 'Department' per 'OrgUnit'
 DI::service(OrgUnit::class);
 DI::bind(OrgUnit::class, null, null, [Department::class]);
 
-try
-{
+try {
     // Should throw an exception because we're trying to add a substituted class
     // to $shareInstances
     DI::bind(OrgUnit::class, null, null, [Office::class]);
-}
-catch (UnexpectedValueException $ex)
-{
+} catch (UnexpectedValueException $ex) {
     $exceptions[] = $ex;
 }
 
@@ -168,23 +166,23 @@ $staff1 = DI::get(DepartmentStaff::class);
 $staff2 = DI::get(DepartmentStaff::class);
 
 // Department names should be applied to separate instances
-$dept1 = DI::get(Department::class, "English");
-$dept2 = DI::get(Department::class, "Mathematics");
+$dept1 = DI::get(Department::class, 'English');
+$dept2 = DI::get(Department::class, 'Mathematics');
 
 // One department instance should be created per object tree
 $orgUnit1 = DI::get(OrgUnit::class);
 $orgUnit2 = DI::get(OrgUnit::class);
 
 print_r([
-    "exceptions"  => $exceptions,
-    "idGenerator" => DI::get(IdGenerator::class),
-    "user1"       => $user1,
-    "user2"       => $user2,
-    "user3"       => $user3,
-    "staff1"      => $staff1,
-    "staff2"      => $staff2,
-    "dept1"       => $dept1,
-    "dept2"       => $dept2,
-    "orgUnit1"    => $orgUnit1,
-    "orgUnit2"    => $orgUnit2,
+    'exceptions'  => $exceptions,
+    'idGenerator' => DI::get(IdGenerator::class),
+    'user1'       => $user1,
+    'user2'       => $user2,
+    'user3'       => $user3,
+    'staff1'      => $staff1,
+    'staff2'      => $staff2,
+    'dept1'       => $dept1,
+    'dept2'       => $dept2,
+    'orgUnit1'    => $orgUnit1,
+    'orgUnit2'    => $orgUnit2,
 ]);

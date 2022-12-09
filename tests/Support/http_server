@@ -8,17 +8,17 @@ use Lkrms\Support\HttpRequest;
 use Lkrms\Support\HttpResponse;
 use Lkrms\Support\HttpServer;
 
-$loader = require (__DIR__ . "/../../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", dirname(__DIR__));
+$loader = require (__DIR__ . '/../../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', dirname(__DIR__));
 
 Err::load();
 
-$server = new HttpServer("localhost", 8306);
+$server = new HttpServer('localhost', 8306);
 $server->start();
-$server->listen(function (HttpRequest $request, bool & $continue, &$return): HttpResponse
-{
+$server->listen(function (HttpRequest $request, bool &$continue, &$return): HttpResponse {
     $response = new HttpResponse("Called with:\n" . print_r($request, true));
     $continue = false;
+
     return $response;
 });
 $server->stop();

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Concept;
 
@@ -226,13 +224,11 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
      */
     final public static function normaliser(): Closure
     {
-        if (!($prefixes = static::getRemovablePrefixes()))
-        {
-            return static function (string $name): string
-            {
+        if (!($prefixes = static::getRemovablePrefixes())) {
+            return static function (string $name): string {
                 return self::$Normalised[static::class][$name]
-                    ?? (self::$Normalised[static::class][$name]
-                        = Convert::toSnakeCase($name));
+                    ?? (self::$Normalised[static::class][$name] =
+                        Convert::toSnakeCase($name));
             };
         }
 
@@ -240,25 +236,22 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
             fn(string $prefix): string => Convert::toSnakeCase($prefix),
             $prefixes
         ));
-        $regex = implode("|", $prefixes);
+        $regex = implode('|', $prefixes);
         $regex = count($prefixes) > 1 ? "($regex)" : $regex;
         $regex = "/^{$regex}_/";
 
-        return static function (string $name, bool $aggressive = true, string ...$hints) use ($regex): string
-        {
-            if ($aggressive && !$hints)
-            {
+        return static function (string $name, bool $aggressive = true, string ...$hints) use ($regex): string {
+            if ($aggressive && !$hints) {
                 return self::$Normalised[static::class][$name]
-                    ?? (self::$Normalised[static::class][$name]
-                        = preg_replace($regex, "", Convert::toSnakeCase($name)));
+                    ?? (self::$Normalised[static::class][$name] =
+                        preg_replace($regex, '', Convert::toSnakeCase($name)));
             }
             $_name = Convert::toSnakeCase($name);
-            if (!$aggressive || in_array($_name, $hints))
-            {
+            if (!$aggressive || in_array($_name, $hints)) {
                 return $_name;
             }
 
-            return preg_replace($regex, "", $_name);
+            return preg_replace($regex, '', $_name);
         };
     }
 
@@ -295,32 +288,31 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
 
     final public function toLink(int $type = SerializeLinkType::MINIMAL, bool $compact = true): array
     {
-        switch ($type)
-        {
+        switch ($type) {
             case SerializeLinkType::INTERNAL:
                 return [
-                    "@class" => static::class,
-                    "@id"    => $this->Id,
+                    '@class' => static::class,
+                    '@id'    => $this->Id,
                 ];
 
             case SerializeLinkType::DETAILED:
                 return array_filter([
-                    "@type"        => $this->typeUri($compact),
-                    "@id"          => $this->id(),
-                    "@name"        => $this->name(),
-                    "@description" => $this->description(),
+                    '@type'        => $this->typeUri($compact),
+                    '@id'          => $this->id(),
+                    '@name'        => $this->name(),
+                    '@description' => $this->description(),
                 ]);
 
             case SerializeLinkType::STANDARD:
                 return array_filter([
-                    "@type" => $this->typeUri($compact),
-                    "@id"   => $this->id(),
-                    "@name" => $this->name(),
+                    '@type' => $this->typeUri($compact),
+                    '@id'   => $this->id(),
+                    '@name' => $this->name(),
                 ]);
 
             case SerializeLinkType::MINIMAL:
                 return [
-                    "@id" => $this->uri($compact),
+                    '@id' => $this->uri($compact),
                 ];
         }
 
@@ -329,7 +321,7 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
 
     final public function uri(bool $compact = true): string
     {
-        return $this->typeUri($compact) . "/" . $this->id();
+        return $this->typeUri($compact) . '/' . $this->id();
     }
 
     /**
@@ -343,13 +335,13 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
     final public function propertyHasSameValueAs(string $property, SyncEntity $entity): bool
     {
         // $entity must be an instance of the same class
-        if (!is_a($entity, static::class))
-        {
+        if (!is_a($entity, static::class)) {
             return false;
         }
 
         $a = $this->$property;
         $b = $entity->$property;
+
         return $a === $b ||
             ($a instanceof SyncEntity && $b instanceof SyncEntity &&
                 get_class($a) == get_class($b) &&
@@ -375,8 +367,7 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
     final protected function defer($deferred, &$replace, ?string $entity = null): void
     {
         $ctx = $this->requireContext();
-        if (is_array($deferred))
-        {
+        if (is_array($deferred)) {
             $ctx = $ctx->withListArrays();
         }
 
@@ -394,12 +385,12 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
     private function typeUri(bool $compact): string
     {
         return ($this->store()->getEntityTypeUri($this->service(), $compact)
-            ?: "/" . str_replace("\\", "/", ltrim($this->service(), "\\")));
+            ?: '/' . str_replace('\\', '/', ltrim($this->service(), '\\')));
     }
 
     private function objectId(): string
     {
-        return implode("\000", [
+        return implode("\x00", [
             $this->service(),
             $this->Id ?: spl_object_id($this),
             $this->_Provider ? $this->_Provider->getProviderHash() : null,
@@ -410,33 +401,29 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
     {
         $array = $this;
         $this->_serialize($array, [], $rules);
-        return (array)$array;
+
+        return (array) $array;
     }
 
     private function _serialize(&$node, array $path, SerializeRules $rules, array $parents = []): void
     {
-        if (!is_null($maxDepth = $rules->getMaxDepth()) && count($path) > $maxDepth)
-        {
-            throw new RuntimeException("In too deep: " . implode(".", $path));
+        if (!is_null($maxDepth = $rules->getMaxDepth()) && count($path) > $maxDepth) {
+            throw new RuntimeException('In too deep: ' . implode('.', $path));
         }
 
-        if ($node instanceof SyncEntity)
-        {
-            if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE)
-            {
+        if ($node instanceof SyncEntity) {
+            if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE) {
                 $node = $node->toLink(SerializeLinkType::INTERNAL);
 
                 return;
             }
 
-            if ($rules->getDetectRecursion())
-            {
+            if ($rules->getDetectRecursion()) {
                 // Prevent infinite recursion by replacing each SyncEntity
                 // descended from itself with a link
-                if ($parents[$node->objectId()] ?? false)
-                {
+                if ($parents[$node->objectId()] ?? false) {
                     $node         = $node->toLink(SerializeLinkType::STANDARD);
-                    $node["@why"] = "Circular reference detected";
+                    $node['@why'] = 'Circular reference detected';
 
                     return;
                 }
@@ -453,82 +440,64 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
         // Don't delete values returned in both lists
         $delete = array_diff_key($delete, $replace);
 
-        if ($delete)
-        {
+        if ($delete) {
             $node = array_diff_key($node, array_flip($delete));
         }
-        foreach ($replace as $rule)
-        {
-            if (is_array($rule))
-            {
+        foreach ($replace as $rule) {
+            if (is_array($rule)) {
                 $_rule    = $rule;
                 $key      = array_shift($rule);
                 $newKey   = $key;
                 $callback = null;
 
-                while ($rule)
-                {
-                    if (is_null($arg = array_shift($rule)))
-                    {
+                while ($rule) {
+                    if (is_null($arg = array_shift($rule))) {
                         continue;
                     }
-                    if (is_int($arg) || is_string($arg))
-                    {
+                    if (is_int($arg) || is_string($arg)) {
                         $newKey = is_string($arg) ? $this->introspector()->maybeNormalise($arg, false, true) : $arg;
                         continue;
                     }
-                    if ($arg instanceof Closure)
-                    {
+                    if ($arg instanceof Closure) {
                         $callback = $arg;
                         continue;
                     }
-                    throw new UnexpectedValueException("Invalid rule: " . var_export($_rule, true));
+                    throw new UnexpectedValueException('Invalid rule: ' . var_export($_rule, true));
                 }
 
-                if ($key !== "[]")
-                {
-                    if (!array_key_exists($key, $node))
-                    {
+                if ($key !== '[]') {
+                    if (!array_key_exists($key, $node)) {
                         continue;
                     }
 
-                    if ($key !== $newKey)
-                    {
-                        if (array_key_exists($newKey, $node))
-                        {
+                    if ($key !== $newKey) {
+                        if (array_key_exists($newKey, $node)) {
                             throw new UnexpectedValueException("Cannot rename '$key': '$newKey' already set");
                         }
                         Convert::arraySpliceAtKey($node, $key, 1, [$newKey => $node[$key]]);
                         $key = $newKey;
                     }
 
-                    if ($callback)
-                    {
+                    if ($callback) {
                         $node[$key] = $callback($node[$key]);
 
                         continue;
                     }
-                }
-                elseif ($callback)
-                {
+                } elseif ($callback) {
                     $node = array_map($callback, $node);
 
                     continue;
                 }
-            }
-            else
-            {
+            } else {
                 $key = $rule;
             }
 
-            if ($key === "[]")
-            {
+            if ($key === '[]') {
                 $_path   = $path;
                 $lastKey = array_pop($_path);
-                $_path[] = $lastKey . "[]";
+                $_path[] = $lastKey . '[]';
 
-                foreach ($node as &$child)
-                {
+                foreach ($node as &$child) {
                     $this->_serializeId($child, $_path);
                 }
                 unset($child);
@@ -536,8 +505,7 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
                 continue;
             }
 
-            if (!array_key_exists($key, $node))
-            {
+            if (!array_key_exists($key, $node)) {
                 continue;
             }
 
@@ -546,61 +514,48 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
             $this->_serializeId($node[$key], $_path);
         }
 
-        if (is_array($node))
-        {
-            if (Test::isIndexedArray($node))
-            {
+        if (is_array($node)) {
+            if (Test::isIndexedArray($node)) {
                 $isList  = true;
                 $lastKey = array_pop($path);
-                $path[]  = $lastKey . "[]";
+                $path[]  = $lastKey . '[]';
             }
-            foreach ($node as $key => & $child)
-            {
-                if (is_null($child) || is_scalar($child))
-                {
+            foreach ($node as $key => &$child) {
+                if (is_null($child) || is_scalar($child)) {
                     continue;
                 }
-                if (!($isList ?? null))
-                {
+                if (!($isList ?? null)) {
                     $_path   = $path;
                     $_path[] = $key;
                 }
                 $this->_serialize($child, $_path ?? $path, $rules, $parents);
             }
-        }
-        elseif ($node instanceof DateTimeInterface)
-        {
+        } elseif ($node instanceof DateTimeInterface) {
             $node = ($rules->getDateFormatter()
                 ?: ($this->provider() ? $this->provider()->getDateFormatter() : null)
                 ?: new DateFormatter())->format($node);
-        }
-        else
-        {
-            throw new UnexpectedValueException("Array or SyncEntity expected: " . print_r($node, true));
+        } else {
+            throw new UnexpectedValueException('Array or SyncEntity expected: ' . print_r($node, true));
         }
     }
 
     private function _serializeId(&$node, array $path): void
     {
-        if (is_null($node))
-        {
+        if (is_null($node)) {
             return;
         }
 
-        if (Test::isArrayOf($node, SyncEntity::class, false, true, false, true))
-        {
+        if (Test::isArrayOf($node, SyncEntity::class, false, true, false, true)) {
             /** @var SyncEntity $child */
-            foreach ($node as &$child)
-            {
+            foreach ($node as &$child) {
                 $child = $child->Id;
             }
 
             return;
         }
 
-        if (!($node instanceof SyncEntity))
-        {
-            throw new UnexpectedValueException("Cannot replace (not a SyncEntity): " . implode(".", $path));
+        if (!($node instanceof SyncEntity)) {
+            throw new UnexpectedValueException('Cannot replace (not a SyncEntity): ' . implode('.', $path));
         }
 
         $node = $node->Id;
@@ -616,9 +571,8 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
     private function serialize(SerializeRules $rules): array
     {
         $array = $this->introspector()->getSerializeClosure($rules)($this);
-        if ($rules->getRemoveCanonicalId())
-        {
-            unset($array[$this->introspector()->maybeNormalise("CanonicalId", false, true)]);
+        if ($rules->getRemoveCanonicalId()) {
+            unset($array[$this->introspector()->maybeNormalise('CanonicalId', false, true)]);
         }
 
         return $array;
@@ -642,9 +596,8 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
 
     final public function setProvider(IProvider $provider)
     {
-        if (!($provider instanceof ISyncProvider))
-        {
-            throw new RuntimeException(get_class($provider) . " does not implement " . ISyncProvider::class);
+        if (!($provider instanceof ISyncProvider)) {
+            throw new RuntimeException(get_class($provider) . ' does not implement ' . ISyncProvider::class);
         }
 
         return $this->_setProvider($provider);
@@ -657,9 +610,8 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
 
     final public function setContext(IProviderContext $context)
     {
-        if (!($context instanceof ISyncContext))
-        {
-            throw new RuntimeException(get_class($context) . " does not implement " . ISyncContext::class);
+        if (!($context instanceof ISyncContext)) {
+            throw new RuntimeException(get_class($context) . ' does not implement ' . ISyncContext::class);
         }
 
         return $this->_setContext($context);
@@ -672,9 +624,8 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
 
     final public function requireContext(): ISyncContext
     {
-        if (!$this->_Context)
-        {
-            throw new RuntimeException("Context required");
+        if (!$this->_Context) {
+            throw new RuntimeException('Context required');
         }
 
         return $this->_Context;
@@ -687,5 +638,4 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
     {
         return $this->toArray();
     }
-
 }

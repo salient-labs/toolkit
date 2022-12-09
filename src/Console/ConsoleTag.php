@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Console;
 
@@ -48,5 +46,4 @@ final class ConsoleTag extends Enumeration
      * - Example: `~~/path/to/script.php:42~~`
      */
     public const LOW_PRIORITY = 3;
-
 }

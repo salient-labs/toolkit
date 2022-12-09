@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
@@ -58,5 +56,4 @@ class User extends SyncEntity
      * @var Post[]|null
      */
     public $Posts;
-
 }

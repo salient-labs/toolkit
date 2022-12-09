@@ -9,85 +9,82 @@ use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ArrayMapperFlag;
 use Throwable;
 
-$loader = require (__DIR__ . "/../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();
 
 $in = [
-    "A_mapped"          => "value 1",
-    "B_mapped_null"     => null,
-    "D_dangerous"       => "value 7 (success)",
-    "E_dangerous_null"  => null,
-    "F_unmapped"        => "value 3",
-    "G_unmapped_null"   => null,
-    "dd_dangerous"      => null,
-    "ee_dangerous_null" => "value 5 (FAILURE)",
+    'A_mapped'          => 'value 1',
+    'B_mapped_null'     => null,
+    'D_dangerous'       => 'value 7 (success)',
+    'E_dangerous_null'  => null,
+    'F_unmapped'        => 'value 3',
+    'G_unmapped_null'   => null,
+    'dd_dangerous'      => null,
+    'ee_dangerous_null' => 'value 5 (FAILURE)',
 ];
 
 $map = [
-    "A_mapped"         => "aa_mapped",
-    "B_mapped_null"    => "bb_mapped_null",
-    "C_missing"        => "cc_missing",
-    "D_dangerous"      => "dd_dangerous",
-    "E_dangerous_null" => "ee_dangerous_null",
+    'A_mapped'         => 'aa_mapped',
+    'B_mapped_null'    => 'bb_mapped_null',
+    'C_missing'        => 'cc_missing',
+    'D_dangerous'      => 'dd_dangerous',
+    'E_dangerous_null' => 'ee_dangerous_null',
 ];
 
 $in2 = [
-    "USER_ID"   => 32,
-    "FULL_NAME" => "Greta",
-    "MAIL"      => "greta@domain.test",
+    'USER_ID'   => 32,
+    'FULL_NAME' => 'Greta',
+    'MAIL'      => 'greta@domain.test',
 ];
 
 $in3 = [
-    "USER_ID"   => 38,
-    "FULL_NAME" => "Amir",
-    "MAIL"      => "amir@domain.test",
-    "URI"       => "https://domain.test/~amir",
+    'USER_ID'   => 38,
+    'FULL_NAME' => 'Amir',
+    'MAIL'      => 'amir@domain.test',
+    'URI'       => 'https://domain.test/~amir',
 ];
 
 $in4 = [
-    "USER_ID"   => 71,
-    "FULL_NAME" => "Terry",
-    "MAIL"      => null,
+    'USER_ID'   => 71,
+    'FULL_NAME' => 'Terry',
+    'MAIL'      => null,
 ];
 
 $map2 = [
-    "USER_ID"   => "Id",
-    "FULL_NAME" => "Name",
-    "MAIL"      => "Email",
+    'USER_ID'   => 'Id',
+    'FULL_NAME' => 'Name',
+    'MAIL'      => 'Email',
 ];
 
 $exceptions = [];
 
-$skipNone     = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
-$skipNone2    = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
-$skipMissing  = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED);
-$skipNull     = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL);
-$skipUnmapped = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING);
+$skipNone              = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
+$skipNone2             = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
+$skipMissing           = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED);
+$skipNull              = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL);
+$skipUnmapped          = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_MISSING);
 $skipMissingOrUnmapped = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, 0);
 
 $sameKeys         = Mapper::getKeyMapClosure($map2, ArrayKeyConformity::COMPLETE, 0);
 $sameKeysSkipNull = Mapper::getKeyMapClosure($map2, ArrayKeyConformity::COMPLETE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL);
 
-try
-{
+try {
     $sameKeys($in3);
-}
-catch (Throwable $ex)
-{
+} catch (Throwable $ex) {
     $exceptions[] = $ex;
 }
 
 print_r([
-    "skipNone"     => $skipNone($in),
-    "skipMissing"  => $skipMissing($in),
-    "skipNull"     => $skipNull($in),
-    "skipUnmapped" => $skipUnmapped($in),
-    "skipMissingOrUnmapped" => $skipMissingOrUnmapped($in),
-    "sameKeys2"            => $sameKeys($in2),
-    "sameKeys4"            => $sameKeys($in4),
-    "sameKeysSkipNull4"    => $sameKeysSkipNull($in4),
-    "skipNone===skipNone2" => $skipNone === $skipNone2,
-    "exceptions" => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
+    'skipNone'              => $skipNone($in),
+    'skipMissing'           => $skipMissing($in),
+    'skipNull'              => $skipNull($in),
+    'skipUnmapped'          => $skipUnmapped($in),
+    'skipMissingOrUnmapped' => $skipMissingOrUnmapped($in),
+    'sameKeys2'             => $sameKeys($in2),
+    'sameKeys4'             => $sameKeys($in4),
+    'sameKeysSkipNull4'     => $sameKeysSkipNull($in4),
+    'skipNone===skipNone2'  => $skipNone === $skipNone2,
+    'exceptions'            => array_map(function (Throwable $ex) {return $ex->getMessage();}, $exceptions),
 ]);

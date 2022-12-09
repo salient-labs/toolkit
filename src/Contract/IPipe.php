@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -14,5 +12,4 @@ use Closure;
 interface IPipe
 {
     public function handle($payload, Closure $next, IPipeline $pipeline, ...$args);
-
 }

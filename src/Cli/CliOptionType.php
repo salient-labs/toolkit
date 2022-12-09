@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
@@ -71,5 +69,4 @@ final class CliOptionType extends Enumeration
      *
      */
     public const ONE_OF_POSITIONAL = 6;
-
 }

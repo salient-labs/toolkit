@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -29,27 +27,25 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
     {
         $summary = [];
         /** @var SyncError $error */
-        foreach ($this as $error)
-        {
+        foreach ($this as $error) {
             $code    = $error->getCode();
             $message = $error->Message;
             $key     = "$code.$message";
-            if (is_null($summary[$key] ?? null))
-            {
+            if (is_null($summary[$key] ?? null)) {
                 $summary[$key] = [
-                    "code"      => $code,
-                    "title"     => ErrorType::toName($error->ErrorType),
-                    "detail"    => $message,
-                    "meta"      => [
-                        "level" => Level::toName($error->Level),
-                        "count" => 0,
-                        "seen"  => 0,
+                    'code'   => $code,
+                    'title'  => ErrorType::toName($error->ErrorType),
+                    'detail' => $message,
+                    'meta'   => [
+                        'level' => Level::toName($error->Level),
+                        'count' => 0,
+                        'seen'  => 0,
                     ],
                 ];
             }
-            $summary[$key]["meta"]["values"][] = Convert::flatten($error->Values);
-            $summary[$key]["meta"]["count"]++;
-            $summary[$key]["meta"]["seen"] += $error->Count;
+            $summary[$key]['meta']['values'][] = Convert::flatten($error->Values);
+            $summary[$key]['meta']['count']++;
+            $summary[$key]['meta']['seen'] += $error->Count;
         }
         ksort($summary);
 
@@ -60,20 +56,19 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
     {
         $summary   = $this->toSummary();
         $lines     = [];
-        $separator = PHP_EOL . "  ";
-        foreach ($summary as $error)
-        {
+        $separator = PHP_EOL . '  ';
+        foreach ($summary as $error) {
             $lines[] = sprintf(
-                '~~{~~_%d_~~}~~ ___%s___ ~~[~~__%s__~~]~~ ~~(~~_\'%s\'_~~)~~:',
-                $error["meta"]["seen"],
-                $error["title"],
-                $error["meta"]["level"],
-                $error["detail"]
+                "~~{~~_%d_~~}~~ ___%s___ ~~[~~__%s__~~]~~ ~~(~~_'%s'_~~)~~:",
+                $error['meta']['seen'],
+                $error['title'],
+                $error['meta']['level'],
+                $error['detail']
             ) . $separator . implode(
                 $separator,
                 array_map(
-                    fn($v) => "`" . Formatter::escape(json_encode($v)) . "`",
-                    $error["meta"]["values"]
+                    fn($v) => '`' . Formatter::escape(json_encode($v)) . '`',
+                    $error['meta']['values']
                 )
             );
         }
@@ -85,5 +80,4 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
     {
         return $this->toSummary();
     }
-
 }

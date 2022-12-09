@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Container;
 
@@ -73,40 +71,41 @@ class AppContainer extends Container implements IReadable
 
     private function getPath(string $name, string $default): string
     {
-        $path = (($path = Env::get($name, ""))
-            ? (Test::isAbsolutePath($path) ? $path : $this->BasePath . "/" . $path)
-            : $this->BasePath . "/" . $default);
+        $path = (($path = Env::get($name, ''))
+            ? (Test::isAbsolutePath($path) ? $path : $this->BasePath . '/' . $path)
+            : $this->BasePath . '/' . $default);
         File::maybeCreateDirectory($path);
+
         return $path;
     }
 
     final protected function _getCachePath(): string
     {
         return $this->_CachePath
-            ?: ($this->_CachePath = $this->getPath("app_cache_path", "var/cache"));
+            ?: ($this->_CachePath = $this->getPath('app_cache_path', 'var/cache'));
     }
 
     final protected function _getDataPath(): string
     {
         return $this->_DataPath
-            ?: ($this->_DataPath = $this->getPath("app_data_path", "var/lib"));
+            ?: ($this->_DataPath = $this->getPath('app_data_path', 'var/lib'));
     }
 
     final protected function _getLogPath(): string
     {
         return $this->_LogPath
-            ?: ($this->_LogPath = $this->getPath("app_log_path", "var/log"));
+            ?: ($this->_LogPath = $this->getPath('app_log_path', 'var/log'));
     }
 
     final protected function _getTempPath(): string
     {
         return $this->_TempPath
-            ?: ($this->_TempPath = $this->getPath("app_temp_path", "var/tmp"));
+            ?: ($this->_TempPath = $this->getPath('app_temp_path', 'var/tmp'));
     }
 
     public static function getReadable(): array
     {
-        return ["BasePath"];
+        return ['BasePath'];
     }
 
     public function __construct(string $basePath = null)
@@ -116,45 +115,37 @@ class AppContainer extends Container implements IReadable
         parent::__construct();
 
         if (self::hasGlobalContainer() &&
-            ($global = get_class(self::getGlobalContainer())) !== Container::class)
-        {
-            throw new RuntimeException("Global container already loaded: " . $global);
+                ($global = get_class(self::getGlobalContainer())) !== Container::class) {
+            throw new RuntimeException('Global container already loaded: ' . $global);
         }
 
         self::setGlobalContainer($this);
 
-        if (is_null($basePath))
-        {
-            $basePath = Env::get("app_base_path", "") ?: Composer::getRootPackagePath();
+        if (is_null($basePath)) {
+            $basePath = Env::get('app_base_path', '') ?: Composer::getRootPackagePath();
         }
 
         if (!is_dir($basePath) ||
-            ($this->BasePath = realpath($basePath)) === false)
-        {
-            throw new RuntimeException("Invalid basePath: " . $basePath);
+                ($this->BasePath = realpath($basePath)) === false) {
+            throw new RuntimeException('Invalid basePath: ' . $basePath);
         }
 
-        if (file_exists($env = $this->BasePath . "/.env"))
-        {
+        if (file_exists($env = $this->BasePath . '/.env')) {
             Env::loadFile($env);
-        }
-        else
-        {
+        } else {
             Env::apply();
         }
 
         Console::registerStdioTargets();
 
         register_shutdown_function(
-            function ()
-            {
+            function () {
                 $this->writeResourceUsage();
             }
         );
 
         Err::load();
-        if ($path = Composer::getPackagePath("adodb/adodb-php"))
-        {
+        if ($path = Composer::getPackagePath('adodb/adodb-php')) {
             Err::silencePaths($path);
         }
     }
@@ -164,14 +155,11 @@ class AppContainer extends Container implements IReadable
      */
     final public function loadCache()
     {
-        $cacheDb = $this->CachePath . "/cache.db";
+        $cacheDb = $this->CachePath . '/cache.db';
 
-        if (!Cache::isLoaded())
-        {
+        if (!Cache::isLoaded()) {
             Cache::load($cacheDb);
-        }
-        elseif (!Test::areSameFile($cacheDb, $file = Cache::getFilename() ?: ""))
-        {
+        } elseif (!Test::areSameFile($cacheDb, $file = Cache::getFilename() ?: '')) {
             throw new RuntimeException("Cache database already loaded: $file");
         }
 
@@ -183,8 +171,7 @@ class AppContainer extends Container implements IReadable
      */
     final public function loadCacheIfExists()
     {
-        if (file_exists($this->CachePath . "/cache.db"))
-        {
+        if (file_exists($this->CachePath . '/cache.db')) {
             $this->loadCache();
         }
 
@@ -208,10 +195,9 @@ class AppContainer extends Container implements IReadable
      */
     final public function logConsoleMessages(?bool $debug = true, ?string $name = null)
     {
-        $name = ($name ? basename($name, ".log") : Sys::getProgramBasename(".php"));
+        $name = ($name ? basename($name, '.log') : Sys::getProgramBasename('.php'));
         Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log"), ConsoleLevels::ALL);
-        if ($debug || (is_null($debug) && Env::debug()))
-        {
+        if ($debug || (is_null($debug) && Env::debug())) {
             Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.debug.log"), ConsoleLevels::ALL_DEBUG);
         }
 
@@ -223,20 +209,17 @@ class AppContainer extends Container implements IReadable
      */
     final public function loadSync(?string $command = null, ?array $arguments = null)
     {
-        $syncDb = $this->DataPath . "/sync.db";
+        $syncDb = $this->DataPath . '/sync.db';
 
-        if (!Sync::isLoaded())
-        {
+        if (!Sync::isLoaded()) {
             Sync::load($syncDb,
                 is_null($command) ? Sys::getProgramName($this->BasePath) : $command,
                 (is_null($arguments)
-                    ? (PHP_SAPI == "cli"
-                        ? array_slice($_SERVER["argv"], 1)
-                        : ["_GET" => $_GET, "_POST" => $_POST])
-                    : $arguments));
-        }
-        elseif (!Test::areSameFile($syncDb, $file = Sync::getFilename() ?: ""))
-        {
+                        ? (PHP_SAPI == 'cli'
+                            ? array_slice($_SERVER['argv'], 1)
+                            : ['_GET' => $_GET, '_POST' => $_POST])
+                        : $arguments));
+        } elseif (!Test::areSameFile($syncDb, $file = Sync::getFilename() ?: '')) {
             throw new RuntimeException("Sync database already loaded: $file");
         }
 
@@ -248,9 +231,8 @@ class AppContainer extends Container implements IReadable
      */
     final public function syncNamespace(string $prefix, string $uri, string $namespace)
     {
-        if (!Sync::isLoaded())
-        {
-            throw new RuntimeException("Sync database not loaded");
+        if (!Sync::isLoaded()) {
+            throw new RuntimeException('Sync database not loaded');
         }
         Sync::namespace($prefix, $uri, $namespace);
 
@@ -262,31 +244,28 @@ class AppContainer extends Container implements IReadable
      */
     final public function unloadSync(bool $silent = false)
     {
-        if (!Sync::isLoaded())
-        {
+        if (!Sync::isLoaded()) {
             return $this;
         }
 
         Sync::close();
 
-        if ($silent)
-        {
+        if ($silent) {
             return $this;
         }
 
-        if ($count = count($errors = Sync::getErrors()))
-        {
+        if ($count = count($errors = Sync::getErrors())) {
             // Print an error message without incrementing `Console`'s error
             // counter
             Console::error(
-                Convert::plural($count, "sync error", null, true) . " recorded:",
+                Convert::plural($count, 'sync error', null, true) . ' recorded:',
                 "\n" . $errors, null, false
             );
 
             return $this;
         }
 
-        Console::info("No sync errors recorded");
+        Console::info('No sync errors recorded');
 
         return $this;
     }
@@ -301,8 +280,8 @@ class AppContainer extends Container implements IReadable
             Sys::getPeakMemoryUsage(),
             ...Sys::getCpuUsage(),
         ];
-        Console::debug("", sprintf(
-            "CPU time: %01.3fs real, %01.3fs user, %01.3fs system; memory: %s peak",
+        Console::debug('', sprintf(
+            'CPU time: %01.3fs real, %01.3fs user, %01.3fs system; memory: %s peak',
             ($endTime - $this->StartTime) / 1000000000,
             $userTime / 1000000,
             $systemTime / 1000000,
@@ -311,5 +290,4 @@ class AppContainer extends Container implements IReadable
 
         return $this;
     }
-
 }

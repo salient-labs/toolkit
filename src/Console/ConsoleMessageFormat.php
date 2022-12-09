@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Console;
 
@@ -28,6 +26,6 @@ final class ConsoleMessageFormat
     {
         return $this->PrefixFormat->apply($prefix)
             . $this->Msg1Format->apply($msg1)
-            . ($msg2 ? $this->Msg2Format->apply($msg2) : "");
+            . ($msg2 ? $this->Msg2Format->apply($msg2) : '');
     }
 }

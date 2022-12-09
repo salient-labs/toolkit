@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Concept;
 
@@ -104,10 +102,8 @@ abstract class SyncDefinition implements ISyncDefinition
     final protected function getPipelineToEntity(): IPipelineImmutable
     {
         return ($this->DataToEntityPipeline ?: PipelineImmutable::create())
-            ->then(function (array $entity, IPipeline $pipeline, int $operation, SyncContext $ctx) use (&$closure)
-            {
-                if (!$closure)
-                {
+            ->then(function (array $entity, IPipeline $pipeline, int $operation, SyncContext $ctx) use (&$closure) {
+                if (!$closure) {
                     $ctx = $ctx->withConformity($this->Conformity);
 
                     $closure = in_array($this->Conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
@@ -118,5 +114,4 @@ abstract class SyncDefinition implements ISyncDefinition
                 return $closure($entity, $this->Provider, $ctx);
             });
     }
-
 }

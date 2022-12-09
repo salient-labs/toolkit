@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Console\Target;
 
@@ -29,7 +27,7 @@ final class StreamTarget extends ConsoleTarget
     /**
      * @var string
      */
-    private $Timestamp = "[d M y H:i:s.vO] ";
+    private $Timestamp = '[d M y H:i:s.vO] ';
 
     /**
      * @var \DateTimeZone|null
@@ -71,18 +69,16 @@ final class StreamTarget extends ConsoleTarget
         stream_set_write_buffer($stream, 0);
 
         $this->Stream       = $stream;
-        $this->IsStdout     = File::getStreamUri($stream) == "php://stdout";
-        $this->IsStderr     = File::getStreamUri($stream) == "php://stderr";
+        $this->IsStdout     = File::getStreamUri($stream) == 'php://stdout';
+        $this->IsStderr     = File::getStreamUri($stream) == 'php://stderr';
         $this->IsTty        = stream_isatty($stream);
         $this->AddTimestamp = !is_null($addTimestamp) ? $addTimestamp : !$this->IsTty;
 
-        if (!is_null($timestamp))
-        {
+        if (!is_null($timestamp)) {
             $this->Timestamp = $timestamp;
         }
 
-        if (!is_null($timezone))
-        {
+        if (!is_null($timezone)) {
             $this->Timezone = Convert::toTimezone($timezone);
         }
     }
@@ -104,15 +100,13 @@ final class StreamTarget extends ConsoleTarget
 
     public function reopen(string $path = null)
     {
-        if (!$this->Path)
-        {
-            throw new RuntimeException("StreamTarget not created by StreamTarget::fromPath()");
+        if (!$this->Path) {
+            throw new RuntimeException('StreamTarget not created by StreamTarget::fromPath()');
         }
 
         $path = $path ?: $this->Path;
 
-        if (!fclose($this->Stream) || !File::maybeCreate($path, 0600) || ($stream = fopen($path, "a")) === false)
-        {
+        if (!fclose($this->Stream) || !File::maybeCreate($path, 0600) || ($stream = fopen($path, 'a')) === false) {
             throw new RuntimeException("Could not close {$this->Path} and open $path");
         }
 
@@ -131,8 +125,7 @@ final class StreamTarget extends ConsoleTarget
      */
     public static function fromPath(string $path, bool $addTimestamp = null, string $timestamp = null, $timezone = null): StreamTarget
     {
-        if (!File::maybeCreate($path, 0600) || ($stream = fopen($path, "a")) === false)
-        {
+        if (!File::maybeCreate($path, 0600) || ($stream = fopen($path, 'a')) === false) {
             throw new RuntimeException("Could not open $path");
         }
 
@@ -144,15 +137,14 @@ final class StreamTarget extends ConsoleTarget
 
     protected function writeToTarget(int $level, string $message, array $context)
     {
-        if ($this->AddTimestamp)
-        {
-            $now     = (new DateTime("now", $this->Timezone))->format($this->Timestamp);
+        if ($this->AddTimestamp) {
+            $now     = (new DateTime('now', $this->Timezone))->format($this->Timestamp);
             $message = $now . str_replace("\n", "\n" . $now, $message);
         }
 
         // Don't add a newline if $message has a trailing carriage return (e.g.
         // when a progress bar is being displayed)
-        fwrite($this->Stream, $message . (substr($message, -1) == "\r" ? "" : "\n"));
+        fwrite($this->Stream, $message . (substr($message, -1) == "\r" ? '' : "\n"));
     }
 
     public function getPath(): string

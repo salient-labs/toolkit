@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -29,7 +27,7 @@ final class Arr implements IImmutable
     /**
      * @return $this
      */
-    public function map(? callable $callback, array ...$arrays)
+    public function map(?callable $callback, array ...$arrays)
     {
         return (clone $this)->_map($callback, ...$arrays);
     }
@@ -37,7 +35,7 @@ final class Arr implements IImmutable
     /**
      * @return $this
      */
-    public function filter(? callable $callback, int $mode = 0)
+    public function filter(?callable $callback, int $mode = 0)
     {
         return (clone $this)->_filter($callback, $mode);
     }
@@ -98,7 +96,7 @@ final class Arr implements IImmutable
     /**
      * @return $this
      */
-    private function _map(? callable $callback, array ...$arrays)
+    private function _map(?callable $callback, array ...$arrays)
     {
         $this->Array = array_map($callback, $this->Array, ...$arrays);
 
@@ -108,7 +106,7 @@ final class Arr implements IImmutable
     /**
      * @return $this
      */
-    private function _filter(? callable $callback, int $mode)
+    private function _filter(?callable $callback, int $mode)
     {
         $this->Array = array_filter($this->Array, $callback, $mode);
 
@@ -164,5 +162,4 @@ final class Arr implements IImmutable
 
         return $this;
     }
-
 }

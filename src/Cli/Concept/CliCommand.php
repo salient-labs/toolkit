@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Cli\Concept;
 
@@ -135,9 +133,8 @@ abstract class CliCommand implements ReturnsContainer
      */
     final public function setName(array $name): void
     {
-        if (!is_null($this->Name))
-        {
-            throw new RuntimeException("Name already set");
+        if (!is_null($this->Name)) {
+            throw new RuntimeException('Name already set');
         }
 
         $this->Name = $name;
@@ -150,7 +147,7 @@ abstract class CliCommand implements ReturnsContainer
      */
     final public function getName(): string
     {
-        return implode(" ", $this->getNameParts());
+        return implode(' ', $this->getNameParts());
     }
 
     /**
@@ -164,7 +161,7 @@ abstract class CliCommand implements ReturnsContainer
         $name = $this->getNameParts();
         array_unshift($name, $this->app()->getProgramName());
 
-        return implode(" ", $name);
+        return implode(' ', $name);
     }
 
     /**
@@ -177,88 +174,75 @@ abstract class CliCommand implements ReturnsContainer
         return $this->Name ?: [];
     }
 
-    private function addOption(CliOption $option, array & $options, bool $hide = false)
+    private function addOption(CliOption $option, array &$options, bool $hide = false)
     {
         $this->applyOption($option, true, $options, $hide);
     }
 
-    private function applyOption(CliOption $option, bool $validate = false, ?array & $options = null, bool $hide = false)
+    private function applyOption(CliOption $option, bool $validate = false, ?array &$options = null, bool $hide = false)
     {
         $names = array_filter([$option->Short, $option->Long]);
 
-        if ($validate)
-        {
+        if ($validate) {
             $option->validate();
 
-            if (!empty(array_intersect($names, array_keys($this->OptionsByName))))
-            {
-                throw new UnexpectedValueException("Option names must be unique: " . implode(", ", $names));
+            if (!empty(array_intersect($names, array_keys($this->OptionsByName)))) {
+                throw new UnexpectedValueException('Option names must be unique: ' . implode(', ', $names));
             }
 
-            if ($option->IsPositional)
-            {
+            if ($option->IsPositional) {
                 if ($option->IsRequired &&
-                    !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => !$opt->IsRequired && !$opt->MultipleAllowed)))
-                {
-                    throw new UnexpectedValueException("Required positional options must be added before optional ones");
+                        !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => !$opt->IsRequired && !$opt->MultipleAllowed))) {
+                    throw new UnexpectedValueException('Required positional options must be added before optional ones');
                 }
                 if (!$option->IsRequired &&
-                    !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => $opt->MultipleAllowed)))
-                {
+                        !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => $opt->MultipleAllowed))) {
                     throw new UnexpectedValueException("'multipleAllowed' positional options must be added after optional ones");
                 }
                 if ($option->MultipleAllowed &&
-                    !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => $opt->MultipleAllowed)))
-                {
+                        !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => $opt->MultipleAllowed))) {
                     throw new UnexpectedValueException("'multipleAllowed' cannot be set on more than one positional option");
                 }
             }
         }
 
-        foreach ($names as $key)
-        {
+        foreach ($names as $key) {
             $this->OptionsByName[$key] = $option;
         }
 
         $this->OptionsByKey[$option->Key] = $option;
 
-        if ($option->IsPositional)
-        {
+        if ($option->IsPositional) {
             $this->PositionalOptions[$option->Key] = $option;
         }
 
-        if ($hide || array_key_exists($option->Key, $this->HiddenOptions))
-        {
+        if ($hide || array_key_exists($option->Key, $this->HiddenOptions)) {
             $this->HiddenOptions[$option->Key] = $option;
         }
 
-        if (!is_null($options))
-        {
+        if (!is_null($options)) {
             $options[] = $option;
         }
     }
 
     private function loadOptions()
     {
-        if (!is_null($this->Options))
-        {
+        if (!is_null($this->Options)) {
             return;
         }
 
         $_options = $this->getOptionList();
         $options  = [];
 
-        foreach ($_options as $option)
-        {
+        foreach ($_options as $option) {
             $this->addOption(CliOption::resolve($option), $options);
         }
 
-        if (!array_key_exists("help", $this->OptionsByName))
-        {
+        if (!array_key_exists('help', $this->OptionsByName)) {
             $this->addOption(CliOption::build()
-                ->long("help")
-                ->short(array_key_exists("h", $this->OptionsByName) ? null : "h")
-                ->go(), $options, true);
+                    ->long('help')
+                    ->short(array_key_exists('h', $this->OptionsByName) ? null : 'h')
+                    ->go(), $options, true);
         }
 
         $this->Options = $options;
@@ -291,7 +275,7 @@ abstract class CliCommand implements ReturnsContainer
 
     final public function getUsage(bool $oneline = false): string
     {
-        $options = "";
+        $options = '';
 
         // To produce a one-line summary like this:
         //
@@ -311,80 +295,61 @@ abstract class CliCommand implements ReturnsContainer
         $required   = [];
         $positional = [];
 
-        foreach ($this->getOptions() as $option)
-        {
-            if (array_key_exists($option->Key, $this->HiddenOptions))
-            {
+        foreach ($this->getOptions() as $option) {
+            if (array_key_exists($option->Key, $this->HiddenOptions)) {
                 continue;
             }
 
-            list ($short, $long, $line, $value, $valueName, $list) = [$option->Short, $option->Long, [], [], "", ""];
+            list($short, $long, $line, $value, $valueName, $list) = [$option->Short, $option->Long, [], [], '', ''];
 
-            if ($option->IsFlag)
-            {
-                if ($short)
-                {
+            if ($option->IsFlag) {
+                if ($short) {
                     $line[]      = "-{$short}";
                     $shortFlag[] = $short;
                 }
 
-                if ($long)
-                {
+                if ($long) {
                     $line[] = "--{$long}";
 
-                    if (!$short)
-                    {
+                    if (!$short) {
                         $longFlag[] = $long;
                     }
                 }
-            }
-            else
-            {
+            } else {
                 $valueName = $option->ValueName;
 
-                if ($valueName != strtoupper($valueName))
-                {
-                    $valueName = "<" . Convert::toKebabCase($valueName) . ">";
+                if ($valueName != strtoupper($valueName)) {
+                    $valueName = '<' . Convert::toKebabCase($valueName) . '>';
                 }
 
-                if ($option->IsPositional)
-                {
-                    $list         = $option->MultipleAllowed ? "..." : "";
+                if ($option->IsPositional) {
+                    $list         = $option->MultipleAllowed ? '...' : '';
                     $line[]       = $valueName . $list;
                     $positional[] = $option->IsRequired ? "$valueName$list" : "[$valueName$list]";
-                }
-                else
-                {
-                    if ($option->MultipleAllowed && $option->Delimiter)
-                    {
+                } else {
+                    if ($option->MultipleAllowed && $option->Delimiter) {
                         $list = "{$option->Delimiter}...";
                     }
 
-                    if ($short)
-                    {
+                    if ($short) {
                         $line[]  = "-{$short}";
                         $value[] = $option->IsValueRequired ? " $valueName$list" : "[$valueName$list]";
                     }
 
-                    if ($long)
-                    {
+                    if ($long) {
                         $line[]  = "--{$long}";
                         $value[] = $option->IsValueRequired ? " $valueName$list" : "[=$valueName$list]";
                     }
 
-                    if ($option->IsRequired)
-                    {
+                    if ($option->IsRequired) {
                         $required[] = $line[0] . $value[0];
-                    }
-                    else
-                    {
+                    } else {
                         $optional[] = $line[0] . $value[0];
                     }
                 }
             }
 
-            if (!$oneline)
-            {
+            if (!$oneline) {
                 // Format:
                 //
                 //     _-o, --option_[=__VALUE__]
@@ -395,49 +360,48 @@ abstract class CliCommand implements ReturnsContainer
                 //         - _option2_
                 //         - _option3_
                 $sep      = ($option->Description ? "\n      " : "\n    ");
-                $options .= ("\n  _" . implode(", ", $line) . "_"
-                    . str_replace($valueName, "__" . $valueName . "__", (array_pop($value) ?: ""))
-                    . ($option->Description ? $this->prepareDescription("\n" . $option->Description, "    ", 76) : "")
-                    . ((!$option->IsFlag && $option->DefaultValue) ? $sep . "__Default:__ ___" . implode(",", Convert::toArray($option->DefaultValue)) . "___" : "")
-                    . ($option->AllowedValues ? $sep . "__Values:__" . $sep . "- _" . implode("_" . $sep . "- _", $option->AllowedValues) . "_" : "")) . "\n";
+                $options .= ("\n  _" . implode(', ', $line) . '_'
+                    . str_replace($valueName, '__' . $valueName . '__', (array_pop($value) ?: ''))
+                    . ($option->Description ? $this->prepareDescription("\n" . $option->Description, '    ', 76) : '')
+                    . ((!$option->IsFlag && $option->DefaultValue) ? $sep . '__Default:__ ___' . implode(',', Convert::toArray($option->DefaultValue)) . '___' : '')
+                    . ($option->AllowedValues ? $sep . '__Values:__' . $sep . '- _' . implode('_' . $sep . '- _', $option->AllowedValues) . '_' : '')) . "\n";
             }
         }
 
-        $synopsis = (($shortFlag ? " [-" . implode("", $shortFlag) . "]" : "")
-            . ($longFlag ? " [--" . implode("] [--", $longFlag) . "]" : "")
-            . ($optional ? " [" . implode("] [", $optional) . "]" : "")
-            . ($required ? " " . implode(" ", $required) : "")
-            . ($positional ? " " . implode(" ", $positional) : ""));
+        $synopsis = (($shortFlag ? ' [-' . implode('', $shortFlag) . ']' : '')
+            . ($longFlag ? ' [--' . implode('] [--', $longFlag) . ']' : '')
+            . ($optional ? ' [' . implode('] [', $optional) . ']' : '')
+            . ($required ? ' ' . implode(' ', $required) : '')
+            . ($positional ? ' ' . implode(' ', $positional) : ''));
 
-        $name        = $this->getNameWithProgram();
-        $desc        = $this->prepareDescription($this->getDescription(), "  ", 78);
-        if ($options = trim($options, "\n"))
-        {
+        $name = $this->getNameWithProgram();
+        $desc = $this->prepareDescription($this->getDescription(), '  ', 78);
+        if ($options = trim($options, "\n")) {
             $options = <<<EOF
 
-
-___OPTIONS___
-$options
-EOF;
+            
+            ___OPTIONS___
+            $options
+            EOF;
         };
 
         return $oneline ? $synopsis : <<<EOF
-___NAME___
-  __{$name}__
+        ___NAME___
+          __{$name}__
 
-___DESCRIPTION___
-  {$desc}
+        ___DESCRIPTION___
+          {$desc}
 
-___SYNOPSIS___
-  __{$name}__{$synopsis}${options}
-EOF;
+        ___SYNOPSIS___
+          __{$name}__{$synopsis}${options}
+        EOF;
     }
 
     private function prepareDescription(string $description, string $indent, int $width): string
     {
         return str_replace("\n", "\n" . $indent,
             wordwrap(
-                str_replace("{{command}}", $this->getNameWithProgram(),
+                str_replace('{{command}}', $this->getNameWithProgram(),
                     Convert::unwrap($description)),
                 $width
             ));
@@ -451,42 +415,32 @@ EOF;
 
     private function loadOptionValues()
     {
-        if (!is_null($this->OptionValues))
-        {
+        if (!is_null($this->OptionValues)) {
             return;
         }
 
         $this->loadOptions();
         $this->OptionErrors      = 0;
         $this->NextArgumentIndex = null;
-        $this->IsHelp = false;
+        $this->IsHelp            = false;
 
         $args   = $this->Arguments;
         $merged = [];
 
-        for ($i = 0; $i < count($args); $i++)
-        {
-            list ($arg, $short, $matches) = [$args[$i], false, null];
+        for ($i = 0; $i < count($args); $i++) {
+            list($arg, $short, $matches) = [$args[$i], false, null];
 
-            if (preg_match("/^-([0-9a-z])(.*)/i", $arg, $matches))
-            {
+            if (preg_match('/^-([0-9a-z])(.*)/i', $arg, $matches)) {
                 $name  = $matches[1];
                 $value = $matches[2] ?: null;
                 $short = true;
-            }
-            elseif (preg_match("/^--([0-9a-z_-]+)(=(.*))?\$/i", $arg, $matches))
-            {
+            } elseif (preg_match('/^--([0-9a-z_-]+)(=(.*))?$/i', $arg, $matches)) {
                 $name  = $matches[1];
                 $value = ($matches[2] ?? null) ? $matches[3] : null;
-            }
-            else
-            {
-                if ($arg == "--")
-                {
+            } else {
+                if ($arg == '--') {
                     $i++;
-                }
-                elseif (substr($arg, 0, 1) == "-")
-                {
+                } elseif (substr($arg, 0, 1) == '-') {
                     $this->optionError("invalid argument '$arg'");
 
                     continue;
@@ -497,33 +451,24 @@ EOF;
 
             $option = $this->OptionsByName[$name] ?? null;
 
-            if (is_null($option) || $option->IsPositional)
-            {
+            if (is_null($option) || $option->IsPositional) {
                 $this->optionError("unknown option '$name'");
 
                 continue;
-            }
-            elseif ($option->IsFlag)
-            {
+            } elseif ($option->IsFlag) {
                 // Handle multiple short flags per argument, e.g. `cp -rv`
-                if ($short && $value)
-                {
+                if ($short && $value) {
                     $args[$i] = "-$value";
                     $i--;
                 }
 
                 $value = true;
-            }
-            elseif (!$option->IsValueRequired)
-            {
-                $value = $value ?: $option->DefaultValue ?: "";
-            }
-            elseif (is_null($value))
-            {
+            } elseif (!$option->IsValueRequired) {
+                $value = $value ?: $option->DefaultValue ?: '';
+            } elseif (is_null($value)) {
                 $i++;
 
-                if (is_null($value = ($args[$i] ?? null)))
-                {
+                if (is_null($value = ($args[$i] ?? null))) {
                     // Allow null to be stored to prevent an additional
                     // "argument required" error
                     $this->optionError("{$option->DisplayName} value required");
@@ -532,77 +477,61 @@ EOF;
             }
 
             if ($option->MultipleAllowed &&
-                $option->Delimiter && $value && is_string($value))
-            {
+                    $option->Delimiter && $value && is_string($value)) {
                 $value = explode($option->Delimiter, $value);
             }
 
             $key = $option->Key;
 
-            if (isset($merged[$key]))
-            {
+            if (isset($merged[$key])) {
                 $merged[$key] = array_merge(Convert::toArray($merged[$key]), Convert::toArray($value));
-            }
-            else
-            {
+            } else {
                 $merged[$key] = $value;
             }
         }
 
         $pending = count($this->PositionalOptions);
-        foreach ($this->PositionalOptions as $option)
-        {
-            if (!($i < count($args)))
-            {
+        foreach ($this->PositionalOptions as $option) {
+            if (!($i < count($args))) {
                 break;
             }
             $pending--;
-            if ($option->IsRequired || !$option->MultipleAllowed)
-            {
+            if ($option->IsRequired || !$option->MultipleAllowed) {
                 $merged[$option->Key] = $option->MultipleAllowed ? [$args[$i++]] : $args[$i++];
-                if (!$option->MultipleAllowed)
-                {
+                if (!$option->MultipleAllowed) {
                     continue;
                 }
             }
-            while (count($args) - $i - $pending > 0)
-            {
+            while (count($args) - $i - $pending > 0) {
                 $merged[$option->Key][] = $args[$i++];
             }
         }
 
         $this->NextArgumentIndex = $i;
 
-        foreach ($merged as $key => $value)
-        {
+        foreach ($merged as $key => $value) {
             $option = $this->OptionsByKey[$key];
 
-            if ($option->Long == "help")
-            {
+            if ($option->Long == 'help') {
                 $this->IsHelp = true;
 
                 continue;
             }
 
-            if (!$option->MultipleAllowed && is_array($value))
-            {
+            if (!$option->MultipleAllowed && is_array($value)) {
                 $this->optionError("{$option->DisplayName} cannot be used multiple times");
             }
 
             if (!is_null($option->AllowedValues) && !is_null($value) &&
-                !empty($invalid = array_diff(Convert::toArray($value), $option->AllowedValues)))
-            {
+                    !empty($invalid = array_diff(Convert::toArray($value), $option->AllowedValues))) {
                 $this->optionError("invalid {$option->DisplayName} "
-                    . Convert::plural(count($invalid), "value") . ": " . implode(", ", $invalid));
+                    . Convert::plural(count($invalid), 'value') . ': ' . implode(', ', $invalid));
             }
         }
 
-        foreach ($this->Options as &$option)
-        {
-            if ($option->IsRequired && !array_key_exists($option->Key, $merged))
-            {
-                if (!(count($args) == 1 && $this->IsHelp))
-                {
+        foreach ($this->Options as &$option) {
+            if ($option->IsRequired && !array_key_exists($option->Key, $merged)) {
+                if (!(count($args) == 1 && $this->IsHelp)) {
                     $this->optionError("{$option->DisplayName} required");
                 }
 
@@ -611,12 +540,9 @@ EOF;
 
             $value = $merged[$option->Key] ?? (!$option->IsValueRequired ? null : $option->DefaultValue);
 
-            if ($option->IsFlag && $option->MultipleAllowed)
-            {
+            if ($option->IsFlag && $option->MultipleAllowed) {
                 $value = count(Convert::toArray($value, true));
-            }
-            elseif ($option->MultipleAllowed)
-            {
+            } elseif ($option->MultipleAllowed) {
                 $value = Convert::toArray($value, true);
             }
 
@@ -624,8 +550,7 @@ EOF;
             $this->applyOption($option, false);
         }
 
-        if ($this->OptionErrors)
-        {
+        if ($this->OptionErrors) {
             throw new CliArgumentsInvalidException();
         }
 
@@ -646,8 +571,7 @@ EOF;
     {
         $this->assertHasRun();
 
-        if (!($option = $this->getOption($name)))
-        {
+        if (!($option = $this->getOption($name))) {
             throw new UnexpectedValueException("No option with name '$name'");
         }
 
@@ -662,9 +586,8 @@ EOF;
         $this->assertHasRun();
 
         $values = [];
-        foreach ($this->Options as $option)
-        {
-            $name = $option->Long ?: $option->Short;
+        foreach ($this->Options as $option) {
+            $name          = $option->Long ?: $option->Short;
             $values[$name] = $option->Value;
         }
 
@@ -685,52 +608,42 @@ EOF;
      */
     final public function getEffectiveArgument($option, bool $shellEscape = false, $value = null): ?string
     {
-        if (is_string($option))
-        {
+        if (is_string($option)) {
             $this->assertHasRun();
 
-            if (!($option = $this->getOption($option)))
-            {
+            if (!($option = $this->getOption($option))) {
                 throw new UnexpectedValueException("No option with name '$option'");
             }
         }
 
-        if (func_num_args() > 2)
-        {
+        if (func_num_args() > 2) {
             $option = $option->withValue($value);
         }
 
-        if (is_null($option->Value) || $option->Value === [] || $option->Value === false || $option->Value === 0)
-        {
+        if (is_null($option->Value) || $option->Value === [] || $option->Value === false || $option->Value === 0) {
             return null;
         }
 
-        if (is_int($option->Value))
-        {
-            if ($option->Short)
-            {
-                return "-" . str_repeat($option->Short, $option->Value);
+        if (is_int($option->Value)) {
+            if ($option->Short) {
+                return '-' . str_repeat($option->Short, $option->Value);
             }
 
-            return implode(" ", array_fill(0, $option->Value, "--{$option->Long}"));
+            return implode(' ', array_fill(0, $option->Value, "--{$option->Long}"));
         }
 
         $value = null;
-        if (is_array($option->Value))
-        {
-            $value = implode(",", $option->Value);
-        }
-        elseif (is_string($option->Value))
-        {
+        if (is_array($option->Value)) {
+            $value = implode(',', $option->Value);
+        } elseif (is_string($option->Value)) {
             $value = $option->Value;
         }
-        if ($shellEscape && !is_null($value))
-        {
+        if ($shellEscape && !is_null($value)) {
             $value = Convert::toShellArg($value);
         }
 
         return $option->IsPositional ? $value : ($option->Long
-            ? "--{$option->Long}" . (is_null($value) ? "" : "=$value")
+            ? "--{$option->Long}" . (is_null($value) ? '' : "=$value")
             : "-{$option->Short}" . $value);
     }
 
@@ -747,13 +660,10 @@ EOF;
 
         $args = $this->getNameParts();
         array_unshift($args, $this->app()->getProgramName());
-        foreach ($this->Options as $option)
-        {
+        foreach ($this->Options as $option) {
             $name = null;
-            foreach (array_filter([$option->Long, $option->Short]) as $key)
-            {
-                if (array_key_exists($key, $values))
-                {
+            foreach (array_filter([$option->Long, $option->Short]) as $key) {
+                if (array_key_exists($key, $values)) {
                     $name = $key;
                     break;
                 }
@@ -763,8 +673,7 @@ EOF;
                 ? $this->getEffectiveArgument($option, $shellEscape, $values[$name])
                 : $this->getEffectiveArgument($option, $shellEscape));
 
-            if ($option->IsPositional)
-            {
+            if ($option->IsPositional) {
                 $positional[] = $arg;
                 continue;
             }
@@ -777,9 +686,8 @@ EOF;
 
     private function assertHasRun()
     {
-        if (is_null($this->OptionValues))
-        {
-            throw new RuntimeException("Command must be invoked first");
+        if (is_null($this->OptionValues)) {
+            throw new RuntimeException('Command must be invoked first');
         }
     }
 
@@ -798,14 +706,13 @@ EOF;
 
         $this->loadOptionValues();
 
-        if ($this->IsHelp)
-        {
+        if ($this->IsHelp) {
             Console::out($this->getUsage());
+
             return 0;
         }
 
-        if (is_int($return = $this->run(...array_slice($this->Arguments, $this->NextArgumentIndex))))
-        {
+        if (is_int($return = $this->run(...array_slice($this->Arguments, $this->NextArgumentIndex)))) {
             return $return;
         }
 
@@ -841,5 +748,4 @@ EOF;
     {
         return $this->Runs;
     }
-
 }

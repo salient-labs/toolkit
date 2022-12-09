@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\CustomEntity;
 
@@ -15,17 +13,17 @@ class Post extends \Lkrms\Tests\Sync\Entity\Post
 
     public function _setUserId($value)
     {
-        if (array_key_exists($value, self::$_users))
-        {
-            $this->User = & self::$_users[$value];
+        if (array_key_exists($value, self::$_users)) {
+            $this->User = &self::$_users[$value];
+
             return;
         }
 
         self::$_users[$value] = null;
         /** @var User */
-        $user = User::backend()->get($value);
+        $user                 = User::backend()->get($value);
         self::$_users[$value] = $user;
 
-        $this->User = & self::$_users[$value];
+        $this->User = &self::$_users[$value];
     }
 }

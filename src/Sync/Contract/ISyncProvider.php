@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Contract;
 
@@ -53,5 +51,4 @@ interface ISyncProvider extends IProvider
      * @param ISyncContext|\Lkrms\Contract\IContainer|null $context
      */
     public function with(string $syncEntity, $context = null): SyncEntityProvider;
-
 }

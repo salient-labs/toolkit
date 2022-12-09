@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Concept;
 
@@ -137,13 +135,11 @@ abstract class HttpSyncProvider extends SyncProvider
      */
     final public function getCurler(string $path, ?int $expiry = -1): Curler
     {
-        if (!is_null($expiry) && $expiry < 0)
-        {
+        if (!is_null($expiry) && $expiry < 0) {
             $expiry = $this->getCurlerCacheExpiry($path);
         }
 
-        if (!is_null($expiry))
-        {
+        if (!is_null($expiry)) {
             $curler = new CachingCurler(
                 $this->getEndpointUrl($path),
                 $this->getCurlerHeaders($path),
@@ -151,9 +147,7 @@ abstract class HttpSyncProvider extends SyncProvider
                 $expiry,
                 fn(CurlerHeaders $headers) => $this->getCurlerCacheKey($headers)
             );
-        }
-        else
-        {
+        } else {
             $curler = new Curler(
                 $this->getEndpointUrl($path),
                 $this->getCurlerHeaders($path),
@@ -168,10 +162,9 @@ abstract class HttpSyncProvider extends SyncProvider
 
     public function checkHeartbeat(int $ttl = 300)
     {
-        Console::debugOnce("Not implemented:",
-            static::class . "::" . __FUNCTION__);
+        Console::debugOnce('Not implemented:',
+            static::class . '::' . __FUNCTION__);
 
         return $this;
     }
-
 }

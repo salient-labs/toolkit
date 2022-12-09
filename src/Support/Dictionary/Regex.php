@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support\Dictionary;
 
@@ -31,5 +29,4 @@ final class Regex extends Dictionary
     {
         return $anchor ? "/^$regex\$/" : "/$regex/";
     }
-
 }

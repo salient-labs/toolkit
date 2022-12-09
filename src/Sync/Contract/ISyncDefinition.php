@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Contract;
 
@@ -21,5 +19,4 @@ interface ISyncDefinition
      * closure with the correct signature for the sync operation.
      */
     public function getSyncOperationClosure(int $operation): ?Closure;
-
 }

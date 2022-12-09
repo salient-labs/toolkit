@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -50,21 +48,18 @@ class ProviderContext implements IProviderContext
 
     final protected function maybeMutate(string $property, $value, ?string $key = null)
     {
-        if ($key)
-        {
-            if (!is_array($this->{$property}))
-            {
+        if ($key) {
+            if (!is_array($this->{$property})) {
                 throw new RuntimeException("\$this->{$property} is not an array");
             }
             $_value       = $this->{$property};
             $_value[$key] = $value;
             $value        = $_value;
         }
-        if ($value === $this->{$property})
-        {
+        if ($value === $this->{$property}) {
             return $this;
         }
-        $clone = clone $this;
+        $clone              = clone $this;
         $clone->{$property} = $value;
 
         return $clone;
@@ -82,12 +77,12 @@ class ProviderContext implements IProviderContext
 
     final public function set(string $key, $value)
     {
-        return $this->maybeMutate("Values", $value, $key);
+        return $this->maybeMutate('Values', $value, $key);
     }
 
     final public function push(IProvidable $entity)
     {
-        $clone = clone $this;
+        $clone          = clone $this;
         $clone->Stack[] = $entity;
 
         return $clone;
@@ -95,17 +90,17 @@ class ProviderContext implements IProviderContext
 
     final public function withContainer(IContainer $container)
     {
-        return $this->maybeMutate("Container", $container);
+        return $this->maybeMutate('Container', $container);
     }
 
     final public function withParent(?IHierarchy $parent)
     {
-        return $this->maybeMutate("Parent", $parent);
+        return $this->maybeMutate('Parent', $parent);
     }
 
     final public function withConformity(int $conformity)
     {
-        return $this->maybeMutate("Conformity", $conformity);
+        return $this->maybeMutate('Conformity', $conformity);
     }
 
     final public function get(string $key)
@@ -127,5 +122,4 @@ class ProviderContext implements IProviderContext
     {
         return $this->Conformity;
     }
-
 }

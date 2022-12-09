@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler\Exception;
 
@@ -30,22 +28,21 @@ class CurlerException extends \Lkrms\Exception\Exception
     public function getDetail(): array
     {
         $detail = [
-            "Response" => implode("\n", [
-                Format::array($this->Curler->ResponseHeadersByName ?: []) ?: "<no headers>",
+            'Response' => implode("\n", [
+                Format::array($this->Curler->ResponseHeadersByName ?: []) ?: '<no headers>',
                 (is_null($this->Curler->ResponseBody)
-                    ? "<no body>"
-                    : ($this->Curler->ResponseBody ?: "<empty body>")),
+                    ? '<no body>'
+                    : ($this->Curler->ResponseBody ?: '<empty body>')),
             ]),
         ];
 
-        if (Env::debug())
-        {
-            $detail["Request"] = (is_array($this->Curler->Body)
+        if (Env::debug()) {
+            $detail['Request'] = (is_array($this->Curler->Body)
                 ? Format::array($this->Curler->Body)
-                : (string)$this->Curler->Body);
+                : (string) $this->Curler->Body);
 
-            $detail["curl_getinfo"] = (is_null($this->Curler->CurlInfo)
-                ? ""
+            $detail['curl_getinfo'] = (is_null($this->Curler->CurlInfo)
+                ? ''
                 : Format::array(array_map(
                     fn($value) => is_string($value) ? trim($value) : $value,
                     $this->Curler->CurlInfo
@@ -64,5 +61,4 @@ class CurlerException extends \Lkrms\Exception\Exception
     {
         return $this->Curler->ReasonPhrase;
     }
-
 }

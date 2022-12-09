@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concept;
 
@@ -31,19 +29,15 @@ abstract class Facade implements IFacade
     {
         $service = static::getServiceName();
 
-        if (Container::hasGlobalContainer())
-        {
+        if (Container::hasGlobalContainer()) {
             $container = Container::getGlobalContainer();
             $instance  = $container->singletonIf($service)
                 ->get($service, ...func_get_args());
-        }
-        else
-        {
+        } else {
             $instance = new $service(...func_get_args());
         }
 
-        if ($instance instanceof ReceivesFacade)
-        {
+        if ($instance instanceof ReceivesFacade) {
             $instance->setFacade(static::class);
         }
 
@@ -63,9 +57,8 @@ abstract class Facade implements IFacade
      */
     final public static function load()
     {
-        if (self::$Instances[static::class] ?? null)
-        {
-            throw new RuntimeException(static::class . " already loaded");
+        if (self::$Instances[static::class] ?? null) {
+            throw new RuntimeException(static::class . ' already loaded');
         }
 
         return self::_load(...func_get_args());
@@ -102,5 +95,4 @@ abstract class Facade implements IFacade
     {
         return (self::$Instances[static::class] ?? self::_load())->$name(...$arguments);
     }
-
 }

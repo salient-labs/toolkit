@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
@@ -14,5 +12,4 @@ use Lkrms\Contract\IImmutable;
 final class CurlerHeadersImmutable extends CurlerHeaders implements IImmutable
 {
     use TImmutable;
-
 }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Contract;
 
@@ -99,5 +97,4 @@ interface ISyncContext extends IProviderContext
      * @see ISyncContext::withArgs()
      */
     public function claimFilterValue(string $key);
-
 }

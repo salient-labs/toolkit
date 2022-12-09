@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -22,5 +20,4 @@ final class Collection implements ICollection
      * @use TCollection<T>
      */
     use TCollection;
-
 }

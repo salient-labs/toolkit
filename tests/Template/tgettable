@@ -12,8 +12,8 @@ use Lkrms\Err\Err;
 use RuntimeException;
 use Throwable;
 
-$loader = require (__DIR__ . "/../../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
+$loader = require (__DIR__ . '/../../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
 
 Err::load();
 
@@ -42,7 +42,7 @@ class B extends A
 {
     public static function getReadable(): array
     {
-        return ["*"];
+        return ['*'];
     }
 
     protected function _GetData()
@@ -102,98 +102,81 @@ class C implements IReadable, IWritable
 
     protected $Id = 0;
 
-    protected $Name = "Hidden";
+    protected $Name = 'Hidden';
 }
 
 $exceptions = [];
 
 $a       = new A();
 $a->Id   = 1;
-$a->Name = "Test entry";
+$a->Name = 'Test entry';
 
 $b       = new B();
 $b->Id   = 2;
-$b->Name = "Another test entry";
+$b->Name = 'Another test entry';
 $b->Data = [3, 4, 5];
 
 $c = new C();
 
-$b_id   = $b->Id;
-$b_name = $b->Name;
-$b_data = $b->Data;
+$b_id            = $b->Id;
+$b_name          = $b->Name;
+$b_data          = $b->Data;
 // @phpstan-ignore-next-line
 $b_data_modified = $b->DataModified;
 
 // @phpstan-ignore-next-line
-$b_meta1 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, "Meta")];
+$b_meta1 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, 'Meta')];
 // @phpstan-ignore-next-line
 $b->Meta = [];
-$b_meta2 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, "Meta")];
+$b_meta2 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, 'Meta')];
 unset($b->Meta);
-$b_meta3 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, "Meta")];
+$b_meta3 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, 'Meta')];
 
-try
-{
+try {
     $a_id = $a->Id;
     throw new RuntimeException('Reading from $a->Id was allowed');
-}
-catch (Throwable $ex)
-{
+} catch (Throwable $ex) {
     $exceptions[] = $ex;
 }
 
-try
-{
+try {
     // @phpstan-ignore-next-line
     $a->Unwritable = 'ok';
     throw new RuntimeException('Writing to $a->Unwritable was allowed');
-}
-catch (RuntimeException $ex)
-{
+} catch (RuntimeException $ex) {
     $exceptions[] = $ex;
 }
 
-try
-{
+try {
     // @phpstan-ignore-next-line
     $b->DoNotEven = 'ok';
     throw new RuntimeException('Writing to $b->DoNotEven was allowed');
-}
-catch (RuntimeException $ex)
-{
+} catch (RuntimeException $ex) {
     $exceptions[] = $ex;
 }
 
-try
-{
+try {
     // @phpstan-ignore-next-line
     $id = $c->Id;
     throw new RuntimeException('Reading from $c->Id was allowed');
-}
-catch (RuntimeException $ex)
-{
+} catch (RuntimeException $ex) {
     $exceptions[] = $ex;
 }
 
-try
-{
+try {
     // @phpstan-ignore-next-line
     $c->Id = 3;
     throw new RuntimeException('Writing to $c->Id was allowed');
-}
-catch (RuntimeException $ex)
-{
+} catch (RuntimeException $ex) {
     $exceptions[] = $ex;
 }
 
-try
-{
+try {
     // @phpstan-ignore-next-line
     isset($b->Data);
 }
 // @phpstan-ignore-next-line
-catch (RuntimeException $ex)
-{
+catch (RuntimeException $ex) {
     $exceptions[] = $ex;
 }
 
@@ -202,15 +185,15 @@ print_r([
     'b_set' => $b,
     'c_set' => $c,
 
-    'b_get'    => [
-        'id'   => $b_id,
-        'name' => $b_name,
-        'data' => $b_data,
+    'b_get' => [
+        'id'            => $b_id,
+        'name'          => $b_name,
+        'data'          => $b_data,
         'data_modified' => $b_data_modified,
         'b_meta1'       => $b_meta1,
         'b_meta2'       => $b_meta2,
         'b_meta3'       => $b_meta3,
     ],
 
-    'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions)
+    'exceptions' => array_map(function (Throwable $ex) {return $ex->getMessage();}, $exceptions)
 ]);

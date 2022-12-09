@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Container;
 
@@ -128,7 +126,6 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
         $this->assertNotSame($c1, $ts1a);
         $this->assertNotSame($c1, $ts2a);
     }
-
 }
 
 interface ITestService1

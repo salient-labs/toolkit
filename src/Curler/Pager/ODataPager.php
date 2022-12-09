@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler\Pager;
 
@@ -43,24 +41,22 @@ final class ODataPager implements ICurlerPager
 
     public function prepareCurler(Curler $curler): void
     {
-        if (!is_null($this->MaxPageSize))
-        {
-            $curler->Headers->addHeader("Prefer", "odata.maxpagesize={$this->MaxPageSize}");
+        if (!is_null($this->MaxPageSize)) {
+            $curler->Headers->addHeader('Prefer', "odata.maxpagesize={$this->MaxPageSize}");
         }
     }
 
     public function getPage($data, Curler $curler, ?ICurlerPage $previous = null): ICurlerPage
     {
-        $prefix = $this->Prefix ?: (($curler->ResponseHeadersByName["odata-version"] ?? null) == "4.0"
-            ? "@odata."
-            : "@");
+        $prefix = $this->Prefix ?: (($curler->ResponseHeadersByName['odata-version'] ?? null) == '4.0'
+            ? '@odata.'
+            : '@');
 
         return CurlerPageBuilder::build()
-            ->entities($data["value"])
+            ->entities($data['value'])
             ->curler($curler)
             ->previous($previous)
-            ->nextUrl($data[$prefix . "nextLink"] ?? null)
+            ->nextUrl($data[$prefix . 'nextLink'] ?? null)
             ->go();
     }
-
 }

@@ -6,8 +6,8 @@ namespace Lkrms\Tests;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Cache;
 
-$loader = require (__DIR__ . "/../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();
 
@@ -20,22 +20,20 @@ Cache::set('key', ['value1', 'value2']);
 print_r(Cache::get('key'));
 
 print_r(Cache::maybeGet(
-    implode("/", [basename(__FILE__), "MaybeGet"]),
-    function ()
-    {
+    implode('/', [basename(__FILE__), 'MaybeGet']),
+    function () {
         return [
-            "key1" => "value1",
-            "key2" => "value2",
+            'key1' => 'value1',
+            'key2' => 'value2',
         ];
     }, 2
 ));
 
-foreach ([1, 2] as $seconds)
-{
+foreach ([1, 2] as $seconds) {
     sleep($seconds);
     print_r(Cache::maybeGet(
-        implode("/", [basename(__FILE__), "MaybeGet"]),
-        "time",
+        implode('/', [basename(__FILE__), 'MaybeGet']),
+        'time',
         2
     ));
 }

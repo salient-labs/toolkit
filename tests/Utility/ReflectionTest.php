@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Utility;
 
@@ -52,7 +50,7 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
     {
         $this->assertEquals(
             [],
-                Reflect::getClassNamesBetween(MyClass::class, MyClass::class, false)
+            Reflect::getClassNamesBetween(MyClass::class, MyClass::class, false)
         );
         $this->assertEquals(
             [MyClass::class],
@@ -88,11 +86,9 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
     {
         $method = (new ReflectionClass(MyClass::class))->getConstructor();
         $types  = [];
-        foreach ($method->getParameters() as $param)
-        {
+        foreach ($method->getParameters() as $param) {
             $types[] = array_map(
-                (function ($type): string
-                {
+                (function ($type): string {
                     /** @var ReflectionNamedType $type */
                     return $type->getName();
                 }),
@@ -101,10 +97,10 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
         }
         $this->assertSame([
             [],
-                ["int"],
-                ["string"],
-                ["Lkrms\\Tests\\Utility\\Reflection\\MyClass"],
-                ["Lkrms\\Tests\\Utility\\Reflection\\MyClass"],
+            ['int'],
+            ['string'],
+            ['Lkrms\Tests\Utility\Reflection\MyClass'],
+            ['Lkrms\Tests\Utility\Reflection\MyClass'],
         ], $types);
     }
 
@@ -112,22 +108,21 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
     {
         $method = (new ReflectionClass(MyClass::class))->getConstructor();
         $names  = [];
-        foreach ($method->getParameters() as $param)
-        {
+        foreach ($method->getParameters() as $param) {
             $names[] = Reflect::getAllTypeNames($param->getType());
         }
         $this->assertSame([
             [],
-                ["int"],
-                ["string"],
-                ["Lkrms\\Tests\\Utility\\Reflection\\MyClass"],
-                ["Lkrms\\Tests\\Utility\\Reflection\\MyClass"],
+            ['int'],
+            ['string'],
+            ['Lkrms\Tests\Utility\Reflection\MyClass'],
+            ['Lkrms\Tests\Utility\Reflection\MyClass'],
         ], $names);
     }
 
     public function testGetAllMethodDocComments()
     {
-        $method      = (new ReflectionClass(MySubclass::class))->getMethod("MyDocumentedMethod");
+        $method      = (new ReflectionClass(MySubclass::class))->getMethod('MyDocumentedMethod');
         $docComments = Reflect::getAllMethodDocComments($method);
         $this->assertSame([
             "/**
@@ -159,7 +154,7 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
 
     public function testGetAllPropertyDocComments()
     {
-        $property    = (new ReflectionClass(MySubclass::class))->getProperty("MyDocumentedProperty");
+        $property    = (new ReflectionClass(MySubclass::class))->getProperty('MyDocumentedProperty');
         $docComments = Reflect::getAllPropertyDocComments($property);
         $this->assertSame([
             "/**
@@ -182,14 +177,13 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
 
     public function testGetTypeDeclaration()
     {
-        $method = (new ReflectionClass(MyClass::class))->getMethod("MyMethod");
+        $method = (new ReflectionClass(MyClass::class))->getMethod('MyMethod');
         $types  = [];
-        foreach ($method->getParameters() as $param)
-        {
+        foreach ($method->getParameters() as $param) {
             $types[] = Reflect::getTypeDeclaration(
                 $param->getType(),
-                "\\",
-                fn($name) => $name == MyClass::class ? "MyClass" : null,
+                '\\',
+                fn($name) => $name == MyClass::class ? 'MyClass' : null,
             );
         }
         $this->assertSame([
@@ -212,32 +206,30 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
 
     public function testGetParameterDeclaration()
     {
-        $method = (new ReflectionClass(MyClass::class))->getMethod("MyMethod");
+        $method = (new ReflectionClass(MyClass::class))->getMethod('MyMethod');
         $params = [];
-        foreach ($method->getParameters() as $param)
-        {
+        foreach ($method->getParameters() as $param) {
             $params[] = Reflect::getParameterDeclaration(
                 $param,
-                "",
-                fn($name) => $name == MyClass::class ? "MyClass" : null,
+                '',
+                fn($name) => $name == MyClass::class ? 'MyClass' : null,
             );
         }
         $this->assertSame([
-            "mixed \$mixed",
-            "?int \$nullableInt",
-            "string \$string",
-            "Countable&ArrayAccess \$intersection",
-            "Lkrms\Tests\Utility\Reflection\MyBaseClass \$class",
-            "?MyClass \$nullableClass",
-            "?MyClass &\$nullableClassByRef",
-            "?MyClass \$nullableAndOptionalClass = null",
-            "string \$optionalString = MyClass::MY_CONSTANT",
-            "MyClass|string \$union = SELF::MY_CONSTANT",
+            'mixed $mixed',
+            '?int $nullableInt',
+            'string $string',
+            'Countable&ArrayAccess $intersection',
+            'Lkrms\Tests\Utility\Reflection\MyBaseClass $class',
+            '?MyClass $nullableClass',
+            '?MyClass &$nullableClassByRef',
+            '?MyClass $nullableAndOptionalClass = null',
+            'string $optionalString = MyClass::MY_CONSTANT',
+            'MyClass|string $union = SELF::MY_CONSTANT',
             "MyClass|string|null \$nullableUnion = 'literal'",
             "MyClass|array \$optionalArrayUnion = ['key'=>'value']",
-            "MyClass|string|null &\$nullableUnionByRef = null",
-            "string &...\$variadicByRef",
+            'MyClass|string|null &$nullableUnionByRef = null',
+            'string &...$variadicByRef',
         ], $params);
     }
-
 }

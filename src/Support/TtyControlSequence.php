@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -10,30 +8,29 @@ namespace Lkrms\Support;
  */
 final class TtyControlSequence
 {
-    public const BLACK      = "\033[30m";
-    public const RED        = "\033[31m";
-    public const GREEN      = "\033[32m";
-    public const YELLOW     = "\033[33m";
-    public const BLUE       = "\033[34m";
-    public const MAGENTA    = "\033[35m";
-    public const CYAN       = "\033[36m";
-    public const WHITE      = "\033[37m";
-    public const DEFAULT    = "\033[39m";
-    public const GREY       = "\033[90m";
-    public const BLACK_BG   = "\033[40m";
-    public const RED_BG     = "\033[41m";
-    public const GREEN_BG   = "\033[42m";
-    public const YELLOW_BG  = "\033[43m";
-    public const BLUE_BG    = "\033[44m";
-    public const MAGENTA_BG = "\033[45m";
-    public const CYAN_BG    = "\033[46m";
-    public const WHITE_BG   = "\033[47m";
-    public const DEFAULT_BG = "\033[49m";
-    public const GREY_BG    = "\033[100m";
-    public const BOLD       = "\033[1m";
-    public const UNBOLD     = "\033[22m";
-    public const DIM        = "\033[2m";
-    public const UNDIM      = "\033[22m";
-    public const RESET      = "\033[m";
-
+    public const BLACK      = "\x1b[30m";
+    public const RED        = "\x1b[31m";
+    public const GREEN      = "\x1b[32m";
+    public const YELLOW     = "\x1b[33m";
+    public const BLUE       = "\x1b[34m";
+    public const MAGENTA    = "\x1b[35m";
+    public const CYAN       = "\x1b[36m";
+    public const WHITE      = "\x1b[37m";
+    public const DEFAULT    = "\x1b[39m";
+    public const GREY       = "\x1b[90m";
+    public const BLACK_BG   = "\x1b[40m";
+    public const RED_BG     = "\x1b[41m";
+    public const GREEN_BG   = "\x1b[42m";
+    public const YELLOW_BG  = "\x1b[43m";
+    public const BLUE_BG    = "\x1b[44m";
+    public const MAGENTA_BG = "\x1b[45m";
+    public const CYAN_BG    = "\x1b[46m";
+    public const WHITE_BG   = "\x1b[47m";
+    public const DEFAULT_BG = "\x1b[49m";
+    public const GREY_BG    = "\x1b[100m";
+    public const BOLD       = "\x1b[1m";
+    public const UNBOLD     = "\x1b[22m";
+    public const DIM        = "\x1b[2m";
+    public const UNDIM      = "\x1b[22m";
+    public const RESET      = "\x1b[m";
 }

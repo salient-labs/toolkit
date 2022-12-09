@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Contract;
 
@@ -68,5 +66,4 @@ interface ISyncEntityProvider
      * @return iterable<SyncEntity>
      */
     public function deleteList(iterable $entities, ...$args): iterable;
-
 }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -15,5 +13,4 @@ interface IComparable
      * @param static $b
      */
     public static function compare($a, $b, bool $strict = false): int;
-
 }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Store\Concept;
 
@@ -53,13 +51,11 @@ abstract class SqliteStore implements ReceivesFacade
      */
     final protected function openDb(string $filename)
     {
-        if ($this->Db)
-        {
-            throw new RuntimeException("Database already open");
+        if ($this->Db) {
+            throw new RuntimeException('Database already open');
         }
 
-        if ($filename != ":memory:")
-        {
+        if ($filename != ':memory:') {
             File::maybeCreate($filename, 0600, 0700);
         }
 
@@ -80,10 +76,8 @@ abstract class SqliteStore implements ReceivesFacade
      */
     final protected function closeDb(bool $unloadFacade = true)
     {
-        try
-        {
-            if (!$this->Db)
-            {
+        try {
+            if (!$this->Db) {
                 return $this;
             }
 
@@ -91,12 +85,9 @@ abstract class SqliteStore implements ReceivesFacade
             [$this->Db, $this->Filename] = [null, null];
 
             return $this;
-        }
-        finally
-        {
-            if ($unloadFacade && $this->Facade)
-            {
-                (new ReflectionClass($this->Facade))->getMethod("unload")->invoke(null);
+        } finally {
+            if ($unloadFacade && $this->Facade) {
+                (new ReflectionClass($this->Facade))->getMethod('unload')->invoke(null);
                 $this->Facade = null;
             }
         }
@@ -151,14 +142,13 @@ abstract class SqliteStore implements ReceivesFacade
      */
     final protected function db(bool $noCheck = false): SQLite3
     {
-        if ($this->Db)
-        {
+        if ($this->Db) {
             $noCheck || $this->check();
 
             return $this->Db;
         }
 
-        throw new RuntimeException("No database open");
+        throw new RuntimeException('No database open');
     }
 
     final protected function isTransactionOpen(): bool
@@ -174,12 +164,11 @@ abstract class SqliteStore implements ReceivesFacade
      */
     final protected function beginTransaction()
     {
-        if ($this->Db && $this->IsTransactionOpen)
-        {
-            throw new RuntimeException("Transaction already open");
+        if ($this->Db && $this->IsTransactionOpen) {
+            throw new RuntimeException('Transaction already open');
         }
 
-        $this->db()->exec("BEGIN");
+        $this->db()->exec('BEGIN');
         $this->IsTransactionOpen = true;
 
         return $this;
@@ -193,12 +182,11 @@ abstract class SqliteStore implements ReceivesFacade
      */
     final protected function commitTransaction()
     {
-        if ($this->Db && !$this->IsTransactionOpen)
-        {
-            throw new RuntimeException("No transaction open");
+        if ($this->Db && !$this->IsTransactionOpen) {
+            throw new RuntimeException('No transaction open');
         }
 
-        $this->db()->exec("COMMIT");
+        $this->db()->exec('COMMIT');
         $this->IsTransactionOpen = false;
 
         return $this;
@@ -215,17 +203,15 @@ abstract class SqliteStore implements ReceivesFacade
      */
     final protected function rollbackTransaction(bool $ignoreNoTransaction = false)
     {
-        if ($this->Db && !$this->IsTransactionOpen)
-        {
-            if ($ignoreNoTransaction)
-            {
+        if ($this->Db && !$this->IsTransactionOpen) {
+            if ($ignoreNoTransaction) {
                 return $this;
             }
 
-            throw new RuntimeException("No transaction open");
+            throw new RuntimeException('No transaction open');
         }
 
-        $this->db()->exec("ROLLBACK");
+        $this->db()->exec('ROLLBACK');
         $this->IsTransactionOpen = false;
 
         return $this;
@@ -242,20 +228,16 @@ abstract class SqliteStore implements ReceivesFacade
      */
     final protected function callInTransaction(callable $callback)
     {
-        if ($this->Db && $this->IsTransactionOpen)
-        {
-            throw new RuntimeException("Transaction already open");
+        if ($this->Db && $this->IsTransactionOpen) {
+            throw new RuntimeException('Transaction already open');
         }
 
         $this->beginTransaction();
 
-        try
-        {
+        try {
             $result = $callback();
             $this->commitTransaction();
-        }
-        catch (Throwable $ex)
-        {
+        } catch (Throwable $ex) {
             $this->rollbackTransaction();
 
             throw $ex;
@@ -271,12 +253,10 @@ abstract class SqliteStore implements ReceivesFacade
      */
     final protected function requireUpsert()
     {
-        if (Sys::sqliteHasUpsert())
-        {
+        if (Sys::sqliteHasUpsert()) {
             return $this;
         }
 
-        throw new RuntimeException("SQLite 3.24 or above required");
+        throw new RuntimeException('SQLite 3.24 or above required');
     }
-
 }

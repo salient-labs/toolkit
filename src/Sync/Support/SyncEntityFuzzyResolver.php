@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -72,18 +70,17 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
      */
     public function __construct(SyncEntityProvider $entityProvider, string $nameProperty, ?string $weightProperty, ?int $algorithm = null, ?float $uncertaintyThreshold = null)
     {
-        $this->EntityProvider = $entityProvider;
-        $this->NameProperty   = $nameProperty;
-        $this->WeightProperty = $weightProperty;
-        $this->Algorithm      = $algorithm;
+        $this->EntityProvider       = $entityProvider;
+        $this->NameProperty         = $nameProperty;
+        $this->WeightProperty       = $weightProperty;
+        $this->Algorithm            = $algorithm;
         $this->UncertaintyThreshold = $uncertaintyThreshold;
     }
 
     private function loadEntities()
     {
         $this->Entities = [];
-        foreach ($this->EntityProvider->getList() as $entity)
-        {
+        foreach ($this->EntityProvider->getList() as $entity) {
             $this->Entities[] = [
                 $entity,
                 Convert::toNormal($entity->{$this->NameProperty})
@@ -93,8 +90,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 
     private function getUncertainty(string $string1, string $string2): float
     {
-        switch ($this->Algorithm)
-        {
+        switch ($this->Algorithm) {
             case self::ALGORITHM_SIMILAR_TEXT:
                 return 1 - Compute::textSimilarity($string1, $string2, false);
 
@@ -109,17 +105,16 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         return $this->getUncertainty($name, $e1[1]) <=> $this->getUncertainty($name, $e2[1]);
     }
 
-    public function getByName(string $name, float & $uncertainty = null): ?SyncEntity
+    public function getByName(string $name, float &$uncertainty = null): ?SyncEntity
     {
-        if (is_null($this->Entities))
-        {
+        if (is_null($this->Entities)) {
             $this->loadEntities();
         }
 
         $_name = Convert::toNormal($name);
-        if (array_key_exists($_name, $this->Cache))
-        {
+        if (array_key_exists($_name, $this->Cache)) {
             [$entity, $uncertainty] = $this->Cache[$_name] ?: [null, null];
+
             return $entity;
         }
 
@@ -127,14 +122,12 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 
         $sort = $this->Entities;
         usort($sort, fn($e1, $e2) => $this->compareUncertainty($_name, $e1, $e2)
-            ?: ($e2[0]->{$this->WeightProperty} <=> $e1[0]->{$this->WeightProperty}));
+                ?: ($e2[0]->{$this->WeightProperty} <=> $e1[0]->{$this->WeightProperty}));
         $cache = $match = reset($sort);
 
-        if ($match !== false)
-        {
+        if ($match !== false) {
             $uncertainty = $this->getUncertainty($_name, $match[1]);
-            if (!is_null($this->UncertaintyThreshold) && $uncertainty >= $this->UncertaintyThreshold)
-            {
+            if (!is_null($this->UncertaintyThreshold) && $uncertainty >= $this->UncertaintyThreshold) {
                 Console::debugOnce(sprintf(
                     "Match with '%s' exceeds uncertainty threshold (%.2f >= %.2f):",
                     $match[0]->{$this->NameProperty},
@@ -143,9 +136,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
                 ), $name);
                 $cache       = $match = false;
                 $uncertainty = null;
-            }
-            else
-            {
+            } else {
                 $cache = [$match[0], $uncertainty];
             }
         }

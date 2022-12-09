@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Console;
 
@@ -15,7 +13,7 @@ final class ConsoleFormat
 
     private $After;
 
-    public function __construct(string $before = "", string $after = "")
+    public function __construct(string $before = '', string $after = '')
     {
         $this->Before = $before;
         $this->After  = $after;
@@ -23,10 +21,10 @@ final class ConsoleFormat
 
     public function apply(?string $text): string
     {
-        if (!$text)
-        {
-            return "";
+        if (!$text) {
+            return '';
         }
+
         return "{$this->Before}$text{$this->After}";
     }
 }

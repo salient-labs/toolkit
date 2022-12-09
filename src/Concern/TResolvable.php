@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
@@ -29,5 +27,4 @@ trait TResolvable
         return ((self::$_Normaliser[static::class] ?? null)
             ?: (self::$_Normaliser[static::class] = static::normaliser()))($name, $aggressive, ...$hints);
     }
-
 }

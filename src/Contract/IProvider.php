@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -36,5 +34,4 @@ interface IProvider extends ReturnsContainer, ReturnsDescription
      * @return $this
      */
     public function checkHeartbeat(int $ttl = 300);
-
 }

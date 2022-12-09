@@ -11,8 +11,8 @@ use Lkrms\Concern\TWritable;
 use Lkrms\Err\Err;
 use Lkrms\Support\Introspector;
 
-$loader = require (__DIR__ . "/../../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
+$loader = require (__DIR__ . '/../../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
 
 Err::load();
 
@@ -78,6 +78,6 @@ class B extends A
 }
 
 print_r([
-    "A" => Introspector::get(A::class),
-    "B" => Introspector::get(B::class),
+    'A' => Introspector::get(A::class),
+    'B' => Introspector::get(B::class),
 ]);

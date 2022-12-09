@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -45,5 +43,4 @@ final class ArrayMapperFlag extends Enumeration
      * `UnexpectedValueException` will be thrown.
      */
     public const REQUIRE_MAPPED = 8;
-
 }

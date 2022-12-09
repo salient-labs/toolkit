@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -41,5 +39,4 @@ final class SyncErrorType extends ConvertibleEnumeration
      * Hierarchical data contains a circular reference
      */
     public const HIERARCHY_IS_CIRCULAR = 5;
-
 }

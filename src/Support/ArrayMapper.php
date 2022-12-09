@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -33,25 +31,21 @@ final class ArrayMapper
      */
     public function getKeyMapClosure(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED): Closure
     {
-        $sig = implode("\000", array_map(
-            fn($v) => is_array($v) ? implode("\001", $v) : $v,
+        $sig = implode("\x00", array_map(
+            fn($v) => is_array($v) ? implode("\x01", $v) : $v,
             array_merge(
                 array_keys($keyMap), array_values($keyMap), [$conformity, $flags]
             )
         ));
 
-        if ($closure = $this->KeyMapClosures[$sig] ?? null)
-        {
+        if ($closure = $this->KeyMapClosures[$sig] ?? null) {
             return $closure;
         }
 
         $flipped = [];
-        foreach ($keyMap as $inKey => $out)
-        {
-            if (is_array($out))
-            {
-                foreach ($out as $outKey)
-                {
+        foreach ($keyMap as $inKey => $out) {
+            if (is_array($out)) {
+                foreach ($out as $outKey) {
                     $flipped[$outKey] = $inKey;
                 }
                 continue;
@@ -60,47 +54,37 @@ final class ArrayMapper
         }
         $allTargetsScalar = (count($keyMap) === count($flipped));
 
-        if ($allTargetsScalar && $conformity === ArrayKeyConformity::COMPLETE)
-        {
+        if ($allTargetsScalar && $conformity === ArrayKeyConformity::COMPLETE) {
             $outKeys = array_values($keyMap);
-            $closure = static function (array $in) use ($outKeys): array
-            {
+            $closure = static function (array $in) use ($outKeys): array {
                 $out = array_combine($outKeys, $in);
-                if ($out === false)
-                {
-                    throw new UnexpectedValueException("Invalid input array");
+                if ($out === false) {
+                    throw new UnexpectedValueException('Invalid input array');
                 }
+
                 return $out;
             };
-        }
-        else
-        {
-            $addMissing    = (bool)($flags & ArrayMapperFlag::ADD_MISSING);
-            $requireMapped = (bool)($flags & ArrayMapperFlag::REQUIRE_MAPPED);
+        } else {
+            $addMissing    = (bool) ($flags & ArrayMapperFlag::ADD_MISSING);
+            $requireMapped = (bool) ($flags & ArrayMapperFlag::REQUIRE_MAPPED);
 
-            $closure = static function (array $in) use ($flipped, $addMissing, $requireMapped): array
-            {
+            $closure = static function (array $in) use ($flipped, $addMissing, $requireMapped): array {
                 $out = [];
-                foreach ($flipped as $outKey => $inKey)
-                {
-                    if ($addMissing || array_key_exists($inKey, $in))
-                    {
+                foreach ($flipped as $outKey => $inKey) {
+                    if ($addMissing || array_key_exists($inKey, $in)) {
                         $out[$outKey] = $in[$inKey] ?? null;
-                    }
-                    elseif ($requireMapped)
-                    {
+                    } elseif ($requireMapped) {
                         throw new UnexpectedValueException("Input array has no data at key '$inKey'");
                     }
                 }
+
                 return $out;
             };
 
-            if ($flags & ArrayMapperFlag::ADD_UNMAPPED)
-            {
+            if ($flags & ArrayMapperFlag::ADD_UNMAPPED) {
                 // Add unmapped values (`array_diff_key($in, $keyMap...`) that
                 // don't conflict with output array keys (`...$flipped`)
-                $closure = static function (array $in) use ($keyMap, $flipped, $closure): array
-                {
+                $closure = static function (array $in) use ($keyMap, $flipped, $closure): array {
                     return array_merge(
                         $closure($in),
                         array_diff_key($in, $keyMap, $flipped)
@@ -109,13 +93,11 @@ final class ArrayMapper
             }
         }
 
-        if ($flags & ArrayMapperFlag::REMOVE_NULL)
-        {
-            $closure = static function (array $in) use ($closure): array
-            {
+        if ($flags & ArrayMapperFlag::REMOVE_NULL) {
+            $closure = static function (array $in) use ($closure): array {
                 return array_filter(
                     $closure($in),
-                    function ($v) { return !is_null($v); }
+                    function ($v) {return !is_null($v);}
                 );
             };
         }
@@ -124,5 +106,4 @@ final class ArrayMapper
 
         return $closure;
     }
-
 }

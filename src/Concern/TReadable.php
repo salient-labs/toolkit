@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
@@ -29,11 +27,11 @@ trait TReadable
 
     final public function __get(string $name)
     {
-        return $this->getProperty("get", $name);
+        return $this->getProperty('get', $name);
     }
 
     final public function __isset(string $name): bool
     {
-        return (bool)$this->getProperty("isset", $name);
+        return (bool) $this->getProperty('isset', $name);
     }
 }

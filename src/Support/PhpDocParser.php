@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -115,92 +113,79 @@ final class PhpDocParser implements IReadable
 
         // Check for a leading "*" after every newline and extract everything
         // between "/**" and "*/"
-        if (!preg_match('/^\/\*\*(.*(?:(?:\r\n|\n)\h*\*.*)*)(?:(?:\r\n|\n)\h*)?\*\/$/u', $docBlock, $matches))
-        {
-            throw new UnexpectedValueException("Invalid DocBlock");
+        if (!preg_match('/^\/\*\*(.*(?:(?:\r\n|\n)\h*\*.*)*)(?:(?:\r\n|\n)\h*)?\*\/$/u', $docBlock, $matches)) {
+            throw new UnexpectedValueException('Invalid DocBlock');
         }
 
         // Trim each line and remove the leading "* " or "*" before splitting
         $this->Lines = preg_split(
             '/\r\n|\n/u',
-            preg_replace('/(^\h*\* ?|\h+$)/um', "", trim($matches[1]))
+            preg_replace('/(^\h*\* ?|\h+$)/um', '', trim($matches[1]))
         );
         $this->NextLine = reset($this->Lines);
 
-        if ($this->NextLine !== false && !preg_match(self::TAG_REGEX, $this->NextLine))
-        {
+        if ($this->NextLine !== false && !preg_match(self::TAG_REGEX, $this->NextLine)) {
             $this->Summary = $this->getLinesUntil('/^$/', true, true);
 
-            if ($this->NextLine !== false && !preg_match(self::TAG_REGEX, $this->NextLine))
-            {
+            if ($this->NextLine !== false && !preg_match(self::TAG_REGEX, $this->NextLine)) {
                 $this->Description = rtrim($this->getLinesUntil(self::TAG_REGEX));
             }
         }
 
         while ($this->Lines &&
-            preg_match(self::TAG_REGEX, $lines = $this->getLinesUntil(self::TAG_REGEX), $matches))
-        {
+                preg_match(self::TAG_REGEX, $lines = $this->getLinesUntil(self::TAG_REGEX), $matches)) {
             $this->TagLines[] = $lines;
 
-            $lines = preg_replace('/^@' . str_replace("\\", "\\\\", $matches["tag"]) . '\h*/', "", $lines);
-            $tag   = ltrim($matches["tag"], "\\");
+            $lines              = preg_replace('/^@' . str_replace('\\', '\\\\', $matches['tag']) . '\h*/', '', $lines);
+            $tag                = ltrim($matches['tag'], '\\');
             $this->Tags[$tag][] = $lines;
 
-            if (!$lines)
-            {
+            if (!$lines) {
                 continue;
             }
 
             $meta = 0;
-            switch ($tag)
-            {
-                case "param":
+            switch ($tag) {
+                case'param':
                     $token = strtok($lines, " \t");
                     $type  = null;
-                    if (!preg_match('/^\$/', $token))
-                    {
+                    if (!preg_match('/^\$/', $token)) {
                         $type = $token;
                         $meta++;
                         $token = strtok(" \t\n\r");
-                        if ($token === false || !preg_match('/^\$/', $token))
-                        {
+                        if ($token === false || !preg_match('/^\$/', $token)) {
                             continue 2;
                         }
                     }
-                    if ($name = substr($token, 1))
-                    {
+                    if ($name = substr($token, 1)) {
                         $meta++;
                         $this->Params[$name] = $this->getValue($type, $lines, $meta);
                     }
                     break;
 
-                case "return":
+                case'return':
                     $token = strtok($lines, " \t\n\r");
                     $type  = $token;
                     $meta++;
                     $this->Return = $this->getValue($type, $lines, $meta);
                     break;
 
-                case "var":
+                case'var':
                     unset($name);
                     $token = strtok($lines, " \t\n\r");
                     $type  = $token;
                     $meta++;
                     $token = strtok(" \t");
-                    if ($token !== false && preg_match('/^\$/', $token))
-                    {
+                    if ($token !== false && preg_match('/^\$/', $token)) {
                         $name = $token;
                         $meta++;
                     }
-                    $var = $this->getValue($type, $lines, $meta, ["name" => $name ?? null]);
-                    if ($var["description"] && $this->Summary)
-                    {
-                        $this->Description .= ($this->Description ? str_repeat(PHP_EOL, 2) : "") . $var["description"];
-                        $var["description"] = $this->Summary;
-                    }
-                    else
-                    {
-                        $var["description"] = $var["description"] ?: $this->Summary;
+                    $var = $this->getValue($type, $lines, $meta, ['name' => $name ?? null]);
+                    if ($var['description'] && $this->Summary) {
+                        $this->Description .= ($this->Description ? str_repeat(PHP_EOL, 2) : '') . $var['description'];
+                        $var['description'] = $this->Summary;
+                    } else {
+                        $var['description'] = $var['description'] ?: $this->Summary;
                     }
                     $this->Var[] = $var;
                     break;
@@ -208,7 +193,7 @@ final class PhpDocParser implements IReadable
         }
 
         // Release strtok's copy of the string most recently passed to it
-        strtok("", "");
+        strtok('', '');
 
         // Replace tags that have no content with `true`
         $this->Tags = array_map(
@@ -219,24 +204,24 @@ final class PhpDocParser implements IReadable
 
     private function getValue(?string $type, string $lines, int $meta, array $initial = []): array
     {
-        if ($this->LegacyNullable && !is_null($type))
-        {
-            $nullable = preg_replace('/^null\||\|null$/', "", $type, 1, $count);
-            if ($count && preg_match(self::TYPE_REGEX, $nullable))
-            {
+        if ($this->LegacyNullable && !is_null($type)) {
+            $nullable = preg_replace('/^null\||\|null$/', '', $type, 1, $count);
+            if ($count && preg_match(self::TYPE_REGEX, $nullable)) {
                 $type = "?$nullable";
             }
         }
+
         return $initial + [
-            "type"        => $type,
-            "description" => preg_split('/\s+/', $lines, $meta + 1)[$meta] ?? null
+            'type'        => $type,
+            'description' => preg_split('/\s+/', $lines, $meta + 1)[$meta] ?? null
         ];
     }
 
     private function getLine(): string
     {
-        $line = array_shift($this->Lines);
+        $line           = array_shift($this->Lines);
         $this->NextLine = reset($this->Lines);
+
         return $line;
     }
 
@@ -245,65 +230,58 @@ final class PhpDocParser implements IReadable
         $lines   = [];
         $inFence = false;
 
-        do
-        {
+        do {
             $lines[] = $line = $this->getLine();
 
             if ((!$inFence && preg_match('/^```+/', $line, $fence)) ||
-                ($inFence && $line == ($fence[0] ?? null)))
-            {
+                    ($inFence && $line == ($fence[0] ?? null))) {
                 $inFence = !$inFence;
             }
-            if ($inFence)
-            {
+            if ($inFence) {
                 continue;
             }
 
-            if (!$this->Lines || preg_match($pattern, $this->NextLine))
-            {
-                if ($discard && $this->Lines)
-                {
+            if (!$this->Lines || preg_match($pattern, $this->NextLine)) {
+                if ($discard && $this->Lines) {
                     $this->getLine();
                 }
                 break;
             }
-        }
-        while ($this->Lines);
+        } while ($this->Lines);
 
-        return implode($unwrap ? " " : PHP_EOL, $lines);
+        return implode($unwrap ? ' ' : PHP_EOL, $lines);
     }
 
     public function unwrap(?string $value): ?string
     {
-        return is_null($value) ? null : str_replace(PHP_EOL, " ", $value);
+        return is_null($value) ? null : str_replace(PHP_EOL, ' ', $value);
     }
 
-    private function mergeValue(?string & $ours, ?string $theirs): void
+    private function mergeValue(?string &$ours, ?string $theirs): void
     {
         // Do nothing if there's nothing to merge
-        if (is_null($theirs) || !trim($theirs))
-        {
+        if (is_null($theirs) || !trim($theirs)) {
             return;
         }
 
         // If we have nothing to keep, use the incoming value
-        if (is_null($ours) || !trim($ours))
-        {
+        if (is_null($ours) || !trim($ours)) {
             $ours = $theirs;
+
             return;
         }
     }
 
-    private function mergeLines(?array & $ours, ?array $theirs): void
+    private function mergeLines(?array &$ours, ?array $theirs): void
     {
         // Add unique incoming lines
         array_push($ours, ...array_diff($theirs, $ours));
     }
 
-    private function mergeType(?array & $ours, ?array $theirs): void
+    private function mergeType(?array &$ours, ?array $theirs): void
     {
-        $this->mergeValue($ours["type"], $theirs["type"] ?? null);
-        $this->mergeValue($ours["description"], $theirs["description"] ?? null);
+        $this->mergeValue($ours['type'], $theirs['type'] ?? null);
+        $this->mergeValue($ours['description'], $theirs['description'] ?? null);
     }
 
     /**
@@ -316,19 +294,14 @@ final class PhpDocParser implements IReadable
         $this->mergeValue($this->Summary, $parent->Summary);
         $this->mergeValue($this->Description, $parent->Description);
         $this->mergeLines($this->TagLines, $parent->TagLines);
-        foreach ($parent->Tags as $tag => $content)
-        {
-            if (!is_array($this->Tags[$tag] ?? null))
-            {
+        foreach ($parent->Tags as $tag => $content) {
+            if (!is_array($this->Tags[$tag] ?? null)) {
                 $this->Tags[$tag] = $content;
-            }
-            elseif (is_array($content))
-            {
+            } elseif (is_array($content)) {
                 $this->mergeLines($this->Tags[$tag], $content);
             }
         }
-        foreach ($parent->Params as $name => $data)
-        {
+        foreach ($parent->Params as $name => $data) {
             $this->mergeType($this->Params[$name], $data);
         }
         $this->mergeType($this->Return, $parent->Return);
@@ -339,15 +312,14 @@ final class PhpDocParser implements IReadable
      */
     public static function fromDocBlocks(array $docBlocks, bool $legacyNullable = true): ?self
     {
-        if (!$docBlocks)
-        {
+        if (!$docBlocks) {
             return null;
         }
         $parser = new self(array_shift($docBlocks), $legacyNullable);
-        while ($docBlocks)
-        {
+        while ($docBlocks) {
             $parser->mergeInherited(new self(array_shift($docBlocks), $legacyNullable));
         }
+
         return $parser;
     }
 }

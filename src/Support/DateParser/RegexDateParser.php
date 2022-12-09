@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support\DateParser;
 
@@ -38,8 +36,7 @@ final class RegexDateParser implements IDateParser
 
     public function parse(string $value, ?DateTimeZone $timezone = null): ?DateTimeImmutable
     {
-        if (preg_match($this->Pattern, $value, $matches))
-        {
+        if (preg_match($this->Pattern, $value, $matches)) {
             return ($this->Callback)($matches, $timezone);
         }
 
@@ -49,18 +46,17 @@ final class RegexDateParser implements IDateParser
     public static function dotNet(): self
     {
         return new self(
-            '/^\\/Date\\((?P<seconds>[0-9]+)(?P<milliseconds>[0-9]{3})(?P<offset>[-+][0-9]{4})?\\)\\/$/',
-            function (array $matches, ?DateTimeZone $timezone): DateTimeImmutable
-            {
+            '/^\/Date\((?P<seconds>[0-9]+)(?P<milliseconds>[0-9]{3})(?P<offset>[-+][0-9]{4})?\)\/$/',
+            function (array $matches, ?DateTimeZone $timezone): DateTimeImmutable {
                 $date = new DateTimeImmutable(
-                    sprintf("@%s.%s",
-                        $matches["seconds"],
-                        $matches["milliseconds"])
+                    sprintf('@%s.%s',
+                        $matches['seconds'],
+                        $matches['milliseconds'])
                 );
-                if (!$timezone && ($matches["offset"] ?? null))
-                {
-                    $timezone = new DateTimeZone($matches["offset"]);
+                if (!$timezone && ($matches['offset'] ?? null)) {
+                    $timezone = new DateTimeZone($matches['offset']);
                 }
+
                 return $timezone
                     ? $date->setTimezone($timezone)
                     : $date;

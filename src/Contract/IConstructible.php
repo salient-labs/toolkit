@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -22,5 +20,4 @@ interface IConstructible
      * @return iterable<static>
      */
     public static function constructList(iterable $dataList, int $conformity = ArrayKeyConformity::NONE, ?IContainer $container = null): iterable;
-
 }

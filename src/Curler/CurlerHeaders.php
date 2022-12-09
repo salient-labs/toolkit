@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
@@ -54,8 +52,8 @@ class CurlerHeaders
      * @var string[]
      */
     private $PrivateHeaderNames = [
-        "authorization",
-        "proxy-authorization",
+        'authorization',
+        'proxy-authorization',
     ];
 
     /**
@@ -104,15 +102,13 @@ class CurlerHeaders
      */
     private function _addRawHeader(string $line)
     {
-        if ($this->RawHeadersClosed)
-        {
+        if ($this->RawHeadersClosed) {
             $this->Trailers[] = $line;
 
             return $this;
         }
 
-        if (!trim($line))
-        {
+        if (!trim($line)) {
             $this->LastRawHeaderKey = null;
             $this->RawHeadersClosed = true;
 
@@ -125,18 +121,15 @@ class CurlerHeaders
         // HTTP headers can extend over multiple lines by starting each extra
         // line with horizontal whitespace, so if the line starts with SP or
         // HTAB, add it to the previous header
-        if (strpos(" \t", $line[0]) !== false)
-        {
-            if (!is_null($key = $this->LastRawHeaderKey))
-            {
+        if (strpos(" \t", $line[0]) !== false) {
+            if (!is_null($key = $this->LastRawHeaderKey)) {
                 $this->Headers[$key] = $this->Headers[$key]->withValueExtended($line);
             }
 
             return $this;
         }
 
-        if (count($split = explode(":", $line, 2)) == 2)
-        {
+        if (count($split = explode(':', $line, 2)) == 2) {
             // The header name will only need trimming if there is whitespace
             // between it and ":", which is not allowed since [RFC7230] (see
             // Section 3.2.4) and should be removed from upstream responses
@@ -152,11 +145,10 @@ class CurlerHeaders
      */
     private function _addHeader(string $name, string $value, bool $private)
     {
-        $i = $this->NextHeader++;
-        $this->Headers[$i] = new CurlerHeader($name, $value, $i);
+        $i                                           = $this->NextHeader++;
+        $this->Headers[$i]                           = new CurlerHeader($name, $value, $i);
         $this->HeaderKeysByName[strtolower($name)][] = $i;
-        if ($private)
-        {
+        if ($private) {
             return $this->_addPrivateHeaderName($name);
         }
 
@@ -169,8 +161,7 @@ class CurlerHeaders
     private function _unsetHeader(string $name)
     {
         $lower = strtolower($name);
-        foreach (($this->HeaderKeysByName[$lower] ?? []) as $key)
-        {
+        foreach (($this->HeaderKeysByName[$lower] ?? []) as $key) {
             unset($this->Headers[$key]);
         }
         unset($this->HeaderKeysByName[$lower]);
@@ -184,8 +175,7 @@ class CurlerHeaders
     private function _addPrivateHeaderName(string $name)
     {
         $lower = strtolower($name);
-        if (!in_array($lower, $this->PrivateHeaderNames))
-        {
+        if (!in_array($lower, $this->PrivateHeaderNames)) {
             $this->PrivateHeaderNames[] = $lower;
         }
 
@@ -227,19 +217,17 @@ class CurlerHeaders
             fn(CurlerHeader $header) => $header->Value,
             array_intersect_key($this->Headers, array_flip($this->HeaderKeysByName[strtolower($name)] ?? []))
         );
-        if (!($flags & (Flag::COMBINE_REPEATED | Flag::DISCARD_REPEATED)))
-        {
+        if (!($flags & (Flag::COMBINE_REPEATED | Flag::DISCARD_REPEATED))) {
             return $values;
         }
-        if (!$values)
-        {
+        if (!$values) {
             return null;
         }
-        if ($flags & Flag::DISCARD_REPEATED)
-        {
+        if ($flags & Flag::DISCARD_REPEATED) {
             return end($values);
         }
-        return implode(", ", $values);
+
+        return implode(', ', $values);
     }
 
     /**
@@ -253,8 +241,7 @@ class CurlerHeaders
      */
     final public function getHeaderValues(int $flags = 0): array
     {
-        if ($flags & Flag::SORT_BY_LAST)
-        {
+        if ($flags & Flag::SORT_BY_LAST) {
             $keysByName = $this->HeaderKeysByName;
             uasort($keysByName, fn(array $a, array $b) => end($a) <=> end($b));
         }
@@ -289,12 +276,10 @@ class CurlerHeaders
     final protected function toImmutable(): CurlerHeadersImmutable
     {
         $immutable = new CurlerHeadersImmutable();
-        foreach ($this as $property => $value)
-        {
+        foreach ($this as $property => $value) {
             $immutable->$property = $value;
         }
 
         return $immutable;
     }
-
 }

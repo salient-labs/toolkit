@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support\DateParser;
 
@@ -23,9 +21,8 @@ final class CreateFromFormatDateParser implements IDateParser
     {
         // Reset fields that don't appear in the format string to zero,
         // otherwise they default to the current time
-        if (strpos($format, "!") === false && strpos($format, "|") === false)
-        {
-            $format .= "|";
+        if (strpos($format, '!') === false && strpos($format, '|') === false) {
+            $format .= '|';
         }
 
         $this->Format = $format;

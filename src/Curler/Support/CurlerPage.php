@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler\Support;
 
@@ -59,8 +57,7 @@ final class CurlerPage implements ICurlerPage
         $this->EntityCount = count($entities) + ($previous ? $previous->entityCount() : 0);
         $this->IsLastPage  = is_null($isLastPage) ? empty($nextUrl) : $isLastPage;
 
-        if (!$this->IsLastPage)
-        {
+        if (!$this->IsLastPage) {
             $this->NextUrl     = $nextUrl ?: $curler->BaseUrl . $curler->QueryString;
             $this->NextData    = $nextData;
             $this->NextHeaders = $nextHeaders;
@@ -84,9 +81,8 @@ final class CurlerPage implements ICurlerPage
 
     private function assertHasNextPage()
     {
-        if ($this->IsLastPage)
-        {
-            throw new RuntimeException("No more pages");
+        if ($this->IsLastPage) {
+            throw new RuntimeException('No more pages');
         }
     }
 
@@ -110,5 +106,4 @@ final class CurlerPage implements ICurlerPage
 
         return $this->NextHeaders;
     }
-
 }

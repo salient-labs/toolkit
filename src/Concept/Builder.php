@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concept;
 
@@ -39,7 +37,7 @@ abstract class Builder extends FluentInterface implements IImmutable
      */
     protected static function getStaticBuilder(): string
     {
-        return "build";
+        return 'build';
     }
 
     /**
@@ -51,7 +49,7 @@ abstract class Builder extends FluentInterface implements IImmutable
      */
     protected static function getTerminator(): string
     {
-        return "go";
+        return 'go';
     }
 
     /**
@@ -63,7 +61,7 @@ abstract class Builder extends FluentInterface implements IImmutable
      */
     protected static function getStaticResolver(): string
     {
-        return "resolve";
+        return 'resolve';
     }
 
     /**
@@ -98,36 +96,28 @@ abstract class Builder extends FluentInterface implements IImmutable
      */
     final public static function __callStatic(string $name, array $arguments)
     {
-        if (static::getStaticBuilder() === $name)
-        {
-            if (count($arguments) > 1)
-            {
-                throw new UnexpectedValueException("Invalid arguments");
+        if (static::getStaticBuilder() === $name) {
+            if (count($arguments) > 1) {
+                throw new UnexpectedValueException('Invalid arguments');
             }
-            if ($arguments && !($arguments[0] instanceof IContainer))
-            {
+            if ($arguments && !($arguments[0] instanceof IContainer)) {
                 throw new UnexpectedValueException('Argument #1 ($container) does not implement ' . IContainer::class);
             }
 
             return new static($arguments[0] ?? null);
         }
-        if (static::getStaticResolver() === $name)
-        {
-            if (count($arguments) !== 1 || !(is_object($arguments[0]) || is_null($arguments[0])))
-            {
-                throw new UnexpectedValueException("Invalid arguments");
+        if (static::getStaticResolver() === $name) {
+            if (count($arguments) !== 1 || !(is_object($arguments[0]) || is_null($arguments[0]))) {
+                throw new UnexpectedValueException('Invalid arguments');
             }
             $obj = $arguments[0];
-            if (!$obj)
-            {
+            if (!$obj) {
                 return null;
             }
-            if ($obj instanceof self)
-            {
+            if ($obj instanceof self) {
                 $obj = $obj->{$obj->getTerminator()}();
             }
-            if (!is_a($obj, static::getClassName()))
-            {
+            if (!is_a($obj, static::getClassName())) {
                 throw new UnexpectedValueException('Argument #1 ($object) does not resolve to a ' . static::getClassName());
             }
 
@@ -142,20 +132,17 @@ abstract class Builder extends FluentInterface implements IImmutable
      */
     final public function __call(string $name, array $arguments)
     {
-        if (static::getTerminator() === $name)
-        {
+        if (static::getTerminator() === $name) {
             return ($this->Closure)($this->Data, $this->Container);
         }
-        if (count($arguments) > 1)
-        {
-            throw new UnexpectedValueException("Invalid arguments");
+        if (count($arguments) > 1) {
+            throw new UnexpectedValueException('Invalid arguments');
         }
-        $clone = clone $this;
+        $clone                                                    = clone $this;
         $clone->Data[$clone->Introspector->maybeNormalise($name)] = (array_key_exists(0, $arguments)
             ? $arguments[0]
             : true);
 
         return $clone;
     }
-
 }

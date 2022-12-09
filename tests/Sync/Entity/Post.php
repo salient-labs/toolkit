@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Entity;
 
@@ -31,5 +29,4 @@ class Post extends SyncEntity
      * @var string|null
      */
     public $Body;
-
 }

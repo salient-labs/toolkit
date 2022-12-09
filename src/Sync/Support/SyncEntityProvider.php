@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -55,15 +53,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
     public function __construct(IContainer $container, string $entity, SyncProvider $provider, ISyncDefinition $definition, ?SyncContext $context = null)
     {
-        if (!is_subclass_of($entity, SyncEntity::class))
-        {
+        if (!is_subclass_of($entity, SyncEntity::class)) {
             throw new UnexpectedValueException("Not a subclass of SyncEntity: $entity");
         }
 
         $entityProvider = SyncIntrospector::entityToProvider($entity);
-        if (!($provider instanceof $entityProvider))
-        {
-            throw new UnexpectedValueException(get_class($provider) . " does not implement " . $entityProvider);
+        if (!($provider instanceof $entityProvider)) {
+            throw new UnexpectedValueException(get_class($provider) . ' does not implement ' . $entityProvider);
         }
 
         $this->Entity     = $entity;
@@ -77,18 +73,15 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     public function run(int $operation, ...$args)
     {
-        if (!($closure = $this->Definition->getSyncOperationClosure($operation)))
-        {
+        if (!($closure = $this->Definition->getSyncOperationClosure($operation))) {
             throw new SyncOperationNotImplementedException($this->Provider, $this->Entity, $operation);
         }
 
         $result = $closure($this->Context->withArgs($operation, $this->Context, ...$args), ...$args);
 
-        if (SyncOperation::isList($operation) && $this->Context->getListToArray() && !is_array($result))
-        {
+        if (SyncOperation::isList($operation) && $this->Context->getListToArray() && !is_array($result)) {
             $entities = [];
-            foreach ($result as $entity)
-            {
+            foreach ($result as $entity) {
                 $entities[] = $entity;
             }
 
@@ -358,5 +351,4 @@ final class SyncEntityProvider implements ISyncEntityProvider
     {
         return new SyncEntityFuzzyResolver($this, $nameProperty, $weightProperty, $algorithm, $uncertaintyThreshold);
     }
-
 }

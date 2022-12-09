@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
@@ -53,7 +51,7 @@ final class Conversions
      */
     public function toIntOrNull($value): ?int
     {
-        return is_null($value) ? null : (int)$value;
+        return is_null($value) ? null : (int) $value;
     }
 
     /**
@@ -115,8 +113,7 @@ final class Conversions
      */
     public function flatten($value)
     {
-        if (!is_array($value) || count($value) !== 1 || array_key_first($value) !== 0)
-        {
+        if (!is_array($value) || count($value) !== 1 || array_key_first($value) !== 0) {
             return $value;
         }
 
@@ -130,10 +127,8 @@ final class Conversions
     public function toUniqueList(array $array): array
     {
         $list = [];
-        foreach ($array as $value)
-        {
-            if (in_array($value, $list, true))
-            {
+        foreach ($array as $value) {
+            if (in_array($value, $list, true)) {
                 continue;
             }
             $list[] = $value;
@@ -152,10 +147,8 @@ final class Conversions
     {
         $list = [];
         $seen = [];
-        foreach ($array as $value)
-        {
-            if ($seen[$value] ?? null)
-            {
+        foreach ($array as $value) {
+            if ($seen[$value] ?? null) {
                 continue;
             }
             $list[]       = $value;
@@ -172,10 +165,8 @@ final class Conversions
      */
     public function toScalarArray(array $array): array
     {
-        foreach ($array as &$value)
-        {
-            if (is_scalar($value) || is_null($value))
-            {
+        foreach ($array as &$value) {
+            if (is_scalar($value) || is_null($value)) {
                 continue;
             }
             $value = json_encode($value);
@@ -191,8 +182,7 @@ final class Conversions
      */
     public function stringToList(string $separator, string $string, ?string $trim = null): array
     {
-        if (!$separator)
-        {
+        if (!$separator) {
             throw new UnexpectedValueException("Invalid separator: $separator");
         }
 
@@ -226,12 +216,11 @@ final class Conversions
      * @param string|int $key
      * @return array The removed portion of the array.
      */
-    public function arraySpliceAtKey(array & $array, $key, ?int $length = null, array $replacement = []): array
+    public function arraySpliceAtKey(array &$array, $key, ?int $length = null, array $replacement = []): array
     {
         $keys   = array_keys($array);
         $offset = array_flip($keys)[$key] ?? null;
-        if (is_null($offset))
-        {
+        if (is_null($offset)) {
             throw new UnexpectedValueException("Array key not found: $key");
         }
         $values  = array_values($array);
@@ -265,12 +254,12 @@ final class Conversions
      */
     public function intervalToSeconds($value): int
     {
-        if (!($value instanceof DateInterval))
-        {
+        if (!($value instanceof DateInterval)) {
             $value = new DateInterval($value);
         }
         $then = new DateTimeImmutable();
         $now  = $then->add($value);
+
         return $now->getTimestamp() - $then->getTimestamp();
     }
 
@@ -293,15 +282,12 @@ final class Conversions
      */
     public function toTimezone($value): DateTimeZone
     {
-        if ($value instanceof DateTimeZone)
-        {
+        if ($value instanceof DateTimeZone) {
             return $value;
-        }
-        elseif (is_string($value))
-        {
+        } elseif (is_string($value)) {
             return new DateTimeZone($value);
         }
-        throw new UnexpectedValueException("Invalid timezone");
+        throw new UnexpectedValueException('Invalid timezone');
     }
 
     /**
@@ -320,10 +306,8 @@ final class Conversions
      */
     public function coalesce(...$values)
     {
-        while ($values)
-        {
-            if (!is_null($value = array_shift($values)))
-            {
+        while ($values) {
+            if (!is_null($value = array_shift($values))) {
                 return $value;
             }
         }
@@ -346,12 +330,10 @@ final class Conversions
      */
     public function iterableToIterator(iterable $iterable): Iterator
     {
-        if ($iterable instanceof Iterator)
-        {
+        if ($iterable instanceof Iterator) {
             return $iterable;
         }
-        if (is_array($iterable))
-        {
+        if (is_array($iterable)) {
             return new ArrayIterator($iterable);
         }
 
@@ -369,11 +351,11 @@ final class Conversions
     public function pathToBasename(string $path, int $extLimit = 0): string
     {
         $path = basename($path);
-        if ($extLimit)
-        {
-            $range = $extLimit > 1 ? "{1,$extLimit}" : ($extLimit < 0 ? "+" : "");
-            $path  = preg_replace("/(?<=.)(?<!^\\.|^\\.\\.)(\\.[^.\\s]+){$range}\$/", "", $path);
+        if ($extLimit) {
+            $range = $extLimit > 1 ? "{1,$extLimit}" : ($extLimit < 0 ? '+' : '');
+            $path  = preg_replace("/(?<=.)(?<!^\\.|^\\.\\.)(\\.[^.\\s]+){$range}\$/", '', $path);
         }
+
         return $path;
     }
 
@@ -383,72 +365,62 @@ final class Conversions
     public function resolveRelativeUrl(string $embeddedUrl, string $baseUrl): string
     {
         // Step 1
-        if (!$baseUrl)
-        {
+        if (!$baseUrl) {
             return $embeddedUrl;
         }
         // Step 2a
-        if (!$embeddedUrl)
-        {
+        if (!$embeddedUrl) {
             return $baseUrl;
         }
         $url = $this->parseUrl($embeddedUrl);
         // Step 2b
-        if ($url["scheme"] ?? null)
-        {
+        if ($url['scheme'] ?? null) {
             return $embeddedUrl;
         }
-        $base = $this->parseUrl($baseUrl);
+        $base          = $this->parseUrl($baseUrl);
         // Step 2c
-        $url["scheme"] = $base["scheme"] ?? null;
+        $url['scheme'] = $base['scheme'] ?? null;
         // Step 3
-        if ($this->netLoc($url))
-        {
+        if ($this->netLoc($url)) {
             return $this->unparseUrl($url);
         }
         $url = $this->netLoc($base) + $url;
         // Step 4
-        if (substr($path = $url["path"] ?? "", 0, 1) === "/")
-        {
+        if (substr($path = $url['path'] ?? '', 0, 1) === '/') {
             return $this->unparseUrl($url);
         }
         // Step 5
-        if (!$path)
-        {
-            $url["path"] = $base["path"] ?? null;
+        if (!$path) {
+            $url['path'] = $base['path'] ?? null;
             // Step 5a
-            if (!($url["params"] ?? null))
-            {
-                $url["params"] = $base["params"] ?? null;
+            if (!($url['params'] ?? null)) {
+                $url['params'] = $base['params'] ?? null;
                 // Step 5b
-                if (!($url["query"] ?? null))
-                {
-                    $url["query"] = $base["query"] ?? null;
+                if (!($url['query'] ?? null)) {
+                    $url['query'] = $base['query'] ?? null;
                 }
             }
 
             return $this->unparseUrl($url);
         }
-        $base["path"] = $base["path"] ?? "";
+        $base['path'] = $base['path'] ?? '';
         // Step 6
-        $path = substr($base["path"], 0, strrpos("/{$base["path"]}", "/")) . $path;
+        $path         = substr($base['path'], 0, strrpos("/{$base['path']}", '/')) . $path;
         // Steps 6a and 6b
-        $path = preg_replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
+        $path         = preg_replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
         // Step 6c
-        do
-        {
+        do {
             $path = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\./@', '', $path, 1, $count);
-        }
-        while ($count);
+        } while ($count);
         // Step 6d
-        $url["path"] = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\.$@', '', $path, 1, $count);
+        $url['path'] = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\.$@', '', $path, 1, $count);
 
         return $this->unparseUrl($url);
     }
 
     private function netLoc(array $url): array
     {
-        return array_intersect_key($url, array_flip(["host", "port", "user", "pass"]));
+        return array_intersect_key($url, array_flip(['host', 'port', 'user', 'pass']));
     }
 
     /**
@@ -463,19 +435,16 @@ final class Conversions
     {
         // Extract "params" early because parse_url doesn't accept URLs where
         // "path" has a leading ";"
-        if (strpos($url, ";") !== false)
-        {
+        if (strpos($url, ';') !== false) {
             preg_match('/;([^?]*)/', $url, $matches);
             $params = $matches[1];
-            $url    = preg_replace('/;[^?]*/', "", $url, 1);
+            $url    = preg_replace('/;[^?]*/', '', $url, 1);
         }
-        if (($url = parse_url($url)) === false)
-        {
+        if (($url = parse_url($url)) === false) {
             return false;
         }
-        if (isset($params))
-        {
-            $url["params"] = $params;
+        if (isset($params)) {
+            $url['params'] = $params;
         }
 
         return $url;
@@ -490,21 +459,20 @@ final class Conversions
      */
     public function unparseUrl(array $url): string
     {
-        [$u, $url] = [$url, ""];
-        !($u["scheme"] ?? null) || $url .= "{$u["scheme"]}:";
-        if ($u["host"] ?? null)
-        {
-            $url .= "//";
-            !array_key_exists("user", $u) || $auth = $u["user"];
-            !array_key_exists("pass", $u) || $auth = ($auth ?? "") . ":{$u["pass"]}";
+        [$u, $url]                       = [$url, ''];
+        !($u['scheme'] ?? null) || $url .= "{$u['scheme']}:";
+        if ($u['host'] ?? null) {
+            $url                                  .= '//';
+            !array_key_exists('user', $u) || $auth = $u['user'];
+            !array_key_exists('pass', $u) || $auth = ($auth ?? '') . ":{$u['pass']}";
             is_null($auth ?? null) || $url        .= "$auth@";
-            $url .= $u["host"];
-            !array_key_exists("port", $u) || $url .= ":{$u["port"]}";
+            $url                                  .= $u['host'];
+            !array_key_exists('port', $u) || $url .= ":{$u['port']}";
         }
-        !($u["path"] ?? null) || $url .= $u["path"];
-        !array_key_exists("params", $u) || $url   .= ";{$u["params"]}";
-        !array_key_exists("query", $u) || $url    .= "?{$u["query"]}";
-        !array_key_exists("fragment", $u) || $url .= "#{$u["fragment"]}";
+        !($u['path'] ?? null) || $url             .= $u['path'];
+        !array_key_exists('params', $u) || $url   .= ";{$u['params']}";
+        !array_key_exists('query', $u) || $url    .= "?{$u['query']}";
+        !array_key_exists('fragment', $u) || $url .= "#{$u['fragment']}";
 
         return $url;
     }
@@ -515,11 +483,9 @@ final class Conversions
      */
     public function classToBasename(string $class, string ...$suffixes): string
     {
-        $class = substr(strrchr("\\" . $class, "\\"), 1);
-        while ($suffixes)
-        {
-            if (($suffix = array_shift($suffixes)) && ($pos = strrpos($class, $suffix)) > 0)
-            {
+        $class = substr(strrchr('\\' . $class, '\\'), 1);
+        while ($suffixes) {
+            if (($suffix = array_shift($suffixes)) && ($pos = strrpos($class, $suffix)) > 0) {
                 return substr($class, 0, $pos);
             }
         }
@@ -536,7 +502,7 @@ final class Conversions
      */
     public function classToNamespace(string $class): string
     {
-        return substr($class, 0, max(0, strrpos("\\" . $class, "\\") - 1));
+        return substr($class, 0, max(0, strrpos('\\' . $class, '\\') - 1));
     }
 
     /**
@@ -608,13 +574,11 @@ final class Conversions
         $list    = $this->iterableToIterator($list);
         $closure = $this->_keyToClosure($key);
 
-        while ($list->valid())
-        {
+        while ($list->valid()) {
             $item = $list->current();
             $list->next();
             if (($strict && ($closure($item) === $value)) ||
-                (!$strict && ($closure($item) == $value)))
-            {
+                    (!$strict && ($closure($item) == $value))) {
                 return $item;
             }
         }
@@ -627,24 +591,17 @@ final class Conversions
      */
     private function _keyToClosure($key): Closure
     {
-        if ($key instanceof Closure)
-        {
+        if ($key instanceof Closure) {
             return $key;
         }
 
-        return function ($item) use ($key)
-        {
-            if (is_array($item))
-            {
+        return function ($item) use ($key) {
+            if (is_array($item)) {
                 return $item[$key];
-            }
-            elseif (is_object($item))
-            {
+            } elseif (is_object($item)) {
                 return $item->$key;
-            }
-            else
-            {
-                throw new UnexpectedValueException("Item is not an array or object");
+            } else {
+                throw new UnexpectedValueException('Item is not an array or object');
             }
         };
     }
@@ -657,7 +614,7 @@ final class Conversions
     {
         return implode($separator, array_filter(
             $array,
-            function ($value) { return strlen((string)$value) > 0; }
+            function ($value) {return strlen((string) $value) > 0;}
         ));
     }
 
@@ -668,12 +625,9 @@ final class Conversions
      */
     public function scalarToString($value)
     {
-        if (is_scalar($value))
-        {
-            return (string)$value;
-        }
-        else
-        {
+        if (is_scalar($value)) {
+            return (string) $value;
+        } else {
             return false;
         }
     }
@@ -690,7 +644,7 @@ final class Conversions
     {
         $noun = ($number == 1
             ? $singular
-            : (is_null($plural) ? $singular . "s" : $plural));
+            : (is_null($plural) ? $singular . 's' : $plural));
 
         return $includeNumber
             ? "$number $noun"
@@ -703,27 +657,19 @@ final class Conversions
      */
     public function nounToPlural(string $noun): string
     {
-        if (preg_match('/(?:(sh?|ch|x|z|(?<!^phot)(?<!^pian)(?<!^hal)o)|([^aeiou]y)|(is)|(on))$/i', $noun, $matches))
-        {
-            if ($matches[1])
-            {
-                return $noun . "es";
-            }
-            elseif ($matches[2])
-            {
-                return substr_replace($noun, "ies", -1);
-            }
-            elseif ($matches[3])
-            {
-                return substr_replace($noun, "es", -2);
-            }
-            elseif ($matches[4])
-            {
-                return substr_replace($noun, "a", -2);
+        if (preg_match('/(?:(sh?|ch|x|z|(?<!^phot)(?<!^pian)(?<!^hal)o)|([^aeiou]y)|(is)|(on))$/i', $noun, $matches)) {
+            if ($matches[1]) {
+                return $noun . 'es';
+            } elseif ($matches[2]) {
+                return substr_replace($noun, 'ies', -1);
+            } elseif ($matches[3]) {
+                return substr_replace($noun, 'es', -2);
+            } elseif ($matches[4]) {
+                return substr_replace($noun, 'a', -2);
             }
         }
 
-        return $noun . "s";
+        return $noun . 's';
     }
 
     /**
@@ -740,7 +686,7 @@ final class Conversions
         return array_column(
             array_filter(
                 array_map(
-                    fn(string $kv) => explode("=", $kv, 2),
+                    fn(string $kv) => explode('=', $kv, 2),
                     $query
                 ),
                 fn(array $kv) => count($kv) == 2 && trim($kv[0])
@@ -766,35 +712,29 @@ final class Conversions
      */
     public function linesToLists(string $text, string $separator = "\n", ?string $marker = null, string $regex = '/^\h*[-*] /'): string
     {
-        $marker       = $marker ? $marker . " " : null;
-        $indent       = $marker ? str_repeat(" ", mb_strlen($marker)) : "";
+        $marker       = $marker ? $marker . ' ' : null;
+        $indent       = $marker ? str_repeat(' ', mb_strlen($marker)) : '';
         $markerIsItem = $marker && preg_match($regex, $marker);
 
         $sections = [];
-        foreach (preg_split('/\r\n|\n/', $text) as $line)
-        {
+        foreach (preg_split('/\r\n|\n/', $text) as $line) {
             // Remove pre-existing markers early to ensure sections with the
             // same name are combined
-            if ($marker && !$markerIsItem && strpos($line, $marker) === 0)
-            {
+            if ($marker && !$markerIsItem && strpos($line, $marker) === 0) {
                 $line = substr($line, strlen($marker));
             }
-            if (!trim($line))
-            {
+            if (!trim($line)) {
                 unset($section);
                 continue;
             }
-            if (!preg_match($regex, $line))
-            {
+            if (!preg_match($regex, $line)) {
                 $section = $line;
             }
             $key = $section ?? $line;
-            if (!array_key_exists($key, $sections))
-            {
+            if (!array_key_exists($key, $sections)) {
                 $sections[$key] = [];
             }
-            if ($key != $line && !in_array($line, $sections[$key]))
-            {
+            if ($key != $line && !in_array($line, $sections[$key])) {
                 $sections[$key][] = $line;
             }
         }
@@ -804,20 +744,18 @@ final class Conversions
             array_filter($sections, fn($lines) => count($lines))
         );
         $groups = [];
-        foreach ($sections as $section => $sectionLines)
-        {
+        foreach ($sections as $section => $sectionLines) {
             if ($marker &&
-                !($markerIsItem && strpos($section, $marker) === 0) &&
-                !preg_match($regex, $section))
-            {
+                    !($markerIsItem && strpos($section, $marker) === 0) &&
+                    !preg_match($regex, $section)) {
                 $section = $marker . $section;
             }
             $groups[] = $section;
-            if ($sectionLines)
-            {
+            if ($sectionLines) {
                 $groups[] = $indent . implode("\n" . $indent, $sectionLines);
             }
         }
+
         return implode($separator, $groups);
     }
 
@@ -827,8 +765,9 @@ final class Conversions
      */
     public function unwrap(string $string, string $break = "\n"): string
     {
-        $break = preg_quote($break, "/");
-        return preg_replace("/(?<!{$break}|^)(${break})(?!{$break}|\$)/", " ", $string);
+        $break = preg_quote($break, '/');
+
+        return preg_replace("/(?<!{$break}|^)(${break})(?!{$break}|\$)/", ' ', $string);
     }
 
     /**
@@ -844,7 +783,7 @@ final class Conversions
         $uuid[] = substr($bytes, 8, 2);
         $uuid[] = substr($bytes, 10, 6);
 
-        return implode("-", array_map(fn(string $bin): string => bin2hex($bin), $uuid));
+        return implode('-', array_map(fn(string $bin): string => bin2hex($bin), $uuid));
     }
 
     /**
@@ -857,14 +796,13 @@ final class Conversions
      */
     public function sizeToBytes(string $size): int
     {
-        if (!preg_match('/^(.+?)([KMG]?)$/', strtoupper($size), $match) || !is_numeric($match[1]))
-        {
+        if (!preg_match('/^(.+?)([KMG]?)$/', strtoupper($size), $match) || !is_numeric($match[1])) {
             throw new UnexpectedValueException("Invalid shorthand: '$size'");
         }
 
         $power = ['' => 0, 'K' => 1, 'M' => 2, 'G' => 3];
 
-        return (int)($match[1] * (1024 ** $power[$match[2]]));
+        return (int) ($match[1] * (1024 ** $power[$match[2]]));
     }
 
     /**
@@ -875,7 +813,7 @@ final class Conversions
      */
     public function toStrings(...$value): array
     {
-        return array_map(function ($string) { return (string)$string; }, $value);
+        return array_map(function ($string) {return (string) $string;}, $value);
     }
 
     /**
@@ -884,8 +822,7 @@ final class Conversions
      */
     public function toShellArg(string $value): string
     {
-        if (!$value || preg_match('/[^a-z0-9+.\\/@_-]/i', $value))
-        {
+        if (!$value || preg_match('/[^a-z0-9+.\/@_-]/i', $value)) {
             return "'" . str_replace("'", "'\\''", $value) . "'";
         }
 
@@ -898,22 +835,17 @@ final class Conversions
      */
     public function toCase(string $text, int $case = self::IDENTIFIER_CASE_SNAKE): string
     {
-        switch ($case)
-        {
+        switch ($case) {
             case self::IDENTIFIER_CASE_SNAKE:
-
                 return $this->toSnakeCase($text);
 
             case self::IDENTIFIER_CASE_KEBAB:
-
                 return $this->toKebabCase($text);
 
             case self::IDENTIFIER_CASE_PASCAL:
-
                 return $this->toPascalCase($text);
 
             case self::IDENTIFIER_CASE_CAMEL:
-
                 return $this->toCamelCase($text);
         }
 
@@ -926,10 +858,10 @@ final class Conversions
      */
     public function toSnakeCase(string $text): string
     {
-        $text = preg_replace("/[^[:alnum:]]+/", "_", $text);
-        $text = preg_replace("/([[:lower:]])([[:upper:]])/", '$1_$2', $text);
+        $text = preg_replace('/[^[:alnum:]]+/', '_', $text);
+        $text = preg_replace('/([[:lower:]])([[:upper:]])/', '$1_$2', $text);
 
-        return strtolower(trim($text, "_"));
+        return strtolower(trim($text, '_'));
     }
 
     /**
@@ -938,10 +870,10 @@ final class Conversions
      */
     public function toKebabCase(string $text): string
     {
-        $text = preg_replace("/[^[:alnum:]]+/", "-", $text);
-        $text = preg_replace("/([[:lower:]])([[:upper:]])/", '$1-$2', $text);
+        $text = preg_replace('/[^[:alnum:]]+/', '-', $text);
+        $text = preg_replace('/([[:lower:]])([[:upper:]])/', '$1-$2', $text);
 
-        return strtolower(trim($text, "-"));
+        return strtolower(trim($text, '-'));
     }
 
     /**
@@ -952,11 +884,11 @@ final class Conversions
     {
         $text = preg_replace_callback(
             '/([[:upper:]]?[[:lower:][:digit:]]+|([[:upper:]](?![[:lower:]]))+)/',
-            function (array $matches) { return ucfirst(strtolower($matches[0])); },
+            function (array $matches) {return ucfirst(strtolower($matches[0]));},
             $text
         );
 
-        return preg_replace("/[^[:alnum:]]+/", "", $text);
+        return preg_replace('/[^[:alnum:]]+/', '', $text);
     }
 
     /**
@@ -984,9 +916,9 @@ final class Conversions
     public function toNormal(string $text): string
     {
         $replace = [
-            "/(?<=[^&])&(?=[^&])/u" => " and ",
-            "/\.+/u" => "",
-            "/[^[:alnum:]]+/u" => " ",
+            '/(?<=[^&])&(?=[^&])/u' => ' and ',
+            '/\.+/u'                => '',
+            '/[^[:alnum:]]+/u'      => ' ',
         ];
 
         return strtoupper(trim(preg_replace(
@@ -1008,39 +940,29 @@ final class Conversions
         return get_object_vars($object);
     }
 
-    private function _dataToQuery(array $data, bool $preserveKeys, DateFormatter $dateFormatter, ?string & $query = null, string $name = "", string $format = "%s"): string
+    private function _dataToQuery(array $data, bool $preserveKeys, DateFormatter $dateFormatter, ?string &$query = null, string $name = '', string $format = '%s'): string
     {
-        if (is_null($query))
-        {
-            $query = "";
+        if (is_null($query)) {
+            $query = '';
         }
 
-        foreach ($data as $param => $value)
-        {
+        foreach ($data as $param => $value) {
             $_name = sprintf($format, $param);
 
-            if (!is_array($value))
-            {
-                if (is_bool($value))
-                {
-                    $value = (int)$value;
-                }
-                elseif ($value instanceof DateTimeInterface)
-                {
+            if (!is_array($value)) {
+                if (is_bool($value)) {
+                    $value = (int) $value;
+                } elseif ($value instanceof DateTimeInterface) {
                     $value = $dateFormatter->format($value);
                 }
 
-                $query .= ($query ? "&" : "") . rawurlencode($name . $_name) . "=" . rawurlencode((string)$value);
+                $query .= ($query ? '&' : '') . rawurlencode($name . $_name) . '=' . rawurlencode((string) $value);
 
                 continue;
-            }
-            elseif (!$preserveKeys && Test::isListArray($value, true))
-            {
-                $_format = "[]";
-            }
-            else
-            {
-                $_format = "[%s]";
+            } elseif (!$preserveKeys && Test::isListArray($value, true)) {
+                $_format = '[]';
+            } else {
+                $_format = '[%s]';
             }
 
             $this->_dataToQuery($value, $preserveKeys, $dateFormatter, $query, $name . $_name, $_format);
@@ -1069,49 +991,40 @@ final class Conversions
         );
     }
 
-    public function valueToCode($value, string $delimiter = ", ", string $arrow = " => "): string
+    public function valueToCode($value, string $delimiter = ', ', string $arrow = ' => '): string
     {
-        if (is_null($value))
-        {
-            return "null";
-        }
-        elseif (is_string($value) && preg_match('/\v/', $value))
-        {
-            return '"' . addcslashes($value, "\n\r\t\v\e\f\\\$\"") . '"';
-        }
-        elseif (is_array($value))
-        {
+        if (is_null($value)) {
+            return 'null';
+        } elseif (is_string($value) && preg_match('/\v/', $value)) {
+            return '"' . addcslashes($value, "\n\r\t\v\x1b\f\\\$\"") . '"';
+        } elseif (is_array($value)) {
             return $this->arrayToCode($value, $delimiter, $arrow);
         }
+
         return var_export($value, true);
     }
 
-    public function arrayToCode(array $array, string $delimiter = ", ", string $arrow = " => "): string
+    public function arrayToCode(array $array, string $delimiter = ', ', string $arrow = ' => '): string
     {
-        if (empty($array))
-        {
-            return "[]";
+        if (empty($array)) {
+            return '[]';
         }
-        $code = "";
-        if (Test::isListArray($array))
-        {
-            foreach ($array as $value)
-            {
-                $code .= ($code ? $delimiter : "[")
+        $code = '';
+        if (Test::isListArray($array)) {
+            foreach ($array as $value) {
+                $code .= ($code ? $delimiter : '[')
                     . $this->valueToCode($value, $delimiter, $arrow);
             }
-        }
-        else
-        {
-            foreach ($array as $key => $value)
-            {
-                $code .= ($code ? $delimiter : "[")
+        } else {
+            foreach ($array as $key => $value) {
+                $code .= ($code ? $delimiter : '[')
                     . $this->valueToCode($key)
                     . $arrow
                     . $this->valueToCode($value, $delimiter, $arrow);
             }
         }
-        return $code . "]";
+
+        return $code . ']';
     }
 
     /**
@@ -1121,5 +1034,4 @@ final class Conversions
     {
         return $this->plural($number, $singular, $plural, $includeNumber);
     }
-
 }

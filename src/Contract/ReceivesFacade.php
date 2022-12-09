@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -17,5 +15,4 @@ interface ReceivesFacade
      * @return $this
      */
     public function setFacade(string $name);
-
 }

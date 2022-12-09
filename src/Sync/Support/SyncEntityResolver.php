@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -38,8 +36,7 @@ final class SyncEntityResolver implements ISyncEntityResolver
             $this->NameProperty,
             $name
         );
-        if ($match === false)
-        {
+        if ($match === false) {
             return null;
         }
 

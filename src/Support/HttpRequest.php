@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -51,14 +49,8 @@ final class HttpRequest implements IReadable
      */
     protected $Client;
 
-    public function __construct(
-        string $method,
-        string $target,
-        string $version,
-        CurlerHeaders $headers,
-        ?string $body,
-        string $client = null
-    ) {
+    public function __construct(string $method, string $target, string $version, CurlerHeaders $headers, ?string $body, string $client = null)
+    {
         $this->Method  = $method;
         $this->Target  = $target;
         $this->Version = $version;

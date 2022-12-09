@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
@@ -36,8 +34,7 @@ trait TConstructible
      */
     final public static function construct(array $data, ?IContainer $container = null, $parent = null)
     {
-        if (!$container)
-        {
+        if (!$container) {
             $container = Container::requireGlobalContainer();
         }
 
@@ -61,16 +58,13 @@ trait TConstructible
      */
     final public static function constructList(iterable $dataList, int $conformity = ArrayKeyConformity::NONE, ?IContainer $container = null, $parent = null): iterable
     {
-        if (!$container)
-        {
+        if (!$container) {
             $container = Container::requireGlobalContainer();
         }
 
         $closure = null;
-        foreach ($dataList as $data)
-        {
-            if (!$closure)
-            {
+        foreach ($dataList as $data) {
+            if (!$closure) {
                 $builder = Introspector::getBound($container, static::class);
                 $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
                     ? $builder->getCreateFromSignatureClosure(array_keys($data), true)
@@ -80,5 +74,4 @@ trait TConstructible
             yield $closure($data, $container, $parent);
         }
     }
-
 }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -46,32 +44,27 @@ final class HttpResponse implements IReadable
      */
     protected $Body;
 
-    public function __construct(
-        ?string $body,
-        int $statusCode        = 200,
-        string $reasonPhrase   = null,
-        CurlerHeaders $headers = null,
-        string $version        = "HTTP/1.1"
-    ) {
+    public function __construct(?string $body, int $statusCode = 200, string $reasonPhrase = null, CurlerHeaders $headers = null, string $version = 'HTTP/1.1')
+    {
         $this->Body         = $body;
         $this->StatusCode   = $statusCode;
         $this->ReasonPhrase = $reasonPhrase;
         $this->Headers      = $headers ?: new CurlerHeaders();
         $this->Version      = $version;
 
-        $this->Headers->setHeader("Content-Length", (string)strlen($this->Body));
+        $this->Headers->setHeader('Content-Length', (string) strlen($this->Body));
     }
 
     public function getResponse(): string
     {
-        $response = [Convert::sparseToString(" ", [
-            $this->Version ?: "HTTP/1.1",
+        $response = [Convert::sparseToString(' ', [
+            $this->Version ?: 'HTTP/1.1',
             $this->StatusCode,
             $this->ReasonPhrase
         ])];
         array_push($response, ...$this->Headers->getHeaders());
-        $response[] = "";
-        $response[] = $this->Body ?: "";
+        $response[] = '';
+        $response[] = $this->Body ?: '';
 
         return implode("\r\n", $response);
     }

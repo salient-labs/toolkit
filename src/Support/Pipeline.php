@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -97,29 +95,29 @@ class Pipeline extends FluentInterface implements IPipeline
 
     final public function send($payload, ...$args)
     {
-        $_this = $this->getMutable();
-        $_this->Payload = $payload;
+        $_this                    = $this->getMutable();
+        $_this->Payload           = $payload;
         $_this->PayloadConformity = ArrayKeyConformity::NONE;
-        $_this->Args   = $args;
-        $_this->Stream = false;
+        $_this->Args              = $args;
+        $_this->Stream            = false;
 
         return $_this;
     }
 
     final public function stream(iterable $payload, ...$args)
     {
-        $_this = $this->getMutable();
-        $_this->Payload = $payload;
+        $_this                    = $this->getMutable();
+        $_this->Payload           = $payload;
         $_this->PayloadConformity = ArrayKeyConformity::NONE;
-        $_this->Args   = $args;
-        $_this->Stream = true;
+        $_this->Args              = $args;
+        $_this->Stream            = true;
 
         return $_this;
     }
 
     final public function withConformity(int $conformity = ArrayKeyConformity::PARTIAL)
     {
-        $_this = $this->getMutable();
+        $_this                    = $this->getMutable();
         $_this->PayloadConformity = $conformity;
 
         return $_this;
@@ -127,9 +125,8 @@ class Pipeline extends FluentInterface implements IPipeline
 
     final public function after(callable $callback, ...$args)
     {
-        if ($this->After)
-        {
-            throw new RuntimeException(static::class . "::after() has already been applied");
+        if ($this->After) {
+            throw new RuntimeException(static::class . '::after() has already been applied');
         }
         $_this            = $this->getMutable();
         $_this->After     = $callback;
@@ -162,9 +159,8 @@ class Pipeline extends FluentInterface implements IPipeline
 
     final public function then(callable $callback, ...$args)
     {
-        if ($this->Then)
-        {
-            throw new RuntimeException(static::class . "::then() has already been applied");
+        if ($this->Then) {
+            throw new RuntimeException(static::class . '::then() has already been applied');
         }
         $_this           = $this->getMutable();
         $_this->Then     = $callback;
@@ -175,9 +171,8 @@ class Pipeline extends FluentInterface implements IPipeline
 
     final public function unless(callable $filter, ...$args)
     {
-        if ($this->Unless)
-        {
-            throw new RuntimeException(static::class . "::unless() has already been applied");
+        if ($this->Unless) {
+            throw new RuntimeException(static::class . '::unless() has already been applied');
         }
         $_this             = $this->getMutable();
         $_this->Unless     = $filter;
@@ -188,18 +183,16 @@ class Pipeline extends FluentInterface implements IPipeline
 
     final public function run()
     {
-        if ($this->Stream)
-        {
-            throw new RuntimeException(static::class . "::run() cannot be called after " . static::class . "::stream()");
+        if ($this->Stream) {
+            throw new RuntimeException(static::class . '::run() cannot be called after ' . static::class . '::stream()');
         }
 
         $result = ($this->getClosure())($this->After
             ? $this->After($this->Payload, $this, ...$this->AfterArgs, ...$this->Args)
             : $this->Payload);
 
-        if ($this->Unless && ($this->Unless)($result, $this, ...$this->UnlessArgs, ...$this->Args) !== true)
-        {
-            throw new PipelineException("Result rejected by filter");
+        if ($this->Unless && ($this->Unless)($result, $this, ...$this->UnlessArgs, ...$this->Args) !== true) {
+            throw new PipelineException('Result rejected by filter');
         }
 
         return $result;
@@ -207,20 +200,17 @@ class Pipeline extends FluentInterface implements IPipeline
 
     final public function start(): iterable
     {
-        if (!$this->Stream)
-        {
-            throw new RuntimeException(static::class . "::stream() must be called before " . static::class . "::start()");
+        if (!$this->Stream) {
+            throw new RuntimeException(static::class . '::stream() must be called before ' . static::class . '::start()');
         }
 
         $closure = $this->getClosure();
-        foreach ($this->Payload as $payload)
-        {
+        foreach ($this->Payload as $payload) {
             $result = ($closure)($this->After
                 ? $this->After($payload, $this, ...$this->AfterArgs, ...$this->Args)
                 : $payload);
 
-            if ($this->Unless && ($this->Unless)($result, $this, ...$this->UnlessArgs, ...$this->Args) !== true)
-            {
+            if ($this->Unless && ($this->Unless)($result, $this, ...$this->UnlessArgs, ...$this->Args) !== true) {
                 continue;
             }
 
@@ -242,8 +232,7 @@ class Pipeline extends FluentInterface implements IPipeline
      */
     final public function go()
     {
-        if ($this->Stream)
-        {
+        if ($this->Stream) {
             return $this->start();
         }
 
@@ -259,33 +248,24 @@ class Pipeline extends FluentInterface implements IPipeline
     {
         return array_reduce(
             array_reverse($this->Pipes),
-            function (Closure $next, $pipe): Closure
-            {
-                if (is_callable($pipe))
-                {
+            function (Closure $next, $pipe): Closure {
+                if (is_callable($pipe)) {
                     $closure = fn($payload) => $pipe($payload, $next, $this, ...$this->Args);
-                }
-                else
-                {
-                    if (is_string($pipe))
-                    {
+                } else {
+                    if (is_string($pipe)) {
                         $container = $this->Container ?: Container::maybeGetGlobalContainer();
                         $pipe      = $container ? $container->get($pipe) : new $pipe();
                     }
-                    if (!($pipe instanceof IPipe))
-                    {
-                        throw new UnexpectedValueException("Pipe does not implement " . IPipe::class);
+                    if (!($pipe instanceof IPipe)) {
+                        throw new UnexpectedValueException('Pipe does not implement ' . IPipe::class);
                     }
                     $closure = fn($payload) => $pipe->handle($payload, $next, $this, ...$this->Args);
                 }
-                return function ($payload) use ($closure)
-                {
-                    try
-                    {
+
+                return function ($payload) use ($closure) {
+                    try {
                         return $closure($payload);
-                    }
-                    catch (Throwable $ex)
-                    {
+                    } catch (Throwable $ex) {
                         return $this->handleException($payload, $ex);
                     }
                 };
@@ -297,12 +277,10 @@ class Pipeline extends FluentInterface implements IPipeline
     final protected function toImmutable(): PipelineImmutable
     {
         $immutable = new PipelineImmutable();
-        foreach ($this as $property => $value)
-        {
+        foreach ($this as $property => $value) {
             $immutable->$property = $value;
         }
 
         return $immutable;
     }
-
 }

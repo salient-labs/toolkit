@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
@@ -24,8 +22,7 @@ trait HasParent
 
     private static function getHierarchyProperties()
     {
-        if (is_null(self::$_HierarchyProperties))
-        {
+        if (is_null(self::$_HierarchyProperties)) {
             // Subclasses can't override these properties, hence `self::`
             // instead of `static::`
             return self::$_HierarchyProperties = [self::getParentProperty(), self::getChildrenProperty()];
@@ -43,13 +40,11 @@ trait HasParent
         [$_parent, $_children] = self::getHierarchyProperties();
 
         if ($parent === $this->{$_parent} &&
-            (is_null($parent) || in_array($this, $parent->{$_children} ?: [], true)))
-        {
+                (is_null($parent) || in_array($this, $parent->{$_children} ?: [], true))) {
             return $this;
         }
 
-        if (!is_null($this->{$_parent}))
-        {
+        if (!is_null($this->{$_parent})) {
             $this->{$_parent}->{$_children} = array_values(array_filter(
                 $this->{$_parent}->{$_children},
                 fn($child) => $child !== $this
@@ -58,9 +53,8 @@ trait HasParent
 
         $this->{$_parent} = $parent;
 
-        if (!is_null($parent))
-        {
-            $this->{$_parent}->{$_children} [] = $this;
+        if (!is_null($parent)) {
+            $this->{$_parent}->{$_children}[] = $this;
         }
 
         return $this;
@@ -74,8 +68,7 @@ trait HasParent
     {
         [$_parent] = self::getHierarchyProperties();
 
-        if ($child->{$_parent} !== $this)
-        {
+        if ($child->{$_parent} !== $this) {
             throw new UnexpectedValueException("\$child->{$_parent} is not \$this");
         }
 
@@ -90,13 +83,11 @@ trait HasParent
 
         $depth  = 0;
         $parent = $this->{$_parent};
-        while (!is_null($parent))
-        {
+        while (!is_null($parent)) {
             $depth++;
             $parent = $parent->{$_parent};
         }
 
         return $depth;
     }
-
 }

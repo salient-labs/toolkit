@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -137,7 +135,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
 
     public function getCode(): string
     {
-        return ConsoleLevel::toCode($this->Level, 2) . sprintf("-%04d", $this->ErrorType);
+        return ConsoleLevel::toCode($this->Level, 2) . sprintf('-%04d', $this->ErrorType);
     }
 
     /**
@@ -147,15 +145,12 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
     {
         $args = [
             $this->Level,
-            "[" . SyncErrorType::toName($this->ErrorType) . "]",
+            '[' . SyncErrorType::toName($this->ErrorType) . ']',
             sprintf($this->Message, ...Convert::toScalarArray($this->Values)),
         ];
-        if ($once)
-        {
+        if ($once) {
             Console::messageOnce(...$args);
-        }
-        else
-        {
+        } else {
             Console::message(...$args);
         }
 
@@ -178,5 +173,4 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
     {
         return SyncErrorBuilder::resolve($object);
     }
-
 }

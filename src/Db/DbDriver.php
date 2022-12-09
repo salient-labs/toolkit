@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Db;
 
@@ -34,10 +32,10 @@ final class DbDriver extends ConvertibleEnumeration
     public const SQLITE = 3;
 
     private const ADODB_MAP = [
-        self::DB2    => "db2",
-        self::MSSQL  => "mssqlnative",
-        self::MYSQL  => "mysqli",
-        self::SQLITE => "sqlite3",
+        self::DB2    => 'db2',
+        self::MSSQL  => 'mssqlnative',
+        self::MYSQL  => 'mysqli',
+        self::SQLITE => 'sqlite3',
     ];
 
     /**
@@ -45,10 +43,10 @@ final class DbDriver extends ConvertibleEnumeration
      */
     public static function toAdodbDriver(int $driver): string
     {
-        if (is_null($adodbDriver = self::ADODB_MAP[$driver] ?? null))
-        {
+        if (is_null($adodbDriver = self::ADODB_MAP[$driver] ?? null)) {
             throw new UnexpectedValueException("Invalid DbDriver: $driver");
         }
+
         return $adodbDriver;
     }
 }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Provider;
 
@@ -33,7 +31,7 @@ use Lkrms\Tests\Sync\Entity\User;
  */
 class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserProvider, IServiceSingleton
 {
-    private const JSON_PLACEHOLDER_BASE_URL = "https://jsonplaceholder.typicode.com";
+    private const JSON_PLACEHOLDER_BASE_URL = 'https://jsonplaceholder.typicode.com';
 
     protected function getBaseUrl(?string $path): string
     {
@@ -70,16 +68,15 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 
     protected function getHttpDefinition(string $entity, HttpSyncDefinitionBuilder $define)
     {
-        switch ($entity)
-        {
+        switch ($entity) {
             case Post::class:
                 return $define->operations([OP::READ, OP::READ_LIST])
-                    ->path("/posts")
+                    ->path('/posts')
                     ->filterPolicy(SyncFilterPolicy::IGNORE);
 
             case User::class:
                 return $define->operations([OP::READ, OP::READ_LIST])
-                    ->path("/users")
+                    ->path('/users')
                     ->filterPolicy(SyncFilterPolicy::IGNORE);
         }
 
@@ -88,12 +85,11 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
 
     public function getPosts(SyncContext $ctx): iterable
     {
-        $filter   = $ctx->getFilter();
-        if ($user = $filter["user"] ?? null)
-        {
+        $filter = $ctx->getFilter();
+        if ($user = $filter['user'] ?? null) {
             return Post::provideList($this->getCurler("/users/$user/posts")->get(), $this, ArrayKeyConformity::NONE, $ctx);
         }
-        return Post::provideList($this->getCurler("/posts")->get(), $this, ArrayKeyConformity::NONE, $ctx);
-    }
 
+        return Post::provideList($this->getCurler('/posts')->get(), $this, ArrayKeyConformity::NONE, $ctx);
+    }
 }

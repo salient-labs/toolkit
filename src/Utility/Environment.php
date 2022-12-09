@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
@@ -38,42 +36,31 @@ final class Environment
      */
     public function loadFile(string $filename, bool $apply = true): void
     {
-        if (($lines = file($filename, FILE_IGNORE_NEW_LINES)) === false)
-        {
+        if (($lines = file($filename, FILE_IGNORE_NEW_LINES)) === false) {
             throw new RuntimeException("Could not open $filename");
         }
 
         $queue = [];
-        foreach ($lines as $i => $line)
-        {
+        foreach ($lines as $i => $line) {
             $l = $i + 1;
 
-            if (!trim($line) || substr($line, 0, 1) == "#")
-            {
+            if (!trim($line) || substr($line, 0, 1) == '#') {
                 continue;
-            }
-            elseif (!preg_match("/^([A-Z_][A-Z0-9_]*)=(\"(([^\"\$`]|\\\\[\"\$`])*)\"|'(([^']|'\\\\'')*)'|[^]\"\$'*?`\\s[]*)\$/i", $line, $match))
-            {
+            } elseif (!preg_match('/^([A-Z_][A-Z0-9_]*)=("(([^"$`]|\\\\["$`])*)"|\'(([^\']|\'\\\\\'\')*)\'|[^]"$\'*?`\s[]*)$/i', $line, $match)) {
                 throw new UnexpectedValueException("Invalid entry at line $l in $filename");
             }
 
             $name = $match[1];
 
-            if (getenv($name) !== false || array_key_exists($name, $_ENV) || array_key_exists($name, $_SERVER))
-            {
+            if (getenv($name) !== false || array_key_exists($name, $_ENV) || array_key_exists($name, $_SERVER)) {
                 continue;
             }
 
-            if ($match[3] ?? null)
-            {
-                $value = preg_replace("/\\\\([\"\$\\`])/", "\\1", $match[3]);
-            }
-            elseif ($match[5] ?? null)
-            {
+            if ($match[3] ?? null) {
+                $value = preg_replace('/\\\\(["$\`])/', '\1', $match[3]);
+            } elseif ($match[5] ?? null) {
                 $value = str_replace("'\\''", "'", $match[5]);
-            }
-            else
-            {
+            } else {
                 $value = $match[2];
             }
 
@@ -82,8 +69,7 @@ final class Environment
 
         array_walk($queue, fn($value, $name) => $this->set($name, $value));
 
-        if ($apply)
-        {
+        if ($apply) {
             $this->apply();
         }
     }
@@ -96,16 +82,12 @@ final class Environment
      */
     public function apply(): void
     {
-        if ($tz = preg_replace("/^:?(.*\/zoneinfo\/)?/", "", $this->get("TZ", "")))
-        {
-            try
-            {
+        if ($tz = preg_replace('/^:?(.*\/zoneinfo\/)?/', '', $this->get('TZ', ''))) {
+            try {
                 $timezone = new DateTimeZone($tz);
                 date_default_timezone_set($timezone->getName());
-            }
-            catch (Throwable $ex)
-            {
-                Console::debug("Not a valid timezone:", $tz, $ex);
+            } catch (Throwable $ex) {
+                Console::debug('Not a valid timezone:', $tz, $ex);
             }
         }
     }
@@ -120,7 +102,7 @@ final class Environment
      */
     public function set(string $name, string $value): void
     {
-        putenv($name . "=" . $value);
+        putenv($name . '=' . $value);
         $_ENV[$name]    = $value;
         $_SERVER[$name] = $value;
     }
@@ -178,14 +160,10 @@ final class Environment
     {
         $value = $this->_get($name);
 
-        if ($value === false)
-        {
-            if (func_num_args() < 2)
-            {
+        if ($value === false) {
+            if (func_num_args() < 2) {
                 throw new RuntimeException("Environment variable $name is not set");
-            }
-            else
-            {
+            } else {
                 return $default;
             }
         }
@@ -207,16 +185,14 @@ final class Environment
      */
     public function getInt(string $name, int $default = null): ?int
     {
-        if (func_num_args() < 2)
-        {
+        if (func_num_args() < 2) {
             $value = $this->get($name);
-        }
-        else
-        {
+        } else {
             // Passes "" if `$default` is `null`, "0" if `$default` is `0`
-            $value = $this->get($name, (string)$default);
+            $value = $this->get($name, (string) $default);
         }
-        return ($value === "") ? null : (int)$value;
+
+        return ($value === '') ? null : (int) $value;
     }
 
     /**
@@ -231,23 +207,18 @@ final class Environment
      * @throws RuntimeException if `$name` is not set and no `$default` is
      * given.
      */
-    public function getList(string $name, array $default = null, string $delimiter = ","): ?array
+    public function getList(string $name, array $default = null, string $delimiter = ','): ?array
     {
-        if (!$delimiter)
-        {
-            throw new UnexpectedValueException("Invalid delimiter");
+        if (!$delimiter) {
+            throw new UnexpectedValueException('Invalid delimiter');
         }
 
-        if (func_num_args() < 2)
-        {
+        if (func_num_args() < 2) {
             $value = $this->get($name);
-        }
-        else
-        {
+        } else {
             $value = $this->get($name, null);
 
-            if (is_null($value))
-            {
+            if (is_null($value)) {
                 return $default;
             }
         }
@@ -257,19 +228,15 @@ final class Environment
 
     private function getOrSetBool(string $name, bool $newState = null): bool
     {
-        if (func_num_args() > 1 && !is_null($newState))
-        {
-            if ($newState)
-            {
-                $this->set($name, "1");
-            }
-            else
-            {
+        if (func_num_args() > 1 && !is_null($newState)) {
+            if ($newState) {
+                $this->set($name, '1');
+            } else {
                 $this->unset($name);
             }
         }
 
-        return (bool)$this->get($name, "");
+        return (bool) $this->get($name, '');
     }
 
     /**
@@ -283,7 +250,7 @@ final class Environment
      */
     public function dryRun(bool $newState = null): bool
     {
-        return $this->getOrSetBool("DRY_RUN", ...func_get_args());
+        return $this->getOrSetBool('DRY_RUN', ...func_get_args());
     }
 
     /**
@@ -297,6 +264,6 @@ final class Environment
      */
     public function debug(bool $newState = null): bool
     {
-        return $this->getOrSetBool("DEBUG", ...func_get_args());
+        return $this->getOrSetBool('DEBUG', ...func_get_args());
     }
 }
