@@ -6,10 +6,9 @@ namespace Lkrms\Concern;
 
 use Lkrms\Concern\HasItems;
 use ReturnTypeWillChange;
-use RuntimeException;
 
 /**
- * Implements ICollection to provide simple array-like collection objects
+ * Implements ICollection to provide array-like objects
  *
  * @see \Lkrms\Contract\ICollection
  * @see \Lkrms\Concept\TypedCollection
@@ -24,12 +23,97 @@ trait TCollection
     use HasItems;
 
     /**
+     * @return $this
+     * @psalm-param callable(T) $callback
+     */
+    final public function forEach(callable $callback)
+    {
+        foreach ($this->_Items as $item)
+        {
+            $callback($item);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return static
+     * @psalm-param callable(T): bool $callback
+     */
+    final public function filter(callable $callback)
+    {
+        $clone         = clone $this;
+        $clone->_Items = [];
+        foreach ($this->_Items as $item)
+        {
+            if ($callback($item))
+            {
+                $clone->_Items[] = $item;
+            }
+        }
+
+        return $clone;
+    }
+
+    /**
+     * @return mixed|false
+     * @psalm-param callable(T): bool $callback
+     * @psalm-return T|false
+     */
+    final public function find(callable $callback)
+    {
+        foreach ($this->_Items as $item)
+        {
+            if ($callback($item))
+            {
+                return $item;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @psalm-param T $item
+     */
+    final public function has($item, bool $strict = false): bool
+    {
+        return in_array($item, $this->_Items, $strict);
+    }
+
+    /**
+     * @return int|string|false
+     * @psalm-param T $item
+     */
+    final public function keyOf($item, bool $strict = false)
+    {
+        return array_search($item, $this->_Items, $strict);
+    }
+
+    /**
+     * @return mixed|false
+     * @psalm-param T $item
+     * @psalm-return T|false
+     */
+    final public function get($item)
+    {
+        if (($key = array_search($item, $this->_Items)) === false)
+        {
+            return false;
+        }
+
+        return $this->_Items[$key];
+    }
+
+    /**
      * @return mixed[]
      * @psalm-return T[]
      */
-    final public function toArray(): array
+    final public function toArray(bool $preserveKeys = true): array
     {
-        return array_values($this->_Items);
+        return $preserveKeys
+            ? $this->_Items
+            : array_values($this->_Items);
     }
 
     /**
@@ -50,16 +134,6 @@ trait TCollection
     {
         $copy = $this->_Items;
         return end($copy);
-    }
-
-    /**
-     * Return true if an item is in the collection
-     *
-     * @psalm-param T $item
-     */
-    final public function has($item, bool $strict = false): bool
-    {
-        return in_array($item, $this->_Items, $strict);
     }
 
     // Implementation of `Iterator`:
@@ -124,11 +198,12 @@ trait TCollection
      */
     final public function offsetSet($offset, $value): void
     {
-        if (!is_null($offset))
+        if (is_null($offset))
         {
-            throw new RuntimeException("Items cannot be added by key");
+            $this->_Items[] = $value;
+            return;
         }
-        $this->_Items[] = $value;
+        $this->_Items[$offset] = $value;
     }
 
     /**
