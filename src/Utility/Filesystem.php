@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
@@ -24,17 +22,14 @@ final class Filesystem
      */
     public function getEol(string $filename)
     {
-        if (($handle = fopen($filename, "r")) === false ||
-            ($line   = fgets($handle)) === false ||
-            fclose($handle) === false)
-        {
+        if (($handle = fopen($filename, 'r')) === false ||
+                ($line = fgets($handle)) === false ||
+                fclose($handle) === false) {
             return false;
         }
 
-        foreach (["\r\n", "\n"] as $eol)
-        {
-            if (substr($line, -strlen($eol)) == $eol)
-            {
+        foreach (["\r\n", "\n"] as $eol) {
+            if (substr($line, -strlen($eol)) == $eol) {
                 return $eol;
             }
         }
@@ -51,17 +46,12 @@ final class Filesystem
      * needs to be created.
      * @return bool `true` on success or `false` on failure.
      */
-    public function maybeCreate(
-        string $filename,
-        int $permissions    = 0777,
-        int $dirPermissions = 0777
-    ): bool
+    public function maybeCreate(string $filename, int $permissions = 0777, int $dirPermissions = 0777): bool
     {
         $dir = dirname($filename);
 
         if ((is_dir($dir) || mkdir($dir, $dirPermissions, true)) &&
-            (is_file($filename) || (touch($filename) && chmod($filename, $permissions))))
-        {
+                (is_file($filename) || (touch($filename) && chmod($filename, $permissions)))) {
             return true;
         }
 
@@ -75,13 +65,9 @@ final class Filesystem
      * @param int $permissions Only used if `$filename` needs to be created.
      * @return bool `true` on success or `false` on failure.
      */
-    public function maybeCreateDirectory(
-        string $filename,
-        int $permissions = 0777
-    ): bool
+    public function maybeCreateDirectory(string $filename, int $permissions = 0777): bool
     {
-        if (is_dir($filename) || mkdir($filename, $permissions, true))
-        {
+        if (is_dir($filename) || mkdir($filename, $permissions, true)) {
             return true;
         }
 
@@ -95,8 +81,7 @@ final class Filesystem
      */
     public function maybeDelete(string $filename): bool
     {
-        if (!is_file($filename))
-        {
+        if (!is_file($filename)) {
             return true;
         }
 
@@ -112,9 +97,8 @@ final class Filesystem
      */
     public function getStreamUri($stream): ?string
     {
-        if (is_resource($stream) && get_resource_type($stream) == "stream")
-        {
-            return stream_get_meta_data($stream)["uri"];
+        if (is_resource($stream) && get_resource_type($stream) == 'stream') {
+            return stream_get_meta_data($stream)['uri'];
         }
 
         return null;
@@ -132,65 +116,51 @@ final class Filesystem
      * @return string|false|void
      * @throws RuntimeException
      */
-    public function writeCsv(iterable $data, ?string $filename = null, bool $headerRow = true, ?string $nullValue = null, ?int & $count = null, ? callable $callback = null)
+    public function writeCsv(iterable $data, ?string $filename = null, bool $headerRow = true, ?string $nullValue = null, ?int &$count = null, ?callable $callback = null)
     {
-        if (is_null($filename))
-        {
-            $filename = "php://temp";
+        if (is_null($filename)) {
+            $filename = 'php://temp';
             $return   = true;
         }
 
-        if (($f = fopen($filename, "w")) === false)
-        {
+        if (($f = fopen($filename, 'w')) === false) {
             throw new RuntimeException("Could not open $filename");
         }
 
         $count = 0;
-        foreach ($data as $row)
-        {
-            if ($callback)
-            {
+        foreach ($data as $row) {
+            if ($callback) {
                 $row = $callback($row);
             }
 
-            if ($headerRow)
-            {
-                if (fputcsv($f, array_keys($row)) === false)
-                {
+            if ($headerRow) {
+                if (fputcsv($f, array_keys($row)) === false) {
                     throw new RuntimeException("Could not write to $filename");
                 }
                 $headerRow = false;
             }
 
-            foreach ($row as &$value)
-            {
-                if (is_null($value))
-                {
+            foreach ($row as &$value) {
+                if (is_null($value)) {
                     $value = $nullValue;
-                }
-                elseif (!is_scalar($value))
-                {
+                } elseif (!is_scalar($value)) {
                     $value = json_encode($value);
                 }
             }
 
-            if (fputcsv($f, $row) === false)
-            {
+            if (fputcsv($f, $row) === false) {
                 throw new RuntimeException("Could not write to $filename");
             }
             $count++;
         }
 
-        if ($return ?? false)
-        {
+        if ($return ?? false) {
             rewind($f);
             $csv = stream_get_contents($f);
             fclose($f);
 
             return $csv;
-        }
-        else
-        {
+        } else {
             fclose($f);
         }
     }
@@ -204,7 +174,7 @@ final class Filesystem
      * @param string|null $dir If null, `sys_get_temp_dir()` is used.
      * @return string
      */
-    public function getStablePath(string $suffix = ".log", string $dir = null)
+    public function getStablePath(string $suffix = '.log', string $dir = null)
     {
         $program  = Sys::getProgramName();
         $basename = basename($program);
@@ -213,8 +183,7 @@ final class Filesystem
 
         return (is_null($dir)
             ? realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR
-            : ($dir ? rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : ""))
-        . "$basename-$hash-$euid$suffix";
+            : ($dir ? rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : ''))
+            . "$basename-$hash-$euid$suffix";
     }
-
 }

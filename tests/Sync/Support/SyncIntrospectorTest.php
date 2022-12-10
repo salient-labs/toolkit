@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Support;
 
@@ -37,18 +35,16 @@ final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase
         $providerIntrospector = SyncIntrospector::getBound($container, PostProvider::class);
 
         $this->assertEquals(null, $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::READ, $entityIntrospector, $provider)));
-        $this->assertEquals("getPosts", $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::READ_LIST, $entityIntrospector, $provider)));
+        $this->assertEquals('getPosts', $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::READ_LIST, $entityIntrospector, $provider)));
         $this->assertEquals(null, $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::CREATE, $entityIntrospector, $provider)));
     }
 
     private function getMethodVar(?Closure $closure): ?string
     {
-        if (!$closure)
-        {
+        if (!$closure) {
             return null;
         }
 
-        return (new ReflectionFunction($closure))->getStaticVariables()["method"];
+        return (new ReflectionFunction($closure))->getStaticVariables()['method'];
     }
-
 }

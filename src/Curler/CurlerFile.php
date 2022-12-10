@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler;
 
@@ -24,13 +22,9 @@ final class CurlerFile
      * @param string $postFilename Filename to use in upload data (default: `basename($filename)`).
      * @param string $mimeType Default: `mime_content_type($filename)`
      */
-    public function __construct(
-        string $filename,
-        string $postFilename = null,
-        string $mimeType     = null
-    ) {
-        if (!is_file($filename) || ($filename = realpath($filename)) === false)
-        {
+    public function __construct(string $filename, string $postFilename = null, string $mimeType = null)
+    {
+        if (!is_file($filename) || ($filename = realpath($filename)) === false) {
             throw new RuntimeException("File not found: $filename");
         }
 

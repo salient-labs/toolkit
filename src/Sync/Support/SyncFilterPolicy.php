@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -48,5 +46,4 @@ final class SyncFilterPolicy extends Enumeration
      * caller.
      */
     public const FILTER_LOCALLY = 3;
-
 }

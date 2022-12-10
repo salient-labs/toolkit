@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Support;
 
@@ -18,13 +16,12 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         $in  = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
         foreach ((new Pipeline())
-            ->stream($in)
-            ->through(
+                ->stream($in)
+                ->through(
                 fn($payload, Closure $next) => $next($payload * 3),
                 fn($payload, Closure $next) => $next($payload / 23),
                 fn($payload, Closure $next) => $next(round($payload, 3)),
-            )->start() as $_out)
-        {
+            )->start() as $_out) {
             $out[] = $_out;
         }
 
@@ -39,14 +36,13 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         $in  = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
         foreach ((new Pipeline())
-            ->stream($in)
-            ->through(
+                ->stream($in)
+                ->through(
                 fn($payload, Closure $next) => $payload % 2 ? null : $next($payload * 3),
                 fn($payload, Closure $next) => $next($payload / 23),
                 fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null,
             )->unless(fn($result) => !is_null($result))
-            ->start() as $_out)
-        {
+            ->start() as $_out) {
             $out[] = $_out;
         }
 
@@ -70,89 +66,82 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
     {
         $in = [
             [
-                "USER_ID"   => 32,
-                "FULL_NAME" => "Greta",
-                "MAIL"      => "greta@domain.test",
+                'USER_ID'   => 32,
+                'FULL_NAME' => 'Greta',
+                'MAIL'      => 'greta@domain.test',
             ],
             [
-                "FULL_NAME" => "Amir",
-                "MAIL"      => "amir@domain.test",
-                "URI"       => "https://domain.test/~amir",
+                'FULL_NAME' => 'Amir',
+                'MAIL'      => 'amir@domain.test',
+                'URI'       => 'https://domain.test/~amir',
             ],
             [
-                "USER_ID"   => 71,
-                "FULL_NAME" => "Terry",
-                "MAIL"      => null,
+                'USER_ID'   => 71,
+                'FULL_NAME' => 'Terry',
+                'MAIL'      => null,
             ],
         ];
         $map = [
-            "USER_ID"   => "Id",
-            "FULL_NAME" => "Name",
-            "MAIL"      => "Email",
+            'USER_ID'   => 'Id',
+            'FULL_NAME' => 'Name',
+            'MAIL'      => 'Email',
         ];
         $out = [];
 
         $pipeline = Pipeline::create()->withConformity(ArrayKeyConformity::NONE)->throughKeyMap($map, 0);
-        foreach ($in as $_in)
-        {
+        foreach ($in as $_in) {
             $out[] = $pipeline->send($_in)->run();
         }
 
         $pipeline = Pipeline::create()->withConformity(ArrayKeyConformity::NONE)->throughKeyMap($map, ArrayMapperFlag::ADD_MISSING);
-        foreach ($in as $_in)
-        {
+        foreach ($in as $_in) {
             $out[] = $pipeline->send($_in)->run();
         }
 
         $pipeline = Pipeline::create()->withConformity(ArrayKeyConformity::NONE)->throughKeyMap($map, ArrayMapperFlag::ADD_UNMAPPED);
-        foreach ($in as $_in)
-        {
+        foreach ($in as $_in) {
             $out[] = $pipeline->send($_in)->run();
         }
 
         $pipeline = Pipeline::create()->withConformity(ArrayKeyConformity::NONE)->throughKeyMap($map, ArrayMapperFlag::REMOVE_NULL);
-        foreach ($in as $_in)
-        {
+        foreach ($in as $_in) {
             $out[] = $pipeline->send($_in)->run();
         }
 
         $pipeline = Pipeline::create()->withConformity(ArrayKeyConformity::NONE)->throughKeyMap($map, ArrayMapperFlag::ADD_MISSING | ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::REMOVE_NULL);
-        foreach ($in as $_in)
-        {
+        foreach ($in as $_in) {
             $out[] = $pipeline->send($_in)->run();
         }
 
         $mapToMultiple = [
-            "USER_ID"   => "Id",
-            "FULL_NAME" => "Name",
-            "MAIL"      => ["Email", "UPN"],
+            'USER_ID'   => 'Id',
+            'FULL_NAME' => 'Name',
+            'MAIL'      => ['Email', 'UPN'],
         ];
         $pipeline = Pipeline::create()->withConformity(ArrayKeyConformity::NONE)->throughKeyMap($mapToMultiple, ArrayMapperFlag::ADD_MISSING);
-        foreach ($in as $_in)
-        {
+        foreach ($in as $_in) {
             $out[] = $pipeline->send($_in)->run();
         }
 
         $compliantIn = [
             [
-                "USER_ID"   => 32,
-                "FULL_NAME" => "Greta",
-                "MAIL"      => "greta@domain.test",
+                'USER_ID'   => 32,
+                'FULL_NAME' => 'Greta',
+                'MAIL'      => 'greta@domain.test',
             ],
             [
-                "USER_ID"   => 53,
-                "FULL_NAME" => "Amir",
-                "MAIL"      => "amir@domain.test",
+                'USER_ID'   => 53,
+                'FULL_NAME' => 'Amir',
+                'MAIL'      => 'amir@domain.test',
             ],
             [
-                "USER_ID"   => 71,
-                "FULL_NAME" => "Terry",
-                "MAIL"      => null,
+                'USER_ID'   => 71,
+                'FULL_NAME' => 'Terry',
+                'MAIL'      => null,
             ],
         ];
         $pipeline = Pipeline::create()->withConformity(ArrayKeyConformity::COMPLETE)->throughKeyMap($map, 0);
-        foreach ($compliantIn as $_in)
-        {
+        foreach ($compliantIn as $_in) {
             $out[] = $pipeline->send($_in)->run();
         }
 
@@ -188,8 +177,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
 
         $pipeline = Pipeline::create()->withConformity(ArrayKeyConformity::NONE)->throughKeyMap($map, ArrayMapperFlag::REQUIRE_MAPPED);
         $this->expectException(UnexpectedValueException::class);
-        foreach ($in as $_in)
-        {
+        foreach ($in as $_in) {
             $pipeline->send($_in)->run();
         }
     }

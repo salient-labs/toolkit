@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Console\Concept;
 
@@ -47,8 +45,8 @@ abstract class ConsoleTarget
     final public function write(int $level, string $message, array $context)
     {
         $this->writeToTarget($level, $this->Prefix
-            ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
-            : $message, $context);
+                ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
+                : $message, $context);
     }
 
     final public function setPrefix(?string $prefix)
@@ -75,15 +73,13 @@ abstract class ConsoleTarget
 
     protected function createMessageFormat(int $level): ConsoleMessageFormat
     {
-        if (!$this->isTty())
-        {
+        if (!$this->isTty()) {
             $fmt = new ConsoleFormat();
 
             return new ConsoleMessageFormat($fmt, $fmt, $fmt);
         }
 
-        switch ($level)
-        {
+        switch ($level) {
             case Level::DEBUG:
                 return new ConsoleMessageFormat(
                     new ConsoleFormat(Colour::DIM, Colour::UNDIM),
@@ -124,13 +120,11 @@ abstract class ConsoleTarget
 
     protected function createTagFormat(int $tag): ConsoleFormat
     {
-        if (!$this->isTty())
-        {
+        if (!$this->isTty()) {
             return new ConsoleFormat();
         }
 
-        switch ($tag)
-        {
+        switch ($tag) {
             case Tag::HEADING:
                 return new ConsoleFormat(Colour::BOLD . Colour::CYAN, Colour::DEFAULT . Colour::UNBOLD);
             case Tag::SUBHEADING:

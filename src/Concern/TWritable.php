@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
@@ -29,11 +27,11 @@ trait TWritable
 
     final public function __set(string $name, $value): void
     {
-        $this->setProperty("set", $name, $value);
+        $this->setProperty('set', $name, $value);
     }
 
     final public function __unset(string $name): void
     {
-        $this->setProperty("unset", $name);
+        $this->setProperty('unset', $name);
     }
 }

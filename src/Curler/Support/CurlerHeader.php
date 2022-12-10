@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler\Support;
 
@@ -56,5 +54,4 @@ final class CurlerHeader implements IReadable, IImmutable
     {
         return "{$this->Name}:{$this->Value}";
     }
-
 }

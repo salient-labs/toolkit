@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Err;
 
@@ -12,8 +10,7 @@ class CliHandler extends PlainTextHandler
 {
     public function handle()
     {
-        if ($this->getLogger())
-        {
+        if ($this->getLogger()) {
             $this->loggerOnly(true);
             parent::handle();
         }

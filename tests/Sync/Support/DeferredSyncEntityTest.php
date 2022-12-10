@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync\Support;
 
@@ -29,15 +27,12 @@ final class DeferredSyncEntityTest extends \Lkrms\Tests\TestCase
         $this->assertCount(3, $list);
         $this->assertContainsOnlyInstancesOf(DeferredSyncEntity::class, $list);
 
-        foreach ($list as $deferred)
-        {
+        foreach ($list as $deferred) {
             $deferred->replace(Post::construct(['id' => $deferred->Deferred], $container));
         }
 
         $this->assertIsArray($list);
         $this->assertCount(3, $list);
         $this->assertContainsOnlyInstancesOf(Post::class, $list);
-
     }
-
 }

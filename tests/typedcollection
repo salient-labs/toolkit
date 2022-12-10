@@ -8,8 +8,8 @@ use Lkrms\Err\Err;
 use RuntimeException;
 use Throwable;
 
-$loader = require (__DIR__ . "/../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();
 
@@ -41,43 +41,36 @@ class EntityCollection extends TypedCollection
 
 $collection = new EntityCollection();
 
-$collection[] = new Entity("delta");
-$collection[] = new Entity("november");
-$collection[] = new Entity("charlie");
+$collection[] = new Entity('delta');
+$collection[] = new Entity('november');
+$collection[] = new Entity('charlie');
 
-try
-{
+try {
     // @phpstan-ignore-next-line
-    $collection["f"] = new Entity("foxtrot");
-    throw new RuntimeException("ERROR: added an item to a collection by key!");
-}
-catch (Throwable $ex)
-{
+    $collection['f'] = new Entity('foxtrot');
+    throw new RuntimeException('ERROR: added an item to a collection by key!');
+} catch (Throwable $ex) {
     $exceptions[] = $ex;
 }
 
-try
-{
+try {
     // @phpstan-ignore-next-line
-    $collection[] = "romeo";
-    throw new RuntimeException("ERROR: added a string to an EntityCollection!");
-}
-catch (Throwable $ex)
-{
+    $collection[] = 'romeo';
+    throw new RuntimeException('ERROR: added a string to an EntityCollection!');
+} catch (Throwable $ex) {
     $exceptions[] = $ex;
 }
 
 $sorted = $collection->sort();
 
 print_r([
-    '$collection' => $collection,
+    '$collection'             => $collection,
     '$sorted (longest first)' => $sorted,
-    '$exceptions' => $exceptions,
+    '$exceptions'             => $exceptions,
 ]);
 
-echo "\nKey is now: " . $collection->key() . "\n\n";
-foreach ($collection as $key => $value)
-{
+echo"\nKey is now: " . $collection->key() . "\n\n";
+foreach ($collection as $key => $value) {
     printf("[%s]->Name => %s\n", $key, $value->Name);
-    echo " -> Key is now: " . $collection->key() . "\n\n";
+    echo' -> Key is now: ' . $collection->key() . "\n\n";
 }

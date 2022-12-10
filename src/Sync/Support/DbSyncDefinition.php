@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -61,34 +59,29 @@ class DbSyncDefinition extends SyncDefinition implements HasBuilder
 
     public function getSyncOperationClosure(int $operation): ?Closure
     {
-        if (array_key_exists($operation, $this->Closures))
-        {
+        if (array_key_exists($operation, $this->Closures)) {
             return $this->Closures[$operation];
         }
 
         // Overrides take precedence over everything else, including declared
         // methods
-        if (array_key_exists($operation, $this->Overrides))
-        {
+        if (array_key_exists($operation, $this->Overrides)) {
             return $this->Closures[$operation] = $this->Overrides[$operation];
         }
 
         // If a method has been declared for this operation, use it, even if
         // it's not in $this->Operations
-        if ($closure = $this->ProviderIntrospector->getDeclaredSyncOperationClosure($operation, $this->EntityIntrospector, $this->Provider))
-        {
+        if ($closure = $this->ProviderIntrospector->getDeclaredSyncOperationClosure($operation, $this->EntityIntrospector, $this->Provider)) {
             return $this->Closures[$operation] = $closure;
         }
 
         // Return null if the operation doesn't appear in $this->Operations, or
         // if no table name has been provided
-        if (!array_key_exists($operation, $this->Operations) || is_null($this->Table))
-        {
+        if (!array_key_exists($operation, $this->Operations) || is_null($this->Table)) {
             return $this->Closures[$operation] = null;
         }
 
-        switch ($operation)
-        {
+        switch ($operation) {
             case SyncOperation::CREATE:
             case SyncOperation::READ:
             case SyncOperation::UPDATE:
@@ -123,5 +116,4 @@ class DbSyncDefinition extends SyncDefinition implements HasBuilder
     {
         return DbSyncDefinitionBuilder::resolve($object);
     }
-
 }

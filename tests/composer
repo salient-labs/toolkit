@@ -6,16 +6,16 @@ namespace Lkrms\Tests;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Composer;
 
-$loader = require (__DIR__ . "/../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();
 
 print_r([
-    'Composer::getRootPackagePath()'    => Composer::getRootPackagePath(),
-    'Composer::getRootPackageName()'    => Composer::getRootPackageName(),
-    'Composer::getRootPackageVersion()' => Composer::getRootPackageVersion(),
-    'Composer::getPackageVersion()'     => Composer::getPackageVersion(),
-    'Composer::getPackageVersion("phpstan/phpstan")'   => Composer::getPackageVersion("phpstan/phpstan"),
-    'Composer::getPackageVersion("composer/composer")' => Composer::getPackageVersion("composer/composer"),
+    'Composer::getRootPackagePath()'                   => Composer::getRootPackagePath(),
+    'Composer::getRootPackageName()'                   => Composer::getRootPackageName(),
+    'Composer::getRootPackageVersion()'                => Composer::getRootPackageVersion(),
+    'Composer::getPackageVersion()'                    => Composer::getPackageVersion(),
+    'Composer::getPackageVersion("phpstan/phpstan")'   => Composer::getPackageVersion('phpstan/phpstan'),
+    'Composer::getPackageVersion("composer/composer")' => Composer::getPackageVersion('composer/composer'),
 ]);

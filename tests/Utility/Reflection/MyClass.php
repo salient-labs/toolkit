@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Utility\Reflection;
 
@@ -11,7 +9,7 @@ class MyClass extends MyBaseClass implements MyInterface
 {
     use MyTrait;
 
-    public const MY_CONSTANT = "my constant";
+    public const MY_CONSTANT = 'my constant';
 
     public $Id;
 
@@ -23,13 +21,8 @@ class MyClass extends MyBaseClass implements MyInterface
 
     public $AltParent;
 
-    public function __construct(
-        $id,
-        ?int $altId,
-        string $name,
-        ?MyClass $parent,
-        MyClass $altParent = null
-    ) {
+    public function __construct($id, ?int $altId, string $name, ?MyClass $parent, MyClass $altParent = null)
+    {
         $this->Id        = $id;
         $this->AltId     = $altId;
         $this->Name      = $name;
@@ -37,22 +30,7 @@ class MyClass extends MyBaseClass implements MyInterface
         $this->AltParent = $altParent;
     }
 
-    public function MyMethod(
-        $mixed,
-        ?int $nullableInt,
-        string $string,
-        Countable & ArrayAccess $intersection,
-        MyBaseClass $class,
-        ?MyClass $nullableClass,
-        ?MyClass & $nullableClassByRef,
-        ?MyClass $nullableAndOptionalClass = null,
-        string $optionalString  = MyClass::MY_CONSTANT,
-        string | MyClass $union = SELF::MY_CONSTANT,
-        string | MyClass | null $nullableUnion = "literal",
-        array | MyClass $optionalArrayUnion    = ["key" => "value"],
-        string | MyClass | null & $nullableUnionByRef = null,
-        string &...$variadicByRef
-    ): MyClass | string | null
+    public function MyMethod($mixed, ?int $nullableInt, string $string, Countable&ArrayAccess $intersection, MyBaseClass $class, ?MyClass $nullableClass, ?MyClass &$nullableClassByRef, ?MyClass $nullableAndOptionalClass = null, string $optionalString = MyClass::MY_CONSTANT, string|MyClass $union = SELF::MY_CONSTANT, string|MyClass|null $nullableUnion = 'literal', array|MyClass $optionalArrayUnion = ['key' => 'value'], string|MyClass|null &$nullableUnionByRef = null, string&...$variadicByRef): MyClass | string | null
     {
         return null;
     }
@@ -68,5 +46,4 @@ class MyClass extends MyBaseClass implements MyInterface
     public function MyDocumentedMethod()
     {
     }
-
 }

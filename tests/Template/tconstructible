@@ -17,8 +17,8 @@ use Lkrms\Err\Err;
 use Throwable;
 use UnexpectedValueException;
 
-$loader = require (__DIR__ . "/../../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__ . "/..");
+$loader = require (__DIR__ . '/../../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
 
 Err::load();
 
@@ -49,21 +49,21 @@ class B extends A implements IExtensible
 $exceptions = [];
 
 $value1 = [
-    "id"   => 1,
-    "name" => "A",
+    'id'   => 1,
+    'name' => 'A',
 ];
 
 $value2 = [
-    "id"   => 2,
-    "name" => "B",
-    "DATA" => [0, 1, 2],
+    'id'   => 2,
+    'name' => 'B',
+    'DATA' => [0, 1, 2],
 ];
 
 $value3 = [
-    "id"    => 3,
-    "name"  => "C",
-    "DATA"  => [10, 11, 12],
-    "DATA2" => [20, 21, 22],
+    'id'    => 3,
+    'name'  => 'C',
+    'DATA'  => [10, 11, 12],
+    'DATA2' => [20, 21, 22],
 ];
 
 Container::getGlobalContainer();
@@ -73,12 +73,9 @@ $b = B::construct($value2);
 $c = B::construct($value3);
 $d = iterator_to_array(B::constructList([$value1, $value2, $value3]));
 
-try
-{
+try {
     $e = iterator_to_array(A::constructList([$value1, $value2, $value3]));
-}
-catch (UnexpectedValueException $ex)
-{
+} catch (UnexpectedValueException $ex) {
     $exceptions[] = $ex;
 }
 
@@ -96,7 +93,7 @@ print_r([
     'c_set' => $c,
     'a_get' => ['id' => $a_id, 'name' => $a_name],
     'b_get' => ['id' => $b_id, 'name' => $b_name, 'data' => $b_data, 'meta' => $b_meta],
-    'd' => $d,
+    'd'     => $d,
 
     // true
     'b == $d[1]' => $b == $d[1],
@@ -104,5 +101,5 @@ print_r([
     // false
     'b === $d[1]' => $b === $d[1],
 
-    'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
+    'exceptions' => array_map(function (Throwable $ex) {return $ex->getMessage();}, $exceptions),
 ]);

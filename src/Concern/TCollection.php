@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
@@ -28,8 +26,7 @@ trait TCollection
      */
     final public function forEach(callable $callback)
     {
-        foreach ($this->_Items as $item)
-        {
+        foreach ($this->_Items as $item) {
             $callback($item);
         }
 
@@ -44,10 +41,8 @@ trait TCollection
     {
         $clone         = clone $this;
         $clone->_Items = [];
-        foreach ($this->_Items as $item)
-        {
-            if ($callback($item))
-            {
+        foreach ($this->_Items as $item) {
+            if ($callback($item)) {
                 $clone->_Items[] = $item;
             }
         }
@@ -62,10 +57,8 @@ trait TCollection
      */
     final public function find(callable $callback)
     {
-        foreach ($this->_Items as $item)
-        {
-            if ($callback($item))
-            {
+        foreach ($this->_Items as $item) {
+            if ($callback($item)) {
                 return $item;
             }
         }
@@ -97,8 +90,7 @@ trait TCollection
      */
     final public function get($item)
     {
-        if (($key = array_search($item, $this->_Items)) === false)
-        {
+        if (($key = array_search($item, $this->_Items)) === false) {
             return false;
         }
 
@@ -123,6 +115,7 @@ trait TCollection
     final public function first()
     {
         $copy = $this->_Items;
+
         return reset($copy);
     }
 
@@ -133,6 +126,7 @@ trait TCollection
     final public function last()
     {
         $copy = $this->_Items;
+
         return end($copy);
     }
 
@@ -198,9 +192,9 @@ trait TCollection
      */
     final public function offsetSet($offset, $value): void
     {
-        if (is_null($offset))
-        {
+        if (is_null($offset)) {
             $this->_Items[] = $value;
+
             return;
         }
         $this->_Items[$offset] = $value;
@@ -220,5 +214,4 @@ trait TCollection
     {
         return count($this->_Items);
     }
-
 }

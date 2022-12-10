@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -111,28 +109,28 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     protected static function getNameMap(): array
     {
         return [
-            self::CREATE      => "CREATE",
-            self::READ        => "READ",
-            self::UPDATE      => "UPDATE",
-            self::DELETE      => "DELETE",
-            self::CREATE_LIST => "CREATE_LIST",
-            self::READ_LIST   => "READ_LIST",
-            self::UPDATE_LIST => "UPDATE_LIST",
-            self::DELETE_LIST => "DELETE_LIST",
+            self::CREATE      => 'CREATE',
+            self::READ        => 'READ',
+            self::UPDATE      => 'UPDATE',
+            self::DELETE      => 'DELETE',
+            self::CREATE_LIST => 'CREATE_LIST',
+            self::READ_LIST   => 'READ_LIST',
+            self::UPDATE_LIST => 'UPDATE_LIST',
+            self::DELETE_LIST => 'DELETE_LIST',
         ];
     }
 
     protected static function getValueMap(): array
     {
         return [
-            "create"      => self::CREATE,
-            "read"        => self::READ,
-            "update"      => self::UPDATE,
-            "delete"      => self::DELETE,
-            "create_list" => self::CREATE_LIST,
-            "read_list"   => self::READ_LIST,
-            "update_list" => self::UPDATE_LIST,
-            "delete_list" => self::DELETE_LIST,
+            'create'      => self::CREATE,
+            'read'        => self::READ,
+            'update'      => self::UPDATE,
+            'delete'      => self::DELETE,
+            'create_list' => self::CREATE_LIST,
+            'read_list'   => self::READ_LIST,
+            'update_list' => self::UPDATE_LIST,
+            'delete_list' => self::DELETE_LIST,
         ];
     }
 
@@ -175,8 +173,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      */
     public static function isList(int $operation): bool
     {
-        if (is_null($list = self::LIST_MAP[$operation] ?? null))
-        {
+        if (is_null($list = self::LIST_MAP[$operation] ?? null)) {
             throw new UnexpectedValueException("Invalid SyncOperation: $operation");
         }
 

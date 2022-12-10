@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler\Contract;
 
@@ -36,5 +34,4 @@ interface ICurlerPager
      *
      */
     public function getPage($data, Curler $curler, ?ICurlerPage $previous = null): ICurlerPage;
-
 }

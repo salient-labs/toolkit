@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
@@ -39,10 +37,9 @@ trait TExtensible
 
     final public function setMetaProperty(string $name, $value): void
     {
-        $normalised = $this->introspector()->maybeNormalise($name);
+        $normalised                         = $this->introspector()->maybeNormalise($name);
         $this->_MetaProperties[$normalised] = $value;
-        if (!array_key_exists($normalised, $this->_MetaPropertyNames))
-        {
+        if (!array_key_exists($normalised, $this->_MetaPropertyNames)) {
             $this->_MetaPropertyNames[$normalised] = $name;
         }
     }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -14,5 +12,4 @@ use Lkrms\Contract\IPipelineImmutable;
 class PipelineImmutable extends Pipeline implements IPipelineImmutable
 {
     use TImmutable;
-
 }

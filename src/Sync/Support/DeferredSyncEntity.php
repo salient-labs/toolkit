@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -48,7 +46,7 @@ final class DeferredSyncEntity implements IReadable
         $this->Context  = $context;
         $this->Entity   = $entity;
         $this->Deferred = $deferred;
-        $this->Replace  = & $replace;
+        $this->Replace  = &$replace;
         $this->Replace  = $this;
     }
 
@@ -66,8 +64,7 @@ final class DeferredSyncEntity implements IReadable
      */
     public static function defer(ISyncProvider $provider, ISyncContext $context, string $entity, $deferred, &$replace): void
     {
-        if (is_array($deferred))
-        {
+        if (is_array($deferred)) {
             self::deferList($provider, $context, $entity, $deferred, $replace);
 
             return;
@@ -82,8 +79,7 @@ final class DeferredSyncEntity implements IReadable
     public static function deferList(ISyncProvider $provider, ISyncContext $context, string $entity, array $deferredList, &$replace): void
     {
         [$i, $list] = [0, []];
-        foreach ($deferredList as $deferred)
-        {
+        foreach ($deferredList as $deferred) {
             $list[$i] = null;
             new self($provider, $context, $entity, $deferred, $list[$i]);
             $i++;
@@ -91,5 +87,4 @@ final class DeferredSyncEntity implements IReadable
 
         $replace = $list;
     }
-
 }

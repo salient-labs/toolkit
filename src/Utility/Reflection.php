@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
@@ -30,7 +28,7 @@ final class Reflection
      */
     public function getNames(array $reflections): array
     {
-        return array_map(function ($r) { return $r->name; }, $reflections);
+        return array_map(function ($r) {return $r->name;}, $reflections);
     }
 
     /**
@@ -48,22 +46,18 @@ final class Reflection
         $child  = $this->toReflectionClass($child);
         $parent = $this->toReflectionClass($parent);
 
-        if (!is_a($child->name, $parent->name, true) || $parent->isInterface())
-        {
+        if (!is_a($child->name, $parent->name, true) || $parent->isInterface()) {
             throw new UnexpectedValueException("{$child->name} is not a subclass of {$parent->name}");
         }
 
         $names = [];
-        do
-        {
-            if ($child == $parent && !$includeParent)
-            {
+        do {
+            if ($child == $parent && !$includeParent) {
                 break;
             }
 
             $names[] = $child->name;
-        }
-        while ($child != $parent && $child = $child->getParentClass());
+        } while ($child != $parent && $child = $child->getParentClass());
 
         return $names;
     }
@@ -75,8 +69,7 @@ final class Reflection
      */
     public function getBaseClass(ReflectionClass $class): ReflectionClass
     {
-        while ($parent = $class->getParentClass())
-        {
+        while ($parent = $class->getParentClass()) {
             $class = $parent;
         }
 
@@ -90,12 +83,9 @@ final class Reflection
      */
     public function getMethodPrototypeClass(ReflectionMethod $method): ReflectionClass
     {
-        try
-        {
+        try {
             return $method->getPrototype()->getDeclaringClass();
-        }
-        catch (ReflectionException $ex)
-        {
+        } catch (ReflectionException $ex) {
             return $method->getDeclaringClass();
         }
     }
@@ -121,8 +111,7 @@ final class Reflection
     public function getAllTypes(?ReflectionType $type): array
     {
         if ($type instanceof ReflectionUnionType ||
-            $type instanceof ReflectionIntersectionType)
-        {
+                $type instanceof ReflectionIntersectionType) {
             return $type->getTypes();
         }
 
@@ -151,7 +140,7 @@ final class Reflection
      */
     public function getTypeName(ReflectionType $type): string
     {
-        return $type instanceof ReflectionNamedType ? $type->getName() : (string)$type;
+        return $type instanceof ReflectionNamedType ? $type->getName() : (string) $type;
     }
 
     /**
@@ -168,25 +157,19 @@ final class Reflection
         $name       = $method->getName();
         $interfaces = $method->getDeclaringClass()->getInterfaces();
         $comments   = [];
-        do
-        {
-            if (($comment = $method->getDocComment()) !== false)
-            {
+        do {
+            if (($comment = $method->getDocComment()) !== false) {
                 $comments[] = $comment;
             }
-            if ($method->getDeclaringClass()->isInterface())
-            {
+            if ($method->getDeclaringClass()->isInterface()) {
                 continue;
             }
-            foreach ($method->getDeclaringClass()->getTraits() as $trait)
-            {
-                if ($trait->hasMethod($name))
-                {
+            foreach ($method->getDeclaringClass()->getTraits() as $trait) {
+                if ($trait->hasMethod($name)) {
                     array_push($comments, ...$this->getAllMethodDocComments($trait->getMethod($name)));
                 }
             }
-        }
-        while (($parent = $method->getDeclaringClass()->getParentClass()) &&
+        } while (($parent = $method->getDeclaringClass()->getParentClass()) &&
             $parent->hasMethod($name) &&
             ($method = $parent->getMethod($name)));
 
@@ -194,15 +177,13 @@ final class Reflection
         usort($interfaces,
             fn(ReflectionClass $a, ReflectionClass $b) => (
                 $a->isSubclassOf($b) ? -1 : (
-                    $b->isSubclassOf($a) ? 1 :
-                    $this->getBaseClass($a)->getName() <=> $this->getBaseClass($b)->getName()
+                    $b->isSubclassOf($a) ? 1
+                        : $this->getBaseClass($a)->getName() <=> $this->getBaseClass($b)->getName()
                 )
             ));
 
-        foreach ($interfaces as $interface)
-        {
-            if ($interface->hasMethod($name))
-            {
+        foreach ($interfaces as $interface) {
+            if ($interface->hasMethod($name)) {
                 array_push($comments, ...$this->getAllMethodDocComments($interface->getMethod($name)));
             }
         }
@@ -223,22 +204,16 @@ final class Reflection
     {
         $name     = $property->getName();
         $comments = [];
-        do
-        {
-            if (($comment = $property->getDocComment()) !== false)
-            {
+        do {
+            if (($comment = $property->getDocComment()) !== false) {
                 $comments[] = $comment;
             }
-            foreach ($property->getDeclaringClass()->getTraits() as $trait)
-            {
-                if ($trait->hasProperty($name))
-                {
+            foreach ($property->getDeclaringClass()->getTraits() as $trait) {
+                if ($trait->hasProperty($name)) {
                     array_push($comments, ...$this->getAllPropertyDocComments($trait->getProperty($name)));
                 }
             }
-
-        }
-        while (($parent = $property->getDeclaringClass()->getParentClass()) &&
+        } while (($parent = $property->getDeclaringClass()->getParentClass()) &&
             $parent->hasProperty($name) &&
             ($property = $parent->getProperty($name)));
 
@@ -258,40 +233,29 @@ final class Reflection
      * ```
      * @return string
      */
-    public function getTypeDeclaration(
-        ?ReflectionType $type,
-        string $classPrefix = "\\",
-        ? callable $typeNameCallback = null
-    ): string
+    public function getTypeDeclaration(?ReflectionType $type, string $classPrefix = '\\', ?callable $typeNameCallback = null): string
     {
-        $glue = "|";
-        if ($type instanceof ReflectionUnionType)
-        {
+        $glue = '|';
+        if ($type instanceof ReflectionUnionType) {
             $types = $type->getTypes();
-        }
-        elseif ($type instanceof ReflectionIntersectionType)
-        {
-            $glue  = "&";
+        } elseif ($type instanceof ReflectionIntersectionType) {
+            $glue  = '&';
             $types = $type->getTypes();
-        }
-        elseif (is_null($type))
-        {
+        } elseif (is_null($type)) {
             $types = [];
-        }
-        else
-        {
+        } else {
             $types = [$type];
         }
         $parts = [];
         /** @var ReflectionNamedType|ReflectionType $type */
-        foreach ($types as $type)
-        {
+        foreach ($types as $type) {
             $name    = $this->getTypeName($type);
             $alias   = $typeNameCallback ? $typeNameCallback($name) : null;
-            $parts[] = (($type->allowsNull() && strcasecmp($name, "null") ? "?" : "")
-                . ($alias || $type->isBuiltin() ? "" : $classPrefix)
+            $parts[] = (($type->allowsNull() && strcasecmp($name, 'null') ? '?' : '')
+                . ($alias || $type->isBuiltin() ? '' : $classPrefix)
                 . ($alias ?: $name));
         }
+
         return implode($glue, $parts);
     }
 
@@ -310,43 +274,36 @@ final class Reflection
      * from a trusted source.
      * @return string
      */
-    public function getParameterDeclaration(
-        ReflectionParameter $parameter,
-        string $classPrefix = "\\",
-        ? callable $typeNameCallback = null,
-        string $type = null
-    ): string
+    public function getParameterDeclaration(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, string $type = null): string
     {
         // If getTypeDeclaration isn't called, neither is $typeNameCallback
         $param  = $this->getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
-        $param  = is_null($type) ? ($param ?: "mixed") : $type;
-        $param .= (($param ? " " : "")
-            . ($parameter->isPassedByReference() ? "&" : "")
-            . ($parameter->isVariadic() ? "..." : "")
+        $param  = is_null($type) ? ($param ?: 'mixed') : $type;
+        $param .= (($param ? ' ' : '')
+            . ($parameter->isPassedByReference() ? '&' : '')
+            . ($parameter->isVariadic() ? '...' : '')
             . '$' . $parameter->getName());
-        if (!$parameter->isDefaultValueAvailable())
-        {
+        if (!$parameter->isDefaultValueAvailable()) {
             return $param;
         }
-        $param .= " = ";
-        if (!$parameter->isDefaultValueConstant())
-        {
-            return $param . Convert::valueToCode($parameter->getDefaultValue(), ",", "=>");
+        $param .= ' = ';
+        if (!$parameter->isDefaultValueConstant()) {
+            return $param . Convert::valueToCode($parameter->getDefaultValue(), ',', '=>');
         }
         $const = $parameter->getDefaultValueConstantName();
-        if (!preg_match('/^(self|parent|static)::/i', $const))
-        {
+        if (!preg_match('/^(self|parent|static)::/i', $const)) {
             if ($typeNameCallback &&
-                ($_const = preg_replace_callback(
+                    ($_const = preg_replace_callback(
                     '/^[^:\\\\]+(?:\\\\[^:\\\\]+)+(?=::)/',
                     fn($matches) => $typeNameCallback($matches[0]) ?: $matches[0],
                     $const
-                )) !== $const)
-            {
+                )) !== $const) {
                 return "$param$_const";
             }
+
             return "$param$classPrefix$const";
         }
+
         return "$param$const";
     }
 
@@ -364,14 +321,12 @@ final class Reflection
     {
         $allTraits = [];
 
-        while ($class && !is_null($traits = $class->getTraits()))
-        {
+        while ($class && !is_null($traits = $class->getTraits())) {
             $allTraits = array_merge($allTraits, $traits);
             $class     = $class->getParentClass();
         }
 
-        if ($class)
-        {
+        if ($class) {
             throw new UnexpectedValueException("Error retrieving traits for class {$class->name}");
         }
 

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -99,13 +97,12 @@ final class SyncIntrospector extends Introspector
 
     final public static function entityToProvider(string $entity): string
     {
-        return sprintf('%s\\Provider\\%sProvider', Convert::classToNamespace($entity), Convert::classToBasename($entity));
+        return sprintf('%s\Provider\%sProvider', Convert::classToNamespace($entity), Convert::classToBasename($entity));
     }
 
     final public static function providerToEntity(string $provider): ?string
     {
-        if (preg_match('/^(?P<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\(?P<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U', $provider, $matches))
-        {
+        if (preg_match('/^(?P<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\(?P<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U', $provider, $matches)) {
             return $matches['namespace'] . $matches['class'];
         }
 
@@ -120,61 +117,51 @@ final class SyncIntrospector extends Introspector
         $this->IsEntity   = $class->isSubclassOf(SyncEntity::class);
         $this->IsProvider = $class->implementsInterface(ISyncProvider::class);
 
-        if ($this->IsEntity)
-        {
+        if ($this->IsEntity) {
             $this->EntityNoun = Convert::classToBasename($this->Class);
-            $plural = $class->getMethod("plural")->invoke(null);
-            if (strcasecmp($this->EntityNoun, $plural))
-            {
+            $plural           = $class->getMethod('plural')->invoke(null);
+            if (strcasecmp($this->EntityNoun, $plural)) {
                 $this->EntityPlural = $plural;
             }
         }
 
-        if ($this->IsProvider)
-        {
+        if ($this->IsProvider) {
             $namespace = (new ReflectionClass(SyncProvider::class))->getNamespaceName();
 
-            foreach ($class->getInterfaces() as $name => $interface)
-            {
+            foreach ($class->getInterfaces() as $name => $interface) {
                 // Add ISyncProvider interfaces to SyncProviderInterfaces
-                if (!$interface->isSubclassOf(ISyncProvider::class))
-                {
+                if (!$interface->isSubclassOf(ISyncProvider::class)) {
                     continue;
                 }
                 $this->SyncProviderInterfaces[] = $name;
 
                 // Add the entities they service to SyncProviderEntities
                 if (!($entity = self::providerToEntity($name)) ||
-                    !is_a($entity, SyncEntity::class, true))
-                {
+                        !is_a($entity, SyncEntity::class, true)) {
                     continue;
                 }
-                $entity = static::get($entity);
+                $entity                       = static::get($entity);
                 $this->SyncProviderEntities[] = $entity->Class;
 
                 // Map unambiguous lowercase entity basenames to qualified names
                 // in SyncProviderEntityBasenames
-                $basename = strtolower(Convert::classToBasename($entity->Class));
+                $basename                                     = strtolower(Convert::classToBasename($entity->Class));
                 $this->SyncProviderEntityBasenames[$basename] = (
                     array_key_exists($basename, $this->SyncProviderEntityBasenames) ? null : $entity->Class
                 );
 
-                $fn = function (int $operation, string $method) use ($class, $namespace, $entity)
-                {
+                $fn = function (int $operation, string $method) use ($class, $namespace, $entity) {
                     // If $method has already been processed, the entity it
                     // services is ambiguous and it can't be used
                     if (array_key_exists($method, $this->SyncOperationMethods) ||
-                        array_key_exists($method, $this->SyncOperationMagicMethods))
-                    {
+                            array_key_exists($method, $this->SyncOperationMagicMethods)) {
                         $this->SyncOperationMagicMethods[$method] = $this->SyncOperationMethods[$method] = null;
 
                         return;
                     }
-                    if ($class->hasMethod($method) && ($_method = $class->getMethod($method))->isPublic())
-                    {
+                    if ($class->hasMethod($method) && ($_method = $class->getMethod($method))->isPublic()) {
                         if ($_method->isStatic() ||
-                            !strcasecmp(Reflect::getMethodPrototypeClass($_method)->getNamespaceName(), $namespace))
-                        {
+                                !strcasecmp(Reflect::getMethodPrototypeClass($_method)->getNamespaceName(), $namespace)) {
                             $this->SyncOperationMethods[$method] = null;
 
                             return;
@@ -188,26 +175,25 @@ final class SyncIntrospector extends Introspector
 
                 [$noun, $plural] = [strtolower($entity->EntityNoun), strtolower($entity->EntityPlural)];
 
-                if ($plural)
-                {
-                    $fn(SyncOperation::CREATE_LIST, "create" . $plural);
-                    $fn(SyncOperation::READ_LIST, "get" . $plural);
-                    $fn(SyncOperation::UPDATE_LIST, "update" . $plural);
-                    $fn(SyncOperation::DELETE_LIST, "delete" . $plural);
+                if ($plural) {
+                    $fn(SyncOperation::CREATE_LIST, 'create' . $plural);
+                    $fn(SyncOperation::READ_LIST, 'get' . $plural);
+                    $fn(SyncOperation::UPDATE_LIST, 'update' . $plural);
+                    $fn(SyncOperation::DELETE_LIST, 'delete' . $plural);
                 }
 
-                $fn(SyncOperation::CREATE, "create" . $noun);
-                $fn(SyncOperation::CREATE, "create_" . $noun);
-                $fn(SyncOperation::READ, "get" . $noun);
-                $fn(SyncOperation::READ, "get_" . $noun);
-                $fn(SyncOperation::UPDATE, "update" . $noun);
-                $fn(SyncOperation::UPDATE, "update_" . $noun);
-                $fn(SyncOperation::DELETE, "delete" . $noun);
-                $fn(SyncOperation::DELETE, "delete_" . $noun);
-                $fn(SyncOperation::CREATE_LIST, "createlist_" . $noun);
-                $fn(SyncOperation::READ_LIST, "getlist_" . $noun);
-                $fn(SyncOperation::UPDATE_LIST, "updatelist_" . $noun);
-                $fn(SyncOperation::DELETE_LIST, "deletelist_" . $noun);
+                $fn(SyncOperation::CREATE, 'create' . $noun);
+                $fn(SyncOperation::CREATE, 'create_' . $noun);
+                $fn(SyncOperation::READ, 'get' . $noun);
+                $fn(SyncOperation::READ, 'get_' . $noun);
+                $fn(SyncOperation::UPDATE, 'update' . $noun);
+                $fn(SyncOperation::UPDATE, 'update_' . $noun);
+                $fn(SyncOperation::DELETE, 'delete' . $noun);
+                $fn(SyncOperation::DELETE, 'delete_' . $noun);
+                $fn(SyncOperation::CREATE_LIST, 'createlist_' . $noun);
+                $fn(SyncOperation::READ_LIST, 'getlist_' . $noun);
+                $fn(SyncOperation::UPDATE_LIST, 'updatelist_' . $noun);
+                $fn(SyncOperation::DELETE_LIST, 'deletelist_' . $noun);
             }
 
             $this->SyncProviderEntityBasenames = array_filter($this->SyncProviderEntityBasenames);
@@ -223,8 +209,7 @@ final class SyncIntrospector extends Introspector
      */
     final public function getSyncProviderInterfaces(): ?array
     {
-        if (!$this->IsProvider)
-        {
+        if (!$this->IsProvider) {
             return null;
         }
 
@@ -238,8 +223,7 @@ final class SyncIntrospector extends Introspector
      */
     final public function getSyncProviderEntities(): ?array
     {
-        if (!$this->IsProvider)
-        {
+        if (!$this->IsProvider) {
             return null;
         }
 
@@ -254,8 +238,7 @@ final class SyncIntrospector extends Introspector
      */
     final public function getSyncProviderEntityBasenames(): ?array
     {
-        if (!$this->IsProvider)
-        {
+        if (!$this->IsProvider) {
             return null;
         }
 
@@ -276,20 +259,16 @@ final class SyncIntrospector extends Introspector
      */
     final public function getDeclaredSyncOperationClosure(int $operation, $entity, ISyncProvider $provider): ?Closure
     {
-        if (!($entity instanceof SyncIntrospector))
-        {
+        if (!($entity instanceof SyncIntrospector)) {
             $entity = static::get($entity);
         }
 
-        if (!$this->IsProvider || !$entity->IsEntity)
-        {
+        if (!$this->IsProvider || !$entity->IsEntity) {
             return null;
         }
 
-        if (($closure = $this->DeclaredSyncOperationClosures[$entity->Class][$operation] ?? false) === false)
-        {
-            if ($method = $this->getSyncOperationMethod($operation, $entity))
-            {
+        if (($closure = $this->DeclaredSyncOperationClosures[$entity->Class][$operation] ?? false) === false) {
+            if ($method = $this->getSyncOperationMethod($operation, $entity)) {
                 $closure = fn(...$args) => $this->$method(...$args);
             }
 
@@ -316,20 +295,16 @@ final class SyncIntrospector extends Introspector
      */
     final public function getMagicSyncOperationClosure(string $method, ISyncProvider $provider): ?Closure
     {
-        if (!$this->IsProvider)
-        {
+        if (!$this->IsProvider) {
             return null;
         }
 
-        if (($closure = $this->MagicSyncOperationClosures[$method = strtolower($method)] ?? false) === false)
-        {
-            if ($operation = $this->SyncOperationMagicMethods[$method] ?? null)
-            {
+        if (($closure = $this->MagicSyncOperationClosures[$method = strtolower($method)] ?? false) === false) {
+            if ($operation = $this->SyncOperationMagicMethods[$method] ?? null) {
                 [$operation, $entity] = $operation;
 
                 $closure =
-                    function (SyncContext $ctx, ...$args) use ($entity, $operation)
-                    {
+                    function (SyncContext $ctx, ...$args) use ($entity, $operation) {
                         /** @var ISyncProvider $this */
                         return $this->with($entity, $ctx)->run($operation, ...$args);
                     };
@@ -345,75 +320,70 @@ final class SyncIntrospector extends Introspector
     {
         [$noun, $plural] = [strtolower($entity->EntityNoun), strtolower($entity->EntityPlural)];
 
-        if ($plural)
-        {
-            switch ($operation)
-            {
+        if ($plural) {
+            switch ($operation) {
                 case SyncOperation::CREATE_LIST:
-                    $methods[] = "create" . $plural;
+                    $methods[] = 'create' . $plural;
                     break;
 
                 case SyncOperation::READ_LIST:
-                    $methods[] = "get" . $plural;
+                    $methods[] = 'get' . $plural;
                     break;
 
                 case SyncOperation::UPDATE_LIST:
-                    $methods[] = "update" . $plural;
+                    $methods[] = 'update' . $plural;
                     break;
 
                 case SyncOperation::DELETE_LIST:
-                    $methods[] = "delete" . $plural;
+                    $methods[] = 'delete' . $plural;
                     break;
             }
         }
 
-        switch ($operation)
-        {
+        switch ($operation) {
             case SyncOperation::CREATE:
-                $methods[] = "create" . $noun;
-                $methods[] = "create_" . $noun;
+                $methods[] = 'create' . $noun;
+                $methods[] = 'create_' . $noun;
                 break;
 
             case SyncOperation::READ:
-                $methods[] = "get" . $noun;
-                $methods[] = "get_" . $noun;
+                $methods[] = 'get' . $noun;
+                $methods[] = 'get_' . $noun;
                 break;
 
             case SyncOperation::UPDATE:
-                $methods[] = "update" . $noun;
-                $methods[] = "update_" . $noun;
+                $methods[] = 'update' . $noun;
+                $methods[] = 'update_' . $noun;
                 break;
 
             case SyncOperation::DELETE:
-                $methods[] = "delete" . $noun;
-                $methods[] = "delete_" . $noun;
+                $methods[] = 'delete' . $noun;
+                $methods[] = 'delete_' . $noun;
                 break;
 
             case SyncOperation::CREATE_LIST:
-                $methods[] = "createlist_" . $noun;
+                $methods[] = 'createlist_' . $noun;
                 break;
 
             case SyncOperation::READ_LIST:
-                $methods[] = "getlist_" . $noun;
+                $methods[] = 'getlist_' . $noun;
                 break;
 
             case SyncOperation::UPDATE_LIST:
-                $methods[] = "updatelist_" . $noun;
+                $methods[] = 'updatelist_' . $noun;
                 break;
 
             case SyncOperation::DELETE_LIST:
-                $methods[] = "deletelist_" . $noun;
+                $methods[] = 'deletelist_' . $noun;
                 break;
         }
 
         $methods = array_intersect_key($this->SyncOperationMethods, array_flip($methods ?? []));
 
-        if (count($methods) > 1)
-        {
-            throw new RuntimeException("Too many implementations: " . implode(", ", $methods));
+        if (count($methods) > 1) {
+            throw new RuntimeException('Too many implementations: ' . implode(', ', $methods));
         }
 
         return reset($methods) ?: null;
     }
-
 }

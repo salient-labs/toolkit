@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests;
 
@@ -28,7 +26,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         // Improve diff readability by adding "<value>" where missing keys
         // should be
-        $expected = array_combine($keys, array_map(fn($key) => $array[$key] ?? "<value>", $keys)) ?: [];
+        $expected = array_combine($keys, array_map(fn($key) => $array[$key] ?? '<value>', $keys)) ?: [];
         $this->assertSame(
             $expected,
             $array,

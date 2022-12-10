@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Curler\Pager;
 
@@ -54,13 +52,11 @@ final class QueryPager implements ICurlerPager
 
     public function prepareQuery(?array $query): ?string
     {
-        if (is_null($this->PageKey))
-        {
+        if (is_null($this->PageKey)) {
             if (is_null($query) ||
-                !is_int(reset($query)) ||
-                !($pageKey = key($query)))
-            {
-                throw new UnexpectedValueException("First element of query array must be an integer");
+                    !is_int(reset($query)) ||
+                    !($pageKey = key($query))) {
+                throw new UnexpectedValueException('First element of query array must be an integer');
             }
             $this->PageKey = $pageKey;
         }
@@ -82,8 +78,7 @@ final class QueryPager implements ICurlerPager
     {
         $data = ($this->Selector)($data);
 
-        if ($data)
-        {
+        if ($data) {
             $this->Query[$this->PageKey]++;
             $nextUrl = $curler->getQueryUrl($this->Query);
         }
@@ -95,5 +90,4 @@ final class QueryPager implements ICurlerPager
             ->nextUrl($nextUrl ?? null)
             ->go();
     }
-
 }

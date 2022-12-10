@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -89,5 +87,4 @@ interface IProvidable extends ReceivesService, ReturnsService
      * @return iterable<static>
      */
     public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProviderContext $context = null): iterable;
-
 }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -62,8 +60,7 @@ final class DateFormatter implements IReadable, IImmutable
     public function format(DateTimeInterface $date): string
     {
         if ($this->Timezone &&
-            $this->Timezone->getName() !== $date->getTimezone()->getName())
-        {
+                $this->Timezone->getName() !== $date->getTimezone()->getName()) {
             $date = Convert::toDateTimeImmutable($date)->setTimezone($this->Timezone);
         }
 
@@ -78,15 +75,12 @@ final class DateFormatter implements IReadable, IImmutable
      */
     public function parse(string $value): ?DateTimeImmutable
     {
-        foreach ($this->Parsers as $parser)
-        {
-            if ($date = $parser->parse($value, $this->Timezone))
-            {
+        foreach ($this->Parsers as $parser) {
+            if ($date = $parser->parse($value, $this->Timezone)) {
                 return $date;
             }
         }
 
         return null;
     }
-
 }

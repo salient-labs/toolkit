@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Support;
 
@@ -106,8 +104,8 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             SyncOperation::getAll(),
             array_merge(array_values($operations), array_keys($overrides))
         );
-        $this->Path  = $path;
-        $this->Query = $query;
+        $this->Path            = $path;
+        $this->Query           = $query;
         $this->HeadersCallback = $headersCallback;
         $this->PagerCallback   = $pagerCallback;
         $this->Request         = $request;
@@ -118,29 +116,25 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
 
     public function getSyncOperationClosure(int $operation): ?Closure
     {
-        if (array_key_exists($operation, $this->Closures))
-        {
+        if (array_key_exists($operation, $this->Closures)) {
             return $this->Closures[$operation];
         }
 
         // Overrides take precedence over everything else, including declared
         // methods
-        if (array_key_exists($operation, $this->Overrides))
-        {
+        if (array_key_exists($operation, $this->Overrides)) {
             return $this->Closures[$operation] = $this->Overrides[$operation];
         }
 
         // If a method has been declared for this operation, use it, even if
         // it's not in $this->Operations
-        if ($closure = $this->ProviderIntrospector->getDeclaredSyncOperationClosure($operation, $this->EntityIntrospector, $this->Provider))
-        {
+        if ($closure = $this->ProviderIntrospector->getDeclaredSyncOperationClosure($operation, $this->EntityIntrospector, $this->Provider)) {
             return $this->Closures[$operation] = $closure;
         }
 
         // Return null if the operation doesn't appear in $this->Operations, or
         // if no endpoint path has been provided
-        if (!array_key_exists($operation, $this->Operations) || is_null($this->Request ?: $this->Path))
-        {
+        if (!array_key_exists($operation, $this->Operations) || is_null($this->Request ?: $this->Path)) {
             return $this->Closures[$operation] = null;
         }
 
@@ -148,14 +142,13 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         $toBackend = $this->getPipelineToBackend();
         $toEntity  = $this->getPipelineToEntity();
 
-        switch ($operation)
-        {
+        switch ($operation) {
             case SyncOperation::CREATE:
             case SyncOperation::UPDATE:
             case SyncOperation::DELETE:
                 // $_args = [$operation, $ctx, $entity, ...$args]
                 $endpointPipe = fn($payload, Closure $next, IPipeline $pipeline, ...$_args) => $next(
-                    $toCurler(... [...$this->getCurlerArgs(...$_args), $payload])
+                    $toCurler(...[...$this->getCurlerArgs(...$_args), $payload])
                 );
                 $closure = fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity =>
                     ($toBackend->send($entity->toArray(), $operation, $ctx, $entity, ...$args)
@@ -179,13 +172,12 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             case SyncOperation::DELETE_LIST:
                 // $_args = [$operation, $ctx, $_entity, ...$args]
                 $endpointPipe = fn($payload, Closure $next, IPipeline $pipeline, ...$_args) => $next(
-                    $toCurler(... [...$this->getCurlerArgs(...$_args), $payload])
+                    $toCurler(...[...$this->getCurlerArgs(...$_args), $payload])
                 );
                 $_entity = null;
-                $closure = function (SyncContext $ctx, iterable $entities, ...$args) use (&$_entity, $endpointPipe, $operation, $toBackend, $toEntity): iterable
-                {
+                $closure = function (SyncContext $ctx, iterable $entities, ...$args) use (&$_entity, $endpointPipe, $operation, $toBackend, $toEntity): iterable {
                     return ($toBackend->stream($entities, $operation, $ctx, $_entity, ...$args)
-                        ->after(function (SyncEntity $entity) use (&$_entity) { $_entity = $entity; })
+                        ->after(function (SyncEntity $entity) use (&$_entity) {$_entity = $entity;})
                         ->through($endpointPipe)
                         ->then(fn($result) =>
                             $toEntity->send($result, $operation, $ctx, $_entity, ...$args)
@@ -211,8 +203,7 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
 
     private function getCurlerArgs(int $operation, SyncContext $ctx, ...$args): array
     {
-        if (($request = $this->Request) instanceof Closure)
-        {
+        if (($request = $this->Request) instanceof Closure) {
             $request = $request($operation, $ctx, ...$args);
         }
 
@@ -231,10 +222,8 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         ];
 
         // Wrap callbacks in closures to preserve $args
-        foreach ([3, 4] as $i)
-        {
-            if (!$args[$i])
-            {
+        foreach ([3, 4] as $i) {
+            if (!$args[$i]) {
                 continue;
             }
             $args[$i] = fn(Curler $curler) => ($args[$i])($curler, $operation, $ctx, ...$args);
@@ -245,13 +234,11 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
 
     private function getPath(int $operation, SyncContext $ctx, ...$args): string
     {
-        if ($this->Path instanceof Closure)
-        {
+        if ($this->Path instanceof Closure) {
             return ($this->Path)($operation, $ctx, ...$args);
         }
-        if (!($this->Query instanceof Closure) && $operation === SyncOperation::READ && !is_null($args[0]))
-        {
-            return $this->Path . "/" . $args[0];
+        if (!($this->Query instanceof Closure) && $operation === SyncOperation::READ && !is_null($args[0])) {
+            return $this->Path . '/' . $args[0];
         }
 
         return $this->Path;
@@ -259,8 +246,7 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
 
     private function getQuery(int $operation, SyncContext $ctx, ...$args): ?array
     {
-        if ($this->Query instanceof Closure)
-        {
+        if ($this->Query instanceof Closure) {
             return ($this->Query)($operation, $ctx, ...$args);
         }
 
@@ -278,35 +264,34 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         // Pagination with operations other than READ_LIST via GET or POST is
         // too risky to implement here, but providers can add their own support
         // for pagination with other operations and/or HTTP methods
-        switch ([$operation, $this->MethodMap[$operation] ?? null])
-        {
-            case [SyncOperation::READ_LIST, HttpRequestMethod::GET] :
-                    $runner = fn(Curler $curler, ?array $query) => $curler->Pager ? $curler->getP($query) : $curler->get($query);
-                    break;
+        switch ([$operation, $this->MethodMap[$operation] ?? null]) {
+            case[SyncOperation::READ_LIST, HttpRequestMethod::GET]:
+                $runner = fn(Curler $curler, ?array $query) => $curler->Pager ? $curler->getP($query) : $curler->get($query);
+                break;
 
-            case [SyncOperation::READ_LIST, HttpRequestMethod::POST] :
-                    $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->Pager ? $curler->postP($payload, $query) : $curler->post($payload, $query);
-                    break;
+            case[SyncOperation::READ_LIST, HttpRequestMethod::POST]:
+                $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->Pager ? $curler->postP($payload, $query) : $curler->post($payload, $query);
+                break;
 
-            case [$operation, HttpRequestMethod::GET] :
-                    $runner = fn(Curler $curler, ?array $query) => $curler->get($query);
-                    break;
+            case[$operation, HttpRequestMethod::GET]:
+                $runner = fn(Curler $curler, ?array $query) => $curler->get($query);
+                break;
 
-            case [$operation, HttpRequestMethod::POST] :
-                    $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->post($payload, $query);
-                    break;
+            case[$operation, HttpRequestMethod::POST]:
+                $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->post($payload, $query);
+                break;
 
-            case [$operation, HttpRequestMethod::PUT] :
-                    $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->put($payload, $query);
-                    break;
+            case[$operation, HttpRequestMethod::PUT]:
+                $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->put($payload, $query);
+                break;
 
-            case [$operation, HttpRequestMethod::PATCH] :
-                    $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->patch($payload, $query);
-                    break;
+            case[$operation, HttpRequestMethod::PATCH]:
+                $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->patch($payload, $query);
+                break;
 
-            case [$operation, HttpRequestMethod::DELETE] :
-                    $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->delete($payload, $query);
-                    break;
+            case[$operation, HttpRequestMethod::DELETE]:
+                $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->delete($payload, $query);
+                break;
 
             default:
                 throw new UnexpectedValueException("Invalid SyncOperation or method map: $operation");
@@ -319,24 +304,20 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     private function runCurlerOperation(Closure $runner, int $operation, SyncContext $ctx, string $path, ?array $query, ?Closure $headers, ?Closure $pager, ?array $payload)
     {
         $curler = $this->Provider->getCurler($path, $this->Expiry);
-        if ($headers && ($headers = $headers($curler)))
-        {
+        if ($headers && ($headers = $headers($curler))) {
             $curler->replaceHeaders($headers);
         }
-        if ($pager && ($pager = $pager($curler)))
-        {
+        if ($pager && ($pager = $pager($curler))) {
             $curler->replacePager($pager);
         }
 
         // The callbacks above may have claimed values from the filter, so this
         // is the last and only place to enforce the unclaimed value policy
-        if (SyncFilterPolicy::IGNORE === $this->FilterPolicy || !($filter = $ctx->getFilter()))
-        {
+        if (SyncFilterPolicy::IGNORE === $this->FilterPolicy || !($filter = $ctx->getFilter())) {
             return $runner($curler, $query, $payload);
         }
 
-        switch ($this->FilterPolicy)
-        {
+        switch ($this->FilterPolicy) {
             case SyncFilterPolicy::THROW_EXCEPTION:
                 throw new RuntimeException(get_class($this->Provider)
                     . " did not claim '" . implode("', '", array_keys($filter))
@@ -346,7 +327,7 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                 return SyncOperation::isList($operation) ? [] : null;
 
             case SyncFilterPolicy::FILTER_LOCALLY:
-                throw new RuntimeException("SyncFilterPolicy::FILTER_LOCALLY is not implemented yet");
+                throw new RuntimeException('SyncFilterPolicy::FILTER_LOCALLY is not implemented yet');
         }
 
         throw new UnexpectedValueException("Invalid SyncFilterPolicy: {$this->FilterPolicy}");
@@ -368,5 +349,4 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     {
         return HttpSyncDefinitionBuilder::resolve($object);
     }
-
 }

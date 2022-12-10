@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Utility\Debugging;
 
@@ -20,7 +18,7 @@ class GetCallerClass
 
     public function getCallback()
     {
-        return function ($depth = 0) { return $this->getCallerViaMethod($depth); };
+        return function ($depth = 0) {return $this->getCallerViaMethod($depth);};
     }
 
     public static function getCallerViaStaticMethod($depth = 0)
@@ -30,6 +28,6 @@ class GetCallerClass
 
     public static function getStaticCallback()
     {
-        return static function ($depth = 0) { return self::getCallerViaStaticMethod($depth); };
+        return static function ($depth = 0) {return self::getCallerViaStaticMethod($depth);};
     }
 }

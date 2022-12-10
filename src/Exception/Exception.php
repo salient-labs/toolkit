@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Exception;
 
@@ -13,7 +11,7 @@ use Throwable;
  */
 abstract class Exception extends RuntimeException
 {
-    public function __construct(string $message = "", ?Throwable $previous = null)
+    public function __construct(string $message = '', ?Throwable $previous = null)
     {
         parent::__construct($message, 0, $previous);
     }
@@ -34,11 +32,10 @@ abstract class Exception extends RuntimeException
     {
         $detail = $this->getDetail();
 
-        return parent::__toString() . implode("", array_map(
+        return parent::__toString() . implode('', array_map(
             fn(string $key, string $value) => "\n\n$key:\n$value",
             array_keys($detail),
             $detail
         ));
     }
-
 }

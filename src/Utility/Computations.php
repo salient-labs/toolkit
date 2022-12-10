@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Utility;
 
@@ -34,12 +32,11 @@ final class Computations
         $uuid[] = chr(ord(random_bytes(1)) & 0x3f | 0x80) . random_bytes(1);
         $uuid[] = random_bytes(6);
 
-        if ($binary)
-        {
-            return implode("", $uuid);
+        if ($binary) {
+            return implode('', $uuid);
         }
 
-        return implode("-", array_map(fn(string $bin): string => bin2hex($bin), $uuid));
+        return implode('-', array_map(fn(string $bin): string => bin2hex($bin), $uuid));
     }
 
     /**
@@ -50,7 +47,7 @@ final class Computations
     public function binaryHash(...$value): string
     {
         // xxHash isn't supported until PHP 8.1, so MD5 is the best fit
-        return hash("md5", implode("\000", Convert::toStrings(...$value)), true);
+        return hash('md5', implode("\x00", Convert::toStrings(...$value)), true);
     }
 
     /**
@@ -60,7 +57,7 @@ final class Computations
      */
     public function hash(...$value): string
     {
-        return hash("md5", implode("\000", Convert::toStrings(...$value)));
+        return hash('md5', implode("\x00", Convert::toStrings(...$value)));
     }
 
     /**
@@ -74,19 +71,13 @@ final class Computations
      * @return float A value between `0` and `1`, where `0` means the strings
      * are identical, and `1` means they have no similarities.
      */
-    public function textDistance(
-        string $string1,
-        string $string2,
-        bool $normalise = true
-    ): float
+    public function textDistance(string $string1, string $string2, bool $normalise = true): float
     {
-        if ($string1 . $string2 == "")
-        {
-            return (float)0;
+        if ($string1 . $string2 == '') {
+            return (float) 0;
         }
 
-        if ($normalise)
-        {
+        if ($normalise) {
             $string1 = Convert::toNormal($string1);
             $string2 = Convert::toNormal($string2);
         }
@@ -105,19 +96,13 @@ final class Computations
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no similarities, and `1` means they are identical.
      */
-    public function textSimilarity(
-        string $string1,
-        string $string2,
-        bool $normalise = true
-    ): float
+    public function textSimilarity(string $string1, string $string2, bool $normalise = true): float
     {
-        if ($string1 . $string2 == "")
-        {
-            return (float)1;
+        if ($string1 . $string2 == '') {
+            return (float) 1;
         }
 
-        if ($normalise)
-        {
+        if ($normalise) {
             $string1 = Convert::toNormal($string1);
             $string2 = Convert::toNormal($string2);
         }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Db;
 
@@ -93,17 +91,15 @@ final class DbConnector implements IReadable
      * @param int|null $driver A {@see DbDriver} value, or `null` to use
      * environment variable `<name>_driver`.
      */
-    public function __construct(
-        string $name,
-        int $driver = null
-    ) {
+    public function __construct(string $name, int $driver = null)
+    {
         $driver = is_null($driver) ? Env::get("{$name}_driver") : $driver;
 
         $this->Name     = $name;
-        $this->Driver   = Test::isIntValue($driver) ? (int)$driver : DbDriver::fromName($driver);
+        $this->Driver   = Test::isIntValue($driver) ? (int) $driver : DbDriver::fromName($driver);
         $this->Dsn      = Env::get("{$name}_dsn", null);
         $this->Hostname = Env::get("{$name}_hostname", null);
-        $this->Port     = (int)Env::get("{$name}_port", null) ?: null;
+        $this->Port     = (int) Env::get("{$name}_port", null) ?: null;
         $this->Username = Env::get("{$name}_username", null);
         $this->Password = Env::get("{$name}_password", null);
         $this->Database = Env::get("{$name}_database", null);
@@ -118,16 +114,15 @@ final class DbConnector implements IReadable
     private function getConnectionString(array $attributes, bool $enclose = true): string
     {
         $parts = [];
-        foreach ($attributes as $keyword => $value)
-        {
-            if (($enclose && strpos($value, "}") !== false) ||
-                (!$enclose && strpos($value, ";") !== false))
-            {
+        foreach ($attributes as $keyword => $value) {
+            if (($enclose && strpos($value, '}') !== false) ||
+                    (!$enclose && strpos($value, ';') !== false)) {
                 throw new UnexpectedValueException("Illegal character in attribute: $keyword");
             }
             $parts[] = "$keyword=" . ($enclose ? "{{$value}}" : "$value");
         }
-        return implode(";", $parts);
+
+        return implode(';', $parts);
     }
 
     public function getConnection(): ADOConnection
@@ -135,28 +130,26 @@ final class DbConnector implements IReadable
         $db = ADONewConnection($this->AdodbDriver);
         $db->SetFetchMode(ADODB_FETCH_ASSOC);
 
-        switch ($this->Driver)
-        {
+        switch ($this->Driver) {
             case DbDriver::DB2:
                 $db->Connect($this->Dsn ?: $this->getConnectionString([
-                    "driver"   => Env::get("odbc_db2_driver", "Db2"),
-                    "hostname" => $this->Hostname,
-                    "protocol" => "tcpip",
-                    "port"     => (string)$this->Port,
-                    "database" => $this->Database,
-                    "uid"      => $this->Username,
-                    "pwd"      => $this->Password,
+                    'driver'   => Env::get('odbc_db2_driver', 'Db2'),
+                    'hostname' => $this->Hostname,
+                    'protocol' => 'tcpip',
+                    'port'     => (string) $this->Port,
+                    'database' => $this->Database,
+                    'uid'      => $this->Username,
+                    'pwd'      => $this->Password,
                 ], false));
-                if ($this->Schema)
-                {
-                    $db->Execute("SET SCHEMA = " . $db->Param("schema"),
-                        ["schema" => $this->Schema]);
+                if ($this->Schema) {
+                    $db->Execute('SET SCHEMA = ' . $db->Param('schema'),
+                        ['schema' => $this->Schema]);
                 }
                 break;
 
             case DbDriver::MSSQL:
-                $db->setConnectionParameter("TrustServerCertificate",
-                    Format::yn(!Env::get("mssql_validate_server", null)));
+                $db->setConnectionParameter('TrustServerCertificate',
+                    Format::yn(!Env::get('mssql_validate_server', null)));
             default:
                 $db->Connect(
                     $this->Hostname,
@@ -166,6 +159,7 @@ final class DbConnector implements IReadable
                 );
                 break;
         }
+
         return $db;
     }
 }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -16,5 +14,4 @@ interface ReceivesContainer
      * @return $this
      */
     public function setContainer(IContainer $container);
-
 }

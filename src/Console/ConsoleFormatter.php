@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Console;
 
@@ -17,26 +15,26 @@ final class ConsoleFormatter
      * Matches a preformatted block or span and the text before it
      */
     private const REGEX_PREFORMATTED = <<<'REGEX'
-(?xs)
-# The end of the previous match
-\G
-# Text before a preformatted block or span, including recognised escapes
-(?P<text> (?: [^\\`]+ | \\ [\\`] | \\ )* )
-# A preformatted block
-(?: (?<= \n | ^) ``` \n (?P<pre> .*? ) \n ``` (?= \n | $) |
-  # ...or span
-  ` (?P<code> (?: [^\\`]+ | \\ [\\`] | \\ )* ) ` |
-  # ...or the end of the subject
-  $)
-REGEX;
+    (?xs)
+    # The end of the previous match
+    \G
+    # Text before a preformatted block or span, including recognised escapes
+    (?P<text> (?: [^\\`]+ | \\ [\\`] | \\ )* )
+    # A preformatted block
+    (?: (?<= \n | ^) ``` \n (?P<pre> .*? ) \n ``` (?= \n | $) |
+      # ...or span
+      ` (?P<code> (?: [^\\`]+ | \\ [\\`] | \\ )* ) ` |
+      # ...or the end of the subject
+      $)
+    REGEX;
 
     /**
      * Matches an escaped backslash or backtick (other escapes are ignored)
      */
     private const REGEX_ESCAPED = <<<'REGEX'
-(?xs)
-\\ ( [\\`] )
-REGEX;
+    (?xs)
+    \\ ( [\\`] )
+    REGEX;
 
     private const REGEX_MAP = [
         Tag::HEADING      => '(?|\b___(?!\s)(.+?)(?<!\s)___\b|\*\*\*(?!\s)(.+?)(?<!\s)\*\*\*)',
@@ -54,9 +52,8 @@ REGEX;
 
     public function __construct(?ConsoleTarget $target)
     {
-        foreach (self::REGEX_MAP as $tag => $regex)
-        {
-            $this->PregReplace[0][] = "/" . $regex . "/u";
+        foreach (self::REGEX_MAP as $tag => $regex) {
+            $this->PregReplace[0][] = '/' . $regex . '/u';
             $this->PregReplace[1][] = ($target ? $target->getTagFormat($tag) : new ConsoleFormat())->apply('$1');
         }
     }
@@ -77,15 +74,14 @@ REGEX;
      */
     public function format(string $string): string
     {
-        return preg_replace_callback("/" . self::REGEX_PREFORMATTED . "/u",
-            function (array $matches)
-            {
+        return preg_replace_callback('/' . self::REGEX_PREFORMATTED . '/u',
+            function (array $matches) {
                 $text = preg_replace(
                     $this->PregReplace[0],
                     $this->PregReplace[1],
-                    $this->unescape($matches["text"])
+                    $this->unescape($matches['text'])
                 );
-                $pre = ($matches["pre"] ?? "") ?: $this->unescape($matches["code"] ?? "");
+                $pre = ($matches['pre'] ?? '') ?: $this->unescape($matches['code'] ?? '');
 
                 return $text . $pre;
             }, $string);
@@ -93,7 +89,7 @@ REGEX;
 
     private function unescape(string $string): string
     {
-        return preg_replace("/" . self::REGEX_ESCAPED . "/u", '$1', $string);
+        return preg_replace('/' . self::REGEX_ESCAPED . '/u', '$1', $string);
     }
 
     /**
@@ -107,7 +103,7 @@ REGEX;
      */
     public static function escape(string $string): string
     {
-        return str_replace(["\\", "`"], ["\\\\", "\\`"], $string);
+        return str_replace(['\\', '`'], ['\\\\', '\`'], $string);
     }
 
     /**

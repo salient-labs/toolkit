@@ -6,10 +6,10 @@ namespace Lkrms\Tests;
 use Lkrms\Err\Err;
 use UnexpectedValueException;
 
-$loader = require (__DIR__ . "/../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();
 Err::silencePaths(__DIR__ . '/../vendor/adodb/adodb-php');
 
-throw new UnexpectedValueException("Well, this was unexpected");
+throw new UnexpectedValueException('Well, this was unexpected');

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
@@ -18,8 +16,8 @@ final class SqlQuery extends FluentInterface implements IReadable
 {
     use TReadable;
 
-    public const AND = "AND";
-    public const OR  = "OR";
+    public const AND = 'AND';
+    public const OR  = 'OR';
 
     /**
      * A list of optionally nested WHERE clauses
@@ -66,7 +64,7 @@ final class SqlQuery extends FluentInterface implements IReadable
 
     public static function getReadable(): array
     {
-        return ["Values"];
+        return ['Values'];
     }
 
     /**
@@ -86,10 +84,9 @@ final class SqlQuery extends FluentInterface implements IReadable
      *
      * @return $this
      */
-    public function addParam(string $name, $value, ?string & $placeholder)
+    public function addParam(string $name, $value, ?string &$placeholder)
     {
-        if (array_key_exists($name, $this->Values))
-        {
+        if (array_key_exists($name, $this->Values)) {
             throw new UnexpectedValueException("Parameter already added: $name");
         }
 
@@ -126,22 +123,20 @@ final class SqlQuery extends FluentInterface implements IReadable
      */
     public function whereValueInList(string $name, ...$value)
     {
-        if (!count($value))
-        {
+        if (!count($value)) {
             return $this;
         }
 
         $expr = [];
-        foreach ($value as $_value)
-        {
+        foreach ($value as $_value) {
             $expr[] = $this->addNextParam($_value);
         }
-        $this->Where[] = "$name IN (" . implode(",", $expr) . ")";
+        $this->Where[] = "$name IN (" . implode(',', $expr) . ')';
 
         return $this;
     }
 
-    public function getWhere(?array & $values = null): ?string
+    public function getWhere(?array &$values = null): ?string
     {
         $values = $this->Values;
 
@@ -150,21 +145,18 @@ final class SqlQuery extends FluentInterface implements IReadable
 
     private function addNextParam($value): string
     {
-        $this->addParam("param_" . count($this->Values), $value, $param);
+        $this->addParam('param_' . count($this->Values), $value, $param);
 
         return $param;
     }
 
     private function buildWhere(array $where)
     {
-        $glue = $where["__"] ?? self::AND;
-        unset($where["__"]);
-        foreach ($where as $i => $clause)
-        {
-            if (is_array($clause))
-            {
-                if (!($clause = $this->buildWhere($clause)))
-                {
+        $glue = $where['__'] ?? self::AND;
+        unset($where['__']);
+        foreach ($where as $i => $clause) {
+            if (is_array($clause)) {
+                if (!($clause = $this->buildWhere($clause))) {
                     unset($where[$i]);
                     continue;
                 }
@@ -174,5 +166,4 @@ final class SqlQuery extends FluentInterface implements IReadable
 
         return implode(" $glue ", $where);
     }
-
 }

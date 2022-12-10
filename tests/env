@@ -6,12 +6,12 @@ namespace Lkrms\Tests;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Env;
 
-$loader = require (__DIR__ . "/../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();
 
-Env::loadFile(__DIR__ . "/.env");
+Env::loadFile(__DIR__ . '/.env');
 
 $debugMode1 = Env::debug();
 $debugMode2 = Env::debug(false);
@@ -20,11 +20,11 @@ $debugMode4 = Env::debug(true);
 $debugMode5 = Env::debug();
 
 print_r([
-    "debugMode1" => $debugMode1,
-    "debugMode2" => $debugMode2,
-    "debugMode3" => $debugMode3,
-    "debugMode4" => $debugMode4,
-    "debugMode5" => $debugMode5,
+    'debugMode1' => $debugMode1,
+    'debugMode2' => $debugMode2,
+    'debugMode3' => $debugMode3,
+    'debugMode4' => $debugMode4,
+    'debugMode5' => $debugMode5,
 ]);
 
 $dryRunMode1 = Env::dryRun();
@@ -34,9 +34,9 @@ $dryRunMode4 = Env::dryRun(false);
 $dryRunMode5 = Env::dryRun();
 
 print_r([
-    "dryRunMode1" => $dryRunMode1,
-    "dryRunMode2" => $dryRunMode2,
-    "dryRunMode3" => $dryRunMode3,
-    "dryRunMode4" => $dryRunMode4,
-    "dryRunMode5" => $dryRunMode5,
+    'dryRunMode1' => $dryRunMode1,
+    'dryRunMode2' => $dryRunMode2,
+    'dryRunMode3' => $dryRunMode3,
+    'dryRunMode4' => $dryRunMode4,
+    'dryRunMode5' => $dryRunMode5,
 ]);

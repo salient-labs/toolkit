@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Err;
 
@@ -37,31 +35,25 @@ final class Err implements IFacade
      */
     public static function load()
     {
-        if (self::$Whoops && self::$WhoopsIsRegistered)
-        {
-            throw new RuntimeException(static::class . " already loaded");
-        }
-        elseif (!self::$Whoops)
-        {
+        if (self::$Whoops && self::$WhoopsIsRegistered) {
+            throw new RuntimeException(static::class . ' already loaded');
+        } elseif (!self::$Whoops) {
             self::$Whoops = new Run();
-            if (PHP_SAPI == "cli")
-            {
+            if (PHP_SAPI == 'cli') {
                 self::$Whoops->pushHandler(new CliHandler());
-            }
-            else
-            {
+            } else {
                 self::$Whoops->pushHandler(new PrettyPageHandler());
             }
         }
         self::$Whoops->register();
         self::$WhoopsIsRegistered = true;
+
         return self::$Whoops;
     }
 
     public static function unload(): void
     {
-        if (self::$Whoops && self::$WhoopsIsRegistered)
-        {
+        if (self::$Whoops && self::$WhoopsIsRegistered) {
             self::$Whoops->unregister();
             self::$WhoopsIsRegistered = false;
         }
@@ -72,10 +64,10 @@ final class Err implements IFacade
      */
     public static function getInstance()
     {
-        if (self::$Whoops && self::$WhoopsIsRegistered)
-        {
+        if (self::$Whoops && self::$WhoopsIsRegistered) {
             return self::$Whoops;
         }
+
         return self::load();
     }
 
@@ -87,14 +79,12 @@ final class Err implements IFacade
     public static function silencePaths(string ...$paths): void
     {
         self::assertIsLoaded();
-        foreach ($paths as $path)
-        {
-            if (($path = realpath($path)) === false)
-            {
+        foreach ($paths as $path) {
+            if (($path = realpath($path)) === false) {
                 continue;
             }
 
-            $regex = preg_quote(rtrim($path, "/") . "/", "/");
+            $regex = preg_quote(rtrim($path, '/') . '/', '/');
             self::$Whoops->silenceErrorsInPaths("/^$regex/",
                 E_STRICT | E_DEPRECATED | E_USER_DEPRECATED);
         }
@@ -103,19 +93,18 @@ final class Err implements IFacade
     public static function __callStatic(string $name, array $arguments)
     {
         self::assertIsLoaded();
+
         return self::$Whoops->$name(...$arguments);
     }
 
     private static function assertIsLoaded(): void
     {
-        if (!self::$Whoops || !self::$WhoopsIsRegistered)
-        {
-            throw new RuntimeException(static::class . " not loaded");
+        if (!self::$Whoops || !self::$WhoopsIsRegistered) {
+            throw new RuntimeException(static::class . ' not loaded');
         }
     }
 
     private function __construct()
     {
     }
-
 }

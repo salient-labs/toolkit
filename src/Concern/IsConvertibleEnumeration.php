@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
@@ -34,9 +32,8 @@ trait IsConvertibleEnumeration
 
     public static function fromName(string $name): int
     {
-        if (is_null($value = static::getValueMap()[strtolower($name)] ?? null))
-        {
-            throw new UnexpectedValueException("Invalid " . Convert::classToBasename(static::class) . " name: $name");
+        if (is_null($value = static::getValueMap()[strtolower($name)] ?? null)) {
+            throw new UnexpectedValueException('Invalid ' . Convert::classToBasename(static::class) . " name: $name");
         }
 
         return $value;
@@ -44,12 +41,10 @@ trait IsConvertibleEnumeration
 
     public static function toName(int $value): string
     {
-        if (is_null($name = static::getNameMap()[$value] ?? null))
-        {
-            throw new UnexpectedValueException("Invalid " . Convert::classToBasename(static::class) . ": $value");
+        if (is_null($name = static::getNameMap()[$value] ?? null)) {
+            throw new UnexpectedValueException('Invalid ' . Convert::classToBasename(static::class) . ": $value");
         }
 
         return $name;
     }
-
 }

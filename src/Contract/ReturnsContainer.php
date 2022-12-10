@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -32,5 +30,4 @@ interface ReturnsContainer
      * Identical to {@see ReturnsContainer::app()}.
      */
     public function container(): IContainer;
-
 }

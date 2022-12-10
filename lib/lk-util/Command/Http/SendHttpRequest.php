@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 /**
  * @package Lkrms\LkUtil
@@ -22,12 +20,12 @@ class SendHttpRequest extends Command
 
     private function getMethod()
     {
-        if ($this->Method)
-        {
+        if ($this->Method) {
             return $this->Method;
         }
 
         $name = $this->getNameParts();
+
         return $this->Method = strtoupper(array_pop($name));
     }
 
@@ -40,41 +38,39 @@ class SendHttpRequest extends Command
     {
         $options = [
             (CliOption::build()
-                ->long("provider")
-                ->valueName("provider")
-                ->description("The HttpSyncProvider class to use")
+                ->long('provider')
+                ->valueName('provider')
+                ->description('The HttpSyncProvider class to use')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
             (CliOption::build()
-                ->long("endpoint")
-                ->valueName("endpoint")
+                ->long('endpoint')
+                ->valueName('endpoint')
                 ->description("The endpoint to {$this->getMethod()}, e.g. '/posts'")
                 ->optionType(CliOptionType::VALUE_POSITIONAL)),
             (CliOption::build()
-                ->long("query")
-                ->short("q")
-                ->valueName("FIELD=VALUE")
-                ->description("A query parameter")
+                ->long('query')
+                ->short('q')
+                ->valueName('FIELD=VALUE')
+                ->description('A query parameter')
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()),
         ];
 
-        if (!in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::HEAD]))
-        {
+        if (!in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::HEAD])) {
             $options[] = (CliOption::build()
-                ->long("data")
-                ->short("o")
-                ->valueName("FILE")
-                ->description("The path to JSON-serialized data to submit with the request")
+                ->long('data')
+                ->short('o')
+                ->valueName('FILE')
+                ->description('The path to JSON-serialized data to submit with the request')
                 ->optionType(CliOptionType::VALUE));
         }
 
-        if (in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::POST]))
-        {
+        if (in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::POST])) {
             $options[] = (CliOption::build()
-                ->long("paginate")
-                ->short("p")
-                ->description("Retrieve every available response page"));
+                ->long('paginate')
+                ->short('p')
+                ->description('Retrieve every available response page'));
         }
 
         return $options;
@@ -83,17 +79,16 @@ class SendHttpRequest extends Command
     protected function run(string ...$args)
     {
         /** @var HttpSyncProvider */
-        $provider = $this->getProvider($this->getOptionValue("provider"), HttpSyncProvider::class);
-        $endpoint = $this->getOptionValue("endpoint");
-        $query    = Convert::queryToData($this->getOptionValue("query")) ?: null;
-        $data     = $this->hasOption("data") ? $this->getOptionValue("data") : null;
+        $provider = $this->getProvider($this->getOptionValue('provider'), HttpSyncProvider::class);
+        $endpoint = $this->getOptionValue('endpoint');
+        $query    = Convert::queryToData($this->getOptionValue('query')) ?: null;
+        $data     = $this->hasOption('data') ? $this->getOptionValue('data') : null;
         $data     = $data ? $this->getJson($data) : null;
-        $paginate = $this->hasOption("paginate") ? $this->getOptionValue("paginate") : false;
+        $paginate = $this->hasOption('paginate') ? $this->getOptionValue('paginate') : false;
 
         $curler = $provider->getCurler($endpoint);
 
-        switch ($this->getMethod())
-        {
+        switch ($this->getMethod()) {
             case HttpRequestMethod::GET:
                 $result = $paginate ? $curler->getP($query) : $curler->get($query);
                 break;
@@ -119,11 +114,10 @@ class SendHttpRequest extends Command
                 break;
 
             default:
-                throw new UnexpectedValueException("Invalid method: " . $this->getMethod());
+                throw new UnexpectedValueException('Invalid method: ' . $this->getMethod());
         }
 
-        if ($paginate)
-        {
+        if ($paginate) {
             $result = Convert::iterableToArray($result);
         }
 

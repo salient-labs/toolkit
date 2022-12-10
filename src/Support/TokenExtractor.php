@@ -1,13 +1,11 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Support;
 
 use Lkrms\Facade\Convert;
 use UnexpectedValueException;
 
-defined("T_NAME_QUALIFIED") || define("T_NAME_QUALIFIED", 10001);
+defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10001);
 
 /**
  * Reflection for files
@@ -33,63 +31,54 @@ final class TokenExtractor
      */
     private function getTokensByType(int ...$id): iterable
     {
-        for ($i = 0; $i < count($this->Tokens); $i++)
-        {
+        for ($i = 0; $i < count($this->Tokens); $i++) {
             $token = $this->Tokens[$i];
-            if (!is_array($token) || !in_array($token[0], $id))
-            {
+            if (!is_array($token) || !in_array($token[0], $id)) {
                 continue;
             }
+
             yield $i;
         }
     }
 
     public function dumpTokens(): void
     {
-        foreach ($this->Tokens as $token)
-        {
-            if (is_array($token))
-            {
-                printf("[%4d] %s: %s\n", $token[2], token_name($token[0]), preg_replace('/\s+/', " ", $token[1]));
-            }
-            else
-            {
-                printf("[%'-4s] %s\n", "", $token);
+        foreach ($this->Tokens as $token) {
+            if (is_array($token)) {
+                printf("[%4d] %s: %s\n", $token[2], token_name($token[0]), preg_replace('/\s+/', ' ', $token[1]));
+            } else {
+                printf("[%'-4s] %s\n", '', $token);
             }
         }
     }
 
-    private function _getUseMap(int & $index, array & $map, string $namespace = "")
+    private function _getUseMap(int &$index, array &$map, string $namespace = '')
     {
         $current = $namespace;
         $pending = true;
-        do
-        {
+        do {
             $token = $this->Tokens[$index++];
-            switch ($token[0] ?? $token)
-            {
+            switch ($token[0] ?? $token) {
                 case T_NAME_QUALIFIED:
                 case T_STRING:
                 case T_NS_SEPARATOR:
                     $current .= $token[1];
                     break;
 
-                case "{":
+                case'{':
                     $this->_getUseMap($index, $map, $current);
                     $pending = false;
                     break;
 
-                case "}":
-                case ";":
-                    if ($pending)
-                    {
+                case'}':
+                case';':
+                    if ($pending) {
                         $map[Convert::classToBasename($current)] = $current;
                     }
                     break 2;
 
-                case ",":
-                    if ($pending)
-                    {
+                case',':
+                    if ($pending) {
                         $map[Convert::classToBasename($current)] = $current;
                     }
                     $current = $namespace;
@@ -98,34 +87,31 @@ final class TokenExtractor
 
                 case T_AS:
                     $token = $this->Tokens[$index++];
-                    if (($token[0] ?? null) !== T_STRING)
-                    {
-                        throw new UnexpectedValueException("T_AS not followed by T_STRING");
+                    if (($token[0] ?? null) !== T_STRING) {
+                        throw new UnexpectedValueException('T_AS not followed by T_STRING');
                     }
                     $map[$token[1]] = $current;
                     $pending        = false;
                     break;
             }
-        }
-        while (true);
+        } while (true);
     }
 
     public function getUseMap(): array
     {
         $map = [];
-        foreach ($this->getTokensByType(T_USE) as $i)
-        {
+        foreach ($this->getTokensByType(T_USE) as $i) {
             // Ignore:
             // - `class <class> { use <trait> ...`
             // - `function() use (<variable> ...`
-            if (in_array($this->Tokens[$i - 1] ?? null, ["{", ")"]))
-            {
+            if (in_array($this->Tokens[$i - 1] ?? null, ['{', ')'])) {
                 continue;
             }
             $index = $i + 1;
             $this->_getUseMap($index, $map);
             unset($index);
         }
+
         return $map;
     }
 }

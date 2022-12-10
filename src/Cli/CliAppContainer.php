@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
@@ -46,9 +44,9 @@ final class CliAppContainer extends AppContainer
         // - the TTY disconnects
         // - `max_execution_time` is non-zero
         // - `memory_limit` is exceeded
-        ini_set("ignore_user_abort", "1");
-        ini_set("max_execution_time", "0");
-        ini_set("memory_limit", "-1");
+        ini_set('ignore_user_abort', '1');
+        ini_set('max_execution_time', '0');
+        ini_set('memory_limit', '-1');
     }
 
     /**
@@ -83,13 +81,11 @@ final class CliAppContainer extends AppContainer
      */
     protected function getNodeCommand(string $name, $node): ?CliCommand
     {
-        if (is_string($node))
-        {
-            if (!(($command = $this->get($node)) instanceof CliCommand))
-            {
+        if (is_string($node)) {
+            if (!(($command = $this->get($node)) instanceof CliCommand)) {
                 throw new UnexpectedValueException("Not a subclass of CliCommand: $node");
             }
-            $command->setName($name ? explode(" ", $name) : []);
+            $command->setName($name ? explode(' ', $name) : []);
 
             return $command;
         }
@@ -119,14 +115,10 @@ final class CliAppContainer extends AppContainer
     {
         $tree = $this->CommandTree;
 
-        foreach ($name as $subcommand)
-        {
-            if (is_null($tree))
-            {
+        foreach ($name as $subcommand) {
+            if (is_null($tree)) {
                 return null;
-            }
-            elseif (!is_array($tree))
-            {
+            } elseif (!is_array($tree)) {
                 return false;
             }
 
@@ -165,40 +157,33 @@ final class CliAppContainer extends AppContainer
      */
     public function command(array $name, string $id)
     {
-        foreach ($name as $i => $subcommand)
-        {
+        foreach ($name as $i => $subcommand) {
             Assert::patternMatches($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
         }
 
-        if (!is_null($this->getNode($name)))
-        {
-            throw new UnexpectedValueException("Another command has been registered at '" . implode(" ", $name) . "'");
+        if (!is_null($this->getNode($name))) {
+            throw new UnexpectedValueException("Another command has been registered at '" . implode(' ', $name) . "'");
         }
 
-        $tree   = & $this->CommandTree;
+        $tree   = &$this->CommandTree;
         $branch = $name;
         $leaf   = array_pop($branch);
 
-        foreach ($branch as $subcommand)
-        {
-            if (!is_array($tree[$subcommand] ?? null))
-            {
+        foreach ($branch as $subcommand) {
+            if (!is_array($tree[$subcommand] ?? null)) {
                 $tree[$subcommand] = [];
             }
 
-            $tree = & $tree[$subcommand];
+            $tree = &$tree[$subcommand];
         }
 
-        if (!is_null($leaf))
-        {
+        if (!is_null($leaf)) {
             $tree[$leaf] = $id;
-        }
-        else
-        {
+        } else {
             $tree = $id;
         }
 
-        $this->Commands[implode(" ", $name)] = $id;
+        $this->Commands[implode(' ', $name)] = $id;
 
         return $this;
     }
@@ -212,25 +197,18 @@ final class CliAppContainer extends AppContainer
      */
     private function getUsage(string $name, $node): ?string
     {
-        if ($command = $this->getNodeCommand($name, $node))
-        {
+        if ($command = $this->getNodeCommand($name, $node)) {
             return $command->getUsage();
-        }
-        elseif (!is_array($node))
-        {
+        } elseif (!is_array($node)) {
             return null;
         }
 
         $synopses = [];
 
-        foreach ($node as $childName => $childNode)
-        {
-            if ($command = $this->getNodeCommand($name . ($name ? " " : "") . $childName, $childNode))
-            {
+        foreach ($node as $childName => $childNode) {
+            if ($command = $this->getNodeCommand($name . ($name ? ' ' : '') . $childName, $childNode)) {
                 $synopses[] = "_{$childName}_" . $command->getUsage(true);
-            }
-            elseif (is_array($childNode))
-            {
+            } elseif (is_array($childNode)) {
                 $synopses[] = "_{$childName}_ <command>";
             }
         }
@@ -239,15 +217,15 @@ final class CliAppContainer extends AppContainer
         $synopses = implode("\n  ", $synopses);
 
         return <<<EOF
-___NAME___
-  __{$name}__
+        ___NAME___
+          __{$name}__
 
-___SYNOPSIS___
-  __{$name}__ <command>
+        ___SYNOPSIS___
+          __{$name}__ <command>
 
-___SUBCOMMANDS___
-  $synopses
-EOF;
+        ___SUBCOMMANDS___
+          $synopses
+        EOF;
     }
 
     /**
@@ -264,15 +242,13 @@ EOF;
      */
     public function run(): int
     {
-        $args = array_slice($_SERVER["argv"], 1);
+        $args = array_slice($_SERVER['argv'], 1);
         $node = $this->CommandTree;
-        $name = "";
+        $name = '';
 
-        try
-        {
-            while (is_array($node))
-            {
-                $arg = array_shift($args) ?: "";
+        try {
+            while (is_array($node)) {
+                $arg = array_shift($args) ?: '';
 
                 // 1. Descend into the command tree if $arg is a legal
                 //    subcommand or unambiguous partial subcommand
@@ -280,62 +256,46 @@ EOF;
                 // 3. Print usage info if $arg is "--help" and there are no
                 //    further arguments
                 // 4. Otherwise, fail
-                if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg))
-                {
+                if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)) {
                     $nodes = array_filter(
                         $node,
-                        function ($childName) use ($arg)
-                        {
+                        function ($childName) use ($arg) {
                             return strpos($childName, $arg) === 0;
                         },
                         ARRAY_FILTER_USE_KEY
                     );
 
-                    if (!$nodes)
-                    {
-                        if ($arg == "help")
-                        {
-                            $args[] = "--help";
+                    if (!$nodes) {
+                        if ($arg == 'help') {
+                            $args[] = '--help';
                             continue;
                         }
-                    }
-                    elseif (count($nodes) == 1)
-                    {
+                    } elseif (count($nodes) == 1) {
                         $arg = key($nodes);
                     }
 
                     $node  = $node[$arg] ?? null;
-                    $name .= ($name ? " " : "") . $arg;
-                }
-                elseif ($arg == "--help" && empty($args))
-                {
+                    $name .= ($name ? ' ' : '') . $arg;
+                } elseif ($arg == '--help' && empty($args)) {
                     Console::out($this->getUsage($name, $node));
 
                     return 0;
-                }
-                else
-                {
-                    throw new CliArgumentsInvalidException("missing or incomplete command" . ($name ? " '$name'" : ""));
+                } else {
+                    throw new CliArgumentsInvalidException('missing or incomplete command' . ($name ? " '$name'" : ''));
                 }
             }
 
-            if ($command = $this->getNodeCommand($name, $node))
-            {
+            if ($command = $this->getNodeCommand($name, $node)) {
                 $this->RunningCommand = $command;
 
                 return $command($args);
-            }
-            else
-            {
+            } else {
                 throw new CliArgumentsInvalidException("no command registered at '$name'");
             }
-        }
-        catch (CliArgumentsInvalidException $ex)
-        {
+        } catch (CliArgumentsInvalidException $ex) {
             unset($ex);
 
-            if ($node && $usage = $this->getUsage($name, $node))
-            {
+            if ($node && $usage = $this->getUsage($name, $node)) {
                 Console::out($usage);
             }
 
@@ -353,6 +313,6 @@ EOF;
      */
     public function runAndExit()
     {
-        exit ($this->run());
+        exit($this->run());
     }
 }

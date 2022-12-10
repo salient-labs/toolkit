@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Sync;
 
@@ -30,11 +28,11 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
 
         $_user = $user->toArrayWith(
             SerializeRulesBuilder::build($container)
-            ->entity(User::class)->sortByKey(true)->go()
+                ->entity(User::class)->sortByKey(true)->go()
         );
         $_post = $post->toArrayWith(
             SerializeRulesBuilder::build($container)
-            ->entity(Post::class)->sortByKey(true)->go()
+                ->entity(Post::class)->sortByKey(true)->go()
         );
 
         $this->assertSame([
@@ -46,20 +44,20 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
             'phone'   => null,
             'posts'   => [
                 [
-                    'body'      => null,
-                    'id'        => 101,
-                    'title'     => null,
-                    'user'      => [
+                    'body'  => null,
+                    'id'    => 101,
+                    'title' => null,
+                    'user'  => [
                         '@type' => '/Lkrms/Tests/Sync/Entity/User',
                         '@id'   => 1,
                         '@why'  => 'Circular reference detected',
                     ],
                 ],
                 [
-                    'body'      => null,
-                    'id'        => 102,
-                    'title'     => null,
-                    'user'      => [
+                    'body'  => null,
+                    'id'    => 102,
+                    'title' => null,
+                    'user'  => [
                         '@type' => '/Lkrms/Tests/Sync/Entity/User',
                         '@id'   => 1,
                         '@why'  => 'Circular reference detected',
@@ -69,10 +67,10 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
             'username' => null,
         ], $_user);
         $this->assertSame([
-            'body'        => null,
-            'id'          => 102,
-            'title'       => null,
-            'user'        => [
+            'body'  => null,
+            'id'    => 102,
+            'title' => null,
+            'user'  => [
                 'address' => null,
                 'company' => null,
                 'email'   => null,
@@ -81,10 +79,10 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
                 'phone'   => null,
                 'posts'   => [
                     [
-                        'body'      => null,
-                        'id'        => 101,
-                        'title'     => null,
-                        'user'      => [
+                        'body'  => null,
+                        'id'    => 101,
+                        'title' => null,
+                        'user'  => [
                             '@type' => '/Lkrms/Tests/Sync/Entity/User',
                             '@id'   => 1,
                             '@why'  => 'Circular reference detected',
@@ -100,5 +98,4 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
             ],
         ], $_post);
     }
-
 }

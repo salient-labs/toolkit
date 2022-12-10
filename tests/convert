@@ -9,29 +9,29 @@ use Lkrms\Err\Err;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 
-$loader = require (__DIR__ . "/../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();
 
 $data = [
-    "user_id"       => 7654,
-    "fields"        => [
-        "surname"   => "Williams",
-        "email"     => "JWilliams432@gmail.com",
-        "notify_by" => [
-            "email",
-            "sms",
+    'user_id' => 7654,
+    'fields'  => [
+        'surname'   => 'Williams',
+        'email'     => 'JWilliams432@gmail.com',
+        'notify_by' => [
+            'email',
+            'sms',
         ],
-        "created" => new DateTime("2021-10-02T17:23:14+10:00")
+        'created' => new DateTime('2021-10-02T17:23:14+10:00')
     ],
 ];
 
 $queries = [
-    "no_force_numeric_keys" => Convert::dataToQuery($data),
-    "force_numeric_keys"    => Convert::dataToQuery($data, true),
-    "date_format_rss"       => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::RSS)),
-    "date_format_utc"       => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::ATOM, "UTC")),
+    'no_force_numeric_keys' => Convert::dataToQuery($data),
+    'force_numeric_keys'    => Convert::dataToQuery($data, true),
+    'date_format_rss'       => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::RSS)),
+    'date_format_utc'       => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::ATOM, 'UTC')),
 ];
 
 $decoded = array_map(fn($q) => urldecode($q), $queries);
@@ -39,19 +39,19 @@ $decoded = array_map(fn($q) => urldecode($q), $queries);
 print_r([$queries, $decoded]);
 
 $identifiers = [
-    "twowords", "TWOWORDS", "twoWords", "TwoWords",
-    "two_words", "TWO_WORDS", "two_Words", "Two_Words",
-    "_two_words_", "_TWO_WORDS_", "_two_Words_", "_Two_Words_",
-    "-two_words-", "-TWO_WORDS-", "-two_Words-", "-Two_Words-",
-    "two-words", "TWO-WORDS", "Two-Words",
-    "12twowords", "two12words", "twowords12",
-    "12TWOWORDS", "TWO12WORDS", "TWOWORDS12",
-    "12twoWords", "two12Words", "twoWords12",
-    "12TwoWords", "Two12Words", "TwoWords12",
-    "12two_words", "two12_words", "two_12words", "two_words12",
-    "12TWO_WORDS", "TWO12_WORDS", "TWO_12WORDS", "TWO_WORDS12",
-    "12two_Words", "two12_Words", "two_12Words", "two_Words12",
-    "12Two_Words", "Two12_Words", "Two_12Words", "Two_Words12",
+    'twowords', 'TWOWORDS', 'twoWords', 'TwoWords',
+    'two_words', 'TWO_WORDS', 'two_Words', 'Two_Words',
+    '_two_words_', '_TWO_WORDS_', '_two_Words_', '_Two_Words_',
+    '-two_words-', '-TWO_WORDS-', '-two_Words-', '-Two_Words-',
+    'two-words', 'TWO-WORDS', 'Two-Words',
+    '12twowords', 'two12words', 'twowords12',
+    '12TWOWORDS', 'TWO12WORDS', 'TWOWORDS12',
+    '12twoWords', 'two12Words', 'twoWords12',
+    '12TwoWords', 'Two12Words', 'TwoWords12',
+    '12two_words', 'two12_words', 'two_12words', 'two_words12',
+    '12TWO_WORDS', 'TWO12_WORDS', 'TWO_12WORDS', 'TWO_WORDS12',
+    '12two_Words', 'two12_Words', 'two_12Words', 'two_Words12',
+    '12Two_Words', 'Two12_Words', 'Two_12Words', 'Two_Words12',
 ];
 
 $snakeCase = array_combine($identifiers, array_map(
@@ -76,12 +76,12 @@ $pascalCase = array_combine($identifiers, array_map(
 print_r($pascalCase);
 
 $normalise = [
-    "History & Geography",
-    "& Mathematics",
-    "Languages — Modern",
-    "I.T.",
-    "IT. ",
-    "it",
+    'History & Geography',
+    '& Mathematics',
+    "Languages \xe2\x80\x94 Modern",
+    'I.T.',
+    'IT. ',
+    'it',
 ];
 var_dump(array_combine($normalise, array_map(
     fn($i) => Convert::toNormal($i),
@@ -99,22 +99,22 @@ $map = Convert::listToMap($list, 'id');
 print_r($map);
 
 $nouns = [
-    "blitz",
-    "boy",
-    "bus",
-    "cat",
-    "city",
-    "halo",
-    "house",
-    "lunch",
-    "marsh",
-    "photo",
-    "piano",
-    "potato",
-    "puppy",
-    "ray",
-    "tax",
-    "truss",
+    'blitz',
+    'boy',
+    'bus',
+    'cat',
+    'city',
+    'halo',
+    'house',
+    'lunch',
+    'marsh',
+    'photo',
+    'piano',
+    'potato',
+    'puppy',
+    'ray',
+    'tax',
+    'truss',
 ];
 
 print_r(array_combine($nouns, array_map(
@@ -166,19 +166,19 @@ $paths = [
 ];
 
 print_r([
-    "pathToBasename" => array_combine($paths, array_map(
-        fn($i)       => Convert::pathToBasename($i),
+    'pathToBasename' => array_combine($paths, array_map(
+        fn($i) => Convert::pathToBasename($i),
         $paths
     )),
-    "pathToBasename(,1)" => array_combine($paths, array_map(
+    'pathToBasename(,1)' => array_combine($paths, array_map(
         fn($i) => Convert::pathToBasename($i, 1),
         $paths
     )),
-    "pathToBasename(,2)" => array_combine($paths, array_map(
+    'pathToBasename(,2)' => array_combine($paths, array_map(
         fn($i) => Convert::pathToBasename($i, 2),
         $paths
     )),
-    "pathToBasename(,-1)" => array_combine($paths, array_map(
+    'pathToBasename(,-1)' => array_combine($paths, array_map(
         fn($i) => Convert::pathToBasename($i, -1),
         $paths
     )),
@@ -191,27 +191,27 @@ $fqcn = [
     '\Composer\Command\Command',
     'Command',
     'RequireCommand',
-    'Composer\Command\UpdateCommand\\',
+    'Composer\\Command\\UpdateCommand\\',
 ];
 
 print_r([
-    "basename" => array_combine($fqcn, array_map(
+    'basename' => array_combine($fqcn, array_map(
         fn($i) => Convert::classToBasename($i),
         $fqcn
     )),
-    "basename_sans_suffix" => array_combine($fqcn, array_map(
-        fn($i) => Convert::classToBasename($i, "Command"),
+    'basename_sans_suffix' => array_combine($fqcn, array_map(
+        fn($i) => Convert::classToBasename($i, 'Command'),
         $fqcn
     )),
-    "namespace" => array_combine($fqcn, array_map(
-        fn($i)  => Convert::classToNamespace($i),
+    'namespace' => array_combine($fqcn, array_map(
+        fn($i) => Convert::classToNamespace($i),
         $fqcn
     ))
 ]);
 
 print_r([
-    "PT48M" => Convert::intervalToSeconds("PT48M"),
-    "P1W2D" => Convert::intervalToSeconds("P1W2D"),
+    'PT48M' => Convert::intervalToSeconds('PT48M'),
+    'P1W2D' => Convert::intervalToSeconds('P1W2D'),
 ]);
 
 $text = <<<EOF
@@ -251,11 +251,11 @@ Section:
 EOF;
 
 print_r([
-    "from"        => $text,
-    "to"          => Convert::linesToLists($text),
-    "markdown"    => Convert::linesToLists($text, "\n\n"),
-    "nested"      => Convert::linesToLists($text, "\n\n", "-"),
-    "mb_from"     => $mbText,
-    "mb_to"       => Convert::linesToLists($mbText, "\n", "📍"),
-    "mb_markdown" => Convert::linesToLists($mbText, "\n\n", "📍"),
+    'from'        => $text,
+    'to'          => Convert::linesToLists($text),
+    'markdown'    => Convert::linesToLists($text, "\n\n"),
+    'nested'      => Convert::linesToLists($text, "\n\n", '-'),
+    'mb_from'     => $mbText,
+    'mb_to'       => Convert::linesToLists($mbText, "\n", "\xf0\x9f\x93\x8d"),
+    'mb_markdown' => Convert::linesToLists($mbText, "\n\n", "\xf0\x9f\x93\x8d"),
 ]);

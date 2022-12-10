@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Concept;
 
@@ -92,7 +90,7 @@ abstract class SyncProvider implements ISyncProvider, IService
 
     public function name(?int $maxLength = null): ?string
     {
-        return Convert::classToBasename(static::class, "SyncProvider", "Provider");
+        return Convert::classToBasename(static::class, 'SyncProvider', 'Provider');
     }
 
     public function description(?int $maxLength = null): ?string
@@ -203,17 +201,15 @@ abstract class SyncProvider implements ISyncProvider, IService
 
     final public function __call(string $name, array $arguments)
     {
-        if (($closure = $this->MagicMethodClosures[$name = strtolower($name)] ?? false) === false)
-        {
-            $closure = SyncIntrospector::get(static::class)->getMagicSyncOperationClosure($name, $this);
+        if (($closure = $this->MagicMethodClosures[$name = strtolower($name)] ?? false) === false) {
+            $closure                          = SyncIntrospector::get(static::class)->getMagicSyncOperationClosure($name, $this);
             $this->MagicMethodClosures[$name] = $closure;
         }
-        if ($closure)
-        {
+        if ($closure) {
             return $closure(...$arguments);
         }
 
-        throw new RuntimeException("Call to undefined method: " . static::class . "::$name()");
+        throw new RuntimeException('Call to undefined method: ' . static::class . "::$name()");
     }
 
     final public function getProviderId(): int
@@ -225,5 +221,4 @@ abstract class SyncProvider implements ISyncProvider, IService
     {
         return $binary ? $this->Hash : bin2hex($this->Hash);
     }
-
 }

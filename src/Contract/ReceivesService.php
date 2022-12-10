@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -18,5 +16,4 @@ interface ReceivesService
      * @return $this
      */
     public function setService(string $id);
-
 }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Curler;
 
@@ -13,9 +11,9 @@ final class CurlerHeadersImmutableTest extends \Lkrms\Tests\TestCase
     public function testFromMutable()
     {
         $headers   = new CurlerHeaders();
-        $changed   = $headers->setHeader("A", "1");
+        $changed   = $headers->setHeader('A', '1');
         $immutable = CurlerHeadersImmutable::fromMutable($headers);
-        $mutated   = $immutable->setHeader("B", "2");
+        $mutated   = $immutable->setHeader('B', '2');
 
         $this->assertInstanceOf(CurlerHeadersImmutable::class, $immutable);
 
@@ -25,5 +23,4 @@ final class CurlerHeadersImmutableTest extends \Lkrms\Tests\TestCase
         $this->assertEquals($headers->getHeaderValues(), $immutable->getHeaderValues());
         $this->assertNotEquals($immutable->getHeaderValues(), $mutated->getHeaderValues());
     }
-
 }

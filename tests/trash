@@ -6,16 +6,16 @@ namespace Lkrms\Tests;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Trash;
 
-$loader = require (__DIR__ . "/../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();
 
-Trash::load("/tmp/__Lkrms__Trash.db");
+Trash::load('/tmp/__Lkrms__Trash.db');
 
 Trash::put(
     '4271',
-    ['id' => 4271, 'name' => "Test object"],
+    ['id' => 4271, 'name' => 'Test object'],
     'generic_entity',
     'com.linacreative.ephemeral',
     filectime(__FILE__),

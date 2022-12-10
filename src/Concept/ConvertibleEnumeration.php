@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concept;
 
@@ -36,10 +34,8 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
         $constants = (new ReflectionClass(static::class))->getReflectionConstants();
 
         $map = $flippedMap = [];
-        foreach ($constants as $constant)
-        {
-            if (!$constant->isPublic())
-            {
+        foreach ($constants as $constant) {
+            if (!$constant->isPublic()) {
                 continue;
             }
 
@@ -47,33 +43,32 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
             $map[$name]         = $value;
             $flippedMap[$value] = $name;
         }
-        if (count($map) != count($flippedMap))
-        {
-            throw new RuntimeException("Public constants are not unique: " . static::class);
+        if (count($map) != count($flippedMap)) {
+            throw new RuntimeException('Public constants are not unique: ' . static::class);
         }
         self::$ValueMaps[static::class] = $map;
-        self::$NameMaps[static::class] = $flippedMap;
+        self::$NameMaps[static::class]  = $flippedMap;
 
         return $flipped ? $flippedMap : $map;
     }
 
     final public static function fromName(string $name): int
     {
-        if (is_null($value = (self::$ValueMaps[static::class] ?? self::getMap())[$name] ?? null))
-        {
-            throw new UnexpectedValueException("Invalid "
+        if (is_null($value = (self::$ValueMaps[static::class] ?? self::getMap())[$name] ?? null)) {
+            throw new UnexpectedValueException('Invalid '
                 . Convert::classToBasename(static::class) . " name: $name");
         }
+
         return $value;
     }
 
     final public static function toName(int $value): string
     {
-        if (is_null($name = (self::$NameMaps[static::class] ?? self::getMap(true))[$value] ?? null))
-        {
-            throw new UnexpectedValueException("Invalid "
+        if (is_null($name = (self::$NameMaps[static::class] ?? self::getMap(true))[$value] ?? null)) {
+            throw new UnexpectedValueException('Invalid '
                 . Convert::classToBasename(static::class) . ": $value");
         }
+
         return $name;
     }
 }

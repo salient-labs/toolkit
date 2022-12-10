@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Cli\Command;
 
@@ -12,7 +10,7 @@ class TestOptions extends CliCommand
 {
     public function getDescription(): string
     {
-        return "Test the available option types";
+        return 'Test the available option types';
     }
 
     protected function getOptionList(): array
@@ -30,69 +28,69 @@ class TestOptions extends CliCommand
         //     "defaultValue"    => null,
         return [
             (CliOption::build()
-                ->long("operation")
-                ->valueName("jobType")
-                ->description("Task to complete")
+                ->long('operation')
+                ->valueName('jobType')
+                ->description('Task to complete')
                 ->optionType(CliOptionType::ONE_OF_POSITIONAL)
-                ->allowedValues(["compress", "copy"])
+                ->allowedValues(['compress', 'copy'])
                 ->required()),
             (CliOption::build()
-                ->long("source")
-                ->description("One or more sources")
+                ->long('source')
+                ->description('One or more sources')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->multipleAllowed()
                 ->required()
                 ->go()),
             (CliOption::build()
-                ->long("target")
-                ->valueName("targetDir")
-                ->description("Target directory")
+                ->long('target')
+                ->valueName('targetDir')
+                ->description('Target directory')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->required()),
             (CliOption::build()
-                ->long("verbose")
-                ->short("v")
-                ->description("Increase verbosity")
+                ->long('verbose')
+                ->short('v')
+                ->description('Increase verbosity')
                 ->multipleAllowed()),
             (CliOption::build()
-                ->long("archive")
-                ->short("a")
-                ->description("Archive mode")),
+                ->long('archive')
+                ->short('a')
+                ->description('Archive mode')),
             (CliOption::build()
-                ->long("stderr")
-                ->description("Change stderr output mode")
-                ->valueName("MODE")
+                ->long('stderr')
+                ->description('Change stderr output mode')
+                ->valueName('MODE')
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(["errors", "all"])
-                ->defaultValue("errors")),
+                ->allowedValues(['errors', 'all'])
+                ->defaultValue('errors')),
             (CliOption::build()
-                ->long("backup-dir")
-                ->description("Make backups into hierarchy based in DIR")
-                ->valueName("DIR")
+                ->long('backup-dir')
+                ->description('Make backups into hierarchy based in DIR')
+                ->valueName('DIR')
                 ->optionType(CliOptionType::VALUE)),
             (CliOption::build()
-                ->long("links")
-                ->short("l")
-                ->description("Copy symlinks as symlinks")),
+                ->long('links')
+                ->short('l')
+                ->description('Copy symlinks as symlinks')),
             (CliOption::build()
-                ->long("copy-links")
-                ->short("L")
-                ->description("Transform symlink into referent file/dir")),
+                ->long('copy-links')
+                ->short('L')
+                ->description('Transform symlink into referent file/dir')),
             (CliOption::build()
-                ->long("in-place")
-                ->short("i")
-                ->valueName("SUFFIX")
-                ->description("Edit files in place")
+                ->long('in-place')
+                ->short('i')
+                ->valueName('SUFFIX')
+                ->description('Edit files in place')
                 ->optionType(CliOptionType::VALUE_OPTIONAL)),
             (CliOption::build()
-                ->long("refresh")
-                ->short("r")
-                ->valueName("CACHE")
-                ->description("Ignore locally cached data")
+                ->long('refresh')
+                ->short('r')
+                ->valueName('CACHE')
+                ->description('Ignore locally cached data')
                 ->optionType(CliOptionType::ONE_OF_OPTIONAL)
-                ->allowedValues(["all", "hosts", "users"])
+                ->allowedValues(['all', 'hosts', 'users'])
                 ->multipleAllowed()
-                ->defaultValue(["all"])),
+                ->defaultValue(['all'])),
         ];
     }
 

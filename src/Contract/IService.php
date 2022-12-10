@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Contract;
 
@@ -41,5 +39,4 @@ interface IService
      * @return array<string,string>
      */
     public static function getContextualBindings(): array;
-
 }

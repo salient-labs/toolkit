@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Cli\Exception;
 
@@ -13,13 +11,12 @@ use Lkrms\Facade\Console;
  */
 class CliArgumentsInvalidException extends \Lkrms\Exception\Exception
 {
-    public function __construct(string $message = "")
+    public function __construct(string $message = '')
     {
-        if ($message)
-        {
+        if ($message) {
             Console::error(Cli::getProgramName() . ": $message");
         }
 
-        parent::__construct($message ?: "Invalid arguments");
+        parent::__construct($message ?: 'Invalid arguments');
     }
 }

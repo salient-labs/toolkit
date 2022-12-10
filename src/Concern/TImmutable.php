@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
@@ -14,8 +12,7 @@ trait TImmutable
 {
     final public static function fromMutable(parent $mutable): self
     {
-        if ($mutable instanceof self)
-        {
+        if ($mutable instanceof self) {
             return $mutable;
         }
 
@@ -29,5 +26,4 @@ trait TImmutable
     {
         return clone $this;
     }
-
 }

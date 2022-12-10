@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Sync\Concept;
 
@@ -22,17 +20,17 @@ abstract class DbSyncProvider extends SyncProvider
     public function getBackendIdentifier(): array
     {
         $connector = $this->getDbConnector();
-        if ($connector->Dsn)
-        {
+        if ($connector->Dsn) {
             /** @todo Implement DSN parsing */
-            throw new RuntimeException("DSN parsing not implemented: "
-                . static::class . "::" . __FUNCTION__);
+            throw new RuntimeException('DSN parsing not implemented: '
+                . static::class . '::' . __FUNCTION__);
         }
+
         return array_map(fn($value) => strtolower(trim($value)), [
-            $connector->Hostname ?: "",
-            (string)$connector->Port ?: "",
-            $connector->Database ?: "",
-            $connector->Schema ?: "",
+            $connector->Hostname ?: '',
+            (string) $connector->Port ?: '',
+            $connector->Database ?: '',
+            $connector->Schema ?: '',
         ]);
     }
 
@@ -77,11 +75,12 @@ abstract class DbSyncProvider extends SyncProvider
 
     final public function getDb(): ADOConnection
     {
-        if (!$this->Db)
-        {
+        if (!$this->Db) {
             Assert::localeIsUtf8();
+
             return $this->Db = $this->getDbConnector()->getConnection();
         }
+
         return $this->Db;
     }
 
@@ -93,12 +92,9 @@ abstract class DbSyncProvider extends SyncProvider
     public function checkHeartbeat(int $ttl = 300)
     {
         $connector = $this->getDbConnector();
-        try
-        {
+        try {
             $connector->getConnection();
-        }
-        catch (Throwable $ex)
-        {
+        } catch (Throwable $ex) {
             throw new RuntimeException(
                 "Heartbeat connection to database '{$connector->Name}' failed",
                 0,

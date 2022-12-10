@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concern;
 
@@ -14,5 +12,4 @@ trait HasItems
      * @psalm-var T[]
      */
     private $_Items = [];
-
 }

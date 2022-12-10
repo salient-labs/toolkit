@@ -6,14 +6,14 @@ namespace Lkrms\Tests;
 use Lkrms\Facade\App;
 use Lkrms\Facade\Cache;
 
-$loader = require (__DIR__ . "/../vendor/autoload.php");
-$loader->addPsr4("Lkrms\\Tests\\", __DIR__);
+$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 $app = App::load(__DIR__)->loadCache();
 
 print_r([
     'App::getInstance()->CachePath' => App::getInstance()->CachePath,
-    '$app->DataPath'       => $app->DataPath,
-    '$app->LogPath'        => $app->LogPath,
-    'Cache::getInstance()' => Cache::getInstance(),
+    '$app->DataPath'                => $app->DataPath,
+    '$app->LogPath'                 => $app->LogPath,
+    'Cache::getInstance()'          => Cache::getInstance(),
 ]);

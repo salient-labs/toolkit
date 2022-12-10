@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Tests\Curler;
 
@@ -10,8 +8,8 @@ final class CurlerTest extends \Lkrms\Tests\TestCase
 {
     public function testCurler()
     {
-        $curler = new Curler("https://api.github.com/meta");
+        $curler = new Curler('https://api.github.com/meta');
         $data   = $curler->get();
-        $this->assertArrayHasKey("web", $data);
+        $this->assertArrayHasKey('web', $data);
     }
 }

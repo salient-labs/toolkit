@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Store;
 
@@ -18,7 +16,7 @@ final class CacheStore extends SqliteStore
      */
     private $FlushedExpired;
 
-    public function __construct(string $filename = ":memory:")
+    public function __construct(string $filename = ':memory:')
     {
         $this->requireUpsert();
 
@@ -30,33 +28,33 @@ final class CacheStore extends SqliteStore
      *
      * @return $this
      */
-    public function open(string $filename = ":memory:")
+    public function open(string $filename = ':memory:')
     {
         $this->openDb($filename);
 
         $db = $this->db();
         $db->exec(
-<<<SQL
-CREATE TABLE IF NOT EXISTS
-  _cache_item (
-    item_key TEXT NOT NULL PRIMARY KEY,
-    item_value BLOB,
-    expires_at DATETIME,
-    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    set_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-  ) WITHOUT ROWID;
+            <<<SQL
+            CREATE TABLE IF NOT EXISTS
+              _cache_item (
+                item_key TEXT NOT NULL PRIMARY KEY,
+                item_value BLOB,
+                expires_at DATETIME,
+                added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                set_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+              ) WITHOUT ROWID;
 
-CREATE TRIGGER IF NOT EXISTS _cache_item_update AFTER
-UPDATE
-  ON _cache_item BEGIN
-UPDATE
-  _cache_item
-SET
-  set_at = CURRENT_TIMESTAMP
-WHERE
-  item_key = NEW.item_key;
-END;
-SQL
+            CREATE TRIGGER IF NOT EXISTS _cache_item_update AFTER
+            UPDATE
+              ON _cache_item BEGIN
+            UPDATE
+              _cache_item
+            SET
+              set_at = CURRENT_TIMESTAMP
+            WHERE
+              item_key = NEW.item_key;
+            END;
+            SQL
         );
 
         return $this;
@@ -64,8 +62,7 @@ SQL
 
     private function maybeFlush(): void
     {
-        if (!$this->FlushedExpired)
-        {
+        if (!$this->FlushedExpired) {
             $this->flushExpired();
             $this->FlushedExpired = true;
         }
@@ -83,8 +80,7 @@ SQL
      */
     public function set(string $key, $value, int $expiry = 0)
     {
-        if ($value === false)
-        {
+        if ($value === false) {
             $this->delete($key);
 
             return $this;
@@ -94,41 +90,38 @@ SQL
 
         // If $expiry is non-zero and exceeds 60*60*24*30 seconds (30 days),
         // take it as a Unix timestamp, otherwise take it as seconds from now
-        if (!$expiry)
-        {
+        if (!$expiry) {
             $expiry = null;
-        }
-        elseif ($expiry <= 2592000)
-        {
+        } elseif ($expiry <= 2592000) {
             $expiry += time();
         }
 
-        $db  = $this->db();
-        $sql = <<<SQL
-INSERT INTO
-  _cache_item (item_key, item_value, expires_at)
-VALUES
-  (
-    :item_key,
-    :item_value,
-    DATETIME(:expires_at, 'unixepoch')
-  ) ON CONFLICT (item_key) DO
-UPDATE
-SET
-  item_value = excluded.item_value,
-  expires_at = excluded.expires_at
-WHERE
-  item_value IS NOT excluded.item_value
-  OR expires_at IS NOT excluded.expires_at;
-SQL;
+        $db   = $this->db();
+        $sql  = <<<SQL
+        INSERT INTO
+          _cache_item (item_key, item_value, expires_at)
+        VALUES
+          (
+            :item_key,
+            :item_value,
+            DATETIME(:expires_at, 'unixepoch')
+          ) ON CONFLICT (item_key) DO
+        UPDATE
+        SET
+          item_value = excluded.item_value,
+          expires_at = excluded.expires_at
+        WHERE
+          item_value IS NOT excluded.item_value
+          OR expires_at IS NOT excluded.expires_at;
+        SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
-        $stmt->bindValue(":item_value", serialize($value), SQLITE3_BLOB);
-        $stmt->bindValue(":expires_at", $expiry, SQLITE3_INTEGER);
+        $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
+        $stmt->bindValue(':item_value', serialize($value), SQLITE3_BLOB);
+        $stmt->bindValue(':expires_at', $expiry, SQLITE3_INTEGER);
         $stmt->execute();
         $stmt->close();
 
-        Console::debug("_cache_item changes:", (string)$db->changes());
+        Console::debug('_cache_item changes:', (string) $db->changes());
 
         return $this;
     }
@@ -145,41 +138,34 @@ SQL;
      */
     public function get(string $key, ?int $maxAge = null)
     {
-        $where[] = "item_key = :item_key";
-        $bind[]  = [":item_key", $key, SQLITE3_TEXT];
+        $where[] = 'item_key = :item_key';
+        $bind[]  = [':item_key', $key, SQLITE3_TEXT];
 
-        if (is_null($maxAge) || $maxAge > 2592000)
-        {
-            $where[] = "(expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)";
-        }
-        elseif ($maxAge)
-        {
-            $where[] = "DATETIME(set_at, :max_age) > CURRENT_TIMESTAMP";
-            $bind[]  = [":max_age", "+$maxAge seconds", SQLITE3_TEXT];
+        if (is_null($maxAge) || $maxAge > 2592000) {
+            $where[] = '(expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)';
+        } elseif ($maxAge) {
+            $where[] = 'DATETIME(set_at, :max_age) > CURRENT_TIMESTAMP';
+            $bind[]  = [':max_age', "+$maxAge seconds", SQLITE3_TEXT];
         }
 
-        $db  = $this->db();
-        $sql = <<<SQL
-SELECT
-  item_value
-FROM
-  _cache_item
-SQL;
-        $stmt = $db->prepare("$sql WHERE " . implode(" AND ", $where));
-        foreach ($bind as $param)
-        {
+        $db   = $this->db();
+        $sql  = <<<SQL
+        SELECT
+          item_value
+        FROM
+          _cache_item
+        SQL;
+        $stmt = $db->prepare("$sql WHERE " . implode(' AND ', $where));
+        foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
         $result = $stmt->execute();
         $row    = $result->fetchArray(SQLITE3_NUM);
         $stmt->close();
 
-        if ($row === false)
-        {
+        if ($row === false) {
             return false;
-        }
-        else
-        {
+        } else {
             return unserialize($row[0]);
         }
     }
@@ -195,19 +181,19 @@ SQL;
     {
         $this->maybeFlush();
 
-        $db  = $this->db();
-        $sql = <<<SQL
-DELETE FROM
-  _cache_item
-WHERE
-  item_key = :item_key;
-SQL;
+        $db   = $this->db();
+        $sql  = <<<SQL
+        DELETE FROM
+          _cache_item
+        WHERE
+          item_key = :item_key;
+        SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
+        $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
-        Console::debug("_cache_item changes:", (string)$db->changes());
+        Console::debug('_cache_item changes:', (string) $db->changes());
 
         return $this;
     }
@@ -221,13 +207,13 @@ SQL;
     {
         $db = $this->db();
         $db->exec(
-<<<SQL
-DELETE FROM
-  _cache_item;
-SQL
+            <<<SQL
+            DELETE FROM
+              _cache_item;
+            SQL
         );
 
-        Console::debug("_cache_item changes:", (string)$db->changes());
+        Console::debug('_cache_item changes:', (string) $db->changes());
 
         return $this;
     }
@@ -241,15 +227,15 @@ SQL
     {
         $db = $this->db();
         $db->exec(
-<<<SQL
-DELETE FROM
-  _cache_item
-WHERE
-  expires_at <= CURRENT_TIMESTAMP;
-SQL
+            <<<SQL
+            DELETE FROM
+              _cache_item
+            WHERE
+              expires_at <= CURRENT_TIMESTAMP;
+            SQL
         );
 
-        Console::debug("_cache_item changes:", (string)$db->changes());
+        Console::debug('_cache_item changes:', (string) $db->changes());
 
         return $this;
     }
@@ -260,13 +246,11 @@ SQL
      */
     public function maybeGet(string $key, callable $callback, int $expiry = 0)
     {
-        if (($value = $this->get($key, $expiry)) === false)
-        {
+        if (($value = $this->get($key, $expiry)) === false) {
             $value = $callback();
             $this->set($key, $value, $expiry);
         }
 
         return $value;
     }
-
 }

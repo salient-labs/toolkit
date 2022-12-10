@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Concept;
 
@@ -44,7 +42,7 @@ abstract class TypedCollection implements ICollection
 
     public function __construct()
     {
-        $this->ItemClass = $this->getItemClass();
+        $this->ItemClass          = $this->getItemClass();
         $this->HasComparableItems = is_a($this->ItemClass, IComparable::class, true);
     }
 
@@ -54,9 +52,8 @@ abstract class TypedCollection implements ICollection
      */
     final public function offsetSet($offset, $value): void
     {
-        if (!is_a($value, $this->ItemClass))
-        {
-            throw new UnexpectedValueException("Expected an instance of " . $this->ItemClass);
+        if (!is_a($value, $this->ItemClass)) {
+            throw new UnexpectedValueException('Expected an instance of ' . $this->ItemClass);
         }
 
         $this->_offsetSet($offset, $value);
@@ -64,15 +61,12 @@ abstract class TypedCollection implements ICollection
 
     final public function has($item, bool $strict = false): bool
     {
-        if (!$this->HasComparableItems)
-        {
+        if (!$this->HasComparableItems) {
             return $this->_has($item, $strict);
         }
 
-        foreach ($this->_Items as $_item)
-        {
-            if (!$this->compareItems($item, $_item, $strict))
-            {
+        foreach ($this->_Items as $_item) {
+            if (!$this->compareItems($item, $_item, $strict)) {
                 return true;
             }
         }
@@ -82,15 +76,12 @@ abstract class TypedCollection implements ICollection
 
     final public function keyOf($item, bool $strict = false)
     {
-        if (!$this->HasComparableItems)
-        {
+        if (!$this->HasComparableItems) {
             return $this->_keyOf($item, $strict);
         }
 
-        foreach ($this->_Items as $key => $_item)
-        {
-            if (!$this->compareItems($item, $_item, $strict))
-            {
+        foreach ($this->_Items as $key => $_item) {
+            if (!$this->compareItems($item, $_item, $strict)) {
                 return $key;
             }
         }
@@ -100,15 +91,12 @@ abstract class TypedCollection implements ICollection
 
     final public function get($item)
     {
-        if (!$this->HasComparableItems)
-        {
+        if (!$this->HasComparableItems) {
             return $this->_get($item);
         }
 
-        foreach ($this->_Items as $_item)
-        {
-            if (!$this->compareItems($item, $_item))
-            {
+        foreach ($this->_Items as $_item) {
+            if (!$this->compareItems($item, $_item)) {
                 return $_item;
             }
         }
@@ -126,5 +114,4 @@ abstract class TypedCollection implements ICollection
             ? $this->ItemClass::compare($a, $b, $strict)
             : ($a <=> $b);
     }
-
 }

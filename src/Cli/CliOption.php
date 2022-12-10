@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Cli;
 
@@ -143,7 +141,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
      * @param string|null $delimiter If `$multipleAllowed` is set, use
      * `$delimiter` to split one value into multiple values.
      */
-    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $optionType = CliOptionType::FLAG, ?array $allowedValues = null, bool $required = false, bool $multipleAllowed = false, $defaultValue = null, ?string $envVariable = null, ?string $delimiter = ",", ? callable $valueCallback = null)
+    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $optionType = CliOptionType::FLAG, ?array $allowedValues = null, bool $required = false, bool $multipleAllowed = false, $defaultValue = null, ?string $envVariable = null, ?string $delimiter = ',', ?callable $valueCallback = null)
     {
         $this->Long            = $long ?: null;
         $this->OptionType      = $optionType;
@@ -151,8 +149,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
         $this->Delimiter       = $multipleAllowed ? $delimiter : null;
         $this->Description     = $description;
 
-        switch ($optionType)
-        {
+        switch ($optionType) {
             case CliOptionType::FLAG:
                 $this->IsFlag  = true;
                 $required      = false;
@@ -162,12 +159,11 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
             case CliOptionType::VALUE_POSITIONAL:
             case CliOptionType::ONE_OF_POSITIONAL:
                 $this->IsPositional = true;
-                $short       = null;
-                $key         = $this->Long;
-                $displayName = $this->Long;
-                $valueName   = $valueName ?: strtoupper(Convert::toSnakeCase($this->Long));
-                if ($optionType === CliOptionType::ONE_OF_POSITIONAL)
-                {
+                $short              = null;
+                $key                = $this->Long;
+                $displayName        = $this->Long;
+                $valueName          = $valueName ?: strtoupper(Convert::toSnakeCase($this->Long));
+                if ($optionType === CliOptionType::ONE_OF_POSITIONAL) {
                     $this->AllowedValues = $allowedValues;
                 }
                 break;
@@ -176,8 +172,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
                 $this->AllowedValues = $allowedValues;
             default:
                 $this->EnvironmentVariable = $envVariable ?: null;
-                if ($this->EnvironmentVariable && Env::has($envVariable))
-                {
+                if ($this->EnvironmentVariable && Env::has($envVariable)) {
                     $required     = false;
                     $defaultValue = Env::get($envVariable);
                 }
@@ -185,16 +180,15 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
         }
 
         $this->Short           = $short ?: null;
-        $this->Key             = $key ?? ($this->Short . "|" . $this->Long);
-        $this->DisplayName     = $displayName ?? ($this->Long ? "--" . $this->Long : "-" . $this->Short);
+        $this->Key             = $key ?? ($this->Short . '|' . $this->Long);
+        $this->DisplayName     = $displayName ?? ($this->Long ? '--' . $this->Long : '-' . $this->Short);
         $this->IsRequired      = $required;
         $this->IsValueRequired = $valueRequired ?? !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
-        $this->ValueName       = $valueName ?: "VALUE";
+        $this->ValueName       = $valueName ?: 'VALUE';
         $this->DefaultValue    = $this->IsRequired ? null : $defaultValue;
         $this->ValueCallback   = $valueCallback;
 
-        if ($this->Delimiter && $this->DefaultValue && is_string($this->DefaultValue))
-        {
+        if ($this->Delimiter && $this->DefaultValue && is_string($this->DefaultValue)) {
             $this->DefaultValue = explode($this->Delimiter, $this->DefaultValue);
         }
     }
@@ -205,55 +199,42 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
      */
     public function validate(): void
     {
-        if ($this->IsPositional && is_null($this->Long))
-        {
-            throw new UnexpectedValueException("long must be set");
-        }
-        elseif (!$this->IsPositional && is_null($this->Long) && is_null($this->Short))
-        {
-            throw new UnexpectedValueException("At least one must be set: long, short");
+        if ($this->IsPositional && is_null($this->Long)) {
+            throw new UnexpectedValueException('long must be set');
+        } elseif (!$this->IsPositional && is_null($this->Long) && is_null($this->Short)) {
+            throw new UnexpectedValueException('At least one must be set: long, short');
         }
 
-        if (!is_null($this->Long))
-        {
-            Assert::patternMatches($this->Long, "/^[a-z0-9][-a-z0-9_]+\$/i", "long");
+        if (!is_null($this->Long)) {
+            Assert::patternMatches($this->Long, '/^[a-z0-9][-a-z0-9_]+$/i', 'long');
         }
 
-        if (!is_null($this->Short))
-        {
-            Assert::patternMatches($this->Short, "/^[a-z0-9]\$/i", "short");
+        if (!is_null($this->Short)) {
+            Assert::patternMatches($this->Short, '/^[a-z0-9]$/i', 'short');
         }
 
-        if (!is_null($this->DefaultValue))
-        {
-            if ($this->MultipleAllowed)
-            {
+        if (!is_null($this->DefaultValue)) {
+            if ($this->MultipleAllowed) {
                 $this->DefaultValue = Convert::toArray($this->DefaultValue);
                 array_walk($this->DefaultValue,
-                    function (&$value)
-                    {
-                        if (($default = Convert::scalarToString($value)) === false)
-                        {
-                            throw new UnexpectedValueException("defaultValue must be a scalar or an array of scalars");
+                    function (&$value) {
+                        if (($default = Convert::scalarToString($value)) === false) {
+                            throw new UnexpectedValueException('defaultValue must be a scalar or an array of scalars');
                         }
 
                         $value = $default;
                     });
-            }
-            else
-            {
-                if (($default = Convert::scalarToString($this->DefaultValue)) === false)
-                {
-                    throw new UnexpectedValueException("defaultValue must be a scalar");
+            } else {
+                if (($default = Convert::scalarToString($this->DefaultValue)) === false) {
+                    throw new UnexpectedValueException('defaultValue must be a scalar');
                 }
 
                 $this->DefaultValue = $default;
             }
         }
 
-        if (in_array($this->OptionType, [CliOptionType::ONE_OF, CliOptionType::ONE_OF_OPTIONAL]))
-        {
-            Assert::notEmpty($this->AllowedValues, "allowedValues");
+        if (in_array($this->OptionType, [CliOptionType::ONE_OF, CliOptionType::ONE_OF_OPTIONAL])) {
+            Assert::notEmpty($this->AllowedValues, 'allowedValues');
         }
     }
 
@@ -290,5 +271,4 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
     {
         return CliOptionBuilder::resolve($object);
     }
-
 }

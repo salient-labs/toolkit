@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Store;
 
@@ -13,7 +11,7 @@ use UnexpectedValueException;
  */
 final class TrashStore extends SqliteStore
 {
-    public function __construct(string $filename = ":memory:")
+    public function __construct(string $filename = ':memory:')
     {
         $this->open($filename);
     }
@@ -23,24 +21,24 @@ final class TrashStore extends SqliteStore
      *
      * @return $this
      */
-    public function open(string $filename = ":memory:")
+    public function open(string $filename = ':memory:')
     {
         $this->openDb($filename);
 
         $db = $this->db();
         $db->exec(
-<<<SQL
-CREATE TABLE IF NOT EXISTS
-  _trash_item (
-    item_type TEXT NOT NULL,
-    item_key TEXT,
-    item_json TEXT NOT NULL,
-    deleted_from TEXT,
-    deleted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_at DATETIME,
-    modified_at DATETIME
-  );
-SQL
+            <<<SQL
+            CREATE TABLE IF NOT EXISTS
+              _trash_item (
+                item_type TEXT NOT NULL,
+                item_key TEXT,
+                item_json TEXT NOT NULL,
+                deleted_from TEXT,
+                deleted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                created_at DATETIME,
+                modified_at DATETIME
+              );
+            SQL
         );
 
         return $this;
@@ -63,39 +61,38 @@ SQL
      */
     public function put(?string $key, $object, ?string $type = null, ?string $deletedFrom = null, ?int $createdAt = null, ?int $modifiedAt = null)
     {
-        if (!$type && !is_object($object))
-        {
+        if (!$type && !is_object($object)) {
             throw new UnexpectedValueException('When argument #3 ($type) is null, argument #2 ($object) must be an object');
         }
 
-        $db  = $this->db();
-        $sql = <<<SQL
-INSERT INTO
-  _trash_item (
-    item_type,
-    item_key,
-    item_json,
-    deleted_from,
-    created_at,
-    modified_at
-  )
-VALUES
-  (
-    :item_type,
-    :item_key,
-    :item_json,
-    :deleted_from,
-    DATETIME(:created_at, 'unixepoch'),
-    DATETIME(:modified_at, 'unixepoch')
-  )
-SQL;
+        $db   = $this->db();
+        $sql  = <<<SQL
+        INSERT INTO
+          _trash_item (
+            item_type,
+            item_key,
+            item_json,
+            deleted_from,
+            created_at,
+            modified_at
+          )
+        VALUES
+          (
+            :item_type,
+            :item_key,
+            :item_json,
+            :deleted_from,
+            DATETIME(:created_at, 'unixepoch'),
+            DATETIME(:modified_at, 'unixepoch')
+          )
+        SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(":item_type", $type ?: get_class($object), SQLITE3_TEXT);
-        $stmt->bindValue(":item_key", $key, SQLITE3_TEXT);
-        $stmt->bindValue(":item_json", json_encode($object), SQLITE3_TEXT);
-        $stmt->bindValue(":deleted_from", $deletedFrom, SQLITE3_TEXT);
-        $stmt->bindValue(":created_at", $createdAt, SQLITE3_INTEGER);
-        $stmt->bindValue(":modified_at", $modifiedAt, SQLITE3_INTEGER);
+        $stmt->bindValue(':item_type', $type ?: get_class($object), SQLITE3_TEXT);
+        $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
+        $stmt->bindValue(':item_json', json_encode($object), SQLITE3_TEXT);
+        $stmt->bindValue(':deleted_from', $deletedFrom, SQLITE3_TEXT);
+        $stmt->bindValue(':created_at', $createdAt, SQLITE3_INTEGER);
+        $stmt->bindValue(':modified_at', $modifiedAt, SQLITE3_INTEGER);
         $stmt->execute();
         $stmt->close();
 
@@ -111,13 +108,12 @@ SQL;
     {
         $db = $this->db();
         $db->exec(
-<<<SQL
-DELETE FROM
-  _trash_item
-SQL
+            <<<SQL
+            DELETE FROM
+              _trash_item
+            SQL
         );
 
         return $this;
     }
-
 }

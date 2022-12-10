@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Lkrms\Console;
 
@@ -81,12 +79,10 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function registerTarget(ConsoleTarget $target, array $levels = ConsoleLevels::ALL_DEBUG)
     {
-        if ($target->isStdout() || $target->isStderr())
-        {
+        if ($target->isStdout() || $target->isStderr()) {
             $this->addTarget($target, $levels, $this->StdioTargets);
         }
-        if ($target->isTty())
-        {
+        if ($target->isTty()) {
             $this->addTarget($target, $levels, $this->TtyTargets);
         }
         $this->addTarget($target, $levels, $this->Targets);
@@ -94,10 +90,9 @@ final class ConsoleWriter implements ReceivesFacade
         return $this;
     }
 
-    private function addTarget(ConsoleTarget $target, array $levels, array & $targets)
+    private function addTarget(ConsoleTarget $target, array $levels, array &$targets)
     {
-        foreach ($levels as $level)
-        {
+        foreach ($levels as $level) {
             $targets[$level][] = $target;
         }
     }
@@ -106,7 +101,7 @@ final class ConsoleWriter implements ReceivesFacade
     {
         // Log output to
         // `{TMPDIR}/<script_basename>-<realpath_hash>-<user_id>.log`
-        $this->registerTarget(StreamTarget::fromPath(File::getStablePath(".log")), ConsoleLevels::ALL_DEBUG);
+        $this->registerTarget(StreamTarget::fromPath(File::getStablePath('.log')), ConsoleLevels::ALL_DEBUG);
         $this->registerDefaultStdioTargets();
     }
 
@@ -120,17 +115,15 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function registerDefaultStdioTargets(bool $replace = false)
     {
-        switch (strtolower(Env::get("CONSOLE_OUTPUT", "")))
-        {
-            case "stderr":
+        switch (strtolower(Env::get('CONSOLE_OUTPUT', ''))) {
+            case'stderr':
                 return $this->registerStdioTarget($replace, STDERR);
 
-            case "stdout":
+            case'stdout':
                 return $this->registerStdioTarget($replace, STDOUT);
         }
 
-        if (stream_isatty(STDERR) && !stream_isatty(STDOUT))
-        {
+        if (stream_isatty(STDERR) && !stream_isatty(STDOUT)) {
             return $this->registerStderrTarget($replace);
         }
 
@@ -147,8 +140,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function registerStdioTargets(bool $replace = false)
     {
-        if (PHP_SAPI != "cli" || ($this->StdioTargets && !$replace))
-        {
+        if (PHP_SAPI != 'cli' || ($this->StdioTargets && !$replace)) {
             return $this;
         }
 
@@ -180,8 +172,7 @@ final class ConsoleWriter implements ReceivesFacade
 
     private function registerStdioTarget(bool $replace, $stream)
     {
-        if (PHP_SAPI != "cli" || ($this->StdioTargets && !$replace))
-        {
+        if (PHP_SAPI != 'cli' || ($this->StdioTargets && !$replace)) {
             return $this;
         }
 
@@ -196,8 +187,7 @@ final class ConsoleWriter implements ReceivesFacade
 
     private function clearStdioTargets(): void
     {
-        if (!$this->StdioTargets)
-        {
+        if (!$this->StdioTargets) {
             return;
         }
         $this->removeTargets($this->StdioTargets, $this->Targets);
@@ -205,12 +195,10 @@ final class ConsoleWriter implements ReceivesFacade
         $this->StdioTargets = [];
     }
 
-    private function removeTargets(array $remove, array & $from): void
+    private function removeTargets(array $remove, array &$from): void
     {
-        foreach (array_keys($remove) as $level)
-        {
-            if ($from[$level] ?? null)
-            {
+        foreach (array_keys($remove) as $level) {
+            if ($from[$level] ?? null) {
                 $from[$level] = array_udiff(
                     $from[$level],
                     $remove[$level],
@@ -258,24 +246,23 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function summary(string $finishedText = "Command finished", string $successText = "without errors")
+    public function summary(string $finishedText = 'Command finished', string $successText = 'without errors')
     {
         $msg1 = trim($finishedText);
-        if (!($this->Warnings || $this->Errors))
-        {
-            return $this->write(Level::INFO, $msg1, $successText, " // ");
+        if (!($this->Warnings || $this->Errors)) {
+            return $this->write(Level::INFO, $msg1, $successText, ' // ');
         }
 
-        $msg2 = "with " . Convert::plural($this->Errors, "error", "errors", true);
-        if ($this->Warnings)
-        {
-            $msg2 .= " and " . Convert::plural($this->Warnings, "warning", "warnings", true);
+        $msg2 = 'with ' . Convert::plural($this->Errors, 'error', 'errors', true);
+        if ($this->Warnings) {
+            $msg2 .= ' and ' . Convert::plural($this->Warnings, 'warning', 'warnings', true);
         }
+
         return $this->write(
             $this->Errors ? Level::ERROR : Level::WARNING,
             $msg1,
             $msg2,
-            $this->Errors ? " !! " : "  ! "
+            $this->Errors ? ' !! ' : '  ! '
         );
     }
 
@@ -307,8 +294,7 @@ final class ConsoleWriter implements ReceivesFacade
     private function writeOnce(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null)
     {
         $hash = Compute::hash($level, $msg1, $msg2, $prefix);
-        if (($this->Written[$hash] = ($this->Written[$hash] ?? 0) + 1) < 2)
-        {
+        if (($this->Written[$hash] = ($this->Written[$hash] ?? 0) + 1) < 2) {
             return $this->write($level, $msg1, $msg2, $prefix, $ex);
         }
 
@@ -322,7 +308,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function out(string $msg, int $level = Level::INFO)
     {
-        return $this->_write($level, $msg, null, "", null, $this->StdioTargets);
+        return $this->_write($level, $msg, null, '', null, $this->StdioTargets);
     }
 
     /**
@@ -332,7 +318,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function tty(string $msg, int $level = Level::INFO)
     {
-        return $this->_write($level, $msg, null, "", null, $this->TtyTargets);
+        return $this->_write($level, $msg, null, '', null, $this->TtyTargets);
     }
 
     /**
@@ -357,10 +343,9 @@ final class ConsoleWriter implements ReceivesFacade
 
     private function _message(int $level, string $msg1, ?string $msg2, ?Throwable $ex, bool $once = false)
     {
-        $suffix = $once ? "Once" : "";
+        $suffix = $once ? 'Once' : '';
 
-        switch ($level)
-        {
+        switch ($level) {
             case Level::EMERGENCY:
             case Level::ALERT:
             case Level::CRITICAL:
@@ -390,8 +375,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function count(int $level)
     {
-        switch ($level)
-        {
+        switch ($level) {
             case Level::EMERGENCY:
             case Level::ALERT:
             case Level::CRITICAL:
@@ -415,7 +399,8 @@ final class ConsoleWriter implements ReceivesFacade
     public function error(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true)
     {
         !$count || $this->Errors++;
-        return $this->write(Level::ERROR, $msg1, $msg2, " !! ", $ex);
+
+        return $this->write(Level::ERROR, $msg1, $msg2, ' !! ', $ex);
     }
 
     /**
@@ -426,7 +411,8 @@ final class ConsoleWriter implements ReceivesFacade
     public function errorOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true)
     {
         !$count || $this->Errors++;
-        return $this->writeOnce(Level::ERROR, $msg1, $msg2, " !! ", $ex);
+
+        return $this->writeOnce(Level::ERROR, $msg1, $msg2, ' !! ', $ex);
     }
 
     /**
@@ -437,7 +423,8 @@ final class ConsoleWriter implements ReceivesFacade
     public function warn(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true)
     {
         !$count || $this->Warnings++;
-        return $this->write(Level::WARNING, $msg1, $msg2, "  ! ", $ex);
+
+        return $this->write(Level::WARNING, $msg1, $msg2, '  ! ', $ex);
     }
 
     /**
@@ -448,7 +435,8 @@ final class ConsoleWriter implements ReceivesFacade
     public function warnOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true)
     {
         !$count || $this->Warnings++;
-        return $this->writeOnce(Level::WARNING, $msg1, $msg2, "  ! ", $ex);
+
+        return $this->writeOnce(Level::WARNING, $msg1, $msg2, '  ! ', $ex);
     }
 
     /**
@@ -458,7 +446,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function info(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
     {
-        return $this->write(Level::NOTICE, $msg1, $msg2, "==> ", $ex);
+        return $this->write(Level::NOTICE, $msg1, $msg2, '==> ', $ex);
     }
 
     /**
@@ -468,7 +456,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function infoOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
     {
-        return $this->writeOnce(Level::NOTICE, $msg1, $msg2, "==> ", $ex);
+        return $this->writeOnce(Level::NOTICE, $msg1, $msg2, '==> ', $ex);
     }
 
     /**
@@ -478,7 +466,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function log(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
     {
-        return $this->write(Level::INFO, $msg1, $msg2, " -> ", $ex);
+        return $this->write(Level::INFO, $msg1, $msg2, ' -> ', $ex);
     }
 
     /**
@@ -488,7 +476,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function logOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
     {
-        return $this->writeOnce(Level::INFO, $msg1, $msg2, " -> ", $ex);
+        return $this->writeOnce(Level::INFO, $msg1, $msg2, ' -> ', $ex);
     }
 
     /**
@@ -498,7 +486,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function logProgress(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
     {
-        return $this->writeTty(Level::INFO, $msg1, $msg2, " -> ", $ex);
+        return $this->writeTty(Level::INFO, $msg1, $msg2, ' -> ', $ex);
     }
 
     /**
@@ -510,14 +498,14 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function debug(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, int $depth = 0)
     {
-        if ($this->Facade)
-        {
+        if ($this->Facade) {
             $depth++;
         }
 
-        $caller = implode("", Debug::getCaller($depth));
-        $msg1   = $msg1 ? " __" . $msg1 . "__" : "";
-        return $this->write(Level::DEBUG, "{{$caller}}{$msg1}", $msg2, "--- ", $ex);
+        $caller = implode('', Debug::getCaller($depth));
+        $msg1   = $msg1 ? ' __' . $msg1 . '__' : '';
+
+        return $this->write(Level::DEBUG, "{{$caller}}{$msg1}", $msg2, '--- ', $ex);
     }
 
     /**
@@ -529,13 +517,13 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function debugOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, int $depth = 0)
     {
-        if ($this->Facade)
-        {
+        if ($this->Facade) {
             $depth++;
         }
 
-        $caller = implode("", Debug::getCaller($depth));
-        return $this->writeOnce(Level::DEBUG, "{{$caller}} __" . $msg1 . "__", $msg2, "--- ", $ex);
+        $caller = implode('', Debug::getCaller($depth));
+
+        return $this->writeOnce(Level::DEBUG, "{{$caller}} __" . $msg1 . '__', $msg2, '--- ', $ex);
     }
 
     /**
@@ -549,8 +537,9 @@ final class ConsoleWriter implements ReceivesFacade
     public function group(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
     {
         $this->GroupLevel++;
-        $this->GroupMessageStack[] = Convert::sparseToString(" ", [$msg1, $msg2]);
-        return $this->write(Level::NOTICE, $msg1, $msg2, ">>> ", $ex);
+        $this->GroupMessageStack[] = Convert::sparseToString(' ', [$msg1, $msg2]);
+
+        return $this->write(Level::NOTICE, $msg1, $msg2, '>>> ', $ex);
     }
 
     /**
@@ -561,15 +550,13 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function groupEnd(bool $printMessage = false)
     {
-        if (($msg = array_pop($this->GroupMessageStack)) && $printMessage)
-        {
+        if (($msg = array_pop($this->GroupMessageStack)) && $printMessage) {
             $msg = ConsoleFormatter::removeTags($msg);
-            $this->write(Level::NOTICE, "", $msg ? "{ $msg } complete" : null, "<<< ");
+            $this->write(Level::NOTICE, '', $msg ? "{ $msg } complete" : null, '<<< ');
         }
-        $this->out("", Level::NOTICE);
+        $this->out('', Level::NOTICE);
 
-        if ($this->GroupLevel > -1)
-        {
+        if ($this->GroupLevel > -1) {
             $this->GroupLevel--;
         }
 
@@ -588,27 +575,23 @@ final class ConsoleWriter implements ReceivesFacade
     {
         $ex = $exception;
         $i  = 0;
-        do
-        {
-            $msg2 = ($msg2 ?? "") . (($i++ ? "\nCaused by __" . get_class($ex) . "__: " : "")
-                . sprintf("`%s` ~~in %s:%d~~",
+        do {
+            $msg2 = ($msg2 ?? '') . (($i++? "\nCaused by __" . get_class($ex) . '__: ' : '')
+                . sprintf('`%s` ~~in %s:%d~~',
                     ConsoleFormatter::escape($ex->getMessage()),
                     $ex->getFile(), $ex->getLine()));
             $ex = $ex->getPrevious();
-        }
-        while ($ex);
+        } while ($ex);
 
         $this->Errors++;
         $this->write(Level::ERROR,
-            "Uncaught __" . get_class($exception) . "__:", $msg2, " !! ", $exception);
+            'Uncaught __' . get_class($exception) . '__:', $msg2, ' !! ', $exception);
         $this->write(Level::DEBUG,
-            "__Stack trace:__", "\n`" . ConsoleFormatter::escape($exception->getTraceAsString()) . "`", "--- ");
-        if ($exception instanceof \Lkrms\Exception\Exception)
-        {
-            foreach ($exception->getDetail() as $section => $text)
-            {
+            '__Stack trace:__', "\n`" . ConsoleFormatter::escape($exception->getTraceAsString()) . '`', '--- ');
+        if ($exception instanceof \Lkrms\Exception\Exception) {
+            foreach ($exception->getDetail() as $section => $text) {
                 $this->write(Level::DEBUG,
-                    "__{$section}:__", "\n`" . ConsoleFormatter::escape($text ?: "") . "`", "--- ");
+                    "__{$section}:__", "\n`" . ConsoleFormatter::escape($text ?: '') . '`', '--- ');
             }
         }
 
@@ -618,10 +601,9 @@ final class ConsoleWriter implements ReceivesFacade
     /**
      * @return $this
      */
-    private function _write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex, array & $targets)
+    private function _write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex, array &$targets)
     {
-        if (!$this->Targets)
-        {
+        if (!$this->Targets) {
             $this->registerDefaultTargets();
         }
 
@@ -629,35 +611,30 @@ final class ConsoleWriter implements ReceivesFacade
         $indent = strlen($prefix);
         $indent = max(0, strpos($msg1, "\n") !== false ? $indent : $indent - 4);
 
-        if ($ex)
-        {
-            $context = ["exception" => $ex];
+        if ($ex) {
+            $context = ['exception' => $ex];
         }
 
         /** @var ConsoleTarget $target */
-        foreach ($targets[$level] ?? [] as $target)
-        {
+        foreach ($targets[$level] ?? [] as $target) {
             $formatter = $target->getFormatter();
             $_msg1     = $formatter->format($msg1);
             $_msg2     = $msg2 ? $formatter->format($msg2) : null;
 
-            if ($margin + $indent && strpos($msg1, "\n") !== false)
-            {
-                $_msg1 = str_replace("\n", "\n" . str_repeat(" ", $margin + $indent), $_msg1);
+            if ($margin + $indent && strpos($msg1, "\n") !== false) {
+                $_msg1 = str_replace("\n", "\n" . str_repeat(' ', $margin + $indent), $_msg1);
             }
 
-            if ($_msg2)
-            {
+            if ($_msg2) {
                 $_msg2 = (strpos($msg2, "\n") !== false
-                    ? str_replace("\n", "\n" . str_repeat(" ", $margin + $indent + 2), "\n" . ltrim($_msg2))
-                    : ($_msg1 ? " " : "") . $_msg2);
+                    ? str_replace("\n", "\n" . str_repeat(' ', $margin + $indent + 2), "\n" . ltrim($_msg2))
+                    : ($_msg1 ? ' ' : '') . $_msg2);
             }
 
             $message = $target->getMessageFormat($level)->apply($_msg1, $_msg2, $prefix);
-            $target->write($level, str_repeat(" ", $margin) . $message, $context ?? []);
+            $target->write($level, str_repeat(' ', $margin) . $message, $context ?? []);
         }
 
         return $this;
     }
-
 }
