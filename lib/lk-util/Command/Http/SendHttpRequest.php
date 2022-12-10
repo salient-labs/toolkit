@@ -37,40 +37,40 @@ class SendHttpRequest extends Command
     protected function getOptionList(): array
     {
         $options = [
-            (CliOption::build()
+            CliOption::build()
                 ->long('provider')
                 ->valueName('provider')
                 ->description('The HttpSyncProvider class to use')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
-            (CliOption::build()
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value)),
+            CliOption::build()
                 ->long('endpoint')
                 ->valueName('endpoint')
                 ->description("The endpoint to {$this->getMethod()}, e.g. '/posts'")
-                ->optionType(CliOptionType::VALUE_POSITIONAL)),
-            (CliOption::build()
+                ->optionType(CliOptionType::VALUE_POSITIONAL),
+            CliOption::build()
                 ->long('query')
                 ->short('q')
                 ->valueName('FIELD=VALUE')
                 ->description('A query parameter')
                 ->optionType(CliOptionType::VALUE)
-                ->multipleAllowed()),
+                ->multipleAllowed(),
         ];
 
         if (!in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::HEAD])) {
-            $options[] = (CliOption::build()
+            $options[] = CliOption::build()
                 ->long('data')
                 ->short('o')
                 ->valueName('FILE')
                 ->description('The path to JSON-serialized data to submit with the request')
-                ->optionType(CliOptionType::VALUE));
+                ->optionType(CliOptionType::VALUE);
         }
 
         if (in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::POST])) {
-            $options[] = (CliOption::build()
+            $options[] = CliOption::build()
                 ->long('paginate')
                 ->short('p')
-                ->description('Retrieve every available response page'));
+                ->description('Retrieve every available response page');
         }
 
         return $options;

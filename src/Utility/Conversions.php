@@ -187,9 +187,9 @@ final class Conversions
         }
 
         return array_values(array_filter(array_map(
-            (is_null($trim)
+            is_null($trim)
                 ? fn(string $item) => trim($item)
-                : fn(string $item) => trim($item, $trim)),
+                : fn(string $item) => trim($item, $trim),
             explode($separator, $string)
         )));
     }

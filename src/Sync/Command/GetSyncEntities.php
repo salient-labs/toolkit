@@ -85,42 +85,42 @@ final class GetSyncEntities extends CliCommand
     protected function getOptionList(): array
     {
         return [
-            (CliOption::build()
+            CliOption::build()
                 ->long('type')
                 ->short('t')
                 ->description('The entity type to retrieve')
                 ->optionType(CliOptionType::ONE_OF)
                 ->valueName('entity_type')
                 ->allowedValues(array_keys($this->Entities))
-                ->required()),
-            (CliOption::build()
+                ->required(),
+            CliOption::build()
                 ->long('provider')
                 ->short('i')
                 ->description('The provider to request data from')
                 ->optionType(CliOptionType::ONE_OF)
                 ->valueName('provider')
-                ->allowedValues(array_keys($this->Providers))),
-            (CliOption::build()
+                ->allowedValues(array_keys($this->Providers)),
+            CliOption::build()
                 ->long('id')
                 ->short('n')
                 ->description('The unique identifier of a particular entity')
                 ->optionType(CliOptionType::VALUE)
-                ->valueName('entity_id')),
-            (CliOption::build()
+                ->valueName('entity_id'),
+            CliOption::build()
                 ->long('filter')
                 ->short('f')
                 ->valueName('TERM=VALUE')
                 ->description('Pass a filter to the provider')
                 ->optionType(CliOptionType::VALUE)
-                ->multipleAllowed()),
-            (CliOption::build()
+                ->multipleAllowed(),
+            CliOption::build()
                 ->long('stream')
                 ->short('s')
-                ->description('Output a stream of entities')),
-            (CliOption::build()
+                ->description('Output a stream of entities'),
+            CliOption::build()
                 ->long('csv')
                 ->short('c')
-                ->description('Generate CSV output')),
+                ->description('Generate CSV output'),
         ];
     }
 
@@ -152,9 +152,9 @@ final class GetSyncEntities extends CliCommand
             $context = $context->withListArrays();
         }
 
-        ($result = !is_null($id)
+        $result = !is_null($id)
             ? $provider->with($class, $context)->get($id, $filter)
-            : $provider->with($class, $context)->getList($filter));
+            : $provider->with($class, $context)->getList($filter);
 
         $rules = $class::rulesBuilder($this->app())->includeMeta(false);
 

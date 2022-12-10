@@ -41,50 +41,50 @@ class GenerateSyncProvider extends GenerateCommand
     protected function getOptionList(): array
     {
         return [
-            (CliOption::build()
+            CliOption::build()
                 ->long('class')
                 ->valueName('class')
                 ->description('The SyncEntity subclass to generate a provider for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get('DEFAULT_NAMESPACE', '')))),
-            (CliOption::build()
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get('DEFAULT_NAMESPACE', ''))),
+            CliOption::build()
                 ->long('extend')
                 ->short('x')
                 ->valueName('CLASS')
                 ->description('An interface to extend (must extend ISyncProvider)')
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
-                ->valueCallback(fn(array $values) => $this->getMultipleFqcnOptionValue($values, Env::get('DEFAULT_NAMESPACE', '')))),
-            (CliOption::build()
+                ->valueCallback(fn(array $values) => $this->getMultipleFqcnOptionValue($values, Env::get('DEFAULT_NAMESPACE', ''))),
+            CliOption::build()
                 ->long('magic')
                 ->short('v')
-                ->description('Generate @method tags instead of declarations')),
-            (CliOption::build()
+                ->description('Generate @method tags instead of declarations'),
+            CliOption::build()
                 ->long('package')
                 ->short('p')
                 ->valueName('PACKAGE')
                 ->description('The PHPDoc package')
                 ->optionType(CliOptionType::VALUE)
-                ->envVariable('PHPDOC_PACKAGE')),
-            (CliOption::build()
+                ->envVariable('PHPDOC_PACKAGE'),
+            CliOption::build()
                 ->long('desc')
                 ->short('d')
                 ->valueName('DESCRIPTION')
                 ->description('A short description of the interface')
-                ->optionType(CliOptionType::VALUE)),
-            (CliOption::build()
+                ->optionType(CliOptionType::VALUE),
+            CliOption::build()
                 ->long('stdout')
                 ->short('s')
-                ->description('Write to standard output')),
-            (CliOption::build()
+                ->description('Write to standard output'),
+            CliOption::build()
                 ->long('force')
                 ->short('f')
-                ->description('Overwrite the class file if it already exists')),
-            (CliOption::build()
+                ->description('Overwrite the class file if it already exists'),
+            CliOption::build()
                 ->long('no-meta')
                 ->short('m')
-                ->description("Suppress '@lkrms-*' metadata tags")),
-            (CliOption::build()
+                ->description("Suppress '@lkrms-*' metadata tags"),
+            CliOption::build()
                 ->long('op')
                 ->short('o')
                 ->valueName('OPERATION')
@@ -93,13 +93,13 @@ class GenerateSyncProvider extends GenerateCommand
                 ->allowedValues(self::OPERATIONS)
                 ->multipleAllowed()
                 ->defaultValue(self::DEFAULT_OPERATIONS)
-                ->valueCallback(fn(array $value) => array_intersect(self::OPERATIONS, $value))),
-            (CliOption::build()
+                ->valueCallback(fn(array $value) => array_intersect(self::OPERATIONS, $value)),
+            CliOption::build()
                 ->long('plural')
                 ->short('l')
                 ->valueName('PLURAL')
                 ->description('Specify the plural form of CLASS')
-                ->optionType(CliOptionType::VALUE)),
+                ->optionType(CliOptionType::VALUE),
         ];
     }
 

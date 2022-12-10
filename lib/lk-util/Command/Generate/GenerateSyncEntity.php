@@ -40,85 +40,85 @@ class GenerateSyncEntity extends GenerateCommand
     protected function getOptionList(): array
     {
         return [
-            (CliOption::build()
+            CliOption::build()
                 ->long('generate')
                 ->valueName('class')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
-            (CliOption::build()
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value)),
+            CliOption::build()
                 ->long('package')
                 ->short('p')
                 ->valueName('PACKAGE')
                 ->description('The PHPDoc package')
                 ->optionType(CliOptionType::VALUE)
-                ->envVariable('PHPDOC_PACKAGE')),
-            (CliOption::build()
+                ->envVariable('PHPDOC_PACKAGE'),
+            CliOption::build()
                 ->long('desc')
                 ->short('d')
                 ->valueName('DESCRIPTION')
                 ->description('A short description of the entity')
-                ->optionType(CliOptionType::VALUE)),
-            (CliOption::build()
+                ->optionType(CliOptionType::VALUE),
+            CliOption::build()
                 ->long('stdout')
                 ->short('s')
-                ->description('Write to standard output')),
-            (CliOption::build()
+                ->description('Write to standard output'),
+            CliOption::build()
                 ->long('force')
                 ->short('f')
-                ->description('Overwrite the class file if it already exists')),
-            (CliOption::build()
+                ->description('Overwrite the class file if it already exists'),
+            CliOption::build()
                 ->long('no-meta')
                 ->short('m')
-                ->description("Suppress '@lkrms-*' metadata tags")),
-            (CliOption::build()
+                ->description("Suppress '@lkrms-*' metadata tags"),
+            CliOption::build()
                 ->long('visibility')
                 ->short('v')
                 ->valueName('KEYWORD')
                 ->description("The visibility of the entity's properties")
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(['public', 'protected', 'private'])
-                ->defaultValue('public')),
-            (CliOption::build()
+                ->defaultValue('public'),
+            CliOption::build()
                 ->long('json')
                 ->short('j')
                 ->valueName('FILE')
                 ->description('The path to a JSON-serialized reference entity')
-                ->optionType(CliOptionType::VALUE)),
-            (CliOption::build()
+                ->optionType(CliOptionType::VALUE),
+            CliOption::build()
                 ->long('provider')
                 ->short('i')
                 ->valueName('CLASS')
                 ->description('The HttpSyncProvider class to retrieve a reference entity from')
                 ->optionType(CliOptionType::VALUE)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
-            (CliOption::build()
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value)),
+            CliOption::build()
                 ->long('endpoint')
                 ->short('e')
                 ->valueName('ENDPOINT')
                 ->description("The endpoint to retrieve a reference entity from, e.g. '/user'")
-                ->optionType(CliOptionType::VALUE)),
-            (CliOption::build()
+                ->optionType(CliOptionType::VALUE),
+            CliOption::build()
                 ->long('method')
                 ->short('h')
                 ->valueName('METHOD')
                 ->description('The HTTP method to use when requesting a reference entity')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::METHODS))
-                ->defaultValue(self::DEFAULT_METHOD)),
-            (CliOption::build()
+                ->defaultValue(self::DEFAULT_METHOD),
+            CliOption::build()
                 ->long('query')
                 ->short('q')
                 ->valueName('FIELD=VALUE')
                 ->description('A query parameter to use when requesting a reference entity')
                 ->optionType(CliOptionType::VALUE)
-                ->multipleAllowed()),
-            (CliOption::build()
+                ->multipleAllowed(),
+            CliOption::build()
                 ->long('data')
                 ->short('o')
                 ->valueName('FILE')
                 ->description('The path to JSON-serialized data to submit when requesting a reference entity')
-                ->optionType(CliOptionType::VALUE)),
+                ->optionType(CliOptionType::VALUE),
         ];
     }
 

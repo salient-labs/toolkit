@@ -17,7 +17,7 @@ use Lkrms\LkUtil\Command\Http\SendHttpRequest;
 $loader = require ($GLOBALS['_composer_autoload_path'] ?? __DIR__ . '/../../vendor/autoload.php');
 $loader->addPsr4('Lkrms\\LkUtil\\', __DIR__);
 
-(Cli::load()
+Cli::load()
     ->loadCacheIfExists()
     ->logConsoleMessages()
     ->command(['generate', 'builder'], GenerateBuilder::class)
@@ -31,4 +31,4 @@ $loader->addPsr4('Lkrms\\LkUtil\\', __DIR__);
     ->command(['http', 'put'], SendHttpRequest::class)
     ->command(['http', 'delete'], SendHttpRequest::class)
     ->command(['http', 'patch'], SendHttpRequest::class)
-    ->runAndExit());
+    ->runAndExit();

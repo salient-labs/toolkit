@@ -48,47 +48,47 @@ final class GenerateFacade extends GenerateCommand
     protected function getOptionList(): array
     {
         return [
-            (CliOption::build()
+            CliOption::build()
                 ->long('class')
                 ->valueName('class')
                 ->description('The class to generate a facade for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
-            (CliOption::build()
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value)),
+            CliOption::build()
                 ->long('generate')
                 ->valueName('facade_class')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))),
-            (CliOption::build()
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value)),
+            CliOption::build()
                 ->long('package')
                 ->short('p')
                 ->valueName('PACKAGE')
                 ->description('The PHPDoc package')
                 ->optionType(CliOptionType::VALUE)
-                ->envVariable('PHPDOC_PACKAGE')),
-            (CliOption::build()
+                ->envVariable('PHPDOC_PACKAGE'),
+            CliOption::build()
                 ->long('desc')
                 ->short('d')
                 ->valueName('DESCRIPTION')
                 ->description('A short description of the facade')
-                ->optionType(CliOptionType::VALUE)),
-            (CliOption::build()
+                ->optionType(CliOptionType::VALUE),
+            CliOption::build()
                 ->long('stdout')
                 ->short('s')
-                ->description('Write to standard output')),
-            (CliOption::build()
+                ->description('Write to standard output'),
+            CliOption::build()
                 ->long('force')
                 ->short('f')
-                ->description('Overwrite the class file if it already exists')),
-            (CliOption::build()
+                ->description('Overwrite the class file if it already exists'),
+            CliOption::build()
                 ->long('no-meta')
                 ->short('m')
-                ->description("Suppress '@lkrms-*' metadata tags")),
-            (CliOption::build()
+                ->description("Suppress '@lkrms-*' metadata tags"),
+            CliOption::build()
                 ->long('declared')
                 ->short('e')
-                ->description('Ignore inherited methods')),
+                ->description('Ignore inherited methods'),
         ];
     }
 
