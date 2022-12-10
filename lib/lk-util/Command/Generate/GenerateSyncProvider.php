@@ -273,8 +273,7 @@ class GenerateSyncProvider extends GenerateCommand
         }
 
         $blocks = [
-            '<?php',
-            'declare(strict_types=1);',
+            '<?php declare(strict_types=1);',
             "namespace $namespace;",
             implode(PHP_EOL, $imports),
             ($docBlock ? implode(PHP_EOL, $docBlock) . PHP_EOL : '')

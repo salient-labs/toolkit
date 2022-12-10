@@ -372,8 +372,7 @@ class GenerateBuilder extends GenerateCommand
         $docBlock[] = ' */';
 
         $blocks = [
-            '<?php',
-            'declare(strict_types=1);',
+            '<?php declare(strict_types=1);',
             "namespace $builderNamespace;",
             implode(PHP_EOL, $imports),
             implode(PHP_EOL, $docBlock) . PHP_EOL

@@ -652,6 +652,19 @@ final class Conversions
     }
 
     /**
+     * Return a phrase like "between lines 3 and 11" or "on platform 23"
+     *
+     * @param string|null $plural `"{$singular}s"` is used if `$plural` is
+     * `null`.
+     */
+    public function pluralRange(int $from, int $to, string $singular, ?string $plural = null, string $preposition = 'on'): string
+    {
+        return $to - $from
+            ? sprintf('between %s %d and %d', is_null($plural) ? $singular . 's' : $plural, $from, $to)
+            : sprintf('%s %s %d', $preposition, $singular, $from);
+    }
+
+    /**
      * Return the plural of a singular noun
      *
      */
