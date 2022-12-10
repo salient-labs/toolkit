@@ -669,9 +669,9 @@ abstract class CliCommand implements ReturnsContainer
                 }
             }
 
-            ($arg = $name
+            $arg = $name
                 ? $this->getEffectiveArgument($option, $shellEscape, $values[$name])
-                : $this->getEffectiveArgument($option, $shellEscape));
+                : $this->getEffectiveArgument($option, $shellEscape);
 
             if ($option->IsPositional) {
                 $positional[] = $arg;

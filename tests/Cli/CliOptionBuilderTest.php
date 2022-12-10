@@ -41,13 +41,13 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
     {
         $container = new Container();
         $this->expectException(UnexpectedValueException::class);
-        (CliOption::build($container)
+        CliOption::build($container)
             ->long('dest')
             ->short('d')
             ->value('DIR')
             ->desc('Sync files to DIR')
             ->type(CliOptionType::VALUE)
             ->required(true)
-            ->go());
+            ->go();
     }
 }

@@ -20,18 +20,18 @@ class CheckHeartbeat extends Command
     protected function getOptionList(): array
     {
         return [
-            (CliOption::build()
+            CliOption::build()
                 ->long('provider')
                 ->valueName('provider')
                 ->description('The provider to check (must implement IProvider)')
-                ->optionType(CliOptionType::VALUE_POSITIONAL)),
-            (CliOption::build()
+                ->optionType(CliOptionType::VALUE_POSITIONAL),
+            CliOption::build()
                 ->long('ttl')
                 ->short('t')
                 ->valueName('SECONDS')
                 ->description('The time-to-live of a positive result')
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue('300')),
+                ->defaultValue('300'),
         ];
     }
 
