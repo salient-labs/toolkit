@@ -48,9 +48,9 @@ final class System
     {
         $limit = $this->getMemoryLimit();
 
-        return ($limit <= 0
+        return $limit <= 0
             ? 0
-            : (int) round(memory_get_usage() * 100 / $limit));
+            : (int) round(memory_get_usage() * 100 / $limit);
     }
 
     /**

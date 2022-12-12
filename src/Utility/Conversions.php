@@ -642,9 +642,9 @@ final class Conversions
      */
     public function plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false): string
     {
-        $noun = ($number == 1
+        $noun = $number == 1
             ? $singular
-            : (is_null($plural) ? $singular . 's' : $plural));
+            : (is_null($plural) ? $singular . 's' : $plural);
 
         return $includeNumber
             ? "$number $noun"
@@ -780,7 +780,7 @@ final class Conversions
     {
         $break = preg_quote($break, '/');
 
-        return preg_replace("/(?<!{$break}|^)(${break})(?!{$break}|\$)/", ' ', $string);
+        return preg_replace("/(?<!{$break}|^)(?<!  )(${break})(?!    )(?!{$break}|\$)/", ' ', $string);
     }
 
     /**

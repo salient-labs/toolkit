@@ -8,7 +8,7 @@ use Lkrms\Support\HttpRequest;
 use Lkrms\Support\HttpResponse;
 use Lkrms\Support\HttpServer;
 
-$loader = require (__DIR__ . '/../../vendor/autoload.php');
+$loader = require __DIR__ . '/../../vendor/autoload.php';
 $loader->addPsr4('Lkrms\\Tests\\', dirname(__DIR__));
 
 Err::load();

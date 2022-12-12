@@ -14,15 +14,15 @@ use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Throwable;
 
-$loader = require (__DIR__ . '/../../vendor/autoload.php');
+$loader = require __DIR__ . '/../../vendor/autoload.php';
 $loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
 
 // Register JsonPlaceholderApi as the provider for Post and User objects
-$app = (App::load(dirname(__DIR__))
-    ->loadCache()
-    ->loadSync()
-    ->syncNamespace('lkrms-tests', 'https://lkrms.github.io/php-util/tests/entity', \Lkrms\Tests\Sync\Entity::class)
-    ->service(JsonPlaceholderApi::class));
+$app = App::load(dirname(__DIR__))
+          ->loadCache()
+          ->loadSync()
+          ->syncNamespace('lkrms-tests', 'https://lkrms.github.io/php-util/tests/entity', \Lkrms\Tests\Sync\Entity::class)
+          ->service(JsonPlaceholderApi::class);
 
 $userApi = User::backend($app);
 

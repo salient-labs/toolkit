@@ -38,6 +38,6 @@ class CheckHeartbeat extends Command
     protected function run(string ...$args)
     {
         $this->getProvider($this->getOptionValue('provider'))
-            ->checkHeartbeat((int) $this->getOptionValue('ttl'));
+             ->checkHeartbeat((int) $this->getOptionValue('ttl'));
     }
 }

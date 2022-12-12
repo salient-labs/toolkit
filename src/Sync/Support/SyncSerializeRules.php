@@ -354,9 +354,9 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
 
     private function getKey(string $path): string
     {
-        return ((substr($path, -2) === '[]')
+        return (substr($path, -2) === '[]')
             ? '[]'
-            : substr(strrchr('.' . $path, '.'), 1));
+            : substr(strrchr('.' . $path, '.'), 1);
     }
 
     /**

@@ -460,9 +460,9 @@ class Introspector
             return $value;
         }
 
-        $normaliser = ($gentle
+        $normaliser = $gentle
             ? $this->GentleNormaliser
-            : ($careful ? $this->CarefulNormaliser : $this->Normaliser));
+            : ($careful ? $this->CarefulNormaliser : $this->Normaliser);
 
         if (is_array($value)) {
             return array_map($normaliser, $value);
@@ -555,9 +555,9 @@ class Introspector
 
         $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
         $closure = static function (array $array, IProvider $provider, $context = null) use ($closure) {
-            [$container, $parent] = ($context instanceof IProviderContext
+            [$container, $parent] = $context instanceof IProviderContext
                 ? [$context->container(), $context->getParent()]
-                : [$context ?: $provider->container(), null]);
+                : [$context ?: $provider->container(), null];
 
             return $closure($container, $array, $provider,
                 $context ?: new ProviderContext($container, $parent),
@@ -663,9 +663,9 @@ class Introspector
         ];
 
         // Build the smallest possible chain of closures
-        $closure = ($parameterKeys
+        $closure = $parameterKeys
             ? $this->_getConstructor($parameterKeys)
-            : $this->_getDefaultConstructor());
+            : $this->_getDefaultConstructor();
         if ($propertyKeys) {
             $closure = $this->_getPropertyClosure($propertyKeys, $closure);
         }
@@ -850,9 +850,9 @@ class Introspector
         return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ...$args) use ($dateKeys, $closure) {
             if (is_null($dateFormatter)) {
                 /** @var DateFormatter $dateFormatter */
-                $dateFormatter = ($provider
+                $dateFormatter = $provider
                     ? $provider->getDateFormatter()
-                    : $container->get(DateFormatter::class));
+                    : $container->get(DateFormatter::class);
             }
 
             foreach ($dateKeys as $key) {
@@ -1026,9 +1026,9 @@ class Introspector
 
     final public function getSerializeClosure(?ISerializeRules $rules = null): Closure
     {
-        $rules = ($rules
+        $rules = $rules
             ? [$rules->getSortByKey(), $this->IsExtensible && $rules->getIncludeMeta()]
-            : [false, $this->IsExtensible]);
+            : [false, $this->IsExtensible];
         $key = implode("\x00", $rules);
 
         if ($closure = $this->SerializeClosures[$key] ?? null) {

@@ -6,10 +6,10 @@ namespace Lkrms\Tests\Cli;
 use Lkrms\Facade\Cli;
 use Lkrms\Tests\Cli\Command\TestOptions;
 
-$loader = require (__DIR__ . '/../../vendor/autoload.php');
+$loader = require __DIR__ . '/../../vendor/autoload.php';
 $loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
 
 Cli::load(dirname(__DIR__))
-    ->command(['test', 'options'], TestOptions::class)
-    ->command(['sync'], TestOptions::class)
-    ->runAndExit();
+   ->command(['test', 'options'], TestOptions::class)
+   ->command(['sync'], TestOptions::class)
+   ->runAndExit();

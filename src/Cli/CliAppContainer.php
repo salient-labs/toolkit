@@ -313,6 +313,6 @@ final class CliAppContainer extends AppContainer
      */
     public function runAndExit()
     {
-        exit($this->run());
+        exit ($this->run());
     }
 }

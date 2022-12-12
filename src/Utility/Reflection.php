@@ -251,9 +251,9 @@ final class Reflection
         foreach ($types as $type) {
             $name    = $this->getTypeName($type);
             $alias   = $typeNameCallback ? $typeNameCallback($name) : null;
-            $parts[] = (($type->allowsNull() && strcasecmp($name, 'null') ? '?' : '')
+            $parts[] = ($type->allowsNull() && strcasecmp($name, 'null') ? '?' : '')
                 . ($alias || $type->isBuiltin() ? '' : $classPrefix)
-                . ($alias ?: $name));
+                . ($alias ?: $name);
         }
 
         return implode($glue, $parts);
@@ -279,10 +279,10 @@ final class Reflection
         // If getTypeDeclaration isn't called, neither is $typeNameCallback
         $param  = $this->getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
         $param  = is_null($type) ? ($param ?: 'mixed') : $type;
-        $param .= (($param ? ' ' : '')
+        $param .= ($param ? ' ' : '')
             . ($parameter->isPassedByReference() ? '&' : '')
             . ($parameter->isVariadic() ? '...' : '')
-            . '$' . $parameter->getName());
+            . '$' . $parameter->getName();
         if (!$parameter->isDefaultValueAvailable()) {
             return $param;
         }

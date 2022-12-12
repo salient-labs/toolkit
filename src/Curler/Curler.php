@@ -294,9 +294,9 @@ class Curler implements IReadable, IWritable
     public function __construct(string $baseUrl, ?CurlerHeaders $headers = null, ?ICurlerPager $pager = null)
     {
         $this->BaseUrl = $baseUrl;
-        $this->Headers = ($headers
+        $this->Headers = $headers
             ? CurlerHeadersImmutable::fromMutable($headers)
-            : new CurlerHeadersImmutable());
+            : new CurlerHeadersImmutable();
         $this->Pager = $pager;
     }
 
@@ -345,9 +345,9 @@ class Curler implements IReadable, IWritable
      */
     final public function setContentType(?string $mimeType)
     {
-        $this->Headers = (is_null($mimeType)
+        $this->Headers = is_null($mimeType)
             ? $this->Headers->unsetHeader(HttpHeader::CONTENT_TYPE)
-            : $this->Headers->setHeader(HttpHeader::CONTENT_TYPE, $mimeType));
+            : $this->Headers->setHeader(HttpHeader::CONTENT_TYPE, $mimeType);
 
         return $this;
     }

@@ -181,13 +181,12 @@ class GenerateBuilder extends GenerateCommand
         }
 
         $files        = [];
-        $maybeAddFile = (
+        $maybeAddFile =
             function ($file) use (&$files) {
                 if ($file !== false) {
                     $files[$file] = $file;
                 }
-            }
-        );
+            };
 
         $writable = Introspector::get($_class->getName())->getWritableProperties();
         $writable = array_combine(
@@ -282,17 +281,17 @@ class GenerateBuilder extends GenerateCommand
                 $propertyFile      = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
 
-                $type = (($_type = $phpDoc->Var[0]['type'] ?? null) && strpbrk($_type, '<>') === false
+                $type = ($_type = $phpDoc->Var[0]['type'] ?? null) && strpbrk($_type, '<>') === false
                     ? $phpDocTypeCallback($_type)
                     : ($_property->hasType()
                         ? Reflect::getTypeDeclaration($_property->getType(), $classPrefix, $typeNameCallback)
-                        : 'mixed'));
+                        : 'mixed');
                 switch ($type) {
-                    case'static':
-                    case'$this':
+                    case 'static':
+                    case '$this':
                         $type = $service;
                         break;
-                    case'self':
+                    case 'self':
                         $type = $typeNameCallback($_property->getDeclaringClass()->getName(), true);
                         break;
                 }
@@ -314,21 +313,21 @@ class GenerateBuilder extends GenerateCommand
             $_param = $_params[$name];
             $_name  = $_param->getName();
 
-            $type = (($_type = $_phpDoc->Params[$_name]['type'] ?? null) && strpbrk($_type, '<>') === false
+            $type = ($_type = $_phpDoc->Params[$_name]['type'] ?? null) && strpbrk($_type, '<>') === false
                 ? $phpDocTypeCallback($_type)
                 : ($_param->hasType()
                     ? Reflect::getTypeDeclaration($_param->getType(), $classPrefix, $typeNameCallback)
-                    : 'mixed'));
+                    : 'mixed');
             $default = '';
             switch ($type) {
-                case'static':
-                case'$this':
+                case 'static':
+                case '$this':
                     $type = $service;
                     break;
-                case'self':
+                case 'self':
                     $type = $typeNameCallback($_constructor->getDeclaringClass()->getName(), true);
                     break;
-                case'bool':
+                case 'bool':
                     $default = ' = true';
                     break;
             }
@@ -425,8 +424,8 @@ class GenerateBuilder extends GenerateCommand
         $class    = $typeNameCallback($property->getDeclaringClass()->getName(), true);
         $property = $property->getName();
 
-        return ($summary
+        return $summary
             ? " $summary (see {@see $class::\$$property})"
-            : " See {@see $class::\$$property}");
+            : " See {@see $class::\$$property}";
     }
 }

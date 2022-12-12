@@ -71,9 +71,9 @@ class AppContainer extends Container implements IReadable
 
     private function getPath(string $name, string $default): string
     {
-        $path = (($path = Env::get($name, ''))
+        $path = ($path = Env::get($name, ''))
             ? (Test::isAbsolutePath($path) ? $path : $this->BasePath . '/' . $path)
-            : $this->BasePath . '/' . $default);
+            : $this->BasePath . '/' . $default;
         File::maybeCreateDirectory($path);
 
         return $path;
@@ -195,7 +195,7 @@ class AppContainer extends Container implements IReadable
      */
     final public function logConsoleMessages(?bool $debug = true, ?string $name = null)
     {
-        $name = ($name ? basename($name, '.log') : Sys::getProgramBasename('.php'));
+        $name = $name ? basename($name, '.log') : Sys::getProgramBasename('.php');
         Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log"), ConsoleLevels::ALL);
         if ($debug || (is_null($debug) && Env::debug())) {
             Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.debug.log"), ConsoleLevels::ALL_DEBUG);

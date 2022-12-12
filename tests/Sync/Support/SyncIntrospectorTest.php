@@ -27,9 +27,8 @@ final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase
 
     public function testGetSyncOperationMethod()
     {
-        $container = ((new Container())
-            ->service(JsonPlaceholderApi::class));
-        $provider = $container->get(PostProvider::class);
+        $container = (new Container())->service(JsonPlaceholderApi::class);
+        $provider  = $container->get(PostProvider::class);
 
         $entityIntrospector   = SyncIntrospector::get(Post::class);
         $providerIntrospector = SyncIntrospector::getBound($container, PostProvider::class);

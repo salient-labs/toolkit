@@ -53,10 +53,10 @@ final class ODataPager implements ICurlerPager
             : '@');
 
         return CurlerPageBuilder::build()
-            ->entities($data['value'])
-            ->curler($curler)
-            ->previous($previous)
-            ->nextUrl($data[$prefix . 'nextLink'] ?? null)
-            ->go();
+                   ->entities($data['value'])
+                   ->curler($curler)
+                   ->previous($previous)
+                   ->nextUrl($data[$prefix . 'nextLink'] ?? null)
+                   ->go();
     }
 }

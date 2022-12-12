@@ -7,7 +7,7 @@ use DateTime;
 use Lkrms\Err\Err;
 use Lkrms\Support\SqlQuery;
 
-$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader = require __DIR__ . '/../vendor/autoload.php';
 $loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();
@@ -16,18 +16,18 @@ $query = new SqlQuery(fn() => '?');
 
 $sql1 = $query->getWhere();
 
-$query = ($query->whereValueInList('record_id')
-    ->whereValueInList('user_id', 12, 36, 7, 32)
-    ->whereValueInList('session_id', '1000', '1001', '1002'));
+$query = $query->whereValueInList('record_id')
+               ->whereValueInList('user_id', 12, 36, 7, 32)
+               ->whereValueInList('session_id', '1000', '1001', '1002');
 
 $sql2 = $query->getWhere();
 
-$query = ($query->addParam('Expiry', new DateTime(), $_expiry)
-    ->where([
-        '__' => SqlQuery::OR,
-        'Expiry IS NULL',
-        'Expiry > ' . $_expiry,
-    ]));
+$query = $query->addParam('Expiry', new DateTime(), $_expiry)
+               ->where([
+                   '__' => SqlQuery::OR,
+                   'Expiry IS NULL',
+                   'Expiry > ' . $_expiry,
+               ]);
 
 $sql3 = $query->getWhere();
 

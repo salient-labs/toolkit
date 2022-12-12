@@ -240,9 +240,9 @@ abstract class CliCommand implements ReturnsContainer
 
         if (!array_key_exists('help', $this->OptionsByName)) {
             $this->addOption(CliOption::build()
-                    ->long('help')
-                    ->short(array_key_exists('h', $this->OptionsByName) ? null : 'h')
-                    ->go(), $options, true);
+                                 ->long('help')
+                                 ->short(array_key_exists('h', $this->OptionsByName) ? null : 'h')
+                                 ->go(), $options, true);
         }
 
         $this->Options = $options;
@@ -359,7 +359,7 @@ abstract class CliCommand implements ReturnsContainer
                 //         - _option1_
                 //         - _option2_
                 //         - _option3_
-                $sep      = ($option->Description ? "\n      " : "\n    ");
+                $sep      = $option->Description ? "\n      " : "\n    ";
                 $options .= ("\n  _" . implode(', ', $line) . '_'
                     . str_replace($valueName, '__' . $valueName . '__', (array_pop($value) ?: ''))
                     . ($option->Description ? $this->prepareDescription("\n" . $option->Description, '    ', 76) : '')
@@ -368,11 +368,11 @@ abstract class CliCommand implements ReturnsContainer
             }
         }
 
-        $synopsis = (($shortFlag ? ' [-' . implode('', $shortFlag) . ']' : '')
+        $synopsis = ($shortFlag ? ' [-' . implode('', $shortFlag) . ']' : '')
             . ($longFlag ? ' [--' . implode('] [--', $longFlag) . ']' : '')
             . ($optional ? ' [' . implode('] [', $optional) . ']' : '')
             . ($required ? ' ' . implode(' ', $required) : '')
-            . ($positional ? ' ' . implode(' ', $positional) : ''));
+            . ($positional ? ' ' . implode(' ', $positional) : '');
 
         $name = $this->getNameWithProgram();
         $desc = $this->prepareDescription($this->getDescription(), '  ', 78);

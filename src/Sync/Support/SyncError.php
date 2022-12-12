@@ -103,7 +103,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
 
     public function __construct(int $errorType, string $message, array $values = [], int $level = ConsoleLevel::ERROR, ?SyncEntity $entity = null, ?string $entityName = null, ?ISyncProvider $provider = null)
     {
-        $this->EntityName = ($entityName ?: ($entity ? $entity->uri() : null));
+        $this->EntityName = $entityName ?: ($entity ? $entity->uri() : null);
         $this->ErrorType  = $errorType;
         $this->Message    = $message;
         $this->Values     = $values ?: [$this->EntityName];

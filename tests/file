@@ -7,7 +7,7 @@ use Lkrms\Err\Err;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Test;
 
-$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader = require __DIR__ . '/../vendor/autoload.php';
 $loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();

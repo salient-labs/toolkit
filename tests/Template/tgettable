@@ -12,7 +12,7 @@ use Lkrms\Err\Err;
 use RuntimeException;
 use Throwable;
 
-$loader = require (__DIR__ . '/../../vendor/autoload.php');
+$loader = require __DIR__ . '/../../vendor/autoload.php';
 $loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
 
 Err::load();

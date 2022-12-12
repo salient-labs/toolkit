@@ -92,4 +92,12 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      * @psalm-return T|false
      */
     public function last();
+
+    /**
+     * Shift an item off the beginning of the collection
+     *
+     * @return mixed|false
+     * @psalm-return T|false
+     */
+    public function shift();
 }

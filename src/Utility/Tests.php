@@ -20,8 +20,8 @@ final class Tests
      */
     public function isIntValue($value): bool
     {
-        return (is_int($value) ||
-            (is_string($value) && preg_match('/^[0-9]+$/', $value)));
+        return is_int($value) ||
+            (is_string($value) && preg_match('/^[0-9]+$/', $value));
     }
 
     /**
