@@ -39,7 +39,7 @@ trait TConstructible
         }
 
         return Introspector::getBound($container, static::class)
-            ->getCreateFromClosure()($data, $container, $parent);
+                   ->getCreateFromClosure()($data, $container, $parent);
     }
 
     /**

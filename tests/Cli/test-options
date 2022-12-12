@@ -7,7 +7,7 @@ use Lkrms\Facade\Cli;
 use Lkrms\Tests\Cli\Command\TestOptions;
 use Throwable;
 
-$loader = require (__DIR__ . '/../../vendor/autoload.php');
+$loader = require __DIR__ . '/../../vendor/autoload.php';
 $loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
 
 $app = Cli::load(dirname(__DIR__));
@@ -29,4 +29,4 @@ print_r([
 ]);
 
 $status = $app->run();
-exit($status);
+exit ($status);

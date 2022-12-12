@@ -146,9 +146,8 @@ final class SyncIntrospector extends Introspector
                 // Map unambiguous lowercase entity basenames to qualified names
                 // in SyncProviderEntityBasenames
                 $basename                                     = strtolower(Convert::classToBasename($entity->Class));
-                $this->SyncProviderEntityBasenames[$basename] = (
-                    array_key_exists($basename, $this->SyncProviderEntityBasenames) ? null : $entity->Class
-                );
+                $this->SyncProviderEntityBasenames[$basename] =
+                    array_key_exists($basename, $this->SyncProviderEntityBasenames) ? null : $entity->Class;
 
                 $fn = function (int $operation, string $method) use ($class, $namespace, $entity) {
                     // If $method has already been processed, the entity it

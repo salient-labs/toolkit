@@ -126,11 +126,11 @@ final class Environment
      */
     private function _get(string $name)
     {
-        return ($_ENV[$name]
+        return $_ENV[$name]
             ?? $_SERVER[$name]
             ?? (($local = getenv($name, true)) !== false
                 ? $local
-                : getenv($name)));
+                : getenv($name));
     }
 
     /**

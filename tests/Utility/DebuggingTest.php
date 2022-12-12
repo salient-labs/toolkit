@@ -105,4 +105,4 @@ final class DebuggingTest extends \Lkrms\Tests\TestCase
     }
 }
 
-require (__DIR__ . '/Debugging/GetCallerFile.php');
+require __DIR__ . '/Debugging/GetCallerFile.php';

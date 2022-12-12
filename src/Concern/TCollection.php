@@ -130,6 +130,11 @@ trait TCollection
         return end($copy);
     }
 
+    final public function shift()
+    {
+        return array_shift($this->_Items);
+    }
+
     // Implementation of `Iterator`:
 
     /**

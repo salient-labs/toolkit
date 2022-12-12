@@ -71,13 +71,13 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         switch ($entity) {
             case Post::class:
                 return $define->operations([OP::READ, OP::READ_LIST])
-                    ->path('/posts')
-                    ->filterPolicy(SyncFilterPolicy::IGNORE);
+                              ->path('/posts')
+                              ->filterPolicy(SyncFilterPolicy::IGNORE);
 
             case User::class:
                 return $define->operations([OP::READ, OP::READ_LIST])
-                    ->path('/users')
-                    ->filterPolicy(SyncFilterPolicy::IGNORE);
+                              ->path('/users')
+                              ->filterPolicy(SyncFilterPolicy::IGNORE);
         }
 
         return null;

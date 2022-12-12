@@ -146,7 +146,7 @@ final class PhpDocParser implements IReadable
 
             $meta = 0;
             switch ($tag) {
-                case'param':
+                case 'param':
                     $token = strtok($lines, " \t");
                     $type  = null;
                     if (!preg_match('/^\$/', $token)) {
@@ -163,14 +163,14 @@ final class PhpDocParser implements IReadable
                     }
                     break;
 
-                case'return':
+                case 'return':
                     $token = strtok($lines, " \t\n\r");
                     $type  = $token;
                     $meta++;
                     $this->Return = $this->getValue($type, $lines, $meta);
                     break;
 
-                case'var':
+                case 'var':
                     unset($name);
                     $token = strtok($lines, " \t\n\r");
                     $type  = $token;

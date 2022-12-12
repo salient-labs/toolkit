@@ -152,12 +152,12 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                 );
                 $closure = fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity =>
                     ($toBackend->send($entity->toArray(), $operation, $ctx, $entity, ...$args)
-                        ->through($endpointPipe)
-                        ->then(fn($result) =>
-                            $toEntity->send($result, $operation, $ctx, $entity, ...$args)
-                            ->withConformity($this->Conformity)
-                            ->run())
-                        ->run());
+                               ->through($endpointPipe)
+                               ->then(fn($result) =>
+                                   $toEntity->send($result, $operation, $ctx, $entity, ...$args)
+                                            ->withConformity($this->Conformity)
+                                            ->run())
+                               ->run());
                 break;
 
             case SyncOperation::READ:
@@ -176,14 +176,14 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                 );
                 $_entity = null;
                 $closure = function (SyncContext $ctx, iterable $entities, ...$args) use (&$_entity, $endpointPipe, $operation, $toBackend, $toEntity): iterable {
-                    return ($toBackend->stream($entities, $operation, $ctx, $_entity, ...$args)
-                        ->after(function (SyncEntity $entity) use (&$_entity) {$_entity = $entity;})
-                        ->through($endpointPipe)
-                        ->then(fn($result) =>
-                            $toEntity->send($result, $operation, $ctx, $_entity, ...$args)
-                            ->withConformity($this->Conformity)
-                            ->run())
-                        ->start());
+                    return $toBackend->stream($entities, $operation, $ctx, $_entity, ...$args)
+                                     ->after(function (SyncEntity $entity) use (&$_entity) {$_entity = $entity;})
+                                     ->through($endpointPipe)
+                                     ->then(fn($result) =>
+                                         $toEntity->send($result, $operation, $ctx, $_entity, ...$args)
+                                                  ->withConformity($this->Conformity)
+                                                  ->run())
+                                     ->start();
                 };
                 break;
 
@@ -265,31 +265,31 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         // too risky to implement here, but providers can add their own support
         // for pagination with other operations and/or HTTP methods
         switch ([$operation, $this->MethodMap[$operation] ?? null]) {
-            case[SyncOperation::READ_LIST, HttpRequestMethod::GET]:
+            case [SyncOperation::READ_LIST, HttpRequestMethod::GET]:
                 $runner = fn(Curler $curler, ?array $query) => $curler->Pager ? $curler->getP($query) : $curler->get($query);
                 break;
 
-            case[SyncOperation::READ_LIST, HttpRequestMethod::POST]:
+            case [SyncOperation::READ_LIST, HttpRequestMethod::POST]:
                 $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->Pager ? $curler->postP($payload, $query) : $curler->post($payload, $query);
                 break;
 
-            case[$operation, HttpRequestMethod::GET]:
+            case [$operation, HttpRequestMethod::GET]:
                 $runner = fn(Curler $curler, ?array $query) => $curler->get($query);
                 break;
 
-            case[$operation, HttpRequestMethod::POST]:
+            case [$operation, HttpRequestMethod::POST]:
                 $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->post($payload, $query);
                 break;
 
-            case[$operation, HttpRequestMethod::PUT]:
+            case [$operation, HttpRequestMethod::PUT]:
                 $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->put($payload, $query);
                 break;
 
-            case[$operation, HttpRequestMethod::PATCH]:
+            case [$operation, HttpRequestMethod::PATCH]:
                 $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->patch($payload, $query);
                 break;
 
-            case[$operation, HttpRequestMethod::DELETE]:
+            case [$operation, HttpRequestMethod::DELETE]:
                 $runner = fn(Curler $curler, ?array $query, ?array $payload) => $curler->delete($payload, $query);
                 break;
 

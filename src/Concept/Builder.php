@@ -138,10 +138,11 @@ abstract class Builder extends FluentInterface implements IImmutable
         if (count($arguments) > 1) {
             throw new UnexpectedValueException('Invalid arguments');
         }
-        $clone                                                    = clone $this;
-        $clone->Data[$clone->Introspector->maybeNormalise($name)] = (array_key_exists(0, $arguments)
+        $clone              = clone $this;
+        $name               = $clone->Introspector->maybeNormalise($name);
+        $clone->Data[$name] = array_key_exists(0, $arguments)
             ? $arguments[0]
-            : true);
+            : true;
 
         return $clone;
     }

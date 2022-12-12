@@ -52,7 +52,7 @@ final class ArrayMapper
             }
             $flipped[$out] = $inKey;
         }
-        $allTargetsScalar = (count($keyMap) === count($flipped));
+        $allTargetsScalar = count($keyMap) === count($flipped);
 
         if ($allTargetsScalar && $conformity === ArrayKeyConformity::COMPLETE) {
             $outKeys = array_values($keyMap);

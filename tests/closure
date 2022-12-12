@@ -9,7 +9,7 @@ use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ArrayMapperFlag;
 use Throwable;
 
-$loader = require (__DIR__ . '/../vendor/autoload.php');
+$loader = require __DIR__ . '/../vendor/autoload.php';
 $loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 
 Err::load();

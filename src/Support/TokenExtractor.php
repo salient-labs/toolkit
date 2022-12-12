@@ -65,19 +65,19 @@ final class TokenExtractor
                     $current .= $token[1];
                     break;
 
-                case'{':
+                case '{':
                     $this->_getUseMap($index, $map, $current);
                     $pending = false;
                     break;
 
-                case'}':
-                case';':
+                case '}':
+                case ';':
                     if ($pending) {
                         $map[Convert::classToBasename($current)] = $current;
                     }
                     break 2;
 
-                case',':
+                case ',':
                     if ($pending) {
                         $map[Convert::classToBasename($current)] = $current;
                     }

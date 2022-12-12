@@ -43,11 +43,11 @@ final class QueryPager implements ICurlerPager
     public function __construct(?string $pageKey = null, $selector = null)
     {
         $this->PageKey  = $pageKey;
-        $this->Selector = ($selector instanceof Closure
+        $this->Selector = $selector instanceof Closure
             ? $selector
             : (is_string($selector)
                 ? fn($response) => $response[$selector]
-                : fn($response) => Convert::toList($response)));
+                : fn($response) => Convert::toList($response));
     }
 
     public function prepareQuery(?array $query): ?string
@@ -84,10 +84,10 @@ final class QueryPager implements ICurlerPager
         }
 
         return CurlerPageBuilder::build()
-            ->entities($data)
-            ->curler($curler)
-            ->previous($previous)
-            ->nextUrl($nextUrl ?? null)
-            ->go();
+                   ->entities($data)
+                   ->curler($curler)
+                   ->previous($previous)
+                   ->nextUrl($nextUrl ?? null)
+                   ->go();
     }
 }

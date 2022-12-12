@@ -136,13 +136,12 @@ final class GenerateFacade extends GenerateCommand
         }
 
         $files        = [];
-        $maybeAddFile = (
+        $maybeAddFile =
             function ($file) use (&$files) {
                 if ($file !== false) {
                     $files[$file] = $file;
                 }
-            }
-        );
+            };
 
         $maybeAddFile($_class->getFileName());
         foreach (($_methods = $_class->getMethods(ReflectionMethod::IS_PUBLIC)) as $_method) {
@@ -224,17 +223,17 @@ final class GenerateFacade extends GenerateCommand
                     //continue;
                 }
 
-                $type = (($_type = $phpDoc->Return['type'] ?? null) && strpbrk($_type, '<>') === false
+                $type = ($_type = $phpDoc->Return['type'] ?? null) && strpbrk($_type, '<>') === false
                     ? $phpDocTypeCallback($_type)
                     : ($_method->hasReturnType()
                         ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
-                        : 'mixed'));
+                        : 'mixed');
                 switch ($type) {
-                    case'static':
-                    case'$this':
+                    case 'static':
+                    case '$this':
                         $type = $service;
                         break;
-                    case'self':
+                    case 'self':
                         $type = $typeNameCallback($_method->getDeclaringClass()->getName(), true);
                         break;
                 }
@@ -264,13 +263,13 @@ final class GenerateFacade extends GenerateCommand
                 array_push($methods, ...$facadeMethods);
             }
 
-            $methods[] = (" * @method static $type $method("
+            $methods[] = " * @method static $type $method("
                 . str_replace("\n", "\n * ", implode(', ', $params)) . ')'
                 . ($_method->isConstructor()
                     ? " $summary"
                     : ($summary
                         ? " $summary (see {@see " . $typeNameCallback($_method->getDeclaringClass()->getName(), true) . "::$method()})"
-                        : ' See {@see ' . $typeNameCallback($_method->getDeclaringClass()->getName(), true) . "::$method()}")));
+                        : ' See {@see ' . $typeNameCallback($_method->getDeclaringClass()->getName(), true) . "::$method()}"));
 
             if ($_method->isConstructor()) {
                 array_push($methods, ...$facadeMethods);

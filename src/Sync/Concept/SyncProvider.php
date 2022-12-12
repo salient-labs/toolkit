@@ -186,9 +186,9 @@ abstract class SyncProvider implements ISyncProvider, IService
         $container = ($context instanceof SyncContext
             ? $context->container()
             : ($context ?: $this->container()))->inContextOf(static::class);
-        $context = ($context instanceof SyncContext
+        $context = $context instanceof SyncContext
             ? $context->withContainer($container)
-            : new SyncContext($container));
+            : new SyncContext($container);
 
         return $container->get(
             SyncEntityProvider::class,

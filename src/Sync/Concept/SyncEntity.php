@@ -351,9 +351,9 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
 
     final protected function store(): SyncStore
     {
-        return ($this->_Provider
+        return $this->_Provider
             ? $this->_Provider->store()
-            : Sync::getInstance());
+            : Sync::getInstance();
     }
 
     /**
@@ -384,8 +384,8 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
 
     private function typeUri(bool $compact): string
     {
-        return ($this->store()->getEntityTypeUri($this->service(), $compact)
-            ?: '/' . str_replace('\\', '/', ltrim($this->service(), '\\')));
+        return $this->store()->getEntityTypeUri($this->service(), $compact)
+            ?: '/' . str_replace('\\', '/', ltrim($this->service(), '\\'));
     }
 
     private function objectId(): string
