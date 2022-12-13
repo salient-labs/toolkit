@@ -4,7 +4,7 @@
     "license": "MIT",
     "description": "A lightweight PHP toolkit for elegant backend/CLI apps. May contain traces of Laravel.",
     "require": {
-        "php": ">=7.4,<8.2",
+        "php": ">=7.4,<=8.2",
         "composer-runtime-api": "^2.2",
         "filp/whoops": "^2",
         "lkrms/dice": "^4.1.3",

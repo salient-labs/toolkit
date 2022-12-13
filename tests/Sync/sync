@@ -45,12 +45,19 @@ $resolver       = new SyncEntityResolver($userApi, 'Name');
 $fuzzyResolver  = new SyncEntityFuzzyResolver($userApi, 'Name', null, null, 0.6);
 $fuzzyResolver2 = new SyncEntityFuzzyResolver($userApi, 'Name', null, SyncEntityFuzzyResolver::ALGORITHM_SIMILAR_TEXT, 0.6);
 
+/** @var User|null */
 $byName          = $resolver->getByName('Leanne Graham');
+/** @var User|null */
 $closestByName1a = $fuzzyResolver->getByName('leanne graham', $uncertainty1a);
+/** @var User|null */
 $closestByName1b = $fuzzyResolver->getByName('GRAHAM, leanne', $uncertainty1b);
+/** @var User|null */
 $closestByName1c = $fuzzyResolver->getByName('Lee-Anna Graham', $uncertainty1c);
+/** @var User|null */
 $closestByName2a = $fuzzyResolver2->getByName('leanne graham', $uncertainty2a);
+/** @var User|null */
 $closestByName2b = $fuzzyResolver2->getByName('GRAHAM, leanne', $uncertainty2b);
+/** @var User|null */
 $closestByName2c = $fuzzyResolver2->getByName('Lee-Anna Graham', $uncertainty2c);
 
 print_r([

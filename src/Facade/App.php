@@ -4,6 +4,7 @@ namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
 use Lkrms\Concept\FluentInterface;
+use Lkrms\Console\ConsoleLevel as Level;
 use Lkrms\Container\AppContainer;
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
@@ -43,7 +44,8 @@ use Lkrms\Contract\IContainer;
  * @method static AppContainer singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})
  * @method static AppContainer syncNamespace(string $prefix, string $uri, string $namespace) See {@see AppContainer::syncNamespace()}
  * @method static AppContainer unloadSync(bool $silent = false) See {@see AppContainer::unloadSync()}
- * @method static AppContainer writeResourceUsage() See {@see AppContainer::writeResourceUsage()}
+ * @method static AppContainer writeResourceUsage(int $level = Level::INFO) See {@see AppContainer::writeResourceUsage()}
+ * @method static AppContainer writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10) See {@see AppContainer::writeTimers()}
  *
  * @uses AppContainer
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Container\AppContainer' 'Lkrms\Facade\App'

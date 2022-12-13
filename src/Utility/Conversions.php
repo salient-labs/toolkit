@@ -780,7 +780,7 @@ final class Conversions
     {
         $break = preg_quote($break, '/');
 
-        return preg_replace("/(?<!{$break}|^)(?<!  )(${break})(?!    )(?!{$break}|\$)/", ' ', $string);
+        return preg_replace("/(?<!{$break}|^)(?<!  )({$break})(?!    )(?!{$break}|\$)/", ' ', $string);
     }
 
     /**

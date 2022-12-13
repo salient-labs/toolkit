@@ -3,6 +3,7 @@
 namespace Lkrms\Container;
 
 use Lkrms\Concern\TReadable;
+use Lkrms\Console\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleLevels;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Container\Container;
@@ -140,7 +141,7 @@ class AppContainer extends Container implements IReadable
 
         register_shutdown_function(
             function () {
-                $this->writeResourceUsage();
+                $this->writeResourceUsage(Level::DEBUG);
             }
         );
 
@@ -273,20 +274,66 @@ class AppContainer extends Container implements IReadable
     /**
      * @return $this
      */
-    final public function writeResourceUsage()
+    final public function writeResourceUsage(int $level = Level::INFO)
     {
         [$endTime, $peakMemory, $userTime, $systemTime] = [
             hrtime(true),
             Sys::getPeakMemoryUsage(),
             ...Sys::getCpuUsage(),
         ];
-        Console::debug('', sprintf(
-            'CPU time: %01.3fs real, %01.3fs user, %01.3fs system; memory: %s peak',
+        Console::print(sprintf(
+            'CPU time: **%.3fs** real, **%.3fs** user, **%.3fs** system; memory: **%s** peak',
             ($endTime - $this->StartTime) / 1000000000,
             $userTime / 1000000,
             $systemTime / 1000000,
             Format::bytes($peakMemory, 3)
-        ));
+        ), $level);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    final public function writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10)
+    {
+        foreach (Sys::getTimers($includeRunning, $type) as $_type => $timers) {
+            $maxRuns = $maxTime = $totalTime = 0;
+            $count   = count($timers);
+            foreach ($timers as [$time, $runs]) {
+                $totalTime += $time;
+                $maxTime    = max($maxTime, $time);
+                $maxRuns    = max($maxRuns, $runs);
+            }
+            uasort($timers, fn(array $a, array $b) => $b[0] <=> $a[0]);
+            $lines[] = sprintf(
+                "Timing: **%.3fms** recorded by **%d** %s with type '**%s**':",
+                $totalTime,
+                $count,
+                Convert::plural($count, 'timer'),
+                $_type
+            );
+            $timeWidth = strlen((string) ((int) $maxTime)) + 4;
+            $runsWidth = strlen((string) ((int) $maxRuns)) + 2;
+            if (!is_null($limit) && $limit < $count) {
+                array_splice($timers, $limit);
+            }
+            foreach ($timers as $name => [$time, $runs]) {
+                $lines[] = sprintf(
+                    "  %{$timeWidth}.3fms ~~{~~%{$runsWidth}s~~}~~ ***%s***",
+                    $time,
+                    sprintf('*%d*', $runs),
+                    $name
+                );
+            }
+            if ($hidden = $count - count($timers)) {
+                $width   = $timeWidth + $runsWidth + 6;
+                $lines[] = sprintf("%{$width}s~~(and %d more)~~", '', $hidden);
+            }
+        }
+        if ($lines ?? null) {
+            Console::print(implode(PHP_EOL, $lines), $level);
+        }
 
         return $this;
     }
