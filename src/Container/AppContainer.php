@@ -141,6 +141,9 @@ class AppContainer extends Container implements IReadable
 
         register_shutdown_function(
             function () {
+                if (Env::debug()) {
+                    $this->writeTimers(true, null, Level::DEBUG);
+                }
                 $this->writeResourceUsage(Level::DEBUG);
             }
         );
