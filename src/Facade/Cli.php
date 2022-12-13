@@ -6,6 +6,7 @@ use Lkrms\Cli\CliAppContainer;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Concept\Facade;
 use Lkrms\Concept\FluentInterface;
+use Lkrms\Console\ConsoleLevel as Level;
 use Lkrms\Container\AppContainer;
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
@@ -50,7 +51,8 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})
  * @method static CliAppContainer syncNamespace(string $prefix, string $uri, string $namespace) See {@see AppContainer::syncNamespace()}
  * @method static CliAppContainer unloadSync(bool $silent = false) See {@see AppContainer::unloadSync()}
- * @method static CliAppContainer writeResourceUsage() See {@see AppContainer::writeResourceUsage()}
+ * @method static CliAppContainer writeResourceUsage(int $level = Level::INFO) See {@see AppContainer::writeResourceUsage()}
+ * @method static CliAppContainer writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10) See {@see AppContainer::writeTimers()}
  *
  * @uses CliAppContainer
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Cli\CliAppContainer' 'Lkrms\Facade\Cli'

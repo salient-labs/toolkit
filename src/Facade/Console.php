@@ -34,6 +34,7 @@ use Throwable;
  * @method static ConsoleWriter message(int $level, string $msg1, ?string $msg2 = null, ?Throwable $ex = null) Print "$msg1 $msg2" with formatting based on $level (see {@see ConsoleWriter::message()})
  * @method static ConsoleWriter messageOnce(int $level, string $msg1, ?string $msg2 = null, ?Throwable $ex = null) Print "$msg1 $msg2" with formatting based on $level once per run (see {@see ConsoleWriter::messageOnce()})
  * @method static ConsoleWriter out(string $msg, int $level = Level::INFO) Print "$msg" to I/O stream targets (STDOUT or STDERR) (see {@see ConsoleWriter::out()})
+ * @method static ConsoleWriter print(string $msg, int $level = Level::INFO) Print "$msg" (see {@see ConsoleWriter::print()})
  * @method static ConsoleWriter registerDefaultStdioTargets(bool $replace = false) Register STDOUT and/or STDERR as targets in their default configuration (see {@see ConsoleWriter::registerDefaultStdioTargets()})
  * @method static ConsoleWriter registerStderrTarget(bool $replace = false) Register STDERR as a target if running on the command line (see {@see ConsoleWriter::registerStderrTarget()})
  * @method static ConsoleWriter registerStdioTargets(bool $replace = false) Register STDOUT and STDERR as targets if running on the command line (see {@see ConsoleWriter::registerStdioTargets()})

@@ -302,6 +302,16 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
+     * Print "$msg"
+     *
+     * @return $this
+     */
+    public function print(string $msg, int $level = Level::INFO)
+    {
+        return $this->write($level, $msg, null, '');
+    }
+
+    /**
      * Print "$msg" to I/O stream targets (STDOUT or STDERR)
      *
      * @return $this

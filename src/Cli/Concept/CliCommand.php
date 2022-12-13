@@ -393,7 +393,7 @@ abstract class CliCommand implements ReturnsContainer
           {$desc}
 
         ___SYNOPSIS___
-          __{$name}__{$synopsis}${options}
+          __{$name}__{$synopsis}{$options}
         EOF;
     }
 

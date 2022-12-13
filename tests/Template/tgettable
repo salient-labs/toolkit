@@ -128,8 +128,10 @@ $b_data_modified = $b->DataModified;
 $b_meta1 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, 'Meta')];
 // @phpstan-ignore-next-line
 $b->Meta = [];
+// @phpstan-ignore-next-line
 $b_meta2 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, 'Meta')];
 unset($b->Meta);
+// @phpstan-ignore-next-line
 $b_meta3 = [$b->Meta, 'isset' => isset($b->Meta), 'exists' => property_exists($b, 'Meta')];
 
 try {
