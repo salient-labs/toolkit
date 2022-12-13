@@ -9,20 +9,45 @@ namespace Lkrms\Console;
  */
 final class ConsoleFormat
 {
+    /**
+     * @var string
+     */
     private $Before;
 
+    /**
+     * @var string
+     */
     private $After;
 
-    public function __construct(string $before = '', string $after = '')
+    /**
+     * @var string[]
+     */
+    private $Replace;
+
+    /**
+     * @var string[]
+     */
+    private $ReplaceWith;
+
+    /**
+     * @param array<string,string> $replace
+     */
+    public function __construct(string $before = '', string $after = '', array $replace = [])
     {
-        $this->Before = $before;
-        $this->After  = $after;
+        $this->Before      = $before;
+        $this->After       = $after;
+        $this->Replace     = array_keys($replace);
+        $this->ReplaceWith = array_values($replace);
     }
 
     public function apply(?string $text): string
     {
         if (!$text) {
             return '';
+        }
+
+        if ($this->Replace) {
+            $text = str_replace($this->Replace, $this->ReplaceWith, $text);
         }
 
         return "{$this->Before}$text{$this->After}";

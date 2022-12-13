@@ -82,8 +82,8 @@ abstract class ConsoleTarget
         switch ($level) {
             case Level::DEBUG:
                 return new ConsoleMessageFormat(
-                    new ConsoleFormat(Colour::DIM, Colour::UNDIM),
-                    new ConsoleFormat(Colour::DIM, Colour::UNDIM),
+                    new ConsoleFormat(Colour::DIM, Colour::UNDIM, [Colour::UNBOLD => Colour::UNBOLD . Colour::DIM]),
+                    new ConsoleFormat(Colour::DIM, Colour::UNDIM, [Colour::UNBOLD => Colour::UNBOLD . Colour::DIM]),
                     new ConsoleFormat(Colour::BOLD . Colour::DIM, Colour::UNDIM . Colour::UNBOLD)
                 );
             case Level::INFO:
