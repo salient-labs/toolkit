@@ -17,6 +17,7 @@ use Lkrms\Utility\Tests;
  * @method static void unload() Clear the underlying Tests instance
  * @method static bool areSameFile(string $path1, string $path2) Return true if two paths exist and refer to the same file (see {@see Tests::areSameFile()})
  * @method static bool classImplements(object|string $class, string $interface) Return true if an object or class implements the given interface (see {@see Tests::classImplements()})
+ * @method static bool firstExistingDirectoryIsWritable(string $dir) Return true if a directory exists and is writable, or doesn't exist but can be created (see {@see Tests::firstExistingDirectoryIsWritable()})
  * @method static bool isAbsolutePath(string $path) Return true for absolute paths (see {@see Tests::isAbsolutePath()})
  * @method static bool isArrayOf(mixed $value, string $class, bool $strict = false, bool $allowEmpty = false, bool $requireList = false, bool $requireIndexed = false) Return true for arrays of a class (see {@see Tests::isArrayOf()})
  * @method static bool isArrayOfArray(mixed $value, bool $allowEmpty = false, bool $requireList = false, bool $requireIndexed = false) Return true for array[] (see {@see Tests::isArrayOfArray()})
@@ -27,6 +28,7 @@ use Lkrms\Utility\Tests;
  * @method static bool isIndexedArray(mixed $value, bool $allowEmpty = false) Return true for arrays with no string keys (see {@see Tests::isIndexedArray()})
  * @method static bool isIntValue(mixed $value) Return true for integers and integer strings (see {@see Tests::isIntValue()})
  * @method static bool isListArray(mixed $value, bool $allowEmpty = false) Return true for arrays with consecutive integer keys numbered from 0 (see {@see Tests::isListArray()})
+ * @method static bool isPharUrl(string $path) Return true if a path starts with 'phar://' (see {@see Tests::isPharUrl()})
  * @method static bool isPhpReservedWord(string $name) Return true for PHP reserved words (see {@see Tests::isPhpReservedWord()})
  *
  * @uses Tests

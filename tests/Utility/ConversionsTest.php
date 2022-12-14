@@ -178,6 +178,11 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
     }
     */
 
+    public function testResolvePath()
+    {
+        $this->assertEquals('/dir/subdir2/doc', Convert::resolvePath('/dir/subdir/files/../../subdir2/./doc'));
+    }
+
     public function testResolveRelativeUrl()
     {
         // From [RFC1808] Section 5

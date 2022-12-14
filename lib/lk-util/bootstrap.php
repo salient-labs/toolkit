@@ -14,7 +14,7 @@ use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncProvider;
 use Lkrms\LkUtil\Command\Http\SendHttpRequest;
 
-$loader = require $GLOBALS['_composer_autoload_path'] ?? __DIR__ . '/../../vendor/autoload.php';
+$loader = require $GLOBALS['_composer_autoload_path'] ?? dirname(dirname(__DIR__)) . '/vendor/autoload.php';
 $loader->addPsr4('Lkrms\\LkUtil\\', __DIR__);
 
 Cli::load()

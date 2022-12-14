@@ -13,11 +13,13 @@
     },
     "suggest": {
         "adodb/adodb-php": "Required for access to databases",
-        "analog/analog": "Allows Analog handlers to be used as Lkrms\\Console\\Console message targets"
+        "analog/analog": "Allows Analog handlers to be used as Lkrms\\Console\\Console message targets",
+        "clue/phar-composer": "Simplifies creation of phar archives"
     },
     "require-dev": {
         "adodb/adodb-php": "^5.22",
         "analog/analog": "^1",
+        "clue/phar-composer": "^1",
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",

@@ -19,7 +19,8 @@ use Lkrms\Utility\Environment;
  * @method static int|null getInt(string $name, ?int $default = null) Return an environment variable as an integer (see {@see Environment::getInt()})
  * @method static string[]|null getList(string $name, string[]|null $default = null, string $delimiter = ',') Return an environment variable as a list of strings (see {@see Environment::getList()})
  * @method static bool has(string $name) Returns true if a variable exists in the environment (see {@see Environment::has()})
- * @method static void loadFile(string $filename, bool $apply = true) Load environment variables from a file (see {@see Environment::loadFile()})
+ * @method static string|null home() Get the current user's home directory from the environment (see {@see Environment::home()})
+ * @method static void loadFile(string $filename) Load environment variables from a file (see {@see Environment::loadFile()})
  * @method static void set(string $name, string $value) Set an environment variable (see {@see Environment::set()})
  * @method static void unset(string $name) Unset an environment variable (see {@see Environment::unset()})
  *

@@ -52,7 +52,6 @@ final class CliAppContainer extends AppContainer
     /**
      * Return the basename of the file used to run the script
      *
-     * @return string
      */
     public function getProgramName(): string
     {

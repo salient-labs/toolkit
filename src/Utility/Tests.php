@@ -16,7 +16,6 @@ final class Tests
      * Return true for integers and integer strings
      *
      * @param mixed $value
-     * @return bool
      */
     public function isIntValue($value): bool
     {
@@ -28,8 +27,6 @@ final class Tests
      * Return true for arrays with consecutive integer keys numbered from 0
      *
      * @param mixed $value
-     * @param bool $allowEmpty
-     * @return bool
      */
     public function isListArray($value, bool $allowEmpty = false): bool
     {
@@ -41,8 +38,6 @@ final class Tests
      * Return true for arrays with one or more string keys
      *
      * @param mixed $value
-     * @param bool $allowEmpty
-     * @return bool
      */
     public function isAssociativeArray($value, bool $allowEmpty = false): bool
     {
@@ -65,8 +60,6 @@ final class Tests
      * Return true for arrays with no string keys
      *
      * @param mixed $value
-     * @param bool $allowEmpty
-     * @return bool
      */
     public function isIndexedArray($value, bool $allowEmpty = false): bool
     {
@@ -142,8 +135,6 @@ final class Tests
     /**
      * Return true for absolute paths
      *
-     * @param string $path
-     * @return bool
      */
     public function isAbsolutePath(string $path): bool
     {
@@ -154,8 +145,6 @@ final class Tests
      * Return true if an object or class implements the given interface
      *
      * @param object|string $class
-     * @param string $interface
-     * @return bool
      */
     public function classImplements($class, string $interface): bool
     {
@@ -165,9 +154,6 @@ final class Tests
     /**
      * Return true if two paths exist and refer to the same file
      *
-     * @param string $path1
-     * @param string $path2
-     * @return bool
      */
     public function areSameFile(string $path1, string $path2): bool
     {
@@ -177,13 +163,30 @@ final class Tests
     }
 
     /**
+     * Return true if a directory exists and is writable, or doesn't exist but
+     * can be created
+     *
+     */
+    public function firstExistingDirectoryIsWritable(string $dir): bool
+    {
+        while (!file_exists($dir)) {
+            $next = dirname($dir);
+            if ($next === $dir) {
+                break;
+            }
+            $dir = $next;
+        }
+
+        return is_dir($dir) && is_writable($dir);
+    }
+
+    /**
      * Return true if an array, iterable or Countable is empty
      *
      * Bear in mind that if `$value` is an empty `iterable`, calling this method
      * will implicitly close it.
      *
      * @param array|Countable|Iterator|IteratorAggregate $value
-     * @return bool
      */
     public function isEmpty($value): bool
     {
@@ -211,5 +214,15 @@ final class Tests
             'null', 'numeric', 'object', 'parent', 'resource',
             'self', 'static', 'string', 'true', 'void',
         ]);
+    }
+
+    /**
+     * Return true if a path starts with 'phar://'
+     *
+     */
+    public function isPharUrl(string $path): bool
+    {
+        return count($split = explode('://', $path, 2)) === 2 &&
+            $split[0] === 'phar';
     }
 }

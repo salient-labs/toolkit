@@ -43,6 +43,7 @@ use Lkrms\Utility\Conversions;
  * @method static string pluralRange(int $from, int $to, string $singular, ?string $plural = null, string $preposition = 'on') Return a phrase like "between lines 3 and 11" or "on platform 23" (see {@see Conversions::pluralRange()})
  * @method static array queryToData(string[] $query) Convert a list of "key=value" strings to an array like ["key" => "value"] (see {@see Conversions::queryToData()})
  * @method static array renameArrayKey(string|int $key, string|int $newKey, array $array) Rename an array key without changing the order of values in the array (see {@see Conversions::renameArrayKey()})
+ * @method static string resolvePath(string $path) Resolve relative segments in a pathname (see {@see Conversions::resolvePath()})
  * @method static string resolveRelativeUrl(string $embeddedUrl, string $baseUrl) Get the absolute form of a URL relative to a base URL, as per [RFC1808] (see {@see Conversions::resolveRelativeUrl()})
  * @method static string|false scalarToString(mixed $value) Convert a scalar to a string (see {@see Conversions::scalarToString()})
  * @method static int sizeToBytes(string $size) Convert php.ini values like "128M" to bytes (see {@see Conversions::sizeToBytes()})
