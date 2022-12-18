@@ -2,9 +2,12 @@
 
 namespace Lkrms\Utility;
 
-use Lkrms\Facade\Composer;
 use Lkrms\Facade\Compute;
+use Lkrms\Facade\Convert;
+use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
+use Lkrms\Facade\Test;
+use Phar;
 use RuntimeException;
 
 /**
@@ -86,6 +89,30 @@ final class Filesystem
         }
 
         return unlink($filename);
+    }
+
+    /**
+     * A phar-friendly realpath()
+     *
+     * If a phar archive is running and `$filename` is a `phar://` URL:
+     * - relative path segments in `$filename` (e.g. `/../..`) are resolved by
+     *   {@see Conversions::resolvePath()}
+     * - if the file or directory exists, the resolved pathname is returned
+     * - if `$filename` doesn't exist, `false` is returned
+     *
+     * Otherwise, the return value of `realpath($filename)` is returned.
+     *
+     * @return string|false
+     */
+    public function realpath(string $filename)
+    {
+        if (Test::isPharUrl($filename) && Phar::running()) {
+            $filename = Convert::resolvePath($filename);
+
+            return file_exists($filename) ? $filename : false;
+        }
+
+        return realpath($filename);
     }
 
     /**
@@ -178,12 +205,12 @@ final class Filesystem
     {
         $program  = Sys::getProgramName();
         $basename = basename($program);
-        $hash     = Compute::hash(realpath($program));
+        $hash     = Compute::hash(File::realpath($program));
         $euid     = posix_geteuid();
 
         return (is_null($dir)
-            ? realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR
-            : ($dir ? rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : ''))
+                ? realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR
+                : ($dir ? rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : ''))
             . "$basename-$hash-$euid$suffix";
     }
 }

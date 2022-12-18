@@ -28,34 +28,26 @@ final class Environment
      * contain single quotes as long as they look like this: `'\''`. Lines
      * starting with `#` are ignored.
      *
-     * @param string $filename The `.env` file to load.
-     * @param bool $apply If `true` (the default), {@see Environment::apply()}
-     * will be called before the function returns.
      * @throws RuntimeException if `$filename` cannot be opened.
      * @throws UnexpectedValueException if `$filename` cannot be parsed.
      */
-    public function loadFile(string $filename, bool $apply = true): void
+    public function loadFile(string $filename): void
     {
         if (($lines = file($filename, FILE_IGNORE_NEW_LINES)) === false) {
             throw new RuntimeException("Could not open $filename");
         }
-
         $queue = [];
         foreach ($lines as $i => $line) {
             $l = $i + 1;
-
             if (!trim($line) || substr($line, 0, 1) == '#') {
                 continue;
             } elseif (!preg_match('/^([A-Z_][A-Z0-9_]*)=("(([^"$`]|\\\\["$`])*)"|\'(([^\']|\'\\\\\'\')*)\'|[^]"$\'*?`\s[]*)$/i', $line, $match)) {
                 throw new UnexpectedValueException("Invalid entry at line $l in $filename");
             }
-
             $name = $match[1];
-
             if (getenv($name) !== false || array_key_exists($name, $_ENV) || array_key_exists($name, $_SERVER)) {
                 continue;
             }
-
             if ($match[3] ?? null) {
                 $value = preg_replace('/\\\\(["$\`])/', '\1', $match[3]);
             } elseif ($match[5] ?? null) {
@@ -63,15 +55,9 @@ final class Environment
             } else {
                 $value = $match[2];
             }
-
             $queue[$name] = $value;
         }
-
         array_walk($queue, fn($value, $name) => $this->set($name, $value));
-
-        if ($apply) {
-            $this->apply();
-        }
     }
 
     /**
@@ -97,8 +83,6 @@ final class Environment
      *
      * The variable is loaded to `getenv()`, `$_ENV` and `$_SERVER`.
      *
-     * @param string $name
-     * @param string $value
      */
     public function set(string $name, string $value): void
     {
@@ -112,7 +96,6 @@ final class Environment
      *
      * The variable is removed from `getenv()`, `$_ENV` and `$_SERVER`.
      *
-     * @param string $name
      */
     public function unset(string $name): void
     {
@@ -136,8 +119,6 @@ final class Environment
     /**
      * Returns true if a variable exists in the environment
      *
-     * @param string $name
-     * @return bool
      */
     public function has(string $name): bool
     {
@@ -152,14 +133,12 @@ final class Environment
      *
      * @param string $name The environment variable to retrieve.
      * @param string|null $default The value to return if `$name` is not set.
-     * @return string|null
      * @throws RuntimeException if `$name` is not set and no `$default` is
      * given.
      */
-    public function get(string $name, string $default = null): ?string
+    public function get(string $name, ?string $default = null): ?string
     {
         $value = $this->_get($name);
-
         if ($value === false) {
             if (func_num_args() < 2) {
                 throw new RuntimeException("Environment variable $name is not set");
@@ -179,11 +158,10 @@ final class Environment
      *
      * @param string $name The environment variable to retrieve.
      * @param int|null $default The value to return if `$name` is not set.
-     * @return int|null
      * @throws RuntimeException if `$name` is not set and no `$default` is
      * given.
      */
-    public function getInt(string $name, int $default = null): ?int
+    public function getInt(string $name, ?int $default = null): ?int
     {
         if (func_num_args() < 2) {
             $value = $this->get($name);
@@ -207,7 +185,7 @@ final class Environment
      * @throws RuntimeException if `$name` is not set and no `$default` is
      * given.
      */
-    public function getList(string $name, array $default = null, string $delimiter = ','): ?array
+    public function getList(string $name, ?array $default = null, string $delimiter = ','): ?array
     {
         if (!$delimiter) {
             throw new UnexpectedValueException('Invalid delimiter');
@@ -226,7 +204,7 @@ final class Environment
         return $value ? explode($delimiter, $value) : [];
     }
 
-    private function getOrSetBool(string $name, bool $newState = null): bool
+    private function getOrSetBool(string $name, ?bool $newState = null): bool
     {
         if (func_num_args() > 1 && !is_null($newState)) {
             if ($newState) {
@@ -245,10 +223,8 @@ final class Environment
      * Dry-run mode can also be enabled by setting the `DRY_RUN` environment
      * variable.
      *
-     * @param bool|null $newState
-     * @return bool
      */
-    public function dryRun(bool $newState = null): bool
+    public function dryRun(?bool $newState = null): bool
     {
         return $this->getOrSetBool('DRY_RUN', ...func_get_args());
     }
@@ -259,11 +235,26 @@ final class Environment
      * Debug mode can also be enabled by setting the `DEBUG` environment
      * variable.
      *
-     * @param bool|null $newState
-     * @return bool
      */
-    public function debug(bool $newState = null): bool
+    public function debug(?bool $newState = null): bool
     {
         return $this->getOrSetBool('DEBUG', ...func_get_args());
+    }
+
+    /**
+     * Get the current user's home directory from the environment
+     *
+     * @return string|null
+     */
+    public function home(): ?string
+    {
+        if ($home = $this->get('HOME', null)) {
+            return $home;
+        }
+        if (($homeDrive = $this->get('HOMEDRIVE', null)) && ($homePath = $this->get('HOMEPATH', null))) {
+            return $homeDrive . $homePath;
+        }
+
+        return null;
     }
 }

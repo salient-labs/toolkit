@@ -3,6 +3,7 @@
 namespace Lkrms\Err;
 
 use Lkrms\Contract\IFacade;
+use Lkrms\Facade\File;
 use RuntimeException;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
@@ -80,7 +81,7 @@ final class Err implements IFacade
     {
         self::assertIsLoaded();
         foreach ($paths as $path) {
-            if (($path = realpath($path)) === false) {
+            if (($path = File::realpath($path)) === false) {
                 continue;
             }
 

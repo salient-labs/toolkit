@@ -3,6 +3,7 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Facade\Convert;
+use Lkrms\Facade\File;
 use RuntimeException;
 use SQLite3;
 
@@ -163,9 +164,11 @@ final class System
     /**
      * Get the filename used to run the script
      *
-     * @param string|null $basePath If set, `"{$basePath}/"` is removed from the
-     * beginning of the filename, and if the filename does not start with
-     * `$basePath`, a `RuntimeException` is thrown.
+     * To get the running script's canonical path relative to the application,
+     * set `$basePath` to the application's root directory.
+     *
+     * @throws RuntimeException if the filename used to run the script doesn't
+     * belong to `$basePath`.
      */
     public function getProgramName(?string $basePath = null): string
     {
@@ -173,10 +176,11 @@ final class System
         if (is_null($basePath)) {
             return $filename;
         }
-        if (($basePath = realpath($basePath)) !== false &&
-                ($filename = realpath($filename)) !== false &&
+        if (($basePath = File::realpath($basePath)) !== false &&
+                ($filename = File::realpath($filename)) !== false &&
                 strpos($filename, $basePath) === 0) {
-            return substr($filename, strlen($basePath) + 1);
+            return substr($filename, strlen($basePath) + 1)
+                ?: basename($filename);
         }
 
         throw new RuntimeException('SCRIPT_FILENAME is not in $basePath');
@@ -185,11 +189,17 @@ final class System
     /**
      * Return the basename of the file used to run the script
      *
-     * @param string $suffix Removed from the end of the filename if set.
+     * @param string ...$suffixes Removed from the end of the filename.
      */
-    public function getProgramBasename(string $suffix = ''): string
+    public function getProgramBasename(string ...$suffixes): string
     {
-        return basename($_SERVER['SCRIPT_FILENAME'], $suffix);
+        $basename = basename($_SERVER['SCRIPT_FILENAME']);
+        if (!$suffixes) {
+            return $basename;
+        }
+        $regex = implode('|', array_map(fn(string $s) => preg_quote($s, '/'), $suffixes));
+
+        return preg_replace("/(?<=.)({$regex})+$/", '', $basename);
     }
 
     /**

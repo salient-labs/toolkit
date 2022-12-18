@@ -45,8 +45,8 @@ abstract class ConsoleTarget
     final public function write(int $level, string $message, array $context)
     {
         $this->writeToTarget($level, $this->Prefix
-                ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
-                : $message, $context);
+            ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
+            : $message, $context);
     }
 
     final public function setPrefix(?string $prefix)
@@ -82,8 +82,8 @@ abstract class ConsoleTarget
         switch ($level) {
             case Level::DEBUG:
                 return new ConsoleMessageFormat(
-                    new ConsoleFormat(Colour::DIM, Colour::UNDIM),
-                    new ConsoleFormat(Colour::DIM, Colour::UNDIM),
+                    new ConsoleFormat(Colour::DIM, Colour::UNDIM, [Colour::UNBOLD => Colour::UNBOLD . Colour::DIM]),
+                    new ConsoleFormat(Colour::DIM, Colour::UNDIM, [Colour::UNBOLD => Colour::UNBOLD . Colour::DIM]),
                     new ConsoleFormat(Colour::BOLD . Colour::DIM, Colour::UNDIM . Colour::UNBOLD)
                 );
             case Level::INFO:

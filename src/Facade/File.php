@@ -18,6 +18,7 @@ use Lkrms\Utility\Filesystem;
  * @method static bool maybeCreate(string $filename, int $permissions = 511, int $dirPermissions = 511) Create a file if it doesn't exist (see {@see Filesystem::maybeCreate()})
  * @method static bool maybeCreateDirectory(string $filename, int $permissions = 511) Create a directory if it doesn't exist (see {@see Filesystem::maybeCreateDirectory()})
  * @method static bool maybeDelete(string $filename) Delete a file if it exists (see {@see Filesystem::maybeDelete()})
+ * @method static string|false realpath(string $filename) A phar-friendly realpath() (see {@see Filesystem::realpath()})
  * @method static string|false|void writeCsv(iterable $data, ?string $filename = null, bool $headerRow = true, string $nullValue = null, ?int &$count = null, ?callable $callback = null) Convert data to CSV (see {@see Filesystem::writeCsv()})
  *
  * @uses Filesystem

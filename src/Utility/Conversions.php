@@ -360,6 +360,24 @@ final class Conversions
     }
 
     /**
+     * Resolve relative segments in a pathname
+     *
+     * e.g. `/dir/subdir/files/../../subdir2/./doc` becomes `/dir/subdir2/doc`.
+     *
+     * @see Conversions::resolveRelativeUrl()
+     */
+    public function resolvePath(string $path): string
+    {
+        $path = preg_replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
+        do {
+            $path = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\./@', '', $path, 1, $count);
+        } while ($count);
+        $path = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\.$@', '', $path, 1, $count);
+
+        return rtrim($path, '/');
+    }
+
+    /**
      * Get the absolute form of a URL relative to a base URL, as per [RFC1808]
      */
     public function resolveRelativeUrl(string $embeddedUrl, string $baseUrl): string

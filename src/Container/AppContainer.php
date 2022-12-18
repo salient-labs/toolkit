@@ -19,22 +19,40 @@ use Lkrms\Facade\Format;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
+use Phar;
 use RuntimeException;
+use UnexpectedValueException;
 
 /**
  * A service container for applications
  *
  * Typically accessed via the {@see \Lkrms\Facade\App} facade.
  *
- * @property-read string $BasePath
- * @property-read string $CachePath
- * @property-read string $DataPath
- * @property-read string $LogPath
- * @property-read string $TempPath
+ * @property-read string $BasePath   Environment variable: app_base_path
+ * @property-read string $CachePath  Environment variable: app_cache_path
+ * @property-read string $ConfigPath Environment variable: app_config_path
+ * @property-read string $DataPath   Environment variable: app_data_path
+ * @property-read string $LogPath    Environment variable: app_log_path
+ * @property-read string $TempPath   Environment variable: app_temp_path
  */
 class AppContainer extends Container implements IReadable
 {
     use TReadable;
+
+    /**
+     * Typically ~/.config/<app>
+     */
+    private const DIR_CONFIG = 'CONFIG';
+
+    /**
+     * Typically ~/.local/share/<app>
+     */
+    private const DIR_DATA = 'DATA';
+
+    /**
+     * Typically ~/.cache/<app>
+     */
+    private const DIR_STATE = 'STATE';
 
     /**
      * @var string
@@ -46,6 +64,12 @@ class AppContainer extends Container implements IReadable
      * @var string
      */
     protected $_CachePath;
+
+    /**
+     * @internal
+     * @var string
+     */
+    protected $_ConfigPath;
 
     /**
      * @internal
@@ -70,11 +94,70 @@ class AppContainer extends Container implements IReadable
      */
     private $StartTime;
 
-    private function getPath(string $name, string $default): string
+    private function getPath(string $name, string $parent, ?string $child, string $sourceChild, string $windowsChild): string
     {
-        $path = ($path = Env::get($name, ''))
-            ? (Test::isAbsolutePath($path) ? $path : $this->BasePath . '/' . $path)
-            : $this->BasePath . '/' . $default;
+        $name = "app_{$name}_path";
+        if ($path = Env::get($name, null)) {
+            return $this->_getPath($path, $name);
+        }
+
+        // If running from source, return `$this->BasePath/$sourceChild` if it
+        // resolves to a writable directory
+        if (!Phar::running()) {
+            $path = "{$this->BasePath}/$sourceChild";
+            if (Test::firstExistingDirectoryIsWritable($path)) {
+                return $this->_getPath($path, $name);
+            }
+        }
+
+        $app = $this->getAppName();
+
+        if (PHP_OS_FAMILY === 'Windows') {
+            switch ($parent) {
+                case self::DIR_CONFIG:
+                case self::DIR_DATA:
+                    $path = Env::get('APPDATA');
+                    break;
+                case self::DIR_STATE:
+                default:
+                    $path = Env::get('LOCALAPPDATA');
+                    break;
+            }
+
+            return $this->_getPath(Convert::sparseToString(
+                DIRECTORY_SEPARATOR,
+                [$path, $app, $windowsChild]
+            ), $name);
+        }
+
+        if (!($home = Env::home())) {
+            throw new RuntimeException('Home directory not found');
+        }
+
+        switch ($parent) {
+            case self::DIR_CONFIG:
+                $path = Env::get('XDG_CONFIG_HOME', $home . '/.config');
+                break;
+            case self::DIR_DATA:
+                $path = Env::get('XDG_DATA_HOME', $home . '/.local/share');
+                break;
+            case self::DIR_STATE:
+            default:
+                $path = Env::get('XDG_CACHE_HOME', $home . '/.cache');
+                break;
+        }
+
+        return $this->_getPath(Convert::sparseToString(
+            DIRECTORY_SEPARATOR,
+            [$path, $app, $child]
+        ), $name);
+    }
+
+    private function _getPath(string $path, string $name): string
+    {
+        if (!Test::isAbsolutePath($path)) {
+            throw new UnexpectedValueException("Absolute path required: $name");
+        }
         File::maybeCreateDirectory($path);
 
         return $path;
@@ -83,25 +166,31 @@ class AppContainer extends Container implements IReadable
     final protected function _getCachePath(): string
     {
         return $this->_CachePath
-            ?: ($this->_CachePath = $this->getPath('app_cache_path', 'var/cache'));
+            ?: ($this->_CachePath = $this->getPath('cache', self::DIR_STATE, 'cache', 'var/cache', 'cache'));
+    }
+
+    final protected function _getConfigPath(): string
+    {
+        return $this->_ConfigPath
+            ?: ($this->_ConfigPath = $this->getPath('config', self::DIR_CONFIG, null, 'config', 'config'));
     }
 
     final protected function _getDataPath(): string
     {
         return $this->_DataPath
-            ?: ($this->_DataPath = $this->getPath('app_data_path', 'var/lib'));
+            ?: ($this->_DataPath = $this->getPath('data', self::DIR_DATA, null, 'var/lib', 'data'));
     }
 
     final protected function _getLogPath(): string
     {
         return $this->_LogPath
-            ?: ($this->_LogPath = $this->getPath('app_log_path', 'var/log'));
+            ?: ($this->_LogPath = $this->getPath('log', self::DIR_STATE, 'log', 'var/log', 'log'));
     }
 
     final protected function _getTempPath(): string
     {
         return $this->_TempPath
-            ?: ($this->_TempPath = $this->getPath('app_temp_path', 'var/tmp'));
+            ?: ($this->_TempPath = $this->getPath('temp', self::DIR_STATE, 'tmp', 'var/tmp', 'tmp'));
     }
 
     public static function getReadable(): array
@@ -123,24 +212,27 @@ class AppContainer extends Container implements IReadable
         self::setGlobalContainer($this);
 
         if (is_null($basePath)) {
-            $basePath = Env::get('app_base_path', '') ?: Composer::getRootPackagePath();
+            $basePath = Env::get('app_base_path', null) ?: Composer::getRootPackagePath();
         }
-
         if (!is_dir($basePath) ||
-                ($this->BasePath = realpath($basePath)) === false) {
+                ($basePath = File::realpath($basePath)) === false) {
             throw new RuntimeException('Invalid basePath: ' . $basePath);
         }
+        $this->BasePath = $basePath;
 
-        if (file_exists($env = $this->BasePath . '/.env')) {
+        if (!Phar::running() &&
+                is_file($env = $this->BasePath . '/.env')) {
             Env::loadFile($env);
-        } else {
-            Env::apply();
         }
+        Env::apply();
 
         Console::registerStdioTargets();
 
         register_shutdown_function(
             function () {
+                if (Env::debug()) {
+                    $this->writeTimers(true, null, Level::DEBUG);
+                }
                 $this->writeResourceUsage(Level::DEBUG);
             }
         );
@@ -149,6 +241,16 @@ class AppContainer extends Container implements IReadable
         if ($path = Composer::getPackagePath('adodb/adodb-php')) {
             Err::silencePaths($path);
         }
+    }
+
+    /**
+     * Return the basename of the file used to run the script after removing PHP
+     * file extensions
+     *
+     */
+    final public function getAppName(): string
+    {
+        return Sys::getProgramBasename('.php', '.phar');
     }
 
     /**
@@ -196,7 +298,7 @@ class AppContainer extends Container implements IReadable
      */
     final public function logConsoleMessages(?bool $debug = true, ?string $name = null)
     {
-        $name = $name ? basename($name, '.log') : Sys::getProgramBasename('.php');
+        $name = $name ? basename($name, '.log') : $this->getAppName();
         Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log"), ConsoleLevels::ALL);
         if ($debug || (is_null($debug) && Env::debug())) {
             Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.debug.log"), ConsoleLevels::ALL_DEBUG);
@@ -216,10 +318,10 @@ class AppContainer extends Container implements IReadable
             Sync::load($syncDb,
                 is_null($command) ? Sys::getProgramName($this->BasePath) : $command,
                 (is_null($arguments)
-                        ? (PHP_SAPI == 'cli'
-                            ? array_slice($_SERVER['argv'], 1)
-                            : ['_GET' => $_GET, '_POST' => $_POST])
-                        : $arguments));
+                    ? (PHP_SAPI == 'cli'
+                        ? array_slice($_SERVER['argv'], 1)
+                        : ['_GET' => $_GET, '_POST' => $_POST])
+                    : $arguments));
         } elseif (!Test::areSameFile($syncDb, $file = Sync::getFilename() ?: '')) {
             throw new RuntimeException("Sync database already loaded: $file");
         }

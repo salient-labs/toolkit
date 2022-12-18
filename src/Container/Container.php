@@ -60,9 +60,9 @@ class Container extends FluentInterface implements IContainer
 
     private function load(): void
     {
-        $this->Dice = $this->Dice->addShared(\Psr\Container\ContainerInterface::class, $this);
-        $this->Dice = $this->Dice->addShared(IContainer::class, $this);
-        $class      = static::class;
+        $this->Dice = $this->Dice->addShared(\Psr\Container\ContainerInterface::class, $this)
+                                 ->addShared(IContainer::class, $this);
+        $class = static::class;
         do {
             $this->Dice = $this->Dice->addShared($class, $this);
         } while (self::class != $class && ($class = get_parent_class($class)));

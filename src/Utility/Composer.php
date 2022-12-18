@@ -5,6 +5,7 @@ namespace Lkrms\Utility;
 use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
 use Lkrms\Facade\Convert;
+use Lkrms\Facade\File;
 use RuntimeException;
 
 /**
@@ -42,7 +43,7 @@ final class Composer
     {
         $path = $this->getRootPackageValue('install_path');
 
-        if (($realpath = realpath($path)) === false) {
+        if (($realpath = File::realpath($path)) === false) {
             throw new RuntimeException('Directory not found: ' . $path);
         }
 
@@ -113,7 +114,7 @@ final class Composer
         foreach ($prefixes as $prefix => $dirs) {
             if (substr($namespace . '\\', 0, strlen($prefix)) == $prefix) {
                 foreach (Convert::toArray($dirs) as $dir) {
-                    if (($dir = realpath($dir)) && is_dir($dir)) {
+                    if (($dir = File::realpath($dir)) && is_dir($dir)) {
                         if ($subdir = strtr(substr($namespace, strlen($prefix)), '\\', DIRECTORY_SEPARATOR)) {
                             return $dir . DIRECTORY_SEPARATOR . $subdir;
                         }
