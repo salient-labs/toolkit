@@ -122,7 +122,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 
         $sort = $this->Entities;
         usort($sort, fn($e1, $e2) => $this->compareUncertainty($_name, $e1, $e2)
-                ?: ($e2[0]->{$this->WeightProperty} <=> $e1[0]->{$this->WeightProperty}));
+            ?: ($e2[0]->{$this->WeightProperty} <=> $e1[0]->{$this->WeightProperty}));
         $cache = $match = reset($sort);
 
         if ($match !== false) {

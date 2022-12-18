@@ -293,7 +293,7 @@ final class Reflection
         $const = $parameter->getDefaultValueConstantName();
         if (!preg_match('/^(self|parent|static)::/i', $const)) {
             if ($typeNameCallback &&
-                    ($_const = preg_replace_callback(
+                ($_const = preg_replace_callback(
                     '/^[^:\\\\]+(?:\\\\[^:\\\\]+)+(?=::)/',
                     fn($matches) => $typeNameCallback($matches[0]) ?: $matches[0],
                     $const

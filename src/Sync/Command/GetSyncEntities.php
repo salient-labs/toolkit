@@ -59,8 +59,8 @@ final class GetSyncEntities extends CliCommand
             foreach ($introspector->getSyncProviderEntityBasenames() as $basename => $entity) {
                 $this->ProviderEntities[$provider] = $entity;
                 if (array_key_exists($basename, $this->Entities) &&
-                        (is_null($this->Entities[$basename]) ||
-                            strcasecmp($this->Entities[$basename], $entity))) {
+                    (is_null($this->Entities[$basename]) ||
+                        strcasecmp($this->Entities[$basename], $entity))) {
                     $this->Entities[$basename] = null;
                     continue;
                 }

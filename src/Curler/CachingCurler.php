@@ -70,9 +70,9 @@ class CachingCurler extends Curler
     protected function execute(bool $close = true, int $depth = 0): string
     {
         if (in_array($this->Method, [HttpRequestMethod::GET, HttpRequestMethod::HEAD]) ||
-                ($this->CachePostRequests &&
-                    $this->Method == HttpRequestMethod::POST &&
-                    !is_array($this->Body))) {
+            ($this->CachePostRequests &&
+                $this->Method == HttpRequestMethod::POST &&
+                !is_array($this->Body))) {
             $key = is_null($this->Callback) ? $this->Headers->getPublicHeaders() : ($this->Callback)($this->Headers);
             if ($this->Method == HttpRequestMethod::POST) {
                 $key[] = $this->Body;

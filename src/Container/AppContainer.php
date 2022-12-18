@@ -318,10 +318,10 @@ class AppContainer extends Container implements IReadable
             Sync::load($syncDb,
                 is_null($command) ? Sys::getProgramName($this->BasePath) : $command,
                 (is_null($arguments)
-                        ? (PHP_SAPI == 'cli'
-                            ? array_slice($_SERVER['argv'], 1)
-                            : ['_GET' => $_GET, '_POST' => $_POST])
-                        : $arguments));
+                    ? (PHP_SAPI == 'cli'
+                        ? array_slice($_SERVER['argv'], 1)
+                        : ['_GET' => $_GET, '_POST' => $_POST])
+                    : $arguments));
         } elseif (!Test::areSameFile($syncDb, $file = Sync::getFilename() ?: '')) {
             throw new RuntimeException("Sync database already loaded: $file");
         }

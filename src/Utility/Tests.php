@@ -113,8 +113,8 @@ final class Tests
         return is_array($value) &&
             (empty($value) ? $allowEmpty
                 : empty(array_filter($value, $strict
-                        ? fn($val) => !is_object($val) || strcasecmp(get_class($val), $class)
-                        : fn($val) => !is_a($val, $class))) &&
+                    ? fn($val) => !is_object($val) || strcasecmp(get_class($val), $class)
+                    : fn($val) => !is_a($val, $class))) &&
                 (!($requireList || $requireIndexed) ||
                     ($requireList && $this->isListArray($value)) ||
                     ((!$requireList) && $this->isIndexedArray($value))));
@@ -193,8 +193,8 @@ final class Tests
         if (is_array($value) || $value instanceof Countable) {
             return count($value) === 0;
         } elseif ($value instanceof Iterator ||
-                ($value instanceof IteratorAggregate &&
-                    ($value = $value->getIterator()) instanceof Iterator)) {
+            ($value instanceof IteratorAggregate &&
+                ($value = $value->getIterator()) instanceof Iterator)) {
             return !$value->valid();
         } else {
             return false;

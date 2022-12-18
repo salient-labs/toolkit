@@ -45,8 +45,8 @@ abstract class ConsoleTarget
     final public function write(int $level, string $message, array $context)
     {
         $this->writeToTarget($level, $this->Prefix
-                ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
-                : $message, $context);
+            ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
+            : $message, $context);
     }
 
     final public function setPrefix(?string $prefix)
