@@ -148,7 +148,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
  * callback(string \$value): string
  * ```
  */";
-        $phpDoc   = new PhpDocParser($docBlock);
+        $phpDoc = new PhpDocParser($docBlock);
         $this->assertEquals($phpDoc->Summary, 'Summary');
         $this->assertEquals($phpDoc->Description, "Description with multiple code blocks:
 

@@ -321,7 +321,7 @@ final class GenerateFacade extends GenerateCommand
         $lines = [implode(PHP_EOL . PHP_EOL, $blocks)];
 
         array_push($lines,
-            ...$this->getStaticGetter('getServiceName', "$service::class"));
+                   ...$this->getStaticGetter('getServiceName', "$service::class"));
 
         /** @var ReflectionMethod $_method */
         foreach ($methodsToDeclare as $_method) {
@@ -335,7 +335,7 @@ final class GenerateFacade extends GenerateCommand
             ];
 
             array_push($lines, '',
-                ...$this->getMethod($_method->name, $code, $_params, $_method->getReturnType()));
+                       ...$this->getMethod($_method->name, $code, $_params, $_method->getReturnType()));
         }
 
         $lines[] = '}';

@@ -86,5 +86,5 @@ print_r([
     'sameKeys4'             => $sameKeys($in4),
     'sameKeysSkipNull4'     => $sameKeysSkipNull($in4),
     'skipNone===skipNone2'  => $skipNone === $skipNone2,
-    'exceptions'            => array_map(function (Throwable $ex) {return $ex->getMessage();}, $exceptions),
+    'exceptions'            => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
 ]);

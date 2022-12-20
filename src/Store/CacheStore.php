@@ -96,8 +96,8 @@ final class CacheStore extends SqliteStore
             $expiry += time();
         }
 
-        $db   = $this->db();
-        $sql  = <<<SQL
+        $db  = $this->db();
+        $sql = <<<SQL
         INSERT INTO
           _cache_item (item_key, item_value, expires_at)
         VALUES
@@ -148,8 +148,8 @@ final class CacheStore extends SqliteStore
             $bind[]  = [':max_age', "+$maxAge seconds", SQLITE3_TEXT];
         }
 
-        $db   = $this->db();
-        $sql  = <<<SQL
+        $db  = $this->db();
+        $sql = <<<SQL
         SELECT
           item_value
         FROM
@@ -181,8 +181,8 @@ final class CacheStore extends SqliteStore
     {
         $this->maybeFlush();
 
-        $db   = $this->db();
-        $sql  = <<<SQL
+        $db  = $this->db();
+        $sql = <<<SQL
         DELETE FROM
           _cache_item
         WHERE

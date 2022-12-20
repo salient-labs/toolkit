@@ -143,13 +143,13 @@ final class DbConnector implements IReadable
                 ], false));
                 if ($this->Schema) {
                     $db->Execute('SET SCHEMA = ' . $db->Param('schema'),
-                        ['schema' => $this->Schema]);
+                                 ['schema' => $this->Schema]);
                 }
                 break;
 
             case DbDriver::MSSQL:
                 $db->setConnectionParameter('TrustServerCertificate',
-                    Format::yn(!Env::get('mssql_validate_server', null)));
+                                            Format::yn(!Env::get('mssql_validate_server', null)));
             default:
                 $db->Connect(
                     $this->Hostname,

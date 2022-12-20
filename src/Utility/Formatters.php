@@ -135,7 +135,7 @@ final class Formatters
         $power = max(0, $precision ? $power : $power - 1);
 
         return sprintf($precision ? "%01.{$precision}f%s" : '%d%s',
-            $bytes / pow(1024, $power),
-            $units[$power]);
+                       $bytes / pow(1024, $power),
+                       $units[$power]);
     }
 }

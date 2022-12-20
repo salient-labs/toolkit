@@ -82,8 +82,8 @@ final class Debugging implements ReceivesFacade
 
         if (($frame = $frames[$depth + 2] ?? null) &&
             preg_match('/^(?P<namespace>.*?)(?P<function>[^\\\\]+|\{closure\})$/',
-                $frame['function'],
-                $function)) {
+                       $frame['function'],
+                       $function)) {
             $class     = $frame['class'] ?? null;
             $namespace = $class ? null : $function['namespace'] ?? null;
             $file      = $class || $namespace ? null : $file;

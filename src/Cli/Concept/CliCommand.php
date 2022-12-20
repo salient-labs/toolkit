@@ -402,7 +402,7 @@ abstract class CliCommand implements ReturnsContainer
         return str_replace("\n", "\n" . $indent,
             wordwrap(
                 str_replace('{{command}}', $this->getNameWithProgram(),
-                    Convert::unwrap($description)),
+                            Convert::unwrap($description)),
                 $width
             ));
     }

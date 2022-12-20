@@ -588,20 +588,20 @@ final class ConsoleWriter implements ReceivesFacade
         do {
             $msg2 = ($msg2 ?? '') . (($i++? "\nCaused by __" . get_class($ex) . '__: ' : '')
                 . sprintf('`%s` ~~in %s:%d~~',
-                    ConsoleFormatter::escape($ex->getMessage()),
-                    $ex->getFile(), $ex->getLine()));
+                          ConsoleFormatter::escape($ex->getMessage()),
+                          $ex->getFile(), $ex->getLine()));
             $ex = $ex->getPrevious();
         } while ($ex);
 
         $this->Errors++;
         $this->write(Level::ERROR,
-            'Uncaught __' . get_class($exception) . '__:', $msg2, ' !! ', $exception);
+                     'Uncaught __' . get_class($exception) . '__:', $msg2, ' !! ', $exception);
         $this->write(Level::DEBUG,
-            '__Stack trace:__', "\n`" . ConsoleFormatter::escape($exception->getTraceAsString()) . '`', '--- ');
+                     '__Stack trace:__', "\n`" . ConsoleFormatter::escape($exception->getTraceAsString()) . '`', '--- ');
         if ($exception instanceof \Lkrms\Exception\Exception) {
             foreach ($exception->getDetail() as $section => $text) {
                 $this->write(Level::DEBUG,
-                    "__{$section}:__", "\n`" . ConsoleFormatter::escape($text ?: '') . '`', '--- ');
+                             "__{$section}:__", "\n`" . ConsoleFormatter::escape($text ?: '') . '`', '--- ');
             }
         }
 

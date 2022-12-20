@@ -44,11 +44,11 @@ $i = 0;
 
 while ($i++< 5) {
     Console::infoOnce('This message is printed repeatedly',
-        'but it should only appear once');
+                      'but it should only appear once');
     Console::logOnce('This message is printed repeatedly',
-        'but it should only appear once');
+                     'but it should only appear once');
     Console::debugOnce('This message is printed repeatedly',
-        'but it should only appear once');
+                       'but it should only appear once');
 }
 
 Console::info('`This is a __preformatted span__`,', "and here's a regular __span__");

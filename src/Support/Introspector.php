@@ -560,8 +560,8 @@ class Introspector
                 : [$context ?: $provider->container(), null];
 
             return $closure($container, $array, $provider,
-                $context ?: new ProviderContext($container, $parent),
-                $parent, $provider->getDateFormatter());
+                            $context ?: new ProviderContext($container, $parent),
+                            $parent, $provider->getDateFormatter());
         };
 
         $this->CreateProvidableFromSignatureClosures[$sig][(int) $strict] = $closure;
@@ -964,21 +964,21 @@ class Introspector
                     $this->checkWritable($property, $action)) {
                 switch ($action) {
                     case self::ACTION_SET:
-                        $closure = static function ($instance, $value) use ($property) {$instance->$property = $value;};
+                        $closure = static function ($instance, $value) use ($property) { $instance->$property = $value; };
                         break;
 
                     case self::ACTION_GET:
-                        $closure = static function ($instance) use ($property) {return $instance->$property;};
+                        $closure = static function ($instance) use ($property) { return $instance->$property; };
                         break;
 
                     case self::ACTION_ISSET:
-                        $closure = static function ($instance) use ($property) {return isset($instance->$property);};
+                        $closure = static function ($instance) use ($property) { return isset($instance->$property); };
                         break;
 
                     case self::ACTION_UNSET:
                         // Removal of a declared property is unlikely to be the
                         // intended outcome, so assign null instead of unsetting
-                        $closure = static function ($instance) use ($property) {$instance->$property = null;};
+                        $closure = static function ($instance) use ($property) { $instance->$property = null; };
                         break;
                 }
             }
@@ -1016,7 +1016,7 @@ class Introspector
         ], false, true);
 
         if (!($names = array_intersect($names, $this->getReadableProperties()))) {
-            return $this->GetNameClosure = static function (): ?string {return null;};
+            return $this->GetNameClosure = static function (): ?string { return null; };
         }
 
         return $this->GetNameClosure = $this->getPropertyActionClosure(
@@ -1038,7 +1038,7 @@ class Introspector
         [$sort, $includeMeta] = $rules;
         $methods              = $this->Actions[self::ACTION_GET] ?? [];
         $props                = array_intersect($this->PropertyMap,
-            $this->ReadableProperties ?: $this->PublicProperties);
+                                                $this->ReadableProperties ?: $this->PublicProperties);
         $keys = array_keys($props + $methods);
         if ($sort) {
             sort($keys);

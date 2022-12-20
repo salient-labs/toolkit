@@ -65,8 +65,8 @@ final class TrashStore extends SqliteStore
             throw new UnexpectedValueException('When argument #3 ($type) is null, argument #2 ($object) must be an object');
         }
 
-        $db   = $this->db();
-        $sql  = <<<SQL
+        $db  = $this->db();
+        $sql = <<<SQL
         INSERT INTO
           _trash_item (
             item_type,

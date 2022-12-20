@@ -632,7 +632,7 @@ final class Conversions
     {
         return implode($separator, array_filter(
             $array,
-            function ($value) {return strlen((string) $value) > 0;}
+            function ($value) { return strlen((string) $value) > 0; }
         ));
     }
 
@@ -844,7 +844,7 @@ final class Conversions
      */
     public function toStrings(...$value): array
     {
-        return array_map(function ($string) {return (string) $string;}, $value);
+        return array_map(function ($string) { return (string) $string; }, $value);
     }
 
     /**
@@ -915,7 +915,7 @@ final class Conversions
     {
         $text = preg_replace_callback(
             '/([[:upper:]]?[[:lower:][:digit:]]+|([[:upper:]](?![[:lower:]]))+)/',
-            function (array $matches) {return ucfirst(strtolower($matches[0]));},
+            function (array $matches) { return ucfirst(strtolower($matches[0])); },
             $text
         );
 

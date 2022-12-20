@@ -177,7 +177,7 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                 $_entity = null;
                 $closure = function (SyncContext $ctx, iterable $entities, ...$args) use (&$_entity, $endpointPipe, $operation, $toBackend, $toEntity): iterable {
                     return $toBackend->stream($entities, $operation, $ctx, $_entity, ...$args)
-                                     ->after(function (SyncEntity $entity) use (&$_entity) {$_entity = $entity;})
+                                     ->after(function (SyncEntity $entity) use (&$_entity) { $_entity = $entity; })
                                      ->through($endpointPipe)
                                      ->then(fn($result) =>
                                          $toEntity->send($result, $operation, $ctx, $_entity, ...$args)

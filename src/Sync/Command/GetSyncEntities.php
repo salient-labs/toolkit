@@ -145,7 +145,7 @@ final class GetSyncEntities extends CliCommand
         $provider = $this->app()->get($this->Providers[$provider]);
 
         Console::info('Retrieving from ' . $provider->name() . ':',
-            $this->Store->getEntityTypeUri($class) . (is_null($id) ? '' : "/$id"));
+                      $this->Store->getEntityTypeUri($class) . (is_null($id) ? '' : "/$id"));
 
         $context = new SyncContext($this->app());
         if (!$stream) {
@@ -164,7 +164,7 @@ final class GetSyncEntities extends CliCommand
             }
 
             File::writeCsv($result, 'php://stdout', true, null, $count,
-                fn(SyncEntity $entity) => $entity->toArrayWith($rules));
+                           fn(SyncEntity $entity) => $entity->toArrayWith($rules));
         } elseif (!is_iterable($result) || !$stream) {
             $result = Convert::toList($result, true);
             /** @var SyncEntity $entity */

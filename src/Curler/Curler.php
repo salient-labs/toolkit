@@ -486,7 +486,7 @@ class Curler implements IReadable, IWritable
         }
 
         return '?' . Convert::dataToQuery($query,
-            $this->PreserveKeys, $this->DateFormatter);
+                                          $this->PreserveKeys, $this->DateFormatter);
     }
 
     private function createHandle(string $url): void
@@ -500,7 +500,7 @@ class Curler implements IReadable, IWritable
 
         // Collect response headers
         curl_setopt($this->Handle, CURLOPT_HEADERFUNCTION,
-            fn($curl, $header) => strlen($this->processHeader($header)));
+                    fn($curl, $header) => strlen($this->processHeader($header)));
 
         if ($this->FollowRedirects) {
             curl_setopt($this->Handle, CURLOPT_FOLLOWLOCATION, true);
@@ -578,7 +578,7 @@ class Curler implements IReadable, IWritable
     private function applyData(array $data): void
     {
         curl_setopt($this->Handle, CURLOPT_POSTFIELDS,
-            ($this->Body = $this->prepareData($data)));
+                    ($this->Body = $this->prepareData($data)));
     }
 
     /**
@@ -588,7 +588,7 @@ class Curler implements IReadable, IWritable
     {
         $file = false;
         array_walk_recursive($data,
-            function (&$value) use (&$file) {$file = $this->prepareDataValue($value) || $file;});
+                             function (&$value) use (&$file) { $file = $this->prepareDataValue($value) || $file; });
 
         if ($file) {
             return $data;
@@ -601,7 +601,7 @@ class Curler implements IReadable, IWritable
             $this->setContentType(MimeType::WWW_FORM);
 
             return Convert::dataToQuery($data,
-                $this->PreserveKeys, $this->DateFormatter);
+                                        $this->PreserveKeys, $this->DateFormatter);
         }
     }
 
@@ -720,7 +720,7 @@ class Curler implements IReadable, IWritable
                 // Sleep for at least one second
                 $after = max(1, $after);
                 Console::debug("Received HTTP error 429 Too Many Requests, sleeping for {$after}s",
-                    null, null, $depth + 3);
+                               null, null, $depth + 3);
                 sleep($after);
 
                 $this->clearResponse();
