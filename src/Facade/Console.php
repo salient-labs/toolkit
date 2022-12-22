@@ -39,6 +39,7 @@ use Throwable;
  * @method static ConsoleWriter registerStderrTarget(bool $replace = false) Register STDERR as a target if running on the command line (see {@see ConsoleWriter::registerStderrTarget()})
  * @method static ConsoleWriter registerStdioTargets(bool $replace = false) Register STDOUT and STDERR as targets if running on the command line (see {@see ConsoleWriter::registerStdioTargets()})
  * @method static ConsoleWriter registerTarget(ConsoleTarget $target, array $levels = ConsoleLevels::ALL_DEBUG) See {@see ConsoleWriter::registerTarget()}
+ * @method static ConsoleWriter setTargetPrefix(?string $prefix, bool $ttyOnly = false, bool $stdio = true, bool $exceptStdio = true) Call setPrefix on registered targets (see {@see ConsoleWriter::setTargetPrefix()})
  * @method static ConsoleWriter summary(string $finishedText = 'Command finished', string $successText = 'without errors') Print a "command finished" message with a summary of errors and warnings (see {@see ConsoleWriter::summary()})
  * @method static ConsoleWriter tty(string $msg, int $level = Level::INFO) Print "$msg" to TTY targets (see {@see ConsoleWriter::tty()})
  * @method static ConsoleWriter warn(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $count = true) Print "  ! $msg1 $msg2" with level WARNING (see {@see ConsoleWriter::warn()})

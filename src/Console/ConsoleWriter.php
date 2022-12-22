@@ -11,6 +11,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Debug;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -27,6 +28,13 @@ final class ConsoleWriter implements ReceivesFacade
      * @var array<int,ConsoleTarget[]>
      */
     private $StdioTargets = [];
+
+    /**
+     * Message level => ConsoleTarget[]
+     *
+     * @var array<int,ConsoleTarget[]>
+     */
+    private $ExceptStdioTargets = [];
 
     /**
      * Message level => ConsoleTarget[]
@@ -81,6 +89,8 @@ final class ConsoleWriter implements ReceivesFacade
     {
         if ($target->isStdout() || $target->isStderr()) {
             $this->addTarget($target, $levels, $this->StdioTargets);
+        } else {
+            $this->addTarget($target, $levels, $this->ExceptStdioTargets);
         }
         if ($target->isTty()) {
             $this->addTarget($target, $levels, $this->TtyTargets);
@@ -99,8 +109,9 @@ final class ConsoleWriter implements ReceivesFacade
 
     private function registerDefaultTargets()
     {
-        // Log output to
-        // `{TMPDIR}/<script_basename>-<realpath_hash>-<user_id>.log`
+        // Log output to:
+        //
+        //     sys_get_temp_dir() . '/<script_basename>-<realpath_hash>-<user_id>.log'
         $this->registerTarget(StreamTarget::fromPath(File::getStablePath('.log')), ConsoleLevels::ALL_DEBUG);
         $this->registerDefaultStdioTargets();
     }
@@ -206,6 +217,56 @@ final class ConsoleWriter implements ReceivesFacade
                 );
             }
         }
+    }
+
+    /**
+     * Call setPrefix on registered targets
+     *
+     * `$prefix` is applied to all registered targets by default. Set `$stdio`
+     * to `false` to exclude targets backed by STDOUT or STDERR, or set
+     * `$exceptStdio` to `false` to exclude targets other than STDOUT and
+     * STDERR.
+     *
+     * Default targets are registered if this method is called before an
+     * explicit target has been registered.
+     *
+     * @param bool $ttyOnly If `true`, only call
+     * {@see ConsoleTarget::setPrefix()} on TTY targets. `$stdio` and/or
+     * `$exceptStdio` must also be `true`.
+     * @return $this
+     */
+    public function setTargetPrefix(?string $prefix, bool $ttyOnly = false, bool $stdio = true, bool $exceptStdio = true)
+    {
+        if (!$this->Targets) {
+            $this->registerDefaultTargets();
+        }
+
+        $targets = $stdio && $exceptStdio
+            ? $this->Targets
+            : ($stdio
+                ? $this->StdioTargets
+                : ($exceptStdio
+                    ? $this->ExceptStdioTargets
+                    : null));
+
+        if (is_null($targets)) {
+            throw new RuntimeException('No targets selected');
+        }
+
+        $applied = [];
+        foreach ($targets as $levelTargets) {
+            foreach ($levelTargets as $target) {
+                if (!in_array($target, $applied, true)) {
+                    $applied[] = $target;
+                    if ($ttyOnly && !$target->isTty()) {
+                        continue;
+                    }
+                    $target->setPrefix($prefix);
+                }
+            }
+        }
+
+        return $this;
     }
 
     public function setFacade(string $name)
