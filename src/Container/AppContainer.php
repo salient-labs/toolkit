@@ -316,8 +316,8 @@ class AppContainer extends Container implements IReadable
 
         if (!Sync::isLoaded()) {
             Sync::load($syncDb,
-                is_null($command) ? Sys::getProgramName($this->BasePath) : $command,
-                (is_null($arguments)
+                       is_null($command) ? Sys::getProgramName($this->BasePath) : $command,
+                       (is_null($arguments)
                     ? (PHP_SAPI == 'cli'
                         ? array_slice($_SERVER['argv'], 1)
                         : ['_GET' => $_GET, '_POST' => $_POST])

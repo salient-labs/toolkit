@@ -50,8 +50,8 @@ final class RegexDateParser implements IDateParser
             function (array $matches, ?DateTimeZone $timezone): DateTimeImmutable {
                 $date = new DateTimeImmutable(
                     sprintf('@%s.%s',
-                        $matches['seconds'],
-                        $matches['milliseconds'])
+                            $matches['seconds'],
+                            $matches['milliseconds'])
                 );
                 if (!$timezone && ($matches['offset'] ?? null)) {
                     $timezone = new DateTimeZone($matches['offset']);

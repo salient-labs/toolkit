@@ -63,8 +63,7 @@ use UnexpectedValueException;
  */
 abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSerializable
 {
-    use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer, HasSyncIntrospector
-    {
+    use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer, HasSyncIntrospector {
         TProvidable::setProvider as private _setProvider;
         TProvidable::setContext as private _setContext;
         HasSyncIntrospector::introspector insteadof TReadable, TWritable, TExtensible;

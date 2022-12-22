@@ -28,7 +28,7 @@ final class Reflection
      */
     public function getNames(array $reflections): array
     {
-        return array_map(function ($r) {return $r->name;}, $reflections);
+        return array_map(function ($r) { return $r->name; }, $reflections);
     }
 
     /**
@@ -129,7 +129,7 @@ final class Reflection
     public function getAllTypeNames(?ReflectionType $type): array
     {
         return array_map(fn(ReflectionType $t) => $this->getTypeName($t),
-            $this->getAllTypes($type));
+                         $this->getAllTypes($type));
     }
 
     /**

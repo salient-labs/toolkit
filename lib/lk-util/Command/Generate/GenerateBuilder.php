@@ -391,21 +391,21 @@ class GenerateBuilder extends GenerateCommand
         $lines = [implode(PHP_EOL . PHP_EOL, $blocks)];
 
         array_push($lines,
-            ...$this->getStaticGetter('getClassName', "$service::class"));
+                   ...$this->getStaticGetter('getClassName', "$service::class"));
 
         if ($this->getOption('static-builder')->DefaultValue !== $staticBuilder) {
             array_push($lines, '',
-                ...$this->getStaticGetter('getStaticBuilder', var_export($staticBuilder, true)));
+                       ...$this->getStaticGetter('getStaticBuilder', var_export($staticBuilder, true)));
         }
 
         if ($this->getOption('terminator')->DefaultValue !== $terminator) {
             array_push($lines, '',
-                ...$this->getStaticGetter('getTerminator', var_export($terminator, true)));
+                       ...$this->getStaticGetter('getTerminator', var_export($terminator, true)));
         }
 
         if ($this->getOption('static-resolver')->DefaultValue !== $staticResolver) {
             array_push($lines, '',
-                ...$this->getStaticGetter('getStaticResolver', var_export($staticResolver, true)));
+                       ...$this->getStaticGetter('getStaticResolver', var_export($staticResolver, true)));
         }
 
         $lines[] = '}';

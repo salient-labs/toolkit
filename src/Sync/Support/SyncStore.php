@@ -54,16 +54,16 @@ final class SyncStore extends SqliteStore
     /**
      * Prefix => PHP namespace
      *
-     * @var array<string,string>
+     * @var array<string,string>|null
      */
-    private $NamespacesByPrefix = [];
+    private $NamespacesByPrefix;
 
     /**
      * Prefix => namespace base URI
      *
-     * @var array<string,string>
+     * @var array<string,string>|null
      */
-    private $NamespaceUrisByPrefix = [];
+    private $NamespaceUrisByPrefix;
 
     /**
      * @var SyncErrorCollection
@@ -128,9 +128,7 @@ final class SyncStore extends SqliteStore
     private function open(string $filename)
     {
         $this->openDb($filename);
-
-        $db = $this->db();
-        $db->exec(
+        $this->db()->exec(
             <<<SQL
             CREATE TABLE IF NOT EXISTS
               _sync_run (
@@ -203,7 +201,6 @@ final class SyncStore extends SqliteStore
 
             SQL
         );
-
         $this->IsLoaded = true;
 
         return $this;
@@ -285,8 +282,8 @@ final class SyncStore extends SqliteStore
         }
 
         // Update `last_seen` if the provider is already in the database
-        $db   = $this->db();
-        $sql  = <<<SQL
+        $db  = $this->db();
+        $sql = <<<SQL
         INSERT INTO
           _sync_provider (provider_hash, provider_class)
         VALUES
@@ -301,7 +298,7 @@ final class SyncStore extends SqliteStore
         $stmt->execute();
         $stmt->close();
 
-        $sql  = <<<SQL
+        $sql = <<<SQL
         SELECT
           provider_id
         FROM
@@ -342,8 +339,8 @@ final class SyncStore extends SqliteStore
         }
 
         // Update `last_seen` if the entity type is already in the database
-        $db   = $this->db();
-        $sql  = <<<SQL
+        $db  = $this->db();
+        $sql = <<<SQL
         INSERT INTO
           _sync_entity_type (entity_type_class)
         VALUES
@@ -357,7 +354,7 @@ final class SyncStore extends SqliteStore
         $stmt->execute();
         $stmt->close();
 
-        $sql  = <<<SQL
+        $sql = <<<SQL
         SELECT
           entity_type_id
         FROM
@@ -386,7 +383,7 @@ final class SyncStore extends SqliteStore
      *
      * @return $this
      */
-    public function namespace(string $prefix, string $uri, string $namespace, bool $reload = true)
+    public function namespace(string $prefix, string $uri, string $namespace)
     {
         // Don't start a run just to register a namespace
         if (is_null($this->RunId)) {
@@ -396,8 +393,8 @@ final class SyncStore extends SqliteStore
         }
 
         // Update `last_seen` if the namespace is already in the database
-        $db   = $this->db();
-        $sql  = <<<SQL
+        $db  = $this->db();
+        $sql = <<<SQL
         INSERT INTO
           _sync_entity_namespace (entity_namespace_prefix, base_uri, php_namespace)
         VALUES
@@ -419,11 +416,12 @@ final class SyncStore extends SqliteStore
         $stmt->execute();
         $stmt->close();
 
-        if ($reload) {
-            return $this->reload();
+        // Don't reload while bootstrapping
+        if (is_null($this->NamespacesByPrefix)) {
+            return $this;
         }
 
-        return $this;
+        return $this->reload();
     }
 
     /**
@@ -458,6 +456,8 @@ final class SyncStore extends SqliteStore
         if (!is_a($entity, SyncEntity::class, true)) {
             throw new UnexpectedValueException("Not a subclass of SyncEntity: $entity");
         }
+
+        $this->check();
 
         $entity = ltrim($entity, '\\');
         $lower  = strtolower($entity);
@@ -547,7 +547,7 @@ final class SyncStore extends SqliteStore
         unset($this->Command, $this->Arguments);
 
         foreach ($this->Namespaces as $prefix => [$uri, $namespace]) {
-            $this->namespace($prefix, $uri, $namespace, false);
+            $this->namespace($prefix, $uri, $namespace);
         }
         unset($this->Namespaces);
 
@@ -559,8 +559,8 @@ final class SyncStore extends SqliteStore
      */
     private function reload()
     {
-        $db                          = $this->db();
-        $sql                         = <<<SQL
+        $db  = $this->db();
+        $sql = <<<SQL
         SELECT
           entity_namespace_prefix,
           base_uri,

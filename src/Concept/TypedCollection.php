@@ -20,8 +20,7 @@ abstract class TypedCollection implements ICollection
      * @use TCollection<T>
      * @use HasSortableItems<T>
      */
-    use TCollection, HasSortableItems
-    {
+    use TCollection, HasSortableItems {
         TCollection::has as private _has;
         TCollection::keyOf as private _keyOf;
         TCollection::get as private _get;

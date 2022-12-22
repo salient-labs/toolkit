@@ -134,7 +134,7 @@ DI::singleton(IdGenerator::class);
 
 // Give 'Office' instances a sequential name
 $offices = 0;
-DI::bind(Office::class, null, [Dice::INSTANCE => function () use (&$offices) {return ['Office #' . (++$offices)];}]);
+DI::bind(Office::class, null, [Dice::INSTANCE => function () use (&$offices) { return ['Office #' . (++$offices)]; }]);
 
 // Create one 'Office' per 'User' and give each 'Department' the same name
 DI::bind(User::class, null, null, [Office::class]);

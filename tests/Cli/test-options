@@ -25,7 +25,7 @@ try {
 }
 
 print_r([
-    'exceptions' => array_map(function (Throwable $ex) {return $ex->getMessage();}, $exceptions),
+    'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
 ]);
 
 $status = $app->run();

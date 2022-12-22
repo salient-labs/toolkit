@@ -16,7 +16,7 @@ namespace Lkrms\Tests\Utility\Debugging
 
     function getFunctionCallback()
     {
-        return function ($depth = 0) {return getCallerViaFunction($depth);};
+        return function ($depth = 0) { return getCallerViaFunction($depth); };
     }
 }
 

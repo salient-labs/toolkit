@@ -160,7 +160,7 @@ class GenerateSyncProvider extends GenerateCommand
         $desc       = $this->getOptionValue('desc');
         $desc       = is_null($desc) ? "Syncs $class objects with a backend" : $desc;
         $operations = array_map(
-            function ($op) use ($operationMap) {return $operationMap[$op];},
+            function ($op) use ($operationMap) { return $operationMap[$op]; },
             $this->getOptionValue('op')
         );
 

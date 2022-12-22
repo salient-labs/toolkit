@@ -284,11 +284,11 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
         // - [0 => ".path.to.key"]
         // - [0 => [".path.to.key", "key_id", fn($value) => $value["id"]]]
         $pathRules = array_filter($allRules,
-            fn($key) => is_int($key),
-            ARRAY_FILTER_USE_KEY);
+                                  fn($key) => is_int($key),
+                                  ARRAY_FILTER_USE_KEY);
         // Discard if ".path.to" is not in $paths
         $pathRules = array_filter($pathRules,
-            fn($rule) => in_array($this->getPath($this->getRuleTarget($rule)), $paths ?? [$path]));
+                                  fn($rule) => in_array($this->getPath($this->getRuleTarget($rule)), $paths ?? [$path]));
         // Remove ".path.to" from the remaining rules
         $pathRules = array_map(
             fn($rule) => $this->setRuleTarget($rule, $this->getKey($this->getRuleTarget($rule))),
@@ -431,7 +431,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private function normaliseTarget(string $target): string
     {
         return preg_replace_callback('/[^].[]+/',
-            fn($matches) => $this->Introspector->maybeNormalise($matches[0], true), $target);
+                                     fn($matches) => $this->Introspector->maybeNormalise($matches[0], true), $target);
     }
 
     public function getDateFormatter(): ?DateFormatter
@@ -474,7 +474,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     public function getRemove(?string $class, ?string $untilClass, array $path): array
     {
         return array_map(fn($rule) => is_array($rule) ? reset($rule) : $rule,
-            $this->compile($class, $untilClass, $path, $this->Remove, __FUNCTION__));
+                         $this->compile($class, $untilClass, $path, $this->Remove, __FUNCTION__));
     }
 
     /**

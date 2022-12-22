@@ -87,7 +87,7 @@ final class Err implements IFacade
 
             $regex = preg_quote(rtrim($path, '/') . '/', '/');
             self::$Whoops->silenceErrorsInPaths("/^$regex/",
-                E_STRICT | E_DEPRECATED | E_USER_DEPRECATED);
+                                                E_STRICT | E_DEPRECATED | E_USER_DEPRECATED);
         }
     }
 
