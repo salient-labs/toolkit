@@ -42,10 +42,11 @@ class GenerateSyncEntity extends GenerateCommand
         return [
             CliOption::build()
                 ->long('generate')
-                ->valueName('class')
+                ->valueName('CLASS')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value)),
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->required(),
             CliOption::build()
                 ->long('package')
                 ->short('p')

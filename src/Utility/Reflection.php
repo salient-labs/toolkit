@@ -135,8 +135,6 @@ final class Reflection
     /**
      * Return the name of the given ReflectionNamedType or ReflectionType
      *
-     * @param ReflectionType $type
-     * @return string
      */
     public function getTypeName(ReflectionType $type): string
     {
@@ -225,13 +223,11 @@ final class Reflection
      *
      * @param ReflectionType|null $type e.g. the return value of
      * `ReflectionParameter::getType()`.
-     * @param string $classPrefix
      * @param callable|null $typeNameCallback Applied to qualified class names
      * if set. Must return `null` or an unqualified alias:
      * ```php
      * callback(string $name): ?string
      * ```
-     * @return string
      */
     public function getTypeDeclaration(?ReflectionType $type, string $classPrefix = '\\', ?callable $typeNameCallback = null): string
     {
@@ -260,10 +256,8 @@ final class Reflection
     }
 
     /**
-     * Convert the given ReflectionParameter to a PHP parameter declaration
+     * Convert a ReflectionParameter to a PHP parameter declaration
      *
-     * @param ReflectionParameter $parameter
-     * @param string $classPrefix
      * @param callable|null $typeNameCallback Applied to qualified class names
      * if set. Must return `null` or an unqualified alias:
      * ```php
@@ -272,17 +266,16 @@ final class Reflection
      * @param string|null $type If set, ignore the parameter's declared type and
      * use `$type` instead. Do not use when generating code unless `$type` is
      * from a trusted source.
-     * @return string
      */
-    public function getParameterDeclaration(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, string $type = null): string
+    public function getParameterDeclaration(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, ?string $type = null, ?string $name = null): string
     {
         // If getTypeDeclaration isn't called, neither is $typeNameCallback
         $param  = $this->getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
-        $param  = is_null($type) ? ($param ?: 'mixed') : $type;
+        $param  = is_null($type) ? $param : $type;
         $param .= ($param ? ' ' : '')
             . ($parameter->isPassedByReference() ? '&' : '')
             . ($parameter->isVariadic() ? '...' : '')
-            . '$' . $parameter->getName();
+            . '$' . ($name ?: $parameter->getName());
         if (!$parameter->isDefaultValueAvailable()) {
             return $param;
         }
@@ -308,12 +301,47 @@ final class Reflection
     }
 
     /**
+     * Convert a ReflectionParameter to a PHPDoc tag
+     *
+     * Returns `null` if:
+     * - `$force` is not set,
+     * - `$documentation` is empty or `null`, and
+     * - there is no difference between PHPDoc and native data types
+     *
+     * @param callable|null $typeNameCallback Applied to qualified class names
+     * if set. Must return `null` or an unqualified alias:
+     * ```php
+     * callback(string $name): ?string
+     * ```
+     * @param string|null $type If set, ignore the parameter's declared type and
+     * use `$type` instead.
+     */
+    public function getParameterPhpDoc(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, ?string $type = null, ?string $name = null, ?string $documentation = null, bool $force = false): ?string
+    {
+        // If getTypeDeclaration isn't called, neither is $typeNameCallback
+        $param  = $this->getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
+        $param  = (is_null($type) ? $param : $type);
+        $param .= ($param ? ' ' : '')
+            . ($parameter->isVariadic() ? '...' : '')
+            . '$' . ($name ?: $parameter->getName());
+
+        if (!$force && !$documentation &&
+            preg_replace(
+                ['/ = .*/', '/&(?=(\.\.\.)?\$)/'], '',
+                $this->getParameterDeclaration($parameter, $classPrefix, $typeNameCallback, null, $name)
+            ) === $param) {
+            return null;
+        }
+
+        return "@param $param" . ($documentation ? " $documentation" : '');
+    }
+
+    /**
      * Return an array of traits used by this class and its parent classes
      *
      * In other words, merge arrays returned by `ReflectionClass::getTraits()`
      * for `$class`, `$class->getParentClass()`, etc.
      *
-     * @param ReflectionClass $class
      * @return array<string,ReflectionClass> An array that maps trait names to
      * `ReflectionClass` instances.
      */

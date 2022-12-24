@@ -43,10 +43,11 @@ class GenerateSyncProvider extends GenerateCommand
         return [
             CliOption::build()
                 ->long('class')
-                ->valueName('class')
+                ->valueName('CLASS')
                 ->description('The SyncEntity subclass to generate a provider for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get('DEFAULT_NAMESPACE', ''))),
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get('DEFAULT_NAMESPACE', '')))
+                ->required(),
             CliOption::build()
                 ->long('extend')
                 ->short('x')

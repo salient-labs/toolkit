@@ -23,9 +23,9 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})
  * @method static CliAppContainer command(string[] $name, string $id) Register a CliCommand with the container (see {@see CliAppContainer::command()})
  * @method static CliAppContainer forEach(array|object $array, callable $callback) Move to the next method in the chain after iterating over an array and passing the object to a callback with each key-value pair in the array (see {@see FluentInterface::forEach()})
- * @method static mixed get(string $id, mixed ...$params) Create a new instance of a class or interface, or return a shared instance created earlier (see {@see Container::get()})
+ * @method static mixed get(string $id, ...$params) Create a new instance of a class or interface, or return a shared instance created earlier (see {@see Container::get()})
  * @method static string getAppName() Return the basename of the file used to run the script after removing PHP file extensions (see {@see AppContainer::getAppName()})
- * @method static mixed getAs(string $id, string $serviceId, mixed ...$params) Create a new instance of a class or interface with an explicit service name, or apply a service name to a shared instance created earlier (see {@see Container::getAs()})
+ * @method static mixed getAs(string $id, string $serviceId, ...$params) Create a new instance of a class or interface with an explicit service name, or apply a service name to a shared instance created earlier (see {@see Container::getAs()})
  * @method static IContainer getGlobalContainer() Get the global container, loading it if necessary (see {@see Container::getGlobalContainer()})
  * @method static string getName(string $id) Resolve a class or interface to a concrete class name (see {@see Container::getName()})
  * @method static string getProgramName() Return the basename of the file used to run the script (see {@see CliAppContainer::getProgramName()})
@@ -35,8 +35,8 @@ use Lkrms\Contract\IContainer;
  * @method static bool hasGlobalContainer() Return true if a global container has been loaded (see {@see Container::hasGlobalContainer()})
  * @method static CliAppContainer if(bool $condition, callable $callback) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of a class or interface have been applied to the default context (see {@see Container::inContextOf()})
- * @method static CliAppContainer instance(string $id, mixed $instance) Add an existing instance to the container as a shared binding (see {@see Container::instance()})
- * @method static CliAppContainer instanceIf(string $id, mixed $instance) Add an existing instance to the container as a shared binding if it hasn't already been bound (see {@see Container::instanceIf()})
+ * @method static CliAppContainer instance(string $id, $instance) Add an existing instance to the container as a shared binding (see {@see Container::instance()})
+ * @method static CliAppContainer instanceIf(string $id, $instance) Add an existing instance to the container as a shared binding if it hasn't already been bound (see {@see Container::instanceIf()})
  * @method static CliAppContainer loadCache() See {@see AppContainer::loadCache()}
  * @method static CliAppContainer loadCacheIfExists() See {@see AppContainer::loadCacheIfExists()}
  * @method static CliAppContainer loadSync(?string $command = null, ?array $arguments = null) See {@see AppContainer::loadSync()}

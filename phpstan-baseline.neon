@@ -11,6 +11,11 @@ parameters:
 			path: src/Cli/CliAppContainer.php
 
 		-
+			message: "#^Property Lkrms\\\\Cli\\\\CliOption\\:\\:\\$BindTo is never read, only written\\.$#"
+			count: 1
+			path: src/Cli/CliOption.php
+
+		-
 			message: "#^If condition is always false\\.$#"
 			count: 1
 			path: src/Cli/Concept/CliCommand.php

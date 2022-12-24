@@ -19,7 +19,6 @@ use Lkrms\Utility\Filesystem;
  * @method static bool maybeCreateDirectory(string $filename, int $permissions = 511) Create a directory if it doesn't exist (see {@see Filesystem::maybeCreateDirectory()})
  * @method static bool maybeDelete(string $filename) Delete a file if it exists (see {@see Filesystem::maybeDelete()})
  * @method static string|false realpath(string $filename) A phar-friendly realpath() (see {@see Filesystem::realpath()})
- * @method static string|false|void writeCsv(iterable $data, ?string $filename = null, bool $headerRow = true, string $nullValue = null, ?int &$count = null, ?callable $callback = null) Convert data to CSV (see {@see Filesystem::writeCsv()})
  *
  * @uses Filesystem
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Filesystem' 'Lkrms\Facade\File'
@@ -34,6 +33,13 @@ final class File extends Facade
         return Filesystem::class;
     }
 
+    /**
+     * Convert data to CSV
+     *
+     * @param string $nullValue
+     * @return string|false|void
+     * @see Filesystem::writeCsv()
+     */
     public static function writeCsv(iterable $data, ?string $filename = null, bool $headerRow = true, ?string $nullValue = null, ?int &$count = null, ?callable $callback = null)
     {
         return static::getInstance()->writeCsv($data, $filename, $headerRow, $nullValue, $count, $callback);
