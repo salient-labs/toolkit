@@ -163,20 +163,25 @@ abstract class GenerateCommand extends Command
     /**
      * Generate a method
      *
-     * @param string[] $lines
-     * @param ReflectionParameter[] $params
+     * @param string[] $code
+     * @param array<ReflectionParameter|string> $params
+     * @param ReflectionType|string $returnType
      * @return string[]
      */
-    protected function getMethod(string $name, array $lines, array $params = [], ?ReflectionType $returnType = null, bool $static = true, string $visibility = GenerateCommand::VISIBILITY_PUBLIC, int $tabs = 1, string $tab = '    '): array
+    protected function getMethod(string $name, array $code, array $params = [], $returnType = null, ?string $docBlock = null, bool $static = true, string $visibility = GenerateCommand::VISIBILITY_PUBLIC, int $tabs = 1, string $tab = '    '): array
     {
         $callback  = fn(string $name): ?string => $this->getFqcnAlias($name, null, false);
         $rawParams = [];
-        /** @var ReflectionParameter $param */
         foreach ($params as $param) {
-            $rawParams[] = Reflect::getParameterDeclaration($param, $this->ClassPrefix, $callback);
+            if ($param instanceof ReflectionParameter) {
+                $param = Reflect::getParameterDeclaration($param, $this->ClassPrefix, $callback);
+            }
+            $rawParams[] = $param;
         }
-        $rawParams  = implode(', ', $rawParams);
-        $returnType = Reflect::getTypeDeclaration($returnType, $this->ClassPrefix, $callback);
+        $rawParams = implode(', ', $rawParams);
+        if ($returnType instanceof ReflectionType) {
+            $returnType = Reflect::getTypeDeclaration($returnType, $this->ClassPrefix, $callback);
+        }
 
         $modifiers = [$visibility];
         if ($static) {
@@ -185,9 +190,10 @@ abstract class GenerateCommand extends Command
         $modifiers = implode(' ', $modifiers);
 
         $lines = [
+            ...($docBlock ? explode(PHP_EOL, $docBlock) : []),
             $modifiers . " function {$name}({$rawParams})" . ($returnType ? ": {$returnType}" : ''),
             '{',
-            ...array_map(fn($line) => "{$tab}$line", $lines),
+            ...array_map(fn($line) => "{$tab}$line", $code),
             '}'
         ];
 
@@ -235,5 +241,10 @@ abstract class GenerateCommand extends Command
         }
 
         file_put_contents($file, $output);
+    }
+
+    protected function cleanPhpDocTag(string $tag): string
+    {
+        return preg_replace('/^(@(?:param|return|var|property-(?:read|write)|property)\h+)\?([^\s&|]+)(\h+\$)/', '$1$2|null$3', $tag);
     }
 }

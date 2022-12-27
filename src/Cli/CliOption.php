@@ -131,6 +131,8 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
      */
     protected $ValueCallback;
 
+    private $BindTo;
+
     /**
      * @param int $optionType A {@see CliOptionType} value.
      * @param string[]|null $allowedValues Ignored unless `$optionType` is
@@ -140,14 +142,17 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
      * `$envVariable`, if set, instead of `$defaultValue`.
      * @param string|null $delimiter If `$multipleAllowed` is set, use
      * `$delimiter` to split one value into multiple values.
+     * @param $bindTo Assign user-supplied values to a variable before running
+     * the command.
      */
-    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $optionType = CliOptionType::FLAG, ?array $allowedValues = null, bool $required = false, bool $multipleAllowed = false, $defaultValue = null, ?string $envVariable = null, ?string $delimiter = ',', ?callable $valueCallback = null)
+    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $optionType = CliOptionType::FLAG, ?array $allowedValues = null, bool $required = false, bool $multipleAllowed = false, $defaultValue = null, ?string $envVariable = null, ?string $delimiter = ',', ?callable $valueCallback = null, &$bindTo = null)
     {
         $this->Long            = $long ?: null;
         $this->OptionType      = $optionType;
         $this->MultipleAllowed = $multipleAllowed;
         $this->Delimiter       = $multipleAllowed ? $delimiter : null;
         $this->Description     = $description;
+        $this->BindTo          = &$bindTo;
 
         switch ($optionType) {
             case CliOptionType::FLAG:
@@ -246,8 +251,9 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
      */
     public function withValue($value)
     {
-        $clone        = clone $this;
-        $clone->Value = $this->ValueCallback && !is_null($value) ? ($this->ValueCallback)($value) : $value;
+        $clone         = clone $this;
+        $clone->Value  = $this->ValueCallback && !is_null($value) ? ($this->ValueCallback)($value) : $value;
+        $clone->BindTo = $clone->Value;
 
         return $clone;
     }

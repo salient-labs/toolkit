@@ -39,15 +39,17 @@ class SendHttpRequest extends Command
         $options = [
             CliOption::build()
                 ->long('provider')
-                ->valueName('provider')
+                ->valueName('PROVIDER')
                 ->description('The HttpSyncProvider class to use')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value)),
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->required(),
             CliOption::build()
                 ->long('endpoint')
-                ->valueName('endpoint')
+                ->valueName('ENDPOINT')
                 ->description("The endpoint to {$this->getMethod()}, e.g. '/posts'")
-                ->optionType(CliOptionType::VALUE_POSITIONAL),
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->required(),
             CliOption::build()
                 ->long('query')
                 ->short('q')

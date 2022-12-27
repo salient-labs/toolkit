@@ -359,7 +359,7 @@ abstract class CliCommand implements ReturnsContainer
                 //         - _option1_
                 //         - _option2_
                 //         - _option3_
-                $sep      = $option->Description ? "\n      " : "\n    ";
+                $sep = $option->Description ? "\n      " : "\n    ";
                 $options .= ("\n  _" . implode(', ', $line) . '_'
                     . str_replace($valueName, '__' . $valueName . '__', (array_pop($value) ?: ''))
                     . ($option->Description ? $this->prepareDescription("\n" . $option->Description, '    ', 76) : '')

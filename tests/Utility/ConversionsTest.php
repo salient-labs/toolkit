@@ -186,7 +186,7 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
     public function testResolveRelativeUrl()
     {
         // From [RFC1808] Section 5
-        $baseUrl      = 'http://a/b/c/d;p?q#f';
+        $baseUrl = 'http://a/b/c/d;p?q#f';
         // "Normal Examples"
         $relativeUrls = [
             'g:h'     => 'g:h',

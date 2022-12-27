@@ -20,6 +20,7 @@ use Lkrms\Utility\Environment;
  * @method static string[]|null getList(string $name, string[]|null $default = null, string $delimiter = ',') Return an environment variable as a list of strings (see {@see Environment::getList()})
  * @method static bool has(string $name) Returns true if a variable exists in the environment (see {@see Environment::has()})
  * @method static string|null home() Get the current user's home directory from the environment (see {@see Environment::home()})
+ * @method static bool isLocaleUtf8() Return true if the current locale for character classification and conversion (LC_CTYPE) supports UTF-8 (see {@see Environment::isLocaleUtf8()})
  * @method static void loadFile(string $filename) Load environment variables from a file (see {@see Environment::loadFile()})
  * @method static void set(string $name, string $value) Set an environment variable (see {@see Environment::set()})
  * @method static void unset(string $name) Unset an environment variable (see {@see Environment::unset()})

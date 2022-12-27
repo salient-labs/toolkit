@@ -78,7 +78,7 @@ print_r($pascalCase);
 $normalise = [
     'History & Geography',
     '& Mathematics',
-    "Languages \xe2\x80\x94 Modern",
+    'Languages — Modern',
     'I.T.',
     'IT. ',
     'it',
@@ -256,6 +256,6 @@ print_r([
     'markdown'    => Convert::linesToLists($text, "\n\n"),
     'nested'      => Convert::linesToLists($text, "\n\n", '-'),
     'mb_from'     => $mbText,
-    'mb_to'       => Convert::linesToLists($mbText, "\n", "\xf0\x9f\x93\x8d"),
-    'mb_markdown' => Convert::linesToLists($mbText, "\n\n", "\xf0\x9f\x93\x8d"),
+    'mb_to'       => Convert::linesToLists($mbText, "\n", '📍'),
+    'mb_markdown' => Convert::linesToLists($mbText, "\n\n", '📍'),
 ]);

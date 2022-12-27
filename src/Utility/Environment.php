@@ -64,10 +64,16 @@ final class Environment
      * Apply values from the environment to the running script
      *
      * Specifically:
-     * - If `TZ` is a valid timezone, pass it to `date_default_timezone_set`.
+     * - Set locale from `LC_ALL`, `LC_COLLATE`, `LC_CTYPE`, `LC_MONETARY`,
+     *   `LC_NUMERIC`, `LC_TIME`, `LC_MESSAGES` and/or `LANG`
+     * - If `TZ` is a valid timezone, pass it to `date_default_timezone_set`
      */
     public function apply(): void
     {
+        if (setlocale(LC_ALL, '') === false) {
+            Console::debug('Invalid locale');
+        }
+
         if ($tz = preg_replace('/^:?(.*\/zoneinfo\/)?/', '', $this->get('TZ', ''))) {
             try {
                 $timezone = new DateTimeZone($tz);
@@ -239,6 +245,22 @@ final class Environment
     public function debug(?bool $newState = null): bool
     {
         return $this->getOrSetBool('DEBUG', ...func_get_args());
+    }
+
+    /**
+     * Return true if the current locale for character classification and
+     * conversion (LC_CTYPE) supports UTF-8
+     *
+     */
+    public function isLocaleUtf8(): bool
+    {
+        if (($locale = setlocale(LC_CTYPE, '0')) === false) {
+            Console::warnOnce('Invalid locale settings');
+
+            return false;
+        }
+
+        return (bool) preg_match('/\.utf-?8$/i', $locale);
     }
 
     /**

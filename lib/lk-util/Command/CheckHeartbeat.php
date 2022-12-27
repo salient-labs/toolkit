@@ -22,9 +22,10 @@ class CheckHeartbeat extends Command
         return [
             CliOption::build()
                 ->long('provider')
-                ->valueName('provider')
+                ->valueName('PROVIDER')
                 ->description('The provider to check (must implement IProvider)')
-                ->optionType(CliOptionType::VALUE_POSITIONAL),
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->required(),
             CliOption::build()
                 ->long('ttl')
                 ->short('t')

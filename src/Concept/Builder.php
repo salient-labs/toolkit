@@ -6,6 +6,7 @@ use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
+use Lkrms\Facade\Console;
 use Lkrms\Support\Introspector;
 use UnexpectedValueException;
 
@@ -123,6 +124,7 @@ abstract class Builder extends FluentInterface implements IImmutable
 
             return $obj;
         }
+        Console::debugOnce(sprintf('%s instantiated by deprecated static call:', static::class), $name);
 
         return (new static())->{$name}(...$arguments);
     }
@@ -138,11 +140,32 @@ abstract class Builder extends FluentInterface implements IImmutable
         if (count($arguments) > 1) {
             throw new UnexpectedValueException('Invalid arguments');
         }
+
+        return $this->getWithValue($name, array_key_exists(0, $arguments)
+            ? $arguments[0]
+            : true);
+    }
+
+    /**
+     * @return $this
+     */
+    final protected function getWithValue(string $name, $value)
+    {
         $clone              = clone $this;
         $name               = $clone->Introspector->maybeNormalise($name);
-        $clone->Data[$name] = array_key_exists(0, $arguments)
-            ? $arguments[0]
-            : true;
+        $clone->Data[$name] = $value;
+
+        return $clone;
+    }
+
+    /**
+     * @return $this
+     */
+    final protected function getWithReference(string $name, &$variable)
+    {
+        $clone              = clone $this;
+        $name               = $clone->Introspector->maybeNormalise($name);
+        $clone->Data[$name] = &$variable;
 
         return $clone;
     }

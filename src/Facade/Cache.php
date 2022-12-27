@@ -22,7 +22,7 @@ use Lkrms\Store\Concept\SqliteStore;
  * @method static bool isOpen() Check if a database is open (see {@see SqliteStore::isOpen()})
  * @method static mixed maybeGet(string $key, callable $callback, int $expiry = 0) Retrieve an item, or get it from a callback and store it for next time (see {@see CacheStore::maybeGet()})
  * @method static CacheStore open(string $filename = ':memory:') Create or open a cache database (see {@see CacheStore::open()})
- * @method static CacheStore set(string $key, mixed $value, int $expiry = 0) Store an item (see {@see CacheStore::set()})
+ * @method static CacheStore set(string $key, $value, int $expiry = 0) Store an item (see {@see CacheStore::set()})
  *
  * @uses CacheStore
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Store\CacheStore' 'Lkrms\Facade\Cache'

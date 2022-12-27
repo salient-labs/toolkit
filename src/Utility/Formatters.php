@@ -108,7 +108,7 @@ final class Formatters
         return $l . $date->format($format) . $r;
     }
 
-    public function dateRange(DateTimeInterface $from, DateTimeInterface $to, string $between = '[]', string $delimiter = "\xe2\x80\x93"): string
+    public function dateRange(DateTimeInterface $from, DateTimeInterface $to, string $between = '[]', string $delimiter = '–'): string
     {
         [$from, $to, $l, $r] = [
             $this->maybeSetTimezone($from),
