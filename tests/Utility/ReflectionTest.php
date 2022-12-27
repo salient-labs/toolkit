@@ -216,7 +216,7 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
             );
         }
         $this->assertSame([
-            'mixed $mixed',
+            '$mixed',
             '?int $nullableInt',
             'string $string',
             'Countable&ArrayAccess $intersection',

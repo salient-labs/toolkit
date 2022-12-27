@@ -181,7 +181,7 @@ class GenerateBuilder extends GenerateCommand
             throw new CliArgumentsInvalidException("class does not exist: $fqcn");
         }
 
-        $files        = [];
+        $files = [];
         $maybeAddFile =
             function ($file) use (&$files) {
                 if ($file !== false) {
@@ -308,7 +308,7 @@ class GenerateBuilder extends GenerateCommand
                     $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_param->getName()]['description'] ?? null) : null;
                 }
 
-                $type      = $type ? "$type " : '';
+                $type = $type ? "$type " : '';
                 $methods[] = " * @method \$this $name($type\$value)" . $this->getSummary(
                     $summary, $_property, $typeNameCallback
                 );
@@ -372,7 +372,7 @@ class GenerateBuilder extends GenerateCommand
                 }
                 $docBlocks[$name] = implode(PHP_EOL, $lines);
             } else {
-                $type      = $type ? "$type " : '';
+                $type = $type ? "$type " : '';
                 $methods[] = " * @method \$this $name($type\$value$default)" . $this->getSummary(
                     $summary, $_property, $typeNameCallback, $declaringClass, $name
                 );

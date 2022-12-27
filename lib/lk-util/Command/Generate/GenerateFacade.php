@@ -137,7 +137,7 @@ final class GenerateFacade extends GenerateCommand
             throw new CliArgumentsInvalidException("class does not exist: $fqcn");
         }
 
-        $files        = [];
+        $files = [];
         $maybeAddFile =
             function ($file) use (&$files) {
                 if ($file !== false) {

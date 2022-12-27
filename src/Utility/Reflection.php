@@ -320,7 +320,7 @@ final class Reflection
     {
         // If getTypeDeclaration isn't called, neither is $typeNameCallback
         $param  = $this->getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
-        $param  = (is_null($type) ? $param : $type);
+        $param  = is_null($type) ? $param : $type;
         $param .= ($param ? ' ' : '')
             . ($parameter->isVariadic() ? '...' : '')
             . '$' . ($name ?: $parameter->getName());

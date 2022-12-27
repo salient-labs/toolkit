@@ -156,11 +156,11 @@ class GenerateSyncProvider extends GenerateCommand
 
         $camelClass = Convert::toCamelCase($class);
 
-        $magic      = $this->getOptionValue('magic');
-        $package    = $this->getOptionValue('package');
-        $desc       = $this->getOptionValue('desc');
-        $desc       = is_null($desc) ? "Syncs $class objects with a backend" : $desc;
-        $operations = array_map(
+        $magic   = $this->getOptionValue('magic');
+        $package = $this->getOptionValue('package');
+        $desc    = $this->getOptionValue('desc');
+        $desc    = is_null($desc) ? "Syncs $class objects with a backend" : $desc;
+        $ops     = array_map(
             function ($op) use ($operationMap) { return $operationMap[$op]; },
             $this->getOptionValue('op')
         );
@@ -196,7 +196,7 @@ class GenerateSyncProvider extends GenerateCommand
         $methods = [];
         $lines   = [];
         /** @var int $op */
-        foreach ($operations as $op) {
+        foreach ($ops as $op) {
             // CREATE and UPDATE have the same signature, so it's a good default
             if (SyncOperation::isList($op)) {
                 $paramDoc   = 'iterable<' . $service . '> $' . $camelPlural;

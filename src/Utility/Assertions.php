@@ -48,11 +48,11 @@ final class Assertions
 
     public function localeIsUtf8(): void
     {
-        if (($locale = setlocale(LC_CTYPE, '')) === false) {
-            throw new RuntimeException('Invalid locale (check LANG and LC_*)');
+        if (($locale = setlocale(LC_CTYPE, '0')) === false) {
+            throw new RuntimeException('Invalid locale settings');
         }
 
-        if (!preg_match('/\.UTF-?8$/i', $locale)) {
+        if (!preg_match('/\.utf-?8$/i', $locale)) {
             throw new RuntimeException("'$locale' is not a UTF-8 locale");
         }
     }
