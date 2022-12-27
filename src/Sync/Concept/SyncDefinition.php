@@ -35,6 +35,7 @@ abstract class SyncDefinition implements ISyncDefinition
 
     /**
      * @var int
+     * @psalm-var ArrayKeyConformity::*
      */
     protected $Conformity;
 
@@ -64,6 +65,7 @@ abstract class SyncDefinition implements ISyncDefinition
     protected $ProviderIntrospector;
 
     /**
+     * @psalm-param ArrayKeyConformity::* $conformity
      * @param int $filterPolicy One of the {@see SyncFilterPolicy} values.
      *
      * To prevent, say, a filtered {@see SyncOperation::READ_LIST} request
@@ -80,6 +82,7 @@ abstract class SyncDefinition implements ISyncDefinition
      * converts a serialized instance of the entity to data compatible with the
      * provider, or `null` if the entity is not supported or conversion is not
      * required.
+     * @psalm-param SyncFilterPolicy::* $filterPolicy
      */
     public function __construct(string $entity, ISyncProvider $provider, int $conformity = ArrayKeyConformity::NONE, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
     {
@@ -107,8 +110,8 @@ abstract class SyncDefinition implements ISyncDefinition
                     $ctx = $ctx->withConformity($this->Conformity);
 
                     $closure = in_array($this->Conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                        ? SyncIntrospector::getBound($ctx->container(), $this->Entity)->getCreateProvidableFromSignatureClosure(array_keys($entity))
-                        : SyncIntrospector::getBound($ctx->container(), $this->Entity)->getCreateProvidableFromClosure();
+                        ? SyncIntrospector::getService($ctx->container(), $this->Entity)->getCreateProvidableFromSignatureClosure(array_keys($entity))
+                        : SyncIntrospector::getService($ctx->container(), $this->Entity)->getCreateProvidableFromClosure();
                 }
 
                 return $closure($entity, $this->Provider, $ctx);

@@ -13,8 +13,8 @@ trait HasSortableItems
     use HasItems;
 
     /**
-     * @psalm-param T $a
-     * @psalm-param T $b
+     * @param T $a
+     * @param T $b
      */
     protected function compareItems($a, $b): int
     {

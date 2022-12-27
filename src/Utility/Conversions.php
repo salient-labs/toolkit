@@ -138,6 +138,36 @@ final class Conversions
     }
 
     /**
+     * A type-agnostic multi-column array_unique with reindexing
+     *
+     * It is assumed that every array provided has the same signature (i.e.
+     * identical lengths and keys).
+     *
+     * Whenever a value is excluded from `$array`, its counterpart in each
+     * `$columns` array is also excluded. Only values in `$array` are checked
+     * for uniqueness.
+     *
+     */
+    public function columnsToUniqueList(array $array, array &...$columns): array
+    {
+        $list = [];
+        foreach ($array as $rowIndex => $value) {
+            if (in_array($value, $list, true)) {
+                continue;
+            }
+            $list[] = $value;
+            foreach ($columns as $columnIndex => $column) {
+                $columns2[$columnIndex][] = $column[$rowIndex];
+            }
+        }
+        foreach ($columns as $columnIndex => &$column) {
+            $column = $columns2[$columnIndex] ?? [];
+        }
+
+        return $list;
+    }
+
+    /**
      * A faster array_unique with reindexing
      *
      * @param string[] $array

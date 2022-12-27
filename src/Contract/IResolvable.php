@@ -15,10 +15,9 @@ interface IResolvable
      *
      * Inheritors may return closures that ignore arguments after `$name`.
      *
-     * @psalm-return Closure(string, bool=, string...): string
-     * @return Closure
+     * @return Closure(string, bool=, string...): string
      * ```php
-     * function (string $name, bool $aggressive = true, string ...$hints): string
+     * function (string $name, bool $greedy = true, string ...$hints): string
      * ```
      */
     public static function normaliser(): Closure;
@@ -30,5 +29,5 @@ interface IResolvable
      * {@see IResolvable::normaliser()} and may ignore arguments after `$name`.
      *
      */
-    public static function normalise(string $name, bool $aggressive = true, string ...$hints): string;
+    public static function normalise(string $name, bool $greedy = true, string ...$hints): string;
 }

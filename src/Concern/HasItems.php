@@ -8,8 +8,7 @@ namespace Lkrms\Concern;
 trait HasItems
 {
     /**
-     * @var mixed[]
-     * @psalm-var T[]
+     * @var T[]
      */
     private $_Items = [];
 }

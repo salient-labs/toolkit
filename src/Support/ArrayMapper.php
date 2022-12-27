@@ -23,7 +23,9 @@ final class ArrayMapper
      * array that maps input keys to one or more output keys.
      * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
      * `COMPLETE` wherever possible to improve performance.
+     * @psalm-param ArrayKeyConformity::* $conformity
      * @param int $flags A bitmask of {@see ArrayMapperFlag} values.
+     * @psalm-param int-mask-of<ArrayMapperFlag::*> $flags
      * @return Closure
      * ```php
      * static function (array $in): array

@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
 
 /**
@@ -11,7 +12,7 @@ use Lkrms\Contract\ReceivesFacade;
 final class Debugging implements ReceivesFacade
 {
     /**
-     * @var string|null
+     * @var class-string<IFacade>
      */
     private $Facade;
 

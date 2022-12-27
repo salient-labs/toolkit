@@ -21,6 +21,7 @@ use Lkrms\Utility\Filesystem;
  * @method static string|false realpath(string $filename) A phar-friendly realpath() (see {@see Filesystem::realpath()})
  *
  * @uses Filesystem
+ * @extends Facade<Filesystem>
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Filesystem' 'Lkrms\Facade\File'
  */
 final class File extends Facade
@@ -42,6 +43,11 @@ final class File extends Facade
      */
     public static function writeCsv(iterable $data, ?string $filename = null, bool $headerRow = true, ?string $nullValue = null, ?int &$count = null, ?callable $callback = null)
     {
-        return static::getInstance()->writeCsv($data, $filename, $headerRow, $nullValue, $count, $callback);
+        static::setFuncNumArgs(__FUNCTION__, func_num_args());
+        try {
+            return static::getInstance()->writeCsv($data, $filename, $headerRow, $nullValue, $count, $callback);
+        } finally {
+            static::clearFuncNumArgs(__FUNCTION__);
+        }
     }
 }

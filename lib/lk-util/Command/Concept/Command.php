@@ -17,6 +17,9 @@ use Lkrms\Facade\Env;
  */
 abstract class Command extends CliCommand
 {
+    /**
+     * @return class-string<object>
+     */
     protected function getFqcnOptionValue(string $value, ?string $defaultNamespace = null): string
     {
         if ($defaultNamespace && trim($value) && strpos($value, '\\') === false) {
@@ -40,6 +43,12 @@ abstract class Command extends CliCommand
         return $_values;
     }
 
+    /**
+     * @template TProvider of IProvider
+     * @param class-string<TProvider> $provider
+     * @param class-string<IProvider> $class
+     * @return TProvider
+     */
     protected function getProvider(string $provider, string $class = IProvider::class): IProvider
     {
         $provider = $this->getFqcnOptionValue($provider, Env::get('PROVIDER_NAMESPACE', null));

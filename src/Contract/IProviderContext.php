@@ -59,6 +59,7 @@ interface IProviderContext extends IImmutable, ReturnsContainer
      *
      * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
      * `COMPLETE` wherever possible to improve performance.
+     * @psalm-param ArrayKeyConformity::* $conformity
      * @return $this
      */
     public function withConformity(int $conformity);

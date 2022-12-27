@@ -8,6 +8,8 @@ use Lkrms\Cli\Concept\CliCommand;
 
 class TestOptions extends CliCommand
 {
+    private $Operation;
+
     public function getDescription(): string
     {
         return 'Test the available option types';
@@ -33,6 +35,7 @@ class TestOptions extends CliCommand
                 ->description('Task to complete')
                 ->optionType(CliOptionType::ONE_OF_POSITIONAL)
                 ->allowedValues(['compress', 'copy'])
+                ->bindTo($this->Operation)
                 ->required(),
             CliOption::build()
                 ->long('source')
@@ -98,5 +101,6 @@ class TestOptions extends CliCommand
     {
         var_dump($this->getOptionValues());
         var_dump($args);
+        var_dump(['$this->Operation' => $this->Operation]);
     }
 }

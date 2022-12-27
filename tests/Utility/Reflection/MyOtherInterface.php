@@ -2,6 +2,9 @@
 
 namespace Lkrms\Tests\Utility\Reflection;
 
+/**
+ * MyOtherInterface
+ */
 interface MyOtherInterface
 {
     /**

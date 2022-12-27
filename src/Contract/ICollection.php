@@ -18,8 +18,8 @@ interface ICollection extends Iterator, ArrayAccess, Countable
     /**
      * Apply a callback to every item
      *
-     * @return $this
      * @psalm-param callable(T) $callback
+     * @return $this
      */
     public function forEach(callable $callback);
 
@@ -28,8 +28,8 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      *
      * Analogous to `array_filter()`.
      *
-     * @return static
      * @psalm-param callable(T): bool $callback
+     * @return static
      */
     public function filter(callable $callback);
 
@@ -37,16 +37,15 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      * Return the first item that satisfies a callback, or false if no such item
      * is in the collection
      *
-     * @return mixed|false
      * @psalm-param callable(T): bool $callback
-     * @psalm-return T|false
+     * @return T|false
      */
     public function find(callable $callback);
 
     /**
      * Return true if an item is in the collection
      *
-     * @psalm-param T $item
+     * @param T $item
      */
     public function has($item, bool $strict = false): bool;
 
@@ -54,50 +53,45 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      * Return the first key at which an item is found, or false if it's not in
      * the collection
      *
+     * @param T $item
      * @return int|string|false
-     * @psalm-param T $item
      */
     public function keyOf($item, bool $strict = false);
 
     /**
-     * Return the first item equal but not identical to $item, or false if no
-     * such item is in the collection
+     * Return the first item equal but not necessarily identical to $item, or
+     * false if no such item is in the collection
      *
-     * @return mixed|false
-     * @psalm-param T $item
-     * @psalm-return T|false
+     * @param T $item
+     * @return T|false
      */
     public function get($item);
 
     /**
      * Return an array with each item
      *
-     * @return mixed[]
-     * @psalm-return T[]
+     * @return T[]
      */
     public function toArray(bool $preserveKeys = true): array;
 
     /**
      * Return the first item, or false if the collection is empty
      *
-     * @return mixed|false
-     * @psalm-return T|false
+     * @return T|false
      */
     public function first();
 
     /**
      * Return the last item, or false if the collection is empty
      *
-     * @return mixed|false
-     * @psalm-return T|false
+     * @return T|false
      */
     public function last();
 
     /**
      * Shift an item off the beginning of the collection
      *
-     * @return mixed|false
-     * @psalm-return T|false
+     * @return T|false
      */
     public function shift();
 }

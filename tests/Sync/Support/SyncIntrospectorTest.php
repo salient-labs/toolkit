@@ -31,7 +31,7 @@ final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase
         $provider  = $container->get(PostProvider::class);
 
         $entityIntrospector   = SyncIntrospector::get(Post::class);
-        $providerIntrospector = SyncIntrospector::getBound($container, PostProvider::class);
+        $providerIntrospector = SyncIntrospector::getService($container, PostProvider::class);
 
         $this->assertEquals(null, $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::READ, $entityIntrospector, $provider)));
         $this->assertEquals('getPosts', $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::READ_LIST, $entityIntrospector, $provider)));

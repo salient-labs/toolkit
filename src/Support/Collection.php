@@ -2,11 +2,8 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Concern\HasSortableItems;
 use Lkrms\Concern\TCollection;
 use Lkrms\Contract\ICollection;
-use Lkrms\Contract\IComparable;
-use UnexpectedValueException;
 
 /**
  * An array-like collection of values

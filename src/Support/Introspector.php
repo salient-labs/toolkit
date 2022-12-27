@@ -3,583 +3,246 @@
 namespace Lkrms\Support;
 
 use Closure;
-use DateTimeInterface;
 use Lkrms\Container\Container;
-use Lkrms\Contract\HasDateProperties;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IHierarchy;
-use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
-use Lkrms\Contract\IReadable;
-use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\ISerializeRules;
-use Lkrms\Contract\IWritable;
-use Lkrms\Facade\Reflect;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionNamedType;
-use ReflectionProperty;
+use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Enumeration\NormaliserFlag;
 use RuntimeException;
 use UnexpectedValueException;
 
+/**
+ * Use reflection to generate closures that perform operations on a class
+ *
+ * {@see Introspector} returns values from its underlying
+ * {@see IntrospectionClass} instance for any properties declared by
+ * `IntrospectionClass` and not declared by `Introspector`.
+ *
+ * @property-read string $Class The name of the class under introspection
+ *
+ * @template TClass of object
+ * @template TIntrospectionClass of IntrospectionClass
+ */
 class Introspector
 {
-    public const ACTION_GET   = 'get';
-    public const ACTION_ISSET = 'isset';
-    public const ACTION_SET   = 'set';
-    public const ACTION_UNSET = 'unset';
-
     /**
-     * @var string
+     * @var TIntrospectionClass
      */
-    private $Class;
+    protected $_Class;
 
     /**
      * @var string|null
      */
-    private $Service;
+    protected $_Service;
 
     /**
-     * @var bool
+     * @var array<string,array<string,IntrospectionClass>>
      */
-    private $IsReadable;
+    private static $IntrospectionClasses = [];
 
     /**
-     * @var bool
-     */
-    private $IsWritable;
-
-    /**
-     * @var bool
-     */
-    private $IsExtensible;
-
-    /**
-     * @var bool
-     */
-    private $IsProvidable;
-
-    /**
-     * @var bool
-     */
-    private $IsHierarchy;
-
-    /**
-     * @var bool
-     */
-    private $HasDates;
-
-    /**
-     * Property names
+     * Get an Introspector for a container-bound service
      *
-     * - `public` properties
-     * - `protected` properties if the class implements {@see IReadable} or
-     *   {@see IWritable}
+     * Uses `$container` to resolve `$service` to a concrete class and returns
+     * an {@see Introspector} for it.
      *
-     * @var string[]
-     */
-    private $Properties = [];
-
-    /**
-     * Public property names
-     *
-     * @var string[]
-     */
-    private $PublicProperties = [];
-
-    /**
-     * Readable property names
-     *
-     * Empty if the class does not implement {@see IReadable}, otherwise:
-     * - `public` properties
-     * - `protected` properties returned by {@see IReadable::getReadable()}
-     *
-     * Does not include "magic" property names.
-     *
-     * @var string[]
-     */
-    private $ReadableProperties = [];
-
-    /**
-     * Writable property names
-     *
-     * Empty if the class does not implement {@see IWritable}, otherwise:
-     * - `public` properties
-     * - `protected` properties returned by {@see IWritable::getWritable()}
-     *
-     * Does not include "magic" property names.
-     *
-     * @var string[]
-     */
-    private $WritableProperties = [];
-
-    /**
-     * Normalised date property names
-     *
-     * Includes "magic" property names.
-     *
-     * @var string[]
-     */
-    private $DateProperties = [];
-
-    /**
-     * Actions => normalised property names => "magic" method names
-     *
-     * @var array<string,array<string,string>>
-     */
-    private $Actions = [];
-
-    /**
-     * Constructor parameter names, in order of appearance
-     *
-     * @var string[]
-     */
-    private $Parameters = [];
-
-    /**
-     * Parameters that aren't nullable and don't have a default value
-     *
-     * @var string[]
-     */
-    private $RequiredParameters = [];
-
-    /**
-     * Default constructor arguments
-     *
-     * @var array
-     */
-    private $DefaultArguments = [];
-
-    /**
-     * Normalised property names => declared property names
-     *
-     * @var array<string,string>
-     */
-    private $PropertyMap = [];
-
-    /**
-     * Normalised property names
-     *
-     * @var string[]
-     */
-    private $MethodProperties = [];
-
-    /**
-     * Normalised constructor parameter names => constructor parameter names
-     *
-     * @var array<string,string>
-     */
-    private $ParameterMap = [];
-
-    /**
-     * Normalised constructor parameter names => constructor parameter names
-     *
-     * @var array<string,string>
-     */
-    private $RequiredMap = [];
-
-    /**
-     * Normalised constructor parameter names => constructor parameter names
-     *
-     * @var array<string,string>
-     */
-    private $DateParameters = [];
-
-    /**
-     * Normalised constructor parameter names => class names
-     *
-     * @var array<string,string>
-     */
-    private $ServiceMap = [];
-
-    /**
-     * Normalised property names, whether declared or "magic"
-     *
-     * @var string[]
-     */
-    private $NormalisedProperties = [];
-
-    /**
-     * Constructor parameter names => constructor argument indices
-     *
-     * @var array<string,int>
-     */
-    private $ParametersIndex = [];
-
-    /**
-     * Converts property names to normalised property names
-     *
-     * @var callable|null
-     */
-    private $Normaliser;
-
-    /**
-     * Normalises property names with $aggressive = false
-     *
-     * @var callable|null
-     */
-    private $GentleNormaliser;
-
-    /**
-     * Normalises property names with $hints = $this->NormalisedProperties
-     *
-     * @var callable|null
-     */
-    private $CarefulNormaliser;
-
-    /**
-     * @var array<string,array<string,Closure>>
-     */
-    private $PropertyActionClosures = [];
-
-    /**
-     * @var array<int,Closure>
-     */
-    private $CreateProviderlessFromClosures = [];
-
-    /**
-     * @var array<int,Closure>
-     */
-    private $CreateProvidableFromClosures = [];
-
-    /**
-     * @var array<string,Closure>
-     */
-    private $CreateFromSignatureClosures = [];
-
-    /**
-     * @var array<string,array<int,Closure>>
-     */
-    private $CreateProviderlessFromSignatureClosures = [];
-
-    /**
-     * @var array<string,array<int,Closure>>
-     */
-    private $CreateProvidableFromSignatureClosures = [];
-
-    /**
-     * @var Closure|null
-     */
-    private $GetNameClosure;
-
-    /**
-     * @var array<string,Closure>
-     */
-    private $SerializeClosures = [];
-
-    /**
-     * @var array<string,array<string,static>>
-     */
-    private static $Instances = [];
-
-    /**
-     * Get an Introspector for $class after optionally using a container to
-     * resolve it to a concrete class
-     *
+     * @template T of object
+     * @param class-string<T> $service
      * @return static
+     * @psalm-return static<T>
+     * @phpstan-return static
      */
-    final public static function maybeGetBound(?IContainer $container, string $class)
+    final public static function getService(IContainer $container, string $service)
     {
-        return is_null($container)
-            ? static::get($class)
-            : static::getBound($container, $class);
-    }
-
-    /**
-     * Get an Introspector for $class after using a container to resolve it to a
-     * concrete class
-     *
-     * @return static
-     */
-    final public static function getBound(IContainer $container, string $class)
-    {
-        $instance          = static::get($container->getName($class));
-        $instance->Service = $class;
+        $instance           = new static($container->getName($service));
+        $instance->_Service = $service;
 
         return $instance;
     }
 
     /**
-     * Get an Introspector for $class
+     * Get an Introspector for a class
      *
+     * @template T of object
+     * @param class-string<T> $class
      * @return static
+     * @psalm-return static<T>
+     * @phpstan-return static
      */
     final public static function get(string $class)
     {
-        return self::$Instances[static::class][$class]
-            ?? (self::$Instances[static::class][$class] = new static($class));
+        return new static($class);
     }
 
+    /**
+     * @param class-string<TClass> $class
+     */
     final private function __construct(string $class)
     {
-        $class = new ReflectionClass($class);
-        $this->load($class);
-    }
-
-    protected function load(ReflectionClass $class): void
-    {
-        $this->Class        = $class->name;
-        $this->IsReadable   = $class->implementsInterface(IReadable::class);
-        $this->IsWritable   = $class->implementsInterface(IWritable::class);
-        $this->IsExtensible = $class->implementsInterface(IExtensible::class);
-        $this->IsProvidable = $class->implementsInterface(IProvidable::class);
-        $this->IsHierarchy  = $class->implementsInterface(IHierarchy::class);
-        $this->HasDates     = $class->implementsInterface(HasDateProperties::class);
-
-        // IResolvable provides access to properties via alternative names
-        if ($class->implementsInterface(IResolvable::class)) {
-            $this->Normaliser        = $class->getMethod('normaliser')->invoke(null);
-            $this->GentleNormaliser  = fn(string $name): string => ($this->Normaliser)($name, false);
-            $this->CarefulNormaliser = fn(string $name): string => ($this->Normaliser)($name, true, ...$this->NormalisedProperties);
-        }
-
-        $propertyFilter = ReflectionProperty::IS_PUBLIC;
-        $methodFilter   = 0;
-
-        // IReadable and IWritable provide access to protected and "magic"
-        // property methods
-        if ($this->IsReadable || $this->IsWritable) {
-            $propertyFilter |= ReflectionProperty::IS_PROTECTED;
-            $methodFilter   |= ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED;
-        }
-
-        // Get instance properties
-        $properties = array_values(array_filter(
-            $class->getProperties($propertyFilter),
-            fn(ReflectionProperty $prop) => !$prop->isStatic()
-        ));
-        $this->Properties = Reflect::getNames($properties);
-
-        if ($propertyFilter & ReflectionProperty::IS_PROTECTED) {
-            $this->PublicProperties = Reflect::getNames(
-                array_values(array_filter(
-                    $properties,
-                    fn(ReflectionProperty $prop) => $prop->isPublic()
-                ))
-            );
-        } else {
-            $this->PublicProperties = $this->Properties;
-        }
-
-        if ($this->IsReadable) {
-            $readable = $class->getMethod('getReadable')->invoke(null);
-            $readable = array_merge(
-                ['*'] === $readable ? $this->Properties : $readable,
-                $this->PublicProperties
-            );
-            $this->ReadableProperties = array_intersect($this->Properties, $readable);
-        }
-
-        if ($this->IsWritable) {
-            $writable = $class->getMethod('getWritable')->invoke(null);
-            $writable = array_merge(
-                ['*'] === $writable ? $this->Properties : $writable,
-                $this->PublicProperties
-            );
-            $this->WritableProperties = array_intersect($this->Properties, $writable);
-        }
-
-        // Get "magic" property methods, e.g. _get<Property>()
-        if ($methodFilter) {
-            $actions = [];
-            if ($this->IsReadable) {
-                $actions[] = self::ACTION_GET;
-                $actions[] = self::ACTION_ISSET;
-            }
-            if ($this->IsWritable) {
-                $actions[] = self::ACTION_SET;
-                $actions[] = self::ACTION_UNSET;
-            }
-            $regex = '/^_(?P<action>' . implode('|', $actions) . ')(?P<property>.+)$/i';
-
-            foreach ($class->getMethods($methodFilter) as $method) {
-                if (!$method->isStatic() && preg_match($regex, $method->name, $match)) {
-                    [$action, $property] = [
-                        strtolower($match['action']),
-                        $this->maybeNormalise($match['property'], true),
-                    ];
-                    $this->MethodProperties[]          = $property;
-                    $this->Actions[$action][$property] = $method->name;
-                }
-            }
-        }
-
-        // Get constructor parameters
-        if (($constructor = $class->getConstructor()) && $constructor->isPublic()) {
-            foreach ($constructor->getParameters() as $param) {
-                $normalised   = $this->maybeNormalise($param->name, true);
-                $defaultValue = null;
-                if ($param->isOptional()) {
-                    $defaultValue = $param->getDefaultValue();
-                } elseif (!$param->allowsNull()) {
-                    $this->RequiredParameters[] = $this->RequiredMap[$normalised] = $param->name;
-                    if (($type = $param->getType()) &&
-                            $type instanceof ReflectionNamedType && !$type->isBuiltin()) {
-                        $this->ServiceMap[$normalised] = $type = $type->getName();
-                        if ($this->HasDates && is_a($type, DateTimeInterface::class, true)) {
-                            $this->DateParameters[] = $normalised;
-                        }
-                    }
-                }
-                $this->Parameters[]       = $this->ParameterMap[$normalised] = $param->name;
-                $this->DefaultArguments[] = $defaultValue;
-            }
-            $this->ParametersIndex = array_flip($this->Parameters);
-        }
-
-        // Create a normalised property name map
-        if ($this->Normaliser) {
-            $this->PropertyMap = array_combine(
-                array_map($this->GentleNormaliser, $this->Properties),
-                $this->Properties
-            );
-        } else {
-            $this->PropertyMap = array_combine($this->Properties, $this->Properties);
-        }
-
-        // And a list of unique normalised property names
-        $this->NormalisedProperties = array_keys($this->PropertyMap + array_flip($this->MethodProperties));
-
-        if ($this->HasDates) {
-            $dates                = $class->getMethod('getDateProperties')->invoke(null);
-            $this->DateProperties = ['*'] === $dates
-                ? $this->NormalisedProperties
-                : array_intersect($this->NormalisedProperties, $this->maybeNormalise($dates, true));
-        }
+        $_class = strtolower($class);
+        $this->_Class =
+            (self::$IntrospectionClasses[static::class][$_class] ?? null)
+                ?: (self::$IntrospectionClasses[static::class][$_class] =
+                    $this->getIntrospectionClass($class));
     }
 
     /**
-     * @param string|string[] $value
-     * @return string|string[]
+     * @internal
      */
-    final public function maybeNormalise($value, bool $gentle = false, bool $careful = false)
+    final public function __get(string $name)
     {
-        if (!$this->Normaliser) {
-            return $value;
-        }
-
-        $normaliser = $gentle
-            ? $this->GentleNormaliser
-            : ($careful ? $this->CarefulNormaliser : $this->Normaliser);
-
-        if (is_array($value)) {
-            return array_map($normaliser, $value);
-        }
-
-        return ($normaliser)($value);
+        return $this->_Class->{$name};
     }
 
+    /**
+     * @param class-string<TClass> $class
+     * @return TIntrospectionClass<TClass>
+     */
+    protected function getIntrospectionClass(string $class): IntrospectionClass
+    {
+        return new IntrospectionClass($class);
+    }
+
+    /**
+     * Normalise a property name if the class has a normaliser, otherwise return
+     * it as-is
+     *
+     * @template T of string[]|string
+     * @param T $value
+     * @param $flags A bitmask of {@see NormaliserFlag} values.
+     * @psalm-param int-mask-of<NormaliserFlag::*> $flags
+     * @return T
+     * @see \Lkrms\Contract\IResolvable::normaliser()
+     * @see \Lkrms\Contract\IResolvable::normalise()
+     */
+    final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
+    {
+        return $this->_Class->maybeNormalise($value, $flags);
+    }
+
+    /**
+     * Return true if the class has a normaliser
+     *
+     */
     final public function hasNormaliser(): bool
     {
-        return !is_null($this->Normaliser);
+        return !is_null($this->_Class->Normaliser);
     }
 
     /**
-     * @return string[]
+     * Get readable properties, including "magic" properties
+     *
+     * @return string[] Normalised property names
      */
     final public function getReadableProperties(): array
     {
-        return array_keys(
-            array_intersect(
-                $this->PropertyMap,
-                $this->ReadableProperties ?: $this->PublicProperties
-            ) + (
-                $this->Actions[self::ACTION_GET] ?? []
-            )
-        );
+        return $this->_Class->getReadableProperties();
     }
 
     /**
-     * @return string[]
+     * Get writable properties, including "magic" properties
+     *
+     * @return string[] Normalised property names
      */
     final public function getWritableProperties(): array
     {
-        return array_keys(
-            array_intersect(
-                $this->PropertyMap,
-                $this->WritableProperties ?: $this->PublicProperties
-            ) + (
-                $this->Actions[self::ACTION_SET] ?? []
-            )
-        );
+        return $this->_Class->getWritableProperties();
     }
 
     /**
-     * @param bool $strict If `true`, throw an exception if the closure would
-     * discard unusable data.
-     * @return Closure
+     * Return true if an action can be performed on a property
+     *
+     * @param $property The normalised property name to check
+     */
+    final public function propertyActionIsAllowed(string $property, string $action): bool
+    {
+        return $this->_Class->propertyActionIsAllowed($property, $action);
+    }
+
+    /**
+     * Get a closure to create instances of the class from arrays with a given
+     * signature
+     *
+     * @param bool $strict If `true`, throw an exception if any data would be
+     * discarded.
+     * @return Closure(array, IContainer, IHierarchy|null=, DateFormatter|null=)
      * ```php
-     * closure(array $array, \Lkrms\Contract\IContainer $container, ?\Lkrms\Contract\IHierarchy $parent = null, ?\Lkrms\Support\DateFormatter $dateFormatter = null)
+     * function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null)
      * ```
      */
     final public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\x00", $keys);
-
-        if ($closure = $this->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] ?? null) {
-            return $closure;
+        if (!($closure = $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] ?? null)) {
+            $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] =
+                $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
+            // If the closure was created successfully in strict mode, cache it for
+            // `$strict = false` too
+            if ($strict && !($this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) false] ?? null)) {
+                $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) false] = $closure;
+            }
         }
+        $service = $this->_Service;
 
-        $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
-        $closure = static function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($closure) {
-            return $closure($container, $array, null, null, $parent, $dateFormatter);
+        return static function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($closure, $service) {
+            return $closure($container, $array, null, null,
+                            $parent, $dateFormatter,
+                            $service);
         };
-
-        $this->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] = $closure;
-        // If the closure was created successfully in strict mode, cache it for
-        // `$strict = false` purposes too
-        if ($strict && !($this->CreateProviderlessFromSignatureClosures[$sig][(int) false] ?? null)) {
-            $this->CreateProviderlessFromSignatureClosures[$sig][(int) false] = $closure;
-        }
-
-        return $closure;
     }
 
     /**
-     * @param bool $strict If `true`, throw an exception if the closure would
-     * discard unusable data.
-     * @return Closure
+     * Get a closure to create instances of the class on behalf of a provider
+     * from arrays with a given signature
+     *
+     * @param bool $strict If `true`, throw an exception if any data would be
+     * discarded.
+     * @return Closure(array, IProvider, IContainer|IProviderContext|null=)
      * ```php
-     * closure(array $array, \Lkrms\Contract\IProvider $provider, \Lkrms\Contract\IContainer|\Lkrms\Contract\IProviderContext|null $context = null)
+     * function (array $array, IProvider $provider, IContainer|IProviderContext|null $context = null)
      * ```
      */
     final public function getCreateProvidableFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\x00", $keys);
-
-        if ($closure = $this->CreateProvidableFromSignatureClosures[$sig][(int) $strict] ?? null) {
-            return $closure;
+        if (!($closure = $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] ?? null)) {
+            $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] =
+                $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
+            // If the closure was created successfully in strict mode, cache it for
+            // `$strict = false` purposes too
+            if ($strict && !($this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) false] ?? null)) {
+                $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) false] = $closure;
+            }
         }
+        $service = $this->_Service;
 
-        $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
-        $closure = static function (array $array, IProvider $provider, $context = null) use ($closure) {
+        return static function (array $array, IProvider $provider, $context = null) use ($closure, $service) {
             [$container, $parent] = $context instanceof IProviderContext
                 ? [$context->container(), $context->getParent()]
                 : [$context ?: $provider->container(), null];
 
             return $closure($container, $array, $provider,
                             $context ?: new ProviderContext($container, $parent),
-                            $parent, $provider->getDateFormatter());
+                            $parent, $provider->getDateFormatter(),
+                            $service);
         };
-
-        $this->CreateProvidableFromSignatureClosures[$sig][(int) $strict] = $closure;
-        // If the closure was created successfully in strict mode, cache it for
-        // `$strict = false` purposes too
-        if ($strict && !($this->CreateProvidableFromSignatureClosures[$sig][(int) false] ?? null)) {
-            $this->CreateProvidableFromSignatureClosures[$sig][(int) false] = $closure;
-        }
-
-        return $closure;
     }
 
-    final protected function getProperties(array $keys, bool $withParameters, bool $strict): IntrospectorProperties
+    /**
+     * Get a list of actions required to apply values from an array with a given
+     * signature to the properties of a new or existing instance
+     *
+     */
+    final protected function getKeyTargets(array $keys, bool $withParameters, bool $strict): IntrospectorKeyTargets
     {
         // Normalise array keys (i.e. field/property names)
-        if ($this->Normaliser) {
+        if ($this->_Class->Normaliser) {
             $keys = array_combine(
-                array_map($this->CarefulNormaliser, $keys),
+                array_map($this->_Class->CarefulNormaliser, $keys),
                 $keys
             );
         } else {
@@ -589,93 +252,104 @@ class Introspector
         // Check for missing constructor parameters if preparing an
         // instantiator, otherwise check for readonly properties
         if ($withParameters) {
-            if ($missing = array_diff_key($this->RequiredMap, $this->ServiceMap, $keys)) {
-                throw new UnexpectedValueException("{$this->Class} constructor requires values for: " . implode(', ', $missing));
+            if ($missing = array_diff_key($this->_Class->RequiredParameters, $this->_Class->ServiceParameters, $keys)) {
+                throw new UnexpectedValueException("{$this->_Class->Class} constructor requires values for: " . implode(', ', $missing));
             }
         } else {
             // Get keys that correspond to constructor parameters and isolate
             // any that don't also match a writable property or "magic" method
-            $parameters = array_intersect_key($this->ParameterMap, $keys);
-            $writable   = array_intersect($this->PropertyMap, $this->WritableProperties ?: $this->PublicProperties);
-
-            if ($readonly = array_diff_key($parameters, $writable, $this->Actions[self::ACTION_SET] ?? [])) {
-                throw new UnexpectedValueException("Cannot set readonly properties of {$this->Class}: " . implode(', ', $readonly));
+            $parameters = array_intersect_key($this->_Class->Parameters, $keys);
+            if ($readonly = array_diff(array_keys($parameters), $this->_Class->getWritableProperties())) {
+                throw new UnexpectedValueException("Cannot set readonly properties of {$this->_Class->Class}: " . implode(', ', $readonly));
             }
         }
 
         // Resolve $keys to:
-        // - constructor parameters ($parameterKeys)
+        // - constructor parameters ($parameterKeys, $passByRefKeys)
         // - "magic" property methods ($methodKeys)
         // - properties ($propertyKeys)
         // - arbitrary properties ($metaKeys)
-        $parameterKeys = $methodKeys = $propertyKeys = $metaKeys = $dateKeys = [];
+        //
+        // Keys that correspond to date parameters or properties are also added
+        // to $dateKeys
+        $parameterKeys = $passByRefKeys = $methodKeys = $propertyKeys = $metaKeys = $dateKeys = [];
 
         foreach ($keys as $normalisedKey => $key) {
-            if ($withParameters && ($param = $this->ParameterMap[$normalisedKey] ?? null)) {
-                $parameterKeys[$key] = $this->ParametersIndex[$param];
-                if (in_array($normalisedKey, $this->DateParameters)) {
+            if ($withParameters && ($param = $this->_Class->Parameters[$normalisedKey] ?? null)) {
+                $parameterKeys[$key] = $this->_Class->ParameterIndex[$param];
+                if ($this->_Class->PassByRefParameters[$normalisedKey] ?? null) {
+                    $passByRefKeys[$key] = true;
+                }
+                if ($this->_Class->DateParameters[$normalisedKey] ?? null) {
                     $dateKeys[] = $key;
+                    // If found in DateParameters, skip DateKeys check below
                     continue;
                 }
-            } elseif ($method = $this->Actions[self::ACTION_SET][$normalisedKey] ?? null) {
+            } elseif ($method = $this->_Class->Actions[IntrospectionClass::ACTION_SET][$normalisedKey] ?? null) {
                 $methodKeys[$key] = $method;
-            } elseif ($property = $this->PropertyMap[$normalisedKey] ?? null) {
-                if (!$this->checkWritable($property, self::ACTION_SET)) {
+            } elseif ($property = $this->_Class->Properties[$normalisedKey] ?? null) {
+                if (!$this->_Class->propertyActionIsAllowed($normalisedKey, IntrospectionClass::ACTION_SET)) {
+                    if ($strict) {
+                        throw new UnexpectedValueException("Cannot set unwritable property '{$this->_Class->Class}::$property'");
+                    }
                     continue;
                 }
                 $propertyKeys[$key] = $property;
-            } elseif ($this->IsExtensible) {
+            } elseif ($this->_Class->IsExtensible) {
                 $metaKeys[] = $key;
             } elseif ($strict) {
-                throw new UnexpectedValueException("No matching property or constructor parameter found in {$this->Class} for '$key'");
+                throw new UnexpectedValueException("No matching property or constructor parameter found in {$this->_Class->Class} for '$key'");
             } else {
                 continue;
             }
-            if (in_array($normalisedKey, $this->DateProperties)) {
+            if (in_array($normalisedKey, $this->_Class->DateKeys)) {
                 $dateKeys[] = $key;
             }
         }
 
-        return new IntrospectorProperties($parameterKeys, $methodKeys, $propertyKeys, $metaKeys, $dateKeys);
+        return new IntrospectorKeyTargets($parameterKeys, $passByRefKeys,
+                                          $methodKeys, $propertyKeys, $metaKeys,
+                                          $dateKeys);
     }
 
     /**
-     * @return Closure
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
+     * IHierarchy|null, DateFormatter|null, string|null)
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
      */
     private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\x00", $keys);
-
-        if ($closure = $this->CreateFromSignatureClosures[$sig] ?? null) {
+        if ($closure = $this->_Class->CreateFromSignatureClosures[$sig] ?? null) {
             return $closure;
         }
 
-        $properties                                                        = $this->getProperties($keys, true, $strict);
-        [$parameterKeys, $propertyKeys, $methodKeys, $metaKeys, $dateKeys] = [
-            $properties->Parameters,
-            $properties->Properties,
-            $properties->Methods,
-            $properties->MetaProperties,
-            $properties->DateProperties,
+        $targets = $this->getKeyTargets($keys, true, $strict);
+        [$parameterKeys, $passByRefKeys, $propertyKeys, $methodKeys, $metaKeys, $dateKeys] = [
+            $targets->Parameters,
+            $targets->PassByRefParameters,
+            $targets->Properties,
+            $targets->Methods,
+            $targets->MetaProperties,
+            $targets->DateProperties,
         ];
 
         // Build the smallest possible chain of closures
         $closure = $parameterKeys
-            ? $this->_getConstructor($parameterKeys)
+            ? $this->_getConstructor($parameterKeys, $passByRefKeys)
             : $this->_getDefaultConstructor();
         if ($propertyKeys) {
             $closure = $this->_getPropertyClosure($propertyKeys, $closure);
         }
         // Call `setProvider()` and `setContext()` early in case property
         // methods need them
-        if ($this->IsProvidable) {
+        if ($this->_Class->IsProvidable) {
             $closure = $this->_getProvidableClosure($closure);
         }
         // Ditto for `setParent()`
-        if ($this->IsHierarchy) {
+        if ($this->_Class->IsHierarchy) {
             $closure = $this->_getHierarchyClosure($closure);
         }
         if ($methodKeys) {
@@ -688,63 +362,68 @@ class Introspector
             $closure = $this->_getDateClosure($dateKeys, $closure);
         }
 
-        return $this->CreateFromSignatureClosures[$sig] = $closure;
+        return $this->_Class->CreateFromSignatureClosures[$sig] = $closure;
     }
 
     /**
-     * @return Closure
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
+     * IHierarchy|null, DateFormatter|null, string|null)
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
      */
-    protected function _getConstructor(array $parameterKeys): Closure
+    protected function _getConstructor(array $parameterKeys, array $passByRefKeys): Closure
     {
-        [$defaultArgs, $service, $class] = [
-            $this->DefaultArguments,
-            $this->Service,
-            $this->Class,
+        [$defaultArgs, $class] = [
+            $this->_Class->DefaultArguments,
+            $this->_Class->Class,
         ];
 
-        return static function (IContainer $container, array $array) use ($parameterKeys, $defaultArgs, $service, $class) {
+        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service) use ($parameterKeys, $passByRefKeys, $defaultArgs, $class) {
             $args = $defaultArgs;
             foreach ($parameterKeys as $key => $index) {
+                if ($passByRefKeys[$key] ?? false) {
+                    $args[$index] = &$array[$key];
+                    continue;
+                }
                 $args[$index] = $array[$key];
             }
             if ($service && strcasecmp($service, $class) && $container instanceof Container) {
-                return $container->getAs($class, $service, ...$args);
+                return $container->getAs($class, $service, $args);
             }
 
-            return $container->get($class, ...$args);
+            return $container->get($class, $args);
         };
     }
 
     /**
-     * @return Closure
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
+     * IHierarchy|null, DateFormatter|null, string|null)
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
      */
     protected function _getDefaultConstructor(): Closure
     {
-        [$defaultArgs, $service, $class] = [
-            $this->DefaultArguments,
-            $this->Service,
-            $this->Class,
+        [$defaultArgs, $class] = [
+            $this->_Class->DefaultArguments,
+            $this->_Class->Class,
         ];
 
-        return static function (IContainer $container) use ($defaultArgs, $service, $class) {
+        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service) use ($defaultArgs, $class) {
             if ($service && strcasecmp($service, $class) && $container instanceof Container) {
-                return $container->getAs($class, $service, ...$defaultArgs);
+                return $container->getAs($class, $service, $defaultArgs);
             }
 
-            return $container->get($class, ...$defaultArgs);
+            return $container->get($class, $defaultArgs);
         };
     }
 
     /**
-     * @return Closure
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
+     * IHierarchy|null, DateFormatter|null, string|null)
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
      */
     protected function _getPropertyClosure(array $propertyKeys, Closure $closure): Closure
@@ -757,19 +436,20 @@ class Introspector
             }
 
             return $obj;
-        })->bindTo(null, $this->Class);
+        })->bindTo(null, $this->_Class->Class);
     }
 
     /**
-     * @return Closure
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
+     * IHierarchy|null, DateFormatter|null, string|null)
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
      */
     protected function _getProvidableClosure(Closure $closure): Closure
     {
         return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ...$args) use ($closure) {
-            /** @var IProvidable $obj */
+            /** @var \Lkrms\Contract\IProvidable $obj */
             $obj = $closure($container, $array, $provider, $context, ...$args);
             if ($provider) {
                 if (!$context) {
@@ -784,9 +464,10 @@ class Introspector
     }
 
     /**
-     * @return Closure
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
+     * IHierarchy|null, DateFormatter|null, string|null)
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
      */
     protected function _getHierarchyClosure(Closure $closure): Closure
@@ -803,9 +484,10 @@ class Introspector
     }
 
     /**
-     * @return Closure
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
+     * IHierarchy|null, DateFormatter|null, string|null)
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
      */
     protected function _getMethodClosure(array $methodKeys, Closure $closure): Closure
@@ -818,13 +500,14 @@ class Introspector
             }
 
             return $obj;
-        })->bindTo(null, $this->Class);
+        })->bindTo(null, $this->_Class->Class);
     }
 
     /**
-     * @return Closure
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
+     * IHierarchy|null, DateFormatter|null, string|null)
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
      */
     protected function _getMetaClosure(array $metaKeys, Closure $closure): Closure
@@ -840,9 +523,10 @@ class Introspector
     }
 
     /**
-     * @return Closure
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
+     * IHierarchy|null, DateFormatter|null, string|null)
      * ```php
-     * closure(\Lkrms\Contract\IContainer $container, array $array, ?\Lkrms\Contract\IProvider $provider, ?\Lkrms\Contract\IProviderContext $context, ?\Lkrms\Contract\IHierarchy $parent, ?\Lkrms\Support\DateFormatter $dateFormatter)
+     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
      */
     protected function _getDateClosure(array $dateKeys, Closure $closure): Closure
@@ -869,16 +553,19 @@ class Introspector
     }
 
     /**
+     * Similar to getCreateFromSignatureClosure(), but return a closure that
+     * resolves array signatures when called
+     *
      * @param bool $strict If `true`, return a closure that throws an exception
-     * if `$array` contains unusable values.
-     * @return Closure
+     * if any data would be discarded.
+     * @return Closure(array, IContainer, IHierarchy|null=, DateFormatter|null=)
      * ```php
-     * closure(array $array, \Lkrms\Contract\IContainer $container, ?\Lkrms\Contract\IHierarchy $parent = null, ?\Lkrms\Support\DateFormatter $dateFormatter = null)
+     * function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null)
      * ```
      */
     final public function getCreateFromClosure(bool $strict = false): Closure
     {
-        if ($closure = $this->CreateProviderlessFromClosures[(int) $strict] ?? null) {
+        if ($closure = $this->_Class->CreateProviderlessFromClosures[(int) $strict] ?? null) {
             return $closure;
         }
 
@@ -888,20 +575,23 @@ class Introspector
             return ($this->getCreateFromSignatureClosure($keys, $strict))($array, $container, $parent, $dateFormatter);
         };
 
-        return $this->CreateProviderlessFromClosures[(int) $strict] = $closure;
+        return $this->_Class->CreateProviderlessFromClosures[(int) $strict] = $closure;
     }
 
     /**
+     * Similar to getCreateProvidableFromSignatureClosure(), but return a
+     * closure that resolves array signatures when called
+     *
      * @param bool $strict If `true`, return a closure that throws an exception
-     * if `$array` contains unusable values.
-     * @return Closure
+     * if any data would be discarded.
+     * @return Closure(array, IProvider, IContainer|IProviderContext|null=)
      * ```php
-     * closure(array $array, \Lkrms\Contract\IProvider $provider, \Lkrms\Contract\IContainer|\Lkrms\Contract\IProviderContext|null $context = null)
+     * function (array $array, IProvider $provider, IContainer|IProviderContext|null $context = null)
      * ```
      */
     final public function getCreateProvidableFromClosure(bool $strict = false): Closure
     {
-        if ($closure = $this->CreateProvidableFromClosures[(int) $strict] ?? null) {
+        if ($closure = $this->_Class->CreateProvidableFromClosures[(int) $strict] ?? null) {
             return $closure;
         }
 
@@ -911,7 +601,7 @@ class Introspector
             return ($this->getCreateProvidableFromSignatureClosure($keys, $strict))($array, $provider, $context);
         };
 
-        return $this->CreateProvidableFromClosures[(int) $strict] = $closure;
+        return $this->_Class->CreateProvidableFromClosures[(int) $strict] = $closure;
     }
 
     /**
@@ -933,57 +623,57 @@ class Introspector
      * ```
      *
      * @param string $name
-     * @param string $action Either {@see Introspector::ACTION_SET},
-     * {@see Introspector::ACTION_GET}, {@see Introspector::ACTION_ISSET} or
-     * {@see Introspector::ACTION_UNSET}.
+     * @param string $action Either {@see IntrospectionClass::ACTION_SET},
+     * {@see IntrospectionClass::ACTION_GET},
+     * {@see IntrospectionClass::ACTION_ISSET} or
+     * {@see IntrospectionClass::ACTION_UNSET}.
      * @return Closure
      */
     final public function getPropertyActionClosure(string $name, string $action): Closure
     {
-        $_name = $this->maybeNormalise($name, false, true);
+        $_name = $this->_Class->maybeNormalise($name, NormaliserFlag::CAREFUL);
 
-        if ($closure = $this->PropertyActionClosures[$_name][$action] ?? null) {
+        if ($closure = $this->_Class->PropertyActionClosures[$_name][$action] ?? null) {
             return $closure;
         }
 
         if (!in_array($action, [
-            self::ACTION_SET,
-            self::ACTION_GET,
-            self::ACTION_ISSET,
-            self::ACTION_UNSET
+            IntrospectionClass::ACTION_SET,
+            IntrospectionClass::ACTION_GET,
+            IntrospectionClass::ACTION_ISSET,
+            IntrospectionClass::ACTION_UNSET
         ])) {
             throw new UnexpectedValueException("Invalid action: $action");
         }
 
-        if ($method = $this->Actions[$action][$_name] ?? null) {
+        if ($method = $this->_Class->Actions[$action][$_name] ?? null) {
             $closure = static function ($instance, ...$params) use ($method) {
                 return $instance->$method(...$params);
             };
-        } elseif (in_array($property = $this->PropertyMap[$_name] ?? $name, $this->Properties)) {
-            if ($this->checkReadable($property, $action) &&
-                    $this->checkWritable($property, $action)) {
+        } elseif ($property = $this->_Class->Properties[$_name] ?? null) {
+            if ($this->_Class->propertyActionIsAllowed($_name, $action)) {
                 switch ($action) {
-                    case self::ACTION_SET:
+                    case IntrospectionClass::ACTION_SET:
                         $closure = static function ($instance, $value) use ($property) { $instance->$property = $value; };
                         break;
 
-                    case self::ACTION_GET:
+                    case IntrospectionClass::ACTION_GET:
                         $closure = static function ($instance) use ($property) { return $instance->$property; };
                         break;
 
-                    case self::ACTION_ISSET:
+                    case IntrospectionClass::ACTION_ISSET:
                         $closure = static function ($instance) use ($property) { return isset($instance->$property); };
                         break;
 
-                    case self::ACTION_UNSET:
+                    case IntrospectionClass::ACTION_UNSET:
                         // Removal of a declared property is unlikely to be the
                         // intended outcome, so assign null instead of unsetting
                         $closure = static function ($instance) use ($property) { $instance->$property = null; };
                         break;
                 }
             }
-        } elseif ($this->IsExtensible) {
-            $method  = $action == self::ACTION_ISSET ? 'isMetaPropertySet' : $action . 'MetaProperty';
+        } elseif ($this->_Class->IsExtensible) {
+            $method  = $action == IntrospectionClass::ACTION_ISSET ? 'isMetaPropertySet' : $action . 'MetaProperty';
             $closure = static function ($instance, ...$params) use ($method, $name) {
                 return $instance->$method($name, ...$params);
             };
@@ -993,18 +683,18 @@ class Introspector
             throw new RuntimeException("Unable to perform '$action' on property '$name'");
         }
 
-        $closure = $closure->bindTo(null, $this->Class);
+        $closure = $closure->bindTo(null, $this->_Class->Class);
 
-        return $this->PropertyActionClosures[$_name][$action] = $closure;
+        return $this->_Class->PropertyActionClosures[$_name][$action] = $closure;
     }
 
     final public function getGetNameClosure(): Closure
     {
-        if ($this->GetNameClosure) {
-            return $this->GetNameClosure;
+        if ($this->_Class->GetNameClosure) {
+            return $this->_Class->GetNameClosure;
         }
 
-        $names = $this->maybeNormalise([
+        $names = $this->_Class->maybeNormalise([
             'display_name',
             'displayname',
             'name',
@@ -1013,32 +703,32 @@ class Introspector
             'title',
             'description',
             'id',
-        ], false, true);
+        ], NormaliserFlag::CAREFUL);
 
-        if (!($names = array_intersect($names, $this->getReadableProperties()))) {
-            return $this->GetNameClosure = static function (): ?string { return null; };
+        if (!($names = array_intersect($names, $this->_Class->getReadableProperties()))) {
+            return $this->_Class->GetNameClosure = static function (): ?string { return null; };
         }
 
-        return $this->GetNameClosure = $this->getPropertyActionClosure(
-            array_shift($names), self::ACTION_GET
+        return $this->_Class->GetNameClosure = $this->getPropertyActionClosure(
+            array_shift($names), IntrospectionClass::ACTION_GET
         );
     }
 
     final public function getSerializeClosure(?ISerializeRules $rules = null): Closure
     {
         $rules = $rules
-            ? [$rules->getSortByKey(), $this->IsExtensible && $rules->getIncludeMeta()]
-            : [false, $this->IsExtensible];
+            ? [$rules->getSortByKey(), $this->_Class->IsExtensible && $rules->getIncludeMeta()]
+            : [false, $this->_Class->IsExtensible];
         $key = implode("\x00", $rules);
 
-        if ($closure = $this->SerializeClosures[$key] ?? null) {
+        if ($closure = $this->_Class->SerializeClosures[$key] ?? null) {
             return $closure;
         }
 
         [$sort, $includeMeta] = $rules;
-        $methods              = $this->Actions[self::ACTION_GET] ?? [];
-        $props                = array_intersect($this->PropertyMap,
-                                                $this->ReadableProperties ?: $this->PublicProperties);
+        $methods              = $this->_Class->Actions[IntrospectionClass::ACTION_GET] ?? [];
+        $props                = array_intersect($this->_Class->Properties,
+                                                $this->_Class->ReadableProperties ?: $this->_Class->PublicProperties);
         $keys = array_keys($props + $methods);
         if ($sort) {
             sort($keys);
@@ -1055,7 +745,7 @@ class Introspector
             }
 
             return $arr;
-        })->bindTo(null, $this->Class);
+        })->bindTo(null, $this->_Class->Class);
 
         if ($includeMeta) {
             $closure = static function (IExtensible $instance) use ($closure) {
@@ -1065,24 +755,6 @@ class Introspector
             };
         }
 
-        return $this->SerializeClosures[$key] = $closure;
-    }
-
-    private function checkReadable(string $property, string $action): bool
-    {
-        if (!$this->IsReadable || !in_array($action, [self::ACTION_GET, self::ACTION_ISSET])) {
-            return true;
-        }
-
-        return in_array($property, $this->ReadableProperties);
-    }
-
-    private function checkWritable(string $property, string $action): bool
-    {
-        if (!$this->IsWritable || !in_array($action, [self::ACTION_SET, self::ACTION_UNSET])) {
-            return true;
-        }
-
-        return in_array($property, $this->WritableProperties);
+        return $this->_Class->SerializeClosures[$key] = $closure;
     }
 }

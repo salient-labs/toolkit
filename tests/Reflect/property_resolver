@@ -3,11 +3,17 @@
 
 namespace Lkrms\Tests\Reflect;
 
+use DateTimeImmutable;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Concern\TResolvable;
 use Lkrms\Concern\TWritable;
+use Lkrms\Contract\IConstructible;
+use Lkrms\Contract\IExtensible;
+use Lkrms\Contract\IReadable;
+use Lkrms\Contract\IResolvable;
+use Lkrms\Contract\IWritable;
 use Lkrms\Err\Err;
 use Lkrms\Support\Introspector;
 
@@ -16,7 +22,7 @@ $loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
 
 Err::load();
 
-class A
+class A implements IExtensible, IResolvable, IReadable, IWritable
 {
     use TExtensible, TResolvable, TFullyReadable, TWritable;
 
@@ -32,9 +38,14 @@ class A
     protected $Unwritable = "can't change me";
 }
 
-class B extends A
+class B extends A implements IConstructible
 {
     use TConstructible;
+
+    public function __construct(DateTimeImmutable $instantiatedAt)
+    {
+        $this->InstantiatedAt = $instantiatedAt;
+    }
 
     protected function _GetData()
     {
@@ -71,13 +82,18 @@ class B extends A
 
     private $Meta;
 
+    protected $InstantiatedAt;
+
     protected $DataModified;
 
     // @phpstan-ignore-next-line
     private $DoNotEven;
 }
 
+$a = Introspector::get(A::class);
+$b = Introspector::get(B::class);
+
 print_r([
-    'A' => Introspector::get(A::class),
-    'B' => Introspector::get(B::class),
+    'A' => $a,
+    'B' => $b,
 ]);

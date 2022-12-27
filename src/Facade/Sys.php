@@ -25,6 +25,7 @@ use Lkrms\Utility\System;
  * @method static float stopTimer(string $name, string $type = 'general') Stop a timer and return the elapsed milliseconds (see {@see System::stopTimer()})
  *
  * @uses System
+ * @extends Facade<System>
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\System' 'Lkrms\Facade\Sys'
  */
 final class Sys extends Facade

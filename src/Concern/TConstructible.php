@@ -38,7 +38,7 @@ trait TConstructible
             $container = Container::requireGlobalContainer();
         }
 
-        return Introspector::getBound($container, static::class)
+        return Introspector::getService($container, static::class)
                    ->getCreateFromClosure()($data, $container, $parent);
     }
 
@@ -50,6 +50,7 @@ trait TConstructible
      * @param iterable<array> $dataList
      * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
      * `COMPLETE` or `PARTIAL` wherever possible to improve performance.
+     * @psalm-param ArrayKeyConformity::* $conformity
      * @param IContainer|null $container Used to create each instance if set.
      * @param static|null $parent If the class implements
      * {@see \Lkrms\Contract\IHierarchy}, pass `$parent` to each instance via
@@ -65,7 +66,7 @@ trait TConstructible
         $closure = null;
         foreach ($dataList as $data) {
             if (!$closure) {
-                $builder = Introspector::getBound($container, static::class);
+                $builder = Introspector::getService($container, static::class);
                 $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
                     ? $builder->getCreateFromSignatureClosure(array_keys($data), true)
                     : $builder->getCreateFromClosure(true);

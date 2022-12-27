@@ -251,11 +251,13 @@ class GenerateBuilder extends GenerateCommand
         };
         $phpDocTypeCallback = function (string $type) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback): string {
             return preg_replace_callback(
-                '/(?<!\$)\b' . PhpDocParser::TYPE_PATTERN . '\b/',
+                '/(?<!\$)(?=\\\\?\b)' . PhpDocParser::TYPE_PATTERN . '\b/',
                 function ($match) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback) {
-                    if (preg_match('/^\\\\/', $match[0]) ||
-                            Test::isPhpReservedWord($match[0])) {
+                    if (Test::isPhpReservedWord($match[0])) {
                         return $match[0];
+                    }
+                    if (preg_match('/^\\\\/', $match[0])) {
+                        return $typeNameCallback($match[0], true);
                     }
 
                     return $typeNameCallback(
