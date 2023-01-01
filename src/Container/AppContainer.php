@@ -98,6 +98,10 @@ class AppContainer extends Container implements IReadable
     {
         $name = "app_{$name}_path";
         if ($path = Env::get($name, null)) {
+            if (!Test::isAbsolutePath($path)) {
+                $path = $this->BasePath . '/' . $path;
+            }
+
             return $this->_getPath($path, $name);
         }
 
