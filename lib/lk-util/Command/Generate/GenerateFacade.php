@@ -165,13 +165,21 @@ final class GenerateFacade extends GenerateCommand
                     ? ($returnFqcn ? $name : null)
                     : $this->getFqcnAlias($name, null, $returnFqcn));
         };
-        $phpDocTypeCallback = function (string $type) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback): string {
+        $phpDocTypeCallback = function (string $type, array $templates) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback): string {
+            $seen = [];
+            while (($_type = $templates[$type]['type'] ?? null) && !($seen[$_type] ?? null)) {
+                $seen[$_type] = true;
+                $type         = $_type;
+            }
+
             return preg_replace_callback(
-                '/(?<!\$)\b' . PhpDocParser::TYPE_PATTERN . '\b/',
+                '/(?<!\$)(?=\\\\?\b)' . PhpDocParser::TYPE_PATTERN . '\b/',
                 function ($match) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback) {
-                    if (preg_match('/^\\\\/', $match[0]) ||
-                            Test::isPhpReservedWord($match[0])) {
+                    if (Test::isPhpReservedWord($match[0])) {
                         return $match[0];
+                    }
+                    if (preg_match('/^\\\\/', $match[0])) {
+                        return $typeNameCallback($match[0], true);
                     }
 
                     return $typeNameCallback(
@@ -197,7 +205,8 @@ final class GenerateFacade extends GenerateCommand
         $methods   = [];
         $toDeclare = [];
         foreach ($_methods as $_method) {
-            $phpDoc          = PhpDocParser::fromDocBlocks(Reflect::getAllMethodDocComments($_method));
+            $docBlocks       = Reflect::getAllMethodDocComments($_method, $classDocBlocks);
+            $phpDoc          = PhpDocParser::fromDocBlocks($docBlocks, $classDocBlocks);
             $methodFile      = $_method->getFileName();
             $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
             $declaring       = $typeNameCallback($_method->getDeclaringClass()->getName(), true);
@@ -226,7 +235,7 @@ final class GenerateFacade extends GenerateCommand
 
                 $type = ($_type = $phpDoc->Return['type'] ?? null) &&
                     strpbrk($_type, '<>') === false
-                        ? $phpDocTypeCallback($_type)
+                        ? $phpDocTypeCallback($_type, $phpDoc->Templates)
                         : ($_method->hasReturnType()
                             ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
                             : 'mixed');
@@ -256,7 +265,7 @@ final class GenerateFacade extends GenerateCommand
                 // Override the declared type if defined in the PHPDoc
                 $_type = ($_type = $phpDoc->Params[$_param->getName()]['type'] ?? null) &&
                     strpbrk($_type, '<>') === false
-                        ? $phpDocTypeCallback($_type)
+                        ? $phpDocTypeCallback($_type, $phpDoc->Templates)
                         : null;
                 $params[] = $declare
                     ? Reflect::getParameterPhpDoc($_param, $classPrefix, $typeNameCallback, $_type)
@@ -320,6 +329,7 @@ final class GenerateFacade extends GenerateCommand
             $docBlock[] = " * @package $package";
         }
         $docBlock[] = " * @uses $service";
+        $docBlock[] = " * @extends $extends<$service>";
         if (!$this->getOptionValue('no-meta')) {
             $docBlock[] = ' * @lkrms-generate-command '
                 . implode(' ', $this->getEffectiveCommandLine(true, [
@@ -355,11 +365,17 @@ final class GenerateFacade extends GenerateCommand
         foreach ($toDeclare as [$_method, $docBlock]) {
             $_params = $_method->getParameters();
             $code    = [
-                "return static::getInstance()->{$_method->name}("
+                'static::setFuncNumArgs(__FUNCTION__, func_num_args());',
+                'try {',
+                "    return static::getInstance()->{$_method->name}("
                     . implode(', ', array_map(
-                        fn(ReflectionParameter $p) => "\${$p->name}",
+                        fn(ReflectionParameter $p) =>
+                            ($p->isVariadic() ? '...' : '') . "\${$p->name}",
                         $_params
                     )) . ');',
+                '} finally {',
+                '    static::clearFuncNumArgs(__FUNCTION__);',
+                '}',
             ];
 
             array_push($lines, '',

@@ -3,19 +3,17 @@
 namespace Lkrms\Tests\Utility\Reflection;
 
 /**
- * MyTrait
+ * MyReusedTrait
  */
-trait MyTrait
+trait MyReusedTrait
 {
-    use MyBaseTrait;
-
     /**
-     * MyTrait::$MyDocumentedProperty PHPDoc
+     * MyReusedTrait::$MyDocumentedProperty PHPDoc
      */
     public $MyDocumentedProperty;
 
     /**
-     * MyTrait::MyDocumentedMethod() PHPDoc
+     * MyReusedTrait::MyDocumentedMethod() PHPDoc
      */
     public function MyDocumentedMethod()
     {

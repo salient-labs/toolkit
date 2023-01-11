@@ -21,14 +21,18 @@ use UnexpectedValueException;
 final class Reflection
 {
     /**
-     * Return the names of the given Reflection objects
+     * Get the names of Reflector objects
      *
-     * @param array<int,\ReflectionClass|\ReflectionClassConstant|\ReflectionFunctionAbstract|\ReflectionParameter|\ReflectionProperty> $reflections
+     * @param array<\ReflectionClass|\ReflectionClassConstant|\ReflectionFunctionAbstract|\ReflectionParameter|\ReflectionProperty> $reflectors
      * @return string[]
      */
-    public function getNames(array $reflections): array
+    public function getNames(array $reflectors): array
     {
-        return array_map(function ($r) { return $r->name; }, $reflections);
+        return array_map(
+            /** @param \ReflectionClass|\ReflectionClassConstant|\ReflectionFunctionAbstract|\ReflectionParameter|\ReflectionProperty $reflector */
+            fn($reflector) => $reflector->getName(),
+            $reflectors
+        );
     }
 
     /**
@@ -46,7 +50,8 @@ final class Reflection
         $child  = $this->toReflectionClass($child);
         $parent = $this->toReflectionClass($parent);
 
-        if (!is_a($child->name, $parent->name, true) || $parent->isInterface()) {
+        if ($parent->isInterface() ||
+                !($child->isSubclassOf($parent) || $child == $parent)) {
             throw new UnexpectedValueException("{$child->name} is not a subclass of {$parent->name}");
         }
 
@@ -55,7 +60,6 @@ final class Reflection
             if ($child == $parent && !$includeParent) {
                 break;
             }
-
             $names[] = $child->name;
         } while ($child != $parent && $child = $child->getParentClass());
 
@@ -142,51 +146,98 @@ final class Reflection
     }
 
     /**
+     * Get an array of doc comments for a ReflectionClass and any ancestors
+     *
+     * Returns an empty array if no doc comments are found for the class or any
+     * inherited classes or interfaces.
+     *
+     * @return string[]
+     */
+    public function getAllClassDocComments(ReflectionClass $class): array
+    {
+        $interfaces = $this->getInterfaces($class);
+        $comments   = [];
+        do {
+            if (($comment = $class->getDocComment()) !== false) {
+                $comments[] = $comment;
+            }
+        } while ($class = $class->getParentClass());
+
+        foreach ($interfaces as $interface) {
+            if (($comment = $interface->getDocComment()) !== false) {
+                $comments[] = $comment;
+            }
+        }
+
+        return Convert::stringsToUniqueList($comments);
+    }
+
+    /**
      * Get an array of doc comments for a ReflectionMethod from its declaring
      * class and any ancestors that declare the same method
      *
      * Returns an empty array if no doc comments are found in the declaring
      * class or in any inherited classes, traits or interfaces.
      *
+     * @param array<string|null>|null $classDocComments If provided,
+     * `$classDocComments` is populated with one of the following for each doc
+     * comment returned:
+     * - the doc comment of the method's declaring class, or
+     * - `null` if the declaring class has no doc comment
      * @return string[]
      */
-    public function getAllMethodDocComments(ReflectionMethod $method): array
+    public function getAllMethodDocComments(ReflectionMethod $method, ?array &$classDocComments = null): array
     {
-        $name       = $method->getName();
-        $interfaces = $method->getDeclaringClass()->getInterfaces();
-        $comments   = [];
+        if (func_num_args() > 1) {
+            $classDocComments = [];
+        }
+        $name     = $method->getName();
+        $comments = $this->_getAllMethodDocComments($method, $name, $classDocComments);
+
+        foreach ($this->getInterfaces($method->getDeclaringClass()) as $interface) {
+            if ($interface->hasMethod($name) &&
+                    ($comment = $interface->getMethod($name)->getDocComment()) !== false) {
+                $comments[] = $comment;
+                is_null($classDocComments) ||
+                    $classDocComments[] = $interface->getDocComment() ?: null;
+            }
+        }
+
+        return is_null($classDocComments)
+            ? Convert::stringsToUniqueList($comments)
+            : Convert::columnsToUniqueList($comments, $classDocComments);
+    }
+
+    /**
+     * @return string[]
+     */
+    private function _getAllMethodDocComments(ReflectionMethod $method, string $name, ?array &$classDocComments): array
+    {
+        $comments = [];
         do {
             if (($comment = $method->getDocComment()) !== false) {
                 $comments[] = $comment;
+                is_null($classDocComments) ||
+                    $classDocComments[] = $method->getDeclaringClass()->getDocComment() ?: null;
             }
+            // Interfaces don't have traits, so there's nothing else to do here
             if ($method->getDeclaringClass()->isInterface()) {
-                continue;
+                break;
             }
+            // getTraits() doesn't return inherited traits, so recurse into them
             foreach ($method->getDeclaringClass()->getTraits() as $trait) {
                 if ($trait->hasMethod($name)) {
-                    array_push($comments, ...$this->getAllMethodDocComments($trait->getMethod($name)));
+                    array_push($comments,
+                               ...$this->_getAllMethodDocComments($trait->getMethod($name),
+                                                                  $name,
+                                                                  $classDocComments));
                 }
             }
         } while (($parent = $method->getDeclaringClass()->getParentClass()) &&
             $parent->hasMethod($name) &&
             ($method = $parent->getMethod($name)));
 
-        // Group by base interface, then sort children before parents
-        usort($interfaces,
-            fn(ReflectionClass $a, ReflectionClass $b) => (
-                $a->isSubclassOf($b) ? -1 : (
-                    $b->isSubclassOf($a) ? 1
-                        : $this->getBaseClass($a)->getName() <=> $this->getBaseClass($b)->getName()
-                )
-            ));
-
-        foreach ($interfaces as $interface) {
-            if ($interface->hasMethod($name)) {
-                array_push($comments, ...$this->getAllMethodDocComments($interface->getMethod($name)));
-            }
-        }
-
-        return Convert::stringsToUniqueList($comments);
+        return $comments;
     }
 
     /**
@@ -196,26 +247,51 @@ final class Reflection
      * Returns an empty array if no doc comments are found in the declaring
      * class or in any inherited classes or traits.
      *
+     * @param array<string|null>|null $classDocComments If provided,
+     * `$classDocComments` is populated with one of the following for each doc
+     * comment returned:
+     * - the doc comment of the property's declaring class, or
+     * - `null` if the declaring class has no doc comment
      * @return string[]
      */
-    public function getAllPropertyDocComments(ReflectionProperty $property): array
+    public function getAllPropertyDocComments(ReflectionProperty $property, ?array &$classDocComments = null): array
     {
+        if (func_num_args() > 1) {
+            $classDocComments = [];
+        }
         $name     = $property->getName();
+        $comments = $this->_getAllPropertyDocComments($property, $name, $classDocComments);
+
+        return is_null($classDocComments)
+            ? Convert::stringsToUniqueList($comments)
+            : Convert::columnsToUniqueList($comments, $classDocComments);
+    }
+
+    /**
+     * @return string[]
+     */
+    private function _getAllPropertyDocComments(ReflectionProperty $property, string $name, ?array &$classDocComments): array
+    {
         $comments = [];
         do {
             if (($comment = $property->getDocComment()) !== false) {
                 $comments[] = $comment;
+                is_null($classDocComments) ||
+                    $classDocComments[] = $property->getDeclaringClass()->getDocComment() ?: null;
             }
             foreach ($property->getDeclaringClass()->getTraits() as $trait) {
                 if ($trait->hasProperty($name)) {
-                    array_push($comments, ...$this->getAllPropertyDocComments($trait->getProperty($name)));
+                    array_push($comments,
+                               ...$this->_getAllPropertyDocComments($trait->getProperty($name),
+                                                                    $name,
+                                                                    $classDocComments));
                 }
             }
         } while (($parent = $property->getDeclaringClass()->getParentClass()) &&
             $parent->hasProperty($name) &&
             ($property = $parent->getProperty($name)));
 
-        return Convert::stringsToUniqueList($comments);
+        return $comments;
     }
 
     /**
@@ -361,8 +437,36 @@ final class Reflection
         return $allTraits;
     }
 
+    /**
+     * @param ReflectionClass|string $class
+     */
     private function toReflectionClass($class): ReflectionClass
     {
-        return $class instanceof ReflectionClass ? $class : new ReflectionClass($class);
+        return $class instanceof ReflectionClass
+            ? $class
+            : new ReflectionClass($class);
+    }
+
+    /**
+     * @return ReflectionClass[]
+     */
+    private function getInterfaces(ReflectionClass $class): array
+    {
+        if (!($interfaces = $class->getInterfaces())) {
+            return [];
+        }
+
+        // Group by base interface, then sort children before parents
+        usort(
+            $interfaces,
+            fn(ReflectionClass $a, ReflectionClass $b) =>
+                $a->isSubclassOf($b)
+                    ? -1
+                    : ($b->isSubclassOf($a)
+                        ? 1
+                        : $this->getBaseClass($a)->getName() <=> $this->getBaseClass($b)->getName())
+        );
+
+        return $interfaces;
     }
 }

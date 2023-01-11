@@ -135,6 +135,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
 
     /**
      * @param int $optionType A {@see CliOptionType} value.
+     * @psalm-param CliOptionType::* $optionType
      * @param string[]|null $allowedValues Ignored unless `$optionType` is
      * {@see CliOptionType::ONE_OF} or {@see CliOptionType::ONE_OF_OPTIONAL}.
      * @param string|string[]|bool|int|null $defaultValue

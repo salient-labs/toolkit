@@ -166,8 +166,8 @@ $staff1 = DI::get(DepartmentStaff::class);
 $staff2 = DI::get(DepartmentStaff::class);
 
 // Department names should be applied to separate instances
-$dept1 = DI::get(Department::class, 'English');
-$dept2 = DI::get(Department::class, 'Mathematics');
+$dept1 = DI::get(Department::class, ['English']);
+$dept2 = DI::get(Department::class, ['Mathematics']);
 
 // One department instance should be created per object tree
 $orgUnit1 = DI::get(OrgUnit::class);

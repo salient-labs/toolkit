@@ -18,8 +18,8 @@ use Lkrms\Contract\IContainer;
  * @method static Container bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static Container bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})
  * @method static Container forEach(array|object $array, callable $callback) Move to the next method in the chain after iterating over an array and passing the object to a callback with each key-value pair in the array (see {@see FluentInterface::forEach()})
- * @method static mixed get(string $id, ...$params) Create a new instance of a class or interface, or return a shared instance created earlier (see {@see Container::get()})
- * @method static mixed getAs(string $id, string $serviceId, ...$params) Create a new instance of a class or interface with an explicit service name, or apply a service name to a shared instance created earlier (see {@see Container::getAs()})
+ * @method static mixed get(string $id, mixed[] $params = []) Create a new instance of a class or interface, or return a shared instance created earlier (see {@see Container::get()})
+ * @method static mixed getAs(string $id, string $serviceId, mixed[] $params = []) Create a new instance of a class or interface with an explicit service name, or apply a service name to a shared instance created earlier (see {@see Container::getAs()})
  * @method static IContainer getGlobalContainer() Get the global container, loading it if necessary (see {@see Container::getGlobalContainer()})
  * @method static string getName(string $id) Resolve a class or interface to a concrete class name (see {@see Container::getName()})
  * @method static string[] getServices() Get a list of classes bound to the container by calling service() (see {@see Container::getServices()})
@@ -38,6 +38,7 @@ use Lkrms\Contract\IContainer;
  * @method static Container singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})
  *
  * @uses Container
+ * @extends Facade<Container>
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Container\Container' 'Lkrms\Facade\DI'
  */
 final class DI extends Facade

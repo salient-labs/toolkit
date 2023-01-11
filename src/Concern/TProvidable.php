@@ -102,7 +102,7 @@ trait TProvidable
         $container = ($context ?: $provider)->container()->inContextOf(get_class($provider));
         $context   = $context ? $context->withContainer($container) : new ProviderContext($container);
 
-        return (Introspector::getBound($container, static::class)->getCreateProvidableFromClosure())($data, $provider, $context);
+        return (Introspector::getService($container, static::class)->getCreateProvidableFromClosure())($data, $provider, $context);
     }
 
     /**
@@ -111,6 +111,7 @@ trait TProvidable
      * See {@see TProvidable::provide()} for more information.
      *
      * @param iterable<array> $dataList
+     * @psalm-param ArrayKeyConformity::* $conformity
      * @return iterable<static>
      */
     final public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProviderContext $context = null): iterable
@@ -122,7 +123,7 @@ trait TProvidable
 
         foreach ($dataList as $data) {
             if (!isset($closure)) {
-                $builder = Introspector::getBound($container, static::class);
+                $builder = Introspector::getService($container, static::class);
                 $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
                     ? $builder->getCreateProvidableFromSignatureClosure(array_keys($data))
                     : $builder->getCreateProvidableFromClosure();

@@ -3,9 +3,24 @@
 namespace Lkrms\Tests\Support;
 
 use Lkrms\Support\PhpDocParser;
+use UnexpectedValueException;
 
 final class PhpDocParserTest extends \Lkrms\Tests\TestCase
 {
+    /**
+     * @dataProvider invalidDocBlockProvider
+     */
+    public function testInvalidDocBlock(string $docBlock)
+    {
+        $this->expectException(UnexpectedValueException::class);
+        new PhpDocParser($docBlock);
+    }
+
+    public function invalidDocBlockProvider(): array
+    {
+        return ['missing asterisk' => ["/**\n\n*/"]];
+    }
+
     public function testFromDocBlocks()
     {
         $docBlocks = [
@@ -126,6 +141,54 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         ], $phpDocs);
     }
 
+    public function testTemplateTags()
+    {
+        $docBlock = "/**
+ * Summary
+ *
+ * @template T
+ * @param class-string<T> \$id
+ * @return T
+ */";
+        $phpDoc = new PhpDocParser($docBlock);
+        $this->assertEquals('Summary', $phpDoc->Summary);
+        $this->assertEquals(null, $phpDoc->Description);
+        $this->assertEquals([
+            'T' => ['type' => 'mixed'],
+        ], $phpDoc->Templates);
+    }
+
+    public function testTemplateInheritance()
+    {
+        $docBlock = "/**
+ * Summary
+ *
+ * @template T
+ * @template TArray of array|null
+ * @param class-string<T> \$id
+ * @param TArray \$array
+ * @param TKey \$key
+ * @param TValue \$value
+ * @return T
+ */";
+        $classDocBlock = "/**
+ * Class summary
+ *
+ * @template T of string
+ * @template TKey of int|string
+ * @template TValue of object
+ */";
+        $phpDoc = new PhpDocParser($docBlock, $classDocBlock);
+        $this->assertEquals('Summary', $phpDoc->Summary);
+        $this->assertEquals(null, $phpDoc->Description);
+        $this->assertEquals([
+            'T'      => ['type' => 'mixed'],
+            'TArray' => ['type' => '?array'],
+            'TKey'   => ['type' => 'int|string'],
+            'TValue' => ['type' => 'object'],
+        ], $phpDoc->Templates);
+    }
+
     public function testFences()
     {
         $docBlock = "/**
@@ -165,6 +228,59 @@ Three, to be precise (including within the `@var`):
 ```php
 callback(string \$value): string
 ```");
-        $this->assertEquals($phpDoc->Var, [['name' => null, 'type' => '?callable', 'description' => 'Summary']]);
+        $this->assertEquals($phpDoc->Var, [[
+            'name'        => null,
+            'type'        => '?callable',
+            'description' => 'Summary',
+        ]]);
+    }
+
+    public function testBlankLines()
+    {
+        $docBlock = "/**
+ *
+ * Summary
+ *
+ *
+ * Summary and description are surrounded by superfluous blank lines.
+ *
+ *
+ * @internal
+ */";
+        $phpDoc = new PhpDocParser($docBlock);
+        $this->assertEquals('Summary', $phpDoc->Summary);
+        $this->assertEquals('Summary and description are surrounded by superfluous blank lines.', $phpDoc->Description);
+    }
+
+    public function testNoBlankLineAfterSummary()
+    {
+        $docBlock = "/**
+ * Summary
+ * @internal
+ */";
+        $phpDoc = new PhpDocParser($docBlock);
+        $this->assertEquals('Summary @internal', $phpDoc->Summary);
+    }
+
+    public function testMultiLineTagDescription()
+    {
+        $docBlock = "/**
+ * @param \$arg
+ * Description of \$arg
+ */";
+        $phpDoc = new PhpDocParser($docBlock);
+        $this->assertEquals([
+            'type'        => null,
+            'description' => 'Description of $arg',
+        ], $phpDoc->Params['arg'] ?? []);
+    }
+
+    public function testEol()
+    {
+        $docBlock =
+            "/**\r\n * Summary \r\n *  \r\n * Has trailing spaces and CRLF end-of-lines. \r\n *  \r\n * @internal \r\n */";
+        $phpDoc = new PhpDocParser($docBlock);
+        $this->assertEquals('Summary', $phpDoc->Summary);
+        $this->assertEquals('Has trailing spaces and CRLF end-of-lines.', $phpDoc->Description);
     }
 }

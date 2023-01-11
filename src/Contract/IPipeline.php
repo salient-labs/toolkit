@@ -49,6 +49,7 @@ interface IPipeline
      *
      * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
      * `COMPLETE` wherever possible to improve performance.
+     * @psalm-param ArrayKeyConformity::* $conformity
      * @return $this
      */
     public function withConformity(int $conformity = ArrayKeyConformity::PARTIAL);
@@ -118,8 +119,8 @@ interface IPipeline
      *
      * @param array<int|string,int|string|array<int,int|string>> $keyMap An
      * array that maps input keys to one or more output keys.
-     * @param int $flags A bitmask of {@see \Lkrms\Support\ArrayMapperFlag}
-     * values.
+     * @param int $flags A bitmask of {@see ArrayMapperFlag} values.
+     * @psalm-param int-mask-of<ArrayMapperFlag::*> $flags
      *
      * @return $this
      */
@@ -183,6 +184,7 @@ interface IPipeline
      * Get the payload's array key conformity
      *
      * @return int One of the {@see ArrayKeyConformity} values.
+     * @psalm-return ArrayKeyConformity::*
      * @see IPipeline::withConformity()
      */
     public function getConformity(): int;

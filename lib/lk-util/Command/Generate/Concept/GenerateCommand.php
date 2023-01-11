@@ -76,14 +76,11 @@ abstract class GenerateCommand extends Command
         $_fqcn = strtolower($fqcn);
 
         // If $fqcn has already been imported, use its alias
-        if ($_alias = $this->ImportMap[$_fqcn] ?? null) {
-            return $_alias;
+        if ($lastAlias = $this->ImportMap[$_fqcn] ?? null) {
+            return $lastAlias;
         }
 
-        if (is_null($alias)) {
-            $alias = Convert::classToBasename($fqcn);
-        }
-
+        $alias  = is_null($alias) ? Convert::classToBasename($fqcn) : $alias;
         $_alias = strtolower($alias);
 
         // Use $alias if it already maps to $fqcn

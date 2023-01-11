@@ -11,14 +11,14 @@ use UnexpectedValueException;
 /**
  * Base class for collections of objects of a particular type
  *
- * @template T of object
- * @implements ICollection<T>
+ * @template TClass of object
+ * @implements ICollection<TClass>
  */
 abstract class TypedCollection implements ICollection
 {
     /**
-     * @use TCollection<T>
-     * @use HasSortableItems<T>
+     * @use TCollection<TClass>
+     * @use HasSortableItems<TClass>
      */
     use TCollection, HasSortableItems {
         TCollection::has as private _has;
@@ -28,7 +28,7 @@ abstract class TypedCollection implements ICollection
     }
 
     /**
-     * @var string
+     * @var class-string<TClass>
      */
     private $ItemClass;
 
@@ -37,6 +37,9 @@ abstract class TypedCollection implements ICollection
      */
     private $HasComparableItems;
 
+    /**
+     * @return class-string<TClass>
+     */
     abstract protected function getItemClass(): string;
 
     public function __construct()
@@ -47,7 +50,7 @@ abstract class TypedCollection implements ICollection
 
     /**
      * @param int|string|null $offset
-     * @psalm-param T $value
+     * @param TClass $value
      */
     final public function offsetSet($offset, $value): void
     {
@@ -104,13 +107,18 @@ abstract class TypedCollection implements ICollection
     }
 
     /**
-     * @psalm-param T $a
-     * @psalm-param T $b
+     * @param TClass $a
+     * @param TClass $b
      */
     protected function compareItems($a, $b, bool $strict = false): int
     {
-        return $this->HasComparableItems
-            ? $this->ItemClass::compare($a, $b, $strict)
-            : ($a <=> $b);
+        switch (true) {
+            case $a instanceof IComparable && is_a($b, get_class($a)):
+                return $a->compare($b, $strict);
+            case $b instanceof IComparable && is_a($a, get_class($b)):
+                return -$b->compare($a, $strict);
+            default:
+                return $a <=> $b;
+        }
     }
 }

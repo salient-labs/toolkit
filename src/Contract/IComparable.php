@@ -3,14 +3,15 @@
 namespace Lkrms\Contract;
 
 /**
- * Compares itself with others
+ * Compares itself with others of the same type
  *
  */
 interface IComparable
 {
     /**
-     * @param static $a
+     * Return the equivalent of $this <=> $b
+     *
      * @param static $b
      */
-    public static function compare($a, $b, bool $strict = false): int;
+    public function compare($b, bool $strict = false): int;
 }

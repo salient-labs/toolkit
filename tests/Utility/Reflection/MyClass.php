@@ -5,9 +5,12 @@ namespace Lkrms\Tests\Utility\Reflection;
 use ArrayAccess;
 use Countable;
 
+/**
+ * MyClass
+ */
 class MyClass extends MyBaseClass implements MyInterface
 {
-    use MyTrait;
+    use MyTrait, MyReusedTrait;
 
     public const MY_CONSTANT = 'my constant';
 

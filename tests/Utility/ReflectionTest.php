@@ -11,7 +11,9 @@ use Lkrms\Tests\Utility\Reflection\MyOtherClass;
 use Lkrms\Tests\Utility\Reflection\MySubclass;
 use Lkrms\Utility\Reflection;
 use ReflectionClass;
+use ReflectionMethod;
 use ReflectionNamedType;
+use ReflectionProperty;
 use UnexpectedValueException;
 
 final class ReflectionTest extends \Lkrms\Tests\TestCase
@@ -120,59 +122,127 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
         ], $names);
     }
 
-    public function testGetAllMethodDocComments()
+    /**
+     * @dataProvider getAllClassDocCommentsProvider
+     */
+    public function testGetAllClassDocComments(ReflectionClass $class, array $expected)
     {
-        $method      = (new ReflectionClass(MySubclass::class))->getMethod('MyDocumentedMethod');
-        $docComments = Reflect::getAllMethodDocComments($method);
-        $this->assertSame([
-            "/**
-     * MySubclass::MyDocumentedMethod() PHPDoc
-     */",
-            "/**
-     * MyClass::MyDocumentedMethod() PHPDoc
-     */",
-            "/**
-     * MyTrait::MyDocumentedMethod() PHPDoc
-     */",
-            "/**
-     * MyBaseTrait::MyDocumentedMethod() PHPDoc
-     */",
-            "/**
-     * MyBaseClass::MyDocumentedMethod() PHPDoc
-     */",
-            "/**
-     * MyInterface::MyDocumentedMethod() PHPDoc
-     */",
-            "/**
-     * MyBaseInterface::MyDocumentedMethod() PHPDoc
-     */",
-            "/**
-     * MyOtherInterface::MyDocumentedMethod() PHPDoc
-     */",
-        ], $docComments);
+        $this->assertSame($expected, Reflect::getAllClassDocComments($class));
     }
 
-    public function testGetAllPropertyDocComments()
+    public function getAllClassDocCommentsProvider()
     {
-        $property    = (new ReflectionClass(MySubclass::class))->getProperty('MyDocumentedProperty');
-        $docComments = Reflect::getAllPropertyDocComments($property);
-        $this->assertSame([
-            "/**
-     * MySubclass::\$MyDocumentedProperty PHPDoc
-     */",
-            "/**
-     * MyClass::\$MyDocumentedProperty PHPDoc
-     */",
-            "/**
-     * MyTrait::\$MyDocumentedProperty PHPDoc
-     */",
-            "/**
-     * MyBaseTrait::\$MyDocumentedProperty PHPDoc
-     */",
-            "/**
-     * MyBaseClass::\$MyDocumentedProperty PHPDoc
-     */",
-        ], $docComments);
+        return [
+            MySubclass::class => [
+                new ReflectionClass(MySubclass::class),
+                [
+                    "/**\n * MySubclass\n */",
+                    "/**\n * MyClass\n */",
+                    "/**\n * MyBaseClass\n */",
+                    "/**\n * MyInterface\n */",
+                    "/**\n * MyBaseInterface\n */",
+                    "/**\n * MyOtherInterface\n */",
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider getAllMethodDocCommentsProvider
+     */
+    public function testGetAllMethodDocComments(ReflectionMethod $method, array $expected, ?array $expectedClassDocComments = null)
+    {
+        if (is_null($expectedClassDocComments)) {
+            $this->assertSame($expected, Reflect::getAllMethodDocComments($method));
+
+            return;
+        }
+
+        $this->assertSame($expected, Reflect::getAllMethodDocComments($method, $classDocComments));
+        $this->assertSame($expectedClassDocComments, $classDocComments);
+    }
+
+    public function getAllMethodDocCommentsProvider()
+    {
+        $expected = [
+            "/**\n     * MySubclass::MyDocumentedMethod() PHPDoc\n     */",
+            "/**\n     * MyClass::MyDocumentedMethod() PHPDoc\n     */",
+            "/**\n     * MyTrait::MyDocumentedMethod() PHPDoc\n     */",
+            "/**\n     * MyBaseTrait::MyDocumentedMethod() PHPDoc\n     */",
+            "/**\n     * MyReusedTrait::MyDocumentedMethod() PHPDoc\n     */",
+            "/**\n     * MyBaseClass::MyDocumentedMethod() PHPDoc\n     */",
+            "/**\n     * MyInterface::MyDocumentedMethod() PHPDoc\n     */",
+            "/**\n     * MyBaseInterface::MyDocumentedMethod() PHPDoc\n     */",
+            "/**\n     * MyOtherInterface::MyDocumentedMethod() PHPDoc\n     */",
+        ];
+
+        return [
+            MySubclass::class . '::MyDocumentedMethod()' => [
+                (new ReflectionClass(MySubclass::class))->getMethod('MyDocumentedMethod'),
+                $expected,
+            ],
+            MySubclass::class . '::MyDocumentedMethod() + classDocComments' => [
+                (new ReflectionClass(MySubclass::class))->getMethod('MyDocumentedMethod'),
+                $expected,
+                [
+                    "/**\n * MySubclass\n */",
+                    "/**\n * MyClass\n */",
+                    "/**\n * MyTrait\n */",
+                    "/**\n * MyBaseTrait\n */",
+                    "/**\n * MyReusedTrait\n */",
+                    "/**\n * MyBaseClass\n */",
+                    "/**\n * MyInterface\n */",
+                    "/**\n * MyBaseInterface\n */",
+                    "/**\n * MyOtherInterface\n */",
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider getAllPropertyDocCommentsProvider
+     */
+    public function testGetAllPropertyDocComments(ReflectionProperty $property, array $expected, ?array $expectedClassDocComments = null)
+    {
+        if (is_null($expectedClassDocComments)) {
+            $this->assertSame($expected, Reflect::getAllPropertyDocComments($property));
+
+            return;
+        }
+
+        $this->assertSame($expected, Reflect::getAllPropertyDocComments($property, $classDocComments));
+        $this->assertSame($expectedClassDocComments, $classDocComments);
+    }
+
+    public function getAllPropertyDocCommentsProvider()
+    {
+        $expected = [
+            "/**\n     * MySubclass::\$MyDocumentedProperty PHPDoc\n     */",
+            "/**\n     * MyClass::\$MyDocumentedProperty PHPDoc\n     */",
+            "/**\n     * MyTrait::\$MyDocumentedProperty PHPDoc\n     */",
+            "/**\n     * MyBaseTrait::\$MyDocumentedProperty PHPDoc\n     */",
+            "/**\n     * MyReusedTrait::\$MyDocumentedProperty PHPDoc\n     */",
+            "/**\n     * MyBaseClass::\$MyDocumentedProperty PHPDoc\n     */",
+        ];
+
+        return [
+            MySubclass::class . '::$MyDocumentedProperty' => [
+                (new ReflectionClass(MySubclass::class))->getProperty('MyDocumentedProperty'),
+                $expected,
+            ],
+            MySubclass::class . '::$MyDocumentedProperty + classDocComments' => [
+                (new ReflectionClass(MySubclass::class))->getProperty('MyDocumentedProperty'),
+                $expected,
+                [
+                    "/**\n * MySubclass\n */",
+                    "/**\n * MyClass\n */",
+                    "/**\n * MyTrait\n */",
+                    "/**\n * MyBaseTrait\n */",
+                    "/**\n * MyReusedTrait\n */",
+                    "/**\n * MyBaseClass\n */",
+                ],
+            ],
+        ];
     }
 
     public function testGetTypeDeclaration()

@@ -21,6 +21,7 @@ use Lkrms\Utility\Formatters;
  * @method static string yn(bool $value) Return "yes" if a boolean is true, "no" if it's not (see {@see Formatters::yn()})
  *
  * @uses Formatters
+ * @extends Facade<Formatters>
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Formatters' 'Lkrms\Facade\Format'
  */
 final class Format extends Facade

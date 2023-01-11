@@ -4,10 +4,11 @@ namespace Lkrms\Support;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Support\Dictionary\Regex;
 use UnexpectedValueException;
 
 /**
- * Partially parses PSR-5 PHPDocs
+ * Parses PSR-5 PHPDocs
  *
  * Newlines and other formatting are preserved unless otherwise noted.
  *
@@ -18,6 +19,7 @@ use UnexpectedValueException;
  * @property-read array<string,array{type:string|null,description:string|null}> $Params
  * @property-read array{type:string,description:string|null}|null $Return
  * @property-read array<int,array{name:string|null,type:string,description:string|null}> $Var
+ * @property-read array<string,array{type:string|null}> $Templates
  */
 final class PhpDocParser implements IReadable
 {
@@ -89,6 +91,13 @@ final class PhpDocParser implements IReadable
     protected $Var = [];
 
     /**
+     * Template type => template metadata
+     *
+     * @var array<string,array{type:string|null}>
+     */
+    protected $Templates = [];
+
+    /**
      * @var bool
      */
     private $LegacyNullable;
@@ -107,20 +116,23 @@ final class PhpDocParser implements IReadable
      * @param bool $legacyNullable If set (the default), convert `<type>|null`
      * and `null|<type>` to `?<type>`.
      */
-    public function __construct(string $docBlock, bool $legacyNullable = true)
+    public function __construct(string $docBlock, string $classDocBlock = null, bool $legacyNullable = true)
     {
-        $this->LegacyNullable = $legacyNullable;
-
-        // Check for a leading "*" after every newline and extract everything
-        // between "/**" and "*/"
-        if (!preg_match('/^\/\*\*(.*(?:(?:\r\n|\n)\h*\*.*)*)(?:(?:\r\n|\n)\h*)?\*\/$/u', $docBlock, $matches)) {
+        // Check for a leading "*" after every newline as per PSR-5
+        if (!preg_match(Regex::delimit(Regex::PHP_DOCBLOCK), $docBlock, $matches)) {
             throw new UnexpectedValueException('Invalid DocBlock');
         }
+        $this->LegacyNullable = $legacyNullable;
 
-        // Trim each line and remove the leading "* " or "*" before splitting
+        // - Extract text between "/**" and "*/"
+        // - Remove trailing spaces and leading "* " or "*" from each line
+        // - Trim the entire PHPDoc
+        // - Split into string[]
         $this->Lines = preg_split(
-            '/\r\n|\n/u',
-            preg_replace('/(^\h*\* ?|\h+$)/um', '', trim($matches[1]))
+            '/\r?\n/u',
+            trim(preg_replace('/(^\h*\* ?|\h+(?=\r?$))/um',
+                              '',
+                              $matches['content']))
         );
         $this->NextLine = reset($this->Lines);
 
@@ -136,7 +148,7 @@ final class PhpDocParser implements IReadable
                 preg_match(self::TAG_REGEX, $lines = $this->getLinesUntil(self::TAG_REGEX), $matches)) {
             $this->TagLines[] = $lines;
 
-            $lines              = preg_replace('/^@' . str_replace('\\', '\\\\', $matches['tag']) . '\h*/', '', $lines);
+            $lines              = preg_replace('/^@' . preg_quote($matches['tag'], '/') . '\h*/', '', $lines);
             $tag                = ltrim($matches['tag'], '\\');
             $this->Tags[$tag][] = $lines;
 
@@ -144,10 +156,21 @@ final class PhpDocParser implements IReadable
                 continue;
             }
 
+            // - If the tag may have an implicit multi-line description, collect
+            //   metadata by calling `strtok($lines, " \t")` for each value up
+            //   to but NOT including the last value before the description
+            //   starts, otherwise the value will not be tokenised correctly
+            //   when the description starts on a new line
+            // - Collect the last value by calling `strtok($lines, " \t\n\r")`
+            // - Call `$this->getValue()` to finalise the tag's metadata and
+            //   collect its description (if applicable)
+            // - To collect metadata for a one-line tag (i.e. with no
+            //   description), call `strtok($lines, " \t")` for each value
             $meta = 0;
             switch ($tag) {
+                // @param [type] $<name> [description]
                 case 'param':
-                    $token = strtok($lines, " \t");
+                    $token = strtok($lines, " \t\n\r");
                     $type  = null;
                     if (!preg_match('/^\$/', $token)) {
                         $type = $token;
@@ -163,6 +186,7 @@ final class PhpDocParser implements IReadable
                     }
                     break;
 
+                // @return <type> [description]
                 case 'return':
                     $token = strtok($lines, " \t\n\r");
                     $type  = $token;
@@ -170,6 +194,7 @@ final class PhpDocParser implements IReadable
                     $this->Return = $this->getValue($type, $lines, $meta);
                     break;
 
+                // @var [type] [$<name>] [description]
                 case 'var':
                     unset($name);
                     $token = strtok($lines, " \t\n\r");
@@ -180,7 +205,7 @@ final class PhpDocParser implements IReadable
                         $name = $token;
                         $meta++;
                     }
-                    $var = $this->getValue($type, $lines, $meta, ['name' => $name ?? null]);
+                    $var = $this->getValue($type, $lines, $meta, true, ['name' => $name ?? null]);
                     if ($var['description'] && $this->Summary) {
                         $this->Description .= ($this->Description ? str_repeat(PHP_EOL, 2) : '') . $var['description'];
                         $var['description'] = $this->Summary;
@@ -188,6 +213,26 @@ final class PhpDocParser implements IReadable
                         $var['description'] = $var['description'] ?: $this->Summary;
                     }
                     $this->Var[] = $var;
+                    break;
+
+                // @template <name> [of <type>]
+                // @template-covariant <name> [of <type>]
+                case 'template':
+                case 'template-covariant':
+                    $token = strtok($lines, " \t");
+                    $name  = $token;
+                    $meta++;
+                    $token = strtok(" \t");
+                    $type  = 'mixed';
+                    if ($token === 'of') {
+                        $meta++;
+                        $token = strtok(" \t");
+                        if ($token !== false) {
+                            $meta++;
+                            $type = $token;
+                        }
+                    }
+                    $this->Templates[$name] = $this->getValue($type, $lines, $meta, false);
                     break;
             }
         }
@@ -200,9 +245,17 @@ final class PhpDocParser implements IReadable
             fn(array $tag) => count(array_filter($tag)) ? $tag : true,
             $this->Tags
         );
+
+        // Merge @template types from the declaring class, if available
+        if ($classDocBlock) {
+            $class = new self($classDocBlock, null, $legacyNullable);
+            foreach ($class->Templates as $template => $data) {
+                $this->mergeType($this->Templates[$template], $data, false);
+            }
+        }
     }
 
-    private function getValue(?string $type, string $lines, int $meta, array $initial = []): array
+    private function getValue(?string $type, string $lines, int $meta, bool $withDesc = true, array $initial = []): array
     {
         if ($this->LegacyNullable && !is_null($type)) {
             $nullable = preg_replace('/^null\||\|null$/', '', $type, 1, $count);
@@ -210,13 +263,17 @@ final class PhpDocParser implements IReadable
                 $type = "?$nullable";
             }
         }
+        $initial += ['type' => $type];
+        if ($withDesc) {
+            return $initial + ['description' => preg_split('/\s+/', $lines, $meta + 1)[$meta] ?? null];
+        }
 
-        return $initial + [
-            'type'        => $type,
-            'description' => preg_split('/\s+/', $lines, $meta + 1)[$meta] ?? null
-        ];
+        return $initial;
     }
 
+    /**
+     * @phpstan-impure
+     */
     private function getLine(): string
     {
         $line           = array_shift($this->Lines);
@@ -225,6 +282,9 @@ final class PhpDocParser implements IReadable
         return $line;
     }
 
+    /**
+     * @phpstan-impure
+     */
     private function getLinesUntil(string $pattern, bool $discard = false, bool $unwrap = false): string
     {
         $lines   = [];
@@ -241,12 +301,18 @@ final class PhpDocParser implements IReadable
                 continue;
             }
 
-            if (!$this->Lines || preg_match($pattern, $this->NextLine)) {
-                if ($discard && $this->Lines) {
-                    $this->getLine();
-                }
+            if (!$this->Lines) {
                 break;
             }
+            if (!preg_match($pattern, $this->NextLine)) {
+                continue;
+            }
+            if ($discard) {
+                do {
+                    $this->getLine();
+                } while ($this->Lines && preg_match($pattern, $this->NextLine));
+            }
+            break;
         } while ($this->Lines);
 
         return implode($unwrap ? ' ' : PHP_EOL, $lines);
@@ -278,10 +344,12 @@ final class PhpDocParser implements IReadable
         array_push($ours, ...array_diff($theirs, $ours));
     }
 
-    private function mergeType(?array &$ours, ?array $theirs): void
+    private function mergeType(?array &$ours, ?array $theirs, bool $withDesc = true): void
     {
         $this->mergeValue($ours['type'], $theirs['type'] ?? null);
-        $this->mergeValue($ours['description'], $theirs['description'] ?? null);
+        if ($withDesc) {
+            $this->mergeValue($ours['description'], $theirs['description'] ?? null);
+        }
     }
 
     /**
@@ -309,15 +377,28 @@ final class PhpDocParser implements IReadable
 
     /**
      * @param string[] $docBlocks
+     * @param array<string|null>|null $classDocBlocks
      */
-    public static function fromDocBlocks(array $docBlocks, bool $legacyNullable = true): ?self
+    public static function fromDocBlocks(array $docBlocks, ?array $classDocBlocks = null, bool $legacyNullable = true): ?self
     {
         if (!$docBlocks) {
             return null;
         }
-        $parser = new self(array_shift($docBlocks), $legacyNullable);
+        $parser = new self(
+            array_shift($docBlocks),
+            $classDocBlocks
+                ? array_shift($classDocBlocks)
+                : null,
+            $legacyNullable
+        );
         while ($docBlocks) {
-            $parser->mergeInherited(new self(array_shift($docBlocks), $legacyNullable));
+            $parser->mergeInherited(new self(
+                array_shift($docBlocks),
+                $classDocBlocks
+                    ? array_shift($classDocBlocks)
+                    : null,
+                $legacyNullable
+            ));
         }
 
         return $parser;

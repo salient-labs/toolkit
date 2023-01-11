@@ -31,6 +31,7 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static SyncStore provider(ISyncProvider $provider) Register a sync provider and set its provider ID (see {@see SyncStore::provider()})
  *
  * @uses SyncStore
+ * @extends Facade<SyncStore>
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Sync\Support\SyncStore' 'Lkrms\Facade\Sync'
  */
 final class Sync extends Facade

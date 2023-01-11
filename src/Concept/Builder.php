@@ -88,7 +88,7 @@ abstract class Builder extends FluentInterface implements IImmutable
     final public function __construct(?IContainer $container = null)
     {
         $this->Container    = $container ?: Container::requireGlobalContainer();
-        $this->Introspector = Introspector::getBound($this->Container, static::getClassName());
+        $this->Introspector = Introspector::getService($this->Container, static::getClassName());
         $this->Closure      = $this->Introspector->getCreateFromClosure(true);
     }
 

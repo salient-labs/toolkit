@@ -8,10 +8,10 @@ use ReturnTypeWillChange;
 /**
  * Implements ICollection to provide array-like objects
  *
- * @see \Lkrms\Contract\ICollection
- * @see \Lkrms\Concept\TypedCollection
  * @template T
  * @psalm-require-implements \Lkrms\Contract\ICollection<T>
+ * @see \Lkrms\Contract\ICollection
+ * @see \Lkrms\Concept\TypedCollection
  */
 trait TCollection
 {
@@ -21,8 +21,8 @@ trait TCollection
     use HasItems;
 
     /**
-     * @return $this
      * @psalm-param callable(T) $callback
+     * @return $this
      */
     final public function forEach(callable $callback)
     {
@@ -34,8 +34,8 @@ trait TCollection
     }
 
     /**
-     * @return static
      * @psalm-param callable(T): bool $callback
+     * @return static
      */
     final public function filter(callable $callback)
     {
@@ -51,9 +51,8 @@ trait TCollection
     }
 
     /**
-     * @return mixed|false
      * @psalm-param callable(T): bool $callback
-     * @psalm-return T|false
+     * @return T|false
      */
     final public function find(callable $callback)
     {
@@ -67,7 +66,7 @@ trait TCollection
     }
 
     /**
-     * @psalm-param T $item
+     * @param T $item
      */
     final public function has($item, bool $strict = false): bool
     {
@@ -75,8 +74,8 @@ trait TCollection
     }
 
     /**
+     * @param T $item
      * @return int|string|false
-     * @psalm-param T $item
      */
     final public function keyOf($item, bool $strict = false)
     {
@@ -84,9 +83,8 @@ trait TCollection
     }
 
     /**
-     * @return mixed|false
-     * @psalm-param T $item
-     * @psalm-return T|false
+     * @param T $item
+     * @return T|false
      */
     final public function get($item)
     {
@@ -98,8 +96,7 @@ trait TCollection
     }
 
     /**
-     * @return mixed[]
-     * @psalm-return T[]
+     * @return T[]
      */
     final public function toArray(bool $preserveKeys = true): array
     {
@@ -109,8 +106,7 @@ trait TCollection
     }
 
     /**
-     * @return mixed|false
-     * @psalm-return T|false
+     * @return T|false
      */
     final public function first()
     {
@@ -120,8 +116,7 @@ trait TCollection
     }
 
     /**
-     * @return mixed|false
-     * @psalm-return T|false
+     * @return T|false
      */
     final public function last()
     {
@@ -130,16 +125,22 @@ trait TCollection
         return end($copy);
     }
 
+    /**
+     * @return T|false
+     */
     final public function shift()
     {
-        return array_shift($this->_Items);
+        $item = array_shift($this->_Items);
+
+        return is_null($item)
+            ? false
+            : $item;
     }
 
     // Implementation of `Iterator`:
 
     /**
-     * @return mixed|false
-     * @psalm-return T|false
+     * @return T|false
      */
     #[ReturnTypeWillChange]
     final public function current()
@@ -183,7 +184,7 @@ trait TCollection
 
     /**
      * @param int|string|null $offset
-     * @psalm-return T
+     * @return T
      */
     #[ReturnTypeWillChange]
     final public function offsetGet($offset)
@@ -193,7 +194,7 @@ trait TCollection
 
     /**
      * @param int|string|null $offset
-     * @psalm-param T $value
+     * @param T $value
      */
     final public function offsetSet($offset, $value): void
     {

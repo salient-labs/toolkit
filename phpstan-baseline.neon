@@ -31,6 +31,11 @@ parameters:
 			path: src/Container/Container.php
 
 		-
+			message: "#^PHPDoc tag @param for parameter \\$driver with type array\\<int, string\\>\\|int\\|null is not subtype of native type int\\|null\\.$#"
+			count: 1
+			path: src/Db/DbConnector.php
+
+		-
 			message: "#^Strict comparison using \\=\\=\\= between array\\<array\\<int, int\\|string\\>\\|int\\|string, mixed\\> and false will always evaluate to false\\.$#"
 			count: 1
 			path: src/Support/ArrayMapper.php
@@ -41,9 +46,9 @@ parameters:
 			path: src/Support/HttpServer.php
 
 		-
-			message: "#^Negated boolean expression is always true\\.$#"
+			message: "#^PHPDoc tag @param for parameter \\$operation with type array\\<int, bool\\>\\|int is not subtype of native type int\\.$#"
 			count: 1
-			path: src/Support/PhpDocParser.php
+			path: src/Sync/Support/SyncIntrospector.php
 
 		-
 			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncStore\\:\\:\\$Providers is never read, only written\\.$#"
@@ -69,6 +74,11 @@ parameters:
 			message: "#^Call to an undefined method Lkrms\\\\Cli\\\\CliOptionBuilder\\:\\:value\\(\\)\\.$#"
 			count: 1
 			path: tests/Cli/CliOptionBuilderTest.php
+
+		-
+			message: "#^Property Lkrms\\\\Tests\\\\Cli\\\\Command\\\\TestOptions\\:\\:\\$Operation is never written, only read\\.$#"
+			count: 1
+			path: tests/Cli/Command/TestOptions.php
 
 		-
 			message: "#^Class Lkrms\\\\Tests\\\\Sync\\\\Entity not found\\.$#"

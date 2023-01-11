@@ -127,12 +127,12 @@ class Container extends FluentInterface implements IContainer
         return self::$GlobalContainer = $container;
     }
 
-    final public function get(string $id, ...$params)
+    final public function get(string $id, array $params = [])
     {
         return $this->Dice->create($id, $params);
     }
 
-    final public function getAs(string $id, string $serviceId, ...$params)
+    final public function getAs(string $id, string $serviceId, array $params = [])
     {
         if ($this->Dice->hasShared($id)) {
             $instance = $this->Dice->create($id);

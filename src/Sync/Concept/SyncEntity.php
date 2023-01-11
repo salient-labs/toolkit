@@ -24,6 +24,7 @@ use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Test;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Enumeration\NormaliserFlag;
 use Lkrms\Sync\Concern\HasSyncIntrospector;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -215,20 +216,23 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
     /**
      * Get a closure to normalise property names
      *
-     * If `$aggressive` is `false`, prefixes returned by
-     * {@see SyncEntity::getRemovablePrefixes()} are not removed from `$name`.
-     * Otherwise, if `$hints` are provided and `$name` matches one of them after
-     * snake_case conversion, prefix removal is skipped.
+     * Prefixes returned by {@see SyncEntity::getRemovablePrefixes()} are
+     * removed from `$name` unless `$greedy` is `false`. Otherwise, if `$hints`
+     * are provided and `$name` matches one of them after snake_case conversion,
+     * prefix removal is skipped.
      *
      */
     final public static function normaliser(): Closure
     {
+        // If there aren't any prefixes to remove, return a closure that
+        // converts everything to snake_case
         if (!($prefixes = static::getRemovablePrefixes())) {
-            return static function (string $name): string {
-                return self::$Normalised[static::class][$name]
-                    ?? (self::$Normalised[static::class][$name] =
-                        Convert::toSnakeCase($name));
-            };
+            return
+                static function (string $name): string {
+                    return self::$Normalised[static::class][$name]
+                        ?? (self::$Normalised[static::class][$name] =
+                            Convert::toSnakeCase($name));
+                };
         }
 
         $prefixes = array_unique(array_map(
@@ -239,19 +243,20 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
         $regex = count($prefixes) > 1 ? "($regex)" : $regex;
         $regex = "/^{$regex}_/";
 
-        return static function (string $name, bool $aggressive = true, string ...$hints) use ($regex): string {
-            if ($aggressive && !$hints) {
-                return self::$Normalised[static::class][$name]
-                    ?? (self::$Normalised[static::class][$name] =
-                        preg_replace($regex, '', Convert::toSnakeCase($name)));
-            }
-            $_name = Convert::toSnakeCase($name);
-            if (!$aggressive || in_array($_name, $hints)) {
-                return $_name;
-            }
+        return
+            static function (string $name, bool $greedy = true, string ...$hints) use ($regex): string {
+                if ($greedy && !$hints) {
+                    return self::$Normalised[static::class][$name]
+                        ?? (self::$Normalised[static::class][$name] =
+                            preg_replace($regex, '', Convert::toSnakeCase($name)));
+                }
+                $_name = Convert::toSnakeCase($name);
+                if (!$greedy || in_array($_name, $hints)) {
+                    return $_name;
+                }
 
-            return preg_replace($regex, '', $_name);
-        };
+                return preg_replace($regex, '', $_name);
+            };
     }
 
     final public static function getSerializeRules(?IContainer $container = null): SerializeRules
@@ -454,7 +459,7 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
                         continue;
                     }
                     if (is_int($arg) || is_string($arg)) {
-                        $newKey = is_string($arg) ? $this->introspector()->maybeNormalise($arg, false, true) : $arg;
+                        $newKey = is_string($arg) ? $this->introspector()->maybeNormalise($arg, NormaliserFlag::CAREFUL) : $arg;
                         continue;
                     }
                     if ($arg instanceof Closure) {
@@ -571,7 +576,7 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
     {
         $array = $this->introspector()->getSerializeClosure($rules)($this);
         if ($rules->getRemoveCanonicalId()) {
-            unset($array[$this->introspector()->maybeNormalise('CanonicalId', false, true)]);
+            unset($array[$this->introspector()->maybeNormalise('CanonicalId', NormaliserFlag::CAREFUL)]);
         }
 
         return $array;

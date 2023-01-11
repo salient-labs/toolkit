@@ -190,13 +190,8 @@ abstract class SyncProvider implements ISyncProvider, IService
             ? $context->withContainer($container)
             : new SyncContext($container);
 
-        return $container->get(
-            SyncEntityProvider::class,
-            $syncEntity,
-            $this,
-            $this->getDefinition($syncEntity),
-            $context
-        );
+        return $container->get(SyncEntityProvider::class,
+                               [$syncEntity, $this, $this->getDefinition($syncEntity), $context]);
     }
 
     final public function __call(string $name, array $arguments)

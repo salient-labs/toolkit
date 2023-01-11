@@ -11,6 +11,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Contract\ISerializeRules;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Enumeration\NormaliserFlag;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use UnexpectedValueException;
 
@@ -431,7 +432,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private function normaliseTarget(string $target): string
     {
         return preg_replace_callback('/[^].[]+/',
-                                     fn($matches) => $this->Introspector->maybeNormalise($matches[0], true), $target);
+                                     fn($matches) => $this->Introspector->maybeNormalise($matches[0], NormaliserFlag::LAZY), $target);
     }
 
     public function getDateFormatter(): ?DateFormatter

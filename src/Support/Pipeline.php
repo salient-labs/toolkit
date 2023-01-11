@@ -32,6 +32,7 @@ class Pipeline extends FluentInterface implements IPipeline
 
     /**
      * @var int
+     * @psalm-var ArrayKeyConformity::*
      */
     private $PayloadConformity;
 

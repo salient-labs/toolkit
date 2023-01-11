@@ -5,6 +5,7 @@ namespace Lkrms\Contract;
 /**
  * Provides a static interface to an instance of an underlying class
  *
+ * @template TClass of object
  * @see \Lkrms\Concept\Facade
  * @see \Lkrms\Contract\ReceivesFacade
  */
@@ -25,6 +26,7 @@ interface IFacade
      * If the underlying class implements {@see ReceivesFacade}, the name of the
      * facade is passed to its {@see ReceivesFacade::setFacade()} method.
      *
+     * @return TClass
      * @throws \RuntimeException if an underlying instance has already been
      * loaded.
      */
@@ -46,6 +48,7 @@ interface IFacade
      * 1. throw a `RuntimeException`, or
      * 2. load an instance of the underlying class and return it
      *
+     * @return TClass
      */
     public static function getInstance();
 }

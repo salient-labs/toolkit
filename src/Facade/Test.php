@@ -32,6 +32,7 @@ use Lkrms\Utility\Tests;
  * @method static bool isPhpReservedWord(string $name) Return true for PHP reserved words (see {@see Tests::isPhpReservedWord()})
  *
  * @uses Tests
+ * @extends Facade<Tests>
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Tests' 'Lkrms\Facade\Test'
  */
 final class Test extends Facade

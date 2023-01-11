@@ -22,9 +22,9 @@ trait TResolvable
         return fn(string $name): string => Convert::toSnakeCase($name);
     }
 
-    final public static function normalise(string $name, bool $aggressive = true, string ...$hints): string
+    final public static function normalise(string $name, bool $greedy = true, string ...$hints): string
     {
         return ((self::$_Normaliser[static::class] ?? null)
-            ?: (self::$_Normaliser[static::class] = static::normaliser()))($name, $aggressive, ...$hints);
+            ?: (self::$_Normaliser[static::class] = static::normaliser()))($name, $greedy, ...$hints);
     }
 }

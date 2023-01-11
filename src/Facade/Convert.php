@@ -70,6 +70,7 @@ use Lkrms\Utility\Conversions;
  * @method static string valueToCode($value, string $delimiter = ', ', string $arrow = ' => ') See {@see Conversions::valueToCode()}
  *
  * @uses Conversions
+ * @extends Facade<Conversions>
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Conversions' 'Lkrms\Facade\Convert'
  */
 final class Convert extends Facade
@@ -90,6 +91,26 @@ final class Convert extends Facade
      */
     public static function arraySpliceAtKey(array &$array, $key, ?int $length = null, array $replacement = []): array
     {
-        return static::getInstance()->arraySpliceAtKey($array, $key, $length, $replacement);
+        static::setFuncNumArgs(__FUNCTION__, func_num_args());
+        try {
+            return static::getInstance()->arraySpliceAtKey($array, $key, $length, $replacement);
+        } finally {
+            static::clearFuncNumArgs(__FUNCTION__);
+        }
+    }
+
+    /**
+     * A type-agnostic multi-column array_unique with reindexing
+     *
+     * @see Conversions::columnsToUniqueList()
+     */
+    public static function columnsToUniqueList(array $array, array &...$columns): array
+    {
+        static::setFuncNumArgs(__FUNCTION__, func_num_args());
+        try {
+            return static::getInstance()->columnsToUniqueList($array, ...$columns);
+        } finally {
+            static::clearFuncNumArgs(__FUNCTION__);
+        }
     }
 }

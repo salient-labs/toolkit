@@ -45,26 +45,26 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * instance created earlier
      *
      * @template T
-     * @psalm-param class-string<T> $id
-     * @psalm-return T
-     * @param mixed ...$params Values to pass to the constructor of the
+     * @param class-string<T> $id
+     * @param mixed[] $params Values to pass to the constructor of the
      * instantiated class. Ignored if `$id` resolves to a shared instance.
+     * @return T
      */
-    public function get(string $id, ...$params);
+    public function get(string $id, array $params = []);
 
     /**
      * Create a new instance of a class or interface with an explicit service
      * name, or apply a service name to a shared instance created earlier
      *
      * @template T
-     * @psalm-param class-string<T> $id
-     * @psalm-return T
+     * @param class-string<T> $id
      * @param string $serviceId The service name passed to
      * `ReceivesService::setService()`.
-     * @param mixed ...$params Values to pass to the constructor of the
+     * @param mixed[] $params Values to pass to the constructor of the
      * instantiated class. Ignored if `$id` resolves to a shared instance.
+     * @return T
      */
-    public function getAs(string $id, string $serviceId, ...$params);
+    public function getAs(string $id, string $serviceId, array $params = []);
 
     /**
      * Resolve a class or interface to a concrete class name
@@ -146,6 +146,7 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * @param string[]|null $services
      * @param string[]|null $exceptServices
      * @param int $lifetime A bitmask of {@see ServiceLifetime} values.
+     * @psalm-param int-mask-of<ServiceLifetime::*> $lifetime
      * @return $this
      */
     public function service(string $id, ?array $services = null, ?array $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT);
@@ -184,6 +185,7 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * ]
      * ```
      * @param int $lifetime A bitmask of {@see ServiceLifetime} values.
+     * @psalm-param int-mask-of<ServiceLifetime::*> $lifetime
      * @return $this
      */
     public function services(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT);

@@ -2,6 +2,9 @@
 
 namespace Lkrms\Tests\Utility\Reflection;
 
+/**
+ * MySubclass
+ */
 class MySubclass extends MyClass implements MyOtherInterface
 {
     /**
