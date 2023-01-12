@@ -56,6 +56,11 @@ parameters:
 			path: src/Sync/Support/SyncStore.php
 
 		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: src/Utility/Conversions.php
+
+		-
 			message: "#^Call to an undefined method ReflectionType\\:\\:isBuiltin\\(\\)\\.$#"
 			count: 1
 			path: src/Utility/Reflection.php
