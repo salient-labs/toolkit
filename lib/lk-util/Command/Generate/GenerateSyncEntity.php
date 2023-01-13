@@ -199,6 +199,7 @@ class GenerateSyncEntity extends GenerateCommand
                 'boolean' => 'bool',
                 'integer' => 'int',
                 'double'  => 'float',
+                'array'   => 'mixed[]',
                 'NULL'    => 'mixed',
             ];
 
@@ -314,6 +315,9 @@ class GenerateSyncEntity extends GenerateCommand
                 "$visibility \$$prop;",
             ];
             array_push($lines, ...array_map(fn($line) => '    ' . $line, $_lines), ...['']);
+        }
+        if (end($lines) === '') {
+            array_pop($lines);
         }
 
         $lines[] = '}';

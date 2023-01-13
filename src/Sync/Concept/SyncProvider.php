@@ -8,6 +8,7 @@ use Lkrms\Contract\IService;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\PipelineImmutable;
+use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
@@ -183,12 +184,12 @@ abstract class SyncProvider implements ISyncProvider, IService
     {
         $this->Store->entityType($syncEntity);
 
-        $container = ($context instanceof SyncContext
+        $container = ($context instanceof ISyncContext
             ? $context->container()
             : ($context ?: $this->container()))->inContextOf(static::class);
-        $context = $context instanceof SyncContext
+        $context = $context instanceof ISyncContext
             ? $context->withContainer($container)
-            : new SyncContext($container);
+            : $container->get(SyncContext::class);
 
         return $container->get(SyncEntityProvider::class,
                                [$syncEntity, $this, $this->getDefinition($syncEntity), $context]);

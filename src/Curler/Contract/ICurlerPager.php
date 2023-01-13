@@ -13,6 +13,8 @@ interface ICurlerPager
      * will be added by {@see Curler}.
      *
      * Return `null` if no special query handling is required.
+     *
+     * @param mixed[]|null $query
      */
     public function prepareQuery(?array $query): ?string;
 
@@ -26,12 +28,16 @@ interface ICurlerPager
      * Prepare POST data for the first page request
      *
      * Return `$data` if no special handling is required.
+     *
+     * @param mixed[]|null $data
+     * @return mixed[]|null
      */
     public function prepareData(?array $data): ?array;
 
     /**
      * Convert data returned by an endpoint to a page object
      *
+     * @param mixed $data
      */
     public function getPage($data, Curler $curler, ?ICurlerPage $previous = null): ICurlerPage;
 }

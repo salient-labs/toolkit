@@ -10,6 +10,7 @@ use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ISerializeRules;
+use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Enumeration\NormaliserFlag;
 use RuntimeException;
@@ -700,12 +701,35 @@ class Introspector
             'name',
             'full_name',
             'fullname',
+            'surname',
+            'last_name',
+            'first_name',
             'title',
             'description',
             'id',
         ], NormaliserFlag::CAREFUL);
 
-        if (!($names = array_intersect($names, $this->_Class->getReadableProperties()))) {
+        $names = array_intersect($names, $this->_Class->getReadableProperties());
+
+        // If surname|last_name and first_name exist, use them together,
+        // otherwise don't use either of them
+        if (in_array($last = reset($names), ['surname', 'last_name'])) {
+            array_shift($names);
+            if (($first = reset($names)) == 'first_name') {
+                $last  = $this->getPropertyActionClosure($last, IntrospectionClass::ACTION_GET);
+                $first = $this->getPropertyActionClosure($first, IntrospectionClass::ACTION_GET);
+
+                return $this->_Class->GetNameClosure =
+                    static function ($instance) use ($first, $last): ?string {
+                        return Convert::sparseToString(' ', [$first($instance), $last($instance)]) ?: null;
+                    };
+            }
+        }
+        while (in_array(reset($names), ['last_name', 'first_name'])) {
+            array_shift($names);
+        }
+
+        if (!$names) {
             return $this->_Class->GetNameClosure = static function (): ?string { return null; };
         }
 

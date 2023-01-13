@@ -4,16 +4,17 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Contract\IContainer;
 use Lkrms\Sync\Concept\SyncEntity;
-use Lkrms\Sync\Concept\SyncProvider;
+use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
+use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncOperation;
 use UnexpectedValueException;
 
 /**
- * Provides an entity-agnostic interface to a SyncProvider's implementation of
+ * Provides an entity-agnostic interface to an ISyncProvider's implementation of
  * sync operations for an entity
  *
  * So you can do this:
@@ -37,7 +38,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     private $Entity;
 
     /**
-     * @var SyncProvider
+     * @var ISyncProvider
      */
     private $Provider;
 
@@ -47,11 +48,11 @@ final class SyncEntityProvider implements ISyncEntityProvider
     private $Definition;
 
     /**
-     * @var SyncContext
+     * @var ISyncContext
      */
     private $Context;
 
-    public function __construct(IContainer $container, string $entity, SyncProvider $provider, ISyncDefinition $definition, ?SyncContext $context = null)
+    public function __construct(IContainer $container, string $entity, ISyncProvider $provider, ISyncDefinition $definition, ?ISyncContext $context = null)
     {
         if (!is_subclass_of($entity, SyncEntity::class)) {
             throw new UnexpectedValueException("Not a subclass of SyncEntity: $entity");
@@ -65,12 +66,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
         $this->Entity     = $entity;
         $this->Provider   = $provider;
         $this->Definition = $definition;
-        $this->Context    = $context ?: new SyncContext($container);
+        $this->Context    = $context ?: $container->get(SyncContext::class);
     }
 
-    /**
-     * @internal
-     */
     public function run(int $operation, ...$args)
     {
         if (!($closure = $this->Definition->getSyncOperationClosure($operation))) {
@@ -120,7 +118,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Add an entity to the backend
      *
-     * The underlying {@see SyncProvider} must implement the
+     * The underlying {@see ISyncProvider} must implement the
      * {@see SyncOperation::CREATE} operation, e.g. one of the following for a
      * `Faculty` entity:
      *
@@ -146,7 +144,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Return an entity from the backend
      *
-     * The underlying {@see SyncProvider} must implement the
+     * The underlying {@see ISyncProvider} must implement the
      * {@see SyncOperation::READ} operation, e.g. one of the following for a
      * `Faculty` entity:
      *
@@ -174,7 +172,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Update an entity in the backend
      *
-     * The underlying {@see SyncProvider} must implement the
+     * The underlying {@see ISyncProvider} must implement the
      * {@see SyncOperation::UPDATE} operation, e.g. one of the following for a
      * `Faculty` entity:
      *
@@ -200,7 +198,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Delete an entity from the backend
      *
-     * The underlying {@see SyncProvider} must implement the
+     * The underlying {@see ISyncProvider} must implement the
      * {@see SyncOperation::DELETE} operation, e.g. one of the following for a
      * `Faculty` entity:
      *
@@ -229,7 +227,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Add a list of entities to the backend
      *
-     * The underlying {@see SyncProvider} must implement the
+     * The underlying {@see ISyncProvider} must implement the
      * {@see SyncOperation::CREATE_LIST} operation, e.g. one of the following
      * for a `Faculty` entity:
      *
@@ -257,7 +255,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Return a list of entities from the backend
      *
-     * The underlying {@see SyncProvider} must implement the
+     * The underlying {@see ISyncProvider} must implement the
      * {@see SyncOperation::READ_LIST} operation, e.g. one of the following for
      * a `Faculty` entity:
      *
@@ -279,7 +277,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Update a list of entities in the backend
      *
-     * The underlying {@see SyncProvider} must implement the
+     * The underlying {@see ISyncProvider} must implement the
      * {@see SyncOperation::UPDATE_LIST} operation, e.g. one of the following
      * for a `Faculty` entity:
      *
@@ -307,7 +305,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Delete a list of entities from the backend
      *
-     * The underlying {@see SyncProvider} must implement the
+     * The underlying {@see ISyncProvider} must implement the
      * {@see SyncOperation::DELETE_LIST} operation, e.g. one of the following
      * for a `Faculty` entity:
      *

@@ -6,6 +6,7 @@ use Closure;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\Dictionary\Regex;
 use Lkrms\Support\Introspector;
+use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncOperation;
 use RuntimeException;
@@ -21,11 +22,19 @@ use RuntimeException;
  */
 final class SyncIntrospector extends Introspector
 {
+    /**
+     * @param class-string<SyncEntity> $entity
+     * @return class-string<ISyncProvider>
+     */
     final public static function entityToProvider(string $entity): string
     {
         return sprintf('%s\Provider\%sProvider', Convert::classToNamespace($entity), Convert::classToBasename($entity));
     }
 
+    /**
+     * @param class-string<ISyncProvider> $provider
+     * @return class-string<SyncEntity>|null
+     */
     final public static function providerToEntity(string $provider): ?string
     {
         if (preg_match('/^(?P<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\(?P<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U',
