@@ -6,8 +6,8 @@ use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
-use Lkrms\Sync\Support\SyncEntityProvider;
 
 /**
  * Uses Levenshtein distances or text similarity to resolve names to entities
@@ -15,6 +15,7 @@ use Lkrms\Sync\Support\SyncEntityProvider;
  * The default algorithm is
  * {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}.
  *
+ * @template TEntity of SyncEntity
  */
 final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 {
@@ -30,7 +31,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     public const ALGORITHM_SIMILAR_TEXT = 1;
 
     /**
-     * @var SyncEntityProvider
+     * @var ISyncEntityProvider
      */
     private $EntityProvider;
 
@@ -62,13 +63,14 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     private $Cache = [];
 
     /**
+     * @param ISyncEntityProvider<TEntity> $entityProvider
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
      * @param int|null $algorithm Overrides the default string comparison
      * algorithm. Either {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}
      * or {@see SyncEntityFuzzyResolver::ALGORITHM_SIMILAR_TEXT}.
      */
-    public function __construct(SyncEntityProvider $entityProvider, string $nameProperty, ?string $weightProperty, ?int $algorithm = null, ?float $uncertaintyThreshold = null)
+    public function __construct(ISyncEntityProvider $entityProvider, string $nameProperty, ?string $weightProperty, ?int $algorithm = null, ?float $uncertaintyThreshold = null)
     {
         $this->EntityProvider       = $entityProvider;
         $this->NameProperty         = $nameProperty;

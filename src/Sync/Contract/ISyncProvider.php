@@ -3,7 +3,7 @@
 namespace Lkrms\Sync\Contract;
 
 use Lkrms\Contract\IProvider;
-use Lkrms\Sync\Support\SyncEntityProvider;
+use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Support\SyncStore;
 
 /**
@@ -47,8 +47,10 @@ interface ISyncProvider extends IProvider
      * Use an entity-agnostic interface to the provider's implementation of sync
      * operations for an entity
      *
-     * @todo Create `ISyncEntityProvider` and update return type.
+     * @template T of SyncEntity
+     * @param class-string<T> $syncEntity
      * @param ISyncContext|\Lkrms\Contract\IContainer|null $context
+     * @return ISyncEntityProvider<T>
      */
-    public function with(string $syncEntity, $context = null): SyncEntityProvider;
+    public function with(string $syncEntity, $context = null): ISyncEntityProvider;
 }

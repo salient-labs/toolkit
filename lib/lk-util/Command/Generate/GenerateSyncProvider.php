@@ -244,6 +244,9 @@ class GenerateSyncProvider extends GenerateCommand
                 $methods[] = " * @method $returnDoc {$opMethod[$op]}($context$separator$paramDoc)";
             }
         }
+        if (end($lines) === '') {
+            array_pop($lines);
+        }
         $lines[] = '}';
         $methods = implode(PHP_EOL, $methods);
 

@@ -51,6 +51,11 @@
 - [ ] Validate `ConsoleLevel` values where necessary
 
 ### CLI utility
+- [ ] `generate sync entity`:
+  - [ ] Use property order from existing class if possible
+    - [ ] Allow order to be reset via command line option
+  - [ ] Find first non-`null` value for each property when a list of reference entities is provided
+  - [ ] Generate `getDateProperties()` if date properties are detected
 - [ ] Consolidate functionality shared between commands where possible
 - [ ] `generate sync`:
   - [ ] Generate entities and providers from OpenAPI specs

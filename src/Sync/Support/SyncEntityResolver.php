@@ -4,17 +4,18 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Facade\Convert;
 use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
-use Lkrms\Sync\Support\SyncEntityProvider;
 
 /**
  * Resolves names to entities
  *
+ * @template TEntity of SyncEntity
  */
 final class SyncEntityResolver implements ISyncEntityResolver
 {
     /**
-     * @var SyncEntityProvider
+     * @var ISyncEntityProvider
      */
     private $EntityProvider;
 
@@ -23,7 +24,10 @@ final class SyncEntityResolver implements ISyncEntityResolver
      */
     private $NameProperty;
 
-    public function __construct(SyncEntityProvider $entityProvider, string $nameProperty)
+    /**
+     * @param ISyncEntityProvider<TEntity> $entityProvider
+     */
+    public function __construct(ISyncEntityProvider $entityProvider, string $nameProperty)
     {
         $this->EntityProvider = $entityProvider;
         $this->NameProperty   = $nameProperty;

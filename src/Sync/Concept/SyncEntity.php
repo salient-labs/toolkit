@@ -27,9 +27,9 @@ use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Enumeration\NormaliserFlag;
 use Lkrms\Sync\Concern\HasSyncIntrospector;
 use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
-use Lkrms\Sync\Support\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeLinkType as SerializeLinkType;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
@@ -185,9 +185,9 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
     /**
      * Return an entity-agnostic interface to the SyncEntity's current provider
      *
-     * @return SyncEntityProvider
+     * @return ISyncEntityProvider<static>
      */
-    final public static function backend(?IContainer $container = null): SyncEntityProvider
+    final public static function backend(?IContainer $container = null): ISyncEntityProvider
     {
         /** @var ISyncProvider */
         $provider = self::requireContainer($container)->get(
