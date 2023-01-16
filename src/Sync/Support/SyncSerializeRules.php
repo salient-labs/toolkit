@@ -255,7 +255,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     {
         $depth = count($path);
         $path  = '.' . implode('.', $path);
-        $key   = Convert::sparseToString("\x00", [$class, $untilClass, $path]);
+        $key   = Convert::sparseToString("\0", [$class, $untilClass, $path]);
 
         if (!is_null($rules = $this->RuleCache[$cacheKey][$key] ?? null)) {
             return $rules;
@@ -264,7 +264,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
         if ($this->getRecurseRules()) {
             [$_depth, $_path, $paths] = [$depth, $path, [$path]];
 
-            while ($_depth--> 1) {
+            while ($_depth-- > 1) {
                 $_path = substr($_path, 0, strrpos($_path, '.'));
                 foreach (array_keys($this->RootPaths[$_depth] ?? []) as $root) {
                     if ($_path === $root) {

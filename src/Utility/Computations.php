@@ -47,7 +47,7 @@ final class Computations
     public function binaryHash(...$value): string
     {
         // xxHash isn't supported until PHP 8.1, so MD5 is the best fit
-        return hash('md5', implode("\x00", Convert::toStrings(...$value)), true);
+        return hash('md5', implode("\0", Convert::toStrings(...$value)), true);
     }
 
     /**
@@ -57,7 +57,7 @@ final class Computations
      */
     public function hash(...$value): string
     {
-        return hash('md5', implode("\x00", Convert::toStrings(...$value)));
+        return hash('md5', implode("\0", Convert::toStrings(...$value)));
     }
 
     /**
