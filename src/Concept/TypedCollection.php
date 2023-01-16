@@ -11,14 +11,14 @@ use UnexpectedValueException;
 /**
  * Base class for collections of objects of a particular type
  *
- * @template TClass of object
- * @implements ICollection<TClass>
+ * @template T of object
+ * @implements ICollection<T>
  */
 abstract class TypedCollection implements ICollection
 {
     /**
-     * @use TCollection<TClass>
-     * @use HasSortableItems<TClass>
+     * @use TCollection<T>
+     * @use HasSortableItems<T>
      */
     use TCollection, HasSortableItems {
         TCollection::has as private _has;
@@ -28,7 +28,7 @@ abstract class TypedCollection implements ICollection
     }
 
     /**
-     * @var class-string<TClass>
+     * @var class-string<T>
      */
     private $ItemClass;
 
@@ -38,7 +38,7 @@ abstract class TypedCollection implements ICollection
     private $HasComparableItems;
 
     /**
-     * @return class-string<TClass>
+     * @return class-string<T>
      */
     abstract protected function getItemClass(): string;
 
@@ -50,7 +50,7 @@ abstract class TypedCollection implements ICollection
 
     /**
      * @param int|string|null $offset
-     * @param TClass $value
+     * @param T $value
      */
     final public function offsetSet($offset, $value): void
     {
@@ -107,8 +107,8 @@ abstract class TypedCollection implements ICollection
     }
 
     /**
-     * @param TClass $a
-     * @param TClass $b
+     * @param T $a
+     * @param T $b
      */
     protected function compareItems($a, $b, bool $strict = false): int
     {
