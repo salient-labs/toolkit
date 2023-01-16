@@ -647,7 +647,7 @@ final class ConsoleWriter implements ReceivesFacade
         $ex = $exception;
         $i  = 0;
         do {
-            $msg2 = ($msg2 ?? '') . (($i++? "\nCaused by __" . get_class($ex) . '__: ' : '')
+            $msg2 = ($msg2 ?? '') . (($i++ ? "\nCaused by __" . get_class($ex) . '__: ' : '')
                 . sprintf('`%s` ~~in %s:%d~~',
                           ConsoleFormatter::escape($ex->getMessage()),
                           $ex->getFile(), $ex->getLine()));

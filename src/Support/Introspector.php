@@ -177,7 +177,7 @@ class Introspector
      */
     final public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
-        $sig = implode("\x00", $keys);
+        $sig = implode("\0", $keys);
         if (!($closure = $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] ?? null)) {
             $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] =
                 $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
@@ -209,7 +209,7 @@ class Introspector
      */
     final public function getCreateProvidableFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
-        $sig = implode("\x00", $keys);
+        $sig = implode("\0", $keys);
         if (!($closure = $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] ?? null)) {
             $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] =
                 $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
@@ -322,7 +322,7 @@ class Introspector
      */
     private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
-        $sig = implode("\x00", $keys);
+        $sig = implode("\0", $keys);
         if ($closure = $this->_Class->CreateFromSignatureClosures[$sig] ?? null) {
             return $closure;
         }
@@ -743,7 +743,7 @@ class Introspector
         $rules = $rules
             ? [$rules->getSortByKey(), $this->_Class->IsExtensible && $rules->getIncludeMeta()]
             : [false, $this->_Class->IsExtensible];
-        $key = implode("\x00", $rules);
+        $key = implode("\0", $rules);
 
         if ($closure = $this->_Class->SerializeClosures[$key] ?? null) {
             return $closure;

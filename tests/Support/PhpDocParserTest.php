@@ -24,19 +24,19 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
     public function testFromDocBlocks()
     {
         $docBlocks = [
-            "/**
-     * @param \$arg1 Description from ClassC (untyped)
-     * @param string[] \$arg3
-     * @return \$this Description from ClassC
-     */",
-            "/**
+            '/**
+     * @param $arg1 Description from ClassC (untyped)
+     * @param string[] $arg3
+     * @return $this Description from ClassC
+     */',
+            '/**
      * Summary from ClassB
      *
-     * @param int|string \$arg1
-     * @param array \$arg3
-     * @return \$this
-     */",
-            "/**
+     * @param int|string $arg1
+     * @param array $arg3
+     * @return $this
+     */',
+            '/**
      * Summary from ClassA
      *
      * Description from ClassA
@@ -45,21 +45,21 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
      * // code here
      * ```
      *
-     * @param mixed \$arg1 Description from ClassA
-     * @param string \$arg2 Description from ClassA
-     * @param array \$arg3 Description from ClassA
-     * @return \$this
-     */",
+     * @param mixed $arg1 Description from ClassA
+     * @param string $arg2 Description from ClassA
+     * @param array $arg3 Description from ClassA
+     * @return $this
+     */',
         ];
 
         $phpDoc = PhpDocParser::fromDocBlocks($docBlocks);
 
         $this->assertEquals($phpDoc->Summary, 'Summary from ClassB');
-        $this->assertEquals($phpDoc->Description, "Description from ClassA
+        $this->assertEquals($phpDoc->Description, 'Description from ClassA
 
 ```php
 // code here
-```");
+```');
         $this->assertEquals($phpDoc->TagLines, [
             '@param $arg1 Description from ClassC (untyped)',
             '@param string[] $arg3',
@@ -110,16 +110,16 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
     {
         $docBlocks = [
             '/** @var int $int This is a counter. */',
-            "/**
+            '/**
      * Full docblock with a summary.
      *
      * @var int
-     */",
+     */',
             '/** @var string|null Short docblock, should contain a description. */',
-            "/**
-      * @var string \$name        Should contain a description
-      * @var string \$description Should contain a description
-      */",
+            '/**
+      * @var string $name        Should contain a description
+      * @var string $description Should contain a description
+      */',
             '/** @var int */',
             '/** @var */',
         ];
@@ -143,13 +143,13 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
 
     public function testTemplateTags()
     {
-        $docBlock = "/**
+        $docBlock = '/**
  * Summary
  *
  * @template T
- * @param class-string<T> \$id
+ * @param class-string<T> $id
  * @return T
- */";
+ */';
         $phpDoc = new PhpDocParser($docBlock);
         $this->assertEquals('Summary', $phpDoc->Summary);
         $this->assertEquals(null, $phpDoc->Description);
@@ -160,24 +160,24 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
 
     public function testTemplateInheritance()
     {
-        $docBlock = "/**
+        $docBlock = '/**
  * Summary
  *
  * @template T
  * @template TArray of array|null
- * @param class-string<T> \$id
- * @param TArray \$array
- * @param TKey \$key
- * @param TValue \$value
+ * @param class-string<T> $id
+ * @param TArray $array
+ * @param TKey $key
+ * @param TValue $value
  * @return T
- */";
-        $classDocBlock = "/**
+ */';
+        $classDocBlock = '/**
  * Class summary
  *
  * @template T of string
  * @template TKey of int|string
  * @template TValue of object
- */";
+ */';
         $phpDoc = new PhpDocParser($docBlock, $classDocBlock);
         $this->assertEquals('Summary', $phpDoc->Summary);
         $this->assertEquals(null, $phpDoc->Description);
@@ -191,43 +191,43 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
 
     public function testFences()
     {
-        $docBlock = "/**
+        $docBlock = '/**
  * Summary
  *
  * Description with multiple code blocks:
  *
  * ```php
- * \$this->doSomething();
+ * $this->doSomething();
  * ```
  *
  * Three, to be precise (including within the `@var`):
  *
  * ```php
- * \$this->doSomethingElse();
+ * $this->doSomethingElse();
  * ```
  *
  * @var callable|null
  * ```php
- * callback(string \$value): string
+ * callback(string $value): string
  * ```
- */";
+ */';
         $phpDoc = new PhpDocParser($docBlock);
         $this->assertEquals($phpDoc->Summary, 'Summary');
-        $this->assertEquals($phpDoc->Description, "Description with multiple code blocks:
+        $this->assertEquals($phpDoc->Description, 'Description with multiple code blocks:
 
 ```php
-\$this->doSomething();
+$this->doSomething();
 ```
 
 Three, to be precise (including within the `@var`):
 
 ```php
-\$this->doSomethingElse();
+$this->doSomethingElse();
 ```
 
 ```php
-callback(string \$value): string
-```");
+callback(string $value): string
+```');
         $this->assertEquals($phpDoc->Var, [[
             'name'        => null,
             'type'        => '?callable',
@@ -237,7 +237,7 @@ callback(string \$value): string
 
     public function testBlankLines()
     {
-        $docBlock = "/**
+        $docBlock = '/**
  *
  * Summary
  *
@@ -246,7 +246,7 @@ callback(string \$value): string
  *
  *
  * @internal
- */";
+ */';
         $phpDoc = new PhpDocParser($docBlock);
         $this->assertEquals('Summary', $phpDoc->Summary);
         $this->assertEquals('Summary and description are surrounded by superfluous blank lines.', $phpDoc->Description);
@@ -254,20 +254,20 @@ callback(string \$value): string
 
     public function testNoBlankLineAfterSummary()
     {
-        $docBlock = "/**
+        $docBlock = '/**
  * Summary
  * @internal
- */";
+ */';
         $phpDoc = new PhpDocParser($docBlock);
         $this->assertEquals('Summary @internal', $phpDoc->Summary);
     }
 
     public function testMultiLineTagDescription()
     {
-        $docBlock = "/**
- * @param \$arg
- * Description of \$arg
- */";
+        $docBlock = '/**
+ * @param $arg
+ * Description of $arg
+ */';
         $phpDoc = new PhpDocParser($docBlock);
         $this->assertEquals([
             'type'        => null,

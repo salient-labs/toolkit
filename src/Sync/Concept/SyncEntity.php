@@ -394,7 +394,7 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
 
     private function objectId(): string
     {
-        return implode("\x00", [
+        return implode("\0", [
             $this->service(),
             $this->Id ?: spl_object_id($this),
             $this->_Provider ? $this->_Provider->getProviderHash() : null,

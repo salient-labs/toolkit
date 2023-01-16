@@ -42,7 +42,7 @@ Console::groupEnd();
 
 $i = 0;
 
-while ($i++< 5) {
+while ($i++ < 5) {
     Console::infoOnce('This message is printed repeatedly',
                       'but it should only appear once');
     Console::logOnce('This message is printed repeatedly',
@@ -52,23 +52,23 @@ while ($i++< 5) {
 }
 
 Console::info('`This is a __preformatted span__`,', "and here's a regular __span__");
-Console::log("```
+Console::log('```
 This is a __preformatted block__, with nothing else in the string
-```");
+```');
 
-Console::info("A \\`preformatted\\` __block__ starts after the next line.
+Console::info('A \`preformatted\` __block__ starts after the next line.
 ___There should be no blank lines.___
 ```
-~~Here's some \\\\```__preformatted__\\`\\`\\` text.~~
+~~Here\'s some \\\\```__preformatted__\`\`\` text.~~
 ```
-And ... _done_. ~~Did two backslashes survive on the left? Three on the right?~~");
+And ... _done_. ~~Did two backslashes survive on the left? Three on the right?~~');
 
-Console::log("A similar block, enclosed between __inline__ delimiters, starts after the next line.
+Console::log('A similar block, enclosed between __inline__ delimiters, starts after the next line.
 ___There should be blank lines.___
 `
-~~Here's some \\\\\\`\\`\\`__preformatted__\\`\\`\\` text.~~
+~~Here\'s some \\\\\\`\`\`__preformatted__\`\`\` text.~~
 `
-~~So let it be written. Hopefully with only one backslash. On the left.~~");
+~~So let it be written. Hopefully with only one backslash. On the left.~~');
 
 class TestClass
 {

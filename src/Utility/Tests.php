@@ -75,9 +75,9 @@ final class Tests
      */
     public function isArrayOfIntOrString($value, bool $allowEmpty = false, bool $requireList = false, bool $requireIndexed = false): bool
     {
-        return is_array($value) &&
-            (empty($value) ? $allowEmpty
-                : (count(array_filter($value, fn($item) => is_string($item))) === count($value) ||
+        return is_array($value) && (empty($value)
+            ? $allowEmpty
+            : (count(array_filter($value, fn($item) => is_string($item))) === count($value) ||
                     count(array_filter($value, fn($item) => is_int($item))) === count($value)) &&
                 (!($requireList || $requireIndexed) ||
                     ($requireList && $this->isListArray($value)) ||
@@ -91,9 +91,9 @@ final class Tests
      */
     public function isArrayOfArray($value, bool $allowEmpty = false, bool $requireList = false, bool $requireIndexed = false): bool
     {
-        return is_array($value) &&
-            (empty($value) ? $allowEmpty
-                : empty(array_filter($value, fn($item) => !is_array($item))) &&
+        return is_array($value) && (empty($value)
+            ? $allowEmpty
+            : empty(array_filter($value, fn($item) => !is_array($item))) &&
                 (!($requireList || $requireIndexed) ||
                     ($requireList && $this->isListArray($value)) ||
                     ((!$requireList) && $this->isIndexedArray($value))));
@@ -110,9 +110,9 @@ final class Tests
      */
     public function isArrayOf($value, string $class, bool $strict = false, bool $allowEmpty = false, bool $requireList = false, bool $requireIndexed = false): bool
     {
-        return is_array($value) &&
-            (empty($value) ? $allowEmpty
-                : empty(array_filter($value, $strict
+        return is_array($value) && (empty($value)
+            ? $allowEmpty
+            : empty(array_filter($value, $strict
                     ? fn($val) => !is_object($val) || strcasecmp(get_class($val), $class)
                     : fn($val) => !is_a($val, $class))) &&
                 (!($requireList || $requireIndexed) ||

@@ -33,7 +33,7 @@ final class ArrayMapper
      */
     public function getKeyMapClosure(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED): Closure
     {
-        $sig = implode("\x00", array_map(
+        $sig = implode("\0", array_map(
             fn($v) => is_array($v) ? implode("\x01", $v) : $v,
             array_merge(
                 array_keys($keyMap), array_values($keyMap), [$conformity, $flags]
