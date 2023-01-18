@@ -5,6 +5,7 @@ Getting started
    :maxdepth: 2
 
    console
+   app
    sync
 
 Installation

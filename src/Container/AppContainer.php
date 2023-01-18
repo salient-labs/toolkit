@@ -28,12 +28,12 @@ use UnexpectedValueException;
  *
  * Typically accessed via the {@see \Lkrms\Facade\App} facade.
  *
- * @property-read string $BasePath   Environment variable: app_base_path
- * @property-read string $CachePath  Environment variable: app_cache_path
- * @property-read string $ConfigPath Environment variable: app_config_path
- * @property-read string $DataPath   Environment variable: app_data_path
- * @property-read string $LogPath    Environment variable: app_log_path
- * @property-read string $TempPath   Environment variable: app_temp_path
+ * @property-read string $BasePath
+ * @property-read string $CachePath
+ * @property-read string $ConfigPath
+ * @property-read string $DataPath
+ * @property-read string $LogPath
+ * @property-read string $TempPath
  */
 class AppContainer extends Container implements IReadable
 {
