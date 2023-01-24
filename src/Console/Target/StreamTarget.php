@@ -135,7 +135,7 @@ final class StreamTarget extends ConsoleTarget
         return $stream;
     }
 
-    protected function writeToTarget(int $level, string $message, array $context)
+    protected function writeToTarget(int $level, string $message, array $context): void
     {
         if ($this->AddTimestamp) {
             $now     = (new DateTime('now', $this->Timezone))->format($this->Timestamp);

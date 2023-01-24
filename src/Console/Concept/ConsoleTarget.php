@@ -17,6 +17,13 @@ use UnexpectedValueException;
 abstract class ConsoleTarget
 {
     /**
+     * True if formatting based on message level is enabled
+     *
+     * @var bool
+     */
+    protected $MessageFormatting = true;
+
+    /**
      * @var string
      */
     private $Prefix;
@@ -40,16 +47,25 @@ abstract class ConsoleTarget
      */
     private $Formatter;
 
-    abstract protected function writeToTarget(int $level, string $message, array $context);
+    abstract protected function writeToTarget(int $level, string $message, array $context): void;
 
-    final public function write(int $level, string $message, array $context)
+    final public function write(int $level, string $message, array $context): void
     {
         $this->writeToTarget($level, $this->Prefix
             ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
             : $message, $context);
     }
 
-    final public function setPrefix(?string $prefix)
+    final public function setMessageFormatting(bool $messageFormatting): void
+    {
+        if ($this->MessageFormatting !== $messageFormatting) {
+            $this->MessageFormatting = $messageFormatting;
+            $this->MessageFormats    = [];
+            $this->Formatter         = null;
+        }
+    }
+
+    final public function setPrefix(?string $prefix): void
     {
         $this->Prefix = $prefix
             ? $this->getTagFormat(Tag::LOW_PRIORITY)->apply($prefix)
@@ -73,7 +89,7 @@ abstract class ConsoleTarget
 
     protected function createMessageFormat(int $level): ConsoleMessageFormat
     {
-        if (!$this->isTty()) {
+        if (!$this->MessageFormatting || !$this->isTty()) {
             $fmt = new ConsoleFormat();
 
             return new ConsoleMessageFormat($fmt, $fmt, $fmt);

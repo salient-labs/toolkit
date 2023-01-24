@@ -12,7 +12,7 @@ use Lkrms\LkUtil\Command\Concept\Command;
 
 class CheckHeartbeat extends Command
 {
-    public function getDescription(): string
+    public function getShortDescription(): string
     {
         return 'Send a heartbeat request to a provider';
     }

@@ -31,7 +31,7 @@ use ReflectionProperty;
  */
 class GenerateBuilder extends GenerateCommand
 {
-    public function getDescription(): string
+    public function getShortDescription(): string
     {
         return 'Generate a fluent interface that creates instances of a class';
     }

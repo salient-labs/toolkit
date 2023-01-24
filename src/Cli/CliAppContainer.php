@@ -7,6 +7,7 @@ use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Container\AppContainer;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Console;
+use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sys;
 use UnexpectedValueException;
 
@@ -190,41 +191,72 @@ final class CliAppContainer extends AppContainer
     /**
      * Generate a usage message for a command tree node
      *
-     * @param string $name
      * @param array|string $node
-     * @return string|null
      */
-    private function getUsage(string $name, $node): ?string
+    private function getUsage(string $name, $node, bool $terse = false): ?string
     {
+        $progName = $this->getProgramName();
+        $fullName = trim("$progName $name");
         if ($command = $this->getNodeCommand($name, $node)) {
-            return $command->getUsage();
+            return $terse
+                ? $fullName . $command->getUsage(true)
+                    . "\n\nSee '"
+                    . ($name ? "$progName help $name" : "$progName --help")
+                    . "' for more information."
+                : $command->getUsage();
         } elseif (!is_array($node)) {
             return null;
         }
 
         $synopses = [];
-
         foreach ($node as $childName => $childNode) {
+            $prefix = $terse
+                ? "$fullName $childName"
+                : "_{$childName}_";
             if ($command = $this->getNodeCommand($name . ($name ? ' ' : '') . $childName, $childNode)) {
-                $synopses[] = "_{$childName}_" . $command->getUsage(true);
+                $synopses[] = $prefix . $command->getUsage(true);
             } elseif (is_array($childNode)) {
-                $synopses[] = "_{$childName}_ <command>";
+                $synopses[] = "$prefix <command>";
             }
         }
+        $synopses = implode("\n", $synopses);
 
-        $name     = trim($this->getProgramName() . " $name");
-        $synopses = implode("\n  ", $synopses);
+        if ($terse) {
+            return "$synopses\n\nSee '"
+                . (Convert::sparseToString(' ', ["$progName help", $name, '<command>']))
+                . "' for more information.";
+        }
 
-        return <<<EOF
-        ___NAME___
-          __{$name}__
+        $sections = [
+            'NAME'        => '__' . $fullName . '__',
+            'SYNOPSIS'    => '__' . $fullName . '__ <command>',
+            'SUBCOMMANDS' => $synopses,
+        ];
 
-        ___SYNOPSIS___
-          __{$name}__ <command>
+        return $this->buildUsageSections($sections);
+    }
 
-        ___SUBCOMMANDS___
-          $synopses
-        EOF;
+    /**
+     * @internal
+     * @param array<string,string> $sections
+     */
+    public function buildUsageSections(array $sections): string
+    {
+        $usage = '';
+        foreach ($sections as $heading => $content) {
+            if (!trim($content)) {
+                continue;
+            }
+            $content = str_replace("\n", "\n  ", $content);
+            $usage  .= <<<EOF
+            ___{$heading}___
+              {$content}
+
+            
+            EOF;
+        }
+
+        return rtrim($usage);
     }
 
     /**
@@ -245,9 +277,11 @@ final class CliAppContainer extends AppContainer
         $node = $this->CommandTree;
         $name = '';
 
+        $lastNode = null;
+        $lastName = null;
         try {
             while (is_array($node)) {
-                $arg = array_shift($args) ?: '';
+                $arg = array_shift($args);
 
                 // 1. Descend into the command tree if $arg is a legal
                 //    subcommand or unambiguous partial subcommand
@@ -255,32 +289,36 @@ final class CliAppContainer extends AppContainer
                 // 3. Print usage info if $arg is "--help" and there are no
                 //    further arguments
                 // 4. Otherwise, fail
-                if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)) {
+                if ($arg && preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)) {
                     $nodes = array_filter(
                         $node,
-                        function ($childName) use ($arg) {
-                            return strpos($childName, $arg) === 0;
-                        },
+                        fn(string $childName): bool => strpos($childName, $arg) === 0,
                         ARRAY_FILTER_USE_KEY
                     );
-
-                    if (!$nodes) {
-                        if ($arg == 'help') {
-                            $args[] = '--help';
-                            continue;
-                        }
-                    } elseif (count($nodes) == 1) {
-                        $arg = key($nodes);
+                    switch (count($nodes)) {
+                        case 0:
+                            if ($arg === 'help') {
+                                $args[] = '--help';
+                                continue 2;
+                            }
+                            break;
+                        case 1:
+                            $arg = array_keys($nodes)[0];
+                            break;
                     }
-
-                    $node  = $node[$arg] ?? null;
-                    $name .= ($name ? ' ' : '') . $arg;
-                } elseif ($arg == '--help' && empty($args)) {
+                    $lastNode = $node;
+                    $lastName = $name;
+                    $node     = $node[$arg] ?? null;
+                    $name    .= ($name ? ' ' : '') . $arg;
+                } elseif ($arg === '--help' && empty($args)) {
                     Console::out($this->getUsage($name, $node));
 
                     return 0;
                 } else {
-                    throw new CliArgumentsInvalidException('missing or incomplete command' . ($name ? " '$name'" : ''));
+                    Console::out($this->getUsage($name, $node, true));
+
+                    // Exit without error unless there are unconsumed arguments
+                    return is_null($arg) ? 0 : 1;
                 }
             }
 
@@ -292,9 +330,8 @@ final class CliAppContainer extends AppContainer
                 throw new CliArgumentsInvalidException("no command registered at '$name'");
             }
         } catch (CliArgumentsInvalidException $ex) {
-            unset($ex);
-
-            if ($node && $usage = $this->getUsage($name, $node)) {
+            if (($node && ($usage = $this->getUsage($name, $node, true))) ||
+                    ($lastNode && ($usage = $this->getUsage($lastName, $lastNode, true)))) {
                 Console::out($usage);
             }
 

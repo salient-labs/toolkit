@@ -77,7 +77,7 @@ final class GetSyncEntities extends CliCommand
         natsort($this->Providers);
     }
 
-    public function getDescription(): string
+    public function getShortDescription(): string
     {
         return 'Get data from a provider';
     }
@@ -122,6 +122,16 @@ final class GetSyncEntities extends CliCommand
                 ->short('c')
                 ->description('Generate CSV output'),
         ];
+    }
+
+    public function getLongDescription(): ?string
+    {
+        return null;
+    }
+
+    public function getUsageSections(): ?array
+    {
+        return null;
     }
 
     protected function run(string ...$params)

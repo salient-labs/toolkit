@@ -151,7 +151,6 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
         $this->Long            = $long ?: null;
         $this->OptionType      = $optionType;
         $this->MultipleAllowed = $multipleAllowed;
-        $this->Delimiter       = $multipleAllowed ? $delimiter : null;
         $this->Description     = $description;
         $this->BindTo          = &$bindTo;
 
@@ -167,7 +166,6 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
                 $this->IsPositional = true;
                 $short              = null;
                 $key                = $this->Long;
-                $displayName        = $this->Long;
                 $valueName          = $valueName ?: strtoupper(Convert::toSnakeCase($this->Long));
                 if ($optionType === CliOptionType::ONE_OF_POSITIONAL) {
                     $this->AllowedValues = $allowedValues;
@@ -187,10 +185,11 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
 
         $this->Short           = $short ?: null;
         $this->Key             = $key ?? ($this->Short . '|' . $this->Long);
-        $this->DisplayName     = $displayName ?? ($this->Long ? '--' . $this->Long : '-' . $this->Short);
         $this->IsRequired      = $required;
         $this->IsValueRequired = $valueRequired ?? !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
-        $this->ValueName       = $valueName ?: 'VALUE';
+        $this->Delimiter       = $this->MultipleAllowed && !$this->IsFlag ? $delimiter : null;
+        $this->ValueName       = $this->IsFlag ? null : ($valueName ?: 'VALUE');
+        $this->DisplayName     = $this->IsPositional ? $this->getFriendlyValueName() : ($this->Long ? '--' . $this->Long : '-' . $this->Short);
         $this->DefaultValue    = $this->IsRequired ? null : $defaultValue;
         $this->ValueCallback   = $valueCallback;
 
@@ -200,14 +199,34 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
     }
 
     /**
+     * Format the option's value name
+     *
+     * For compatibility with {@link http://docopt.org docopt} and similar
+     * conventions, upper-case value names are returned as-is, otherwise they
+     * are converted to kebab-case and enclosed in angle brackets (`<` and `>`).
+     *
+     */
+    public function getFriendlyValueName(): ?string
+    {
+        $name = $this->ValueName;
+        if ($name !== strtoupper($name)) {
+            $name = '<' . Convert::toKebabCase($name) . '>';
+        }
+
+        return $name;
+    }
+
+    /**
      * @internal
      * @see \Lkrms\Cli\Concept\CliCommand::applyOption()
      */
     public function validate(): void
     {
-        if ($this->IsPositional && is_null($this->Long)) {
-            throw new UnexpectedValueException('long must be set');
-        } elseif (!$this->IsPositional && is_null($this->Long) && is_null($this->Short)) {
+        if ($this->IsPositional) {
+            if (is_null($this->Long)) {
+                throw new UnexpectedValueException('long must be set');
+            }
+        } elseif (is_null($this->Long) && is_null($this->Short)) {
             throw new UnexpectedValueException('At least one must be set: long, short');
         }
 
@@ -219,7 +238,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
             Assert::patternMatches($this->Short, '/^[a-z0-9]$/i', 'short');
         }
 
-        if (!is_null($this->DefaultValue)) {
+        if (!is_null($this->DefaultValue) && !$this->IsFlag) {
             if ($this->MultipleAllowed) {
                 $this->DefaultValue = Convert::toArray($this->DefaultValue);
                 array_walk($this->DefaultValue,
@@ -227,14 +246,12 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
                         if (($default = Convert::scalarToString($value)) === false) {
                             throw new UnexpectedValueException('defaultValue must be a scalar or an array of scalars');
                         }
-
                         $value = $default;
                     });
             } else {
                 if (($default = Convert::scalarToString($this->DefaultValue)) === false) {
                     throw new UnexpectedValueException('defaultValue must be a scalar');
                 }
-
                 $this->DefaultValue = $default;
             }
         }

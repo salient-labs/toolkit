@@ -17,6 +17,16 @@ use Lkrms\Facade\Env;
  */
 abstract class Command extends CliCommand
 {
+    public function getLongDescription(): ?string
+    {
+        return null;
+    }
+
+    public function getUsageSections(): ?array
+    {
+        return null;
+    }
+
     /**
      * @return class-string<object>
      */
