@@ -7,6 +7,7 @@ use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Concern\HasCliAppContainer;
 use Lkrms\Contract\ReturnsContainer;
+use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use RuntimeException;
@@ -143,6 +144,11 @@ abstract class CliCommand implements ReturnsContainer
     private $IsHelp;
 
     /**
+     * @var bool
+     */
+    private $IsVersion;
+
+    /**
      * @var int
      */
     private $ExitStatus = 0;
@@ -267,6 +273,13 @@ abstract class CliCommand implements ReturnsContainer
             $this->addOption(CliOption::build()
                                  ->long('help')
                                  ->short(array_key_exists('h', $this->OptionsByName) ? null : 'h')
+                                 ->go(), $options, true);
+        }
+
+        if (!array_key_exists('version', $this->OptionsByName)) {
+            $this->addOption(CliOption::build()
+                                 ->long('version')
+                                 ->short(array_key_exists('v', $this->OptionsByName) ? null : 'v')
                                  ->go(), $options, true);
         }
 
@@ -465,6 +478,7 @@ abstract class CliCommand implements ReturnsContainer
         $this->OptionErrors      = [];
         $this->NextArgumentIndex = null;
         $this->IsHelp            = false;
+        $this->IsVersion         = false;
 
         $args   = $this->Arguments;
         $merged = [];
@@ -561,6 +575,12 @@ abstract class CliCommand implements ReturnsContainer
                 continue;
             }
 
+            if ($option->Long == 'version') {
+                $this->IsVersion = true;
+
+                continue;
+            }
+
             if (!$option->MultipleAllowed && is_array($value)) {
                 $this->optionError("{$option->DisplayName} cannot be used multiple times");
             }
@@ -575,7 +595,7 @@ abstract class CliCommand implements ReturnsContainer
 
         foreach ($this->Options as &$option) {
             if ($option->IsRequired && !array_key_exists($option->Key, $merged)) {
-                if (!(count($args) == 1 && $this->IsHelp)) {
+                if (!(count($args) == 1 && ($this->IsHelp || $this->IsVersion))) {
                     $this->optionError("{$option->DisplayName} required"
                         . $this->maybeGetAllowedValues($option));;
                 }
@@ -769,6 +789,14 @@ abstract class CliCommand implements ReturnsContainer
 
         if ($this->IsHelp) {
             Console::out($this->getUsage());
+
+            return 0;
+        }
+
+        if ($this->IsVersion) {
+            $appName = $this->app()->getAppName();
+            $version = Composer::getRootPackageVersion();
+            Console::out("__{$appName}__ $version");
 
             return 0;
         }

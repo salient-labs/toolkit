@@ -6,6 +6,7 @@ use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Container\AppContainer;
 use Lkrms\Facade\Assert;
+use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sys;
@@ -263,11 +264,17 @@ final class CliAppContainer extends AppContainer
      * Process the command line
      *
      * One of the following actions will be taken:
-     * - if `--help` is the only remaining argument after processing any
-     *   subcommand names, print a usage message and return `0`
-     * - if subcommands resolve to a registered command, invoke it and return
-     *   its exit status
-     * - report an error, print a usage message, and return `1`
+     * - if subcommand arguments resolve to a registered command, invoke it and
+     *   return its exit status
+     * - if `--help` is the only remaining argument after processing subcommand
+     *   arguments, print a usage message and return `0`
+     * - if `--version` is the only remaining argument, print the application's
+     *   name and version number and return `0`
+     * - if, after processing subcommand arguments, there are no further
+     *   arguments but there are further subcommands, print a one-line synopsis
+     *   of each registered subcommand and return `0`
+     * - report an error, print a one-line synopsis of each registered
+     *   subcommand and return `1`
      *
      * @return int
      */
@@ -286,8 +293,8 @@ final class CliAppContainer extends AppContainer
                 // 1. Descend into the command tree if $arg is a legal
                 //    subcommand or unambiguous partial subcommand
                 // 2. Push "--help" onto $args and continue if $arg is "help"
-                // 3. Print usage info if $arg is "--help" and there are no
-                //    further arguments
+                // 3. If there are no further arguments, print usage info if
+                //    $arg is "--help" or version number if $arg is "--version"
                 // 4. Otherwise, fail
                 if ($arg && preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)) {
                     $nodes = array_filter(
@@ -312,6 +319,12 @@ final class CliAppContainer extends AppContainer
                     $name    .= ($name ? ' ' : '') . $arg;
                 } elseif ($arg === '--help' && empty($args)) {
                     Console::out($this->getUsage($name, $node));
+
+                    return 0;
+                } elseif ($arg === '--version' && empty($args)) {
+                    $appName = $this->getAppName();
+                    $version = Composer::getRootPackageVersion();
+                    Console::out("__{$appName}__ $version");
 
                     return 0;
                 } else {
