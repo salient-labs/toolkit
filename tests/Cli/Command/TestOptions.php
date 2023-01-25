@@ -10,7 +10,7 @@ class TestOptions extends CliCommand
 {
     private $Operation;
 
-    public function getDescription(): string
+    public function getShortDescription(): string
     {
         return 'Test the available option types';
     }
@@ -95,6 +95,16 @@ class TestOptions extends CliCommand
                 ->multipleAllowed()
                 ->defaultValue(['all']),
         ];
+    }
+
+    public function getLongDescription(): ?string
+    {
+        return null;
+    }
+
+    public function getUsageSections(): ?array
+    {
+        return null;
     }
 
     protected function run(string ...$args)

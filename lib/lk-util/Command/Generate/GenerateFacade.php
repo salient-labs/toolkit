@@ -40,7 +40,7 @@ final class GenerateFacade extends GenerateCommand
         'getInstance',
     ];
 
-    public function getDescription(): string
+    public function getShortDescription(): string
     {
         return 'Generate a static interface to a class';
     }

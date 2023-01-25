@@ -32,7 +32,7 @@ class GenerateSyncEntity extends GenerateCommand
 
     private const DEFAULT_METHOD = 'get';
 
-    public function getDescription(): string
+    public function getShortDescription(): string
     {
         return 'Generate a sync entity class';
     }

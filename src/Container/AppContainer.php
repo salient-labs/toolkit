@@ -388,7 +388,7 @@ class AppContainer extends Container implements IReadable
             ...Sys::getCpuUsage(),
         ];
         Console::print(sprintf(
-            'CPU time: **%.3fs** real, **%.3fs** user, **%.3fs** system; memory: **%s** peak',
+            "\nCPU time: **%.3fs** real, **%.3fs** user, **%.3fs** system; memory: **%s** peak",
             ($endTime - $this->StartTime) / 1000000000,
             $userTime / 1000000,
             $systemTime / 1000000,
@@ -413,7 +413,7 @@ class AppContainer extends Container implements IReadable
             }
             uasort($timers, fn(array $a, array $b) => $b[0] <=> $a[0]);
             $lines[] = sprintf(
-                "Timing: **%.3fms** recorded by **%d** %s with type '**%s**':",
+                "\nTiming: **%.3fms** recorded by **%d** %s with type '**%s**':",
                 $totalTime,
                 $count,
                 Convert::plural($count, 'timer'),

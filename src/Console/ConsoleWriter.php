@@ -22,6 +22,17 @@ use Throwable;
  */
 final class ConsoleWriter implements ReceivesFacade
 {
+    private const LEVEL_PREFIX = [
+        Level::EMERGENCY => ' !! ',
+        Level::ALERT     => ' !! ',
+        Level::CRITICAL  => ' !! ',
+        Level::ERROR     => ' !! ',
+        Level::WARNING   => '  ! ',
+        Level::NOTICE    => '==> ',
+        Level::INFO      => ' -> ',
+        Level::DEBUG     => '--- ',
+    ];
+
     /**
      * Message level => ConsoleTarget[]
      *
@@ -332,9 +343,9 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    private function write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null)
+    private function write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null, bool $formatByLevel = true)
     {
-        return $this->_write($level, $msg1, $msg2, $prefix, $ex, $this->Targets);
+        return $this->_write($level, $msg1, $msg2, $prefix, $ex, $this->Targets, $formatByLevel);
     }
 
     /**
@@ -352,11 +363,11 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    private function writeOnce(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null)
+    private function writeOnce(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null, bool $formatByLevel = true)
     {
         $hash = Compute::hash($level, $msg1, $msg2, $prefix);
         if (($this->Written[$hash] = ($this->Written[$hash] ?? 0) + 1) < 2) {
-            return $this->write($level, $msg1, $msg2, $prefix, $ex);
+            return $this->write($level, $msg1, $msg2, $prefix, $ex, $formatByLevel);
         }
 
         return $this;
@@ -367,9 +378,9 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function print(string $msg, int $level = Level::INFO)
+    public function print(string $msg, int $level = Level::INFO, bool $formatByLevel = true)
     {
-        return $this->write($level, $msg, null, '');
+        return $this->write($level, $msg, null, '', null, $formatByLevel);
     }
 
     /**
@@ -377,9 +388,9 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function out(string $msg, int $level = Level::INFO)
+    public function out(string $msg, int $level = Level::INFO, bool $formatByLevel = true)
     {
-        return $this->_write($level, $msg, null, '', null, $this->StdioTargets);
+        return $this->_write($level, $msg, null, '', null, $this->StdioTargets, $formatByLevel);
     }
 
     /**
@@ -387,56 +398,40 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function tty(string $msg, int $level = Level::INFO)
+    public function tty(string $msg, int $level = Level::INFO, bool $formatByLevel = true)
     {
-        return $this->_write($level, $msg, null, '', null, $this->TtyTargets);
+        return $this->_write($level, $msg, null, '', null, $this->TtyTargets, $formatByLevel);
     }
 
     /**
-     * Print "$msg1 $msg2" with formatting based on $level
+     * Print "$msg1 $msg2" with prefix and formatting optionally based on $level
+     *
+     * This method increments the message counter for `$level`.
      *
      * @return $this
      */
-    public function message(int $level, string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function message(int $level, string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $prefixByLevel = true, bool $formatByLevel = true)
     {
-        return $this->_message($level, $msg1, $msg2, $ex);
+        return $this->count($level)
+                    ->write($level, $msg1, $msg2,
+                            $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
+                            $ex, $formatByLevel);
     }
 
     /**
-     * Print "$msg1 $msg2" with formatting based on $level once per run
+     * Print "$msg1 $msg2" with prefix and formatting optionally based on $level
+     * once per run
+     *
+     * This method increments the message counter for `$level`.
      *
      * @return $this
      */
-    public function messageOnce(int $level, string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function messageOnce(int $level, string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $prefixByLevel = true, bool $formatByLevel = true)
     {
-        return $this->_message($level, $msg1, $msg2, $ex, true);
-    }
-
-    private function _message(int $level, string $msg1, ?string $msg2, ?Throwable $ex, bool $once = false)
-    {
-        $suffix = $once ? 'Once' : '';
-
-        switch ($level) {
-            case Level::EMERGENCY:
-            case Level::ALERT:
-            case Level::CRITICAL:
-            case Level::ERROR:
-                return $this->{"error$suffix"}($msg1, $msg2, $ex);
-
-            case Level::WARNING:
-                return $this->{"warn$suffix"}($msg1, $msg2, $ex);
-
-            case Level::NOTICE:
-                return $this->{"info$suffix"}($msg1, $msg2, $ex);
-
-            case Level::INFO:
-                break;
-
-            case Level::DEBUG:
-                return $this->{"debug$suffix"}($msg1, $msg2, $ex, 1);
-        }
-
-        return $this->{"log$suffix"}($msg1, $msg2, $ex);
+        return $this->count($level)
+                    ->writeOnce($level, $msg1, $msg2,
+                                $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
+                                $ex, $formatByLevel);
     }
 
     /**
@@ -672,7 +667,7 @@ final class ConsoleWriter implements ReceivesFacade
     /**
      * @return $this
      */
-    private function _write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex, array &$targets)
+    private function _write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex, array &$targets, bool $formatByLevel = true)
     {
         if (!$this->Targets) {
             $this->registerDefaultTargets();
@@ -688,6 +683,8 @@ final class ConsoleWriter implements ReceivesFacade
 
         /** @var ConsoleTarget $target */
         foreach ($targets[$level] ?? [] as $target) {
+            $target->setMessageFormatting($formatByLevel);
+
             $formatter = $target->getFormatter();
             $_msg1     = $formatter->format($msg1);
             $_msg2     = $msg2 ? $formatter->format($msg2) : null;
