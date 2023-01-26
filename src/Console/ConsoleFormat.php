@@ -50,6 +50,13 @@ final class ConsoleFormat
             $text = str_replace($this->Replace, $this->ReplaceWith, $text);
         }
 
-        return "{$this->Before}$text{$this->After}";
+        $text = $this->Before . $text;
+
+        // Preserve trailing carriage returns
+        if ($text[-1] === "\r") {
+            return substr($text, 0, -1) . $this->After . "\r";
+        }
+
+        return $text . $this->After;
     }
 }

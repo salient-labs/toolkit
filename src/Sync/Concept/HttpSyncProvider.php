@@ -2,11 +2,12 @@
 
 namespace Lkrms\Sync\Concept;
 
+use Lkrms\Contract\IProvider;
 use Lkrms\Curler\CachingCurler;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerHeaders;
-use Lkrms\Facade\Console;
+use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinition;
@@ -162,9 +163,6 @@ abstract class HttpSyncProvider extends SyncProvider
 
     public function checkHeartbeat(int $ttl = 300)
     {
-        Console::debugOnce('Not implemented:',
-                           static::class . '::' . __FUNCTION__);
-
-        return $this;
+        throw new MethodNotImplementedException(static::class, __FUNCTION__, IProvider::class);
     }
 }
