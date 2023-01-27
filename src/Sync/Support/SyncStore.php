@@ -3,6 +3,7 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Console\ConsoleLevel as Level;
+use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
@@ -11,6 +12,7 @@ use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use ReflectionClass;
 use RuntimeException;
+use Throwable;
 use UnexpectedValueException;
 
 /**
@@ -470,6 +472,30 @@ final class SyncStore extends SqliteStore
         }
 
         return null;
+    }
+
+    /**
+     * Throw an exception if a registered provider has an unreachable backend
+     *
+     * @return $this
+     */
+    public function checkHeartbeats()
+    {
+        foreach ($this->Providers as $id => $provider) {
+            $name = ($provider->name() ?: get_class($provider)) . " [#$id]";
+            Console::logProgress('Checking', $name . "\r");
+            try {
+                $provider->checkHeartbeat();
+                Console::log('Heartbeat OK:', $name);
+            } catch (MethodNotImplementedException $ex) {
+                Console::log('Heartbeat check not supported:', $name);
+            } catch (Throwable $ex) {
+                Console::log('No heartbeat:', $name);
+                throw $ex;
+            }
+        }
+
+        return $this;
     }
 
     /**

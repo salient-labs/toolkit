@@ -253,7 +253,7 @@ final class CliAppContainer extends AppContainer
             ___{$heading}___
               {$content}
 
-            
+
             EOF;
         }
 

@@ -18,7 +18,11 @@ interface ICollection extends Iterator, ArrayAccess, Countable
     /**
      * Apply a callback to every item
      *
-     * @psalm-param callable(T) $callback
+     * @param callable $callback
+     * ```php
+     * fn(T $item, ?T $prevItem, ?T $nextItem)
+     * ```
+     * @psalm-param callable(T, ?T, ?T) $callback
      * @return $this
      */
     public function forEach(callable $callback);
@@ -28,7 +32,11 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      *
      * Analogous to `array_filter()`.
      *
-     * @psalm-param callable(T): bool $callback
+     * @param callable $callback
+     * ```php
+     * fn(T $item, ?T $prevItem, ?T $nextItem): bool
+     * ```
+     * @psalm-param callable(T, ?T, ?T): bool $callback
      * @return static
      */
     public function filter(callable $callback);
@@ -37,7 +45,11 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      * Return the first item that satisfies a callback, or false if no such item
      * is in the collection
      *
-     * @psalm-param callable(T): bool $callback
+     * @param callable $callback
+     * ```php
+     * fn(T $item, ?T $prevItem, ?T $nextItem): bool
+     * ```
+     * @psalm-param callable(T, ?T, ?T): bool $callback
      * @return T|false
      */
     public function find(callable $callback);

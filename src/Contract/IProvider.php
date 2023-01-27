@@ -2,6 +2,7 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Support\DateFormatter;
 
 /**
@@ -27,11 +28,12 @@ interface IProvider extends ReturnsContainer, ReturnsDescription
     /**
      * Throw an exception if the backend isn't reachable
      *
-     * This method MAY emit a {@see \Lkrms\Console\ConsoleLevel::DEBUG} message
-     * after confirming a successful handshake. Positive results SHOULD be
-     * cached for up to `$ttl` seconds.
+     * Positive results should be cached for `$ttl` seconds. Negative results
+     * must never be cached.
      *
      * @return $this
+     * @throws MethodNotImplementedException if heartbeat monitoring isn't
+     * supported.
      */
     public function checkHeartbeat(int $ttl = 300);
 }

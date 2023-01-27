@@ -17,6 +17,7 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static SyncStore getInstance() Return the underlying SyncStore instance
  * @method static bool isLoaded() Return true if an underlying SyncStore instance has been loaded
  * @method static void unload() Clear the underlying SyncStore instance
+ * @method static SyncStore checkHeartbeats() Throw an exception if a registered provider has an unreachable backend (see {@see SyncStore::checkHeartbeats()})
  * @method static SyncStore close(?int $exitStatus = 0) Close the database (see {@see SyncStore::close()})
  * @method static SyncStore entityType(string $entity) Register a sync entity type and set its ID unless already registered (see {@see SyncStore::entityType()})
  * @method static SyncStore error(SyncError|SyncErrorBuilder $error, bool $deduplicate = false, bool $toConsole = false) Report an error that occurred during a sync operation (see {@see SyncStore::error()})

@@ -21,45 +21,88 @@ trait TCollection
     use HasItems;
 
     /**
-     * @psalm-param callable(T) $callback
+     * @param callable $callback
+     * ```php
+     * fn(T $item, ?T $prevItem, ?T $nextItem)
+     * ```
+     * @psalm-param callable(T, ?T, ?T) $callback
      * @return $this
      */
     final public function forEach(callable $callback)
     {
-        foreach ($this->_Items as $item) {
-            $callback($item);
+        $items   = $this->_Items;
+        $items[] = null;
+
+        $prev = null;
+        $item = null;
+        $i    = -1;
+        foreach ($items as $next) {
+            if ($i++ > -1) {
+                $callback($item, $prev, $next);
+                $prev = $item;
+            }
+            $item = $next;
         }
 
         return $this;
     }
 
     /**
-     * @psalm-param callable(T): bool $callback
+     * @param callable $callback
+     * ```php
+     * fn(T $item, ?T $prevItem, ?T $nextItem): bool
+     * ```
+     * @psalm-param callable(T, ?T, ?T): bool $callback
      * @return static
      */
     final public function filter(callable $callback)
     {
         $clone         = clone $this;
         $clone->_Items = [];
-        foreach ($this->_Items as $item) {
-            if ($callback($item)) {
-                $clone->_Items[] = $item;
+
+        $items   = $this->_Items;
+        $items[] = null;
+
+        $prev = null;
+        $item = null;
+        $i    = -1;
+        foreach ($items as $next) {
+            if ($i++ > -1) {
+                if ($callback($item, $prev, $next)) {
+                    $clone->_Items[] = $item;
+                }
+                $prev = $item;
             }
+            $item = $next;
         }
 
         return $clone;
     }
 
     /**
-     * @psalm-param callable(T): bool $callback
+     * @param callable $callback
+     * ```php
+     * fn(T $item, ?T $prevItem, ?T $nextItem): bool
+     * ```
+     * @psalm-param callable(T, ?T, ?T): bool $callback
      * @return T|false
      */
     final public function find(callable $callback)
     {
-        foreach ($this->_Items as $item) {
-            if ($callback($item)) {
-                return $item;
+        $items   = $this->_Items;
+        $items[] = null;
+
+        $prev = null;
+        $item = null;
+        $i    = -1;
+        foreach ($items as $next) {
+            if ($i++ > -1) {
+                if ($callback($item, $prev, $next)) {
+                    return $item;
+                }
+                $prev = $item;
             }
+            $item = $next;
         }
 
         return false;
