@@ -242,12 +242,12 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
             if ($this->MultipleAllowed) {
                 $this->DefaultValue = Convert::toArray($this->DefaultValue);
                 array_walk($this->DefaultValue,
-                    function (&$value) {
-                        if (($default = Convert::scalarToString($value)) === false) {
-                            throw new UnexpectedValueException('defaultValue must be a scalar or an array of scalars');
-                        }
-                        $value = $default;
-                    });
+                           function (&$value) {
+                               if (($default = Convert::scalarToString($value)) === false) {
+                                   throw new UnexpectedValueException('defaultValue must be a scalar or an array of scalars');
+                               }
+                               $value = $default;
+                           });
             } else {
                 if (($default = Convert::scalarToString($this->DefaultValue)) === false) {
                     throw new UnexpectedValueException('defaultValue must be a scalar');

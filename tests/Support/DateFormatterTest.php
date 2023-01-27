@@ -24,15 +24,15 @@ final class DateFormatterTest extends \Lkrms\Tests\TestCase
             '2020-10-20T00:00:00.000+00:00',
             '2022-11-11T16:12:49.876+11:00',
         ], array_map(fn(string $date) =>
-                $formatter->format($formatter->parse($date)),
-            $data));
+                         $formatter->format($formatter->parse($date)),
+                     $data));
 
         $this->assertEquals([
             '2018-06-28T10:00:00.000+10:00',
             '2020-10-20T11:00:00.000+11:00',
             '2022-11-11T16:12:49.876+11:00',
         ], array_map(fn(string $date) =>
-                $formatter2->format($formatter2->parse($date)),
-            $data));
+                         $formatter2->format($formatter2->parse($date)),
+                     $data));
     }
 }

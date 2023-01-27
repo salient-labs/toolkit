@@ -193,9 +193,9 @@ final class GenerateFacade extends GenerateCommand
         };
 
         usort($_methods,
-            fn(ReflectionMethod $a, ReflectionMethod $b) => $a->isConstructor()
-                ? -1 : ($b->isConstructor()
-                    ? 1 : $a->getName() <=> $b->getName()));
+              fn(ReflectionMethod $a, ReflectionMethod $b) => $a->isConstructor()
+                  ? -1 : ($b->isConstructor()
+                      ? 1 : $a->getName() <=> $b->getName()));
         $facadeMethods = [
             " * @method static $service load() Load and return an instance of the underlying $class class",
             " * @method static $service getInstance() Return the underlying $class instance",
