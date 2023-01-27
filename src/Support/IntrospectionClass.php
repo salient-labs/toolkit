@@ -322,10 +322,10 @@ class IntrospectionClass
         $this->PublicProperties =
             $propertyFilter & ReflectionProperty::IS_PROTECTED
                 ? array_intersect($this->Properties,
-                    Reflect::getNames(array_filter(
-                        $properties,
-                        fn(ReflectionProperty $prop) => $prop->isPublic()
-                    )))
+                                  Reflect::getNames(array_filter(
+                                      $properties,
+                                      fn(ReflectionProperty $prop) => $prop->isPublic()
+                                  )))
                 : $this->Properties;
 
         if ($this->IsReadable) {

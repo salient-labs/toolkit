@@ -75,16 +75,16 @@ final class ConsoleFormatter
     public function format(string $string): string
     {
         return preg_replace_callback('/' . self::REGEX_PREFORMATTED . '/u',
-            function (array $matches) {
-                $text = preg_replace(
-                    $this->PregReplace[0],
-                    $this->PregReplace[1],
-                    $this->unescape($matches['text'])
-                );
-                $pre = ($matches['pre'] ?? '') ?: $this->unescape($matches['code'] ?? '');
+                                     function (array $matches) {
+                                         $text = preg_replace(
+                                             $this->PregReplace[0],
+                                             $this->PregReplace[1],
+                                             $this->unescape($matches['text'])
+                                         );
+                                         $pre = ($matches['pre'] ?? '') ?: $this->unescape($matches['code'] ?? '');
 
-                return $text . $pre;
-            }, $string);
+                                         return $text . $pre;
+                                     }, $string);
     }
 
     private function unescape(string $string): string

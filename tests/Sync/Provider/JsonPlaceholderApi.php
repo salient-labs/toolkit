@@ -48,7 +48,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return [self::JSON_PLACEHOLDER_BASE_URL];
     }
 
-    protected function createDateFormatter(): DateFormatter
+    protected function getDateFormatter(): DateFormatter
     {
         return new DateFormatter();
     }

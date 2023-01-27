@@ -6,6 +6,7 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
@@ -29,6 +30,8 @@ use UnexpectedValueException;
  * $faculties = Faculty::backend()->getList();
  * ```
  *
+ * @template TEntity of ISyncEntity
+ * @implements ISyncEntityProvider<TEntity>
  */
 final class SyncEntityProvider implements ISyncEntityProvider
 {
@@ -136,7 +139,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *   entity being created
      * - must be required
      */
-    public function create(SyncEntity $entity, ...$args): SyncEntity
+    public function create($entity, ...$args): ISyncEntity
     {
         return $this->run(SyncOperation::CREATE, $entity, ...$args);
     }
@@ -164,7 +167,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *
      * @param int|string|null $id
      */
-    public function get($id, ...$args): SyncEntity
+    public function get($id, ...$args): ISyncEntity
     {
         return $this->run(SyncOperation::READ, $id, ...$args);
     }
@@ -190,7 +193,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *   entity being updated
      * - must be required
      */
-    public function update(SyncEntity $entity, ...$args): SyncEntity
+    public function update($entity, ...$args): ISyncEntity
     {
         return $this->run(SyncOperation::UPDATE, $entity, ...$args);
     }
@@ -219,7 +222,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * The return value:
      * - must represent the final state of the entity before it was deleted
      */
-    public function delete(SyncEntity $entity, ...$args): SyncEntity
+    public function delete($entity, ...$args): ISyncEntity
     {
         return $this->run(SyncOperation::DELETE, $entity, ...$args);
     }

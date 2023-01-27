@@ -4,7 +4,6 @@ namespace Lkrms\Sync\Concept;
 
 use Closure;
 use DateTimeInterface;
-use JsonSerializable;
 use Lkrms\Concern\RequiresContainer;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
@@ -15,10 +14,6 @@ use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
-use Lkrms\Contract\IProviderEntity;
-use Lkrms\Contract\IReadable;
-use Lkrms\Contract\IWritable;
-use Lkrms\Contract\ReturnsDescription;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
@@ -27,6 +22,7 @@ use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Enumeration\NormaliserFlag;
 use Lkrms\Sync\Concern\HasSyncIntrospector;
 use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
@@ -41,10 +37,10 @@ use UnexpectedValueException;
 /**
  * Represents the state of an entity in an external system
  *
- * {@see SyncEntity} implements {@see IReadable} and {@see IWritable}, but
- * `protected` properties are not accessible by default. Override
- * {@see SyncEntity::getReadable()} and/or {@see SyncEntity::getWritable()} to
- * change this.
+ * {@see SyncEntity} implements {@see \Lkrms\Contract\IReadable} and
+ * {@see \Lkrms\Contract\IWritable}, but `protected` properties are not
+ * accessible by default. Override {@see SyncEntity::getReadable()} and/or
+ * {@see SyncEntity::getWritable()} to change this.
  *
  * The following "magic" property methods are discovered automatically and don't
  * need to be returned by {@see SyncEntity::getReadable()} or
@@ -58,11 +54,11 @@ use UnexpectedValueException;
  *
  * Accessible properties are mapped to associative arrays with snake_case keys
  * when {@see SyncEntity} objects are serialized. Override
- * {@see SyncEntity::buildSerializeRules()} to provide serialization rules for
+ * {@see SyncEntity::getSerializeRules()} to provide serialization rules for
  * nested entities.
  *
  */
-abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSerializable
+abstract class SyncEntity implements ISyncEntity
 {
     use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer, HasSyncIntrospector {
         TProvidable::setProvider as private _setProvider;
@@ -157,7 +153,7 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
      *
      * @return SerializeRules|SerializeRulesBuilder
      */
-    protected static function buildSerializeRules(SerializeRulesBuilder $build)
+    protected static function getSerializeRules(SerializeRulesBuilder $build)
     {
         return $build->go();
     }
@@ -182,11 +178,6 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
         );
     }
 
-    /**
-     * Return an entity-agnostic interface to the SyncEntity's current provider
-     *
-     * @return ISyncEntityProvider<static>
-     */
     final public static function backend(?IContainer $container = null): ISyncEntityProvider
     {
         /** @var ISyncProvider */
@@ -197,20 +188,13 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
         return $provider->with(static::class);
     }
 
-    /**
-     * Get a SyncSerializeRules builder for the SyncEntity, optionally
-     * inheriting the entity's default rules
-     *
-     */
-    final public static function rulesBuilder(?IContainer $container = null, bool $inherit = true): SerializeRulesBuilder
+    final public static function buildSerializeRules(?IContainer $container = null, bool $inherit = true): SerializeRulesBuilder
     {
-        $builder = (new SerializeRulesBuilder(
-            self::requireContainer($container)
-        ))->entity(static::class);
-
-        return $inherit
-            ? $builder->inherit(static::getSerializeRules($container))
-            : $builder;
+        return (new SerializeRulesBuilder($container = self::requireContainer($container)))
+            ->if($inherit,
+                 fn(SerializeRulesBuilder $builder) =>
+                     $builder->inherit(static::serializeRules($container)))
+            ->entity(static::class);
     }
 
     /**
@@ -259,32 +243,18 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
             };
     }
 
-    final public static function getSerializeRules(?IContainer $container = null): SerializeRules
+    final public static function serializeRules(?IContainer $container = null): SerializeRules
     {
         return SerializeRules::resolve(
-            static::buildSerializeRules(static::rulesBuilder($container, false))
+            static::getSerializeRules(static::buildSerializeRules($container, false))
         );
     }
 
-    /**
-     * Serialize the entity and any nested entities
-     *
-     * The entity's {@see SerializeRules} are applied to each `SyncEntity`
-     * encountered during this recursive operation.
-     *
-     * @see SyncEntity::buildSerializeRules()
-     */
     final public function toArray(): array
     {
-        return $this->_toArray(static::getSerializeRules());
+        return $this->_toArray(static::serializeRules());
     }
 
-    /**
-     * Serialize the entity and any nested entities, overriding the default
-     * SerializeRules
-     *
-     * @param SerializeRulesBuilder|SerializeRules $rules
-     */
     final public function toArrayWith($rules): array
     {
         return $this->_toArray(SerializeRules::resolve($rules));
@@ -536,7 +506,7 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
             }
         } elseif ($node instanceof DateTimeInterface) {
             $node = ($rules->getDateFormatter()
-                ?: ($this->provider() ? $this->provider()->getDateFormatter() : null)
+                ?: ($this->provider() ? $this->provider()->dateFormatter() : null)
                 ?: new DateFormatter())->format($node);
         } else {
             throw new UnexpectedValueException('Array or SyncEntity expected: ' . print_r($node, true));
@@ -582,12 +552,6 @@ abstract class SyncEntity implements IProviderEntity, ReturnsDescription, JsonSe
         return $array;
     }
 
-    /**
-     * Called when the class is registered with an entity store
-     *
-     * See {@see \Lkrms\Sync\Support\SyncStore::entityType()} for more
-     * information.
-     */
     final public static function setEntityTypeId(int $entityTypeId): void
     {
         self::$TypeId[static::class] = $entityTypeId;

@@ -23,6 +23,12 @@ interface IProvidable extends ReceivesService, ReturnsService
     public function context(): ?IProviderContext;
 
     /**
+     * Get the context in which the entity is being serviced, or throw an
+     * exception if no context has been set
+     */
+    public function requireContext(): IProviderContext;
+
+    /**
      * Get the entity the instance was resolved from
      *
      * Consider the following scenario:

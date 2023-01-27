@@ -5,7 +5,7 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
-use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
 
@@ -15,7 +15,7 @@ use Lkrms\Sync\Contract\ISyncEntityResolver;
  * The default algorithm is
  * {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}.
  *
- * @template TEntity of SyncEntity
+ * @template TEntity of ISyncEntity
  */
 final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 {
@@ -46,7 +46,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     private $WeightProperty;
 
     /**
-     * @var array<int,array{0:SyncEntity,1:string}>|null
+     * @var array<int,array{0:TEntity,1:string}>|null
      */
     private $Entities;
 
@@ -107,7 +107,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         return $this->getUncertainty($name, $e1[1]) <=> $this->getUncertainty($name, $e2[1]);
     }
 
-    public function getByName(string $name, float &$uncertainty = null): ?SyncEntity
+    public function getByName(string $name, float &$uncertainty = null): ?ISyncEntity
     {
         if (is_null($this->Entities)) {
             $this->loadEntities();
