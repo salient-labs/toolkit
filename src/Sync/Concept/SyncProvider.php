@@ -63,7 +63,7 @@ abstract class SyncProvider implements ISyncProvider, IService
      * {@see SyncProvider} instance.
      *
      */
-    abstract protected function createDateFormatter(): DateFormatter;
+    abstract protected function getDateFormatter(): DateFormatter;
 
     /**
      * Get an array that maps concrete classes to more specific subclasses
@@ -169,10 +169,10 @@ abstract class SyncProvider implements ISyncProvider, IService
         return PipelineImmutable::create($this->Container);
     }
 
-    final public function getDateFormatter(): DateFormatter
+    final public function dateFormatter(): DateFormatter
     {
         return $this->DateFormatter
-            ?: ($this->DateFormatter = $this->createDateFormatter());
+            ?: ($this->DateFormatter = $this->getDateFormatter());
     }
 
     final public static function getServices(): array

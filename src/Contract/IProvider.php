@@ -23,7 +23,7 @@ interface IProvider extends ReturnsContainer, ReturnsDescription
      * Get a DateFormatter to work with the backend's date format and timezone
      *
      */
-    public function getDateFormatter(): DateFormatter;
+    public function dateFormatter(): DateFormatter;
 
     /**
      * Throw an exception if the backend isn't reachable

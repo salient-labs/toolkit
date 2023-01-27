@@ -13,6 +13,7 @@ use RuntimeException;
  * Implements IProvidable to represent an external entity
  *
  * @see \Lkrms\Contract\IProvidable
+ * @psalm-require-implements \Lkrms\Contract\IProvidable
  */
 trait TProvidable
 {
@@ -70,10 +71,6 @@ trait TProvidable
         return $this->_Service ?: static::class;
     }
 
-    /**
-     * Throw an exception if the instance was created with no IProviderContext,
-     * otherwise return it
-     */
     final public function requireContext(): IProviderContext
     {
         if (!$this->_Context) {
@@ -99,10 +96,16 @@ trait TProvidable
      */
     final public static function provide(array $data, IProvider $provider, ?IProviderContext $context = null)
     {
-        $container = ($context ?: $provider)->container()->inContextOf(get_class($provider));
-        $context   = $context ? $context->withContainer($container) : new ProviderContext($container);
+        $container = ($context
+            ? $context->container()
+            : $provider->container())->inContextOf(get_class($provider));
+        $context = $context
+            ? $context->withContainer($container)
+            : new ProviderContext($container);
+        $introspector = Introspector::getService($container, static::class);
+        $closure      = $introspector->getCreateProvidableFromClosure();
 
-        return (Introspector::getService($container, static::class)->getCreateProvidableFromClosure())($data, $provider, $context);
+        return $closure($data, $provider, $context);
     }
 
     /**
@@ -116,17 +119,19 @@ trait TProvidable
      */
     final public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProviderContext $context = null): iterable
     {
-        $container = ($context ?: $provider)->container()->inContextOf(get_class($provider));
-        $context   = (
-            $context ? $context->withContainer($container) : new ProviderContext($container)
-        )->withConformity($conformity);
+        $container = ($context
+            ? $context->container()
+            : $provider->container())->inContextOf(get_class($provider));
+        $context = ($context
+            ? $context->withContainer($container)
+            : new ProviderContext($container))->withConformity($conformity);
+        $introspector = Introspector::getService($container, static::class);
 
         foreach ($dataList as $data) {
             if (!isset($closure)) {
-                $builder = Introspector::getService($container, static::class);
                 $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                    ? $builder->getCreateProvidableFromSignatureClosure(array_keys($data))
-                    : $builder->getCreateProvidableFromClosure();
+                    ? $introspector->getCreateProvidableFromSignatureClosure(array_keys($data))
+                    : $introspector->getCreateProvidableFromClosure();
             }
 
             yield $closure($data, $provider, $context);

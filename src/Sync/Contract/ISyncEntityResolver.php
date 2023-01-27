@@ -10,5 +10,5 @@ use Lkrms\Sync\Concept\SyncEntity;
  */
 interface ISyncEntityResolver
 {
-    public function getByName(string $name): ?SyncEntity;
+    public function getByName(string $name): ?ISyncEntity;
 }

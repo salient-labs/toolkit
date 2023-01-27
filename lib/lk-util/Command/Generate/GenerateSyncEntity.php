@@ -229,7 +229,7 @@ class GenerateSyncEntity extends GenerateCommand
                     }
 
                     if (is_string($value) &&
-                            !is_null($provider->getDateFormatter()->parse($value))) {
+                            !is_null($provider->dateFormatter()->parse($value))) {
                         $props[$key] = $this->getFqcnAlias(DateTimeImmutable::class, 'DateTime') . '|null';
                         continue;
                     }

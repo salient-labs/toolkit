@@ -46,14 +46,14 @@ parameters:
 			path: src/Support/HttpServer.php
 
 		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: src/Sync/Concept/SyncEntity.php
+
+		-
 			message: "#^PHPDoc tag @param for parameter \\$operation with type array\\<int, bool\\>\\|int is not subtype of native type int\\.$#"
 			count: 1
 			path: src/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncStore\\:\\:\\$Providers is never read, only written\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncStore.php
 
 		-
 			message: "#^Unreachable statement \\- code above always terminates\\.$#"

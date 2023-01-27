@@ -228,7 +228,7 @@ class Introspector
 
             return $closure($container, $array, $provider,
                             $context ?: new ProviderContext($container, $parent),
-                            $parent, $provider->getDateFormatter(),
+                            $parent, $provider->dateFormatter(),
                             $service);
         };
     }
@@ -534,9 +534,8 @@ class Introspector
     {
         return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ...$args) use ($dateKeys, $closure) {
             if (is_null($dateFormatter)) {
-                /** @var DateFormatter $dateFormatter */
                 $dateFormatter = $provider
-                    ? $provider->getDateFormatter()
+                    ? $provider->dateFormatter()
                     : $container->get(DateFormatter::class);
             }
 

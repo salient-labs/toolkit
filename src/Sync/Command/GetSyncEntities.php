@@ -166,7 +166,7 @@ final class GetSyncEntities extends CliCommand
             ? $provider->with($class, $context)->get($id, $filter)
             : $provider->with($class, $context)->getList($filter);
 
-        $rules = $class::rulesBuilder($this->app())->includeMeta(false);
+        $rules = $class::buildSerializeRules($this->app())->includeMeta(false);
 
         if ($csv) {
             if (!is_null($id)) {

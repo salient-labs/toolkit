@@ -2,13 +2,11 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Sync\Concept\SyncEntity;
-
 /**
  * Provides an entity-agnostic interface to an ISyncProvider's implementation of
  * sync operations for an entity
  *
- * @template TEntity of SyncEntity
+ * @template TEntity of ISyncEntity
  */
 interface ISyncEntityProvider
 {
@@ -18,7 +16,7 @@ interface ISyncEntityProvider
      * @param TEntity $entity
      * @return TEntity
      */
-    public function create(SyncEntity $entity, ...$args): SyncEntity;
+    public function create($entity, ...$args): ISyncEntity;
 
     /**
      * Return an entity from the backend
@@ -26,7 +24,7 @@ interface ISyncEntityProvider
      * @param int|string|null $id
      * @return TEntity
      */
-    public function get($id, ...$args): SyncEntity;
+    public function get($id, ...$args): ISyncEntity;
 
     /**
      * Update an entity in the backend
@@ -34,7 +32,7 @@ interface ISyncEntityProvider
      * @param TEntity $entity
      * @return TEntity
      */
-    public function update(SyncEntity $entity, ...$args): SyncEntity;
+    public function update($entity, ...$args): ISyncEntity;
 
     /**
      * Delete an entity from the backend
@@ -42,7 +40,7 @@ interface ISyncEntityProvider
      * @param TEntity $entity
      * @return TEntity
      */
-    public function delete(SyncEntity $entity, ...$args): SyncEntity;
+    public function delete($entity, ...$args): ISyncEntity;
 
     /**
      * Add a list of entities to the backend
