@@ -13,15 +13,15 @@ use Lkrms\Utility\System;
  * @method static bool isLoaded() Return true if an underlying System instance has been loaded
  * @method static void unload() Clear the underlying System instance
  * @method static int[] getCpuUsage() Get user and system CPU times for the current run, in microseconds (see {@see System::getCpuUsage()})
- * @method static int getMemoryLimit() Get the configured memory_limit in bytes (see {@see System::getMemoryLimit()})
- * @method static int getMemoryUsage() Get the current memory usage of the script in bytes (see {@see System::getMemoryUsage()})
- * @method static int getMemoryUsagePercent() Get the current memory usage of the script as a percentage of the memory_limit (see {@see System::getMemoryUsagePercent()})
- * @method static int getPeakMemoryUsage() Get the peak memory usage of the script in bytes (see {@see System::getPeakMemoryUsage()})
- * @method static string getProgramBasename(string ...$suffixes) Return the basename of the file used to run the script (see {@see System::getProgramBasename()})
+ * @method static int getMemoryLimit() Get the configured memory_limit in bytes
+ * @method static int getMemoryUsage() Get the current memory usage of the script in bytes
+ * @method static int getMemoryUsagePercent() Get the current memory usage of the script as a percentage of the memory_limit
+ * @method static int getPeakMemoryUsage() Get the peak memory usage of the script in bytes
+ * @method static string getProgramBasename(string ...$suffixes) Return the basename of the file used to run the script
  * @method static string getProgramName(?string $basePath = null) Get the filename used to run the script (see {@see System::getProgramName()})
  * @method static array getTimers(bool $includeRunning = true, ?string $type = null) Get the elapsed milliseconds and start count for timers started in the current run (see {@see System::getTimers()})
  * @method static bool sqliteHasUpsert() Return true if the SQLite3 library supports UPSERT syntax (see {@see System::sqliteHasUpsert()})
- * @method static void startTimer(string $name, string $type = 'general') Start a timer using the system's high-resolution time (see {@see System::startTimer()})
+ * @method static void startTimer(string $name, string $type = 'general') Start a timer using the system's high-resolution time
  * @method static float stopTimer(string $name, string $type = 'general') Stop a timer and return the elapsed milliseconds (see {@see System::stopTimer()})
  *
  * @uses System

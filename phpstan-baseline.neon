@@ -51,6 +51,11 @@ parameters:
 			path: src/Sync/Concept/SyncEntity.php
 
 		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: src/Sync/Support/HttpSyncDefinition.php
+
+		-
 			message: "#^PHPDoc tag @param for parameter \\$operation with type array\\<int, bool\\>\\|int is not subtype of native type int\\.$#"
 			count: 1
 			path: src/Sync/Support/SyncIntrospector.php

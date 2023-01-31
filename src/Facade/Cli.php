@@ -21,40 +21,40 @@ use Lkrms\Contract\IContainer;
  * @method static void unload() Clear the underlying CliAppContainer instance
  * @method static CliAppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static CliAppContainer bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})
- * @method static string buildUsageSections(array $sections) See {@see CliAppContainer::buildUsageSections()}
+ * @method static string buildUsageSections(array $sections) A facade for CliAppContainer::buildUsageSections()
  * @method static CliAppContainer command(string[] $name, string $id) Register a CliCommand with the container (see {@see CliAppContainer::command()})
  * @method static CliAppContainer forEach(array|object $array, callable $callback) Move to the next method in the chain after iterating over an array and passing the object to a callback with each key-value pair in the array (see {@see FluentInterface::forEach()})
  * @method static mixed get(string $id, mixed[] $params = []) Create a new instance of a class or interface, or return a shared instance created earlier (see {@see Container::get()})
- * @method static string getAppName() Return the basename of the file used to run the script after removing PHP file extensions (see {@see AppContainer::getAppName()})
+ * @method static string getAppName() Return the basename of the file used to run the script after removing PHP file extensions
  * @method static mixed getAs(string $id, string $serviceId, mixed[] $params = []) Create a new instance of a class or interface with an explicit service name, or apply a service name to a shared instance created earlier (see {@see Container::getAs()})
- * @method static IContainer getGlobalContainer() Get the global container, loading it if necessary (see {@see Container::getGlobalContainer()})
+ * @method static IContainer getGlobalContainer() Get the global container, loading it if necessary
  * @method static string getName(string $id) Resolve a class or interface to a concrete class name (see {@see Container::getName()})
- * @method static string getProgramName() Return the basename of the file used to run the script (see {@see CliAppContainer::getProgramName()})
- * @method static CliCommand|null getRunningCommand() Return the CliCommand started from the command line (see {@see CliAppContainer::getRunningCommand()})
- * @method static string[] getServices() Get a list of classes bound to the container by calling service() (see {@see Container::getServices()})
+ * @method static string getProgramName() Return the basename of the file used to run the script
+ * @method static CliCommand|null getRunningCommand() Return the CliCommand started from the command line
+ * @method static string[] getServices() Get a list of classes bound to the container by calling service()
  * @method static bool has(string $id) Return true if a class or interface resolves to a concrete class that actually exists (see {@see Container::has()})
- * @method static bool hasGlobalContainer() Return true if a global container has been loaded (see {@see Container::hasGlobalContainer()})
+ * @method static bool hasGlobalContainer() Return true if a global container has been loaded
  * @method static CliAppContainer if(bool $condition, callable $callback) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
- * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of a class or interface have been applied to the default context (see {@see Container::inContextOf()})
- * @method static CliAppContainer instance(string $id, $instance) Add an existing instance to the container as a shared binding (see {@see Container::instance()})
- * @method static CliAppContainer instanceIf(string $id, $instance) Add an existing instance to the container as a shared binding if it hasn't already been bound (see {@see Container::instanceIf()})
- * @method static CliAppContainer loadCache() See {@see AppContainer::loadCache()}
- * @method static CliAppContainer loadCacheIfExists() See {@see AppContainer::loadCacheIfExists()}
- * @method static CliAppContainer loadSync(?string $command = null, ?array $arguments = null) See {@see AppContainer::loadSync()}
+ * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of a class or interface have been applied to the default context
+ * @method static CliAppContainer instance(string $id, $instance) Add an existing instance to the container as a shared binding
+ * @method static CliAppContainer instanceIf(string $id, $instance) Add an existing instance to the container as a shared binding if it hasn't already been bound
+ * @method static CliAppContainer loadCache() A facade for AppContainer::loadCache()
+ * @method static CliAppContainer loadCacheIfExists() A facade for AppContainer::loadCacheIfExists()
+ * @method static CliAppContainer loadSync(?string $command = null, ?array $arguments = null) A facade for AppContainer::loadSync()
  * @method static CliAppContainer logConsoleMessages(?bool $debug = true, ?string $name = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
- * @method static IContainer|null maybeGetGlobalContainer() Similar to getGlobalContainer(), but return null if no global container has been loaded (see {@see Container::maybeGetGlobalContainer()})
- * @method static IContainer requireGlobalContainer() Similar to getGlobalContainer(), but throw an exception if no global container has been loaded (see {@see Container::requireGlobalContainer()})
+ * @method static IContainer|null maybeGetGlobalContainer() Similar to getGlobalContainer(), but return null if no global container has been loaded
+ * @method static IContainer requireGlobalContainer() Similar to getGlobalContainer(), but throw an exception if no global container has been loaded
  * @method static int run() Process the command line (see {@see CliAppContainer::run()})
  * @method static never runAndExit() Process the command line and exit (see {@see CliAppContainer::runAndExit()})
  * @method static CliAppContainer service(string $id, string[]|null $services = null, string[]|null $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT) Add bindings to the container for an IService implementation and its services, optionally specifying services to bind or exclude (see {@see Container::service()})
  * @method static CliAppContainer services(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT) Consolidate a service map and call service() once per concrete class (see {@see Container::services()})
- * @method static IContainer|null setGlobalContainer(?IContainer $container) Set (or unset) the global container (see {@see Container::setGlobalContainer()})
+ * @method static IContainer|null setGlobalContainer(?IContainer $container) Set (or unset) the global container
  * @method static CliAppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})
  * @method static CliAppContainer singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})
- * @method static CliAppContainer syncNamespace(string $prefix, string $uri, string $namespace) See {@see AppContainer::syncNamespace()}
- * @method static CliAppContainer unloadSync(bool $silent = false) See {@see AppContainer::unloadSync()}
- * @method static CliAppContainer writeResourceUsage(int $level = Level::INFO) See {@see AppContainer::writeResourceUsage()}
- * @method static CliAppContainer writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10) See {@see AppContainer::writeTimers()}
+ * @method static CliAppContainer syncNamespace(string $prefix, string $uri, string $namespace) A facade for AppContainer::syncNamespace()
+ * @method static CliAppContainer unloadSync(bool $silent = false) A facade for AppContainer::unloadSync()
+ * @method static CliAppContainer writeResourceUsage(int $level = Level::INFO) A facade for AppContainer::writeResourceUsage()
+ * @method static CliAppContainer writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10) A facade for AppContainer::writeTimers()
  *
  * @uses CliAppContainer
  * @extends Facade<CliAppContainer>

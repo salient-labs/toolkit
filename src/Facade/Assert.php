@@ -12,11 +12,11 @@ use Lkrms\Utility\Assertions;
  * @method static Assertions getInstance() Return the underlying Assertions instance
  * @method static bool isLoaded() Return true if an underlying Assertions instance has been loaded
  * @method static void unload() Clear the underlying Assertions instance
- * @method static void argvIsRegistered() See {@see Assertions::argvIsRegistered()}
- * @method static void localeIsUtf8() See {@see Assertions::localeIsUtf8()}
- * @method static void notEmpty($value, ?string $name = null) See {@see Assertions::notEmpty()}
- * @method static void patternMatches(?string $value, string $pattern, ?string $name = null) See {@see Assertions::patternMatches()}
- * @method static void sapiIsCli() See {@see Assertions::sapiIsCli()}
+ * @method static void argvIsRegistered() A facade for Assertions::argvIsRegistered()
+ * @method static void localeIsUtf8() A facade for Assertions::localeIsUtf8()
+ * @method static void notEmpty($value, ?string $name = null) A facade for Assertions::notEmpty()
+ * @method static void patternMatches(?string $value, string $pattern, ?string $name = null) A facade for Assertions::patternMatches()
+ * @method static void sapiIsCli() A facade for Assertions::sapiIsCli()
  *
  * @uses Assertions
  * @extends Facade<Assertions>

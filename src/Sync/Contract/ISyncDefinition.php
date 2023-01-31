@@ -8,6 +8,8 @@ use Closure;
  * Provides access to an ISyncProvider's implementation of sync operations for
  * an entity
  *
+ * @template TEntity of ISyncEntity
+ * @template TProvider of ISyncProvider
  */
 interface ISyncDefinition
 {

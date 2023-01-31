@@ -81,6 +81,27 @@ final class SyncIntrospectionClass extends IntrospectionClass
     public $SyncOperationMagicMethods = [];
 
     /**
+     * Signature => closure
+     *
+     * @var array<string,\Closure>
+     */
+    public $CreateFromSignatureSyncClosures = [];
+
+    /**
+     * Signature => (int) $strict => closure
+     *
+     * @var array<string,array<int,\Closure>>
+     */
+    public $CreateSyncEntityFromSignatureClosures = [];
+
+    /**
+     * (int) $strict => closure
+     *
+     * @var array<int,\Closure>
+     */
+    public $CreateSyncEntityFromClosures = [];
+
+    /**
      * Entity => sync operation => closure
      *
      * @var array<string,array<int,\Closure|null>>
