@@ -8,7 +8,7 @@ use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Store\Concept\SqliteStore;
-use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use ReflectionClass;
 use RuntimeException;
@@ -98,11 +98,20 @@ final class SyncStore extends SqliteStore
     private $Arguments;
 
     /**
-     * Prefix => [ namespace base URI, PHP namespace ]
+     * Deferred namespace registrations
      *
-     * @var array<string,string[]>|null
+     * [ Prefix, namespace base URI, PHP namespace ]
+     *
+     * @var string[]|null
      */
     private $Namespaces = [];
+
+    /**
+     * [ Prefix => true ]
+     *
+     * @var array<string,true>
+     */
+    private $RegisteredNamespaces = [];
 
     /**
      * Initiate a "run" of sync operations
@@ -336,8 +345,8 @@ final class SyncStore extends SqliteStore
         }
 
         $class = new ReflectionClass($entity);
-        if (!$class->isSubclassOf(SyncEntity::class)) {
-            throw new UnexpectedValueException("Not a subclass of SyncEntity: $entity");
+        if (!$class->implementsInterface(ISyncEntity::class)) {
+            throw new UnexpectedValueException("Does not implement ISyncEntity: $entity");
         }
 
         // Update `last_seen` if the entity type is already in the database
@@ -383,15 +392,37 @@ final class SyncStore extends SqliteStore
     /**
      * Register a sync entity namespace
      *
+     * A prefix can only be associated with one namespace per {@see SyncStore}
+     * and cannot be changed unless the {@see SyncStore}'s backing database has
+     * been reset.
+     *
+     * If `$prefix` has already been registered, its previous URI and PHP
+     * namespace are updated if they differ. This is by design and is intended
+     * to facilitate refactoring.
+     *
+     * @param string $prefix A short alternative to `$uri`. Case-insensitive.
+     * Must be unique within the scope of the {@see SyncStore}. Must be a scheme
+     * name that complies with Section 3.1 of [RFC3986], i.e. a match for the
+     * regular expression `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
+     * @param string $uri A globally unique namespace URI.
+     * @param string $namespace A fully-qualified PHP namespace.
      * @return $this
      */
     public function namespace(string $prefix, string $uri, string $namespace)
     {
         // Don't start a run just to register a namespace
         if (is_null($this->RunId)) {
-            $this->Namespaces[$prefix] = [$uri, $namespace];
+            $this->Namespaces[] = [$prefix, $uri, $namespace];
 
             return $this;
+        }
+
+        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9+.-]*$/', $prefix)) {
+            throw new UnexpectedValueException("Invalid prefix: $prefix");
+        }
+        $prefix = strtolower($prefix);
+        if ($this->RegisteredNamespaces[$prefix] ?? false) {
+            throw new UnexpectedValueException("Prefix already registered: $prefix");
         }
 
         // Update `last_seen` if the namespace is already in the database
@@ -417,6 +448,8 @@ final class SyncStore extends SqliteStore
         $stmt->bindValue(':php_namespace', trim($namespace, '\\') . '\\', SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
+
+        $this->RegisteredNamespaces[$prefix] = true;
 
         // Don't reload while bootstrapping
         if (is_null($this->NamespacesByPrefix)) {
@@ -455,8 +488,8 @@ final class SyncStore extends SqliteStore
      */
     public function getEntityTypeNamespace(string $entity, bool $uri = false): ?string
     {
-        if (!is_a($entity, SyncEntity::class, true)) {
-            throw new UnexpectedValueException("Not a subclass of SyncEntity: $entity");
+        if (!is_a($entity, ISyncEntity::class, true)) {
+            throw new UnexpectedValueException("Does not implement ISyncEntity: $entity");
         }
 
         $this->check();
@@ -572,7 +605,7 @@ final class SyncStore extends SqliteStore
         $this->RunUuid = $uuid;
         unset($this->Command, $this->Arguments);
 
-        foreach ($this->Namespaces as $prefix => [$uri, $namespace]) {
+        foreach ($this->Namespaces as [$prefix, $uri, $namespace]) {
             $this->namespace($prefix, $uri, $namespace);
         }
         unset($this->Namespaces);

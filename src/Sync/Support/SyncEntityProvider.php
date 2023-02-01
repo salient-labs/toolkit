@@ -59,7 +59,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     public function __construct(IContainer $container, string $entity, ISyncProvider $provider, ISyncDefinition $definition, ?ISyncContext $context = null)
     {
-        if (!is_subclass_of($entity, ISyncEntity::class)) {
+        if (!is_a($entity, ISyncEntity::class, true)) {
             throw new UnexpectedValueException("Does not implement ISyncEntity: $entity");
         }
 
