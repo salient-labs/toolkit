@@ -74,6 +74,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
         $this->Context    = $context ?: $container->get(SyncContext::class);
     }
 
+    /**
+     * @internal
+     */
     public function run(int $operation, ...$args)
     {
         if (!($closure = $this->Definition->getSyncOperationClosure($operation))) {

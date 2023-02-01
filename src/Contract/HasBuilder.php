@@ -5,23 +5,23 @@ namespace Lkrms\Contract;
 use Lkrms\Concept\Builder;
 
 /**
- * Returns a builder that provides a fluent interface for creating instances
+ * Uses a builder to provide a fluent interface for creating instances
  *
  * @see Builder
  */
 interface HasBuilder
 {
     /**
-     * Use a fluent interface to create a new instance
+     * Create a new instance
      *
      */
     public static function build(?IContainer $container = null): Builder;
 
     /**
-     * Resolve a builder or an instance to an instance
+     * Get an instance from a builder that may or may not have been terminated
      *
-     * Makes it easy to work with instances and unterminated {@see Builder}s
-     * that can create them interchangeably.
+     * This method simplifies working with instances and unterminated
+     * {@see Builder}s interchangeably.
      *
      * @param Builder|static|null $object
      * @return static

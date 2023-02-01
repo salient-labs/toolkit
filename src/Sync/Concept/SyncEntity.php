@@ -260,34 +260,28 @@ abstract class SyncEntity implements ISyncEntity
         return $this->_toArray(SerializeRules::resolve($rules));
     }
 
-    final public function toLink(int $type = SerializeLinkType::MINIMAL, bool $compact = true): array
+    final public function toLink(int $type = SerializeLinkType::DEFAULT, bool $compact = true): array
     {
         switch ($type) {
             case SerializeLinkType::INTERNAL:
+            case SerializeLinkType::DEFAULT:
                 return [
-                    '@class' => static::class,
-                    '@id'    => $this->Id,
+                    '@type' => $this->typeUri($compact),
+                    '@id'   => $this->id(),
                 ];
 
-            case SerializeLinkType::DETAILED:
+            case SerializeLinkType::COMPACT:
+                return [
+                    '@id' => $this->uri($compact),
+                ];
+
+            case SerializeLinkType::FRIENDLY:
                 return array_filter([
                     '@type'        => $this->typeUri($compact),
                     '@id'          => $this->id(),
                     '@name'        => $this->name(),
                     '@description' => $this->description(),
                 ]);
-
-            case SerializeLinkType::STANDARD:
-                return array_filter([
-                    '@type' => $this->typeUri($compact),
-                    '@id'   => $this->id(),
-                    '@name' => $this->name(),
-                ]);
-
-            case SerializeLinkType::MINIMAL:
-                return [
-                    '@id' => $this->uri($compact),
-                ];
         }
 
         throw new UnexpectedValueException("Invalid link type: $type");
@@ -396,7 +390,7 @@ abstract class SyncEntity implements ISyncEntity
                 // Prevent infinite recursion by replacing each SyncEntity
                 // descended from itself with a link
                 if ($parents[$node->objectId()] ?? false) {
-                    $node         = $node->toLink(SerializeLinkType::STANDARD);
+                    $node         = $node->toLink(SerializeLinkType::DEFAULT);
                     $node['@why'] = 'Circular reference detected';
 
                     return;

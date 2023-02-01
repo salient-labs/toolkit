@@ -2,6 +2,8 @@
 
 namespace Lkrms\Sync\Contract;
 
+use Lkrms\Sync\Support\SyncOperation;
+
 /**
  * Provides an entity-agnostic interface to an ISyncProvider's implementation of
  * sync operations for an entity

@@ -254,6 +254,7 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     }
 
     /**
+     * @psalm-param SyncOperation::* $operation
      * @return Closure
      * ```php
      * fn(SyncContext $ctx, string $path, ?array $query, ?Closure $headersCallback, ?array $payload)
@@ -301,6 +302,9 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             $this->runCurlerOperation($runner, $operation, $ctx, $path, $query, $headersCallback, $pagerCallback, $payload);
     }
 
+    /**
+     * @psalm-param SyncOperation::* $operation
+     */
     private function runCurlerOperation(Closure $runner, int $operation, SyncContext $ctx, string $path, ?array $query, ?Closure $headers, ?Closure $pager, ?array $payload)
     {
         $curler = $this->Provider->getCurler($path, $this->Expiry);

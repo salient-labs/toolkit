@@ -19,6 +19,10 @@ use UnexpectedValueException;
  * Tracks the state of entities synced to and from third-party backends in a
  * local SQLite database
  *
+ * Creating a {@see SyncStore} instance starts a "run" of sync operations that
+ * must be terminated by calling {@see SyncStore}, otherwise a failed run is
+ * recorded.
+ *
  */
 final class SyncStore extends SqliteStore
 {
@@ -114,8 +118,6 @@ final class SyncStore extends SqliteStore
     private $RegisteredNamespaces = [];
 
     /**
-     * Initiate a "run" of sync operations
-     *
      * @param string $command The canonical name of the command performing sync
      * operations (e.g. a qualified class and/or method name).
      * @param string[] $arguments Arguments passed to the command.
@@ -217,6 +219,10 @@ final class SyncStore extends SqliteStore
         return $this;
     }
 
+    /**
+     * Terminate the current run and close the database
+     *
+     */
     public function close(?int $exitStatus = 0)
     {
         if (!$this->isOpen()) {
@@ -334,7 +340,7 @@ final class SyncStore extends SqliteStore
     }
 
     /**
-     * Register a sync entity type and set its ID unless already registered
+     * Register a sync entity type and set its ID (unless already registered)
      *
      * @return $this
      */
@@ -569,6 +575,10 @@ final class SyncStore extends SqliteStore
         return $this;
     }
 
+    /**
+     * Get sync operation errors recorded so far
+     *
+     */
     public function getErrors(): SyncErrorCollection
     {
         return clone $this->Errors;

@@ -195,7 +195,6 @@ class GenerateSyncProvider extends GenerateCommand
 
         $methods = [];
         $lines   = [];
-        /** @var int $op */
         foreach ($ops as $op) {
             // CREATE and UPDATE have the same signature, so it's a good default
             if (SyncOperation::isList($op)) {

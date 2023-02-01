@@ -11,7 +11,19 @@ use Lkrms\Concept\Enumeration;
 final class SyncSerializeLinkType extends Enumeration
 {
     /**
-     * "@id" only
+     * "@type" and "@id"
+     *
+     * ```php
+     * [
+     *   "@type" => "prefix:Entity",
+     *   "@id"   => 1,
+     * ]
+     * ```
+     */
+    public const DEFAULT = 0;
+
+    /**
+     * "@id" only (identifier type not preserved)
      *
      * ```php
      * [
@@ -19,23 +31,10 @@ final class SyncSerializeLinkType extends Enumeration
      * ]
      * ```
      */
-    public const MINIMAL = 0;
+    public const COMPACT = 1;
 
     /**
-     * "@type", "@id" and "@name" (preserves identifier type)
-     *
-     * ```php
-     * [
-     *   "@type" => "prefix:Entity",
-     *   "@id"   => 1,
-     *   "@name" => "My Entity",
-     * ]
-     * ```
-     */
-    public const STANDARD = 1;
-
-    /**
-     * "@type", "@id", "@name" and "@description"
+     * "@type", "@id", "@name" and "@description" (empty values removed)
      *
      * ```php
      * [
@@ -46,7 +45,7 @@ final class SyncSerializeLinkType extends Enumeration
      * ]
      * ```
      */
-    public const DETAILED = 2;
+    public const FRIENDLY = 2;
 
     /**
      * @internal

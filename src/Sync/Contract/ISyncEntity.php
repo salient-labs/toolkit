@@ -76,7 +76,7 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
      * @return array<string,int|string>
      * @see SyncSerializeLinkType
      */
-    public function toLink(int $type = SyncSerializeLinkType::MINIMAL, bool $compact = true): array;
+    public function toLink(int $type = SyncSerializeLinkType::DEFAULT, bool $compact = true): array;
 
     /**
      * Get the entity's canonical location in the form of a URI
