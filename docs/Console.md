@@ -62,8 +62,6 @@ called, preferably while bootstrapping your application.
     until `Console::groupEnd()` is called.
 
 
----
-
 [AppContainer]: https://lkrms.github.io/php-util/classes/Lkrms-Container-AppContainer.html
 [CliAppContainer]: https://lkrms.github.io/php-util/classes/Lkrms-Cli-CliAppContainer.html
 [Console]: https://lkrms.github.io/php-util/classes/Lkrms-Facade-Console.html

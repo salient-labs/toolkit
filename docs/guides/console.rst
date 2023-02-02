@@ -65,7 +65,6 @@ Output methods
 | ``logProgress()``  | ``INFO`` = ``6``    | ``->``         | ``STDOUT``                    |
 +--------------------+---------------------+----------------+-------------------------------+
 
-
 .. [1]
    Actually a facade for `ConsoleWriter`_.
 

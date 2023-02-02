@@ -14,12 +14,12 @@ use RuntimeException;
  */
 final class Composer
 {
-    private function getRootPackageValue(string $value): string
+    private function getRootPackageValue(string $key): string
     {
-        $value = InstalledVersions::getRootPackage()[$value] ?? null;
+        $value = InstalledVersions::getRootPackage()[$key] ?? null;
 
         if (is_null($value)) {
-            throw new RuntimeException("Root package $value not found");
+            throw new RuntimeException("Value not found: $key");
         }
 
         return $value;
@@ -30,10 +30,11 @@ final class Composer
         return $this->getRootPackageValue('name');
     }
 
-    public function getRootPackageVersion(): string
+    public function getRootPackageVersion(bool $pretty = false): string
     {
-        if (preg_match('/^dev-/', $version = $this->getRootPackageValue('version'))) {
-            $version = substr($this->getRootPackageValue('reference'), 0, 7);
+        $version = $this->getRootPackageValue($pretty ? 'pretty_version' : 'version');
+        if (preg_match('/^dev-/', $version)) {
+            $version = substr($this->getRootPackageValue('reference'), 0, 8);
         }
 
         return $version;
@@ -50,14 +51,17 @@ final class Composer
         return $realpath;
     }
 
-    public function getPackageVersion(string $name = 'lkrms/util'): ?string
+    public function getPackageVersion(string $name = 'lkrms/util', bool $pretty = false): ?string
     {
         if (!InstalledVersions::isInstalled($name)) {
             return null;
         }
 
-        if (preg_match('/^dev-/', $version = InstalledVersions::getVersion($name))) {
-            $version = substr(InstalledVersions::getReference($name), 0, 7);
+        $version = $pretty
+            ? InstalledVersions::getPrettyVersion($name)
+            : InstalledVersions::getVersion($name);
+        if (preg_match('/^dev-/', $version)) {
+            $version = substr(InstalledVersions::getReference($name), 0, 8);
         }
 
         return $version;

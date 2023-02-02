@@ -2,7 +2,7 @@
     "name": "lkrms/util",
     "type": "library",
     "license": "MIT",
-    "description": "A lightweight PHP toolkit for elegant backend/CLI apps. May contain traces of Laravel.",
+    "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
     "require": {
         "php": ">=7.4,<8.3",
         "composer-runtime-api": "^2.2",

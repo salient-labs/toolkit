@@ -39,8 +39,6 @@ and **optional** arguments may be accepted after mandatory parameters.
     recommendations, including recognised signatures.
 
 
----
-
 [getDefinition]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncProvider.html#method_getDefinition
 [SyncContext]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Support-SyncContext.html
 [SyncEntity]: https://lkrms.github.io/php-util/classes/Lkrms-Sync-Concept-SyncEntity.html

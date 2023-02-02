@@ -1,7 +1,7 @@
 # lkrms/util
 
-A lightweight PHP toolkit for elegant backend/CLI apps. Opinionated but not
-pushy. PSR-amenable. May contain traces of Laravel.
+> A lightweight PHP toolkit for expressive backend/CLI apps. Opinionated but
+> adaptable. PSR-amenable. May contain traces of Laravel.
 
 ## Installation
 
@@ -21,32 +21,8 @@ If phpDocumentor is installed on your system, you can build the API
 documentation by running `phpdoc` in the top-level directory. It should appear
 in `docs/api` after a few seconds.
 
-Other documentation is available in the source code and [unit tests][tests].
+Other documentation is available in the source code.
 
-## Using the CLI utility
-
-`lkrms/util` includes code generators and other command-line tools you can use
-during development by running `lk-util` from your project's `vendor/bin`
-directory.
-
-For a list of available subcommands, run `lk-util` with no arguments. For usage
-information, use `help` as a subcommand or add the `--help` option.
-
-### Environment variables
-
-To make it easier to work with PHP namespaces on the command line, the following
-defaults are taken from the environment:
-
-| Variable             | Description                                         | Example                     |
-| -------------------- | --------------------------------------------------- | --------------------------- |
-| `DEFAULT_NAMESPACE`  | Applied to unqualified class names                  | `Lkrms\Tests\Sync\Entity`   |
-| `BUILDER_NAMESPACE`  | Overrides `DEFAULT_NAMESPACE` for `Builder` classes | `Lkrms\Tests\Builder`       |
-| `FACADE_NAMESPACE`   | Overrides `DEFAULT_NAMESPACE` for `Facade` classes  | `Lkrms\Tests\Facade`        |
-| `PHPDOC_PACKAGE`     | Used if `--package` is not specified                | `Lkrms\Tests`               |
-| `PROVIDER_NAMESPACE` | Applied to unqualified `--provider` class names     | `Lkrms\Tests\Sync\Provider` |
-
-
----
 
 [api-docs]: https://lkrms.github.io/php-util/
 [phpdoc]: https://phpdoc.org/
