@@ -3,7 +3,6 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Contract\IContainer;
-use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -15,8 +14,8 @@ use Lkrms\Sync\Support\SyncOperation;
 use UnexpectedValueException;
 
 /**
- * Provides an entity-agnostic interface to an ISyncProvider's implementation of
- * sync operations for an entity
+ * An interface to an ISyncProvider's implementation of sync operations for an
+ * ISyncEntity class
  *
  * So you can do this:
  *
@@ -36,7 +35,7 @@ use UnexpectedValueException;
 final class SyncEntityProvider implements ISyncEntityProvider
 {
     /**
-     * @var string
+     * @var class-string<TEntity>
      */
     private $Entity;
 
@@ -55,10 +54,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     private $Context;
 
+    /**
+     * @param class-string<TEntity> $entity
+     */
     public function __construct(IContainer $container, string $entity, ISyncProvider $provider, ISyncDefinition $definition, ?ISyncContext $context = null)
     {
-        if (!is_subclass_of($entity, SyncEntity::class)) {
-            throw new UnexpectedValueException("Not a subclass of SyncEntity: $entity");
+        if (!is_a($entity, ISyncEntity::class, true)) {
+            throw new UnexpectedValueException("Does not implement ISyncEntity: $entity");
         }
 
         $entityProvider = SyncIntrospector::entityToProvider($entity);
@@ -72,6 +74,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
         $this->Context    = $context ?: $container->get(SyncContext::class);
     }
 
+    /**
+     * @internal
+     */
     public function run(int $operation, ...$args)
     {
         if (!($closure = $this->Definition->getSyncOperationClosure($operation))) {
@@ -247,8 +252,8 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must have a native type declaration, which must be `iterable`
      * - must be required
      *
-     * @param iterable<SyncEntity> $entities
-     * @return iterable<SyncEntity>
+     * @param iterable<TEntity> $entities
+     * @return iterable<TEntity>
      */
     public function createList(iterable $entities, ...$args): iterable
     {
@@ -270,7 +275,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * public function getList_Faculty(SyncContext $ctx): iterable;
      * ```
      *
-     * @return iterable<SyncEntity>
+     * @return iterable<TEntity>
      */
     public function getList(...$args): iterable
     {
@@ -297,8 +302,8 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must have a native type declaration, which must be `iterable`
      * - must be required
      *
-     * @param iterable<SyncEntity> $entities
-     * @return iterable<SyncEntity>
+     * @param iterable<TEntity> $entities
+     * @return iterable<TEntity>
      */
     public function updateList(iterable $entities, ...$args): iterable
     {
@@ -328,8 +333,8 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * The return value:
      * - must represent the final state of the entities before they were deleted
      *
-     * @param iterable<SyncEntity> $entities
-     * @return iterable<SyncEntity>
+     * @param iterable<TEntity> $entities
+     * @return iterable<TEntity>
      */
     public function deleteList(iterable $entities, ...$args): iterable
     {

@@ -3,11 +3,14 @@
 namespace Lkrms\Sync\Contract;
 
 use Closure;
+use Lkrms\Sync\Support\SyncOperation;
 
 /**
  * Provides access to an ISyncProvider's implementation of sync operations for
  * an entity
  *
+ * @template TEntity of ISyncEntity
+ * @template TProvider of ISyncProvider
  */
 interface ISyncDefinition
 {
@@ -15,6 +18,7 @@ interface ISyncDefinition
      * Return a closure that uses the provider to perform a sync operation on
      * the entity
      *
+     * @psalm-param SyncOperation::* $operation
      * @return Closure|null `null` if `$operation` is not supported, otherwise a
      * closure with the correct signature for the sync operation.
      */

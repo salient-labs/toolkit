@@ -248,7 +248,16 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
-     * Return the basename of the file used to run the script after removing PHP
+     * Get the basename of the file used to run the script
+     *
+     */
+    public function getProgramName(): string
+    {
+        return Sys::getProgramBasename();
+    }
+
+    /**
+     * Get the basename of the file used to run the script, removing any PHP
      * file extensions
      *
      */
@@ -258,7 +267,12 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
+     * Load the application's CacheStore, creating a backing database if needed
+     *
+     * The backing database is created in {@see AppContainer::$CachePath}.
+     *
      * @return $this
+     * @see \Lkrms\Store\CacheStore
      */
     final public function loadCache()
     {
@@ -274,7 +288,14 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
+     * Load the application's CacheStore if a backing database already exists
+     *
+     * Caching is only enabled if a backing database created by
+     * {@see AppContainer::loadCache()} is found in
+     * {@see AppContainer::$CachePath}.
+     *
      * @return $this
+     * @see \Lkrms\Store\CacheStore
      */
     final public function loadCacheIfExists()
     {
@@ -312,7 +333,15 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
+     * Load the application's SyncStore, creating a backing database if needed
+     *
+     * The backing database is created in {@see AppContainer::$DataPath}.
+     *
+     * Call {@see AppContainer::unloadSync()} before the application terminates,
+     * otherwise a failed run will be recorded.
+     *
      * @return $this
+     * @see \Lkrms\Sync\Support\SyncStore
      */
     final public function loadSync(?string $command = null, ?array $arguments = null)
     {
@@ -334,7 +363,23 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
+     * Register a sync entity namespace with the application's SyncStore
+     *
+     * A prefix can only be associated with one namespace per application and
+     * cannot be changed unless the {@see \Lkrms\Sync\Support\SyncStore}'s
+     * backing database has been reset.
+     *
+     * If `$prefix` has already been registered, its previous URI and PHP
+     * namespace are updated if they differ.
+     *
+     * @param string $prefix A short alternative to `$uri`. Case-insensitive.
+     * Must be unique within the scope of the application. Must be a scheme name
+     * that complies with Section 3.1 of [RFC3986], i.e. a match for the regular
+     * expression `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
+     * @param string $uri A globally unique namespace URI.
+     * @param string $namespace A fully-qualified PHP namespace.
      * @return $this
+     * @see \Lkrms\Sync\Support\SyncStore::namespace()
      */
     final public function syncNamespace(string $prefix, string $uri, string $namespace)
     {
@@ -347,6 +392,11 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
+     * Close the application's SyncStore
+     *
+     * If this method is not called after calling
+     * {@see AppContainer::loadSync()}, a failed run will be recorded.
+     *
      * @return $this
      */
     final public function unloadSync(bool $silent = false)
@@ -378,6 +428,15 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
+     * Print a summary of the script's system resource usage
+     *
+     * Example output:
+     *
+     * ```
+     * CPU time: 0.011s real, 0.035s user, 0.016s system; memory: 3.817MiB peak
+     *
+     * ```
+     *
      * @return $this
      */
     final public function writeResourceUsage(int $level = Level::INFO)
@@ -399,7 +458,28 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
+     * Print a summary of the script's timers
+     *
+     * Example output:
+     *
+     * ```
+     * Timing: 6.281ms recorded by 1 timer with type 'file':
+     *   6.281ms {1} lk-util
+     *
+     * Timing: 1.863ms recorded by 26 timers with type 'rule':
+     *   0.879ms {2} PreserveOneLineStatements
+     *   0.153ms {2} AddStandardWhitespace
+     *   0.145ms {2} AddHangingIndentation
+     *   ...
+     *   0.042ms {2} AlignArguments
+     *               (and 16 more)
+     *
+     * ```
+     *
      * @return $this
+     * @see \Lkrms\Utility\System::startTimer()
+     * @see \Lkrms\Utility\System::stopTimer()
+     * @see \Lkrms\Utility\System::getTimers()
      */
     final public function writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10)
     {

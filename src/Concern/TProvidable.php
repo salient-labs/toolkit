@@ -101,7 +101,7 @@ trait TProvidable
             : $provider->container())->inContextOf(get_class($provider));
         $context = $context
             ? $context->withContainer($container)
-            : new ProviderContext($container);
+            : $container->get(ProviderContext::class);
         $introspector = Introspector::getService($container, static::class);
         $closure      = $introspector->getCreateProvidableFromClosure();
 

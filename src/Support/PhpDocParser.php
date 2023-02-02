@@ -323,6 +323,28 @@ final class PhpDocParser implements IReadable
         return is_null($value) ? null : str_replace(PHP_EOL, ' ', $value);
     }
 
+    /**
+     * True if the PHPDoc contains more than a summary and/or variable type
+     * information
+     *
+     */
+    public function hasDetail(): bool
+    {
+        if ($this->Description) {
+            return true;
+        }
+        foreach ([...$this->Params, $this->Return, ...$this->Var] as $entity) {
+            if ($entity['description'] ?? null) {
+                return true;
+            }
+        }
+        if (array_diff_key($this->Tags, array_flip(['param', 'return', 'var', 'internal']))) {
+            return true;
+        }
+
+        return false;
+    }
+
     private function mergeValue(?string &$ours, ?string $theirs): void
     {
         // Do nothing if there's nothing to merge

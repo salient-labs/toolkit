@@ -210,12 +210,16 @@ final class GenerateFacade extends GenerateCommand
             $methodFile      = $_method->getFileName();
             $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
             $declaring       = $typeNameCallback($_method->getDeclaringClass()->getName(), true);
+            $methodName      = $_method->getName();
+            $methodFqsen     = "{$declaring}::{$methodName}()";
             $_params         = $_method->getParameters();
 
             // Variables can't be passed to __callStatic by reference, so if
             // this method has any parameters that are passed by reference, it
             // needs a declared facade
-            $declare = (bool) array_filter($_params, fn(ReflectionParameter $p) => $p->isPassedByReference());
+            $declare  = (bool) array_filter($_params, fn(ReflectionParameter $p) => $p->isPassedByReference());
+            $internal = (bool) ($phpDoc->Tags['internal'] ?? null);
+            $link     = !$internal && $phpDoc && $phpDoc->hasDetail();
 
             if ($_method->isConstructor()) {
                 $method  = 'load';
@@ -226,19 +230,27 @@ final class GenerateFacade extends GenerateCommand
                 if ($phpDoc->Tags['deprecated'] ?? null) {
                     continue;
                 }
-                $method = $_method->getName();
+                $method = $methodName;
                 if (strpos($method, '__') === 0 ||
                         in_array($method, self::SKIP_METHODS) ||
                         ($declared && $_method->getDeclaringClass() != $_class)) {
                     continue;
                 }
 
-                $type = ($_type = $phpDoc->Return['type'] ?? null) &&
-                    strpbrk($_type, '<>') === false
-                        ? $phpDocTypeCallback($_type, $phpDoc->Templates)
-                        : ($_method->hasReturnType()
-                            ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
-                            : 'mixed');
+                $_type = $phpDoc->Return['type'] ?? null;
+                if ($_type && strpbrk($_type, '<>') === false) {
+                    $type = $phpDocTypeCallback($_type, $phpDoc->Templates);
+                } else {
+                    $type = $_method->hasReturnType()
+                        ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
+                        : 'mixed';
+
+                    // If the underlying method has more type information,
+                    // provide a link to it
+                    if ($_type) {
+                        $link = !$internal;
+                    }
+                }
 
                 switch ($type) {
                     case 'static':
@@ -249,9 +261,10 @@ final class GenerateFacade extends GenerateCommand
                         $type = $declaring;
                         break;
                 }
-                $summary = ($summary = $phpDoc->Summary ?? null)
-                    ? ($declare ? $summary : "$summary (see {@see {$declaring}::{$method}()})")
-                    : ($declare ? "A facade for {$declaring}::{$method}()" : "See {@see {$declaring}::{$method}()}");
+                $summary = $phpDoc->Summary ?? null;
+                $summary = $summary
+                    ? ($declare || !$link ? $summary : "$summary (see {@see $methodFqsen})")
+                    : ($declare || !$link ? "A facade for $methodFqsen" : "See {@see $methodFqsen}");
 
                 // Work around phpDocumentor's inability to parse "?<type>"
                 // return types
@@ -287,20 +300,29 @@ final class GenerateFacade extends GenerateCommand
                                                 $typeNameCallback) !== $type))
                     ? $this->cleanPhpDocTag("@return $type")
                     : '';
+
                 $lines   = [];
-                $lines[] = '/**';
-                $lines[] = " * $summary";
-                $lines[] = ' *';
-                $lines[] = " * $params";
-                $lines[] = " * $return";
-                $lines[] = " * @see {$declaring}::{$method}()";
+                $lines[] = '/**';                     // 0
+                $lines[] = " * $summary";             // 1
+                $lines[] = ' *';                      // 2
+                $lines[] = ' * @internal';            // 3
+                $lines[] = " * $params";              // 4
+                $lines[] = " * $return";              // 5
+                $lines[] = " * @see $methodFqsen";    // 6
                 $lines[] = ' */';
+                if (!$link) {
+                    unset($lines[6]);
+                }
                 if (!$return) {
-                    unset($lines[4]);
+                    unset($lines[5]);
                 }
                 if (!$params) {
+                    unset($lines[4]);
+                }
+                if (!$internal) {
                     unset($lines[3]);
                 }
+
                 $toDeclare[] = [$_method, implode(PHP_EOL, $lines)];
             } else {
                 $methods[] = " * @method static $type $method("

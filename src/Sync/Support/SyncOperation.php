@@ -16,7 +16,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     use IsConvertibleEnumeration;
 
     /**
-     * Add an entity to the connected system
+     * Add an entity to the backend
      *
      * Typically corresponds to:
      * - `<provider>::create<entity_name>(<entity_class> $entity)`
@@ -27,7 +27,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     public const CREATE = 0;
 
     /**
-     * Read an entity from the connected system
+     * Read an entity from the backend
      *
      * Typically corresponds to:
      * - `<provider>::get<entity_name>(int|string|null $id)`
@@ -39,7 +39,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     public const READ = 1;
 
     /**
-     * Update an entity in the connected system
+     * Update an entity in the backend
      *
      * Typically corresponds to:
      * - `<provider>::update<entity_name>(<entity_class> $entity)`
@@ -51,7 +51,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     public const UPDATE = 2;
 
     /**
-     * Delete an entity from the connected system
+     * Delete an entity from the backend
      *
      * Typically corresponds to:
      * - `<provider>::delete<entity_name>(<entity_class> $entity)`
@@ -62,7 +62,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     public const DELETE = 3;
 
     /**
-     * Add a list of entities to the connected system
+     * Add a list of entities to the backend
      *
      * Typically corresponds to:
      * - `<provider>::create<plural_entity_name>(<entity_class>[] $entities)`
@@ -73,7 +73,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     public const CREATE_LIST = 4;
 
     /**
-     * Read a list of entities from the connected system
+     * Read a list of entities from the backend
      *
      * Typically corresponds to:
      * - `<provider>::get<plural_entity_name>()`
@@ -84,7 +84,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     public const READ_LIST = 5;
 
     /**
-     * Update a list of entities in the connected system
+     * Update a list of entities in the backend
      *
      * Typically corresponds to:
      * - `<provider>::update<plural_entity_name>(<entity_class>[] $entity)`
@@ -96,7 +96,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     public const UPDATE_LIST = 6;
 
     /**
-     * Delete a list of entities from the connected system
+     * Delete a list of entities from the backend
      *
      * Typically corresponds to:
      * - `<provider>::delete<plural_entity_name>(<entity_class>[] $entity)`
@@ -135,21 +135,9 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     }
 
     /**
-     * @var array<int,bool>
-     */
-    private const LIST_MAP = [
-        self::CREATE      => false,
-        self::READ        => false,
-        self::UPDATE      => false,
-        self::DELETE      => false,
-        self::CREATE_LIST => true,
-        self::READ_LIST   => true,
-        self::UPDATE_LIST => true,
-        self::DELETE_LIST => true,
-    ];
-
-    /**
-     * @return int[]
+     * Get a list of all operations
+     *
+     * @psalm-return (SyncOperation::*)[]
      */
     public static function getAll(): array
     {
@@ -166,17 +154,13 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     }
 
     /**
-     * Return true if the SyncOperation is CREATE_LIST, READ_LIST, UPDATE_LIST
-     * or DELETE_LIST
+     * True if an operation is CREATE_LIST, READ_LIST, UPDATE_LIST or
+     * DELETE_LIST
      *
-     * @throws UnexpectedValueException
+     * @psalm-param SyncOperation::* $operation
      */
     public static function isList(int $operation): bool
     {
-        if (is_null($list = self::LIST_MAP[$operation] ?? null)) {
-            throw new UnexpectedValueException("Invalid SyncOperation: $operation");
-        }
-
-        return $list;
+        return (bool) ($operation & 4);
     }
 }

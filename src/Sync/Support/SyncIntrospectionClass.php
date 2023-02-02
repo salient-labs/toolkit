@@ -76,14 +76,35 @@ final class SyncIntrospectionClass extends IntrospectionClass
      * Used only to map "magic" method names to sync operations. Providers
      * aren't required to service any of them.
      *
-     * @var array<string,array{0:int,1:string}>
+     * @var array<string,array{0:SyncOperation::*,1:string}>
      */
     public $SyncOperationMagicMethods = [];
 
     /**
+     * Signature => closure
+     *
+     * @var array<string,\Closure>
+     */
+    public $CreateFromSignatureSyncClosures = [];
+
+    /**
+     * Signature => (int) $strict => closure
+     *
+     * @var array<string,array<int,\Closure>>
+     */
+    public $CreateSyncEntityFromSignatureClosures = [];
+
+    /**
+     * (int) $strict => closure
+     *
+     * @var array<int,\Closure>
+     */
+    public $CreateSyncEntityFromClosures = [];
+
+    /**
      * Entity => sync operation => closure
      *
-     * @var array<string,array<int,\Closure|null>>
+     * @var array<string,array<SyncOperation::*,\Closure|null>>
      */
     public $DeclaredSyncOperationClosures = [];
 
@@ -159,6 +180,10 @@ final class SyncIntrospectionClass extends IntrospectionClass
 
                     return;
                 }
+
+                /**
+                 * @psalm-var SyncOperation::* $operation
+                 */
                 $this->SyncOperationMagicMethods[$method] = [$operation, $entity->Class];
             };
 

@@ -87,9 +87,8 @@ final class GetSyncEntities extends CliCommand
         return [
             CliOption::build()
                 ->long('type')
-                ->short('t')
-                ->description('The entity type to retrieve')
-                ->optionType(CliOptionType::ONE_OF)
+                ->description('The entity type to request')
+                ->optionType(CliOptionType::ONE_OF_POSITIONAL)
                 ->valueName('entity_type')
                 ->allowedValues(array_keys($this->Entities))
                 ->required(),

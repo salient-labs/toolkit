@@ -181,19 +181,21 @@ class Introspector
         if (!($closure = $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] ?? null)) {
             $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] =
                 $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
-            // If the closure was created successfully in strict mode, cache it for
-            // `$strict = false` too
+
+            // If the closure was created successfully in strict mode, cache it
+            // for `$strict = false` too
             if ($strict && !($this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) false] ?? null)) {
                 $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) false] = $closure;
             }
         }
         $service = $this->_Service;
 
-        return static function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($closure, $service) {
-            return $closure($container, $array, null, null,
-                            $parent, $dateFormatter,
-                            $service);
-        };
+        return
+            static function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($closure, $service) {
+                return $closure($container, $array, null, null,
+                                $parent, $dateFormatter,
+                                $service);
+            };
     }
 
     /**
@@ -209,28 +211,31 @@ class Introspector
      */
     final public function getCreateProvidableFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
-        $sig = implode("\0", $keys);
-        if (!($closure = $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] ?? null)) {
+        $sig     = implode("\0", $keys);
+        $closure = $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] ?? null;
+        if (!$closure) {
             $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] =
                 $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
-            // If the closure was created successfully in strict mode, cache it for
-            // `$strict = false` purposes too
+
+            // If the closure was created successfully in strict mode, cache it
+            // for `$strict = false` purposes too
             if ($strict && !($this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) false] ?? null)) {
                 $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) false] = $closure;
             }
         }
         $service = $this->_Service;
 
-        return static function (array $array, IProvider $provider, $context = null) use ($closure, $service) {
-            [$container, $parent] = $context instanceof IProviderContext
-                ? [$context->container(), $context->getParent()]
-                : [$context ?: $provider->container(), null];
+        return
+            static function (array $array, IProvider $provider, $context = null) use ($closure, $service) {
+                [$container, $parent] = $context instanceof IProviderContext
+                    ? [$context->container(), $context->getParent()]
+                    : [$context ?: $provider->container(), null];
 
-            return $closure($container, $array, $provider,
-                            $context ?: new ProviderContext($container, $parent),
-                            $parent, $provider->dateFormatter(),
-                            $service);
-        };
+                return $closure($container, $array, $provider,
+                                $context ?: new ProviderContext($container, $parent),
+                                $parent, $provider->dateFormatter(),
+                                $service);
+            };
     }
 
     /**
@@ -259,8 +264,11 @@ class Introspector
         } else {
             // Get keys that correspond to constructor parameters and isolate
             // any that don't also match a writable property or "magic" method
-            $parameters = array_intersect_key($this->_Class->Parameters, $keys);
-            if ($readonly = array_diff(array_keys($parameters), $this->_Class->getWritableProperties())) {
+            $parameters = array_intersect_key($this->_Class->Parameters,
+                                              $keys);
+            $readonly = array_diff(array_keys($parameters),
+                                   $this->_Class->getWritableProperties());
+            if ($readonly) {
                 throw new UnexpectedValueException("Cannot set readonly properties of {$this->_Class->Class}: " . implode(', ', $readonly));
             }
         }
@@ -457,7 +465,8 @@ class Introspector
                     throw new UnexpectedValueException('$context cannot be null when $provider is not null');
                 }
 
-                return $obj->setProvider($provider)->setContext($context);
+                return $obj->setProvider($provider)
+                           ->setContext($context);
             }
 
             return $obj;
@@ -553,8 +562,11 @@ class Introspector
     }
 
     /**
-     * Similar to getCreateFromSignatureClosure(), but return a closure that
-     * resolves array signatures when called
+     * Get a closure to create instances of the class from arrays
+     *
+     * This method is similar to
+     * {@see Introspector::getCreateFromSignatureClosure()}, but it returns a
+     * closure that resolves array signatures when called.
      *
      * @param bool $strict If `true`, return a closure that throws an exception
      * if any data would be discarded.
@@ -569,18 +581,23 @@ class Introspector
             return $closure;
         }
 
-        $closure = function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($strict) {
-            $keys = array_keys($array);
+        $closure =
+            function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($strict) {
+                $keys = array_keys($array);
 
-            return ($this->getCreateFromSignatureClosure($keys, $strict))($array, $container, $parent, $dateFormatter);
-        };
+                return ($this->getCreateFromSignatureClosure($keys, $strict))($array, $container, $parent, $dateFormatter);
+            };
 
         return $this->_Class->CreateProviderlessFromClosures[(int) $strict] = $closure;
     }
 
     /**
-     * Similar to getCreateProvidableFromSignatureClosure(), but return a
-     * closure that resolves array signatures when called
+     * Get a closure to create instances of the class from arrays on behalf of a
+     * provider
+     *
+     * This method is similar to
+     * {@see Introspector::getCreateProvidableFromSignatureClosure()}, but it
+     * returns a closure that resolves array signatures when called.
      *
      * @param bool $strict If `true`, return a closure that throws an exception
      * if any data would be discarded.
@@ -595,11 +612,12 @@ class Introspector
             return $closure;
         }
 
-        $closure = function (array $array, IProvider $provider, $context = null) use ($strict) {
-            $keys = array_keys($array);
+        $closure =
+            function (array $array, IProvider $provider, $context = null) use ($strict) {
+                $keys = array_keys($array);
 
-            return ($this->getCreateProvidableFromSignatureClosure($keys, $strict))($array, $provider, $context);
-        };
+                return ($this->getCreateProvidableFromSignatureClosure($keys, $strict))($array, $provider, $context);
+            };
 
         return $this->_Class->CreateProvidableFromClosures[(int) $strict] = $closure;
     }

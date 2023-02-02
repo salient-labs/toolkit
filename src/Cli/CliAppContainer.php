@@ -52,15 +52,6 @@ final class CliAppContainer extends AppContainer
     }
 
     /**
-     * Return the basename of the file used to run the script
-     *
-     */
-    public function getProgramName(): string
-    {
-        return Sys::getProgramBasename();
-    }
-
-    /**
      * Return the CliCommand started from the command line
      *
      */
@@ -261,7 +252,7 @@ final class CliAppContainer extends AppContainer
     }
 
     /**
-     * Process the command line
+     * Process command-line arguments passed to the script
      *
      * One of the following actions will be taken:
      * - if subcommand arguments resolve to a registered command, invoke it and
@@ -353,7 +344,7 @@ final class CliAppContainer extends AppContainer
     }
 
     /**
-     * Process the command line and exit
+     * Exit after processing command-line arguments passed to the script
      *
      * The value returned by {@see CliAppContainer::run()} is used as the exit
      * status.
