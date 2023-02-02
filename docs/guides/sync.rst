@@ -39,7 +39,6 @@ used. The first value passed is always the current `SyncContext`_ and
 | ``DELETE_LIST``      | ``fn(SyncContext $ctx, iterable $entities, ...$args): iterable``      | ``delete<EntityPlural>``   | ``deleteList_<Entity>`` |
 +----------------------+-----------------------------------------------------------------------+----------------------------+-------------------------+
 
-
 .. [1]
    See `SyncOperation`_.
 

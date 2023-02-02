@@ -24,7 +24,6 @@ Directory Specification`_:
 | ``TempPath``          | app_temp_path      | ``$XDG_CACHE_HOME/<App>/tmp``          | ``%LOCALAPPDATA%/<App>/tmp``   | ``<BasePath>/var/tmp``   |
 +-----------------------+--------------------+----------------------------------------+--------------------------------+--------------------------+
 
-
 .. [1]
    ``app_base_path`` is always ignored if ``$basePath`` is passed to
    `AppContainer`_’s constructor.

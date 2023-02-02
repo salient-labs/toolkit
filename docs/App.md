@@ -27,7 +27,6 @@ respectively) follow the [XDG Base Directory Specification][xdg-base-spec]:
 [^4]: If `XDG_DATA_HOME` is empty or not set, `$HOME/.local/share` is used as
     the default
 
----
 
 [App]: https://lkrms.github.io/php-util/classes/Lkrms-Facade-App.html
 [Cli]: https://lkrms.github.io/php-util/classes/Lkrms-Facade-Cli.html
