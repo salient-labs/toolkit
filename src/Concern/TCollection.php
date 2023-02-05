@@ -171,6 +171,16 @@ trait TCollection
     /**
      * @return T|false
      */
+    final public function nth(int $index)
+    {
+        $copy = $this->_Items;
+
+        return $copy[array_keys($copy)[$index]] ?? false;
+    }
+
+    /**
+     * @return T|false
+     */
     final public function shift()
     {
         $item = array_shift($this->_Items);
