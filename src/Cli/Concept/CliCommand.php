@@ -416,11 +416,14 @@ abstract class CliCommand implements ReturnsContainer
                 ? "\n  " . implode("\n  ", $optionLines)
                 : '';
 
-            if ($option->Description) {
-                $options    .= "\n  " . $this->prepareDescription($option->Description, '  ', 76);
+            if ($description = trim($option->Description)) {
+                $options    .= "\n  " . $this->prepareDescription($description, '  ', 76);
                 // Increase the indentation of "Default:" and "Values:" to
                 // separate them from the description
                 $optionLines = $optionLines ? str_replace("\n", "\n  ", $optionLines) : '';
+                if ($optionLines && strpos($description, "\n") !== false) {
+                    $options .= "\n";
+                }
             }
 
             $options .= $optionLines . "\n";

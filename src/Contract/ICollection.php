@@ -101,6 +101,13 @@ interface ICollection extends Iterator, ArrayAccess, Countable
     public function last();
 
     /**
+     * Return the nth item, or false if no such item is in the collection
+     *
+     * @return T|false
+     */
+    public function nth(int $index);
+
+    /**
      * Shift an item off the beginning of the collection
      *
      * @return T|false

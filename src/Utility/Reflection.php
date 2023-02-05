@@ -362,11 +362,11 @@ final class Reflection
         $const = $parameter->getDefaultValueConstantName();
         if (!preg_match('/^(self|parent|static)::/i', $const)) {
             if ($typeNameCallback &&
-                ($_const = preg_replace_callback(
-                    '/^[^:\\\\]+(?:\\\\[^:\\\\]+)+(?=::)/',
-                    fn($matches) => $typeNameCallback($matches[0]) ?: $matches[0],
-                    $const
-                )) !== $const) {
+                    ($_const = preg_replace_callback(
+                        '/^[^:\\\\]+(?:\\\\[^:\\\\]+)+(?=::)/',
+                        fn($matches) => $typeNameCallback($matches[0]) ?: $matches[0],
+                        $const
+                    )) !== $const) {
                 return "$param$_const";
             }
 
@@ -402,10 +402,10 @@ final class Reflection
             . '$' . ($name ?: $parameter->getName());
 
         if (!$force && !$documentation &&
-            preg_replace(
-                ['/ = .*/', '/&(?=(\.\.\.)?\$)/'], '',
-                $this->getParameterDeclaration($parameter, $classPrefix, $typeNameCallback, null, $name)
-            ) === $param) {
+                preg_replace(
+                    ['/ = .*/', '/&(?=(\.\.\.)?\$)/'], '',
+                    $this->getParameterDeclaration($parameter, $classPrefix, $typeNameCallback, null, $name)
+                ) === $param) {
             return null;
         }
 
