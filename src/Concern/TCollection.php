@@ -174,8 +174,12 @@ trait TCollection
     final public function nth(int $index)
     {
         $copy = $this->_Items;
+        $key  = array_keys($copy)[$index] ?? null;
+        if (is_null($key)) {
+            return false;
+        }
 
-        return $copy[array_keys($copy)[$index]] ?? false;
+        return $copy[$key];
     }
 
     /**
