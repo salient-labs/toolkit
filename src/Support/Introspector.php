@@ -192,8 +192,12 @@ class Introspector
 
         return
             static function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($closure, $service) {
-                return $closure($container, $array, null, null,
-                                $parent, $dateFormatter,
+                return $closure($container,
+                                $array,
+                                null,
+                                null,
+                                $parent,
+                                $dateFormatter,
                                 $service);
             };
     }
@@ -231,9 +235,12 @@ class Introspector
                     ? [$context->container(), $context->getParent()]
                     : [$context ?: $provider->container(), null];
 
-                return $closure($container, $array, $provider,
+                return $closure($container,
+                                $array,
+                                $provider,
                                 $context ?: new ProviderContext($container, $parent),
-                                $parent, $provider->dateFormatter(),
+                                $parent,
+                                $provider->dateFormatter(),
                                 $service);
             };
     }
@@ -316,8 +323,11 @@ class Introspector
             }
         }
 
-        return new IntrospectorKeyTargets($parameterKeys, $passByRefKeys,
-                                          $methodKeys, $propertyKeys, $metaKeys,
+        return new IntrospectorKeyTargets($parameterKeys,
+                                          $passByRefKeys,
+                                          $methodKeys,
+                                          $propertyKeys,
+                                          $metaKeys,
                                           $dateKeys);
     }
 
@@ -751,7 +761,8 @@ class Introspector
         }
 
         return $this->_Class->GetNameClosure = $this->getPropertyActionClosure(
-            array_shift($names), IntrospectionClass::ACTION_GET
+            array_shift($names),
+            IntrospectionClass::ACTION_GET
         );
     }
 

@@ -127,9 +127,12 @@ final class SyncIntrospector extends Introspector
                     ? [$context->container(), $context->getParent()]
                     : [$context ?: $provider->container(), null];
 
-                return $closure($container, $array, $provider,
+                return $closure($container,
+                                $array,
+                                $provider,
                                 $context ?: new SyncContext($container, $parent),
-                                $parent, $provider->dateFormatter(),
+                                $parent,
+                                $provider->dateFormatter(),
                                 $service);
             };
     }

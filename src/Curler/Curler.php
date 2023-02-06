@@ -387,7 +387,8 @@ class Curler implements IReadable, IWritable
     final public function responseContentTypeIs(string $mimeType): bool
     {
         $contentType = $this->ResponseHeaders->getHeaderValue(
-            HttpHeader::CONTENT_TYPE, CurlerHeadersFlag::DISCARD_REPEATED
+            HttpHeader::CONTENT_TYPE,
+            CurlerHeadersFlag::DISCARD_REPEATED
         );
 
         if (is_null($contentType)) {
@@ -485,8 +486,11 @@ class Curler implements IReadable, IWritable
             return '';
         }
 
-        return '?' . Convert::dataToQuery($query,
-                                          $this->PreserveKeys, $this->DateFormatter);
+        return '?' . Convert::dataToQuery(
+            $query,
+            $this->PreserveKeys,
+            $this->DateFormatter
+        );
     }
 
     private function createHandle(string $url): void
@@ -499,7 +503,8 @@ class Curler implements IReadable, IWritable
         curl_setopt($this->Handle, CURLOPT_RETURNTRANSFER, true);
 
         // Collect response headers
-        curl_setopt($this->Handle, CURLOPT_HEADERFUNCTION,
+        curl_setopt($this->Handle,
+                    CURLOPT_HEADERFUNCTION,
                     fn($curl, $header) => strlen($this->processHeader($header)));
 
         if ($this->FollowRedirects) {
@@ -577,7 +582,8 @@ class Curler implements IReadable, IWritable
 
     private function applyData(array $data): void
     {
-        curl_setopt($this->Handle, CURLOPT_POSTFIELDS,
+        curl_setopt($this->Handle,
+                    CURLOPT_POSTFIELDS,
                     ($this->Body = $this->prepareData($data)));
     }
 
@@ -601,7 +607,8 @@ class Curler implements IReadable, IWritable
             $this->setContentType(MimeType::WWW_FORM);
 
             return Convert::dataToQuery($data,
-                                        $this->PreserveKeys, $this->DateFormatter);
+                                        $this->PreserveKeys,
+                                        $this->DateFormatter);
         }
     }
 
@@ -660,7 +667,9 @@ class Curler implements IReadable, IWritable
                 // get(), but one frame deeper
                 Console::debug("{$this->Method} "
                                    . rawurldecode(curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)),
-                               null, null, $depth + 3);
+                               null,
+                               null,
+                               $depth + 3);
             }
 
             // Execute the request
@@ -720,7 +729,9 @@ class Curler implements IReadable, IWritable
                 // Sleep for at least one second
                 $after = max(1, $after);
                 Console::debug("Received HTTP error 429 Too Many Requests, sleeping for {$after}s",
-                               null, null, $depth + 3);
+                               null,
+                               null,
+                               $depth + 3);
                 sleep($after);
 
                 $this->clearResponse();
@@ -898,9 +909,8 @@ class Curler implements IReadable, IWritable
             if ($page->isLastPage()) {
                 break;
             }
-            [$url, $data, $headers] = [
-                $page->nextUrl(), $page->nextData(), $page->nextHeaders()
-            ];
+            [$url, $data, $headers] =
+                [$page->nextUrl(), $page->nextData(), $page->nextHeaders()];
             curl_setopt($this->Handle, CURLOPT_URL, $url);
             if (!is_null($headers)) {
                 $this->Headers = CurlerHeadersImmutable::fromMutable($headers);

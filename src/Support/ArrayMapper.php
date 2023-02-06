@@ -36,7 +36,9 @@ final class ArrayMapper
         $sig = implode("\0", array_map(
             fn($v) => is_array($v) ? implode("\x01", $v) : $v,
             array_merge(
-                array_keys($keyMap), array_values($keyMap), [$conformity, $flags]
+                array_keys($keyMap),
+                array_values($keyMap),
+                [$conformity, $flags]
             )
         ));
 

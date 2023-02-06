@@ -26,7 +26,8 @@ print_r(Cache::maybeGet(
             'key1' => 'value1',
             'key2' => 'value2',
         ];
-    }, 2
+    },
+    2
 ));
 
 foreach ([1, 2] as $seconds) {

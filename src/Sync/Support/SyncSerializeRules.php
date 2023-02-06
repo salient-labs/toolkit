@@ -432,7 +432,8 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private function normaliseTarget(string $target): string
     {
         return preg_replace_callback('/[^].[]+/',
-                                     fn($matches) => $this->Introspector->maybeNormalise($matches[0], NormaliserFlag::LAZY), $target);
+                                     fn($matches) => $this->Introspector->maybeNormalise($matches[0], NormaliserFlag::LAZY),
+                                     $target);
     }
 
     public function getDateFormatter(): ?DateFormatter

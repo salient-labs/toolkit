@@ -163,7 +163,10 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             case SyncOperation::READ:
                 $closure = fn(SyncContext $ctx, $id, ...$args): SyncEntity => $toEntity->send(
                     $toCurler(...$this->getCurlerArgs($operation, $ctx, $id, ...$args)),
-                    $operation, $ctx, $id, ...$args
+                    $operation,
+                    $ctx,
+                    $id,
+                    ...$args
                 )->withConformity($this->Conformity)->run();
                 break;
 
@@ -190,7 +193,9 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             case SyncOperation::READ_LIST:
                 $closure = fn(SyncContext $ctx, ...$args): iterable => $toEntity->stream(
                     $toCurler(...$this->getCurlerArgs($operation, $ctx, ...$args)),
-                    $operation, $ctx, ...$args
+                    $operation,
+                    $ctx,
+                    ...$args
                 )->withConformity($this->Conformity)->start();
                 break;
 

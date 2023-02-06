@@ -311,9 +311,10 @@ class GenerateBuilder extends GenerateCommand
                 }
 
                 $type = $type ? "$type " : '';
-                $methods[] = " * @method \$this $name($type\$value)" . $this->getSummary(
-                    $summary, $_property, $typeNameCallback
-                );
+                $methods[] = " * @method \$this $name($type\$value)"
+                    . $this->getSummary($summary,
+                                        $_property,
+                                        $typeNameCallback);
 
                 continue;
             }
@@ -375,9 +376,12 @@ class GenerateBuilder extends GenerateCommand
                 $docBlocks[$name] = implode(PHP_EOL, $lines);
             } else {
                 $type = $type ? "$type " : '';
-                $methods[] = " * @method \$this $name($type\$value$default)" . $this->getSummary(
-                    $summary, $_property, $typeNameCallback, $declaringClass, $name
-                );
+                $methods[] = " * @method \$this $name($type\$value$default)"
+                    . $this->getSummary($summary,
+                                        $_property,
+                                        $typeNameCallback,
+                                        $declaringClass,
+                                        $name);
             }
         }
         $methods[] = " * @method $service $terminator() Return a new $class object";
@@ -432,17 +436,20 @@ class GenerateBuilder extends GenerateCommand
                    ...$this->getStaticGetter('getClassName', "$service::class"));
 
         if ($this->getOption('static-builder')->DefaultValue !== $staticBuilder) {
-            array_push($lines, '',
+            array_push($lines,
+                       '',
                        ...$this->getStaticGetter('getStaticBuilder', var_export($staticBuilder, true)));
         }
 
         if ($this->getOption('terminator')->DefaultValue !== $terminator) {
-            array_push($lines, '',
+            array_push($lines,
+                       '',
                        ...$this->getStaticGetter('getTerminator', var_export($terminator, true)));
         }
 
         if ($this->getOption('static-resolver')->DefaultValue !== $staticResolver) {
-            array_push($lines, '',
+            array_push($lines,
+                       '',
                        ...$this->getStaticGetter('getStaticResolver', var_export($staticResolver, true)));
         }
 
@@ -456,7 +463,8 @@ class GenerateBuilder extends GenerateCommand
                 ? Reflect::getTypeDeclaration($_param->getType(), $classPrefix, $typeNameCallback)
                 : '';
             $type = $type ? "$type " : '';
-            array_push($lines, '',
+            array_push($lines,
+                       '',
                        ...$this->getMethod($name, $code, ["{$type}&\$variable"], null, $docBlocks[$name], false));
         }
 
