@@ -915,6 +915,7 @@ class Curler implements IReadable, IWritable
             if (!is_null($headers)) {
                 $this->Headers = CurlerHeadersImmutable::fromMutable($headers);
             }
+            $this->clearResponse();
         } while (true);
 
         $this->close();
@@ -1020,6 +1021,7 @@ class Curler implements IReadable, IWritable
             do {
                 if ($nextUrl) {
                     curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
+                    $this->clearResponse();
                     $nextUrl = null;
                 }
 
@@ -1065,6 +1067,7 @@ class Curler implements IReadable, IWritable
         do {
             if ($nextUrl) {
                 curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
+                $this->clearResponse();
                 $nextUrl = null;
             }
 
@@ -1098,6 +1101,7 @@ class Curler implements IReadable, IWritable
         do {
             if ($nextUrl) {
                 curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
+                $this->clearResponse();
             }
 
             // Collect data from response and move on to next page
@@ -1123,6 +1127,7 @@ class Curler implements IReadable, IWritable
         do {
             if ($nextUrl) {
                 curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
+                $this->clearResponse();
             }
 
             // Collect data from response and move on to next page
