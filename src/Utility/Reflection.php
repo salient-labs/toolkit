@@ -403,7 +403,8 @@ final class Reflection
 
         if (!$force && !$documentation &&
                 preg_replace(
-                    ['/ = .*/', '/&(?=(\.\.\.)?\$)/'], '',
+                    ['/ = .*/', '/&(?=(\.\.\.)?\$)/'],
+                    '',
                     $this->getParameterDeclaration($parameter, $classPrefix, $typeNameCallback, null, $name)
                 ) === $param) {
             return null;

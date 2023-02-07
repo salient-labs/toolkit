@@ -25,12 +25,22 @@ use Lkrms\Sync\Support\SyncOperation;
 class GenerateSyncProvider extends GenerateCommand
 {
     private const OPERATIONS = [
-        'create', 'get', 'update', 'delete',
-        'create-list', 'get-list', 'update-list', 'delete-list'
+        'create',
+        'get',
+        'update',
+        'delete',
+        'create-list',
+        'get-list',
+        'update-list',
+        'delete-list',
     ];
 
     private const DEFAULT_OPERATIONS = [
-        'create', 'get', 'update', 'delete', 'get-list'
+        'create',
+        'get',
+        'update',
+        'delete',
+        'get-list',
     ];
 
     public function getShortDescription(): string

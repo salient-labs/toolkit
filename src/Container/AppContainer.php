@@ -416,7 +416,9 @@ class AppContainer extends Container implements IReadable
             // counter
             Console::error(
                 Convert::plural($count, 'sync error', null, true) . ' recorded:',
-                "\n" . $errors, null, false
+                "\n" . $errors,
+                null,
+                false
             );
 
             return $this;

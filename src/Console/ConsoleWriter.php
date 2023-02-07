@@ -413,9 +413,12 @@ final class ConsoleWriter implements ReceivesFacade
     public function message(int $level, string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $prefixByLevel = true, bool $formatByLevel = true)
     {
         return $this->count($level)
-                    ->write($level, $msg1, $msg2,
+                    ->write($level,
+                            $msg1,
+                            $msg2,
                             $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
-                            $ex, $formatByLevel);
+                            $ex,
+                            $formatByLevel);
     }
 
     /**
@@ -429,9 +432,12 @@ final class ConsoleWriter implements ReceivesFacade
     public function messageOnce(int $level, string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $prefixByLevel = true, bool $formatByLevel = true)
     {
         return $this->count($level)
-                    ->writeOnce($level, $msg1, $msg2,
+                    ->writeOnce($level,
+                                $msg1,
+                                $msg2,
                                 $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
-                                $ex, $formatByLevel);
+                                $ex,
+                                $formatByLevel);
     }
 
     /**
@@ -645,19 +651,27 @@ final class ConsoleWriter implements ReceivesFacade
             $msg2 = ($msg2 ?? '') . (($i++ ? "\nCaused by __" . get_class($ex) . '__: ' : '')
                 . sprintf('`%s` ~~in %s:%d~~',
                           ConsoleFormatter::escape($ex->getMessage()),
-                          $ex->getFile(), $ex->getLine()));
+                          $ex->getFile(),
+                          $ex->getLine()));
             $ex = $ex->getPrevious();
         } while ($ex);
 
         $this->Errors++;
         $this->write(Level::ERROR,
-                     'Uncaught __' . get_class($exception) . '__:', $msg2, ' !! ', $exception);
+                     'Uncaught __' . get_class($exception) . '__:',
+                     $msg2,
+                     ' !! ',
+                     $exception);
         $this->write(Level::DEBUG,
-                     '__Stack trace:__', "\n`" . ConsoleFormatter::escape($exception->getTraceAsString()) . '`', '--- ');
+                     '__Stack trace:__',
+                     "\n`" . ConsoleFormatter::escape($exception->getTraceAsString()) . '`',
+                     '--- ');
         if ($exception instanceof \Lkrms\Exception\Exception) {
             foreach ($exception->getDetail() as $section => $text) {
                 $this->write(Level::DEBUG,
-                             "__{$section}:__", "\n`" . ConsoleFormatter::escape($text ?: '') . '`', '--- ');
+                             "__{$section}:__",
+                             "\n`" . ConsoleFormatter::escape($text ?: '') . '`',
+                             '--- ');
             }
         }
 

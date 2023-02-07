@@ -172,8 +172,14 @@ final class GetSyncEntities extends CliCommand
                 $result = Convert::toList($result, true);
             }
 
-            File::writeCsv($result, 'php://stdout', true, null, $count,
-                           fn(SyncEntity $entity) => $entity->toArrayWith($rules));
+            File::writeCsv(
+                $result,
+                'php://stdout',
+                true,
+                null,
+                $count,
+                fn(SyncEntity $entity) => $entity->toArrayWith($rules)
+            );
         } elseif (!is_iterable($result) || !$stream) {
             $result = Convert::toList($result, true);
             /** @var SyncEntity $entity */

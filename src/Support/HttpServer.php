@@ -165,9 +165,10 @@ final class HttpServer implements IReadable
             } finally {
                 fwrite(
                     $socket,
-                    ($response ?? new HttpResponse(
-                        'Internal server error', 500, 'Internal Server Error'
-                    ))->getResponse()
+                    ($response
+                        ?? new HttpResponse('Internal server error',
+                                            500,
+                                            'Internal Server Error'))->getResponse()
                 );
                 fclose($socket);
             }

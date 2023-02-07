@@ -400,7 +400,8 @@ final class GenerateFacade extends GenerateCommand
                 '}',
             ];
 
-            array_push($lines, '',
+            array_push($lines,
+                       '',
                        ...$this->getMethod($_method->name, $code, $_params, $_method->getReturnType(), $docBlock));
         }
 

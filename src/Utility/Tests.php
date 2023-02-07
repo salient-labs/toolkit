@@ -209,10 +209,26 @@ final class Tests
     public function isPhpReservedWord(string $name): bool
     {
         return in_array(strtolower($name), [
-            'array', 'bool', 'callable', 'enum', 'false',
-            'float', 'int', 'iterable', 'mixed', 'never',
-            'null', 'numeric', 'object', 'parent', 'resource',
-            'self', 'static', 'string', 'true', 'void',
+            'array',
+            'bool',
+            'callable',
+            'enum',
+            'false',
+            'float',
+            'int',
+            'iterable',
+            'mixed',
+            'never',
+            'null',
+            'numeric',
+            'object',
+            'parent',
+            'resource',
+            'self',
+            'static',
+            'string',
+            'true',
+            'void',
         ]);
     }
 
