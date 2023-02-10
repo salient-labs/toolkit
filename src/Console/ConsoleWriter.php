@@ -701,13 +701,13 @@ final class ConsoleWriter implements ReceivesFacade
 
             $formatter = $target->getFormatter();
             $_msg1     = $formatter->format($msg1);
-            $_msg2     = $msg2 ? $formatter->format($msg2) : null;
+            $_msg2     = is_null($msg2) ? null : $formatter->format($msg2);
 
             if ($margin + $indent && strpos($msg1, "\n") !== false) {
                 $_msg1 = str_replace("\n", "\n" . str_repeat(' ', $margin + $indent), $_msg1);
             }
 
-            if ($_msg2) {
+            if (!is_null($_msg2)) {
                 $_msg2 = strpos($msg2, "\n") !== false
                     ? str_replace("\n", "\n" . str_repeat(' ', $margin + $indent + 2), "\n" . ltrim($_msg2))
                     : ($_msg1 ? ' ' : '') . $_msg2;
