@@ -681,6 +681,20 @@ final class Conversions
     }
 
     /**
+     * Replace the end of a multi-byte string with an ellipsis ("...") if its
+     * length exceeds a limit
+     *
+     */
+    public function ellipsize(string $value, int $length): string
+    {
+        if (mb_strlen($value) > $length) {
+            return rtrim(mb_substr($value, 0, $length - 3)) . '...';
+        }
+
+        return $value;
+    }
+
+    /**
      * If $number is 1, return $singular, otherwise return $plural
      *
      * @param string|null $plural `"{$singular}s"` is used if `$plural` is
