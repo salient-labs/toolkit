@@ -25,6 +25,7 @@ use Lkrms\Utility\Conversions;
  * @method static string classToNamespace(string $class) Return the namespace of a class (see {@see Conversions::classToNamespace()})
  * @method static mixed coalesce(...$values) Get the first value that is not null
  * @method static string dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null) A more API-friendly http_build_query (see {@see Conversions::dataToQuery()})
+ * @method static string ellipsize(string $value, int $length) Replace the end of a multi-byte string with an ellipsis ("...") if its length exceeds a limit
  * @method static mixed emptyToNull($value) If a value is 'falsey', make it null (see {@see Conversions::emptyToNull()})
  * @method static mixed flatten($value) Recursively remove outer single-element arrays (see {@see Conversions::flatten()})
  * @method static int intervalToSeconds(DateInterval|string $value) Convert an interval to the equivalent number of seconds (see {@see Conversions::intervalToSeconds()})
