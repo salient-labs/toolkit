@@ -98,22 +98,22 @@ final class CacheStore extends SqliteStore
 
         $db  = $this->db();
         $sql = <<<SQL
-        INSERT INTO
-          _cache_item (item_key, item_value, expires_at)
-        VALUES
-          (
-            :item_key,
-            :item_value,
-            DATETIME(:expires_at, 'unixepoch')
-          ) ON CONFLICT (item_key) DO
-        UPDATE
-        SET
-          item_value = excluded.item_value,
-          expires_at = excluded.expires_at
-        WHERE
-          item_value IS NOT excluded.item_value
-          OR expires_at IS NOT excluded.expires_at;
-        SQL;
+            INSERT INTO
+              _cache_item (item_key, item_value, expires_at)
+            VALUES
+              (
+                :item_key,
+                :item_value,
+                DATETIME(:expires_at, 'unixepoch')
+              ) ON CONFLICT (item_key) DO
+            UPDATE
+            SET
+              item_value = excluded.item_value,
+              expires_at = excluded.expires_at
+            WHERE
+              item_value IS NOT excluded.item_value
+              OR expires_at IS NOT excluded.expires_at;
+            SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
         $stmt->bindValue(':item_value', serialize($value), SQLITE3_BLOB);
@@ -150,11 +150,11 @@ final class CacheStore extends SqliteStore
 
         $db  = $this->db();
         $sql = <<<SQL
-        SELECT
-          item_value
-        FROM
-          _cache_item
-        SQL;
+            SELECT
+              item_value
+            FROM
+              _cache_item
+            SQL;
         $stmt = $db->prepare("$sql WHERE " . implode(' AND ', $where));
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
@@ -183,11 +183,11 @@ final class CacheStore extends SqliteStore
 
         $db  = $this->db();
         $sql = <<<SQL
-        DELETE FROM
-          _cache_item
-        WHERE
-          item_key = :item_key;
-        SQL;
+            DELETE FROM
+              _cache_item
+            WHERE
+              item_key = :item_key;
+            SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
         $stmt->execute();

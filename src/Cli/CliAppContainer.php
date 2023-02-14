@@ -241,11 +241,11 @@ final class CliAppContainer extends AppContainer
             }
             $content = str_replace("\n", "\n  ", $content);
             $usage  .= <<<EOF
-            ___{$heading}___
-              {$content}
+                ___{$heading}___
+                  {$content}
 
 
-            EOF;
+                EOF;
         }
 
         return rtrim($usage);
