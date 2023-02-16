@@ -72,7 +72,7 @@ final class StreamTarget extends ConsoleTarget
         $this->IsStdout     = File::getStreamUri($stream) == 'php://stdout';
         $this->IsStderr     = File::getStreamUri($stream) == 'php://stderr';
         $this->IsTty        = stream_isatty($stream);
-        $this->AddTimestamp = !is_null($addTimestamp) ? $addTimestamp : !$this->IsTty;
+        $this->AddTimestamp = !is_null($addTimestamp) ? $addTimestamp : !($this->IsStdout || $this->IsStderr);
 
         if (!is_null($timestamp)) {
             $this->Timestamp = $timestamp;

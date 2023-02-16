@@ -171,10 +171,10 @@ trait TCollection
     /**
      * @return T|false
      */
-    final public function nth(int $index)
+    final public function nth(int $n)
     {
         $copy = $this->_Items;
-        $key  = array_keys($copy)[$index] ?? null;
+        $key  = array_keys($copy)[$n - 1] ?? null;
         if (is_null($key)) {
             return false;
         }

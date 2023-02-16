@@ -67,25 +67,25 @@ final class TrashStore extends SqliteStore
 
         $db  = $this->db();
         $sql = <<<SQL
-        INSERT INTO
-          _trash_item (
-            item_type,
-            item_key,
-            item_json,
-            deleted_from,
-            created_at,
-            modified_at
-          )
-        VALUES
-          (
-            :item_type,
-            :item_key,
-            :item_json,
-            :deleted_from,
-            DATETIME(:created_at, 'unixepoch'),
-            DATETIME(:modified_at, 'unixepoch')
-          )
-        SQL;
+            INSERT INTO
+              _trash_item (
+                item_type,
+                item_key,
+                item_json,
+                deleted_from,
+                created_at,
+                modified_at
+              )
+            VALUES
+              (
+                :item_type,
+                :item_key,
+                :item_json,
+                :deleted_from,
+                DATETIME(:created_at, 'unixepoch'),
+                DATETIME(:modified_at, 'unixepoch')
+              )
+            SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':item_type', $type ?: get_class($object), SQLITE3_TEXT);
         $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
