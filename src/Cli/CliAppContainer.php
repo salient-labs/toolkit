@@ -9,7 +9,6 @@ use Lkrms\Facade\Assert;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Sys;
 use UnexpectedValueException;
 
 /**
