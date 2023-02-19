@@ -94,6 +94,16 @@ class AppContainer extends Container implements IReadable
      */
     private $StartTime;
 
+    /**
+     * @var StreamTarget[]
+     */
+    private $LogTargets = [];
+
+    /**
+     * @var StreamTarget[]
+     */
+    private $DebugLogTargets = [];
+
     private function getPath(string $name, string $parent, ?string $child, string $sourceChild, string $windowsChild): string
     {
         $name = "app_{$name}_path";
@@ -337,12 +347,17 @@ class AppContainer extends Container implements IReadable
      * @param string|null $name Defaults to the name used to run the script.
      * @return $this
      */
-    final public function logConsoleMessages(?bool $debug = true, ?string $name = null)
+    final public function logConsoleMessages(?bool $debug = null, ?string $name = null)
     {
         $name = $name ? basename($name, '.log') : $this->getAppName();
-        Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.log"), ConsoleLevels::ALL);
-        if ($debug || (is_null($debug) && Env::debug())) {
-            Console::registerTarget(StreamTarget::fromPath($this->LogPath . "/$name.debug.log"), ConsoleLevels::ALL_DEBUG);
+        if (!($this->LogTargets[$name] ?? null)) {
+            $this->LogTargets[$name] = $target = StreamTarget::fromPath($this->LogPath . "/$name.log");
+            Console::registerTarget($target, ConsoleLevels::ALL);
+        }
+        if (($debug || (is_null($debug) && Env::debug())) &&
+                !($this->DebugLogTargets[$name] ?? null)) {
+            $this->DebugLogTargets[$name] = $target = StreamTarget::fromPath($this->LogPath . "/$name.debug.log");
+            Console::registerTarget($target, ConsoleLevels::ALL_DEBUG);
         }
 
         return $this;

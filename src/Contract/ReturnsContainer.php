@@ -5,6 +5,7 @@ namespace Lkrms\Contract;
 /**
  * Returns a service container, creating one if necessary
  *
+ * @template T of IContainer
  */
 interface ReturnsContainer
 {
@@ -14,6 +15,8 @@ interface ReturnsContainer
      * Provided for convenience and consistency.
      *
      * See {@see ReturnsContainer::container()} for more information.
+     *
+     * @return T
      */
     public function app(): IContainer;
 
@@ -28,6 +31,8 @@ interface ReturnsContainer
      * - throw a `RuntimeException`
      *
      * Identical to {@see ReturnsContainer::app()}.
+     *
+     * @return T
      */
     public function container(): IContainer;
 }

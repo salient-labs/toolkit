@@ -2,6 +2,7 @@
 
 namespace Lkrms\Cli\Concept;
 
+use Lkrms\Cli\CliAppContainer;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
@@ -16,6 +17,7 @@ use UnexpectedValueException;
 /**
  * Base class for CLI commands
  *
+ * @implements ReturnsContainer<CliAppContainer>
  */
 abstract class CliCommand implements ReturnsContainer
 {
