@@ -16,7 +16,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         new PhpDocParser($docBlock);
     }
 
-    public function invalidDocBlockProvider(): array
+    public static function invalidDocBlockProvider(): array
     {
         return ['missing asterisk' => ["/**\n\n*/"]];
     }
