@@ -314,7 +314,7 @@ final class CliAppContainer extends AppContainer
                     return 0;
                 } elseif ($arg === '--version' && empty($args)) {
                     $appName = $this->getAppName();
-                    $version = Composer::getRootPackageVersion(true);
+                    $version = Composer::getRootPackageVersion(true, true);
                     Console::out("__{$appName}__ $version");
 
                     return 0;
