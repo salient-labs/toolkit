@@ -798,7 +798,7 @@ abstract class CliCommand implements ReturnsContainer
 
         if ($this->IsVersion) {
             $appName = $this->app()->getAppName();
-            $version = Composer::getRootPackageVersion(true);
+            $version = Composer::getRootPackageVersion(true, true);
             Console::out("__{$appName}__ $version");
 
             return 0;

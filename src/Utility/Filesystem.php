@@ -92,9 +92,9 @@ final class Filesystem
     }
 
     /**
-     * A phar-friendly realpath()
+     * A Phar-friendly realpath()
      *
-     * If a phar archive is running and `$filename` is a `phar://` URL:
+     * If a Phar archive is running and `$filename` is a `phar://` URL:
      * - relative path segments in `$filename` (e.g. `/../..`) are resolved by
      *   {@see Conversions::resolvePath()}
      * - if the file or directory exists, the resolved pathname is returned

@@ -36,6 +36,7 @@ use Lkrms\Contract\IContainer;
  * @method static bool hasGlobalContainer() Return true if a global container has been loaded
  * @method static CliAppContainer if(bool $condition, callable $callback) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of a class or interface have been applied to the default context
+ * @method static bool inProduction() Return true if the application is in production, false if it's running from source (see {@see AppContainer::inProduction()})
  * @method static CliAppContainer instance(string $id, $instance) Add an existing instance to the container as a shared binding
  * @method static CliAppContainer instanceIf(string $id, $instance) Add an existing instance to the container as a shared binding if it hasn't already been bound
  * @method static CliAppContainer loadCache() Load the application's CacheStore, creating a backing database if needed (see {@see AppContainer::loadCache()})

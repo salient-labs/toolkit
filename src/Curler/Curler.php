@@ -644,7 +644,7 @@ class Curler implements IReadable, IWritable
         return self::$DefaultUserAgent
             ?: (self::$DefaultUserAgent = implode(' ', [
                 str_replace('/', '~', Composer::getRootPackageName())
-                    . '/' . Composer::getRootPackageVersion(),
+                    . '/' . Composer::getRootPackageVersion(true, true),
                 'php/' . PHP_VERSION
             ]));
     }

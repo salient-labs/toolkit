@@ -9,7 +9,6 @@ use Lkrms\Facade\Assert;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Sys;
 use UnexpectedValueException;
 
 /**
@@ -314,7 +313,7 @@ final class CliAppContainer extends AppContainer
                     return 0;
                 } elseif ($arg === '--version' && empty($args)) {
                     $appName = $this->getAppName();
-                    $version = Composer::getRootPackageVersion(true);
+                    $version = Composer::getRootPackageVersion(true, true);
                     Console::out("__{$appName}__ $version");
 
                     return 0;

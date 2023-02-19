@@ -14,7 +14,6 @@ parameters:
     - tests/Cli/app
     - tests/Cli/test-options
     - tests/closure
-    - tests/composer
     - tests/console
     - tests/convert
     - tests/env

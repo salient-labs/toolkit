@@ -107,7 +107,7 @@ class AppContainer extends Container implements IReadable
 
         // If running from source, return `$this->BasePath/$sourceChild` if it
         // resolves to a writable directory
-        if (!Phar::running()) {
+        if (!$this->inProduction()) {
             $path = "{$this->BasePath}/$sourceChild";
             if (Test::firstExistingDirectoryIsWritable($path)) {
                 return $this->_getPath($path, $name);
@@ -245,6 +245,22 @@ class AppContainer extends Container implements IReadable
         if ($path = Composer::getPackagePath('adodb/adodb-php')) {
             Err::silencePaths($path);
         }
+    }
+
+    /**
+     * Return true if the application is in production, false if it's running
+     * from source
+     *
+     * "In production" means one of the following is true:
+     * - a Phar archive is currently executing, or
+     * - the application was installed with `composer --no-dev`
+     *
+     * @see Composer::hasDevDependencies()
+     */
+    public function inProduction(): bool
+    {
+        return Phar::running() ||
+            !Composer::hasDevDependencies();
     }
 
     /**
