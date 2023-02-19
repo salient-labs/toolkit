@@ -283,13 +283,18 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
-     * Get the basename of the file used to run the script, removing any PHP
-     * file extensions
+     * Get the basename of the file used to run the script, removing known PHP
+     * file extensions and recognised version numbers
      *
      */
     final public function getAppName(): string
     {
-        return Sys::getProgramBasename('.php', '.phar');
+        return preg_replace(
+            // Match `git describe --long` and similar formats
+            '/-v?[0-9]+(\.[0-9]+){0,3}(-[0-9]+)?(-g?[0-9a-f]+)?$/i',
+            '',
+            Sys::getProgramBasename('.php', '.phar')
+        );
     }
 
     /**

@@ -25,7 +25,7 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer command(string[] $name, string $id) Register a CliCommand with the container (see {@see CliAppContainer::command()})
  * @method static CliAppContainer forEach(array|object $array, callable $callback) Move to the next method in the chain after iterating over an array and passing the object to a callback with each key-value pair in the array (see {@see FluentInterface::forEach()})
  * @method static mixed get(string $id, mixed[] $params = []) Create a new instance of a class or interface, or return a shared instance created earlier (see {@see Container::get()})
- * @method static string getAppName() Get the basename of the file used to run the script, removing any PHP file extensions
+ * @method static string getAppName() Get the basename of the file used to run the script, removing known PHP file extensions and recognised version numbers
  * @method static mixed getAs(string $id, string $serviceId, mixed[] $params = []) Create a new instance of a class or interface with an explicit service name, or apply a service name to a shared instance created earlier (see {@see Container::getAs()})
  * @method static IContainer getGlobalContainer() Get the global container, loading it if necessary
  * @method static string getName(string $id) Resolve a class or interface to a concrete class name (see {@see Container::getName()})
@@ -42,7 +42,7 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer loadCache() Load the application's CacheStore, creating a backing database if needed (see {@see AppContainer::loadCache()})
  * @method static CliAppContainer loadCacheIfExists() Load the application's CacheStore if a backing database already exists (see {@see AppContainer::loadCacheIfExists()})
  * @method static CliAppContainer loadSync(?string $command = null, ?array $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see AppContainer::loadSync()})
- * @method static CliAppContainer logConsoleMessages(?bool $debug = true, ?string $name = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
+ * @method static CliAppContainer logConsoleMessages(?bool $debug = null, ?string $name = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Similar to getGlobalContainer(), but return null if no global container has been loaded
  * @method static IContainer requireGlobalContainer() Similar to getGlobalContainer(), but throw an exception if no global container has been loaded
  * @method static int run() Process command-line arguments passed to the script (see {@see CliAppContainer::run()})
