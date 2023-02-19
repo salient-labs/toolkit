@@ -130,7 +130,7 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
         $this->assertSame($expected, Reflect::getAllClassDocComments($class));
     }
 
-    public function getAllClassDocCommentsProvider()
+    public static function getAllClassDocCommentsProvider()
     {
         return [
             MySubclass::class => [
@@ -162,7 +162,7 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
         $this->assertSame($expectedClassDocComments, $classDocComments);
     }
 
-    public function getAllMethodDocCommentsProvider()
+    public static function getAllMethodDocCommentsProvider()
     {
         $expected = [
             "/**\n     * MySubclass::MyDocumentedMethod() PHPDoc\n     */",
@@ -214,7 +214,7 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
         $this->assertSame($expectedClassDocComments, $classDocComments);
     }
 
-    public function getAllPropertyDocCommentsProvider()
+    public static function getAllPropertyDocCommentsProvider()
     {
         $expected = [
             "/**\n     * MySubclass::\$MyDocumentedProperty PHPDoc\n     */",
