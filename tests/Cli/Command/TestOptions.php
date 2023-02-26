@@ -5,101 +5,141 @@ namespace Lkrms\Tests\Cli\Command;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Concept\CliCommand;
+use Lkrms\Facade\Convert;
 
 class TestOptions extends CliCommand
 {
-    private $Operation;
+    public $flag1;
+
+    public $valPos1;
+
+    public $val1;
+
+    public $valOpt1;
+
+    public $oneOfPos1;
+
+    public $oneOf1;
+
+    public $oneOfOpt3;
 
     public function getShortDescription(): string
     {
-        return 'Test the available option types';
+        return 'Test various permutations of each CliOption type';
     }
 
     protected function getOptionList(): array
     {
-        // Defaults:
-        //
-        //     "long"            => "",
-        //     "short"           => "",
-        //     "valueName"       => "VALUE",
-        //     "description"     => null,
-        //     "optionType"      => CliOptionType::FLAG,
-        //     "allowedValues"   => null,
-        //     "required"        => false,
-        //     "multipleAllowed" => false,
-        //     "defaultValue"    => null,
-        return [
-            CliOption::build()
-                ->long('operation')
-                ->valueName('jobType')
-                ->description('Task to complete')
-                ->optionType(CliOptionType::ONE_OF_POSITIONAL)
-                ->allowedValues(['compress', 'copy'])
-                ->bindTo($this->Operation)
-                ->required(),
-            CliOption::build()
-                ->long('source')
-                ->description('One or more sources')
-                ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->multipleAllowed()
-                ->required()
-                ->go(),
-            CliOption::build()
-                ->long('target')
-                ->valueName('targetDir')
-                ->description('Target directory')
-                ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->required(),
-            CliOption::build()
-                ->long('verbose')
-                ->short('v')
-                ->description('Increase verbosity')
-                ->multipleAllowed(),
-            CliOption::build()
-                ->long('archive')
-                ->short('a')
-                ->description('Archive mode'),
-            CliOption::build()
-                ->long('stderr')
-                ->description('Change stderr output mode')
-                ->valueName('MODE')
-                ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(['errors', 'all'])
-                ->defaultValue('errors'),
-            CliOption::build()
-                ->long('backup-dir')
-                ->description('Make backups into hierarchy based in DIR')
-                ->valueName('DIR')
-                ->optionType(CliOptionType::VALUE),
-            CliOption::build()
-                ->long('links')
-                ->short('l')
-                ->description('Copy symlinks as symlinks'),
-            CliOption::build()
-                ->long('copy-links')
-                ->short('L')
-                ->description('Transform symlink into referent file/dir'),
-            CliOption::build()
-                ->long('in-place')
-                ->short('i')
-                ->valueName('SUFFIX')
-                ->description('Edit files in place')
-                ->optionType(CliOptionType::VALUE_OPTIONAL),
-            CliOption::build()
-                ->long('refresh')
-                ->short('r')
-                ->valueName('CACHE')
-                ->description('Ignore locally cached data')
-                ->optionType(CliOptionType::ONE_OF_OPTIONAL)
-                ->allowedValues(['all', 'hosts', 'users'])
-                ->multipleAllowed()
-                ->defaultValue(['all']),
-        ];
+        $short = array_map(
+            fn(int $ord): string => chr($ord),
+            [...range(ord('a'), ord('z')), ...range(ord('A'), ord('Z'))]
+        );
+        natcasesort($short);
+
+        $options = [];
+        $current = 1;
+        foreach (
+            [
+                'FLAG'              => CliOptionType::FLAG,
+                'VALUE'             => CliOptionType::VALUE,
+                'VALUE_OPTIONAL'    => CliOptionType::VALUE_OPTIONAL,
+                'VALUE_POSITIONAL'  => CliOptionType::VALUE_POSITIONAL,
+                'ONE_OF'            => CliOptionType::ONE_OF,
+                'ONE_OF_OPTIONAL'   => CliOptionType::ONE_OF_OPTIONAL,
+                'ONE_OF_POSITIONAL' => CliOptionType::ONE_OF_POSITIONAL,
+            ] as $typeName => $type
+        ) {
+            unset($names);
+            $vary  = [];
+            $apply = [];
+
+            switch ($type) {
+                case CliOptionType::FLAG:
+                    $names                   = ['flag1', 'flag2'];
+                    $vary['multipleAllowed'] = [false, true];
+                    $vary['bindTo']          = [&$this->flag1];
+                    break;
+
+                case CliOptionType::VALUE_POSITIONAL:
+                    $names            = ['valPos1'];
+                    $vary['required'] = [true];
+                    $vary['bindTo']   = [&$this->valPos1];
+                case CliOptionType::VALUE:
+                    $names          ??= ['val1', 'val2', 'val3'];
+                    $vary['bindTo'] ??= [&$this->val1];
+                case CliOptionType::VALUE_OPTIONAL:
+                    $names                 ??= ['valOpt1', 'valOpt2', 'valOpt3'];
+                    $vary['valueName']       = ['VAL', 'val', null];
+                    $vary['multipleAllowed'] = [false, false, true];
+                    $vary['required']      ??= [false, true];
+                    $vary['bindTo']        ??= [&$this->valOpt1];
+                    break;
+
+                case CliOptionType::ONE_OF_POSITIONAL:
+                    $names                = ['oneOfPos1', 'oneOfPos2', 'oneOfPos3'];
+                    $vary['defaultValue'] = [];
+                    $vary['required']     = [true];
+                    $vary['bindTo']       = [&$this->oneOfPos1];
+                case CliOptionType::ONE_OF:
+                    $names                ??= ['oneOf1', 'oneOf2', 'oneOf3', 'oneOf4'];
+                    $vary['defaultValue'] ??= [null, 'value1', 'value1,value2', ['value4', 'value3']];
+                    $vary['bindTo']       ??= [&$this->oneOf1];
+                case CliOptionType::ONE_OF_OPTIONAL:
+                    $names                 ??= ['oneOfOpt1', 'oneOfOpt2', 'oneOfOpt3', 'oneOfOpt4'];
+                    $vary['valueName']       = ['ONE_OF', 'one_of', null, 'one_of'];
+                    $vary['multipleAllowed'] = [false, false, true, true];
+                    $vary['required']      ??= [false, false, true];
+                    $vary['bindTo']        ??= [null, null, &$this->oneOfOpt3];
+
+                    $apply['allowedValues'] = ['value1', 'value2', 'value3', 'value4'];
+                    break;
+            }
+
+            foreach ($names ?? [$typeName . $current] as $i => $long) {
+                $option = CliOption::build()
+                              ->long($long)
+                              ->short(array_shift($short))
+                              ->optionType($type);
+                $desc = [];
+                foreach ($vary as $property => $values) {
+                    if (!array_key_exists($i, $values)) {
+                        continue;
+                    }
+                    // Preserve references, i.e. bindTo arguments
+                    $value  = &$values[$i];
+                    $option = $option->{$property}($value);
+                    $desc[] = "$property=***" . Convert::valueToCode($value) . '***';
+                    unset($value);
+                }
+
+                foreach ($apply as $property => $value) {
+                    $option = $option->{$property}($value);
+                    $desc[] = "~~$property=***" . Convert::valueToCode($value) . '***~~';
+                }
+
+                $option = $option->description(implode(
+                    "  \n",
+                    ["Option $current (CliOptionType::$typeName)  \n", ...$desc]
+                ));
+
+                $options[] = $option;
+                $current++;
+            }
+        }
+
+        return $options;
     }
 
     public function getLongDescription(): ?string
     {
-        return null;
+        return <<<EOF
+            Variations tested:
+
+            - Short option names that vary only by case  
+            - UPPER_CASE, lower_case and null `valueName`  
+            - Legal combinations of `multipleAllowed` and `required`  
+            - Bound to class properties, and unbound  
+            EOF;
     }
 
     public function getUsageSections(): ?array
@@ -109,8 +149,21 @@ class TestOptions extends CliCommand
 
     protected function run(string ...$args)
     {
-        var_dump($this->getOptionValues());
-        var_dump($args);
-        var_dump(['$this->Operation' => $this->Operation]);
+        if ($this->app()->getRunningCommand() === $this) {
+            echo json_encode(
+                ['args'    => $args,
+                 'options' => $this->getOptionValues(),
+                 'bound'   => [
+                     'flag1'     => $this->flag1,
+                     'valPos1'   => $this->valPos1,
+                     'val1'      => $this->val1,
+                     'valOpt1'   => $this->valOpt1,
+                     'oneOfPos1' => $this->oneOfPos1,
+                     'oneOf1'    => $this->oneOf1,
+                     'oneOfOpt3' => $this->oneOfOpt3,
+                 ]],
+                JSON_PRETTY_PRINT
+            );
+        }
     }
 }

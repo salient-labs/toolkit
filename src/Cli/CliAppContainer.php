@@ -328,11 +328,16 @@ final class CliAppContainer extends AppContainer
             if ($command = $this->getNodeCommand($name, $node)) {
                 $this->RunningCommand = $command;
 
-                return $command($args);
+                $result = $command($args);
+
+                $this->RunningCommand = null;
+
+                return $result;
             } else {
                 throw new CliArgumentsInvalidException("no command registered at '$name'");
             }
         } catch (CliArgumentsInvalidException $ex) {
+            $this->RunningCommand = null;
             if (($node && ($usage = $this->getUsage($name, $node, true))) ||
                     ($lastNode && ($usage = $this->getUsage($lastName, $lastNode, true)))) {
                 Console::out($usage);

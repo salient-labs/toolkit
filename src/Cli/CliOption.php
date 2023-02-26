@@ -2,6 +2,7 @@
 
 namespace Lkrms\Cli;
 
+use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IContainer;
@@ -33,7 +34,9 @@ use UnexpectedValueException;
  * @property-read string|null $Description
  * @property-read string[]|null $AllowedValues
  * @property-read string|string[]|bool|int|null $DefaultValue
+ * @property-read bool $KeepDefault
  * @property-read string|null $EnvironmentVariable
+ * @property-read bool $KeepEnv
  * @property-read string|string[]|bool|int|null $Value
  * @property-read callable|null $ValueCallback
  */
@@ -69,7 +72,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
     /**
      * @var bool
      */
-    protected $IsFlag = false;
+    protected $IsFlag;
 
     /**
      * @var bool
@@ -117,9 +120,19 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
     protected $DefaultValue;
 
     /**
+     * @var bool
+     */
+    protected $KeepDefault;
+
+    /**
      * @var string|null
      */
     protected $EnvironmentVariable;
+
+    /**
+     * @var bool
+     */
+    protected $KeepEnv;
 
     /**
      * @var string|string[]|bool|int|null
@@ -133,6 +146,8 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
 
     private $BindTo;
 
+    private $RawDefaultValue;
+
     /**
      * @param int $optionType A {@see CliOptionType} value.
      * @psalm-param CliOptionType::* $optionType
@@ -141,22 +156,30 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
      * @param string|string[]|bool|int|null $defaultValue
      * @param string|null $envVariable Use the value of environment variable
      * `$envVariable`, if set, instead of `$defaultValue`.
+     * @param bool $keepDefault If `$multipleAllowed` is set, add environment
+     * and/or user-supplied values to those in `$defaultValue`, instead of
+     * replacing them. Implies `$keepEnv`.
+     * @param bool $keepEnv If `$multipleAllowed` is set, add user-supplied
+     * values to those in the environment, instead of replacing them.
      * @param string|null $delimiter If `$multipleAllowed` is set, use
      * `$delimiter` to split one value into multiple values.
      * @param $bindTo Assign user-supplied values to a variable before running
      * the command.
      */
-    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $optionType = CliOptionType::FLAG, ?array $allowedValues = null, bool $required = false, bool $multipleAllowed = false, $defaultValue = null, ?string $envVariable = null, ?string $delimiter = ',', ?callable $valueCallback = null, &$bindTo = null)
+    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $optionType = CliOptionType::FLAG, ?array $allowedValues = null, bool $required = false, bool $multipleAllowed = false, $defaultValue = null, ?string $envVariable = null, bool $keepDefault = false, bool $keepEnv = false, ?string $delimiter = ',', ?callable $valueCallback = null, &$bindTo = null)
     {
         $this->Long            = $long ?: null;
         $this->OptionType      = $optionType;
+        $this->IsFlag          = $this->OptionType === CliOptionType::FLAG;
         $this->MultipleAllowed = $multipleAllowed;
+        $this->Delimiter       = $this->MultipleAllowed && !$this->IsFlag ? $delimiter : null;
         $this->Description     = $description;
+        $this->KeepDefault     = $defaultValue && $this->MultipleAllowed && !$this->IsFlag && $keepDefault;
         $this->BindTo          = &$bindTo;
+        $this->RawDefaultValue = $defaultValue;
 
         switch ($optionType) {
             case CliOptionType::FLAG:
-                $this->IsFlag  = true;
                 $required      = false;
                 $valueRequired = false;
                 $defaultValue  = $this->MultipleAllowed ? 0 : false;
@@ -178,7 +201,10 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
                 $this->EnvironmentVariable = $envVariable ?: null;
                 if ($this->EnvironmentVariable && Env::has($envVariable)) {
                     $required     = false;
-                    $defaultValue = Env::get($envVariable);
+                    $defaultValue = $this->KeepDefault
+                        ? (array_merge($this->maybeSplitValue($defaultValue),
+                                       $this->maybeSplitValue(Env::get($envVariable))))
+                        : Env::get($envVariable);
                 }
                 break;
         }
@@ -187,15 +213,33 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
         $this->Key             = $key ?? ($this->Short . '|' . $this->Long);
         $this->IsRequired      = $required;
         $this->IsValueRequired = $valueRequired ?? !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
-        $this->Delimiter       = $this->MultipleAllowed && !$this->IsFlag ? $delimiter : null;
         $this->ValueName       = $this->IsFlag ? null : ($valueName ?: 'VALUE');
         $this->DisplayName     = $this->IsPositional ? $this->getFriendlyValueName() : ($this->Long ? '--' . $this->Long : '-' . $this->Short);
-        $this->DefaultValue    = $this->IsRequired ? null : $defaultValue;
+        $this->DefaultValue    = $this->IsRequired ? null : ($this->MultipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue);
+        $this->KeepEnv         = $this->EnvironmentVariable && ($this->KeepDefault || ($this->MultipleAllowed && $keepEnv));
         $this->ValueCallback   = $valueCallback;
+    }
 
-        if ($this->Delimiter && $this->DefaultValue && is_string($this->DefaultValue)) {
-            $this->DefaultValue = explode($this->Delimiter, $this->DefaultValue);
+    /**
+     * Split delimited values into an array, if possible
+     *
+     * @internal
+     * @param string|string[]|bool|int|null $value
+     * @return string[]
+     */
+    public function maybeSplitValue($value): array
+    {
+        if (is_array($value)) {
+            return $value;
         }
+        if (!$value) {
+            return [];
+        }
+        if ($this->Delimiter && is_string($value)) {
+            return explode($this->Delimiter, $value);
+        }
+
+        return [(string) $value];
     }
 
     /**
@@ -220,7 +264,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
      * @internal
      * @see \Lkrms\Cli\Concept\CliCommand::applyOption()
      */
-    public function validate(): void
+    public function validate(bool $commandIsRunning = false): void
     {
         if ($this->IsPositional) {
             if (is_null($this->Long)) {
@@ -240,7 +284,6 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
 
         if (!is_null($this->DefaultValue) && !$this->IsFlag) {
             if ($this->MultipleAllowed) {
-                $this->DefaultValue = Convert::toArray($this->DefaultValue);
                 array_walk($this->DefaultValue,
                            function (&$value) {
                                if (($default = Convert::scalarToString($value)) === false) {
@@ -256,9 +299,76 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
             }
         }
 
-        if (in_array($this->OptionType, [CliOptionType::ONE_OF, CliOptionType::ONE_OF_OPTIONAL])) {
+        if (in_array($this->OptionType, [
+            CliOptionType::ONE_OF,
+            CliOptionType::ONE_OF_OPTIONAL,
+            CliOptionType::ONE_OF_POSITIONAL
+        ])) {
             Assert::notEmpty($this->AllowedValues, 'allowedValues');
+
+            if ($this->RawDefaultValue &&
+                    ($invalid = $this->getInvalid($this->RawDefaultValue))) {
+                throw new UnexpectedValueException($this->getInvalidMessage($invalid, 'defaultValue'));
+            }
+            if ($commandIsRunning && $this->EnvironmentVariable && $this->DefaultValue &&
+                    ($invalid = $this->getInvalid($this->DefaultValue))) {
+                throw new CliArgumentsInvalidException(
+                    $this->getInvalidMessage($invalid, "env:{$this->EnvironmentVariable}")
+                );
+            }
         }
+    }
+
+    /**
+     * Return values that don't appear in AllowedValues, if any
+     *
+     * @internal
+     * @param string|string[]|bool|int|null $value
+     * @return string[]
+     * @see CliOption::$AllowedValues
+     */
+    public function getInvalid($value): array
+    {
+        if (!$this->AllowedValues) {
+            return [];
+        }
+
+        return array_diff($this->maybeSplitValue($value), $this->AllowedValues);
+    }
+
+    /**
+     * "invalid --field values 'title','name' (expected one of: first,last)"
+     *
+     * @internal
+     * @param string[] $invalid
+     */
+    public function getInvalidMessage(array $invalid = [], ?string $source = null): string
+    {
+        return "invalid {$this->DisplayName}"
+            . ($invalid ? ' ' . Convert::plural(count($invalid), 'value') . " '" . implode("','", $invalid) . "'" : '')
+            . ($source ? " in $source" : '')
+            . $this->maybeGetAllowedValues(' (expected one? of: {})');
+    }
+
+    /**
+     * " (one or more of: first,last)"
+     *
+     * @internal
+     */
+    public function maybeGetAllowedValues(string $message = ' (one? of: {})'): string
+    {
+        if (!$this->AllowedValues) {
+            return '';
+        }
+        $delimiter = ($this->MultipleAllowed ? $this->Delimiter : null) ?: ',';
+
+        return str_replace([
+            '?',
+            '{}',
+        ], [
+            $this->MultipleAllowed ? ' or more' : '',
+            implode($delimiter, $this->AllowedValues),
+        ], $message);
     }
 
     /**
