@@ -19,6 +19,8 @@ use Lkrms\Contract\IContainer;
  * @method $this multipleAllowed(bool $value = true) See {@see CliOption::$MultipleAllowed}
  * @method $this defaultValue(string|string[]|bool|int|null $value) See {@see CliOption::$DefaultValue}
  * @method $this envVariable(?string $value) Use the value of environment variable `$envVariable`, if set, instead of `$defaultValue` (see {@see CliOption::__construct()})
+ * @method $this keepDefault(bool $value = true) If `$multipleAllowed` is set, add environment and/or user-supplied values to those in `$defaultValue`, instead of replacing them. Implies `$keepEnv` (see {@see CliOption::$KeepDefault})
+ * @method $this keepEnv(bool $value = true) If `$multipleAllowed` is set, add user-supplied values to those in the environment, instead of replacing them (see {@see CliOption::$KeepEnv})
  * @method $this delimiter(?string $value) If `$multipleAllowed` is set, use `$delimiter` to split one value into multiple values (see {@see CliOption::$Delimiter})
  * @method $this valueCallback(?callable $value) See {@see CliOption::$ValueCallback}
  * @method CliOption go() Return a new CliOption object

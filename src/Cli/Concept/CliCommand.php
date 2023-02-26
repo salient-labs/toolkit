@@ -217,7 +217,7 @@ abstract class CliCommand implements ReturnsContainer
         $names = array_filter([$option->Short, $option->Long]);
 
         if ($validate) {
-            $option->validate();
+            $option->validate($this->app()->getRunningCommand() === $this);
 
             if (!empty(array_intersect($names, array_keys($this->OptionsByName)))) {
                 throw new UnexpectedValueException('Option names must be unique: ' . implode(', ', $names));
@@ -408,11 +408,25 @@ abstract class CliCommand implements ReturnsContainer
 
             $optionLines = [];
             if ($option->DefaultValue) {
-                $optionLines[] = sprintf('__Default:__ ___%s___', implode(',', Convert::toArray($option->DefaultValue)));
+                $optionLines[] = sprintf(
+                    '__Default:__ ___%s___',
+                    implode('___,___', (array) $option->DefaultValue)
+                ) . ($option->KeepDefault || $option->KeepEnv
+                    ? '  ~~(command-line values are appended)~~'
+                    : '');
             }
             if ($option->AllowedValues) {
                 $optionLines[] = '__Values:__';
-                array_push($optionLines, ...array_map(fn(string $v): string => sprintf('- _%s_', $v), $option->AllowedValues));
+                if (mb_strlen(implode('  ', $option->AllowedValues)) < 73) {
+                    $optionLines[] =
+                        '  _' . implode('_  _', $option->AllowedValues) . '_';
+                } else {
+                    array_push($optionLines,
+                               ...array_map(
+                                   fn(string $v): string => sprintf('- _%s_', $v),
+                                   $option->AllowedValues
+                               ));
+                }
             }
             $optionLines = $optionLines
                 ? "\n  " . implode("\n  ", $optionLines)
@@ -510,7 +524,8 @@ abstract class CliCommand implements ReturnsContainer
                 break;
             }
 
-            $option = $this->OptionsByName[$name] ?? null;
+            $option    = $this->OptionsByName[$name] ?? null;
+            $isDefault = false;
 
             if (is_null($option) || $option->IsPositional) {
                 $this->optionError("unknown option '$name'");
@@ -524,29 +539,36 @@ abstract class CliCommand implements ReturnsContainer
                 }
 
                 $value = true;
-            } elseif (!$option->IsValueRequired) {
-                $value = $value ?: $option->DefaultValue ?: '';
+            } elseif (!$option->IsValueRequired && !$value) {
+                $value     = $option->DefaultValue ?: '';
+                $isDefault = true;
             } elseif (is_null($value)) {
                 $i++;
-
                 if (is_null($value = ($args[$i] ?? null))) {
                     // Allow null to be stored to prevent an additional
                     // "argument required" error
                     $this->optionError("{$option->DisplayName} requires a value"
-                        . $this->maybeGetAllowedValues($option));
+                        . $option->maybeGetAllowedValues());
                     $i--;
                 }
             }
 
-            if ($option->MultipleAllowed &&
-                    $option->Delimiter && $value && is_string($value)) {
-                $value = explode($option->Delimiter, $value);
-            }
-
             $key = $option->Key;
 
+            if ($option->MultipleAllowed && !$option->IsFlag) {
+                // Interpret "--option=" as "clear previous --option values"
+                if ($option->IsValueRequired && $value === '') {
+                    $merged[$key] = [];
+                    continue;
+                }
+                $value = $option->maybeSplitValue($value);
+                if (!$isDefault && ($option->KeepDefault || $option->KeepEnv) && !array_key_exists($key, $merged)) {
+                    $value = array_merge($option->DefaultValue, $value);
+                }
+            }
+
             if (isset($merged[$key])) {
-                $merged[$key] = array_merge(Convert::toArray($merged[$key]), Convert::toArray($value));
+                $merged[$key] = array_merge((array) $merged[$key], (array) $value);
             } else {
                 $merged[$key] = $value;
             }
@@ -592,17 +614,15 @@ abstract class CliCommand implements ReturnsContainer
 
             if (!is_null($option->AllowedValues) && !is_null($value) &&
                     !empty($invalid = array_diff(Convert::toArray($value), $option->AllowedValues))) {
-                $this->optionError("invalid {$option->DisplayName} "
-                    . Convert::plural(count($invalid), 'value') . " '" . implode("','", $invalid) . "'"
-                    . $this->maybeGetAllowedValues($option, ' (expected one? of: {})'));
+                $this->optionError($option->getInvalidMessage($invalid));
             }
         }
 
         foreach ($this->Options as &$option) {
-            if ($option->IsRequired && !array_key_exists($option->Key, $merged)) {
+            if ($option->IsRequired && (!array_key_exists($option->Key, $merged) || $merged[$option->Key] === [])) {
                 if (!(count($args) == 1 && ($this->IsHelp || $this->IsVersion))) {
                     $this->optionError("{$option->DisplayName} required"
-                        . $this->maybeGetAllowedValues($option));;
+                        . $option->maybeGetAllowedValues());;
                 }
 
                 continue;
@@ -625,22 +645,6 @@ abstract class CliCommand implements ReturnsContainer
         }
 
         $this->OptionValues = $merged;
-    }
-
-    private function maybeGetAllowedValues(CliOption $option, string $message = ' (one? of: {})'): string
-    {
-        if (!$option->AllowedValues) {
-            return '';
-        }
-        $delimiter = ($option->MultipleAllowed ? $option->Delimiter : null) ?: ',';
-
-        return str_replace([
-            '?',
-            '{}',
-        ], [
-            $option->MultipleAllowed ? ' or more' : '',
-            implode($delimiter, $option->AllowedValues),
-        ], $message);
     }
 
     /**

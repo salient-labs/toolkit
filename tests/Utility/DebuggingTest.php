@@ -3,6 +3,7 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Tests\Utility\Debugging\GetCallerClass;
+
 use function Lkrms\Tests\Utility\Debugging\getCallerViaFunction;
 use function Lkrms\Tests\Utility\Debugging\getFunctionCallback;
 
