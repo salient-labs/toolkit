@@ -101,8 +101,8 @@ class Container extends FluentInterface implements IContainer
     }
 
     /**
-     * Similar to getGlobalContainer(), but return null if no global container
-     * has been loaded
+     * Get the global container, returning null if no global container has been
+     * loaded
      */
     final public static function maybeGetGlobalContainer(): ?IContainer
     {
@@ -110,8 +110,8 @@ class Container extends FluentInterface implements IContainer
     }
 
     /**
-     * Similar to getGlobalContainer(), but throw an exception if no global
-     * container has been loaded
+     * Get the global container, throwing an exception if no global container
+     * has been loaded
      */
     final public static function requireGlobalContainer(): IContainer
     {

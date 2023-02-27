@@ -170,4 +170,12 @@ final class StreamTarget extends ConsoleTarget
     {
         return $this->Path;
     }
+
+    public function __destruct()
+    {
+        if ($this->IsTty && $this->HasPendingClearLine && is_resource($this->Stream)) {
+            fwrite($this->Stream, "\r" . TtyControlSequence::CLEAR_LINE . TtyControlSequence::WRAP_ON);
+            $this->HasPendingClearLine = false;
+        }
+    }
 }

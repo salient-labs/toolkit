@@ -16,7 +16,7 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function __construct();
 
     /**
-     * Return true if a global container has been loaded
+     * True if a global container has been loaded
      *
      */
     public static function hasGlobalContainer(): bool;
@@ -35,13 +35,13 @@ interface IContainer extends \Psr\Container\ContainerInterface
 
     /**
      * Get a copy of the container where the contextual bindings of a class or
-     * interface have been applied to the default context
+     * interface have been applied to the container itself
      *
      */
     public function inContextOf(string $id): IContainer;
 
     /**
-     * Create a new instance of a class or interface, or return a shared
+     * Create a new instance of a class or service interface, or get a shared
      * instance created earlier
      *
      * @template T
@@ -53,8 +53,8 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function get(string $id, array $params = []);
 
     /**
-     * Create a new instance of a class or interface with an explicit service
-     * name, or apply a service name to a shared instance created earlier
+     * Apply an explicit service name while creating a new instance of a class
+     * or service interface or getting a shared instance created earlier
      *
      * @template T
      * @param class-string<T> $id
@@ -75,7 +75,7 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function getName(string $id): string;
 
     /**
-     * Return true if a class or interface resolves to a concrete class that
+     * True if a class or service interface resolves to a concrete class that
      * actually exists
      *
      * If `has($id)` returns `false`, `get($id)` must throw a
@@ -130,8 +130,8 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
 
     /**
-     * Add bindings to the container for an IService implementation and its
-     * services, optionally specifying services to bind or exclude
+     * Add bindings to the container for an IService, optionally specifying
+     * services to include or exclude
      *
      * A shared binding is added for `$id` if it implements
      * {@see IServiceSingleton} or if {@see ServiceLifetime::SINGLETON} is set

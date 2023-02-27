@@ -224,11 +224,11 @@ abstract class CliCommand implements ReturnsContainer
             }
 
             if ($option->IsPositional) {
-                if ($option->IsRequired &&
-                        !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => !$opt->IsRequired && !$opt->MultipleAllowed))) {
+                if ($option->Required &&
+                        !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => !$opt->Required && !$opt->MultipleAllowed))) {
                     throw new UnexpectedValueException('Required positional options must be added before optional ones');
                 }
-                if (!$option->IsRequired &&
+                if (!$option->Required &&
                         !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => $opt->MultipleAllowed))) {
                     throw new UnexpectedValueException("'multipleAllowed' positional options must be added after optional ones");
                 }
@@ -365,20 +365,20 @@ abstract class CliCommand implements ReturnsContainer
                 if ($option->IsPositional) {
                     $list         = $option->MultipleAllowed ? '...' : '';
                     $line[]       = $valueName . $list;
-                    $positional[] = $option->IsRequired ? "$valueName$list" : "[$valueName$list]";
+                    $positional[] = $option->Required ? "$valueName$list" : "[$valueName$list]";
                 } else {
                     if ($option->MultipleAllowed && $option->Delimiter) {
                         $list = "{$option->Delimiter}...";
                     }
                     if ($short) {
                         $line[]  = "-{$short}";
-                        $value[] = $option->IsValueRequired ? " $valueName$list" : "[$valueName$list]";
+                        $value[] = $option->ValueRequired ? " $valueName$list" : "[$valueName$list]";
                     }
                     if ($long) {
                         $line[]  = "--{$long}";
-                        $value[] = $option->IsValueRequired ? " $valueName$list" : "[=$valueName$list]";
+                        $value[] = $option->ValueRequired ? " $valueName$list" : "[=$valueName$list]";
                     }
-                    if ($option->IsRequired) {
+                    if ($option->Required) {
                         $required[] = $line[0] . $value[0];
                     } else {
                         $optional[] = $line[0] . $value[0];
@@ -539,7 +539,7 @@ abstract class CliCommand implements ReturnsContainer
                 }
 
                 $value = true;
-            } elseif (!$option->IsValueRequired && !$value) {
+            } elseif (!$option->ValueRequired && !$value) {
                 $value     = $option->DefaultValue ?: '';
                 $isDefault = true;
             } elseif (is_null($value)) {
@@ -557,7 +557,7 @@ abstract class CliCommand implements ReturnsContainer
 
             if ($option->MultipleAllowed && !$option->IsFlag) {
                 // Interpret "--option=" as "clear previous --option values"
-                if ($option->IsValueRequired && $value === '') {
+                if ($option->ValueRequired && $value === '') {
                     $merged[$key] = [];
                     continue;
                 }
@@ -580,7 +580,7 @@ abstract class CliCommand implements ReturnsContainer
                 break;
             }
             $pending--;
-            if ($option->IsRequired || !$option->MultipleAllowed) {
+            if ($option->Required || !$option->MultipleAllowed) {
                 $merged[$option->Key] = $option->MultipleAllowed ? [$args[$i++]] : $args[$i++];
                 if (!$option->MultipleAllowed) {
                     continue;
@@ -619,7 +619,7 @@ abstract class CliCommand implements ReturnsContainer
         }
 
         foreach ($this->Options as &$option) {
-            if ($option->IsRequired && (!array_key_exists($option->Key, $merged) || $merged[$option->Key] === [])) {
+            if ($option->Required && (!array_key_exists($option->Key, $merged) || $merged[$option->Key] === [])) {
                 if (!(count($args) == 1 && ($this->IsHelp || $this->IsVersion))) {
                     $this->optionError("{$option->DisplayName} required"
                         . $option->maybeGetAllowedValues());;
@@ -628,7 +628,7 @@ abstract class CliCommand implements ReturnsContainer
                 continue;
             }
 
-            $value = $merged[$option->Key] ?? (!$option->IsValueRequired ? null : $option->DefaultValue);
+            $value = $merged[$option->Key] ?? (!$option->ValueRequired ? null : $option->DefaultValue);
 
             if ($option->IsFlag && $option->MultipleAllowed) {
                 $value = count(Convert::toArray($value, true));

@@ -426,7 +426,7 @@ final class Reflection
     {
         $allTraits = [];
 
-        while ($class && !is_null($traits = $class->getTraits())) {
+        while ($class && ($traits = $class->getTraits())) {
             $allTraits = array_merge($allTraits, $traits);
             $class     = $class->getParentClass();
         }

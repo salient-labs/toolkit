@@ -556,10 +556,10 @@ final class ConsoleWriter implements ReceivesFacade
      * the next line
      *
      * The next message sent to the same targets is written with a leading
-     * "clear to end of line" sequence unless {@see Console::maybeClearLine()}
-     * has been called in the meantime.
+     * "clear to end of line" sequence unless
+     * {@see ConsoleWriter::maybeClearLine()} has been called in the meantime.
      *
-     * {@see Console::logProgress()} can be called repeatedly to display
+     * {@see ConsoleWriter::logProgress()} can be called repeatedly to display
      * transient progress updates only when running interactively, without
      * disrupting other Console messages or bloating output logs.
      *

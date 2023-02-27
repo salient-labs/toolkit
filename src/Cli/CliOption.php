@@ -26,8 +26,8 @@ use UnexpectedValueException;
  * @property-read int $OptionType
  * @property-read bool $IsFlag
  * @property-read bool $IsPositional
- * @property-read bool $IsRequired
- * @property-read bool $IsValueRequired
+ * @property-read bool $Required
+ * @property-read bool $ValueRequired
  * @property-read bool $MultipleAllowed
  * @property-read string|null $Delimiter
  * @property-read string|null $ValueName
@@ -35,7 +35,7 @@ use UnexpectedValueException;
  * @property-read string[]|null $AllowedValues
  * @property-read string|string[]|bool|int|null $DefaultValue
  * @property-read bool $KeepDefault
- * @property-read string|null $EnvironmentVariable
+ * @property-read string|null $EnvVariable
  * @property-read bool $KeepEnv
  * @property-read string|string[]|bool|int|null $Value
  * @property-read callable|null $ValueCallback
@@ -45,101 +45,159 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
     use TFullyReadable;
 
     /**
+     * The name of the long form of the option
+     *
      * @var string|null
      */
     protected $Long;
 
     /**
+     * The letter or number of the short form of the option
+     *
      * @var string|null
      */
     protected $Short;
 
     /**
+     * The internal identifier of the option
+     *
      * @var string
      */
     protected $Key;
 
     /**
+     * The name of the option as it appears in usage information / help pages
+     *
      * @var string
      */
     protected $DisplayName;
 
     /**
+     * One of the CliOptionType::* values
+     *
      * @var int
+     * @psalm-var CliOptionType::*
+     * @see CliOptionType
      */
     protected $OptionType;
 
     /**
+     * True if the option is a flag
+     *
      * @var bool
      */
     protected $IsFlag;
 
     /**
+     * True if the option is positional
+     *
      * @var bool
      */
     protected $IsPositional = false;
 
     /**
+     * True if the option is required
+     *
      * @var bool
      */
-    protected $IsRequired;
+    protected $Required;
 
     /**
+     * True if the option has a required value
+     *
      * @var bool
      */
-    protected $IsValueRequired;
+    protected $ValueRequired;
 
     /**
+     * True if the option may be given more than once
+     *
      * @var bool
      */
     protected $MultipleAllowed;
 
     /**
+     * The separator between values passed to the option as a single argument
+     *
+     * Ignored if {@see CliOption::$MultipleAllowed} is not set.
+     *
      * @var string|null
      */
     protected $Delimiter;
 
     /**
+     * The name of the option's value as it appears in usage information / help
+     * pages
+     *
      * @var string|null
+     * @see CliOption::getFriendlyValueName()
      */
     protected $ValueName;
 
     /**
+     * A description of the option
+     *
+     * Blank lines, newlines after two spaces, and lines with four leading
+     * spaces are preserved when the description is formatted for usage
+     * information / help pages.
+     *
      * @var string|null
      */
     protected $Description;
 
     /**
+     * A list of the option's possible values
+     *
+     * Ignored unless {@see CliOption::$OptionType} is
+     * {@see CliOptionType::ONE_OF}, {@see CliOptionType::ONE_OF_OPTIONAL} or
+     * {@see CliOptionType::ONE_OF_POSITIONAL}.
+     *
      * @var string[]|null
      */
     protected $AllowedValues;
 
     /**
+     * Assigned to the option if no value is set on the command line
+     *
      * @var string|string[]|bool|int|null
      */
     protected $DefaultValue;
 
     /**
+     * True if the option's environment and/or user-supplied values extend
+     * DefaultValue instead of replacing it
+     *
      * @var bool
      */
     protected $KeepDefault;
 
     /**
+     * The name of an environment variable that, if set, overrides the option's
+     * default value
+     *
      * @var string|null
      */
-    protected $EnvironmentVariable;
+    protected $EnvVariable;
 
     /**
+     * True if the option's user-supplied values extend the value of
+     * EnvVariable instead of replacing it
+     *
      * @var bool
      */
     protected $KeepEnv;
 
     /**
+     * The value of the option after processing command line arguments,
+     * EnvVariable, DefaultValue and/or ValueCallback
+     *
      * @var string|string[]|bool|int|null
      */
     protected $Value;
 
     /**
+     * Applied to the option's value immediately before it is assigned
+     *
      * @var callable|null
      */
     protected $ValueCallback;
@@ -149,20 +207,9 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
     private $RawDefaultValue;
 
     /**
-     * @param int $optionType A {@see CliOptionType} value.
      * @psalm-param CliOptionType::* $optionType
-     * @param string[]|null $allowedValues Ignored unless `$optionType` is
-     * {@see CliOptionType::ONE_OF} or {@see CliOptionType::ONE_OF_OPTIONAL}.
+     * @param string[]|null $allowedValues
      * @param string|string[]|bool|int|null $defaultValue
-     * @param string|null $envVariable Use the value of environment variable
-     * `$envVariable`, if set, instead of `$defaultValue`.
-     * @param bool $keepDefault If `$multipleAllowed` is set, add environment
-     * and/or user-supplied values to those in `$defaultValue`, instead of
-     * replacing them. Implies `$keepEnv`.
-     * @param bool $keepEnv If `$multipleAllowed` is set, add user-supplied
-     * values to those in the environment, instead of replacing them.
-     * @param string|null $delimiter If `$multipleAllowed` is set, use
-     * `$delimiter` to split one value into multiple values.
      * @param $bindTo Assign user-supplied values to a variable before running
      * the command.
      */
@@ -198,8 +245,8 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
             case CliOptionType::ONE_OF_OPTIONAL:
                 $this->AllowedValues = $allowedValues;
             default:
-                $this->EnvironmentVariable = $envVariable ?: null;
-                if ($this->EnvironmentVariable && Env::has($envVariable)) {
+                $this->EnvVariable = $envVariable ?: null;
+                if ($this->EnvVariable && Env::has($envVariable)) {
                     $required     = false;
                     $defaultValue = $this->KeepDefault
                         ? (array_merge($this->maybeSplitValue($defaultValue),
@@ -209,15 +256,15 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
                 break;
         }
 
-        $this->Short           = $short ?: null;
-        $this->Key             = $key ?? ($this->Short . '|' . $this->Long);
-        $this->IsRequired      = $required;
-        $this->IsValueRequired = $valueRequired ?? !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
-        $this->ValueName       = $this->IsFlag ? null : ($valueName ?: 'VALUE');
-        $this->DisplayName     = $this->IsPositional ? $this->getFriendlyValueName() : ($this->Long ? '--' . $this->Long : '-' . $this->Short);
-        $this->DefaultValue    = $this->IsRequired ? null : ($this->MultipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue);
-        $this->KeepEnv         = $this->EnvironmentVariable && ($this->KeepDefault || ($this->MultipleAllowed && $keepEnv));
-        $this->ValueCallback   = $valueCallback;
+        $this->Short         = $short ?: null;
+        $this->Key           = $key ?? ($this->Short . '|' . $this->Long);
+        $this->Required      = $required;
+        $this->ValueRequired = $valueRequired ?? !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
+        $this->ValueName     = $this->IsFlag ? null : ($valueName ?: 'VALUE');
+        $this->DisplayName   = $this->IsPositional ? $this->getFriendlyValueName() : ($this->Long ? '--' . $this->Long : '-' . $this->Short);
+        $this->DefaultValue  = $this->Required ? null : ($this->MultipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue);
+        $this->KeepEnv       = $this->EnvVariable && ($this->KeepDefault || ($this->MultipleAllowed && $keepEnv));
+        $this->ValueCallback = $valueCallback;
     }
 
     /**
@@ -310,10 +357,10 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
                     ($invalid = $this->getInvalid($this->RawDefaultValue))) {
                 throw new UnexpectedValueException($this->getInvalidMessage($invalid, 'defaultValue'));
             }
-            if ($commandIsRunning && $this->EnvironmentVariable && $this->DefaultValue &&
+            if ($commandIsRunning && $this->EnvVariable && $this->DefaultValue &&
                     ($invalid = $this->getInvalid($this->DefaultValue))) {
                 throw new CliArgumentsInvalidException(
-                    $this->getInvalidMessage($invalid, "env:{$this->EnvironmentVariable}")
+                    $this->getInvalidMessage($invalid, "env:{$this->EnvVariable}")
                 );
             }
         }

@@ -12,8 +12,8 @@ $loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 $app = App::load(__DIR__)->loadCache();
 
 print_r([
-    'App::getInstance()->CachePath' => App::getInstance()->CachePath,
-    '$app->DataPath'                => $app->DataPath,
-    '$app->LogPath'                 => $app->LogPath,
-    'Cache::getInstance()'          => Cache::getInstance(),
+    'App::getInstance()->getCachePath()' => App::getInstance()->getCachePath(),
+    '$app->getDataPath()'                => $app->getDataPath(),
+    '$app->getLogPath()'                 => $app->getLogPath(),
+    'Cache::getInstance()'               => Cache::getInstance(),
 ]);

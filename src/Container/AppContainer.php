@@ -29,11 +29,6 @@ use UnexpectedValueException;
  * Typically accessed via the {@see \Lkrms\Facade\App} facade.
  *
  * @property-read string $BasePath
- * @property-read string $CachePath
- * @property-read string $ConfigPath
- * @property-read string $DataPath
- * @property-read string $LogPath
- * @property-read string $TempPath
  */
 class AppContainer extends Container implements IReadable
 {
@@ -60,34 +55,29 @@ class AppContainer extends Container implements IReadable
     protected $BasePath;
 
     /**
-     * @internal
      * @var string
      */
-    protected $_CachePath;
+    private $_CachePath;
 
     /**
-     * @internal
      * @var string
      */
-    protected $_ConfigPath;
+    private $_ConfigPath;
 
     /**
-     * @internal
      * @var string
      */
-    protected $_DataPath;
+    private $_DataPath;
 
     /**
-     * @internal
      * @var string
      */
-    protected $_LogPath;
+    private $_LogPath;
 
     /**
-     * @internal
      * @var string
      */
-    protected $_TempPath;
+    private $_TempPath;
 
     /**
      * @var int|float
@@ -177,31 +167,58 @@ class AppContainer extends Container implements IReadable
         return $path;
     }
 
-    final protected function _getCachePath(): string
+    /**
+     * Get a writable cache directory for the application
+     *
+     * The application's cache directory is appropriate for data that should
+     * persist between runs, but isn't important or portable enough for the data
+     * directory.
+     *
+     */
+    final public function getCachePath(): string
     {
         return $this->_CachePath
             ?: ($this->_CachePath = $this->getPath('cache', self::DIR_STATE, 'cache', 'var/cache', 'cache'));
     }
 
-    final protected function _getConfigPath(): string
+    /**
+     * Get a writable directory for the application's configuration files
+     *
+     */
+    final public function getConfigPath(): string
     {
         return $this->_ConfigPath
             ?: ($this->_ConfigPath = $this->getPath('config', self::DIR_CONFIG, null, 'config', 'config'));
     }
 
-    final protected function _getDataPath(): string
+    /**
+     * Get a writable data directory for the application
+     *
+     * The application's data directory is appropriate for data that should
+     * persist indefinitely.
+     *
+     */
+    final public function getDataPath(): string
     {
         return $this->_DataPath
             ?: ($this->_DataPath = $this->getPath('data', self::DIR_DATA, null, 'var/lib', 'data'));
     }
 
-    final protected function _getLogPath(): string
+    /**
+     * Get a writable directory for the application's log files
+     *
+     */
+    final public function getLogPath(): string
     {
         return $this->_LogPath
             ?: ($this->_LogPath = $this->getPath('log', self::DIR_STATE, 'log', 'var/log', 'log'));
     }
 
-    final protected function _getTempPath(): string
+    /**
+     * Get a writable directory for the application's ephemeral data
+     *
+     */
+    final public function getTempPath(): string
     {
         return $this->_TempPath
             ?: ($this->_TempPath = $this->getPath('temp', self::DIR_STATE, 'tmp', 'var/tmp', 'tmp'));
@@ -212,7 +229,7 @@ class AppContainer extends Container implements IReadable
         return ['BasePath'];
     }
 
-    public function __construct(string $basePath = null)
+    public function __construct(?string $basePath = null)
     {
         $this->StartTime = hrtime(true);
 
@@ -265,7 +282,7 @@ class AppContainer extends Container implements IReadable
      * - a Phar archive is currently executing, or
      * - the application was installed with `composer --no-dev`
      *
-     * @see Composer::hasDevDependencies()
+     * @see \Lkrms\Utility\Composer::hasDevDependencies()
      */
     public function inProduction(): bool
     {
@@ -300,14 +317,14 @@ class AppContainer extends Container implements IReadable
     /**
      * Load the application's CacheStore, creating a backing database if needed
      *
-     * The backing database is created in {@see AppContainer::$CachePath}.
+     * The backing database is created in {@see AppContainer::getCachePath()}.
      *
      * @return $this
      * @see \Lkrms\Store\CacheStore
      */
     final public function loadCache()
     {
-        $cacheDb = $this->CachePath . '/cache.db';
+        $cacheDb = $this->getCachePath() . '/cache.db';
 
         if (!Cache::isLoaded()) {
             Cache::load($cacheDb);
@@ -323,14 +340,14 @@ class AppContainer extends Container implements IReadable
      *
      * Caching is only enabled if a backing database created by
      * {@see AppContainer::loadCache()} is found in
-     * {@see AppContainer::$CachePath}.
+     * {@see AppContainer::getCachePath()}.
      *
      * @return $this
      * @see \Lkrms\Store\CacheStore
      */
     final public function loadCacheIfExists()
     {
-        if (file_exists($this->CachePath . '/cache.db')) {
+        if (file_exists($this->getCachePath() . '/cache.db')) {
             $this->loadCache();
         }
 
@@ -356,12 +373,12 @@ class AppContainer extends Container implements IReadable
     {
         $name = $name ? basename($name, '.log') : $this->getAppName();
         if (!($this->LogTargets[$name] ?? null)) {
-            $this->LogTargets[$name] = $target = StreamTarget::fromPath($this->LogPath . "/$name.log");
+            $this->LogTargets[$name] = $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
             Console::registerTarget($target, ConsoleLevels::ALL);
         }
         if (($debug || (is_null($debug) && Env::debug())) &&
                 !($this->DebugLogTargets[$name] ?? null)) {
-            $this->DebugLogTargets[$name] = $target = StreamTarget::fromPath($this->LogPath . "/$name.debug.log");
+            $this->DebugLogTargets[$name] = $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
             Console::registerTarget($target, ConsoleLevels::ALL_DEBUG);
         }
 
@@ -371,7 +388,7 @@ class AppContainer extends Container implements IReadable
     /**
      * Load the application's SyncStore, creating a backing database if needed
      *
-     * The backing database is created in {@see AppContainer::$DataPath}.
+     * The backing database is created in {@see AppContainer::getDataPath()}.
      *
      * Call {@see AppContainer::unloadSync()} before the application terminates,
      * otherwise a failed run will be recorded.
@@ -381,7 +398,7 @@ class AppContainer extends Container implements IReadable
      */
     final public function loadSync(?string $command = null, ?array $arguments = null)
     {
-        $syncDb = $this->DataPath . '/sync.db';
+        $syncDb = $this->getDataPath() . '/sync.db';
 
         if (!Sync::isLoaded()) {
             Sync::load($syncDb,
