@@ -522,7 +522,7 @@ final class SyncStore extends SqliteStore
     {
         foreach ($this->Providers as $id => $provider) {
             $name = ($provider->name() ?: get_class($provider)) . " [#$id]";
-            Console::logProgress('Checking', $name . "\r");
+            Console::logProgress('Checking', $name);
             try {
                 $provider->checkHeartbeat();
                 Console::log('Heartbeat OK:', $name);

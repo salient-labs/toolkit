@@ -26,15 +26,15 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertEquals('--dest', $option->DisplayName);
         $this->assertEquals(CliOptionType::VALUE, $option->OptionType);
         $this->assertEquals(false, $option->IsFlag);
-        $this->assertEquals(true, $option->IsRequired);
-        $this->assertEquals(true, $option->IsValueRequired);
+        $this->assertEquals(true, $option->Required);
+        $this->assertEquals(true, $option->ValueRequired);
         $this->assertEquals(false, $option->MultipleAllowed);
         $this->assertEquals(NULL, $option->Delimiter);
         $this->assertEquals('DIR', $option->ValueName);
         $this->assertEquals('Sync files to DIR', $option->Description);
         $this->assertEquals(NULL, $option->AllowedValues);
         $this->assertEquals(NULL, $option->DefaultValue);
-        $this->assertEquals(NULL, $option->EnvironmentVariable);
+        $this->assertEquals(NULL, $option->EnvVariable);
     }
 
     public function testInvalidBuild()

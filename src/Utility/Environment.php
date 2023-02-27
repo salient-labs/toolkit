@@ -19,7 +19,8 @@ final class Environment
      *
      * Variables are loaded from the given .env file to `getenv()`, `$_ENV` and
      * `$_SERVER`. Variables already present in the environment are never
-     * overwritten.
+     * overwritten, but if the same variable appears in the .env file multiple
+     * times, the last value is used.
      *
      * Each line in `$filename` should be a shell-compatible variable
      * assignment. Unquoted values cannot contain whitespace, `"`, `'`, `$`,
@@ -33,19 +34,27 @@ final class Environment
      */
     public function loadFile(string $filename): void
     {
-        if (($lines = file($filename, FILE_IGNORE_NEW_LINES)) === false) {
+        $lines = file($filename, FILE_IGNORE_NEW_LINES);
+        if ($lines === false) {
             throw new RuntimeException("Could not open $filename");
         }
+
         $queue = [];
         foreach ($lines as $i => $line) {
             $l = $i + 1;
-            if (!trim($line) || substr($line, 0, 1) == '#') {
+            if (!trim($line) || substr($line, 0, 1) === '#') {
                 continue;
-            } elseif (!preg_match('/^([A-Z_][A-Z0-9_]*)=("(([^"$`]|\\\\["$`])*)"|\'(([^\']|\'\\\\\'\')*)\'|[^]"$\'*?`\s[]*)$/i', $line, $match)) {
+            } elseif (!preg_match(
+                '/^([A-Z_][A-Z0-9_]*)=("(([^"$`]|\\\\["$`])*)"|\'(([^\']|\'\\\\\'\')*)\'|[^]"$\'*?`\s[]*)$/i',
+                $line,
+                $match
+            )) {
                 throw new UnexpectedValueException("Invalid entry at line $l in $filename");
             }
             $name = $match[1];
-            if (getenv($name) !== false || array_key_exists($name, $_ENV) || array_key_exists($name, $_SERVER)) {
+            if (getenv($name) !== false ||
+                    array_key_exists($name, $_ENV) ||
+                    array_key_exists($name, $_SERVER)) {
                 continue;
             }
             if ($match[3] ?? null) {
@@ -266,14 +275,14 @@ final class Environment
     /**
      * Get the current user's home directory from the environment
      *
-     * @return string|null
      */
     public function home(): ?string
     {
         if ($home = $this->get('HOME', null)) {
             return $home;
         }
-        if (($homeDrive = $this->get('HOMEDRIVE', null)) && ($homePath = $this->get('HOMEPATH', null))) {
+        if (($homeDrive = $this->get('HOMEDRIVE', null)) &&
+                ($homePath = $this->get('HOMEPATH', null))) {
             return $homeDrive . $homePath;
         }
 

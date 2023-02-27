@@ -16,6 +16,10 @@ use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
 
+/**
+ * A generic sync entity retrieval command
+ *
+ */
 final class GetSyncEntities extends CliCommand
 {
     /**
