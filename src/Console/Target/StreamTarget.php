@@ -6,6 +6,7 @@ use DateTime;
 use Lkrms\Console\Concept\ConsoleTarget;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
+use Lkrms\Support\Dictionary\TtyControlSequence;
 use RuntimeException;
 
 /**
@@ -55,11 +56,16 @@ final class StreamTarget extends ConsoleTarget
     private $Path;
 
     /**
+     * @var bool
+     */
+    private $HasPendingClearLine = false;
+
+    /**
      * Use an open stream as a console output target
      *
      * @param resource $stream
      * @param bool|null $addTimestamp If `null`, timestamps will be added unless
-     * `$stream` is a TTY
+     * `$stream` is STDOUT, STDERR, or a TTY
      * @param string|null $timestamp Default: `[d M y H:i:s.vO] `
      * @param \DateTimeZone|string|null $timezone Default: as per
      * `date_default_timezone_set` or INI setting `date.timezone`
@@ -118,12 +124,12 @@ final class StreamTarget extends ConsoleTarget
      * Open a file in append mode and return a console output target for it
      *
      * @param bool|null $addTimestamp If `null`, timestamps will be added unless
-     * `$path` is a TTY
+     * `$path` is STDOUT, STDERR, or a TTY
      * @param string|null $timestamp Default: `[d M y H:i:s.vO] `
      * @param \DateTimeZone|string|null $timezone Default: as per
      * `date_default_timezone_set` or INI setting `date.timezone`
      */
-    public static function fromPath(string $path, bool $addTimestamp = null, string $timestamp = null, $timezone = null): StreamTarget
+    public static function fromPath(string $path, ?bool $addTimestamp = null, ?string $timestamp = null, $timezone = null): StreamTarget
     {
         if (!File::maybeCreate($path, 0600) || ($stream = fopen($path, 'a')) === false) {
             throw new RuntimeException("Could not open $path");
@@ -142,9 +148,22 @@ final class StreamTarget extends ConsoleTarget
             $message = $now . str_replace("\n", "\n" . $now, $message);
         }
 
-        // Don't add a newline if $message has a trailing carriage return (e.g.
-        // when a progress bar is being displayed)
-        fwrite($this->Stream, $message . (substr($message, -1) == "\r" ? '' : "\n"));
+        // If writing a progress message to a TTY, suppress the usual newline
+        // and write a "clear to end of line" sequence before the next message
+        if ($this->IsTty) {
+            if ($this->HasPendingClearLine) {
+                fwrite($this->Stream, "\r" . TtyControlSequence::CLEAR_LINE . TtyControlSequence::WRAP_ON);
+                $this->HasPendingClearLine = false;
+            }
+            if ($message[-1] === "\r") {
+                fwrite($this->Stream, TtyControlSequence::WRAP_OFF . rtrim($message, "\r"));
+                $this->HasPendingClearLine = true;
+
+                return;
+            }
+        }
+
+        fwrite($this->Stream, rtrim($message, "\r") . "\n");
     }
 
     public function getPath(): string

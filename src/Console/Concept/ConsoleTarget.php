@@ -7,7 +7,7 @@ use Lkrms\Console\ConsoleFormatter;
 use Lkrms\Console\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleMessageFormat;
 use Lkrms\Console\ConsoleTag as Tag;
-use Lkrms\Support\TtyControlSequence as Colour;
+use Lkrms\Support\Dictionary\TtyControlSequence as Colour;
 use UnexpectedValueException;
 
 /**
