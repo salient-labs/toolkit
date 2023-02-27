@@ -516,9 +516,9 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function info(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function info(string $msg1, ?string $msg2 = null)
     {
-        return $this->write(Level::NOTICE, $msg1, $msg2, '==> ', $ex);
+        return $this->write(Level::NOTICE, $msg1, $msg2, '==> ');
     }
 
     /**
@@ -526,9 +526,9 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function infoOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function infoOnce(string $msg1, ?string $msg2 = null)
     {
-        return $this->writeOnce(Level::NOTICE, $msg1, $msg2, '==> ', $ex);
+        return $this->writeOnce(Level::NOTICE, $msg1, $msg2, '==> ');
     }
 
     /**
@@ -536,9 +536,9 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function log(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function log(string $msg1, ?string $msg2 = null)
     {
-        return $this->write(Level::INFO, $msg1, $msg2, ' -> ', $ex);
+        return $this->write(Level::INFO, $msg1, $msg2, ' -> ');
     }
 
     /**
@@ -546,19 +546,59 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function logOnce(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function logOnce(string $msg1, ?string $msg2 = null)
     {
-        return $this->writeOnce(Level::INFO, $msg1, $msg2, ' -> ', $ex);
+        return $this->writeOnce(Level::INFO, $msg1, $msg2, ' -> ');
     }
 
     /**
-     * Print " -> $msg1 $msg2" with level INFO to TTY targets
+     * Print " -> $msg1 $msg2" with level INFO to TTY targets without moving to
+     * the next line
+     *
+     * The next message sent to the same targets is written with a leading
+     * "clear to end of line" sequence unless {@see Console::maybeClearLine()}
+     * has been called in the meantime.
+     *
+     * {@see Console::logProgress()} can be called repeatedly to display
+     * transient progress updates only when running interactively, without
+     * disrupting other Console messages or bloating output logs.
+     *
+     * To prevent moving to the next line when message length exceeds terminal
+     * width, truncate output by setting `$withLineWrapOff`.
      *
      * @return $this
      */
-    public function logProgress(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function logProgress(string $msg1, ?string $msg2 = null)
     {
-        return $this->writeTty(Level::INFO, $msg1, $msg2, ' -> ', $ex);
+        if (!($this->TtyTargets[Level::INFO] ?? null)) {
+            return $this;
+        }
+
+        if (is_null($msg2)) {
+            $msg1 = rtrim($msg1, "\r") . "\r";
+        } else {
+            $msg2 = rtrim($msg2, "\r") . "\r";
+        }
+
+        return $this->writeTty(Level::INFO, $msg1, $msg2, ' -> ');
+    }
+
+    /**
+     * Print a "clear to end of line" control sequence with level INFO to any
+     * TTY targets with a pending logProgress() message
+     *
+     * Useful when progress updates that would disrupt other output to STDOUT or
+     * STDERR may have been displayed.
+     *
+     * @return $this
+     */
+    public function maybeClearLine()
+    {
+        if (!($this->TtyTargets[Level::INFO] ?? null)) {
+            return $this;
+        }
+
+        return $this->writeTty(Level::INFO, '', null, '');
     }
 
     /**
@@ -606,12 +646,12 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function group(string $msg1, ?string $msg2 = null, ?Throwable $ex = null)
+    public function group(string $msg1, ?string $msg2 = null)
     {
         $this->GroupLevel++;
         $this->GroupMessageStack[] = Convert::sparseToString(' ', [$msg1, $msg2]);
 
-        return $this->write(Level::NOTICE, $msg1, $msg2, '>>> ', $ex);
+        return $this->write(Level::NOTICE, $msg1, $msg2, '>>> ');
     }
 
     /**

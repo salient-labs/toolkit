@@ -1,12 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Lkrms\Support\Dictionary;
+
+use Lkrms\Concept\Dictionary;
 
 /**
- * Escape sequences to set and clear terminal display attributes
+ * Terminal control sequences
  *
  */
-final class TtyControlSequence
+final class TtyControlSequence extends Dictionary
 {
     public const BLACK      = "\x1b[30m";
     public const RED        = "\x1b[31m";
@@ -32,5 +34,28 @@ final class TtyControlSequence
     public const UNBOLD     = "\x1b[22m";
     public const DIM        = "\x1b[2m";
     public const UNDIM      = "\x1b[22m";
-    public const RESET      = "\x1b[m";
+
+    /**
+     * Turn off all attributes
+     *
+     */
+    public const RESET = "\x1b[m";
+
+    /**
+     * Clear to end of line
+     *
+     */
+    public const CLEAR_LINE = "\x1b[K";
+
+    /**
+     * Turn off automatic margins
+     *
+     */
+    public const WRAP_OFF = "\x1b[?7l";
+
+    /**
+     * Turn on automatic margins
+     *
+     */
+    public const WRAP_ON = "\x1b[?7h";
 }
