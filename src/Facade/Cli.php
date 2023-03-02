@@ -59,6 +59,7 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})
  * @method static CliAppContainer singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})
  * @method static CliAppContainer syncNamespace(string $prefix, string $uri, string $namespace) Register a sync entity namespace with the application's SyncStore (see {@see AppContainer::syncNamespace()})
+ * @method static CliAppContainer unbind(string $id) Remove a binding from the container
  * @method static CliAppContainer unloadSync(bool $silent = false) Close the application's SyncStore (see {@see AppContainer::unloadSync()})
  * @method static CliAppContainer writeResourceUsage(int $level = Level::INFO) Print a summary of the script's system resource usage (see {@see AppContainer::writeResourceUsage()})
  * @method static CliAppContainer writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10) Print a summary of the script's timers (see {@see AppContainer::writeTimers()})

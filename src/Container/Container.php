@@ -425,4 +425,11 @@ class Container extends FluentInterface implements IContainer
     {
         return array_keys($this->Services);
     }
+
+    final public function unbind(string $id)
+    {
+        $this->Dice = $this->Dice->removeRule($id);
+
+        return $this;
+    }
 }

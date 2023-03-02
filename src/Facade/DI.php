@@ -37,6 +37,7 @@ use Lkrms\Contract\IContainer;
  * @method static IContainer|null setGlobalContainer(?IContainer $container) Set (or unset) the global container
  * @method static Container singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})
  * @method static Container singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})
+ * @method static Container unbind(string $id) Remove a binding from the container
  *
  * @uses Container
  * @extends Facade<Container>
