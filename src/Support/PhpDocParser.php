@@ -334,7 +334,7 @@ final class PhpDocParser implements IReadable
             return true;
         }
         foreach ([...$this->Params, $this->Return, ...$this->Var] as $entity) {
-            if ($entity['description'] ?? null) {
+            if (($description = $entity['description'] ?? null) && $description !== $this->Summary) {
                 return true;
             }
         }

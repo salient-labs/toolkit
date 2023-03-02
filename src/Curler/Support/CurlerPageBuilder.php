@@ -12,13 +12,13 @@ use Lkrms\Curler\CurlerHeaders;
  * A fluent interface for creating CurlerPage objects
  *
  * @method static $this build(?IContainer $container = null) Create a new CurlerPageBuilder (syntactic sugar for 'new CurlerPageBuilder()')
- * @method $this entities(array $value) Data extracted from the upstream response (see {@see CurlerPage::__construct()})
- * @method $this curler(Curler $value) The Curler instance that retrieved the page (see {@see CurlerPage::__construct()})
- * @method $this previous(?ICurlerPage $value) See {@see CurlerPage::__construct()}
- * @method $this nextUrl(?string $value) The URL of the next page, including the query component (if any) (see {@see CurlerPage::__construct()})
- * @method $this isLastPage(?bool $value) Set if no more data is available (see {@see CurlerPage::__construct()})
- * @method $this nextData(?array $value) Data to send in the body of the next request (see {@see CurlerPage::__construct()})
- * @method $this nextHeaders(?CurlerHeaders $value) Replaces the next request's HTTP headers (see {@see CurlerPage::__construct()})
+ * @method $this entities(array $value) Data extracted from the upstream response
+ * @method $this curler(Curler $value) The Curler instance that retrieved the page
+ * @method $this previous(?ICurlerPage $value) Pass $value to `$previous` in CurlerPage::__construct()
+ * @method $this nextUrl(?string $value) The URL of the next page, including the query component (if any)
+ * @method $this isLastPage(?bool $value = true) Set if no more data is available
+ * @method $this nextData(?array $value) Data to send in the body of the next request
+ * @method $this nextHeaders(?CurlerHeaders $value) Replaces the next request's HTTP headers
  * @method CurlerPage go() Return a new CurlerPage object
  * @method static CurlerPage|null resolve(CurlerPage|CurlerPageBuilder|null $object) Resolve a CurlerPageBuilder or CurlerPage object to a CurlerPage object
  *
