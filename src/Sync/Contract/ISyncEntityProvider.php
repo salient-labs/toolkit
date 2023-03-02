@@ -89,4 +89,20 @@ interface ISyncEntityProvider
      *
      */
     public function getResolver(string $nameProperty): ISyncEntityResolver;
+
+    /**
+     * Perform sync operations on the backend directly, ignoring any entities in
+     * the entity store
+     *
+     * @return $this
+     */
+    public function online();
+
+    /**
+     * Perform "get" operations on the entity store, throwing an exception if
+     * entities have never been synced with the backend
+     *
+     * @return $this
+     */
+    public function offline();
 }

@@ -55,6 +55,11 @@ final class SyncEntityProvider implements ISyncEntityProvider
     private $Context;
 
     /**
+     * @var bool|null
+     */
+    private $GetFromSyncStore;
+
+    /**
      * @param class-string<TEntity> $entity
      */
     public function __construct(IContainer $container, string $entity, ISyncProvider $provider, ISyncDefinition $definition, ?ISyncContext $context = null)
@@ -339,6 +344,20 @@ final class SyncEntityProvider implements ISyncEntityProvider
     public function deleteList(iterable $entities, ...$args): iterable
     {
         return $this->run(SyncOperation::DELETE_LIST, $entities, ...$args);
+    }
+
+    public function online()
+    {
+        $this->GetFromSyncStore = false;
+
+        return $this;
+    }
+
+    public function offline()
+    {
+        $this->GetFromSyncStore = true;
+
+        return $this;
     }
 
     /**
