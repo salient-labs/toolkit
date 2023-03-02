@@ -16,8 +16,8 @@ use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncOperation;
 
 /**
- * Provides access to an ISyncProvider's implementation of sync operations for
- * an entity
+ * Provides direct access to an ISyncProvider's implementation of sync
+ * operations for an entity
  *
  * @template TEntity of ISyncEntity
  * @template TProvider of ISyncProvider

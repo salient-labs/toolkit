@@ -162,7 +162,6 @@ abstract class SyncProvider implements ISyncProvider, IService
     /**
      * Get a new pipeline bound to the provider's container
      *
-     * @return PipelineImmutable
      */
     final protected function pipeline(): PipelineImmutable
     {

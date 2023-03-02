@@ -132,13 +132,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *
      * ```php
      * // 1.
-     * public function createFaculty(SyncContext $ctx, Faculty $entity): Faculty;
+     * public function createFaculty(ISyncContext $ctx, Faculty $entity): Faculty;
      *
      * // 2.
-     * public function create_Faculty(SyncContext $ctx, Faculty $entity): Faculty;
+     * public function create_Faculty(ISyncContext $ctx, Faculty $entity): Faculty;
      * ```
      *
-     * The first parameter after `SyncContext $ctx`:
+     * The first parameter after `ISyncContext $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be the class of the
      *   entity being created
@@ -150,7 +150,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     }
 
     /**
-     * Return an entity from the backend
+     * Get an entity from the backend
      *
      * The underlying {@see ISyncProvider} must implement the
      * {@see SyncOperation::READ} operation, e.g. one of the following for a
@@ -158,13 +158,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *
      * ```php
      * // 1.
-     * public function getFaculty(SyncContext $ctx, $id): Faculty;
+     * public function getFaculty(ISyncContext $ctx, $id): Faculty;
      *
      * // 2.
-     * public function get_Faculty(SyncContext $ctx, $id): Faculty;
+     * public function get_Faculty(ISyncContext $ctx, $id): Faculty;
      * ```
      *
-     * The first parameter after `SyncContext $ctx`:
+     * The first parameter after `ISyncContext $ctx`:
      * - must be defined
      * - must not have a native type declaration, but may be tagged as an
      *   `int|string|null` parameter for static analysis purposes
@@ -186,13 +186,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *
      * ```php
      * // 1.
-     * public function updateFaculty(SyncContext $ctx, Faculty $entity): Faculty;
+     * public function updateFaculty(ISyncContext $ctx, Faculty $entity): Faculty;
      *
      * // 2.
-     * public function update_Faculty(SyncContext $ctx, Faculty $entity): Faculty;
+     * public function update_Faculty(ISyncContext $ctx, Faculty $entity): Faculty;
      * ```
      *
-     * The first parameter after `SyncContext $ctx`:
+     * The first parameter after `ISyncContext $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be the class of the
      *   entity being updated
@@ -212,13 +212,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *
      * ```php
      * // 1.
-     * public function deleteFaculty(SyncContext $ctx, Faculty $entity): Faculty;
+     * public function deleteFaculty(ISyncContext $ctx, Faculty $entity): Faculty;
      *
      * // 2.
-     * public function delete_Faculty(SyncContext $ctx, Faculty $entity): Faculty;
+     * public function delete_Faculty(ISyncContext $ctx, Faculty $entity): Faculty;
      * ```
      *
-     * The first parameter after `SyncContext $ctx`:
+     * The first parameter after `ISyncContext $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be the class of the
      *   entity being deleted
@@ -241,13 +241,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function createFaculties(SyncContext $ctx, iterable $entities): iterable;
+     * public function createFaculties(ISyncContext $ctx, iterable $entities): iterable;
      *
      * // 2. With a singular name
-     * public function createList_Faculty(SyncContext $ctx, iterable $entities): iterable;
+     * public function createList_Faculty(ISyncContext $ctx, iterable $entities): iterable;
      * ```
      *
-     * The first parameter after `SyncContext $ctx`:
+     * The first parameter after `ISyncContext $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be `iterable`
      * - must be required
@@ -261,7 +261,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     }
 
     /**
-     * Return a list of entities from the backend
+     * Get a list of entities from the backend
      *
      * The underlying {@see ISyncProvider} must implement the
      * {@see SyncOperation::READ_LIST} operation, e.g. one of the following for
@@ -269,10 +269,10 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function getFaculties(SyncContext $ctx): iterable;
+     * public function getFaculties(ISyncContext $ctx): iterable;
      *
      * // 2. With a singular name
-     * public function getList_Faculty(SyncContext $ctx): iterable;
+     * public function getList_Faculty(ISyncContext $ctx): iterable;
      * ```
      *
      * @return iterable<TEntity>
@@ -291,13 +291,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function updateFaculties(SyncContext $ctx, iterable $entities): iterable;
+     * public function updateFaculties(ISyncContext $ctx, iterable $entities): iterable;
      *
      * // 2. With a singular name
-     * public function updateList_Faculty(SyncContext $ctx, iterable $entities): iterable;
+     * public function updateList_Faculty(ISyncContext $ctx, iterable $entities): iterable;
      * ```
      *
-     * The first parameter after `SyncContext $ctx`:
+     * The first parameter after `ISyncContext $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be `iterable`
      * - must be required
@@ -319,13 +319,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *
      * ```php
      * // 1. With a plural entity name
-     * public function deleteFaculties(SyncContext $ctx, iterable $entities): iterable;
+     * public function deleteFaculties(ISyncContext $ctx, iterable $entities): iterable;
      *
      * // 2. With a singular name
-     * public function deleteList_Faculty(SyncContext $ctx, iterable $entities): iterable;
+     * public function deleteList_Faculty(ISyncContext $ctx, iterable $entities): iterable;
      * ```
      *
-     * The first parameter after `SyncContext $ctx`:
+     * The first parameter after `ISyncContext $ctx`:
      * - must be defined
      * - must have a native type declaration, which must be `iterable`
      * - must be required
@@ -341,12 +341,19 @@ final class SyncEntityProvider implements ISyncEntityProvider
         return $this->run(SyncOperation::DELETE_LIST, $entities, ...$args);
     }
 
+    /**
+     * Use a property of the entity class to resolve names to entities
+     *
+     */
     public function getResolver(string $nameProperty): SyncEntityResolver
     {
         return new SyncEntityResolver($this, $nameProperty);
     }
 
     /**
+     * Use a property of the entity class to resolve names to entities
+     * using a text similarity algorithm
+     *
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
      * @param int|null $algorithm Overrides the default string comparison
