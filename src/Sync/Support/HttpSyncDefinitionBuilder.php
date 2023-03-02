@@ -13,21 +13,21 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * A fluent interface for creating HttpSyncDefinition objects
  *
  * @method static $this build(?IContainer $container = null) Create a new HttpSyncDefinitionBuilder (syntactic sugar for 'new HttpSyncDefinitionBuilder()')
- * @method $this entity(string $value) Set SyncDefinition::$Entity
- * @method $this provider(HttpSyncProvider $value) Set HttpSyncDefinition::$Provider
- * @method $this operations(int[] $value) Set HttpSyncDefinition::$Operations
- * @method $this path(Closure|string|null $value) Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): string`
- * @method $this query(Closure|array|null $value) Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): ?array`
- * @method $this headersCallback(?Closure $value) Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?CurlerHeaders`
- * @method $this pagerCallback(?Closure $value) Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?ICurlerPager`
- * @method $this request(Closure|HttpSyncDefinitionRequest|null $value) If set, `$path`, `$query`, `$headersCallback` and `$pagerCallback` are ignored. Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): HttpSyncDefinitionRequest`
- * @method $this conformity(int $value) See {@see SyncDefinition::$Conformity}
- * @method $this filterPolicy(int $value) One of the {@see SyncFilterPolicy} values.  To prevent, say, a filtered {@see SyncOperation::READ_LIST} request returning every entity of that type when a provider doesn't use the filter, the default policy is {@see SyncFilterPolicy::THROW_EXCEPTION}.  See {@see \Lkrms\Sync\Contract\ISyncContext::withArgs()} for more information (see {@see SyncDefinition::$FilterPolicy})
- * @method $this expiry(?int $value) Set HttpSyncDefinition::$Expiry
- * @method $this methodMap(array $value) Set HttpSyncDefinition::$MethodMap
- * @method $this overrides(array $value) See {@see HttpSyncDefinition::$Overrides}
- * @method $this dataToEntityPipeline(?IPipeline $value) A pipeline that converts data received from the provider to an associative array from which the entity can be instantiated, or `null` if the entity is not supported or conversion is not required
- * @method $this entityToDataPipeline(?IPipeline $value) A pipeline that converts a serialized instance of the entity to data compatible with the provider, or `null` if the entity is not supported or conversion is not required
+ * @method $this entity(string $value) The ISyncEntity being serviced (see {@see SyncDefinition::$Entity})
+ * @method $this provider(HttpSyncProvider $value) The ISyncProvider servicing the entity
+ * @method $this operations(int[] $value) A list of supported sync operations (see {@see SyncDefinition::$Operations})
+ * @method $this path(Closure|string|null $value) Closure signature: `fn(int $operation, ISyncContext $ctx, ...$args): string`
+ * @method $this query(Closure|array|null $value) Closure signature: `fn(int $operation, ISyncContext $ctx, ...$args): ?array`
+ * @method $this headersCallback(?Closure $value) Closure signature: `fn(Curler $curler, int $operation, ISyncContext $ctx, ...$args): ?CurlerHeaders`
+ * @method $this pagerCallback(?Closure $value) Closure signature: `fn(Curler $curler, int $operation, ISyncContext $ctx, ...$args): ?ICurlerPager`
+ * @method $this request(Closure|HttpSyncDefinitionRequest|null $value) If set, `$path`, `$query`, `$headersCallback` and `$pagerCallback` are ignored. Closure signature: `fn(int $operation, ISyncContext $ctx, ...$args): HttpSyncDefinitionRequest`
+ * @method $this conformity(int $value) The conformity level of data returned by the provider for this entity (see {@see SyncDefinition::$Conformity})
+ * @method $this filterPolicy(int $value) The action to take when filters are ignored by the provider (see {@see SyncDefinition::$FilterPolicy})
+ * @method $this expiry(?int $value) Passed to the provider's getCurler() method
+ * @method $this methodMap(array $value) An array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})
+ * @method $this overrides(array $value) See {@see SyncDefinition::$Overrides}
+ * @method $this dataToEntityPipeline(?IPipeline $value) A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required (see {@see SyncDefinition::$DataToEntityPipeline})
+ * @method $this entityToDataPipeline(?IPipeline $value) A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required (see {@see SyncDefinition::$EntityToDataPipeline})
  * @method HttpSyncDefinition go() Return a new HttpSyncDefinition object
  * @method static HttpSyncDefinition|null resolve(HttpSyncDefinition|HttpSyncDefinitionBuilder|null $object) Resolve a HttpSyncDefinitionBuilder or HttpSyncDefinition object to a HttpSyncDefinition object
  *

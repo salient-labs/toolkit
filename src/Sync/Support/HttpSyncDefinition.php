@@ -11,11 +11,41 @@ use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
-use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Support\SyncOperation;
 use RuntimeException;
 use UnexpectedValueException;
 
+/**
+ * Provides direct access to an HttpSyncProvider's implementation of sync
+ * operations for an entity
+ *
+ * Providers can use {@see HttpSyncDefinition} instead of hand-coded sync
+ * operations to service HTTP backends declaratively.
+ *
+ * For entities that should be serviced this way, override
+ * {@see HttpSyncProvider::getHttpDefinition()} and return an
+ * {@see HttpSyncDefinition} or {@see HttpSyncDefinitionBuilder} that describes
+ * the relevant endpoints.
+ *
+ * If more than one implementation of a sync operation is available for an
+ * entity, the order of precedence is as follows:
+ *
+ * 1. The callback in {@see SyncDefinition::$Overrides} for the operation
+ * 2. The provider method declared for the operation, e.g.
+ *    `Provider::getFaculties()` or `Provider::createUser()`
+ * 3. The closure returned by {@see SyncDefinition::getClosure()} for the
+ *    operation
+ *
+ * If no implementations are found, {@see SyncOperationNotImplementedException}
+ * is thrown.
+ *
+ * @template TEntity of ISyncEntity
+ * @template TProvider of HttpSyncProvider
+ * @extends SyncDefinition<TEntity,TProvider>
+ */
 class HttpSyncDefinition extends SyncDefinition implements HasBuilder
 {
     public const DEFAULT_METHOD_MAP = [
@@ -28,16 +58,6 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         SyncOperation::UPDATE_LIST => HttpRequestMethod::PUT,
         SyncOperation::DELETE_LIST => HttpRequestMethod::DELETE,
     ];
-
-    /**
-     * @var HttpSyncProvider
-     */
-    protected $Provider;
-
-    /**
-     * @var int[]
-     */
-    protected $Operations;
 
     /**
      * @var Closure|string|null
@@ -65,44 +85,68 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     protected $Request;
 
     /**
+     * Passed to the provider's getCurler() method
+     *
      * @var int|null
      */
     protected $Expiry;
 
     /**
+     * An array that maps sync operations to HTTP request methods
+     *
+     * The default method map is {@see HttpSyncDefinition::DEFAULT_METHOD_MAP}.
+     * It contains:
+     *
+     * ```php
+     * [
+     *   SyncOperation::CREATE      => HttpRequestMethod::POST,
+     *   SyncOperation::READ        => HttpRequestMethod::GET,
+     *   SyncOperation::UPDATE      => HttpRequestMethod::PUT,
+     *   SyncOperation::DELETE      => HttpRequestMethod::DELETE,
+     *   SyncOperation::CREATE_LIST => HttpRequestMethod::POST,
+     *   SyncOperation::READ_LIST   => HttpRequestMethod::GET,
+     *   SyncOperation::UPDATE_LIST => HttpRequestMethod::PUT,
+     *   SyncOperation::DELETE_LIST => HttpRequestMethod::DELETE,
+     * ]
+     * ```
+     *
      * @var array<int,string>
      */
     protected $MethodMap;
 
     /**
-     * @var array<int,Closure>
-     */
-    protected $Overrides;
-
-    /**
-     * @var array<int,Closure>
-     */
-    private $Closures = [];
-
-    /**
+     * @param class-string<TEntity> $entity
+     * @param TProvider $provider
      * @param int[] $operations
-     * @param Closure|string|null $path Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): string`
-     * @param Closure|array|null $query Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): ?array`
-     * @param Closure|null $headersCallback Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?CurlerHeaders`
-     * @param Closure|null $pagerCallback Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?ICurlerPager`
-     * @param Closure|HttpSyncDefinitionRequest|null $request If set, `$path`, `$query`, `$headersCallback` and `$pagerCallback` are ignored. Closure signature: `fn(int $operation, SyncContext $ctx, ...$args): HttpSyncDefinitionRequest`
+     * @psalm-param array<SyncOperation::*> $operations
+     * @param Closure|string|null $path Closure signature: `fn(int $operation, ISyncContext $ctx, ...$args): string`
+     * @param Closure|array|null $query Closure signature: `fn(int $operation, ISyncContext $ctx, ...$args): ?array`
+     * @param Closure|null $headersCallback Closure signature: `fn(Curler $curler, int $operation, ISyncContext $ctx, ...$args): ?CurlerHeaders`
+     * @param Closure|null $pagerCallback Closure signature: `fn(Curler $curler, int $operation, ISyncContext $ctx, ...$args): ?ICurlerPager`
+     * @param Closure|HttpSyncDefinitionRequest|null $request If set, `$path`,
+     * `$query`, `$headersCallback` and `$pagerCallback` are ignored. Closure
+     * signature: `fn(int $operation, ISyncContext $ctx, ...$args):
+     * HttpSyncDefinitionRequest`
+     * @psalm-param ArrayKeyConformity::* $conformity
+     * @psalm-param SyncFilterPolicy::* $filterPolicy
      * @param array<int,Closure> $overrides
+     * @psalm-param array<SyncOperation::*,Closure> $overrides
+     * @param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
+     * @param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
      */
     public function __construct(string $entity, HttpSyncProvider $provider, array $operations = [], $path = null, $query = null, ?Closure $headersCallback = null, ?Closure $pagerCallback = null, $request = null, int $conformity = ArrayKeyConformity::NONE, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, ?int $expiry = -1, array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP, array $overrides = [], ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
     {
-        parent::__construct($entity, $provider, $conformity, $filterPolicy, $dataToEntityPipeline, $entityToDataPipeline);
-
-        // Combine overridden operations with $operations and remove invalid
-        // values
-        $this->Operations = array_intersect(
-            SyncOperation::getAll(),
-            array_merge(array_values($operations), array_keys($overrides))
+        parent::__construct(
+            $entity,
+            $provider,
+            $operations,
+            $conformity,
+            $filterPolicy,
+            $overrides,
+            $dataToEntityPipeline,
+            $entityToDataPipeline
         );
+
         $this->Path            = $path;
         $this->Query           = $query;
         $this->HeadersCallback = $headersCallback;
@@ -110,31 +154,16 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         $this->Request         = $request;
         $this->Expiry          = $expiry;
         $this->MethodMap       = $methodMap;
-        $this->Overrides       = array_intersect_key($overrides, array_flip($this->Operations));
     }
 
-    public function getSyncOperationClosure(int $operation): ?Closure
+    /**
+     * @psalm-param SyncOperation::* $operation
+     */
+    protected function getClosure(int $operation): ?Closure
     {
-        if (array_key_exists($operation, $this->Closures)) {
-            return $this->Closures[$operation];
-        }
-
-        // Overrides take precedence over everything else, including declared
-        // methods
-        if (array_key_exists($operation, $this->Overrides)) {
-            return $this->Closures[$operation] = $this->Overrides[$operation];
-        }
-
-        // If a method has been declared for this operation, use it, even if
-        // it's not in $this->Operations
-        if ($closure = $this->ProviderIntrospector->getDeclaredSyncOperationClosure($operation, $this->EntityIntrospector, $this->Provider)) {
-            return $this->Closures[$operation] = $closure;
-        }
-
-        // Return null if the operation doesn't appear in $this->Operations, or
-        // if no endpoint path has been provided
-        if (!array_key_exists($operation, $this->Operations) || is_null($this->Request ?: $this->Path)) {
-            return $this->Closures[$operation] = null;
+        // Return null if no endpoint path has been provided
+        if (is_null($this->Request ?: $this->Path)) {
+            return null;
         }
 
         $toCurler  = $this->getCurlerOperationClosure($operation);
@@ -145,67 +174,58 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             case SyncOperation::CREATE:
             case SyncOperation::UPDATE:
             case SyncOperation::DELETE:
-                // $_args = [$operation, $ctx, $entity, ...$args]
-                $endpointPipe = fn($payload, Closure $next, IPipeline $pipeline, ...$_args) => $next(
-                    $toCurler(...[...$this->getCurlerArgs(...$_args), $payload])
-                );
-                $closure = fn(SyncContext $ctx, SyncEntity $entity, ...$args): SyncEntity =>
-                    ($toBackend->send($entity->toArray(), $operation, $ctx, $entity, ...$args)
-                               ->through($endpointPipe)
-                               ->then(fn($result) =>
-                                   $toEntity->send($result, $operation, $ctx, $entity, ...$args)
-                                            ->withConformity($this->Conformity)
-                                            ->run())
-                               ->run());
+                $closure =
+                    fn(ISyncContext $ctx, ISyncEntity $entity, ...$args): ISyncEntity =>
+                        $toBackend->send($entity, $arg = [$operation, $ctx, $entity, ...$args])
+                                  ->then(fn($data) =>
+                                      $toCurler(...[...$this->getCurlerArgs(...$arg), $data]))
+                                  ->runThrough($toEntity)
+                                  ->withConformity($this->Conformity)
+                                  ->run();
                 break;
 
             case SyncOperation::READ:
-                $closure = fn(SyncContext $ctx, $id, ...$args): SyncEntity => $toEntity->send(
-                    $toCurler(...$this->getCurlerArgs($operation, $ctx, $id, ...$args)),
-                    $operation,
-                    $ctx,
-                    $id,
-                    ...$args
-                )->withConformity($this->Conformity)->run();
+                $closure =
+                    fn(ISyncContext $ctx, $id, ...$args): ISyncEntity =>
+                        $toEntity->send($toCurler(...$this->getCurlerArgs($operation, $ctx, $id, ...$args)),
+                                        [$operation, $ctx, $id, ...$args])
+                                 ->withConformity($this->Conformity)
+                                 ->run();
                 break;
 
             case SyncOperation::CREATE_LIST:
             case SyncOperation::UPDATE_LIST:
             case SyncOperation::DELETE_LIST:
-                // $_args = [$operation, $ctx, $_entity, ...$args]
-                $endpointPipe = fn($payload, Closure $next, IPipeline $pipeline, ...$_args) => $next(
-                    $toCurler(...[...$this->getCurlerArgs(...$_args), $payload])
-                );
-                $_entity = null;
-                $closure = function (SyncContext $ctx, iterable $entities, ...$args) use (&$_entity, $endpointPipe, $operation, $toBackend, $toEntity): iterable {
-                    return $toBackend->stream($entities, $operation, $ctx, $_entity, ...$args)
-                                     ->after(function (SyncEntity $entity) use (&$_entity) { $_entity = $entity; })
-                                     ->through($endpointPipe)
-                                     ->then(fn($result) =>
-                                         $toEntity->send($result, $operation, $ctx, $_entity, ...$args)
-                                                  ->withConformity($this->Conformity)
-                                                  ->run())
-                                     ->start();
-                };
+                $entity  = null;
+                $closure =
+                    function (ISyncContext $ctx, iterable $entities, ...$args) use (&$entity, $operation, $toCurler, $toBackend, $toEntity): iterable {
+                        return $toBackend->stream($entities, $arg = [$operation, $ctx, &$entity, ...$args])
+                                         ->after(function (ISyncEntity $e) use (&$entity) { return $entity = $e; })
+                                         ->then(fn($payload) =>
+                                             $toCurler(...[...$this->getCurlerArgs(...$arg), $payload]))
+                                         ->startThrough($toEntity)
+                                         ->withConformity($this->Conformity)
+                                         ->start();
+                    };
                 break;
 
             case SyncOperation::READ_LIST:
-                $closure = fn(SyncContext $ctx, ...$args): iterable => $toEntity->stream(
-                    $toCurler(...$this->getCurlerArgs($operation, $ctx, ...$args)),
-                    $operation,
-                    $ctx,
-                    ...$args
-                )->withConformity($this->Conformity)->start();
+                $closure =
+                    fn(ISyncContext $ctx, ...$args): iterable =>
+                        $toEntity->stream($toCurler(...$this->getCurlerArgs($operation, $ctx, ...$args)),
+                                          [$operation, $ctx, ...$args])
+                                 ->withConformity($this->Conformity)
+                                 ->start();
                 break;
 
             default:
                 throw new UnexpectedValueException("Invalid SyncOperation: $operation");
         }
 
-        return $this->Closures[$operation] = $closure;
+        return $closure;
     }
 
-    private function getCurlerArgs(int $operation, SyncContext $ctx, ...$args): array
+    private function getCurlerArgs(int $operation, ISyncContext $ctx, ...$args): array
     {
         if (($request = $this->Request) instanceof Closure) {
             $request = $request($operation, $ctx, ...$args);
@@ -236,7 +256,7 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         return $args;
     }
 
-    private function getPath(int $operation, SyncContext $ctx, ...$args): string
+    private function getPath(int $operation, ISyncContext $ctx, ...$args): string
     {
         if ($this->Path instanceof Closure) {
             return ($this->Path)($operation, $ctx, ...$args);
@@ -248,7 +268,7 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         return $this->Path;
     }
 
-    private function getQuery(int $operation, SyncContext $ctx, ...$args): ?array
+    private function getQuery(int $operation, ISyncContext $ctx, ...$args): ?array
     {
         if ($this->Query instanceof Closure) {
             return ($this->Query)($operation, $ctx, ...$args);
@@ -258,10 +278,12 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     }
 
     /**
+     * Get a closure to perform a sync operation via HTTP
+     *
      * @psalm-param SyncOperation::* $operation
-     * @return Closure
+     * @return Closure(ISyncContext, string, array|null, Closure|null, Closure|null, array|null)
      * ```php
-     * fn(SyncContext $ctx, string $path, ?array $query, ?Closure $headersCallback, ?array $payload)
+     * fn(ISyncContext $ctx, string $path, ?array $query, ?Closure $headersCallback, ?Closure $pagerCallback, ?array $payload = null)
      * ```
      */
     private function getCurlerOperationClosure(int $operation): Closure
@@ -302,21 +324,26 @@ class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                 throw new UnexpectedValueException("Invalid SyncOperation or method map: $operation");
         }
 
-        return fn(SyncContext $ctx, string $path, ?array $query, ?Closure $headersCallback, ?Closure $pagerCallback, ?array $payload = null) =>
+        return fn(ISyncContext $ctx, string $path, ?array $query, ?Closure $headersCallback, ?Closure $pagerCallback, ?array $payload = null) =>
             $this->runCurlerOperation($runner, $operation, $ctx, $path, $query, $headersCallback, $pagerCallback, $payload);
     }
 
     /**
+     * @param Closure $runner
+     * ```php
+     * fn(Curler $curler, ?array $query, ?array $payload)
+     * ```
+     * @psalm-param Closure(Curler, ?array, ?array) $runner
      * @psalm-param SyncOperation::* $operation
      */
-    private function runCurlerOperation(Closure $runner, int $operation, SyncContext $ctx, string $path, ?array $query, ?Closure $headers, ?Closure $pager, ?array $payload)
+    private function runCurlerOperation(Closure $runner, int $operation, ISyncContext $ctx, string $path, ?array $query, ?Closure $headersCallback, ?Closure $pagerCallback, ?array $payload)
     {
         $curler = $this->Provider->getCurler($path, $this->Expiry);
-        if ($headers && ($headers = $headers($curler))) {
-            $curler->replaceHeaders($headers);
+        if ($headersCallback && ($headers = $headersCallback($curler))) {
+            $curler = $curler->withHeaders($headers);
         }
-        if ($pager && ($pager = $pager($curler))) {
-            $curler->replacePager($pager);
+        if ($pagerCallback && ($pager = $pagerCallback($curler))) {
+            $curler = $curler->withPager($pager);
         }
 
         // The callbacks above may have claimed values from the filter, so this

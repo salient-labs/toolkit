@@ -51,6 +51,11 @@ parameters:
 			path: src/Sync/Support/HttpSyncDefinition.php
 
 		-
+			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$GetFromSyncStore is never read, only written\\.$#"
+			count: 1
+			path: src/Sync/Support/SyncEntityProvider.php
+
+		-
 			message: "#^Unreachable statement \\- code above always terminates\\.$#"
 			count: 1
 			path: src/Utility/Conversions.php

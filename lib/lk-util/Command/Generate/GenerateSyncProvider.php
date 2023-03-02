@@ -13,8 +13,8 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncOperation;
 
@@ -230,7 +230,7 @@ class GenerateSyncProvider extends GenerateCommand
                     break;
             }
 
-            $context   = $this->getFqcnAlias(SyncContext::class) . ' $ctx';
+            $context   = $this->getFqcnAlias(ISyncContext::class) . ' $ctx';
             $separator = $paramCode ? ', ' : '';
             $paramCode = "$context$separator$paramCode";
 

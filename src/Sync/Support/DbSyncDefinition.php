@@ -9,76 +9,59 @@ use Lkrms\Contract\IPipeline;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
+use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Support\SyncOperation;
 use UnexpectedValueException;
 
+/**
+ * Provides direct access to a DbSyncProvider's implementation of sync
+ * operations for an entity
+ *
+ * @template TEntity of ISyncEntity
+ * @template TProvider of DbSyncProvider
+ * @extends SyncDefinition<TEntity,TProvider>
+ */
 class DbSyncDefinition extends SyncDefinition implements HasBuilder
 {
-    /**
-     * @var DbSyncProvider
-     */
-    protected $Provider;
-
-    /**
-     * @var int[]
-     */
-    protected $Operations;
-
     /**
      * @var string|null
      */
     protected $Table;
 
     /**
-     * @var array<int,Closure>
-     */
-    protected $Overrides;
-
-    /**
-     * @var array<int,Closure>
-     */
-    private $Closures = [];
-
-    /**
+     * @param class-string<TEntity> $entity
+     * @param TProvider $provider
      * @param int[] $operations
+     * @psalm-param array<SyncOperation::*> $operations
+     * @psalm-param ArrayKeyConformity::* $conformity
+     * @psalm-param SyncFilterPolicy::* $filterPolicy
      * @param array<int,Closure> $overrides
+     * @psalm-param array<SyncOperation::*,Closure> $overrides
+     * @param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
+     * @param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
      */
     public function __construct(string $entity, DbSyncProvider $provider, array $operations = [], ?string $table = null, int $conformity = ArrayKeyConformity::PARTIAL, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, array $overrides = [], ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
     {
-        parent::__construct($entity, $provider, $conformity, $filterPolicy, $dataToEntityPipeline, $entityToDataPipeline);
-
-        // Combine overridden operations with $operations and remove invalid
-        // values
-        $this->Operations = array_intersect(
-            SyncOperation::getAll(),
-            array_merge(array_values($operations), array_keys($overrides))
+        parent::__construct(
+            $entity,
+            $provider,
+            $operations,
+            $conformity,
+            $filterPolicy,
+            $overrides,
+            $dataToEntityPipeline,
+            $entityToDataPipeline
         );
-        $this->Table     = $table;
-        $this->Overrides = array_intersect_key($overrides, array_flip($this->Operations));
+
+        $this->Table = $table;
     }
 
-    public function getSyncOperationClosure(int $operation): ?Closure
+    protected function getClosure(int $operation): ?Closure
     {
-        if (array_key_exists($operation, $this->Closures)) {
-            return $this->Closures[$operation];
-        }
-
-        // Overrides take precedence over everything else, including declared
-        // methods
-        if (array_key_exists($operation, $this->Overrides)) {
-            return $this->Closures[$operation] = $this->Overrides[$operation];
-        }
-
-        // If a method has been declared for this operation, use it, even if
-        // it's not in $this->Operations
-        if ($closure = $this->ProviderIntrospector->getDeclaredSyncOperationClosure($operation, $this->EntityIntrospector, $this->Provider)) {
-            return $this->Closures[$operation] = $closure;
-        }
-
-        // Return null if the operation doesn't appear in $this->Operations, or
-        // if no table name has been provided
-        if (!array_key_exists($operation, $this->Operations) || is_null($this->Table)) {
-            return $this->Closures[$operation] = null;
+        // Return null if no table name has been provided
+        if (is_null($this->Table)) {
+            return null;
         }
 
         switch ($operation) {
@@ -97,7 +80,7 @@ class DbSyncDefinition extends SyncDefinition implements HasBuilder
                 throw new UnexpectedValueException("Invalid SyncOperation: $operation");
         }
 
-        return $this->Closures[$operation] = $closure;
+        return $closure;
     }
 
     /**

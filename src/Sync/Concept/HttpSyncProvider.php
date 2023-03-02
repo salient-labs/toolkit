@@ -105,7 +105,7 @@ abstract class HttpSyncProvider extends SyncProvider
         return null;
     }
 
-    final protected function getDefinition(string $entity): ISyncDefinition
+    final public function getDefinition(string $entity): ISyncDefinition
     {
         $builder = HttpSyncDefinition::build()
                        ->entity($entity)
@@ -132,6 +132,7 @@ abstract class HttpSyncProvider extends SyncProvider
      * If `$expiry` is an integer less than `0`, the return value of
      * {@see HttpSyncProvider::getCurlerCacheExpiry()} will be used as the
      * response expiry time.
+     *
      */
     final public function getCurler(string $path, ?int $expiry = -1): Curler
     {

@@ -419,9 +419,7 @@ abstract class SyncEntity implements ISyncEntity
                 $callback = null;
 
                 while ($rule) {
-                    if (is_null($arg = array_shift($rule))) {
-                        continue;
-                    }
+                    $arg = array_shift($rule);
                     if (is_int($arg) || is_string($arg)) {
                         $newKey = is_string($arg) ? $this->introspector()->maybeNormalise($arg, NormaliserFlag::CAREFUL) : $arg;
                         continue;
