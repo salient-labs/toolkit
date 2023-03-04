@@ -13,8 +13,29 @@ use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
 use RuntimeException;
 use Throwable;
 
+/**
+ * Base class for providers with traditional database backends
+ *
+ */
 abstract class DbSyncProvider extends SyncProvider
 {
+    /**
+     * @var DbConnector|null
+     */
+    private $DbConnector;
+
+    /**
+     * @var ADOConnection|null
+     */
+    private $Db;
+
+    /**
+     * Specify how to connect to the upstream database
+     *
+     * The {@see DbConnector} returned will be cached for the lifetime of the
+     * {@see DbSyncProvider} instance.
+     *
+     */
     abstract protected function getNewDbConnector(): DbConnector;
 
     public function getBackendIdentifier(): array
@@ -22,16 +43,18 @@ abstract class DbSyncProvider extends SyncProvider
         $connector = $this->getDbConnector();
         if ($connector->Dsn) {
             /** @todo Implement DSN parsing */
-            throw new RuntimeException('DSN parsing not implemented: '
-                . static::class . '::' . __FUNCTION__);
+            throw new RuntimeException('DSN parsing not implemented');
         }
 
-        return array_map(fn($value) => strtolower(trim($value)), [
-            $connector->Hostname ?: '',
-            (string) $connector->Port ?: '',
-            $connector->Database ?: '',
-            $connector->Schema ?: '',
-        ]);
+        return array_map(
+            fn($value) => strtolower(trim($value)),
+            [
+                $connector->Hostname ?: '',
+                (string) $connector->Port ?: '',
+                $connector->Database ?: '',
+                $connector->Schema ?: '',
+            ]
+        );
     }
 
     /**
@@ -49,28 +72,22 @@ abstract class DbSyncProvider extends SyncProvider
         return null;
     }
 
-    final protected function getDefinition(string $entity): ISyncDefinition
+    final public function getDefinition(string $entity): ISyncDefinition
     {
-        $builder = DbSyncDefinition::build()->entity($entity)->provider($this);
+        $builder = DbSyncDefinition::build()
+                       ->entity($entity)
+                       ->provider($this);
+        $def = $this->getDbDefinition($entity, $builder);
 
-        return DbSyncDefinitionBuilder::resolve(
-            $this->getDbDefinition($entity, $builder)
-        ) ?: $builder->go();
+        return $def
+            ? DbSyncDefinitionBuilder::resolve($def)
+            : $builder->go();
     }
-
-    /**
-     * @var DbConnector|null
-     */
-    private $DbConnector;
-
-    /**
-     * @var ADOConnection|null
-     */
-    private $Db;
 
     final public function getDbConnector(): DbConnector
     {
-        return $this->DbConnector ?: ($this->DbConnector = $this->getNewDbConnector());
+        return $this->DbConnector
+            ?: ($this->DbConnector = $this->getNewDbConnector());
     }
 
     final public function getDb(): ADOConnection

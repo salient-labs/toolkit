@@ -123,6 +123,7 @@ final class SyncIntrospector extends Introspector
 
         return
             static function (array $array, ISyncProvider $provider, $context = null) use ($closure, $service) {
+                /** @var IContainer $container */
                 [$container, $parent] = $context instanceof ISyncContext
                     ? [$context->container(), $context->getParent()]
                     : [$context ?: $provider->container(), null];
@@ -130,7 +131,7 @@ final class SyncIntrospector extends Introspector
                 return $closure($container,
                                 $array,
                                 $provider,
-                                $context ?: new SyncContext($container, $parent),
+                                $context ?: $container->get(SyncContext::class)->withParent($parent),
                                 $parent,
                                 $provider->dateFormatter(),
                                 $service);
@@ -181,9 +182,9 @@ final class SyncIntrospector extends Introspector
      * @param int $operation A {@see SyncOperation} value.
      * @psalm-param SyncOperation::* $operation
      * @param string|SyncIntrospector $entity
-     * @return Closure(SyncContext, mixed...)|null
+     * @return Closure(ISyncContext, mixed...)|null
      * ```php
-     * fn(SyncContext $ctx, ...$args)
+     * fn(ISyncContext $ctx, ...$args)
      * ```
      */
     final public function getDeclaredSyncOperationClosure(int $operation, $entity, ISyncProvider $provider): ?Closure
@@ -221,9 +222,9 @@ final class SyncIntrospector extends Introspector
      * - `$method` doesn't resolve to an unambiguous sync operation on an
      *   {@see ISyncEntity} class serviced by the {@see ISyncProvider} class
      *
-     * @return Closure(SyncContext, mixed...)|null
+     * @return Closure(ISyncContext, mixed...)|null
      * ```php
-     * fn(SyncContext $ctx, ...$args)
+     * fn(ISyncContext $ctx, ...$args)
      * ```
      */
     final public function getMagicSyncOperationClosure(string $method, ISyncProvider $provider): ?Closure
@@ -240,7 +241,7 @@ final class SyncIntrospector extends Introspector
             if ($operation) {
                 [$operation, $entity] = $operation;
                 $closure              =
-                    function (SyncContext $ctx, ...$args) use ($entity, $operation) {
+                    function (ISyncContext $ctx, ...$args) use ($entity, $operation) {
                         /** @var ISyncProvider $this */
                         return $this->with($entity, $ctx)->run($operation, ...$args);
                     };

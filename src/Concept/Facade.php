@@ -80,6 +80,9 @@ abstract class Facade implements IFacade
      */
     final public static function unload(): void
     {
+        if (Container::hasGlobalContainer()) {
+            Container::getGlobalContainer()->unbind(static::getServiceName());
+        }
         unset(self::$Instances[static::class]);
     }
 

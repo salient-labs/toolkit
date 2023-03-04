@@ -7,7 +7,7 @@ use Lkrms\Container\Container;
 use Lkrms\Contract\IService;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
-use Lkrms\Support\PipelineImmutable;
+use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -29,10 +29,10 @@ abstract class SyncProvider implements ISyncProvider, IService
      * via an ISyncDefinition object
      *
      */
-    abstract protected function getDefinition(string $entity): ISyncDefinition;
+    abstract public function getDefinition(string $entity): ISyncDefinition;
 
     /**
-     * Return a stable list of values that, together with the name of the class,
+     * Get a stable list of values that, together with the name of the class,
      * uniquely identifies the backend instance
      *
      * This method must be idempotent for each backend instance the provider
@@ -162,11 +162,10 @@ abstract class SyncProvider implements ISyncProvider, IService
     /**
      * Get a new pipeline bound to the provider's container
      *
-     * @return PipelineImmutable
      */
-    final protected function pipeline(): PipelineImmutable
+    final protected function pipeline(): Pipeline
     {
-        return PipelineImmutable::create($this->Container);
+        return Pipeline::create($this->Container);
     }
 
     final public function dateFormatter(): DateFormatter

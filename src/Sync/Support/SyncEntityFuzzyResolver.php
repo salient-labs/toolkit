@@ -10,7 +10,7 @@ use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
 
 /**
- * Uses Levenshtein distances or text similarity to resolve names to entities
+ * Resolves names to entities using a text similarity algorithm
  *
  * The default algorithm is
  * {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}.
@@ -20,8 +20,10 @@ use Lkrms\Sync\Contract\ISyncEntityResolver;
 final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 {
     /**
-     * Inexpensive, but string length cannot exceed 255 characters, and
-     * similar_text() may match substrings better
+     * Inexpensive, but string length cannot exceed 255 characters
+     *
+     * {@see SyncEntityFuzzyResolver::ALGORITHM_SIMILAR_TEXT} may match
+     * substrings better.
      */
     public const ALGORITHM_LEVENSHTEIN = 0;
 

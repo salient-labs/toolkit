@@ -5,7 +5,7 @@
 ### General
 - [ ] Review namespaces and classes before making a v1.0.0 release
   - [ ] Make classes and methods `final` where appropriate
-    - Useful regex: `^(.(?!//)(?!abstract )(?!final )(?!private ))*((public|protected|static) )+function`
+    - Useful regex: `^((.(?!//)(?!abstract )(?!final )(?!private ))*((public|protected|static) )+function|([a-z]+ )*class)`
   - [ ] Replace instantiation via `new` or `DI` with `ContainerInterface->get` where appropriate
   - [ ] Adopt generators and iterators where appropriate
   - [x] Clean up `Exception` namespace
@@ -44,11 +44,11 @@
   - [ ] `DIRECTORY` (must exist)
   - [ ] `JSON`?
 - [ ] Add `ENVIRONMENT VARIABLES` section to help
-- [ ] Allow ad-hoc help sections
+- [x] Allow ad-hoc help sections
 - [ ] Allow documentation-only nodes
 
 ### Console
-- [ ] Validate `ConsoleLevel` values where necessary
+- ~~Validate `ConsoleLevel` values where necessary~~
 
 ### CLI utility
 - [ ] `generate sync entity`:

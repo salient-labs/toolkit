@@ -249,7 +249,13 @@ class GenerateBuilder extends GenerateCommand
                     ? ($returnFqcn ? $name : null)
                     : $this->getFqcnAlias($name, null, $returnFqcn));
         };
-        $phpDocTypeCallback = function (string $type) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback): string {
+        $phpDocTypeCallback = function (string $type, array $templates) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback): string {
+            $seen = [];
+            while (($_type = $templates[$type]['type'] ?? null) && !($seen[$_type] ?? null)) {
+                $seen[$_type] = true;
+                $type         = $_type;
+            }
+
             return preg_replace_callback(
                 '/(?<!\$)(?=\\\\?\b)' . PhpDocParser::TYPE_PATTERN . '\b/',
                 function ($match) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback) {
@@ -270,7 +276,8 @@ class GenerateBuilder extends GenerateCommand
             );
         };
 
-        $_phpDoc = PhpDocParser::fromDocBlocks(Reflect::getAllMethodDocComments($_constructor));
+        $docBlocks = Reflect::getAllMethodDocComments($_constructor, $classDocBlocks);
+        $_phpDoc   = PhpDocParser::fromDocBlocks($docBlocks, $classDocBlocks);
 
         $names   = array_keys($_params + $_properties);
         //sort($names);
@@ -287,22 +294,50 @@ class GenerateBuilder extends GenerateCommand
                     continue;
                 }
 
-                $phpDoc            = PhpDocParser::fromDocBlocks(Reflect::getAllPropertyDocComments($_property));
+                $docBlocks         = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
+                $phpDoc            = PhpDocParser::fromDocBlocks($docBlocks, $classDocBlocks);
                 $propertyFile      = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
 
-                $type = ($_type = $phpDoc->Var[0]['type'] ?? null) && strpbrk($_type, '<>') === false
-                    ? $phpDocTypeCallback($_type)
-                    : ($_property->hasType()
+                $internal = (bool) ($phpDoc->Tags['internal'] ?? null);
+                $link     = !$internal && $phpDoc && $phpDoc->hasDetail();
+
+                $_type = $phpDoc->Var[0]['type'] ?? null;
+                if ($_type && strpbrk($_type, '<>') === false) {
+                    $type = $phpDocTypeCallback($_type, $phpDoc->Templates);
+                } else {
+                    $type = $_property->hasType()
                         ? Reflect::getTypeDeclaration($_property->getType(), $classPrefix, $typeNameCallback)
-                        : '');
-                switch ($type) {
+                        : '';
+
+                    // If the underlying property has more type information,
+                    // provide a link to it
+                    if ($_type) {
+                        $link = !$internal;
+                    }
+                }
+
+                $default     = '';
+                $defaultText = null;
+                switch (ltrim($type, '?')) {
                     case 'static':
                     case '$this':
                         $type = $service;
                         break;
                     case 'self':
                         $type = $typeNameCallback($_property->getDeclaringClass()->getName(), true);
+                        break;
+                    case 'bool':
+                        $default = ' = true';
+                        if ($_property->hasDefaultValue()) {
+                            $defaultValue = $_property->getDefaultValue();
+                            if (!is_null($defaultValue)) {
+                                $defaultText = sprintf(
+                                    'default: %s',
+                                    var_export($defaultValue, true)
+                                );
+                            }
+                        }
                         break;
                 }
                 $summary = $phpDoc->Summary ?? null;
@@ -311,10 +346,15 @@ class GenerateBuilder extends GenerateCommand
                 }
 
                 $type = $type ? "$type " : '';
-                $methods[] = " * @method \$this $name($type\$value)"
+                $methods[] = " * @method \$this $name($type\$value$default)"
                     . $this->getSummary($summary,
                                         $_property,
-                                        $typeNameCallback);
+                                        $typeNameCallback,
+                                        null,
+                                        null,
+                                        $defaultText,
+                                        false,
+                                        $link);
 
                 continue;
             }
@@ -324,21 +364,42 @@ class GenerateBuilder extends GenerateCommand
             $declaringClass    = $typeNameCallback($_constructor->getDeclaringClass()->getName(), true);
             $declare           = array_key_exists($name, $toDeclare);
 
+            // If the parameter has a matching property, retrieve its DocBlock
+            if ($_property = $_allProperties[$name] ?? null) {
+                $docBlocks = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
+                $phpDoc    = PhpDocParser::fromDocBlocks($docBlocks, $classDocBlocks);
+            } else {
+                $phpDoc = null;
+            }
+            $internal = (bool) ($phpDoc->Tags['internal'] ?? null);
+            $link     = !$internal && $phpDoc && $phpDoc->hasDetail();
+
             $_param = $_params[$name];
             $_name  = $_param->getName();
 
-            $_type = ($_type = $_phpDoc->Params[$_name]['type'] ?? null) &&
-                strpbrk($_type, '<>') === false
-                    ? $phpDocTypeCallback($_type)
-                    : null;
-            $type = is_null($_type)
-                ? ($_param->hasType()
+            $_type = $_phpDoc->Params[$_name]['type'] ?? null;
+            if ($_type && strpbrk($_type, '<>') === false) {
+                $type = $phpDocTypeCallback($_type, $_phpDoc->Templates);
+            } else {
+                $type = $_param->hasType()
                     ? Reflect::getTypeDeclaration($_param->getType(), $classPrefix, $typeNameCallback)
-                    : '')
-                : $_type;
+                    : '';
 
-            $default = '';
-            switch ($type) {
+                // If the underlying parameter has more type information,
+                // provide a link to it
+                if ($_type) {
+                    // Ensure the link is to the constructor, not the property,
+                    // unless both are annotated with the same type
+                    if ($_property && $phpDoc && ($phpDoc->Var[0]['type'] ?? null) !== $_type) {
+                        $_property = null;
+                    }
+                    $link = true;
+                }
+            }
+
+            $default     = '';
+            $defaultText = null;
+            switch (ltrim($type, '?')) {
                 case 'static':
                 case '$this':
                     $type = $service;
@@ -348,13 +409,20 @@ class GenerateBuilder extends GenerateCommand
                     break;
                 case 'bool':
                     $default = ' = true';
+                    if ($_param->isDefaultValueAvailable()) {
+                        $defaultValue = $_param->getDefaultValue();
+                        if (!is_null($defaultValue)) {
+                            $defaultText = sprintf(
+                                'default: %s',
+                                var_export($defaultValue, true)
+                            );
+                        }
+                    }
                     break;
             }
 
             $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_name]['description'] ?? null) : null;
-            if (($_property = $_allProperties[$name] ?? null) &&
-                    !$summary &&
-                    ($phpDoc = PhpDocParser::fromDocBlocks(Reflect::getAllPropertyDocComments($_property)))) {
+            if (!$summary && $phpDoc) {
                 $summary = $phpDoc->Summary;
             }
 
@@ -364,12 +432,15 @@ class GenerateBuilder extends GenerateCommand
                 }
                 $lines   = [];
                 $lines[] = '/**';
-                $lines[] = ' * ' . $this->getSummary($summary, $_property, $typeNameCallback, $declaringClass, $name, true, $see);
+                $lines[] = ' * ' . $this->getSummary($summary, $_property, $typeNameCallback, $declaringClass, $name, null, true, $link, $see);
                 $lines[] = ' *';
                 $lines[] = " * $param";
                 $lines[] = ' * @return $this';
                 $lines[] = " * @see $see";
                 $lines[] = ' */';
+                if (!$link) {
+                    unset($lines[5]);
+                }
                 if (!$param) {
                     unset($lines[3]);
                 }
@@ -381,7 +452,10 @@ class GenerateBuilder extends GenerateCommand
                                         $_property,
                                         $typeNameCallback,
                                         $declaringClass,
-                                        $name);
+                                        $name,
+                                        $defaultText,
+                                        false,
+                                        $link);
             }
         }
         $methods[] = " * @method $service $terminator() Return a new $class object";
@@ -473,7 +547,7 @@ class GenerateBuilder extends GenerateCommand
         $this->handleOutput($builderClass, $builderNamespace, $lines);
     }
 
-    private function getSummary(?string $summary, ?ReflectionProperty $property, Closure $typeNameCallback, ?string $class = null, ?string $name = null, bool $declare = false, ?string &$see = null): string
+    private function getSummary(?string $summary, ?ReflectionProperty $property, Closure $typeNameCallback, ?string $class = null, ?string $name = null, ?string $default = null, bool $declare = false, bool $link = true, ?string &$see = null): string
     {
         if ($summary) {
             $summary = rtrim($summary, '.');
@@ -487,9 +561,22 @@ class GenerateBuilder extends GenerateCommand
             $param = "`\$$name` in ";
             $see   = $class . '::__construct()';
         }
+        if ($default) {
+            $defaultPrefix = "$default; ";
+            $defaultSuffix = " ($default)";
+        } else {
+            $defaultSuffix = $defaultPrefix = '';
+        }
 
         return $summary
-            ? ($declare ? $summary : " $summary (see {@see {$see}})")
-            : ($declare ? "Pass a variable to $param$see by reference" : " See {@see {$see}}");
+            ? ($declare
+                ? $summary . $defaultSuffix
+                : " $summary" . ($link ? " ({$defaultPrefix}see {@see $see})" : $defaultSuffix))
+            : (($declare
+                ? "Pass a variable to $param$see by reference"
+                : ($link
+                    ? " See {@see $see}"
+                    : ($param ? " Pass \$value to $param$see" : " Set $see")))
+                . $defaultSuffix);
     }
 }

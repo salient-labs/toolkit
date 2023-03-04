@@ -9,6 +9,22 @@ namespace Lkrms\Concept;
 abstract class FluentInterface
 {
     /**
+     * Move to the next method in the chain after passing the object to a
+     * callback
+     *
+     * @param callable $callback Receives and must return the object.
+     * ```php
+     * fn(FluentInterface $object): FluentInterface
+     * ```
+     * @psalm-param callable($this): $this $callback
+     * @return $this
+     */
+    final public function call(callable $callback)
+    {
+        return $callback($this);
+    }
+
+    /**
      * Move to the next method in the chain after conditionally passing the
      * object to a callback
      *

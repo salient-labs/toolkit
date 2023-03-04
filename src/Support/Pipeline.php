@@ -4,7 +4,6 @@ namespace Lkrms\Support;
 
 use Closure;
 use Lkrms\Concept\FluentInterface;
-use Lkrms\Concern\TMutable;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipe;
@@ -18,16 +17,21 @@ use UnexpectedValueException;
 /**
  * Sends a payload through a series of pipes to a destination
  *
+ * @template TInput
+ * @template TOutput
+ * @template TArgument
+ * @implements IPipeline<TInput,TOutput,TArgument>
  */
-class Pipeline extends FluentInterface implements IPipeline
+final class Pipeline extends FluentInterface implements IPipeline
 {
-    use TMutable;
-
     /**
      * @var IContainer|null
      */
     private $Container;
 
+    /**
+     * @var TInput|iterable<TInput>
+     */
     private $Payload;
 
     /**
@@ -37,9 +41,9 @@ class Pipeline extends FluentInterface implements IPipeline
     private $PayloadConformity;
 
     /**
-     * @var array|null
+     * @var TArgument|null
      */
-    private $Args;
+    private $Arg;
 
     /**
      * @var bool|null
@@ -47,39 +51,28 @@ class Pipeline extends FluentInterface implements IPipeline
     private $Stream;
 
     /**
-     * @var array<int,IPipe|Closure|string>
+     * @var array<IPipe<TInput,TOutput,TArgument>|callable|class-string<IPipe>>
+     * @psalm-var array<IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline, TArgument): (TInput|TOutput))|class-string<IPipe>>
      */
     private $Pipes = [];
 
     /**
-     * @var Closure|null
+     * @var callable|null
+     * @psalm-var (callable(TInput, IPipeline, TArgument): (TInput|TOutput))|null
      */
     private $After;
 
     /**
-     * @var array
-     */
-    private $AfterArgs = [];
-
-    /**
-     * @var Closure|null
+     * @var callable|null
+     * @psalm-var (callable(TInput, IPipeline, TArgument): TOutput)|null
      */
     private $Then;
 
     /**
-     * @var array
-     */
-    private $ThenArgs = [];
-
-    /**
-     * @var Closure|null
+     * @var callable|null
+     * @psalm-var (callable(TOutput, IPipeline, TArgument): bool)|null
      */
     private $Unless;
-
-    /**
-     * @var array
-     */
-    private $UnlessArgs = [];
 
     final public function __construct(?IContainer $container = null)
     {
@@ -94,23 +87,23 @@ class Pipeline extends FluentInterface implements IPipeline
         return new static($container);
     }
 
-    final public function send($payload, ...$args)
+    final public function send($payload, $arg = null)
     {
-        $_this                    = $this->getMutable();
+        $_this                    = clone $this;
         $_this->Payload           = $payload;
         $_this->PayloadConformity = ArrayKeyConformity::NONE;
-        $_this->Args              = $args;
+        $_this->Arg               = $arg;
         $_this->Stream            = false;
 
         return $_this;
     }
 
-    final public function stream(iterable $payload, ...$args)
+    final public function stream(iterable $payload, $arg = null)
     {
-        $_this                    = $this->getMutable();
+        $_this                    = clone $this;
         $_this->Payload           = $payload;
         $_this->PayloadConformity = ArrayKeyConformity::NONE;
-        $_this->Args              = $args;
+        $_this->Arg               = $arg;
         $_this->Stream            = true;
 
         return $_this;
@@ -118,66 +111,69 @@ class Pipeline extends FluentInterface implements IPipeline
 
     final public function withConformity(int $conformity = ArrayKeyConformity::PARTIAL)
     {
-        $_this                    = $this->getMutable();
+        $_this                    = clone $this;
         $_this->PayloadConformity = $conformity;
 
         return $_this;
     }
 
-    final public function after(callable $callback, ...$args)
+    final public function after(callable $callback)
     {
         if ($this->After) {
             throw new RuntimeException(static::class . '::after() has already been applied');
         }
-        $_this            = $this->getMutable();
-        $_this->After     = $callback;
-        $_this->AfterArgs = $args;
+        $_this        = clone $this;
+        $_this->After = $callback;
 
         return $_this;
     }
 
     final public function through(...$pipes)
     {
-        $_this = $this->getMutable();
+        $_this = clone $this;
         array_push($_this->Pipes, ...$pipes);
 
         return $_this;
     }
 
-    final public function throughCallback(callable $callback, bool $suppressArgs = false)
+    final public function throughCallback(callable $callback)
     {
-        return $suppressArgs
-            ? $this->through(fn($payload, Closure $next) => $next($callback($payload)))
-            : $this->through(fn($payload, Closure $next, IPipeline $pipeline, ...$args) => $next($callback($payload, $pipeline, ...$args)));
+        return $this->through(
+            fn($payload, Closure $next, IPipeline $pipeline, $args) =>
+                $next($callback($payload, $pipeline, $args))
+        );
     }
 
     final public function throughKeyMap(array $keyMap, int $flags = ArrayMapperFlag::ADD_UNMAPPED)
     {
-        return $this->through(fn($payload, Closure $next, IPipeline $pipeline) => $next(
-            (Mapper::getKeyMapClosure($keyMap, $pipeline->getConformity(), $flags))($payload)
-        ));
+        return $this->through(
+            fn($payload, Closure $next, IPipeline $pipeline) =>
+                $next((Mapper::getKeyMapClosure(
+                    $keyMap,
+                    $pipeline->getConformity(),
+                    $flags
+                ))($payload))
+        );
     }
 
-    final public function then(callable $callback, ...$args)
+    final public function then(callable $callback)
     {
         if ($this->Then) {
             throw new RuntimeException(static::class . '::then() has already been applied');
         }
-        $_this           = $this->getMutable();
-        $_this->Then     = $callback;
-        $_this->ThenArgs = $args;
+        $_this       = clone $this;
+        $_this->Then = $callback;
 
         return $_this;
     }
 
-    final public function unless(callable $filter, ...$args)
+    final public function unless(callable $filter)
     {
         if ($this->Unless) {
             throw new RuntimeException(static::class . '::unless() has already been applied');
         }
-        $_this             = $this->getMutable();
-        $_this->Unless     = $filter;
-        $_this->UnlessArgs = $args;
+        $_this         = clone $this;
+        $_this->Unless = $filter;
 
         return $_this;
     }
@@ -189,10 +185,10 @@ class Pipeline extends FluentInterface implements IPipeline
         }
 
         $result = ($this->getClosure())($this->After
-            ? $this->After($this->Payload, $this, ...$this->AfterArgs, ...$this->Args)
+            ? ($this->After)($this->Payload, $this, $this->Arg)
             : $this->Payload);
 
-        if ($this->Unless && ($this->Unless)($result, $this, ...$this->UnlessArgs, ...$this->Args) !== true) {
+        if ($this->Unless && ($this->Unless)($result, $this, $this->Arg) !== true) {
             throw new PipelineException('Result rejected by filter');
         }
 
@@ -208,10 +204,10 @@ class Pipeline extends FluentInterface implements IPipeline
         $closure = $this->getClosure();
         foreach ($this->Payload as $payload) {
             $result = ($closure)($this->After
-                ? $this->After($payload, $this, ...$this->AfterArgs, ...$this->Args)
+                ? ($this->After)($payload, $this, $this->Arg)
                 : $payload);
 
-            if ($this->Unless && ($this->Unless)($result, $this, ...$this->UnlessArgs, ...$this->Args) !== true) {
+            if ($this->Unless && ($this->Unless)($result, $this, $this->Arg) !== true) {
                 continue;
             }
 
@@ -224,23 +220,17 @@ class Pipeline extends FluentInterface implements IPipeline
         return $this->PayloadConformity;
     }
 
-    /**
-     * Run the pipeline
-     *
-     * If {@see Pipeline::stream()} has been called, use
-     * {@see Pipeline::start()} to run the pipeline and return an iterator,
-     * otherwise call {@see Pipeline::run()} and return the result.
-     */
-    final public function go()
+    final public function runThrough(IPipeline $next)
     {
-        if ($this->Stream) {
-            return $this->start();
-        }
-
-        return $this->run();
+        return $next->send($this->run(), $this->Arg);
     }
 
-    protected function handleException($payload, Throwable $ex)
+    final public function startThrough(IPipeline $next)
+    {
+        return $next->stream($this->start(), $this->Arg);
+    }
+
+    private function handleException($payload, Throwable $ex)
     {
         throw $ex;
     }
@@ -251,7 +241,7 @@ class Pipeline extends FluentInterface implements IPipeline
             array_reverse($this->Pipes),
             function (Closure $next, $pipe): Closure {
                 if (is_callable($pipe)) {
-                    $closure = fn($payload) => $pipe($payload, $next, $this, ...$this->Args);
+                    $closure = fn($payload) => $pipe($payload, $next, $this, $this->Arg);
                 } else {
                     if (is_string($pipe)) {
                         $container = $this->Container ?: Container::maybeGetGlobalContainer();
@@ -260,7 +250,7 @@ class Pipeline extends FluentInterface implements IPipeline
                     if (!($pipe instanceof IPipe)) {
                         throw new UnexpectedValueException('Pipe does not implement ' . IPipe::class);
                     }
-                    $closure = fn($payload) => $pipe->handle($payload, $next, $this, ...$this->Args);
+                    $closure = fn($payload) => $pipe->handle($payload, $next, $this, $this->Arg);
                 }
 
                 return function ($payload) use ($closure) {
@@ -271,17 +261,7 @@ class Pipeline extends FluentInterface implements IPipeline
                     }
                 };
             },
-            fn($result) => ($this->Then ?: fn($result) => $result)($result, $this, ...$this->ThenArgs, ...$this->Args)
+            fn($result) => ($this->Then ?: fn($result) => $result)($result, $this, $this->Arg)
         );
-    }
-
-    final protected function toImmutable(): PipelineImmutable
-    {
-        $immutable = new PipelineImmutable();
-        foreach ($this as $property => $value) {
-            $immutable->$property = $value;
-        }
-
-        return $immutable;
     }
 }

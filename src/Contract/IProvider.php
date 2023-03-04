@@ -12,7 +12,7 @@ use Lkrms\Support\DateFormatter;
 interface IProvider extends ReturnsContainer, ReturnsDescription
 {
     /**
-     * Get a stable identifier that, together with the name of the class,
+     * Get a stable list of values that, together with the name of the class,
      * uniquely identifies the backend instance
      *
      * @return array<string|\Stringable>

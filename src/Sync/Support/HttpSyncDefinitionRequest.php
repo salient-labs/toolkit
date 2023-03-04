@@ -37,8 +37,8 @@ final class HttpSyncDefinitionRequest implements IReadable
     protected $PagerCallback;
 
     /**
-     * @param Closure|null $headersCallback Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?CurlerHeaders`
-     * @param Closure|null $pagerCallback Closure signature: `fn(Curler $curler, int $operation, SyncContext $ctx, ...$args): ?ICurlerPager`
+     * @param Closure|null $headersCallback Closure signature: `fn(Curler $curler, int $operation, ISyncContext $ctx, ...$args): ?CurlerHeaders`
+     * @param Closure|null $pagerCallback Closure signature: `fn(Curler $curler, int $operation, ISyncContext $ctx, ...$args): ?ICurlerPager`
      */
     public function __construct(string $path, ?array $query = null, ?Closure $headersCallback = null, ?Closure $pagerCallback = null)
     {

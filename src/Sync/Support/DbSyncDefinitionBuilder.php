@@ -4,7 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IPipelineImmutable;
+use Lkrms\Contract\IPipeline;
 use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 
@@ -12,15 +12,15 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * A fluent interface for creating DbSyncDefinition objects
  *
  * @method static $this build(?IContainer $container = null) Create a new DbSyncDefinitionBuilder (syntactic sugar for 'new DbSyncDefinitionBuilder()')
- * @method $this entity(string $value) See {@see SyncDefinition::$Entity}
- * @method $this provider(DbSyncProvider $value) See {@see DbSyncDefinition::$Provider}
- * @method $this operations(int[] $value) See {@see DbSyncDefinition::$Operations}
- * @method $this table(?string $value) See {@see DbSyncDefinition::$Table}
- * @method $this conformity(int $value) See {@see SyncDefinition::$Conformity}
- * @method $this filterPolicy(int $value) One of the {@see SyncFilterPolicy} values.  To prevent, say, a filtered {@see SyncOperation::READ_LIST} request returning every entity of that type when a provider doesn't use the filter, the default policy is {@see SyncFilterPolicy::THROW_EXCEPTION}.  See {@see \Lkrms\Sync\Contract\ISyncContext::withArgs()} for more information (see {@see SyncDefinition::$FilterPolicy})
- * @method $this overrides(array $value) See {@see DbSyncDefinition::$Overrides}
- * @method $this dataToEntityPipeline(?IPipelineImmutable $value) A pipeline that converts data received from the provider to an associative array from which the entity can be instantiated, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$DataToEntityPipeline})
- * @method $this entityToDataPipeline(?IPipelineImmutable $value) A pipeline that converts a serialized instance of the entity to data compatible with the provider, or `null` if the entity is not supported or conversion is not required (see {@see SyncDefinition::$EntityToDataPipeline})
+ * @method $this entity(string $value) The ISyncEntity being serviced (see {@see SyncDefinition::$Entity})
+ * @method $this provider(DbSyncProvider $value) The ISyncProvider servicing the entity
+ * @method $this operations(int[] $value) A list of supported sync operations (see {@see SyncDefinition::$Operations})
+ * @method $this table(?string $value) Set DbSyncDefinition::$Table
+ * @method $this conformity(int $value) The conformity level of data returned by the provider for this entity (see {@see SyncDefinition::$Conformity})
+ * @method $this filterPolicy(int $value) The action to take when filters are ignored by the provider (see {@see SyncDefinition::$FilterPolicy})
+ * @method $this overrides(array $value) See {@see SyncDefinition::$Overrides}
+ * @method $this dataToEntityPipeline(?IPipeline $value) A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required (see {@see SyncDefinition::$DataToEntityPipeline})
+ * @method $this entityToDataPipeline(?IPipeline $value) A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required (see {@see SyncDefinition::$EntityToDataPipeline})
  * @method DbSyncDefinition go() Return a new DbSyncDefinition object
  * @method static DbSyncDefinition|null resolve(DbSyncDefinition|DbSyncDefinitionBuilder|null $object) Resolve a DbSyncDefinitionBuilder or DbSyncDefinition object to a DbSyncDefinition object
  *

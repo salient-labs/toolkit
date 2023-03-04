@@ -25,17 +25,13 @@ abstract class HttpSyncProvider extends SyncProvider
      * `$path` should be ignored unless the provider uses endpoint-specific base
      * URLs to connect to the API. It should never be added to the return value.
      *
-     * Called once per {@see HttpSyncProvider::getCurler()} call.
-     *
      * @param string|null $path The endpoint requested via
      * {@see HttpSyncProvider::getCurler()}.
      */
     abstract protected function getBaseUrl(?string $path): string;
 
     /**
-     * Return headers to use when connecting to the upstream API
-     *
-     * Called once per {@see HttpSyncProvider::getCurler()} call.
+     * Return HTTP headers to use when connecting to the upstream API
      *
      * @param string|null $path The endpoint requested via
      * {@see HttpSyncProvider::getCurler()}.
@@ -60,8 +56,8 @@ abstract class HttpSyncProvider extends SyncProvider
      * Return `null` to disable response caching (the default) or `0` to cache
      * upstream responses indefinitely.
      *
-     * Called whenever {@see HttpSyncProvider::getCurler()} is called without an
-     * explicit `$expiry`.
+     * Called when {@see HttpSyncProvider::getCurler()} is called with a
+     * negative `$expiry`.
      *
      * @param string|null $path The endpoint requested via
      * {@see HttpSyncProvider::getCurler()}.
@@ -109,13 +105,16 @@ abstract class HttpSyncProvider extends SyncProvider
         return null;
     }
 
-    final protected function getDefinition(string $entity): ISyncDefinition
+    final public function getDefinition(string $entity): ISyncDefinition
     {
-        $builder = HttpSyncDefinition::build()->entity($entity)->provider($this);
+        $builder = HttpSyncDefinition::build()
+                       ->entity($entity)
+                       ->provider($this);
+        $def = $this->getHttpDefinition($entity, $builder);
 
-        return HttpSyncDefinitionBuilder::resolve(
-            $this->getHttpDefinition($entity, $builder)
-        ) ?: $builder->go();
+        return $def
+            ? HttpSyncDefinitionBuilder::resolve($def)
+            : $builder->go();
     }
 
     /**
@@ -133,6 +132,7 @@ abstract class HttpSyncProvider extends SyncProvider
      * If `$expiry` is an integer less than `0`, the return value of
      * {@see HttpSyncProvider::getCurlerCacheExpiry()} will be used as the
      * response expiry time.
+     *
      */
     final public function getCurler(string $path, ?int $expiry = -1): Curler
     {
@@ -163,6 +163,10 @@ abstract class HttpSyncProvider extends SyncProvider
 
     public function checkHeartbeat(int $ttl = 300)
     {
-        throw new MethodNotImplementedException(static::class, __FUNCTION__, IProvider::class);
+        throw new MethodNotImplementedException(
+            static::class,
+            __FUNCTION__,
+            IProvider::class
+        );
     }
 }

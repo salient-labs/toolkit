@@ -10,6 +10,8 @@ use Lkrms\Facade\Convert;
 use Lkrms\Sync\Support\SyncErrorType as ErrorType;
 
 /**
+ * A collection of SyncError objects
+ *
  * @extends TypedCollection<SyncError>
  */
 final class SyncErrorCollection extends TypedCollection implements JsonSerializable
@@ -20,7 +22,7 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
     }
 
     /**
-     * Return a JSON:API-compatible representation of the errors
+     * Get a JSON:API-compatible representation of the errors
      *
      */
     public function toSummary(): array

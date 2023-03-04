@@ -196,4 +196,11 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * @return string[]
      */
     public function getServices(): array;
+
+    /**
+     * Remove a binding from the container
+     *
+     * @return $this
+     */
+    public function unbind(string $id);
 }

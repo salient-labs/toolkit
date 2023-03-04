@@ -25,7 +25,7 @@ final class GetSyncEntities extends CliCommand
     /**
      * Unambiguous lowercase entity basename => entity
      *
-     * @var array<string,string>
+     * @var array<string,string|null>
      */
     private $Entities = [];
 
@@ -160,7 +160,7 @@ final class GetSyncEntities extends CliCommand
         Console::info('Retrieving from ' . $provider->name() . ':',
                       $this->Store->getEntityTypeUri($class) . (is_null($id) ? '' : "/$id"));
 
-        $context = new SyncContext($this->app());
+        $context = $this->app()->get(SyncContext::class);
         if (!$stream) {
             $context = $context->withListArrays();
         }

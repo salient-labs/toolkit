@@ -27,7 +27,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     public const CREATE = 0;
 
     /**
-     * Read an entity from the backend
+     * Get an entity from the backend
      *
      * Typically corresponds to:
      * - `<provider>::get<entity_name>(int|string|null $id)`
@@ -73,7 +73,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     public const CREATE_LIST = 4;
 
     /**
-     * Read a list of entities from the backend
+     * Get a list of entities from the backend
      *
      * Typically corresponds to:
      * - `<provider>::get<plural_entity_name>()`

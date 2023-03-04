@@ -13,6 +13,15 @@ use Lkrms\Sync\Support\SyncOperation;
 interface ISyncEntityProvider
 {
     /**
+     * Perform an arbitrary sync operation on one or more backend entities
+     *
+     * @internal
+     * @param int $operation A {@see SyncOperation} value.
+     * @psalm-param SyncOperation::* $operation
+     */
+    public function run(int $operation, ...$args);
+
+    /**
      * Add an entity to the backend
      *
      * @param TEntity $entity
@@ -21,7 +30,7 @@ interface ISyncEntityProvider
     public function create($entity, ...$args): ISyncEntity;
 
     /**
-     * Return an entity from the backend
+     * Get an entity from the backend
      *
      * @param int|string|null $id
      * @return TEntity
@@ -53,7 +62,7 @@ interface ISyncEntityProvider
     public function createList(iterable $entities, ...$args): iterable;
 
     /**
-     * Return a list of entities from the backend
+     * Get a list of entities from the backend
      *
      * @return iterable<TEntity>
      */
@@ -76,11 +85,24 @@ interface ISyncEntityProvider
     public function deleteList(iterable $entities, ...$args): iterable;
 
     /**
-     * Perform an arbitrary sync operation on one or more backend entities
+     * Use a property of the entity class to resolve names to entities
      *
-     * @internal
-     * @param int $operation A {@see SyncOperation} value.
-     * @psalm-param SyncOperation::* $operation
      */
-    public function run(int $operation, ...$args);
+    public function getResolver(string $nameProperty): ISyncEntityResolver;
+
+    /**
+     * Perform sync operations on the backend directly, ignoring any entities in
+     * the entity store
+     *
+     * @return $this
+     */
+    public function online();
+
+    /**
+     * Perform "get" operations on the entity store, throwing an exception if
+     * entities have never been synced with the backend
+     *
+     * @return $this
+     */
+    public function offline();
 }

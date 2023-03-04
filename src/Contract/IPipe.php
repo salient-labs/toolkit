@@ -7,9 +7,17 @@ use Closure;
 /**
  * Forms part of a pipeline
  *
+ * @template TInput
+ * @template TOutput
+ * @template TArgument
  * @see IPipeline
  */
 interface IPipe
 {
-    public function handle($payload, Closure $next, IPipeline $pipeline, ...$args);
+    /**
+     * @param TInput|TOutput $payload
+     * @param TArgument $arg
+     * @return TInput|TOutput
+     */
+    public function handle($payload, Closure $next, IPipeline $pipeline, $arg);
 }

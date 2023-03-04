@@ -15,9 +15,9 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @method $this message(string $value) An sprintf() format string that explains the error (see {@see SyncError::$Message})
  * @method $this values(array $value) Values passed to sprintf() with the message format string (see {@see SyncError::$Values})
  * @method $this level(int $value) One of the ConsoleLevel values (see {@see SyncError::$Level})
- * @method $this entity(?SyncEntity $value) The entity associated with the error (see {@see SyncError::$Entity})
+ * @method $this entity(?SyncEntity $value) The entity associated with the error
  * @method $this entityName(?string $value) The display name of the entity associated with the error (see {@see SyncError::$EntityName})
- * @method $this provider(?ISyncProvider $value) The sync provider associated with the error (see {@see SyncError::$Provider})
+ * @method $this provider(?ISyncProvider $value) The sync provider associated with the error
  * @method SyncError go() Return a new SyncError object
  * @method static SyncError|null resolve(SyncError|SyncErrorBuilder|null $object) Resolve a SyncErrorBuilder or SyncError object to a SyncError object
  *
