@@ -291,13 +291,25 @@ class Curler implements IReadable, IWritable
      */
     private static $DefaultUserAgent;
 
-    public function __construct(string $baseUrl, ?CurlerHeaders $headers = null, ?ICurlerPager $pager = null)
+    public function __construct(string $baseUrl, ?CurlerHeaders $headers = null, ?ICurlerPager $pager = null, bool $throwHttpErrors = true, bool $followRedirects = false, ?int $maxRedirects = null, bool $handleCookies = false, ?string $cookieCacheKey = null, bool $retryAfterTooManyRequests = false, int $retryAfterMaxSeconds = 60, bool $expectJson = true, bool $postJson = true, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null, ?string $userAgent = null, bool $alwaysPaginate = false, bool $objectAsArray = true)
     {
-        $this->BaseUrl = $baseUrl;
-        $this->Headers = $headers
-            ? CurlerHeadersImmutable::fromMutable($headers)
-            : new CurlerHeadersImmutable();
-        $this->Pager = $pager;
+        $this->BaseUrl                   = $baseUrl;
+        $this->Headers                   = $headers ? CurlerHeadersImmutable::fromMutable($headers) : new CurlerHeadersImmutable();
+        $this->Pager                     = $pager;
+        $this->ThrowHttpErrors           = $throwHttpErrors;
+        $this->FollowRedirects           = $followRedirects;
+        $this->MaxRedirects              = $maxRedirects;
+        $this->HandleCookies             = $handleCookies;
+        $this->CookieCacheKey            = $cookieCacheKey;
+        $this->RetryAfterTooManyRequests = $retryAfterTooManyRequests;
+        $this->RetryAfterMaxSeconds      = $retryAfterMaxSeconds;
+        $this->ExpectJson                = $expectJson;
+        $this->PostJson                  = $postJson;
+        $this->PreserveKeys              = $preserveKeys;
+        $this->DateFormatter             = $dateFormatter;
+        $this->UserAgent                 = $userAgent;
+        $this->AlwaysPaginate            = $alwaysPaginate;
+        $this->ObjectAsArray             = $objectAsArray;
     }
 
     /**
@@ -353,23 +365,29 @@ class Curler implements IReadable, IWritable
     }
 
     /**
+     * Apply new headers to a clone of the instance
+     *
      * @return $this
      */
-    final public function replaceHeaders(CurlerHeaders $headers)
+    final public function withHeaders(CurlerHeaders $headers)
     {
-        $this->Headers = CurlerHeadersImmutable::fromMutable($headers);
+        $clone          = clone $this;
+        $clone->Headers = CurlerHeadersImmutable::fromMutable($headers);
 
-        return $this;
+        return $clone;
     }
 
     /**
+     * Apply a new pager to a clone of the instance
+     *
      * @return $this
      */
-    final public function replacePager(ICurlerPager $pager)
+    final public function withPager(ICurlerPager $pager)
     {
-        $this->Pager = $pager;
+        $clone        = clone $this;
+        $clone->Pager = $pager;
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -993,66 +1011,6 @@ class Curler implements IReadable, IWritable
     }
 
     /**
-     * Return data from a JSON endpoint by fetching subsequent pages until there
-     * are no more results
-     *
-     * Iterates over each item returned by the endpoint. If the endpoint doesn't
-     * return a list, iterates over each page.
-     *
-     * @deprecated Use {@see \Lkrms\Curler\Pager\QueryPager} instead
-     * @param array<string,mixed> $query The first element must be the page
-     * number parameter. It will be incremented after each request.
-     * @param callable|string|null $selector If set, data will be taken from:
-     * - `$selector($result)` if `$selector` is callable, or
-     * - `$result[$selector]` if `$selector` is a string
-     * @return iterable
-     */
-    final public function getAllByPage(array $query, $selector = null): iterable
-    {
-        if (!is_int(reset($query)) ||
-                is_null($pageKey = key($query))) {
-            throw new UnexpectedValueException('First query element is not a page number');
-        };
-
-        $this->initialise(HttpRequestMethod::GET, $query);
-        $nextUrl = null;
-
-        try {
-            do {
-                if ($nextUrl) {
-                    curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
-                    $this->clearResponse();
-                    $nextUrl = null;
-                }
-
-                $page = json_decode($this->execute(false), true);
-                if ($selector) {
-                    if (is_callable($selector)) {
-                        $page = $selector($page);
-                    } elseif (is_string($selector)) {
-                        $page = $page[$selector];
-                    } else {
-                        throw new UnexpectedValueException('Invalid selector');
-                    }
-                }
-
-                $yielded = 0;
-                foreach (Convert::toList($page) as $entry) {
-                    yield $entry;
-                    $yielded++;
-                }
-
-                if ($yielded) {
-                    $query[$pageKey]++;
-                    $nextUrl = $this->getQueryUrl($query);
-                }
-            } while ($nextUrl);
-        } finally {
-            $this->close();
-        }
-    }
-
-    /**
      * Follow HTTP `Link` headers to retrieve and merge paged JSON data
      *
      * @param array $query
@@ -1108,41 +1066,6 @@ class Curler implements IReadable, IWritable
             $result   = json_decode($this->execute(false), true);
             $entities = array_merge($entities, $result[$entityName]);
             $nextUrl  = $result['links']['next'] ?? null;
-        } while ($nextUrl);
-
-        $this->close();
-
-        return $entities;
-    }
-
-    /**
-     * @deprecated Use {@see \Lkrms\Curler\Pager\ODataPager} instead
-     */
-    final public function getAllLinkedByOData(?array $query = null, string $prefix = null)
-    {
-        $this->initialise(HttpRequestMethod::GET, $query);
-        $entities = [];
-        $nextUrl  = null;
-
-        do {
-            if ($nextUrl) {
-                curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
-                $this->clearResponse();
-            }
-
-            // Collect data from response and move on to next page
-            $result = json_decode($this->execute(false), true);
-
-            if (is_null($prefix)) {
-                if ($this->ResponseHeadersByName['odata-version'] === '4.0') {
-                    $prefix = '@odata.';
-                } else {
-                    $prefix = '@';
-                }
-            }
-
-            $entities = array_merge($entities, $result['value']);
-            $nextUrl  = $result[$prefix . 'nextLink'] ?? null;
         } while ($nextUrl);
 
         $this->close();
@@ -1220,7 +1143,7 @@ class Curler implements IReadable, IWritable
                 $requestLimit--;
             }
 
-            $result = json_decode($this->post($nextQuery), true);
+            $result = $this->post($nextQuery);
 
             if (!isset($result['data'])) {
                 throw new CurlerException($this, 'No data returned');
