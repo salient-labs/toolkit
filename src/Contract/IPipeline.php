@@ -90,9 +90,9 @@ interface IPipeline extends IImmutable
      *   (this bypasses any remaining pipes and the callback passed to
      *   {@see IPipeline::then()}, if applicable)
      *
-     * @param IPipe<TInput,TOutput,TArgument>|callable|class-string<IPipe> ...$pipes Each
-     * pipe must be an `IPipe` object, the name of an `IPipe` class to
-     * instantiate, or a closure with the following signature:
+     * @param IPipe|callable|class-string<IPipe> ...$pipes Each pipe must be an
+     * `IPipe` object, the name of an `IPipe` class to instantiate, or a closure
+     * with the following signature:
      * ```php
      * function ($payload, Closure $next, IPipeline $pipeline, $arg)
      * ```
@@ -135,7 +135,8 @@ interface IPipeline extends IImmutable
      * fn($result, IPipeline $pipeline, $arg)
      * ```
      * @psalm-param callable(TInput|TOutput, IPipeline, TArgument): TThenOutput $callback
-     * @return IPipeline<TInput,TThenOutput,TArgument>
+     * @return $this
+     * @psalm-return IPipeline<TInput,TThenOutput,TArgument>
      */
     public function then(callable $callback);
 
@@ -189,8 +190,9 @@ interface IPipeline extends IImmutable
      * Run the pipeline and pass the result to another pipeline
      *
      * @template TNextOutput
-     * @param IPipeline<TOutput,TNextOutput,TArgument> $next
-     * @return IPipeline<TOutput,TNextOutput,TArgument>
+     * @psalm-param IPipeline<TOutput,TNextOutput,TArgument> $next
+     * @return $this
+     * @psalm-return IPipeline<TOutput,TNextOutput,TArgument>
      */
     public function runThrough(IPipeline $next);
 
@@ -201,8 +203,9 @@ interface IPipeline extends IImmutable
      * {@see IPipeline::startThrough()} can be used to run the pipeline.
      *
      * @template TNextOutput
-     * @param IPipeline<TOutput,TNextOutput,TArgument> $next
-     * @return IPipeline<TOutput,TNextOutput,TArgument>
+     * @psalm-param IPipeline<TOutput,TNextOutput,TArgument> $next
+     * @return $this
+     * @psalm-return IPipeline<TOutput,TNextOutput,TArgument>
      */
     public function startThrough(IPipeline $next);
 }
