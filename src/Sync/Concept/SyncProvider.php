@@ -7,7 +7,7 @@ use Lkrms\Container\Container;
 use Lkrms\Contract\IService;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
-use Lkrms\Support\PipelineImmutable;
+use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -163,9 +163,9 @@ abstract class SyncProvider implements ISyncProvider, IService
      * Get a new pipeline bound to the provider's container
      *
      */
-    final protected function pipeline(): PipelineImmutable
+    final protected function pipeline(): Pipeline
     {
-        return PipelineImmutable::create($this->Container);
+        return Pipeline::create($this->Container);
     }
 
     final public function dateFormatter(): DateFormatter

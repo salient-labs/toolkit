@@ -5,7 +5,7 @@ namespace Lkrms\Sync\Support;
 use Closure;
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IPipelineImmutable;
+use Lkrms\Contract\IPipeline;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 
@@ -26,8 +26,8 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method $this expiry(?int $value) Set HttpSyncDefinition::$Expiry
  * @method $this methodMap(array $value) Set HttpSyncDefinition::$MethodMap
  * @method $this overrides(array $value) See {@see HttpSyncDefinition::$Overrides}
- * @method $this dataToEntityPipeline(?IPipelineImmutable $value) A pipeline that converts data received from the provider to an associative array from which the entity can be instantiated, or `null` if the entity is not supported or conversion is not required
- * @method $this entityToDataPipeline(?IPipelineImmutable $value) A pipeline that converts a serialized instance of the entity to data compatible with the provider, or `null` if the entity is not supported or conversion is not required
+ * @method $this dataToEntityPipeline(?IPipeline $value) A pipeline that converts data received from the provider to an associative array from which the entity can be instantiated, or `null` if the entity is not supported or conversion is not required
+ * @method $this entityToDataPipeline(?IPipeline $value) A pipeline that converts a serialized instance of the entity to data compatible with the provider, or `null` if the entity is not supported or conversion is not required
  * @method HttpSyncDefinition go() Return a new HttpSyncDefinition object
  * @method static HttpSyncDefinition|null resolve(HttpSyncDefinition|HttpSyncDefinitionBuilder|null $object) Resolve a HttpSyncDefinitionBuilder or HttpSyncDefinition object to a HttpSyncDefinition object
  *

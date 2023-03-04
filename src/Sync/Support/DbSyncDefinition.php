@@ -5,7 +5,7 @@ namespace Lkrms\Sync\Support;
 use Closure;
 use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IPipelineImmutable;
+use Lkrms\Contract\IPipeline;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
@@ -43,7 +43,7 @@ class DbSyncDefinition extends SyncDefinition implements HasBuilder
      * @param int[] $operations
      * @param array<int,Closure> $overrides
      */
-    public function __construct(string $entity, DbSyncProvider $provider, array $operations = [], ?string $table = null, int $conformity = ArrayKeyConformity::PARTIAL, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, array $overrides = [], ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
+    public function __construct(string $entity, DbSyncProvider $provider, array $operations = [], ?string $table = null, int $conformity = ArrayKeyConformity::PARTIAL, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, array $overrides = [], ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
     {
         parent::__construct($entity, $provider, $conformity, $filterPolicy, $dataToEntityPipeline, $entityToDataPipeline);
 

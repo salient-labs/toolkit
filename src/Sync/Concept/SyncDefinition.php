@@ -4,9 +4,8 @@ namespace Lkrms\Sync\Concept;
 
 use Closure;
 use Lkrms\Contract\IPipeline;
-use Lkrms\Contract\IPipelineImmutable;
 use Lkrms\Support\ArrayKeyConformity;
-use Lkrms\Support\PipelineImmutable;
+use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -50,12 +49,12 @@ abstract class SyncDefinition implements ISyncDefinition
     protected $FilterPolicy;
 
     /**
-     * @var IPipelineImmutable|null
+     * @var IPipeline|null
      */
     protected $DataToEntityPipeline;
 
     /**
-     * @var IPipelineImmutable|null
+     * @var IPipeline|null
      */
     protected $EntityToDataPipeline;
 
@@ -80,16 +79,16 @@ abstract class SyncDefinition implements ISyncDefinition
      * See {@see \Lkrms\Sync\Contract\ISyncContext::withArgs()} for more
      * information.
      * @psalm-param SyncFilterPolicy::* $filterPolicy
-     * @param IPipelineImmutable|null $dataToEntityPipeline A pipeline that
+     * @param IPipeline|null $dataToEntityPipeline A pipeline that
      * converts data received from the provider to an associative array from
      * which the entity can be instantiated, or `null` if the entity is not
      * supported or conversion is not required.
-     * @param IPipelineImmutable|null $entityToDataPipeline A pipeline that
+     * @param IPipeline|null $entityToDataPipeline A pipeline that
      * converts a serialized instance of the entity to data compatible with the
      * provider, or `null` if the entity is not supported or conversion is not
      * required.
      */
-    public function __construct(string $entity, ISyncProvider $provider, int $conformity = ArrayKeyConformity::NONE, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, ?IPipelineImmutable $dataToEntityPipeline = null, ?IPipelineImmutable $entityToDataPipeline = null)
+    public function __construct(string $entity, ISyncProvider $provider, int $conformity = ArrayKeyConformity::NONE, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
     {
         $this->Entity               = $entity;
         $this->Provider             = $provider;
@@ -102,14 +101,14 @@ abstract class SyncDefinition implements ISyncDefinition
         $this->ProviderIntrospector = SyncIntrospector::get(get_class($provider));
     }
 
-    final protected function getPipelineToBackend(): IPipelineImmutable
+    final protected function getPipelineToBackend(): IPipeline
     {
-        return $this->EntityToDataPipeline ?: PipelineImmutable::create();
+        return $this->EntityToDataPipeline ?: Pipeline::create();
     }
 
-    final protected function getPipelineToEntity(): IPipelineImmutable
+    final protected function getPipelineToEntity(): IPipeline
     {
-        return ($this->DataToEntityPipeline ?: PipelineImmutable::create())
+        return ($this->DataToEntityPipeline ?: Pipeline::create())
             ->then(
                 function (array $data, IPipeline $pipeline, int $operation, SyncContext $ctx) use (&$closure) {
                     if (!$closure) {

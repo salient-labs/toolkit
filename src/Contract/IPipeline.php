@@ -8,17 +8,20 @@ use Lkrms\Support\ArrayMapperFlag;
 /**
  * Sends a payload through a series of pipes to a destination
  *
+ * @template TInput
+ * @template TOutput
+ * @template TArgument
  */
-interface IPipeline
+interface IPipeline extends IImmutable
 {
     /**
      * Set the payload
      *
-     * Arguments added after `$payload` are passed to each pipe.
-     *
+     * @param TInput $payload
+     * @param TArgument $arg Passed to each pipe.
      * @return $this
      */
-    public function send($payload, ...$args);
+    public function send($payload, $arg = null);
 
     /**
      * Provide a payload source
@@ -26,15 +29,14 @@ interface IPipeline
      * Call {@see IPipeline::start()} to run the pipeline with each value in
      * `$payload` and `yield` the results via a generator.
      *
-     * Arguments added after `$payload` are passed to each pipe.
-     *
      * If payloads are associative arrays, call
      * {@see IPipeline::withConformity()} to improve performance.
      *
-     * @param iterable $payload Must be traversable with `foreach`.
+     * @param iterable<TInput> $payload Must be traversable with `foreach`.
+     * @param TArgument $arg Passed to each pipe.
      * @return $this
      */
-    public function stream(iterable $payload, ...$args);
+    public function stream(iterable $payload, $arg = null);
 
     /**
      * Specify the payload's array key conformity
@@ -59,17 +61,14 @@ interface IPipeline
      *
      * This method can only be called once per pipeline.
      *
-     * Arguments added after `$callback` are passed to the callback **before**
-     * any arguments given after `$payload` in {@see IPipeline::send()} or
-     * {@see IPipeline::stream()}.
-     *
      * @param callable $callback
      * ```php
-     * fn($payload, IPipeline $pipeline, ...$args): mixed
+     * fn($payload, IPipeline $pipeline, $arg)
      * ```
+     * @psalm-param callable(TInput, IPipeline, TArgument): (TInput|TOutput) $callback
      * @return $this
      */
-    public function after(callable $callback, ...$args);
+    public function after(callable $callback);
 
     /**
      * Add pipes to the pipeline
@@ -80,7 +79,7 @@ interface IPipeline
      *   created), or
      * - a callback with the same signature as {@see IPipe::handle()}:
      * ```php
-     * function ($payload, Closure $next, IPipeline $pipeline, ...$args)
+     * function ($payload, Closure $next, IPipeline $pipeline, $arg)
      * ```
      *
      * Whichever form it takes, a pipe should use, mutate and/or replace
@@ -91,12 +90,13 @@ interface IPipeline
      *   (this bypasses any remaining pipes and the callback passed to
      *   {@see IPipeline::then()}, if applicable)
      *
-     * @param IPipe|callable|string ...$pipes Each pipe must be an `IPipe`
-     * object, the name of an `IPipe` class to instantiate, or a closure with
-     * the following signature:
+     * @param IPipe<TInput,TOutput,TArgument>|callable|class-string<IPipe> ...$pipes Each
+     * pipe must be an `IPipe` object, the name of an `IPipe` class to
+     * instantiate, or a closure with the following signature:
      * ```php
-     * function ($payload, Closure $next, IPipeline $pipeline, ...$args)
+     * function ($payload, Closure $next, IPipeline $pipeline, $arg)
      * ```
+     * @psalm-param IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline, TArgument): (TInput|TOutput))|class-string<IPipe> ...$pipes
      * @return $this
      */
     public function through(...$pipes);
@@ -104,15 +104,14 @@ interface IPipeline
     /**
      * Add a simple callback to the pipeline
      *
-     * If `$suppressArgs` is set, the only argument passed to `$callback` is the
-     * payload. Otherwise, `$callback` is invoked as follows:
+     * @param callable $callback
      * ```php
-     * fn($payload, IPipeline $pipeline, ...$args)
+     * fn($payload, IPipeline $pipeline, $arg)
      * ```
-     *
+     * @psalm-param (callable(TInput, IPipeline, TArgument): (TInput|TOutput)) $callback
      * @return $this
      */
-    public function throughCallback(callable $callback, bool $suppressArgs = false);
+    public function throughCallback(callable $callback);
 
     /**
      * Add an array key mapper to the pipeline
@@ -121,7 +120,6 @@ interface IPipeline
      * array that maps input keys to one or more output keys.
      * @param int $flags A bitmask of {@see ArrayMapperFlag} values.
      * @psalm-param int-mask-of<ArrayMapperFlag::*> $flags
-     *
      * @return $this
      */
     public function throughKeyMap(array $keyMap, int $flags = ArrayMapperFlag::ADD_UNMAPPED);
@@ -131,17 +129,15 @@ interface IPipeline
      *
      * This method can only be called once per pipeline.
      *
-     * Arguments added after `$callback` are passed to the callback **before**
-     * any arguments given after `$payload` in {@see IPipeline::send()} or
-     * {@see IPipeline::stream()}.
-     *
+     * @template TThenOutput
      * @param callable $callback
      * ```php
-     * fn($result, IPipeline $pipeline, ...$args): mixed
+     * fn($result, IPipeline $pipeline, $arg)
      * ```
-     * @return $this
+     * @psalm-param callable(TInput|TOutput, IPipeline, TArgument): TThenOutput $callback
+     * @return IPipeline<TInput,TThenOutput,TArgument>
      */
-    public function then(callable $callback, ...$args);
+    public function then(callable $callback);
 
     /**
      * Apply a filter to each result
@@ -153,21 +149,19 @@ interface IPipeline
      * - if {@see IPipeline::stream()} was called, the result is discarded
      * - if {@see IPipeline::send()} was called, an exception is thrown
      *
-     * Arguments added after `$filter` are passed to the filter **before** any
-     * arguments given after `$payload` in {@see IPipeline::send()} or
-     * {@see IPipeline::stream()}.
-     *
      * @param callable $filter
      * ```php
-     * fn($result, IPipeline $pipeline, ...$args): bool
+     * fn($result, IPipeline $pipeline, $arg): bool
      * ```
+     * @psalm-param callable(TOutput, IPipeline, TArgument): bool $filter
      * @return $this
      */
-    public function unless(callable $filter, ...$args);
+    public function unless(callable $filter);
 
     /**
      * Run the pipeline and return the result
      *
+     * @return TOutput
      */
     public function run();
 
@@ -177,6 +171,8 @@ interface IPipeline
      *
      * {@see IPipeline::stream()} must be called before
      * {@see IPipeline::start()} can be used to run the pipeline.
+     *
+     * @return iterable<TOutput>
      */
     public function start(): iterable;
 
@@ -188,4 +184,25 @@ interface IPipeline
      * @see IPipeline::withConformity()
      */
     public function getConformity(): int;
+
+    /**
+     * Run the pipeline and pass the result to another pipeline
+     *
+     * @template TNextOutput
+     * @param IPipeline<TOutput,TNextOutput,TArgument> $next
+     * @return IPipeline<TOutput,TNextOutput,TArgument>
+     */
+    public function runThrough(IPipeline $next);
+
+    /**
+     * Run the pipeline and pass each result to another pipeline
+     *
+     * {@see IPipeline::stream()} must be called before
+     * {@see IPipeline::startThrough()} can be used to run the pipeline.
+     *
+     * @template TNextOutput
+     * @param IPipeline<TOutput,TNextOutput,TArgument> $next
+     * @return IPipeline<TOutput,TNextOutput,TArgument>
+     */
+    public function startThrough(IPipeline $next);
 }
