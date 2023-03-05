@@ -94,6 +94,11 @@ class AppContainer extends Container implements IReadable
      */
     private $DebugLogTargets = [];
 
+    /**
+     * @var bool
+     */
+    private $ShutdownReportIsRegistered = false;
+
     private function getPath(string $name, string $parent, ?string $child, string $sourceChild, string $windowsChild): string
     {
         $name = "app_{$name}_path";
@@ -259,19 +264,50 @@ class AppContainer extends Container implements IReadable
 
         Console::registerStdioTargets();
 
-        register_shutdown_function(
-            function () {
-                if (Env::debug()) {
-                    $this->writeTimers(true, null, Level::DEBUG);
-                }
-                $this->writeResourceUsage(Level::DEBUG);
-            }
-        );
-
         Err::load();
         if ($path = Composer::getPackagePath('adodb/adodb-php')) {
             Err::silencePaths($path);
         }
+    }
+
+    /**
+     * Report timers and resource usage when the application terminates
+     *
+     * Use {@see \Lkrms\Utility\System::startTimer()} and
+     * {@see \Lkrms\Utility\System::stopTimer()} to collect timing information.
+     *
+     * @param array|null $timers If `null` or empty, timers aren't reported. If
+     * `['*']` (the default), all timers are reported. Otherwise, only timers of
+     * the specified types are reported.
+     * @return $this
+     * @see AppContainer::writeResourceUsage()
+     * @see AppContainer::writeTimers()
+     */
+    public function registerShutdownReport($level = Level::DEBUG, ?array $timers = ['*'], bool $resourceUsage = true)
+    {
+        if (!$timers && !$resourceUsage) {
+            return $this;
+        }
+        if ($this->ShutdownReportIsRegistered) {
+            throw new RuntimeException('Shutdown report already registered');
+        }
+        register_shutdown_function(
+            function () use ($level, $timers, $resourceUsage) {
+                if ($timers === ['*']) {
+                    $this->writeTimers(true, null, $level);
+                } elseif ($timers) {
+                    foreach ($timers as $timer) {
+                        $this->writeTimers(true, $timer, $level);
+                    }
+                }
+                if ($resourceUsage) {
+                    $this->writeResourceUsage($level);
+                }
+            }
+        );
+        $this->ShutdownReportIsRegistered = true;
+
+        return $this;
     }
 
     /**
@@ -488,7 +524,7 @@ class AppContainer extends Container implements IReadable
      * Example output:
      *
      * ```
-     * CPU time: 0.011s real, 0.035s user, 0.016s system; memory: 3.817MiB peak
+     * CPU time: 0.011s elapsed, 0.035s user, 0.016s system; memory: 3.817MiB peak
      *
      * ```
      *
@@ -502,7 +538,7 @@ class AppContainer extends Container implements IReadable
             ...Sys::getCpuUsage(),
         ];
         Console::print(sprintf(
-            "\nCPU time: **%.3fs** real, **%.3fs** user, **%.3fs** system; memory: **%s** peak",
+            "\nCPU time: **%.3fs** elapsed, **%.3fs** user, **%.3fs** system; memory: **%s** peak",
             ($endTime - $this->StartTime) / 1000000000,
             $userTime / 1000000,
             $systemTime / 1000000,
