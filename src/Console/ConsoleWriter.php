@@ -738,7 +738,6 @@ final class ConsoleWriter implements ReceivesFacade
         /** @var ConsoleTarget $target */
         foreach ($targets[$level] ?? [] as $target) {
             $target->setMessageFormatting($formatByLevel);
-
             $formatter = $target->getFormatter();
             $_msg1     = $formatter->format($msg1);
             $_msg2     = is_null($msg2) ? null : $formatter->format($msg2);

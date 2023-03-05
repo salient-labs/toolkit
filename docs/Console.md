@@ -61,6 +61,18 @@ called, preferably while bootstrapping your application.
 [^2]: `Console::group()` adds a level of indentation to all `Console` output
     until `Console::groupEnd()` is called.
 
+### Formatting
+
+The following Markdown-like syntax is supported in [Console][Console] messages:
+
+| Style        | Tag                      | Appearance          | Example                                                                                 |
+| ------------ | ------------------------ | ------------------- | --------------------------------------------------------------------------------------- |
+| Heading      | `___` or `***`           | ***Bold + colour*** | `___DESCRIPTION___` or<br>`***DESCRIPTION***`                                           |
+| Subheading   | `__` or `**`             | **Bold**            | `__command__` or<br>`**command**`                                                       |
+| Title        | `_` or `*`               | *Secondary colour*  | `_options:_` or<br>`*options:*`                                                         |
+| Low priority | `~~`                     | Dim                 | `~~/path/to/script.php:42~~`                                                            |
+| Preformatted | `` ` `` or ```` ``` ```` | `Unchanged`         | `` `<untrusted text>` `` or<br><pre>\`\`\`&#10;&lt;untrusted block&gt;&#10;\`\`\`</pre> |
+
 
 [AppContainer]: https://lkrms.github.io/php-util/classes/Lkrms-Container-AppContainer.html
 [CliAppContainer]: https://lkrms.github.io/php-util/classes/Lkrms-Cli-CliAppContainer.html
