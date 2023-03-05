@@ -544,7 +544,7 @@ abstract class CliCommand implements ReturnsContainer
                 $isDefault = true;
             } elseif (is_null($value)) {
                 $i++;
-                if (is_null($value = ($args[$i] ?? null))) {
+                if (is_null($value = $args[$i] ?? null)) {
                     // Allow null to be stored to prevent an additional
                     // "argument required" error
                     $this->optionError("{$option->DisplayName} requires a value"

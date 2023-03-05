@@ -50,6 +50,7 @@ use Lkrms\Contract\IContainer;
  * @method static CliAppContainer loadSync(?string $command = null, ?array $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see AppContainer::loadSync()})
  * @method static CliAppContainer logConsoleMessages(?bool $debug = null, ?string $name = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Get the global container, returning null if no global container has been loaded
+ * @method static CliAppContainer registerShutdownReport($level = Level::DEBUG, ?array $timers = ['*'], bool $resourceUsage = true) Report timers and resource usage when the application terminates (see {@see AppContainer::registerShutdownReport()})
  * @method static IContainer requireGlobalContainer() Get the global container, throwing an exception if no global container has been loaded
  * @method static int run() Process command-line arguments passed to the script (see {@see CliAppContainer::run()})
  * @method static never runAndExit() Exit after processing command-line arguments passed to the script (see {@see CliAppContainer::runAndExit()})

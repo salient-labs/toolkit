@@ -58,7 +58,7 @@ final class StreamTarget extends ConsoleTarget
     /**
      * @var bool
      */
-    private $HasPendingClearLine = false;
+    private static $HasPendingClearLine = false;
 
     /**
      * Use an open stream as a console output target
@@ -151,13 +151,13 @@ final class StreamTarget extends ConsoleTarget
         // If writing a progress message to a TTY, suppress the usual newline
         // and write a "clear to end of line" sequence before the next message
         if ($this->IsTty) {
-            if ($this->HasPendingClearLine) {
+            if (self::$HasPendingClearLine) {
                 fwrite($this->Stream, "\r" . TtyControlSequence::CLEAR_LINE . TtyControlSequence::WRAP_ON);
-                $this->HasPendingClearLine = false;
+                self::$HasPendingClearLine = false;
             }
             if (($message[-1] ?? null) === "\r") {
                 fwrite($this->Stream, TtyControlSequence::WRAP_OFF . rtrim($message, "\r"));
-                $this->HasPendingClearLine = true;
+                self::$HasPendingClearLine = true;
 
                 return;
             }
@@ -173,9 +173,9 @@ final class StreamTarget extends ConsoleTarget
 
     public function __destruct()
     {
-        if ($this->IsTty && $this->HasPendingClearLine && is_resource($this->Stream)) {
+        if ($this->IsTty && self::$HasPendingClearLine && is_resource($this->Stream)) {
             fwrite($this->Stream, "\r" . TtyControlSequence::CLEAR_LINE . TtyControlSequence::WRAP_ON);
-            $this->HasPendingClearLine = false;
+            self::$HasPendingClearLine = false;
         }
     }
 }
