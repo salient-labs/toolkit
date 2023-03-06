@@ -155,6 +155,9 @@ final class StreamTarget extends ConsoleTarget
                 fwrite($this->Stream, "\r" . TtyControlSequence::CLEAR_LINE . TtyControlSequence::WRAP_ON);
                 self::$HasPendingClearLine = false;
             }
+            if ($message === "\r") {
+                return;
+            }
             if (($message[-1] ?? null) === "\r") {
                 fwrite($this->Stream, TtyControlSequence::WRAP_OFF . rtrim($message, "\r"));
                 self::$HasPendingClearLine = true;
