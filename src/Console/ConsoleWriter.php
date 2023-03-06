@@ -598,7 +598,7 @@ final class ConsoleWriter implements ReceivesFacade
             return $this;
         }
 
-        return $this->writeTty(Level::INFO, '', null, '');
+        return $this->writeTty(Level::INFO, "\r", null, '');
     }
 
     /**
