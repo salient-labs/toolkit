@@ -2,6 +2,7 @@
 
 namespace Lkrms\Curler;
 
+use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Compute;
@@ -55,11 +56,11 @@ class CachingCurler extends Curler
      * @param callable|null $callback Provide a callback to use instead of
      * `$headers->getPublicHeaders()` when adding request headers to cache keys.
      * ```php
-     * callback(CurlerHeaders $headers): string[]
+     * callback(ICurlerHeaders $headers): string[]
      * ```
      * @return void
      */
-    public function __construct(string $baseUrl, ?CurlerHeaders $headers = null, ?ICurlerPager $pager = null, int $expiry = 3600, ?callable $callback = null)
+    public function __construct(string $baseUrl, ?ICurlerHeaders $headers = null, ?ICurlerPager $pager = null, int $expiry = 3600, ?callable $callback = null)
     {
         parent::__construct($baseUrl, $headers, $pager);
 

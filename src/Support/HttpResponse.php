@@ -4,6 +4,7 @@ namespace Lkrms\Support;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Facade\Convert;
 
@@ -12,7 +13,7 @@ use Lkrms\Facade\Convert;
  * @property-read string $Version
  * @property-read int $StatusCode
  * @property-read string|null $ReasonPhrase
- * @property-read CurlerHeaders $Headers
+ * @property-read ICurlerHeaders $Headers
  * @property-read string|null $Body
  */
 final class HttpResponse implements IReadable
@@ -35,7 +36,7 @@ final class HttpResponse implements IReadable
     protected $ReasonPhrase;
 
     /**
-     * @var CurlerHeaders
+     * @var ICurlerHeaders
      */
     protected $Headers;
 
@@ -44,7 +45,7 @@ final class HttpResponse implements IReadable
      */
     protected $Body;
 
-    public function __construct(?string $body, int $statusCode = 200, string $reasonPhrase = null, CurlerHeaders $headers = null, string $version = 'HTTP/1.1')
+    public function __construct(?string $body, int $statusCode = 200, string $reasonPhrase = null, ICurlerHeaders $headers = null, string $version = 'HTTP/1.1')
     {
         $this->Body         = $body;
         $this->StatusCode   = $statusCode;

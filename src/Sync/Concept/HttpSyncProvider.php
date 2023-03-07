@@ -4,9 +4,9 @@ namespace Lkrms\Sync\Concept;
 
 use Lkrms\Contract\IProvider;
 use Lkrms\Curler\CachingCurler;
+use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
-use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
@@ -35,9 +35,8 @@ abstract class HttpSyncProvider extends SyncProvider
      *
      * @param string|null $path The endpoint requested via
      * {@see HttpSyncProvider::getCurler()}.
-     * @return CurlerHeaders|null
      */
-    abstract protected function getCurlerHeaders(?string $path): ?CurlerHeaders;
+    abstract protected function getCurlerHeaders(?string $path): ?ICurlerHeaders;
 
     /**
      * Return a pager to use with paginated data from the upstream API
@@ -85,7 +84,7 @@ abstract class HttpSyncProvider extends SyncProvider
      * @return string[]
      * @see CachingCurler::__construct()
      */
-    protected function getCurlerCacheKey(CurlerHeaders $headers): array
+    protected function getCurlerCacheKey(ICurlerHeaders $headers): array
     {
         return $headers->getPublicHeaders();
     }
@@ -146,7 +145,7 @@ abstract class HttpSyncProvider extends SyncProvider
                 $this->getCurlerHeaders($path),
                 $this->getCurlerPager($path),
                 $expiry,
-                fn(CurlerHeaders $headers) => $this->getCurlerCacheKey($headers)
+                fn(ICurlerHeaders $headers) => $this->getCurlerCacheKey($headers)
             );
         } else {
             $curler = new Curler(

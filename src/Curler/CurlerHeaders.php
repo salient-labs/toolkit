@@ -2,7 +2,7 @@
 
 namespace Lkrms\Curler;
 
-use Lkrms\Concern\TMutable;
+use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\CurlerHeadersFlag as Flag;
 use Lkrms\Curler\Support\CurlerHeader;
 
@@ -10,10 +10,8 @@ use Lkrms\Curler\Support\CurlerHeader;
  * A collection of HTTP headers
  *
  */
-class CurlerHeaders
+final class CurlerHeaders implements ICurlerHeaders
 {
-    use TMutable;
-
     /**
      * Headers in their original order, case preserved, duplicates allowed
      *
@@ -56,45 +54,29 @@ class CurlerHeaders
         'proxy-authorization',
     ];
 
-    /**
-     * @internal
-     * @return $this
-     */
     final public function addRawHeader(string $line)
     {
-        return $this->getMutable()->_addRawHeader($line);
+        return (clone $this)->_addRawHeader($line);
     }
 
-    /**
-     * @return $this
-     */
     final public function addHeader(string $name, string $value, bool $private = false)
     {
-        return $this->getMutable()->_addHeader($name, $value, $private);
+        return (clone $this)->_addHeader($name, $value, $private);
     }
 
-    /**
-     * @return $this
-     */
     final public function unsetHeader(string $name)
     {
-        return $this->getMutable()->_unsetHeader($name);
+        return (clone $this)->_unsetHeader($name);
     }
 
-    /**
-     * @return $this
-     */
     final public function setHeader(string $name, string $value, bool $private = false)
     {
         return $this->unsetHeader($name)->_addHeader($name, $value, $private);
     }
 
-    /**
-     * @return $this
-     */
     final public function addPrivateHeaderName(string $name)
     {
-        return $this->getMutable()->_addPrivateHeaderName($name);
+        return (clone $this)->_addPrivateHeaderName($name);
     }
 
     /**
@@ -187,9 +169,6 @@ class CurlerHeaders
         return array_key_exists(strtolower($name), $this->HeaderKeysByName);
     }
 
-    /**
-     * @return string[]
-     */
     final public function getHeaders(): array
     {
         return array_values(array_map(
@@ -198,20 +177,6 @@ class CurlerHeaders
         ));
     }
 
-    /**
-     * Get the value of a header
-     *
-     * @param int $flags A bitmask of {@see Flag} values.
-     * @psalm-param int-mask-of<Flag::*> $flags
-     * @return string[]|string|null If {@see Flag::COMBINE_REPEATED} or
-     * {@see Flag::DISCARD_REPEATED} are set:
-     * - a `string` containing one or more comma-separated values, or
-     * - `null` if there are no matching headers
-     *
-     * Otherwise:
-     * - a `string[]` containing one or more values, or
-     * - an empty `array` if there are no matching headers
-     */
     final public function getHeaderValue(string $name, int $flags = 0)
     {
         $values = array_map(
@@ -231,16 +196,6 @@ class CurlerHeaders
         return implode(', ', $values);
     }
 
-    /**
-     * Get the values of all headers
-     *
-     * @param int $flags A bitmask of {@see Flag} values.
-     * @psalm-param int-mask-of<Flag::*> $flags
-     * @return array<string,string[]|string> An array that maps lowercase header
-     * names to values returned by {@see CurlerHeaders::getHeaderValue()},
-     * sorted to maintain the position of each header's last appearance if
-     * {@see Flag::SORT_BY_LAST} is set.
-     */
     final public function getHeaderValues(int $flags = 0): array
     {
         if ($flags & Flag::SORT_BY_LAST) {
@@ -258,9 +213,6 @@ class CurlerHeaders
         );
     }
 
-    /**
-     * @return string[]
-     */
     final public function getPublicHeaders(): array
     {
         return array_values(array_map(
@@ -273,15 +225,5 @@ class CurlerHeaders
                 )
             )
         ));
-    }
-
-    final protected function toImmutable(): CurlerHeadersImmutable
-    {
-        $immutable = new CurlerHeadersImmutable();
-        foreach ($this as $property => $value) {
-            $immutable->$property = $value;
-        }
-
-        return $immutable;
     }
 }

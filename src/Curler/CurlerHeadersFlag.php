@@ -5,7 +5,7 @@ namespace Lkrms\Curler;
 use Lkrms\Concept\Enumeration;
 
 /**
- * CurlerHeaders flags
+ * ICurlerHeaders flags
  *
  */
 final class CurlerHeadersFlag extends Enumeration

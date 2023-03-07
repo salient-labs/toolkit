@@ -2,8 +2,6 @@
 
 namespace Lkrms\Curler\Contract;
 
-use Lkrms\Curler\CurlerHeaders;
-
 interface ICurlerPage
 {
     /**
@@ -42,5 +40,5 @@ interface ICurlerPage
      *
      * Return `null` to use the same headers sent with the last request.
      */
-    public function nextHeaders(): ?CurlerHeaders;
+    public function nextHeaders(): ?ICurlerHeaders;
 }

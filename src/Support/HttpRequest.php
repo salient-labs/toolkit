@@ -4,14 +4,14 @@ namespace Lkrms\Support;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Curler\CurlerHeaders;
+use Lkrms\Curler\Contract\ICurlerHeaders;
 
 /**
  *
  * @property-read string $Method
  * @property-read string $Target
  * @property-read string $Version
- * @property-read CurlerHeaders $Headers
+ * @property-read ICurlerHeaders $Headers
  * @property-read string|null $Body
  * @property-read string|null $Client
  */
@@ -35,7 +35,7 @@ final class HttpRequest implements IReadable
     protected $Version;
 
     /**
-     * @var CurlerHeaders
+     * @var ICurlerHeaders
      */
     protected $Headers;
 
@@ -49,7 +49,7 @@ final class HttpRequest implements IReadable
      */
     protected $Client;
 
-    public function __construct(string $method, string $target, string $version, CurlerHeaders $headers, ?string $body, string $client = null)
+    public function __construct(string $method, string $target, string $version, ICurlerHeaders $headers, ?string $body, string $client = null)
     {
         $this->Method  = $method;
         $this->Target  = $target;

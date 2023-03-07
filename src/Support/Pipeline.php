@@ -89,32 +89,32 @@ final class Pipeline extends FluentInterface implements IPipeline
 
     final public function send($payload, $arg = null)
     {
-        $_this                    = clone $this;
-        $_this->Payload           = $payload;
-        $_this->PayloadConformity = ArrayKeyConformity::NONE;
-        $_this->Arg               = $arg;
-        $_this->Stream            = false;
+        $clone                    = clone $this;
+        $clone->Payload           = $payload;
+        $clone->PayloadConformity = ArrayKeyConformity::NONE;
+        $clone->Arg               = $arg;
+        $clone->Stream            = false;
 
-        return $_this;
+        return $clone;
     }
 
     final public function stream(iterable $payload, $arg = null)
     {
-        $_this                    = clone $this;
-        $_this->Payload           = $payload;
-        $_this->PayloadConformity = ArrayKeyConformity::NONE;
-        $_this->Arg               = $arg;
-        $_this->Stream            = true;
+        $clone                    = clone $this;
+        $clone->Payload           = $payload;
+        $clone->PayloadConformity = ArrayKeyConformity::NONE;
+        $clone->Arg               = $arg;
+        $clone->Stream            = true;
 
-        return $_this;
+        return $clone;
     }
 
     final public function withConformity(int $conformity = ArrayKeyConformity::PARTIAL)
     {
-        $_this                    = clone $this;
-        $_this->PayloadConformity = $conformity;
+        $clone                    = clone $this;
+        $clone->PayloadConformity = $conformity;
 
-        return $_this;
+        return $clone;
     }
 
     final public function after(callable $callback)
@@ -122,18 +122,18 @@ final class Pipeline extends FluentInterface implements IPipeline
         if ($this->After) {
             throw new RuntimeException(static::class . '::after() has already been applied');
         }
-        $_this        = clone $this;
-        $_this->After = $callback;
+        $clone        = clone $this;
+        $clone->After = $callback;
 
-        return $_this;
+        return $clone;
     }
 
     final public function through(...$pipes)
     {
-        $_this = clone $this;
-        array_push($_this->Pipes, ...$pipes);
+        $clone = clone $this;
+        array_push($clone->Pipes, ...$pipes);
 
-        return $_this;
+        return $clone;
     }
 
     final public function throughCallback(callable $callback)
@@ -161,10 +161,10 @@ final class Pipeline extends FluentInterface implements IPipeline
         if ($this->Then) {
             throw new RuntimeException(static::class . '::then() has already been applied');
         }
-        $_this       = clone $this;
-        $_this->Then = $callback;
+        $clone       = clone $this;
+        $clone->Then = $callback;
 
-        return $_this;
+        return $clone;
     }
 
     final public function unless(callable $filter)
@@ -172,10 +172,10 @@ final class Pipeline extends FluentInterface implements IPipeline
         if ($this->Unless) {
             throw new RuntimeException(static::class . '::unless() has already been applied');
         }
-        $_this         = clone $this;
-        $_this->Unless = $filter;
+        $clone         = clone $this;
+        $clone->Unless = $filter;
 
-        return $_this;
+        return $clone;
     }
 
     final public function run()

@@ -13,6 +13,8 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncFilterPolicy;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncOperation;
+use RuntimeException;
+use UnexpectedValueException;
 
 /**
  * Provides direct access to an ISyncProvider's implementation of sync
@@ -24,6 +26,28 @@ use Lkrms\Sync\Support\SyncOperation;
  */
 abstract class SyncDefinition implements ISyncDefinition
 {
+    /**
+     * Return a closure to perform a sync operation on the entity
+     *
+     * This method is called if `$operation` is found in
+     * {@see SyncDefinition::$Operations}.
+     *
+     * @psalm-param SyncOperation::* $operation
+     * @psalm-return (
+     *
+     *     $operation is SyncOperation::READ
+     *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
+     *     : (
+     *         $operation is SyncOperation::READ_LIST
+     *         ? (Closure(ISyncContext, mixed...): iterable<TEntity>)
+     *         : (
+     *             $operation is SyncOperation::CREATE|SyncOperation::UPDATE|SyncOperation::DELETE
+     *             ? (Closure(ISyncContext, TEntity, mixed...): TEntity)
+     *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
+     *         )
+     *     )
+     * )
+     */
     abstract protected function getClosure(int $operation): ?Closure;
 
     /**
@@ -154,6 +178,11 @@ abstract class SyncDefinition implements ISyncDefinition
         $this->ProviderIntrospector = SyncIntrospector::get(get_class($provider));
     }
 
+    public function __clone()
+    {
+        $this->Closures = [];
+    }
+
     final public function getSyncOperationClosure(int $operation): ?Closure
     {
         // Return a previous result if possible
@@ -243,5 +272,43 @@ abstract class SyncDefinition implements ISyncDefinition
                     return $entity;
                 }
             );
+    }
+
+    /**
+     * Enforce the ignored filter policy
+     *
+     * @psalm-param SyncOperation::* $operation
+     * @see SyncDefinition::$FilterPolicy
+     */
+    final protected function applyFilterPolicy(int $operation, ISyncContext $ctx, ?bool &$returnEmpty, &$empty): void
+    {
+        $returnEmpty = false;
+
+        if (SyncFilterPolicy::IGNORE === $this->FilterPolicy ||
+                !($filter = $ctx->getFilter())) {
+            return;
+        }
+
+        switch ($this->FilterPolicy) {
+            case SyncFilterPolicy::THROW_EXCEPTION:
+                throw new RuntimeException(sprintf(
+                    "%s did not claim '%s' from %s filter",
+                    get_class($this->Provider),
+                    implode("', '", array_keys($filter)),
+                    $this->Entity
+                ));
+
+            case SyncFilterPolicy::RETURN_EMPTY:
+                $returnEmpty = true;
+                $empty       = SyncOperation::isList($operation) ? [] : null;
+
+                return;
+
+            case SyncFilterPolicy::FILTER_LOCALLY:
+                /** @todo Implement SyncFilterPolicy::FILTER_LOCALLY */
+                break;
+        }
+
+        throw new UnexpectedValueException("SyncFilterPolicy invalid or not implemented: {$this->FilterPolicy}");
     }
 }

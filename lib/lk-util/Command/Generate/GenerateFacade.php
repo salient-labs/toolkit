@@ -302,13 +302,13 @@ final class GenerateFacade extends GenerateCommand
                     : '';
 
                 $lines   = [];
-                $lines[] = '/**';                     // 0
-                $lines[] = " * $summary";             // 1
-                $lines[] = ' *';                      // 2
-                $lines[] = ' * @internal';            // 3
-                $lines[] = " * $params";              // 4
-                $lines[] = " * $return";              // 5
-                $lines[] = " * @see $methodFqsen";    // 6
+                $lines[] = '/**';                   // 0
+                $lines[] = " * $summary";           // 1
+                $lines[] = ' *';                    // 2
+                $lines[] = ' * @internal';          // 3
+                $lines[] = " * $params";            // 4
+                $lines[] = " * $return";            // 5
+                $lines[] = " * @see $methodFqsen";  // 6
                 $lines[] = ' */';
                 if (!$link) {
                     unset($lines[6]);

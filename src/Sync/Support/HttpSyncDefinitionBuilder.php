@@ -2,10 +2,11 @@
 
 namespace Lkrms\Sync\Support;
 
-use Closure;
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
+use Lkrms\Curler\Contract\ICurlerHeaders;
+use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 
@@ -16,14 +17,14 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method $this entity(string $value) The ISyncEntity being serviced (see {@see SyncDefinition::$Entity})
  * @method $this provider(HttpSyncProvider $value) The ISyncProvider servicing the entity
  * @method $this operations(int[] $value) A list of supported sync operations (see {@see SyncDefinition::$Operations})
- * @method $this path(Closure|string|null $value) Closure signature: `fn(int $operation, ISyncContext $ctx, ...$args): string`
- * @method $this query(Closure|array|null $value) Closure signature: `fn(int $operation, ISyncContext $ctx, ...$args): ?array`
- * @method $this headersCallback(?Closure $value) Closure signature: `fn(Curler $curler, int $operation, ISyncContext $ctx, ...$args): ?CurlerHeaders`
- * @method $this pagerCallback(?Closure $value) Closure signature: `fn(Curler $curler, int $operation, ISyncContext $ctx, ...$args): ?ICurlerPager`
- * @method $this request(Closure|HttpSyncDefinitionRequest|null $value) If set, `$path`, `$query`, `$headersCallback` and `$pagerCallback` are ignored. Closure signature: `fn(int $operation, ISyncContext $ctx, ...$args): HttpSyncDefinitionRequest`
+ * @method $this path(?string $value) The path to the provider endpoint servicing the entity, e.g. "/v1/user" (see {@see HttpSyncDefinition::$Path})
+ * @method $this query(mixed[]|null $value) Query parameters applied to the sync operation URL (see {@see HttpSyncDefinition::$Query})
+ * @method $this headers(?ICurlerHeaders $value) HTTP headers applied to the sync operation request (see {@see HttpSyncDefinition::$Headers})
+ * @method $this pager(?ICurlerPager $value) The pagination handler for the endpoint servicing the entity (see {@see HttpSyncDefinition::$Pager})
+ * @method $this callback(?callable $value) A callback applied to the definition before every sync operation (see {@see HttpSyncDefinition::$Callback})
  * @method $this conformity(int $value) The conformity level of data returned by the provider for this entity (see {@see SyncDefinition::$Conformity})
  * @method $this filterPolicy(int $value) The action to take when filters are ignored by the provider (see {@see SyncDefinition::$FilterPolicy})
- * @method $this expiry(?int $value) Passed to the provider's getCurler() method
+ * @method $this expiry(?int $value) The time, in seconds, before responses from the provider expire (see {@see HttpSyncDefinition::$Expiry})
  * @method $this methodMap(array $value) An array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})
  * @method $this overrides(array $value) See {@see SyncDefinition::$Overrides}
  * @method $this dataToEntityPipeline(?IPipeline $value) A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required (see {@see SyncDefinition::$DataToEntityPipeline})
