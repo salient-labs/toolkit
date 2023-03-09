@@ -104,6 +104,9 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      * Return the nth item (1-based), or false if no such item is in the
      * collection
      *
+     * If `$n` is negative, the nth item from the end of the collection is
+     * returned.
+     *
      * @return T|false
      */
     public function nth(int $n);

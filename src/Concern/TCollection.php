@@ -3,6 +3,7 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Concern\HasItems;
+use LogicException;
 use ReturnTypeWillChange;
 
 /**
@@ -173,8 +174,16 @@ trait TCollection
      */
     final public function nth(int $n)
     {
+        if ($n === 0) {
+            throw new LogicException('Argument #1 ($n) is 1-based, 0 given');
+        }
         $copy = $this->_Items;
-        $key  = array_keys($copy)[$n - 1] ?? null;
+        $keys = array_keys($copy);
+        if ($n < 0) {
+            $keys = array_reverse($keys);
+            $n    = -$n;
+        }
+        $key = $keys[$n - 1] ?? null;
         if (is_null($key)) {
             return false;
         }
