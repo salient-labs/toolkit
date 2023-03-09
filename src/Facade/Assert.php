@@ -9,8 +9,8 @@ use Lkrms\Utility\Assertions;
  * A facade for \Lkrms\Utility\Assertions
  *
  * @method static Assertions load() Load and return an instance of the underlying Assertions class
- * @method static Assertions getInstance() Return the underlying Assertions instance
- * @method static bool isLoaded() Return true if an underlying Assertions instance has been loaded
+ * @method static Assertions getInstance() Get the underlying Assertions instance
+ * @method static bool isLoaded() True if an underlying Assertions instance has been loaded
  * @method static void unload() Clear the underlying Assertions instance
  * @method static void argvIsRegistered() A facade for Assertions::argvIsRegistered()
  * @method static void localeIsUtf8() A facade for Assertions::localeIsUtf8()

@@ -16,8 +16,8 @@ use Lkrms\Utility\Conversions;
  * A facade for \Lkrms\Utility\Conversions
  *
  * @method static Conversions load() Load and return an instance of the underlying Conversions class
- * @method static Conversions getInstance() Return the underlying Conversions instance
- * @method static bool isLoaded() Return true if an underlying Conversions instance has been loaded
+ * @method static Conversions getInstance() Get the underlying Conversions instance
+ * @method static bool isLoaded() True if an underlying Conversions instance has been loaded
  * @method static void unload() Clear the underlying Conversions instance
  * @method static int|null arrayKeyToOffset(string|int $key, array $array) Get the offset of a key in an array (see {@see Conversions::arrayKeyToOffset()})
  * @method static string arrayToCode(array $array, string $delimiter = ', ', string $arrow = ' => ') A facade for Conversions::arrayToCode()

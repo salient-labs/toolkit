@@ -10,8 +10,8 @@ use Lkrms\Store\TrashStore;
  * A facade for \Lkrms\Store\TrashStore
  *
  * @method static TrashStore load(string $filename = ':memory:') Load and return an instance of the underlying TrashStore class
- * @method static TrashStore getInstance() Return the underlying TrashStore instance
- * @method static bool isLoaded() Return true if an underlying TrashStore instance has been loaded
+ * @method static TrashStore getInstance() Get the underlying TrashStore instance
+ * @method static bool isLoaded() True if an underlying TrashStore instance has been loaded
  * @method static void unload() Clear the underlying TrashStore instance
  * @method static TrashStore close() Close the database
  * @method static TrashStore empty() Delete everything

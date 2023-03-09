@@ -13,8 +13,8 @@ use Throwable;
  * A facade for \Lkrms\Console\ConsoleWriter
  *
  * @method static ConsoleWriter load() Load and return an instance of the underlying ConsoleWriter class
- * @method static ConsoleWriter getInstance() Return the underlying ConsoleWriter instance
- * @method static bool isLoaded() Return true if an underlying ConsoleWriter instance has been loaded
+ * @method static ConsoleWriter getInstance() Get the underlying ConsoleWriter instance
+ * @method static bool isLoaded() True if an underlying ConsoleWriter instance has been loaded
  * @method static void unload() Clear the underlying ConsoleWriter instance
  * @method static ConsoleWriter count(int $level) Increment the message counter for $level without printing anything
  * @method static ConsoleWriter debug(string $msg1, ?string $msg2 = null, ?Throwable $ex = null, int $depth = 0) Print "--- {CALLER} $msg1 $msg2" with level DEBUG (see {@see ConsoleWriter::debug()})

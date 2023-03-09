@@ -198,8 +198,8 @@ final class GenerateFacade extends GenerateCommand
                       ? 1 : $a->getName() <=> $b->getName()));
         $facadeMethods = [
             " * @method static $service load() Load and return an instance of the underlying $class class",
-            " * @method static $service getInstance() Return the underlying $class instance",
-            " * @method static bool isLoaded() Return true if an underlying $class instance has been loaded",
+            " * @method static $service getInstance() Get the underlying $class instance",
+            " * @method static bool isLoaded() True if an underlying $class instance has been loaded",
             " * @method static void unload() Clear the underlying $class instance",
         ];
         $methods   = [];

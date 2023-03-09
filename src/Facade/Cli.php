@@ -16,8 +16,8 @@ use Lkrms\Contract\IContainer;
  * A facade for \Lkrms\Cli\CliAppContainer
  *
  * @method static CliAppContainer load(?string $basePath = null) Load and return an instance of the underlying CliAppContainer class
- * @method static CliAppContainer getInstance() Return the underlying CliAppContainer instance
- * @method static bool isLoaded() Return true if an underlying CliAppContainer instance has been loaded
+ * @method static CliAppContainer getInstance() Get the underlying CliAppContainer instance
+ * @method static bool isLoaded() True if an underlying CliAppContainer instance has been loaded
  * @method static void unload() Clear the underlying CliAppContainer instance
  * @method static CliAppContainer bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static CliAppContainer bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})

@@ -4,9 +4,9 @@ namespace Lkrms\Curler\Support;
 
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
+use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Curler;
-use Lkrms\Curler\CurlerHeaders;
 
 /**
  * A fluent interface for creating CurlerPage objects
@@ -18,12 +18,13 @@ use Lkrms\Curler\CurlerHeaders;
  * @method $this nextUrl(?string $value) The URL of the next page, including the query component (if any)
  * @method $this isLastPage(?bool $value = true) Set if no more data is available
  * @method $this nextData(?array $value) Data to send in the body of the next request
- * @method $this nextHeaders(?CurlerHeaders $value) Replaces the next request's HTTP headers
- * @method CurlerPage go() Return a new CurlerPage object
+ * @method $this nextHeaders(?ICurlerHeaders $value) Replaces the next request's HTTP headers
+ * @method bool isset(string $name) True if a value for $name has been applied to the unresolved CurlerPage by calling $name()
+ * @method CurlerPage go() Get a new CurlerPage object
  * @method static CurlerPage|null resolve(CurlerPage|CurlerPageBuilder|null $object) Resolve a CurlerPageBuilder or CurlerPage object to a CurlerPage object
  *
  * @uses CurlerPage
- * @lkrms-generate-command lk-util generate builder --static-builder=build --terminator=go --static-resolver=resolve 'Lkrms\Curler\Support\CurlerPage'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Curler\Support\CurlerPage'
  */
 final class CurlerPageBuilder extends Builder
 {

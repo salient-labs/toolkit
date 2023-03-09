@@ -113,8 +113,8 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      * The time, in seconds, before responses from the provider expire
      *
      * If `null` (the default), responses are not cached. If less than `0`, the
-     * return value of {@see HttpSyncProvider::getCurlerCacheExpiry()} is used.
-     * If `0`, responses are cached indefinitely.
+     * return value of {@see HttpSyncProvider::getExpiry()} is used. If `0`,
+     * responses are cached indefinitely.
      *
      * May be set via {@see HttpSyncDefinition::__construct()},
      * {@see HttpSyncDefinition::withExpiry()} or

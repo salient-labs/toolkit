@@ -61,6 +61,13 @@ class GenerateBuilder extends GenerateCommand
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('build'),
             CliOption::build()
+                ->long('value-checker')
+                ->short('c')
+                ->valueName('METHOD')
+                ->description('The method that returns true if a value has been set')
+                ->optionType(CliOptionType::VALUE)
+                ->defaultValue('isset'),
+            CliOption::build()
                 ->long('terminator')
                 ->short('t')
                 ->valueName('METHOD')
@@ -146,9 +153,10 @@ class GenerateBuilder extends GenerateCommand
         $container = $this->getFqcnAlias(IContainer::class);
 
         $staticBuilder  = Convert::toCamelCase($this->getOptionValue('static-builder'));
+        $valueChecker   = Convert::toCamelCase($this->getOptionValue('value-checker'));
         $terminator     = Convert::toCamelCase($this->getOptionValue('terminator'));
         $staticResolver = Convert::toCamelCase($this->getOptionValue('static-resolver'));
-        array_push($this->SkipProperties, $staticBuilder, $terminator, $staticResolver);
+        array_push($this->SkipProperties, $staticBuilder, $valueChecker, $terminator, $staticResolver);
 
         $package  = $this->getOptionValue('package');
         $desc     = $this->getOptionValue('desc');
@@ -458,7 +466,8 @@ class GenerateBuilder extends GenerateCommand
                                         $link);
             }
         }
-        $methods[] = " * @method $service $terminator() Return a new $class object";
+        $methods[] = " * @method bool $valueChecker(string \$name) True if a value for \$name has been applied to the unresolved $class by calling \$name()";
+        $methods[] = " * @method $service $terminator() Get a new $class object";
         $methods[] = " * @method static $service|null $staticResolver($service|$builderClass|null \$object) Resolve a $builderClass or $class object to a $class object";
         $methods   = implode(PHP_EOL, $methods);
 
@@ -513,6 +522,12 @@ class GenerateBuilder extends GenerateCommand
             array_push($lines,
                        '',
                        ...$this->getStaticGetter('getStaticBuilder', var_export($staticBuilder, true)));
+        }
+
+        if ($this->getOption('value-checker')->DefaultValue !== $valueChecker) {
+            array_push($lines,
+                       '',
+                       ...$this->getStaticGetter('getValueChecker', var_export($valueChecker, true)));
         }
 
         if ($this->getOption('terminator')->DefaultValue !== $terminator) {

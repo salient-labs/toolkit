@@ -15,8 +15,8 @@ use ReflectionType;
  * A facade for \Lkrms\Utility\Reflection
  *
  * @method static Reflection load() Load and return an instance of the underlying Reflection class
- * @method static Reflection getInstance() Return the underlying Reflection instance
- * @method static bool isLoaded() Return true if an underlying Reflection instance has been loaded
+ * @method static Reflection getInstance() Get the underlying Reflection instance
+ * @method static bool isLoaded() True if an underlying Reflection instance has been loaded
  * @method static void unload() Clear the underlying Reflection instance
  * @method static string[] getAllClassDocComments(ReflectionClass $class) Get an array of doc comments for a ReflectionClass and any ancestors (see {@see Reflection::getAllClassDocComments()})
  * @method static array getAllTraits(ReflectionClass $class) Return an array of traits used by this class and its parent classes (see {@see Reflection::getAllTraits()})

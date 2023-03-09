@@ -21,11 +21,12 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method $this overrides(array $value) See {@see SyncDefinition::$Overrides}
  * @method $this dataToEntityPipeline(?IPipeline $value) A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required (see {@see SyncDefinition::$DataToEntityPipeline})
  * @method $this entityToDataPipeline(?IPipeline $value) A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required (see {@see SyncDefinition::$EntityToDataPipeline})
- * @method DbSyncDefinition go() Return a new DbSyncDefinition object
+ * @method bool isset(string $name) True if a value for $name has been applied to the unresolved DbSyncDefinition by calling $name()
+ * @method DbSyncDefinition go() Get a new DbSyncDefinition object
  * @method static DbSyncDefinition|null resolve(DbSyncDefinition|DbSyncDefinitionBuilder|null $object) Resolve a DbSyncDefinitionBuilder or DbSyncDefinition object to a DbSyncDefinition object
  *
  * @uses DbSyncDefinition
- * @lkrms-generate-command lk-util generate builder --static-builder=build --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\DbSyncDefinition'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\DbSyncDefinition'
  */
 final class DbSyncDefinitionBuilder extends Builder
 {

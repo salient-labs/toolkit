@@ -9,8 +9,8 @@ use Lkrms\Utility\Computations;
  * A facade for \Lkrms\Utility\Computations
  *
  * @method static Computations load() Load and return an instance of the underlying Computations class
- * @method static Computations getInstance() Return the underlying Computations instance
- * @method static bool isLoaded() Return true if an underlying Computations instance has been loaded
+ * @method static Computations getInstance() Get the underlying Computations instance
+ * @method static bool isLoaded() True if an underlying Computations instance has been loaded
  * @method static void unload() Clear the underlying Computations instance
  * @method static string binaryHash(...$value) Generate a unique non-crypto hash and return raw binary data
  * @method static string hash(...$value) Generate a unique non-crypto hash and return a hexadecimal string
