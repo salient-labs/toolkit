@@ -12,8 +12,8 @@ use Lkrms\Utility\Tests;
  * A facade for \Lkrms\Utility\Tests
  *
  * @method static Tests load() Load and return an instance of the underlying Tests class
- * @method static Tests getInstance() Return the underlying Tests instance
- * @method static bool isLoaded() Return true if an underlying Tests instance has been loaded
+ * @method static Tests getInstance() Get the underlying Tests instance
+ * @method static bool isLoaded() True if an underlying Tests instance has been loaded
  * @method static void unload() Clear the underlying Tests instance
  * @method static bool areSameFile(string $path1, string $path2) Return true if two paths exist and refer to the same file
  * @method static bool classImplements(object|string $class, string $interface) Return true if an object or class implements the given interface

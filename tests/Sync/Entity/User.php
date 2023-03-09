@@ -31,7 +31,7 @@ class User extends SyncEntity
     public $Email;
 
     /**
-     * @var array|null
+     * @var mixed[]|null
      */
     public $Address;
 
@@ -48,7 +48,7 @@ class User extends SyncEntity
     //public $Website;
 
     /**
-     * @var array|null
+     * @var mixed[]|null
      */
     public $Company;
 

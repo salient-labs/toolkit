@@ -34,7 +34,8 @@ final class PhpDocParser implements IReadable
      * @link https://github.com/php-fig/fig-standards/blob/master/proposed/phpdoc.md#appendix-a-types
      */
     public const TYPE_PATTERN = '(?:\\\\?[[:alpha:]_\x80-\xff][[:alnum:]_\x80-\xff]*)+';
-    public const TYPE_REGEX   = '/^' . self::TYPE_PATTERN . '$/';
+
+    public const TYPE_REGEX = '/^' . self::TYPE_PATTERN . '$/';
 
     /**
      * The summary, if provided

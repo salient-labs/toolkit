@@ -5,12 +5,16 @@ namespace Lkrms\Curler;
 use DateTimeInterface;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
+use Lkrms\Contract\HasBuilder;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
+use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerException;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Composer;
+use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
@@ -25,18 +29,22 @@ use UnexpectedValueException;
  * A cURL wrapper optimised for consumption of REST APIs
  *
  * @property-read string $BaseUrl Request URL
- * @property-read CurlerHeadersImmutable $Headers Request headers
+ * @property-read ICurlerHeaders $Headers Request headers
  * @property-read string|null $Method Last request method
  * @property-read string|null $QueryString Query string last added to request URL
  * @property-read string|array|null $Body Request body, as passed to cURL
  * @property-read string|array|null $Data Request body, before serialization
  * @property-read ICurlerPager|null $Pager Pagination handler
- * @property-read CurlerHeadersImmutable|null $ResponseHeaders Response headers
+ * @property-read ICurlerHeaders|null $ResponseHeaders Response headers
  * @property-read array<string,string>|null $ResponseHeadersByName An array that maps lowercase response headers to their combined values
  * @property-read int|null $StatusCode Response status code
  * @property-read string|null $ReasonPhrase Response status explanation
  * @property-read string|null $ResponseBody Response body
  * @property-read array|null $CurlInfo curl_getinfo()'s last return value
+ * @property bool $CacheResponse Cache responses to GET and HEAD requests?
+ * @property bool $CachePostResponse Cache responses to eligible POST requests?
+ * @property int $Expiry Seconds before cached responses expire
+ * @property callable|null $ResponseCacheKeyCallback Override the default cache key when saving and loading cached responses
  * @property bool $ThrowHttpErrors Throw an exception if the status code is >= 400?
  * @property bool $FollowRedirects Follow "Location:" headers?
  * @property int|null $MaxRedirects Limit the number of redirections followed when FollowRedirects is set
@@ -52,7 +60,7 @@ use UnexpectedValueException;
  * @property bool $AlwaysPaginate Pass every response to the pager?
  * @property bool $ObjectAsArray Return deserialized objects as associative arrays?
  */
-class Curler implements IReadable, IWritable
+final class Curler implements IReadable, IWritable, HasBuilder
 {
     use TReadable, TWritable;
 
@@ -66,7 +74,7 @@ class Curler implements IReadable, IWritable
     /**
      * Request headers
      *
-     * @var CurlerHeadersImmutable
+     * @var ICurlerHeaders
      */
     protected $Headers;
 
@@ -108,7 +116,7 @@ class Curler implements IReadable, IWritable
     /**
      * Response headers
      *
-     * @var CurlerHeadersImmutable|null
+     * @var ICurlerHeaders|null
      */
     protected $ResponseHeaders;
 
@@ -148,6 +156,48 @@ class Curler implements IReadable, IWritable
      * @var array|null
      */
     protected $CurlInfo;
+
+    /**
+     * Cache responses to GET and HEAD requests?
+     *
+     * @var bool
+     */
+    protected $CacheResponse = false;
+
+    /**
+     * Cache responses to eligible POST requests?
+     *
+     * Ignored unless {@see Curler::$CacheResponse} is `true`.
+     *
+     * @var bool
+     */
+    protected $CachePostResponse = false;
+
+    /**
+     * Seconds before cached responses expire
+     *
+     * `0` = no expiry.
+     *
+     * Ignored unless {@see Curler::$CacheResponse} is `true`.
+     *
+     * @var int
+     */
+    protected $Expiry = 3600;
+
+    /**
+     * Override the default cache key when saving and loading cached responses
+     *
+     * The `string[]` returned by the callback is hashed and combined with the
+     * request method and effective URL.
+     *
+     * The default callback returns unprivileged request headers from
+     * {@see ICurlerHeaders::getPublicHeaders()}.
+     *
+     * Ignored unless {@see Curler::$CacheResponse} is `true`.
+     *
+     * @var (callable(Curler): string[])|null
+     */
+    protected $ResponseCacheKeyCallback;
 
     /**
      * Throw an exception if the status code is >= 400?
@@ -291,11 +341,18 @@ class Curler implements IReadable, IWritable
      */
     private static $DefaultUserAgent;
 
-    public function __construct(string $baseUrl, ?CurlerHeaders $headers = null, ?ICurlerPager $pager = null, bool $throwHttpErrors = true, bool $followRedirects = false, ?int $maxRedirects = null, bool $handleCookies = false, ?string $cookieCacheKey = null, bool $retryAfterTooManyRequests = false, int $retryAfterMaxSeconds = 60, bool $expectJson = true, bool $postJson = true, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null, ?string $userAgent = null, bool $alwaysPaginate = false, bool $objectAsArray = true)
+    /**
+     * @param (callable(Curler): string[])|null $responseCacheKeyCallback
+     */
+    public function __construct(string $baseUrl, ?ICurlerHeaders $headers = null, ?ICurlerPager $pager = null, bool $cacheResponse = false, bool $cachePostResponse = false, int $expiry = 3600, ?callable $responseCacheKeyCallback = null, bool $throwHttpErrors = true, bool $followRedirects = false, ?int $maxRedirects = null, bool $handleCookies = false, ?string $cookieCacheKey = null, bool $retryAfterTooManyRequests = false, int $retryAfterMaxSeconds = 60, bool $expectJson = true, bool $postJson = true, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null, ?string $userAgent = null, bool $alwaysPaginate = false, bool $objectAsArray = true)
     {
         $this->BaseUrl                   = $baseUrl;
-        $this->Headers                   = $headers ? CurlerHeadersImmutable::fromMutable($headers) : new CurlerHeadersImmutable();
+        $this->Headers                   = $headers ?: new CurlerHeaders();
         $this->Pager                     = $pager;
+        $this->CacheResponse             = $cacheResponse;
+        $this->CachePostResponse         = $cachePostResponse;
+        $this->Expiry                    = $expiry;
+        $this->ResponseCacheKeyCallback  = $responseCacheKeyCallback;
         $this->ThrowHttpErrors           = $throwHttpErrors;
         $this->FollowRedirects           = $followRedirects;
         $this->MaxRedirects              = $maxRedirects;
@@ -369,10 +426,10 @@ class Curler implements IReadable, IWritable
      *
      * @return $this
      */
-    final public function withHeaders(CurlerHeaders $headers)
+    final public function withHeaders(ICurlerHeaders $headers)
     {
         $clone          = clone $this;
-        $clone->Headers = CurlerHeadersImmutable::fromMutable($headers);
+        $clone->Headers = $headers;
 
         return $clone;
     }
@@ -590,7 +647,7 @@ class Curler implements IReadable, IWritable
 
     private function clearResponse(): void
     {
-        $this->ResponseHeaders       = new CurlerHeadersImmutable();
+        $this->ResponseHeaders       = new CurlerHeaders();
         $this->ResponseHeadersByName = null;
         $this->StatusCode            = null;
         $this->ReasonPhrase          = null;
@@ -669,6 +726,25 @@ class Curler implements IReadable, IWritable
 
     protected function execute(bool $close = true, int $depth = 0): string
     {
+        if ($this->CacheResponse &&
+                ($cacheKey = $this->getCacheKey()) &&
+                ($last = Cache::get($cacheKey, $this->Expiry)) !== false) {
+            if ($close) {
+                $this->close();
+            }
+
+            $this->StatusCode      = $last[0];
+            $this->ReasonPhrase    = $last[1];
+            $this->ResponseHeaders = $last[2];
+            $this->ResponseBody    = $last[3];
+
+            $this->ResponseHeadersByName =
+                $this->ResponseHeaders
+                     ->getHeaderValues(CurlerHeadersFlag::COMBINE_REPEATED);
+
+            return $this->ResponseBody;
+        }
+
         $this->ExecuteCount++;
 
         curl_setopt($this->Handle, CURLOPT_HTTPHEADER, $this->Headers->getHeaders());
@@ -767,10 +843,44 @@ class Curler implements IReadable, IWritable
             $this->close();
         }
 
+        if ($cacheKey ?? null) {
+            Cache::set($cacheKey,
+                       [$this->StatusCode, $this->ReasonPhrase, $this->ResponseHeaders, $this->ResponseBody],
+                       $this->Expiry);
+        }
+
         return $this->ResponseBody;
     }
 
-    final public function head(?array $query = null): CurlerHeadersImmutable
+    private function getCacheKey(): ?string
+    {
+        if (!($this->Method === HttpRequestMethod::GET ||
+            $this->Method === HttpRequestMethod::HEAD ||
+            ($this->Method === HttpRequestMethod::POST &&
+                $this->CachePostResponse &&
+                !is_array($this->Body))) ||
+            !($url = $this->getEffectiveUrl()
+                ?: $this->BaseUrl . $this->QueryString)) {
+            return null;
+        }
+
+        $key = $this->ResponseCacheKeyCallback
+            ? ($this->ResponseCacheKeyCallback)($this)
+            : $this->Headers->getPublicHeaders();
+        if ($this->Method === HttpRequestMethod::POST) {
+            $key[] = $this->Body;
+        }
+
+        return implode(':', [
+            self::class,
+            'response',
+            $this->Method,
+            rawurlencode($url),
+            Compute::hash(...$key),
+        ]);
+    }
+
+    final public function head(?array $query = null): ICurlerHeaders
     {
         return $this->process(HttpRequestMethod::HEAD, $query);
     }
@@ -931,7 +1041,7 @@ class Curler implements IReadable, IWritable
                 [$page->nextUrl(), $page->nextData(), $page->nextHeaders()];
             curl_setopt($this->Handle, CURLOPT_URL, $url);
             if (!is_null($headers)) {
-                $this->Headers = CurlerHeadersImmutable::fromMutable($headers);
+                $this->Headers = $headers;
             }
             $this->clearResponse();
         } while (true);
@@ -993,6 +1103,10 @@ class Curler implements IReadable, IWritable
     public static function getWritable(): array
     {
         return [
+            'CacheResponse',
+            'CachePostResponse',
+            'Expiry',
+            'ResponseCacheKeyCallback',
             'ThrowHttpErrors',
             'FollowRedirects',
             'MaxRedirects',
@@ -1226,5 +1340,19 @@ class Curler implements IReadable, IWritable
     final public function deleteJson(?array $data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::DELETE, $query, $data);
+    }
+
+    /**
+     * Use a fluent interface to create a new Curler object
+     *
+     */
+    public static function build(?IContainer $container = null): CurlerBuilder
+    {
+        return new CurlerBuilder($container);
+    }
+
+    public static function resolve($object)
+    {
+        return CurlerBuilder::resolve($object);
     }
 }

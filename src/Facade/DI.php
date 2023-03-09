@@ -12,8 +12,8 @@ use Lkrms\Contract\IContainer;
  * A facade for \Lkrms\Container\Container
  *
  * @method static Container load() Load and return an instance of the underlying Container class
- * @method static Container getInstance() Return the underlying Container instance
- * @method static bool isLoaded() Return true if an underlying Container instance has been loaded
+ * @method static Container getInstance() Get the underlying Container instance
+ * @method static bool isLoaded() True if an underlying Container instance has been loaded
  * @method static void unload() Clear the underlying Container instance
  * @method static Container bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static Container bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})

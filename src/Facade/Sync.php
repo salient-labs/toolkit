@@ -14,8 +14,8 @@ use Lkrms\Sync\Support\SyncStore;
  * A facade for \Lkrms\Sync\Support\SyncStore
  *
  * @method static SyncStore load(string $filename = ':memory:', string $command = '', string[] $arguments = []) Load and return an instance of the underlying SyncStore class
- * @method static SyncStore getInstance() Return the underlying SyncStore instance
- * @method static bool isLoaded() Return true if an underlying SyncStore instance has been loaded
+ * @method static SyncStore getInstance() Get the underlying SyncStore instance
+ * @method static bool isLoaded() True if an underlying SyncStore instance has been loaded
  * @method static void unload() Clear the underlying SyncStore instance
  * @method static SyncStore checkHeartbeats() Throw an exception if a registered provider has an unreachable backend
  * @method static SyncStore close(?int $exitStatus = 0) Terminate the current run and close the database

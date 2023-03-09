@@ -9,8 +9,8 @@ use Lkrms\Utility\Filesystem;
  * A facade for \Lkrms\Utility\Filesystem
  *
  * @method static Filesystem load() Load and return an instance of the underlying Filesystem class
- * @method static Filesystem getInstance() Return the underlying Filesystem instance
- * @method static bool isLoaded() Return true if an underlying Filesystem instance has been loaded
+ * @method static Filesystem getInstance() Get the underlying Filesystem instance
+ * @method static bool isLoaded() True if an underlying Filesystem instance has been loaded
  * @method static void unload() Clear the underlying Filesystem instance
  * @method static string|false getEol(string $filename) Get a file's end-of-line sequence (see {@see Filesystem::getEol()})
  * @method static string getStablePath(string $suffix = '.log', ?string $dir = null) Return the name of a file unique to the current script and user (see {@see Filesystem::getStablePath()})

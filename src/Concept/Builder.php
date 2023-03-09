@@ -42,6 +42,18 @@ abstract class Builder extends FluentInterface implements IImmutable
     }
 
     /**
+     * Get the name of the method that returns true if a value has been applied
+     * to the builder
+     *
+     * The default method name is "isset". Override
+     * {@see Builder::getValueChecker()} to change it.
+     */
+    protected static function getValueChecker(): string
+    {
+        return 'isset';
+    }
+
+    /**
      * Get the name of the method that returns a new instance of the underlying
      * class and terminates the fluent interface
      *
@@ -134,6 +146,13 @@ abstract class Builder extends FluentInterface implements IImmutable
      */
     final public function __call(string $name, array $arguments)
     {
+        if (static::getValueChecker() === $name) {
+            if (count($arguments) !== 1 || !is_string($arguments[0]) || !$arguments[0]) {
+                throw new UnexpectedValueException(sprintf('Invalid arguments to %s::%s(string $name)', static::class, $name));
+            }
+
+            return array_key_exists($this->Introspector->maybeNormalise($arguments[0]), $this->Data);
+        }
         if (static::getTerminator() === $name) {
             return ($this->Closure)($this->Data, $this->Container);
         }

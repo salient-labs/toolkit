@@ -2,9 +2,9 @@
 
 namespace Lkrms\Curler\Support;
 
+use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Curler;
-use Lkrms\Curler\CurlerHeaders;
 use RuntimeException;
 
 /**
@@ -39,7 +39,7 @@ final class CurlerPage implements ICurlerPage
     private $NextData;
 
     /**
-     * @var CurlerHeaders|null
+     * @var ICurlerHeaders|null
      */
     private $NextHeaders;
 
@@ -49,9 +49,9 @@ final class CurlerPage implements ICurlerPage
      * @param null|string $nextUrl The URL of the next page, including the query component (if any)
      * @param null|bool $isLastPage Set if no more data is available
      * @param null|array $nextData Data to send in the body of the next request
-     * @param null|CurlerHeaders $nextHeaders Replaces the next request's HTTP headers
+     * @param null|ICurlerHeaders $nextHeaders Replaces the next request's HTTP headers
      */
-    public function __construct(array $entities, Curler $curler, ?ICurlerPage $previous, ?string $nextUrl = null, ?bool $isLastPage = null, ?array $nextData = null, ?CurlerHeaders $nextHeaders = null)
+    public function __construct(array $entities, Curler $curler, ?ICurlerPage $previous, ?string $nextUrl = null, ?bool $isLastPage = null, ?array $nextData = null, ?ICurlerHeaders $nextHeaders = null)
     {
         $this->Entities    = $entities;
         $this->EntityCount = count($entities) + ($previous ? $previous->entityCount() : 0);
@@ -100,7 +100,7 @@ final class CurlerPage implements ICurlerPage
         return $this->NextData;
     }
 
-    final public function nextHeaders(): ?CurlerHeaders
+    final public function nextHeaders(): ?ICurlerHeaders
     {
         $this->assertHasNextPage();
 

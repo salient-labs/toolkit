@@ -10,8 +10,8 @@ use Lkrms\Utility\Formatters;
  * A facade for \Lkrms\Utility\Formatters
  *
  * @method static Formatters load() Load and return an instance of the underlying Formatters class
- * @method static Formatters getInstance() Return the underlying Formatters instance
- * @method static bool isLoaded() Return true if an underlying Formatters instance has been loaded
+ * @method static Formatters getInstance() Get the underlying Formatters instance
+ * @method static bool isLoaded() True if an underlying Formatters instance has been loaded
  * @method static void unload() Clear the underlying Formatters instance
  * @method static string array(array $array, string $format = "%s: %s\n", int $indentSpaces = 4) Format an array's keys and values (see {@see Formatters::array()})
  * @method static string bool(bool $value) Return "true" if a boolean is true, "false" if it's not (see {@see Formatters::bool()})

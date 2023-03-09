@@ -9,8 +9,8 @@ use Lkrms\Utility\System;
  * A facade for \Lkrms\Utility\System
  *
  * @method static System load() Load and return an instance of the underlying System class
- * @method static System getInstance() Return the underlying System instance
- * @method static bool isLoaded() Return true if an underlying System instance has been loaded
+ * @method static System getInstance() Get the underlying System instance
+ * @method static bool isLoaded() True if an underlying System instance has been loaded
  * @method static void unload() Clear the underlying System instance
  * @method static int[] getCpuUsage() Get user and system CPU times for the current run, in microseconds (see {@see System::getCpuUsage()})
  * @method static int getMemoryLimit() Get the configured memory_limit in bytes

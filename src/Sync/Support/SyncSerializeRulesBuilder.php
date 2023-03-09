@@ -22,11 +22,12 @@ use Lkrms\Support\DateFormatter;
  * @method $this recurseRules(?bool $value = true) Apply path-based rules to every instance of $Entity? (default: true)
  * @method $this flags(?int $value) Set SyncSerializeRules::$Flags
  * @method $this inherit(SyncSerializeRules|SyncSerializeRulesBuilder|null $value) Pass $value to `$inherit` in SyncSerializeRules::__construct()
- * @method SyncSerializeRules go() Return a new SyncSerializeRules object
+ * @method bool isset(string $name) True if a value for $name has been applied to the unresolved SyncSerializeRules by calling $name()
+ * @method SyncSerializeRules go() Get a new SyncSerializeRules object
  * @method static SyncSerializeRules|null resolve(SyncSerializeRules|SyncSerializeRulesBuilder|null $object) Resolve a SyncSerializeRulesBuilder or SyncSerializeRules object to a SyncSerializeRules object
  *
  * @uses SyncSerializeRules
- * @lkrms-generate-command lk-util generate builder --static-builder=build --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\SyncSerializeRules'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\SyncSerializeRules'
  */
 final class SyncSerializeRulesBuilder extends Builder
 {

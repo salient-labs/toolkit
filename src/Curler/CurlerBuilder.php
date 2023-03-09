@@ -4,6 +4,7 @@ namespace Lkrms\Curler;
 
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
+use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Support\DateFormatter;
 
@@ -12,8 +13,12 @@ use Lkrms\Support\DateFormatter;
  *
  * @method static $this build(?IContainer $container = null) Create a new CurlerBuilder (syntactic sugar for 'new CurlerBuilder()')
  * @method $this baseUrl(string $value) Request URL
- * @method $this headers(?CurlerHeaders $value) Request headers
+ * @method $this headers(?ICurlerHeaders $value) Request headers
  * @method $this pager(?ICurlerPager $value) Pagination handler
+ * @method $this cacheResponse(bool $value = true) Cache responses to GET and HEAD requests? (default: false)
+ * @method $this cachePostResponse(bool $value = true) Cache responses to eligible POST requests? (default: false; see {@see Curler::$CachePostResponse})
+ * @method $this expiry(int $value) Seconds before cached responses expire (see {@see Curler::$Expiry})
+ * @method $this responseCacheKeyCallback(?callable $value) Override the default cache key when saving and loading cached responses (see {@see Curler::$ResponseCacheKeyCallback})
  * @method $this throwHttpErrors(bool $value = true) Throw an exception if the status code is >= 400? (default: true)
  * @method $this followRedirects(bool $value = true) Follow "Location:" headers? (default: false; see {@see Curler::$FollowRedirects})
  * @method $this maxRedirects(?int $value) Limit the number of redirections followed when FollowRedirects is set
@@ -28,11 +33,12 @@ use Lkrms\Support\DateFormatter;
  * @method $this userAgent(?string $value) Override the default User-Agent header
  * @method $this alwaysPaginate(bool $value = true) Pass every response to the pager? (default: false)
  * @method $this objectAsArray(bool $value = true) Return deserialized objects as associative arrays? (default: true)
- * @method Curler go() Return a new Curler object
+ * @method bool isset(string $name) True if a value for $name has been applied to the unresolved Curler by calling $name()
+ * @method Curler go() Get a new Curler object
  * @method static Curler|null resolve(Curler|CurlerBuilder|null $object) Resolve a CurlerBuilder or Curler object to a Curler object
  *
  * @uses Curler
- * @lkrms-generate-command lk-util generate builder --static-builder=build --terminator=go --static-resolver=resolve 'Lkrms\Curler\Curler'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Curler\Curler'
  */
 final class CurlerBuilder extends Builder
 {

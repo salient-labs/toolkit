@@ -23,11 +23,12 @@ use Lkrms\Contract\IContainer;
  * @method $this keepEnv(bool $value = true) True if the option's user-supplied values extend the value of EnvVariable instead of replacing it (default: false)
  * @method $this delimiter(?string $value) The separator between values passed to the option as a single argument (see {@see CliOption::$Delimiter})
  * @method $this valueCallback(?callable $value) Applied to the option's value immediately before it is assigned
- * @method CliOption go() Return a new CliOption object
+ * @method bool isset(string $name) True if a value for $name has been applied to the unresolved CliOption by calling $name()
+ * @method CliOption go() Get a new CliOption object
  * @method static CliOption|null resolve(CliOption|CliOptionBuilder|null $object) Resolve a CliOptionBuilder or CliOption object to a CliOption object
  *
  * @uses CliOption
- * @lkrms-generate-command lk-util generate builder --static-builder=build --terminator=go --static-resolver=resolve 'Lkrms\Cli\CliOption'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Cli\CliOption'
  */
 final class CliOptionBuilder extends Builder
 {

@@ -38,7 +38,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return self::JSON_PLACEHOLDER_BASE_URL;
     }
 
-    protected function getCurlerHeaders(?string $path): ?CurlerHeaders
+    protected function getHeaders(?string $path): ?CurlerHeaders
     {
         return null;
     }
@@ -53,7 +53,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return new DateFormatter();
     }
 
-    protected function getCurlerCacheExpiry(?string $path): ?int
+    protected function getExpiry(?string $path): ?int
     {
         return 24 * 60 * 60;
     }
@@ -66,21 +66,21 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         ];
     }
 
-    protected function getHttpDefinition(string $entity, HttpSyncDefinitionBuilder $define)
+    protected function getHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
     {
         switch ($entity) {
             case Post::class:
-                return $define->operations([OP::READ, OP::READ_LIST])
-                              ->path('/posts')
-                              ->filterPolicy(SyncFilterPolicy::IGNORE);
+                return $defB->operations([OP::READ, OP::READ_LIST])
+                            ->path('/posts')
+                            ->filterPolicy(SyncFilterPolicy::IGNORE);
 
             case User::class:
-                return $define->operations([OP::READ, OP::READ_LIST])
-                              ->path('/users')
-                              ->filterPolicy(SyncFilterPolicy::IGNORE);
+                return $defB->operations([OP::READ, OP::READ_LIST])
+                            ->path('/users')
+                            ->filterPolicy(SyncFilterPolicy::IGNORE);
         }
 
-        return null;
+        return $defB;
     }
 
     public function getPosts(SyncContext $ctx): iterable
