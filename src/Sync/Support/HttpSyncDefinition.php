@@ -273,7 +273,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         }
 
         $httpClosure = $this->getHttpOperationClosure($operation);
-        $httpRunner  =
+        $httpRunner =
             fn(ISyncContext $ctx, ...$args) =>
                 $this->runHttpOperation($httpClosure, $operation, $ctx, ...$args);
 

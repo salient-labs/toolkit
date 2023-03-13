@@ -176,9 +176,8 @@ try {
 try {
     // @phpstan-ignore-next-line
     isset($b->Data);
-}
-// @phpstan-ignore-next-line
-catch (RuntimeException $ex) {
+    // @phpstan-ignore-next-line
+} catch (RuntimeException $ex) {
     $exceptions[] = $ex;
 }
 

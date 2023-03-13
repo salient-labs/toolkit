@@ -240,7 +240,7 @@ final class SyncIntrospector extends Introspector
             $operation = $this->_Class->SyncOperationMagicMethods[$method] ?? null;
             if ($operation) {
                 [$operation, $entity] = $operation;
-                $closure              =
+                $closure =
                     function (ISyncContext $ctx, ...$args) use ($entity, $operation) {
                         /** @var ISyncProvider $this */
                         return $this->with($entity, $ctx)->run($operation, ...$args);

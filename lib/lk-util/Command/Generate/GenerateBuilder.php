@@ -377,7 +377,7 @@ class GenerateBuilder extends GenerateCommand
                 $docBlocks = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
                 $phpDoc    = PhpDocParser::fromDocBlocks($docBlocks, $classDocBlocks);
             } else {
-                $phpDoc = null;
+                $phpDoc    = null;
             }
             $internal = (bool) ($phpDoc->Tags['internal'] ?? null);
             $link     = !$internal && $phpDoc && $phpDoc->hasDetail();
