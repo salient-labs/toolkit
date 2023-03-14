@@ -42,6 +42,17 @@ abstract class Builder extends FluentInterface implements IImmutable
     }
 
     /**
+     * Get the name of the method that returns a value applied to the builder
+     *
+     * The default method name is "get". Override
+     * {@see Builder::getValueGetter()} to change it.
+     */
+    protected static function getValueGetter(): string
+    {
+        return 'get';
+    }
+
+    /**
      * Get the name of the method that returns true if a value has been applied
      * to the builder
      *
@@ -146,6 +157,13 @@ abstract class Builder extends FluentInterface implements IImmutable
      */
     final public function __call(string $name, array $arguments)
     {
+        if (static::getValueGetter() === $name) {
+            if (count($arguments) !== 1 || !is_string($arguments[0]) || !$arguments[0]) {
+                throw new UnexpectedValueException(sprintf('Invalid arguments to %s::%s(string $name)', static::class, $name));
+            }
+
+            return $this->Data[$this->Introspector->maybeNormalise($arguments[0])] ?? null;
+        }
         if (static::getValueChecker() === $name) {
             if (count($arguments) !== 1 || !is_string($arguments[0]) || !$arguments[0]) {
                 throw new UnexpectedValueException(sprintf('Invalid arguments to %s::%s(string $name)', static::class, $name));

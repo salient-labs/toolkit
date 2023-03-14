@@ -63,7 +63,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
                                      fn($payload, Closure $next) => $next($payload / 23),
                                      fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null,
                                  )
-                                 ->unless(fn($result) => !is_null($result))
+                                 ->unless(fn($result) => is_null($result))
                                  ->start() as $_out) {
             $out[] = $_out;
         }
@@ -80,7 +80,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
                             fn($payload, Closure $next) => $next($payload / 23),
                             fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null,
                         )
-                        ->unless(fn($result) => !is_null($result))
+                        ->unless(fn($result) => is_null($result))
                         ->run();
     }
 

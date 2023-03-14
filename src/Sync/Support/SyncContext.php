@@ -2,36 +2,46 @@
 
 namespace Lkrms\Sync\Support;
 
+use Lkrms\Contract\FluentIterator;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Test;
 use Lkrms\Support\ProviderContext;
-use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncEntity;
+use UnexpectedValueException;
 
 /**
- * The context within which a SyncEntity is instantiated
+ * The context within which a sync entity is instantiated
  *
+ * @template TList of array|FluentIterator
+ * @implements ISyncContext<TList>
  */
 final class SyncContext extends ProviderContext implements ISyncContext
 {
-    /**
-     * @var bool|null
-     */
-    protected $ListToArray;
+    protected bool $IteratorToArray = false;
+
+    protected array $Filter = [];
 
     /**
-     * @var array|null
+     * @return SyncContext<array>
      */
-    protected $Filter;
-
-    public function withListArrays()
+    public function withArrays()
     {
-        return $this->maybeMutate('ListToArray', true);
+        /** @var SyncContext<array> */
+        $instance = $this->withPropertyValue('IteratorToArray', true);
+
+        return $instance;
     }
 
-    public function withGenerators()
+    /**
+     * @return SyncContext<FluentIterator>
+     */
+    public function withIterators()
     {
-        return $this->maybeMutate('ListToArray', false);
+        /** @var SyncContext<FluentIterator> */
+        $instance = $this->withPropertyValue('IteratorToArray', false);
+
+        return $instance;
     }
 
     public function withArgs(int $operation, ...$args)
@@ -45,51 +55,58 @@ final class SyncContext extends ProviderContext implements ISyncContext
         }
 
         if (empty($args)) {
-            return $this->maybeMutate('Filter', []);
+            return $this->withPropertyValue('Filter', []);
         }
 
         if (is_array($args[0]) && count($args) === 1) {
-            return $this->maybeMutate('Filter', array_combine(
+            return $this->withPropertyValue('Filter', array_combine(
                 array_map(
-                    fn($key) => preg_match('/[^[:alnum:]_-]/', $key) ? $key : Convert::toSnakeCase($key),
+                    fn($key) =>
+                        preg_match('/[^[:alnum:]_-]/', $key) ? $key : Convert::toSnakeCase($key),
                     array_keys($args[0])
                 ),
                 array_map(
-                    fn($value) => $value instanceof SyncEntity ? $value->Id : $value,
+                    fn($value) =>
+                        $value instanceof ISyncEntity ? $value->id() : $value,
                     $args[0]
                 )
             ));
         }
 
         if (Test::isArrayOfIntOrString($args)) {
-            return $this->maybeMutate('Filter', ['id' => $args]);
+            return $this->withPropertyValue('Filter', ['id' => $args]);
         }
 
-        if (Test::isArrayOf($args, SyncEntity::class)) {
-            return $this->maybeMutate('Filter', array_merge_recursive(...array_map(
-                fn(SyncEntity $entity): array => [
-                    Convert::toSnakeCase(Convert::classToBasename($entity->service())) => [$entity->Id]
-                ],
-                $args
-            )));
+        if (Test::isArrayOf($args, ISyncEntity::class)) {
+            return $this->withPropertyValue(
+                'Filter',
+                array_merge_recursive(
+                    ...array_map(
+                        fn(ISyncEntity $entity): array =>
+                            [Convert::toSnakeCase(Convert::classToBasename($entity->service())) =>
+                                [$entity->id()]],
+                        $args
+                    )
+                )
+            );
         }
 
-        return $this->maybeMutate('Filter', null);
+        throw new UnexpectedValueException('Filter signature not recognised');
     }
 
-    public function getListToArray(): bool
+    public function getIteratorToArray(): bool
     {
-        return $this->ListToArray ?: false;
+        return $this->IteratorToArray;
     }
 
-    public function getFilter(): ?array
+    public function getFilter(): array
     {
         return $this->Filter;
     }
 
     public function claimFilterValue(string $key)
     {
-        if (array_key_exists($key, $this->Filter ?: [])) {
+        if (array_key_exists($key, $this->Filter)) {
             $value = $this->Filter[$key];
             unset($this->Filter[$key]);
 

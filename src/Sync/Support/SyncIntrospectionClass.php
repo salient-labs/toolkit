@@ -11,6 +11,8 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use ReflectionClass;
 
 /**
+ * Internal use only
+ *
  * @template TClass of object
  * @extends IntrospectionClass<TClass>
  */

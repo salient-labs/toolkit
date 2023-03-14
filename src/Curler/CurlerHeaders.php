@@ -54,27 +54,32 @@ final class CurlerHeaders implements ICurlerHeaders
         'proxy-authorization',
     ];
 
-    final public function addRawHeader(string $line)
+    public static function create(): ICurlerHeaders
+    {
+        return new self();
+    }
+
+    public function addRawHeader(string $line)
     {
         return (clone $this)->_addRawHeader($line);
     }
 
-    final public function addHeader(string $name, string $value, bool $private = false)
+    public function addHeader(string $name, string $value, bool $private = false)
     {
         return (clone $this)->_addHeader($name, $value, $private);
     }
 
-    final public function unsetHeader(string $name)
+    public function unsetHeader(string $name)
     {
         return (clone $this)->_unsetHeader($name);
     }
 
-    final public function setHeader(string $name, string $value, bool $private = false)
+    public function setHeader(string $name, string $value, bool $private = false)
     {
         return $this->unsetHeader($name)->_addHeader($name, $value, $private);
     }
 
-    final public function addPrivateHeaderName(string $name)
+    public function addPrivateHeaderName(string $name)
     {
         return (clone $this)->_addPrivateHeaderName($name);
     }
@@ -164,12 +169,12 @@ final class CurlerHeaders implements ICurlerHeaders
         return $this;
     }
 
-    final public function hasHeader(string $name): bool
+    public function hasHeader(string $name): bool
     {
         return array_key_exists(strtolower($name), $this->HeaderKeysByName);
     }
 
-    final public function getHeaders(): array
+    public function getHeaders(): array
     {
         return array_values(array_map(
             fn(CurlerHeader $header) => $header->getHeader(),
@@ -177,7 +182,7 @@ final class CurlerHeaders implements ICurlerHeaders
         ));
     }
 
-    final public function getHeaderValue(string $name, int $flags = 0)
+    public function getHeaderValue(string $name, int $flags = 0)
     {
         $values = array_map(
             fn(CurlerHeader $header) => $header->Value,
@@ -196,7 +201,7 @@ final class CurlerHeaders implements ICurlerHeaders
         return implode(', ', $values);
     }
 
-    final public function getHeaderValues(int $flags = 0): array
+    public function getHeaderValues(int $flags = 0): array
     {
         if ($flags & Flag::SORT_BY_LAST) {
             $keysByName = $this->HeaderKeysByName;
@@ -213,7 +218,7 @@ final class CurlerHeaders implements ICurlerHeaders
         );
     }
 
-    final public function getPublicHeaders(): array
+    public function getPublicHeaders(): array
     {
         return array_values(array_map(
             fn(CurlerHeader $header) => $header->getHeader(),

@@ -19,7 +19,7 @@ final class Arr implements IImmutable
         $this->Array = $array;
     }
 
-    public static function with(array $array): self
+    public static function from(array $array): self
     {
         return new self($array);
     }

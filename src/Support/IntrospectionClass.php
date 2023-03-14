@@ -18,6 +18,8 @@ use ReflectionNamedType;
 use ReflectionProperty;
 
 /**
+ * Internal use only
+ *
  * @template TClass of object
  */
 class IntrospectionClass

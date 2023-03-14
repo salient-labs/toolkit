@@ -33,12 +33,13 @@ use Lkrms\Support\DateFormatter;
  * @method $this userAgent(?string $value) Override the default User-Agent header
  * @method $this alwaysPaginate(bool $value = true) Pass every response to the pager? (default: false)
  * @method $this objectAsArray(bool $value = true) Return deserialized objects as associative arrays? (default: true)
+ * @method mixed get(string $name) The value of $name if applied to the unresolved Curler by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved Curler by calling $name()
  * @method Curler go() Get a new Curler object
  * @method static Curler|null resolve(Curler|CurlerBuilder|null $object) Resolve a CurlerBuilder or Curler object to a Curler object
  *
  * @uses Curler
- * @lkrms-generate-command lk-util generate builder --static-builder=build --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Curler\Curler'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Curler\Curler'
  */
 final class CurlerBuilder extends Builder
 {

@@ -7,10 +7,12 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
+use Lkrms\Contract\FluentIterator;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncIntrospector;
@@ -160,9 +162,11 @@ final class GetSyncEntities extends CliCommand
         Console::info('Retrieving from ' . $provider->name() . ':',
                       $this->Store->getEntityTypeUri($class) . (is_null($id) ? '' : "/$id"));
 
-        $context = $this->app()->get(SyncContext::class);
+        $this->app()->bindIf(ISyncContext::class, SyncContext::class);
+        /** @var ISyncContext<FluentIterator> */
+        $context = $this->app()->get(ISyncContext::class);
         if (!$stream) {
-            $context = $context->withListArrays();
+            $context = $context->withArrays();
         }
 
         $result = !is_null($id)

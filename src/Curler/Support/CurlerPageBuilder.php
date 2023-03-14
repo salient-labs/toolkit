@@ -19,12 +19,13 @@ use Lkrms\Curler\Curler;
  * @method $this isLastPage(?bool $value = true) Set if no more data is available
  * @method $this nextData(?array $value) Data to send in the body of the next request
  * @method $this nextHeaders(?ICurlerHeaders $value) Replaces the next request's HTTP headers
+ * @method mixed get(string $name) The value of $name if applied to the unresolved CurlerPage by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved CurlerPage by calling $name()
  * @method CurlerPage go() Get a new CurlerPage object
  * @method static CurlerPage|null resolve(CurlerPage|CurlerPageBuilder|null $object) Resolve a CurlerPageBuilder or CurlerPage object to a CurlerPage object
  *
  * @uses CurlerPage
- * @lkrms-generate-command lk-util generate builder --static-builder=build --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Curler\Support\CurlerPage'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Curler\Support\CurlerPage'
  */
 final class CurlerPageBuilder extends Builder
 {

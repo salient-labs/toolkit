@@ -90,7 +90,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
         $result = $closure($this->Context->withArgs($operation, $this->Context, ...$args), ...$args);
 
-        if (SyncOperation::isList($operation) && $this->Context->getListToArray() && !is_array($result)) {
+        if (SyncOperation::isList($operation) && $this->Context->getIteratorToArray() && !is_array($result)) {
             $entities = [];
             foreach ($result as $entity) {
                 $entities[] = $entity;

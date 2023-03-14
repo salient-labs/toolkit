@@ -103,8 +103,21 @@ abstract class SyncDefinition implements ISyncDefinition
     protected $FilterPolicy;
 
     /**
+     * An array that maps sync operations to closures that override any other
+     * implementations
+     *
+     * An {@see ISyncDefinition} instance and {@see SyncOperation} value are
+     * passed to closures in {@see SyncDefinition::$Overrides} via two arguments
+     * inserted before the operation's arguments.
+     *
+     * Operations implemented here don't need to be added to
+     * {@see SyncDefinition::$Operations}.
+     *
      * @var array<int,Closure>
-     * @psalm-var array<SyncOperation::*,Closure>
+     * ```php
+     * fn(ISyncDefinition $def, int $op, ISyncContext $ctx, ...$args)
+     * ```
+     * @psalm-var array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...)>
      */
     protected $Overrides;
 
@@ -145,6 +158,11 @@ abstract class SyncDefinition implements ISyncDefinition
     private $Closures = [];
 
     /**
+     * @var static|null
+     */
+    private $WithoutOverrides;
+
+    /**
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param int[] $operations
@@ -152,7 +170,7 @@ abstract class SyncDefinition implements ISyncDefinition
      * @psalm-param ArrayKeyConformity::* $conformity
      * @psalm-param SyncFilterPolicy::* $filterPolicy
      * @param array<int,Closure> $overrides
-     * @psalm-param array<SyncOperation::*,Closure> $overrides
+     * @psalm-param array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...)> $overrides
      * @psalm-param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
      * @psalm-param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
      */
@@ -180,9 +198,15 @@ abstract class SyncDefinition implements ISyncDefinition
 
     public function __clone()
     {
-        $this->Closures = [];
+        $this->Closures         = [];
+        $this->WithoutOverrides = null;
     }
 
+    /**
+     * Get a closure that uses the provider to perform a sync operation on the
+     * entity
+     *
+     */
     final public function getSyncOperationClosure(int $operation): ?Closure
     {
         // Return a previous result if possible
@@ -193,7 +217,8 @@ abstract class SyncDefinition implements ISyncDefinition
         // Overrides take precedence over everything else, including declared
         // methods
         if (array_key_exists($operation, $this->Overrides)) {
-            return $this->Closures[$operation] = $this->Overrides[$operation];
+            return $this->Closures[$operation] =
+                fn(ISyncContext $ctx, ...$args) => $this->Overrides[$operation]($this, $operation, $ctx, ...$args);
         }
 
         // If a method has been declared for this operation, use it, even if
@@ -217,7 +242,31 @@ abstract class SyncDefinition implements ISyncDefinition
     }
 
     /**
+     * Ignoring defined overrides, get a closure that uses the provider to
+     * perform a sync operation on the entity
+     *
+     * Useful within overrides when a fallback implementation is required.
+     *
+     * @psalm-param SyncOperation::* $operation
+     * @see SyncDefinition::$Overrides
+     */
+    final public function getFallbackSyncOperationClosure(int $operation): ?Closure
+    {
+        if (!($clone = $this->WithoutOverrides)) {
+            $clone                  = clone $this;
+            $clone->Overrides       = [];
+            $this->WithoutOverrides = $clone;
+        }
+
+        return $clone->getSyncOperationClosure($operation);
+    }
+
+    /**
      * Get an entity-to-data pipeline for the entity
+     *
+     * Before returning the pipeline:
+     * - a pipe that serializes any unserialized {@see ISyncEntity} instances is
+     *   added via {@see IPipeline::through()}
      *
      * @psalm-return IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>
      */
@@ -228,8 +277,11 @@ abstract class SyncDefinition implements ISyncDefinition
             ?: Pipeline::create();
 
         /** @var IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}> */
-        $pipeline = $pipeline->after(
-            fn(ISyncEntity $payload) => $payload->toArray()
+        $pipeline = $pipeline->through(
+            fn($payload, Closure $next) =>
+                $payload instanceof ISyncEntity
+                    ? $next($payload->toArray())
+                    : $next($payload)
         );
 
         return $pipeline;
@@ -241,6 +293,8 @@ abstract class SyncDefinition implements ISyncDefinition
      * Before returning the pipeline:
      * - a closure to create instances of the entity from arrays returned by the
      *   pipeline is applied via {@see IPipeline::then()}
+     * - a closure to discard `null` results is applied via
+     *   {@see IPipeline::unlessIf()}
      * - the definition's {@see SyncDefinition::$Conformity} is applied via
      *   {@see IPipeline::withConformity()}
      *
@@ -271,7 +325,8 @@ abstract class SyncDefinition implements ISyncDefinition
 
                     return $entity;
                 }
-            );
+            )
+            ->unlessIf(fn($entity) => is_null($entity));
     }
 
     /**

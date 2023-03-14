@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Concept;
 
 use Closure;
 use Lkrms\Container\Container;
+use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IService;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
@@ -163,7 +164,7 @@ abstract class SyncProvider implements ISyncProvider, IService
      * Get a new pipeline bound to the provider's container
      *
      */
-    final protected function pipeline(): Pipeline
+    final protected function pipeline(): IPipeline
     {
         return Pipeline::create($this->Container);
     }

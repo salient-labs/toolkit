@@ -26,15 +26,16 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method $this filterPolicy(int $value) The action to take when filters are ignored by the provider (see {@see SyncDefinition::$FilterPolicy})
  * @method $this expiry(?int $value) The time, in seconds, before responses from the provider expire (see {@see HttpSyncDefinition::$Expiry})
  * @method $this methodMap(array $value) An array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})
- * @method $this overrides(array $value) See {@see SyncDefinition::$Overrides}
+ * @method $this overrides(array $value) An array that maps sync operations to closures that override any other implementations (see {@see SyncDefinition::$Overrides})
  * @method $this dataToEntityPipeline(?IPipeline $value) A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required (see {@see SyncDefinition::$DataToEntityPipeline})
  * @method $this entityToDataPipeline(?IPipeline $value) A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required (see {@see SyncDefinition::$EntityToDataPipeline})
+ * @method mixed get(string $name) The value of $name if applied to the unresolved HttpSyncDefinition by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved HttpSyncDefinition by calling $name()
  * @method HttpSyncDefinition go() Get a new HttpSyncDefinition object
  * @method static HttpSyncDefinition|null resolve(HttpSyncDefinition|HttpSyncDefinitionBuilder|null $object) Resolve a HttpSyncDefinitionBuilder or HttpSyncDefinition object to a HttpSyncDefinition object
  *
  * @uses HttpSyncDefinition
- * @lkrms-generate-command lk-util generate builder --static-builder=build --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\HttpSyncDefinition'
+ * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\HttpSyncDefinition'
  */
 final class HttpSyncDefinitionBuilder extends Builder
 {
