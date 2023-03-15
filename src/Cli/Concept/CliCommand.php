@@ -433,7 +433,7 @@ abstract class CliCommand implements ReturnsContainer
                 : '';
 
             if ($description = trim($option->Description)) {
-                $options    .= "\n  " . $this->prepareDescription($description, '  ', 76);
+                $options .= "\n  " . $this->prepareDescription($description, '  ', 76);
                 // Increase the indentation of "Default:" and "Values:" to
                 // separate them from the description
                 $optionLines = $optionLines ? str_replace("\n", "\n  ", $optionLines) : '';

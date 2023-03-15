@@ -43,7 +43,7 @@ final class RegexDateParser implements IDateParser
         return null;
     }
 
-    public static function dotNet(): self
+    public static function dotNet(): IDateParser
     {
         return new self(
             '/^\/Date\((?P<seconds>[0-9]+)(?P<milliseconds>[0-9]{3})(?P<offset>[-+][0-9]{4})?\)\/$/',

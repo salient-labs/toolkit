@@ -142,6 +142,16 @@ abstract class SyncEntity implements ISyncEntity
         return null;
     }
 
+    final public function id()
+    {
+        return $this->Id;
+    }
+
+    final public function canonicalId()
+    {
+        return $this->CanonicalId;
+    }
+
     /**
      * Override to specify how the object graph below this entity type should be
      * serialized
@@ -267,7 +277,9 @@ abstract class SyncEntity implements ISyncEntity
             case SerializeLinkType::DEFAULT:
                 return [
                     '@type' => $this->typeUri($compact),
-                    '@id'   => $this->id(),
+                    '@id'   => is_null($this->Id)
+                        ? spl_object_id($this)
+                        : $this->Id,
                 ];
 
             case SerializeLinkType::COMPACT:
@@ -277,8 +289,10 @@ abstract class SyncEntity implements ISyncEntity
 
             case SerializeLinkType::FRIENDLY:
                 return array_filter([
-                    '@type'        => $this->typeUri($compact),
-                    '@id'          => $this->id(),
+                    '@type' => $this->typeUri($compact),
+                    '@id'   => is_null($this->Id)
+                        ? spl_object_id($this)
+                        : $this->Id,
                     '@name'        => $this->name(),
                     '@description' => $this->description(),
                 ]);
@@ -289,7 +303,13 @@ abstract class SyncEntity implements ISyncEntity
 
     final public function uri(bool $compact = true): string
     {
-        return $this->typeUri($compact) . '/' . $this->id();
+        return sprintf(
+            '%s/%s',
+            $this->typeUri($compact),
+            is_null($this->Id)
+                ? spl_object_id($this)
+                : $this->Id
+        );
     }
 
     /**
@@ -336,18 +356,10 @@ abstract class SyncEntity implements ISyncEntity
     {
         $ctx = $this->requireContext();
         if (is_array($deferred)) {
-            $ctx = $ctx->withListArrays();
+            $ctx = $ctx->withArrays();
         }
 
         DeferredSyncEntity::defer($this->provider(), $ctx->push($this), $entity ?: static::class, $deferred, $replace);
-    }
-
-    /**
-     * @return int|string
-     */
-    private function id()
-    {
-        return is_null($this->Id) ? spl_object_id($this) : $this->Id;
     }
 
     private function typeUri(bool $compact): string

@@ -141,7 +141,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
                 $cache       = $match = false;
                 $uncertainty = null;
             } else {
-                $cache = [$match[0], $uncertainty];
+                $cache       = [$match[0], $uncertainty];
             }
         }
 

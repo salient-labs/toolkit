@@ -33,7 +33,10 @@ abstract class HttpSyncProvider extends SyncProvider
      */
     final public function getCurler(string $path, ?int $expiry = -1, ?ICurlerHeaders $headers = null, ?ICurlerPager $pager = null): Curler
     {
-        $curlerB = $this->buildCurler(CurlerBuilder::build());
+        $curlerB = $this->buildCurler(
+            CurlerBuilder::build()
+                ->baseUrl($this->getEndpointUrl($path))
+        );
 
         if (!is_null($expiry) && $expiry < 0) {
             $expiry = $this->getExpiry($path);
@@ -57,9 +60,7 @@ abstract class HttpSyncProvider extends SyncProvider
             $curlerB = $curlerB->pager($this->getPager($path));
         }
 
-        return
-            $curlerB->baseUrl($this->getEndpointUrl($path))
-                    ->go();
+        return $curlerB->go();
     }
 
     final public function getDefinition(string $entity): ISyncDefinition
@@ -95,12 +96,17 @@ abstract class HttpSyncProvider extends SyncProvider
     /**
      * Configure an unresolved Curler instance for upstream requests
      *
+     * `baseUrl()` has already been applied to {@see CurlerBuilder} instances
+     * passed to this method.
+     *
      * Called once per {@see HttpSyncProvider::getCurler()} call.
      *
      * {@see HttpSyncProvider::getHeaders()} and
      * {@see HttpSyncProvider::getPager()} are not called if
      * {@see HttpSyncProvider::buildCurler()} sets their respective properties
      * via {@see CurlerBuilder::headers()} or {@see CurlerBuilder::pager()}.
+     * Values passed to {@see HttpSyncProvider::getCurler()}'s `$headers` and
+     * `$pager` arguments take precedence over all of these.
      *
      */
     protected function buildCurler(CurlerBuilder $curlerB): CurlerBuilder

@@ -137,7 +137,7 @@ final class System
      * current run
      *
      * @return array<string,array<string,array{float,int}>> An array that maps
-     * timer types to `<timer-name> => <milliseconds-elapsed>` arrays.
+     * timer types to `<timer_name> => <milliseconds_elapsed>` arrays.
      */
     public function getTimers(bool $includeRunning = true, ?string $type = null): array
     {

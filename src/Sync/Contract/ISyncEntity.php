@@ -51,6 +51,29 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
     public static function entityTypeId(): ?int;
 
     /**
+     * The unique identifier assigned to the entity by its provider
+     *
+     * @return int|string|null
+     */
+    public function id();
+
+    /**
+     * The unique identifier assigned to the entity by its canonical backend
+     *
+     * An {@see ISyncEntity}'s canonical backend is the provider regarded as the
+     * "single source of truth" for its underlying
+     * {@see \Lkrms\Contract\IProvidable::service()} and any properties that
+     * aren't "owned" by another provider.
+     *
+     * To improve the accuracy and performance of sync operations, providers
+     * should propagate this value to and from backends capable of storing it,
+     * but this is not strictly required.
+     *
+     * @return int|string|null
+     */
+    public function canonicalId();
+
+    /**
      * Serialize the entity and any nested entities
      *
      * The entity's {@see SyncSerializeRules} are applied to each

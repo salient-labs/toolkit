@@ -2,87 +2,94 @@
 
 namespace Lkrms\Sync\Contract;
 
+use Lkrms\Contract\FluentIterator;
 use Lkrms\Contract\IProviderContext;
 
 /**
- * The context within which a SyncEntity is instantiated
+ * The context within which a sync entity is instantiated
  *
+ * @template TList of array|FluentIterator
  */
 interface ISyncContext extends IProviderContext
 {
     /**
-     * Request arrays instead of generators from sync operations that return
-     * lists
+     * Request an array instead of an Iterator from sync operations that return
+     * a list
      *
-     * {@see ISyncContext::getListToArray()} returns `true` until
-     * {@see ISyncContext::withGenerators()} is called.
+     * {@see ISyncContext::getIteratorToArray()} returns `true` after calling
+     * this method.
      *
-     * @return $this
+     * @return ISyncContext<array>
      */
-    public function withListArrays();
+    public function withArrays();
 
     /**
-     * Request generators (instead of arrays) from sync operations that return
-     * lists
+     * Request an Iterator instead of an array from sync operations that return
+     * a list
      *
-     * @return $this
+     * {@see ISyncContext::getIteratorToArray()} returns `false` after calling
+     * this method.
+     *
+     * @return ISyncContext<FluentIterator>
      */
-    public function withGenerators();
+    public function withIterators();
 
     /**
      * Convert non-mandatory sync operation arguments to a normalised filter and
      * add it to the context
      *
      * If, after removing the operation's mandatory arguments from `$args`, the
-     * remaining values have one of the following signatures, they are mapped to
-     * an associative array returned by {@see ISyncContext::getFilter()} until
-     * the next call to {@see ISyncContext::withArgs()}.
+     * remaining values match one of the following signatures, they are mapped
+     * to an associative array and returned by {@see ISyncContext::getFilter()}
+     * until updated by another call to {@see ISyncContext::withArgs()}.
      *
-     * 1. One array argument (`fn(array $filter)`)
+     * 1. One array argument (`fn(...<mandatory>, array $filter)`)
      *    - Alphanumeric keys are converted to snake_case
      *    - Keys containing characters other than letters, numbers, hyphens and
      *      underscores, e.g. `'$orderby'`, are left as-is
      *
-     * 2. A list of entity IDs (`fn(int|string ...$ids)`)
-     *    - Converted to `[ "id" => $ids ]`
+     * 2. A list of entity IDs (`fn(...<mandatory>, int|string ...$ids)`)
+     *    - Converted to `[ 'id' => $ids ]`
      *
-     * 3. A list of entities (`fn(SyncEntity ...$entities)`)
+     * 3. A list of entities (`fn(...<mandatory>, ISyncEntity ...$entities)`)
      *    - Converted to an array that maps the normalised name of each entity's
      *      unqualified {@see \Lkrms\Contract\IProvidable::service()} to an
      *      array of entity IDs
      *
-     * If none of these match `$args`, {@see ISyncContext::getFilter()} returns
-     * `null`. {@see ISyncContext::getFilter()} returns an empty array (`[]`) if
-     * no non-mandatory arguments were provided.
+     * 4. No arguments (`fn(...<mandatory>`)
+     *    - Converted to an empty array (`[]`)
+     *
+     * If `$args` doesn't match any of these, an `UnexpectedValueException` is
+     * thrown.
      *
      * Using {@see ISyncContext::claimFilterValue()} to "claim" values from the
      * filter is recommended. Depending on the provider's
      * {@see \Lkrms\Sync\Support\SyncFilterPolicy}, unclaimed values may cause
      * requests to fail.
      *
-     * {@see \Lkrms\Sync\Concept\SyncEntity} objects are replaced with the value
-     * of their {@see \Lkrms\Sync\Concept\SyncEntity::$Id Id} when `$args`
-     * contains an array or a list of entities. This operation is not recursive.
+     * {@see ISyncEntity} objects are replaced with the return value of
+     * {@see ISyncEntity::id()} when `$args` contains an array or a list of
+     * entities. This operation is not recursive.
      *
      * @return $this
      */
     public function withArgs(int $operation, ...$args);
 
     /**
-     * Return true if list operations should return arrays instead of generators
+     * True if list operations should return an array instead of an Iterator
      *
      * @return bool
+     * @see ISyncContext::withArrays()
+     * @see ISyncContext::withIterators()
      */
-    public function getListToArray(): bool;
+    public function getIteratorToArray(): bool;
 
     /**
      * Get the filter most recently passed via optional sync operation arguments
      *
-     * @return array|null `null` if arguments were passed to the operation but
-     * couldn't be converted to a filter.
      * @see ISyncContext::withArgs()
      */
-    public function getFilter(): ?array;
+    public function getFilter(): array;
 
     /**
      * Get a value from the filter most recently passed via optional sync

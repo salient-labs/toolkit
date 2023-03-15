@@ -61,6 +61,13 @@ class GenerateBuilder extends GenerateCommand
                 ->optionType(CliOptionType::VALUE)
                 ->defaultValue('build'),
             CliOption::build()
+                ->long('value-getter')
+                ->short('V')
+                ->valueName('METHOD')
+                ->description('The method that returns a value if it has been set')
+                ->optionType(CliOptionType::VALUE)
+                ->defaultValue('get'),
+            CliOption::build()
                 ->long('value-checker')
                 ->short('c')
                 ->valueName('METHOD')
@@ -153,10 +160,11 @@ class GenerateBuilder extends GenerateCommand
         $container = $this->getFqcnAlias(IContainer::class);
 
         $staticBuilder  = Convert::toCamelCase($this->getOptionValue('static-builder'));
+        $valueGetter    = Convert::toCamelCase($this->getOptionValue('value-getter'));
         $valueChecker   = Convert::toCamelCase($this->getOptionValue('value-checker'));
         $terminator     = Convert::toCamelCase($this->getOptionValue('terminator'));
         $staticResolver = Convert::toCamelCase($this->getOptionValue('static-resolver'));
-        array_push($this->SkipProperties, $staticBuilder, $valueChecker, $terminator, $staticResolver);
+        array_push($this->SkipProperties, $staticBuilder, $valueGetter, $valueChecker, $terminator, $staticResolver);
 
         $package  = $this->getOptionValue('package');
         $desc     = $this->getOptionValue('desc');
@@ -377,7 +385,7 @@ class GenerateBuilder extends GenerateCommand
                 $docBlocks = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
                 $phpDoc    = PhpDocParser::fromDocBlocks($docBlocks, $classDocBlocks);
             } else {
-                $phpDoc = null;
+                $phpDoc    = null;
             }
             $internal = (bool) ($phpDoc->Tags['internal'] ?? null);
             $link     = !$internal && $phpDoc && $phpDoc->hasDetail();
@@ -466,6 +474,7 @@ class GenerateBuilder extends GenerateCommand
                                         $link);
             }
         }
+        $methods[] = " * @method mixed $valueGetter(string \$name) The value of \$name if applied to the unresolved $class by calling \$name(), otherwise null";
         $methods[] = " * @method bool $valueChecker(string \$name) True if a value for \$name has been applied to the unresolved $class by calling \$name()";
         $methods[] = " * @method $service $terminator() Get a new $class object";
         $methods[] = " * @method static $service|null $staticResolver($service|$builderClass|null \$object) Resolve a $builderClass or $class object to a $class object";
@@ -522,6 +531,12 @@ class GenerateBuilder extends GenerateCommand
             array_push($lines,
                        '',
                        ...$this->getStaticGetter('getStaticBuilder', var_export($staticBuilder, true)));
+        }
+
+        if ($this->getOption('value-getter')->DefaultValue !== $valueGetter) {
+            array_push($lines,
+                       '',
+                       ...$this->getStaticGetter('getValueGetter', var_export($valueGetter, true)));
         }
 
         if ($this->getOption('value-checker')->DefaultValue !== $valueChecker) {

@@ -71,6 +71,19 @@ interface IPipeline extends IImmutable
     public function after(callable $callback);
 
     /**
+     * Apply a callback to each payload before it is sent if an after() callback
+     * hasn't already been applied
+     *
+     * @param callable $callback
+     * ```php
+     * fn($payload, IPipeline $pipeline, $arg)
+     * ```
+     * @psalm-param callable(TInput, IPipeline, TArgument): (TInput|TOutput) $callback
+     * @return $this
+     */
+    public function afterIf(callable $callback);
+
+    /**
      * Add pipes to the pipeline
      *
      * A pipe must be one of the following:
@@ -141,12 +154,30 @@ interface IPipeline extends IImmutable
     public function then(callable $callback);
 
     /**
+     * Apply a callback to each result if a then() callback hasn't already been
+     * applied
+     *
+     * @template TThenOutput
+     * @param callable $callback
+     * ```php
+     * fn($result, IPipeline $pipeline, $arg)
+     * ```
+     * @psalm-param callable(TInput|TOutput, IPipeline, TArgument): TThenOutput $callback
+     * @return $this
+     * @psalm-return IPipeline<TInput,TThenOutput,TArgument>
+     */
+    public function thenIf(callable $callback);
+
+    /**
      * Apply a filter to each result
      *
      * This method can only be called once per pipeline.
      *
-     * Analogous to `array_filter()`. If `$filter` returns `true`, `$result` is
-     * returned to the caller, otherwise:
+     * Analogous to `array_filter()`, although the effect of the callback's
+     * return value is inverted.
+     *
+     * If `$filter` returns `false`, `$result` is returned to the caller,
+     * otherwise:
      * - if {@see IPipeline::stream()} was called, the result is discarded
      * - if {@see IPipeline::send()} was called, an exception is thrown
      *
@@ -154,10 +185,25 @@ interface IPipeline extends IImmutable
      * ```php
      * fn($result, IPipeline $pipeline, $arg): bool
      * ```
-     * @psalm-param callable(TOutput, IPipeline, TArgument): bool $filter
+     * @psalm-param callable(TOutput|null, IPipeline, TArgument): bool $filter
      * @return $this
      */
     public function unless(callable $filter);
+
+    /**
+     * Apply a filter to each result if an unless() callback hasn't already been
+     * applied
+     *
+     * See {@see IPipeline::unless()} for more information.
+     *
+     * @param callable $filter
+     * ```php
+     * fn($result, IPipeline $pipeline, $arg): bool
+     * ```
+     * @psalm-param callable(TOutput|null, IPipeline, TArgument): bool $filter
+     * @return $this
+     */
+    public function unlessIf(callable $filter);
 
     /**
      * Run the pipeline and return the result

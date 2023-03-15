@@ -2,11 +2,11 @@
 
 namespace Lkrms\Support;
 
+use Lkrms\Concern\HasMutator;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderContext;
-use RuntimeException;
 
 /**
  * The context within which an IProvidable is instantiated
@@ -14,6 +14,8 @@ use RuntimeException;
  */
 class ProviderContext implements IProviderContext
 {
+    use HasMutator;
+
     /**
      * @var IContainer
      */
@@ -46,25 +48,6 @@ class ProviderContext implements IProviderContext
         $this->Conformity = $conformity;
     }
 
-    final protected function maybeMutate(string $property, $value, ?string $key = null)
-    {
-        if ($key) {
-            if (!is_array($this->{$property})) {
-                throw new RuntimeException("\$this->{$property} is not an array");
-            }
-            $_value       = $this->{$property};
-            $_value[$key] = $value;
-            $value        = $_value;
-        }
-        if ($value === $this->{$property}) {
-            return $this;
-        }
-        $clone              = clone $this;
-        $clone->{$property} = $value;
-
-        return $clone;
-    }
-
     final public function app(): IContainer
     {
         return $this->Container;
@@ -77,7 +60,7 @@ class ProviderContext implements IProviderContext
 
     final public function set(string $key, $value)
     {
-        return $this->maybeMutate('Values', $value, $key);
+        return $this->withPropertyValue('Values', $value, $key);
     }
 
     final public function push(IProvidable $entity)
@@ -90,17 +73,17 @@ class ProviderContext implements IProviderContext
 
     final public function withContainer(IContainer $container)
     {
-        return $this->maybeMutate('Container', $container);
+        return $this->withPropertyValue('Container', $container);
     }
 
     final public function withParent(?IHierarchy $parent)
     {
-        return $this->maybeMutate('Parent', $parent);
+        return $this->withPropertyValue('Parent', $parent);
     }
 
     final public function withConformity(int $conformity)
     {
-        return $this->maybeMutate('Conformity', $conformity);
+        return $this->withPropertyValue('Conformity', $conformity);
     }
 
     final public function get(string $key)
