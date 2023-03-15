@@ -3,6 +3,7 @@
 namespace Lkrms\Tests\Concept;
 
 use Lkrms\Tests\Concept\HasMutator\MyMutatingClass;
+use RuntimeException;
 
 final class HasMutatorTest extends \Lkrms\Tests\TestCase
 {
@@ -19,9 +20,10 @@ final class HasMutatorTest extends \Lkrms\Tests\TestCase
                ->with('Arr4', 'fff', 'f');
         $e = $d->with('Obj', 'aa', 'A')
                ->with('Obj', 'bb', 'B');
-        $f = $e->with('Obj', 'aa', 'A')
-               ->with('Obj', 'bb', 'B')
-               ->with('A', 1);
+        $f = $e->with('A', 1)
+               ->with('Obj', 'aa', 'A')
+               ->with('Obj', 'bb', 'B');
+        $g = $f->with('Coll', new \stdClass(), 'g');
 
         $this->assertNotSame($a, $b);
         $this->assertNotEquals($a, $b);
@@ -31,10 +33,16 @@ final class HasMutatorTest extends \Lkrms\Tests\TestCase
         $this->assertNotEquals($c, $d);
         $this->assertNotSame($d, $e);
         $this->assertNotEquals($d, $e);
+        $this->assertNotSame($f, $g);
+        $this->assertNotEquals($f, $g);
 
         $this->assertSame($e, $f);
 
+        $this->assertSame($c->Obj, $d->Obj);
         $this->assertNotSame($d->Obj, $e->Obj);
+
+        $this->assertSame($d->Coll, $e->Coll);
+        $this->assertNotSame($f->Coll, $g->Coll);
 
         $A       = new MyMutatingClass();
         $A->A    = 1;
@@ -54,8 +62,13 @@ final class HasMutatorTest extends \Lkrms\Tests\TestCase
         $A->Arr4 = [
             'f' => 'fff',
         ];
-        $A->Obj->A = 'aa';
-        $A->Obj->B = 'bb';
-        $this->assertEquals($A, $f);
+        $A->Obj->A    = 'aa';
+        $A->Obj->B    = 'bb';
+        $A->Coll['g'] = new \stdClass();
+
+        $this->assertEquals($A, $g);
+
+        $this->expectException(RuntimeException::class);
+        $g->with('B', 5, 'index');
     }
 }

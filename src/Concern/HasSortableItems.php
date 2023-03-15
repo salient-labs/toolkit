@@ -21,18 +21,22 @@ trait HasSortableItems
         return $a <=> $b;
     }
 
-    private function sortItems(): void
+    private function sortItems(bool $preserveKeys = true): void
     {
-        usort($this->_Items, fn($a, $b) => $this->compareItems($a, $b));
+        if ($preserveKeys) {
+            uasort($this->_Items, fn($a, $b) => $this->compareItems($a, $b));
+        } else {
+            usort($this->_Items, fn($a, $b) => $this->compareItems($a, $b));
+        }
     }
 
     /**
      * @return $this
      */
-    final public function sort()
+    final public function sort(bool $preserveKeys = true)
     {
         $clone = clone $this;
-        $clone->sortItems();
+        $clone->sortItems($preserveKeys);
 
         return $clone;
     }
@@ -40,10 +44,14 @@ trait HasSortableItems
     /**
      * @return $this
      */
-    final public function reverse()
+    final public function reverse(bool $preserveKeys = true)
     {
         $clone         = clone $this;
-        $clone->_Items = array_reverse($clone->_Items);
+        $clone->_Items = array_reverse($clone->_Items, $preserveKeys);
+        // clear non-numeric keys too
+        if (!$preserveKeys) {
+            $clone->_Items = array_values($clone->_Items);
+        }
 
         return $clone;
     }
