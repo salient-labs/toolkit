@@ -86,6 +86,7 @@ interface IProviderContext extends IImmutable, ReturnsContainer
     /**
      * Get the current payload's array key conformity
      *
+     * @psalm-return ArrayKeyConformity::*
      */
     public function getConformity(): int;
 }

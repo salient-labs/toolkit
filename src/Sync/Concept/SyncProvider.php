@@ -140,7 +140,8 @@ abstract class SyncProvider implements ISyncProvider, IService
 
     final public function setProviderId(int $providerId, string $providerHash)
     {
-        [$this->Id, $this->Hash] = [$providerId, $providerHash];
+        $this->Id   = $providerId;
+        $this->Hash = $providerHash;
 
         return $this;
     }

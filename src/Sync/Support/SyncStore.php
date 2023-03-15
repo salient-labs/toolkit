@@ -87,9 +87,11 @@ final class SyncStore extends SqliteStore
     private $WarningCount = 0;
 
     /**
-     * @var bool
+     * [ Prefix => true ]
+     *
+     * @var array<string,true>
      */
-    private $IsLoaded = false;
+    private $RegisteredNamespaces = [];
 
     /**
      * @var string|null
@@ -102,20 +104,20 @@ final class SyncStore extends SqliteStore
     private $Arguments;
 
     /**
+     * Deferred provider registrations
+     *
+     * @var ISyncProvider[]
+     */
+    private $DeferredProviders = [];
+
+    /**
      * Deferred namespace registrations
      *
      * [ Prefix, namespace base URI, PHP namespace ]
      *
-     * @var string[]|null
+     * @var array<array{string,string,string}>
      */
-    private $Namespaces = [];
-
-    /**
-     * [ Prefix => true ]
-     *
-     * @var array<string,true>
-     */
-    private $RegisteredNamespaces = [];
+    private $DeferredNamespaces = [];
 
     /**
      * @param string $command The canonical name of the command performing sync
@@ -124,24 +126,22 @@ final class SyncStore extends SqliteStore
      */
     public function __construct(string $filename = ':memory:', string $command = '', array $arguments = [])
     {
-        $this->requireUpsert();
-
         $this->Errors    = new SyncErrorCollection();
         $this->Command   = $command;
         $this->Arguments = $arguments;
 
-        $this->open($filename);
+        $this->requireUpsert()
+             ->open($filename);
     }
 
     /**
      * Create or open a sync entity database
      *
-     * @return $this
      */
-    private function open(string $filename)
+    private function open(string $filename): void
     {
-        $this->openDb($filename);
-        $this->db()->exec(
+        $this->openDb(
+            $filename,
             <<<SQL
             CREATE TABLE IF NOT EXISTS
               _sync_run (
@@ -214,9 +214,6 @@ final class SyncStore extends SqliteStore
 
             SQL
         );
-        $this->IsLoaded = true;
-
-        return $this;
     }
 
     /**
@@ -287,10 +284,22 @@ final class SyncStore extends SqliteStore
     /**
      * Register a sync provider and set its provider ID
      *
+     * If a sync run has started, the provider is registered immediately and its
+     * provider ID is passed to {@see ISyncProvider::setProviderId()} before
+     * {@see SyncStore::provider()} returns. Otherwise, registration is deferred
+     * until a sync run starts.
+     *
      * @return $this
      */
     public function provider(ISyncProvider $provider)
     {
+        // Don't start a run just to register a provider
+        if (is_null($this->RunId)) {
+            $this->DeferredProviders[] = $provider;
+
+            return $this;
+        }
+
         $class = get_class($provider);
         $hash  = Compute::binaryHash($class, ...$provider->getBackendIdentifier());
 
@@ -418,7 +427,7 @@ final class SyncStore extends SqliteStore
     {
         // Don't start a run just to register a namespace
         if (is_null($this->RunId)) {
-            $this->Namespaces[] = [$prefix, $uri, $namespace];
+            $this->DeferredNamespaces[] = [$prefix, $uri, $namespace];
 
             return $this;
         }
@@ -586,10 +595,7 @@ final class SyncStore extends SqliteStore
 
     protected function check(): void
     {
-        // Don't check anything until `open()` returns, otherwise tables etc.
-        // won't be created because the query below will fail, and every
-        // invocation will initiate a run, whether sync is used or not
-        if (!$this->IsLoaded || !is_null($this->RunId)) {
+        if (!is_null($this->RunId)) {
             return;
         }
 
@@ -615,10 +621,15 @@ final class SyncStore extends SqliteStore
         $this->RunUuid = $uuid;
         unset($this->Command, $this->Arguments);
 
-        foreach ($this->Namespaces as [$prefix, $uri, $namespace]) {
+        foreach ($this->DeferredProviders as $provider) {
+            $this->provider($provider);
+        }
+        unset($this->DeferredProviders);
+
+        foreach ($this->DeferredNamespaces as [$prefix, $uri, $namespace]) {
             $this->namespace($prefix, $uri, $namespace);
         }
-        unset($this->Namespaces);
+        unset($this->DeferredNamespaces);
 
         $this->reload();
     }

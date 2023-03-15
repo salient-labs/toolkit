@@ -2,13 +2,13 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\FluentIterator;
+use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProviderContext;
 
 /**
  * The context within which a sync entity is instantiated
  *
- * @template TList of array|FluentIterator
+ * @template TList of array|IIterable
  */
 interface ISyncContext extends IProviderContext
 {
@@ -30,7 +30,7 @@ interface ISyncContext extends IProviderContext
      * {@see ISyncContext::getIteratorToArray()} returns `false` after calling
      * this method.
      *
-     * @return ISyncContext<FluentIterator>
+     * @return ISyncContext<IIterable>
      */
     public function withIterators();
 

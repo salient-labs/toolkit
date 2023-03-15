@@ -7,7 +7,7 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
-use Lkrms\Contract\FluentIterator;
+use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
@@ -163,7 +163,7 @@ final class GetSyncEntities extends CliCommand
                       $this->Store->getEntityTypeUri($class) . (is_null($id) ? '' : "/$id"));
 
         $this->app()->bindIf(ISyncContext::class, SyncContext::class);
-        /** @var ISyncContext<FluentIterator> */
+        /** @var ISyncContext<IIterable> */
         $context = $this->app()->get(ISyncContext::class);
         if (!$stream) {
             $context = $context->withArrays();
