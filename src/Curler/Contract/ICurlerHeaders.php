@@ -62,7 +62,7 @@ interface ICurlerHeaders extends IImmutable
      * Get the value of a header
      *
      * @param int $flags A bitmask of {@see Flag} values.
-     * @psalm-param int-mask-of<Flag::*> $flags
+     * @phpstan-param int-mask-of<Flag::*> $flags
      * @return string[]|string|null If {@see Flag::COMBINE_REPEATED} or
      * {@see Flag::DISCARD_REPEATED} are set:
      * - a `string` containing one or more comma-separated values, or
@@ -78,7 +78,7 @@ interface ICurlerHeaders extends IImmutable
      * Get the values of all headers
      *
      * @param int $flags A bitmask of {@see Flag} values.
-     * @psalm-param int-mask-of<Flag::*> $flags
+     * @phpstan-param int-mask-of<Flag::*> $flags
      * @return array<string,string[]|string> An array that maps lowercase header
      * names to values returned by {@see ICurlerHeaders::getHeaderValue()},
      * sorted to maintain the position of each header's last appearance if

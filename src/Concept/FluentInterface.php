@@ -16,8 +16,8 @@ abstract class FluentInterface
      * ```php
      * fn(FluentInterface $object): FluentInterface
      * ```
-     * @psalm-param callable($this): $this $callback
-     * @return $this
+     * @phpstan-param callable(static): static $callback
+     * @return static
      */
     final public function call(callable $callback)
     {
@@ -33,8 +33,8 @@ abstract class FluentInterface
      * ```php
      * fn(FluentInterface $object): FluentInterface
      * ```
-     * @psalm-param callable($this): $this $callback
-     * @return $this
+     * @phpstan-param callable(static): static $callback
+     * @return static
      */
     final public function if(bool $condition, callable $callback)
     {
@@ -55,8 +55,8 @@ abstract class FluentInterface
      * ```php
      * fn(FluentInterface $object, $value, int|string $key): FluentInterface
      * ```
-     * @psalm-param callable($this, mixed, int|string): $this $callback
-     * @return $this
+     * @phpstan-param callable(static, mixed, int|string): static $callback
+     * @return static
      */
     final public function forEach($array, callable $callback)
     {

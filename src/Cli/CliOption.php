@@ -76,7 +76,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
      * One of the CliOptionType::* values
      *
      * @var int
-     * @psalm-var CliOptionType::*
+     * @phpstan-var CliOptionType::*
      * @see CliOptionType
      */
     protected $OptionType;
@@ -207,7 +207,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
     private $RawDefaultValue;
 
     /**
-     * @psalm-param CliOptionType::* $optionType
+     * @phpstan-param CliOptionType::* $optionType
      * @param string[]|null $allowedValues
      * @param string|string[]|bool|int|null $defaultValue
      * @param $bindTo Assign user-supplied values to a variable before running

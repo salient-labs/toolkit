@@ -114,7 +114,7 @@ trait TProvidable
      * See {@see TProvidable::provide()} for more information.
      *
      * @param iterable<array> $dataList
-     * @psalm-param ArrayKeyConformity::* $conformity
+     * @phpstan-param ArrayKeyConformity::* $conformity
      * @return iterable<static>
      */
     final public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProviderContext $context = null): iterable

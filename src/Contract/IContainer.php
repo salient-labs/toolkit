@@ -146,7 +146,7 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * @param string[]|null $services
      * @param string[]|null $exceptServices
      * @param int $lifetime A bitmask of {@see ServiceLifetime} values.
-     * @psalm-param int-mask-of<ServiceLifetime::*> $lifetime
+     * @phpstan-param int-mask-of<ServiceLifetime::*> $lifetime
      * @return $this
      */
     public function service(string $id, ?array $services = null, ?array $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT);
@@ -185,7 +185,7 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * ]
      * ```
      * @param int $lifetime A bitmask of {@see ServiceLifetime} values.
-     * @psalm-param int-mask-of<ServiceLifetime::*> $lifetime
+     * @phpstan-param int-mask-of<ServiceLifetime::*> $lifetime
      * @return $this
      */
     public function services(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT);

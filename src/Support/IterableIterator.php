@@ -8,7 +8,7 @@ use Lkrms\Contract\IIterable;
  * Converts an iterable to an Iterator with expressive helper methods
  *
  * @template TValue
- * @template TIterable as \Traversable<int,TValue>
+ * @template TIterable of \Traversable<int,TValue>
  * @extends \IteratorIterator<int,TValue,TIterable>
  * @implements IIterable<TValue>
  */
@@ -30,6 +30,10 @@ final class IterableIterator extends \IteratorIterator implements IIterable
      */
     public static function from(iterable $iterable): self
     {
+        if ($iterable instanceof self) {
+            return $iterable;
+        }
+
         return new self($iterable);
     }
 

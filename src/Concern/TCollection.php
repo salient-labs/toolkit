@@ -24,9 +24,9 @@ trait TCollection
     /**
      * @param callable $callback
      * ```php
-     * fn(T $item, ?T $nextItem, ?T $prevItem)
+     * fn(T $item, ?T $nextItem, ?T $prevItem): void
      * ```
-     * @psalm-param callable(T, ?T, ?T) $callback
+     * @phpstan-param callable(T, ?T, ?T): void $callback
      * @return $this
      */
     final public function forEach(callable $callback)
@@ -53,7 +53,7 @@ trait TCollection
      * ```php
      * fn(T $item, ?T $nextItem, ?T $prevItem): bool
      * ```
-     * @psalm-param callable(T, ?T, ?T): bool $callback
+     * @phpstan-param callable(T, ?T, ?T): bool $callback
      * @return static
      */
     final public function filter(callable $callback)
@@ -85,7 +85,7 @@ trait TCollection
      * ```php
      * fn(T $item, ?T $nextItem, ?T $prevItem): bool
      * ```
-     * @psalm-param callable(T, ?T, ?T): bool $callback
+     * @phpstan-param callable(T, ?T, ?T): bool $callback
      * @return T|false
      */
     final public function find(callable $callback)

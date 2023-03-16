@@ -3,6 +3,8 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IIterable;
+use Lkrms\Support\IterableIterator;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -26,11 +28,12 @@ use UnexpectedValueException;
  * or, if a `Faculty` provider is bound to the current global container:
  *
  * ```php
- * $faculties = Faculty::backend()->getList();
+ * $faculties = Faculty::withDefaultProvider()->getList();
  * ```
  *
  * @template TEntity of ISyncEntity
- * @implements ISyncEntityProvider<TEntity>
+ * @template TList of array|IIterable
+ * @implements ISyncEntityProvider<TEntity,TList>
  */
 final class SyncEntityProvider implements ISyncEntityProvider
 {
@@ -50,7 +53,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     private $Definition;
 
     /**
-     * @var ISyncContext
+     * @var ISyncContext<TList>
      */
     private $Context;
 
@@ -61,6 +64,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
     /**
      * @param class-string<TEntity> $entity
+     * @param ISyncContext<TList>|null $context
      */
     public function __construct(IContainer $container, string $entity, ISyncProvider $provider, ISyncDefinition $definition, ?ISyncContext $context = null)
     {
@@ -84,19 +88,34 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     public function run(int $operation, ...$args)
     {
-        if (!($closure = $this->Definition->getSyncOperationClosure($operation))) {
-            throw new SyncOperationNotImplementedException($this->Provider, $this->Entity, $operation);
+        $closure = $this->Definition
+                        ->getSyncOperationClosure($operation);
+
+        if (!$closure) {
+            throw new SyncOperationNotImplementedException(
+                $this->Provider,
+                $this->Entity,
+                $operation
+            );
         }
 
-        $result = $closure($this->Context->withArgs($operation, $this->Context, ...$args), ...$args);
+        $result = $closure(
+            $this->Context->withArgs($operation, ...$args),
+            ...$args
+        );
 
-        if (SyncOperation::isList($operation) && $this->Context->getIteratorToArray() && !is_array($result)) {
-            $entities = [];
-            foreach ($result as $entity) {
-                $entities[] = $entity;
-            }
+        if (!SyncOperation::isList($operation)) {
+            return $result;
+        }
 
-            return $entities;
+        if ($this->Context->getIteratorToArray()) {
+            return is_array($result)
+                ? $result
+                : iterator_to_array($result, false);
+        }
+
+        if (!($result instanceof IIterable)) {
+            return new IterableIterator($result);
         }
 
         return $result;
@@ -258,9 +277,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must be required
      *
      * @param iterable<TEntity> $entities
-     * @return iterable<TEntity>
+     * @return TList
      */
-    public function createList(iterable $entities, ...$args): iterable
+    public function createList(iterable $entities, ...$args)
     {
         return $this->run(SyncOperation::CREATE_LIST, $entities, ...$args);
     }
@@ -280,9 +299,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * public function getList_Faculty(ISyncContext $ctx): iterable;
      * ```
      *
-     * @return iterable<TEntity>
+     * @return TList
      */
-    public function getList(...$args): iterable
+    public function getList(...$args)
     {
         return $this->run(SyncOperation::READ_LIST, ...$args);
     }
@@ -308,9 +327,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must be required
      *
      * @param iterable<TEntity> $entities
-     * @return iterable<TEntity>
+     * @return TList
      */
-    public function updateList(iterable $entities, ...$args): iterable
+    public function updateList(iterable $entities, ...$args)
     {
         return $this->run(SyncOperation::UPDATE_LIST, $entities, ...$args);
     }
@@ -339,9 +358,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must represent the final state of the entities before they were deleted
      *
      * @param iterable<TEntity> $entities
-     * @return iterable<TEntity>
+     * @return TList
      */
-    public function deleteList(iterable $entities, ...$args): iterable
+    public function deleteList(iterable $entities, ...$args)
     {
         return $this->run(SyncOperation::DELETE_LIST, $entities, ...$args);
     }

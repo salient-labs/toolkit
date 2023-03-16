@@ -59,7 +59,7 @@ interface IProviderContext extends IImmutable, ReturnsContainer
      *
      * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
      * `COMPLETE` wherever possible to improve performance.
-     * @psalm-param ArrayKeyConformity::* $conformity
+     * @phpstan-param ArrayKeyConformity::* $conformity
      * @return $this
      */
     public function withConformity(int $conformity);
@@ -86,7 +86,7 @@ interface IProviderContext extends IImmutable, ReturnsContainer
     /**
      * Get the current payload's array key conformity
      *
-     * @psalm-return ArrayKeyConformity::*
+     * @phpstan-return ArrayKeyConformity::*
      */
     public function getConformity(): int;
 }

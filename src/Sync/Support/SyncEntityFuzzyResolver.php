@@ -2,6 +2,7 @@
 
 namespace Lkrms\Sync\Support;
 
+use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
@@ -16,6 +17,7 @@ use Lkrms\Sync\Contract\ISyncEntityResolver;
  * {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}.
  *
  * @template TEntity of ISyncEntity
+ * @template TList of array|IIterable
  */
 final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 {
@@ -33,7 +35,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     public const ALGORITHM_SIMILAR_TEXT = 1;
 
     /**
-     * @var ISyncEntityProvider
+     * @var ISyncEntityProvider<TEntity,TList>
      */
     private $EntityProvider;
 
@@ -65,7 +67,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     private $Cache = [];
 
     /**
-     * @param ISyncEntityProvider<TEntity> $entityProvider
+     * @param ISyncEntityProvider<TEntity,TList> $entityProvider
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
      * @param int|null $algorithm Overrides the default string comparison

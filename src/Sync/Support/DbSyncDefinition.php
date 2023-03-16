@@ -33,13 +33,13 @@ class DbSyncDefinition extends SyncDefinition implements HasBuilder
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param int[] $operations
-     * @psalm-param array<SyncOperation::*> $operations
-     * @psalm-param ArrayKeyConformity::* $conformity
-     * @psalm-param SyncFilterPolicy::* $filterPolicy
+     * @phpstan-param array<SyncOperation::*> $operations
+     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @phpstan-param SyncFilterPolicy::* $filterPolicy
      * @param array<int,Closure> $overrides
-     * @psalm-param array<SyncOperation::*,Closure> $overrides
-     * @psalm-param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
-     * @psalm-param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
+     * @phpstan-param array<SyncOperation::*,Closure> $overrides
+     * @phpstan-param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
+     * @phpstan-param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
      */
     public function __construct(string $entity, DbSyncProvider $provider, array $operations = [], ?string $table = null, int $conformity = ArrayKeyConformity::PARTIAL, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, array $overrides = [], ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
     {

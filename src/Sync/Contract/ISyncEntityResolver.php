@@ -2,8 +2,6 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Sync\Concept\SyncEntity;
-
 /**
  * Resolves names to entities
  *

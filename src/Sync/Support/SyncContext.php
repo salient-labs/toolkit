@@ -46,8 +46,6 @@ final class SyncContext extends ProviderContext implements ISyncContext
 
     public function withArgs(int $operation, ...$args)
     {
-        array_shift($args);
-
         // READ_LIST is the only operation with no mandatory argument after
         // `SyncContext $ctx`
         if ($operation !== SyncOperation::READ_LIST) {

@@ -3,6 +3,7 @@
 namespace Lkrms\Support;
 
 use Closure;
+use Lkrms\Concern\TIntrospector;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IExtensible;
@@ -31,65 +32,9 @@ use UnexpectedValueException;
 class Introspector
 {
     /**
-     * @var TIntrospectionClass
+     * @use TIntrospector<TClass,TIntrospectionClass>
      */
-    protected $_Class;
-
-    /**
-     * @var string|null
-     */
-    protected $_Service;
-
-    /**
-     * @var array<string,array<string,IntrospectionClass>>
-     */
-    private static $IntrospectionClasses = [];
-
-    /**
-     * Get an Introspector for a container-bound service
-     *
-     * Uses `$container` to resolve `$service` to a concrete class and returns
-     * an {@see Introspector} for it.
-     *
-     * @template T of object
-     * @param class-string<T> $service
-     * @return static
-     * @psalm-return static<T>
-     * @phpstan-return static
-     */
-    final public static function getService(IContainer $container, string $service)
-    {
-        $instance           = new static($container->getName($service));
-        $instance->_Service = $service;
-
-        return $instance;
-    }
-
-    /**
-     * Get an Introspector for a class
-     *
-     * @template T of object
-     * @param class-string<T> $class
-     * @return static
-     * @psalm-return static<T>
-     * @phpstan-return static
-     */
-    final public static function get(string $class)
-    {
-        return new static($class);
-    }
-
-    /**
-     * @param class-string<TClass> $class
-     */
-    final private function __construct(string $class)
-    {
-        $_class = strtolower($class);
-        $this->_Class =
-            (self::$IntrospectionClasses[static::class][$_class] ?? null)
-                ?: (self::$IntrospectionClasses[static::class][$_class] =
-                    $this->getIntrospectionClass($class));
-    }
+    use TIntrospector;
 
     /**
      * @internal
@@ -99,11 +44,7 @@ class Introspector
         return $this->_Class->{$name};
     }
 
-    /**
-     * @param class-string<TClass> $class
-     * @return TIntrospectionClass<TClass>
-     */
-    protected function getIntrospectionClass(string $class): IntrospectionClass
+    private function getIntrospectionClass(string $class): IntrospectionClass
     {
         return new IntrospectionClass($class);
     }
@@ -115,7 +56,7 @@ class Introspector
      * @template T of string[]|string
      * @param T $value
      * @param $flags A bitmask of {@see NormaliserFlag} values.
-     * @psalm-param int-mask-of<NormaliserFlag::*> $flags
+     * @phpstan-param int-mask-of<NormaliserFlag::*> $flags
      * @return T
      * @see \Lkrms\Contract\IResolvable::normaliser()
      * @see \Lkrms\Contract\IResolvable::normalise()

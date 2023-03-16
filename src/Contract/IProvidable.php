@@ -7,24 +7,30 @@ use Lkrms\Support\ArrayKeyConformity;
 /**
  * Can be instantiated by an IProvider
  *
+ * @template TProvider of IProvider
+ * @template TProviderContext of IProviderContext
  */
 interface IProvidable extends ReceivesService, ReturnsService
 {
     /**
      * Get the provider servicing the entity
      *
+     * @return TProvider|null
      */
     public function provider(): ?IProvider;
 
     /**
      * Get the context in which the entity is being serviced
      *
+     * @return TProviderContext|null
      */
     public function context(): ?IProviderContext;
 
     /**
      * Get the context in which the entity is being serviced, or throw an
      * exception if no context has been set
+     *
+     * @return TProviderContext
      */
     public function requireContext(): IProviderContext;
 
@@ -71,6 +77,7 @@ interface IProvidable extends ReceivesService, ReturnsService
     /**
      * Called immediately after instantiation by a provider's service container
      *
+     * @param TProvider $provider
      * @return $this
      * @throws \RuntimeException if the instance already has a provider.
      */
@@ -79,6 +86,7 @@ interface IProvidable extends ReceivesService, ReturnsService
     /**
      * Called immediately after instantiation, then as needed by the provider
      *
+     * @param TProviderContext $context
      * @return $this
      */
     public function setContext(IProviderContext $context);

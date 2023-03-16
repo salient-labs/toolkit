@@ -4,8 +4,8 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 
 /**
@@ -50,7 +50,7 @@ final class DeferredSyncEntity implements IReadable
         $this->Replace  = $this;
     }
 
-    public function replace(SyncEntity $entity): void
+    public function replace(ISyncEntity $entity): void
     {
         $this->Replace = $entity;
         unset($this->Replace);

@@ -20,9 +20,9 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      *
      * @param callable $callback
      * ```php
-     * fn(T $item, ?T $nextItem, ?T $prevItem)
+     * fn(T $item, ?T $nextItem, ?T $prevItem): void
      * ```
-     * @psalm-param callable(T, ?T, ?T) $callback
+     * @phpstan-param callable(T, ?T, ?T): void $callback
      * @return $this
      */
     public function forEach(callable $callback);
@@ -36,7 +36,7 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      * ```php
      * fn(T $item, ?T $nextItem, ?T $prevItem): bool
      * ```
-     * @psalm-param callable(T, ?T, ?T): bool $callback
+     * @phpstan-param callable(T, ?T, ?T): bool $callback
      * @return static
      */
     public function filter(callable $callback);
@@ -49,7 +49,7 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      * ```php
      * fn(T $item, ?T $nextItem, ?T $prevItem): bool
      * ```
-     * @psalm-param callable(T, ?T, ?T): bool $callback
+     * @phpstan-param callable(T, ?T, ?T): bool $callback
      * @return T|false
      */
     public function find(callable $callback);

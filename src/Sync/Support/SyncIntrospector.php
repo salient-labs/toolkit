@@ -3,6 +3,7 @@
 namespace Lkrms\Sync\Support;
 
 use Closure;
+use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\Dictionary\Regex;
@@ -18,10 +19,22 @@ use RuntimeException;
  * @property-read string|null $EntityPlural Not set if the plural class name is the same the singular one
  *
  * @template TClass of object
- * @extends Introspector<TClass,SyncIntrospectionClass>
+ * @template TIntrospectionClass of SyncIntrospectionClass
+ * @extends Introspector<TClass,TIntrospectionClass>
  */
 final class SyncIntrospector extends Introspector
 {
+    /**
+     * @use TIntrospector<TClass,TIntrospectionClass>
+     */
+    use TIntrospector;
+
+    /**
+     * @var TIntrospectionClass
+     * @todo Remove this property when Intelephense resolves trait generics
+     */
+    protected $_Class;
+
     /**
      * @param class-string<ISyncEntity> $entity
      * @return class-string<ISyncProvider>
@@ -46,7 +59,7 @@ final class SyncIntrospector extends Introspector
         return null;
     }
 
-    protected function getIntrospectionClass(string $class): SyncIntrospectionClass
+    private function getIntrospectionClass(string $class): SyncIntrospectionClass
     {
         return new SyncIntrospectionClass($class);
     }
@@ -180,7 +193,7 @@ final class SyncIntrospector extends Introspector
      *   {@see SyncOperation} via a method
      *
      * @param int $operation A {@see SyncOperation} value.
-     * @psalm-param SyncOperation::* $operation
+     * @phpstan-param SyncOperation::* $operation
      * @param string|SyncIntrospector $entity
      * @return Closure(ISyncContext, mixed...)|null
      * ```php

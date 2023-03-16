@@ -36,7 +36,7 @@ final class Pipeline extends FluentInterface implements IPipeline
 
     /**
      * @var int
-     * @psalm-var ArrayKeyConformity::*
+     * @phpstan-var ArrayKeyConformity::*
      */
     private $PayloadConformity;
 
@@ -52,25 +52,25 @@ final class Pipeline extends FluentInterface implements IPipeline
 
     /**
      * @var array<IPipe|callable|class-string<IPipe>>
-     * @psalm-var array<IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline, TArgument): (TInput|TOutput))|class-string<IPipe>>
+     * @phpstan-var array<IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline, TArgument): (TInput|TOutput))|class-string<IPipe>>
      */
     private $Pipes = [];
 
     /**
      * @var callable|null
-     * @psalm-var (callable(TInput, IPipeline, TArgument): (TInput|TOutput))|null
+     * @phpstan-var (callable(TInput, IPipeline, TArgument): (TInput|TOutput))|null
      */
     private $After;
 
     /**
      * @var callable|null
-     * @psalm-var (callable(TInput, IPipeline, TArgument): TOutput)|null
+     * @phpstan-var (callable(TInput, IPipeline, TArgument): TOutput)|null
      */
     private $Then;
 
     /**
      * @var callable|null
-     * @psalm-var (callable(TOutput, IPipeline, TArgument): bool)|null
+     * @phpstan-var (callable(TOutput, IPipeline, TArgument): bool)|null
      */
     private $Unless;
 

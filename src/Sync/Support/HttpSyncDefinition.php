@@ -161,13 +161,13 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param int[] $operations
-     * @psalm-param array<SyncOperation::*> $operations
-     * @psalm-param ArrayKeyConformity::* $conformity
-     * @psalm-param SyncFilterPolicy::* $filterPolicy
+     * @phpstan-param array<SyncOperation::*> $operations
+     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @phpstan-param SyncFilterPolicy::* $filterPolicy
      * @param array<int,Closure> $overrides
-     * @psalm-param array<SyncOperation::*,Closure> $overrides
-     * @psalm-param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
-     * @psalm-param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
+     * @phpstan-param array<SyncOperation::*,Closure> $overrides
+     * @phpstan-param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
+     * @phpstan-param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
      * @param mixed[]|null $query
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
      * @param array<int,string> $methodMap
@@ -329,8 +329,8 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     /**
      * Get a closure to perform a sync operation via HTTP
      *
-     * @psalm-param SyncOperation::* $operation
-     * @psalm-return Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]
+     * @phpstan-param SyncOperation::* $operation
+     * @phpstan-return Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]
      */
     private function getHttpOperationClosure(int $operation): Closure
     {
@@ -366,8 +366,8 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     /**
      * Run a sync operation closure prepared earlier
      *
-     * @psalm-param (Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]) $httpClosure
-     * @psalm-param SyncOperation::* $operation
+     * @phpstan-param (Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]) $httpClosure
+     * @phpstan-param SyncOperation::* $operation
      * @return mixed[]
      */
     private function runHttpOperation(Closure $httpClosure, int $operation, ISyncContext $ctx, ...$args)

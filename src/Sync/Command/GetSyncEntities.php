@@ -11,8 +11,8 @@ use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
-use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncIntrospector;
@@ -186,11 +186,11 @@ final class GetSyncEntities extends CliCommand
                 true,
                 null,
                 $count,
-                fn(SyncEntity $entity) => $entity->toArrayWith($rules)
+                fn(ISyncEntity $entity) => $entity->toArrayWith($rules)
             );
         } elseif (!is_iterable($result) || !$stream) {
             $result = Convert::toList($result, true);
-            /** @var SyncEntity $entity */
+            /** @var ISyncEntity $entity */
             foreach ($result as &$entity) {
                 $entity = $entity->toArrayWith($rules);
             }

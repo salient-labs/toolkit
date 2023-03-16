@@ -433,7 +433,7 @@ class IntrospectionClass
      * @template T of string[]|string
      * @param T $value
      * @param $flags A bitmask of {@see NormaliserFlag} values.
-     * @psalm-param int-mask-of<NormaliserFlag::*> $flags
+     * @phpstan-param int-mask-of<NormaliserFlag::*> $flags
      * @return T
      * @see \Lkrms\Contract\IResolvable::normaliser()
      * @see \Lkrms\Contract\IResolvable::normalise()

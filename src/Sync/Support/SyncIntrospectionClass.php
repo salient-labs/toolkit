@@ -5,8 +5,8 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Support\IntrospectionClass;
-use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Concept\SyncProvider;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use ReflectionClass;
 
@@ -121,7 +121,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
     {
         parent::__construct($class);
         $class            = $this->Reflector;
-        $this->IsEntity   = $class->isSubclassOf(SyncEntity::class);
+        $this->IsEntity   = $class->implementsInterface(ISyncEntity::class);
         $this->IsProvider = $class->implementsInterface(ISyncProvider::class);
 
         if ($this->IsEntity) {
@@ -147,7 +147,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
 
             // Add the entities they service to SyncProviderEntities
             if (!($entity = SyncIntrospector::providerToEntity($name)) ||
-                    !is_a($entity, SyncEntity::class, true)) {
+                    !is_a($entity, ISyncEntity::class, true)) {
                 continue;
             }
             $entity                       = SyncIntrospector::get($entity);
@@ -184,7 +184,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
                 }
 
                 /**
-                 * @psalm-var SyncOperation::* $operation
+                 * @phpstan-var SyncOperation::* $operation
                  */
                 $this->SyncOperationMagicMethods[$method] = [$operation, $entity->Class];
             };

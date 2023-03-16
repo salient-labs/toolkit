@@ -2,20 +2,22 @@
 
 namespace Lkrms\Sync\Support;
 
+use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Convert;
-use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
 
 /**
  * Resolves names to entities
  *
- * @template TEntity of SyncEntity
+ * @template TEntity of ISyncEntity
+ * @template TList of array|IIterable
  */
 final class SyncEntityResolver implements ISyncEntityResolver
 {
     /**
-     * @var ISyncEntityProvider
+     * @var ISyncEntityProvider<TEntity,TList>
      */
     private $EntityProvider;
 
@@ -25,7 +27,7 @@ final class SyncEntityResolver implements ISyncEntityResolver
     private $NameProperty;
 
     /**
-     * @param ISyncEntityProvider<TEntity> $entityProvider
+     * @param ISyncEntityProvider<TEntity,TList> $entityProvider
      */
     public function __construct(ISyncEntityProvider $entityProvider, string $nameProperty)
     {
@@ -33,7 +35,7 @@ final class SyncEntityResolver implements ISyncEntityResolver
         $this->NameProperty   = $nameProperty;
     }
 
-    public function getByName(string $name): ?SyncEntity
+    public function getByName(string $name): ?ISyncEntity
     {
         $match = Convert::iterableToItem(
             $this->EntityProvider->getList([$this->NameProperty => $name]),

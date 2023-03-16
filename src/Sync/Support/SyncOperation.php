@@ -137,7 +137,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     /**
      * Get a list of all operations
      *
-     * @psalm-return (SyncOperation::*)[]
+     * @phpstan-return (SyncOperation::*)[]
      */
     public static function getAll(): array
     {
@@ -157,7 +157,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * True if an operation is CREATE_LIST, READ_LIST, UPDATE_LIST or
      * DELETE_LIST
      *
-     * @psalm-param SyncOperation::* $operation
+     * @phpstan-param SyncOperation::* $operation
      */
     public static function isList(int $operation): bool
     {

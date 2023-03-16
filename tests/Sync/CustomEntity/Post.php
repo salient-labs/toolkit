@@ -21,7 +21,7 @@ class Post extends \Lkrms\Tests\Sync\Entity\Post
 
         self::$_users[$value] = null;
         /** @var User */
-        $user                 = User::backend()->get($value);
+        $user                 = User::withDefaultProvider()->get($value);
         self::$_users[$value] = $user;
 
         $this->User = &self::$_users[$value];
