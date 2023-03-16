@@ -1,5 +1,6 @@
 includes:
   - phpstan-baseline.neon
+  - tests/phpstan-conditional.php
 
 parameters:
   level: 5
@@ -25,17 +26,9 @@ parameters:
     - tests/Reflect/property_resolver
     - tests/sql
     - tests/Support/http_server
-    - tests/Support/token_extractor
     - tests/Sync/sync
     - tests/Template/tconstructible
     - tests/Template/tgettable
     - tests/trash
   bootstrapFiles:
     - tests/bootstrap.php
-  ignoreErrors:
-    - "# has unknown class Curl(Multi)?Handle as its type\\.$#"
-    - "#^Argument of an invalid type Lkrms\\\\[^\\s]+ supplied for foreach, only iterables are supported\\.$#"
-    -
-      message: "#^Used (constant|function) [^\\s]+ not found\\.$#"
-      path: tests/Support/token_extractor
-  reportUnmatchedIgnoredErrors: false

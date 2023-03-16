@@ -253,6 +253,10 @@ final class Conversions
         if (is_null($offset)) {
             throw new UnexpectedValueException("Array key not found: $key");
         }
+        // $length can't be null in PHP 7.4
+        if (is_null($length)) {
+            $length = count($array);
+        }
         $values  = array_values($array);
         $_keys   = array_splice($keys, $offset, $length, array_keys($replacement));
         $_values = array_splice($values, $offset, $length, array_values($replacement));

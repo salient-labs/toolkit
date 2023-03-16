@@ -232,7 +232,10 @@ class GenerateBuilder extends GenerateCommand
         }
 
         /** @var ReflectionProperty[] */
-        $_allProperties = [];
+        $_allProperties     = [];
+        /** @var array<string,mixed> */
+        $_defaultProperties = [];
+        $defaults           = $_class->getDefaultProperties();
         foreach ($_class->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED) as $_property) {
             if ($_property->isStatic()) {
                 continue;
@@ -240,6 +243,9 @@ class GenerateBuilder extends GenerateCommand
             $_name                 = $_property->getName();
             $name                  = Convert::toCamelCase($_name);
             $_allProperties[$name] = $_property;
+            if (array_key_exists($_name, $defaults)) {
+                $_defaultProperties[$name] = $defaults[$_name];
+            }
         }
 
         /** @var ReflectionProperty[] */
@@ -345,8 +351,8 @@ class GenerateBuilder extends GenerateCommand
                         break;
                     case 'bool':
                         $default = ' = true';
-                        if ($_property->hasDefaultValue()) {
-                            $defaultValue = $_property->getDefaultValue();
+                        if (array_key_exists($name, $_defaultProperties)) {
+                            $defaultValue = $_defaultProperties[$name];
                             if (!is_null($defaultValue)) {
                                 $defaultText = sprintf(
                                     'default: %s',

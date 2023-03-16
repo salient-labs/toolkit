@@ -29,7 +29,7 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static string getRunUuid(bool $binary = false) Get the UUID of the current run (see {@see SyncStore::getRunUuid()})
  * @method static bool isOpen() Check if a database is open
  * @method static SyncStore namespace(string $prefix, string $uri, string $namespace) Register a sync entity namespace (see {@see SyncStore::namespace()})
- * @method static SyncStore provider(ISyncProvider $provider) Register a sync provider and set its provider ID
+ * @method static SyncStore provider(ISyncProvider $provider) Register a sync provider and set its provider ID (see {@see SyncStore::provider()})
  *
  * @uses SyncStore
  * @extends Facade<SyncStore>

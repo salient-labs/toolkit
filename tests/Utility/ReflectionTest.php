@@ -6,6 +6,7 @@ use Lkrms\Facade\Reflect;
 use Lkrms\Tests\Utility\Reflection\MyBaseClass;
 use Lkrms\Tests\Utility\Reflection\MyBaseInterface;
 use Lkrms\Tests\Utility\Reflection\MyClass;
+use Lkrms\Tests\Utility\Reflection\MyClassWithUnionsAndIntersections;
 use Lkrms\Tests\Utility\Reflection\MyInterface;
 use Lkrms\Tests\Utility\Reflection\MyOtherClass;
 use Lkrms\Tests\Utility\Reflection\MySubclass;
@@ -245,9 +246,12 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
         ];
     }
 
+    /**
+     * @requires PHP >= 8.1
+     */
     public function testGetTypeDeclaration()
     {
-        $method = (new ReflectionClass(MyClass::class))->getMethod('MyMethod');
+        $method = (new ReflectionClass(MyClassWithUnionsAndIntersections::class))->getMethod('MyMethod');
         $types  = [];
         foreach ($method->getParameters() as $param) {
             $types[] = Reflect::getTypeDeclaration(
@@ -274,9 +278,12 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
         ], $types);
     }
 
+    /**
+     * @requires PHP >= 8.1
+     */
     public function testGetParameterDeclaration()
     {
-        $method = (new ReflectionClass(MyClass::class))->getMethod('MyMethod');
+        $method = (new ReflectionClass(MyClassWithUnionsAndIntersections::class))->getMethod('MyMethod');
         $params = [];
         foreach ($method->getParameters() as $param) {
             $params[] = Reflect::getParameterDeclaration(

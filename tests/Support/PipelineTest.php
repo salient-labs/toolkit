@@ -247,6 +247,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
             'MAIL'      => 'Email',
         ];
         $out = [];
+        $err = [];
 
         foreach ([ArrayKeyConformity::COMPLETE, ArrayKeyConformity::NONE] as $conformity) {
             foreach ([$good, $bad, $ugly] as $i => $in) {
@@ -256,12 +257,11 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
                                 ->throughKeyMap($map, 0);
 
                 if ($i === 2) {
-                    $ex = null;
                     try {
                         $output = iterator_to_array($pipeline->start());
                         array_push($out, ...$output);
                     } catch (Throwable $ex) {
-                        array_push($out, get_class($ex));
+                        $err[] = $out[] = [get_class($ex) => $ex->getMessage()];
                     }
                     continue;
                 }
@@ -282,7 +282,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
 
             // ArrayKeyConformity::COMPLETE + ugly
-            'ValueError',
+            $err[0] ?? null,
 
             // ArrayKeyConformity::NONE + good
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],

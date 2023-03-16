@@ -4,7 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
-use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 
 /**
@@ -15,7 +15,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @method $this message(string $value) An sprintf() format string that explains the error (see {@see SyncError::$Message})
  * @method $this values(array $value) Values passed to sprintf() with the message format string (see {@see SyncError::$Values})
  * @method $this level(int $value) One of the ConsoleLevel values (see {@see SyncError::$Level})
- * @method $this entity(?SyncEntity $value) The entity associated with the error
+ * @method $this entity(?ISyncEntity $value) The entity associated with the error
  * @method $this entityName(?string $value) The display name of the entity associated with the error (see {@see SyncError::$EntityName})
  * @method $this provider(?ISyncProvider $value) The sync provider associated with the error
  * @method mixed get(string $name) The value of $name if applied to the unresolved SyncError by calling $name(), otherwise null
