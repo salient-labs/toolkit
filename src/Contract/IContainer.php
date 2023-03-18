@@ -53,6 +53,22 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function get(string $id, array $params = []);
 
     /**
+     * Create a new instance of a class or service interface, or get a shared
+     * instance created earlier, if the instance inherits a class or implements
+     * an interface
+     *
+     * @template T0
+     * @template T1
+     * @param class-string<T0> $id
+     * @param class-string<T1> $serviceId
+     * @param mixed[] $params Values to pass to the constructor of the
+     * instantiated class. Ignored if `$id` resolves to a shared instance.
+     * @return T0&T1
+     * @throws \RuntimeException if `$serviceId` is not inherited.
+     */
+    public function getIf(string $id, string $serviceId, array $params = []);
+
+    /**
      * Apply an explicit service name while creating a new instance of a class
      * or service interface or getting a shared instance created earlier
      *

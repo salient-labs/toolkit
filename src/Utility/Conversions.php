@@ -123,6 +123,9 @@ final class Conversions
     /**
      * A type-agnostic array_unique with reindexing
      *
+     * @template T
+     * @param T[] $array
+     * @return T[]
      */
     public function toUniqueList(array $array): array
     {
@@ -147,6 +150,9 @@ final class Conversions
      * `$columns` array is also excluded. Only values in `$array` are checked
      * for uniqueness.
      *
+     * @template T
+     * @param T[] $array
+     * @return T[]
      */
     public function columnsToUniqueList(array $array, array &...$columns): array
     {
@@ -839,7 +845,8 @@ final class Conversions
     }
 
     /**
-     * Undo wordwrap()
+     * Undo wordwrap(), preserving line breaks that appear consecutively,
+     * immediately after 2 spaces, or immediately before 4 spaces
      *
      */
     public function unwrap(string $string, string $break = "\n"): string

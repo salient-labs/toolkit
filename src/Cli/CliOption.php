@@ -265,6 +265,14 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
         $this->DefaultValue  = $this->Required ? null : ($this->MultipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue);
         $this->KeepEnv       = $this->EnvVariable && ($this->KeepDefault || ($this->MultipleAllowed && $keepEnv));
         $this->ValueCallback = $valueCallback;
+
+        if ($this->AllowedValues && $this->MultipleAllowed) {
+            $this->AllowedValues = array_diff($this->AllowedValues, ['all']);
+            if ($this->DefaultValue && $this->DefaultValue === $this->AllowedValues) {
+                $this->DefaultValue = ['all'];
+            }
+            array_unshift($this->AllowedValues, 'all');
+        }
     }
 
     /**

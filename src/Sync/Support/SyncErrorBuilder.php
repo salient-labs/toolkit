@@ -21,7 +21,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @method mixed get(string $name) The value of $name if applied to the unresolved SyncError by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved SyncError by calling $name()
  * @method SyncError go() Get a new SyncError object
- * @method static SyncError|null resolve(SyncError|SyncErrorBuilder|null $object) Resolve a SyncErrorBuilder or SyncError object to a SyncError object
+ * @method static SyncError resolve(SyncError|SyncErrorBuilder $object) Resolve a SyncErrorBuilder or SyncError object to a SyncError object
  *
  * @uses SyncError
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\SyncError'

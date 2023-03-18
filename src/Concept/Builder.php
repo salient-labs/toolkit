@@ -131,13 +131,10 @@ abstract class Builder extends FluentInterface implements IImmutable
             return new static($arguments[0] ?? null);
         }
         if (static::getStaticResolver() === $name) {
-            if (count($arguments) !== 1 || !(is_object($arguments[0]) || is_null($arguments[0]))) {
+            if (count($arguments) !== 1 || !is_object($arguments[0])) {
                 throw new UnexpectedValueException('Invalid arguments');
             }
             $obj = $arguments[0];
-            if (!$obj) {
-                return null;
-            }
             if ($obj instanceof self) {
                 $obj = $obj->{$obj->getTerminator()}();
             }

@@ -13,10 +13,10 @@ use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Test;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
+use Lkrms\LkUtil\Dictionary\EnvVar;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\PhpDocParser;
 use Lkrms\Support\TokenExtractor;
@@ -31,6 +31,17 @@ use ReflectionProperty;
  */
 class GenerateBuilder extends GenerateCommand
 {
+    private ?string $ClassFqcn;
+
+    private ?string $BuilderFqcn;
+
+    private ?string $ExtendsFqcn;
+
+    /**
+     * @var string[]
+     */
+    private array $SkipProperties = [];
+
     public function getShortDescription(): string
     {
         return 'Generate a fluent interface that creates instances of a class';
@@ -38,63 +49,72 @@ class GenerateBuilder extends GenerateCommand
 
     protected function getOptionList(): array
     {
+        $toCamelCase =
+            fn(string $value) =>
+                Convert::toCamelCase($value);
+
         return [
             CliOption::build()
                 ->long('class')
-                ->valueName('CLASS')
+                ->valueName('class')
                 ->description('The class to generate a builder for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
-                ->required(),
+                ->required()
+                ->bindTo($this->ClassFqcn),
             CliOption::build()
                 ->long('generate')
                 ->short('g')
-                ->valueName('CLASS')
+                ->valueName('class')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value)),
+                ->bindTo($this->BuilderFqcn),
             CliOption::build()
                 ->long('static-builder')
                 ->short('b')
-                ->valueName('METHOD')
+                ->valueName('method')
                 ->description('The static method that returns a new builder')
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue('build'),
+                ->defaultValue('build')
+                ->valueCallback($toCamelCase),
             CliOption::build()
                 ->long('value-getter')
                 ->short('V')
-                ->valueName('METHOD')
+                ->valueName('method')
                 ->description('The method that returns a value if it has been set')
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue('get'),
+                ->defaultValue('get')
+                ->valueCallback($toCamelCase),
             CliOption::build()
                 ->long('value-checker')
                 ->short('c')
-                ->valueName('METHOD')
+                ->valueName('method')
                 ->description('The method that returns true if a value has been set')
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue('isset'),
+                ->defaultValue('isset')
+                ->valueCallback($toCamelCase),
             CliOption::build()
                 ->long('terminator')
                 ->short('t')
-                ->valueName('METHOD')
+                ->valueName('method')
                 ->description('The method that terminates the interface')
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue('go'),
+                ->defaultValue('go')
+                ->valueCallback($toCamelCase),
             CliOption::build()
                 ->long('static-resolver')
                 ->short('r')
-                ->valueName('METHOD')
+                ->valueName('method')
                 ->description('The static method that resolves unterminated builders')
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue('resolve'),
+                ->defaultValue('resolve')
+                ->valueCallback($toCamelCase),
             CliOption::build()
                 ->long('extend')
                 ->short('x')
-                ->valueName('CLASS')
+                ->valueName('class')
                 ->description('The Builder subclass to extend')
                 ->optionType(CliOptionType::VALUE)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value)),
+                ->bindTo($this->ExtendsFqcn),
             CliOption::build()
                 ->long('no-final')
                 ->short('a')
@@ -102,14 +122,14 @@ class GenerateBuilder extends GenerateCommand
             CliOption::build()
                 ->long('package')
                 ->short('p')
-                ->valueName('PACKAGE')
+                ->valueName('package')
                 ->description('The PHPDoc package')
                 ->optionType(CliOptionType::VALUE)
                 ->envVariable('PHPDOC_PACKAGE'),
             CliOption::build()
                 ->long('desc')
                 ->short('d')
-                ->valueName('DESCRIPTION')
+                ->valueName('description')
                 ->description('A short description of the builder')
                 ->optionType(CliOptionType::VALUE),
             CliOption::build()
@@ -131,48 +151,53 @@ class GenerateBuilder extends GenerateCommand
         ];
     }
 
-    public $SkipProperties = [];
-
     protected function run(string ...$args)
     {
-        $namespace = explode('\\', ltrim($this->getOptionValue('class'), '\\'));
-        $class     = array_pop($namespace);
-        $namespace = implode('\\', $namespace) ?: Env::get('DEFAULT_NAMESPACE', '');
-        $fqcn      = $namespace ? $namespace . '\\' . $class : $class;
+        $classFqcn = $this->getFqcnOptionValue(
+            $this->ClassFqcn,
+            null,
+            $classClass
+        );
 
-        $builderNamespace = explode('\\', ltrim($this->getOptionValue('generate') ?: $fqcn . 'Builder', '\\'));
-        $builderClass     = array_pop($builderNamespace);
-        $builderNamespace = implode('\\', $builderNamespace) ?: Env::get('BUILDER_NAMESPACE', $namespace);
-        $builderFqcn      = $builderNamespace ? $builderNamespace . '\\' . $builderClass : $builderClass;
-        $classPrefix      = $builderNamespace ? '\\' : '';
+        $builderFqcn = $this->getFqcnOptionValue(
+            $this->BuilderFqcn ?: $classFqcn . 'Builder',
+            EnvVar::NS_BUILDER,
+            $builderClass,
+            $builderNamespace
+        );
 
-        $extendsNamespace = explode('\\', ltrim($this->getOptionValue('extend') ?: Builder::class, '\\'));
-        $extendsClass     = array_pop($extendsNamespace);
-        $extendsNamespace = implode('\\', $extendsNamespace) ?: Env::get('BUILDER_NAMESPACE', $namespace);
-        $extendsFqcn      = $extendsNamespace ? $extendsNamespace . '\\' . $extendsClass : $extendsClass;
+        $extendsFqcn = $this->getFqcnOptionValue(
+            $this->ExtendsFqcn ?: Builder::class,
+            EnvVar::NS_BUILDER,
+            $extendsClass
+        );
 
         $this->OutputClass     = $builderClass;
         $this->OutputNamespace = $builderNamespace;
-        $this->ClassPrefix     = $classPrefix;
+        $this->ClassPrefix     = $classPrefix = $builderNamespace ? '\\' : '';
 
         $extends   = $this->getFqcnAlias($extendsFqcn, $extendsClass);
-        $service   = $this->getFqcnAlias($fqcn, $class);
+        $service   = $this->getFqcnAlias($classFqcn, $classClass);
         $container = $this->getFqcnAlias(IContainer::class);
 
-        $staticBuilder  = Convert::toCamelCase($this->getOptionValue('static-builder'));
-        $valueGetter    = Convert::toCamelCase($this->getOptionValue('value-getter'));
-        $valueChecker   = Convert::toCamelCase($this->getOptionValue('value-checker'));
-        $terminator     = Convert::toCamelCase($this->getOptionValue('terminator'));
-        $staticResolver = Convert::toCamelCase($this->getOptionValue('static-resolver'));
-        array_push($this->SkipProperties, $staticBuilder, $valueGetter, $valueChecker, $terminator, $staticResolver);
+        array_push(
+            $this->SkipProperties,
+            $staticBuilder  = $this->getOptionValue('static-builder'),
+            $valueGetter    = $this->getOptionValue('value-getter'),
+            $valueChecker   = $this->getOptionValue('value-checker'),
+            $terminator     = $this->getOptionValue('terminator'),
+            $staticResolver = $this->getOptionValue('static-resolver')
+        );
 
-        $package  = $this->getOptionValue('package');
-        $desc     = $this->getOptionValue('desc');
-        $desc     = is_null($desc) ? "A fluent interface for creating $class objects" : $desc;
+        $package = $this->getOptionValue('package');
+        $desc    = $this->getOptionValue('desc');
+        $desc    = is_null($desc)
+            ? "A fluent interface for creating $classClass objects"
+            : $desc;
         $declared = $this->getOptionValue('declared');
 
-        if (!$fqcn) {
-            throw new CliArgumentsInvalidException("invalid class: $fqcn");
+        if (!$classFqcn) {
+            throw new CliArgumentsInvalidException("invalid class: $classFqcn");
         }
 
         if (!$builderFqcn) {
@@ -184,17 +209,16 @@ class GenerateBuilder extends GenerateCommand
         }
 
         if (!is_a($extendsFqcn, Builder::class, true)) {
-            throw new CliArgumentsInvalidException("not a subclass of Builder: $extendsClass");
+            throw new CliArgumentsInvalidException("not a subclass of Builder: $extendsFqcn");
         }
 
         try {
-            $_class = new ReflectionClass($fqcn);
-
+            $_class = new ReflectionClass($classFqcn);
             if (!$_class->isInstantiable() && !$_class->isAbstract()) {
-                throw new CliArgumentsInvalidException("not an instantiable class: $fqcn");
+                throw new CliArgumentsInvalidException("not an instantiable class: $classFqcn");
             }
         } catch (ReflectionException $ex) {
-            throw new CliArgumentsInvalidException("class does not exist: $fqcn");
+            throw new CliArgumentsInvalidException("class does not exist: $classFqcn");
         }
 
         $files = [];
@@ -272,6 +296,11 @@ class GenerateBuilder extends GenerateCommand
                     : $this->getFqcnAlias($name, null, $returnFqcn));
         };
         $phpDocTypeCallback = function (string $type, array $templates) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback): string {
+            $suffix = '';
+            if (substr($type, -2) === '[]') {
+                $suffix = '[]';
+                $type   = substr($type, 0, -2);
+            }
             $seen = [];
             while (($_type = $templates[$type]['type'] ?? null) && !($seen[$_type] ?? null)) {
                 $seen[$_type] = true;
@@ -295,7 +324,7 @@ class GenerateBuilder extends GenerateCommand
                     );
                 },
                 $type
-            );
+            ) . $suffix;
         };
 
         $docBlocks = Reflect::getAllMethodDocComments($_constructor, $classDocBlocks);
@@ -325,7 +354,7 @@ class GenerateBuilder extends GenerateCommand
                 $link     = !$internal && $phpDoc && $phpDoc->hasDetail();
 
                 $_type = $phpDoc->Var[0]['type'] ?? null;
-                if ($_type && strpbrk($_type, '<>') === false) {
+                if ($_type && strpbrk($_type, '&<>') === false) {
                     $type = $phpDocTypeCallback($_type, $phpDoc->Templates);
                 } else {
                     $type = $_property->hasType()
@@ -400,7 +429,7 @@ class GenerateBuilder extends GenerateCommand
             $_name  = $_param->getName();
 
             $_type = $_phpDoc->Params[$_name]['type'] ?? null;
-            if ($_type && strpbrk($_type, '<>') === false) {
+            if ($_type && strpbrk($_type, '&<>') === false) {
                 $type = $phpDocTypeCallback($_type, $_phpDoc->Templates);
             } else {
                 $type = $_param->hasType()
@@ -480,10 +509,10 @@ class GenerateBuilder extends GenerateCommand
                                         $link);
             }
         }
-        $methods[] = " * @method mixed $valueGetter(string \$name) The value of \$name if applied to the unresolved $class by calling \$name(), otherwise null";
-        $methods[] = " * @method bool $valueChecker(string \$name) True if a value for \$name has been applied to the unresolved $class by calling \$name()";
-        $methods[] = " * @method $service $terminator() Get a new $class object";
-        $methods[] = " * @method static $service|null $staticResolver($service|$builderClass|null \$object) Resolve a $builderClass or $class object to a $class object";
+        $methods[] = " * @method mixed $valueGetter(string \$name) The value of \$name if applied to the unresolved $classClass by calling \$name(), otherwise null";
+        $methods[] = " * @method bool $valueChecker(string \$name) True if a value for \$name has been applied to the unresolved $classClass by calling \$name()";
+        $methods[] = " * @method $service $terminator() Get a new $classClass object";
+        $methods[] = " * @method static $service $staticResolver($service|$builderClass \$object) Resolve a $builderClass or $classClass object to a $classClass object";
         $methods   = implode(PHP_EOL, $methods);
 
         $imports = $this->getImports();

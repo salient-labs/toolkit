@@ -36,7 +36,7 @@ trait TIntrospector
      * Get an Introspector for a container-bound service
      *
      * Uses `$container` to resolve `$service` to a concrete class and returns
-     * an {@see Introspector} for it.
+     * an {@see \Lkrms\Support\Introspector} for it.
      *
      * @template T of object
      * @param class-string<T> $service

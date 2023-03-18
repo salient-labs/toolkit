@@ -113,12 +113,12 @@ abstract class SyncProvider implements ISyncProvider, IService
     private $Store;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $Id;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $Hash;
 
@@ -220,13 +220,17 @@ abstract class SyncProvider implements ISyncProvider, IService
         throw new RuntimeException('Call to undefined method: ' . static::class . "::$name()");
     }
 
-    final public function getProviderId(): int
+    final public function getProviderId(): ?int
     {
         return $this->Id;
     }
 
-    final public function getProviderHash(bool $binary = false): string
+    final public function getProviderHash(bool $binary = false): ?string
     {
+        if (is_null($this->Hash)) {
+            return null;
+        }
+
         return $binary ? $this->Hash : bin2hex($this->Hash);
     }
 }

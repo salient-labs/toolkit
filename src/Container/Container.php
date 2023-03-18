@@ -132,6 +132,15 @@ class Container extends FluentInterface implements IContainer
         return $this->Dice->create($id, $params);
     }
 
+    final public function getIf(string $id, string $serviceId, array $params = [])
+    {
+        if (!is_a($this->getName($id), $serviceId, true)) {
+            throw new RuntimeException(sprintf('%s does not inherit %s', $id, $serviceId));
+        }
+
+        return $this->Dice->create($id, $params);
+    }
+
     final public function getAs(string $id, string $serviceId, array $params = [])
     {
         if ($this->Dice->hasShared($id)) {

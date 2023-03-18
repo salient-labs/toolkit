@@ -28,21 +28,27 @@ abstract class FluentInterface
      * Move to the next method in the chain after conditionally passing the
      * object to a callback
      *
-     * @param callable $callback Receives and must return the object. Called if
+     * @param callable $then Receives and must return the object. Called if
      * `$condition` is `true`.
      * ```php
      * fn(FluentInterface $object): FluentInterface
      * ```
-     * @phpstan-param callable(static): static $callback
+     * @phpstan-param callable(static): static $then
+     * @param callable|null $else Receives and must return the object. Called if
+     * `$condition` is `false`.
+     * ```php
+     * fn(FluentInterface $object): FluentInterface
+     * ```
+     * @phpstan-param (callable(static): static)|null $else
      * @return static
      */
-    final public function if(bool $condition, callable $callback)
+    final public function if(bool $condition, callable $then, ?callable $else = null)
     {
         if (!$condition) {
-            return $this;
+            return $else ? $else($this) : $this;
         }
 
-        return $callback($this);
+        return $then($this);
     }
 
     /**

@@ -14,6 +14,7 @@ use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Test;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
+use Lkrms\LkUtil\Dictionary\EnvVar;
 use Lkrms\Support\PhpDocParser;
 use Lkrms\Support\TokenExtractor;
 use ReflectionClass;
@@ -98,12 +99,12 @@ final class GenerateFacade extends GenerateCommand
     {
         $namespace = explode('\\', ltrim($this->getOptionValue('class'), '\\'));
         $class     = array_pop($namespace);
-        $namespace = implode('\\', $namespace) ?: Env::get('DEFAULT_NAMESPACE', '');
+        $namespace = implode('\\', $namespace) ?: Env::get(EnvVar::NS_DEFAULT, '');
         $fqcn      = $namespace ? $namespace . '\\' . $class : $class;
 
         $facadeNamespace = explode('\\', ltrim($this->getOptionValue('generate'), '\\'));
         $facadeClass     = array_pop($facadeNamespace);
-        $facadeNamespace = implode('\\', $facadeNamespace) ?: Env::get('FACADE_NAMESPACE', $namespace);
+        $facadeNamespace = implode('\\', $facadeNamespace) ?: Env::get(EnvVar::NS_FACADE, $namespace);
         $facadeFqcn      = $facadeNamespace ? $facadeNamespace . '\\' . $facadeClass : $facadeClass;
         $classPrefix     = $facadeNamespace ? '\\' : '';
 
@@ -166,6 +167,11 @@ final class GenerateFacade extends GenerateCommand
                     : $this->getFqcnAlias($name, null, $returnFqcn));
         };
         $phpDocTypeCallback = function (string $type, array $templates) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback): string {
+            $suffix = '';
+            if (substr($type, -2) === '[]') {
+                $suffix = '[]';
+                $type   = substr($type, 0, -2);
+            }
             $seen = [];
             while (($_type = $templates[$type]['type'] ?? null) && !($seen[$_type] ?? null)) {
                 $seen[$_type] = true;
@@ -189,7 +195,7 @@ final class GenerateFacade extends GenerateCommand
                     );
                 },
                 $type
-            );
+            ) . $suffix;
         };
 
         usort($_methods,
@@ -238,7 +244,7 @@ final class GenerateFacade extends GenerateCommand
                 }
 
                 $_type = $phpDoc->Return['type'] ?? null;
-                if ($_type && strpbrk($_type, '<>') === false) {
+                if ($_type && strpbrk($_type, '&<>') === false) {
                     $type = $phpDocTypeCallback($_type, $phpDoc->Templates);
                 } else {
                     $type = $_method->hasReturnType()
@@ -277,7 +283,7 @@ final class GenerateFacade extends GenerateCommand
             foreach ($_params as $_param) {
                 // Override the declared type if defined in the PHPDoc
                 $_type = ($_type = $phpDoc->Params[$_param->getName()]['type'] ?? null) &&
-                    strpbrk($_type, '<>') === false
+                    strpbrk($_type, '&<>') === false
                         ? $phpDocTypeCallback($_type, $phpDoc->Templates)
                         : null;
                 $params[] = $declare

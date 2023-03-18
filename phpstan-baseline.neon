@@ -6,6 +6,21 @@ parameters:
 			path: lib/lk-util/Command/Generate/GenerateBuilder.php
 
 		-
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateBuilder\\:\\:\\$BuilderFqcn is never written, only read\\.$#"
+			count: 1
+			path: lib/lk-util/Command/Generate/GenerateBuilder.php
+
+		-
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateBuilder\\:\\:\\$ClassFqcn is never written, only read\\.$#"
+			count: 1
+			path: lib/lk-util/Command/Generate/GenerateBuilder.php
+
+		-
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateBuilder\\:\\:\\$ExtendsFqcn is never written, only read\\.$#"
+			count: 1
+			path: lib/lk-util/Command/Generate/GenerateBuilder.php
+
+		-
 			message: "#^Property Lkrms\\\\Cli\\\\CliAppContainer\\:\\:\\$Commands is never read, only written\\.$#"
 			count: 1
 			path: src/Cli/CliAppContainer.php

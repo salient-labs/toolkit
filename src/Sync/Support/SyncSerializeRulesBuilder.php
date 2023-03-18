@@ -25,7 +25,7 @@ use Lkrms\Support\DateFormatter;
  * @method mixed get(string $name) The value of $name if applied to the unresolved SyncSerializeRules by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved SyncSerializeRules by calling $name()
  * @method SyncSerializeRules go() Get a new SyncSerializeRules object
- * @method static SyncSerializeRules|null resolve(SyncSerializeRules|SyncSerializeRulesBuilder|null $object) Resolve a SyncSerializeRulesBuilder or SyncSerializeRules object to a SyncSerializeRules object
+ * @method static SyncSerializeRules resolve(SyncSerializeRules|SyncSerializeRulesBuilder $object) Resolve a SyncSerializeRulesBuilder or SyncSerializeRules object to a SyncSerializeRules object
  *
  * @uses SyncSerializeRules
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\SyncSerializeRules'

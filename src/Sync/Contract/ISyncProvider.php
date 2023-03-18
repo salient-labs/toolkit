@@ -28,7 +28,7 @@ interface ISyncProvider extends IProvider
      * entity store
      *
      */
-    public function getProviderId(): int;
+    public function getProviderId(): ?int;
 
     /**
      * Get a stable hash that uniquely identifies the backend instance
@@ -37,7 +37,7 @@ interface ISyncProvider extends IProvider
      * {@see ISyncProvider::setProviderId()}.
      *
      */
-    public function getProviderHash(bool $binary = false): string;
+    public function getProviderHash(bool $binary = false): ?string;
 
     /**
      * Get the provider's implementation of sync operations for an entity

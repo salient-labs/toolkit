@@ -39,4 +39,9 @@ final class SyncErrorType extends ConvertibleEnumeration
      * Hierarchical data contains a circular reference
      */
     public const HIERARCHY_IS_CIRCULAR = 5;
+
+    /**
+     * The provider cannot establish a connection to the backend
+     */
+    public const BACKEND_UNREACHABLE = 6;
 }

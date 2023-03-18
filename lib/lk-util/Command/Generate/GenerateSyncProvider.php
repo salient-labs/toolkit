@@ -12,6 +12,7 @@ use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
+use Lkrms\LkUtil\Dictionary\EnvVar;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -56,7 +57,7 @@ class GenerateSyncProvider extends GenerateCommand
                 ->valueName('CLASS')
                 ->description('The SyncEntity subclass to generate a provider for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get('DEFAULT_NAMESPACE', '')))
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get(EnvVar::NS_DEFAULT, '')))
                 ->required(),
             CliOption::build()
                 ->long('extend')
@@ -65,7 +66,7 @@ class GenerateSyncProvider extends GenerateCommand
                 ->description('An interface to extend (must extend ISyncProvider)')
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
-                ->valueCallback(fn(array $values) => $this->getMultipleFqcnOptionValue($values, Env::get('DEFAULT_NAMESPACE', ''))),
+                ->valueCallback(fn(array $values) => $this->getMultipleFqcnOptionValue($values, Env::get(EnvVar::NS_DEFAULT, ''))),
             CliOption::build()
                 ->long('magic')
                 ->short('v')

@@ -14,16 +14,40 @@ use UnexpectedValueException;
 final class Formatters
 {
     /**
+     * Format values in a list
+     *
+     * Non-scalar values are converted to JSON first.
+     *
+     * @param string $format The format to pass to `sprintf`. Must include a
+     * string conversion specification (`%s`).
+     * @param int $indentSpaces Spaces to add after newlines in `$list`.
+     */
+    public function list(array $list, string $format = "- %s\n", int $indentSpaces = 2): string
+    {
+        $indent = str_repeat(' ', $indentSpaces);
+        $string = '';
+
+        foreach ($list as $value) {
+            if (!is_scalar($value)) {
+                $value = json_encode($value);
+            }
+            $value = str_replace("\r\n", "\n", (string) $value);
+            $value = str_replace("\n", PHP_EOL . $indent, $value, $count);
+
+            $string .= sprintf($format, $value);
+        }
+
+        return $string;
+    }
+
+    /**
      * Format an array's keys and values
      *
      * Non-scalar values are converted to JSON first.
      *
-     * @param array $array
-     * @param int $indentSpaces The number of spaces to add after any newlines
-     * in `$array`.
      * @param string $format The format to pass to `sprintf`. Must include two
      * string conversion specifications (`%s`).
-     * @return string
+     * @param int $indentSpaces Spaces to add after newlines in `$array`.
      */
     public function array(array $array, string $format = "%s: %s\n", int $indentSpaces = 4): string
     {
@@ -34,10 +58,8 @@ final class Formatters
             if (!is_scalar($value)) {
                 $value = json_encode($value);
             }
-
             $value = str_replace("\r\n", "\n", (string) $value);
             $value = str_replace("\n", PHP_EOL . $indent, $value, $count);
-
             if ($count) {
                 $value = PHP_EOL . $indent . $value;
             }
@@ -49,10 +71,8 @@ final class Formatters
     }
 
     /**
-     * Return "true" if a boolean is true, "false" if it's not
+     * "true" if a boolean is true, "false" if it's not
      *
-     * @param bool $value
-     * @return string Either `"true"` or `"false"`.
      */
     public function bool(bool $value): string
     {
@@ -60,10 +80,8 @@ final class Formatters
     }
 
     /**
-     * Return "yes" if a boolean is true, "no" if it's not
+     * "yes" if a boolean is true, "no" if it's not
      *
-     * @param bool $value
-     * @return string Either `"yes"` or `"no"`.
      */
     public function yn(bool $value): string
     {
@@ -93,6 +111,10 @@ final class Formatters
         )->setTimezone(new DateTimeZone(date_default_timezone_get()));
     }
 
+    /**
+     * Format a DateTime without redundant information
+     *
+     */
     public function date(DateTimeInterface $date, string $between = '[]'): string
     {
         [$date, $l, $r] = [
@@ -108,6 +130,10 @@ final class Formatters
         return $l . $date->format($format) . $r;
     }
 
+    /**
+     * Format a DateTime range without redundant information
+     *
+     */
     public function dateRange(DateTimeInterface $from, DateTimeInterface $to, string $between = '[]', string $delimiter = '–'): string
     {
         [$from, $to, $l, $r] = [
@@ -127,7 +153,11 @@ final class Formatters
         return $l . $from->format($fromFormat) . "$r$delimiter$l" . $to->format($toFormat) . $r;
     }
 
-    public function bytes(int $bytes, int $precision = 0)
+    /**
+     * Round an integer to an appropriate binary unit (B, KiB, MiB, TiB, ...)
+     *
+     */
+    public function bytes(int $bytes, int $precision = 0): string
     {
         $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
         $bytes = max(0, $bytes);

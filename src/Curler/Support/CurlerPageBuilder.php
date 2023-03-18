@@ -22,7 +22,7 @@ use Lkrms\Curler\Curler;
  * @method mixed get(string $name) The value of $name if applied to the unresolved CurlerPage by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved CurlerPage by calling $name()
  * @method CurlerPage go() Get a new CurlerPage object
- * @method static CurlerPage|null resolve(CurlerPage|CurlerPageBuilder|null $object) Resolve a CurlerPageBuilder or CurlerPage object to a CurlerPage object
+ * @method static CurlerPage resolve(CurlerPage|CurlerPageBuilder $object) Resolve a CurlerPageBuilder or CurlerPage object to a CurlerPage object
  *
  * @uses CurlerPage
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Curler\Support\CurlerPage'

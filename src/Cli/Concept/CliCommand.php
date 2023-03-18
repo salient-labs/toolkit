@@ -433,7 +433,7 @@ abstract class CliCommand implements ReturnsContainer
                 : '';
 
             if ($description = trim($option->Description)) {
-                $options .= "\n  " . $this->prepareDescription($description, '  ', 76);
+                $options .= "\n  " . $this->prepareDescription($description, '  ');
                 // Increase the indentation of "Default:" and "Values:" to
                 // separate them from the description
                 $optionLines = $optionLines ? str_replace("\n", "\n  ", $optionLines) : '';
@@ -460,26 +460,33 @@ abstract class CliCommand implements ReturnsContainer
         $sections = [
             'NAME'        => '__' . $name . '__ - ' . $this->getShortDescription(),
             'SYNOPSIS'    => '__' . $name . '__' . $synopsis,
-            'OPTIONS'     => ltrim($options),
-            'DESCRIPTION' => $this->prepareDescription($this->getLongDescription(), '  ', 78),
+            'OPTIONS'     => trim($options),
+            'DESCRIPTION' => $this->prepareDescription($this->getLongDescription()),
         ] + ($this->getUsageSections() ?: []);
 
         return $this->app()->buildUsageSections($sections);
     }
 
-    private function prepareDescription(?string $description, string $indent, int $width): string
+    private function prepareDescription(?string $description, ?string $indent = null): string
     {
         if (!$description) {
             return '';
         }
 
-        $description = str_replace('{{command}}',
-                                   $this->getNameWithProgram(),
-                                   Convert::unwrap($description));
+        $description = wordwrap(
+            str_replace(
+                '{{command}}',
+                $this->getNameWithProgram(),
+                Convert::unwrap($description)
+            ),
+            78 - ($indent ? strlen($indent) : 0)
+        );
 
-        return str_replace("\n",
-                           "\n" . $indent,
-                           wordwrap($description, $width));
+        if ($indent) {
+            return str_replace("\n", "\n" . $indent, $description);
+        }
+
+        return $description;
     }
 
     private function optionError(string $message)
@@ -593,7 +600,7 @@ abstract class CliCommand implements ReturnsContainer
 
         $this->NextArgumentIndex = $i;
 
-        foreach ($merged as $key => $value) {
+        foreach ($merged as $key => &$value) {
             $option = $this->OptionsByKey[$key];
 
             if ($option->Long == 'help') {
@@ -613,13 +620,15 @@ abstract class CliCommand implements ReturnsContainer
             }
 
             if (!is_null($option->AllowedValues) && !is_null($value) &&
-                    !empty($invalid = array_diff(Convert::toArray($value), $option->AllowedValues))) {
+                    !empty($invalid = $option->getInvalid($value))) {
                 $this->optionError($option->getInvalidMessage($invalid));
             }
         }
+        unset($value);
 
         foreach ($this->Options as &$option) {
-            if ($option->Required && (!array_key_exists($option->Key, $merged) || $merged[$option->Key] === [])) {
+            if ($option->Required &&
+                    (!array_key_exists($option->Key, $merged) || $merged[$option->Key] === [])) {
                 if (!(count($args) == 1 && ($this->IsHelp || $this->IsVersion))) {
                     $this->optionError("{$option->DisplayName} required"
                         . $option->maybeGetAllowedValues());;
@@ -630,7 +639,10 @@ abstract class CliCommand implements ReturnsContainer
 
             $value = $merged[$option->Key] ?? (!$option->ValueRequired ? null : $option->DefaultValue);
 
-            if ($option->IsFlag && $option->MultipleAllowed) {
+            if ($option->AllowedValues && $option->MultipleAllowed &&
+                    !is_null($value) && in_array('all', (array) $value)) {
+                $value = array_diff($option->AllowedValues, ['all']);
+            } elseif ($option->IsFlag && $option->MultipleAllowed) {
                 $value = count(Convert::toArray($value, true));
             } elseif ($option->MultipleAllowed) {
                 $value = Convert::toArray($value, true);

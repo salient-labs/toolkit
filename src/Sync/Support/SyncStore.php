@@ -10,6 +10,8 @@ use Lkrms\Facade\Convert;
 use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
+use Lkrms\Sync\Support\SyncErrorBuilder as ErrorBuilder;
 use ReflectionClass;
 use RuntimeException;
 use Throwable;
@@ -19,8 +21,8 @@ use UnexpectedValueException;
  * Tracks the state of entities synced to and from third-party backends in a
  * local SQLite database
  *
- * Creating a {@see SyncStore} instance starts a "run" of sync operations that
- * must be terminated by calling {@see SyncStore}, otherwise a failed run is
+ * Creating a {@see SyncStore} instance starts a sync operation run that must be
+ * terminated by calling {@see SyncStore::close()}, otherwise a failed run is
  * recorded.
  *
  */
@@ -523,24 +525,64 @@ final class SyncStore extends SqliteStore
     }
 
     /**
-     * Throw an exception if a registered provider has an unreachable backend
+     * Throw an exception if a provider has an unreachable backend
+     *
+     * If called with no `$providers`, all registered providers are checked.
+     *
+     * Duplicates are ignored.
      *
      * @return $this
      */
-    public function checkHeartbeats()
+    public function checkHeartbeats(int $ttl = 300, bool $failEarly = true, ISyncProvider ...$providers)
     {
-        foreach ($this->Providers as $id => $provider) {
-            $name = ($provider->name() ?: get_class($provider)) . " [#$id]";
+        $this->check();
+
+        if ($providers) {
+            $providers = Convert::toUniqueList($providers);
+        } elseif ($this->Providers) {
+            $providers = $this->Providers;
+        } else {
+            return $this;
+        }
+
+        $failed = [];
+        /** @var ISyncProvider $provider */
+        foreach ($providers as $provider) {
+            $name = $provider->name() ?: get_class($provider);
+            $id   = $provider->getProviderId();
+            if (is_null($id)) {
+                $name .= ' [unregistered]';
+            } else {
+                $name .= " [#$id]";
+            }
             Console::logProgress('Checking', $name);
             try {
-                $provider->checkHeartbeat();
+                $provider->checkHeartbeat($ttl);
                 Console::log('Heartbeat OK:', $name);
             } catch (MethodNotImplementedException $ex) {
                 Console::log('Heartbeat check not supported:', $name);
             } catch (Throwable $ex) {
                 Console::log('No heartbeat:', $name);
-                throw $ex;
+                $failed[] = $provider;
+                $this->error(
+                    ErrorBuilder::build()
+                        ->errorType(SyncErrorType::BACKEND_UNREACHABLE)
+                        ->message('Heartbeat check failed: %s')
+                        ->values([[
+                            'provider_id'    => $id,
+                            'provider_class' => get_class($provider),
+                            'exception'      => get_class($ex),
+                            'message'        => $ex->getMessage()
+                        ]])
+                );
             }
+            if ($failEarly && $failed) {
+                break;
+            }
+        }
+
+        if ($failed) {
+            throw new SyncProviderBackendUnreachableException(...$failed);
         }
 
         return $this;
@@ -554,8 +596,7 @@ final class SyncStore extends SqliteStore
      */
     public function error($error, bool $deduplicate = false, bool $toConsole = false)
     {
-        /** @var SyncError $error */
-        $error = SyncErrorBuilder::resolve($error);
+        $error = ErrorBuilder::resolve($error);
         if (!$deduplicate || !($seen = $this->Errors->get($error))) {
             $this->Errors[] = $error;
 

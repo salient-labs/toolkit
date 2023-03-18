@@ -26,7 +26,7 @@ use Lkrms\Contract\IContainer;
  * @method mixed get(string $name) The value of $name if applied to the unresolved CliOption by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved CliOption by calling $name()
  * @method CliOption go() Get a new CliOption object
- * @method static CliOption|null resolve(CliOption|CliOptionBuilder|null $object) Resolve a CliOptionBuilder or CliOption object to a CliOption object
+ * @method static CliOption resolve(CliOption|CliOptionBuilder $object) Resolve a CliOptionBuilder or CliOption object to a CliOption object
  *
  * @uses CliOption
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Cli\CliOption'

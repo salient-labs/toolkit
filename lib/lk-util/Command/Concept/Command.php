@@ -9,7 +9,9 @@ namespace Lkrms\LkUtil\Command\Concept;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Contract\IProvider;
+use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
+use Lkrms\LkUtil\Dictionary\EnvVar;
 
 /**
  * Base class for lk-util commands
@@ -30,24 +32,35 @@ abstract class Command extends CliCommand
     /**
      * @return class-string<object>
      */
-    protected function getFqcnOptionValue(string $value, ?string $defaultNamespace = null): string
+    protected function getFqcnOptionValue(string $value, ?string $namespaceEnvVar = null, ?string &$class = null, ?string &$namespace = null): string
     {
-        if ($defaultNamespace && trim($value) && strpos($value, '\\') === false) {
-            return trim($defaultNamespace, '\\') . "\\$value";
+        $namespace = null;
+        if ($namespaceEnvVar) {
+            $namespace = Env::get($namespaceEnvVar, null);
         }
+        if (is_null($namespace)) {
+            $namespace = Env::get(EnvVar::NS_DEFAULT, null);
+        }
+        if ($namespace && trim($value) && strpos($value, '\\') === false) {
+            $fqcn = trim($namespace, '\\') . "\\$value";
+        } else {
+            $fqcn = ltrim($value, '\\');
+        }
+        $class     = Convert::classToBasename($fqcn);
+        $namespace = Convert::classToNamespace($fqcn);
 
-        return ltrim($value, '\\');
+        return $fqcn;
     }
 
     /**
      * @param string[] $values
-     * @return string[]
+     * @return array<class-string<object>>
      */
-    protected function getMultipleFqcnOptionValue(array $values, ?string $defaultNamespace = null): array
+    protected function getMultipleFqcnOptionValue(array $values, ?string $namespaceEnvVar = null): array
     {
         $_values = [];
         foreach ($values as $value) {
-            $_values[] = $this->getFqcnOptionValue($value, $defaultNamespace);
+            $_values[] = $this->getFqcnOptionValue($value, $namespaceEnvVar);
         }
 
         return $_values;
@@ -61,7 +74,7 @@ abstract class Command extends CliCommand
      */
     protected function getProvider(string $provider, string $class = IProvider::class): IProvider
     {
-        $provider = $this->getFqcnOptionValue($provider, Env::get('PROVIDER_NAMESPACE', null));
+        $provider = $this->getFqcnOptionValue($provider, EnvVar::NS_PROVIDER);
         if (is_a($provider, $class, true)) {
             return $this->app()->get($provider);
         }

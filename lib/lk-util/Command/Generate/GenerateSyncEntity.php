@@ -14,6 +14,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Test;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
+use Lkrms\LkUtil\Dictionary\EnvVar;
 use Lkrms\Support\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
@@ -127,7 +128,7 @@ class GenerateSyncEntity extends GenerateCommand
     {
         $namespace   = explode('\\', ltrim($this->getOptionValue('generate'), '\\'));
         $class       = array_pop($namespace);
-        $namespace   = implode('\\', $namespace) ?: Env::get('DEFAULT_NAMESPACE', '');
+        $namespace   = implode('\\', $namespace) ?: Env::get(EnvVar::NS_DEFAULT, '');
         $fqcn        = $namespace ? $namespace . '\\' . $class : $class;
         $classPrefix = $namespace ? '\\' : '';
 

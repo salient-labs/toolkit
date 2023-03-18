@@ -8,8 +8,9 @@
     - Useful regex: `^((.(?!//)(?!abstract )(?!final )(?!private ))*((public|protected|static) )+function|([a-z]+ )*class)`
   - [ ] Replace instantiation via `new` or `DI` with `ContainerInterface->get` where appropriate
   - [ ] Adopt generators and iterators where appropriate
-  - [x] Clean up `Exception` namespace
 - [ ] Add support for simultaneous requests to `Curler`
+  - [ ] Add `getQ()`, `postQ()` etc. to return a queuable `Curler` instance that will pass the response to a given callback
+  - [ ] Add `run()` or similar to process a queue of instances via one `CurlMultiHandle`
 - [ ] Finalise `Dice` refactor
 - [ ] Convert informal tests to PHPUnit tests
 - [ ] Increase code coverage
@@ -27,13 +28,11 @@
     - [ ] Retain audit log
     - [ ] Track "deltas in" and "deltas out"
   - [ ] Track foreign keys between backends
-- ~~Add `SyncException` as a base class~~
-- [x] Add `SyncEntityProvider::getResolver()` and `getFuzzyResolver()`
-- [ ] Add `SyncStore::checkHeartbeats()`
+- [x] Add `SyncStore::checkHeartbeats()`
 
 ### Cli
 - [ ] Implement shared/default command options
-- [ ] Add `ALL` as a `ONE_OF` option if `MultipleAllowed` is set
+- [x] Add `ALL` as a `ONE_OF` option if `MultipleAllowed` is set
 - [ ] Implement `CliOptionDataType`
   - [ ] `BOOLEAN` (flag)
   - [ ] `INTEGER` (flag + multiple allowed)
@@ -44,11 +43,11 @@
   - [ ] `DIRECTORY` (must exist)
   - [ ] `JSON`?
 - [ ] Add `ENVIRONMENT VARIABLES` section to help
-- [x] Allow ad-hoc help sections
 - [ ] Allow documentation-only nodes
+- [ ] In `CliCommand::prepareDescription()`, improve accuracy of `wordwrap()` when formatting markup is used
 
 ### Console
-- ~~Validate `ConsoleLevel` values where necessary~~
+- [ ] Add `ConsoleFormatter::removeTags()` variant that returns tag reinsertion data, e.g. for `CliCommand::prepareDescription()`
 
 ### CLI utility
 - [ ] `generate sync entity`:
@@ -65,20 +64,3 @@
   - [ ] Allow headers to be specified
   - [ ] `--query` should handle duplicate fields
 
-## Snippets
-
-Reinstate when duplicating `ProviderEntity`:
-
-```php
-// Detach from the provider servicing the original instance
-$this->clearProvider();
-
-// Undeclared properties are typically provider-specific
-$this->clearMetaProperties();
-```
-
-And when duplicating `SyncEntity`:
-
-```php
-$this->Id = null;
-```

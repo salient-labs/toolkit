@@ -24,7 +24,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method mixed get(string $name) The value of $name if applied to the unresolved DbSyncDefinition by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved DbSyncDefinition by calling $name()
  * @method DbSyncDefinition go() Get a new DbSyncDefinition object
- * @method static DbSyncDefinition|null resolve(DbSyncDefinition|DbSyncDefinitionBuilder|null $object) Resolve a DbSyncDefinitionBuilder or DbSyncDefinition object to a DbSyncDefinition object
+ * @method static DbSyncDefinition resolve(DbSyncDefinition|DbSyncDefinitionBuilder $object) Resolve a DbSyncDefinitionBuilder or DbSyncDefinition object to a DbSyncDefinition object
  *
  * @uses DbSyncDefinition
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\DbSyncDefinition'
