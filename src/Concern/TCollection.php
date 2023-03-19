@@ -24,9 +24,9 @@ trait TCollection
     /**
      * @param callable $callback
      * ```php
-     * fn(T $item, ?T $prevItem, ?T $nextItem)
+     * fn(T $item, ?T $nextItem, ?T $prevItem): void
      * ```
-     * @psalm-param callable(T, ?T, ?T) $callback
+     * @phpstan-param callable(T, ?T, ?T): void $callback
      * @return $this
      */
     final public function forEach(callable $callback)
@@ -39,7 +39,7 @@ trait TCollection
         $i    = -1;
         foreach ($items as $next) {
             if ($i++ > -1) {
-                $callback($item, $prev, $next);
+                $callback($item, $next, $prev);
                 $prev = $item;
             }
             $item = $next;
@@ -51,9 +51,9 @@ trait TCollection
     /**
      * @param callable $callback
      * ```php
-     * fn(T $item, ?T $prevItem, ?T $nextItem): bool
+     * fn(T $item, ?T $nextItem, ?T $prevItem): bool
      * ```
-     * @psalm-param callable(T, ?T, ?T): bool $callback
+     * @phpstan-param callable(T, ?T, ?T): bool $callback
      * @return static
      */
     final public function filter(callable $callback)
@@ -69,7 +69,7 @@ trait TCollection
         $i    = -1;
         foreach ($items as $next) {
             if ($i++ > -1) {
-                if ($callback($item, $prev, $next)) {
+                if ($callback($item, $next, $prev)) {
                     $clone->_Items[] = $item;
                 }
                 $prev = $item;
@@ -83,9 +83,9 @@ trait TCollection
     /**
      * @param callable $callback
      * ```php
-     * fn(T $item, ?T $prevItem, ?T $nextItem): bool
+     * fn(T $item, ?T $nextItem, ?T $prevItem): bool
      * ```
-     * @psalm-param callable(T, ?T, ?T): bool $callback
+     * @phpstan-param callable(T, ?T, ?T): bool $callback
      * @return T|false
      */
     final public function find(callable $callback)
@@ -98,7 +98,7 @@ trait TCollection
         $i    = -1;
         foreach ($items as $next) {
             if ($i++ > -1) {
-                if ($callback($item, $prev, $next)) {
+                if ($callback($item, $next, $prev)) {
                     return $item;
                 }
                 $prev = $item;

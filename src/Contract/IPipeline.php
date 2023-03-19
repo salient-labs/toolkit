@@ -51,7 +51,7 @@ interface IPipeline extends IImmutable
      *
      * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
      * `COMPLETE` wherever possible to improve performance.
-     * @psalm-param ArrayKeyConformity::* $conformity
+     * @phpstan-param ArrayKeyConformity::* $conformity
      * @return $this
      */
     public function withConformity(int $conformity = ArrayKeyConformity::PARTIAL);
@@ -65,7 +65,7 @@ interface IPipeline extends IImmutable
      * ```php
      * fn($payload, IPipeline $pipeline, $arg)
      * ```
-     * @psalm-param callable(TInput, IPipeline, TArgument): (TInput|TOutput) $callback
+     * @phpstan-param callable(TInput, IPipeline, TArgument): (TInput|TOutput) $callback
      * @return $this
      */
     public function after(callable $callback);
@@ -78,7 +78,7 @@ interface IPipeline extends IImmutable
      * ```php
      * fn($payload, IPipeline $pipeline, $arg)
      * ```
-     * @psalm-param callable(TInput, IPipeline, TArgument): (TInput|TOutput) $callback
+     * @phpstan-param callable(TInput, IPipeline, TArgument): (TInput|TOutput) $callback
      * @return $this
      */
     public function afterIf(callable $callback);
@@ -109,7 +109,7 @@ interface IPipeline extends IImmutable
      * ```php
      * function ($payload, Closure $next, IPipeline $pipeline, $arg)
      * ```
-     * @psalm-param IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline, TArgument): (TInput|TOutput))|class-string<IPipe> ...$pipes
+     * @phpstan-param IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline, TArgument): (TInput|TOutput))|class-string<IPipe> ...$pipes
      * @return $this
      */
     public function through(...$pipes);
@@ -121,7 +121,7 @@ interface IPipeline extends IImmutable
      * ```php
      * fn($payload, IPipeline $pipeline, $arg)
      * ```
-     * @psalm-param (callable(TInput, IPipeline, TArgument): (TInput|TOutput)) $callback
+     * @phpstan-param (callable(TInput, IPipeline, TArgument): (TInput|TOutput)) $callback
      * @return $this
      */
     public function throughCallback(callable $callback);
@@ -132,7 +132,7 @@ interface IPipeline extends IImmutable
      * @param array<int|string,int|string|array<int,int|string>> $keyMap An
      * array that maps input keys to one or more output keys.
      * @param int $flags A bitmask of {@see ArrayMapperFlag} values.
-     * @psalm-param int-mask-of<ArrayMapperFlag::*> $flags
+     * @phpstan-param int-mask-of<ArrayMapperFlag::*> $flags
      * @return $this
      */
     public function throughKeyMap(array $keyMap, int $flags = ArrayMapperFlag::ADD_UNMAPPED);
@@ -147,9 +147,9 @@ interface IPipeline extends IImmutable
      * ```php
      * fn($result, IPipeline $pipeline, $arg)
      * ```
-     * @psalm-param callable(TInput|TOutput, IPipeline, TArgument): TThenOutput $callback
+     * @phpstan-param callable(TInput|TOutput, IPipeline, TArgument): TThenOutput $callback
      * @return $this
-     * @psalm-return IPipeline<TInput,TThenOutput,TArgument>
+     * @phpstan-return IPipeline<TInput,TThenOutput,TArgument>
      */
     public function then(callable $callback);
 
@@ -162,9 +162,9 @@ interface IPipeline extends IImmutable
      * ```php
      * fn($result, IPipeline $pipeline, $arg)
      * ```
-     * @psalm-param callable(TInput|TOutput, IPipeline, TArgument): TThenOutput $callback
+     * @phpstan-param callable(TInput|TOutput, IPipeline, TArgument): TThenOutput $callback
      * @return $this
-     * @psalm-return IPipeline<TInput,TThenOutput,TArgument>
+     * @phpstan-return IPipeline<TInput,TThenOutput,TArgument>
      */
     public function thenIf(callable $callback);
 
@@ -185,7 +185,7 @@ interface IPipeline extends IImmutable
      * ```php
      * fn($result, IPipeline $pipeline, $arg): bool
      * ```
-     * @psalm-param callable(TOutput|null, IPipeline, TArgument): bool $filter
+     * @phpstan-param callable(TOutput|null, IPipeline, TArgument): bool $filter
      * @return $this
      */
     public function unless(callable $filter);
@@ -200,7 +200,7 @@ interface IPipeline extends IImmutable
      * ```php
      * fn($result, IPipeline $pipeline, $arg): bool
      * ```
-     * @psalm-param callable(TOutput|null, IPipeline, TArgument): bool $filter
+     * @phpstan-param callable(TOutput|null, IPipeline, TArgument): bool $filter
      * @return $this
      */
     public function unlessIf(callable $filter);
@@ -227,7 +227,7 @@ interface IPipeline extends IImmutable
      * Get the payload's array key conformity
      *
      * @return int One of the {@see ArrayKeyConformity} values.
-     * @psalm-return ArrayKeyConformity::*
+     * @phpstan-return ArrayKeyConformity::*
      * @see IPipeline::withConformity()
      */
     public function getConformity(): int;
@@ -236,9 +236,9 @@ interface IPipeline extends IImmutable
      * Run the pipeline and pass the result to another pipeline
      *
      * @template TNextOutput
-     * @psalm-param IPipeline<TOutput,TNextOutput,TArgument> $next
+     * @phpstan-param IPipeline<TOutput,TNextOutput,TArgument> $next
      * @return $this
-     * @psalm-return IPipeline<TOutput,TNextOutput,TArgument>
+     * @phpstan-return IPipeline<TOutput,TNextOutput,TArgument>
      */
     public function runThrough(IPipeline $next);
 
@@ -249,9 +249,9 @@ interface IPipeline extends IImmutable
      * {@see IPipeline::startThrough()} can be used to run the pipeline.
      *
      * @template TNextOutput
-     * @psalm-param IPipeline<TOutput,TNextOutput,TArgument> $next
+     * @phpstan-param IPipeline<TOutput,TNextOutput,TArgument> $next
      * @return $this
-     * @psalm-return IPipeline<TOutput,TNextOutput,TArgument>
+     * @phpstan-return IPipeline<TOutput,TNextOutput,TArgument>
      */
     public function startThrough(IPipeline $next);
 }

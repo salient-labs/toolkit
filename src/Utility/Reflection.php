@@ -36,8 +36,8 @@ final class Reflection
     }
 
     /**
-     * Return the names of a class and its parents, up to and optionally
-     * including $parent
+     * Get the names of a class and its parents, up to and optionally including
+     * $parent
      *
      * @param string|ReflectionClass $child
      * @param string|ReflectionClass $parent
@@ -95,21 +95,19 @@ final class Reflection
     }
 
     /**
-     * Return all types included in the given ReflectionType
+     * Get all types in a ReflectionType
      *
-     * Reflection methods that return a `ReflectionType` may actually return any
-     * of the following:
+     * Different versions of PHP return different `ReflectionType` objects:
+     *
      * - `ReflectionType` (became `abstract` in PHP 8)
      * - `ReflectionNamedType` (PHP 7.1+)
      * - `ReflectionUnionType` (PHP 8+)
      * - `ReflectionIntersectionType` (PHP 8.1+)
      *
-     * Depending on the PHP version, `getAllTypes` returns an array of
+     * {@see Reflection::getAllTypes()} normalises them to an array of
      * `ReflectionNamedType` and/or `ReflectionType` instances.
      *
-     * @param ReflectionType|null $type e.g. the return value of
-     * `ReflectionParameter::getType()`.
-     * @return ReflectionNamedType[]|ReflectionType[]
+     * @return array<ReflectionNamedType|ReflectionType>
      * @see Reflection::getAllTypeNames()
      */
     public function getAllTypes(?ReflectionType $type): array
@@ -123,26 +121,28 @@ final class Reflection
     }
 
     /**
-     * Return the names of all types included in the given ReflectionType
+     * Get the names of all types in a ReflectionType
      *
-     * @param ReflectionType|null $type e.g. the return value of
-     * `ReflectionParameter::getType()`.
      * @return string[]
      * @see Reflection::getAllTypes()
      */
     public function getAllTypeNames(?ReflectionType $type): array
     {
-        return array_map(fn(ReflectionType $t) => $this->getTypeName($t),
-                         $this->getAllTypes($type));
+        return array_map(
+            fn(ReflectionType $t) => $this->getTypeName($t),
+            $this->getAllTypes($type)
+        );
     }
 
     /**
-     * Return the name of the given ReflectionNamedType or ReflectionType
+     * Get the name of a ReflectionNamedType or ReflectionType
      *
      */
-    public function getTypeName(ReflectionType $type): string
+    private function getTypeName(ReflectionType $type): string
     {
-        return $type instanceof ReflectionNamedType ? $type->getName() : (string) $type;
+        return $type instanceof ReflectionNamedType
+            ? $type->getName()
+            : (string) $type;
     }
 
     /**
@@ -414,7 +414,7 @@ final class Reflection
     }
 
     /**
-     * Return an array of traits used by this class and its parent classes
+     * Get an array of traits used by this class and its parent classes
      *
      * In other words, merge arrays returned by `ReflectionClass::getTraits()`
      * for `$class`, `$class->getParentClass()`, etc.

@@ -188,14 +188,15 @@ abstract class SyncEntity implements ISyncEntity
         );
     }
 
-    final public static function backend(?IContainer $container = null): ISyncEntityProvider
+    final public static function defaultProvider(?IContainer $container = null): ISyncProvider
     {
-        /** @var ISyncProvider */
-        $provider = self::requireContainer($container)->get(
-            SyncIntrospector::entityToProvider(static::class)
-        );
+        return self::requireContainer($container)
+                   ->get(SyncIntrospector::entityToProvider(static::class));
+    }
 
-        return $provider->with(static::class);
+    final public static function withDefaultProvider(?IContainer $container = null): ISyncEntityProvider
+    {
+        return static::defaultProvider()->with(static::class);
     }
 
     final public static function buildSerializeRules(?IContainer $container = null, bool $inherit = true): SerializeRulesBuilder

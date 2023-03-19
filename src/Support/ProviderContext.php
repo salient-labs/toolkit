@@ -38,9 +38,13 @@ class ProviderContext implements IProviderContext
 
     /**
      * @var int
+     * @phpstan-var ArrayKeyConformity::*
      */
     protected $Conformity;
 
+    /**
+     * @phpstan-param ArrayKeyConformity::* $conformity
+     */
     public function __construct(IContainer $container, ?IHierarchy $parent = null, int $conformity = ArrayKeyConformity::NONE)
     {
         $this->Container  = $container;

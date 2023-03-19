@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Concept;
 
 use Closure;
 use Lkrms\Container\Container;
+use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IService;
 use Lkrms\Facade\Convert;
@@ -11,6 +12,7 @@ use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncEntityProvider;
@@ -71,7 +73,7 @@ abstract class SyncProvider implements ISyncProvider, IService
      *
      * {@inheritdoc}
      *
-     * Bind any {@see SyncEntity} classes customised for this provider to their
+     * Bind any {@see ISyncEntity} classes customised for this provider to their
      * generic parent classes by overriding this method, e.g.:
      *
      * ```php
@@ -111,12 +113,12 @@ abstract class SyncProvider implements ISyncProvider, IService
     private $Store;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $Id;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $Hash;
 
@@ -140,7 +142,8 @@ abstract class SyncProvider implements ISyncProvider, IService
 
     final public function setProviderId(int $providerId, string $providerHash)
     {
-        [$this->Id, $this->Hash] = [$providerId, $providerHash];
+        $this->Id   = $providerId;
+        $this->Hash = $providerHash;
 
         return $this;
     }
@@ -180,6 +183,15 @@ abstract class SyncProvider implements ISyncProvider, IService
         return SyncIntrospector::get(static::class)->getSyncProviderInterfaces();
     }
 
+    /**
+     * @template TEntity of ISyncEntity
+     * @param class-string<TEntity> $syncEntity
+     * @phpstan-return (
+     *     $context is ISyncContext<array>
+     *     ? SyncEntityProvider<TEntity,array<TEntity>>
+     *     : SyncEntityProvider<TEntity,IIterable<TEntity>>
+     * )
+     */
     final public function with(string $syncEntity, $context = null): SyncEntityProvider
     {
         $this->Store->entityType($syncEntity);
@@ -208,13 +220,17 @@ abstract class SyncProvider implements ISyncProvider, IService
         throw new RuntimeException('Call to undefined method: ' . static::class . "::$name()");
     }
 
-    final public function getProviderId(): int
+    final public function getProviderId(): ?int
     {
         return $this->Id;
     }
 
-    final public function getProviderHash(bool $binary = false): string
+    final public function getProviderHash(bool $binary = false): ?string
     {
+        if (is_null($this->Hash)) {
+            return null;
+        }
+
         return $binary ? $this->Hash : bin2hex($this->Hash);
     }
 }

@@ -49,7 +49,7 @@ abstract class SqliteStore implements ReceivesFacade
      * @return $this
      * @throws RuntimeException if a database is already open.
      */
-    final protected function openDb(string $filename)
+    final protected function openDb(string $filename, ?string $query = null)
     {
         if ($this->Db) {
             throw new RuntimeException('Database already open');
@@ -64,7 +64,11 @@ abstract class SqliteStore implements ReceivesFacade
         $db->busyTimeout(60000);
         $db->exec('PRAGMA journal_mode=WAL');
         $db->exec('PRAGMA foreign_keys=ON');
-        [$this->Db, $this->Filename] = [$db, $filename];
+        if ($query) {
+            $db->exec($query);
+        }
+        $this->Db       = $db;
+        $this->Filename = $filename;
 
         return $this;
     }

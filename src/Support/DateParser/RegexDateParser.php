@@ -49,7 +49,8 @@ final class RegexDateParser implements IDateParser
             '/^\/Date\((?P<seconds>[0-9]+)(?P<milliseconds>[0-9]{3})(?P<offset>[-+][0-9]{4})?\)\/$/',
             function (array $matches, ?DateTimeZone $timezone): DateTimeImmutable {
                 $date = new DateTimeImmutable(
-                    sprintf('@%s.%s',
+                    // PHP 7.4 requires 6 digits after the decimal point
+                    sprintf('@%s.%s000',
                             $matches['seconds'],
                             $matches['milliseconds'])
                 );

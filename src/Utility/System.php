@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use RuntimeException;
@@ -215,5 +216,44 @@ final class System
     private function getSQLite3Version(): int
     {
         return SQLite3::version()['versionNumber'];
+    }
+
+    /**
+     * Handle SIGINT and SIGTERM to make a clean exit from the running script
+     *
+     * If `posix_getpgid()` is available, `SIGINT` is propagated to the current
+     * process group just before PHP exits.
+     *
+     * @return bool `false` if signal handlers can't be installed on this
+     * platform, otherwise `true`.
+     */
+    public function handleExitSignals(): bool
+    {
+        if (!function_exists('pcntl_async_signals')) {
+            return false;
+        }
+        $handler =
+            function (int $signal): void {
+                Console::debug('Received signal ' . $signal);
+                if ($signal === SIGINT &&
+                        function_exists('posix_getpgid') &&
+                        ($pgid = posix_getpgid(posix_getpid())) !== false) {
+                    // Stop handling SIGINT before propagating it
+                    pcntl_signal(SIGINT, SIG_DFL);
+                    register_shutdown_function(
+                        function () use ($pgid) {
+                            Console::debug('Sending SIGINT to process group ' . $pgid);
+                            posix_kill($pgid, SIGINT);
+                        }
+                    );
+                }
+                exit ($signal);
+            };
+
+        pcntl_async_signals(true);
+        pcntl_signal(SIGINT, $handler);
+        pcntl_signal(SIGTERM, $handler);
+
+        return true;
     }
 }

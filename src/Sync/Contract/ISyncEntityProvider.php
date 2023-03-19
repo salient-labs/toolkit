@@ -2,6 +2,7 @@
 
 namespace Lkrms\Sync\Contract;
 
+use Lkrms\Contract\IIterable;
 use Lkrms\Sync\Support\SyncOperation;
 
 /**
@@ -9,6 +10,7 @@ use Lkrms\Sync\Support\SyncOperation;
  * sync operations for an entity
  *
  * @template TEntity of ISyncEntity
+ * @template TList of array|IIterable
  */
 interface ISyncEntityProvider
 {
@@ -17,7 +19,7 @@ interface ISyncEntityProvider
      *
      * @internal
      * @param int $operation A {@see SyncOperation} value.
-     * @psalm-param SyncOperation::* $operation
+     * @phpstan-param SyncOperation::* $operation
      */
     public function run(int $operation, ...$args);
 
@@ -57,32 +59,32 @@ interface ISyncEntityProvider
      * Add a list of entities to the backend
      *
      * @param iterable<TEntity> $entities
-     * @return iterable<TEntity>
+     * @return TList
      */
-    public function createList(iterable $entities, ...$args): iterable;
+    public function createList(iterable $entities, ...$args);
 
     /**
      * Get a list of entities from the backend
      *
-     * @return iterable<TEntity>
+     * @return TList
      */
-    public function getList(...$args): iterable;
+    public function getList(...$args);
 
     /**
      * Update a list of entities in the backend
      *
      * @param iterable<TEntity> $entities
-     * @return iterable<TEntity>
+     * @return TList
      */
-    public function updateList(iterable $entities, ...$args): iterable;
+    public function updateList(iterable $entities, ...$args);
 
     /**
      * Delete a list of entities from the backend
      *
      * @param iterable<TEntity> $entities
-     * @return iterable<TEntity>
+     * @return TList
      */
-    public function deleteList(iterable $entities, ...$args): iterable;
+    public function deleteList(iterable $entities, ...$args);
 
     /**
      * Use a property of the entity class to resolve names to entities

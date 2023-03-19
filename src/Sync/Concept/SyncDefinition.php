@@ -11,6 +11,7 @@ use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncFilterPolicy;
+use Lkrms\Sync\Support\SyncIntrospectionClass;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncOperation;
 use RuntimeException;
@@ -32,9 +33,8 @@ abstract class SyncDefinition implements ISyncDefinition
      * This method is called if `$operation` is found in
      * {@see SyncDefinition::$Operations}.
      *
-     * @psalm-param SyncOperation::* $operation
-     * @psalm-return (
-     *
+     * @phpstan-param SyncOperation::* $operation
+     * @phpstan-return (
      *     $operation is SyncOperation::READ
      *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
      *     : (
@@ -68,7 +68,7 @@ abstract class SyncDefinition implements ISyncDefinition
      * A list of supported sync operations
      *
      * @var int[]
-     * @psalm-var array<SyncOperation::*>
+     * @phpstan-var array<SyncOperation::*>
      * @see SyncOperation
      */
     protected $Operations;
@@ -81,7 +81,7 @@ abstract class SyncDefinition implements ISyncDefinition
      * performance.
      *
      * @var int
-     * @psalm-var ArrayKeyConformity::*
+     * @phpstan-var ArrayKeyConformity::*
      * @see ArrayKeyConformity
      */
     protected $Conformity;
@@ -98,7 +98,7 @@ abstract class SyncDefinition implements ISyncDefinition
      * about filters.
      *
      * @var int
-     * @psalm-var SyncFilterPolicy::*
+     * @phpstan-var SyncFilterPolicy::*
      */
     protected $FilterPolicy;
 
@@ -117,7 +117,7 @@ abstract class SyncDefinition implements ISyncDefinition
      * ```php
      * fn(ISyncDefinition $def, int $op, ISyncContext $ctx, ...$args)
      * ```
-     * @psalm-var array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...)>
+     * @phpstan-var array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed>
      */
     protected $Overrides;
 
@@ -126,7 +126,7 @@ abstract class SyncDefinition implements ISyncDefinition
      * associative arrays, or `null` if mapping is not required
      *
      * @var IPipeline|null
-     * @psalm-var IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null
+     * @phpstan-var IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null
      */
     protected $DataToEntityPipeline;
 
@@ -135,25 +135,27 @@ abstract class SyncDefinition implements ISyncDefinition
      * provider, or `null` if mapping is not required
      *
      * @var IPipeline|null
-     * @psalm-var IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null
+     * @phpstan-var IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null
      */
     protected $EntityToDataPipeline;
 
     /**
      * @internal
-     * @var SyncIntrospector<TEntity>
+     * @var SyncIntrospector<TEntity,SyncIntrospectionClass>
+     * @todo Remove ",SyncIntrospectionClass" when template defaults are working
      */
     protected $EntityIntrospector;
 
     /**
      * @internal
-     * @var SyncIntrospector<TProvider>
+     * @var SyncIntrospector<TProvider,SyncIntrospectionClass>
+     * @todo Remove ",SyncIntrospectionClass" when template defaults are working
      */
     protected $ProviderIntrospector;
 
     /**
      * @var array<int,Closure>
-     * @psalm-var array<SyncOperation::*,Closure>
+     * @phpstan-var array<SyncOperation::*,Closure>
      */
     private $Closures = [];
 
@@ -166,13 +168,13 @@ abstract class SyncDefinition implements ISyncDefinition
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param int[] $operations
-     * @psalm-param array<SyncOperation::*> $operations
-     * @psalm-param ArrayKeyConformity::* $conformity
-     * @psalm-param SyncFilterPolicy::* $filterPolicy
+     * @phpstan-param array<SyncOperation::*> $operations
+     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @phpstan-param SyncFilterPolicy::* $filterPolicy
      * @param array<int,Closure> $overrides
-     * @psalm-param array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...)> $overrides
-     * @psalm-param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
-     * @psalm-param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
+     * @phpstan-param array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $overrides
+     * @phpstan-param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
+     * @phpstan-param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
      */
     public function __construct(string $entity, ISyncProvider $provider, array $operations = [], int $conformity = ArrayKeyConformity::NONE, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, array $overrides = [], ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
     {
@@ -247,7 +249,7 @@ abstract class SyncDefinition implements ISyncDefinition
      *
      * Useful within overrides when a fallback implementation is required.
      *
-     * @psalm-param SyncOperation::* $operation
+     * @phpstan-param SyncOperation::* $operation
      * @see SyncDefinition::$Overrides
      */
     final public function getFallbackSyncOperationClosure(int $operation): ?Closure
@@ -268,7 +270,7 @@ abstract class SyncDefinition implements ISyncDefinition
      * - a pipe that serializes any unserialized {@see ISyncEntity} instances is
      *   added via {@see IPipeline::through()}
      *
-     * @psalm-return IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>
+     * @phpstan-return IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>
      */
     final protected function getPipelineToBackend(): IPipeline
     {
@@ -298,7 +300,7 @@ abstract class SyncDefinition implements ISyncDefinition
      * - the definition's {@see SyncDefinition::$Conformity} is applied via
      *   {@see IPipeline::withConformity()}
      *
-     * @psalm-return IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>
+     * @phpstan-return IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>
      */
     final protected function getPipelineToEntity(): IPipeline
     {
@@ -332,7 +334,7 @@ abstract class SyncDefinition implements ISyncDefinition
     /**
      * Enforce the ignored filter policy
      *
-     * @psalm-param SyncOperation::* $operation
+     * @phpstan-param SyncOperation::* $operation
      * @see SyncDefinition::$FilterPolicy
      */
     final protected function applyFilterPolicy(int $operation, ISyncContext $ctx, ?bool &$returnEmpty, &$empty): void

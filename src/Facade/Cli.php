@@ -32,6 +32,7 @@ use Lkrms\Contract\IContainer;
  * @method static string getConfigPath() Get a writable directory for the application's configuration files
  * @method static string getDataPath() Get a writable data directory for the application (see {@see AppContainer::getDataPath()})
  * @method static IContainer getGlobalContainer() Get the global container, loading it if necessary
+ * @method static mixed getIf(string $id, string $serviceId, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier, if the instance inherits a class or implements an interface (see {@see Container::getIf()})
  * @method static string getLogPath() Get a writable directory for the application's log files
  * @method static string getName(string $id) Resolve a class or interface to a concrete class name (see {@see Container::getName()})
  * @method static string getProgramName() Get the basename of the file used to run the script
@@ -40,7 +41,7 @@ use Lkrms\Contract\IContainer;
  * @method static string getTempPath() Get a writable directory for the application's ephemeral data
  * @method static bool has(string $id) True if a class or service interface resolves to a concrete class that actually exists (see {@see Container::has()})
  * @method static bool hasGlobalContainer() True if a global container has been loaded
- * @method static CliAppContainer if(bool $condition, callable $callback) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
+ * @method static CliAppContainer if(bool $condition, callable $then, ?callable $else = null) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of a class or interface have been applied to the container itself
  * @method static bool inProduction() Return true if the application is in production, false if it's running from source (see {@see AppContainer::inProduction()})
  * @method static CliAppContainer instance(string $id, $instance) Add an existing instance to the container as a shared binding

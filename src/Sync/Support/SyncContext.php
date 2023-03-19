@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Contract\FluentIterator;
+use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Test;
 use Lkrms\Support\ProviderContext;
@@ -13,7 +13,7 @@ use UnexpectedValueException;
 /**
  * The context within which a sync entity is instantiated
  *
- * @template TList of array|FluentIterator
+ * @template TList of array|IIterable
  * @implements ISyncContext<TList>
  */
 final class SyncContext extends ProviderContext implements ISyncContext
@@ -34,11 +34,11 @@ final class SyncContext extends ProviderContext implements ISyncContext
     }
 
     /**
-     * @return SyncContext<FluentIterator>
+     * @return SyncContext<IIterable>
      */
     public function withIterators()
     {
-        /** @var SyncContext<FluentIterator> */
+        /** @var SyncContext<IIterable> */
         $instance = $this->withPropertyValue('IteratorToArray', false);
 
         return $instance;
@@ -46,8 +46,6 @@ final class SyncContext extends ProviderContext implements ISyncContext
 
     public function withArgs(int $operation, ...$args)
     {
-        array_shift($args);
-
         // READ_LIST is the only operation with no mandatory argument after
         // `SyncContext $ctx`
         if ($operation !== SyncOperation::READ_LIST) {

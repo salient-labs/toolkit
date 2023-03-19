@@ -76,7 +76,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
      * One of the CliOptionType::* values
      *
      * @var int
-     * @psalm-var CliOptionType::*
+     * @phpstan-var CliOptionType::*
      * @see CliOptionType
      */
     protected $OptionType;
@@ -207,7 +207,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
     private $RawDefaultValue;
 
     /**
-     * @psalm-param CliOptionType::* $optionType
+     * @phpstan-param CliOptionType::* $optionType
      * @param string[]|null $allowedValues
      * @param string|string[]|bool|int|null $defaultValue
      * @param $bindTo Assign user-supplied values to a variable before running
@@ -265,6 +265,14 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
         $this->DefaultValue  = $this->Required ? null : ($this->MultipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue);
         $this->KeepEnv       = $this->EnvVariable && ($this->KeepDefault || ($this->MultipleAllowed && $keepEnv));
         $this->ValueCallback = $valueCallback;
+
+        if ($this->AllowedValues && $this->MultipleAllowed) {
+            $this->AllowedValues = array_diff($this->AllowedValues, ['all']);
+            if ($this->DefaultValue && $this->DefaultValue === $this->AllowedValues) {
+                $this->DefaultValue = ['all'];
+            }
+            array_unshift($this->AllowedValues, 'all');
+        }
     }
 
     /**

@@ -64,9 +64,9 @@ use Lkrms\Utility\Conversions;
  * @method static string toSnakeCase(string $text) Convert an identifier to snake_case
  * @method static string[] toStrings(...$value) Convert the given strings and Stringables to an array of strings
  * @method static DateTimeZone toTimezone(DateTimeZone|string $value) Convert a value to a DateTimeZone instance
- * @method static array toUniqueList(array $array) A type-agnostic array_unique with reindexing
+ * @method static mixed[] toUniqueList(mixed[] $array) A type-agnostic array_unique with reindexing (see {@see Conversions::toUniqueList()})
  * @method static string unparseUrl(array $url) Convert a parse_url array to a string (see {@see Conversions::unparseUrl()})
- * @method static string unwrap(string $string, string $break = "\n") Undo wordwrap()
+ * @method static string unwrap(string $string, string $break = "\n") Undo wordwrap(), preserving line breaks that appear consecutively, immediately after 2 spaces, or immediately before 4 spaces
  * @method static string uuidToHex(string $bytes) Convert a 16-byte UUID to its 36-byte hexadecimal representation
  * @method static string valueToCode($value, string $delimiter = ', ', string $arrow = ' => ') A facade for Conversions::valueToCode()
  *
@@ -103,6 +103,8 @@ final class Convert extends Facade
     /**
      * A type-agnostic multi-column array_unique with reindexing
      *
+     * @param mixed[] $array
+     * @return mixed[]
      * @see Conversions::columnsToUniqueList()
      */
     public static function columnsToUniqueList(array $array, array &...$columns): array

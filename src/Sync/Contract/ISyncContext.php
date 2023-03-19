@@ -2,13 +2,13 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\FluentIterator;
+use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProviderContext;
 
 /**
  * The context within which a sync entity is instantiated
  *
- * @template TList of array|FluentIterator
+ * @template-covariant TList of array|IIterable
  */
 interface ISyncContext extends IProviderContext
 {
@@ -30,7 +30,7 @@ interface ISyncContext extends IProviderContext
      * {@see ISyncContext::getIteratorToArray()} returns `false` after calling
      * this method.
      *
-     * @return ISyncContext<FluentIterator>
+     * @return ISyncContext<IIterable>
      */
     public function withIterators();
 
@@ -71,6 +71,8 @@ interface ISyncContext extends IProviderContext
      * {@see ISyncEntity::id()} when `$args` contains an array or a list of
      * entities. This operation is not recursive.
      *
+     * @param mixed ...$args Sync operation arguments, NOT including the
+     * {@see ISyncContext} argument.
      * @return $this
      */
     public function withArgs(int $operation, ...$args);

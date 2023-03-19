@@ -11,7 +11,7 @@ use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
-use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 
 /**
@@ -21,7 +21,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @property-read string $Message An sprintf() format string that explains the error
  * @property-read array $Values Values passed to sprintf() with the message format string
  * @property-read int $Level One of the ConsoleLevel values
- * @property-read SyncEntity|null $Entity The entity associated with the error
+ * @property-read ISyncEntity|null $Entity The entity associated with the error
  * @property-read string|null $EntityName The display name of the entity associated with the error
  * @property-read ISyncProvider|null $Provider The sync provider associated with the error
  * @property-read int $Count How many times the error has been reported
@@ -73,7 +73,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
     /**
      * The entity associated with the error
      *
-     * @var SyncEntity|null
+     * @var ISyncEntity|null
      */
     protected $Entity;
 
@@ -83,7 +83,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
      * Used in messages and summaries. Default: `<Entity>->uri()`
      *
      * @var string|null
-     * @see SyncEntity::uri()
+     * @see ISyncEntity::uri()
      */
     protected $EntityName;
 
@@ -101,7 +101,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
      */
     protected $Count = 1;
 
-    public function __construct(int $errorType, string $message, array $values = [], int $level = ConsoleLevel::ERROR, ?SyncEntity $entity = null, ?string $entityName = null, ?ISyncProvider $provider = null)
+    public function __construct(int $errorType, string $message, array $values = [], int $level = ConsoleLevel::ERROR, ?ISyncEntity $entity = null, ?string $entityName = null, ?ISyncProvider $provider = null)
     {
         $this->EntityName = $entityName ?: ($entity ? $entity->uri() : null);
         $this->ErrorType  = $errorType;
@@ -130,7 +130,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
             ?: $this->Values <=> $b->Values
             ?: $this->EntityName <=> $b->EntityName
             ?: ($this->Provider ? $this->Provider->getProviderId() : null) <=> ($b->Provider ? $b->Provider->getProviderId() : null)
-            ?: ($this->Entity ? $this->Entity->Id : null) <=> ($b->Entity ? $b->Entity->Id : null);
+            ?: ($this->Entity ? $this->Entity->id() : null) <=> ($b->Entity ? $b->Entity->id() : null);
     }
 
     public function getCode(): string

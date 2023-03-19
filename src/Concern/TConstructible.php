@@ -50,7 +50,7 @@ trait TConstructible
      * @param iterable<array> $dataList
      * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
      * `COMPLETE` or `PARTIAL` wherever possible to improve performance.
-     * @psalm-param ArrayKeyConformity::* $conformity
+     * @phpstan-param ArrayKeyConformity::* $conformity
      * @param IContainer|null $container Used to create each instance if set.
      * @param static|null $parent If the class implements
      * {@see \Lkrms\Contract\IHierarchy}, pass `$parent` to each instance via

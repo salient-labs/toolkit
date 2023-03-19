@@ -7,12 +7,12 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
-use Lkrms\Contract\FluentIterator;
+use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
-use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncIntrospector;
@@ -163,7 +163,7 @@ final class GetSyncEntities extends CliCommand
                       $this->Store->getEntityTypeUri($class) . (is_null($id) ? '' : "/$id"));
 
         $this->app()->bindIf(ISyncContext::class, SyncContext::class);
-        /** @var ISyncContext<FluentIterator> */
+        /** @var ISyncContext<IIterable> */
         $context = $this->app()->get(ISyncContext::class);
         if (!$stream) {
             $context = $context->withArrays();
@@ -186,11 +186,11 @@ final class GetSyncEntities extends CliCommand
                 true,
                 null,
                 $count,
-                fn(SyncEntity $entity) => $entity->toArrayWith($rules)
+                fn(ISyncEntity $entity) => $entity->toArrayWith($rules)
             );
         } elseif (!is_iterable($result) || !$stream) {
             $result = Convert::toList($result, true);
-            /** @var SyncEntity $entity */
+            /** @var ISyncEntity $entity */
             foreach ($result as &$entity) {
                 $entity = $entity->toArrayWith($rules);
             }

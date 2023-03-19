@@ -9,6 +9,7 @@ use Lkrms\Facade\Assert;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
+use Lkrms\Facade\Sys;
 use UnexpectedValueException;
 
 /**
@@ -45,9 +46,12 @@ final class CliAppContainer extends AppContainer
         // - the TTY disconnects
         // - `max_execution_time` is non-zero
         // - `memory_limit` is exceeded
-        ini_set('ignore_user_abort', '1');
-        ini_set('max_execution_time', '0');
+        ignore_user_abort(true);
+        set_time_limit(0);
         ini_set('memory_limit', '-1');
+
+        // Exit cleanly when interrupted
+        Sys::handleExitSignals();
     }
 
     /**

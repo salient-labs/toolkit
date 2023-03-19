@@ -27,9 +27,12 @@ class MyMutatingClass
 
     public $Obj;
 
+    public $Coll;
+
     public function __construct()
     {
-        $this->Obj = new \stdClass();
+        $this->Obj  = new \stdClass();
+        $this->Coll = new MyArrayAccessClass();
     }
 
     public function with(string $property, $value, ?string $key = null)

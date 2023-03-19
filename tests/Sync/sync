@@ -6,6 +6,7 @@ namespace Lkrms\Tests\Sync;
 use Lkrms\Facade\App;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sync;
+use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncEntityFuzzyResolver;
 use Lkrms\Sync\Support\SyncEntityResolver;
 use Lkrms\Sync\Support\SyncOperation;
@@ -24,15 +25,21 @@ $app = App::load(dirname(__DIR__))
           ->syncNamespace('lkrms-tests', 'https://lkrms.github.io/php-util/tests/entity', \Lkrms\Tests\Sync\Entity::class)
           ->service(JsonPlaceholderApi::class);
 
-$userApi = User::backend($app);
+$userApi = User::withDefaultProvider($app);
 
-$posts = iterator_to_array(Post::backend()->getList());
+$provider     = Post::defaultProvider();
+$context      = (new SyncContext($provider->container()))->withArrays();
+$postProvider = $provider->with(Post::class, $context);
+$posts        = $postProvider->getList();
+//\PHPStan\dumpType($context);
+//\PHPStan\dumpType($postProvider);
+//\PHPStan\dumpType($posts);
 Console::info('Posts retrieved:', (string) count($posts));
 
 /** @var Post */
 $post = reset($posts);
 /** @var User */
-$user = User::backend()->get($post->User->Id);
+$user = User::withDefaultProvider()->get($post->User->Id);
 
 print_r([
     'Sync::getRunId()'               => Sync::getRunId(),
@@ -99,7 +106,7 @@ try {
 }
 
 try {
-    Post::backend()->create($app->get(Post::class));
+    Post::withDefaultProvider()->create($app->get(Post::class));
 } catch (Throwable $ex) {
     $exceptions[] = $ex;
 }

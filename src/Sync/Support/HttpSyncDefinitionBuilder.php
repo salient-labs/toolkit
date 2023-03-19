@@ -32,7 +32,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method mixed get(string $name) The value of $name if applied to the unresolved HttpSyncDefinition by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved HttpSyncDefinition by calling $name()
  * @method HttpSyncDefinition go() Get a new HttpSyncDefinition object
- * @method static HttpSyncDefinition|null resolve(HttpSyncDefinition|HttpSyncDefinitionBuilder|null $object) Resolve a HttpSyncDefinitionBuilder or HttpSyncDefinition object to a HttpSyncDefinition object
+ * @method static HttpSyncDefinition resolve(HttpSyncDefinition|HttpSyncDefinitionBuilder $object) Resolve a HttpSyncDefinitionBuilder or HttpSyncDefinition object to a HttpSyncDefinition object
  *
  * @uses HttpSyncDefinition
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\HttpSyncDefinition'

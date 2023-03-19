@@ -2,6 +2,7 @@
 
 namespace Lkrms\Sync\Contract;
 
+use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Sync\Support\SyncStore;
 
@@ -27,7 +28,7 @@ interface ISyncProvider extends IProvider
      * entity store
      *
      */
-    public function getProviderId(): int;
+    public function getProviderId(): ?int;
 
     /**
      * Get a stable hash that uniquely identifies the backend instance
@@ -36,7 +37,7 @@ interface ISyncProvider extends IProvider
      * {@see ISyncProvider::setProviderId()}.
      *
      */
-    public function getProviderHash(bool $binary = false): string;
+    public function getProviderHash(bool $binary = false): ?string;
 
     /**
      * Get the provider's implementation of sync operations for an entity
@@ -54,10 +55,14 @@ interface ISyncProvider extends IProvider
      * Use an entity-agnostic interface to the provider's implementation of sync
      * operations for an entity
      *
-     * @template T of ISyncEntity
-     * @param class-string<T> $syncEntity
-     * @param ISyncContext|\Lkrms\Contract\IContainer|null $context
-     * @return ISyncEntityProvider<T>
+     * @template TEntity of ISyncEntity
+     * @param class-string<TEntity> $syncEntity
+     * @param ISyncContext<array|IIterable>|\Lkrms\Contract\IContainer|null $context
+     * @phpstan-return (
+     *     $context is ISyncContext<array>
+     *     ? ISyncEntityProvider<TEntity,array<TEntity>>
+     *     : ISyncEntityProvider<TEntity,IIterable<TEntity>>
+     * )
      */
     public function with(string $syncEntity, $context = null): ISyncEntityProvider;
 }

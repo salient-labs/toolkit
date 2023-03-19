@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Contract;
 
 use JsonSerializable;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\ReturnsDescription;
 use Lkrms\Sync\Support\SyncSerializeLinkType;
@@ -13,16 +14,24 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder;
 /**
  * Represents the state of an entity in an external system
  *
+ * @extends IProviderEntity<ISyncProvider,ISyncContext>
  * @see \Lkrms\Sync\Concept\SyncEntity
  */
 interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializable
 {
     /**
-     * Get an interface to the entity's current provider
+     * Get an instance of the entity's current provider
      *
-     * @return ISyncEntityProvider<static>
      */
-    public static function backend(?IContainer $container = null): ISyncEntityProvider;
+    public static function defaultProvider(?IContainer $container = null): ISyncProvider;
+
+    /**
+     * Get an interface to perform sync operations on the entity with its
+     * current provider
+     *
+     * @return ISyncEntityProvider<static,IIterable<static>>
+     */
+    public static function withDefaultProvider(?IContainer $container = null): ISyncEntityProvider;
 
     /**
      * Get a SyncSerializeRules builder for the entity, optionally inheriting
@@ -95,7 +104,7 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
      *
      * Inspired by JSON-LD.
      *
-     * @psalm-param SyncSerializeLinkType::* $type
+     * @phpstan-param SyncSerializeLinkType::* $type
      * @return array<string,int|string>
      * @see SyncSerializeLinkType
      */

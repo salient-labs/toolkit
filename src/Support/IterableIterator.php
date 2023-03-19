@@ -2,22 +2,20 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Contract\FluentIterator;
+use Lkrms\Contract\IIterable;
 
 /**
- * Wrap an Iterator with expressive helper methods around an array or
- * Traversable
+ * Converts an iterable to an Iterator with expressive helper methods
  *
- * @template TKey
  * @template TValue
- * @template TIterable as \Traversable<TKey,TValue>
- * @extends \IteratorIterator<TKey,TValue,TIterable>
- * @implements FluentIterator<TKey,TValue>
+ * @template TIterable of \Traversable<int,TValue>
+ * @extends \IteratorIterator<int,TValue,TIterable>
+ * @implements IIterable<TValue>
  */
-final class IterableIterator extends \IteratorIterator implements FluentIterator
+final class IterableIterator extends \IteratorIterator implements IIterable
 {
     /**
-     * @psalm-param \Traversable<TKey,TValue>|array<TKey,TValue> $iterable
+     * @param iterable<TValue> $iterable
      */
     public function __construct(iterable $iterable)
     {
@@ -27,8 +25,15 @@ final class IterableIterator extends \IteratorIterator implements FluentIterator
         parent::__construct($iterable);
     }
 
+    /**
+     * @param iterable<TValue> $iterable
+     */
     public static function from(iterable $iterable): self
     {
+        if ($iterable instanceof self) {
+            return $iterable;
+        }
+
         return new self($iterable);
     }
 
