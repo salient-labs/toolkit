@@ -24,9 +24,9 @@ trait TCollection
     /**
      * @param callable $callback
      * ```php
-     * fn(T $item, ?T $nextItem, ?T $prevItem): void
+     * fn(T $item, ?T $nextItem, ?T $prevItem): mixed
      * ```
-     * @phpstan-param callable(T, ?T, ?T): void $callback
+     * @phpstan-param callable(T, ?T, ?T): mixed $callback
      * @return $this
      */
     final public function forEach(callable $callback)
