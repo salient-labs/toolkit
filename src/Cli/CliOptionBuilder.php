@@ -17,6 +17,7 @@ use Lkrms\Contract\IContainer;
  * @method $this allowedValues(string[]|null $value) A list of the option's possible values (see {@see CliOption::$AllowedValues})
  * @method $this required(bool $value = true) True if the option is required (default: false)
  * @method $this multipleAllowed(bool $value = true) True if the option may be given more than once (default: false)
+ * @method $this addAll(bool $value = true) True if ALL should be added to the list of possible values when the option can be given more than once (default: false)
  * @method $this defaultValue(string|string[]|bool|int|null $value) Assigned to the option if no value is set on the command line
  * @method $this envVariable(?string $value) The name of an environment variable that, if set, overrides the option's default value
  * @method $this keepDefault(bool $value = true) True if the option's environment and/or user-supplied values extend DefaultValue instead of replacing it (default: false)

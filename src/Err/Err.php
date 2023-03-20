@@ -40,8 +40,9 @@ final class Err implements IFacade
             throw new RuntimeException(static::class . ' already loaded');
         } elseif (!self::$Whoops) {
             self::$Whoops = new Run();
-            if (PHP_SAPI == 'cli') {
+            if (PHP_SAPI === 'cli') {
                 self::$Whoops->pushHandler(new CliHandler());
+                self::$Whoops->sendExitCode(15);
             } else {
                 self::$Whoops->pushHandler(new PrettyPageHandler());
             }

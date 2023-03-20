@@ -65,13 +65,13 @@ class TestOptions extends CliCommand
                     $vary['required'] = [true];
                     $vary['bindTo']   = [&$this->valPos1];
                 case CliOptionType::VALUE:
-                    $names          ??= ['val1', 'val2', 'val3'];
-                    $vary['bindTo'] ??= [&$this->val1];
+                    $names            ??= ['val1', 'val2', 'val3'];
+                    $vary['required'] ??= [false, true];
+                    $vary['bindTo']   ??= [&$this->val1];
                 case CliOptionType::VALUE_OPTIONAL:
                     $names                 ??= ['valOpt1', 'valOpt2', 'valOpt3'];
                     $vary['valueName']       = ['VAL', 'val', null];
                     $vary['multipleAllowed'] = [false, false, true];
-                    $vary['required']      ??= [false, true];
                     $vary['bindTo']        ??= [&$this->valOpt1];
                     break;
 
@@ -83,12 +83,14 @@ class TestOptions extends CliCommand
                 case CliOptionType::ONE_OF:
                     $names                ??= ['oneOf1', 'oneOf2', 'oneOf3', 'oneOf4'];
                     $vary['defaultValue'] ??= [null, 'value1', 'value1,value2', ['value4', 'value3']];
+                    $vary['required']     ??= [false, false, true];
                     $vary['bindTo']       ??= [&$this->oneOf1];
                 case CliOptionType::ONE_OF_OPTIONAL:
                     $names                 ??= ['oneOfOpt1', 'oneOfOpt2', 'oneOfOpt3', 'oneOfOpt4'];
                     $vary['valueName']       = ['ONE_OF', 'one_of', null, 'one_of'];
                     $vary['multipleAllowed'] = [false, false, true, true];
-                    $vary['required']      ??= [false, false, true];
+                    $vary['addAll']          = [false, false, true, true];
+                    $vary['defaultValue']  ??= [null, 'value2', 'value3,value4', ['value1', 'value4']];
                     $vary['bindTo']        ??= [null, null, &$this->oneOfOpt3];
 
                     $apply['allowedValues'] = ['value1', 'value2', 'value3', 'value4'];
