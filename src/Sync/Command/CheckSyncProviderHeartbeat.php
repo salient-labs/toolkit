@@ -72,7 +72,8 @@ final class CheckSyncProviderHeartbeat extends CliCommand
                      fn(CliOptionBuilder $build) =>
                          $build->optionType(CliOptionType::ONE_OF_POSITIONAL)
                                ->allowedValues(array_keys($this->Providers))
-                               ->defaultValue('all'),
+                               ->addAll()
+                               ->defaultValue('ALL'),
                      fn(CliOptionBuilder $build) =>
                          $build->optionType(CliOptionType::VALUE_POSITIONAL)
                                ->required()),

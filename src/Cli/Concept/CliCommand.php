@@ -416,11 +416,11 @@ abstract class CliCommand implements ReturnsContainer
                     : '');
             }
             if ($option->AllowedValues) {
-                $optionLines[] = '__Values:__';
-                if (mb_strlen(implode('  ', $option->AllowedValues)) < 73) {
+                if (mb_strlen(implode(' ', $option->AllowedValues)) < 67) {
                     $optionLines[] =
-                        '  _' . implode('_  _', $option->AllowedValues) . '_';
+                        '__Values:__ _' . implode('_ _', $option->AllowedValues) . '_';
                 } else {
+                    $optionLines[] = '__Values:__';
                     array_push($optionLines,
                                ...array_map(
                                    fn(string $v): string => sprintf('- _%s_', $v),
@@ -433,7 +433,7 @@ abstract class CliCommand implements ReturnsContainer
                 : '';
 
             if ($description = trim($option->Description)) {
-                $options .= "\n  " . $this->prepareDescription($description, '  ');
+                $options .= "\n  " . $this->prepareUsage($description, '  ');
                 // Increase the indentation of "Default:" and "Values:" to
                 // separate them from the description
                 $optionLines = $optionLines ? str_replace("\n", "\n  ", $optionLines) : '';
@@ -456,18 +456,24 @@ abstract class CliCommand implements ReturnsContainer
         }
 
         $name = $this->getNameWithProgram();
+        if ($sections = $this->getUsageSections() ?: []) {
+            $sections = array_map(
+                fn(string $section) => $this->prepareUsage($section),
+                $sections
+            );
+        }
 
         $sections = [
             'NAME'        => '__' . $name . '__ - ' . $this->getShortDescription(),
             'SYNOPSIS'    => '__' . $name . '__' . $synopsis,
             'OPTIONS'     => trim($options),
-            'DESCRIPTION' => $this->prepareDescription($this->getLongDescription()),
-        ] + ($this->getUsageSections() ?: []);
+            'DESCRIPTION' => $this->prepareUsage($this->getLongDescription()),
+        ] + $sections;
 
         return $this->app()->buildUsageSections($sections);
     }
 
-    private function prepareDescription(?string $description, ?string $indent = null): string
+    private function prepareUsage(?string $description, ?string $indent = null): string
     {
         if (!$description) {
             return '';
@@ -546,9 +552,12 @@ abstract class CliCommand implements ReturnsContainer
                 }
 
                 $value = true;
-            } elseif (!$option->ValueRequired && !$value) {
-                $value     = $option->DefaultValue ?: '';
-                $isDefault = true;
+            } elseif (!$option->ValueRequired) {
+                // Don't use the default value if `--option=` was given
+                if (is_null($value) && !is_null($option->DefaultValue)) {
+                    $value     = $option->DefaultValue;
+                    $isDefault = true;
+                }
             } elseif (is_null($value)) {
                 $i++;
                 if (is_null($value = $args[$i] ?? null)) {
@@ -628,7 +637,11 @@ abstract class CliCommand implements ReturnsContainer
 
         foreach ($this->Options as &$option) {
             if ($option->Required &&
-                    (!array_key_exists($option->Key, $merged) || $merged[$option->Key] === [])) {
+                (!array_key_exists($option->Key, $merged) ||
+                    // The test before `&&` is sufficient, but if required
+                    // options are ever allowed to have optional values, the
+                    // second test will be required
+                    ($merged[$option->Key] === [] && $option->ValueRequired))) {
                 if (!(count($args) == 1 && ($this->IsHelp || $this->IsVersion))) {
                     $this->optionError("{$option->DisplayName} required"
                         . $option->maybeGetAllowedValues());;
@@ -639,9 +652,8 @@ abstract class CliCommand implements ReturnsContainer
 
             $value = $merged[$option->Key] ?? (!$option->ValueRequired ? null : $option->DefaultValue);
 
-            if ($option->AllowedValues && $option->MultipleAllowed &&
-                    !is_null($value) && in_array('all', (array) $value)) {
-                $value = array_diff($option->AllowedValues, ['all']);
+            if ($option->AddAll && !is_null($value) && in_array('ALL', (array) $value)) {
+                $value = array_diff($option->AllowedValues, ['ALL']);
             } elseif ($option->IsFlag && $option->MultipleAllowed) {
                 $value = count(Convert::toArray($value, true));
             } elseif ($option->MultipleAllowed) {

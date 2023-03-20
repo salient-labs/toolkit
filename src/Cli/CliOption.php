@@ -33,6 +33,7 @@ use UnexpectedValueException;
  * @property-read string|null $ValueName
  * @property-read string|null $Description
  * @property-read string[]|null $AllowedValues
+ * @property-read bool $AddAll
  * @property-read string|string[]|bool|int|null $DefaultValue
  * @property-read bool $KeepDefault
  * @property-read string|null $EnvVariable
@@ -157,6 +158,14 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
     protected $AllowedValues;
 
     /**
+     * True if ALL should be added to the list of possible values when the
+     * option can be given more than once
+     *
+     * @var bool
+     */
+    protected $AddAll;
+
+    /**
      * Assigned to the option if no value is set on the command line
      *
      * @var string|string[]|bool|int|null
@@ -213,8 +222,24 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
      * @param $bindTo Assign user-supplied values to a variable before running
      * the command.
      */
-    public function __construct(?string $long, ?string $short, ?string $valueName, ?string $description, int $optionType = CliOptionType::FLAG, ?array $allowedValues = null, bool $required = false, bool $multipleAllowed = false, $defaultValue = null, ?string $envVariable = null, bool $keepDefault = false, bool $keepEnv = false, ?string $delimiter = ',', ?callable $valueCallback = null, &$bindTo = null)
-    {
+    public function __construct(
+        ?string $long,
+        ?string $short,
+        ?string $valueName,
+        ?string $description,
+        int $optionType          = CliOptionType::FLAG,
+        ?array $allowedValues    = null,
+        bool $required           = false,
+        bool $multipleAllowed    = false,
+        bool $addAll             = false,
+        $defaultValue            = null,
+        ?string $envVariable     = null,
+        bool $keepDefault        = false,
+        bool $keepEnv            = false,
+        ?string $delimiter       = ',',
+        ?callable $valueCallback = null,
+        &$bindTo                 = null
+    ) {
         $this->Long            = $long ?: null;
         $this->OptionType      = $optionType;
         $this->IsFlag          = $this->OptionType === CliOptionType::FLAG;
@@ -262,16 +287,17 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
         $this->ValueRequired = $valueRequired ?? !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
         $this->ValueName     = $this->IsFlag ? null : ($valueName ?: 'VALUE');
         $this->DisplayName   = $this->IsPositional ? $this->getFriendlyValueName() : ($this->Long ? '--' . $this->Long : '-' . $this->Short);
+        $this->AddAll        = $this->AllowedValues && $this->MultipleAllowed && $addAll;
         $this->DefaultValue  = $this->Required ? null : ($this->MultipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue);
         $this->KeepEnv       = $this->EnvVariable && ($this->KeepDefault || ($this->MultipleAllowed && $keepEnv));
         $this->ValueCallback = $valueCallback;
 
-        if ($this->AllowedValues && $this->MultipleAllowed) {
-            $this->AllowedValues = array_diff($this->AllowedValues, ['all']);
+        if ($this->AddAll) {
+            $this->AllowedValues = array_diff($this->AllowedValues, ['ALL']);
             if ($this->DefaultValue && $this->DefaultValue === $this->AllowedValues) {
-                $this->DefaultValue = ['all'];
+                $this->DefaultValue = ['ALL'];
             }
-            array_unshift($this->AllowedValues, 'all');
+            $this->AllowedValues[] = 'ALL';
         }
     }
 
@@ -335,6 +361,10 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
 
         if (!is_null($this->Short)) {
             Assert::patternMatches($this->Short, '/^[a-z0-9]$/i', 'short');
+        }
+
+        if ($this->Required && !$this->ValueRequired) {
+            throw new UnexpectedValueException('required must be false when value is optional');
         }
 
         if (!is_null($this->DefaultValue) && !$this->IsFlag) {
