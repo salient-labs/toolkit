@@ -51,7 +51,12 @@ parameters:
 			path: src/Curler/CurlerHeaders.php
 
 		-
-			message: "#^PHPDoc tag @param for parameter \\$driver with type array\\<int, string\\>\\|int\\|null is not subtype of native type int\\|null\\.$#"
+			message: "#^Parameter \\#2 \\$value of method ADOConnection\\:\\:setConnectionParameter\\(\\) expects string, bool given\\.$#"
+			count: 1
+			path: src/Db/DbConnector.php
+
+		-
+			message: "#^Parameter \\#2 \\$value of method ADOConnection\\:\\:setConnectionParameter\\(\\) expects string, int given\\.$#"
 			count: 1
 			path: src/Db/DbConnector.php
 

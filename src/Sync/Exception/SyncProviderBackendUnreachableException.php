@@ -13,9 +13,11 @@ class SyncProviderBackendUnreachableException extends \Lkrms\Exception\Exception
 {
     public function __construct(ISyncProvider ...$provider)
     {
-        parent::__construct(sprintf(
-            'Provider %s unreachable',
-            Convert::plural(count($provider), 'backend is', 'backends are')
-        ));
+        $count = count($provider);
+        parent::__construct(
+            $count === 1
+                ? 'Provider backend unreachable'
+                : sprintf('%d provider backends unreachable', $count)
+        );
     }
 }

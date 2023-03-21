@@ -94,7 +94,9 @@ final class DbConnector implements IReadable
      */
     public function __construct(string $name, int $driver = null)
     {
-        $driver = is_null($driver) ? Env::get("{$name}_driver") : $driver;
+        $driver = is_null($driver)
+            ? Env::get("{$name}_driver")
+            : $driver;
 
         $this->Name     = $name;
         $this->Driver   = Test::isIntValue($driver) ? (int) $driver : DbDriver::fromName($driver);
@@ -110,12 +112,20 @@ final class DbConnector implements IReadable
     }
 
     /**
-     * @param array<string,string> $attributes
+     * @param array<string,string|int|bool> $attributes
      */
     private function getConnectionString(array $attributes, bool $enclose = true): string
     {
         $parts = [];
         foreach ($attributes as $keyword => $value) {
+            switch (true) {
+                case is_int($value):
+                    $value = (string) $value;
+                    break;
+                case is_bool($value):
+                    $value = Format::bool($value);
+                    break;
+            }
             if (($enclose && strpos($value, '}') !== false) ||
                     (!$enclose && strpos($value, ';') !== false)) {
                 throw new UnexpectedValueException("Illegal character in attribute: $keyword");
@@ -126,22 +136,24 @@ final class DbConnector implements IReadable
         return implode(';', $parts);
     }
 
-    public function getConnection(): ADOConnection
+    public function getConnection(int $timeout = 15): ADOConnection
     {
         $db = ADONewConnection($this->AdodbDriver);
         $db->SetFetchMode(ADODB_FETCH_ASSOC);
 
         switch ($this->Driver) {
             case DbDriver::DB2:
-                $db->Connect($this->Dsn ?: $this->getConnectionString([
-                    'driver'   => Env::get('odbc_db2_driver', 'Db2'),
-                    'hostname' => $this->Hostname,
-                    'protocol' => 'tcpip',
-                    'port'     => (string) $this->Port,
-                    'database' => $this->Database,
-                    'uid'      => $this->Username,
-                    'pwd'      => $this->Password,
-                ], false));
+                $db->Connect($this->Dsn
+                    ?: $this->getConnectionString([
+                        'driver'         => Env::get('odbc_db2_driver', 'Db2'),
+                        'hostname'       => $this->Hostname,
+                        'protocol'       => 'tcpip',
+                        'port'           => $this->Port,
+                        'database'       => $this->Database,
+                        'uid'            => $this->Username,
+                        'pwd'            => $this->Password,
+                        'connecttimeout' => $timeout,
+                    ], false));
                 if ($this->Schema) {
                     $db->Execute('SET SCHEMA = ' . $db->Param('schema'),
                                  ['schema' => $this->Schema]);
@@ -150,7 +162,8 @@ final class DbConnector implements IReadable
 
             case DbDriver::MSSQL:
                 $db->setConnectionParameter('TrustServerCertificate',
-                                            Format::yn(!Env::get('mssql_validate_server', null)));
+                                            (bool) Env::get('mssql_trust_server_certificate', null));
+                $db->setConnectionParameter('LoginTimeout', $timeout);
             default:
                 $db->Connect(
                     $this->Hostname,
