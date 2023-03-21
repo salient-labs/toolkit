@@ -562,6 +562,7 @@ final class SyncStore extends SqliteStore
             } catch (MethodNotImplementedException $ex) {
                 Console::log('Heartbeat check not supported:', $name);
             } catch (Throwable $ex) {
+                Console::exception($ex, Level::DEBUG, null);
                 Console::log('No heartbeat:', $name);
                 $failed[] = $provider;
                 $this->error(

@@ -679,11 +679,14 @@ final class ConsoleWriter implements ReceivesFacade
      * Report an uncaught exception
      *
      * Prints " !! Uncaught <exception>: <message> in <file>:<line>" with level
-     * ERROR, followed by the exception's stack trace with level DEBUG.
+     * `$messageLevel` (default: ERROR), followed by the exception's stack trace
+     * with level `$stackTraceLevel` (default: DEBUG).
      *
+     * @param int|null $stackTraceLevel If `null`, the exception's stack trace
+     * is not printed.
      * @return $this
      */
-    public function exception(Throwable $exception)
+    public function exception(Throwable $exception, int $messageLevel = Level::ERROR, ?int $stackTraceLevel = Level::DEBUG)
     {
         $ex = $exception;
         $i  = 0;
@@ -696,19 +699,22 @@ final class ConsoleWriter implements ReceivesFacade
             $ex = $ex->getPrevious();
         } while ($ex);
 
-        $this->Errors++;
-        $this->write(Level::ERROR,
+        $this->count($messageLevel)
+             ->write($messageLevel,
                      'Uncaught __' . get_class($exception) . '__:',
                      $msg2,
                      ' !! ',
                      $exception);
-        $this->write(Level::DEBUG,
+        if (is_null($stackTraceLevel)) {
+            return $this;
+        }
+        $this->write($stackTraceLevel,
                      '__Stack trace:__',
                      "\n`" . ConsoleFormatter::escape($exception->getTraceAsString()) . '`',
                      '--- ');
         if ($exception instanceof \Lkrms\Exception\Exception) {
             foreach ($exception->getDetail() as $section => $text) {
-                $this->write(Level::DEBUG,
+                $this->write($stackTraceLevel,
                              "__{$section}:__",
                              "\n`" . ConsoleFormatter::escape($text ?: '') . '`',
                              '--- ');

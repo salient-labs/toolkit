@@ -108,16 +108,8 @@ abstract class DbSyncProvider extends SyncProvider
 
     public function checkHeartbeat(int $ttl = 300)
     {
-        $connector = $this->getDbConnector();
-        try {
-            $connector->getConnection();
-        } catch (Throwable $ex) {
-            throw new RuntimeException(
-                "Heartbeat connection to database '{$connector->Name}' failed",
-                0,
-                $ex
-            );
-        }
+        $this->getDbConnector()
+             ->getConnection(5);
 
         return $this;
     }
