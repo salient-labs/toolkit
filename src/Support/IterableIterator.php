@@ -23,6 +23,7 @@ final class IterableIterator extends \IteratorIterator implements IIterable
             $iterable = new \ArrayIterator($iterable);
         }
         parent::__construct($iterable);
+        $this->rewind();
     }
 
     /**
@@ -35,6 +36,16 @@ final class IterableIterator extends \IteratorIterator implements IIterable
         }
 
         return new self($iterable);
+    }
+
+    public function forEach(callable $callback)
+    {
+        while ($this->valid()) {
+            $callback($this->current());
+            $this->next();
+        }
+
+        return $this;
     }
 
     public function nextWithValue($key, $value, bool $strict = false)
