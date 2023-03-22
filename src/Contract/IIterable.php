@@ -11,6 +11,14 @@ namespace Lkrms\Contract;
 interface IIterable extends \Iterator
 {
     /**
+     * Apply a callback to the iterator's remaining elements
+     *
+     * @param callable(TValue): mixed $callback
+     * @return $this
+     */
+    public function forEach(callable $callback);
+
+    /**
      * Get the next element with a key or property that matches a value
      *
      * If the current element has `$value` at `$key`, it is returned after

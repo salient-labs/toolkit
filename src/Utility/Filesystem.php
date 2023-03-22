@@ -2,13 +2,21 @@
 
 namespace Lkrms\Utility;
 
+use CallbackFilterIterator;
+use FilesystemIterator;
+use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
+use Lkrms\Support\IterableIterator;
 use Phar;
+use RecursiveCallbackFilterIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use RuntimeException;
+use SplFileInfo;
 
 /**
  * Work with files, directories and paths
@@ -16,6 +24,58 @@ use RuntimeException;
  */
 final class Filesystem
 {
+    /**
+     * Iterate over files in a directory
+     *
+     * @param null|string $exclude A regex that matches paths to exclude.
+     * Applied before `$include`. No files are excluded if `null`.
+     *
+     * To exclude a directory, provide a regex that matches its name and a
+     * subsequent `DIRECTORY_SEPARATOR`.
+     *
+     * @param null|string $include A regex that matches paths to include. All
+     * files are included if `null`.
+     * @return IIterable<SplFileInfo>
+     */
+    public function find(string $directory, ?string $exclude = null, ?string $include = null, bool $recursive = true): IIterable
+    {
+        $flags = FilesystemIterator::KEY_AS_PATHNAME
+            | FilesystemIterator::CURRENT_AS_FILEINFO
+            | FilesystemIterator::SKIP_DOTS;
+
+        if ($exclude || $include) {
+            $callback =
+                function (SplFileInfo $current, string $key) use ($exclude, $include): bool {
+                    if ($exclude && preg_match($exclude, $key)) {
+                        return false;
+                    }
+                    if ($current->isDir()) {
+                        return !($exclude && preg_match($exclude, "$key" . DIRECTORY_SEPARATOR));
+                    }
+
+                    return !$include || preg_match($include, $key);
+                };
+        }
+
+        if ($recursive) {
+            $iterator = new RecursiveDirectoryIterator($directory, $flags);
+            if ($callback ?? null) {
+                $iterator = new RecursiveCallbackFilterIterator($iterator, $callback);
+            }
+            $iterator = new RecursiveIteratorIterator($iterator);
+
+            return new IterableIterator($iterator);
+        }
+
+        $iterator = new FilesystemIterator($directory, $flags);
+        if ($callback ?? null) {
+            $iterator = new CallbackFilterIterator($iterator, $callback);
+        }
+        $iterator = new CallbackFilterIterator($iterator, fn(SplFileInfo $current) => !$current->isDir());
+
+        return new IterableIterator($iterator);
+    }
+
     /**
      * Get a file's end-of-line sequence
      *
