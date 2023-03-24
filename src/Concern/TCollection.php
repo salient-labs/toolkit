@@ -110,6 +110,20 @@ trait TCollection
     }
 
     /**
+     * @return static
+     */
+    final public function slice(int $offset, ?int $length = null, bool $preserveKeys = true)
+    {
+        $clone         = clone $this;
+        $clone->_Items = array_slice($clone->_Items, $offset, $length, $preserveKeys);
+        if (!$preserveKeys) {
+            $clone->_Items = array_values($clone->_Items);
+        }
+
+        return $clone;
+    }
+
+    /**
      * @param T $item
      */
     final public function has($item, bool $strict = false): bool
