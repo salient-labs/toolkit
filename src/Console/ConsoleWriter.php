@@ -169,8 +169,8 @@ final class ConsoleWriter implements ReceivesFacade
         // Send errors and warnings to STDERR, everything else to STDOUT
         $stderrLevels = ConsoleLevels::ERRORS;
         $stdoutLevels = Env::debug()
-            ? ConsoleLevels::INFO_DEBUG
-            : ConsoleLevels::INFO;
+                            ? ConsoleLevels::INFO_DEBUG
+                            : ConsoleLevels::INFO;
         $this->clearStdioTargets();
         $this->registerTarget(new StreamTarget(STDERR), $stderrLevels);
         $this->registerTarget(new StreamTarget(STDOUT), $stdoutLevels);
@@ -199,8 +199,8 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         $levels = Env::debug()
-            ? ConsoleLevels::ALL_DEBUG
-            : ConsoleLevels::ALL;
+                      ? ConsoleLevels::ALL_DEBUG
+                      : ConsoleLevels::ALL;
         $this->clearStdioTargets();
         $this->registerTarget(new StreamTarget($stream), $levels);
 
@@ -253,12 +253,12 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         $targets = $stdio && $exceptStdio
-            ? $this->Targets
-            : ($stdio
-                ? $this->StdioTargets
-                : ($exceptStdio
-                    ? $this->ExceptStdioTargets
-                    : null));
+                       ? $this->Targets
+                       : ($stdio
+                              ? $this->StdioTargets
+                              : ($exceptStdio
+                                     ? $this->ExceptStdioTargets
+                                     : null));
 
         if (is_null($targets)) {
             throw new RuntimeException('No targets selected');
@@ -754,8 +754,8 @@ final class ConsoleWriter implements ReceivesFacade
 
             if (!is_null($_msg2)) {
                 $_msg2 = strpos($msg2, "\n") !== false
-                    ? str_replace("\n", "\n" . str_repeat(' ', $margin + $indent + 2), "\n" . ltrim($_msg2))
-                    : ($_msg1 ? ' ' : '') . $_msg2;
+                             ? str_replace("\n", "\n" . str_repeat(' ', $margin + $indent + 2), "\n" . ltrim($_msg2))
+                             : ($_msg1 ? ' ' : '') . $_msg2;
             }
 
             $message = $target->getMessageFormat($level)->apply($_msg1, $_msg2, $prefix);

@@ -227,7 +227,7 @@ final class Composer
     private function formatReference(?string $ref, ?int $abbrev): ?string
     {
         return is_string($ref)
-            ? (($abbrev ?: 0) < 4 ? $ref : substr($ref, 0, $abbrev))
-            : null;
+                   ? (($abbrev ?: 0) < 4 ? $ref : substr($ref, 0, $abbrev))
+                   : null;
     }
 }

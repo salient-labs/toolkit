@@ -272,11 +272,12 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
             default:
                 $this->EnvVariable = $envVariable ?: null;
                 if ($this->EnvVariable && Env::has($envVariable)) {
-                    $required     = false;
-                    $defaultValue = $this->KeepDefault
-                        ? (array_merge($this->maybeSplitValue($defaultValue),
-                                       $this->maybeSplitValue(Env::get($envVariable))))
-                        : Env::get($envVariable);
+                    $required = false;
+                    $defaultValue =
+                        $this->KeepDefault
+                            ? (array_merge($this->maybeSplitValue($defaultValue),
+                                           $this->maybeSplitValue(Env::get($envVariable))))
+                            : Env::get($envVariable);
                 }
                 break;
         }

@@ -380,8 +380,8 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             $def = $def->withPath($this->Path . '/' . $id);
         }
         $def = $def->Callback
-            ? ($def->Callback)($def, $operation, $ctx, ...$args)
-            : $def;
+                   ? ($def->Callback)($def, $operation, $ctx, ...$args)
+                   : $def;
 
         /** @var Curler $curler */
         $curler = $this->Provider->getCurler($def->Path, $def->Expiry);

@@ -51,8 +51,8 @@ trait HasMutator
             return $this;
         }
         $_value = $clone
-            ? clone $this->$property
-            : $this->$property ?? null;
+                      ? clone $this->$property
+                      : $this->$property ?? null;
         if ($array) {
             $_value[$key] = $value;
         } else {

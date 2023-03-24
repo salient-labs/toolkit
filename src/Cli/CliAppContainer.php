@@ -194,11 +194,11 @@ final class CliAppContainer extends AppContainer
         $fullName = trim("$progName $name");
         if ($command = $this->getNodeCommand($name, $node)) {
             return $terse
-                ? $fullName . $command->getUsage(true)
-                    . "\n\nSee '"
-                    . ($name ? "$progName help $name" : "$progName --help")
-                    . "' for more information."
-                : $command->getUsage();
+                       ? $fullName . $command->getUsage(true)
+                           . "\n\nSee '"
+                           . ($name ? "$progName help $name" : "$progName --help")
+                           . "' for more information."
+                       : $command->getUsage();
         } elseif (!is_array($node)) {
             return null;
         }
@@ -206,8 +206,8 @@ final class CliAppContainer extends AppContainer
         $synopses = [];
         foreach ($node as $childName => $childNode) {
             $prefix = $terse
-                ? "$fullName $childName"
-                : "_{$childName}_";
+                          ? "$fullName $childName"
+                          : "_{$childName}_";
             if ($command = $this->getNodeCommand($name . ($name ? ' ' : '') . $childName, $childNode)) {
                 $synopses[] = $prefix . $command->getUsage(true);
             } elseif (is_array($childNode)) {

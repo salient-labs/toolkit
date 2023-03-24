@@ -159,8 +159,8 @@ trait TCollection
     final public function toArray(bool $preserveKeys = true): array
     {
         return $preserveKeys
-            ? $this->_Items
-            : array_values($this->_Items);
+                   ? $this->_Items
+                   : array_values($this->_Items);
     }
 
     /**
@@ -213,8 +213,8 @@ trait TCollection
         $item = array_shift($this->_Items);
 
         return is_null($item)
-            ? false
-            : $item;
+                   ? false
+                   : $item;
     }
 
     // Implementation of `Iterator`:

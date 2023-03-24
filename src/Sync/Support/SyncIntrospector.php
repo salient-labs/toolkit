@@ -137,9 +137,10 @@ final class SyncIntrospector extends Introspector
         return
             static function (array $array, ISyncProvider $provider, $context = null) use ($closure, $service) {
                 /** @var IContainer $container */
-                [$container, $parent] = $context instanceof ISyncContext
-                    ? [$context->container(), $context->getParent()]
-                    : [$context ?: $provider->container(), null];
+                [$container, $parent] =
+                    $context instanceof ISyncContext
+                        ? [$context->container(), $context->getParent()]
+                        : [$context ?: $provider->container(), null];
 
                 return $closure($container,
                                 $array,
@@ -291,8 +292,8 @@ final class SyncIntrospector extends Introspector
 
         // Build the smallest possible chain of closures
         $closure = $parameterKeys
-            ? $this->_getConstructor($parameterKeys, $passByRefKeys)
-            : $this->_getDefaultConstructor();
+                       ? $this->_getConstructor($parameterKeys, $passByRefKeys)
+                       : $this->_getDefaultConstructor();
         if ($propertyKeys) {
             $closure = $this->_getPropertyClosure($propertyKeys, $closure);
         }

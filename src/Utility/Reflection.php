@@ -141,8 +141,8 @@ final class Reflection
     private function getTypeName(ReflectionType $type): string
     {
         return $type instanceof ReflectionNamedType
-            ? $type->getName()
-            : (string) $type;
+                   ? $type->getName()
+                   : (string) $type;
     }
 
     /**
@@ -263,8 +263,8 @@ final class Reflection
         $comments = $this->_getAllPropertyDocComments($property, $name, $classDocComments);
 
         return is_null($classDocComments)
-            ? Convert::stringsToUniqueList($comments)
-            : Convert::columnsToUniqueList($comments, $classDocComments);
+                   ? Convert::stringsToUniqueList($comments)
+                   : Convert::columnsToUniqueList($comments, $classDocComments);
     }
 
     /**
@@ -444,8 +444,8 @@ final class Reflection
     private function toReflectionClass($class): ReflectionClass
     {
         return $class instanceof ReflectionClass
-            ? $class
-            : new ReflectionClass($class);
+                   ? $class
+                   : new ReflectionClass($class);
     }
 
     /**
@@ -464,8 +464,8 @@ final class Reflection
                 $a->isSubclassOf($b)
                     ? -1
                     : ($b->isSubclassOf($a)
-                        ? 1
-                        : $this->getBaseClass($a)->getName() <=> $this->getBaseClass($b)->getName())
+                           ? 1
+                           : $this->getBaseClass($a)->getName() <=> $this->getBaseClass($b)->getName())
         );
 
         return $interfaces;

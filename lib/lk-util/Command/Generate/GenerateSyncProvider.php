@@ -276,10 +276,11 @@ class GenerateSyncProvider extends GenerateCommand
         }
         if (!$this->getOptionValue('no-meta')) {
             $docBlock[] = ' * @lkrms-generate-command '
-                . implode(' ', $this->getEffectiveCommandLine(true, [
-                    'stdout' => null,
-                    'force'  => null,
-                ]));
+                . implode(' ',
+                          $this->getEffectiveCommandLine(true, [
+                              'stdout' => null,
+                              'force'  => null,
+                          ]));
         }
         $docBlock[] = ' */';
         if (count($docBlock) == 2) {

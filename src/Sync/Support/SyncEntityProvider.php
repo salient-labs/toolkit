@@ -110,8 +110,8 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
         if ($this->Context->getIteratorToArray()) {
             return is_array($result)
-                ? $result
-                : iterator_to_array($result, false);
+                       ? $result
+                       : iterator_to_array($result, false);
         }
 
         if (!($result instanceof IIterable)) {

@@ -175,7 +175,7 @@ abstract class SyncProvider implements ISyncProvider, IService
     final public function dateFormatter(): DateFormatter
     {
         return $this->DateFormatter
-            ?: ($this->DateFormatter = $this->getDateFormatter());
+                   ?: ($this->DateFormatter = $this->getDateFormatter());
     }
 
     final public static function getServices(): array
@@ -197,11 +197,11 @@ abstract class SyncProvider implements ISyncProvider, IService
         $this->Store->entityType($syncEntity);
 
         $container = ($context instanceof ISyncContext
-            ? $context->container()
-            : ($context ?: $this->container()))->inContextOf(static::class);
+                          ? $context->container()
+                          : ($context ?: $this->container()))->inContextOf(static::class);
         $context = $context instanceof ISyncContext
-            ? $context->withContainer($container)
-            : $container->get(SyncContext::class);
+                       ? $context->withContainer($container)
+                       : $container->get(SyncContext::class);
 
         return $container->get(SyncEntityProvider::class,
                                [$syncEntity, $this, $this->getDefinition($syncEntity), $context]);

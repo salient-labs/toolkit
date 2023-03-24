@@ -170,8 +170,8 @@ final class GetSyncEntities extends CliCommand
         }
 
         $result = !is_null($id)
-            ? $provider->with($class, $context)->get($id, $filter)
-            : $provider->with($class, $context)->getList($filter);
+                      ? $provider->with($class, $context)->get($id, $filter)
+                      : $provider->with($class, $context)->getList($filter);
 
         $rules = $class::buildSerializeRules($this->app())->includeMeta(false);
 

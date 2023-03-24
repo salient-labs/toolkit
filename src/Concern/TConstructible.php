@@ -67,9 +67,10 @@ trait TConstructible
         foreach ($dataList as $data) {
             if (!$closure) {
                 $builder = Introspector::getService($container, static::class);
-                $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                    ? $builder->getCreateFromSignatureClosure(array_keys($data), true)
-                    : $builder->getCreateFromClosure(true);
+                $closure =
+                    in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                        ? $builder->getCreateFromSignatureClosure(array_keys($data), true)
+                        : $builder->getCreateFromClosure(true);
             }
 
             yield $closure($data, $container, $parent);

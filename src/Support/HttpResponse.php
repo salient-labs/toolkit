@@ -58,11 +58,16 @@ final class HttpResponse implements IReadable
 
     public function getResponse(): string
     {
-        $response = [Convert::sparseToString(' ', [
-            $this->Version ?: 'HTTP/1.1',
-            $this->StatusCode,
-            $this->ReasonPhrase
-        ])];
+        $response = [
+            Convert::sparseToString(
+                ' ',
+                [
+                    $this->Version ?: 'HTTP/1.1',
+                    $this->StatusCode,
+                    $this->ReasonPhrase,
+                ]
+            )
+        ];
         array_push($response, ...$this->Headers->getHeaders());
         $response[] = '';
         $response[] = $this->Body ?: '';

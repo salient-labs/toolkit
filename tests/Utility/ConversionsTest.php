@@ -409,9 +409,9 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
             "https://@host:8443/path/$params?query#fragment",
             "https://host:8443/path/$params?query#fragment",
             ...(!$withParams ? [] : [
-                'https://host:8443;params',
-                'https://host;params',
-            ]),
+                    'https://host:8443;params',
+                    'https://host;params',
+                ]),
             'https://host:8443?query',
             'https://host?query',
             'https://host:8443#fragment',

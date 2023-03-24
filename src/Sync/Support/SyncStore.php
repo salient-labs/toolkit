@@ -492,8 +492,8 @@ final class SyncStore extends SqliteStore
         $entity    = str_replace('\\', '/', substr(ltrim($entity, '\\'), strlen($namespace)));
 
         return $compact
-            ? "{$prefix}:{$entity}"
-            : "{$this->NamespaceUrisByPrefix[$prefix]}{$entity}";
+                   ? "{$prefix}:{$entity}"
+                   : "{$this->NamespaceUrisByPrefix[$prefix]}{$entity}";
     }
 
     /**
@@ -516,8 +516,8 @@ final class SyncStore extends SqliteStore
         foreach ($this->NamespacesByPrefix as $prefix => $namespace) {
             if (strpos($lower, $namespace) === 0) {
                 return $uri
-                    ? $this->NamespaceUrisByPrefix[$prefix]
-                    : $prefix;
+                           ? $this->NamespaceUrisByPrefix[$prefix]
+                           : $prefix;
             }
         }
 

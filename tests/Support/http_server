@@ -15,10 +15,12 @@ Err::load();
 
 $server = new HttpServer('localhost', 8306);
 $server->start();
-$server->listen(function (HttpRequest $request, bool &$continue, &$return): HttpResponse {
-    $response = new HttpResponse("Called with:\n" . print_r($request, true));
-    $continue = false;
+$server->listen(
+    function (HttpRequest $request, bool &$continue, &$return): HttpResponse {
+        $response = new HttpResponse("Called with:\n" . print_r($request, true));
+        $continue = false;
 
-    return $response;
-});
+        return $response;
+    }
+);
 $server->stop();

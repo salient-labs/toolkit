@@ -155,10 +155,10 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $this->through(
             fn($payload, Closure $next, IPipeline $pipeline) =>
                 $next((Mapper::getKeyMapClosure(
-                    $keyMap,
-                    $pipeline->getConformity(),
-                    $flags
-                ))($payload))
+                           $keyMap,
+                           $pipeline->getConformity(),
+                           $flags
+                       ))($payload))
         );
     }
 

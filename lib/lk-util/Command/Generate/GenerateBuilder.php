@@ -192,8 +192,8 @@ class GenerateBuilder extends GenerateCommand
         $package = $this->getOptionValue('package');
         $desc    = $this->getOptionValue('desc');
         $desc    = is_null($desc)
-            ? "A fluent interface for creating $classClass objects"
-            : $desc;
+                       ? "A fluent interface for creating $classClass objects"
+                       : $desc;
         $declared = $this->getOptionValue('declared');
 
         if (!$classFqcn) {
@@ -291,9 +291,9 @@ class GenerateBuilder extends GenerateCommand
             $alias = $typeMap[$propertyFile][ltrim(strtolower($name), '\\')] ?? null;
 
             return ($alias ? $this->getFqcnAlias($name, $alias, $returnFqcn) : null)
-                ?: (Test::isPhpReservedWord($name)
-                    ? ($returnFqcn ? $name : null)
-                    : $this->getFqcnAlias($name, null, $returnFqcn));
+                       ?: (Test::isPhpReservedWord($name)
+                              ? ($returnFqcn ? $name : null)
+                              : $this->getFqcnAlias($name, null, $returnFqcn));
         };
         $phpDocTypeCallback = function (string $type, array $templates) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback): string {
             $suffix = '';
@@ -358,8 +358,8 @@ class GenerateBuilder extends GenerateCommand
                     $type = $phpDocTypeCallback($_type, $phpDoc->Templates);
                 } else {
                     $type = $_property->hasType()
-                        ? Reflect::getTypeDeclaration($_property->getType(), $classPrefix, $typeNameCallback)
-                        : '';
+                                ? Reflect::getTypeDeclaration($_property->getType(), $classPrefix, $typeNameCallback)
+                                : '';
 
                     // If the underlying property has more type information,
                     // provide a link to it
@@ -433,8 +433,8 @@ class GenerateBuilder extends GenerateCommand
                 $type = $phpDocTypeCallback($_type, $_phpDoc->Templates);
             } else {
                 $type = $_param->hasType()
-                    ? Reflect::getTypeDeclaration($_param->getType(), $classPrefix, $typeNameCallback)
-                    : '';
+                            ? Reflect::getTypeDeclaration($_param->getType(), $classPrefix, $typeNameCallback)
+                            : '';
 
                 // If the underlying parameter has more type information,
                 // provide a link to it
@@ -532,10 +532,11 @@ class GenerateBuilder extends GenerateCommand
         $docBlock[] = " * @uses $service";
         if (!$this->getOptionValue('no-meta')) {
             $docBlock[] = ' * @lkrms-generate-command '
-                . implode(' ', $this->getEffectiveCommandLine(true, [
-                    'stdout' => null,
-                    'force'  => null,
-                ]));
+                . implode(' ',
+                          $this->getEffectiveCommandLine(true, [
+                              'stdout' => null,
+                              'force'  => null,
+                          ]));
         }
         $docBlock[] = ' */';
 
@@ -599,8 +600,8 @@ class GenerateBuilder extends GenerateCommand
             ];
 
             $type = $_param->hasType()
-                ? Reflect::getTypeDeclaration($_param->getType(), $classPrefix, $typeNameCallback)
-                : '';
+                        ? Reflect::getTypeDeclaration($_param->getType(), $classPrefix, $typeNameCallback)
+                        : '';
             $type = $type ? "$type " : '';
             array_push($lines,
                        '',
@@ -635,13 +636,13 @@ class GenerateBuilder extends GenerateCommand
 
         return $summary
             ? ($declare
-                ? $summary . $defaultSuffix
-                : " $summary" . ($link ? " ({$defaultPrefix}see {@see $see})" : $defaultSuffix))
+                   ? $summary . $defaultSuffix
+                   : " $summary" . ($link ? " ({$defaultPrefix}see {@see $see})" : $defaultSuffix))
             : (($declare
-                ? "Pass a variable to $param$see by reference"
-                : ($link
-                    ? " See {@see $see}"
-                    : ($param ? " Pass \$value to $param$see" : " Set $see")))
+                    ? "Pass a variable to $param$see by reference"
+                    : ($link
+                           ? " See {@see $see}"
+                           : ($param ? " Pass \$value to $param$see" : " Set $see")))
                 . $defaultSuffix);
     }
 }

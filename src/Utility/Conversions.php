@@ -63,8 +63,8 @@ final class Conversions
     public function toArray($value, bool $emptyIfNull = false): array
     {
         return is_array($value)
-            ? $value
-            : ($emptyIfNull && is_null($value) ? [] : [$value]);
+                   ? $value
+                   : ($emptyIfNull && is_null($value) ? [] : [$value]);
     }
 
     /**
@@ -76,8 +76,8 @@ final class Conversions
     public function toList($value, bool $emptyIfNull = false): array
     {
         return Test::isListArray($value, true)
-            ? $value
-            : ($emptyIfNull && is_null($value) ? [] : [$value]);
+                   ? $value
+                   : ($emptyIfNull && is_null($value) ? [] : [$value]);
     }
 
     /**
@@ -310,8 +310,8 @@ final class Conversions
     public function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
     {
         return $date instanceof DateTimeImmutable
-            ? $date
-            : DateTimeImmutable::createFromMutable($date);
+                   ? $date
+                   : DateTimeImmutable::createFromMutable($date);
     }
 
     /**
@@ -715,12 +715,12 @@ final class Conversions
     public function plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false): string
     {
         $noun = $number == 1
-            ? $singular
-            : (is_null($plural) ? $singular . 's' : $plural);
+                    ? $singular
+                    : (is_null($plural) ? $singular . 's' : $plural);
 
         return $includeNumber
-            ? "$number $noun"
-            : $noun;
+                   ? "$number $noun"
+                   : $noun;
     }
 
     /**
@@ -732,8 +732,8 @@ final class Conversions
     public function pluralRange(int $from, int $to, string $singular, ?string $plural = null, string $preposition = 'on'): string
     {
         return $to - $from
-            ? sprintf('between %s %d and %d', is_null($plural) ? $singular . 's' : $plural, $from, $to)
-            : sprintf('%s %s %d', $preposition, $singular, $from);
+                   ? sprintf('between %s %d and %d', is_null($plural) ? $singular . 's' : $plural, $from, $to)
+                   : sprintf('%s %s %d', $preposition, $singular, $from);
     }
 
     /**

@@ -412,8 +412,8 @@ abstract class CliCommand implements ReturnsContainer
                     '__Default:__ ___%s___',
                     implode('___,___', (array) $option->DefaultValue)
                 ) . ($option->KeepDefault || $option->KeepEnv
-                    ? '  ~~(command-line values are appended)~~'
-                    : '');
+                         ? '  ~~(command-line values are appended)~~'
+                         : '');
             }
             if ($option->AllowedValues) {
                 if (mb_strlen(implode(' ', $option->AllowedValues)) < 67) {
@@ -429,8 +429,8 @@ abstract class CliCommand implements ReturnsContainer
                 }
             }
             $optionLines = $optionLines
-                ? "\n  " . implode("\n  ", $optionLines)
-                : '';
+                               ? "\n  " . implode("\n  ", $optionLines)
+                               : '';
 
             if ($description = trim($option->Description)) {
                 $options .= "\n  " . $this->prepareUsage($description, '  ');
@@ -563,8 +563,9 @@ abstract class CliCommand implements ReturnsContainer
                 if (is_null($value = $args[$i] ?? null)) {
                     // Allow null to be stored to prevent an additional
                     // "argument required" error
-                    $this->optionError("{$option->DisplayName} requires a value"
-                        . $option->maybeGetAllowedValues());
+                    $this->optionError(
+                        "{$option->DisplayName} requires a value" . $option->maybeGetAllowedValues()
+                    );
                     $i--;
                 }
             }
@@ -643,8 +644,9 @@ abstract class CliCommand implements ReturnsContainer
                     // second test will be required
                     ($merged[$option->Key] === [] && $option->ValueRequired))) {
                 if (!(count($args) == 1 && ($this->IsHelp || $this->IsVersion))) {
-                    $this->optionError("{$option->DisplayName} required"
-                        . $option->maybeGetAllowedValues());;
+                    $this->optionError(
+                        "{$option->DisplayName} required" . $option->maybeGetAllowedValues()
+                    );;
                 }
 
                 continue;
@@ -756,9 +758,11 @@ abstract class CliCommand implements ReturnsContainer
             $value = Convert::toShellArg($value);
         }
 
-        return $option->IsPositional ? $value : ($option->Long
-            ? "--{$option->Long}" . (is_null($value) ? '' : "=$value")
-            : "-{$option->Short}" . $value);
+        return $option->IsPositional
+            ? $value
+            : ($option->Long
+                   ? "--{$option->Long}" . (is_null($value) ? '' : "=$value")
+                   : "-{$option->Short}" . $value);
     }
 
     /**
@@ -784,8 +788,8 @@ abstract class CliCommand implements ReturnsContainer
             }
 
             $arg = $name
-                ? $this->getEffectiveArgument($option, $shellEscape, $values[$name])
-                : $this->getEffectiveArgument($option, $shellEscape);
+                       ? $this->getEffectiveArgument($option, $shellEscape, $values[$name])
+                       : $this->getEffectiveArgument($option, $shellEscape);
 
             if ($option->IsPositional) {
                 $positional[] = $arg;

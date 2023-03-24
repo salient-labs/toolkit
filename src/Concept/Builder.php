@@ -175,9 +175,10 @@ abstract class Builder extends FluentInterface implements IImmutable
             throw new UnexpectedValueException('Invalid arguments');
         }
 
-        return $this->getWithValue($name, array_key_exists(0, $arguments)
-            ? $arguments[0]
-            : true);
+        return $this->getWithValue($name,
+                                   array_key_exists(0, $arguments)
+                                       ? $arguments[0]
+                                       : true);
     }
 
     /**

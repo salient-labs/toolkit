@@ -95,8 +95,8 @@ final class DbConnector implements IReadable
     public function __construct(string $name, int $driver = null)
     {
         $driver = is_null($driver)
-            ? Env::get("{$name}_driver")
-            : $driver;
+                      ? Env::get("{$name}_driver")
+                      : $driver;
 
         $this->Name     = $name;
         $this->Driver   = Test::isIntValue($driver) ? (int) $driver : DbDriver::fromName($driver);
@@ -143,17 +143,21 @@ final class DbConnector implements IReadable
 
         switch ($this->Driver) {
             case DbDriver::DB2:
-                $db->Connect($this->Dsn
-                    ?: $this->getConnectionString([
-                        'driver'         => Env::get('odbc_db2_driver', 'Db2'),
-                        'hostname'       => $this->Hostname,
-                        'protocol'       => 'tcpip',
-                        'port'           => $this->Port,
-                        'database'       => $this->Database,
-                        'uid'            => $this->Username,
-                        'pwd'            => $this->Password,
-                        'connecttimeout' => $timeout,
-                    ], false));
+                $db->Connect(
+                    $this->Dsn ?: $this->getConnectionString(
+                        [
+                            'driver'         => Env::get('odbc_db2_driver', 'Db2'),
+                            'hostname'       => $this->Hostname,
+                            'protocol'       => 'tcpip',
+                            'port'           => $this->Port,
+                            'database'       => $this->Database,
+                            'uid'            => $this->Username,
+                            'pwd'            => $this->Password,
+                            'connecttimeout' => $timeout,
+                        ],
+                        false
+                    )
+                );
                 if ($this->Schema) {
                     $db->Execute('SET SCHEMA = ' . $db->Param('schema'),
                                  ['schema' => $this->Schema]);

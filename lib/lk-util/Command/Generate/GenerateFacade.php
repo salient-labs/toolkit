@@ -162,9 +162,9 @@ final class GenerateFacade extends GenerateCommand
             $alias = $typeMap[$methodFile][ltrim(strtolower($name), '\\')] ?? null;
 
             return ($alias ? $this->getFqcnAlias($name, $alias, $returnFqcn) : null)
-                ?: (Test::isPhpReservedWord($name)
-                    ? ($returnFqcn ? $name : null)
-                    : $this->getFqcnAlias($name, null, $returnFqcn));
+                       ?: (Test::isPhpReservedWord($name)
+                              ? ($returnFqcn ? $name : null)
+                              : $this->getFqcnAlias($name, null, $returnFqcn));
         };
         $phpDocTypeCallback = function (string $type, array $templates) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback): string {
             $suffix = '';
@@ -199,9 +199,12 @@ final class GenerateFacade extends GenerateCommand
         };
 
         usort($_methods,
-              fn(ReflectionMethod $a, ReflectionMethod $b) => $a->isConstructor()
-                  ? -1 : ($b->isConstructor()
-                      ? 1 : $a->getName() <=> $b->getName()));
+              fn(ReflectionMethod $a, ReflectionMethod $b) =>
+                  $a->isConstructor()
+                      ? -1
+                      : ($b->isConstructor()
+                             ? 1
+                             : $a->getName() <=> $b->getName()));
         $facadeMethods = [
             " * @method static $service load() Load and return an instance of the underlying $class class",
             " * @method static $service getInstance() Get the underlying $class instance",
@@ -248,8 +251,8 @@ final class GenerateFacade extends GenerateCommand
                     $type = $phpDocTypeCallback($_type, $phpDoc->Templates);
                 } else {
                     $type = $_method->hasReturnType()
-                        ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
-                        : 'mixed';
+                                ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
+                                : 'mixed';
 
                     // If the underlying method has more type information,
                     // provide a link to it
@@ -269,8 +272,8 @@ final class GenerateFacade extends GenerateCommand
                 }
                 $summary = $phpDoc->Summary ?? null;
                 $summary = $summary
-                    ? ($declare || !$link ? $summary : "$summary (see {@see $methodFqsen})")
-                    : ($declare || !$link ? "A facade for $methodFqsen" : "See {@see $methodFqsen}");
+                               ? ($declare || !$link ? $summary : "$summary (see {@see $methodFqsen})")
+                               : ($declare || !$link ? "A facade for $methodFqsen" : "See {@see $methodFqsen}");
 
                 // Work around phpDocumentor's inability to parse "?<type>"
                 // return types
@@ -284,11 +287,11 @@ final class GenerateFacade extends GenerateCommand
                 // Override the declared type if defined in the PHPDoc
                 $_type = ($_type = $phpDoc->Params[$_param->getName()]['type'] ?? null) &&
                     strpbrk($_type, '&<>') === false
-                        ? $phpDocTypeCallback($_type, $phpDoc->Templates)
-                        : null;
+                                 ? $phpDocTypeCallback($_type, $phpDoc->Templates)
+                                 : null;
                 $params[] = $declare
-                    ? Reflect::getParameterPhpDoc($_param, $classPrefix, $typeNameCallback, $_type)
-                    : Reflect::getParameterDeclaration($_param, $classPrefix, $typeNameCallback, $_type);
+                                ? Reflect::getParameterPhpDoc($_param, $classPrefix, $typeNameCallback, $_type)
+                                : Reflect::getParameterDeclaration($_param, $classPrefix, $typeNameCallback, $_type);
             }
 
             if (!$methods && !$_method->isConstructor()) {
@@ -304,8 +307,8 @@ final class GenerateFacade extends GenerateCommand
                     Reflect::getTypeDeclaration($_method->getReturnType(),
                                                 $classPrefix,
                                                 $typeNameCallback) !== $type))
-                    ? $this->cleanPhpDocTag("@return $type")
-                    : '';
+                              ? $this->cleanPhpDocTag("@return $type")
+                              : '';
 
                 $lines   = [];
                 $lines[] = '/**';                   // 0
@@ -360,10 +363,11 @@ final class GenerateFacade extends GenerateCommand
         $docBlock[] = " * @extends $extends<$service>";
         if (!$this->getOptionValue('no-meta')) {
             $docBlock[] = ' * @lkrms-generate-command '
-                . implode(' ', $this->getEffectiveCommandLine(true, [
-                    'stdout' => null,
-                    'force'  => null,
-                ]));
+                . implode(' ',
+                          $this->getEffectiveCommandLine(true, [
+                              'stdout' => null,
+                              'force'  => null,
+                          ]));
         }
         $docBlock[] = ' */';
 

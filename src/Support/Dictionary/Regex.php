@@ -50,7 +50,7 @@ final class Regex extends Dictionary
         $modifier = $utf8 ? 'u' : '';
 
         return $anchor
-            ? "$delimiter^$regex\$$delimiter$modifier"
-            : "$delimiter$regex$delimiter$modifier";
+                   ? "$delimiter^$regex\$$delimiter$modifier"
+                   : "$delimiter$regex$delimiter$modifier";
     }
 }

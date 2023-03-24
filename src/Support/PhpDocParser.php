@@ -415,13 +415,15 @@ final class PhpDocParser implements IReadable
             $legacyNullable
         );
         while ($docBlocks) {
-            $parser->mergeInherited(new self(
-                array_shift($docBlocks),
-                $classDocBlocks
-                    ? array_shift($classDocBlocks)
-                    : null,
-                $legacyNullable
-            ));
+            $parser->mergeInherited(
+                new self(
+                    array_shift($docBlocks),
+                    $classDocBlocks
+                        ? array_shift($classDocBlocks)
+                        : null,
+                    $legacyNullable
+                )
+            );
         }
 
         return $parser;
