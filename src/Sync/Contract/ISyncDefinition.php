@@ -22,6 +22,19 @@ interface ISyncDefinition extends IImmutable
      * @phpstan-param SyncOperation::* $operation
      * @return Closure|null `null` if `$operation` is not supported, otherwise a
      * closure with the correct signature for the sync operation.
+     * @phpstan-return (
+     *     $operation is SyncOperation::READ
+     *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
+     *     : (
+     *         $operation is SyncOperation::READ_LIST
+     *         ? (Closure(ISyncContext, mixed...): iterable<TEntity>)
+     *         : (
+     *             $operation is SyncOperation::CREATE|SyncOperation::UPDATE|SyncOperation::DELETE
+     *             ? (Closure(ISyncContext, TEntity, mixed...): TEntity)
+     *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
+     *         )
+     *     )
+     * )|null
      */
     public function getSyncOperationClosure(int $operation): ?Closure;
 }

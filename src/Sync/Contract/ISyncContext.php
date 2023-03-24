@@ -8,32 +8,9 @@ use Lkrms\Contract\IProviderContext;
 /**
  * The context within which a sync entity is instantiated
  *
- * @template-covariant TList of array|IIterable
  */
 interface ISyncContext extends IProviderContext
 {
-    /**
-     * Request an array instead of an Iterator from sync operations that return
-     * a list
-     *
-     * {@see ISyncContext::getIteratorToArray()} returns `true` after calling
-     * this method.
-     *
-     * @return ISyncContext<array>
-     */
-    public function withArrays();
-
-    /**
-     * Request an Iterator instead of an array from sync operations that return
-     * a list
-     *
-     * {@see ISyncContext::getIteratorToArray()} returns `false` after calling
-     * this method.
-     *
-     * @return ISyncContext<IIterable>
-     */
-    public function withIterators();
-
     /**
      * Convert non-mandatory sync operation arguments to a normalised filter and
      * add it to the context
@@ -76,15 +53,6 @@ interface ISyncContext extends IProviderContext
      * @return $this
      */
     public function withArgs(int $operation, ...$args);
-
-    /**
-     * True if list operations should return an array instead of an Iterator
-     *
-     * @return bool
-     * @see ISyncContext::withArrays()
-     * @see ISyncContext::withIterators()
-     */
-    public function getIteratorToArray(): bool;
 
     /**
      * Get the filter most recently passed via optional sync operation arguments

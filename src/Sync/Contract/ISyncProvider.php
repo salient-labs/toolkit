@@ -57,12 +57,8 @@ interface ISyncProvider extends IProvider
      *
      * @template TEntity of ISyncEntity
      * @param class-string<TEntity> $syncEntity
-     * @param ISyncContext<array|IIterable>|\Lkrms\Contract\IContainer|null $context
-     * @phpstan-return (
-     *     $context is ISyncContext<array>
-     *     ? ISyncEntityProvider<TEntity,array<TEntity>>
-     *     : ISyncEntityProvider<TEntity,IIterable<TEntity>>
-     * )
+     * @param ISyncContext|\Lkrms\Contract\IContainer|null $context
+     * @return ISyncEntityProvider<TEntity>
      */
     public function with(string $syncEntity, $context = null): ISyncEntityProvider;
 }

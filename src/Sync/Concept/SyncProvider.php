@@ -4,7 +4,6 @@ namespace Lkrms\Sync\Concept;
 
 use Closure;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IService;
 use Lkrms\Facade\Convert;
@@ -186,11 +185,7 @@ abstract class SyncProvider implements ISyncProvider, IService
     /**
      * @template TEntity of ISyncEntity
      * @param class-string<TEntity> $syncEntity
-     * @phpstan-return (
-     *     $context is ISyncContext<array>
-     *     ? SyncEntityProvider<TEntity,array<TEntity>>
-     *     : SyncEntityProvider<TEntity,IIterable<TEntity>>
-     * )
+     * @return SyncEntityProvider<TEntity,static>
      */
     final public function with(string $syncEntity, $context = null): SyncEntityProvider
     {

@@ -158,6 +158,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * DELETE_LIST
      *
      * @phpstan-param SyncOperation::* $operation
+     * @phpstan-return ($operation is SyncOperation::*_LIST ? true : false)
      */
     public static function isList(int $operation): bool
     {

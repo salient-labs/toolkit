@@ -355,12 +355,13 @@ abstract class SyncEntity implements ISyncEntity
      */
     final protected function defer($deferred, &$replace, ?string $entity = null): void
     {
-        $ctx = $this->requireContext();
-        if (is_array($deferred)) {
-            $ctx = $ctx->withArrays();
-        }
-
-        DeferredSyncEntity::defer($this->provider(), $ctx->push($this), $entity ?: static::class, $deferred, $replace);
+        DeferredSyncEntity::defer(
+            $this->provider(),
+            $this->requireContext()->push($this),
+            $entity ?: static::class,
+            $deferred,
+            $replace
+        );
     }
 
     private function typeUri(bool $compact): string

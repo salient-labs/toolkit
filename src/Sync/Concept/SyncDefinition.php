@@ -46,7 +46,7 @@ abstract class SyncDefinition implements ISyncDefinition
      *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
      *         )
      *     )
-     * )
+     * )|null
      */
     abstract protected function getClosure(int $operation): ?Closure;
 

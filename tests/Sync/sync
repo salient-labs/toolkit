@@ -27,13 +27,9 @@ $app = App::load(dirname(__DIR__))
 
 $userApi = User::withDefaultProvider($app);
 
-$provider     = Post::defaultProvider();
-$context      = (new SyncContext($provider->container()))->withArrays();
-$postProvider = $provider->with(Post::class, $context);
-$posts        = $postProvider->getList();
-//\PHPStan\dumpType($context);
-//\PHPStan\dumpType($postProvider);
-//\PHPStan\dumpType($posts);
+$provider     = Post::defaultProvider($app);
+$postProvider = $provider->with(Post::class);
+$posts        = $postProvider->getListA();
 Console::info('Posts retrieved:', (string) count($posts));
 
 /** @var Post */

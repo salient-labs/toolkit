@@ -163,15 +163,13 @@ final class GetSyncEntities extends CliCommand
                       $this->Store->getEntityTypeUri($class) . (is_null($id) ? '' : "/$id"));
 
         $this->app()->bindIf(ISyncContext::class, SyncContext::class);
-        /** @var ISyncContext<IIterable> */
         $context = $this->app()->get(ISyncContext::class);
-        if (!$stream) {
-            $context = $context->withArrays();
-        }
 
         $result = !is_null($id)
                       ? $provider->with($class, $context)->get($id, $filter)
-                      : $provider->with($class, $context)->getList($filter);
+                      : ($stream
+                             ? $provider->with($class, $context)->getList($filter)
+                             : $provider->with($class, $context)->getListA($filter));
 
         $rules = $class::buildSerializeRules($this->app())->includeMeta(false);
 

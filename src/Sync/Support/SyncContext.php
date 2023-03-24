@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Test;
 use Lkrms\Support\ProviderContext;
@@ -13,36 +12,10 @@ use UnexpectedValueException;
 /**
  * The context within which a sync entity is instantiated
  *
- * @template TList of array|IIterable
- * @implements ISyncContext<TList>
  */
 final class SyncContext extends ProviderContext implements ISyncContext
 {
-    protected bool $IteratorToArray = false;
-
     protected array $Filter = [];
-
-    /**
-     * @return SyncContext<array>
-     */
-    public function withArrays()
-    {
-        /** @var SyncContext<array> */
-        $instance = $this->withPropertyValue('IteratorToArray', true);
-
-        return $instance;
-    }
-
-    /**
-     * @return SyncContext<IIterable>
-     */
-    public function withIterators()
-    {
-        /** @var SyncContext<IIterable> */
-        $instance = $this->withPropertyValue('IteratorToArray', false);
-
-        return $instance;
-    }
 
     public function withArgs(int $operation, ...$args)
     {
@@ -90,11 +63,6 @@ final class SyncContext extends ProviderContext implements ISyncContext
         }
 
         throw new UnexpectedValueException('Filter signature not recognised');
-    }
-
-    public function getIteratorToArray(): bool
-    {
-        return $this->IteratorToArray;
     }
 
     public function getFilter(): array
