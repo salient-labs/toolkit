@@ -16,13 +16,22 @@ Err::load();
 
 $server = new HttpServer('localhost', 8306);
 $server->start();
-Console::log('Listening at:', 'http://localhost:8306');
-$server->listen(
+$baseUrl = $server->getBaseUrl();
+Console::log('Listening at:', implode("\n", [$baseUrl, "$baseUrl/loop", "$baseUrl/return"]));
+$lastClient = $server->listen(
     function (HttpRequest $request, bool &$continue, &$return): HttpResponse {
-        $response = new HttpResponse("Called with:\n" . print_r($request, true));
-        $continue = false;
+        Console::log($request->Method . ' request from ' . $request->Client . ':', $request->Target);
+        switch ($request->Target) {
+            case '/loop':
+                $continue = true;
+                break;
+            case '/return':
+                $return = $request->Client;
+                break;
+        }
 
-        return $response;
+        return new HttpResponse("Called with:\n" . print_r($request, true));
     }
 );
 $server->stop();
+Console::log('Last client:', $lastClient ?: '<not returned>');

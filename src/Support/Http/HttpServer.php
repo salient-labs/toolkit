@@ -3,6 +3,7 @@
 namespace Lkrms\Support\Http;
 
 use Lkrms\Concern\TFullyReadable;
+use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Curler\CurlerHeadersFlag;
@@ -18,8 +19,11 @@ use RuntimeException;
  * @property-read string $Host
  * @property-read int $Port
  * @property-read int $Timeout
+ * @property-read string|null $ProxyHost
+ * @property-read int|null $ProxyPort
+ * @property-read bool|null $ProxyTls
  */
-final class HttpServer implements IReadable
+final class HttpServer implements IReadable, IImmutable
 {
     use TFullyReadable;
 
@@ -39,6 +43,21 @@ final class HttpServer implements IReadable
     protected $Timeout;
 
     /**
+     * @var string|null
+     */
+    protected $ProxyHost;
+
+    /**
+     * @var int|null
+     */
+    protected $ProxyPort;
+
+    /**
+     * @var bool|null
+     */
+    protected $ProxyTls;
+
+    /**
      * @var resource|null
      */
     private $Server;
@@ -48,6 +67,58 @@ final class HttpServer implements IReadable
         $this->Host    = $host;
         $this->Port    = $port;
         $this->Timeout = $timeout;
+    }
+
+    /**
+     * Run the server behind a reverse proxy
+     *
+     * The server continues to listen at the same {@see HttpServer::$Host} and
+     * {@see HttpServer::$Port} while referring to itself as
+     * `http[s]://<proxy_host>[:<proxy_port>]` in client-facing URLs.
+     *
+     * @return $this
+     * @see HttpServer::getBaseUrl()
+     */
+    public function withProxy(string $proxyHost, int $proxyPort, ?bool $proxyTls = null)
+    {
+        $clone            = clone $this;
+        $clone->ProxyHost = $proxyHost;
+        $clone->ProxyPort = $proxyPort;
+        $clone->ProxyTls  = is_null($proxyTls) ? ($proxyPort === 443) : $proxyTls;
+        $clone->Server    = null;
+
+        return $clone;
+    }
+
+    /**
+     * Get the server's client-facing base URL with no trailing slash
+     *
+     */
+    public function getBaseUrl(): string
+    {
+        if ($this->ProxyHost && $this->ProxyPort) {
+            return ($this->ProxyTls && $this->ProxyPort === 443) ||
+                (!$this->ProxyTls && $this->ProxyPort === 80)
+                    ? sprintf(
+                        '%s://%s',
+                        $this->ProxyTls
+                            ? 'https'
+                            : 'http',
+                        $this->ProxyHost
+                    )
+                    : sprintf(
+                        '%s://%s:%d',
+                        $this->ProxyTls
+                            ? 'https'
+                            : 'http',
+                        $this->ProxyHost,
+                        $this->ProxyPort
+                    );
+        }
+
+        return $this->ProxyPort === 80
+            ? sprintf('http://%s', $this->Host)
+            : sprintf('http://%s:%d', $this->Host, $this->Port);
     }
 
     /**
