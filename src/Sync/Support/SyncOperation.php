@@ -19,8 +19,6 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * Add an entity to the backend
      *
      * Typically corresponds to:
-     * - `<provider>::create<entity_name>(<entity_class> $entity)`
-     * - `<provider>::create_<entity_name>(<entity_class> $entity)`
      * - `POST /<entity_name>`
      * - `INSERT INTO <entity_name> ...`
      */
@@ -30,8 +28,6 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * Get an entity from the backend
      *
      * Typically corresponds to:
-     * - `<provider>::get<entity_name>(int|string|null $id)`
-     * - `<provider>::get_<entity_name>(int|string|null $id)`
      * - `GET /<entity_name>/<id>`
      * - `GET /<entity_name>`
      * - `SELECT ... FROM <entity_name> WHERE <id_field> = <id>`
@@ -42,8 +38,6 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * Update an entity in the backend
      *
      * Typically corresponds to:
-     * - `<provider>::update<entity_name>(<entity_class> $entity)`
-     * - `<provider>::update_<entity_name>(<entity_class> $entity)`
      * - `PUT /<entity_name>/<id>`
      * - `PATCH /<entity_name>/<id>`
      * - `UPDATE <entity_name> WHERE ...`
@@ -54,8 +48,6 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * Delete an entity from the backend
      *
      * Typically corresponds to:
-     * - `<provider>::delete<entity_name>(<entity_class> $entity)`
-     * - `<provider>::delete_<entity_name>(<entity_class> $entity)`
      * - `DELETE /<entity_name>/<id>`
      * - `DELETE FROM <entity_name> WHERE ...`
      */
@@ -65,8 +57,6 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * Add a list of entities to the backend
      *
      * Typically corresponds to:
-     * - `<provider>::create<plural_entity_name>(<entity_class>[] $entities)`
-     * - `<provider>::createList_<entity_name>(<entity_class>[] $entities)`
      * - `POST /<entity_name>`
      * - `INSERT INTO <entity_name> ...`
      */
@@ -76,8 +66,6 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * Get a list of entities from the backend
      *
      * Typically corresponds to:
-     * - `<provider>::get<plural_entity_name>()`
-     * - `<provider>::getList_<entity_name>()`
      * - `GET /<entity_name>`
      * - `SELECT ... FROM <entity_name>`
      */
@@ -87,8 +75,6 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * Update a list of entities in the backend
      *
      * Typically corresponds to:
-     * - `<provider>::update<plural_entity_name>(<entity_class>[] $entity)`
-     * - `<provider>::updateList_<entity_name>(<entity_class>[] $entity)`
      * - `PUT /<entity_name>`
      * - `PATCH /<entity_name>`
      * - `UPDATE <entity_name> WHERE ...`
@@ -99,8 +85,6 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * Delete a list of entities from the backend
      *
      * Typically corresponds to:
-     * - `<provider>::delete<plural_entity_name>(<entity_class>[] $entity)`
-     * - `<provider>::deleteList_<entity_name>(<entity_class>[] $entity)`
      * - `DELETE /<entity_name>`
      * - `DELETE FROM <entity_name> WHERE ...`
      */

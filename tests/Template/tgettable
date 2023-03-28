@@ -184,7 +184,6 @@ print_r([
     'a_set' => $a,
     'b_set' => $b,
     'c_set' => $c,
-
     'b_get' => [
         'id'            => $b_id,
         'name'          => $b_name,
@@ -194,6 +193,5 @@ print_r([
         'b_meta2'       => $b_meta2,
         'b_meta3'       => $b_meta3,
     ],
-
     'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions)
 ]);
