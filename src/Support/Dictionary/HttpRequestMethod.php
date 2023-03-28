@@ -2,13 +2,14 @@
 
 namespace Lkrms\Support\Dictionary;
 
-use Lkrms\Concept\Enumeration;
+use Lkrms\Concept\Dictionary;
 
 /**
  * HTTP request methods
  *
+ * @see HttpRequestMethods::ALL
  */
-final class HttpRequestMethod extends Enumeration
+final class HttpRequestMethod extends Dictionary
 {
     public const GET     = 'GET';
     public const HEAD    = 'HEAD';
@@ -19,22 +20,4 @@ final class HttpRequestMethod extends Enumeration
     public const CONNECT = 'CONNECT';
     public const OPTIONS = 'OPTIONS';
     public const TRACE   = 'TRACE';
-
-    /**
-     * @return string[]
-     */
-    public static function getAll(): array
-    {
-        return [
-            self::GET,
-            self::HEAD,
-            self::POST,
-            self::PUT,
-            self::PATCH,
-            self::DELETE,
-            self::CONNECT,
-            self::OPTIONS,
-            self::TRACE,
-        ];
-    }
 }

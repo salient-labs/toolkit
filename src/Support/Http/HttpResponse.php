@@ -9,8 +9,9 @@ use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Facade\Convert;
 
 /**
+ * Represents an outgoing HTTP response
  *
- * @property-read string $Version
+ * @property-read string $ProtocolVersion
  * @property-read int $StatusCode
  * @property-read string|null $ReasonPhrase
  * @property-read ICurlerHeaders $Headers
@@ -23,7 +24,7 @@ final class HttpResponse implements IReadable
     /**
      * @var string
      */
-    protected $Version;
+    protected $ProtocolVersion;
 
     /**
      * @var int
@@ -45,28 +46,30 @@ final class HttpResponse implements IReadable
      */
     protected $Body;
 
-    public function __construct(?string $body, int $statusCode = 200, string $reasonPhrase = null, ICurlerHeaders $headers = null, string $version = 'HTTP/1.1')
-    {
-        $this->Body         = $body;
-        $this->StatusCode   = $statusCode;
-        $this->ReasonPhrase = $reasonPhrase;
-        $this->Headers      = $headers ?: new CurlerHeaders();
-        $this->Version      = $version;
+    public function __construct(
+        ?string $body,
+        int $statusCode          = 200,
+        ?string $reasonPhrase    = null,
+        ?ICurlerHeaders $headers = null,
+        string $protocolVersion  = '1.1'
+    ) {
+        $headers = $headers ?: new CurlerHeaders();
 
-        $this->Headers->setHeader('Content-Length', (string) strlen($this->Body));
+        $this->Body            = $body;
+        $this->StatusCode      = $statusCode;
+        $this->ReasonPhrase    = $reasonPhrase;
+        $this->Headers         = $headers->setHeader('Content-Length', (string) strlen($this->Body));
+        $this->ProtocolVersion = $protocolVersion;
     }
 
-    public function getResponse(): string
+    public function __toString(): string
     {
         $response = [
-            Convert::sparseToString(
-                ' ',
-                [
-                    $this->Version ?: 'HTTP/1.1',
-                    $this->StatusCode,
-                    $this->ReasonPhrase,
-                ]
-            )
+            Convert::sparseToString(' ', [
+                sprintf('HTTP/%s', $this->ProtocolVersion ?: '1.1'),
+                $this->StatusCode,
+                $this->ReasonPhrase,
+            ])
         ];
         array_push($response, ...$this->Headers->getHeaders());
         $response[] = '';

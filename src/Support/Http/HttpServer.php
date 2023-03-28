@@ -7,15 +7,15 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Curler\CurlerHeadersFlag;
 use Lkrms\Facade\Console;
+use Lkrms\Support\Dictionary\HttpRequestMethods;
 use Lkrms\Support\Http\HttpRequest;
 use Lkrms\Support\Http\HttpResponse;
 use RuntimeException;
-use Throwable;
 
 /**
  * Listen for HTTP requests on a local address
  *
- * @property-read string $Address
+ * @property-read string $Host
  * @property-read int $Port
  * @property-read int $Timeout
  */
@@ -26,7 +26,7 @@ final class HttpServer implements IReadable
     /**
      * @var string
      */
-    protected $Address;
+    protected $Host;
 
     /**
      * @var int
@@ -43,41 +43,51 @@ final class HttpServer implements IReadable
      */
     private $Server;
 
-    public function __construct(string $address, int $port, int $timeout = 300)
+    public function __construct(string $host, int $port, int $timeout = 300)
     {
-        $this->Address = $address;
+        $this->Host    = $host;
         $this->Port    = $port;
         $this->Timeout = $timeout;
     }
 
-    public function start(): void
+    /**
+     * @return $this
+     */
+    public function start()
     {
         if ($this->Server) {
-            return;
+            return $this;
         }
 
+        $errMessage = $errCode = null;
         if ($server = stream_socket_server(
-            "tcp://{$this->Address}:{$this->Port}",
-            $errCode,
-            $errMessage
+            "tcp://{$this->Host}:{$this->Port}", $errCode, $errMessage
         )) {
             $this->Server = $server;
 
-            return;
+            return $this;
         }
 
-        throw new RuntimeException(
-            "Unable to start HTTP server at {$this->Address}:{$this->Port}"
-                . ($errCode ? " (error $errCode: $errMessage)" : '')
-        );
+        throw new RuntimeException(sprintf(
+            'Unable to start HTTP server at %s:%d (error %d: %s)',
+            $this->Host,
+            $this->Port,
+            $errCode,
+            $errMessage
+        ));
     }
 
-    public function stop(): void
+    /**
+     * @return $this
+     */
+    public function stop()
     {
         if ($this->Server) {
             fclose($this->Server);
-            unset($this->Server);
+            $this->Server = null;
         }
+
+        return $this;
     }
 
     public function isRunning(): bool
@@ -85,32 +95,27 @@ final class HttpServer implements IReadable
         return !is_null($this->Server);
     }
 
-    private function assertIsRunning(): void
+    /**
+     * Wait for a request and return a response
+     *
+     * @template T
+     * @param callable $callback Receives an {@see HttpRequest} and returns an
+     * {@see HttpResponse}. May also set `$continue = true` to make
+     * {@see HttpServer::listen()} wait for another request, or use `$return =
+     * <value>` to pass `<value>` back to the caller.
+     * ```php
+     * fn(HttpRequest $request, bool &$continue, &$return): HttpResponse
+     * ```
+     * @phpstan-param callable(HttpRequest, bool &$continue, T &$return): HttpResponse $callback
+     * @return T|null
+     */
+    public function listen(callable $callback, ?int $timeout = null)
     {
         if (!$this->Server) {
             throw new RuntimeException('start() must be called first');
         }
-    }
-
-    /**
-     * Wait for a request and return a response
-     *
-     * @param callable $callback Handles the given {@see HttpRequest} and
-     * returns an {@see HttpResponse} object. May also set `$continue = true` to
-     * make {@see HttpServer::listen()} wait for another request, or use
-     * `$return = <value>` to pass `<value>` back to the caller.
-     * ```php
-     * callback(HttpRequest $request, bool &$continue, &$return): HttpResponse
-     * ```
-     * @param int|null $timeout
-     * @return mixed
-     */
-    public function listen(callable $callback, int $timeout = null)
-    {
-        $this->assertIsRunning();
 
         $timeout = is_null($timeout) ? $this->Timeout : $timeout;
-
         do {
             $peer   = null;
             $socket = stream_socket_accept($this->Server, $timeout, $peer);
@@ -122,6 +127,7 @@ final class HttpServer implements IReadable
             }
 
             $startLine = null;
+            $version   = null;
             $headers   = new CurlerHeaders();
             $body      = null;
             do {
@@ -131,13 +137,19 @@ final class HttpServer implements IReadable
 
                 if (is_null($startLine)) {
                     $startLine = explode(' ', rtrim($line, "\r\n"));
-                    if (count($startLine) != 3) {
+                    if (count($startLine) != 3 ||
+                            !in_array($startLine[0], HttpRequestMethods::ALL, true) ||
+                            !preg_match(
+                                '/^HTTP\/([0-9]+(?:\.[0-9]+)?)$/',
+                                $startLine[2],
+                                $version
+                            )) {
                         throw new RuntimeException("Invalid HTTP request from $peer");
                     }
                     continue;
                 }
 
-                $headers->addRawHeader($line);
+                $headers = $headers->addRawHeader($line);
 
                 if (!trim($line)) {
                     break;
@@ -151,8 +163,9 @@ final class HttpServer implements IReadable
                 }
             }
 
-            list($method, $target, $version) = $startLine;
-            $request                         = new HttpRequest($method, $target, $version, $headers, $body, $client);
+            [[$method, $target], [1 => $version]] = [$startLine, $version];
+            $request =
+                new HttpRequest($method, $target, $version, $headers, $body, $client);
 
             Console::debug("$method request received from $client:", $target);
 
@@ -163,13 +176,9 @@ final class HttpServer implements IReadable
                 /** @var HttpResponse */
                 $response = $callback($request, $continue, $return);
             } finally {
-                fwrite(
-                    $socket,
-                    ($response
-                        ?? new HttpResponse('Internal server error',
-                                            500,
-                                            'Internal Server Error'))->getResponse()
-                );
+                fwrite($socket, (string) ($response ?? new HttpResponse(
+                    'Internal server error', 500, 'Internal Server Error'
+                )));
                 fclose($socket);
             }
         } while ($continue);

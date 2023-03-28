@@ -4,6 +4,7 @@
 namespace Lkrms\Tests\Support;
 
 use Lkrms\Err\Err;
+use Lkrms\Facade\Console;
 use Lkrms\Support\Http\HttpRequest;
 use Lkrms\Support\Http\HttpResponse;
 use Lkrms\Support\Http\HttpServer;
@@ -15,6 +16,7 @@ Err::load();
 
 $server = new HttpServer('localhost', 8306);
 $server->start();
+Console::log('Listening at:', 'http://localhost:8306');
 $server->listen(
     function (HttpRequest $request, bool &$continue, &$return): HttpResponse {
         $response = new HttpResponse("Called with:\n" . print_r($request, true));

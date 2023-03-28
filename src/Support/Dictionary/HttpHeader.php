@@ -2,13 +2,13 @@
 
 namespace Lkrms\Support\Dictionary;
 
-use Lkrms\Concept\Enumeration;
+use Lkrms\Concept\Dictionary;
 
 /**
  * Frequently-used HTTP headers
  *
  */
-final class HttpHeader extends Enumeration
+final class HttpHeader extends Dictionary
 {
     public const ACCEPT        = 'Accept';
     public const AUTHORIZATION = 'Authorization';

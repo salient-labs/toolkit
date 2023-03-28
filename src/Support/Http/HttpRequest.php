@@ -7,10 +7,11 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 
 /**
+ * Represents an incoming HTTP request
  *
  * @property-read string $Method
  * @property-read string $Target
- * @property-read string $Version
+ * @property-read string $ProtocolVersion
  * @property-read ICurlerHeaders $Headers
  * @property-read string|null $Body
  * @property-read string|null $Client
@@ -32,7 +33,7 @@ final class HttpRequest implements IReadable
     /**
      * @var string
      */
-    protected $Version;
+    protected $ProtocolVersion;
 
     /**
      * @var ICurlerHeaders
@@ -49,13 +50,19 @@ final class HttpRequest implements IReadable
      */
     protected $Client;
 
-    public function __construct(string $method, string $target, string $version, ICurlerHeaders $headers, ?string $body, string $client = null)
-    {
-        $this->Method  = $method;
-        $this->Target  = $target;
-        $this->Version = $version;
-        $this->Headers = $headers;
-        $this->Body    = $body;
-        $this->Client  = $client;
+    public function __construct(
+        string $method,
+        string $target,
+        string $protocolVersion,
+        ICurlerHeaders $headers,
+        ?string $body,
+        ?string $client = null
+    ) {
+        $this->Method          = $method;
+        $this->Target          = $target;
+        $this->ProtocolVersion = $protocolVersion;
+        $this->Headers         = $headers;
+        $this->Body            = $body;
+        $this->Client          = $client;
     }
 }
