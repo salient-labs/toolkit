@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Lkrms\Support\Http;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Curler\CurlerHeadersFlag;
 use Lkrms\Facade\Console;
-use Lkrms\Support\HttpRequest;
-use Lkrms\Support\HttpResponse;
+use Lkrms\Support\Http\HttpRequest;
+use Lkrms\Support\Http\HttpResponse;
 use RuntimeException;
 use Throwable;
 

@@ -20,8 +20,8 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Test;
 use Lkrms\Support\DateFormatter;
-use Lkrms\Support\HttpHeader;
-use Lkrms\Support\HttpRequestMethod;
+use Lkrms\Support\Dictionary\HttpHeader;
+use Lkrms\Support\Dictionary\HttpRequestMethod;
 use Lkrms\Support\MimeType;
 use UnexpectedValueException;
 

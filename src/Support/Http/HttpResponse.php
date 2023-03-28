@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Lkrms\Support\Http;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;

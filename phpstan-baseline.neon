@@ -63,7 +63,7 @@ parameters:
 		-
 			message: "#^Do\\-while loop condition is always false\\.$#"
 			count: 1
-			path: src/Support/HttpServer.php
+			path: src/Support/Http/HttpServer.php
 
 		-
 			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$GetFromSyncStore is never read, only written\\.$#"
