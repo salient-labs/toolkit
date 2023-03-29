@@ -25,7 +25,7 @@ use ReflectionType;
  * @method static string[] getClassNamesBetween(string|ReflectionClass $child, string|ReflectionClass $parent, bool $includeParent = true) Get the names of a class and its parents, up to and optionally including $parent (see {@see Reflection::getClassNamesBetween()})
  * @method static ReflectionClass getMethodPrototypeClass(ReflectionMethod $method) If a method has a prototype, return its declaring class, otherwise return the method's declaring class
  * @method static string[] getNames(array $reflectors) Get the names of Reflector objects
- * @method static string getParameterDeclaration(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, ?string $type = null, ?string $name = null) Convert a ReflectionParameter to a PHP parameter declaration (see {@see Reflection::getParameterDeclaration()})
+ * @method static string getParameterDeclaration(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, ?string $type = null, ?string $name = null, bool $phpDoc = false) Convert a ReflectionParameter to a PHP parameter declaration (see {@see Reflection::getParameterDeclaration()})
  * @method static string|null getParameterPhpDoc(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, ?string $type = null, ?string $name = null, ?string $documentation = null, bool $force = false) Convert a ReflectionParameter to a PHPDoc tag (see {@see Reflection::getParameterPhpDoc()})
  * @method static string getTypeDeclaration(?ReflectionType $type, string $classPrefix = '\\', ?callable $typeNameCallback = null) Convert the given ReflectionType to a PHP type declaration (see {@see Reflection::getTypeDeclaration()})
  *

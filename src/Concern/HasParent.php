@@ -2,6 +2,7 @@
 
 namespace Lkrms\Concern;
 
+use LogicException;
 use UnexpectedValueException;
 
 /**
@@ -11,9 +12,15 @@ use UnexpectedValueException;
  */
 trait HasParent
 {
-    abstract private static function getParentProperty(): string;
+    private static function getParentProperty(): string
+    {
+        throw new LogicException('Method not defined: ' . __METHOD__);
+    }
 
-    abstract private static function getChildrenProperty(): string;
+    private static function getChildrenProperty(): string
+    {
+        throw new LogicException('Method not defined: ' . __METHOD__);
+    }
 
     /**
      * @var string[]|null

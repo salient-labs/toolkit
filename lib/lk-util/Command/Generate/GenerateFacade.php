@@ -291,7 +291,7 @@ final class GenerateFacade extends GenerateCommand
                                  : null;
                 $params[] = $declare
                                 ? Reflect::getParameterPhpDoc($_param, $classPrefix, $typeNameCallback, $_type)
-                                : Reflect::getParameterDeclaration($_param, $classPrefix, $typeNameCallback, $_type);
+                                : Reflect::getParameterDeclaration($_param, $classPrefix, $typeNameCallback, $_type, null, true);
             }
 
             if (!$methods && !$_method->isConstructor()) {

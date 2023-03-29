@@ -1077,47 +1077,49 @@ final class Conversions
         );
     }
 
-    public function valueToCode($value, string $delimiter = ', ', string $arrow = ' => '): string
+    /**
+     * Like var_export but with more compact output
+     *
+     */
+    public function valueToCode($value, string $delimiter = ', ', string $arrow = ' => ', ?string $escapeCharacters = null): string
     {
         if (is_null($value)) {
             return 'null';
-        } elseif (is_string($value) && preg_match('/\v/', $value)) {
-            return '"' . addcslashes($value, "\n\r\t\v\x1b\f\\\$\"") . '"';
-        } elseif (is_array($value)) {
-            return $this->arrayToCode($value, $delimiter, $arrow);
         }
+        if (is_string($value) &&
+            (($escapeCharacters && strpbrk($value, $escapeCharacters) !== false) ||
+                preg_match('/\v/', $value))) {
+            $escaped = addcslashes($value, "\n\r\t\v\x1b\f\\\$\"" . $escapeCharacters);
+            if ($escapeCharacters) {
+                foreach (str_split($escapeCharacters) as $character) {
+                    $oct     = sprintf('\%03o', ord($character));
+                    $escaped = str_replace(addcslashes($character, $character), $oct, $escaped);
+                }
+            }
 
-        return var_export($value, true);
-    }
-
-    public function arrayToCode(array $array, string $delimiter = ', ', string $arrow = ' => '): string
-    {
-        if (empty($array)) {
+            return '"' . $escaped . '"';
+        }
+        if (!is_array($value)) {
+            return var_export($value, true);
+        }
+        if (empty($value)) {
             return '[]';
         }
         $code = '';
-        if (Test::isListArray($array)) {
-            foreach ($array as $value) {
+        if (Test::isListArray($value)) {
+            foreach ($value as $value) {
                 $code .= ($code ? $delimiter : '[')
-                    . $this->valueToCode($value, $delimiter, $arrow);
+                    . $this->valueToCode($value, $delimiter, $arrow, $escapeCharacters);
             }
         } else {
-            foreach ($array as $key => $value) {
+            foreach ($value as $key => $value) {
                 $code .= ($code ? $delimiter : '[')
-                    . $this->valueToCode($key)
+                    . $this->valueToCode($key, $delimiter, $arrow, $escapeCharacters)
                     . $arrow
-                    . $this->valueToCode($value, $delimiter, $arrow);
+                    . $this->valueToCode($value, $delimiter, $arrow, $escapeCharacters);
             }
         }
 
         return $code . ']';
-    }
-
-    /**
-     * @deprecated Use {@see Conversions::plural()} instead
-     */
-    public function numberToNoun(int $number, string $singular, ?string $plural = null, bool $includeNumber = false): string
-    {
-        return $this->plural($number, $singular, $plural, $includeNumber);
     }
 }
