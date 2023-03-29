@@ -15,12 +15,11 @@ use UnexpectedValueException;
 final class Environment
 {
     /**
-     * Load environment variables from a file
+     * Load values into the environment from a file
      *
-     * Variables are loaded from the given .env file to `getenv()`, `$_ENV` and
-     * `$_SERVER`. Variables already present in the environment are never
-     * overwritten, but if the same variable appears in the .env file multiple
-     * times, the last value is used.
+     * Values are loaded from a .env file to `getenv()`, `$_ENV` and `$_SERVER`.
+     * Variables already present in the environment are never overwritten, but
+     * if they appear in the .env file multiple times, the last value is used.
      *
      * Each line in `$filename` should be a shell-compatible variable
      * assignment. Unquoted values cannot contain whitespace, `"`, `'`, `$`,
@@ -44,7 +43,8 @@ final class Environment
             $l = $i + 1;
             if (!trim($line) || substr($line, 0, 1) === '#') {
                 continue;
-            } elseif (!preg_match(
+            }
+            if (!preg_match(
                 '/^([A-Z_][A-Z0-9_]*)=("(([^"$`]|\\\\["$`])*)"|\'(([^\']|\'\\\\\'\')*)\'|[^]"$\'*?`\s[]*)$/i',
                 $line,
                 $match
@@ -66,7 +66,9 @@ final class Environment
             }
             $queue[$name] = $value;
         }
-        array_walk($queue, fn($value, $name) => $this->set($name, $value));
+        foreach ($queue as $name => $value) {
+            $this->set($name, $value);
+        }
     }
 
     /**
@@ -96,7 +98,7 @@ final class Environment
     /**
      * Set an environment variable
      *
-     * The variable is loaded to `getenv()`, `$_ENV` and `$_SERVER`.
+     * `$value` is loaded to `getenv()`, `$_ENV` and `$_SERVER`.
      *
      */
     public function set(string $name, string $value): void
@@ -109,7 +111,7 @@ final class Environment
     /**
      * Unset an environment variable
      *
-     * The variable is removed from `getenv()`, `$_ENV` and `$_SERVER`.
+     * The value is removed from `getenv()`, `$_ENV` and `$_SERVER`.
      *
      */
     public function unset(string $name): void
@@ -132,7 +134,7 @@ final class Environment
     }
 
     /**
-     * Returns true if a variable exists in the environment
+     * True if a variable exists in the environment
      *
      */
     public function has(string $name): bool
@@ -141,14 +143,17 @@ final class Environment
     }
 
     /**
-     * Retrieve an environment variable
+     * Get an environment variable
      *
      * Looks for `$name` in `$_ENV`, `$_SERVER` and `getenv()`, in that order,
      * and returns the first value it finds.
      *
-     * @param string $name The environment variable to retrieve.
-     * @param string|null $default The value to return if `$name` is not set.
-     * @throws RuntimeException if `$name` is not set and no `$default` is
+     * Returns `$default` if `$name` is not found in the environment.
+     *
+     * @template T of string
+     * @phpstan-param T|null $default
+     * @phpstan-return T|string
+     * @throws RuntimeException if `$name` is not set and `$default` is not
      * given.
      */
     public function get(string $name, ?string $default = null): ?string
@@ -166,14 +171,15 @@ final class Environment
     }
 
     /**
-     * Return an environment variable as an integer
+     * Get an integer value from the environment
      *
-     * Casts the return value of {@see Environment::get()} as an `int`,
-     * returning `null` if `$name` is set but empty.
+     * Returns `$default` if `$name` is empty or unset, otherwise casts it as an
+     * `int` before returning.
      *
-     * @param string $name The environment variable to retrieve.
-     * @param int|null $default The value to return if `$name` is not set.
-     * @throws RuntimeException if `$name` is not set and no `$default` is
+     * @template T of int
+     * @phpstan-param T|null $default
+     * @phpstan-return T|int
+     * @throws RuntimeException if `$name` is not set and `$default` is not
      * given.
      */
     public function getInt(string $name, ?int $default = null): ?int
@@ -181,23 +187,57 @@ final class Environment
         if (func_num_args() < 2) {
             $value = $this->get($name);
         } else {
-            // Passes "" if `$default` is `null`, "0" if `$default` is `0`
-            $value = $this->get($name, (string) $default);
+            $value = $this->get($name, null);
+        }
+        if (trim($value) === '') {
+            return $default;
         }
 
-        return ($value === '') ? null : (int) $value;
+        return (int) $value;
     }
 
     /**
-     * Return an environment variable as a list of strings
+     * Get a boolean value from the environment
      *
-     * See {@see Environment::get()} for details.
+     * Returns `$default` if `$name` is empty or unset, `false` if it's `"n"`,
+     * `"no"`, `"false"` or `"0"`, otherwise `true`. Comparison is not
+     * case-sensitive.
      *
-     * @param string $name The environment variable to retrieve.
-     * @param string[]|null $default The value to return if `$name` is not set.
-     * @param string $delimiter The character used between items.
+     * @template T of bool
+     * @phpstan-param T|null $default
+     * @phpstan-return T|bool
+     * @throws RuntimeException if `$name` is not set and `$default` is not
+     * given.
+     */
+    public function getBool(string $name, ?bool $default = null): ?bool
+    {
+        if (func_num_args() < 2) {
+            $value = $this->get($name);
+        } else {
+            $value = $this->get($name, null);
+        }
+        if (trim($value) === '') {
+            return $default;
+        }
+        if (preg_match('/^(no?|false)/i', $value)) {
+            return false;
+        }
+
+        return (bool) $value;
+    }
+
+    /**
+     * Get a list of strings from the environment
+     *
+     * Returns `$default` if `$name` is not set or an empty array if it's empty,
+     * otherwise splits it into an array on `$delimiter` before returning.
+     *
+     * @template T of string[]
+     * @phpstan-param T|null $default
+     * @phpstan-return T|string[]
+     * @param string[]|null $default
      * @return string[]|null
-     * @throws RuntimeException if `$name` is not set and no `$default` is
+     * @throws RuntimeException if `$name` is not set and `$default` is not
      * given.
      */
     public function getList(string $name, ?array $default = null, string $delimiter = ','): ?array
@@ -257,8 +297,8 @@ final class Environment
     }
 
     /**
-     * Return true if the current locale for character classification and
-     * conversion (LC_CTYPE) supports UTF-8
+     * True if the current locale for character classification and conversion
+     * (LC_CTYPE) supports UTF-8
      *
      */
     public function isLocaleUtf8(): bool
