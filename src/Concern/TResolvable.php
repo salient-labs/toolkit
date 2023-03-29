@@ -25,6 +25,6 @@ trait TResolvable
     final public static function normalise(string $name, bool $greedy = true, string ...$hints): string
     {
         return ((self::$_Normaliser[static::class] ?? null)
-            ?: (self::$_Normaliser[static::class] = static::normaliser()))($name, $greedy, ...$hints);
+                    ?: (self::$_Normaliser[static::class] = static::normaliser()))($name, $greedy, ...$hints);
     }
 }

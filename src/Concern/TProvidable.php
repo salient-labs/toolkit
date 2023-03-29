@@ -97,11 +97,11 @@ trait TProvidable
     final public static function provide(array $data, IProvider $provider, ?IProviderContext $context = null)
     {
         $container = ($context
-            ? $context->container()
-            : $provider->container())->inContextOf(get_class($provider));
+                          ? $context->container()
+                          : $provider->container())->inContextOf(get_class($provider));
         $context = $context
-            ? $context->withContainer($container)
-            : $container->get(ProviderContext::class);
+                       ? $context->withContainer($container)
+                       : $container->get(ProviderContext::class);
         $introspector = Introspector::getService($container, static::class);
         $closure      = $introspector->getCreateProvidableFromClosure();
 
@@ -120,18 +120,19 @@ trait TProvidable
     final public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProviderContext $context = null): iterable
     {
         $container = ($context
-            ? $context->container()
-            : $provider->container())->inContextOf(get_class($provider));
+                          ? $context->container()
+                          : $provider->container())->inContextOf(get_class($provider));
         $context = ($context
-            ? $context->withContainer($container)
-            : new ProviderContext($container))->withConformity($conformity);
+                        ? $context->withContainer($container)
+                        : new ProviderContext($container))->withConformity($conformity);
         $introspector = Introspector::getService($container, static::class);
 
         foreach ($dataList as $data) {
             if (!isset($closure)) {
-                $closure = in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                    ? $introspector->getCreateProvidableFromSignatureClosure(array_keys($data))
-                    : $introspector->getCreateProvidableFromClosure();
+                $closure =
+                    in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                        ? $introspector->getCreateProvidableFromSignatureClosure(array_keys($data))
+                        : $introspector->getCreateProvidableFromClosure();
             }
 
             yield $closure($data, $provider, $context);

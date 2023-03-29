@@ -28,7 +28,7 @@ interface ICollection extends Iterator, ArrayAccess, Countable
     public function forEach(callable $callback);
 
     /**
-     * Return a new instance with items that satisfy a callback
+     * Get a new instance with items that satisfy a callback
      *
      * Analogous to `array_filter()`.
      *
@@ -42,8 +42,8 @@ interface ICollection extends Iterator, ArrayAccess, Countable
     public function filter(callable $callback);
 
     /**
-     * Return the first item that satisfies a callback, or false if no such item
-     * is in the collection
+     * Get the first item that satisfies a callback, or false if no such item is
+     * in the collection
      *
      * @param callable $callback
      * ```php
@@ -55,15 +55,24 @@ interface ICollection extends Iterator, ArrayAccess, Countable
     public function find(callable $callback);
 
     /**
-     * Return true if an item is in the collection
+     * Get a new instance with items extracted from the collection
+     *
+     * Analogous to `array_slice()`.
+     *
+     * @return static
+     */
+    public function slice(int $offset, ?int $length = null, bool $preserveKeys = true);
+
+    /**
+     * True if an item is in the collection
      *
      * @param T $item
      */
     public function has($item, bool $strict = false): bool;
 
     /**
-     * Return the first key at which an item is found, or false if it's not in
-     * the collection
+     * Get the first key at which an item is found, or false if it's not in the
+     * collection
      *
      * @param T $item
      * @return int|string|false
@@ -71,8 +80,8 @@ interface ICollection extends Iterator, ArrayAccess, Countable
     public function keyOf($item, bool $strict = false);
 
     /**
-     * Return the first item equal but not necessarily identical to $item, or
-     * false if no such item is in the collection
+     * Get the first item equal but not necessarily identical to $item, or false
+     * if no such item is in the collection
      *
      * @param T $item
      * @return T|false
@@ -80,29 +89,28 @@ interface ICollection extends Iterator, ArrayAccess, Countable
     public function get($item);
 
     /**
-     * Return an array with each item
+     * Get an array with each item
      *
      * @return T[]
      */
     public function toArray(bool $preserveKeys = true): array;
 
     /**
-     * Return the first item, or false if the collection is empty
+     * Get the first item, or false if the collection is empty
      *
      * @return T|false
      */
     public function first();
 
     /**
-     * Return the last item, or false if the collection is empty
+     * Get the last item, or false if the collection is empty
      *
      * @return T|false
      */
     public function last();
 
     /**
-     * Return the nth item (1-based), or false if no such item is in the
-     * collection
+     * Get the nth item (1-based), or false if no such item is in the collection
      *
      * If `$n` is negative, the nth item from the end of the collection is
      * returned.

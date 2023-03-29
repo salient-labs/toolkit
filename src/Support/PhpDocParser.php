@@ -4,7 +4,7 @@ namespace Lkrms\Support;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Support\Dictionary\Regex;
+use Lkrms\Support\Dictionary\RegularExpression as Regex;
 use UnexpectedValueException;
 
 /**
@@ -415,13 +415,15 @@ final class PhpDocParser implements IReadable
             $legacyNullable
         );
         while ($docBlocks) {
-            $parser->mergeInherited(new self(
-                array_shift($docBlocks),
-                $classDocBlocks
-                    ? array_shift($classDocBlocks)
-                    : null,
-                $legacyNullable
-            ));
+            $parser->mergeInherited(
+                new self(
+                    array_shift($docBlocks),
+                    $classDocBlocks
+                        ? array_shift($classDocBlocks)
+                        : null,
+                    $legacyNullable
+                )
+            );
         }
 
         return $parser;

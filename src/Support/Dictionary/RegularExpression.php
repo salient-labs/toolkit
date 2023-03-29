@@ -8,7 +8,7 @@ use Lkrms\Concept\Dictionary;
  * Useful PCRE regular expressions
  *
  */
-final class Regex extends Dictionary
+final class RegularExpression extends Dictionary
 {
     /**
      * A valid PHP identifier, e.g. for variable names and classes
@@ -21,7 +21,7 @@ final class Regex extends Dictionary
     /**
      * A valid PHP type, i.e. an optionally namespaced PHP_IDENTIFIER
      *
-     * @see Regex::PHP_IDENTIFIER
+     * @see RegularExpression::PHP_IDENTIFIER
      */
     public const PHP_TYPE = '(?:\\\\?' . self::PHP_IDENTIFIER . ')+';
 
@@ -50,7 +50,7 @@ final class Regex extends Dictionary
         $modifier = $utf8 ? 'u' : '';
 
         return $anchor
-            ? "$delimiter^$regex\$$delimiter$modifier"
-            : "$delimiter$regex$delimiter$modifier";
+                   ? "$delimiter^$regex\$$delimiter$modifier"
+                   : "$delimiter$regex$delimiter$modifier";
     }
 }

@@ -133,10 +133,12 @@ class AppContainer extends Container implements IReadable
                     break;
             }
 
-            return $this->_getPath(Convert::sparseToString(
-                DIRECTORY_SEPARATOR,
-                [$path, $app, $windowsChild]
-            ), $name);
+            return $this->_getPath(
+                Convert::sparseToString(
+                    DIRECTORY_SEPARATOR, [$path, $app, $windowsChild]
+                ),
+                $name
+            );
         }
 
         if (!($home = Env::home())) {
@@ -156,10 +158,12 @@ class AppContainer extends Container implements IReadable
                 break;
         }
 
-        return $this->_getPath(Convert::sparseToString(
-            DIRECTORY_SEPARATOR,
-            [$path, $app, $child]
-        ), $name);
+        return $this->_getPath(
+            Convert::sparseToString(
+                DIRECTORY_SEPARATOR, [$path, $app, $child]
+            ),
+            $name
+        );
     }
 
     private function _getPath(string $path, string $name): string
@@ -183,7 +187,7 @@ class AppContainer extends Container implements IReadable
     final public function getCachePath(): string
     {
         return $this->_CachePath
-            ?: ($this->_CachePath = $this->getPath('cache', self::DIR_STATE, 'cache', 'var/cache', 'cache'));
+                   ?: ($this->_CachePath = $this->getPath('cache', self::DIR_STATE, 'cache', 'var/cache', 'cache'));
     }
 
     /**
@@ -193,7 +197,7 @@ class AppContainer extends Container implements IReadable
     final public function getConfigPath(): string
     {
         return $this->_ConfigPath
-            ?: ($this->_ConfigPath = $this->getPath('config', self::DIR_CONFIG, null, 'config', 'config'));
+                   ?: ($this->_ConfigPath = $this->getPath('config', self::DIR_CONFIG, null, 'config', 'config'));
     }
 
     /**
@@ -206,7 +210,7 @@ class AppContainer extends Container implements IReadable
     final public function getDataPath(): string
     {
         return $this->_DataPath
-            ?: ($this->_DataPath = $this->getPath('data', self::DIR_DATA, null, 'var/lib', 'data'));
+                   ?: ($this->_DataPath = $this->getPath('data', self::DIR_DATA, null, 'var/lib', 'data'));
     }
 
     /**
@@ -216,7 +220,7 @@ class AppContainer extends Container implements IReadable
     final public function getLogPath(): string
     {
         return $this->_LogPath
-            ?: ($this->_LogPath = $this->getPath('log', self::DIR_STATE, 'log', 'var/log', 'log'));
+                   ?: ($this->_LogPath = $this->getPath('log', self::DIR_STATE, 'log', 'var/log', 'log'));
     }
 
     /**
@@ -226,7 +230,7 @@ class AppContainer extends Container implements IReadable
     final public function getTempPath(): string
     {
         return $this->_TempPath
-            ?: ($this->_TempPath = $this->getPath('temp', self::DIR_STATE, 'tmp', 'var/tmp', 'tmp'));
+                   ?: ($this->_TempPath = $this->getPath('temp', self::DIR_STATE, 'tmp', 'var/tmp', 'tmp'));
     }
 
     public static function getReadable(): array
@@ -440,10 +444,10 @@ class AppContainer extends Container implements IReadable
             Sync::load($syncDb,
                        is_null($command) ? Sys::getProgramName($this->BasePath) : $command,
                        (is_null($arguments)
-                           ? (PHP_SAPI == 'cli'
-                               ? array_slice($_SERVER['argv'], 1)
-                               : ['_GET' => $_GET, '_POST' => $_POST])
-                           : $arguments));
+                            ? (PHP_SAPI == 'cli'
+                                   ? array_slice($_SERVER['argv'], 1)
+                                   : ['_GET' => $_GET, '_POST' => $_POST])
+                            : $arguments));
         } elseif (!Test::areSameFile($syncDb, $file = Sync::getFilename() ?: '')) {
             throw new RuntimeException("Sync database already loaded: $file");
         }

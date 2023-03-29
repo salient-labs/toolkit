@@ -37,16 +37,18 @@ class CurlerException extends \Lkrms\Exception\Exception
         ];
 
         if (Env::debug()) {
-            $detail['Request'] = is_array($this->Curler->Body)
-                ? Format::array($this->Curler->Body)
-                : (string) $this->Curler->Body;
+            $detail['Request'] =
+                is_array($this->Curler->Body)
+                    ? Format::array($this->Curler->Body)
+                    : (string) $this->Curler->Body;
 
-            $detail['curl_getinfo'] = is_null($this->Curler->CurlInfo)
-                ? ''
-                : Format::array(array_map(
-                    fn($value) => is_string($value) ? trim($value) : $value,
-                    $this->Curler->CurlInfo
-                ));
+            $detail['curl_getinfo'] =
+                is_null($this->Curler->CurlInfo)
+                    ? ''
+                    : Format::array(array_map(
+                        fn($value) => is_string($value) ? trim($value) : $value,
+                        $this->Curler->CurlInfo
+                    ));
         }
 
         return $detail;

@@ -110,6 +110,20 @@ trait TCollection
     }
 
     /**
+     * @return static
+     */
+    final public function slice(int $offset, ?int $length = null, bool $preserveKeys = true)
+    {
+        $clone         = clone $this;
+        $clone->_Items = array_slice($clone->_Items, $offset, $length, $preserveKeys);
+        if (!$preserveKeys) {
+            $clone->_Items = array_values($clone->_Items);
+        }
+
+        return $clone;
+    }
+
+    /**
      * @param T $item
      */
     final public function has($item, bool $strict = false): bool
@@ -145,8 +159,8 @@ trait TCollection
     final public function toArray(bool $preserveKeys = true): array
     {
         return $preserveKeys
-            ? $this->_Items
-            : array_values($this->_Items);
+                   ? $this->_Items
+                   : array_values($this->_Items);
     }
 
     /**
@@ -199,8 +213,8 @@ trait TCollection
         $item = array_shift($this->_Items);
 
         return is_null($item)
-            ? false
-            : $item;
+                   ? false
+                   : $item;
     }
 
     // Implementation of `Iterator`:

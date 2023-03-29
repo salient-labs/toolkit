@@ -4,9 +4,10 @@
 namespace Lkrms\Tests\Support;
 
 use Lkrms\Err\Err;
-use Lkrms\Support\HttpRequest;
-use Lkrms\Support\HttpResponse;
-use Lkrms\Support\HttpServer;
+use Lkrms\Facade\Console;
+use Lkrms\Support\Http\HttpRequest;
+use Lkrms\Support\Http\HttpResponse;
+use Lkrms\Support\Http\HttpServer;
 
 $loader = require __DIR__ . '/../../vendor/autoload.php';
 $loader->addPsr4('Lkrms\\Tests\\', dirname(__DIR__));
@@ -15,10 +16,22 @@ Err::load();
 
 $server = new HttpServer('localhost', 8306);
 $server->start();
-$server->listen(function (HttpRequest $request, bool &$continue, &$return): HttpResponse {
-    $response = new HttpResponse("Called with:\n" . print_r($request, true));
-    $continue = false;
+$baseUrl = $server->getBaseUrl();
+Console::log('Listening at:', implode("\n", [$baseUrl, "$baseUrl/loop", "$baseUrl/return"]));
+$lastClient = $server->listen(
+    function (HttpRequest $request, bool &$continue, &$return): HttpResponse {
+        Console::log($request->Method . ' request from ' . $request->Client . ':', $request->Target);
+        switch ($request->Target) {
+            case '/loop':
+                $continue = true;
+                break;
+            case '/return':
+                $return = $request->Client;
+                break;
+        }
 
-    return $response;
-});
+        return new HttpResponse("Called with:\n" . print_r($request, true));
+    }
+);
 $server->stop();
+Console::log('Last client:', $lastClient ?: '<not returned>');

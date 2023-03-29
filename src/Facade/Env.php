@@ -17,7 +17,7 @@ use Lkrms\Utility\Environment;
  * @method static bool dryRun(?bool $newState = null) Optionally turn dry-run mode on or off, then return its current state (see {@see Environment::dryRun()})
  * @method static string|null get(string $name, ?string $default = null) Retrieve an environment variable (see {@see Environment::get()})
  * @method static int|null getInt(string $name, ?int $default = null) Return an environment variable as an integer (see {@see Environment::getInt()})
- * @method static string[]|null getList(string $name, string[]|null $default = null, string $delimiter = ',') Return an environment variable as a list of strings (see {@see Environment::getList()})
+ * @method static string[]|null getList(string $name, string[]|null $default = null, string $delimiter = "\054") Return an environment variable as a list of strings (see {@see Environment::getList()})
  * @method static bool has(string $name) Returns true if a variable exists in the environment
  * @method static string|null home() Get the current user's home directory from the environment
  * @method static bool isLocaleUtf8() Return true if the current locale for character classification and conversion (LC_CTYPE) supports UTF-8

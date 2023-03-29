@@ -121,6 +121,6 @@ final class ConsoleFormatter
     private static function getDefaultInstance(): self
     {
         return self::$DefaultInstance
-            ?: (self::$DefaultInstance = new self(null));
+                   ?: (self::$DefaultInstance = new self(null));
     }
 }

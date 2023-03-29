@@ -104,9 +104,9 @@ abstract class HttpSyncProvider extends SyncProvider
      * {@see HttpSyncProvider::getHeaders()} and
      * {@see HttpSyncProvider::getPager()} are not called if
      * {@see HttpSyncProvider::buildCurler()} sets their respective properties
-     * via {@see CurlerBuilder::headers()} or {@see CurlerBuilder::pager()}.
-     * Values passed to {@see HttpSyncProvider::getCurler()}'s `$headers` and
-     * `$pager` arguments take precedence over all of these.
+     * via the relevant {@see CurlerBuilder} methods. Values passed to
+     * {@see HttpSyncProvider::getCurler()}'s `$headers` and `$pager` arguments
+     * take precedence over all of these.
      *
      */
     protected function buildCurler(CurlerBuilder $curlerB): CurlerBuilder

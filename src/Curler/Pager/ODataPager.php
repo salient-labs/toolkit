@@ -48,9 +48,10 @@ final class ODataPager implements ICurlerPager
 
     public function getPage($data, Curler $curler, ?ICurlerPage $previous = null): ICurlerPage
     {
-        $prefix = $this->Prefix ?: (($curler->ResponseHeadersByName['odata-version'] ?? null) == '4.0'
-            ? '@odata.'
-            : '@');
+        $prefix = $this->Prefix
+                      ?: (($curler->ResponseHeadersByName['odata-version'] ?? null) == '4.0'
+                             ? '@odata.'
+                             : '@');
 
         return CurlerPageBuilder::build()
                    ->entities($data['value'])

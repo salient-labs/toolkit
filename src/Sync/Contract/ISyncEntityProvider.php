@@ -10,7 +10,6 @@ use Lkrms\Sync\Support\SyncOperation;
  * sync operations for an entity
  *
  * @template TEntity of ISyncEntity
- * @template TList of array|IIterable
  */
 interface ISyncEntityProvider
 {
@@ -20,6 +19,12 @@ interface ISyncEntityProvider
      * @internal
      * @param int $operation A {@see SyncOperation} value.
      * @phpstan-param SyncOperation::* $operation
+     * @return IIterable<TEntity>|TEntity
+     * @phpstan-return (
+     *     $operation is SyncOperation::*_LIST
+     *     ? IIterable<TEntity>
+     *     : TEntity
+     * )
      */
     public function run(int $operation, ...$args);
 
@@ -59,32 +64,74 @@ interface ISyncEntityProvider
      * Add a list of entities to the backend
      *
      * @param iterable<TEntity> $entities
-     * @return TList
+     * @return IIterable<TEntity>
      */
-    public function createList(iterable $entities, ...$args);
+    public function createList(iterable $entities, ...$args): IIterable;
 
     /**
      * Get a list of entities from the backend
      *
-     * @return TList
+     * @return IIterable<TEntity>
      */
-    public function getList(...$args);
+    public function getList(...$args): IIterable;
 
     /**
      * Update a list of entities in the backend
      *
      * @param iterable<TEntity> $entities
-     * @return TList
+     * @return IIterable<TEntity>
      */
-    public function updateList(iterable $entities, ...$args);
+    public function updateList(iterable $entities, ...$args): IIterable;
 
     /**
      * Delete a list of entities from the backend
      *
      * @param iterable<TEntity> $entities
-     * @return TList
+     * @return IIterable<TEntity>
      */
-    public function deleteList(iterable $entities, ...$args);
+    public function deleteList(iterable $entities, ...$args): IIterable;
+
+    /**
+     * Perform an arbitrary sync operation on a list of backend entities and
+     * return an array
+     *
+     * @internal
+     * @param int $operation One of the {@see SyncOperation}::*_LIST values.
+     * @phpstan-param SyncOperation::*_LIST $operation
+     * @return array<TEntity>
+     */
+    public function runA(int $operation, ...$args): array;
+
+    /**
+     * Add a list of entities to the backend and return an array
+     *
+     * @param iterable<TEntity> $entities
+     * @return array<TEntity>
+     */
+    public function createListA(iterable $entities, ...$args): array;
+
+    /**
+     * Get a list of entities from the backend as an array
+     *
+     * @return array<TEntity>
+     */
+    public function getListA(...$args): array;
+
+    /**
+     * Update a list of entities in the backend and return an array
+     *
+     * @param iterable<TEntity> $entities
+     * @return array<TEntity>
+     */
+    public function updateListA(iterable $entities, ...$args): array;
+
+    /**
+     * Delete a list of entities from the backend and return an array
+     *
+     * @param iterable<TEntity> $entities
+     * @return array<TEntity>
+     */
+    public function deleteListA(iterable $entities, ...$args): array;
 
     /**
      * Use a property of the entity class to resolve names to entities

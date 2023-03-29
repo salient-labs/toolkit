@@ -56,8 +56,8 @@ final class CheckSyncProviderHeartbeat extends CliCommand
     {
         return 'Send a heartbeat request to '
             . (count($this->Providers) > 1
-                ? 'one or more providers'
-                : 'a provider');
+                   ? 'one or more providers'
+                   : 'a provider');
     }
 
     protected function getOptionList(): array

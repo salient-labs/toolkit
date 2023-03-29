@@ -13,7 +13,6 @@
         <api>
             <source dsn=".">
                 <path>src</path>
-                <!--<path>lib/lk-util</path>-->
             </source>
             <ignore>
                 <path>**/*.generated.*</path>
@@ -28,6 +27,7 @@
                 <ignore-tag>property-write</ignore-tag>
                 <ignore-tag>lkrms-generate-command</ignore-tag>
                 <ignore-tag>lkrms-reference-entity</ignore-tag>
+                <ignore-tag>phpstan-impure</ignore-tag>
                 <ignore-tag>phpstan-param</ignore-tag>
                 <ignore-tag>phpstan-return</ignore-tag>
                 <ignore-tag>phpstan-var</ignore-tag>

@@ -202,10 +202,10 @@ abstract class SyncEntity implements ISyncEntity
     final public static function buildSerializeRules(?IContainer $container = null, bool $inherit = true): SerializeRulesBuilder
     {
         return (new SerializeRulesBuilder($container = self::requireContainer($container)))
-            ->if($inherit,
-                 fn(SerializeRulesBuilder $builder) =>
-                     $builder->inherit(static::serializeRules($container)))
-            ->entity(static::class);
+                   ->if($inherit,
+                        fn(SerializeRulesBuilder $builder) =>
+                            $builder->inherit(static::serializeRules($container)))
+                   ->entity(static::class);
     }
 
     /**
@@ -279,8 +279,8 @@ abstract class SyncEntity implements ISyncEntity
                 return [
                     '@type' => $this->typeUri($compact),
                     '@id'   => is_null($this->Id)
-                        ? spl_object_id($this)
-                        : $this->Id,
+                                   ? spl_object_id($this)
+                                   : $this->Id,
                 ];
 
             case SerializeLinkType::COMPACT:
@@ -292,8 +292,8 @@ abstract class SyncEntity implements ISyncEntity
                 return array_filter([
                     '@type' => $this->typeUri($compact),
                     '@id'   => is_null($this->Id)
-                        ? spl_object_id($this)
-                        : $this->Id,
+                                   ? spl_object_id($this)
+                                   : $this->Id,
                     '@name'        => $this->name(),
                     '@description' => $this->description(),
                 ]);
@@ -341,8 +341,8 @@ abstract class SyncEntity implements ISyncEntity
     final protected function store(): SyncStore
     {
         return $this->_Provider
-            ? $this->_Provider->store()
-            : Sync::getInstance();
+                   ? $this->_Provider->store()
+                   : Sync::getInstance();
     }
 
     /**
@@ -355,18 +355,19 @@ abstract class SyncEntity implements ISyncEntity
      */
     final protected function defer($deferred, &$replace, ?string $entity = null): void
     {
-        $ctx = $this->requireContext();
-        if (is_array($deferred)) {
-            $ctx = $ctx->withArrays();
-        }
-
-        DeferredSyncEntity::defer($this->provider(), $ctx->push($this), $entity ?: static::class, $deferred, $replace);
+        DeferredSyncEntity::defer(
+            $this->provider(),
+            $this->requireContext()->push($this),
+            $entity ?: static::class,
+            $deferred,
+            $replace
+        );
     }
 
     private function typeUri(bool $compact): string
     {
         return $this->store()->getEntityTypeUri($this->service(), $compact)
-            ?: '/' . str_replace('\\', '/', ltrim($this->service(), '\\'));
+                   ?: '/' . str_replace('\\', '/', ltrim($this->service(), '\\'));
     }
 
     private function objectId(): string
@@ -511,8 +512,8 @@ abstract class SyncEntity implements ISyncEntity
             }
         } elseif ($node instanceof DateTimeInterface) {
             $node = ($rules->getDateFormatter()
-                ?: ($this->provider() ? $this->provider()->dateFormatter() : null)
-                ?: new DateFormatter())->format($node);
+                         ?: ($this->provider() ? $this->provider()->dateFormatter() : null)
+                         ?: new DateFormatter())->format($node);
         } else {
             throw new UnexpectedValueException('Array or SyncEntity expected: ' . print_r($node, true));
         }

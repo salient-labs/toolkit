@@ -12,12 +12,11 @@ use Lkrms\Sync\Contract\ISyncEntityResolver;
  * Resolves names to entities
  *
  * @template TEntity of ISyncEntity
- * @template TList of array|IIterable
  */
 final class SyncEntityResolver implements ISyncEntityResolver
 {
     /**
-     * @var ISyncEntityProvider<TEntity,TList>
+     * @var ISyncEntityProvider<TEntity>
      */
     private $EntityProvider;
 
@@ -27,7 +26,7 @@ final class SyncEntityResolver implements ISyncEntityResolver
     private $NameProperty;
 
     /**
-     * @param ISyncEntityProvider<TEntity,TList> $entityProvider
+     * @param ISyncEntityProvider<TEntity> $entityProvider
      */
     public function __construct(ISyncEntityProvider $entityProvider, string $nameProperty)
     {

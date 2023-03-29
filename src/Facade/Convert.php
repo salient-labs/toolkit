@@ -20,7 +20,6 @@ use Lkrms\Utility\Conversions;
  * @method static bool isLoaded() True if an underlying Conversions instance has been loaded
  * @method static void unload() Clear the underlying Conversions instance
  * @method static int|null arrayKeyToOffset(string|int $key, array $array) Get the offset of a key in an array (see {@see Conversions::arrayKeyToOffset()})
- * @method static string arrayToCode(array $array, string $delimiter = ', ', string $arrow = ' => ') A facade for Conversions::arrayToCode()
  * @method static string classToBasename(string $class, string ...$suffixes) Remove the namespace and the first matched suffix from a class name
  * @method static string classToNamespace(string $class) Return the namespace of a class (see {@see Conversions::classToNamespace()})
  * @method static mixed coalesce(...$values) Get the first value that is not null
@@ -68,7 +67,7 @@ use Lkrms\Utility\Conversions;
  * @method static string unparseUrl(array $url) Convert a parse_url array to a string (see {@see Conversions::unparseUrl()})
  * @method static string unwrap(string $string, string $break = "\n") Undo wordwrap(), preserving line breaks that appear consecutively, immediately after 2 spaces, or immediately before 4 spaces
  * @method static string uuidToHex(string $bytes) Convert a 16-byte UUID to its 36-byte hexadecimal representation
- * @method static string valueToCode($value, string $delimiter = ', ', string $arrow = ' => ') A facade for Conversions::valueToCode()
+ * @method static string valueToCode($value, string $delimiter = "\054 ", string $arrow = ' => ', ?string $escapeCharacters = null) Like var_export but with more compact output
  *
  * @uses Conversions
  * @extends Facade<Conversions>

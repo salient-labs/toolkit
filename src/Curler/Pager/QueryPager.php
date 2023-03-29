@@ -44,10 +44,10 @@ final class QueryPager implements ICurlerPager
     {
         $this->PageKey  = $pageKey;
         $this->Selector = $selector instanceof Closure
-            ? $selector
-            : (is_string($selector)
-                ? fn($response) => $response[$selector]
-                : fn($response) => Convert::toList($response));
+                              ? $selector
+                              : (is_string($selector)
+                                     ? fn($response) => $response[$selector]
+                                     : fn($response) => Convert::toList($response));
     }
 
     public function prepareQuery(?array $query): ?string

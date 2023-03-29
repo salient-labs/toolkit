@@ -51,9 +51,12 @@ abstract class ConsoleTarget
 
     final public function write(int $level, string $message, array $context): void
     {
-        $this->writeToTarget($level, $this->Prefix
-            ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
-            : $message, $context);
+        $this->writeToTarget(
+            $level,
+            $this->Prefix
+                ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
+                : $message, $context
+        );
     }
 
     final public function setMessageFormatting(bool $messageFormatting): void
@@ -67,9 +70,10 @@ abstract class ConsoleTarget
 
     final public function setPrefix(?string $prefix): void
     {
-        $this->Prefix = $prefix
-            ? $this->getTagFormat(Tag::LOW_PRIORITY)->apply($prefix)
-            : $prefix;
+        $this->Prefix =
+            $prefix
+                ? $this->getTagFormat(Tag::LOW_PRIORITY)->apply($prefix)
+                : $prefix;
     }
 
     public function isStdout(): bool
@@ -169,6 +173,6 @@ abstract class ConsoleTarget
     final public function getFormatter(): ConsoleFormatter
     {
         return $this->Formatter
-            ?: ($this->Formatter = new ConsoleFormatter($this));
+                   ?: ($this->Formatter = new ConsoleFormatter($this));
     }
 }

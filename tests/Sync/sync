@@ -20,20 +20,16 @@ $loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
 
 // Register JsonPlaceholderApi as the provider for Post and User objects
 $app = App::load(dirname(__DIR__))
-          ->loadCache()
-          ->loadSync()
-          ->syncNamespace('lkrms-tests', 'https://lkrms.github.io/php-util/tests/entity', \Lkrms\Tests\Sync\Entity::class)
-          ->service(JsonPlaceholderApi::class);
+           ->loadCache()
+           ->loadSync()
+           ->syncNamespace('lkrms-tests', 'https://lkrms.github.io/php-util/tests/entity', \Lkrms\Tests\Sync\Entity::class)
+           ->service(JsonPlaceholderApi::class);
 
 $userApi = User::withDefaultProvider($app);
 
-$provider     = Post::defaultProvider();
-$context      = (new SyncContext($provider->container()))->withArrays();
-$postProvider = $provider->with(Post::class, $context);
-$posts        = $postProvider->getList();
-//\PHPStan\dumpType($context);
-//\PHPStan\dumpType($postProvider);
-//\PHPStan\dumpType($posts);
+$provider     = Post::defaultProvider($app);
+$postProvider = $provider->with(Post::class);
+$posts        = $postProvider->getListA();
 Console::info('Posts retrieved:', (string) count($posts));
 
 /** @var Post */

@@ -29,7 +29,7 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
      * Get an interface to perform sync operations on the entity with its
      * current provider
      *
-     * @return ISyncEntityProvider<static,IIterable<static>>
+     * @return ISyncEntityProvider<static>
      */
     public static function withDefaultProvider(?IContainer $container = null): ISyncEntityProvider;
 

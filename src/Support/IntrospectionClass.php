@@ -382,8 +382,8 @@ class IntrospectionClass
             foreach ($constructor->getParameters() as $param) {
                 $type = $param->getType();
                 $type = $type instanceof ReflectionNamedType && !$type->isBuiltin()
-                    ? $type->getName()
-                    : null;
+                            ? $type->getName()
+                            : null;
                 $normalised   = $this->maybeNormalise($name = $param->getName(), NormaliserFlag::LAZY);
                 $defaultValue = null;
                 if ($param->isOptional()) {
@@ -467,9 +467,10 @@ class IntrospectionClass
      */
     final public function getReadableProperties(): array
     {
-        return array_keys(($this->ReadableProperties
-                ?: $this->PublicProperties)
-            + ($this->Actions[self::ACTION_GET] ?? []));
+        return array_keys((
+            $this->ReadableProperties
+                ?: $this->PublicProperties
+        ) + ($this->Actions[self::ACTION_GET] ?? []));
     }
 
     /**
@@ -479,9 +480,10 @@ class IntrospectionClass
      */
     final public function getWritableProperties(): array
     {
-        return array_keys(($this->WritableProperties
-                ?: $this->PublicProperties)
-            + ($this->Actions[self::ACTION_SET] ?? []));
+        return array_keys((
+            $this->WritableProperties
+                ?: $this->PublicProperties
+        ) + ($this->Actions[self::ACTION_SET] ?? []));
     }
 
     /**

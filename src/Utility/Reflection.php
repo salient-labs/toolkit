@@ -141,8 +141,8 @@ final class Reflection
     private function getTypeName(ReflectionType $type): string
     {
         return $type instanceof ReflectionNamedType
-            ? $type->getName()
-            : (string) $type;
+                   ? $type->getName()
+                   : (string) $type;
     }
 
     /**
@@ -263,8 +263,8 @@ final class Reflection
         $comments = $this->_getAllPropertyDocComments($property, $name, $classDocComments);
 
         return is_null($classDocComments)
-            ? Convert::stringsToUniqueList($comments)
-            : Convert::columnsToUniqueList($comments, $classDocComments);
+                   ? Convert::stringsToUniqueList($comments)
+                   : Convert::columnsToUniqueList($comments, $classDocComments);
     }
 
     /**
@@ -343,7 +343,7 @@ final class Reflection
      * use `$type` instead. Do not use when generating code unless `$type` is
      * from a trusted source.
      */
-    public function getParameterDeclaration(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, ?string $type = null, ?string $name = null): string
+    public function getParameterDeclaration(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, ?string $type = null, ?string $name = null, bool $phpDoc = false): string
     {
         // If getTypeDeclaration isn't called, neither is $typeNameCallback
         $param  = $this->getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
@@ -357,7 +357,8 @@ final class Reflection
         }
         $param .= ' = ';
         if (!$parameter->isDefaultValueConstant()) {
-            return $param . Convert::valueToCode($parameter->getDefaultValue(), ',', '=>');
+            // Escape commas for phpDocumentor
+            return $param . Convert::valueToCode($parameter->getDefaultValue(), ',', '=>', $phpDoc ? ',' : null);
         }
         $const = $parameter->getDefaultValueConstantName();
         if (!preg_match('/^(self|parent|static)::/i', $const)) {
@@ -444,8 +445,8 @@ final class Reflection
     private function toReflectionClass($class): ReflectionClass
     {
         return $class instanceof ReflectionClass
-            ? $class
-            : new ReflectionClass($class);
+                   ? $class
+                   : new ReflectionClass($class);
     }
 
     /**
@@ -464,8 +465,8 @@ final class Reflection
                 $a->isSubclassOf($b)
                     ? -1
                     : ($b->isSubclassOf($a)
-                        ? 1
-                        : $this->getBaseClass($a)->getName() <=> $this->getBaseClass($b)->getName())
+                           ? 1
+                           : $this->getBaseClass($a)->getName() <=> $this->getBaseClass($b)->getName())
         );
 
         return $interfaces;

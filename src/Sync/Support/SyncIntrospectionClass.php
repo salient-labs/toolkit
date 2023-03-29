@@ -78,7 +78,8 @@ final class SyncIntrospectionClass extends IntrospectionClass
      * Used only to map "magic" method names to sync operations. Providers
      * aren't required to service any of them.
      *
-     * @var array<string,array{0:SyncOperation::*,1:string}>
+     * @var array<string,array{0:int,1:string}>
+     * @phpstan-var array<string,array{0:SyncOperation::*,1:string}>
      */
     public $SyncOperationMagicMethods = [];
 
@@ -106,7 +107,8 @@ final class SyncIntrospectionClass extends IntrospectionClass
     /**
      * Entity => sync operation => closure
      *
-     * @var array<string,array<SyncOperation::*,\Closure|null>>
+     * @var array<string,array<int,\Closure|null>>
+     * @phpstan-var array<string,array<SyncOperation::*,\Closure|null>>
      */
     public $DeclaredSyncOperationClosures = [];
 

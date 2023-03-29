@@ -2,7 +2,8 @@ name: documentation
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
   # Allow running the workflow manually from the Actions tab
   #workflow_dispatch:
@@ -25,21 +26,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Configure GitHub Pages
+        if: ${{ !env.ACT }}
         uses: actions/configure-pages@v1
       - name: Cache phpDocumentor build files
         id: phpdocumentor-cache
+        if: ${{ !env.ACT }}
         uses: actions/cache@v3
         with:
-          path: .cache/phpdoc
+          path: .ci/cache/docs/api
           key: ${{ runner.os }}-phpdocumentor-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-phpdocumentor-
       - name: Build with phpDocumentor
-        run: docker run --rm --volume "$(pwd):/data" phpdoc/phpdoc:3 -vv --target docs/api --cache-folder .cache/phpdoc --template default --sourcecode
+        run: docker run --rm --volume "$(pwd):/data" phpdoc/phpdoc:3 -vv --target .ci/docs/api --cache-folder .ci/cache/docs/api --template default --sourcecode
       - name: Upload artifact to GitHub Pages
+        if: ${{ !env.ACT }}
         uses: actions/upload-pages-artifact@v1
         with:
-          path: docs/api
+          path: .ci/docs/api
 
   deploy:
     needs: build
@@ -50,4 +54,5 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
+        if: ${{ !env.ACT }}
         uses: actions/deploy-pages@v1

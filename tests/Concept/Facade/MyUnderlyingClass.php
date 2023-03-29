@@ -25,9 +25,10 @@ class MyUnderlyingClass implements ReceivesFacade
 
     public function checkFuncNumArgs(int &$numArgs = null, string $format = '', &...$values): string
     {
-        !is_null($this->LastFuncNumArgs = $this->Facade
-                ? $this->Facade::getFuncNumArgs(__FUNCTION__)
-                : null) ||
+        !is_null($this->LastFuncNumArgs =
+                     $this->Facade
+                         ? $this->Facade::getFuncNumArgs(__FUNCTION__)
+                         : null) ||
             $this->LastFuncNumArgs = func_num_args();
 
         $numArgs = $this->LastFuncNumArgs;

@@ -4,7 +4,6 @@ namespace Lkrms\Sync\Concept;
 
 use Closure;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IService;
 use Lkrms\Facade\Convert;
@@ -175,7 +174,7 @@ abstract class SyncProvider implements ISyncProvider, IService
     final public function dateFormatter(): DateFormatter
     {
         return $this->DateFormatter
-            ?: ($this->DateFormatter = $this->getDateFormatter());
+                   ?: ($this->DateFormatter = $this->getDateFormatter());
     }
 
     final public static function getServices(): array
@@ -186,22 +185,18 @@ abstract class SyncProvider implements ISyncProvider, IService
     /**
      * @template TEntity of ISyncEntity
      * @param class-string<TEntity> $syncEntity
-     * @phpstan-return (
-     *     $context is ISyncContext<array>
-     *     ? SyncEntityProvider<TEntity,array<TEntity>>
-     *     : SyncEntityProvider<TEntity,IIterable<TEntity>>
-     * )
+     * @return SyncEntityProvider<TEntity,static>
      */
     final public function with(string $syncEntity, $context = null): SyncEntityProvider
     {
         $this->Store->entityType($syncEntity);
 
         $container = ($context instanceof ISyncContext
-            ? $context->container()
-            : ($context ?: $this->container()))->inContextOf(static::class);
+                          ? $context->container()
+                          : ($context ?: $this->container()))->inContextOf(static::class);
         $context = $context instanceof ISyncContext
-            ? $context->withContainer($container)
-            : $container->get(SyncContext::class);
+                       ? $context->withContainer($container)
+                       : $container->get(SyncContext::class);
 
         return $container->get(SyncEntityProvider::class,
                                [$syncEntity, $this, $this->getDefinition($syncEntity), $context]);

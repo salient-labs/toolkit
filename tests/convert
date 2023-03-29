@@ -84,9 +84,9 @@ $normalise = [
     'it',
 ];
 var_dump(array_combine($normalise, array_map(
-    fn($i) => Convert::toNormal($i),
-    $normalise
-)));
+             fn($i) => Convert::toNormal($i),
+             $normalise
+         )));
 
 $list = [
     ['id' => 38, 'name' => 'Amir'],
@@ -118,9 +118,9 @@ $nouns = [
 ];
 
 print_r(array_combine($nouns, array_map(
-    fn($i) => Convert::nounToPlural($i),
-    $nouns
-)));
+            fn($i) => Convert::nounToPlural($i),
+            $nouns
+        )));
 
 $paths = [
     'file',

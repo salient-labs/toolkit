@@ -46,7 +46,7 @@ abstract class SyncDefinition implements ISyncDefinition
      *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
      *         )
      *     )
-     * )
+     * )|null
      */
     abstract protected function getClosure(int $operation): ?Closure;
 
@@ -275,8 +275,7 @@ abstract class SyncDefinition implements ISyncDefinition
     final protected function getPipelineToBackend(): IPipeline
     {
         /** @var IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}> */
-        $pipeline = $this->EntityToDataPipeline
-            ?: Pipeline::create();
+        $pipeline = $this->EntityToDataPipeline ?: Pipeline::create();
 
         /** @var IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}> */
         $pipeline = $pipeline->through(
@@ -305,30 +304,32 @@ abstract class SyncDefinition implements ISyncDefinition
     final protected function getPipelineToEntity(): IPipeline
     {
         /** @var IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}> */
-        $pipeline = $this->DataToEntityPipeline
-            ?: Pipeline::create();
+        $pipeline = $this->DataToEntityPipeline ?: Pipeline::create();
 
         return $pipeline
-            ->withConformity($this->Conformity)
-            ->then(
-                function (array $data, IPipeline $pipeline, $arg) use (&$ctx, &$closure) {
-                    if (!$ctx) {
-                        /** @var ISyncContext $ctx */
-                        [, $ctx] = $arg;
-                        $ctx     = $ctx->withConformity($this->Conformity);
-                    }
-                    if (!$closure) {
-                        $closure = in_array($this->Conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                            ? SyncIntrospector::getService($ctx->container(), $this->Entity)->getCreateSyncEntityFromSignatureClosure(array_keys($data))
-                            : SyncIntrospector::getService($ctx->container(), $this->Entity)->getCreateSyncEntityFromClosure();
-                    }
-                    /** @var TEntity */
-                    $entity = $closure($data, $this->Provider, $ctx);
+                   ->withConformity($this->Conformity)
+                   ->then(
+                       function (array $data, IPipeline $pipeline, $arg) use (&$ctx, &$closure) {
+                           if (!$ctx) {
+                               /** @var ISyncContext $ctx */
+                               [, $ctx] = $arg;
+                               $ctx     = $ctx->withConformity($this->Conformity);
+                           }
+                           if (!$closure) {
+                               $closure = in_array($this->Conformity,
+                                                   [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                                              ? SyncIntrospector::getService($ctx->container(), $this->Entity)
+                                                    ->getCreateSyncEntityFromSignatureClosure(array_keys($data))
+                                              : SyncIntrospector::getService($ctx->container(), $this->Entity)
+                                                    ->getCreateSyncEntityFromClosure();
+                           }
+                           /** @var TEntity */
+                           $entity = $closure($data, $this->Provider, $ctx);
 
-                    return $entity;
-                }
-            )
-            ->unlessIf(fn($entity) => is_null($entity));
+                           return $entity;
+                       }
+                   )
+                   ->unlessIf(fn($entity) => is_null($entity));
     }
 
     /**

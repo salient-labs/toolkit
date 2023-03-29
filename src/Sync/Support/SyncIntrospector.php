@@ -6,7 +6,7 @@ use Closure;
 use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Convert;
-use Lkrms\Support\Dictionary\Regex;
+use Lkrms\Support\Dictionary\RegularExpression as Regex;
 use Lkrms\Support\Introspector;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -50,9 +50,12 @@ final class SyncIntrospector extends Introspector
      */
     final public static function providerToEntity(string $provider): ?string
     {
-        if (preg_match('/^(?P<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\(?P<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U',
-                       $provider,
-                       $matches)) {
+        if (preg_match(
+            '/^(?P<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\'
+                . '(?P<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U',
+            $provider,
+            $matches
+        )) {
             return $matches['namespace'] . $matches['class'];
         }
 
@@ -137,9 +140,10 @@ final class SyncIntrospector extends Introspector
         return
             static function (array $array, ISyncProvider $provider, $context = null) use ($closure, $service) {
                 /** @var IContainer $container */
-                [$container, $parent] = $context instanceof ISyncContext
-                    ? [$context->container(), $context->getParent()]
-                    : [$context ?: $provider->container(), null];
+                [$container, $parent] =
+                    $context instanceof ISyncContext
+                        ? [$context->container(), $context->getParent()]
+                        : [$context ?: $provider->container(), null];
 
                 return $closure($container,
                                 $array,
@@ -291,8 +295,8 @@ final class SyncIntrospector extends Introspector
 
         // Build the smallest possible chain of closures
         $closure = $parameterKeys
-            ? $this->_getConstructor($parameterKeys, $passByRefKeys)
-            : $this->_getDefaultConstructor();
+                       ? $this->_getConstructor($parameterKeys, $passByRefKeys)
+                       : $this->_getDefaultConstructor();
         if ($propertyKeys) {
             $closure = $this->_getPropertyClosure($propertyKeys, $closure);
         }

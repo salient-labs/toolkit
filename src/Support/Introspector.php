@@ -172,9 +172,10 @@ class Introspector
 
         return
             static function (array $array, IProvider $provider, $context = null) use ($closure, $service) {
-                [$container, $parent] = $context instanceof IProviderContext
-                    ? [$context->container(), $context->getParent()]
-                    : [$context ?: $provider->container(), null];
+                [$container, $parent] =
+                    $context instanceof IProviderContext
+                        ? [$context->container(), $context->getParent()]
+                        : [$context ?: $provider->container(), null];
 
                 return $closure($container,
                                 $array,
@@ -298,8 +299,8 @@ class Introspector
 
         // Build the smallest possible chain of closures
         $closure = $parameterKeys
-            ? $this->_getConstructor($parameterKeys, $passByRefKeys)
-            : $this->_getDefaultConstructor();
+                       ? $this->_getConstructor($parameterKeys, $passByRefKeys)
+                       : $this->_getDefaultConstructor();
         if ($propertyKeys) {
             $closure = $this->_getPropertyClosure($propertyKeys, $closure);
         }
@@ -495,8 +496,8 @@ class Introspector
         return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ...$args) use ($dateKeys, $closure) {
             if (is_null($dateFormatter)) {
                 $dateFormatter = $provider
-                    ? $provider->dateFormatter()
-                    : $container->get(DateFormatter::class);
+                                     ? $provider->dateFormatter()
+                                     : $container->get(DateFormatter::class);
             }
 
             foreach ($dateKeys as $key) {
@@ -710,8 +711,8 @@ class Introspector
     final public function getSerializeClosure(?ISerializeRules $rules = null): Closure
     {
         $rules = $rules
-            ? [$rules->getSortByKey(), $this->_Class->IsExtensible && $rules->getIncludeMeta()]
-            : [false, $this->_Class->IsExtensible];
+                     ? [$rules->getSortByKey(), $this->_Class->IsExtensible && $rules->getIncludeMeta()]
+                     : [false, $this->_Class->IsExtensible];
         $key = implode("\0", $rules);
 
         if ($closure = $this->_Class->SerializeClosures[$key] ?? null) {

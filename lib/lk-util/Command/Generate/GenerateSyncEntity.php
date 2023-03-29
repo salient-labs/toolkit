@@ -15,7 +15,7 @@ use Lkrms\Facade\Env;
 use Lkrms\Facade\Test;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\LkUtil\Dictionary\EnvVar;
-use Lkrms\Support\HttpRequestMethod;
+use Lkrms\Support\Dictionary\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
 use RuntimeException;

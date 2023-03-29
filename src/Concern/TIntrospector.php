@@ -28,9 +28,9 @@ trait TIntrospector
 
     /**
      * @param class-string<TClass> $class
-     * @return TIntrospectionClass<TClass>
+     * @return TIntrospectionClass
      */
-    abstract private function getIntrospectionClass(string $class): IntrospectionClass;
+    abstract protected function getIntrospectionClass(string $class): IntrospectionClass;
 
     /**
      * Get an Introspector for a container-bound service

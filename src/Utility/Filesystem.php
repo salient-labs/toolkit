@@ -269,8 +269,8 @@ final class Filesystem
         $euid     = posix_geteuid();
 
         return (is_null($dir)
-                ? realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR
-                : ($dir ? rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : ''))
+                    ? realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR
+                    : ($dir ? rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : ''))
             . "$basename-$hash-$euid$suffix";
     }
 }

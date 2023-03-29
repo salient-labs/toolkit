@@ -127,8 +127,8 @@ final class Environment
         return $_ENV[$name]
             ?? $_SERVER[$name]
             ?? (($local = getenv($name, true)) !== false
-                ? $local
-                : getenv($name));
+                    ? $local
+                    : getenv($name));
     }
 
     /**

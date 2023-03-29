@@ -20,21 +20,21 @@ Cache::set('key', ['value1', 'value2']);
 print_r(Cache::get('key'));
 
 print_r(Cache::maybeGet(
-    implode('/', [basename(__FILE__), 'MaybeGet']),
-    function () {
-        return [
-            'key1' => 'value1',
-            'key2' => 'value2',
-        ];
-    },
-    2
-));
+            implode('/', [basename(__FILE__), 'MaybeGet']),
+            function () {
+                return [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ];
+            },
+            2
+        ));
 
 foreach ([1, 2] as $seconds) {
     sleep($seconds);
     print_r(Cache::maybeGet(
-        implode('/', [basename(__FILE__), 'MaybeGet']),
-        'time',
-        2
-    ));
+                implode('/', [basename(__FILE__), 'MaybeGet']),
+                'time',
+                2
+            ));
 }

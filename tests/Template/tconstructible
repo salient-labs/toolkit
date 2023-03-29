@@ -88,18 +88,13 @@ $b_data = $b->Data;
 $b_meta = $b->getMetaProperties();
 
 print_r([
-    'a_set' => $a,
-    'b_set' => $b,
-    'c_set' => $c,
-    'a_get' => ['id' => $a_id, 'name' => $a_name],
-    'b_get' => ['id' => $b_id, 'name' => $b_name, 'data' => $b_data, 'meta' => $b_meta],
-    'd'     => $d,
-
-    // true
-    'b == $d[1]' => $b == $d[1],
-
-    // false
-    'b === $d[1]' => $b === $d[1],
-
-    'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
+    'a_set'       => $a,
+    'b_set'       => $b,
+    'c_set'       => $c,
+    'a_get'       => ['id' => $a_id, 'name' => $a_name],
+    'b_get'       => ['id' => $b_id, 'name' => $b_name, 'data' => $b_data, 'meta' => $b_meta],
+    'd'           => $d,
+    'b == $d[1]'  => $b == $d[1],   // true
+    'b === $d[1]' => $b === $d[1],  // false
+    'exceptions'  => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
 ]);

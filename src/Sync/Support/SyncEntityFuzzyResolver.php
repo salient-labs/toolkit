@@ -17,7 +17,6 @@ use Lkrms\Sync\Contract\ISyncEntityResolver;
  * {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}.
  *
  * @template TEntity of ISyncEntity
- * @template TList of array|IIterable
  */
 final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 {
@@ -35,7 +34,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     public const ALGORITHM_SIMILAR_TEXT = 1;
 
     /**
-     * @var ISyncEntityProvider<TEntity,TList>
+     * @var ISyncEntityProvider<TEntity>
      */
     private $EntityProvider;
 
@@ -67,7 +66,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     private $Cache = [];
 
     /**
-     * @param ISyncEntityProvider<TEntity,TList> $entityProvider
+     * @param ISyncEntityProvider<TEntity> $entityProvider
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
      * @param int|null $algorithm Overrides the default string comparison
@@ -127,8 +126,10 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         $uncertainty = null;
 
         $sort = $this->Entities;
-        usort($sort, fn($e1, $e2) => $this->compareUncertainty($_name, $e1, $e2)
-            ?: ($e2[0]->{$this->WeightProperty} <=> $e1[0]->{$this->WeightProperty}));
+        usort($sort,
+              fn($e1, $e2) =>
+                  $this->compareUncertainty($_name, $e1, $e2)
+                      ?: ($e2[0]->{$this->WeightProperty} <=> $e1[0]->{$this->WeightProperty}));
         $cache = $match = reset($sort);
 
         if ($match !== false) {

@@ -55,8 +55,9 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
     final public static function fromName(string $name): int
     {
         if (is_null($value = (self::$ValueMaps[static::class] ?? self::getMap())[$name] ?? null)) {
-            throw new UnexpectedValueException('Invalid '
-                . Convert::classToBasename(static::class) . " name: $name");
+            throw new UnexpectedValueException(
+                'Invalid ' . Convert::classToBasename(static::class) . " name: $name"
+            );
         }
 
         return $value;
@@ -65,8 +66,9 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
     final public static function toName(int $value): string
     {
         if (is_null($name = (self::$NameMaps[static::class] ?? self::getMap(true))[$value] ?? null)) {
-            throw new UnexpectedValueException('Invalid '
-                . Convert::classToBasename(static::class) . ": $value");
+            throw new UnexpectedValueException(
+                'Invalid ' . Convert::classToBasename(static::class) . ": $value"
+            );
         }
 
         return $name;

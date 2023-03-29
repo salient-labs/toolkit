@@ -20,8 +20,8 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Test;
 use Lkrms\Support\DateFormatter;
-use Lkrms\Support\HttpHeader;
-use Lkrms\Support\HttpRequestMethod;
+use Lkrms\Support\Dictionary\HttpHeader;
+use Lkrms\Support\Dictionary\HttpRequestMethod;
 use Lkrms\Support\MimeType;
 use UnexpectedValueException;
 
@@ -414,9 +414,10 @@ final class Curler implements IReadable, IWritable, HasBuilder
      */
     final public function setContentType(?string $mimeType)
     {
-        $this->Headers = is_null($mimeType)
-            ? $this->Headers->unsetHeader(HttpHeader::CONTENT_TYPE)
-            : $this->Headers->setHeader(HttpHeader::CONTENT_TYPE, $mimeType);
+        $this->Headers =
+            is_null($mimeType)
+                ? $this->Headers->unsetHeader(HttpHeader::CONTENT_TYPE)
+                : $this->Headers->setHeader(HttpHeader::CONTENT_TYPE, $mimeType);
 
         return $this;
     }
@@ -494,8 +495,8 @@ final class Curler implements IReadable, IWritable, HasBuilder
     final protected function getEffectiveUrl(): ?string
     {
         return $this->Handle
-            ? curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)
-            : null;
+                   ? curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)
+                   : null;
     }
 
     final protected function close(): void
@@ -704,24 +705,24 @@ final class Curler implements IReadable, IWritable, HasBuilder
     private function getCookieKey(): ?string
     {
         return $this->HandleCookies
-            ? Convert::sparseToString(':', [self::class, 'cookies', $this->CookieCacheKey])
-            : null;
+                   ? Convert::sparseToString(':', [self::class, 'cookies', $this->CookieCacheKey])
+                   : null;
     }
 
     private function getDateFormatter(): DateFormatter
     {
         return $this->DateFormatter
-            ?: ($this->DateFormatter = new DateFormatter());
+                   ?: ($this->DateFormatter = new DateFormatter());
     }
 
     private static function getDefaultUserAgent(): string
     {
         return self::$DefaultUserAgent
-            ?: (self::$DefaultUserAgent = implode(' ', [
-                str_replace('/', '~', Composer::getRootPackageName())
-                    . '/' . Composer::getRootPackageVersion(true, true),
-                'php/' . PHP_VERSION
-            ]));
+                   ?: (self::$DefaultUserAgent = implode(' ', [
+                       str_replace('/', '~', Composer::getRootPackageName())
+                           . '/' . Composer::getRootPackageVersion(true, true),
+                       'php/' . PHP_VERSION
+                   ]));
     }
 
     protected function execute(bool $close = true, int $depth = 0): string
@@ -860,13 +861,13 @@ final class Curler implements IReadable, IWritable, HasBuilder
                 $this->CachePostResponse &&
                 !is_array($this->Body))) ||
             !($url = $this->getEffectiveUrl()
-                ?: $this->BaseUrl . $this->QueryString)) {
+                         ?: $this->BaseUrl . $this->QueryString)) {
             return null;
         }
 
         $key = $this->ResponseCacheKeyCallback
-            ? ($this->ResponseCacheKeyCallback)($this)
-            : $this->Headers->getPublicHeaders();
+                   ? ($this->ResponseCacheKeyCallback)($this)
+                   : $this->Headers->getPublicHeaders();
         if ($this->Method === HttpRequestMethod::POST) {
             $key[] = $this->Body;
         }
@@ -1208,11 +1209,12 @@ final class Curler implements IReadable, IWritable, HasBuilder
     final public static function walkGraphQL(array &$data, callable $filter = null)
     {
         if (Test::isListArray($data, true)) {
-            array_walk($data, function (&$data) use ($filter) {
-                if (is_array($data)) {
-                    self::walkGraphQL($data, $filter);
-                }
-            });
+            array_walk($data,
+                       function (&$data) use ($filter) {
+                           if (is_array($data)) {
+                               self::walkGraphQL($data, $filter);
+                           }
+                       });
 
             if ($filter) {
                 $data = array_filter($data, $filter);

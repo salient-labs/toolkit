@@ -4,7 +4,7 @@ namespace Lkrms\Contract;
 
 /**
  * Defines one or more public constants, each with a unique integer value, and
- * has no other members apart from helper methods to service them
+ * has no other members except helper methods to service them
  *
  */
 interface IEnumeration

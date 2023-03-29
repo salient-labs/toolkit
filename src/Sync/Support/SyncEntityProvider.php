@@ -32,8 +32,8 @@ use UnexpectedValueException;
  * ```
  *
  * @template TEntity of ISyncEntity
- * @template TList of array|IIterable
- * @implements ISyncEntityProvider<TEntity,TList>
+ * @template TProvider of ISyncProvider
+ * @implements ISyncEntityProvider<TEntity>
  */
 final class SyncEntityProvider implements ISyncEntityProvider
 {
@@ -43,17 +43,17 @@ final class SyncEntityProvider implements ISyncEntityProvider
     private $Entity;
 
     /**
-     * @var ISyncProvider
+     * @var TProvider
      */
     private $Provider;
 
     /**
-     * @var ISyncDefinition
+     * @var ISyncDefinition<TEntity,TProvider>
      */
     private $Definition;
 
     /**
-     * @var ISyncContext<TList>
+     * @var ISyncContext
      */
     private $Context;
 
@@ -64,7 +64,8 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
     /**
      * @param class-string<TEntity> $entity
-     * @param ISyncContext<TList>|null $context
+     * @param TProvider $provider
+     * @param ISyncContext|null $context
      */
     public function __construct(IContainer $container, string $entity, ISyncProvider $provider, ISyncDefinition $definition, ?ISyncContext $context = null)
     {
@@ -84,9 +85,15 @@ final class SyncEntityProvider implements ISyncEntityProvider
     }
 
     /**
-     * @internal
+     * @phpstan-param SyncOperation::* $operation
+     * @return iterable<TEntity>|TEntity
+     * @phpstan-return (
+     *     $operation is SyncOperation::*_LIST
+     *     ? iterable<TEntity>
+     *     : TEntity
+     * )
      */
-    public function run(int $operation, ...$args)
+    private function _run(int $operation, ...$args)
     {
         $closure = $this->Definition
                         ->getSyncOperationClosure($operation);
@@ -99,21 +106,22 @@ final class SyncEntityProvider implements ISyncEntityProvider
             );
         }
 
-        $result = $closure(
+        return $closure(
             $this->Context->withArgs($operation, ...$args),
             ...$args
         );
+    }
 
+    /**
+     * @internal
+     */
+    public function run(int $operation, ...$args)
+    {
         if (!SyncOperation::isList($operation)) {
-            return $result;
+            return $this->_run($operation, ...$args);
         }
 
-        if ($this->Context->getIteratorToArray()) {
-            return is_array($result)
-                ? $result
-                : iterator_to_array($result, false);
-        }
-
+        $result = $this->_run($operation, ...$args);
         if (!($result instanceof IIterable)) {
             return new IterableIterator($result);
         }
@@ -277,9 +285,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must be required
      *
      * @param iterable<TEntity> $entities
-     * @return TList
+     * @return IIterable<TEntity>
      */
-    public function createList(iterable $entities, ...$args)
+    public function createList(iterable $entities, ...$args): IIterable
     {
         return $this->run(SyncOperation::CREATE_LIST, $entities, ...$args);
     }
@@ -299,9 +307,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * public function getList_Faculty(ISyncContext $ctx): iterable;
      * ```
      *
-     * @return TList
+     * @return IIterable<TEntity>
      */
-    public function getList(...$args)
+    public function getList(...$args): IIterable
     {
         return $this->run(SyncOperation::READ_LIST, ...$args);
     }
@@ -327,9 +335,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must be required
      *
      * @param iterable<TEntity> $entities
-     * @return TList
+     * @return IIterable<TEntity>
      */
-    public function updateList(iterable $entities, ...$args)
+    public function updateList(iterable $entities, ...$args): IIterable
     {
         return $this->run(SyncOperation::UPDATE_LIST, $entities, ...$args);
     }
@@ -358,11 +366,45 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must represent the final state of the entities before they were deleted
      *
      * @param iterable<TEntity> $entities
-     * @return TList
+     * @return IIterable<TEntity>
      */
-    public function deleteList(iterable $entities, ...$args)
+    public function deleteList(iterable $entities, ...$args): IIterable
     {
         return $this->run(SyncOperation::DELETE_LIST, $entities, ...$args);
+    }
+
+    public function runA(int $operation, ...$args): array
+    {
+        if (!SyncOperation::isList($operation)) {
+            throw new UnexpectedValueException('Not a *_LIST operation: ' . $operation);
+        }
+
+        $result = $this->_run($operation, ...$args);
+        if (!is_array($result)) {
+            return iterator_to_array($result);
+        }
+
+        return $result;
+    }
+
+    public function createListA(iterable $entities, ...$args): array
+    {
+        return $this->runA(SyncOperation::CREATE_LIST, $entities, ...$args);
+    }
+
+    public function getListA(...$args): array
+    {
+        return $this->runA(SyncOperation::READ_LIST, ...$args);
+    }
+
+    public function updateListA(iterable $entities, ...$args): array
+    {
+        return $this->runA(SyncOperation::UPDATE_LIST, $entities, ...$args);
+    }
+
+    public function deleteListA(iterable $entities, ...$args): array
+    {
+        return $this->runA(SyncOperation::DELETE_LIST, $entities, ...$args);
     }
 
     public function online()
@@ -389,8 +431,8 @@ final class SyncEntityProvider implements ISyncEntityProvider
     }
 
     /**
-     * Use a property of the entity class to resolve names to entities
-     * using a text similarity algorithm
+     * Use a property of the entity class to resolve names to entities using a
+     * text similarity algorithm
      *
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
