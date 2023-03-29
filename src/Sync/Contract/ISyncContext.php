@@ -48,8 +48,9 @@ interface ISyncContext extends IProviderContext
      * {@see ISyncEntity::id()} when `$args` contains an array or a list of
      * entities. This operation is not recursive.
      *
-     * @param mixed ...$args Sync operation arguments, NOT including the
+     * @param mixed $args Sync operation arguments, NOT including the
      * {@see ISyncContext} argument.
+     * @phpstan-param mixed ...$args
      * @return $this
      */
     public function withArgs(int $operation, ...$args);
