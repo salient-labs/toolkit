@@ -18,6 +18,7 @@ use Lkrms\Support\DateFormatter;
  * @method $this cacheResponse(bool $value = true) Cache responses to GET and HEAD requests? (default: false)
  * @method $this cachePostResponse(bool $value = true) Cache responses to eligible POST requests? (default: false; see {@see Curler::$CachePostResponse})
  * @method $this expiry(int $value) Seconds before cached responses expire (see {@see Curler::$Expiry})
+ * @method $this flush(bool $value = true) Replace cached responses that haven't expired? (default: false)
  * @method $this responseCacheKeyCallback(?callable $value) Override the default cache key when saving and loading cached responses (see {@see Curler::$ResponseCacheKeyCallback})
  * @method $this throwHttpErrors(bool $value = true) Throw an exception if the status code is >= 400? (default: true)
  * @method $this followRedirects(bool $value = true) Follow "Location:" headers? (default: false; see {@see Curler::$FollowRedirects})

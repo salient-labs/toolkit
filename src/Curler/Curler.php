@@ -22,7 +22,7 @@ use Lkrms\Facade\Test;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Dictionary\HttpHeader;
 use Lkrms\Support\Dictionary\HttpRequestMethod;
-use Lkrms\Support\MimeType;
+use Lkrms\Support\Dictionary\MimeType;
 use UnexpectedValueException;
 
 /**
@@ -44,6 +44,7 @@ use UnexpectedValueException;
  * @property bool $CacheResponse Cache responses to GET and HEAD requests?
  * @property bool $CachePostResponse Cache responses to eligible POST requests?
  * @property int $Expiry Seconds before cached responses expire
+ * @property bool $Flush Replace cached responses that haven't expired?
  * @property callable|null $ResponseCacheKeyCallback Override the default cache key when saving and loading cached responses
  * @property bool $ThrowHttpErrors Throw an exception if the status code is >= 400?
  * @property bool $FollowRedirects Follow "Location:" headers?
@@ -183,6 +184,13 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @var int
      */
     protected $Expiry = 3600;
+
+    /**
+     * Replace cached responses that haven't expired?
+     *
+     * @var bool
+     */
+    protected $Flush = false;
 
     /**
      * Override the default cache key when saving and loading cached responses
@@ -344,14 +352,37 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * @param (callable(Curler): string[])|null $responseCacheKeyCallback
      */
-    public function __construct(string $baseUrl, ?ICurlerHeaders $headers = null, ?ICurlerPager $pager = null, bool $cacheResponse = false, bool $cachePostResponse = false, int $expiry = 3600, ?callable $responseCacheKeyCallback = null, bool $throwHttpErrors = true, bool $followRedirects = false, ?int $maxRedirects = null, bool $handleCookies = false, ?string $cookieCacheKey = null, bool $retryAfterTooManyRequests = false, int $retryAfterMaxSeconds = 60, bool $expectJson = true, bool $postJson = true, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null, ?string $userAgent = null, bool $alwaysPaginate = false, bool $objectAsArray = true)
-    {
+    public function __construct(
+        string $baseUrl,
+        ?ICurlerHeaders $headers            = null,
+        ?ICurlerPager $pager                = null,
+        bool $cacheResponse                 = false,
+        bool $cachePostResponse             = false,
+        int $expiry                         = 3600,
+        bool $flush                         = false,
+        ?callable $responseCacheKeyCallback = null,
+        bool $throwHttpErrors               = true,
+        bool $followRedirects               = false,
+        ?int $maxRedirects                  = null,
+        bool $handleCookies                 = false,
+        ?string $cookieCacheKey             = null,
+        bool $retryAfterTooManyRequests     = false,
+        int $retryAfterMaxSeconds           = 60,
+        bool $expectJson                    = true,
+        bool $postJson                      = true,
+        bool $preserveKeys                  = false,
+        ?DateFormatter $dateFormatter       = null,
+        ?string $userAgent                  = null,
+        bool $alwaysPaginate                = false,
+        bool $objectAsArray                 = true
+    ) {
         $this->BaseUrl                   = $baseUrl;
         $this->Headers                   = $headers ?: new CurlerHeaders();
         $this->Pager                     = $pager;
         $this->CacheResponse             = $cacheResponse;
         $this->CachePostResponse         = $cachePostResponse;
         $this->Expiry                    = $expiry;
+        $this->Flush                     = $flush;
         $this->ResponseCacheKeyCallback  = $responseCacheKeyCallback;
         $this->ThrowHttpErrors           = $throwHttpErrors;
         $this->FollowRedirects           = $followRedirects;
@@ -467,14 +498,12 @@ final class Curler implements IReadable, IWritable, HasBuilder
             CurlerHeadersFlag::DISCARD_REPEATED
         );
 
+        // Assume JSON if it's expected and no Content-Type is specified
         if (is_null($contentType)) {
             return !strcasecmp($mimeType, MimeType::JSON) && $this->ExpectJson;
         }
 
-        // Remove charset, boundary, etc.
-        $contentType = Convert::stringToList(';', $contentType)[0] ?? null;
-
-        return !strcasecmp($contentType, $mimeType);
+        return MimeType::is($mimeType, $contentType);
     }
 
     /**
@@ -729,6 +758,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     {
         if ($this->CacheResponse &&
                 ($cacheKey = $this->getCacheKey()) &&
+                !$this->Flush &&
                 ($last = Cache::get($cacheKey, $this->Expiry)) !== false) {
             if ($close) {
                 $this->close();
@@ -1107,6 +1137,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
             'CacheResponse',
             'CachePostResponse',
             'Expiry',
+            'Flush',
             'ResponseCacheKeyCallback',
             'ThrowHttpErrors',
             'FollowRedirects',

@@ -189,7 +189,7 @@ final class Environment
         } else {
             $value = $this->get($name, null);
         }
-        if (trim($value) === '') {
+        if (trim((string) $value) === '') {
             return $default;
         }
 
@@ -216,7 +216,7 @@ final class Environment
         } else {
             $value = $this->get($name, null);
         }
-        if (trim($value) === '') {
+        if (trim((string) $value) === '') {
             return $default;
         }
         if (preg_match('/^(no?|false)/i', $value)) {

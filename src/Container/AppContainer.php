@@ -8,6 +8,7 @@ use Lkrms\Console\ConsoleLevels;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IReadable;
+use Lkrms\Contract\ReturnsEnvironment;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Composer;
@@ -19,6 +20,7 @@ use Lkrms\Facade\Format;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
+use Lkrms\Utility\Environment;
 use Phar;
 use RuntimeException;
 use UnexpectedValueException;
@@ -30,7 +32,7 @@ use UnexpectedValueException;
  *
  * @property-read string $BasePath
  */
-class AppContainer extends Container implements IReadable
+class AppContainer extends Container implements IReadable, ReturnsEnvironment
 {
     use TReadable;
 
@@ -48,6 +50,11 @@ class AppContainer extends Container implements IReadable
      * Typically ~/.cache/<app>
      */
     private const DIR_STATE = 'STATE';
+
+    /**
+     * @var Environment
+     */
+    protected $Env;
 
     /**
      * @var string
@@ -102,7 +109,7 @@ class AppContainer extends Container implements IReadable
     private function getPath(string $name, string $parent, ?string $child, string $sourceChild, string $windowsChild): string
     {
         $name = "app_{$name}_path";
-        if ($path = Env::get($name, null)) {
+        if ($path = $this->Env->get($name, null)) {
             if (!Test::isAbsolutePath($path)) {
                 $path = $this->BasePath . '/' . $path;
             }
@@ -125,11 +132,11 @@ class AppContainer extends Container implements IReadable
             switch ($parent) {
                 case self::DIR_CONFIG:
                 case self::DIR_DATA:
-                    $path = Env::get('APPDATA');
+                    $path = $this->Env->get('APPDATA');
                     break;
                 case self::DIR_STATE:
                 default:
-                    $path = Env::get('LOCALAPPDATA');
+                    $path = $this->Env->get('LOCALAPPDATA');
                     break;
             }
 
@@ -141,20 +148,20 @@ class AppContainer extends Container implements IReadable
             );
         }
 
-        if (!($home = Env::home())) {
+        if (!($home = $this->Env->home())) {
             throw new RuntimeException('Home directory not found');
         }
 
         switch ($parent) {
             case self::DIR_CONFIG:
-                $path = Env::get('XDG_CONFIG_HOME', $home . '/.config');
+                $path = $this->Env->get('XDG_CONFIG_HOME', $home . '/.config');
                 break;
             case self::DIR_DATA:
-                $path = Env::get('XDG_DATA_HOME', $home . '/.local/share');
+                $path = $this->Env->get('XDG_DATA_HOME', $home . '/.local/share');
                 break;
             case self::DIR_STATE:
             default:
-                $path = Env::get('XDG_CACHE_HOME', $home . '/.cache');
+                $path = $this->Env->get('XDG_CACHE_HOME', $home . '/.cache');
                 break;
         }
 
@@ -251,8 +258,10 @@ class AppContainer extends Container implements IReadable
 
         self::setGlobalContainer($this);
 
+        $this->Env = Env::getInstance();
+
         if (is_null($basePath)) {
-            $basePath = Env::get('app_base_path', null) ?: Composer::getRootPackagePath();
+            $basePath = $this->Env->get('app_base_path', null) ?: Composer::getRootPackagePath();
         }
         if (!is_dir($basePath) ||
                 ($basePath = File::realpath($basePath)) === false) {
@@ -262,9 +271,9 @@ class AppContainer extends Container implements IReadable
 
         if (!Phar::running() &&
                 is_file($env = $this->BasePath . '/.env')) {
-            Env::loadFile($env);
+            $this->Env->loadFile($env);
         }
-        Env::apply();
+        $this->Env->apply();
 
         Console::registerStdioTargets();
 
@@ -355,6 +364,15 @@ class AppContainer extends Container implements IReadable
     }
 
     /**
+     * Get the Environment instance that underpins the Env facade
+     *
+     */
+    final public function env(): Environment
+    {
+        return $this->Env;
+    }
+
+    /**
      * Load the application's CacheStore, creating a backing database if needed
      *
      * The backing database is created in {@see AppContainer::getCachePath()}.
@@ -416,7 +434,7 @@ class AppContainer extends Container implements IReadable
             $this->LogTargets[$name] = $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
             Console::registerTarget($target, ConsoleLevels::ALL);
         }
-        if (($debug || (is_null($debug) && Env::debug())) &&
+        if (($debug || (is_null($debug) && $this->Env->debug())) &&
                 !($this->DebugLogTargets[$name] ?? null)) {
             $this->DebugLogTargets[$name] = $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
             Console::registerTarget($target, ConsoleLevels::ALL_DEBUG);
