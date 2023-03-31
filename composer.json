@@ -13,6 +13,8 @@
     },
     "suggest": {
         "adodb/adodb-php": "Required for access to databases",
+        "league/oauth2-client": "Required for integration with OAuth 2.0 service providers",
+        "firebase/php-jwt": "Required for validation of OAuth 2.0 access tokens",
         "analog/analog": "Allows Analog handlers to be used as Lkrms\\Console\\Console message targets",
         "clue/phar-composer": "Simplifies creation of phar archives"
     },
@@ -20,6 +22,8 @@
         "adodb/adodb-php": "^5.22",
         "analog/analog": "^1",
         "clue/phar-composer": "^1",
+        "firebase/php-jwt": "^6",
+        "league/oauth2-client": "^2",
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",

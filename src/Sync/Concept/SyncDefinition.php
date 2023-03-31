@@ -3,6 +3,7 @@
 namespace Lkrms\Sync\Concept;
 
 use Closure;
+use Lkrms\Concept\FluentInterface;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\Pipeline;
@@ -25,7 +26,7 @@ use UnexpectedValueException;
  * @template TProvider of ISyncProvider
  * @implements ISyncDefinition<TEntity,TProvider>
  */
-abstract class SyncDefinition implements ISyncDefinition
+abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
 {
     /**
      * Return a closure to perform a sync operation on the entity

@@ -17,6 +17,7 @@ use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
+use Lkrms\Utility\Environment;
 use RuntimeException;
 
 /**
@@ -107,6 +108,11 @@ abstract class SyncProvider implements ISyncProvider, IService
     private $Container;
 
     /**
+     * @var Environment
+     */
+    private $Environment;
+
+    /**
      * @var SyncStore
      */
     private $Store;
@@ -131,10 +137,11 @@ abstract class SyncProvider implements ISyncProvider, IService
      */
     private $MagicMethodClosures = [];
 
-    public function __construct(Container $container, SyncStore $store)
+    public function __construct(Container $container, Environment $environment, SyncStore $store)
     {
-        $this->Container = $container;
-        $this->Store     = $store;
+        $this->Container   = $container;
+        $this->Environment = $environment;
+        $this->Store       = $store;
 
         $this->Store->provider($this);
     }
@@ -155,6 +162,11 @@ abstract class SyncProvider implements ISyncProvider, IService
     final public function container(): Container
     {
         return $this->Container;
+    }
+
+    final public function env(): Environment
+    {
+        return $this->Environment;
     }
 
     final public function store(): SyncStore
