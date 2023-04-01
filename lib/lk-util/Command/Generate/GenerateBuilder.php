@@ -296,35 +296,30 @@ class GenerateBuilder extends GenerateCommand
                               : $this->getFqcnAlias($name, null, $returnFqcn));
         };
         $phpDocTypeCallback = function (string $type, array $templates) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback): string {
-            $suffix = '';
-            if (substr($type, -2) === '[]') {
-                $suffix = '[]';
-                $type   = substr($type, 0, -2);
-            }
-            $seen = [];
-            while (($_type = $templates[$type]['type'] ?? null) && !($seen[$_type] ?? null)) {
-                $seen[$_type] = true;
-                $type         = $_type;
-            }
+            $type = $this->resolveTemplates($type, $templates);
 
             return preg_replace_callback(
-                '/(?<!\$)(?=\\\\?\b)' . PhpDocParser::TYPE_PATTERN . '\b/',
-                function ($match) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback) {
-                    if (Test::isPhpReservedWord($match[0])) {
-                        return $match[0];
+                '/(?<!\$)([a-z]+(-[a-z]+)+|(?=\\\\?\b)' . PhpDocParser::TYPE_PATTERN . ')\b/',
+                function ($match) use ($templates, &$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback) {
+                    $type = $this->resolveTemplates($match[0], $templates);
+
+                    // Use reserved words and hyphenated types (e.g. `class-string`) as-is
+                    if (Test::isPhpReservedWord($type) || strpbrk($type, '-') !== false) {
+                        return $type;
                     }
-                    if (preg_match('/^\\\\/', $match[0])) {
-                        return $typeNameCallback($match[0], true);
+
+                    if (preg_match('/^\\\\/', $type)) {
+                        return $typeNameCallback($type, true);
                     }
 
                     return $typeNameCallback(
-                        $useMap[$propertyFile][$match[0]]
-                            ?? '\\' . $propertyNamespace . '\\' . $match[0],
+                        $useMap[$propertyFile][$type]
+                            ?? '\\' . $propertyNamespace . '\\' . $type,
                         true
                     );
                 },
                 $type
-            ) . $suffix;
+            );
         };
 
         $docBlocks = Reflect::getAllMethodDocComments($_constructor, $classDocBlocks);

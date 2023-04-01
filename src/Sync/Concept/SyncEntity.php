@@ -525,7 +525,7 @@ abstract class SyncEntity implements ISyncEntity
             return;
         }
 
-        if (Test::isArrayOf($node, SyncEntity::class, false, true, false, true)) {
+        if (Test::isArrayOf($node, SyncEntity::class, true) && Test::isIndexedArray($node, true)) {
             /** @var SyncEntity $child */
             foreach ($node as &$child) {
                 $child = $child->Id;

@@ -2,54 +2,52 @@
 
 namespace Lkrms\Utility;
 
-use Countable;
-use Iterator;
-use IteratorAggregate;
-
 /**
- * Perform a true/false test on a value
+ * Perform true/false tests on values
  *
  */
 final class Tests
 {
     /**
-     * Return true for integers and integer strings
+     * True if $value is an integer or integer string
      *
      * @param mixed $value
      */
-    public function isIntValue($value): bool
+    public static function isIntValue($value): bool
     {
         return is_int($value) ||
             (is_string($value) && preg_match('/^[0-9]+$/', $value));
     }
 
     /**
-     * Return true for arrays with consecutive integer keys numbered from 0
+     * True if $value is an array with consecutive integer keys numbered from 0
      *
      * @param mixed $value
      */
-    public function isListArray($value, bool $allowEmpty = false): bool
+    public static function isListArray($value, bool $allowEmpty = false): bool
     {
         return is_array($value) &&
-            (empty($value) ? $allowEmpty : array_keys($value) === range(0, count($value) - 1));
+            ($value
+                 ? array_keys($value) === range(0, count($value) - 1)
+                 : $allowEmpty);
     }
 
     /**
-     * Return true for arrays with one or more string keys
+     * True if $value is an array with one or more string keys
      *
      * @param mixed $value
      */
-    public function isAssociativeArray($value, bool $allowEmpty = false): bool
+    public static function isAssociativeArray($value, bool $allowEmpty = false): bool
     {
-        if (is_array($value)) {
-            if (empty($value)) {
-                return $allowEmpty;
-            }
-
-            foreach (array_keys($value) as $key) {
-                if (is_string($key)) {
-                    return true;
-                }
+        if (!is_array($value)) {
+            return false;
+        }
+        if (!$value) {
+            return $allowEmpty;
+        }
+        foreach (array_keys($value) as $key) {
+            if (is_string($key)) {
+                return true;
             }
         }
 
@@ -57,122 +55,107 @@ final class Tests
     }
 
     /**
-     * Return true for arrays with no string keys
+     * True if $value is an array with no string keys
      *
      * @param mixed $value
      */
-    public function isIndexedArray($value, bool $allowEmpty = false): bool
+    public static function isIndexedArray($value, bool $allowEmpty = false): bool
     {
         return is_array($value) &&
-            (empty($value) ? $allowEmpty : !$this->isAssociativeArray($value));
+            ($value
+                 ? !self::isAssociativeArray($value)
+                 : $allowEmpty);
     }
 
     /**
-     * Return true for string[] and int[]
+     * True if $value is a string[] or int[]
      *
-     * Returns `false` unless `$value` is an array where all values are integers
-     * or where all values are strings.
+     * @param mixed $value
      */
-    public function isArrayOfIntOrString($value, bool $allowEmpty = false, bool $requireList = false, bool $requireIndexed = false): bool
+    public static function isArrayOfIntOrString($value, bool $allowEmpty = false): bool
     {
         return is_array($value) &&
-            (empty($value)
-                 ? $allowEmpty
-                 : (count(array_filter($value, fn($item) => is_string($item))) === count($value) ||
-                         count(array_filter($value, fn($item) => is_int($item))) === count($value)) &&
-                     (!($requireList || $requireIndexed) ||
-                         ($requireList && $this->isListArray($value)) ||
-                         ((!$requireList) && $this->isIndexedArray($value))));
+            ($value
+                 ? count(array_filter($value, fn($item) => is_string($item))) === count($value) ||
+                     count(array_filter($value, fn($item) => is_int($item))) === count($value)
+                     : $allowEmpty);
     }
 
     /**
-     * Return true for array[]
+     * True if $value is an array of instances of $class
      *
-     * Returns `false` unless `$value` is an array where all values are arrays.
      */
-    public function isArrayOfArray($value, bool $allowEmpty = false, bool $requireList = false, bool $requireIndexed = false): bool
+    public static function isArrayOf($value, string $class, bool $allowEmpty = false): bool
     {
         return is_array($value) &&
-            (empty($value)
-                 ? $allowEmpty
-                 : empty(array_filter($value, fn($item) => !is_array($item))) &&
-                     (!($requireList || $requireIndexed) ||
-                         ($requireList && $this->isListArray($value)) ||
-                         ((!$requireList) && $this->isIndexedArray($value))));
+            ($value
+                 ? !array_filter($value, fn($item) => !is_a($item, $class))
+                 : $allowEmpty);
     }
 
     /**
-     * Return true for arrays of a class
+     * True if $value is a number within a range
      *
-     * Returns `false` unless `$value` is an array where every element is an
-     * instance of `$class`.
-     *
-     * @param bool $strict If `true`, subclasses of `$class` are not allowed in
-     * `$value`.
+     * @template T of int|float
+     * @param T $value
+     * @param T $min
+     * @param T $max
      */
-    public function isArrayOf($value, string $class, bool $strict = false, bool $allowEmpty = false, bool $requireList = false, bool $requireIndexed = false): bool
-    {
-        return is_array($value) &&
-            (empty($value)
-                 ? $allowEmpty
-                 : empty(array_filter(
-                     $value,
-                     $strict
-                         ? fn($val) => !is_object($val) || strcasecmp(get_class($val), $class)
-                         : fn($val) => !is_a($val, $class)
-                 )) && (!($requireList || $requireIndexed) ||
-                     ($requireList && $this->isListArray($value)) ||
-                     ((!$requireList) && $this->isIndexedArray($value))));
-    }
-
-    /**
-     * Return true for numbers within a range
-     *
-     * @param int|float $value
-     * @param int|float $min
-     * @param int|float $max
-     */
-    public function isBetween($value, $min, $max): bool
+    public static function isBetween($value, $min, $max): bool
     {
         return $value >= $min && $value <= $max;
     }
 
     /**
-     * Return true for absolute paths
+     * True if an object or class implements an interface
      *
+     * @param object|class-string $class
+     * @param class-string $interface
      */
-    public function isAbsolutePath(string $path): bool
+    public static function classImplements($class, string $interface): bool
     {
-        return (bool) preg_match('/^(\/|\\\\|[a-z]:\\\\)/i', $path);
+        return in_array($interface, class_implements($class) ?: [], true);
     }
 
     /**
-     * Return true if an object or class implements the given interface
+     * True if $path starts with 'phar://'
      *
-     * @param object|string $class
      */
-    public function classImplements($class, string $interface): bool
+    public static function isPharUrl(string $path): bool
     {
-        return in_array($interface, class_implements($class) ?: []);
+        return count($split = explode('://', $path, 2)) === 2 &&
+            $split[0] === 'phar';
     }
 
     /**
-     * Return true if two paths exist and refer to the same file
+     * True if $path is an absolute path
+     *
+     * A string that starts with `/` (a forward slash), `\\` (two backslashes),
+     * or `[a-z]:\` (a letter followed by a colon and backslash) is regarded as
+     * an absolute path.
+     */
+    public static function isAbsolutePath(string $path): bool
+    {
+        return (bool) preg_match('/^(\/|\\\\\\\\|[a-z]:\\\\)/i', $path);
+    }
+
+    /**
+     * True if two paths exist and refer to the same file
      *
      */
-    public function areSameFile(string $path1, string $path2): bool
+    public static function areSameFile(string $path1, string $path2): bool
     {
         return file_exists($path1) && file_exists($path2) &&
-            is_int($inode = fileinode($path1)) &&
+            ($inode = fileinode($path1)) !== false &&
             fileinode($path2) === $inode;
     }
 
     /**
-     * Return true if a directory exists and is writable, or doesn't exist but
+     * True if a directory exists and is writable, or doesn't exist but
      * can be created
      *
      */
-    public function firstExistingDirectoryIsWritable(string $dir): bool
+    public static function firstExistingDirectoryIsWritable(string $dir): bool
     {
         while (!file_exists($dir)) {
             $next = dirname($dir);
@@ -186,34 +169,13 @@ final class Tests
     }
 
     /**
-     * Return true if an array, iterable or Countable is empty
-     *
-     * Bear in mind that if `$value` is an empty `iterable`, calling this method
-     * will implicitly close it.
-     *
-     * @param array|Countable|Iterator|IteratorAggregate $value
-     */
-    public function isEmpty($value): bool
-    {
-        if (is_array($value) || $value instanceof Countable) {
-            return count($value) === 0;
-        } elseif ($value instanceof Iterator ||
-            ($value instanceof IteratorAggregate &&
-                ($value = $value->getIterator()) instanceof Iterator)) {
-            return !$value->valid();
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Return true for PHP reserved words
+     * True if $value is a PHP reserved word
      *
      * @link https://www.php.net/manual/en/reserved.php
      */
-    public function isPhpReservedWord(string $name): bool
+    public static function isPhpReservedWord(string $value): bool
     {
-        return in_array(strtolower($name), [
+        return in_array(strtolower($value), [
             'array',
             'bool',
             'callable',
@@ -235,15 +197,5 @@ final class Tests
             'true',
             'void',
         ]);
-    }
-
-    /**
-     * Return true if a path starts with 'phar://'
-     *
-     */
-    public function isPharUrl(string $path): bool
-    {
-        return count($split = explode('://', $path, 2)) === 2 &&
-            $split[0] === 'phar';
     }
 }

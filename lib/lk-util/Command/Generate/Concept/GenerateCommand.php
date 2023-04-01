@@ -55,6 +55,22 @@ abstract class GenerateCommand extends Command
     protected $ImportMap = [];
 
     /**
+     * Resolve PHPDoc templates to concrete types if possible
+     *
+     * @param array<string,array{type:string|null}> $templates
+     */
+    protected function resolveTemplates(string $type, array $templates): string
+    {
+        $seen = [];
+        while (($_type = $templates[$type]['type'] ?? null) && !($seen[$_type] ?? null)) {
+            $seen[$_type] = true;
+            $type         = $_type;
+        }
+
+        return $type;
+    }
+
+    /**
      * Create an alias for a namespaced name and return an identifier to use in
      * generated code
      *

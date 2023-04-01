@@ -11,6 +11,7 @@ use Lkrms\Container\AppContainer;
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\IContainer;
+use Lkrms\Utility\Environment;
 
 /**
  * A facade for \Lkrms\Cli\CliAppContainer
@@ -24,6 +25,7 @@ use Lkrms\Contract\IContainer;
  * @method static string buildUsageSections(array $sections) A facade for CliAppContainer::buildUsageSections()
  * @method static CliAppContainer call(callable $callback) Move to the next method in the chain after passing the object to a callback (see {@see FluentInterface::call()})
  * @method static CliAppContainer command(string[] $name, string $id) Register a CliCommand with the container (see {@see CliAppContainer::command()})
+ * @method static Environment env() Get the Environment instance that underpins the Env facade
  * @method static CliAppContainer forEach(array|object $array, callable $callback) Move to the next method in the chain after passing the object to a callback for each key-value pair in an array (see {@see FluentInterface::forEach()})
  * @method static mixed get(string $id, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier (see {@see Container::get()})
  * @method static string getAppName() Get the basename of the file used to run the script, removing known PHP file extensions and recognised version numbers
