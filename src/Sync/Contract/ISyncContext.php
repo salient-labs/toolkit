@@ -2,8 +2,8 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProviderContext;
+use Lkrms\Sync\Support\SyncFilterPolicy;
 
 /**
  * The context within which a sync entity is instantiated
@@ -41,8 +41,7 @@ interface ISyncContext extends IProviderContext
      *
      * Using {@see ISyncContext::claimFilterValue()} to "claim" values from the
      * filter is recommended. Depending on the provider's
-     * {@see \Lkrms\Sync\Support\SyncFilterPolicy}, unclaimed values may cause
-     * requests to fail.
+     * {@see SyncFilterPolicy}, unclaimed values may cause requests to fail.
      *
      * {@see ISyncEntity} objects are replaced with the return value of
      * {@see ISyncEntity::id()} when `$args` contains an array or a list of
@@ -54,6 +53,33 @@ interface ISyncContext extends IProviderContext
      * @return $this
      */
     public function withArgs(int $operation, ...$args);
+
+    /**
+     * Use a callback to enforce the provider's ignored filter policy
+     *
+     * Allows providers to enforce their {@see SyncFilterPolicy} by calling
+     * {@see ISyncContext::maybeApplyFilterPolicy()} in scenarios where
+     * enforcement before a sync operation starts isn't possible.
+     *
+     * @param (callable(ISyncContext, ?bool &$returnEmpty, mixed &$empty): void)|null $callback
+     * @return $this
+     */
+    public function withFilterPolicyCallback(?callable $callback);
+
+    /**
+     * Run the ignored filter policy callback (if provided)
+     *
+     * Example:
+     *
+     * ```php
+     * $ctx->maybeApplyFilterPolicy($returnEmpty, $empty);
+     * if ($returnEmpty) {
+     *     return $empty;
+     * }
+     * ```
+     *
+     */
+    public function maybeApplyFilterPolicy(?bool &$returnEmpty, &$empty): void;
 
     /**
      * Get the filter most recently passed via optional sync operation arguments

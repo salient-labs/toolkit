@@ -8,7 +8,7 @@ use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\Support\CurlerPageBuilder;
 use Lkrms\Facade\Convert;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * Increments a value in the query string and repeats the request until no
@@ -21,6 +21,11 @@ final class QueryPager implements ICurlerPager
      * @var string|null
      */
     private $PageKey;
+
+    /**
+     * @var string|null
+     */
+    private $CurrentPageKey;
 
     /**
      * @var Closure
@@ -42,12 +47,13 @@ final class QueryPager implements ICurlerPager
      */
     public function __construct(?string $pageKey = null, $selector = null)
     {
-        $this->PageKey  = $pageKey;
-        $this->Selector = $selector instanceof Closure
-                              ? $selector
-                              : (is_string($selector)
-                                     ? fn($response) => $response[$selector]
-                                     : fn($response) => Convert::toList($response));
+        $this->PageKey = $pageKey;
+        $this->Selector =
+            $selector instanceof Closure
+                ? $selector
+                : (is_string($selector)
+                       ? fn($response) => $response[$selector]
+                       : fn($response) => Convert::toList($response));
     }
 
     public function prepareQuery(?array $query): ?string
@@ -56,9 +62,9 @@ final class QueryPager implements ICurlerPager
             if (is_null($query) ||
                     !is_int(reset($query)) ||
                     !($pageKey = key($query))) {
-                throw new UnexpectedValueException('First element of query array must be an integer');
+                throw new LogicException('First element of query array must be an integer');
             }
-            $this->PageKey = $pageKey;
+            $this->CurrentPageKey = $pageKey;
         }
         $this->Query = $query;
 
@@ -70,8 +76,9 @@ final class QueryPager implements ICurlerPager
         return $data;
     }
 
-    public function prepareCurler(Curler $curler): void
+    public function prepareCurler(Curler $curler): Curler
     {
+        return $curler;
     }
 
     public function getPage($data, Curler $curler, ?ICurlerPage $previous = null): ICurlerPage
@@ -79,7 +86,7 @@ final class QueryPager implements ICurlerPager
         $data = ($this->Selector)($data);
 
         if ($data) {
-            $this->Query[$this->PageKey]++;
+            $this->Query[$this->CurrentPageKey ?: $this->PageKey]++;
             $nextUrl = $curler->getQueryUrl($this->Query);
         }
 

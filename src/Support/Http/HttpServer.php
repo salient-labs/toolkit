@@ -228,7 +228,7 @@ final class HttpServer implements IReadable, IImmutable
             } while (true);
 
             /** @todo Add support for Transfer-Encoding */
-            if ($length = $headers->getHeaderValue('Content-Length', CurlerHeadersFlag::DISCARD_REPEATED)) {
+            if ($length = $headers->getHeaderValue('Content-Length', CurlerHeadersFlag::KEEP_LAST)) {
                 if (($body = fread($socket, (int) $length)) === false) {
                     throw new RuntimeException("Error reading request body from $peer");
                 }

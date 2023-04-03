@@ -3,6 +3,8 @@
 namespace Lkrms\Tests\Curler;
 
 use Lkrms\Curler\CurlerHeaders;
+use Lkrms\Curler\CurlerHeadersFlag;
+use Lkrms\Support\Dictionary\HttpHeader;
 
 final class CurlerHeadersTest extends \Lkrms\Tests\TestCase
 {
@@ -17,5 +19,45 @@ final class CurlerHeadersTest extends \Lkrms\Tests\TestCase
 
         $this->assertNotEquals($headers->getHeaderValues(), $change1->getHeaderValues());
         $this->assertNotEquals($change1->getHeaderValues(), $change2->getHeaderValues());
+    }
+
+    public function testPattern()
+    {
+        $headers = (new CurlerHeaders())
+            ->addHeader(HttpHeader::PREFER, 'respond-async')
+            ->addHeader(HttpHeader::PREFER, 'wait=5')
+            ->addHeader(HttpHeader::PREFER, 'handling=lenient')
+            ->addHeader(HttpHeader::PREFER, 'task_priority=2')
+            ->addHeader(HttpHeader::PREFER, 'ODATA.maxpagesize=100');
+        $this->assertSame(true, $headers->hasHeader(HttpHeader::PREFER, '/^wait\h*=/i'));
+        $this->assertSame(true, $headers->hasHeader(HttpHeader::PREFER, '/^odata\./i'));
+        $this->assertSame(false, $headers->hasHeader(HttpHeader::PREFER, '/^return\h*=/i'));
+
+        $headers = $headers->unsetHeader(HttpHeader::PREFER, '/^odata\./i');
+        $this->assertSame(false, $headers->hasHeader(HttpHeader::PREFER, '/^odata\./i'));
+        $headers = $headers->addHeader(HttpHeader::PREFER, 'odata.maxpagesize=50');
+        $this->assertSame(
+            [
+                [
+                    'prefer' => [
+                        0 => 'respond-async',
+                        1 => 'wait=5',
+                        2 => 'handling=lenient',
+                        3 => 'task_priority=2',
+                        5 => 'odata.maxpagesize=50',
+                    ],
+                ],
+                [
+                    'prefer' => 'respond-async, wait=5, handling=lenient, task_priority=2, odata.maxpagesize=50',
+                ],
+                'odata.maxpagesize=50, odata.track-changes',
+            ],
+            [
+                $headers->getHeaderValues(),
+                $headers->getHeaderValues(CurlerHeadersFlag::COMBINE),
+                $headers->addHeader(HttpHeader::PREFER, 'odata.track-changes')
+                        ->getHeaderValue(HttpHeader::PREFER, CurlerHeadersFlag::COMBINE, '/^odata\./i'),
+            ]
+        );
     }
 }

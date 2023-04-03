@@ -17,6 +17,25 @@ final class SyncContext extends ProviderContext implements ISyncContext
 {
     protected array $Filter = [];
 
+    /**
+     * @var (callable(ISyncContext, ?bool &$returnEmpty, mixed &$empty): void)|null
+     */
+    protected $FilterPolicyCallback;
+
+    public function withFilterPolicyCallback(?callable $callback)
+    {
+        return $this->withPropertyValue('FilterPolicyCallback', $callback);
+    }
+
+    public function maybeApplyFilterPolicy(?bool &$returnEmpty, &$empty): void
+    {
+        $returnEmpty = false;
+
+        if ($this->FilterPolicyCallback) {
+            ($this->FilterPolicyCallback)($this, $returnEmpty, $empty);
+        }
+    }
+
     public function withArgs(int $operation, ...$args)
     {
         // READ_LIST is the only operation with no mandatory argument after

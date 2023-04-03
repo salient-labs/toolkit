@@ -69,9 +69,9 @@ final class CurlerHeaders implements ICurlerHeaders
         return (clone $this)->_addHeader($name, $value, $private);
     }
 
-    public function unsetHeader(string $name)
+    public function unsetHeader(string $name, ?string $pattern = null)
     {
-        return (clone $this)->_unsetHeader($name);
+        return (clone $this)->_unsetHeader($name, $pattern);
     }
 
     public function setHeader(string $name, string $value, bool $private = false)
@@ -145,13 +145,19 @@ final class CurlerHeaders implements ICurlerHeaders
     /**
      * @return $this
      */
-    private function _unsetHeader(string $name)
+    private function _unsetHeader(string $name, ?string $pattern)
     {
         $lower = strtolower($name);
-        foreach (($this->HeaderKeysByName[$lower] ?? []) as $key) {
+        foreach (($this->HeaderKeysByName[$lower] ?? []) as $i => $key) {
+            if ($pattern && !preg_match($pattern, $this->Headers[$key]->Value)) {
+                continue;
+            }
             unset($this->Headers[$key]);
+            unset($this->HeaderKeysByName[$lower][$i]);
         }
-        unset($this->HeaderKeysByName[$lower]);
+        if (!($this->HeaderKeysByName[$lower] ?? null)) {
+            unset($this->HeaderKeysByName[$lower]);
+        }
 
         return $this;
     }
@@ -169,9 +175,22 @@ final class CurlerHeaders implements ICurlerHeaders
         return $this;
     }
 
-    public function hasHeader(string $name): bool
+    public function hasHeader(string $name, ?string $pattern = null): bool
     {
-        return array_key_exists(strtolower($name), $this->HeaderKeysByName);
+        $name = strtolower($name);
+        if (!array_key_exists($name, $this->HeaderKeysByName)) {
+            return false;
+        }
+        if (!$pattern) {
+            return true;
+        }
+        foreach ($this->HeaderKeysByName[$name] as $key) {
+            if (preg_match($pattern, $this->Headers[$key]->Value)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function getHeaders(): array
@@ -182,20 +201,37 @@ final class CurlerHeaders implements ICurlerHeaders
         ));
     }
 
-    public function getHeaderValue(string $name, int $flags = 0)
+    public function getHeaderValue(string $name, int $flags = 0, ?string $pattern = null)
     {
         $values = array_map(
             fn(CurlerHeader $header) => $header->Value,
             array_intersect_key($this->Headers, array_flip($this->HeaderKeysByName[strtolower($name)] ?? []))
         );
-        if (!($flags & (Flag::COMBINE_REPEATED | Flag::DISCARD_REPEATED))) {
+        if ($pattern) {
+            $values = array_filter(
+                $values,
+                fn(string $header) => (bool) preg_match($pattern, $header)
+            );
+        }
+
+        // If no flags are set, return "a `string[]` containing one or more
+        // values, or an empty `array` if there are no matching headers"
+        if (!($flags & (Flag::COMBINE | Flag::KEEP_LAST | Flag::KEEP_FIRST))) {
             return $values;
         }
+
+        // Otherwise, return "`null` if there are no matching headers"
         if (!$values) {
             return null;
         }
-        if ($flags & Flag::DISCARD_REPEATED) {
+
+        // Or "a `string` containing one or more comma-separated values"
+        if ($flags & Flag::KEEP_LAST) {
             return end($values);
+        }
+
+        if ($flags & Flag::KEEP_FIRST) {
+            return reset($values);
         }
 
         return implode(', ', $values);
@@ -203,11 +239,7 @@ final class CurlerHeaders implements ICurlerHeaders
 
     public function getHeaderValues(int $flags = 0): array
     {
-        if ($flags & Flag::SORT_BY_LAST) {
-            $keysByName = $this->HeaderKeysByName;
-            uasort($keysByName, fn(array $a, array $b) => end($a) <=> end($b));
-        }
-        $names = array_keys($keysByName ?? $this->HeaderKeysByName);
+        $names = array_keys($this->HeaderKeysByName);
 
         return array_combine(
             $names,

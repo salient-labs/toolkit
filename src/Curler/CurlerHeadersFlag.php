@@ -11,20 +11,21 @@ use Lkrms\Concept\Enumeration;
 final class CurlerHeadersFlag extends Enumeration
 {
     /**
-     * Combine headers that appear multiple times by adding commas between their
+     * Combine headers given multiple times by adding commas between their
      * values, as per Section 5.2 of [RFC9110]
      *
      */
-    public const COMBINE_REPEATED = 1;
+    public const COMBINE = 1;
 
     /**
-     * Discard all but the last value of any headers that appear multiple times
+     * Discard all but the last value of any headers given multiple times
      *
      */
-    public const DISCARD_REPEATED = 2;
+    public const KEEP_LAST = 2;
 
     /**
-     * Sort headers to maintain the position of their last appearance
+     * Discard all but the first value of any headers given multiple times
+     *
      */
-    public const SORT_BY_LAST = 4;
+    public const KEEP_FIRST = 4;
 }
