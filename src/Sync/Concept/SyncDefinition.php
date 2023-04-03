@@ -177,8 +177,16 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * @phpstan-param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
      * @phpstan-param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
      */
-    public function __construct(string $entity, ISyncProvider $provider, array $operations = [], int $conformity = ArrayKeyConformity::NONE, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, array $overrides = [], ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
-    {
+    public function __construct(
+        string $entity,
+        ISyncProvider $provider,
+        array $operations                = [],
+        int $conformity                  = ArrayKeyConformity::NONE,
+        int $filterPolicy                = SyncFilterPolicy::THROW_EXCEPTION,
+        array $overrides                 = [],
+        ?IPipeline $dataToEntityPipeline = null,
+        ?IPipeline $entityToDataPipeline = null
+    ) {
         $this->Entity               = $entity;
         $this->Provider             = $provider;
         $this->Conformity           = $conformity;
@@ -221,7 +229,13 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         // methods
         if (array_key_exists($operation, $this->Overrides)) {
             return $this->Closures[$operation] =
-                fn(ISyncContext $ctx, ...$args) => $this->Overrides[$operation]($this, $operation, $ctx, ...$args);
+                fn(ISyncContext $ctx, ...$args) =>
+                    $this->Overrides[$operation](
+                        $this,
+                        $operation,
+                        $this->getContextWithFilterCallback($operation, $ctx),
+                        ...$args
+                    );
         }
 
         // If a method has been declared for this operation, use it, even if
@@ -232,7 +246,12 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
                     $this->EntityIntrospector,
                     $this->Provider
                 )) {
-            return $this->Closures[$operation] = $closure;
+            return $this->Closures[$operation] =
+                fn(ISyncContext $ctx, ...$args) =>
+                    $closure(
+                        $this->getContextWithFilterCallback($operation, $ctx),
+                        ...$args
+                    );
         }
 
         // Return null if the operation doesn't appear in $this->Operations
@@ -308,29 +327,29 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         $pipeline = $this->DataToEntityPipeline ?: Pipeline::create();
 
         return $pipeline
-                   ->withConformity($this->Conformity)
-                   ->then(
-                       function (array $data, IPipeline $pipeline, $arg) use (&$ctx, &$closure) {
-                           if (!$ctx) {
-                               /** @var ISyncContext $ctx */
-                               [, $ctx] = $arg;
-                               $ctx     = $ctx->withConformity($this->Conformity);
-                           }
-                           if (!$closure) {
-                               $closure = in_array($this->Conformity,
-                                                   [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                                              ? SyncIntrospector::getService($ctx->container(), $this->Entity)
-                                                    ->getCreateSyncEntityFromSignatureClosure(array_keys($data))
-                                              : SyncIntrospector::getService($ctx->container(), $this->Entity)
-                                                    ->getCreateSyncEntityFromClosure();
-                           }
-                           /** @var TEntity */
-                           $entity = $closure($data, $this->Provider, $ctx);
+            ->withConformity($this->Conformity)
+            ->then(
+                function (array $data, IPipeline $pipeline, $arg) use (&$ctx, &$closure) {
+                    if (!$ctx) {
+                        /** @var ISyncContext $ctx */
+                        [, $ctx] = $arg;
+                        $ctx     = $ctx->withConformity($this->Conformity);
+                    }
+                    if (!$closure) {
+                        $closure = in_array($this->Conformity,
+                                            [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                                       ? SyncIntrospector::getService($ctx->container(), $this->Entity)
+                                           ->getCreateSyncEntityFromSignatureClosure(array_keys($data))
+                                       : SyncIntrospector::getService($ctx->container(), $this->Entity)
+                                           ->getCreateSyncEntityFromClosure();
+                    }
+                    /** @var TEntity */
+                    $entity = $closure($data, $this->Provider, $ctx);
 
-                           return $entity;
-                       }
-                   )
-                   ->unlessIf(fn($entity) => is_null($entity));
+                    return $entity;
+                }
+            )
+            ->unlessIf(fn($entity) => is_null($entity));
     }
 
     /**
@@ -369,5 +388,17 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         }
 
         throw new UnexpectedValueException("SyncFilterPolicy invalid or not implemented: {$this->FilterPolicy}");
+    }
+
+    /**
+     * @phpstan-param SyncOperation::* $operation
+     */
+    private function getContextWithFilterCallback(int $operation, ISyncContext $ctx): ISyncContext
+    {
+        return $ctx->withFilterPolicyCallback(
+            function (ISyncContext $ctx, ?bool &$returnEmpty, &$empty) use ($operation): void {
+                $this->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
+            }
+        );
     }
 }

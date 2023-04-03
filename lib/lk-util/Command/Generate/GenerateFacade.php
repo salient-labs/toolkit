@@ -167,35 +167,30 @@ final class GenerateFacade extends GenerateCommand
                               : $this->getFqcnAlias($name, null, $returnFqcn));
         };
         $phpDocTypeCallback = function (string $type, array $templates) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback): string {
-            $suffix = '';
-            if (substr($type, -2) === '[]') {
-                $suffix = '[]';
-                $type   = substr($type, 0, -2);
-            }
-            $seen = [];
-            while (($_type = $templates[$type]['type'] ?? null) && !($seen[$_type] ?? null)) {
-                $seen[$_type] = true;
-                $type         = $_type;
-            }
+            $type = $this->resolveTemplates($type, $templates);
 
             return preg_replace_callback(
-                '/(?<!\$)(?=\\\\?\b)' . PhpDocParser::TYPE_PATTERN . '\b/',
-                function ($match) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback) {
-                    if (Test::isPhpReservedWord($match[0])) {
-                        return $match[0];
+                '/(?<!\$)([a-z]+(-[a-z]+)+|(?=\\\\?\b)' . PhpDocParser::TYPE_PATTERN . ')\b/',
+                function ($match) use ($templates, &$methodFile, &$methodNamespace, $useMap, $typeNameCallback) {
+                    $type = $this->resolveTemplates($match[0], $templates);
+
+                    // Use reserved words and hyphenated types (e.g. `class-string`) as-is
+                    if (Test::isPhpReservedWord($type) || strpbrk($type, '-') !== false) {
+                        return $type;
                     }
-                    if (preg_match('/^\\\\/', $match[0])) {
-                        return $typeNameCallback($match[0], true);
+
+                    if (preg_match('/^\\\\/', $type)) {
+                        return $typeNameCallback($type, true);
                     }
 
                     return $typeNameCallback(
-                        $useMap[$methodFile][$match[0]]
-                            ?? '\\' . $methodNamespace . '\\' . $match[0],
+                        $useMap[$methodFile][$type]
+                            ?? '\\' . $methodNamespace . '\\' . $type,
                         true
                     );
                 },
                 $type
-            ) . $suffix;
+            );
         };
 
         usort($_methods,

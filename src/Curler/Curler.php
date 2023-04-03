@@ -413,9 +413,9 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * @return $this
      */
-    final public function unsetHeader(string $name)
+    final public function unsetHeader(string $name, ?string $pattern = null)
     {
-        $this->Headers = $this->Headers->unsetHeader($name);
+        $this->Headers = $this->Headers->unsetHeader($name, $pattern);
 
         return $this;
     }
@@ -495,7 +495,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     {
         $contentType = $this->ResponseHeaders->getHeaderValue(
             HttpHeader::CONTENT_TYPE,
-            CurlerHeadersFlag::DISCARD_REPEATED
+            CurlerHeadersFlag::KEEP_LAST
         );
 
         // Assume JSON if it's expected and no Content-Type is specified
@@ -771,7 +771,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
             $this->ResponseHeadersByName =
                 $this->ResponseHeaders
-                     ->getHeaderValues(CurlerHeadersFlag::COMBINE_REPEATED);
+                     ->getHeaderValues(CurlerHeadersFlag::COMBINE);
 
             return $this->ResponseBody;
         }
@@ -835,7 +835,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
             if (is_null($error)) {
                 // ReasonPhrase is collected by processHeader()
-                $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE_REPEATED);
+                $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE);
                 $this->StatusCode            = (int) curl_getinfo($this->Handle, CURLINFO_RESPONSE_CODE);
                 $this->ResponseBody          = curl_multi_getcontent($this->Handle);
 
@@ -1125,6 +1125,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
             'UserAgent',
             'AlwaysPaginate',
             'ObjectAsArray',
+            ...self::getWritable(),
         ];
     }
 

@@ -4,6 +4,10 @@ namespace Lkrms\Curler\Contract;
 
 use Lkrms\Curler\Curler;
 
+/**
+ * Implements retrieval and extraction of paginated data
+ *
+ */
 interface ICurlerPager
 {
     /**
@@ -22,7 +26,7 @@ interface ICurlerPager
      * Prepare a Curler instance to request the first page from an endpoint
      *
      */
-    public function prepareCurler(Curler $curler): void;
+    public function prepareCurler(Curler $curler): Curler;
 
     /**
      * Prepare POST data for the first page request

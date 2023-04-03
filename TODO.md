@@ -12,6 +12,8 @@
   - [ ] Add `getQ()`, `postQ()` etc. to return a queuable `Curler` instance that will pass the response to a given callback
   - [ ] Add `run()` or similar to process a queue of instances via one `CurlMultiHandle`
 - [ ] Finalise `Dice` refactor
+- [ ] Build out OAuth 2.0 implementation and remove dependency on `league/oauth2-client`
+- [ ] Remove dependency on `filp/whoops`
 - [ ] Convert informal tests to PHPUnit tests
 - [ ] Increase code coverage
 

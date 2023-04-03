@@ -99,21 +99,21 @@ final class HttpServer implements IReadable, IImmutable
         if ($this->ProxyHost && $this->ProxyPort) {
             return ($this->ProxyTls && $this->ProxyPort === 443) ||
                 (!$this->ProxyTls && $this->ProxyPort === 80)
-                    ? sprintf(
-                        '%s://%s',
-                        $this->ProxyTls
-                            ? 'https'
-                            : 'http',
-                        $this->ProxyHost
-                    )
-                    : sprintf(
-                        '%s://%s:%d',
-                        $this->ProxyTls
-                            ? 'https'
-                            : 'http',
-                        $this->ProxyHost,
-                        $this->ProxyPort
-                    );
+                           ? sprintf(
+                               '%s://%s',
+                               $this->ProxyTls
+                                   ? 'https'
+                                   : 'http',
+                               $this->ProxyHost
+                           )
+                           : sprintf(
+                               '%s://%s:%d',
+                               $this->ProxyTls
+                                   ? 'https'
+                                   : 'http',
+                               $this->ProxyHost,
+                               $this->ProxyPort
+                           );
         }
 
         return $this->ProxyPort === 80
@@ -228,7 +228,7 @@ final class HttpServer implements IReadable, IImmutable
             } while (true);
 
             /** @todo Add support for Transfer-Encoding */
-            if ($length = $headers->getHeaderValue('Content-Length', CurlerHeadersFlag::DISCARD_REPEATED)) {
+            if ($length = $headers->getHeaderValue('Content-Length', CurlerHeadersFlag::KEEP_LAST)) {
                 if (($body = fread($socket, (int) $length)) === false) {
                     throw new RuntimeException("Error reading request body from $peer");
                 }
@@ -247,9 +247,12 @@ final class HttpServer implements IReadable, IImmutable
                 /** @var HttpResponse */
                 $response = $callback($request, $continue, $return);
             } finally {
-                fwrite($socket, (string) ($response ?? new HttpResponse(
-                    'Internal server error', 500, 'Internal Server Error'
-                )));
+                fwrite(
+                    $socket,
+                    (string) ($response ?? new HttpResponse(
+                        'Internal server error', 500, 'Internal Server Error'
+                    ))
+                );
                 fclose($socket);
             }
         } while ($continue);

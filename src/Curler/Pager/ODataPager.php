@@ -6,6 +6,7 @@ use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\Support\CurlerPageBuilder;
+use Lkrms\Support\Dictionary\HttpHeader;
 
 final class ODataPager implements ICurlerPager
 {
@@ -39,11 +40,14 @@ final class ODataPager implements ICurlerPager
         return $data;
     }
 
-    public function prepareCurler(Curler $curler): void
+    public function prepareCurler(Curler $curler): Curler
     {
         if (!is_null($this->MaxPageSize)) {
-            $curler->Headers->addHeader('Prefer', "odata.maxpagesize={$this->MaxPageSize}");
+            return $curler->unsetHeader(HttpHeader::PREFER, '/^odata\.maxpagesize\h*=/')
+                          ->addHeader(HttpHeader::PREFER, sprintf('odata.maxpagesize=%d', $this->MaxPageSize));
         }
+
+        return $curler;
     }
 
     public function getPage($data, Curler $curler, ?ICurlerPage $previous = null): ICurlerPage
@@ -54,10 +58,10 @@ final class ODataPager implements ICurlerPager
                              : '@');
 
         return CurlerPageBuilder::build()
-                   ->entities($data['value'])
-                   ->curler($curler)
-                   ->previous($previous)
-                   ->nextUrl($data[$prefix . 'nextLink'] ?? null)
-                   ->go();
+            ->entities($data['value'])
+            ->curler($curler)
+            ->previous($previous)
+            ->nextUrl($data[$prefix . 'nextLink'] ?? null)
+            ->go();
     }
 }
