@@ -78,7 +78,7 @@ final class Tests
             ($value
                  ? count(array_filter($value, fn($item) => is_string($item))) === count($value) ||
                      count(array_filter($value, fn($item) => is_int($item))) === count($value)
-                     : $allowEmpty);
+                 : $allowEmpty);
     }
 
     /**

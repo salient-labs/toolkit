@@ -308,29 +308,29 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         $pipeline = $this->DataToEntityPipeline ?: Pipeline::create();
 
         return $pipeline
-                   ->withConformity($this->Conformity)
-                   ->then(
-                       function (array $data, IPipeline $pipeline, $arg) use (&$ctx, &$closure) {
-                           if (!$ctx) {
-                               /** @var ISyncContext $ctx */
-                               [, $ctx] = $arg;
-                               $ctx     = $ctx->withConformity($this->Conformity);
-                           }
-                           if (!$closure) {
-                               $closure = in_array($this->Conformity,
-                                                   [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                                              ? SyncIntrospector::getService($ctx->container(), $this->Entity)
-                                                    ->getCreateSyncEntityFromSignatureClosure(array_keys($data))
-                                              : SyncIntrospector::getService($ctx->container(), $this->Entity)
-                                                    ->getCreateSyncEntityFromClosure();
-                           }
-                           /** @var TEntity */
-                           $entity = $closure($data, $this->Provider, $ctx);
+            ->withConformity($this->Conformity)
+            ->then(
+                function (array $data, IPipeline $pipeline, $arg) use (&$ctx, &$closure) {
+                    if (!$ctx) {
+                        /** @var ISyncContext $ctx */
+                        [, $ctx] = $arg;
+                        $ctx     = $ctx->withConformity($this->Conformity);
+                    }
+                    if (!$closure) {
+                        $closure = in_array($this->Conformity,
+                                            [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                                       ? SyncIntrospector::getService($ctx->container(), $this->Entity)
+                                           ->getCreateSyncEntityFromSignatureClosure(array_keys($data))
+                                       : SyncIntrospector::getService($ctx->container(), $this->Entity)
+                                           ->getCreateSyncEntityFromClosure();
+                    }
+                    /** @var TEntity */
+                    $entity = $closure($data, $this->Provider, $ctx);
 
-                           return $entity;
-                       }
-                   )
-                   ->unlessIf(fn($entity) => is_null($entity));
+                    return $entity;
+                }
+            )
+            ->unlessIf(fn($entity) => is_null($entity));
     }
 
     /**

@@ -75,8 +75,8 @@ abstract class DbSyncProvider extends SyncProvider
     final public function getDefinition(string $entity): ISyncDefinition
     {
         $builder = DbSyncDefinition::build()
-                       ->entity($entity)
-                       ->provider($this);
+            ->entity($entity)
+            ->provider($this);
         $def = $this->getDbDefinition($entity, $builder);
 
         return $def

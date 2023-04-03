@@ -84,10 +84,10 @@ final class QueryPager implements ICurlerPager
         }
 
         return CurlerPageBuilder::build()
-                   ->entities($data)
-                   ->curler($curler)
-                   ->previous($previous)
-                   ->nextUrl($nextUrl ?? null)
-                   ->go();
+            ->entities($data)
+            ->curler($curler)
+            ->previous($previous)
+            ->nextUrl($nextUrl ?? null)
+            ->go();
     }
 }

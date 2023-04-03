@@ -13,13 +13,13 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
     {
         $container = new Container();
         $option    = CliOption::build($container)
-                         ->long('dest')
-                         ->short('d')
-                         ->valueName('DIR')
-                         ->description('Sync files to DIR')
-                         ->optionType(CliOptionType::VALUE)
-                         ->required(true)
-                         ->go();
+            ->long('dest')
+            ->short('d')
+            ->valueName('DIR')
+            ->description('Sync files to DIR')
+            ->optionType(CliOptionType::VALUE)
+            ->required(true)
+            ->go();
         $this->assertEquals('dest', $option->Long);
         $this->assertEquals('d', $option->Short);
         $this->assertEquals('d|dest', $option->Key);

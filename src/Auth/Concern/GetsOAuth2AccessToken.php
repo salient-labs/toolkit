@@ -343,12 +343,12 @@ trait GetsOAuth2AccessToken
     private function getJsonWebKeySet(bool $refresh = false): array
     {
         return CurlerBuilder::build()
-                   ->baseUrl($this->getOAuth2JsonWebKeySetUrl())
-                   ->cacheResponse()
-                   ->expiry(0)
-                   ->if($refresh, fn(CurlerBuilder $curlerB) => $curlerB->flush())
-                   ->go()
-                   ->get();
+            ->baseUrl($this->getOAuth2JsonWebKeySetUrl())
+            ->cacheResponse()
+            ->expiry(0)
+            ->if($refresh, fn(CurlerBuilder $curlerB) => $curlerB->flush())
+            ->go()
+            ->get();
     }
 
     /**

@@ -191,7 +191,7 @@ abstract class SyncEntity implements ISyncEntity
     final public static function defaultProvider(?IContainer $container = null): ISyncProvider
     {
         return self::requireContainer($container)
-                   ->get(SyncIntrospector::entityToProvider(static::class));
+            ->get(SyncIntrospector::entityToProvider(static::class));
     }
 
     final public static function withDefaultProvider(?IContainer $container = null): ISyncEntityProvider
@@ -202,10 +202,10 @@ abstract class SyncEntity implements ISyncEntity
     final public static function buildSerializeRules(?IContainer $container = null, bool $inherit = true): SerializeRulesBuilder
     {
         return (new SerializeRulesBuilder($container = self::requireContainer($container)))
-                   ->if($inherit,
-                        fn(SerializeRulesBuilder $builder) =>
-                            $builder->inherit(static::serializeRules($container)))
-                   ->entity(static::class);
+            ->if($inherit,
+                 fn(SerializeRulesBuilder $builder) =>
+                     $builder->inherit(static::serializeRules($container)))
+            ->entity(static::class);
     }
 
     /**

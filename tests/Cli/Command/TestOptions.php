@@ -99,9 +99,9 @@ class TestOptions extends CliCommand
 
             foreach ($names ?? [$typeName . $current] as $i => $long) {
                 $option = CliOption::build()
-                              ->long($long)
-                              ->short(array_shift($short))
-                              ->optionType($type);
+                    ->long($long)
+                    ->short(array_shift($short))
+                    ->optionType($type);
                 $desc = [];
                 foreach ($vary as $property => $values) {
                     if (!array_key_exists($i, $values)) {
