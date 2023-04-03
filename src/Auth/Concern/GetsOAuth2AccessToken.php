@@ -20,7 +20,8 @@ use RuntimeException;
 use Throwable;
 
 /**
- * An OAuth 2.0 client implementation
+ * An OAuth 2.0 client that uses the Authorization Code flow to acquire and
+ * validate tokens for access to endpoints on a resource server
  *
  * @property-read HttpServer $OAuth2Listener
  * @property-read string $OAuth2RedirectUri
@@ -33,12 +34,73 @@ trait GetsOAuth2AccessToken
 {
     use TReadable;
 
+    /**
+     * Return an HTTP listener to receive OAuth 2.0 redirects from the provider
+     *
+     * Reference implementation:
+     *
+     * ```php
+     * protected function getOAuth2Listener(): \Lkrms\Support\Http\HttpServer
+     * {
+     *     $listener = new \Lkrms\Support\Http\HttpServer(
+     *         Env::get('app_host', 'localhost'),
+     *         Env::getInt('app_port', 27755)
+     *     );
+     *     $proxyHost = Env::get('app_proxy_host', null);
+     *     $proxyPort = Env::getInt('app_proxy_port', null);
+     *     if ($proxyHost && !is_null($proxyPort)) {
+     *         return $listener->withProxy(
+     *             $proxyHost,
+     *             $proxyPort,
+     *             Env::getBool('app_proxy_tls', null)
+     *         );
+     *     }
+     *     return $listener;
+     * }
+     * ```
+     *
+     */
     abstract protected function getOAuth2Listener(): HttpServer;
 
+    /**
+     * Return an OAuth 2.0 provider to request and validate tokens that
+     * authorize access to the resource server
+     *
+     * Example:
+     *
+     * ```php
+     * protected function getOAuth2Provider(): \League\OAuth2\Client\Provider\AbstractProvider
+     * {
+     *     $tenant = Env::get('backend_tenant');
+     *     return new \League\OAuth2\Client\Provider\GenericProvider([
+     *         'clientId'                => Env::get('backend_client_id'),
+     *         'clientSecret'            => Env::get('backend_client_secret'),
+     *         'redirectUri'             => sprintf('%s/oauth2/callback', $this->OAuth2Listener->getBaseUrl()),
+     *         'urlAuthorize'            => sprintf('https://login.microsoftonline.com/%s/oauth2/authorize', $tenant),
+     *         'urlAccessToken'          => sprintf('https://login.microsoftonline.com/%s/oauth2/v2.0/token', $tenant),
+     *         'urlResourceOwnerDetails' => sprintf('https://login.microsoftonline.com/%s/openid/userinfo', $tenant),
+     *         'scopes'                  => ['openid', 'offline_access', 'https://graph.microsoft.com/.default'],
+     *         'scopeSeparator'          => ' ',
+     *     ]);
+     * }
+     * ```
+     *
+     */
     abstract protected function getOAuth2Provider(): AbstractProvider;
 
+    /**
+     * Return the URL of the OAuth 2.0 provider's JSON Web Key Set
+     *
+     * Required for token signature validation. Check the provider's
+     * `https://server.com/.well-known/openid-configuration` if unsure.
+     *
+     */
     abstract protected function getOAuth2JsonWebKeySetUrl(): string;
 
+    /**
+     * Called when an access token is received from the OAuth 2.0 provider
+     *
+     */
     abstract protected function receiveOAuth2Token(AccessTokenInterface $token): void;
 
     public static function getReadable(): array
