@@ -73,12 +73,17 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
      * algorithm. Either {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}
      * or {@see SyncEntityFuzzyResolver::ALGORITHM_SIMILAR_TEXT}.
      */
-    public function __construct(ISyncEntityProvider $entityProvider, string $nameProperty, ?string $weightProperty, ?int $algorithm = null, ?float $uncertaintyThreshold = null)
-    {
-        $this->EntityProvider       = $entityProvider;
-        $this->NameProperty         = $nameProperty;
-        $this->WeightProperty       = $weightProperty;
-        $this->Algorithm            = $algorithm;
+    public function __construct(
+        ISyncEntityProvider $entityProvider,
+        string $nameProperty,
+        ?string $weightProperty,
+        ?int $algorithm = null,
+        ?float $uncertaintyThreshold = null
+    ) {
+        $this->EntityProvider = $entityProvider;
+        $this->NameProperty = $nameProperty;
+        $this->WeightProperty = $weightProperty;
+        $this->Algorithm = $algorithm;
         $this->UncertaintyThreshold = $uncertaintyThreshold;
     }
 
@@ -126,10 +131,12 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         $uncertainty = null;
 
         $sort = $this->Entities;
-        usort($sort,
-              fn($e1, $e2) =>
-                  $this->compareUncertainty($_name, $e1, $e2)
-                      ?: ($e2[0]->{$this->WeightProperty} <=> $e1[0]->{$this->WeightProperty}));
+        usort(
+            $sort,
+            fn($e1, $e2) =>
+                $this->compareUncertainty($_name, $e1, $e2)
+                    ?: ($e2[0]->{$this->WeightProperty} <=> $e1[0]->{$this->WeightProperty})
+        );
         $cache = $match = reset($sort);
 
         if ($match !== false) {
@@ -141,10 +148,10 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
                     $uncertainty,
                     $this->UncertaintyThreshold
                 ), $name);
-                $cache       = $match = false;
+                $cache = $match = false;
                 $uncertainty = null;
             } else {
-                $cache       = [$match[0], $uncertainty];
+                $cache = [$match[0], $uncertainty];
             }
         }
 

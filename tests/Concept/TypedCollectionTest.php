@@ -41,10 +41,10 @@ final class TypedCollectionTest extends \Lkrms\Tests\TestCase
         }
         $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e1], $arr ?? null);
 
-        $arr  = $arrNext = $arrPrev = [];
+        $arr = $arrNext = $arrPrev = [];
         $coll = $collection->forEach(
             function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev) {
-                $arr[]     = $item;
+                $arr[] = $item;
                 $arrNext[] = $next;
                 $arrPrev[] = $prev;
             }
@@ -54,10 +54,10 @@ final class TypedCollectionTest extends \Lkrms\Tests\TestCase
         $this->assertSame([$e2, $e1, null], $arrNext);
         $this->assertSame([null, $e0, $e2], $arrPrev);
 
-        $arr  = $arrNext = $arrPrev = [];
+        $arr = $arrNext = $arrPrev = [];
         $coll = $collection->filter(
             function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev): bool {
-                $arr[]     = $item;
+                $arr[] = $item;
                 $arrNext[] = $next;
                 $arrPrev[] = $prev;
 
@@ -69,10 +69,10 @@ final class TypedCollectionTest extends \Lkrms\Tests\TestCase
         $this->assertSame([$e2, $e1, null], $arrNext);
         $this->assertSame([null, $e0, $e2], $arrPrev);
 
-        $arr   = $arrNext = $arrPrev = [];
+        $arr = $arrNext = $arrPrev = [];
         $found = $collection->find(
             function ($item, $next, $prev) use (&$arr, &$arrNext, &$arrPrev): bool {
-                $arr[]     = $item;
+                $arr[] = $item;
                 $arrNext[] = $next;
                 $arrPrev[] = $prev;
 

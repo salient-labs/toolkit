@@ -38,7 +38,10 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
      * its default rules
      *
      */
-    public static function buildSerializeRules(?IContainer $container = null, bool $inherit = true): SyncSerializeRulesBuilder;
+    public static function buildSerializeRules(
+        ?IContainer $container = null,
+        bool $inherit = true
+    ): SyncSerializeRulesBuilder;
 
     /**
      * Get the entity's default serialization rules

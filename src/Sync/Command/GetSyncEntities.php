@@ -143,12 +143,12 @@ final class GetSyncEntities extends CliCommand
     {
         Console::registerStderrTarget(true);
 
-        $class    = $this->Entities[$this->getOptionValue('type')];
+        $class = $this->Entities[$this->getOptionValue('type')];
         $provider = $this->getOptionValue('provider');
-        $id       = $this->getOptionValue('id');
-        $filter   = Convert::queryToData($this->getOptionValue('filter'));
-        $stream   = $this->getOptionValue('stream');
-        $csv      = $this->getOptionValue('csv');
+        $id = $this->getOptionValue('id');
+        $filter = Convert::queryToData($this->getOptionValue('filter'));
+        $stream = $this->getOptionValue('stream');
+        $csv = $this->getOptionValue('csv');
 
         if (!($provider = $provider ?: array_search(
             $this->app()->getName(SyncIntrospector::entityToProvider($class)),
@@ -159,17 +159,19 @@ final class GetSyncEntities extends CliCommand
         /** @var ISyncProvider */
         $provider = $this->app()->get($this->Providers[$provider]);
 
-        Console::info('Retrieving from ' . $provider->name() . ':',
-                      $this->Store->getEntityTypeUri($class) . (is_null($id) ? '' : "/$id"));
+        Console::info(
+            'Retrieving from ' . $provider->name() . ':',
+            $this->Store->getEntityTypeUri($class) . (is_null($id) ? '' : "/$id")
+        );
 
         $this->app()->bindIf(ISyncContext::class, SyncContext::class);
         $context = $this->app()->get(ISyncContext::class);
 
         $result = !is_null($id)
-                      ? $provider->with($class, $context)->get($id, $filter)
-                      : ($stream
-                             ? $provider->with($class, $context)->getList($filter)
-                             : $provider->with($class, $context)->getListA($filter));
+            ? $provider->with($class, $context)->get($id, $filter)
+            : ($stream
+                ? $provider->with($class, $context)->getList($filter)
+                : $provider->with($class, $context)->getListA($filter));
 
         $rules = $class::buildSerializeRules($this->app())->includeMeta(false);
 

@@ -32,8 +32,12 @@ abstract class Command extends CliCommand
     /**
      * @return class-string<object>
      */
-    protected function getFqcnOptionValue(string $value, ?string $namespaceEnvVar = null, ?string &$class = null, ?string &$namespace = null): string
-    {
+    protected function getFqcnOptionValue(
+        string $value,
+        ?string $namespaceEnvVar = null,
+        ?string &$class = null,
+        ?string &$namespace = null
+    ): string {
         $namespace = null;
         if ($namespaceEnvVar) {
             $namespace = Env::get($namespaceEnvVar, null);
@@ -46,7 +50,7 @@ abstract class Command extends CliCommand
         } else {
             $fqcn = ltrim($value, '\\');
         }
-        $class     = Convert::classToBasename($fqcn);
+        $class = Convert::classToBasename($fqcn);
         $namespace = Convert::classToNamespace($fqcn);
 
         return $fqcn;

@@ -134,7 +134,7 @@ trait GetsOAuth2AccessToken
     final protected function _getOAuth2Listener(): HttpServer
     {
         return $this->_OAuth2Listener
-                   ?: ($this->_OAuth2Listener = $this->getOAuth2Listener());
+            ?: ($this->_OAuth2Listener = $this->getOAuth2Listener());
     }
 
     /**
@@ -143,9 +143,11 @@ trait GetsOAuth2AccessToken
     final protected function _getOAuth2RedirectUri(): string
     {
         return $this->_OAuth2RedirectUri
-                   ?: $this->_OAuth2RedirectUri =
-                       sprintf('%s/oauth2/callback',
-                               $this->OAuth2Listener->getBaseUrl());
+            ?: $this->_OAuth2RedirectUri =
+                sprintf(
+                    '%s/oauth2/callback',
+                    $this->OAuth2Listener->getBaseUrl()
+                );
     }
 
     /**
@@ -154,7 +156,7 @@ trait GetsOAuth2AccessToken
     final protected function _getOAuth2Provider(): AbstractProvider
     {
         return $this->_OAuth2Provider
-                   ?: ($this->_OAuth2Provider = $this->getOAuth2Provider());
+            ?: ($this->_OAuth2Provider = $this->getOAuth2Provider());
     }
 
     /**
@@ -163,13 +165,13 @@ trait GetsOAuth2AccessToken
     final protected function _getOAuth2TokenKey(?string $type = null): string
     {
         return ($this->_OAuth2TokenKey
-                    ?: ($this->_OAuth2TokenKey =
-                        implode(':', [
-                            static::class,
-                            'oauth2',
-                            $this->OAuth2Provider->getBaseAuthorizationUrl(),
-                            'token',
-                        ]))) . ($type ? ":$type" : '');
+            ?: ($this->_OAuth2TokenKey =
+                implode(':', [
+                    static::class,
+                    'oauth2',
+                    $this->OAuth2Provider->getBaseAuthorizationUrl(),
+                    'token',
+                ]))) . ($type ? ":$type" : '');
     }
 
     /**
@@ -261,15 +263,17 @@ trait GetsOAuth2AccessToken
     {
         $this->flushAccessToken();
 
-        $url   = $this->OAuth2Provider->getAuthorizationUrl();
+        $url = $this->OAuth2Provider->getAuthorizationUrl();
         $state = $this->OAuth2Provider->getState();
         Cache::set("{$this->OAuth2TokenKey}:state", $state);
 
         Console::debug(
             'Starting HTTP server to receive authorization_code:',
-            sprintf('%s:%d',
-                    $this->OAuth2Listener->Host,
-                    $this->OAuth2Listener->Port)
+            sprintf(
+                '%s:%d',
+                $this->OAuth2Listener->Host,
+                $this->OAuth2Listener->Port
+            )
         );
 
         $this->OAuth2Listener->start();
@@ -328,7 +332,7 @@ trait GetsOAuth2AccessToken
         $_token = $this->OAuth2Provider->getAccessToken($grant, $parameters);
 
         $tokenString = $_token->getToken();
-        $claims      = $this->getValidJsonWebToken($tokenString);
+        $claims = $this->getValidJsonWebToken($tokenString);
 
         $token = new AccessToken(
             $tokenString,

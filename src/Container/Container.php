@@ -249,7 +249,7 @@ class Container extends FluentInterface implements IContainer
                 // the default rule and force Dice to use it for the given
                 // identifier
                 $defaultRule['substitutions'][$key] = $value;
-                $this->Dice                         = $this->Dice->removeRule($key);
+                $this->Dice = $this->Dice->removeRule($key);
             }
         }
         if (!empty($defaultRule)) {
@@ -264,8 +264,13 @@ class Container extends FluentInterface implements IContainer
     /**
      * @return $this
      */
-    private function _bind(string $id, ?string $instanceOf, ?array $constructParams, ?array $shareInstances, array $rule = [])
-    {
+    private function _bind(
+        string $id,
+        ?string $instanceOf,
+        ?array $constructParams,
+        ?array $shareInstances,
+        array $rule = []
+    ) {
         if (!is_null($instanceOf)) {
             $rule['instanceOf'] = $instanceOf;
         }
@@ -283,16 +288,24 @@ class Container extends FluentInterface implements IContainer
     /**
      * @return $this
      */
-    final public function bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
-    {
+    final public function bind(
+        string $id,
+        ?string $instanceOf = null,
+        ?array $constructParams = null,
+        ?array $shareInstances = null
+    ) {
         return $this->_bind($id, $instanceOf, $constructParams, $shareInstances);
     }
 
     /**
      * @return $this
      */
-    final public function bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
-    {
+    final public function bindIf(
+        string $id,
+        ?string $instanceOf = null,
+        ?array $constructParams = null,
+        ?array $shareInstances = null
+    ) {
         if (!$this->Dice->hasRule($id)) {
             return $this->_bind($id, $instanceOf, $constructParams, $shareInstances);
         }
@@ -303,16 +316,24 @@ class Container extends FluentInterface implements IContainer
     /**
      * @return $this
      */
-    final public function singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
-    {
+    final public function singleton(
+        string $id,
+        ?string $instanceOf = null,
+        ?array $constructParams = null,
+        ?array $shareInstances = null
+    ) {
         return $this->_bind($id, $instanceOf, $constructParams, $shareInstances, ['shared' => true]);
     }
 
     /**
      * @return $this
      */
-    final public function singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null)
-    {
+    final public function singletonIf(
+        string $id,
+        ?string $instanceOf = null,
+        ?array $constructParams = null,
+        ?array $shareInstances = null
+    ) {
         if (!$this->Dice->hasRule($id)) {
             return $this->_bind($id, $instanceOf, $constructParams, $shareInstances, ['shared' => true]);
         }
@@ -325,8 +346,12 @@ class Container extends FluentInterface implements IContainer
      * @param string[]|null $exceptServices
      * @return $this
      */
-    final public function service(string $id, ?array $services = null, ?array $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT)
-    {
+    final public function service(
+        string $id,
+        ?array $services = null,
+        ?array $exceptServices = null,
+        int $lifetime = ServiceLifetime::INHERIT
+    ) {
         if (!is_subclass_of($id, IService::class)) {
             throw new UnexpectedValueException($id . ' does not implement ' . IService::class);
         }
@@ -336,8 +361,12 @@ class Container extends FluentInterface implements IContainer
         return $this;
     }
 
-    private function applyService(string $id, ?array $services = null, ?array $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT): void
-    {
+    private function applyService(
+        string $id,
+        ?array $services = null,
+        ?array $exceptServices = null,
+        int $lifetime = ServiceLifetime::INHERIT
+    ): void {
         if ($lifetime & ServiceLifetime::INHERIT) {
             $lifetime = 0;
             if (is_a($id, IServiceSingleton::class, true)) {

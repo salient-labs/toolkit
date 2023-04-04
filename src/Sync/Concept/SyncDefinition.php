@@ -180,17 +180,17 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     public function __construct(
         string $entity,
         ISyncProvider $provider,
-        array $operations                = [],
-        int $conformity                  = ArrayKeyConformity::NONE,
-        int $filterPolicy                = SyncFilterPolicy::THROW_EXCEPTION,
-        array $overrides                 = [],
+        array $operations = [],
+        int $conformity = ArrayKeyConformity::NONE,
+        int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
+        array $overrides = [],
         ?IPipeline $dataToEntityPipeline = null,
         ?IPipeline $entityToDataPipeline = null
     ) {
-        $this->Entity               = $entity;
-        $this->Provider             = $provider;
-        $this->Conformity           = $conformity;
-        $this->FilterPolicy         = $filterPolicy;
+        $this->Entity = $entity;
+        $this->Provider = $provider;
+        $this->Conformity = $conformity;
+        $this->FilterPolicy = $filterPolicy;
         $this->DataToEntityPipeline = $dataToEntityPipeline;
         $this->EntityToDataPipeline = $entityToDataPipeline;
 
@@ -203,13 +203,13 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         // Discard any overrides for invalid operations
         $this->Overrides = array_intersect_key($overrides, array_flip($this->Operations));
 
-        $this->EntityIntrospector   = SyncIntrospector::get($entity);
+        $this->EntityIntrospector = SyncIntrospector::get($entity);
         $this->ProviderIntrospector = SyncIntrospector::get(get_class($provider));
     }
 
     public function __clone()
     {
-        $this->Closures         = [];
+        $this->Closures = [];
         $this->WithoutOverrides = null;
     }
 
@@ -275,8 +275,8 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     final public function getFallbackSyncOperationClosure(int $operation): ?Closure
     {
         if (!($clone = $this->WithoutOverrides)) {
-            $clone                  = clone $this;
-            $clone->Overrides       = [];
+            $clone = clone $this;
+            $clone->Overrides = [];
             $this->WithoutOverrides = $clone;
         }
 
@@ -333,15 +333,17 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
                     if (!$ctx) {
                         /** @var ISyncContext $ctx */
                         [, $ctx] = $arg;
-                        $ctx     = $ctx->withConformity($this->Conformity);
+                        $ctx = $ctx->withConformity($this->Conformity);
                     }
                     if (!$closure) {
-                        $closure = in_array($this->Conformity,
-                                            [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
-                                       ? SyncIntrospector::getService($ctx->container(), $this->Entity)
-                                           ->getCreateSyncEntityFromSignatureClosure(array_keys($data))
-                                       : SyncIntrospector::getService($ctx->container(), $this->Entity)
-                                           ->getCreateSyncEntityFromClosure();
+                        $closure = in_array(
+                            $this->Conformity,
+                            [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE]
+                        )
+                            ? SyncIntrospector::getService($ctx->container(), $this->Entity)
+                                ->getCreateSyncEntityFromSignatureClosure(array_keys($data))
+                            : SyncIntrospector::getService($ctx->container(), $this->Entity)
+                                ->getCreateSyncEntityFromClosure();
                     }
                     /** @var TEntity */
                     $entity = $closure($data, $this->Provider, $ctx);
@@ -378,7 +380,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
 
             case SyncFilterPolicy::RETURN_EMPTY:
                 $returnEmpty = true;
-                $empty       = SyncOperation::isList($operation) ? [] : null;
+                $empty = SyncOperation::isList($operation) ? [] : null;
 
                 return;
 

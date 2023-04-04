@@ -354,50 +354,50 @@ final class Curler implements IReadable, IWritable, HasBuilder
      */
     public function __construct(
         string $baseUrl,
-        ?ICurlerHeaders $headers            = null,
-        ?ICurlerPager $pager                = null,
-        bool $cacheResponse                 = false,
-        bool $cachePostResponse             = false,
-        int $expiry                         = 3600,
-        bool $flush                         = false,
+        ?ICurlerHeaders $headers = null,
+        ?ICurlerPager $pager = null,
+        bool $cacheResponse = false,
+        bool $cachePostResponse = false,
+        int $expiry = 3600,
+        bool $flush = false,
         ?callable $responseCacheKeyCallback = null,
-        bool $throwHttpErrors               = true,
-        bool $followRedirects               = false,
-        ?int $maxRedirects                  = null,
-        bool $handleCookies                 = false,
-        ?string $cookieCacheKey             = null,
-        bool $retryAfterTooManyRequests     = false,
-        int $retryAfterMaxSeconds           = 60,
-        bool $expectJson                    = true,
-        bool $postJson                      = true,
-        bool $preserveKeys                  = false,
-        ?DateFormatter $dateFormatter       = null,
-        ?string $userAgent                  = null,
-        bool $alwaysPaginate                = false,
-        bool $objectAsArray                 = true
+        bool $throwHttpErrors = true,
+        bool $followRedirects = false,
+        ?int $maxRedirects = null,
+        bool $handleCookies = false,
+        ?string $cookieCacheKey = null,
+        bool $retryAfterTooManyRequests = false,
+        int $retryAfterMaxSeconds = 60,
+        bool $expectJson = true,
+        bool $postJson = true,
+        bool $preserveKeys = false,
+        ?DateFormatter $dateFormatter = null,
+        ?string $userAgent = null,
+        bool $alwaysPaginate = false,
+        bool $objectAsArray = true
     ) {
-        $this->BaseUrl                   = $baseUrl;
-        $this->Headers                   = $headers ?: new CurlerHeaders();
-        $this->Pager                     = $pager;
-        $this->CacheResponse             = $cacheResponse;
-        $this->CachePostResponse         = $cachePostResponse;
-        $this->Expiry                    = $expiry;
-        $this->Flush                     = $flush;
-        $this->ResponseCacheKeyCallback  = $responseCacheKeyCallback;
-        $this->ThrowHttpErrors           = $throwHttpErrors;
-        $this->FollowRedirects           = $followRedirects;
-        $this->MaxRedirects              = $maxRedirects;
-        $this->HandleCookies             = $handleCookies;
-        $this->CookieCacheKey            = $cookieCacheKey;
+        $this->BaseUrl = $baseUrl;
+        $this->Headers = $headers ?: new CurlerHeaders();
+        $this->Pager = $pager;
+        $this->CacheResponse = $cacheResponse;
+        $this->CachePostResponse = $cachePostResponse;
+        $this->Expiry = $expiry;
+        $this->Flush = $flush;
+        $this->ResponseCacheKeyCallback = $responseCacheKeyCallback;
+        $this->ThrowHttpErrors = $throwHttpErrors;
+        $this->FollowRedirects = $followRedirects;
+        $this->MaxRedirects = $maxRedirects;
+        $this->HandleCookies = $handleCookies;
+        $this->CookieCacheKey = $cookieCacheKey;
         $this->RetryAfterTooManyRequests = $retryAfterTooManyRequests;
-        $this->RetryAfterMaxSeconds      = $retryAfterMaxSeconds;
-        $this->ExpectJson                = $expectJson;
-        $this->PostJson                  = $postJson;
-        $this->PreserveKeys              = $preserveKeys;
-        $this->DateFormatter             = $dateFormatter;
-        $this->UserAgent                 = $userAgent;
-        $this->AlwaysPaginate            = $alwaysPaginate;
-        $this->ObjectAsArray             = $objectAsArray;
+        $this->RetryAfterMaxSeconds = $retryAfterMaxSeconds;
+        $this->ExpectJson = $expectJson;
+        $this->PostJson = $postJson;
+        $this->PreserveKeys = $preserveKeys;
+        $this->DateFormatter = $dateFormatter;
+        $this->UserAgent = $userAgent;
+        $this->AlwaysPaginate = $alwaysPaginate;
+        $this->ObjectAsArray = $objectAsArray;
     }
 
     /**
@@ -460,7 +460,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      */
     final public function withHeaders(ICurlerHeaders $headers)
     {
-        $clone          = clone $this;
+        $clone = clone $this;
         $clone->Headers = $headers;
 
         return $clone;
@@ -473,7 +473,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      */
     final public function withPager(ICurlerPager $pager)
     {
-        $clone        = clone $this;
+        $clone = clone $this;
         $clone->Pager = $pager;
 
         return $clone;
@@ -524,8 +524,8 @@ final class Curler implements IReadable, IWritable, HasBuilder
     final protected function getEffectiveUrl(): ?string
     {
         return $this->Handle
-                   ? curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)
-                   : null;
+            ? curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)
+            : null;
     }
 
     final protected function close(): void
@@ -608,9 +608,11 @@ final class Curler implements IReadable, IWritable, HasBuilder
         curl_setopt($this->Handle, CURLOPT_RETURNTRANSFER, true);
 
         // Collect response headers
-        curl_setopt($this->Handle,
-                    CURLOPT_HEADERFUNCTION,
-                    fn($curl, $header) => strlen($this->processHeader($header)));
+        curl_setopt(
+            $this->Handle,
+            CURLOPT_HEADERFUNCTION,
+            fn($curl, $header) => strlen($this->processHeader($header))
+        );
 
         if ($this->FollowRedirects) {
             curl_setopt($this->Handle, CURLOPT_FOLLOWLOCATION, true);
@@ -677,19 +679,21 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
     private function clearResponse(): void
     {
-        $this->ResponseHeaders       = new CurlerHeaders();
+        $this->ResponseHeaders = new CurlerHeaders();
         $this->ResponseHeadersByName = null;
-        $this->StatusCode            = null;
-        $this->ReasonPhrase          = null;
-        $this->ResponseBody          = null;
-        $this->CurlInfo              = null;
+        $this->StatusCode = null;
+        $this->ReasonPhrase = null;
+        $this->ResponseBody = null;
+        $this->CurlInfo = null;
     }
 
     private function applyData(array $data): void
     {
-        curl_setopt($this->Handle,
-                    CURLOPT_POSTFIELDS,
-                    ($this->Body = $this->prepareData($data)));
+        curl_setopt(
+            $this->Handle,
+            CURLOPT_POSTFIELDS,
+            ($this->Body = $this->prepareData($data))
+        );
     }
 
     /**
@@ -698,8 +702,10 @@ final class Curler implements IReadable, IWritable, HasBuilder
     private function prepareData(array $data)
     {
         $file = false;
-        array_walk_recursive($data,
-                             function (&$value) use (&$file) { $file = $this->prepareDataValue($value) || $file; });
+        array_walk_recursive(
+            $data,
+            function (&$value) use (&$file) { $file = $this->prepareDataValue($value) || $file; }
+        );
 
         if ($file) {
             return $data;
@@ -711,9 +717,11 @@ final class Curler implements IReadable, IWritable, HasBuilder
         } else {
             $this->setContentType(MimeType::WWW_FORM);
 
-            return Convert::dataToQuery($data,
-                                        $this->PreserveKeys,
-                                        $this->DateFormatter);
+            return Convert::dataToQuery(
+                $data,
+                $this->PreserveKeys,
+                $this->DateFormatter
+            );
         }
     }
 
@@ -734,24 +742,24 @@ final class Curler implements IReadable, IWritable, HasBuilder
     private function getCookieKey(): ?string
     {
         return $this->HandleCookies
-                   ? Convert::sparseToString(':', [self::class, 'cookies', $this->CookieCacheKey])
-                   : null;
+            ? Convert::sparseToString(':', [self::class, 'cookies', $this->CookieCacheKey])
+            : null;
     }
 
     private function getDateFormatter(): DateFormatter
     {
         return $this->DateFormatter
-                   ?: ($this->DateFormatter = new DateFormatter());
+            ?: ($this->DateFormatter = new DateFormatter());
     }
 
     private static function getDefaultUserAgent(): string
     {
         return self::$DefaultUserAgent
-                   ?: (self::$DefaultUserAgent = implode(' ', [
-                       str_replace('/', '~', Composer::getRootPackageName())
-                           . '/' . Composer::getRootPackageVersion(true, true),
-                       'php/' . PHP_VERSION
-                   ]));
+            ?: (self::$DefaultUserAgent = implode(' ', [
+                str_replace('/', '~', Composer::getRootPackageName())
+                    . '/' . Composer::getRootPackageVersion(true, true),
+                'php/' . PHP_VERSION
+            ]));
     }
 
     protected function execute(bool $close = true, int $depth = 0): string
@@ -764,10 +772,10 @@ final class Curler implements IReadable, IWritable, HasBuilder
                 $this->close();
             }
 
-            $this->StatusCode      = $last[0];
-            $this->ReasonPhrase    = $last[1];
+            $this->StatusCode = $last[0];
+            $this->ReasonPhrase = $last[1];
             $this->ResponseHeaders = $last[2];
-            $this->ResponseBody    = $last[3];
+            $this->ResponseBody = $last[3];
 
             $this->ResponseHeadersByName =
                 $this->ResponseHeaders
@@ -790,17 +798,19 @@ final class Curler implements IReadable, IWritable, HasBuilder
                 // Console::debug() should print the details of whatever called
                 // one of Curler's public methods, i.e. not execute(), not
                 // get(), but one frame deeper
-                Console::debug("{$this->Method} "
-                                   . rawurldecode(curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)),
-                               null,
-                               null,
-                               $depth + 3);
+                Console::debug(
+                    "{$this->Method} "
+                        . rawurldecode(curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)),
+                    null,
+                    null,
+                    $depth + 3
+                );
             }
 
             // Execute the request
             curl_multi_add_handle($this->MultiHandle, $this->Handle);
             $active = null;
-            $error  = null;
+            $error = null;
 
             do {
                 if (($status = curl_multi_exec($this->MultiHandle, $active)) !== CURLM_OK) {
@@ -836,8 +846,8 @@ final class Curler implements IReadable, IWritable, HasBuilder
             if (is_null($error)) {
                 // ReasonPhrase is collected by processHeader()
                 $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE);
-                $this->StatusCode            = (int) curl_getinfo($this->Handle, CURLINFO_RESPONSE_CODE);
-                $this->ResponseBody          = curl_multi_getcontent($this->Handle);
+                $this->StatusCode = (int) curl_getinfo($this->Handle, CURLINFO_RESPONSE_CODE);
+                $this->ResponseBody = curl_multi_getcontent($this->Handle);
 
                 if (Env::debug()) {
                     $this->CurlInfo = curl_getinfo($this->Handle);
@@ -853,10 +863,12 @@ final class Curler implements IReadable, IWritable, HasBuilder
                     ($this->RetryAfterMaxSeconds === 0 || $after <= $this->RetryAfterMaxSeconds)) {
                 // Sleep for at least one second
                 $after = max(1, $after);
-                Console::debug("Received HTTP error 429 Too Many Requests, sleeping for {$after}s",
-                               null,
-                               null,
-                               $depth + 3);
+                Console::debug(
+                    "Received HTTP error 429 Too Many Requests, sleeping for {$after}s",
+                    null,
+                    null,
+                    $depth + 3
+                );
                 sleep($after);
 
                 $this->clearResponse();
@@ -875,9 +887,11 @@ final class Curler implements IReadable, IWritable, HasBuilder
         }
 
         if ($cacheKey ?? null) {
-            Cache::set($cacheKey,
-                       [$this->StatusCode, $this->ReasonPhrase, $this->ResponseHeaders, $this->ResponseBody],
-                       $this->Expiry);
+            Cache::set(
+                $cacheKey,
+                [$this->StatusCode, $this->ReasonPhrase, $this->ResponseHeaders, $this->ResponseBody],
+                $this->Expiry
+            );
         }
 
         return $this->ResponseBody;
@@ -891,13 +905,13 @@ final class Curler implements IReadable, IWritable, HasBuilder
                 $this->CachePostResponse &&
                 !is_array($this->Body))) ||
             !($url = $this->getEffectiveUrl()
-                         ?: $this->BaseUrl . $this->QueryString)) {
+                ?: $this->BaseUrl . $this->QueryString)) {
             return null;
         }
 
         $key = $this->ResponseCacheKeyCallback
-                   ? ($this->ResponseCacheKeyCallback)($this)
-                   : $this->Headers->getPublicHeaders();
+            ? ($this->ResponseCacheKeyCallback)($this)
+            : $this->Headers->getPublicHeaders();
         if ($this->Method === HttpRequestMethod::POST) {
             $key[] = $this->Body;
         }
@@ -1167,7 +1181,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     {
         $this->initialise(HttpRequestMethod::GET, $query);
         $entities = [];
-        $nextUrl  = null;
+        $nextUrl = null;
 
         do {
             if ($nextUrl) {
@@ -1177,7 +1191,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
             }
 
             // Collect data from response and move on to next page
-            $result   = json_decode($this->execute(false), true);
+            $result = json_decode($this->execute(false), true);
             $entities = array_merge($entities, $result);
 
             if (preg_match('/<([^>]+)>;\s*rel=([\'"])next\2/', $this->ResponseHeadersByName['link'] ?? '', $matches)) {
@@ -1201,7 +1215,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     {
         $this->initialise(HttpRequestMethod::GET, $query);
         $entities = [];
-        $nextUrl  = null;
+        $nextUrl = null;
 
         do {
             if ($nextUrl) {
@@ -1210,9 +1224,9 @@ final class Curler implements IReadable, IWritable, HasBuilder
             }
 
             // Collect data from response and move on to next page
-            $result   = json_decode($this->execute(false), true);
+            $result = json_decode($this->execute(false), true);
             $entities = array_merge($entities, $result[$entityName]);
-            $nextUrl  = $result['links']['next'] ?? null;
+            $nextUrl = $result['links']['next'] ?? null;
         } while ($nextUrl);
 
         $this->close();
@@ -1241,12 +1255,14 @@ final class Curler implements IReadable, IWritable, HasBuilder
     final public static function walkGraphQL(array &$data, callable $filter = null)
     {
         if (Test::isListArray($data, true)) {
-            array_walk($data,
-                       function (&$data) use ($filter) {
-                           if (is_array($data)) {
-                               self::walkGraphQL($data, $filter);
-                           }
-                       });
+            array_walk(
+                $data,
+                function (&$data) use ($filter) {
+                    if (is_array($data)) {
+                        self::walkGraphQL($data, $filter);
+                    }
+                }
+            );
 
             if ($filter) {
                 $data = array_filter($data, $filter);
@@ -1270,15 +1286,21 @@ final class Curler implements IReadable, IWritable, HasBuilder
         }
     }
 
-    final public function getByGraphQL(string $query, array $variables = null, string $entityPath = null, string $pagePath = null, callable $filter = null, int $requestLimit = null): array
-    {
+    final public function getByGraphQL(
+        string $query,
+        array $variables = null,
+        string $entityPath = null,
+        string $pagePath = null,
+        callable $filter = null,
+        int $requestLimit = null
+    ): array {
         if (!is_null($pagePath) && !(($variables['first'] ?? null) && array_key_exists('after', $variables))) {
             throw new UnexpectedValueException('$first and $after variables are required for pagination');
         }
 
-        $entities  = [];
+        $entities = [];
         $nextQuery = [
-            'query'     => $query,
+            'query' => $query,
             'variables' => $variables,
         ];
 
@@ -1298,7 +1320,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
             }
 
             $nextQuery = null;
-            $objects   = [];
+            $objects = [];
             self::collateNested($result['data'], is_null($entityPath) ? null : explode('.', $entityPath), $objects);
 
             self::walkGraphQL($objects, $filter);
@@ -1317,8 +1339,8 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
                 if ($page[0]['pageInfo']['hasNextPage']) {
                     $variables['after'] = $page[0]['pageInfo']['endCursor'];
-                    $nextQuery          = [
-                        'query'     => $query,
+                    $nextQuery = [
+                        'query' => $query,
                         'variables' => $variables,
                     ];
                 }

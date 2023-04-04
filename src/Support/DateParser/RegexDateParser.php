@@ -30,7 +30,7 @@ final class RegexDateParser implements IDateParser
      */
     public function __construct(string $pattern, callable $callback)
     {
-        $this->Pattern  = $pattern;
+        $this->Pattern = $pattern;
         $this->Callback = $callback;
     }
 
@@ -50,9 +50,11 @@ final class RegexDateParser implements IDateParser
             function (array $matches, ?DateTimeZone $timezone): DateTimeImmutable {
                 $date = new DateTimeImmutable(
                     // PHP 7.4 requires 6 digits after the decimal point
-                    sprintf('@%s.%s000',
-                            $matches['seconds'],
-                            $matches['milliseconds'])
+                    sprintf(
+                        '@%s.%s000',
+                        $matches['seconds'],
+                        $matches['milliseconds']
+                    )
                 );
                 if (!$timezone && ($matches['offset'] ?? null)) {
                     $timezone = new DateTimeZone($matches['offset']);

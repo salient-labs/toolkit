@@ -28,17 +28,17 @@ final class TrashStore extends SqliteStore
         $db = $this->db();
         $db->exec(
             <<<SQL
-            CREATE TABLE IF NOT EXISTS
-              _trash_item (
-                item_type TEXT NOT NULL,
-                item_key TEXT,
-                item_json TEXT NOT NULL,
-                deleted_from TEXT,
-                deleted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                created_at DATETIME,
-                modified_at DATETIME
-              );
-            SQL
+CREATE TABLE IF NOT EXISTS
+  _trash_item (
+    item_type TEXT NOT NULL,
+    item_key TEXT,
+    item_json TEXT NOT NULL,
+    deleted_from TEXT,
+    deleted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME,
+    modified_at DATETIME
+  );
+SQL
         );
 
         return $this;
@@ -59,33 +59,39 @@ final class TrashStore extends SqliteStore
      * last modification time (before it was deleted, preferably).
      * @return $this
      */
-    public function put(?string $key, $object, ?string $type = null, ?string $deletedFrom = null, ?int $createdAt = null, ?int $modifiedAt = null)
-    {
+    public function put(
+        ?string $key,
+        $object,
+        ?string $type = null,
+        ?string $deletedFrom = null,
+        ?int $createdAt = null,
+        ?int $modifiedAt = null
+    ) {
         if (!$type && !is_object($object)) {
             throw new UnexpectedValueException('When argument #3 ($type) is null, argument #2 ($object) must be an object');
         }
 
-        $db  = $this->db();
+        $db = $this->db();
         $sql = <<<SQL
-            INSERT INTO
-              _trash_item (
-                item_type,
-                item_key,
-                item_json,
-                deleted_from,
-                created_at,
-                modified_at
-              )
-            VALUES
-              (
-                :item_type,
-                :item_key,
-                :item_json,
-                :deleted_from,
-                DATETIME(:created_at, 'unixepoch'),
-                DATETIME(:modified_at, 'unixepoch')
-              )
-            SQL;
+INSERT INTO
+  _trash_item (
+    item_type,
+    item_key,
+    item_json,
+    deleted_from,
+    created_at,
+    modified_at
+  )
+VALUES
+  (
+    :item_type,
+    :item_key,
+    :item_json,
+    :deleted_from,
+    DATETIME(:created_at, 'unixepoch'),
+    DATETIME(:modified_at, 'unixepoch')
+  )
+SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':item_type', $type ?: get_class($object), SQLITE3_TEXT);
         $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
@@ -109,9 +115,9 @@ final class TrashStore extends SqliteStore
         $db = $this->db();
         $db->exec(
             <<<SQL
-            DELETE FROM
-              _trash_item
-            SQL
+DELETE FROM
+  _trash_item
+SQL
         );
 
         return $this;

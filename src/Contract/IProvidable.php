@@ -100,5 +100,10 @@ interface IProvidable extends ReceivesService, ReturnsService
      * @param iterable<array> $dataList
      * @return iterable<static>
      */
-    public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProviderContext $context = null): iterable;
+    public static function provideList(
+        iterable $dataList,
+        IProvider $provider,
+        int $conformity = ArrayKeyConformity::NONE,
+        ?IProviderContext $context = null
+    ): iterable;
 }

@@ -74,7 +74,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
                     ...array_map(
                         fn(ISyncEntity $entity): array =>
                             [Convert::toSnakeCase(Convert::classToBasename($entity->service())) =>
-                                 [$entity->id()]],
+                                [$entity->id()]],
                         $args
                     )
                 )

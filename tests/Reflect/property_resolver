@@ -54,7 +54,7 @@ class B extends A implements IConstructible
 
     protected function _SetData($value)
     {
-        $this->Data         = $value;
+        $this->Data = $value;
         $this->DataModified = time();
     }
 

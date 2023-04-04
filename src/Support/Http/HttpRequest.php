@@ -58,11 +58,11 @@ final class HttpRequest implements IReadable
         ?string $body,
         ?string $client = null
     ) {
-        $this->Method          = $method;
-        $this->Target          = $target;
+        $this->Method = $method;
+        $this->Target = $target;
         $this->ProtocolVersion = $protocolVersion;
-        $this->Headers         = $headers;
-        $this->Body            = $body;
-        $this->Client          = $client;
+        $this->Headers = $headers;
+        $this->Body = $body;
+        $this->Client = $client;
     }
 }

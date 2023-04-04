@@ -91,7 +91,7 @@ final class TokenExtractor
                         throw new UnexpectedValueException('T_AS not followed by T_STRING');
                     }
                     $map[$token[1]] = $current;
-                    $pending        = false;
+                    $pending = false;
                     break;
             }
         } while (true);

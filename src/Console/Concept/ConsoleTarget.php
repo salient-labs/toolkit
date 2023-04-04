@@ -55,7 +55,8 @@ abstract class ConsoleTarget
             $level,
             $this->Prefix
                 ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
-                : $message, $context
+                : $message,
+            $context
         );
     }
 
@@ -63,8 +64,8 @@ abstract class ConsoleTarget
     {
         if ($this->MessageFormatting !== $messageFormatting) {
             $this->MessageFormatting = $messageFormatting;
-            $this->MessageFormats    = [];
-            $this->Formatter         = null;
+            $this->MessageFormats = [];
+            $this->Formatter = null;
         }
     }
 
@@ -173,6 +174,6 @@ abstract class ConsoleTarget
     final public function getFormatter(): ConsoleFormatter
     {
         return $this->Formatter
-                   ?: ($this->Formatter = new ConsoleFormatter($this));
+            ?: ($this->Formatter = new ConsoleFormatter($this));
     }
 }

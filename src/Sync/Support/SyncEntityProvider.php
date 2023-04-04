@@ -67,8 +67,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * @param TProvider $provider
      * @param ISyncContext|null $context
      */
-    public function __construct(IContainer $container, string $entity, ISyncProvider $provider, ISyncDefinition $definition, ?ISyncContext $context = null)
-    {
+    public function __construct(
+        IContainer $container,
+        string $entity,
+        ISyncProvider $provider,
+        ISyncDefinition $definition,
+        ?ISyncContext $context = null
+    ) {
         if (!is_a($entity, ISyncEntity::class, true)) {
             throw new UnexpectedValueException("Does not implement ISyncEntity: $entity");
         }
@@ -78,10 +83,10 @@ final class SyncEntityProvider implements ISyncEntityProvider
             throw new UnexpectedValueException(get_class($provider) . ' does not implement ' . $entityProvider);
         }
 
-        $this->Entity     = $entity;
-        $this->Provider   = $provider;
+        $this->Entity = $entity;
+        $this->Provider = $provider;
         $this->Definition = $definition;
-        $this->Context    = $context ?: $container->get(SyncContext::class);
+        $this->Context = $context ?: $container->get(SyncContext::class);
     }
 
     /**
@@ -440,8 +445,12 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * algorithm. Either {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}
      * or {@see SyncEntityFuzzyResolver::ALGORITHM_SIMILAR_TEXT}.
      */
-    public function getFuzzyResolver(string $nameProperty, ?string $weightProperty, ?int $algorithm = null, ?float $uncertaintyThreshold = null): SyncEntityFuzzyResolver
-    {
+    public function getFuzzyResolver(
+        string $nameProperty,
+        ?string $weightProperty,
+        ?int $algorithm = null,
+        ?float $uncertaintyThreshold = null
+    ): SyncEntityFuzzyResolver {
         return new SyncEntityFuzzyResolver($this, $nameProperty, $weightProperty, $algorithm, $uncertaintyThreshold);
     }
 }

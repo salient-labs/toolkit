@@ -80,14 +80,14 @@ abstract class DbSyncProvider extends SyncProvider
         $def = $this->getDbDefinition($entity, $builder);
 
         return $def
-                   ? DbSyncDefinitionBuilder::resolve($def)
-                   : $builder->go();
+            ? DbSyncDefinitionBuilder::resolve($def)
+            : $builder->go();
     }
 
     final public function getDbConnector(): DbConnector
     {
         return $this->DbConnector
-                   ?: ($this->DbConnector = $this->getNewDbConnector());
+            ?: ($this->DbConnector = $this->getNewDbConnector());
     }
 
     final public function getDb(): ADOConnection

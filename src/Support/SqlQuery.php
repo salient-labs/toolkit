@@ -17,7 +17,7 @@ final class SqlQuery extends FluentInterface implements IReadable
     use TReadable;
 
     public const AND = 'AND';
-    public const OR  = 'OR';
+    public const OR = 'OR';
 
     /**
      * A list of optionally nested WHERE clauses
@@ -90,7 +90,7 @@ final class SqlQuery extends FluentInterface implements IReadable
             throw new UnexpectedValueException("Parameter already added: $name");
         }
 
-        $placeholder         = ($this->ParamCallback)($name);
+        $placeholder = ($this->ParamCallback)($name);
         $this->Values[$name] = $value;
 
         return $this;

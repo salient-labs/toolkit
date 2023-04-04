@@ -48,17 +48,17 @@ final class HttpResponse implements IReadable
 
     public function __construct(
         ?string $body,
-        int $statusCode          = 200,
-        ?string $reasonPhrase    = null,
+        int $statusCode = 200,
+        ?string $reasonPhrase = null,
         ?ICurlerHeaders $headers = null,
-        string $protocolVersion  = '1.1'
+        string $protocolVersion = '1.1'
     ) {
         $headers = $headers ?: new CurlerHeaders();
 
-        $this->Body            = $body;
-        $this->StatusCode      = $statusCode;
-        $this->ReasonPhrase    = $reasonPhrase;
-        $this->Headers         = $headers->setHeader('Content-Length', (string) strlen($this->Body));
+        $this->Body = $body;
+        $this->StatusCode = $statusCode;
+        $this->ReasonPhrase = $reasonPhrase;
+        $this->Headers = $headers->setHeader('Content-Length', (string) strlen($this->Body));
         $this->ProtocolVersion = $protocolVersion;
     }
 

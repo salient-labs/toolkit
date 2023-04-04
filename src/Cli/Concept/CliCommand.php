@@ -265,7 +265,7 @@ abstract class CliCommand implements ReturnsContainer
         }
 
         $_options = $this->getOptionList();
-        $options  = [];
+        $options = [];
 
         foreach ($_options as $option) {
             $this->addOption(CliOption::resolve($option), $options);
@@ -273,16 +273,16 @@ abstract class CliCommand implements ReturnsContainer
 
         if (!array_key_exists('help', $this->OptionsByName)) {
             $this->addOption(CliOption::build()
-                                 ->long('help')
-                                 ->short(array_key_exists('h', $this->OptionsByName) ? null : 'h')
-                                 ->go(), $options, true);
+                ->long('help')
+                ->short(array_key_exists('h', $this->OptionsByName) ? null : 'h')
+                ->go(), $options, true);
         }
 
         if (!array_key_exists('version', $this->OptionsByName)) {
             $this->addOption(CliOption::build()
-                                 ->long('version')
-                                 ->short(array_key_exists('v', $this->OptionsByName) ? null : 'v')
-                                 ->go(), $options, true);
+                ->long('version')
+                ->short(array_key_exists('v', $this->OptionsByName) ? null : 'v')
+                ->go(), $options, true);
         }
 
         $this->Options = $options;
@@ -329,10 +329,10 @@ abstract class CliCommand implements ReturnsContainer
         //     $required   = ['--from SOURCE'];
         //     $positional = ['DEST'];
         //
-        $shortFlag  = [];
-        $longFlag   = [];
-        $optional   = [];
-        $required   = [];
+        $shortFlag = [];
+        $longFlag = [];
+        $optional = [];
+        $required = [];
         $positional = [];
 
         foreach ($this->getOptions() as $option) {
@@ -351,7 +351,7 @@ abstract class CliCommand implements ReturnsContainer
 
             if ($option->IsFlag) {
                 if ($short) {
-                    $line[]      = "-{$short}";
+                    $line[] = "-{$short}";
                     $shortFlag[] = $short;
                 }
                 if ($long) {
@@ -363,19 +363,19 @@ abstract class CliCommand implements ReturnsContainer
             } else {
                 $valueName = $option->getFriendlyValueName();
                 if ($option->IsPositional) {
-                    $list         = $option->MultipleAllowed ? '...' : '';
-                    $line[]       = $valueName . $list;
+                    $list = $option->MultipleAllowed ? '...' : '';
+                    $line[] = $valueName . $list;
                     $positional[] = $option->Required ? "$valueName$list" : "[$valueName$list]";
                 } else {
                     if ($option->MultipleAllowed && $option->Delimiter) {
                         $list = "{$option->Delimiter}...";
                     }
                     if ($short) {
-                        $line[]  = "-{$short}";
+                        $line[] = "-{$short}";
                         $value[] = $option->ValueRequired ? " $valueName$list" : "[$valueName$list]";
                     }
                     if ($long) {
-                        $line[]  = "--{$long}";
+                        $line[] = "--{$long}";
                         $value[] = $option->ValueRequired ? " $valueName$list" : "[=$valueName$list]";
                     }
                     if ($option->Required) {
@@ -412,8 +412,8 @@ abstract class CliCommand implements ReturnsContainer
                     '__Default:__ ___%s___',
                     implode('___,___', (array) $option->DefaultValue)
                 ) . ($option->KeepDefault || $option->KeepEnv
-                         ? '  ~~(command-line values are appended)~~'
-                         : '');
+                    ? '  ~~(command-line values are appended)~~'
+                    : '');
             }
             if ($option->AllowedValues) {
                 if (mb_strlen(implode(' ', $option->AllowedValues)) < 67) {
@@ -421,16 +421,18 @@ abstract class CliCommand implements ReturnsContainer
                         '__Values:__ _' . implode('_ _', $option->AllowedValues) . '_';
                 } else {
                     $optionLines[] = '__Values:__';
-                    array_push($optionLines,
-                               ...array_map(
-                                   fn(string $v): string => sprintf('- _%s_', $v),
-                                   $option->AllowedValues
-                               ));
+                    array_push(
+                        $optionLines,
+                        ...array_map(
+                            fn(string $v): string => sprintf('- _%s_', $v),
+                            $option->AllowedValues
+                        )
+                    );
                 }
             }
             $optionLines = $optionLines
-                               ? "\n  " . implode("\n  ", $optionLines)
-                               : '';
+                ? "\n  " . implode("\n  ", $optionLines)
+                : '';
 
             if ($description = trim($option->Description)) {
                 $options .= "\n  " . $this->prepareUsage($description, '  ');
@@ -464,9 +466,9 @@ abstract class CliCommand implements ReturnsContainer
         }
 
         $sections = [
-            'NAME'        => '__' . $name . '__ - ' . $this->getShortDescription(),
-            'SYNOPSIS'    => '__' . $name . '__' . $synopsis,
-            'OPTIONS'     => trim($options),
+            'NAME' => '__' . $name . '__ - ' . $this->getShortDescription(),
+            'SYNOPSIS' => '__' . $name . '__' . $synopsis,
+            'OPTIONS' => trim($options),
             'DESCRIPTION' => $this->prepareUsage($this->getLongDescription()),
         ] + $sections;
 
@@ -507,23 +509,23 @@ abstract class CliCommand implements ReturnsContainer
         }
 
         $this->loadOptions();
-        $this->OptionErrors      = [];
+        $this->OptionErrors = [];
         $this->NextArgumentIndex = null;
-        $this->IsHelp            = false;
-        $this->IsVersion         = false;
+        $this->IsHelp = false;
+        $this->IsVersion = false;
 
-        $args   = $this->Arguments;
+        $args = $this->Arguments;
         $merged = [];
 
         for ($i = 0; $i < count($args); $i++) {
             list($arg, $short, $matches) = [$args[$i], false, null];
 
             if (preg_match('/^-([0-9a-z])(.*)/i', $arg, $matches)) {
-                $name  = $matches[1];
+                $name = $matches[1];
                 $value = $matches[2] ?: null;
                 $short = true;
             } elseif (preg_match('/^--([0-9a-z_-]+)(=(.*))?$/i', $arg, $matches)) {
-                $name  = $matches[1];
+                $name = $matches[1];
                 $value = ($matches[2] ?? null) ? $matches[3] : null;
             } else {
                 if ($arg == '--') {
@@ -537,7 +539,7 @@ abstract class CliCommand implements ReturnsContainer
                 break;
             }
 
-            $option    = $this->OptionsByName[$name] ?? null;
+            $option = $this->OptionsByName[$name] ?? null;
             $isDefault = false;
 
             if (is_null($option) || $option->IsPositional) {
@@ -555,7 +557,7 @@ abstract class CliCommand implements ReturnsContainer
             } elseif (!$option->ValueRequired) {
                 // Don't use the default value if `--option=` was given
                 if (is_null($value) && !is_null($option->DefaultValue)) {
-                    $value     = $option->DefaultValue;
+                    $value = $option->DefaultValue;
                     $isDefault = true;
                 }
             } elseif (is_null($value)) {
@@ -703,7 +705,7 @@ abstract class CliCommand implements ReturnsContainer
 
         $values = [];
         foreach ($this->Options as $option) {
-            $name          = $option->Long ?: $option->Short;
+            $name = $option->Long ?: $option->Short;
             $values[$name] = $option->Value;
         }
 
@@ -761,8 +763,8 @@ abstract class CliCommand implements ReturnsContainer
         return $option->IsPositional
             ? $value
             : ($option->Long
-                   ? "--{$option->Long}" . (is_null($value) ? '' : "=$value")
-                   : "-{$option->Short}" . $value);
+                ? "--{$option->Long}" . (is_null($value) ? '' : "=$value")
+                : "-{$option->Short}" . $value);
     }
 
     /**
@@ -788,8 +790,8 @@ abstract class CliCommand implements ReturnsContainer
             }
 
             $arg = $name
-                       ? $this->getEffectiveArgument($option, $shellEscape, $values[$name])
-                       : $this->getEffectiveArgument($option, $shellEscape);
+                ? $this->getEffectiveArgument($option, $shellEscape, $values[$name])
+                : $this->getEffectiveArgument($option, $shellEscape);
 
             if ($option->IsPositional) {
                 $positional[] = $arg;
@@ -817,9 +819,9 @@ abstract class CliCommand implements ReturnsContainer
      */
     final public function __invoke(array $args): int
     {
-        $this->Arguments    = $args;
+        $this->Arguments = $args;
         $this->OptionValues = null;
-        $this->ExitStatus   = 0;
+        $this->ExitStatus = 0;
         $this->Runs++;
 
         $this->loadOptionValues();

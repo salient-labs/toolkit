@@ -39,11 +39,15 @@ final class ComposerTest extends \Lkrms\Tests\TestCase
 
     public function testGetPackageVersion()
     {
-        $this->assertSame(InstalledVersions::getPrettyVersion('phpstan/phpstan'),
-                          Composer::getPackageVersion('phpstan/phpstan', true));
-        $this->assertSame(InstalledVersions::getPrettyVersion('phpstan/phpstan')
-                              . '-' . substr(InstalledVersions::getReference('phpstan/phpstan'), 0, 8),
-                          Composer::getPackageVersion('phpstan/phpstan', true, true));
+        $this->assertSame(
+            InstalledVersions::getPrettyVersion('phpstan/phpstan'),
+            Composer::getPackageVersion('phpstan/phpstan', true)
+        );
+        $this->assertSame(
+            InstalledVersions::getPrettyVersion('phpstan/phpstan')
+                . '-' . substr(InstalledVersions::getReference('phpstan/phpstan'), 0, 8),
+            Composer::getPackageVersion('phpstan/phpstan', true, true)
+        );
         $this->assertNull(Composer::getPackageVersion('composer/composer'));
     }
 

@@ -31,12 +31,12 @@ trait TCollection
      */
     final public function forEach(callable $callback)
     {
-        $items   = $this->_Items;
+        $items = $this->_Items;
         $items[] = null;
 
         $prev = null;
         $item = null;
-        $i    = -1;
+        $i = -1;
         foreach ($items as $next) {
             if ($i++ > -1) {
                 $callback($item, $next, $prev);
@@ -58,15 +58,15 @@ trait TCollection
      */
     final public function filter(callable $callback)
     {
-        $clone         = clone $this;
+        $clone = clone $this;
         $clone->_Items = [];
 
-        $items   = $this->_Items;
+        $items = $this->_Items;
         $items[] = null;
 
         $prev = null;
         $item = null;
-        $i    = -1;
+        $i = -1;
         foreach ($items as $next) {
             if ($i++ > -1) {
                 if ($callback($item, $next, $prev)) {
@@ -90,12 +90,12 @@ trait TCollection
      */
     final public function find(callable $callback)
     {
-        $items   = $this->_Items;
+        $items = $this->_Items;
         $items[] = null;
 
         $prev = null;
         $item = null;
-        $i    = -1;
+        $i = -1;
         foreach ($items as $next) {
             if ($i++ > -1) {
                 if ($callback($item, $next, $prev)) {
@@ -114,7 +114,7 @@ trait TCollection
      */
     final public function slice(int $offset, ?int $length = null, bool $preserveKeys = true)
     {
-        $clone         = clone $this;
+        $clone = clone $this;
         $clone->_Items = array_slice($clone->_Items, $offset, $length, $preserveKeys);
         if (!$preserveKeys) {
             $clone->_Items = array_values($clone->_Items);
@@ -159,8 +159,8 @@ trait TCollection
     final public function toArray(bool $preserveKeys = true): array
     {
         return $preserveKeys
-                   ? $this->_Items
-                   : array_values($this->_Items);
+            ? $this->_Items
+            : array_values($this->_Items);
     }
 
     /**
@@ -195,7 +195,7 @@ trait TCollection
         $keys = array_keys($copy);
         if ($n < 0) {
             $keys = array_reverse($keys);
-            $n    = -$n;
+            $n = -$n;
         }
         $key = $keys[$n - 1] ?? null;
         if (is_null($key)) {
@@ -213,8 +213,8 @@ trait TCollection
         $item = array_shift($this->_Items);
 
         return is_null($item)
-                   ? false
-                   : $item;
+            ? false
+            : $item;
     }
 
     // Implementation of `Iterator`:

@@ -16,9 +16,9 @@ Err::load();
 
 $data = [
     'user_id' => 7654,
-    'fields'  => [
-        'surname'   => 'Williams',
-        'email'     => 'JWilliams432@gmail.com',
+    'fields' => [
+        'surname' => 'Williams',
+        'email' => 'JWilliams432@gmail.com',
         'notify_by' => [
             'email',
             'sms',
@@ -29,9 +29,9 @@ $data = [
 
 $queries = [
     'no_force_numeric_keys' => Convert::dataToQuery($data),
-    'force_numeric_keys'    => Convert::dataToQuery($data, true),
-    'date_format_rss'       => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::RSS)),
-    'date_format_utc'       => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::ATOM, 'UTC')),
+    'force_numeric_keys' => Convert::dataToQuery($data, true),
+    'date_format_rss' => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::RSS)),
+    'date_format_utc' => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::ATOM, 'UTC')),
 ];
 
 $decoded = array_map(fn($q) => urldecode($q), $queries);
@@ -84,9 +84,9 @@ $normalise = [
     'it',
 ];
 var_dump(array_combine($normalise, array_map(
-             fn($i) => Convert::toNormal($i),
-             $normalise
-         )));
+    fn($i) => Convert::toNormal($i),
+    $normalise
+)));
 
 $list = [
     ['id' => 38, 'name' => 'Amir'],
@@ -118,9 +118,9 @@ $nouns = [
 ];
 
 print_r(array_combine($nouns, array_map(
-            fn($i) => Convert::nounToPlural($i),
-            $nouns
-        )));
+    fn($i) => Convert::nounToPlural($i),
+    $nouns
+)));
 
 $paths = [
     'file',
@@ -215,47 +215,47 @@ print_r([
 ]);
 
 $text = <<<EOF
-    - Before lists
+- Before lists
 
-    Section:
-    - d
-    Other section:
-    - <not a letter>
-    Without a subsequent list
-    Section:
-    - a
-    - b
-    Section:
-    - c
-    - b
-    - d
-    EOF;
+Section:
+- d
+Other section:
+- <not a letter>
+Without a subsequent list
+Section:
+- a
+- b
+Section:
+- c
+- b
+- d
+EOF;
 
 $mbText = <<<EOF
-    - Before lists
-    📍 Section:
-    - list item
-    - another
+- Before lists
+📍 Section:
+- list item
+- another
 
-    Other section:
-    - item i
-    - item ii
+Other section:
+- item i
+- item ii
 
-    - Standalone
+- Standalone
 
-    Also standalone
+Also standalone
 
-    Section:
-    - another
-    - and another
-    EOF;
+Section:
+- another
+- and another
+EOF;
 
 print_r([
-    'from'        => $text,
-    'to'          => Convert::linesToLists($text),
-    'markdown'    => Convert::linesToLists($text, "\n\n"),
-    'nested'      => Convert::linesToLists($text, "\n\n", '-'),
-    'mb_from'     => $mbText,
-    'mb_to'       => Convert::linesToLists($mbText, "\n", '📍'),
+    'from' => $text,
+    'to' => Convert::linesToLists($text),
+    'markdown' => Convert::linesToLists($text, "\n\n"),
+    'nested' => Convert::linesToLists($text, "\n\n", '-'),
+    'mb_from' => $mbText,
+    'mb_to' => Convert::linesToLists($mbText, "\n", '📍'),
     'mb_markdown' => Convert::linesToLists($mbText, "\n\n", '📍'),
 ]);

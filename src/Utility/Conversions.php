@@ -63,8 +63,8 @@ final class Conversions
     public function toArray($value, bool $emptyIfNull = false): array
     {
         return is_array($value)
-                   ? $value
-                   : ($emptyIfNull && is_null($value) ? [] : [$value]);
+            ? $value
+            : ($emptyIfNull && is_null($value) ? [] : [$value]);
     }
 
     /**
@@ -76,8 +76,8 @@ final class Conversions
     public function toList($value, bool $emptyIfNull = false): array
     {
         return Test::isListArray($value, true)
-                   ? $value
-                   : ($emptyIfNull && is_null($value) ? [] : [$value]);
+            ? $value
+            : ($emptyIfNull && is_null($value) ? [] : [$value]);
     }
 
     /**
@@ -187,7 +187,7 @@ final class Conversions
             if ($seen[$value] ?? null) {
                 continue;
             }
-            $list[]       = $value;
+            $list[] = $value;
             $seen[$value] = true;
         }
 
@@ -254,7 +254,7 @@ final class Conversions
      */
     public function arraySpliceAtKey(array &$array, $key, ?int $length = null, array $replacement = []): array
     {
-        $keys   = array_keys($array);
+        $keys = array_keys($array);
         $offset = array_flip($keys)[$key] ?? null;
         if (is_null($offset)) {
             throw new UnexpectedValueException("Array key not found: $key");
@@ -263,10 +263,10 @@ final class Conversions
         if (is_null($length)) {
             $length = count($array);
         }
-        $values  = array_values($array);
-        $_keys   = array_splice($keys, $offset, $length, array_keys($replacement));
+        $values = array_values($array);
+        $_keys = array_splice($keys, $offset, $length, array_keys($replacement));
         $_values = array_splice($values, $offset, $length, array_values($replacement));
-        $array   = array_combine($keys, $values);
+        $array = array_combine($keys, $values);
 
         return array_combine($_keys, $_values);
     }
@@ -298,7 +298,7 @@ final class Conversions
             $value = new DateInterval($value);
         }
         $then = new DateTimeImmutable();
-        $now  = $then->add($value);
+        $now = $then->add($value);
 
         return $now->getTimestamp() - $then->getTimestamp();
     }
@@ -310,8 +310,8 @@ final class Conversions
     public function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
     {
         return $date instanceof DateTimeImmutable
-                   ? $date
-                   : DateTimeImmutable::createFromMutable($date);
+            ? $date
+            : DateTimeImmutable::createFromMutable($date);
     }
 
     /**
@@ -393,7 +393,7 @@ final class Conversions
         $path = basename($path);
         if ($extLimit) {
             $range = $extLimit > 1 ? "{1,$extLimit}" : ($extLimit < 0 ? '+' : '');
-            $path  = preg_replace("/(?<=.)(?<!^\\.|^\\.\\.)(\\.[^.\\s]+){$range}\$/", '', $path);
+            $path = preg_replace("/(?<=.)(?<!^\\.|^\\.\\.)(\\.[^.\\s]+){$range}\$/", '', $path);
         }
 
         return $path;
@@ -435,7 +435,7 @@ final class Conversions
         if ($url['scheme'] ?? null) {
             return $embeddedUrl;
         }
-        $base          = $this->parseUrl($baseUrl);
+        $base = $this->parseUrl($baseUrl);
         // Step 2c
         $url['scheme'] = $base['scheme'] ?? null;
         // Step 3
@@ -463,9 +463,9 @@ final class Conversions
         }
         $base['path'] = $base['path'] ?? '';
         // Step 6
-        $path         = substr($base['path'], 0, strrpos("/{$base['path']}", '/')) . $path;
+        $path = substr($base['path'], 0, strrpos("/{$base['path']}", '/')) . $path;
         // Steps 6a and 6b
-        $path         = preg_replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
+        $path = preg_replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
         // Step 6c
         do {
             $path = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\./@', '', $path, 1, $count);
@@ -496,7 +496,7 @@ final class Conversions
         if (strpos($url, ';') !== false) {
             preg_match('/;([^?]*)/', $url, $matches);
             $params = $matches[1];
-            $url    = preg_replace('/;[^?]*/', '', $url, 1);
+            $url = preg_replace('/;[^?]*/', '', $url, 1);
         }
         if (($url = parse_url($url)) === false) {
             return false;
@@ -517,19 +517,19 @@ final class Conversions
      */
     public function unparseUrl(array $url): string
     {
-        [$u, $url]                       = [$url, ''];
+        [$u, $url] = [$url, ''];
         !($u['scheme'] ?? null) || $url .= "{$u['scheme']}:";
         if ($u['host'] ?? null) {
-            $url                                  .= '//';
+            $url .= '//';
             !array_key_exists('user', $u) || $auth = $u['user'];
             !array_key_exists('pass', $u) || $auth = ($auth ?? '') . ":{$u['pass']}";
-            is_null($auth ?? null) || $url        .= "$auth@";
-            $url                                  .= $u['host'];
+            is_null($auth ?? null) || $url .= "$auth@";
+            $url .= $u['host'];
             !array_key_exists('port', $u) || $url .= ":{$u['port']}";
         }
-        !($u['path'] ?? null) || $url             .= $u['path'];
-        !array_key_exists('params', $u) || $url   .= ";{$u['params']}";
-        !array_key_exists('query', $u) || $url    .= "?{$u['query']}";
+        !($u['path'] ?? null) || $url .= $u['path'];
+        !array_key_exists('params', $u) || $url .= ";{$u['params']}";
+        !array_key_exists('query', $u) || $url .= "?{$u['query']}";
         !array_key_exists('fragment', $u) || $url .= "#{$u['fragment']}";
 
         return $url;
@@ -629,7 +629,7 @@ final class Conversions
      */
     public function iterableToItem(iterable $list, $key, $value, bool $strict = false)
     {
-        $list    = $this->iterableToIterator($list);
+        $list = $this->iterableToIterator($list);
         $closure = $this->_keyToClosure($key);
 
         while ($list->valid()) {
@@ -715,12 +715,12 @@ final class Conversions
     public function plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false): string
     {
         $noun = $number == 1
-                    ? $singular
-                    : (is_null($plural) ? $singular . 's' : $plural);
+            ? $singular
+            : (is_null($plural) ? $singular . 's' : $plural);
 
         return $includeNumber
-                   ? "$number $noun"
-                   : $noun;
+            ? "$number $noun"
+            : $noun;
     }
 
     /**
@@ -729,11 +729,16 @@ final class Conversions
      * @param string|null $plural `"{$singular}s"` is used if `$plural` is
      * `null`.
      */
-    public function pluralRange(int $from, int $to, string $singular, ?string $plural = null, string $preposition = 'on'): string
-    {
+    public function pluralRange(
+        int $from,
+        int $to,
+        string $singular,
+        ?string $plural = null,
+        string $preposition = 'on'
+    ): string {
         return $to - $from
-                   ? sprintf('between %s %d and %d', is_null($plural) ? $singular . 's' : $plural, $from, $to)
-                   : sprintf('%s %s %d', $preposition, $singular, $from);
+            ? sprintf('between %s %d and %d', is_null($plural) ? $singular . 's' : $plural, $from, $to)
+            : sprintf('%s %s %d', $preposition, $singular, $from);
     }
 
     /**
@@ -795,10 +800,14 @@ final class Conversions
      * to top-level lines and indent others with two spaces, set `$marker` to
      * `"-"`.
      */
-    public function linesToLists(string $text, string $separator = "\n", ?string $marker = null, string $regex = '/^\h*[-*] /'): string
-    {
-        $marker       = $marker ? $marker . ' ' : null;
-        $indent       = $marker ? str_repeat(' ', mb_strlen($marker)) : '';
+    public function linesToLists(
+        string $text,
+        string $separator = "\n",
+        ?string $marker = null,
+        string $regex = '/^\h*[-*] /'
+    ): string {
+        $marker = $marker ? $marker . ' ' : null;
+        $indent = $marker ? str_repeat(' ', mb_strlen($marker)) : '';
         $markerIsItem = $marker && preg_match($regex, $marker);
 
         $sections = [];
@@ -862,7 +871,7 @@ final class Conversions
      */
     public function uuidToHex(string $bytes): string
     {
-        $uuid   = [];
+        $uuid = [];
         $uuid[] = substr($bytes, 0, 4);
         $uuid[] = substr($bytes, 4, 2);
         $uuid[] = substr($bytes, 6, 2);
@@ -1003,8 +1012,8 @@ final class Conversions
     {
         $replace = [
             '/(?<=[^&])&(?=[^&])/u' => ' and ',
-            '/\.+/u'                => '',
-            '/[^[:alnum:]]+/u'      => ' ',
+            '/\.+/u' => '',
+            '/[^[:alnum:]]+/u' => ' ',
         ];
 
         return strtoupper(trim(preg_replace(
@@ -1026,8 +1035,14 @@ final class Conversions
         return get_object_vars($object);
     }
 
-    private function _dataToQuery(array $data, bool $preserveKeys, DateFormatter $dateFormatter, ?string &$query = null, string $name = '', string $format = '%s'): string
-    {
+    private function _dataToQuery(
+        array $data,
+        bool $preserveKeys,
+        DateFormatter $dateFormatter,
+        ?string &$query = null,
+        string $name = '',
+        string $format = '%s'
+    ): string {
         if (is_null($query)) {
             $query = '';
         }
@@ -1081,8 +1096,12 @@ final class Conversions
      * Like var_export but with more compact output
      *
      */
-    public function valueToCode($value, string $delimiter = ', ', string $arrow = ' => ', ?string $escapeCharacters = null): string
-    {
+    public function valueToCode(
+        $value,
+        string $delimiter = ', ',
+        string $arrow = ' => ',
+        ?string $escapeCharacters = null
+    ): string {
         if (is_null($value)) {
             return 'null';
         }
@@ -1092,7 +1111,7 @@ final class Conversions
             $escaped = addcslashes($value, "\n\r\t\v\x1b\f\\\$\"" . $escapeCharacters);
             if ($escapeCharacters) {
                 foreach (str_split($escapeCharacters) as $character) {
-                    $oct     = sprintf('\%03o', ord($character));
+                    $oct = sprintf('\%03o', ord($character));
                     $escaped = str_replace(addcslashes($character, $character), $oct, $escaped);
                 }
             }

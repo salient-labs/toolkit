@@ -28,8 +28,8 @@ final class Tests
     {
         return is_array($value) &&
             ($value
-                 ? array_keys($value) === range(0, count($value) - 1)
-                 : $allowEmpty);
+                ? array_keys($value) === range(0, count($value) - 1)
+                : $allowEmpty);
     }
 
     /**
@@ -63,8 +63,8 @@ final class Tests
     {
         return is_array($value) &&
             ($value
-                 ? !self::isAssociativeArray($value)
-                 : $allowEmpty);
+                ? !self::isAssociativeArray($value)
+                : $allowEmpty);
     }
 
     /**
@@ -76,9 +76,9 @@ final class Tests
     {
         return is_array($value) &&
             ($value
-                 ? count(array_filter($value, fn($item) => is_string($item))) === count($value) ||
-                     count(array_filter($value, fn($item) => is_int($item))) === count($value)
-                 : $allowEmpty);
+                ? count(array_filter($value, fn($item) => is_string($item))) === count($value) ||
+                    count(array_filter($value, fn($item) => is_int($item))) === count($value)
+                : $allowEmpty);
     }
 
     /**
@@ -89,8 +89,8 @@ final class Tests
     {
         return is_array($value) &&
             ($value
-                 ? !array_filter($value, fn($item) => !is_a($item, $class))
-                 : $allowEmpty);
+                ? !array_filter($value, fn($item) => !is_a($item, $class))
+                : $allowEmpty);
     }
 
     /**

@@ -217,19 +217,31 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      * @param array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $replace
      * @param SyncSerializeRules|SerializeRulesBuilder|null $inherit
      */
-    public function __construct(string $entity, ?DateFormatter $dateFormatter = null, ?bool $includeMeta = null, ?bool $sortByKey = null, ?int $maxDepth = null, ?bool $detectRecursion = null, ?bool $removeCanonicalId = null, array $remove = [], array $replace = [], ?bool $recurseRules = null, ?int $flags = null, $inherit = null)
-    {
-        $this->Entity            = $entity;
-        $this->DateFormatter     = $dateFormatter;
-        $this->IncludeMeta       = $includeMeta;
-        $this->SortByKey         = $sortByKey;
-        $this->MaxDepth          = $maxDepth;
-        $this->DetectRecursion   = $detectRecursion;
+    public function __construct(
+        string $entity,
+        ?DateFormatter $dateFormatter = null,
+        ?bool $includeMeta = null,
+        ?bool $sortByKey = null,
+        ?int $maxDepth = null,
+        ?bool $detectRecursion = null,
+        ?bool $removeCanonicalId = null,
+        array $remove = [],
+        array $replace = [],
+        ?bool $recurseRules = null,
+        ?int $flags = null,
+        $inherit = null
+    ) {
+        $this->Entity = $entity;
+        $this->DateFormatter = $dateFormatter;
+        $this->IncludeMeta = $includeMeta;
+        $this->SortByKey = $sortByKey;
+        $this->MaxDepth = $maxDepth;
+        $this->DetectRecursion = $detectRecursion;
         $this->RemoveCanonicalId = $removeCanonicalId;
-        $this->Remove            = $remove;
-        $this->Replace           = $replace;
-        $this->RecurseRules      = $recurseRules;
-        $this->Flags             = $flags;
+        $this->Remove = $remove;
+        $this->Replace = $replace;
+        $this->RecurseRules = $recurseRules;
+        $this->Flags = $flags;
 
         $this->Introspector = SyncIntrospector::get($this->Entity);
 
@@ -239,7 +251,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
             return;
         }
 
-        $this->Remove  = $this->flattenRules($this->Remove);
+        $this->Remove = $this->flattenRules($this->Remove);
         $this->Replace = $this->flattenRules($this->Replace);
     }
 
@@ -254,8 +266,8 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private function compile(?string $class, ?string $untilClass, array $path, array $allRules, string $cacheKey): array
     {
         $depth = count($path);
-        $path  = '.' . implode('.', $path);
-        $key   = Convert::sparseToString("\0", [$class, $untilClass, $path]);
+        $path = '.' . implode('.', $path);
+        $key = Convert::sparseToString("\0", [$class, $untilClass, $path]);
 
         if (!is_null($rules = $this->RuleCache[$cacheKey][$key] ?? null)) {
             return $rules;
@@ -284,12 +296,16 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
         // Extract rules like:
         // - [0 => ".path.to.key"]
         // - [0 => [".path.to.key", "key_id", fn($value) => $value["id"]]]
-        $pathRules = array_filter($allRules,
-                                  fn($key) => is_int($key),
-                                  ARRAY_FILTER_USE_KEY);
+        $pathRules = array_filter(
+            $allRules,
+            fn($key) => is_int($key),
+            ARRAY_FILTER_USE_KEY
+        );
         // Discard if ".path.to" is not in $paths
-        $pathRules = array_filter($pathRules,
-                                  fn($rule) => in_array($this->getPath($this->getRuleTarget($rule)), $paths ?? [$path]));
+        $pathRules = array_filter(
+            $pathRules,
+            fn($rule) => in_array($this->getPath($this->getRuleTarget($rule)), $paths ?? [$path])
+        );
         // Remove ".path.to" from the remaining rules
         $pathRules = array_map(
             fn($rule) => $this->setRuleTarget($rule, $this->getKey($this->getRuleTarget($rule))),
@@ -337,7 +353,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private function setRuleTarget($rule, string $target)
     {
         if (is_array($rule)) {
-            $rule    = array_values($rule);
+            $rule = array_values($rule);
             $rule[0] = $target;
 
             return $rule;
@@ -349,15 +365,15 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private function getPath(string $path): string
     {
         return ((substr($path, -2) === '[]')
-                    ? substr($path, 0, -2)
-                    : substr($path, 0, max(0, strrpos('.' . $path, '.') - 1))) ?: '.';
+            ? substr($path, 0, -2)
+            : substr($path, 0, max(0, strrpos('.' . $path, '.') - 1))) ?: '.';
     }
 
     private function getKey(string $path): string
     {
         return (substr($path, -2) === '[]')
-                   ? '[]'
-                   : substr(strrchr('.' . $path, '.'), 1);
+            ? '[]'
+            : substr(strrchr('.' . $path, '.'), 1);
     }
 
     /**
@@ -390,17 +406,17 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
             throw new UnexpectedValueException("Not a subclass of {$base->Entity}: {$merge->Entity}");
         }
 
-        $this->Entity            = $merge->Entity;
-        $this->DateFormatter     = $merge->DateFormatter ?: $base->DateFormatter;
-        $this->IncludeMeta       = Convert::coalesce($merge->IncludeMeta, $base->IncludeMeta);
-        $this->SortByKey         = Convert::coalesce($merge->SortByKey, $base->SortByKey);
-        $this->MaxDepth          = Convert::coalesce($merge->MaxDepth, $base->MaxDepth);
-        $this->DetectRecursion   = Convert::coalesce($merge->DetectRecursion, $base->DetectRecursion);
+        $this->Entity = $merge->Entity;
+        $this->DateFormatter = $merge->DateFormatter ?: $base->DateFormatter;
+        $this->IncludeMeta = Convert::coalesce($merge->IncludeMeta, $base->IncludeMeta);
+        $this->SortByKey = Convert::coalesce($merge->SortByKey, $base->SortByKey);
+        $this->MaxDepth = Convert::coalesce($merge->MaxDepth, $base->MaxDepth);
+        $this->DetectRecursion = Convert::coalesce($merge->DetectRecursion, $base->DetectRecursion);
         $this->RemoveCanonicalId = Convert::coalesce($merge->RemoveCanonicalId, $base->RemoveCanonicalId);
-        $this->Remove            = $this->flattenRules($base->Remove, $merge->Remove);
-        $this->Replace           = $this->flattenRules($base->Replace, $merge->Replace);
-        $this->RecurseRules      = Convert::coalesce($merge->RecurseRules, $base->RecurseRules);
-        $this->Flags             = Convert::coalesce($merge->Flags, $base->Flags);
+        $this->Remove = $this->flattenRules($base->Remove, $merge->Remove);
+        $this->Replace = $this->flattenRules($base->Replace, $merge->Replace);
+        $this->RecurseRules = Convert::coalesce($merge->RecurseRules, $base->RecurseRules);
+        $this->Flags = Convert::coalesce($merge->Flags, $base->Flags);
     }
 
     private function flattenRules(array $base, array ...$merge): array
@@ -410,7 +426,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
             foreach ($array as $key => $rule) {
                 if (is_int($key)) {
                     $target = $this->normaliseTarget($this->getRuleTarget($rule));
-                    $rule   = $this->setRuleTarget($rule, $target);
+                    $rule = $this->setRuleTarget($rule, $target);
 
                     $paths[$target] = $rule;
 
@@ -418,7 +434,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
                 }
                 foreach ($rule as $_rule) {
                     $target = $this->normaliseTarget($this->getRuleTarget($_rule));
-                    $_rule  = $this->setRuleTarget($_rule, $target);
+                    $_rule = $this->setRuleTarget($_rule, $target);
 
                     $classes[$key][$target] = $_rule;
                 }
@@ -431,9 +447,11 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
 
     private function normaliseTarget(string $target): string
     {
-        return preg_replace_callback('/[^].[]+/',
-                                     fn($matches) => $this->Introspector->maybeNormalise($matches[0], NormaliserFlag::LAZY),
-                                     $target);
+        return preg_replace_callback(
+            '/[^].[]+/',
+            fn($matches) => $this->Introspector->maybeNormalise($matches[0], NormaliserFlag::LAZY),
+            $target
+        );
     }
 
     public function getDateFormatter(): ?DateFormatter
@@ -475,8 +493,10 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      */
     public function getRemove(?string $class, ?string $untilClass, array $path): array
     {
-        return array_map(fn($rule) => is_array($rule) ? reset($rule) : $rule,
-                         $this->compile($class, $untilClass, $path, $this->Remove, __FUNCTION__));
+        return array_map(
+            fn($rule) => is_array($rule) ? reset($rule) : $rule,
+            $this->compile($class, $untilClass, $path, $this->Remove, __FUNCTION__)
+        );
     }
 
     /**

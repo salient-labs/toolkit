@@ -31,8 +31,12 @@ abstract class HttpSyncProvider extends SyncProvider
      * {@see HttpSyncProvider::getPager()}.
      *
      */
-    final public function getCurler(string $path, ?int $expiry = -1, ?ICurlerHeaders $headers = null, ?ICurlerPager $pager = null): Curler
-    {
+    final public function getCurler(
+        string $path,
+        ?int $expiry = -1,
+        ?ICurlerHeaders $headers = null,
+        ?ICurlerPager $pager = null
+    ): Curler {
         $curlerB = $this->buildCurler(
             CurlerBuilder::build()
                 ->baseUrl($this->getEndpointUrl($path))

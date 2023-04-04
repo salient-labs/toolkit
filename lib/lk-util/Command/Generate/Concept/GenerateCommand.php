@@ -21,9 +21,9 @@ use ReflectionType;
  */
 abstract class GenerateCommand extends Command
 {
-    protected const VISIBILITY_PUBLIC    = 'public';
+    protected const VISIBILITY_PUBLIC = 'public';
     protected const VISIBILITY_PROTECTED = 'protected';
-    protected const VISIBILITY_PRIVATE   = 'private';
+    protected const VISIBILITY_PRIVATE = 'private';
 
     /**
      * @var string
@@ -64,7 +64,7 @@ abstract class GenerateCommand extends Command
         $seen = [];
         while (($_type = $templates[$type]['type'] ?? null) && !($seen[$_type] ?? null)) {
             $seen[$_type] = true;
-            $type         = $_type;
+            $type = $_type;
         }
 
         return $type;
@@ -88,7 +88,7 @@ abstract class GenerateCommand extends Command
      */
     protected function getFqcnAlias(string $fqcn, ?string $alias = null, bool $returnFqcn = true): ?string
     {
-        $fqcn  = ltrim($fqcn, '\\');
+        $fqcn = ltrim($fqcn, '\\');
         $_fqcn = strtolower($fqcn);
 
         // If $fqcn has already been imported, use its alias
@@ -96,7 +96,7 @@ abstract class GenerateCommand extends Command
             return $lastAlias;
         }
 
-        $alias  = is_null($alias) ? Convert::classToBasename($fqcn) : $alias;
+        $alias = is_null($alias) ? Convert::classToBasename($fqcn) : $alias;
         $_alias = strtolower($alias);
 
         // Use $alias if it already maps to $fqcn
@@ -158,8 +158,14 @@ abstract class GenerateCommand extends Command
      *
      * @return string[]
      */
-    protected function getStaticGetter(string $name, string $rawValue, string $rawParams = '', string $returnType = 'string', int $tabs = 1, string $tab = '    '): array
-    {
+    protected function getStaticGetter(
+        string $name,
+        string $rawValue,
+        string $rawParams = '',
+        string $returnType = 'string',
+        int $tabs = 1,
+        string $tab = '    '
+    ): array {
         $lines = [
             '/**',
             ' * @internal',
@@ -181,9 +187,18 @@ abstract class GenerateCommand extends Command
      * @param ReflectionType|string $returnType
      * @return string[]
      */
-    protected function getMethod(string $name, array $code, array $params = [], $returnType = null, ?string $docBlock = null, bool $static = true, string $visibility = GenerateCommand::VISIBILITY_PUBLIC, int $tabs = 1, string $tab = '    '): array
-    {
-        $callback  = fn(string $name): ?string => $this->getFqcnAlias($name, null, false);
+    protected function getMethod(
+        string $name,
+        array $code,
+        array $params = [],
+        $returnType = null,
+        ?string $docBlock = null,
+        bool $static = true,
+        string $visibility = GenerateCommand::VISIBILITY_PUBLIC,
+        int $tabs = 1,
+        string $tab = '    '
+    ): array {
+        $callback = fn(string $name): ?string => $this->getFqcnAlias($name, null, false);
         $rawParams = [];
         foreach ($params as $param) {
             if ($param instanceof ReflectionParameter) {

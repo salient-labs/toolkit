@@ -134,8 +134,12 @@ final class Formatters
      * Format a DateTime range without redundant information
      *
      */
-    public function dateRange(DateTimeInterface $from, DateTimeInterface $to, string $between = '[]', string $delimiter = '–'): string
-    {
+    public function dateRange(
+        DateTimeInterface $from,
+        DateTimeInterface $to,
+        string $between = '[]',
+        string $delimiter = '–'
+    ): string {
         [$from, $to, $l, $r] = [
             $this->maybeSetTimezone($from),
             $this->maybeSetTimezone($to),
@@ -144,11 +148,11 @@ final class Formatters
 
         $sameYear = ($year = $from->format('Y')) == $to->format('Y');
         $sameZone = $from->getTimezone() == $to->getTimezone();
-        $noYear   = $sameYear && date('Y') == $year;
-        $noTime   = $sameZone && $from->format('H:i:s') == '00:00:00' && $to->format('H:i:s') == '00:00:00';
+        $noYear = $sameYear && date('Y') == $year;
+        $noTime = $sameZone && $from->format('H:i:s') == '00:00:00' && $to->format('H:i:s') == '00:00:00';
 
         $fromFormat = 'D j M' . ($noYear ? '' : ' Y') . ($noTime ? '' : ' H:i:s' . ($sameZone ? '' : ' T'));
-        $toFormat   = $fromFormat . ($noTime || !$sameZone ? '' : ' T');
+        $toFormat = $fromFormat . ($noTime || !$sameZone ? '' : ' T');
 
         return $l . $from->format($fromFormat) . "$r$delimiter$l" . $to->format($toFormat) . $r;
     }
@@ -164,8 +168,10 @@ final class Formatters
         $power = min(count($units) - 1, floor(($bytes ? log($bytes) : 0) / log(1024)));
         $power = max(0, $precision ? $power : $power - 1);
 
-        return sprintf($precision ? "%01.{$precision}f%s" : '%d%s',
-                       $bytes / pow(1024, $power),
-                       $units[$power]);
+        return sprintf(
+            $precision ? "%01.{$precision}f%s" : '%d%s',
+            $bytes / pow(1024, $power),
+            $units[$power]
+        );
     }
 }

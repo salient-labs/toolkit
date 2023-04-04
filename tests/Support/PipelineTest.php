@@ -14,7 +14,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
 {
     public function testStream()
     {
-        $in  = [12, 23, 34, 45, 56, 67, 78, 89, 90];
+        $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
         foreach ((new Pipeline())->stream($in)
                                  ->through(
@@ -34,7 +34,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
 
     public function testAfter()
     {
-        $in  = [12, 23, 34, 45, 56, 67, 78, 89, 90];
+        $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
         foreach ((new Pipeline())->stream($in)
                                  ->after(fn($payload) => $payload * 2)
@@ -55,7 +55,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
 
     public function testUnless()
     {
-        $in  = [12, 23, 34, 45, 56, 67, 78, 89, 90];
+        $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
         foreach ((new Pipeline())->stream($in)
                                  ->through(
@@ -88,25 +88,25 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
     {
         $in = [
             [
-                'USER_ID'   => 32,
+                'USER_ID' => 32,
                 'FULL_NAME' => 'Greta',
-                'MAIL'      => 'greta@domain.test',
+                'MAIL' => 'greta@domain.test',
             ],
             [
                 'FULL_NAME' => 'Amir',
-                'MAIL'      => 'amir@domain.test',
-                'URI'       => 'https://domain.test/~amir',
+                'MAIL' => 'amir@domain.test',
+                'URI' => 'https://domain.test/~amir',
             ],
             [
-                'USER_ID'   => 71,
+                'USER_ID' => 71,
                 'FULL_NAME' => 'Terry',
-                'MAIL'      => null,
+                'MAIL' => null,
             ],
         ];
         $map = [
-            'USER_ID'   => 'Id',
+            'USER_ID' => 'Id',
             'FULL_NAME' => 'Name',
-            'MAIL'      => 'Email',
+            'MAIL' => 'Email',
         ];
         $out = [];
 
@@ -146,9 +146,9 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         }
 
         $mapToMultiple = [
-            'USER_ID'   => 'Id',
+            'USER_ID' => 'Id',
             'FULL_NAME' => 'Name',
-            'MAIL'      => ['Email', 'UPN'],
+            'MAIL' => ['Email', 'UPN'],
         ];
         $pipeline = Pipeline::create()
             ->throughKeyMap($mapToMultiple, ArrayMapperFlag::ADD_MISSING);
@@ -200,57 +200,57 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
     {
         $good = [
             [
-                'USER_ID'   => 32,
+                'USER_ID' => 32,
                 'FULL_NAME' => 'Greta',
-                'MAIL'      => 'greta@domain.test',
+                'MAIL' => 'greta@domain.test',
             ],
             [
-                'USER_ID'   => 53,
+                'USER_ID' => 53,
                 'FULL_NAME' => 'Amir',
-                'MAIL'      => 'amir@domain.test',
+                'MAIL' => 'amir@domain.test',
             ],
             [
-                'USER_ID'   => 71,
+                'USER_ID' => 71,
                 'FULL_NAME' => 'Terry',
-                'MAIL'      => null,
+                'MAIL' => null,
             ],
         ];
         $bad = [
             [
                 'FULL_NAME' => 'Greta',
-                'USER_ID'   => 32,
-                'MAIL'      => 'greta@domain.test',
+                'USER_ID' => 32,
+                'MAIL' => 'greta@domain.test',
             ],
             [
                 'FULL_NAME' => 'Amir',
-                'MAIL'      => 'amir@domain.test',
-                'USER_ID'   => 53,
+                'MAIL' => 'amir@domain.test',
+                'USER_ID' => 53,
             ],
             [
-                'USER_ID'   => 71,
+                'USER_ID' => 71,
                 'FULL_NAME' => 'Terry',
-                'MAIL'      => null,
+                'MAIL' => null,
             ],
         ];
         $ugly = [
             [
-                'USER_ID'   => 32,
+                'USER_ID' => 32,
                 'FULL_NAME' => 'Greta',
-                'MAIL'      => 'greta@domain.test',
+                'MAIL' => 'greta@domain.test',
             ],
             [
                 'MAIL' => 'amir@domain.test',
-                'URI'  => 'https://domain.test/~amir',
+                'URI' => 'https://domain.test/~amir',
             ],
             [
-                'USER_ID'   => 71,
+                'USER_ID' => 71,
                 'FULL_NAME' => 'Terry',
             ],
         ];
         $map = [
-            'USER_ID'   => 'Id',
+            'USER_ID' => 'Id',
             'FULL_NAME' => 'Name',
-            'MAIL'      => 'Email',
+            'MAIL' => 'Email',
         ];
         $out = [];
         $err = [];

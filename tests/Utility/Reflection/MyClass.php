@@ -26,10 +26,10 @@ class MyClass extends MyBaseClass implements MyInterface
 
     public function __construct($id, ?int $altId, string $name, ?MyClass $parent, MyClass $altParent = null)
     {
-        $this->Id        = $id;
-        $this->AltId     = $altId;
-        $this->Name      = $name;
-        $this->Parent    = $parent;
+        $this->Id = $id;
+        $this->AltId = $altId;
+        $this->Name = $name;
+        $this->Parent = $parent;
         $this->AltParent = $altParent;
     }
 

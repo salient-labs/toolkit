@@ -34,26 +34,26 @@ final class CacheStore extends SqliteStore
         $db = $this->db();
         $db->exec(
             <<<SQL
-            CREATE TABLE IF NOT EXISTS
-              _cache_item (
-                item_key TEXT NOT NULL PRIMARY KEY,
-                item_value BLOB,
-                expires_at DATETIME,
-                added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                set_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-              ) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS
+  _cache_item (
+    item_key TEXT NOT NULL PRIMARY KEY,
+    item_value BLOB,
+    expires_at DATETIME,
+    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    set_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  ) WITHOUT ROWID;
 
-            CREATE TRIGGER IF NOT EXISTS _cache_item_update AFTER
-            UPDATE
-              ON _cache_item BEGIN
-            UPDATE
-              _cache_item
-            SET
-              set_at = CURRENT_TIMESTAMP
-            WHERE
-              item_key = NEW.item_key;
-            END;
-            SQL
+CREATE TRIGGER IF NOT EXISTS _cache_item_update AFTER
+UPDATE
+  ON _cache_item BEGIN
+UPDATE
+  _cache_item
+SET
+  set_at = CURRENT_TIMESTAMP
+WHERE
+  item_key = NEW.item_key;
+END;
+SQL
         );
 
         return $this;
@@ -95,24 +95,24 @@ final class CacheStore extends SqliteStore
             $expiry += time();
         }
 
-        $db  = $this->db();
+        $db = $this->db();
         $sql = <<<SQL
-            INSERT INTO
-              _cache_item (item_key, item_value, expires_at)
-            VALUES
-              (
-                :item_key,
-                :item_value,
-                DATETIME(:expires_at, 'unixepoch')
-              ) ON CONFLICT (item_key) DO
-            UPDATE
-            SET
-              item_value = excluded.item_value,
-              expires_at = excluded.expires_at
-            WHERE
-              item_value IS NOT excluded.item_value
-              OR expires_at IS NOT excluded.expires_at;
-            SQL;
+INSERT INTO
+  _cache_item (item_key, item_value, expires_at)
+VALUES
+  (
+    :item_key,
+    :item_value,
+    DATETIME(:expires_at, 'unixepoch')
+  ) ON CONFLICT (item_key) DO
+UPDATE
+SET
+  item_value = excluded.item_value,
+  expires_at = excluded.expires_at
+WHERE
+  item_value IS NOT excluded.item_value
+  OR expires_at IS NOT excluded.expires_at;
+SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
         $stmt->bindValue(':item_value', serialize($value), SQLITE3_BLOB);
@@ -138,28 +138,28 @@ final class CacheStore extends SqliteStore
     public function get(string $key, ?int $maxAge = null)
     {
         $where[] = 'item_key = :item_key';
-        $bind[]  = [':item_key', $key, SQLITE3_TEXT];
+        $bind[] = [':item_key', $key, SQLITE3_TEXT];
 
         if (is_null($maxAge) || $maxAge > 2592000) {
             $where[] = '(expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)';
         } elseif ($maxAge) {
             $where[] = 'DATETIME(set_at, :max_age) > CURRENT_TIMESTAMP';
-            $bind[]  = [':max_age', "+$maxAge seconds", SQLITE3_TEXT];
+            $bind[] = [':max_age', "+$maxAge seconds", SQLITE3_TEXT];
         }
 
-        $db  = $this->db();
+        $db = $this->db();
         $sql = <<<SQL
-            SELECT
-              item_value
-            FROM
-              _cache_item
-            SQL;
+SELECT
+  item_value
+FROM
+  _cache_item
+SQL;
         $stmt = $db->prepare("$sql WHERE " . implode(' AND ', $where));
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
         $result = $stmt->execute();
-        $row    = $result->fetchArray(SQLITE3_NUM);
+        $row = $result->fetchArray(SQLITE3_NUM);
         $stmt->close();
 
         if ($row === false) {
@@ -180,13 +180,13 @@ final class CacheStore extends SqliteStore
     {
         $this->maybeFlush();
 
-        $db  = $this->db();
+        $db = $this->db();
         $sql = <<<SQL
-            DELETE FROM
-              _cache_item
-            WHERE
-              item_key = :item_key;
-            SQL;
+DELETE FROM
+  _cache_item
+WHERE
+  item_key = :item_key;
+SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
         $stmt->execute();
@@ -207,9 +207,9 @@ final class CacheStore extends SqliteStore
         $db = $this->db();
         $db->exec(
             <<<SQL
-            DELETE FROM
-              _cache_item;
-            SQL
+DELETE FROM
+  _cache_item;
+SQL
         );
 
         Console::debug('_cache_item changes:', (string) $db->changes());
@@ -227,11 +227,11 @@ final class CacheStore extends SqliteStore
         $db = $this->db();
         $db->exec(
             <<<SQL
-            DELETE FROM
-              _cache_item
-            WHERE
-              expires_at <= CURRENT_TIMESTAMP;
-            SQL
+DELETE FROM
+  _cache_item
+WHERE
+  expires_at <= CURRENT_TIMESTAMP;
+SQL
         );
 
         Console::debug('_cache_item changes:', (string) $db->changes());

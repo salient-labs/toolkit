@@ -132,8 +132,8 @@ final class CurlerHeaders implements ICurlerHeaders
      */
     private function _addHeader(string $name, string $value, bool $private)
     {
-        $i                                           = $this->NextHeader++;
-        $this->Headers[$i]                           = new CurlerHeader($name, $value, $i);
+        $i = $this->NextHeader++;
+        $this->Headers[$i] = new CurlerHeader($name, $value, $i);
         $this->HeaderKeysByName[strtolower($name)][] = $i;
         if ($private) {
             return $this->_addPrivateHeaderName($name);

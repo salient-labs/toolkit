@@ -104,7 +104,7 @@ final class Environment
     public function set(string $name, string $value): void
     {
         putenv($name . '=' . $value);
-        $_ENV[$name]    = $value;
+        $_ENV[$name] = $value;
         $_SERVER[$name] = $value;
     }
 
@@ -129,8 +129,8 @@ final class Environment
         return $_ENV[$name]
             ?? $_SERVER[$name]
             ?? (($local = getenv($name, true)) !== false
-                    ? $local
-                    : getenv($name));
+                ? $local
+                : getenv($name));
     }
 
     /**

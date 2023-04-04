@@ -123,7 +123,7 @@ final class SyncIntrospector extends Introspector
      */
     final public function getCreateSyncEntityFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
-        $sig     = implode("\0", $keys);
+        $sig = implode("\0", $keys);
         $closure = $this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) $strict] ?? null;
         if (!$closure) {
             $this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) $strict] =
@@ -145,13 +145,15 @@ final class SyncIntrospector extends Introspector
                         ? [$context->container(), $context->getParent()]
                         : [$context ?: $provider->container(), null];
 
-                return $closure($container,
-                                $array,
-                                $provider,
-                                $context ?: $container->get(SyncContext::class)->withParent($parent),
-                                $parent,
-                                $provider->dateFormatter(),
-                                $service);
+                return $closure(
+                    $container,
+                    $array,
+                    $provider,
+                    $context ?: $container->get(SyncContext::class)->withParent($parent),
+                    $parent,
+                    $provider->dateFormatter(),
+                    $service
+                );
             };
     }
 
@@ -250,7 +252,7 @@ final class SyncIntrospector extends Introspector
             return null;
         }
 
-        $method  = strtolower($method);
+        $method = strtolower($method);
         $closure = $this->_Class->MagicSyncOperationClosures[$method] ?? false;
         // Use strict comparison with `false` because null closures are cached
         if ($closure === false) {
@@ -295,8 +297,8 @@ final class SyncIntrospector extends Introspector
 
         // Build the smallest possible chain of closures
         $closure = $parameterKeys
-                       ? $this->_getConstructor($parameterKeys, $passByRefKeys)
-                       : $this->_getDefaultConstructor();
+            ? $this->_getConstructor($parameterKeys, $passByRefKeys)
+            : $this->_getDefaultConstructor();
         if ($propertyKeys) {
             $closure = $this->_getPropertyClosure($propertyKeys, $closure);
         }
@@ -325,8 +327,8 @@ final class SyncIntrospector extends Introspector
     private function getSyncOperationMethod(int $operation, SyncIntrospector $entity): ?string
     {
         $_entity = $entity->_Class;
-        $noun    = strtolower($_entity->EntityNoun);
-        $plural  = strtolower($_entity->EntityPlural);
+        $noun = strtolower($_entity->EntityNoun);
+        $plural = strtolower($_entity->EntityPlural);
 
         if ($plural) {
             switch ($operation) {
@@ -386,8 +388,10 @@ final class SyncIntrospector extends Introspector
                 break;
         }
 
-        $methods = array_intersect_key($this->_Class->SyncOperationMethods,
-                                       array_flip($methods ?? []));
+        $methods = array_intersect_key(
+            $this->_Class->SyncOperationMethods,
+            array_flip($methods ?? [])
+        );
         if (count($methods) > 1) {
             throw new RuntimeException('Too many implementations: ' . implode(', ', $methods));
         }

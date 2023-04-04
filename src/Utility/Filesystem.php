@@ -37,8 +37,12 @@ final class Filesystem
      * files are included if `null`.
      * @return IIterable<SplFileInfo>
      */
-    public function find(string $directory, ?string $exclude = null, ?string $include = null, bool $recursive = true): IIterable
-    {
+    public function find(
+        string $directory,
+        ?string $exclude = null,
+        ?string $include = null,
+        bool $recursive = true
+    ): IIterable {
         $flags = FilesystemIterator::KEY_AS_PATHNAME
             | FilesystemIterator::CURRENT_AS_FILEINFO
             | FilesystemIterator::SKIP_DOTS;
@@ -203,11 +207,17 @@ final class Filesystem
      * @return string|false|void
      * @throws RuntimeException
      */
-    public function writeCsv(iterable $data, ?string $filename = null, bool $headerRow = true, ?string $nullValue = null, ?int &$count = null, ?callable $callback = null)
-    {
+    public function writeCsv(
+        iterable $data,
+        ?string $filename = null,
+        bool $headerRow = true,
+        ?string $nullValue = null,
+        ?int &$count = null,
+        ?callable $callback = null
+    ) {
         if (is_null($filename)) {
             $filename = 'php://temp';
-            $return   = true;
+            $return = true;
         }
 
         if (($f = fopen($filename, 'w')) === false) {
@@ -263,14 +273,14 @@ final class Filesystem
      */
     public function getStablePath(string $suffix = '.log', string $dir = null)
     {
-        $program  = Sys::getProgramName();
+        $program = Sys::getProgramName();
         $basename = basename($program);
-        $hash     = Compute::hash(File::realpath($program));
-        $euid     = posix_geteuid();
+        $hash = Compute::hash(File::realpath($program));
+        $euid = posix_geteuid();
 
         return (is_null($dir)
-                    ? realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR
-                    : ($dir ? rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : ''))
+                ? realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR
+                : ($dir ? rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : ''))
             . "$basename-$hash-$euid$suffix";
     }
 }

@@ -19,5 +19,9 @@ interface IConstructible
      * @param iterable<array> $dataList
      * @return iterable<static>
      */
-    public static function constructList(iterable $dataList, int $conformity = ArrayKeyConformity::NONE, ?IContainer $container = null): iterable;
+    public static function constructList(
+        iterable $dataList,
+        int $conformity = ArrayKeyConformity::NONE,
+        ?IContainer $container = null
+    ): iterable;
 }

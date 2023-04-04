@@ -28,9 +28,9 @@ final class CurlerFile
             throw new RuntimeException("File not found: $filename");
         }
 
-        $this->Filename     = $filename;
+        $this->Filename = $filename;
         $this->PostFilename = $postFilename ?: basename($filename);
-        $this->MimeType     = $mimeType ?: mime_content_type($filename);
+        $this->MimeType = $mimeType ?: mime_content_type($filename);
     }
 
     /**

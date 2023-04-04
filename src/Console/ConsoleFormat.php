@@ -34,9 +34,9 @@ final class ConsoleFormat
      */
     public function __construct(string $before = '', string $after = '', array $replace = [])
     {
-        $this->Before      = $before;
-        $this->After       = $after;
-        $this->Replace     = array_keys($replace);
+        $this->Before = $before;
+        $this->After = $after;
+        $this->Replace = array_keys($replace);
         $this->ReplaceWith = array_values($replace);
     }
 

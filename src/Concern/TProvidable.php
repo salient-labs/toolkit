@@ -97,13 +97,13 @@ trait TProvidable
     final public static function provide(array $data, IProvider $provider, ?IProviderContext $context = null)
     {
         $container = ($context
-                          ? $context->container()
-                          : $provider->container())->inContextOf(get_class($provider));
+            ? $context->container()
+            : $provider->container())->inContextOf(get_class($provider));
         $context = $context
-                       ? $context->withContainer($container)
-                       : $container->get(ProviderContext::class);
+            ? $context->withContainer($container)
+            : $container->get(ProviderContext::class);
         $introspector = Introspector::getService($container, static::class);
-        $closure      = $introspector->getCreateProvidableFromClosure();
+        $closure = $introspector->getCreateProvidableFromClosure();
 
         return $closure($data, $provider, $context);
     }
@@ -117,14 +117,18 @@ trait TProvidable
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @return iterable<static>
      */
-    final public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProviderContext $context = null): iterable
-    {
+    final public static function provideList(
+        iterable $dataList,
+        IProvider $provider,
+        int $conformity = ArrayKeyConformity::NONE,
+        ?IProviderContext $context = null
+    ): iterable {
         $container = ($context
-                          ? $context->container()
-                          : $provider->container())->inContextOf(get_class($provider));
+            ? $context->container()
+            : $provider->container())->inContextOf(get_class($provider));
         $context = ($context
-                        ? $context->withContainer($container)
-                        : new ProviderContext($container))->withConformity($conformity);
+            ? $context->withContainer($container)
+            : new ProviderContext($container))->withConformity($conformity);
         $introspector = Introspector::getService($container, static::class);
 
         foreach ($dataList as $data) {

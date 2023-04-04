@@ -110,9 +110,9 @@ abstract class Builder extends FluentInterface implements IImmutable
 
     final public function __construct(?IContainer $container = null)
     {
-        $this->Container    = $container ?: Container::requireGlobalContainer();
+        $this->Container = $container ?: Container::requireGlobalContainer();
         $this->Introspector = Introspector::getService($this->Container, static::getClassName());
-        $this->Closure      = $this->Introspector->getCreateFromClosure(true);
+        $this->Closure = $this->Introspector->getCreateFromClosure(true);
     }
 
     /**
@@ -175,10 +175,12 @@ abstract class Builder extends FluentInterface implements IImmutable
             throw new UnexpectedValueException('Invalid arguments');
         }
 
-        return $this->getWithValue($name,
-                                   array_key_exists(0, $arguments)
-                                       ? $arguments[0]
-                                       : true);
+        return $this->getWithValue(
+            $name,
+            array_key_exists(0, $arguments)
+                ? $arguments[0]
+                : true
+        );
     }
 
     /**
@@ -186,8 +188,8 @@ abstract class Builder extends FluentInterface implements IImmutable
      */
     final protected function getWithValue(string $name, $value)
     {
-        $clone              = clone $this;
-        $name               = $clone->Introspector->maybeNormalise($name);
+        $clone = clone $this;
+        $name = $clone->Introspector->maybeNormalise($name);
         $clone->Data[$name] = $value;
 
         return $clone;
@@ -198,8 +200,8 @@ abstract class Builder extends FluentInterface implements IImmutable
      */
     final protected function getWithReference(string $name, &$variable)
     {
-        $clone              = clone $this;
-        $name               = $clone->Introspector->maybeNormalise($name);
+        $clone = clone $this;
+        $name = $clone->Introspector->maybeNormalise($name);
         $clone->Data[$name] = &$variable;
 
         return $clone;

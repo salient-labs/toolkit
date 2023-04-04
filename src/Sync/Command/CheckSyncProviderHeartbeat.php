@@ -56,8 +56,8 @@ final class CheckSyncProviderHeartbeat extends CliCommand
     {
         return 'Send a heartbeat request to '
             . (count($this->Providers) > 1
-                   ? 'one or more providers'
-                   : 'a provider');
+                ? 'one or more providers'
+                : 'a provider');
     }
 
     protected function getOptionList(): array
@@ -68,15 +68,17 @@ final class CheckSyncProviderHeartbeat extends CliCommand
                 ->valueName('provider')
                 ->description('The provider to check')
                 ->multipleAllowed()
-                ->if((bool) $this->Providers,
-                     fn(CliOptionBuilder $build) =>
-                         $build->optionType(CliOptionType::ONE_OF_POSITIONAL)
-                               ->allowedValues(array_keys($this->Providers))
-                               ->addAll()
-                               ->defaultValue('ALL'),
-                     fn(CliOptionBuilder $build) =>
-                         $build->optionType(CliOptionType::VALUE_POSITIONAL)
-                               ->required()),
+                ->if(
+                    (bool) $this->Providers,
+                    fn(CliOptionBuilder $build) =>
+                        $build->optionType(CliOptionType::ONE_OF_POSITIONAL)
+                              ->allowedValues(array_keys($this->Providers))
+                              ->addAll()
+                              ->defaultValue('ALL'),
+                    fn(CliOptionBuilder $build) =>
+                        $build->optionType(CliOptionType::VALUE_POSITIONAL)
+                              ->required()
+                ),
             CliOption::build()
                 ->long('ttl')
                 ->short('t')
@@ -94,19 +96,19 @@ final class CheckSyncProviderHeartbeat extends CliCommand
     public function getLongDescription(): ?string
     {
         !$this->Providers || $description = <<<EOF
-            If no providers are given, all providers are checked.
+If no providers are given, all providers are checked.
 
 
-            EOF;
+EOF;
 
         return ($description ?? '') . <<<EOF
-            If a heartbeat request fails, __{{command}}__ continues to the next
-            provider unless --fail-early is given, in which case it exits
-            immediately.
+If a heartbeat request fails, __{{command}}__ continues to the next
+provider unless --fail-early is given, in which case it exits
+immediately.
 
-            The command exits with a non-zero status if a provider backend is
-            unreachable.
-            EOF;
+The command exits with a non-zero status if a provider backend is
+unreachable.
+EOF;
     }
 
     public function getUsageSections(): ?array

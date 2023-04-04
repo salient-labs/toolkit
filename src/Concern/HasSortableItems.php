@@ -46,7 +46,7 @@ trait HasSortableItems
      */
     final public function reverse(bool $preserveKeys = true)
     {
-        $clone         = clone $this;
+        $clone = clone $this;
         $clone->_Items = array_reverse($clone->_Items, $preserveKeys);
         // clear non-numeric keys too
         if (!$preserveKeys) {

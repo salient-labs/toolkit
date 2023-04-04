@@ -13,7 +13,7 @@ $app = App::load(__DIR__)->loadCache();
 
 print_r([
     'App::getInstance()->getCachePath()' => App::getInstance()->getCachePath(),
-    '$app->getDataPath()'                => $app->getDataPath(),
-    '$app->getLogPath()'                 => $app->getLogPath(),
-    'Cache::getInstance()'               => Cache::getInstance(),
+    '$app->getDataPath()' => $app->getDataPath(),
+    '$app->getLogPath()' => $app->getLogPath(),
+    'Cache::getInstance()' => Cache::getInstance(),
 ]);

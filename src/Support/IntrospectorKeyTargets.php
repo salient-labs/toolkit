@@ -63,13 +63,19 @@ final class IntrospectorKeyTargets implements IReadable
      */
     protected $DateProperties;
 
-    public function __construct(array $parameters, array $passByRefProperties, array $methods, array $properties, array $metaProperties, array $dateProperties)
-    {
-        $this->Parameters          = $parameters;
+    public function __construct(
+        array $parameters,
+        array $passByRefProperties,
+        array $methods,
+        array $properties,
+        array $metaProperties,
+        array $dateProperties
+    ) {
+        $this->Parameters = $parameters;
         $this->PassByRefParameters = $passByRefProperties;
-        $this->Methods             = $methods;
-        $this->Properties          = $properties;
-        $this->MetaProperties      = $metaProperties;
-        $this->DateProperties      = $dateProperties;
+        $this->Methods = $methods;
+        $this->Properties = $properties;
+        $this->MetaProperties = $metaProperties;
+        $this->DateProperties = $dateProperties;
     }
 }

@@ -32,8 +32,8 @@ $query = $query->addParam('Expiry', new DateTime(), $_expiry)
 $sql3 = $query->getWhere();
 
 var_dump([
-    'sql1'  => $sql1,
-    'sql2'  => $sql2,
-    'sql3'  => $sql3,
+    'sql1' => $sql1,
+    'sql2' => $sql2,
+    'sql3' => $sql3,
     'query' => $query,
 ]);

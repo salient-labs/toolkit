@@ -45,10 +45,13 @@ class ProviderContext implements IProviderContext
     /**
      * @phpstan-param ArrayKeyConformity::* $conformity
      */
-    public function __construct(IContainer $container, ?IHierarchy $parent = null, int $conformity = ArrayKeyConformity::NONE)
-    {
-        $this->Container  = $container;
-        $this->Parent     = $parent;
+    public function __construct(
+        IContainer $container,
+        ?IHierarchy $parent = null,
+        int $conformity = ArrayKeyConformity::NONE
+    ) {
+        $this->Container = $container;
+        $this->Parent = $parent;
         $this->Conformity = $conformity;
     }
 
@@ -69,7 +72,7 @@ class ProviderContext implements IProviderContext
 
     final public function push(IProvidable $entity)
     {
-        $clone          = clone $this;
+        $clone = clone $this;
         $clone->Stack[] = $entity;
 
         return $clone;

@@ -72,8 +72,8 @@ final class System
         $limit = $this->getMemoryLimit();
 
         return $limit <= 0
-                   ? 0
-                   : (int) round(memory_get_usage() * 100 / $limit);
+            ? 0
+            : (int) round(memory_get_usage() * 100 / $limit);
     }
 
     /**
@@ -110,7 +110,7 @@ final class System
             throw new RuntimeException(sprintf('Timer already running: %s', $name));
         }
         $this->RunningTimers[$type][$name] = $now;
-        $this->TimerRuns[$type][$name]     = ($this->TimerRuns[$type][$name] ?? 0) + 1;
+        $this->TimerRuns[$type][$name] = ($this->TimerRuns[$type][$name] ?? 0) + 1;
     }
 
     /**
@@ -143,8 +143,8 @@ final class System
     public function getTimers(bool $includeRunning = true, ?string $type = null): array
     {
         $timerRuns = is_null($type)
-                         ? $this->TimerRuns
-                         : array_intersect_key($this->TimerRuns, [$type => 0]);
+            ? $this->TimerRuns
+            : array_intersect_key($this->TimerRuns, [$type => 0]);
         foreach ($timerRuns as $_type => $runs) {
             foreach ($runs as $name => $count) {
                 $elapsed = $this->ElapsedTime[$_type][$name] ?? 0;
@@ -181,7 +181,7 @@ final class System
                 ($filename = File::realpath($filename)) !== false &&
                 strpos($filename, $basePath) === 0) {
             return substr($filename, strlen($basePath) + 1)
-                       ?: basename($filename);
+                ?: basename($filename);
         }
 
         throw new RuntimeException('SCRIPT_FILENAME is not in $basePath');

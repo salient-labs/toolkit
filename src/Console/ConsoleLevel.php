@@ -19,36 +19,36 @@ final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
     use IsConvertibleEnumeration;
 
     public const EMERGENCY = 0;
-    public const ALERT     = 1;
-    public const CRITICAL  = 2;
-    public const ERROR     = 3;
-    public const WARNING   = 4;
-    public const NOTICE    = 5;
-    public const INFO      = 6;
-    public const DEBUG     = 7;
+    public const ALERT = 1;
+    public const CRITICAL = 2;
+    public const ERROR = 3;
+    public const WARNING = 4;
+    public const NOTICE = 5;
+    public const INFO = 6;
+    public const DEBUG = 7;
 
     private const LOG_LEVEL_MAP = [
         self::EMERGENCY => LogLevel::EMERGENCY,
-        self::ALERT     => LogLevel::ALERT,
-        self::CRITICAL  => LogLevel::CRITICAL,
-        self::ERROR     => LogLevel::ERROR,
-        self::WARNING   => LogLevel::WARNING,
-        self::NOTICE    => LogLevel::NOTICE,
-        self::INFO      => LogLevel::INFO,
-        self::DEBUG     => LogLevel::DEBUG,
+        self::ALERT => LogLevel::ALERT,
+        self::CRITICAL => LogLevel::CRITICAL,
+        self::ERROR => LogLevel::ERROR,
+        self::WARNING => LogLevel::WARNING,
+        self::NOTICE => LogLevel::NOTICE,
+        self::INFO => LogLevel::INFO,
+        self::DEBUG => LogLevel::DEBUG,
     ];
 
     protected static function getNameMap(): array
     {
         return [
             self::EMERGENCY => 'EMERGENCY',
-            self::ALERT     => 'ALERT',
-            self::CRITICAL  => 'CRITICAL',
-            self::ERROR     => 'ERROR',
-            self::WARNING   => 'WARNING',
-            self::NOTICE    => 'NOTICE',
-            self::INFO      => 'INFO',
-            self::DEBUG     => 'DEBUG',
+            self::ALERT => 'ALERT',
+            self::CRITICAL => 'CRITICAL',
+            self::ERROR => 'ERROR',
+            self::WARNING => 'WARNING',
+            self::NOTICE => 'NOTICE',
+            self::INFO => 'INFO',
+            self::DEBUG => 'DEBUG',
         ];
     }
 
@@ -56,13 +56,13 @@ final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
     {
         return [
             'emergency' => self::EMERGENCY,
-            'alert'     => self::ALERT,
-            'critical'  => self::CRITICAL,
-            'error'     => self::ERROR,
-            'warning'   => self::WARNING,
-            'notice'    => self::NOTICE,
-            'info'      => self::INFO,
-            'debug'     => self::DEBUG,
+            'alert' => self::ALERT,
+            'critical' => self::CRITICAL,
+            'error' => self::ERROR,
+            'warning' => self::WARNING,
+            'notice' => self::NOTICE,
+            'info' => self::INFO,
+            'debug' => self::DEBUG,
         ];
     }
 

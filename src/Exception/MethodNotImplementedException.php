@@ -33,8 +33,8 @@ class MethodNotImplementedException extends \Lkrms\Exception\Exception
             $prototypeClass = Reflect::getMethodPrototypeClass($_class->getMethod($method))->getName();
         }
 
-        $this->Class          = $class;
-        $this->Method         = $method;
+        $this->Class = $class;
+        $this->Method = $method;
         $this->PrototypeClass = $prototypeClass;
 
         parent::__construct(sprintf(

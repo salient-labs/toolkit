@@ -32,9 +32,9 @@ final class DbDriver extends ConvertibleEnumeration
     public const SQLITE = 3;
 
     private static $AdodbDriverMap = [
-        self::DB2    => 'db2',
-        self::MSSQL  => 'mssqlnative',
-        self::MYSQL  => 'mysqli',
+        self::DB2 => 'db2',
+        self::MSSQL => 'mssqlnative',
+        self::MYSQL => 'mysqli',
         self::SQLITE => 'sqlite3',
     ];
 
