@@ -552,7 +552,7 @@ final class Conversions
     }
 
     /**
-     * Return the namespace of a class
+     * Get the namespace of a class
      *
      * Returns an empty string if `$class` is not namespaced, otherwise returns
      * the namespace without adding or removing the global prefix operator.
@@ -606,8 +606,8 @@ final class Conversions
      * )
      * ```
      *
-     * @param string|Closure $key Either the index or property name to use when
-     * retrieving keys from arrays or objects in `$list`, or a closure that
+     * @param int|string|Closure $key Either the index or property name to use
+     * when retrieving keys from arrays or objects in `$list`, or a closure that
      * returns a key for each item in `$list`.
      */
     public function listToMap(array $list, $key): array
@@ -619,11 +619,11 @@ final class Conversions
     }
 
     /**
-     * Return the first item in $list where the value at $key is $value
+     * Get the first item in $list where the value at $key is $value
      *
-     * @param string|Closure $key Either the index or property name to use when
-     * retrieving values from arrays or objects in `$list`, or a closure that
-     * returns a value for each item in `$list`.
+     * @param int|string|Closure $key Either the index or property name to use
+     * when retrieving values from arrays or objects in `$list`, or a closure
+     * that returns a value for each item in `$list`.
      * @return array|object|false `false` if no item was found in `$list` with
      * `$value` at `$key`.
      */
@@ -645,23 +645,27 @@ final class Conversions
     }
 
     /**
-     * @param string|Closure $key
+     * @param int|string|Closure $key
      */
     private function _keyToClosure($key): Closure
     {
-        if ($key instanceof Closure) {
-            return $key;
-        }
+        return $key instanceof Closure
+            ? $key
+            : fn($item) => $this->valueAtKey($item, $key);
+    }
 
-        return function ($item) use ($key) {
-            if (is_array($item)) {
-                return $item[$key];
-            } elseif (is_object($item)) {
-                return $item->$key;
-            } else {
-                throw new UnexpectedValueException('Item is not an array or object');
-            }
-        };
+    /**
+     * Get the value at $key in $item, where $item is an array or object
+     *
+     * @param array|\ArrayAccess|object $item
+     * @param int|string $key
+     * @return mixed
+     */
+    public function valueAtKey($item, $key)
+    {
+        return is_array($item) || $item instanceof \ArrayAccess
+            ? $item[$key]
+            : $item->$key;
     }
 
     /**
@@ -724,7 +728,7 @@ final class Conversions
     }
 
     /**
-     * Return a phrase like "between lines 3 and 11" or "on platform 23"
+     * Get a phrase like "between lines 3 and 11" or "on platform 23"
      *
      * @param string|null $plural `"{$singular}s"` is used if `$plural` is
      * `null`.
@@ -742,7 +746,7 @@ final class Conversions
     }
 
     /**
-     * Return the plural of a singular noun
+     * Get the plural of a singular noun
      *
      */
     public function nounToPlural(string $noun): string
@@ -799,12 +803,15 @@ final class Conversions
      * number of spaces are added before each list item. To add a leading `"- "`
      * to top-level lines and indent others with two spaces, set `$marker` to
      * `"-"`.
+     * @param bool $clean If `true`, the first match of `$regex` in each section
+     * name is removed.
      */
     public function linesToLists(
         string $text,
         string $separator = "\n",
         ?string $marker = null,
-        string $regex = '/^\h*[-*] /'
+        string $regex = '/^\h*[-*] /',
+        bool $clean = false
     ): string {
         $marker = $marker ? $marker . ' ' : null;
         $indent = $marker ? str_repeat(' ', mb_strlen($marker)) : '';
@@ -839,6 +846,9 @@ final class Conversions
         );
         $groups = [];
         foreach ($sections as $section => $sectionLines) {
+            if ($clean) {
+                $section = preg_replace($regex, '', $section, 1);
+            }
             if ($marker &&
                     !($markerIsItem && strpos($section, $marker) === 0) &&
                     !preg_match($regex, $section)) {

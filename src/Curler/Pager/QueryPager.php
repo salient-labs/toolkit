@@ -8,7 +8,6 @@ use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\Support\CurlerPageBuilder;
 use Lkrms\Facade\Convert;
-use LogicException;
 
 /**
  * Increments a value in the query string and repeats the request until no
@@ -17,35 +16,34 @@ use LogicException;
  */
 final class QueryPager implements ICurlerPager
 {
-    /**
-     * @var string|null
-     */
-    private $PageKey;
+    private ?string $PageKey;
+
+    private Closure $Selector;
+
+    private ?int $PageSize;
+
+    private array $Query;
+
+    private ?string $QueryPageKey;
 
     /**
-     * @var string|null
+     * @var true|null
      */
-    private $CurrentPageKey;
-
-    /**
-     * @var Closure
-     */
-    private $Selector;
-
-    /**
-     * @var array|null
-     */
-    private $Query;
+    private $QueryPageKeyChecked;
 
     /**
      * @param string|null $pageKey The value to increment with each request, or
-     * `null` to use the first value in the query.
+     * `null` to use the first value in the query. Added to the query string of
+     * the second and subsequent requests if missing from the first.
      * @param Closure|string|null $selector Entities are collected from:
      * - `<Selector>($response)` if `$selector` is a closure,
      * - `$response[<Selector>]` if `$selector` is a string, or
      * - The response itself
+     * @param int|null $pageSize Another page is requested if:
+     * - `$pageSize` is `null` and at least one result is returned, or
+     * - `$pageSize` is `>0` and exactly `$pageSize` results are returned
      */
-    public function __construct(?string $pageKey = null, $selector = null)
+    public function __construct(?string $pageKey = null, $selector = null, ?int $pageSize = null)
     {
         $this->PageKey = $pageKey;
         $this->Selector =
@@ -54,21 +52,29 @@ final class QueryPager implements ICurlerPager
                 : (is_string($selector)
                     ? fn($response) => $response[$selector]
                     : fn($response) => Convert::toList($response));
+        $this->PageSize = $pageSize;
     }
 
-    public function prepareQuery(?array $query): ?string
+    public function prepareQuery(?array $query): ?array
     {
-        if (is_null($this->PageKey)) {
-            if (is_null($query) ||
-                    !is_int(reset($query)) ||
-                    !($pageKey = key($query))) {
-                throw new LogicException('First element of query array must be an integer');
-            }
-            $this->CurrentPageKey = $pageKey;
-        }
-        $this->Query = $query;
+        // Save the query for subsequent requests
+        $this->Query = $query ?: [];
 
-        return null;
+        // Clear the last detected page key to ensure `getPage()` starts over
+        if (is_null($this->PageKey)) {
+            $this->QueryPageKey = null;
+            $this->QueryPageKeyChecked = null;
+
+            return $query;
+        }
+
+        // Or, if a page key has been set but doesn't appear in the query, add
+        // an initial value to `$this->Query` without changing the first request
+        if (!array_key_exists($this->PageKey, $this->Query)) {
+            $this->Query[$this->PageKey] = 1;
+        }
+
+        return $query;
     }
 
     public function prepareData(?array $data): ?array
@@ -85,9 +91,25 @@ final class QueryPager implements ICurlerPager
     {
         $data = ($this->Selector)($data);
 
-        if ($data) {
-            $this->Query[$this->CurrentPageKey ?: $this->PageKey]++;
-            $nextUrl = $curler->getQueryUrl($this->Query);
+        if ($data &&
+            (!$this->PageSize ||
+                $this->PageSize < 1 ||
+                count($data) === $this->PageSize)) {
+            $key = $this->PageKey;
+            if (is_null($key)) {
+                if ($this->QueryPageKeyChecked) {
+                    $key = $this->QueryPageKey;
+                } else {
+                    if ($this->Query && is_int(reset($this->Query))) {
+                        $key = $this->QueryPageKey = key($this->Query);
+                    }
+                    $this->QueryPageKeyChecked = true;
+                }
+            }
+            if (!is_null($key)) {
+                $this->Query[$key]++;
+                $nextUrl = $curler->getQueryUrl($this->Query);
+            }
         }
 
         return CurlerPageBuilder::build()

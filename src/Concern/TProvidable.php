@@ -2,10 +2,12 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\Introspector;
+use Lkrms\Support\IterableIterator;
 use Lkrms\Support\ProviderContext;
 use RuntimeException;
 
@@ -115,13 +117,29 @@ trait TProvidable
      *
      * @param iterable<array> $dataList
      * @phpstan-param ArrayKeyConformity::* $conformity
-     * @return iterable<static>
+     * @return IIterable<static>
      */
     final public static function provideList(
         iterable $dataList,
         IProvider $provider,
         int $conformity = ArrayKeyConformity::NONE,
         ?IProviderContext $context = null
+    ): IIterable {
+        return IterableIterator::from(
+            self::_provideList($dataList, $provider, $conformity, $context)
+        );
+    }
+
+    /**
+     * @param iterable<array> $dataList
+     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @return iterable<static>
+     */
+    private static function _provideList(
+        iterable $dataList,
+        IProvider $provider,
+        int $conformity,
+        ?IProviderContext $context
     ): iterable {
         $container = ($context
             ? $context->container()

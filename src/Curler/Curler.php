@@ -542,12 +542,12 @@ final class Curler implements IReadable, IWritable, HasBuilder
         $this->Handle = null;
     }
 
-    private function initialise(string $method, ?array $query): void
+    private function initialise(string $method, ?array $query, ?ICurlerPager $pager = null): void
     {
-        if ($this->Pager && !is_null($_query = $this->Pager->prepareQuery($query))) {
-            $_query = '?' . $_query;
+        if ($pager) {
+            $query = $pager->prepareQuery($query);
         }
-        $this->QueryString = ($_query ?? null) ?: $this->getQueryString($query);
+        $this->QueryString = $this->getQueryString($query);
 
         $this->createHandle($this->BaseUrl . $this->QueryString);
 
@@ -561,8 +561,8 @@ final class Curler implements IReadable, IWritable, HasBuilder
         $this->setContentType(null);
         $this->Body = $this->Data = null;
 
-        if ($this->Pager) {
-            $this->Pager->prepareCurler($this);
+        if ($pager) {
+            $pager->prepareCurler($this);
         }
 
         if ($this->ExpectJson) {
@@ -1006,16 +1006,14 @@ final class Curler implements IReadable, IWritable, HasBuilder
     private function process(string $method, ?array $query, $data = null, ?string $mimeType = null)
     {
         $isRaw = !is_null($mimeType);
-        if ($this->AlwaysPaginate && !$isRaw) {
-            if (!$this->Pager) {
-                throw new UnexpectedValueException(static::class . '::$Pager is not set');
-            }
+        if ($this->Pager && $this->AlwaysPaginate && !$isRaw) {
+            $pager = $this->Pager;
             if ($method !== HttpRequestMethod::GET) {
-                $data = $this->Pager->prepareData($data);
+                $data = $pager->prepareData($data);
             }
         }
 
-        $this->initialise($method, $query);
+        $this->initialise($method, $query, $pager ?? null);
 
         $this->Data = $data;
         if (is_array($data)) {
@@ -1034,8 +1032,8 @@ final class Curler implements IReadable, IWritable, HasBuilder
         if ($this->responseContentTypeIs(MimeType::JSON)) {
             $response = json_decode($this->ResponseBody, $this->ObjectAsArray);
 
-            if ($this->AlwaysPaginate) {
-                $response = $this->Pager->getPage($response, $this)->entities();
+            if ($pager ?? null) {
+                $response = $pager->getPage($response, $this)->entities();
                 if (array_keys($response) === [0] &&
                         (is_array($response[0]) || is_scalar($response[0]))) {
                     return $response[0];
@@ -1057,7 +1055,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
             $data = $this->Pager->prepareData($data);
         }
 
-        $this->initialise($method, $query);
+        $this->initialise($method, $query, $this->Pager);
 
         do {
             if (!is_null($data)) {

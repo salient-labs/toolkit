@@ -30,9 +30,9 @@ final class ODataPager implements ICurlerPager
         $this->MaxPageSize = $maxPageSize;
     }
 
-    public function prepareQuery(?array $query): ?string
+    public function prepareQuery(?array $query): ?array
     {
-        return null;
+        return $query;
     }
 
     public function prepareData(?array $data): ?array

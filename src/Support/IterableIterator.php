@@ -38,6 +38,16 @@ final class IterableIterator extends \IteratorIterator implements IIterable
         return new self($iterable);
     }
 
+    public function toArray(): array
+    {
+        while ($this->valid()) {
+            $array[] = $this->current();
+            $this->next();
+        }
+
+        return $array ?? [];
+    }
+
     public function forEach(callable $callback)
     {
         while ($this->valid()) {

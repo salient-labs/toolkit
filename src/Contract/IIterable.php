@@ -11,6 +11,13 @@ namespace Lkrms\Contract;
 interface IIterable extends \Iterator
 {
     /**
+     * Convert the iterator's remaining elements to an array
+     *
+     * @return TValue[]
+     */
+    public function toArray(): array;
+
+    /**
      * Apply a callback to the iterator's remaining elements
      *
      * @param callable(TValue): mixed $callback

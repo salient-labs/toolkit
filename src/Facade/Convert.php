@@ -2,6 +2,7 @@
 
 namespace Lkrms\Facade;
 
+use ArrayAccess;
 use Closure;
 use DateInterval;
 use DateTimeImmutable;
@@ -21,7 +22,7 @@ use Lkrms\Utility\Conversions;
  * @method static void unload() Clear the underlying Conversions instance
  * @method static int|null arrayKeyToOffset(string|int $key, array $array) Get the offset of a key in an array (see {@see Conversions::arrayKeyToOffset()})
  * @method static string classToBasename(string $class, string ...$suffixes) Remove the namespace and the first matched suffix from a class name
- * @method static string classToNamespace(string $class) Return the namespace of a class (see {@see Conversions::classToNamespace()})
+ * @method static string classToNamespace(string $class) Get the namespace of a class (see {@see Conversions::classToNamespace()})
  * @method static mixed coalesce(...$values) Get the first value that is not null
  * @method static string dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null) A more API-friendly http_build_query (see {@see Conversions::dataToQuery()})
  * @method static string ellipsize(string $value, int $length) Replace the end of a multi-byte string with an ellipsis ("...") if its length exceeds a limit
@@ -29,17 +30,17 @@ use Lkrms\Utility\Conversions;
  * @method static mixed flatten($value) Recursively remove outer single-element arrays (see {@see Conversions::flatten()})
  * @method static int intervalToSeconds(DateInterval|string $value) Convert an interval to the equivalent number of seconds (see {@see Conversions::intervalToSeconds()})
  * @method static array iterableToArray(iterable $iterable, bool $preserveKeys = false) If an iterable isn't already an array, make it one
- * @method static array|object|false iterableToItem(iterable $list, string|Closure $key, $value, bool $strict = false) Return the first item in $list where the value at $key is $value (see {@see Conversions::iterableToItem()})
+ * @method static array|object|false iterableToItem(iterable $list, int|string|Closure $key, $value, bool $strict = false) Get the first item in $list where the value at $key is $value (see {@see Conversions::iterableToItem()})
  * @method static Iterator iterableToIterator(iterable $iterable) If an iterable isn't already an Iterator, enclose it in one
- * @method static string linesToLists(string $text, string $separator = "\n", ?string $marker = null, string $regex = '/^\\h*[-*] /') Remove duplicates in a string where 'top-level' lines ("section names") are grouped with any subsequent 'child' lines ("list items") (see {@see Conversions::linesToLists()})
- * @method static array listToMap(array $list, string|Closure $key) Create a map from a list (see {@see Conversions::listToMap()})
+ * @method static string linesToLists(string $text, string $separator = "\n", ?string $marker = null, string $regex = '/^\\h*[-*] /', bool $clean = false) Remove duplicates in a string where 'top-level' lines ("section names") are grouped with any subsequent 'child' lines ("list items") (see {@see Conversions::linesToLists()})
+ * @method static array listToMap(array $list, int|string|Closure $key) Create a map from a list (see {@see Conversions::listToMap()})
  * @method static string methodToFunction(string $method) Remove the class from a method name
- * @method static string nounToPlural(string $noun) Return the plural of a singular noun
+ * @method static string nounToPlural(string $noun) Get the plural of a singular noun
  * @method static array objectToArray(object $object) A wrapper for get_object_vars (see {@see Conversions::objectToArray()})
  * @method static array|false parseUrl(string $url) Parse a URL and return its components, including "params" if FTP parameters are present (see {@see Conversions::parseUrl()})
  * @method static string pathToBasename(string $path, int $extLimit = 0) Remove the directory and up to the given number of extensions from a path (see {@see Conversions::pathToBasename()})
  * @method static string plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false) If $number is 1, return $singular, otherwise return $plural (see {@see Conversions::plural()})
- * @method static string pluralRange(int $from, int $to, string $singular, ?string $plural = null, string $preposition = 'on') Return a phrase like "between lines 3 and 11" or "on platform 23" (see {@see Conversions::pluralRange()})
+ * @method static string pluralRange(int $from, int $to, string $singular, ?string $plural = null, string $preposition = 'on') Get a phrase like "between lines 3 and 11" or "on platform 23" (see {@see Conversions::pluralRange()})
  * @method static array queryToData(string[] $query) Convert a list of "key=value" strings to an array like ["key" => "value"] (see {@see Conversions::queryToData()})
  * @method static array renameArrayKey(string|int $key, string|int $newKey, array $array) Rename an array key without changing the order of values in the array
  * @method static string resolvePath(string $path) Resolve relative segments in a pathname (see {@see Conversions::resolvePath()})
@@ -67,6 +68,7 @@ use Lkrms\Utility\Conversions;
  * @method static string unparseUrl(array $url) Convert a parse_url array to a string (see {@see Conversions::unparseUrl()})
  * @method static string unwrap(string $string, string $break = "\n") Undo wordwrap(), preserving line breaks that appear consecutively, immediately after 2 spaces, or immediately before 4 spaces
  * @method static string uuidToHex(string $bytes) Convert a 16-byte UUID to its 36-byte hexadecimal representation
+ * @method static mixed valueAtKey(array|ArrayAccess|object $item, int|string $key) Get the value at $key in $item, where $item is an array or object
  * @method static string valueToCode($value, string $delimiter = "\054 ", string $arrow = ' => ', ?string $escapeCharacters = null) Like var_export but with more compact output
  *
  * @uses Conversions

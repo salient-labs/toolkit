@@ -748,6 +748,10 @@ class Introspector
                 } else {
                     $arr[$key] = $instance->{$props[$key]};
                 }
+                // Iterators aren't serializable, so convert them to arrays
+                if (is_iterable($arr[$key]) && !is_array($arr[$key])) {
+                    $arr[$key] = iterator_to_array($arr[$key]);
+                }
             }
 
             return $arr;
