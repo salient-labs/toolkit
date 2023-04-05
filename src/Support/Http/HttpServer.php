@@ -64,8 +64,8 @@ final class HttpServer implements IReadable, IImmutable
 
     public function __construct(string $host, int $port, int $timeout = 300)
     {
-        $this->Host    = $host;
-        $this->Port    = $port;
+        $this->Host = $host;
+        $this->Port = $port;
         $this->Timeout = $timeout;
     }
 
@@ -81,11 +81,11 @@ final class HttpServer implements IReadable, IImmutable
      */
     public function withProxy(string $proxyHost, int $proxyPort, ?bool $proxyTls = null)
     {
-        $clone            = clone $this;
+        $clone = clone $this;
         $clone->ProxyHost = $proxyHost;
         $clone->ProxyPort = $proxyPort;
-        $clone->ProxyTls  = is_null($proxyTls) ? ($proxyPort === 443) : $proxyTls;
-        $clone->Server    = null;
+        $clone->ProxyTls = is_null($proxyTls) ? ($proxyPort === 443) : $proxyTls;
+        $clone->Server = null;
 
         return $clone;
     }
@@ -99,21 +99,21 @@ final class HttpServer implements IReadable, IImmutable
         if ($this->ProxyHost && $this->ProxyPort) {
             return ($this->ProxyTls && $this->ProxyPort === 443) ||
                 (!$this->ProxyTls && $this->ProxyPort === 80)
-                           ? sprintf(
-                               '%s://%s',
-                               $this->ProxyTls
-                                   ? 'https'
-                                   : 'http',
-                               $this->ProxyHost
-                           )
-                           : sprintf(
-                               '%s://%s:%d',
-                               $this->ProxyTls
-                                   ? 'https'
-                                   : 'http',
-                               $this->ProxyHost,
-                               $this->ProxyPort
-                           );
+                    ? sprintf(
+                        '%s://%s',
+                        $this->ProxyTls
+                            ? 'https'
+                            : 'http',
+                        $this->ProxyHost
+                    )
+                    : sprintf(
+                        '%s://%s:%d',
+                        $this->ProxyTls
+                            ? 'https'
+                            : 'http',
+                        $this->ProxyHost,
+                        $this->ProxyPort
+                    );
         }
 
         return $this->ProxyPort === 80
@@ -188,19 +188,19 @@ final class HttpServer implements IReadable, IImmutable
 
         $timeout = is_null($timeout) ? $this->Timeout : $timeout;
         do {
-            $peer   = null;
+            $peer = null;
             $socket = stream_socket_accept($this->Server, $timeout, $peer);
             $client = $peer ? preg_replace('/:[0-9]+$/', '', $peer) : null;
-            $peer   = $peer ?: '<unknown>';
+            $peer = $peer ?: '<unknown>';
 
             if (!$socket) {
                 throw new RuntimeException("Unable to accept connection from $peer");
             }
 
             $startLine = null;
-            $version   = null;
-            $headers   = new CurlerHeaders();
-            $body      = null;
+            $version = null;
+            $headers = new CurlerHeaders();
+            $body = null;
             do {
                 if (($line = fgets($socket)) === false) {
                     throw new RuntimeException("Error reading request from $peer");
@@ -241,7 +241,7 @@ final class HttpServer implements IReadable, IImmutable
             Console::debug("$method request received from $client:", $target);
 
             $continue = false;
-            $return   = null;
+            $return = null;
 
             try {
                 /** @var HttpResponse */

@@ -11,10 +11,10 @@ use Lkrms\Facade\Convert;
  */
 final class MimeType extends Dictionary
 {
-    public const TEXT     = 'text/plain';
-    public const BINARY   = 'application/octet-stream';
+    public const TEXT = 'text/plain';
+    public const BINARY = 'application/octet-stream';
     public const WWW_FORM = 'application/x-www-form-urlencoded';
-    public const JSON     = 'application/json';
+    public const JSON = 'application/json';
 
     /**
      * @var array<string,string>
@@ -36,7 +36,7 @@ final class MimeType extends Dictionary
     {
         // Remove charset, boundary, etc.
         [$value] = explode(';', $value);
-        $value   = strtolower(rtrim($value));
+        $value = strtolower(rtrim($value));
 
         if ($value === $mimeType) {
             return true;

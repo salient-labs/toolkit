@@ -86,29 +86,29 @@ final class Pipeline extends FluentInterface implements IPipeline
 
     public function send($payload, $arg = null)
     {
-        $clone                    = clone $this;
-        $clone->Payload           = $payload;
+        $clone = clone $this;
+        $clone->Payload = $payload;
         $clone->PayloadConformity = ArrayKeyConformity::NONE;
-        $clone->Arg               = $arg;
-        $clone->Stream            = false;
+        $clone->Arg = $arg;
+        $clone->Stream = false;
 
         return $clone;
     }
 
     public function stream(iterable $payload, $arg = null)
     {
-        $clone                    = clone $this;
-        $clone->Payload           = $payload;
+        $clone = clone $this;
+        $clone->Payload = $payload;
         $clone->PayloadConformity = ArrayKeyConformity::NONE;
-        $clone->Arg               = $arg;
-        $clone->Stream            = true;
+        $clone->Arg = $arg;
+        $clone->Stream = true;
 
         return $clone;
     }
 
     public function withConformity(int $conformity = ArrayKeyConformity::PARTIAL)
     {
-        $clone                    = clone $this;
+        $clone = clone $this;
         $clone->PayloadConformity = $conformity;
 
         return $clone;
@@ -119,7 +119,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         if ($this->After) {
             throw new RuntimeException(static::class . '::after() has already been applied');
         }
-        $clone        = clone $this;
+        $clone = clone $this;
         $clone->After = $callback;
 
         return $clone;
@@ -155,10 +155,10 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $this->through(
             fn($payload, Closure $next, IPipeline $pipeline) =>
                 $next((Mapper::getKeyMapClosure(
-                           $keyMap,
-                           $pipeline->getConformity(),
-                           $flags
-                       ))($payload))
+                    $keyMap,
+                    $pipeline->getConformity(),
+                    $flags
+                ))($payload))
         );
     }
 
@@ -167,7 +167,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         if ($this->Then) {
             throw new RuntimeException(static::class . '::then() has already been applied');
         }
-        $clone       = clone $this;
+        $clone = clone $this;
         $clone->Then = $callback;
 
         return $clone;
@@ -187,7 +187,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         if ($this->Unless) {
             throw new RuntimeException(static::class . '::unless() has already been applied');
         }
-        $clone         = clone $this;
+        $clone = clone $this;
         $clone->Unless = $filter;
 
         return $clone;
@@ -275,7 +275,7 @@ final class Pipeline extends FluentInterface implements IPipeline
                 } else {
                     if (is_string($pipe)) {
                         $container = $this->Container ?: Container::maybeGetGlobalContainer();
-                        $pipe      = $container ? $container->get($pipe) : new $pipe();
+                        $pipe = $container ? $container->get($pipe) : new $pipe();
                     }
                     if (!($pipe instanceof IPipe)) {
                         throw new UnexpectedValueException('Pipe does not implement ' . IPipe::class);

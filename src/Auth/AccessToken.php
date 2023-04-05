@@ -46,11 +46,11 @@ final class AccessToken implements IReadable
      */
     public function __construct(string $token, $expires, array $claims = [], ?string $type = null)
     {
-        $this->Token   = $token;
+        $this->Token = $token;
         $this->Expires = $expires instanceof DateTimeInterface
-                             ? Convert::toDateTimeImmutable($expires)
-                             : ($expires > 0 ? new DateTimeImmutable("@$expires") : 0);
+            ? Convert::toDateTimeImmutable($expires)
+            : ($expires > 0 ? new DateTimeImmutable("@$expires") : 0);
         $this->Claims = $claims;
-        $this->Type   = $type;
+        $this->Type = $type;
     }
 }

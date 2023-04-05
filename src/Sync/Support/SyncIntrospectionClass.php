@@ -122,13 +122,13 @@ final class SyncIntrospectionClass extends IntrospectionClass
     public function __construct(string $class)
     {
         parent::__construct($class);
-        $class            = $this->Reflector;
-        $this->IsEntity   = $class->implementsInterface(ISyncEntity::class);
+        $class = $this->Reflector;
+        $this->IsEntity = $class->implementsInterface(ISyncEntity::class);
         $this->IsProvider = $class->implementsInterface(ISyncProvider::class);
 
         if ($this->IsEntity) {
             $this->EntityNoun = Convert::classToBasename($this->Class);
-            $plural           = $class->getMethod('plural')->invoke(null);
+            $plural = $class->getMethod('plural')->invoke(null);
             if (strcasecmp($this->EntityNoun, $plural)) {
                 $this->EntityPlural = $plural;
             }
@@ -152,7 +152,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
                     !is_a($entity, ISyncEntity::class, true)) {
                 continue;
             }
-            $entity                       = SyncIntrospector::get($entity);
+            $entity = SyncIntrospector::get($entity);
             $this->SyncProviderEntities[] = $entity->Class;
 
             // Map unambiguous lowercase entity basenames to qualified names in
@@ -191,8 +191,10 @@ final class SyncIntrospectionClass extends IntrospectionClass
                 $this->SyncOperationMagicMethods[$method] = [$operation, $entity->Class];
             };
 
-            [$noun, $plural] = [strtolower($entity->EntityNoun),
-                                strtolower($entity->EntityPlural)];
+            [$noun, $plural] = [
+                strtolower($entity->EntityNoun),
+                strtolower($entity->EntityPlural)
+            ];
 
             if ($plural) {
                 $fn(SyncOperation::CREATE_LIST, 'create' . $plural);
@@ -214,7 +216,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
             $fn(SyncOperation::DELETE_LIST, 'deletelist_' . $noun);
         }
         $this->SyncProviderEntityBasenames = array_filter($this->SyncProviderEntityBasenames);
-        $this->SyncOperationMethods        = array_filter($this->SyncOperationMethods);
-        $this->SyncOperationMagicMethods   = array_filter($this->SyncOperationMagicMethods);
+        $this->SyncOperationMethods = array_filter($this->SyncOperationMethods);
+        $this->SyncOperationMagicMethods = array_filter($this->SyncOperationMagicMethods);
     }
 }

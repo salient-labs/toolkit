@@ -35,7 +35,7 @@ class Office
 
     public function __construct(IdGenerator $idGenerator, string $name = null)
     {
-        $this->id   = $idGenerator->getNext(__CLASS__);
+        $this->id = $idGenerator->getNext(__CLASS__);
         $this->name = $name;
     }
 }
@@ -52,7 +52,7 @@ class User
 
     public function __construct(IdGenerator $idGenerator, Office $office)
     {
-        $this->id     = $idGenerator->getNext(__CLASS__);
+        $this->id = $idGenerator->getNext(__CLASS__);
         $this->office = $office;
     }
 }
@@ -91,9 +91,9 @@ class Department
 
     public function __construct(IdGenerator $idGenerator, Office $mainOffice, $name = null)
     {
-        $this->id         = $idGenerator->getNext(__CLASS__);
+        $this->id = $idGenerator->getNext(__CLASS__);
         $this->mainOffice = $mainOffice;
-        $this->name       = $name;
+        $this->name = $name;
     }
 }
 
@@ -113,8 +113,8 @@ class OrgUnit implements IService
     {
         $this->mainOffice = $mainOffice;
         $this->department = $department;
-        $this->manager    = $manager;
-        $this->admin      = $admin;
+        $this->manager = $manager;
+        $this->admin = $admin;
     }
 
     public static function getContextualBindings(): array
@@ -122,8 +122,8 @@ class OrgUnit implements IService
         // Resolve 'Office' to 'FancyOffice', etc.
         return [
             Office::class => FancyOffice::class,
-            User::class   => DepartmentStaff::class,
-            Staff::class  => DepartmentStaff::class,
+            User::class => DepartmentStaff::class,
+            Staff::class => DepartmentStaff::class,
         ];
     }
 }
@@ -174,15 +174,15 @@ $orgUnit1 = DI::get(OrgUnit::class);
 $orgUnit2 = DI::get(OrgUnit::class);
 
 print_r([
-    'exceptions'  => $exceptions,
+    'exceptions' => $exceptions,
     'idGenerator' => DI::get(IdGenerator::class),
-    'user1'       => $user1,
-    'user2'       => $user2,
-    'user3'       => $user3,
-    'staff1'      => $staff1,
-    'staff2'      => $staff2,
-    'dept1'       => $dept1,
-    'dept2'       => $dept2,
-    'orgUnit1'    => $orgUnit1,
-    'orgUnit2'    => $orgUnit2,
+    'user1' => $user1,
+    'user2' => $user2,
+    'user3' => $user3,
+    'staff1' => $staff1,
+    'staff2' => $staff2,
+    'dept1' => $dept1,
+    'dept2' => $dept2,
+    'orgUnit1' => $orgUnit1,
+    'orgUnit2' => $orgUnit2,
 ]);

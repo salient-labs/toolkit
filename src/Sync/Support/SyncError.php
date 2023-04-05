@@ -101,15 +101,22 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
      */
     protected $Count = 1;
 
-    public function __construct(int $errorType, string $message, array $values = [], int $level = ConsoleLevel::ERROR, ?ISyncEntity $entity = null, ?string $entityName = null, ?ISyncProvider $provider = null)
-    {
+    public function __construct(
+        int $errorType,
+        string $message,
+        array $values = [],
+        int $level = ConsoleLevel::ERROR,
+        ?ISyncEntity $entity = null,
+        ?string $entityName = null,
+        ?ISyncProvider $provider = null
+    ) {
         $this->EntityName = $entityName ?: ($entity ? $entity->uri() : null);
-        $this->ErrorType  = $errorType;
-        $this->Message    = $message;
-        $this->Values     = $values ?: [$this->EntityName];
-        $this->Level      = $level;
-        $this->Entity     = $entity;
-        $this->Provider   = $provider ?: ($entity ? $entity->provider() : null);
+        $this->ErrorType = $errorType;
+        $this->Message = $message;
+        $this->Values = $values ?: [$this->EntityName];
+        $this->Level = $level;
+        $this->Entity = $entity;
+        $this->Provider = $provider ?: ($entity ? $entity->provider() : null);
     }
 
     /**
@@ -125,12 +132,12 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
     public function compare($b, bool $strict = false): int
     {
         return $this->Level <=> $b->Level
-                   ?: $this->ErrorType <=> $b->ErrorType
-                   ?: $this->Message <=> $b->Message
-                   ?: $this->Values <=> $b->Values
-                   ?: $this->EntityName <=> $b->EntityName
-                   ?: ($this->Provider ? $this->Provider->getProviderId() : null) <=> ($b->Provider ? $b->Provider->getProviderId() : null)
-                   ?: ($this->Entity ? $this->Entity->id() : null) <=> ($b->Entity ? $b->Entity->id() : null);
+            ?: $this->ErrorType <=> $b->ErrorType
+            ?: $this->Message <=> $b->Message
+            ?: $this->Values <=> $b->Values
+            ?: $this->EntityName <=> $b->EntityName
+            ?: ($this->Provider ? $this->Provider->getProviderId() : null) <=> ($b->Provider ? $b->Provider->getProviderId() : null)
+            ?: ($this->Entity ? $this->Entity->id() : null) <=> ($b->Entity ? $b->Entity->id() : null);
     }
 
     public function getCode(): string

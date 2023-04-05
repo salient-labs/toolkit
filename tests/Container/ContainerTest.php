@@ -52,10 +52,10 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
     public function testServiceBindings()
     {
         $container = (new Container())->service(TestServiceImplB::class);
-        $ts1       = $container->get(ITestService1::class);
-        $o1        = $container->get(A::class);
+        $ts1 = $container->get(ITestService1::class);
+        $o1 = $container->get(A::class);
         $container = $container->inContextOf(get_class($ts1));
-        $o2        = $container->get(A::class);
+        $o2 = $container->get(A::class);
         $this->assertInstanceOf(A::class, $o1);
         $this->assertNotInstanceOf(B::class, $o1);
         $this->assertInstanceOf(B::class, $o2);
@@ -63,8 +63,8 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
 
     private function _testServiceTransient($container, $concrete = TestServiceImplA::class)
     {
-        $c1   = $container->get($concrete);
-        $c2   = $container->get($concrete);
+        $c1 = $container->get($concrete);
+        $c2 = $container->get($concrete);
         $ts1a = $container->get(ITestService1::class);
         $ts1b = $container->get(ITestService1::class);
         $ts2a = $container->get(ITestService2::class);
@@ -80,8 +80,8 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
 
     private function _testServiceShared($container, $concrete = TestServiceImplA::class)
     {
-        $c1   = $container->get($concrete);
-        $c2   = $container->get($concrete);
+        $c1 = $container->get($concrete);
+        $c2 = $container->get($concrete);
         $ts1a = $container->get(ITestService1::class);
         $ts1b = $container->get(ITestService1::class);
         $ts2a = $container->get(ITestService2::class);
@@ -98,8 +98,8 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
 
     private function _testServiceSingleton($container, $concrete = TestServiceImplA::class)
     {
-        $c1   = $container->get($concrete);
-        $c2   = $container->get($concrete);
+        $c1 = $container->get($concrete);
+        $c2 = $container->get($concrete);
         $ts1a = $container->get(ITestService1::class);
         $ts1b = $container->get(ITestService1::class);
         $ts2a = $container->get(ITestService2::class);
@@ -113,8 +113,8 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
 
     private function _testServiceSharedSingleton($container, $concrete = TestServiceImplA::class)
     {
-        $c1   = $container->get($concrete);
-        $c2   = $container->get($concrete);
+        $c1 = $container->get($concrete);
+        $c2 = $container->get($concrete);
         $ts1a = $container->get(ITestService1::class);
         $ts1b = $container->get(ITestService1::class);
         $ts2a = $container->get(ITestService2::class);

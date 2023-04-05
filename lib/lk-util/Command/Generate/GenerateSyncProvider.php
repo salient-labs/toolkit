@@ -118,20 +118,20 @@ class GenerateSyncProvider extends GenerateCommand
     protected function run(string ...$args)
     {
         $operationMap = [
-            'create'      => SyncOperation::CREATE,
-            'get'         => SyncOperation::READ,
-            'update'      => SyncOperation::UPDATE,
-            'delete'      => SyncOperation::DELETE,
+            'create' => SyncOperation::CREATE,
+            'get' => SyncOperation::READ,
+            'update' => SyncOperation::UPDATE,
+            'delete' => SyncOperation::DELETE,
             'create-list' => SyncOperation::CREATE_LIST,
-            'get-list'    => SyncOperation::READ_LIST,
+            'get-list' => SyncOperation::READ_LIST,
             'update-list' => SyncOperation::UPDATE_LIST,
             'delete-list' => SyncOperation::DELETE_LIST,
         ];
 
-        $namespace   = explode('\\', $classArg = $this->getOptionValue('class'));
-        $class       = array_pop($namespace);
-        $namespace   = implode('\\', $namespace);
-        $fqcn        = $namespace . '\\' . $class;
+        $namespace = explode('\\', $classArg = $this->getOptionValue('class'));
+        $class = array_pop($namespace);
+        $namespace = implode('\\', $namespace);
+        $fqcn = $namespace . '\\' . $class;
         $classPrefix = '\\';
 
         if (!$class) {
@@ -149,14 +149,14 @@ class GenerateSyncProvider extends GenerateCommand
         $extendsFqcn = [];
         foreach ($this->getOptionValue('extend') ?: [ISyncProvider::class] as $_extends) {
             $extendsNamespace = explode('\\', $_extends);
-            $extendsClass     = array_pop($extendsNamespace);
+            $extendsClass = array_pop($extendsNamespace);
             $extendsNamespace = implode('\\', $extendsNamespace);
-            $extendsFqcn[]    = $extendsNamespace . '\\' . $extendsClass;
+            $extendsFqcn[] = $extendsNamespace . '\\' . $extendsClass;
         }
 
-        $this->OutputClass     = $interface;
+        $this->OutputClass = $interface;
         $this->OutputNamespace = $namespace;
-        $this->ClassPrefix     = $classPrefix;
+        $this->ClassPrefix = $classPrefix;
 
         $service = $this->getFqcnAlias($fqcn, $class);
         $extends = [];
@@ -167,11 +167,11 @@ class GenerateSyncProvider extends GenerateCommand
 
         $camelClass = Convert::toCamelCase($class);
 
-        $magic   = $this->getOptionValue('magic');
+        $magic = $this->getOptionValue('magic');
         $package = $this->getOptionValue('package');
-        $desc    = $this->getOptionValue('desc');
-        $desc    = is_null($desc) ? "Syncs $class objects with a backend" : $desc;
-        $ops     = array_map(
+        $desc = $this->getOptionValue('desc');
+        $desc = is_null($desc) ? "Syncs $class objects with a backend" : $desc;
+        $ops = array_map(
             function ($op) use ($operationMap) { return $operationMap[$op]; },
             $this->getOptionValue('op')
         );
@@ -180,49 +180,49 @@ class GenerateSyncProvider extends GenerateCommand
 
         if (strcasecmp($class, $plural)) {
             $camelPlural = Convert::toCamelCase($plural);
-            $opMethod    = [
-                SyncOperation::CREATE      => 'create' . $class,
-                SyncOperation::READ        => 'get' . $class,
-                SyncOperation::UPDATE      => 'update' . $class,
-                SyncOperation::DELETE      => 'delete' . $class,
+            $opMethod = [
+                SyncOperation::CREATE => 'create' . $class,
+                SyncOperation::READ => 'get' . $class,
+                SyncOperation::UPDATE => 'update' . $class,
+                SyncOperation::DELETE => 'delete' . $class,
                 SyncOperation::CREATE_LIST => 'create' . $plural,
-                SyncOperation::READ_LIST   => 'get' . $plural,
+                SyncOperation::READ_LIST => 'get' . $plural,
                 SyncOperation::UPDATE_LIST => 'update' . $plural,
                 SyncOperation::DELETE_LIST => 'delete' . $plural,
             ];
         } else {
             $camelPlural = $camelClass;
-            $opMethod    = [
-                SyncOperation::CREATE      => 'create_' . $class,
-                SyncOperation::READ        => 'get_' . $class,
-                SyncOperation::UPDATE      => 'update_' . $class,
-                SyncOperation::DELETE      => 'delete_' . $class,
+            $opMethod = [
+                SyncOperation::CREATE => 'create_' . $class,
+                SyncOperation::READ => 'get_' . $class,
+                SyncOperation::UPDATE => 'update_' . $class,
+                SyncOperation::DELETE => 'delete_' . $class,
                 SyncOperation::CREATE_LIST => 'createList_' . $class,
-                SyncOperation::READ_LIST   => 'getList_' . $class,
+                SyncOperation::READ_LIST => 'getList_' . $class,
                 SyncOperation::UPDATE_LIST => 'updateList_' . $class,
                 SyncOperation::DELETE_LIST => 'deleteList_' . $class,
             ];
         }
 
         $methods = [];
-        $lines   = [];
+        $lines = [];
         foreach ($ops as $op) {
             // CREATE and UPDATE have the same signature, so it's a good default
             if (SyncOperation::isList($op)) {
-                $paramDoc   = 'iterable<' . $service . '> $' . $camelPlural;
-                $paramCode  = 'iterable $' . $camelPlural;
-                $returnDoc  = 'iterable<' . $service . '>';
+                $paramDoc = 'iterable<' . $service . '> $' . $camelPlural;
+                $paramCode = 'iterable $' . $camelPlural;
+                $returnDoc = 'iterable<' . $service . '>';
                 $returnCode = 'iterable';
             } else {
-                $paramDoc   = $service . ' $' . $camelClass;
-                $paramCode  = $paramDoc;
-                $returnDoc  = $service;
+                $paramDoc = $service . ' $' . $camelClass;
+                $paramCode = $paramDoc;
+                $returnDoc = $service;
                 $returnCode = $service;
             }
 
             switch ($op) {
                 case SyncOperation::READ:
-                    $paramDoc  = 'int|string|null $id';
+                    $paramDoc = 'int|string|null $id';
                     $paramCode = '$id';
                     break;
 
@@ -231,7 +231,7 @@ class GenerateSyncProvider extends GenerateCommand
                     break;
             }
 
-            $context   = $this->getFqcnAlias(ISyncContext::class) . ' $ctx';
+            $context = $this->getFqcnAlias(ISyncContext::class) . ' $ctx';
             $separator = $paramCode ? ', ' : '';
             $paramCode = "$context$separator$paramCode";
 
@@ -276,11 +276,13 @@ class GenerateSyncProvider extends GenerateCommand
         }
         if (!$this->getOptionValue('no-meta')) {
             $docBlock[] = ' * @lkrms-generate-command '
-                . implode(' ',
-                          $this->getEffectiveCommandLine(true, [
-                              'stdout' => null,
-                              'force'  => null,
-                          ]));
+                . implode(
+                    ' ',
+                    $this->getEffectiveCommandLine(true, [
+                        'stdout' => null,
+                        'force' => null,
+                    ])
+                );
         }
         $docBlock[] = ' */';
         if (count($docBlock) == 2) {

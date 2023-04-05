@@ -15,31 +15,31 @@ final class ConsoleFormatter
      * Matches a preformatted block or span and the text before it
      */
     private const REGEX_PREFORMATTED = <<<'REGEX'
-        (?xs)
-        # The end of the previous match
-        \G
-        # Text before a preformatted block or span, including recognised escapes
-        (?P<text> (?: [^\\`]+ | \\ [\\`] | \\ )* )
-        # A preformatted block
-        (?: (?<= \n | ^) ``` \n (?P<pre> .*? ) \n ``` (?= \n | $) |
-          # ...or span
-          ` (?P<code> (?: [^\\`]+ | \\ [\\`] | \\ )* ) ` |
-          # ...or the end of the subject
-          $)
-        REGEX;
+(?xs)
+# The end of the previous match
+\G
+# Text before a preformatted block or span, including recognised escapes
+(?P<text> (?: [^\\`]+ | \\ [\\`] | \\ )* )
+# A preformatted block
+(?: (?<= \n | ^) ``` \n (?P<pre> .*? ) \n ``` (?= \n | $) |
+  # ...or span
+  ` (?P<code> (?: [^\\`]+ | \\ [\\`] | \\ )* ) ` |
+  # ...or the end of the subject
+  $)
+REGEX;
 
     /**
      * Matches an escaped backslash or backtick (other escapes are ignored)
      */
     private const REGEX_ESCAPED = <<<'REGEX'
-        (?xs)
-        \\ ( [\\`] )
-        REGEX;
+(?xs)
+\\ ( [\\`] )
+REGEX;
 
     private const REGEX_MAP = [
-        Tag::HEADING      => '(?|\b___(?!\s)(.+?)(?<!\s)___\b|\*\*\*(?!\s)(.+?)(?<!\s)\*\*\*)',
-        Tag::SUBHEADING   => '(?|\b__(?!\s)(.+?)(?<!\s)__\b|\*\*(?!\s)(.+?)(?<!\s)\*\*)',
-        Tag::TITLE        => '(?|\b_(?!\s)(.+?)(?<!\s)_\b|\*(?!\s)(.+?)(?<!\s)\*)',
+        Tag::HEADING => '(?|\b___(?!\s)(.+?)(?<!\s)___\b|\*\*\*(?!\s)(.+?)(?<!\s)\*\*\*)',
+        Tag::SUBHEADING => '(?|\b__(?!\s)(.+?)(?<!\s)__\b|\*\*(?!\s)(.+?)(?<!\s)\*\*)',
+        Tag::TITLE => '(?|\b_(?!\s)(.+?)(?<!\s)_\b|\*(?!\s)(.+?)(?<!\s)\*)',
         Tag::LOW_PRIORITY => '~~(.+?)~~',
     ];
 
@@ -121,6 +121,6 @@ final class ConsoleFormatter
     private static function getDefaultInstance(): self
     {
         return self::$DefaultInstance
-                   ?: (self::$DefaultInstance = new self(null));
+            ?: (self::$DefaultInstance = new self(null));
     }
 }

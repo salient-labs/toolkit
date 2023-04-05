@@ -106,8 +106,13 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
      */
     private $ShutdownReportIsRegistered = false;
 
-    private function getPath(string $name, string $parent, ?string $child, string $sourceChild, string $windowsChild): string
-    {
+    private function getPath(
+        string $name,
+        string $parent,
+        ?string $child,
+        string $sourceChild,
+        string $windowsChild
+    ): string {
         $name = "app_{$name}_path";
         if ($path = $this->Env->get($name, null)) {
             if (!Test::isAbsolutePath($path)) {
@@ -194,7 +199,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
     final public function getCachePath(): string
     {
         return $this->_CachePath
-                   ?: ($this->_CachePath = $this->getPath('cache', self::DIR_STATE, 'cache', 'var/cache', 'cache'));
+            ?: ($this->_CachePath = $this->getPath('cache', self::DIR_STATE, 'cache', 'var/cache', 'cache'));
     }
 
     /**
@@ -204,7 +209,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
     final public function getConfigPath(): string
     {
         return $this->_ConfigPath
-                   ?: ($this->_ConfigPath = $this->getPath('config', self::DIR_CONFIG, null, 'config', 'config'));
+            ?: ($this->_ConfigPath = $this->getPath('config', self::DIR_CONFIG, null, 'config', 'config'));
     }
 
     /**
@@ -217,7 +222,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
     final public function getDataPath(): string
     {
         return $this->_DataPath
-                   ?: ($this->_DataPath = $this->getPath('data', self::DIR_DATA, null, 'var/lib', 'data'));
+            ?: ($this->_DataPath = $this->getPath('data', self::DIR_DATA, null, 'var/lib', 'data'));
     }
 
     /**
@@ -227,7 +232,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
     final public function getLogPath(): string
     {
         return $this->_LogPath
-                   ?: ($this->_LogPath = $this->getPath('log', self::DIR_STATE, 'log', 'var/log', 'log'));
+            ?: ($this->_LogPath = $this->getPath('log', self::DIR_STATE, 'log', 'var/log', 'log'));
     }
 
     /**
@@ -237,7 +242,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
     final public function getTempPath(): string
     {
         return $this->_TempPath
-                   ?: ($this->_TempPath = $this->getPath('temp', self::DIR_STATE, 'tmp', 'var/tmp', 'tmp'));
+            ?: ($this->_TempPath = $this->getPath('temp', self::DIR_STATE, 'tmp', 'var/tmp', 'tmp'));
     }
 
     public static function getReadable(): array
@@ -459,13 +464,15 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
         $syncDb = $this->getDataPath() . '/sync.db';
 
         if (!Sync::isLoaded()) {
-            Sync::load($syncDb,
-                       is_null($command) ? Sys::getProgramName($this->BasePath) : $command,
-                       (is_null($arguments)
-                            ? (PHP_SAPI == 'cli'
-                                   ? array_slice($_SERVER['argv'], 1)
-                                   : ['_GET' => $_GET, '_POST' => $_POST])
-                            : $arguments));
+            Sync::load(
+                $syncDb,
+                is_null($command) ? Sys::getProgramName($this->BasePath) : $command,
+                (is_null($arguments)
+                    ? (PHP_SAPI == 'cli'
+                        ? array_slice($_SERVER['argv'], 1)
+                        : ['_GET' => $_GET, '_POST' => $_POST])
+                    : $arguments)
+            );
         } elseif (!Test::areSameFile($syncDb, $file = Sync::getFilename() ?: '')) {
             throw new RuntimeException("Sync database already loaded: $file");
         }
@@ -594,15 +601,19 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
      * @see \Lkrms\Utility\System::stopTimer()
      * @see \Lkrms\Utility\System::getTimers()
      */
-    final public function writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10)
-    {
+    final public function writeTimers(
+        bool $includeRunning = true,
+        ?string $type = null,
+        int $level = Level::INFO,
+        ?int $limit = 10
+    ) {
         foreach (Sys::getTimers($includeRunning, $type) as $_type => $timers) {
             $maxRuns = $maxTime = $totalTime = 0;
-            $count   = count($timers);
+            $count = count($timers);
             foreach ($timers as [$time, $runs]) {
                 $totalTime += $time;
-                $maxTime    = max($maxTime, $time);
-                $maxRuns    = max($maxRuns, $runs);
+                $maxTime = max($maxTime, $time);
+                $maxRuns = max($maxRuns, $runs);
             }
             uasort($timers, fn(array $a, array $b) => $b[0] <=> $a[0]);
             $lines[] = sprintf(
@@ -626,7 +637,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
                 );
             }
             if ($hidden = $count - count($timers)) {
-                $width   = $timeWidth + $runsWidth + 6;
+                $width = $timeWidth + $runsWidth + 6;
                 $lines[] = sprintf("%{$width}s~~(and %d more)~~", '', $hidden);
             }
         }

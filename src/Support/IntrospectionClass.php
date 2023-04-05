@@ -24,9 +24,9 @@ use ReflectionProperty;
  */
 class IntrospectionClass
 {
-    public const ACTION_GET   = 'get';
+    public const ACTION_GET = 'get';
     public const ACTION_ISSET = 'isset';
-    public const ACTION_SET   = 'set';
+    public const ACTION_SET = 'set';
     public const ACTION_UNSET = 'unset';
 
     /**
@@ -285,30 +285,30 @@ class IntrospectionClass
      */
     public function __construct(string $class)
     {
-        $this->Reflector    = $class = new ReflectionClass($class);
-        $this->Class        = $class->getName();
-        $this->IsReadable   = $class->implementsInterface(IReadable::class);
-        $this->IsWritable   = $class->implementsInterface(IWritable::class);
+        $this->Reflector = $class = new ReflectionClass($class);
+        $this->Class = $class->getName();
+        $this->IsReadable = $class->implementsInterface(IReadable::class);
+        $this->IsWritable = $class->implementsInterface(IWritable::class);
         $this->IsExtensible = $class->implementsInterface(IExtensible::class);
         $this->IsProvidable = $class->implementsInterface(IProvidable::class);
-        $this->IsHierarchy  = $class->implementsInterface(IHierarchy::class);
-        $this->HasDates     = $class->implementsInterface(HasDateProperties::class);
+        $this->IsHierarchy = $class->implementsInterface(IHierarchy::class);
+        $this->HasDates = $class->implementsInterface(HasDateProperties::class);
 
         // IResolvable provides access to properties via non-canonical names
         if ($class->implementsInterface(IResolvable::class)) {
-            $this->Normaliser        = $class->getMethod('normaliser')->invoke(null);
-            $this->GentleNormaliser  = fn(string $name): string => ($this->Normaliser)($name, false);
+            $this->Normaliser = $class->getMethod('normaliser')->invoke(null);
+            $this->GentleNormaliser = fn(string $name): string => ($this->Normaliser)($name, false);
             $this->CarefulNormaliser = fn(string $name): string => ($this->Normaliser)($name, true, ...$this->NormalisedKeys);
         }
 
         $propertyFilter = ReflectionProperty::IS_PUBLIC;
-        $methodFilter   = 0;
+        $methodFilter = 0;
 
         // IReadable and IWritable provide access to protected and "magic"
         // property methods
         if ($this->IsReadable || $this->IsWritable) {
             $propertyFilter |= ReflectionProperty::IS_PROTECTED;
-            $methodFilter   |= ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED;
+            $methodFilter |= ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED;
         }
 
         // Get instance properties
@@ -323,11 +323,13 @@ class IntrospectionClass
         );
         $this->PublicProperties =
             $propertyFilter & ReflectionProperty::IS_PROTECTED
-                ? array_intersect($this->Properties,
-                                  Reflect::getNames(array_filter(
-                                      $properties,
-                                      fn(ReflectionProperty $prop) => $prop->isPublic()
-                                  )))
+                ? array_intersect(
+                    $this->Properties,
+                    Reflect::getNames(array_filter(
+                        $properties,
+                        fn(ReflectionProperty $prop) => $prop->isPublic()
+                    ))
+                )
                 : $this->Properties;
 
         if ($this->IsReadable) {
@@ -368,8 +370,8 @@ class IntrospectionClass
                 if (!preg_match($regex, $name = $method->getName(), $match)) {
                     continue;
                 }
-                $action                            = strtolower($match['action']);
-                $property                          = $this->maybeNormalise($match['property'], NormaliserFlag::LAZY);
+                $action = strtolower($match['action']);
+                $property = $this->maybeNormalise($match['property'], NormaliserFlag::LAZY);
                 $this->Actions[$action][$property] = $name;
             }
         }
@@ -382,9 +384,9 @@ class IntrospectionClass
             foreach ($constructor->getParameters() as $param) {
                 $type = $param->getType();
                 $type = $type instanceof ReflectionNamedType && !$type->isBuiltin()
-                            ? $type->getName()
-                            : null;
-                $normalised   = $this->maybeNormalise($name = $param->getName(), NormaliserFlag::LAZY);
+                    ? $type->getName()
+                    : null;
+                $normalised = $this->maybeNormalise($name = $param->getName(), NormaliserFlag::LAZY);
                 $defaultValue = null;
                 if ($param->isOptional()) {
                     $defaultValue = $param->getDefaultValue();
@@ -401,7 +403,7 @@ class IntrospectionClass
                     $this->DateParameters[$normalised] = $name;
                 }
                 $this->Parameters[$normalised] = $name;
-                $this->DefaultArguments[]      = $defaultValue;
+                $this->DefaultArguments[] = $defaultValue;
             }
             $this->ParameterIndex = array_flip(array_values($this->Parameters));
         }
@@ -421,8 +423,10 @@ class IntrospectionClass
             $this->DateKeys =
                 ['*'] === $dates
                     ? $this->NormalisedKeys
-                    : array_intersect($this->NormalisedKeys,
-                                      $this->maybeNormalise($dates, NormaliserFlag::LAZY));
+                    : array_intersect(
+                        $this->NormalisedKeys,
+                        $this->maybeNormalise($dates, NormaliserFlag::LAZY)
+                    );
         }
     }
 
@@ -496,13 +500,17 @@ class IntrospectionClass
         switch ($action) {
             case self::ACTION_GET:
             case self::ACTION_ISSET:
-                return in_array($property,
-                                $this->getReadableProperties());
+                return in_array(
+                    $property,
+                    $this->getReadableProperties()
+                );
 
             case self::ACTION_SET:
             case self::ACTION_UNSET:
-                return in_array($property,
-                                $this->getWritableProperties());
+                return in_array(
+                    $property,
+                    $this->getWritableProperties()
+                );
         }
 
         return false;

@@ -78,30 +78,32 @@ final class Debugging implements ReceivesFacade
         // Use class (or namespace) and function from 2 if possible, otherwise
         // file and line from 1
         $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $depth + 3);
-        $file   = $frames[$depth + 1]['file'] ?? null;
-        $line   = $frames[$depth + 1]['line'] ?? null;
+        $file = $frames[$depth + 1]['file'] ?? null;
+        $line = $frames[$depth + 1]['line'] ?? null;
 
         if (($frame = $frames[$depth + 2] ?? null) &&
-            preg_match('/^(?P<namespace>.*?)(?P<function>[^\\\\]+|\{closure\})$/',
-                       $frame['function'],
-                       $function)) {
-            $class     = $frame['class'] ?? null;
+                preg_match(
+                    '/^(?P<namespace>.*?)(?P<function>[^\\\\]+|\{closure\})$/',
+                    $frame['function'],
+                    $function
+                )) {
+            $class = $frame['class'] ?? null;
             $namespace = $class ? null : $function['namespace'] ?? null;
-            $file      = $class || $namespace ? null : $file;
+            $file = $class || $namespace ? null : $file;
 
             return array_filter([
-                'class'     => $class,
+                'class' => $class,
                 'namespace' => $namespace,
-                'file'      => $file,
-                0           => $frame['type'] ?? ($file ? '::' : null),
-                'function'  => $function['function'],
-                1           => is_null($line) ? null : ':',
-                'line'      => $line,
+                'file' => $file,
+                0 => $frame['type'] ?? ($file ? '::' : null),
+                'function' => $function['function'],
+                1 => is_null($line) ? null : ':',
+                'line' => $line,
             ]);
         } elseif ($frames[$depth + 1] ?? null) {
             return array_filter([
                 'file' => $file,
-                0      => is_null($line) ? null : ':',
+                0 => is_null($line) ? null : ':',
                 'line' => $line,
             ]);
         }

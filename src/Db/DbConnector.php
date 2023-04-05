@@ -95,18 +95,18 @@ final class DbConnector implements IReadable
     public function __construct(string $name, int $driver = null)
     {
         $driver = is_null($driver)
-                      ? Env::get("{$name}_driver")
-                      : $driver;
+            ? Env::get("{$name}_driver")
+            : $driver;
 
-        $this->Name     = $name;
-        $this->Driver   = Test::isIntValue($driver) ? (int) $driver : DbDriver::fromName($driver);
-        $this->Dsn      = Env::get("{$name}_dsn", null);
+        $this->Name = $name;
+        $this->Driver = Test::isIntValue($driver) ? (int) $driver : DbDriver::fromName($driver);
+        $this->Dsn = Env::get("{$name}_dsn", null);
         $this->Hostname = Env::get("{$name}_hostname", null);
-        $this->Port     = (int) Env::get("{$name}_port", null) ?: null;
+        $this->Port = (int) Env::get("{$name}_port", null) ?: null;
         $this->Username = Env::get("{$name}_username", null);
         $this->Password = Env::get("{$name}_password", null);
         $this->Database = Env::get("{$name}_database", null);
-        $this->Schema   = Env::get("{$name}_schema", null);
+        $this->Schema = Env::get("{$name}_schema", null);
 
         $this->AdodbDriver = DbDriver::toAdodbDriver($this->Driver);
     }
@@ -146,27 +146,31 @@ final class DbConnector implements IReadable
                 $db->Connect(
                     $this->Dsn ?: $this->getConnectionString(
                         [
-                            'driver'         => Env::get('odbc_db2_driver', 'Db2'),
-                            'hostname'       => $this->Hostname,
-                            'protocol'       => 'tcpip',
-                            'port'           => $this->Port,
-                            'database'       => $this->Database,
-                            'uid'            => $this->Username,
-                            'pwd'            => $this->Password,
+                            'driver' => Env::get('odbc_db2_driver', 'Db2'),
+                            'hostname' => $this->Hostname,
+                            'protocol' => 'tcpip',
+                            'port' => $this->Port,
+                            'database' => $this->Database,
+                            'uid' => $this->Username,
+                            'pwd' => $this->Password,
                             'connecttimeout' => $timeout,
                         ],
                         false
                     )
                 );
                 if ($this->Schema) {
-                    $db->Execute('SET SCHEMA = ' . $db->Param('schema'),
-                                 ['schema' => $this->Schema]);
+                    $db->Execute(
+                        'SET SCHEMA = ' . $db->Param('schema'),
+                        ['schema' => $this->Schema]
+                    );
                 }
                 break;
 
             case DbDriver::MSSQL:
-                $db->setConnectionParameter('TrustServerCertificate',
-                                            (bool) Env::get('mssql_trust_server_certificate', null));
+                $db->setConnectionParameter(
+                    'TrustServerCertificate',
+                    (bool) Env::get('mssql_trust_server_certificate', null)
+                );
                 $db->setConnectionParameter('LoginTimeout', $timeout);
             default:
                 $db->Connect(

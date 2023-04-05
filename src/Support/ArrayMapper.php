@@ -31,8 +31,11 @@ final class ArrayMapper
      * static function (array $in): array
      * ```
      */
-    public function getKeyMapClosure(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED): Closure
-    {
+    public function getKeyMapClosure(
+        array $keyMap,
+        int $conformity = ArrayKeyConformity::NONE,
+        int $flags = ArrayMapperFlag::ADD_UNMAPPED
+    ): Closure {
         $sig = implode("\0", array_map(
             fn($v) => is_array($v) ? implode("\x01", $v) : $v,
             array_merge(
@@ -69,7 +72,7 @@ final class ArrayMapper
                 return $out;
             };
         } else {
-            $addMissing    = (bool) ($flags & ArrayMapperFlag::ADD_MISSING);
+            $addMissing = (bool) ($flags & ArrayMapperFlag::ADD_MISSING);
             $requireMapped = (bool) ($flags & ArrayMapperFlag::REQUIRE_MAPPED);
 
             $closure = static function (array $in) use ($flipped, $addMissing, $requireMapped): array {

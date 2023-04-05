@@ -131,9 +131,11 @@ final class PhpDocParser implements IReadable
         // - Split into string[]
         $this->Lines = preg_split(
             '/\r?\n/u',
-            trim(preg_replace('/(^\h*\* ?|\h+(?=\r?$))/um',
-                              '',
-                              $matches['content']))
+            trim(preg_replace(
+                '/(^\h*\* ?|\h+(?=\r?$))/um',
+                '',
+                $matches['content']
+            ))
         );
         $this->NextLine = reset($this->Lines);
 
@@ -149,8 +151,8 @@ final class PhpDocParser implements IReadable
                 preg_match(self::TAG_REGEX, $lines = $this->getLinesUntil(self::TAG_REGEX), $matches)) {
             $this->TagLines[] = $lines;
 
-            $lines              = preg_replace('/^@' . preg_quote($matches['tag'], '/') . '\h*/', '', $lines);
-            $tag                = ltrim($matches['tag'], '\\');
+            $lines = preg_replace('/^@' . preg_quote($matches['tag'], '/') . '\h*/', '', $lines);
+            $tag = ltrim($matches['tag'], '\\');
             $this->Tags[$tag][] = $lines;
 
             if (!$lines) {
@@ -172,7 +174,7 @@ final class PhpDocParser implements IReadable
                 // @param [type] $<name> [description]
                 case 'param':
                     $token = strtok($lines, " \t\n\r");
-                    $type  = null;
+                    $type = null;
                     if (!preg_match('/^\$/', $token)) {
                         $type = $token;
                         $meta++;
@@ -190,7 +192,7 @@ final class PhpDocParser implements IReadable
                 // @return <type> [description]
                 case 'return':
                     $token = strtok($lines, " \t\n\r");
-                    $type  = $token;
+                    $type = $token;
                     $meta++;
                     $this->Return = $this->getValue($type, $lines, $meta);
                     break;
@@ -199,7 +201,7 @@ final class PhpDocParser implements IReadable
                 case 'var':
                     unset($name);
                     $token = strtok($lines, " \t\n\r");
-                    $type  = $token;
+                    $type = $token;
                     $meta++;
                     $token = strtok(" \t");
                     if ($token !== false && preg_match('/^\$/', $token)) {
@@ -221,10 +223,10 @@ final class PhpDocParser implements IReadable
                 case 'template':
                 case 'template-covariant':
                     $token = strtok($lines, " \t");
-                    $name  = $token;
+                    $name = $token;
                     $meta++;
                     $token = strtok(" \t");
-                    $type  = 'mixed';
+                    $type = 'mixed';
                     if ($token === 'of') {
                         $meta++;
                         $token = strtok(" \t");
@@ -256,8 +258,13 @@ final class PhpDocParser implements IReadable
         }
     }
 
-    private function getValue(?string $type, string $lines, int $meta, bool $withDesc = true, array $initial = []): array
-    {
+    private function getValue(
+        ?string $type,
+        string $lines,
+        int $meta,
+        bool $withDesc = true,
+        array $initial = []
+    ): array {
         if ($this->LegacyNullable && !is_null($type)) {
             $nullable = preg_replace('/^null\||\|null$/', '', $type, 1, $count);
             if ($count && preg_match(self::TYPE_REGEX, $nullable)) {
@@ -277,7 +284,7 @@ final class PhpDocParser implements IReadable
      */
     private function getLine(): string
     {
-        $line           = array_shift($this->Lines);
+        $line = array_shift($this->Lines);
         $this->NextLine = reset($this->Lines);
 
         return $line;
@@ -288,7 +295,7 @@ final class PhpDocParser implements IReadable
      */
     private function getLinesUntil(string $pattern, bool $discard = false, bool $unwrap = false): string
     {
-        $lines   = [];
+        $lines = [];
         $inFence = false;
 
         do {
@@ -402,8 +409,11 @@ final class PhpDocParser implements IReadable
      * @param string[] $docBlocks
      * @param array<string|null>|null $classDocBlocks
      */
-    public static function fromDocBlocks(array $docBlocks, ?array $classDocBlocks = null, bool $legacyNullable = true): ?self
-    {
+    public static function fromDocBlocks(
+        array $docBlocks,
+        ?array $classDocBlocks = null,
+        bool $legacyNullable = true
+    ): ?self {
         if (!$docBlocks) {
             return null;
         }

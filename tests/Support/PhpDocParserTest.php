@@ -88,20 +88,20 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         ]);
         $this->assertEquals($phpDoc->Params, [
             'arg1' => [
-                'type'        => 'int|string',
+                'type' => 'int|string',
                 'description' => 'Description from ClassC (untyped)',
             ],
             'arg3' => [
-                'type'        => 'string[]',
+                'type' => 'string[]',
                 'description' => 'Description from ClassA',
             ],
             'arg2' => [
-                'type'        => 'string',
+                'type' => 'string',
                 'description' => 'Description from ClassA',
             ],
         ]);
         $this->assertEquals($phpDoc->Return, [
-            'type'        => '$this',
+            'type' => '$this',
             'description' => 'Description from ClassC',
         ]);
     }
@@ -182,9 +182,9 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         $this->assertEquals('Summary', $phpDoc->Summary);
         $this->assertEquals(null, $phpDoc->Description);
         $this->assertEquals([
-            'T'      => ['type' => 'mixed'],
+            'T' => ['type' => 'mixed'],
             'TArray' => ['type' => '?array'],
-            'TKey'   => ['type' => 'int|string'],
+            'TKey' => ['type' => 'int|string'],
             'TValue' => ['type' => 'object'],
         ], $phpDoc->Templates);
     }
@@ -229,8 +229,8 @@ $this->doSomethingElse();
 callback(string $value): string
 ```');
         $this->assertEquals($phpDoc->Var, [[
-            'name'        => null,
-            'type'        => '?callable',
+            'name' => null,
+            'type' => '?callable',
             'description' => 'Summary',
         ]]);
     }
@@ -270,7 +270,7 @@ callback(string $value): string
  */';
         $phpDoc = new PhpDocParser($docBlock);
         $this->assertEquals([
-            'type'        => null,
+            'type' => null,
             'description' => 'Description of $arg',
         ], $phpDoc->Params['arg'] ?? []);
     }

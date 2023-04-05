@@ -93,12 +93,12 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     protected static function getNameMap(): array
     {
         return [
-            self::CREATE      => 'CREATE',
-            self::READ        => 'READ',
-            self::UPDATE      => 'UPDATE',
-            self::DELETE      => 'DELETE',
+            self::CREATE => 'CREATE',
+            self::READ => 'READ',
+            self::UPDATE => 'UPDATE',
+            self::DELETE => 'DELETE',
             self::CREATE_LIST => 'CREATE_LIST',
-            self::READ_LIST   => 'READ_LIST',
+            self::READ_LIST => 'READ_LIST',
             self::UPDATE_LIST => 'UPDATE_LIST',
             self::DELETE_LIST => 'DELETE_LIST',
         ];
@@ -107,12 +107,12 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     protected static function getValueMap(): array
     {
         return [
-            'create'      => self::CREATE,
-            'read'        => self::READ,
-            'update'      => self::UPDATE,
-            'delete'      => self::DELETE,
+            'create' => self::CREATE,
+            'read' => self::READ,
+            'update' => self::UPDATE,
+            'delete' => self::DELETE,
             'create_list' => self::CREATE_LIST,
-            'read_list'   => self::READ_LIST,
+            'read_list' => self::READ_LIST,
             'update_list' => self::UPDATE_LIST,
             'delete_list' => self::DELETE_LIST,
         ];

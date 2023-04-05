@@ -39,15 +39,15 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
                 continue;
             }
 
-            [$name, $value]     = [$constant->getName(), $constant->getValue()];
-            $map[$name]         = $value;
+            [$name, $value] = [$constant->getName(), $constant->getValue()];
+            $map[$name] = $value;
             $flippedMap[$value] = $name;
         }
         if (count($map) != count($flippedMap)) {
             throw new RuntimeException('Public constants are not unique: ' . static::class);
         }
         self::$ValueMaps[static::class] = $map;
-        self::$NameMaps[static::class]  = $flippedMap;
+        self::$NameMaps[static::class] = $flippedMap;
 
         return $flipped ? $flippedMap : $map;
     }

@@ -112,7 +112,12 @@ interface IContainer extends \Psr\Container\ContainerInterface
      *
      * @return $this
      */
-    public function bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
+    public function bind(
+        string $id,
+        ?string $instanceOf = null,
+        ?array $constructParams = null,
+        ?array $shareInstances = null
+    );
 
     /**
      * Add a binding to the container if it hasn't already been bound
@@ -121,7 +126,12 @@ interface IContainer extends \Psr\Container\ContainerInterface
      *
      * @return $this
      */
-    public function bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
+    public function bindIf(
+        string $id,
+        ?string $instanceOf = null,
+        ?array $constructParams = null,
+        ?array $shareInstances = null
+    );
 
     /**
      * Add a shared binding to the container
@@ -134,7 +144,12 @@ interface IContainer extends \Psr\Container\ContainerInterface
      *
      * @return $this
      */
-    public function singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
+    public function singleton(
+        string $id,
+        ?string $instanceOf = null,
+        ?array $constructParams = null,
+        ?array $shareInstances = null
+    );
 
     /**
      * Add a shared binding to the container if it hasn't already been bound
@@ -143,7 +158,12 @@ interface IContainer extends \Psr\Container\ContainerInterface
      *
      * @return $this
      */
-    public function singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null);
+    public function singletonIf(
+        string $id,
+        ?string $instanceOf = null,
+        ?array $constructParams = null,
+        ?array $shareInstances = null
+    );
 
     /**
      * Add bindings to the container for an IService, optionally specifying
@@ -165,7 +185,12 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * @phpstan-param int-mask-of<ServiceLifetime::*> $lifetime
      * @return $this
      */
-    public function service(string $id, ?array $services = null, ?array $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT);
+    public function service(
+        string $id,
+        ?array $services = null,
+        ?array $exceptServices = null,
+        int $lifetime = ServiceLifetime::INHERIT
+    );
 
     /**
      * Add an existing instance to the container as a shared binding

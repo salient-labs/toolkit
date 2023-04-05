@@ -32,7 +32,7 @@ trait HasMutator
         if (isset($this->$property) && $value === $this->$property) {
             return $this;
         }
-        $clone            = clone $this;
+        $clone = clone $this;
         $clone->$property = $value;
 
         return $clone;
@@ -42,8 +42,13 @@ trait HasMutator
      * @param mixed $value
      * @return $this
      */
-    private function applyPropertyKeyValue(string $property, $value, string $key, bool $clone = false, bool $array = true)
-    {
+    private function applyPropertyKeyValue(
+        string $property,
+        $value,
+        string $key,
+        bool $clone = false,
+        bool $array = true
+    ) {
         if (($array && isset($this->$property[$key]) &&
                 $value === $this->$property[$key]) ||
             (!$array && isset($this->$property->$key) &&
@@ -51,14 +56,14 @@ trait HasMutator
             return $this;
         }
         $_value = $clone
-                      ? clone $this->$property
-                      : $this->$property ?? null;
+            ? clone $this->$property
+            : $this->$property ?? null;
         if ($array) {
             $_value[$key] = $value;
         } else {
             $_value->$key = $value;
         }
-        $clone            = clone $this;
+        $clone = clone $this;
         $clone->$property = $_value;
 
         return $clone;

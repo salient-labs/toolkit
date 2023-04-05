@@ -44,7 +44,7 @@ abstract class TypedCollection implements ICollection
 
     public function __construct()
     {
-        $this->ItemClass          = $this->getItemClass();
+        $this->ItemClass = $this->getItemClass();
         $this->HasComparableItems = is_a($this->ItemClass, IComparable::class, true);
     }
 

@@ -2,10 +2,12 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\Introspector;
+use Lkrms\Support\IterableIterator;
 use Lkrms\Support\ProviderContext;
 use RuntimeException;
 
@@ -97,13 +99,13 @@ trait TProvidable
     final public static function provide(array $data, IProvider $provider, ?IProviderContext $context = null)
     {
         $container = ($context
-                          ? $context->container()
-                          : $provider->container())->inContextOf(get_class($provider));
+            ? $context->container()
+            : $provider->container())->inContextOf(get_class($provider));
         $context = $context
-                       ? $context->withContainer($container)
-                       : $container->get(ProviderContext::class);
+            ? $context->withContainer($container)
+            : $container->get(ProviderContext::class);
         $introspector = Introspector::getService($container, static::class);
-        $closure      = $introspector->getCreateProvidableFromClosure();
+        $closure = $introspector->getCreateProvidableFromClosure();
 
         return $closure($data, $provider, $context);
     }
@@ -115,16 +117,36 @@ trait TProvidable
      *
      * @param iterable<array> $dataList
      * @phpstan-param ArrayKeyConformity::* $conformity
+     * @return IIterable<static>
+     */
+    final public static function provideList(
+        iterable $dataList,
+        IProvider $provider,
+        int $conformity = ArrayKeyConformity::NONE,
+        ?IProviderContext $context = null
+    ): IIterable {
+        return IterableIterator::from(
+            self::_provideList($dataList, $provider, $conformity, $context)
+        );
+    }
+
+    /**
+     * @param iterable<array> $dataList
+     * @phpstan-param ArrayKeyConformity::* $conformity
      * @return iterable<static>
      */
-    final public static function provideList(iterable $dataList, IProvider $provider, int $conformity = ArrayKeyConformity::NONE, ?IProviderContext $context = null): iterable
-    {
+    private static function _provideList(
+        iterable $dataList,
+        IProvider $provider,
+        int $conformity,
+        ?IProviderContext $context
+    ): iterable {
         $container = ($context
-                          ? $context->container()
-                          : $provider->container())->inContextOf(get_class($provider));
+            ? $context->container()
+            : $provider->container())->inContextOf(get_class($provider));
         $context = ($context
-                        ? $context->withContainer($container)
-                        : new ProviderContext($container))->withConformity($conformity);
+            ? $context->withContainer($container)
+            : new ProviderContext($container))->withConformity($conformity);
         $introspector = Introspector::getService($container, static::class);
 
         foreach ($dataList as $data) {

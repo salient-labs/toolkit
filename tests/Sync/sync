@@ -20,16 +20,16 @@ $loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
 
 // Register JsonPlaceholderApi as the provider for Post and User objects
 $app = App::load(dirname(__DIR__))
-           ->loadCache()
-           ->loadSync()
-           ->syncNamespace('lkrms-tests', 'https://lkrms.github.io/php-util/tests/entity', \Lkrms\Tests\Sync\Entity::class)
-           ->service(JsonPlaceholderApi::class);
+    ->loadCache()
+    ->loadSync()
+    ->syncNamespace('lkrms-tests', 'https://lkrms.github.io/php-util/tests/entity', \Lkrms\Tests\Sync\Entity::class)
+    ->service(JsonPlaceholderApi::class);
 
 $userApi = User::withDefaultProvider($app);
 
-$provider     = Post::defaultProvider($app);
+$provider = Post::defaultProvider($app);
 $postProvider = $provider->with(Post::class);
-$posts        = $postProvider->getListA();
+$posts = $postProvider->getListA();
 Console::info('Posts retrieved:', (string) count($posts));
 
 /** @var Post */
@@ -38,18 +38,18 @@ $post = reset($posts);
 $user = User::withDefaultProvider()->get($post->User->Id);
 
 print_r([
-    'Sync::getRunId()'               => Sync::getRunId(),
-    'Sync::getRunUuid()'             => Sync::getRunUuid(),
-    'Sync::getEntityTypeUri()'       => Sync::getEntityTypeUri(User::class),
+    'Sync::getRunId()' => Sync::getRunId(),
+    'Sync::getRunUuid()' => Sync::getRunUuid(),
+    'Sync::getEntityTypeUri()' => Sync::getEntityTypeUri(User::class),
     'Sync::getEntityTypeUri(,false)' => Sync::getEntityTypeUri(User::class, false),
 ]);
 
-$resolver       = new SyncEntityResolver($userApi, 'Name');
-$fuzzyResolver  = new SyncEntityFuzzyResolver($userApi, 'Name', null, null, 0.6);
+$resolver = new SyncEntityResolver($userApi, 'Name');
+$fuzzyResolver = new SyncEntityFuzzyResolver($userApi, 'Name', null, null, 0.6);
 $fuzzyResolver2 = new SyncEntityFuzzyResolver($userApi, 'Name', null, SyncEntityFuzzyResolver::ALGORITHM_SIMILAR_TEXT, 0.6);
 
 /** @var User|null */
-$byName          = $resolver->getByName('Leanne Graham');
+$byName = $resolver->getByName('Leanne Graham');
 /** @var User|null */
 $closestByName1a = $fuzzyResolver->getByName('leanne graham', $uncertainty1a);
 /** @var User|null */
@@ -64,19 +64,19 @@ $closestByName2b = $fuzzyResolver2->getByName('GRAHAM, leanne', $uncertainty2b);
 $closestByName2c = $fuzzyResolver2->getByName('Lee-Anna Graham', $uncertainty2c);
 
 print_r([
-    'byName'          => $byName->Name ?? null,
+    'byName' => $byName->Name ?? null,
     'closestByName1a' => $closestByName1a->Name ?? null,
     'closestByName1b' => $closestByName1b->Name ?? null,
     'closestByName1c' => $closestByName1c->Name ?? null,
     'closestByName2a' => $closestByName2a->Name ?? null,
     'closestByName2b' => $closestByName2b->Name ?? null,
     'closestByName2c' => $closestByName2c->Name ?? null,
-    'uncertainty1a'   => $uncertainty1a,
-    'uncertainty1b'   => $uncertainty1b,
-    'uncertainty1c'   => $uncertainty1c,
-    'uncertainty2a'   => $uncertainty2a,
-    'uncertainty2b'   => $uncertainty2b,
-    'uncertainty2c'   => $uncertainty2c,
+    'uncertainty1a' => $uncertainty1a,
+    'uncertainty1b' => $uncertainty1b,
+    'uncertainty1c' => $uncertainty1c,
+    'uncertainty2a' => $uncertainty2a,
+    'uncertainty2b' => $uncertainty2b,
+    'uncertainty2c' => $uncertainty2c,
 ]);
 
 $exceptions = [];
@@ -108,7 +108,7 @@ try {
 }
 
 print_r([
-    'ops'        => $ops,
+    'ops' => $ops,
     'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions),
 ]);
 

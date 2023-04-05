@@ -31,7 +31,7 @@ final class SystemTest extends \Lkrms\Tests\TestCase
         usleep(25000);
         $time4 = hrtime(true) / 1000000;
 
-        $timers        = $system->getTimers();
+        $timers = $system->getTimers();
         $generalTimers = $system->getTimers(true, 'general');
         $specialTimers = $system->getTimers(true, 'special');
         $stoppedTimers = $system->getTimers(false);

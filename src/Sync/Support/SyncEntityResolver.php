@@ -31,7 +31,7 @@ final class SyncEntityResolver implements ISyncEntityResolver
     public function __construct(ISyncEntityProvider $entityProvider, string $nameProperty)
     {
         $this->EntityProvider = $entityProvider;
-        $this->NameProperty   = $nameProperty;
+        $this->NameProperty = $nameProperty;
     }
 
     public function getByName(string $name): ?ISyncEntity

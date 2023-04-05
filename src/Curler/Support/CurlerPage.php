@@ -51,15 +51,22 @@ final class CurlerPage implements ICurlerPage
      * @param null|array $nextData Data to send in the body of the next request
      * @param null|ICurlerHeaders $nextHeaders Replaces the next request's HTTP headers
      */
-    public function __construct(array $entities, Curler $curler, ?ICurlerPage $previous, ?string $nextUrl = null, ?bool $isLastPage = null, ?array $nextData = null, ?ICurlerHeaders $nextHeaders = null)
-    {
-        $this->Entities    = $entities;
+    public function __construct(
+        array $entities,
+        Curler $curler,
+        ?ICurlerPage $previous,
+        ?string $nextUrl = null,
+        ?bool $isLastPage = null,
+        ?array $nextData = null,
+        ?ICurlerHeaders $nextHeaders = null
+    ) {
+        $this->Entities = $entities;
         $this->EntityCount = count($entities) + ($previous ? $previous->entityCount() : 0);
-        $this->IsLastPage  = is_null($isLastPage) ? empty($nextUrl) : $isLastPage;
+        $this->IsLastPage = is_null($isLastPage) ? empty($nextUrl) : $isLastPage;
 
         if (!$this->IsLastPage) {
-            $this->NextUrl     = $nextUrl ?: $curler->BaseUrl . $curler->QueryString;
-            $this->NextData    = $nextData;
+            $this->NextUrl = $nextUrl ?: $curler->BaseUrl . $curler->QueryString;
+            $this->NextData = $nextData;
             $this->NextHeaders = $nextHeaders;
         }
     }

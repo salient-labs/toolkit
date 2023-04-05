@@ -50,12 +50,12 @@ use UnexpectedValueException;
 final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
 {
     public const DEFAULT_METHOD_MAP = [
-        SyncOperation::CREATE      => HttpRequestMethod::POST,
-        SyncOperation::READ        => HttpRequestMethod::GET,
-        SyncOperation::UPDATE      => HttpRequestMethod::PUT,
-        SyncOperation::DELETE      => HttpRequestMethod::DELETE,
+        SyncOperation::CREATE => HttpRequestMethod::POST,
+        SyncOperation::READ => HttpRequestMethod::GET,
+        SyncOperation::UPDATE => HttpRequestMethod::PUT,
+        SyncOperation::DELETE => HttpRequestMethod::DELETE,
         SyncOperation::CREATE_LIST => HttpRequestMethod::POST,
-        SyncOperation::READ_LIST   => HttpRequestMethod::GET,
+        SyncOperation::READ_LIST => HttpRequestMethod::GET,
         SyncOperation::UPDATE_LIST => HttpRequestMethod::PUT,
         SyncOperation::DELETE_LIST => HttpRequestMethod::DELETE,
     ];
@@ -172,8 +172,23 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
      * @param array<int,string> $methodMap
      */
-    public function __construct(string $entity, HttpSyncProvider $provider, array $operations = [], ?string $path = null, ?array $query = null, ?ICurlerHeaders $headers = null, ?ICurlerPager $pager = null, ?callable $callback = null, int $conformity = ArrayKeyConformity::NONE, int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION, ?int $expiry = -1, array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP, array $overrides = [], ?IPipeline $dataToEntityPipeline = null, ?IPipeline $entityToDataPipeline = null)
-    {
+    public function __construct(
+        string $entity,
+        HttpSyncProvider $provider,
+        array $operations = [],
+        ?string $path = null,
+        ?array $query = null,
+        ?ICurlerHeaders $headers = null,
+        ?ICurlerPager $pager = null,
+        ?callable $callback = null,
+        int $conformity = ArrayKeyConformity::NONE,
+        int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
+        ?int $expiry = -1,
+        array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,
+        array $overrides = [],
+        ?IPipeline $dataToEntityPipeline = null,
+        ?IPipeline $entityToDataPipeline = null
+    ) {
         parent::__construct(
             $entity,
             $provider,
@@ -185,12 +200,12 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             $entityToDataPipeline
         );
 
-        $this->Path      = $path;
-        $this->Query     = $query;
-        $this->Headers   = $headers;
-        $this->Pager     = $pager;
-        $this->Callback  = $callback;
-        $this->Expiry    = $expiry;
+        $this->Path = $path;
+        $this->Query = $query;
+        $this->Headers = $headers;
+        $this->Pager = $pager;
+        $this->Callback = $callback;
+        $this->Expiry = $expiry;
         $this->MethodMap = $methodMap;
     }
 
@@ -202,7 +217,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      */
     public function withPath(?string $path)
     {
-        $clone       = clone $this;
+        $clone = clone $this;
         $clone->Path = $path;
 
         return $clone;
@@ -217,7 +232,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      */
     public function withQuery(?array $query)
     {
-        $clone        = clone $this;
+        $clone = clone $this;
         $clone->Query = $query;
 
         return $clone;
@@ -231,7 +246,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      */
     public function withHeaders(?ICurlerHeaders $headers)
     {
-        $clone          = clone $this;
+        $clone = clone $this;
         $clone->Headers = $headers;
 
         return $clone;
@@ -245,7 +260,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      */
     public function withPager(?ICurlerPager $pager)
     {
-        $clone        = clone $this;
+        $clone = clone $this;
         $clone->Pager = $pager;
 
         return $clone;
@@ -259,7 +274,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      */
     public function withExpiry(?int $expiry)
     {
-        $clone         = clone $this;
+        $clone = clone $this;
         $clone->Expiry = $expiry;
 
         return $clone;
@@ -380,8 +395,8 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             $def = $def->withPath($this->Path . '/' . $id);
         }
         $def = $def->Callback
-                   ? ($def->Callback)($def, $operation, $ctx, ...$args)
-                   : $def;
+            ? ($def->Callback)($def, $operation, $ctx, ...$args)
+            : $def;
 
         /** @var Curler $curler */
         $curler = $this->Provider->getCurler($def->Path, $def->Expiry);

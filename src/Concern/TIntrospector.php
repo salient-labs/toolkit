@@ -45,7 +45,7 @@ trait TIntrospector
     public static function getService(IContainer $container, string $service): self
     {
         /** @var self<T,TIntrospectionClass> */
-        $instance           = new self($container->getName($service));
+        $instance = new self($container->getName($service));
         $instance->_Service = $service;
 
         return $instance;

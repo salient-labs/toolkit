@@ -26,13 +26,13 @@ final class ODataPager implements ICurlerPager
      */
     public function __construct(?int $maxPageSize = null, ?string $prefix = null)
     {
-        $this->Prefix      = $prefix;
+        $this->Prefix = $prefix;
         $this->MaxPageSize = $maxPageSize;
     }
 
-    public function prepareQuery(?array $query): ?string
+    public function prepareQuery(?array $query): ?array
     {
-        return null;
+        return $query;
     }
 
     public function prepareData(?array $data): ?array
@@ -53,9 +53,9 @@ final class ODataPager implements ICurlerPager
     public function getPage($data, Curler $curler, ?ICurlerPage $previous = null): ICurlerPage
     {
         $prefix = $this->Prefix
-                      ?: (($curler->ResponseHeadersByName['odata-version'] ?? null) == '4.0'
-                             ? '@odata.'
-                             : '@');
+            ?: (($curler->ResponseHeadersByName['odata-version'] ?? null) == '4.0'
+                ? '@odata.'
+                : '@');
 
         return CurlerPageBuilder::build()
             ->entities($data['value'])

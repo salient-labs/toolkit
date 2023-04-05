@@ -44,9 +44,9 @@ final class DateFormatter implements IReadable, IImmutable
      */
     public function __construct(string $format = DateTimeInterface::ATOM, $timezone = null, IDateParser ...$parsers)
     {
-        $this->Format   = $format;
+        $this->Format = $format;
         $this->Timezone = is_null($timezone) ? null : Convert::toTimezone($timezone);
-        $this->Parsers  = $parsers ?: [new CreateFromFormatDateParser($format)];
+        $this->Parsers = $parsers ?: [new CreateFromFormatDateParser($format)];
     }
 
     /**

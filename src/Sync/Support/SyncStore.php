@@ -128,8 +128,8 @@ final class SyncStore extends SqliteStore
      */
     public function __construct(string $filename = ':memory:', string $command = '', array $arguments = [])
     {
-        $this->Errors    = new SyncErrorCollection();
-        $this->Command   = $command;
+        $this->Errors = new SyncErrorCollection();
+        $this->Command = $command;
         $this->Arguments = $arguments;
 
         $this->requireUpsert()
@@ -145,76 +145,76 @@ final class SyncStore extends SqliteStore
         $this->openDb(
             $filename,
             <<<SQL
-            CREATE TABLE IF NOT EXISTS
-              _sync_run (
-                run_id INTEGER NOT NULL PRIMARY KEY,
-                run_uuid BLOB NOT NULL UNIQUE,
-                run_command TEXT NOT NULL,
-                run_arguments_json TEXT NOT NULL,
-                started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                finished_at DATETIME,
-                exit_status INTEGER,
-                error_count INTEGER,
-                warning_count INTEGER,
-                errors_json TEXT
-              );
+CREATE TABLE IF NOT EXISTS
+  _sync_run (
+    run_id INTEGER NOT NULL PRIMARY KEY,
+    run_uuid BLOB NOT NULL UNIQUE,
+    run_command TEXT NOT NULL,
+    run_arguments_json TEXT NOT NULL,
+    started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    finished_at DATETIME,
+    exit_status INTEGER,
+    error_count INTEGER,
+    warning_count INTEGER,
+    errors_json TEXT
+  );
 
-            CREATE TABLE IF NOT EXISTS
-              _sync_provider (
-                provider_id INTEGER NOT NULL PRIMARY KEY,
-                provider_hash BLOB NOT NULL UNIQUE,
-                provider_class TEXT NOT NULL,
-                added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
-              );
+CREATE TABLE IF NOT EXISTS
+  _sync_provider (
+    provider_id INTEGER NOT NULL PRIMARY KEY,
+    provider_hash BLOB NOT NULL UNIQUE,
+    provider_class TEXT NOT NULL,
+    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 
-            CREATE TABLE IF NOT EXISTS
-              _sync_entity_type (
-                entity_type_id INTEGER NOT NULL PRIMARY KEY,
-                entity_type_class TEXT NOT NULL UNIQUE,
-                added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
-              );
+CREATE TABLE IF NOT EXISTS
+  _sync_entity_type (
+    entity_type_id INTEGER NOT NULL PRIMARY KEY,
+    entity_type_class TEXT NOT NULL UNIQUE,
+    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 
-            CREATE TABLE IF NOT EXISTS
-              _sync_entity_type_state (
-                provider_id INTEGER NOT NULL,
-                entity_type_id INTEGER NOT NULL,
-                last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-                last_sync DATETIME,
-                PRIMARY KEY (provider_id, entity_type_id),
-                FOREIGN KEY (provider_id) REFERENCES _sync_provider,
-                FOREIGN KEY (entity_type_id) REFERENCES _sync_entity_type
-              );
+CREATE TABLE IF NOT EXISTS
+  _sync_entity_type_state (
+    provider_id INTEGER NOT NULL,
+    entity_type_id INTEGER NOT NULL,
+    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_sync DATETIME,
+    PRIMARY KEY (provider_id, entity_type_id),
+    FOREIGN KEY (provider_id) REFERENCES _sync_provider,
+    FOREIGN KEY (entity_type_id) REFERENCES _sync_entity_type
+  );
 
-            CREATE TABLE IF NOT EXISTS
-              _sync_entity (
-                provider_id INTEGER NOT NULL,
-                entity_type_id INTEGER NOT NULL,
-                entity_id TEXT NOT NULL,
-                canonical_id TEXT,
-                is_dirty INTEGER NOT NULL DEFAULT 0,
-                is_deleted INTEGER NOT NULL DEFAULT 0,
-                added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-                last_sync DATETIME,
-                entity_json TEXT NOT NULL,
-                PRIMARY KEY (provider_id, entity_type_id, entity_id),
-                FOREIGN KEY (provider_id) REFERENCES _sync_provider,
-                FOREIGN KEY (entity_type_id) REFERENCES _sync_entity_type
-              ) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS
+  _sync_entity (
+    provider_id INTEGER NOT NULL,
+    entity_type_id INTEGER NOT NULL,
+    entity_id TEXT NOT NULL,
+    canonical_id TEXT,
+    is_dirty INTEGER NOT NULL DEFAULT 0,
+    is_deleted INTEGER NOT NULL DEFAULT 0,
+    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_sync DATETIME,
+    entity_json TEXT NOT NULL,
+    PRIMARY KEY (provider_id, entity_type_id, entity_id),
+    FOREIGN KEY (provider_id) REFERENCES _sync_provider,
+    FOREIGN KEY (entity_type_id) REFERENCES _sync_entity_type
+  ) WITHOUT ROWID;
 
-            CREATE TABLE IF NOT EXISTS
-              _sync_entity_namespace (
-                entity_namespace_id INTEGER NOT NULL PRIMARY KEY,
-                entity_namespace_prefix TEXT NOT NULL UNIQUE,
-                base_uri TEXT NOT NULL,
-                php_namespace TEXT NOT NULL,
-                added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
-              );
+CREATE TABLE IF NOT EXISTS
+  _sync_entity_namespace (
+    entity_namespace_id INTEGER NOT NULL PRIMARY KEY,
+    entity_namespace_prefix TEXT NOT NULL UNIQUE,
+    base_uri TEXT NOT NULL,
+    php_namespace TEXT NOT NULL,
+    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 
-            SQL
+SQL
         );
     }
 
@@ -233,19 +233,19 @@ final class SyncStore extends SqliteStore
             return parent::close();
         }
 
-        $db  = $this->db();
+        $db = $this->db();
         $sql = <<<SQL
-            UPDATE
-              _sync_run
-            SET
-              finished_at = CURRENT_TIMESTAMP,
-              exit_status = :exit_status,
-              error_count = :error_count,
-              warning_count = :warning_count,
-              errors_json = :errors_json
-            WHERE
-              run_uuid = :run_uuid;
-            SQL;
+UPDATE
+  _sync_run
+SET
+  finished_at = CURRENT_TIMESTAMP,
+  exit_status = :exit_status,
+  error_count = :error_count,
+  warning_count = :warning_count,
+  errors_json = :errors_json
+WHERE
+  run_uuid = :run_uuid;
+SQL;
 
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':exit_status', $exitStatus, SQLITE3_INTEGER);
@@ -303,23 +303,23 @@ final class SyncStore extends SqliteStore
         }
 
         $class = get_class($provider);
-        $hash  = Compute::binaryHash($class, ...$provider->getBackendIdentifier());
+        $hash = Compute::binaryHash($class, ...$provider->getBackendIdentifier());
 
         if (!is_null($this->ProvidersByHash[$hash] ?? null)) {
             throw new RuntimeException("Provider already registered: $class");
         }
 
         // Update `last_seen` if the provider is already in the database
-        $db  = $this->db();
+        $db = $this->db();
         $sql = <<<SQL
-            INSERT INTO
-              _sync_provider (provider_hash, provider_class)
-            VALUES
-              (:provider_hash, :provider_class) ON CONFLICT (provider_hash) DO
-            UPDATE
-            SET
-              last_seen = CURRENT_TIMESTAMP;
-            SQL;
+INSERT INTO
+  _sync_provider (provider_hash, provider_class)
+VALUES
+  (:provider_hash, :provider_class) ON CONFLICT (provider_hash) DO
+UPDATE
+SET
+  last_seen = CURRENT_TIMESTAMP;
+SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':provider_hash', $hash, SQLITE3_BLOB);
         $stmt->bindValue(':provider_class', $class, SQLITE3_TEXT);
@@ -327,17 +327,17 @@ final class SyncStore extends SqliteStore
         $stmt->close();
 
         $sql = <<<SQL
-            SELECT
-              provider_id
-            FROM
-              _sync_provider
-            WHERE
-              provider_hash = :provider_hash;
-            SQL;
+SELECT
+  provider_id
+FROM
+  _sync_provider
+WHERE
+  provider_hash = :provider_hash;
+SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':provider_hash', $hash, SQLITE3_BLOB);
         $result = $stmt->execute();
-        $row    = $result->fetchArray(SQLITE3_NUM);
+        $row = $result->fetchArray(SQLITE3_NUM);
         $stmt->close();
 
         if ($row === false) {
@@ -367,33 +367,33 @@ final class SyncStore extends SqliteStore
         }
 
         // Update `last_seen` if the entity type is already in the database
-        $db  = $this->db();
+        $db = $this->db();
         $sql = <<<SQL
-            INSERT INTO
-              _sync_entity_type (entity_type_class)
-            VALUES
-              (:entity_type_class) ON CONFLICT (entity_type_class) DO
-            UPDATE
-            SET
-              last_seen = CURRENT_TIMESTAMP;
-            SQL;
+INSERT INTO
+  _sync_entity_type (entity_type_class)
+VALUES
+  (:entity_type_class) ON CONFLICT (entity_type_class) DO
+UPDATE
+SET
+  last_seen = CURRENT_TIMESTAMP;
+SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':entity_type_class', $class->name, SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
         $sql = <<<SQL
-            SELECT
-              entity_type_id
-            FROM
-              _sync_entity_type
-            WHERE
-              entity_type_class = :entity_type_class;
-            SQL;
+SELECT
+  entity_type_id
+FROM
+  _sync_entity_type
+WHERE
+  entity_type_class = :entity_type_class;
+SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':entity_type_class', $class->name, SQLITE3_TEXT);
         $result = $stmt->execute();
-        $row    = $result->fetchArray(SQLITE3_NUM);
+        $row = $result->fetchArray(SQLITE3_NUM);
         $stmt->close();
 
         if ($row === false) {
@@ -443,22 +443,22 @@ final class SyncStore extends SqliteStore
         }
 
         // Update `last_seen` if the namespace is already in the database
-        $db  = $this->db();
+        $db = $this->db();
         $sql = <<<SQL
-            INSERT INTO
-              _sync_entity_namespace (entity_namespace_prefix, base_uri, php_namespace)
-            VALUES
-              (
-                :entity_namespace_prefix,
-                :base_uri,
-                :php_namespace
-              ) ON CONFLICT (entity_namespace_prefix) DO
-            UPDATE
-            SET
-              base_uri = excluded.base_uri,
-              php_namespace = excluded.php_namespace,
-              last_seen = CURRENT_TIMESTAMP;
-            SQL;
+INSERT INTO
+  _sync_entity_namespace (entity_namespace_prefix, base_uri, php_namespace)
+VALUES
+  (
+    :entity_namespace_prefix,
+    :base_uri,
+    :php_namespace
+  ) ON CONFLICT (entity_namespace_prefix) DO
+UPDATE
+SET
+  base_uri = excluded.base_uri,
+  php_namespace = excluded.php_namespace,
+  last_seen = CURRENT_TIMESTAMP;
+SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':entity_namespace_prefix', $prefix, SQLITE3_TEXT);
         $stmt->bindValue(':base_uri', rtrim($uri, '/') . '/', SQLITE3_TEXT);
@@ -489,11 +489,11 @@ final class SyncStore extends SqliteStore
             return null;
         }
         $namespace = $this->NamespacesByPrefix[$prefix];
-        $entity    = str_replace('\\', '/', substr(ltrim($entity, '\\'), strlen($namespace)));
+        $entity = str_replace('\\', '/', substr(ltrim($entity, '\\'), strlen($namespace)));
 
         return $compact
-                   ? "{$prefix}:{$entity}"
-                   : "{$this->NamespaceUrisByPrefix[$prefix]}{$entity}";
+            ? "{$prefix}:{$entity}"
+            : "{$this->NamespaceUrisByPrefix[$prefix]}{$entity}";
     }
 
     /**
@@ -512,12 +512,12 @@ final class SyncStore extends SqliteStore
         $this->check();
 
         $entity = ltrim($entity, '\\');
-        $lower  = strtolower($entity);
+        $lower = strtolower($entity);
         foreach ($this->NamespacesByPrefix as $prefix => $namespace) {
             if (strpos($lower, $namespace) === 0) {
                 return $uri
-                           ? $this->NamespaceUrisByPrefix[$prefix]
-                           : $prefix;
+                    ? $this->NamespaceUrisByPrefix[$prefix]
+                    : $prefix;
             }
         }
 
@@ -549,7 +549,7 @@ final class SyncStore extends SqliteStore
         /** @var ISyncProvider $provider */
         foreach ($providers as $provider) {
             $name = $provider->name() ?: get_class($provider);
-            $id   = $provider->getProviderId();
+            $id = $provider->getProviderId();
             if (is_null($id)) {
                 $name .= ' [unregistered]';
             } else {
@@ -570,10 +570,10 @@ final class SyncStore extends SqliteStore
                         ->errorType(SyncErrorType::BACKEND_UNREACHABLE)
                         ->message('Heartbeat check failed: %s')
                         ->values([[
-                            'provider_id'    => $id,
+                            'provider_id' => $id,
                             'provider_class' => get_class($provider),
-                            'exception'      => get_class($ex),
-                            'message'        => $ex->getMessage()
+                            'exception' => get_class($ex),
+                            'message' => $ex->getMessage()
                         ]])
                 );
             }
@@ -642,15 +642,15 @@ final class SyncStore extends SqliteStore
         }
 
         $sql = <<<SQL
-            INSERT INTO _sync_run (run_uuid, run_command, run_arguments_json)
-            VALUES (
-                :run_uuid,
-                :run_command,
-                :run_arguments_json
-              );
-            SQL;
+INSERT INTO _sync_run (run_uuid, run_command, run_arguments_json)
+VALUES (
+    :run_uuid,
+    :run_command,
+    :run_arguments_json
+  );
+SQL;
 
-        $db   = $this->db(true);
+        $db = $this->db(true);
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':run_uuid', $uuid = Compute::uuid(true), SQLITE3_BLOB);
         $stmt->bindValue(':run_command', $this->Command, SQLITE3_TEXT);
@@ -658,8 +658,8 @@ final class SyncStore extends SqliteStore
         $stmt->execute();
         $stmt->close();
 
-        $id            = $db->lastInsertRowID();
-        $this->RunId   = $id;
+        $id = $db->lastInsertRowID();
+        $this->RunId = $id;
         $this->RunUuid = $uuid;
         unset($this->Command, $this->Arguments);
 
@@ -681,23 +681,23 @@ final class SyncStore extends SqliteStore
      */
     private function reload()
     {
-        $db  = $this->db();
+        $db = $this->db();
         $sql = <<<SQL
-            SELECT
-              entity_namespace_prefix,
-              base_uri,
-              php_namespace
-            FROM
-              _sync_entity_namespace
-            ORDER BY
-              LENGTH(php_namespace) DESC;
-            SQL;
-        $stmt                        = $db->prepare($sql);
-        $result                      = $stmt->execute();
-        $this->NamespacesByPrefix    = [];
+SELECT
+  entity_namespace_prefix,
+  base_uri,
+  php_namespace
+FROM
+  _sync_entity_namespace
+ORDER BY
+  LENGTH(php_namespace) DESC;
+SQL;
+        $stmt = $db->prepare($sql);
+        $result = $stmt->execute();
+        $this->NamespacesByPrefix = [];
         $this->NamespaceUrisByPrefix = [];
         while (($row = $result->fetchArray(SQLITE3_NUM)) !== false) {
-            $this->NamespacesByPrefix[$row[0]]    = strtolower($row[2]);
+            $this->NamespacesByPrefix[$row[0]] = strtolower($row[2]);
             $this->NamespaceUrisByPrefix[$row[0]] = $row[1];
         }
         $result->finalize();

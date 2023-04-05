@@ -44,10 +44,10 @@ final class HasMutatorTest extends \Lkrms\Tests\TestCase
         $this->assertSame($d->Coll, $e->Coll);
         $this->assertNotSame($f->Coll, $g->Coll);
 
-        $A       = new MyMutatingClass();
-        $A->A    = 1;
-        $A->B    = 2;
-        $A->C    = 30;
+        $A = new MyMutatingClass();
+        $A->A = 1;
+        $A->B = 2;
+        $A->C = 30;
         $A->Arr1 = [
             'a' => 'foo',
             'b' => 'bbb',
@@ -62,8 +62,8 @@ final class HasMutatorTest extends \Lkrms\Tests\TestCase
         $A->Arr4 = [
             'f' => 'fff',
         ];
-        $A->Obj->A    = 'aa';
-        $A->Obj->B    = 'bb';
+        $A->Obj->A = 'aa';
+        $A->Obj->B = 'bb';
         $A->Coll['g'] = new \stdClass();
 
         $this->assertEquals($A, $g);

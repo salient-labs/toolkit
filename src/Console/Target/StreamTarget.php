@@ -74,10 +74,10 @@ final class StreamTarget extends ConsoleTarget
     {
         stream_set_write_buffer($stream, 0);
 
-        $this->Stream       = $stream;
-        $this->IsStdout     = File::getStreamUri($stream) == 'php://stdout';
-        $this->IsStderr     = File::getStreamUri($stream) == 'php://stderr';
-        $this->IsTty        = stream_isatty($stream);
+        $this->Stream = $stream;
+        $this->IsStdout = File::getStreamUri($stream) == 'php://stdout';
+        $this->IsStderr = File::getStreamUri($stream) == 'php://stderr';
+        $this->IsTty = stream_isatty($stream);
         $this->AddTimestamp = !is_null($addTimestamp) ? $addTimestamp : !($this->IsStdout || $this->IsStderr);
 
         if (!is_null($timestamp)) {
@@ -117,7 +117,7 @@ final class StreamTarget extends ConsoleTarget
         }
 
         $this->Stream = $stream;
-        $this->Path   = $path;
+        $this->Path = $path;
     }
 
     /**
@@ -129,13 +129,17 @@ final class StreamTarget extends ConsoleTarget
      * @param \DateTimeZone|string|null $timezone Default: as per
      * `date_default_timezone_set` or INI setting `date.timezone`
      */
-    public static function fromPath(string $path, ?bool $addTimestamp = null, ?string $timestamp = null, $timezone = null): StreamTarget
-    {
+    public static function fromPath(
+        string $path,
+        ?bool $addTimestamp = null,
+        ?string $timestamp = null,
+        $timezone = null
+    ): StreamTarget {
         if (!File::maybeCreate($path, 0600) || ($stream = fopen($path, 'a')) === false) {
             throw new RuntimeException("Could not open $path");
         }
 
-        $stream       = new StreamTarget($stream, $addTimestamp, $timestamp, $timezone);
+        $stream = new StreamTarget($stream, $addTimestamp, $timestamp, $timezone);
         $stream->Path = $path;
 
         return $stream;
@@ -144,7 +148,7 @@ final class StreamTarget extends ConsoleTarget
     protected function writeToTarget(int $level, string $message, array $context): void
     {
         if ($this->AddTimestamp) {
-            $now     = (new DateTime('now', $this->Timezone))->format($this->Timestamp);
+            $now = (new DateTime('now', $this->Timezone))->format($this->Timestamp);
             $message = $now . str_replace("\n", "\n" . $now, $message);
         }
 

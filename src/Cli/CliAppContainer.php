@@ -160,9 +160,9 @@ final class CliAppContainer extends AppContainer
             throw new UnexpectedValueException("Another command has been registered at '" . implode(' ', $name) . "'");
         }
 
-        $tree   = &$this->CommandTree;
+        $tree = &$this->CommandTree;
         $branch = $name;
-        $leaf   = array_pop($branch);
+        $leaf = array_pop($branch);
 
         foreach ($branch as $subcommand) {
             if (!is_array($tree[$subcommand] ?? null)) {
@@ -194,11 +194,11 @@ final class CliAppContainer extends AppContainer
         $fullName = trim("$progName $name");
         if ($command = $this->getNodeCommand($name, $node)) {
             return $terse
-                       ? $fullName . $command->getUsage(true)
-                           . "\n\nSee '"
-                           . ($name ? "$progName help $name" : "$progName --help")
-                           . "' for more information."
-                       : $command->getUsage();
+                ? $fullName . $command->getUsage(true)
+                    . "\n\nSee '"
+                    . ($name ? "$progName help $name" : "$progName --help")
+                    . "' for more information."
+                : $command->getUsage();
         } elseif (!is_array($node)) {
             return null;
         }
@@ -206,8 +206,8 @@ final class CliAppContainer extends AppContainer
         $synopses = [];
         foreach ($node as $childName => $childNode) {
             $prefix = $terse
-                          ? "$fullName $childName"
-                          : "_{$childName}_";
+                ? "$fullName $childName"
+                : "_{$childName}_";
             if ($command = $this->getNodeCommand($name . ($name ? ' ' : '') . $childName, $childNode)) {
                 $synopses[] = $prefix . $command->getUsage(true);
             } elseif (is_array($childNode)) {
@@ -223,8 +223,8 @@ final class CliAppContainer extends AppContainer
         }
 
         $sections = [
-            'NAME'        => '__' . $fullName . '__',
-            'SYNOPSIS'    => '__' . $fullName . '__ <command>',
+            'NAME' => '__' . $fullName . '__',
+            'SYNOPSIS' => '__' . $fullName . '__ <command>',
             'SUBCOMMANDS' => $synopses,
         ];
 
@@ -243,12 +243,12 @@ final class CliAppContainer extends AppContainer
                 continue;
             }
             $content = str_replace("\n", "\n  ", $content);
-            $usage  .= <<<EOF
-                ___{$heading}___
-                  {$content}
+            $usage .= <<<EOF
+___{$heading}___
+  {$content}
 
 
-                EOF;
+EOF;
         }
 
         return rtrim($usage);
@@ -309,8 +309,8 @@ final class CliAppContainer extends AppContainer
                     }
                     $lastNode = $node;
                     $lastName = $name;
-                    $node     = $node[$arg] ?? null;
-                    $name    .= ($name ? ' ' : '') . $arg;
+                    $node = $node[$arg] ?? null;
+                    $name .= ($name ? ' ' : '') . $arg;
                 } elseif ($arg === '--help' && empty($args)) {
                     Console::out($this->getUsage($name, $node));
 

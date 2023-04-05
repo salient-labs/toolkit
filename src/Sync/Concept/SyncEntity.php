@@ -199,12 +199,16 @@ abstract class SyncEntity implements ISyncEntity
         return static::defaultProvider()->with(static::class);
     }
 
-    final public static function buildSerializeRules(?IContainer $container = null, bool $inherit = true): SerializeRulesBuilder
-    {
+    final public static function buildSerializeRules(
+        ?IContainer $container = null,
+        bool $inherit = true
+    ): SerializeRulesBuilder {
         return (new SerializeRulesBuilder($container = self::requireContainer($container)))
-            ->if($inherit,
-                 fn(SerializeRulesBuilder $builder) =>
-                     $builder->inherit(static::serializeRules($container)))
+            ->if(
+                $inherit,
+                fn(SerializeRulesBuilder $builder) =>
+                    $builder->inherit(static::serializeRules($container))
+            )
             ->entity(static::class);
     }
 
@@ -278,9 +282,9 @@ abstract class SyncEntity implements ISyncEntity
             case SerializeLinkType::DEFAULT:
                 return [
                     '@type' => $this->typeUri($compact),
-                    '@id'   => is_null($this->Id)
-                                   ? spl_object_id($this)
-                                   : $this->Id,
+                    '@id' => is_null($this->Id)
+                        ? spl_object_id($this)
+                        : $this->Id,
                 ];
 
             case SerializeLinkType::COMPACT:
@@ -291,10 +295,10 @@ abstract class SyncEntity implements ISyncEntity
             case SerializeLinkType::FRIENDLY:
                 return array_filter([
                     '@type' => $this->typeUri($compact),
-                    '@id'   => is_null($this->Id)
-                                   ? spl_object_id($this)
-                                   : $this->Id,
-                    '@name'        => $this->name(),
+                    '@id' => is_null($this->Id)
+                        ? spl_object_id($this)
+                        : $this->Id,
+                    '@name' => $this->name(),
                     '@description' => $this->description(),
                 ]);
         }
@@ -341,8 +345,8 @@ abstract class SyncEntity implements ISyncEntity
     final protected function store(): SyncStore
     {
         return $this->_Provider
-                   ? $this->_Provider->store()
-                   : Sync::getInstance();
+            ? $this->_Provider->store()
+            : Sync::getInstance();
     }
 
     /**
@@ -367,7 +371,7 @@ abstract class SyncEntity implements ISyncEntity
     private function typeUri(bool $compact): string
     {
         return $this->store()->getEntityTypeUri($this->service(), $compact)
-                   ?: '/' . str_replace('\\', '/', ltrim($this->service(), '\\'));
+            ?: '/' . str_replace('\\', '/', ltrim($this->service(), '\\'));
     }
 
     private function objectId(): string
@@ -404,7 +408,7 @@ abstract class SyncEntity implements ISyncEntity
                 // Prevent infinite recursion by replacing each SyncEntity
                 // descended from itself with a link
                 if ($parents[$node->objectId()] ?? false) {
-                    $node         = $node->toLink(SerializeLinkType::DEFAULT);
+                    $node = $node->toLink(SerializeLinkType::DEFAULT);
                     $node['@why'] = 'Circular reference detected';
 
                     return;
@@ -413,10 +417,10 @@ abstract class SyncEntity implements ISyncEntity
             }
 
             $class = get_class($node);
-            $node  = $node->serialize($rules);
+            $node = $node->serialize($rules);
         }
 
-        $delete  = $rules->getRemove($class ?? null, null, $path);
+        $delete = $rules->getRemove($class ?? null, null, $path);
         $replace = $rules->getReplace($class ?? null, null, $path);
 
         // Don't delete values returned in both lists
@@ -427,9 +431,9 @@ abstract class SyncEntity implements ISyncEntity
         }
         foreach ($replace as $rule) {
             if (is_array($rule)) {
-                $_rule    = $rule;
-                $key      = array_shift($rule);
-                $newKey   = $key;
+                $_rule = $rule;
+                $key = array_shift($rule);
+                $newKey = $key;
                 $callback = null;
 
                 while ($rule) {
@@ -473,7 +477,7 @@ abstract class SyncEntity implements ISyncEntity
             }
 
             if ($key === '[]') {
-                $_path   = $path;
+                $_path = $path;
                 $lastKey = array_pop($_path);
                 $_path[] = $lastKey . '[]';
 
@@ -489,31 +493,31 @@ abstract class SyncEntity implements ISyncEntity
                 continue;
             }
 
-            $_path   = $path;
+            $_path = $path;
             $_path[] = $key;
             $this->_serializeId($node[$key], $_path);
         }
 
         if (is_array($node)) {
             if (Test::isIndexedArray($node)) {
-                $isList  = true;
+                $isList = true;
                 $lastKey = array_pop($path);
-                $path[]  = $lastKey . '[]';
+                $path[] = $lastKey . '[]';
             }
             foreach ($node as $key => &$child) {
                 if (is_null($child) || is_scalar($child)) {
                     continue;
                 }
                 if (!($isList ?? null)) {
-                    $_path   = $path;
+                    $_path = $path;
                     $_path[] = $key;
                 }
                 $this->_serialize($child, $_path ?? $path, $rules, $parents);
             }
         } elseif ($node instanceof DateTimeInterface) {
             $node = ($rules->getDateFormatter()
-                         ?: ($this->provider() ? $this->provider()->dateFormatter() : null)
-                         ?: new DateFormatter())->format($node);
+                ?: ($this->provider() ? $this->provider()->dateFormatter() : null)
+                ?: new DateFormatter())->format($node);
         } else {
             throw new UnexpectedValueException('Array or SyncEntity expected: ' . print_r($node, true));
         }

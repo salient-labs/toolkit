@@ -34,7 +34,7 @@ final class CurlerHeader implements IReadable, IImmutable
 
     public function __construct(string $name, string $value, int $index)
     {
-        $this->Name  = $name;
+        $this->Name = $name;
         $this->Value = $value;
         $this->Index = $index;
     }
@@ -44,7 +44,7 @@ final class CurlerHeader implements IReadable, IImmutable
      */
     public function withValueExtended(string $value)
     {
-        $clone         = clone $this;
+        $clone = clone $this;
         $clone->Value .= $value;
 
         return $clone;

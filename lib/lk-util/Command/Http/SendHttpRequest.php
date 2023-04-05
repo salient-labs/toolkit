@@ -83,9 +83,9 @@ class SendHttpRequest extends Command
         /** @var HttpSyncProvider */
         $provider = $this->getProvider($this->getOptionValue('provider'), HttpSyncProvider::class);
         $endpoint = $this->getOptionValue('endpoint');
-        $query    = Convert::queryToData($this->getOptionValue('query')) ?: null;
-        $data     = $this->hasOption('data') ? $this->getOptionValue('data') : null;
-        $data     = $data ? $this->getJson($data) : null;
+        $query = Convert::queryToData($this->getOptionValue('query')) ?: null;
+        $data = $this->hasOption('data') ? $this->getOptionValue('data') : null;
+        $data = $data ? $this->getJson($data) : null;
         $paginate = $this->hasOption('paginate') ? $this->getOptionValue('paginate') : false;
 
         $curler = $provider->getCurler($endpoint);

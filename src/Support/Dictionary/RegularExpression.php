@@ -32,25 +32,29 @@ final class RegularExpression extends Dictionary
      * @link https://github.com/php-fig/fig-standards/blob/master/proposed/phpdoc.md#3-definitions
      */
     public const PHP_DOCBLOCK = <<<'REGEX'
-        (?x) ^ /\*\*
-        (?P<content>
-          # Text immediately after the opening delimiter
-          .*
-          # Newlines and any subsequent text
-          (?: \r ? \n \h * \* .* )*
-          # Optional newline and whitespace before the closing delimiter
-          (?: \r ? \n \h * )?
-        )
-        \*/ $
-        REGEX;
+(?x) ^ /\*\*
+(?P<content>
+  # Text immediately after the opening delimiter
+  .*
+  # Newlines and any subsequent text
+  (?: \r ? \n \h * \* .* )*
+  # Optional newline and whitespace before the closing delimiter
+  (?: \r ? \n \h * )?
+)
+\*/ $
+REGEX;
 
-    public static function delimit(string $regex, bool $anchor = false, bool $utf8 = true, string $delimiter = '/'): string
-    {
-        $regex    = str_replace($delimiter, '\\' . $delimiter, $regex);
+    public static function delimit(
+        string $regex,
+        bool $anchor = false,
+        bool $utf8 = true,
+        string $delimiter = '/'
+    ): string {
+        $regex = str_replace($delimiter, '\\' . $delimiter, $regex);
         $modifier = $utf8 ? 'u' : '';
 
         return $anchor
-                   ? "$delimiter^$regex\$$delimiter$modifier"
-                   : "$delimiter$regex$delimiter$modifier";
+            ? "$delimiter^$regex\$$delimiter$modifier"
+            : "$delimiter$regex$delimiter$modifier";
     }
 }

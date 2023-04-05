@@ -133,13 +133,15 @@ class Introspector
 
         return
             static function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($closure, $service) {
-                return $closure($container,
-                                $array,
-                                null,
-                                null,
-                                $parent,
-                                $dateFormatter,
-                                $service);
+                return $closure(
+                    $container,
+                    $array,
+                    null,
+                    null,
+                    $parent,
+                    $dateFormatter,
+                    $service
+                );
             };
     }
 
@@ -156,7 +158,7 @@ class Introspector
      */
     final public function getCreateProvidableFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
-        $sig     = implode("\0", $keys);
+        $sig = implode("\0", $keys);
         $closure = $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] ?? null;
         if (!$closure) {
             $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] =
@@ -177,13 +179,15 @@ class Introspector
                         ? [$context->container(), $context->getParent()]
                         : [$context ?: $provider->container(), null];
 
-                return $closure($container,
-                                $array,
-                                $provider,
-                                $context ?: new ProviderContext($container, $parent),
-                                $parent,
-                                $provider->dateFormatter(),
-                                $service);
+                return $closure(
+                    $container,
+                    $array,
+                    $provider,
+                    $context ?: new ProviderContext($container, $parent),
+                    $parent,
+                    $provider->dateFormatter(),
+                    $service
+                );
             };
     }
 
@@ -213,10 +217,14 @@ class Introspector
         } else {
             // Get keys that correspond to constructor parameters and isolate
             // any that don't also match a writable property or "magic" method
-            $parameters = array_intersect_key($this->_Class->Parameters,
-                                              $keys);
-            $readonly = array_diff(array_keys($parameters),
-                                   $this->_Class->getWritableProperties());
+            $parameters = array_intersect_key(
+                $this->_Class->Parameters,
+                $keys
+            );
+            $readonly = array_diff(
+                array_keys($parameters),
+                $this->_Class->getWritableProperties()
+            );
             if ($readonly) {
                 throw new UnexpectedValueException("Cannot set readonly properties of {$this->_Class->Class}: " . implode(', ', $readonly));
             }
@@ -265,12 +273,14 @@ class Introspector
             }
         }
 
-        return new IntrospectorKeyTargets($parameterKeys,
-                                          $passByRefKeys,
-                                          $methodKeys,
-                                          $propertyKeys,
-                                          $metaKeys,
-                                          $dateKeys);
+        return new IntrospectorKeyTargets(
+            $parameterKeys,
+            $passByRefKeys,
+            $methodKeys,
+            $propertyKeys,
+            $metaKeys,
+            $dateKeys
+        );
     }
 
     /**
@@ -299,8 +309,8 @@ class Introspector
 
         // Build the smallest possible chain of closures
         $closure = $parameterKeys
-                       ? $this->_getConstructor($parameterKeys, $passByRefKeys)
-                       : $this->_getDefaultConstructor();
+            ? $this->_getConstructor($parameterKeys, $passByRefKeys)
+            : $this->_getDefaultConstructor();
         if ($propertyKeys) {
             $closure = $this->_getPropertyClosure($propertyKeys, $closure);
         }
@@ -496,8 +506,8 @@ class Introspector
         return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ...$args) use ($dateKeys, $closure) {
             if (is_null($dateFormatter)) {
                 $dateFormatter = $provider
-                                     ? $provider->dateFormatter()
-                                     : $container->get(DateFormatter::class);
+                    ? $provider->dateFormatter()
+                    : $container->get(DateFormatter::class);
             }
 
             foreach ($dateKeys as $key) {
@@ -643,7 +653,7 @@ class Introspector
                 }
             }
         } elseif ($this->_Class->IsExtensible) {
-            $method  = $action == IntrospectionClass::ACTION_ISSET ? 'isMetaPropertySet' : $action . 'MetaProperty';
+            $method = $action == IntrospectionClass::ACTION_ISSET ? 'isMetaPropertySet' : $action . 'MetaProperty';
             $closure = static function ($instance, ...$params) use ($method, $name) {
                 return $instance->$method($name, ...$params);
             };
@@ -685,7 +695,7 @@ class Introspector
         if (in_array($last = reset($names), ['surname', 'last_name'])) {
             array_shift($names);
             if (($first = reset($names)) == 'first_name') {
-                $last  = $this->getPropertyActionClosure($last, IntrospectionClass::ACTION_GET);
+                $last = $this->getPropertyActionClosure($last, IntrospectionClass::ACTION_GET);
                 $first = $this->getPropertyActionClosure($first, IntrospectionClass::ACTION_GET);
 
                 return $this->_Class->GetNameClosure =
@@ -711,8 +721,8 @@ class Introspector
     final public function getSerializeClosure(?ISerializeRules $rules = null): Closure
     {
         $rules = $rules
-                     ? [$rules->getSortByKey(), $this->_Class->IsExtensible && $rules->getIncludeMeta()]
-                     : [false, $this->_Class->IsExtensible];
+            ? [$rules->getSortByKey(), $this->_Class->IsExtensible && $rules->getIncludeMeta()]
+            : [false, $this->_Class->IsExtensible];
         $key = implode("\0", $rules);
 
         if ($closure = $this->_Class->SerializeClosures[$key] ?? null) {
@@ -720,9 +730,11 @@ class Introspector
         }
 
         [$sort, $includeMeta] = $rules;
-        $methods              = $this->_Class->Actions[IntrospectionClass::ACTION_GET] ?? [];
-        $props                = array_intersect($this->_Class->Properties,
-                                                $this->_Class->ReadableProperties ?: $this->_Class->PublicProperties);
+        $methods = $this->_Class->Actions[IntrospectionClass::ACTION_GET] ?? [];
+        $props = array_intersect(
+            $this->_Class->Properties,
+            $this->_Class->ReadableProperties ?: $this->_Class->PublicProperties
+        );
         $keys = array_keys($props + $methods);
         if ($sort) {
             sort($keys);
@@ -735,6 +747,10 @@ class Introspector
                     $arr[$key] = $instance->{$method}();
                 } else {
                     $arr[$key] = $instance->{$props[$key]};
+                }
+                // Iterators aren't serializable, so convert them to arrays
+                if (is_iterable($arr[$key]) && !is_array($arr[$key])) {
+                    $arr[$key] = iterator_to_array($arr[$key]);
                 }
             }
 

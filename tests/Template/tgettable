@@ -52,7 +52,7 @@ class B extends A
 
     protected function _SetData($value)
     {
-        $this->Data         = $value;
+        $this->Data = $value;
         $this->DataModified = time();
     }
 
@@ -107,20 +107,20 @@ class C implements IReadable, IWritable
 
 $exceptions = [];
 
-$a       = new A();
-$a->Id   = 1;
+$a = new A();
+$a->Id = 1;
 $a->Name = 'Test entry';
 
-$b       = new B();
-$b->Id   = 2;
+$b = new B();
+$b->Id = 2;
 $b->Name = 'Another test entry';
 $b->Data = [3, 4, 5];
 
 $c = new C();
 
-$b_id            = $b->Id;
-$b_name          = $b->Name;
-$b_data          = $b->Data;
+$b_id = $b->Id;
+$b_name = $b->Name;
+$b_data = $b->Data;
 // @phpstan-ignore-next-line
 $b_data_modified = $b->DataModified;
 
@@ -185,13 +185,13 @@ print_r([
     'b_set' => $b,
     'c_set' => $c,
     'b_get' => [
-        'id'            => $b_id,
-        'name'          => $b_name,
-        'data'          => $b_data,
+        'id' => $b_id,
+        'name' => $b_name,
+        'data' => $b_data,
         'data_modified' => $b_data_modified,
-        'b_meta1'       => $b_meta1,
-        'b_meta2'       => $b_meta2,
-        'b_meta3'       => $b_meta3,
+        'b_meta1' => $b_meta1,
+        'b_meta2' => $b_meta2,
+        'b_meta3' => $b_meta3,
     ],
     'exceptions' => array_map(function (Throwable $ex) { return $ex->getMessage(); }, $exceptions)
 ]);

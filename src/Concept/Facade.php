@@ -41,8 +41,8 @@ abstract class Facade implements IFacade
 
         if (Container::hasGlobalContainer()) {
             $container = Container::getGlobalContainer();
-            $instance  = $container->singletonIf($service)
-                                   ->get($service, func_get_args());
+            $instance = $container->singletonIf($service)
+                                  ->get($service, func_get_args());
         } else {
             $instance = new $service(...func_get_args());
         }

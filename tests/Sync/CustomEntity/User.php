@@ -11,7 +11,7 @@ class User extends \Lkrms\Tests\Sync\Entity\User
         /** @var iterable<Post> */
         $posts = Post::withDefaultProvider()->getList(['user' => $value]);
 
-        $this->Id    = $value;
+        $this->Id = $value;
         $this->Posts = iterator_to_array($posts);
     }
 }

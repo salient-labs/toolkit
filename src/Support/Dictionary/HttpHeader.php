@@ -10,9 +10,9 @@ use Lkrms\Concept\Dictionary;
  */
 final class HttpHeader extends Dictionary
 {
-    public const ACCEPT        = 'Accept';
+    public const ACCEPT = 'Accept';
     public const AUTHORIZATION = 'Authorization';
-    public const CONTENT_TYPE  = 'Content-Type';
-    public const PREFER        = 'Prefer';
-    public const USER_AGENT    = 'User-Agent';
+    public const CONTENT_TYPE = 'Content-Type';
+    public const PREFER = 'Prefer';
+    public const USER_AGENT = 'User-Agent';
 }

@@ -12,7 +12,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
     public function testBuild()
     {
         $container = new Container();
-        $option    = CliOption::build($container)
+        $option = CliOption::build($container)
             ->long('dest')
             ->short('d')
             ->valueName('DIR')

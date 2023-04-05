@@ -139,16 +139,16 @@ abstract class SyncProvider implements ISyncProvider, IService
 
     public function __construct(Container $container, Environment $environment, SyncStore $store)
     {
-        $this->Container   = $container;
+        $this->Container = $container;
         $this->Environment = $environment;
-        $this->Store       = $store;
+        $this->Store = $store;
 
         $this->Store->provider($this);
     }
 
     final public function setProviderId(int $providerId, string $providerHash)
     {
-        $this->Id   = $providerId;
+        $this->Id = $providerId;
         $this->Hash = $providerHash;
 
         return $this;
@@ -186,7 +186,7 @@ abstract class SyncProvider implements ISyncProvider, IService
     final public function dateFormatter(): DateFormatter
     {
         return $this->DateFormatter
-                   ?: ($this->DateFormatter = $this->getDateFormatter());
+            ?: ($this->DateFormatter = $this->getDateFormatter());
     }
 
     final public static function getServices(): array
@@ -204,20 +204,22 @@ abstract class SyncProvider implements ISyncProvider, IService
         $this->Store->entityType($syncEntity);
 
         $container = ($context instanceof ISyncContext
-                          ? $context->container()
-                          : ($context ?: $this->container()))->inContextOf(static::class);
+            ? $context->container()
+            : ($context ?: $this->container()))->inContextOf(static::class);
         $context = $context instanceof ISyncContext
-                       ? $context->withContainer($container)
-                       : $container->get(SyncContext::class);
+            ? $context->withContainer($container)
+            : $container->get(SyncContext::class);
 
-        return $container->get(SyncEntityProvider::class,
-                               [$syncEntity, $this, $this->getDefinition($syncEntity), $context]);
+        return $container->get(
+            SyncEntityProvider::class,
+            [$syncEntity, $this, $this->getDefinition($syncEntity), $context]
+        );
     }
 
     final public function __call(string $name, array $arguments)
     {
         if (($closure = $this->MagicMethodClosures[$name = strtolower($name)] ?? false) === false) {
-            $closure                          = SyncIntrospector::get(static::class)->getMagicSyncOperationClosure($name, $this);
+            $closure = SyncIntrospector::get(static::class)->getMagicSyncOperationClosure($name, $this);
             $this->MagicMethodClosures[$name] = $closure;
         }
         if ($closure) {

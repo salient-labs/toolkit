@@ -43,11 +43,11 @@ final class DeferredSyncEntity implements IReadable
     private function __construct(ISyncProvider $provider, ISyncContext $context, string $entity, $deferred, &$replace)
     {
         $this->Provider = $provider;
-        $this->Context  = $context;
-        $this->Entity   = $entity;
+        $this->Context = $context;
+        $this->Entity = $entity;
         $this->Deferred = $deferred;
-        $this->Replace  = &$replace;
-        $this->Replace  = $this;
+        $this->Replace = &$replace;
+        $this->Replace = $this;
     }
 
     public function replace(ISyncEntity $entity): void
@@ -62,8 +62,13 @@ final class DeferredSyncEntity implements IReadable
      * element to replace when the entity or list is resolved. Do not assign
      * anything else to it after calling this method.
      */
-    public static function defer(ISyncProvider $provider, ISyncContext $context, string $entity, $deferred, &$replace): void
-    {
+    public static function defer(
+        ISyncProvider $provider,
+        ISyncContext $context,
+        string $entity,
+        $deferred,
+        &$replace
+    ): void {
         if (is_array($deferred)) {
             self::deferList($provider, $context, $entity, $deferred, $replace);
 
@@ -76,8 +81,13 @@ final class DeferredSyncEntity implements IReadable
     /**
      * @param int[]|string[] $deferredList A list of entity IDs.
      */
-    public static function deferList(ISyncProvider $provider, ISyncContext $context, string $entity, array $deferredList, &$replace): void
-    {
+    public static function deferList(
+        ISyncProvider $provider,
+        ISyncContext $context,
+        string $entity,
+        array $deferredList,
+        &$replace
+    ): void {
         [$i, $list] = [0, []];
         foreach ($deferredList as $deferred) {
             $list[$i] = null;

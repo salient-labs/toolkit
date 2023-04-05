@@ -227,41 +227,41 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
         ?string $short,
         ?string $valueName,
         ?string $description,
-        int $optionType          = CliOptionType::FLAG,
-        ?array $allowedValues    = null,
-        bool $required           = false,
-        bool $multipleAllowed    = false,
-        bool $addAll             = false,
-        $defaultValue            = null,
-        ?string $envVariable     = null,
-        bool $keepDefault        = false,
-        bool $keepEnv            = false,
-        ?string $delimiter       = ',',
+        int $optionType = CliOptionType::FLAG,
+        ?array $allowedValues = null,
+        bool $required = false,
+        bool $multipleAllowed = false,
+        bool $addAll = false,
+        $defaultValue = null,
+        ?string $envVariable = null,
+        bool $keepDefault = false,
+        bool $keepEnv = false,
+        ?string $delimiter = ',',
         ?callable $valueCallback = null,
-        &$bindTo                 = null
+        &$bindTo = null
     ) {
-        $this->Long            = $long ?: null;
-        $this->OptionType      = $optionType;
-        $this->IsFlag          = $this->OptionType === CliOptionType::FLAG;
+        $this->Long = $long ?: null;
+        $this->OptionType = $optionType;
+        $this->IsFlag = $this->OptionType === CliOptionType::FLAG;
         $this->MultipleAllowed = $multipleAllowed;
-        $this->Delimiter       = $this->MultipleAllowed && !$this->IsFlag ? $delimiter : null;
-        $this->Description     = $description;
-        $this->KeepDefault     = $defaultValue && $this->MultipleAllowed && !$this->IsFlag && $keepDefault;
-        $this->BindTo          = &$bindTo;
+        $this->Delimiter = $this->MultipleAllowed && !$this->IsFlag ? $delimiter : null;
+        $this->Description = $description;
+        $this->KeepDefault = $defaultValue && $this->MultipleAllowed && !$this->IsFlag && $keepDefault;
+        $this->BindTo = &$bindTo;
         $this->RawDefaultValue = $defaultValue;
 
         switch ($optionType) {
             case CliOptionType::FLAG:
-                $required      = false;
+                $required = false;
                 $valueRequired = false;
-                $defaultValue  = $this->MultipleAllowed ? 0 : false;
+                $defaultValue = $this->MultipleAllowed ? 0 : false;
                 break;
             case CliOptionType::VALUE_POSITIONAL:
             case CliOptionType::ONE_OF_POSITIONAL:
                 $this->IsPositional = true;
-                $short              = null;
-                $key                = $this->Long;
-                $valueName          = $valueName ?: strtoupper(Convert::toSnakeCase($this->Long));
+                $short = null;
+                $key = $this->Long;
+                $valueName = $valueName ?: strtoupper(Convert::toSnakeCase($this->Long));
                 if ($optionType === CliOptionType::ONE_OF_POSITIONAL) {
                     $this->AllowedValues = $allowedValues;
                 }
@@ -275,22 +275,24 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
                     $required = false;
                     $defaultValue =
                         $this->KeepDefault
-                            ? (array_merge($this->maybeSplitValue($defaultValue),
-                                           $this->maybeSplitValue(Env::get($envVariable))))
+                            ? (array_merge(
+                                $this->maybeSplitValue($defaultValue),
+                                $this->maybeSplitValue(Env::get($envVariable))
+                            ))
                             : Env::get($envVariable);
                 }
                 break;
         }
 
-        $this->Short         = $short ?: null;
-        $this->Key           = $key ?? ($this->Short . '|' . $this->Long);
-        $this->Required      = $required;
+        $this->Short = $short ?: null;
+        $this->Key = $key ?? ($this->Short . '|' . $this->Long);
+        $this->Required = $required;
         $this->ValueRequired = $valueRequired ?? !in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL]);
-        $this->ValueName     = $this->IsFlag ? null : ($valueName ?: 'VALUE');
-        $this->DisplayName   = $this->IsPositional ? $this->getFriendlyValueName() : ($this->Long ? '--' . $this->Long : '-' . $this->Short);
-        $this->AddAll        = $this->AllowedValues && $this->MultipleAllowed && $addAll;
-        $this->DefaultValue  = $this->Required ? null : ($this->MultipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue);
-        $this->KeepEnv       = $this->EnvVariable && ($this->KeepDefault || ($this->MultipleAllowed && $keepEnv));
+        $this->ValueName = $this->IsFlag ? null : ($valueName ?: 'VALUE');
+        $this->DisplayName = $this->IsPositional ? $this->getFriendlyValueName() : ($this->Long ? '--' . $this->Long : '-' . $this->Short);
+        $this->AddAll = $this->AllowedValues && $this->MultipleAllowed && $addAll;
+        $this->DefaultValue = $this->Required ? null : ($this->MultipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue);
+        $this->KeepEnv = $this->EnvVariable && ($this->KeepDefault || ($this->MultipleAllowed && $keepEnv));
         $this->ValueCallback = $valueCallback;
 
         if ($this->AddAll) {
@@ -370,13 +372,15 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
 
         if (!is_null($this->DefaultValue) && !$this->IsFlag) {
             if ($this->MultipleAllowed) {
-                array_walk($this->DefaultValue,
-                           function (&$value) {
-                               if (($default = Convert::scalarToString($value)) === false) {
-                                   throw new UnexpectedValueException('defaultValue must be a scalar or an array of scalars');
-                               }
-                               $value = $default;
-                           });
+                array_walk(
+                    $this->DefaultValue,
+                    function (&$value) {
+                        if (($default = Convert::scalarToString($value)) === false) {
+                            throw new UnexpectedValueException('defaultValue must be a scalar or an array of scalars');
+                        }
+                        $value = $default;
+                    }
+                );
             } else {
                 if (($default = Convert::scalarToString($this->DefaultValue)) === false) {
                     throw new UnexpectedValueException('defaultValue must be a scalar');
@@ -465,8 +469,8 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
      */
     public function withValue($value)
     {
-        $clone         = clone $this;
-        $clone->Value  = $this->ValueCallback && !is_null($value) ? ($this->ValueCallback)($value) : $value;
+        $clone = clone $this;
+        $clone->Value = $this->ValueCallback && !is_null($value) ? ($this->ValueCallback)($value) : $value;
         $clone->BindTo = $clone->Value;
 
         return $clone;

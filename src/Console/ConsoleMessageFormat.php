@@ -17,8 +17,8 @@ final class ConsoleMessageFormat
 
     public function __construct(ConsoleFormat $msg1Format, ConsoleFormat $msg2Format, ConsoleFormat $prefixFormat)
     {
-        $this->Msg1Format   = $msg1Format;
-        $this->Msg2Format   = $msg2Format;
+        $this->Msg1Format = $msg1Format;
+        $this->Msg2Format = $msg2Format;
         $this->PrefixFormat = $prefixFormat;
     }
 

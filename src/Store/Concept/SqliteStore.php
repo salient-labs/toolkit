@@ -67,7 +67,7 @@ abstract class SqliteStore implements ReceivesFacade
         if ($query) {
             $db->exec($query);
         }
-        $this->Db       = $db;
+        $this->Db = $db;
         $this->Filename = $filename;
 
         return $this;

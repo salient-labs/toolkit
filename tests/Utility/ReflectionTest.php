@@ -88,7 +88,7 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
     public function testGetAllTypes()
     {
         $method = (new ReflectionClass(MyClass::class))->getConstructor();
-        $types  = [];
+        $types = [];
         foreach ($method->getParameters() as $param) {
             $types[] = array_map(
                 function ($type): string {
@@ -110,7 +110,7 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
     public function testGetAllTypeNames()
     {
         $method = (new ReflectionClass(MyClass::class))->getConstructor();
-        $names  = [];
+        $names = [];
         foreach ($method->getParameters() as $param) {
             $names[] = Reflect::getAllTypeNames($param->getType());
         }
@@ -151,8 +151,11 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
     /**
      * @dataProvider getAllMethodDocCommentsProvider
      */
-    public function testGetAllMethodDocComments(ReflectionMethod $method, array $expected, ?array $expectedClassDocComments = null)
-    {
+    public function testGetAllMethodDocComments(
+        ReflectionMethod $method,
+        array $expected,
+        ?array $expectedClassDocComments = null
+    ) {
         if (is_null($expectedClassDocComments)) {
             $this->assertSame($expected, Reflect::getAllMethodDocComments($method));
 
@@ -203,8 +206,11 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
     /**
      * @dataProvider getAllPropertyDocCommentsProvider
      */
-    public function testGetAllPropertyDocComments(ReflectionProperty $property, array $expected, ?array $expectedClassDocComments = null)
-    {
+    public function testGetAllPropertyDocComments(
+        ReflectionProperty $property,
+        array $expected,
+        ?array $expectedClassDocComments = null
+    ) {
         if (is_null($expectedClassDocComments)) {
             $this->assertSame($expected, Reflect::getAllPropertyDocComments($property));
 
@@ -252,7 +258,7 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
     public function testGetTypeDeclaration()
     {
         $method = (new ReflectionClass(MyClassWithUnionsAndIntersections::class))->getMethod('MyMethod');
-        $types  = [];
+        $types = [];
         foreach ($method->getParameters() as $param) {
             $types[] = Reflect::getTypeDeclaration(
                 $param->getType(),

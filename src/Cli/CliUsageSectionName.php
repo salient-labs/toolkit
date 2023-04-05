@@ -11,15 +11,15 @@ use Lkrms\Concept\Dictionary;
  */
 final class CliUsageSectionName extends Dictionary
 {
-    public const EXIT_STATUS    = 'EXIT STATUS';
-    public const RETURN_VALUE   = 'EXIT STATUS';
-    public const ENVIRONMENT    = 'ENVIRONMENT';
-    public const FILES          = 'FILES';
-    public const EXAMPLES       = 'EXAMPLES';
-    public const SEE_ALSO       = 'SEE ALSO';
-    public const HISTORY        = 'HISTORY';
-    public const BUGS           = 'BUGS';
+    public const EXIT_STATUS = 'EXIT STATUS';
+    public const RETURN_VALUE = 'EXIT STATUS';
+    public const ENVIRONMENT = 'ENVIRONMENT';
+    public const FILES = 'FILES';
+    public const EXAMPLES = 'EXAMPLES';
+    public const SEE_ALSO = 'SEE ALSO';
+    public const HISTORY = 'HISTORY';
+    public const BUGS = 'BUGS';
     public const REPORTING_BUGS = 'REPORTING BUGS';
-    public const AUTHOR         = 'AUTHOR';
-    public const COPYRIGHT      = 'COPYRIGHT';
+    public const AUTHOR = 'AUTHOR';
+    public const COPYRIGHT = 'COPYRIGHT';
 }

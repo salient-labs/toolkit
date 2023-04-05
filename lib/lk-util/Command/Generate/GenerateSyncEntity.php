@@ -27,7 +27,7 @@ use RuntimeException;
 class GenerateSyncEntity extends GenerateCommand
 {
     private const METHODS = [
-        'get'  => HttpRequestMethod::GET,
+        'get' => HttpRequestMethod::GET,
         'post' => HttpRequestMethod::POST,
     ];
 
@@ -126,29 +126,29 @@ class GenerateSyncEntity extends GenerateCommand
 
     protected function run(string ...$args)
     {
-        $namespace   = explode('\\', ltrim($this->getOptionValue('generate'), '\\'));
-        $class       = array_pop($namespace);
-        $namespace   = implode('\\', $namespace) ?: Env::get(EnvVar::NS_DEFAULT, '');
-        $fqcn        = $namespace ? $namespace . '\\' . $class : $class;
+        $namespace = explode('\\', ltrim($this->getOptionValue('generate'), '\\'));
+        $class = array_pop($namespace);
+        $namespace = implode('\\', $namespace) ?: Env::get(EnvVar::NS_DEFAULT, '');
+        $fqcn = $namespace ? $namespace . '\\' . $class : $class;
         $classPrefix = $namespace ? '\\' : '';
 
-        $this->OutputClass     = $class;
+        $this->OutputClass = $class;
         $this->OutputNamespace = $namespace;
-        $this->ClassPrefix     = $classPrefix;
+        $this->ClassPrefix = $classPrefix;
 
         $extends = $this->getFqcnAlias(SyncEntity::class);
 
-        $package    = $this->getOptionValue('package');
-        $desc       = $this->getOptionValue('desc');
+        $package = $this->getOptionValue('package');
+        $desc = $this->getOptionValue('desc');
         $visibility = $this->getOptionValue('visibility');
-        $json       = $this->getOptionValue('json');
-        $provider   = $this->getOptionValue('provider');
+        $json = $this->getOptionValue('json');
+        $provider = $this->getOptionValue('provider');
 
-        $props     = ['Id' => 'int|string|null'];
-        $entity    = null;
+        $props = ['Id' => 'int|string|null'];
+        $entity = null;
         $entityUri = null;
-        $data      = null;
-        $dataUri   = null;
+        $data = null;
+        $dataUri = null;
 
         if (!$fqcn) {
             throw new CliArgumentsInvalidException("invalid class: $fqcn");
@@ -164,13 +164,13 @@ class GenerateSyncEntity extends GenerateCommand
             /** @var HttpSyncProvider */
             $provider = $this->getProvider($provider, HttpSyncProvider::class);
             $endpoint = $this->getOptionValue('endpoint');
-            $query    = Convert::queryToData($this->getOptionValue('query')) ?: null;
-            $data     = $this->getOptionValue('data');
-            $data     = $data ? $this->getJson($data, $dataUri) : null;
-            $method   = $data && $endpoint ? HttpRequestMethod::POST : self::METHODS[$this->getOptionValue('method')];
+            $query = Convert::queryToData($this->getOptionValue('query')) ?: null;
+            $data = $this->getOptionValue('data');
+            $data = $data ? $this->getJson($data, $dataUri) : null;
+            $method = $data && $endpoint ? HttpRequestMethod::POST : self::METHODS[$this->getOptionValue('method')];
             $endpoint = $endpoint ?: '/' . Convert::toKebabCase($class);
 
-            $curler    = $provider->getCurler($endpoint);
+            $curler = $provider->getCurler($endpoint);
             $entityUri = $provider->getEndpointUrl($endpoint);
 
             switch ($method) {
@@ -199,9 +199,9 @@ class GenerateSyncEntity extends GenerateCommand
             $typeMap = [
                 'boolean' => 'bool',
                 'integer' => 'int',
-                'double'  => 'float',
-                'array'   => 'mixed[]',
-                'NULL'    => 'mixed',
+                'double' => 'float',
+                'array' => 'mixed[]',
+                'NULL' => 'mixed',
             ];
 
             $entityClass = new class extends SyncEntity {
@@ -217,7 +217,7 @@ class GenerateSyncEntity extends GenerateCommand
             };
 
             $entityClass::$EntityName = $class;
-            $normaliser               = $entityClass::normaliser();
+            $normaliser = $entityClass::normaliser();
 
             foreach ($entity as $key => $value) {
                 if (is_string($key) && preg_match('/^[[:alpha:]]/', $key)) {
@@ -235,8 +235,8 @@ class GenerateSyncEntity extends GenerateCommand
                         continue;
                     }
 
-                    $type  = gettype($value);
-                    $type  = $typeMap[$type] ?? $type;
+                    $type = gettype($value);
+                    $type = $typeMap[$type] ?? $type;
                     $type .= $type == 'mixed' ? '' : '|null';
 
                     $props[$key] = $type;
@@ -265,21 +265,21 @@ class GenerateSyncEntity extends GenerateCommand
                 $docBlock[] = " * @lkrms-reference-entity $entityUri";
             }
             $values = [
-                'stdout'   => null,
-                'force'    => null,
-                'json'     => null,
+                'stdout' => null,
+                'force' => null,
+                'json' => null,
                 'provider' => null,
                 'endpoint' => null,
-                'method'   => null,
-                'query'    => null,
-                'data'     => null,
+                'method' => null,
+                'query' => null,
+                'data' => null,
             ];
             if ($json) {
                 $values['json'] = $entityUri ?: $this->getOptionValue('json');
             } elseif ($provider) {
                 unset($values['provider'], $values['endpoint'], $values['query']);
                 $values['method'] = array_search($method ?? null, self::METHODS, true) ?: null;
-                $values['data']   = $dataUri ?: $this->getOptionValue('data');
+                $values['data'] = $dataUri ?: $this->getOptionValue('data');
             }
             $docBlock[] = ' * @lkrms-generate-command '
                 . implode(' ', $this->getEffectiveCommandLine(true, $values));

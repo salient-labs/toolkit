@@ -30,18 +30,18 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
         $summary = [];
         /** @var SyncError $error */
         foreach ($this as $error) {
-            $code    = $error->getCode();
+            $code = $error->getCode();
             $message = $error->Message;
-            $key     = "$code.$message";
+            $key = "$code.$message";
             if (is_null($summary[$key] ?? null)) {
                 $summary[$key] = [
-                    'code'   => $code,
-                    'title'  => ErrorType::toName($error->ErrorType),
+                    'code' => $code,
+                    'title' => ErrorType::toName($error->ErrorType),
                     'detail' => $message,
-                    'meta'   => [
+                    'meta' => [
                         'level' => Level::toName($error->Level),
                         'count' => 0,
-                        'seen'  => 0,
+                        'seen' => 0,
                     ],
                 ];
             }
@@ -56,8 +56,8 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
 
     public function __toString(): string
     {
-        $summary   = $this->toSummary();
-        $lines     = [];
+        $summary = $this->toSummary();
+        $lines = [];
         $separator = PHP_EOL . '  ';
         foreach ($summary as $error) {
             $lines[] = sprintf(

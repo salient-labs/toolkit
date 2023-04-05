@@ -47,7 +47,7 @@ final class Reflection
      */
     public function getClassNamesBetween($child, $parent, bool $includeParent = true): array
     {
-        $child  = $this->toReflectionClass($child);
+        $child = $this->toReflectionClass($child);
         $parent = $this->toReflectionClass($parent);
 
         if ($parent->isInterface() ||
@@ -141,8 +141,8 @@ final class Reflection
     private function getTypeName(ReflectionType $type): string
     {
         return $type instanceof ReflectionNamedType
-                   ? $type->getName()
-                   : (string) $type;
+            ? $type->getName()
+            : (string) $type;
     }
 
     /**
@@ -156,7 +156,7 @@ final class Reflection
     public function getAllClassDocComments(ReflectionClass $class): array
     {
         $interfaces = $this->getInterfaces($class);
-        $comments   = [];
+        $comments = [];
         do {
             if (($comment = $class->getDocComment()) !== false) {
                 $comments[] = $comment;
@@ -191,7 +191,7 @@ final class Reflection
         if (func_num_args() > 1) {
             $classDocComments = [];
         }
-        $name     = $method->getName();
+        $name = $method->getName();
         $comments = $this->_getAllMethodDocComments($method, $name, $classDocComments);
 
         foreach ($this->getInterfaces($method->getDeclaringClass()) as $interface) {
@@ -227,10 +227,14 @@ final class Reflection
             // getTraits() doesn't return inherited traits, so recurse into them
             foreach ($method->getDeclaringClass()->getTraits() as $trait) {
                 if ($trait->hasMethod($name)) {
-                    array_push($comments,
-                               ...$this->_getAllMethodDocComments($trait->getMethod($name),
-                                                                  $name,
-                                                                  $classDocComments));
+                    array_push(
+                        $comments,
+                        ...$this->_getAllMethodDocComments(
+                            $trait->getMethod($name),
+                            $name,
+                            $classDocComments
+                        )
+                    );
                 }
             }
         } while (($parent = $method->getDeclaringClass()->getParentClass()) &&
@@ -259,19 +263,22 @@ final class Reflection
         if (func_num_args() > 1) {
             $classDocComments = [];
         }
-        $name     = $property->getName();
+        $name = $property->getName();
         $comments = $this->_getAllPropertyDocComments($property, $name, $classDocComments);
 
         return is_null($classDocComments)
-                   ? Convert::stringsToUniqueList($comments)
-                   : Convert::columnsToUniqueList($comments, $classDocComments);
+            ? Convert::stringsToUniqueList($comments)
+            : Convert::columnsToUniqueList($comments, $classDocComments);
     }
 
     /**
      * @return string[]
      */
-    private function _getAllPropertyDocComments(ReflectionProperty $property, string $name, ?array &$classDocComments): array
-    {
+    private function _getAllPropertyDocComments(
+        ReflectionProperty $property,
+        string $name,
+        ?array &$classDocComments
+    ): array {
         $comments = [];
         do {
             if (($comment = $property->getDocComment()) !== false) {
@@ -281,10 +288,14 @@ final class Reflection
             }
             foreach ($property->getDeclaringClass()->getTraits() as $trait) {
                 if ($trait->hasProperty($name)) {
-                    array_push($comments,
-                               ...$this->_getAllPropertyDocComments($trait->getProperty($name),
-                                                                    $name,
-                                                                    $classDocComments));
+                    array_push(
+                        $comments,
+                        ...$this->_getAllPropertyDocComments(
+                            $trait->getProperty($name),
+                            $name,
+                            $classDocComments
+                        )
+                    );
                 }
             }
         } while (($parent = $property->getDeclaringClass()->getParentClass()) &&
@@ -305,13 +316,16 @@ final class Reflection
      * callback(string $name): ?string
      * ```
      */
-    public function getTypeDeclaration(?ReflectionType $type, string $classPrefix = '\\', ?callable $typeNameCallback = null): string
-    {
+    public function getTypeDeclaration(
+        ?ReflectionType $type,
+        string $classPrefix = '\\',
+        ?callable $typeNameCallback = null
+    ): string {
         $glue = '|';
         if ($type instanceof ReflectionUnionType) {
             $types = $type->getTypes();
         } elseif ($type instanceof ReflectionIntersectionType) {
-            $glue  = '&';
+            $glue = '&';
             $types = $type->getTypes();
         } elseif (is_null($type)) {
             $types = [];
@@ -321,8 +335,8 @@ final class Reflection
         $parts = [];
         /** @var ReflectionNamedType|ReflectionType $type */
         foreach ($types as $type) {
-            $name    = $this->getTypeName($type);
-            $alias   = $typeNameCallback ? $typeNameCallback($name) : null;
+            $name = $this->getTypeName($type);
+            $alias = $typeNameCallback ? $typeNameCallback($name) : null;
             $parts[] = ($type->allowsNull() && strcasecmp($name, 'null') ? '?' : '')
                 . ($alias || $type->isBuiltin() ? '' : $classPrefix)
                 . ($alias ?: $name);
@@ -343,11 +357,17 @@ final class Reflection
      * use `$type` instead. Do not use when generating code unless `$type` is
      * from a trusted source.
      */
-    public function getParameterDeclaration(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, ?string $type = null, ?string $name = null, bool $phpDoc = false): string
-    {
+    public function getParameterDeclaration(
+        ReflectionParameter $parameter,
+        string $classPrefix = '\\',
+        ?callable $typeNameCallback = null,
+        ?string $type = null,
+        ?string $name = null,
+        bool $phpDoc = false
+    ): string {
         // If getTypeDeclaration isn't called, neither is $typeNameCallback
-        $param  = $this->getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
-        $param  = is_null($type) ? $param : $type;
+        $param = $this->getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
+        $param = is_null($type) ? $param : $type;
         $param .= ($param ? ' ' : '')
             . ($parameter->isPassedByReference() ? '&' : '')
             . ($parameter->isVariadic() ? '...' : '')
@@ -393,11 +413,18 @@ final class Reflection
      * @param string|null $type If set, ignore the parameter's declared type and
      * use `$type` instead.
      */
-    public function getParameterPhpDoc(ReflectionParameter $parameter, string $classPrefix = '\\', ?callable $typeNameCallback = null, ?string $type = null, ?string $name = null, ?string $documentation = null, bool $force = false): ?string
-    {
+    public function getParameterPhpDoc(
+        ReflectionParameter $parameter,
+        string $classPrefix = '\\',
+        ?callable $typeNameCallback = null,
+        ?string $type = null,
+        ?string $name = null,
+        ?string $documentation = null,
+        bool $force = false
+    ): ?string {
         // If getTypeDeclaration isn't called, neither is $typeNameCallback
-        $param  = $this->getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
-        $param  = is_null($type) ? $param : $type;
+        $param = $this->getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
+        $param = is_null($type) ? $param : $type;
         $param .= ($param ? ' ' : '')
             . ($parameter->isVariadic() ? '...' : '')
             . '$' . ($name ?: $parameter->getName());
@@ -429,7 +456,7 @@ final class Reflection
 
         while ($class && ($traits = $class->getTraits())) {
             $allTraits = array_merge($allTraits, $traits);
-            $class     = $class->getParentClass();
+            $class = $class->getParentClass();
         }
 
         if ($class) {
@@ -445,8 +472,8 @@ final class Reflection
     private function toReflectionClass($class): ReflectionClass
     {
         return $class instanceof ReflectionClass
-                   ? $class
-                   : new ReflectionClass($class);
+            ? $class
+            : new ReflectionClass($class);
     }
 
     /**
@@ -465,8 +492,8 @@ final class Reflection
                 $a->isSubclassOf($b)
                     ? -1
                     : ($b->isSubclassOf($a)
-                           ? 1
-                           : $this->getBaseClass($a)->getName() <=> $this->getBaseClass($b)->getName())
+                        ? 1
+                        : $this->getBaseClass($a)->getName() <=> $this->getBaseClass($b)->getName())
         );
 
         return $interfaces;

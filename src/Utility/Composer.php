@@ -113,8 +113,11 @@ final class Composer
      * @param bool $pretty If `true`, return the original version number, e.g.
      * `v0.3.1` instead of `0.3.1.0`.
      */
-    public function getPackageVersion(string $package = 'lkrms/util', bool $pretty = false, bool $withReference = false): ?string
-    {
+    public function getPackageVersion(
+        string $package = 'lkrms/util',
+        bool $pretty = false,
+        bool $withReference = false
+    ): ?string {
         if (!InstalledVersions::isInstalled($package)) {
             return null;
         }
@@ -174,7 +177,7 @@ final class Composer
     public function getNamespacePath(string $namespace): ?string
     {
         $namespace = trim($namespace, '\\');
-        $prefixes  = [];
+        $prefixes = [];
         foreach (ClassLoader::getRegisteredLoaders() as $loader) {
             // If multiple loaders return the same prefix, prefer the first one
             $prefixes = array_merge($loader->getPrefixesPsr4(), $prefixes);
@@ -227,7 +230,7 @@ final class Composer
     private function formatReference(?string $ref, ?int $abbrev): ?string
     {
         return is_string($ref)
-                   ? (($abbrev ?: 0) < 4 ? $ref : substr($ref, 0, $abbrev))
-                   : null;
+            ? (($abbrev ?: 0) < 4 ? $ref : substr($ref, 0, $abbrev))
+            : null;
     }
 }

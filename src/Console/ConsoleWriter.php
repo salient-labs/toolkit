@@ -24,13 +24,13 @@ final class ConsoleWriter implements ReceivesFacade
 {
     private const LEVEL_PREFIX = [
         Level::EMERGENCY => ' !! ',
-        Level::ALERT     => ' !! ',
-        Level::CRITICAL  => ' !! ',
-        Level::ERROR     => ' !! ',
-        Level::WARNING   => '  ! ',
-        Level::NOTICE    => '==> ',
-        Level::INFO      => ' -> ',
-        Level::DEBUG     => '--- ',
+        Level::ALERT => ' !! ',
+        Level::CRITICAL => ' !! ',
+        Level::ERROR => ' !! ',
+        Level::WARNING => '  ! ',
+        Level::NOTICE => '==> ',
+        Level::INFO => ' -> ',
+        Level::DEBUG => '--- ',
     ];
 
     /**
@@ -169,8 +169,8 @@ final class ConsoleWriter implements ReceivesFacade
         // Send errors and warnings to STDERR, everything else to STDOUT
         $stderrLevels = ConsoleLevels::ERRORS;
         $stdoutLevels = Env::debug()
-                            ? ConsoleLevels::INFO_DEBUG
-                            : ConsoleLevels::INFO;
+            ? ConsoleLevels::INFO_DEBUG
+            : ConsoleLevels::INFO;
         $this->clearStdioTargets();
         $this->registerTarget(new StreamTarget(STDERR), $stderrLevels);
         $this->registerTarget(new StreamTarget(STDOUT), $stdoutLevels);
@@ -199,8 +199,8 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         $levels = Env::debug()
-                      ? ConsoleLevels::ALL_DEBUG
-                      : ConsoleLevels::ALL;
+            ? ConsoleLevels::ALL_DEBUG
+            : ConsoleLevels::ALL;
         $this->clearStdioTargets();
         $this->registerTarget(new StreamTarget($stream), $levels);
 
@@ -246,19 +246,23 @@ final class ConsoleWriter implements ReceivesFacade
      * `$exceptStdio` must also be `true`.
      * @return $this
      */
-    public function setTargetPrefix(?string $prefix, bool $ttyOnly = false, bool $stdio = true, bool $exceptStdio = true)
-    {
+    public function setTargetPrefix(
+        ?string $prefix,
+        bool $ttyOnly = false,
+        bool $stdio = true,
+        bool $exceptStdio = true
+    ) {
         if (!$this->Targets) {
             $this->registerDefaultTargets();
         }
 
         $targets = $stdio && $exceptStdio
-                       ? $this->Targets
-                       : ($stdio
-                              ? $this->StdioTargets
-                              : ($exceptStdio
-                                     ? $this->ExceptStdioTargets
-                                     : null));
+            ? $this->Targets
+            : ($stdio
+                ? $this->StdioTargets
+                : ($exceptStdio
+                    ? $this->ExceptStdioTargets
+                    : null));
 
         if (is_null($targets)) {
             throw new RuntimeException('No targets selected');
@@ -343,8 +347,14 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    private function write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null, bool $formatByLevel = true)
-    {
+    private function write(
+        int $level,
+        string $msg1,
+        ?string $msg2,
+        string $prefix,
+        ?Throwable $ex = null,
+        bool $formatByLevel = true
+    ) {
         return $this->_write($level, $msg1, $msg2, $prefix, $ex, $this->Targets, $formatByLevel);
     }
 
@@ -363,8 +373,14 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    private function writeOnce(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null, bool $formatByLevel = true)
-    {
+    private function writeOnce(
+        int $level,
+        string $msg1,
+        ?string $msg2,
+        string $prefix,
+        ?Throwable $ex = null,
+        bool $formatByLevel = true
+    ) {
         $hash = Compute::hash($level, $msg1, $msg2, $prefix);
         if (($this->Written[$hash] = ($this->Written[$hash] ?? 0) + 1) < 2) {
             return $this->write($level, $msg1, $msg2, $prefix, $ex, $formatByLevel);
@@ -410,15 +426,23 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function message(int $level, string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $prefixByLevel = true, bool $formatByLevel = true)
-    {
+    public function message(
+        int $level,
+        string $msg1,
+        ?string $msg2 = null,
+        ?Throwable $ex = null,
+        bool $prefixByLevel = true,
+        bool $formatByLevel = true
+    ) {
         return $this->count($level)
-                    ->write($level,
-                            $msg1,
-                            $msg2,
-                            $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
-                            $ex,
-                            $formatByLevel);
+                    ->write(
+                        $level,
+                        $msg1,
+                        $msg2,
+                        $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
+                        $ex,
+                        $formatByLevel
+                    );
     }
 
     /**
@@ -429,15 +453,23 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    public function messageOnce(int $level, string $msg1, ?string $msg2 = null, ?Throwable $ex = null, bool $prefixByLevel = true, bool $formatByLevel = true)
-    {
+    public function messageOnce(
+        int $level,
+        string $msg1,
+        ?string $msg2 = null,
+        ?Throwable $ex = null,
+        bool $prefixByLevel = true,
+        bool $formatByLevel = true
+    ) {
         return $this->count($level)
-                    ->writeOnce($level,
-                                $msg1,
-                                $msg2,
-                                $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
-                                $ex,
-                                $formatByLevel);
+                    ->writeOnce(
+                        $level,
+                        $msg1,
+                        $msg2,
+                        $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
+                        $ex,
+                        $formatByLevel
+                    );
     }
 
     /**
@@ -615,7 +647,7 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         $caller = implode('', Debug::getCaller($depth));
-        $msg1   = $msg1 ? ' __' . $msg1 . '__' : '';
+        $msg1 = $msg1 ? ' __' . $msg1 . '__' : '';
 
         return $this->write(Level::DEBUG, "{{$caller}}{$msg1}", $msg2, '--- ', $ex);
     }
@@ -686,38 +718,49 @@ final class ConsoleWriter implements ReceivesFacade
      * is not printed.
      * @return $this
      */
-    public function exception(Throwable $exception, int $messageLevel = Level::ERROR, ?int $stackTraceLevel = Level::DEBUG)
-    {
+    public function exception(
+        Throwable $exception,
+        int $messageLevel = Level::ERROR,
+        ?int $stackTraceLevel = Level::DEBUG
+    ) {
         $ex = $exception;
-        $i  = 0;
+        $i = 0;
         do {
             $msg2 = ($msg2 ?? '') . (($i++ ? "\nCaused by __" . get_class($ex) . '__: ' : '')
-                . sprintf('`%s` ~~in %s:%d~~',
-                          ConsoleFormatter::escape($ex->getMessage()),
-                          $ex->getFile(),
-                          $ex->getLine()));
+                . sprintf(
+                    '`%s` ~~in %s:%d~~',
+                    ConsoleFormatter::escape($ex->getMessage()),
+                    $ex->getFile(),
+                    $ex->getLine()
+                ));
             $ex = $ex->getPrevious();
         } while ($ex);
 
         $this->count($messageLevel)
-             ->write($messageLevel,
-                     'Uncaught __' . get_class($exception) . '__:',
-                     $msg2,
-                     ' !! ',
-                     $exception);
+             ->write(
+                 $messageLevel,
+                 'Uncaught __' . get_class($exception) . '__:',
+                 $msg2,
+                 ' !! ',
+                 $exception
+             );
         if (is_null($stackTraceLevel)) {
             return $this;
         }
-        $this->write($stackTraceLevel,
-                     '__Stack trace:__',
-                     "\n`" . ConsoleFormatter::escape($exception->getTraceAsString()) . '`',
-                     '--- ');
+        $this->write(
+            $stackTraceLevel,
+            '__Stack trace:__',
+            "\n`" . ConsoleFormatter::escape($exception->getTraceAsString()) . '`',
+            '--- '
+        );
         if ($exception instanceof \Lkrms\Exception\Exception) {
             foreach ($exception->getDetail() as $section => $text) {
-                $this->write($stackTraceLevel,
-                             "__{$section}:__",
-                             "\n`" . ConsoleFormatter::escape($text ?: '') . '`',
-                             '--- ');
+                $this->write(
+                    $stackTraceLevel,
+                    "__{$section}:__",
+                    "\n`" . ConsoleFormatter::escape($text ?: '') . '`',
+                    '--- '
+                );
             }
         }
 
@@ -727,8 +770,15 @@ final class ConsoleWriter implements ReceivesFacade
     /**
      * @return $this
      */
-    private function _write(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex, array &$targets, bool $formatByLevel = true)
-    {
+    private function _write(
+        int $level,
+        string $msg1,
+        ?string $msg2,
+        string $prefix,
+        ?Throwable $ex,
+        array &$targets,
+        bool $formatByLevel = true
+    ) {
         if (!$this->Targets) {
             $this->registerDefaultTargets();
         }
@@ -745,8 +795,8 @@ final class ConsoleWriter implements ReceivesFacade
         foreach ($targets[$level] ?? [] as $target) {
             $target->setMessageFormatting($formatByLevel);
             $formatter = $target->getFormatter();
-            $_msg1     = $formatter->format($msg1);
-            $_msg2     = is_null($msg2) ? null : $formatter->format($msg2);
+            $_msg1 = $formatter->format($msg1);
+            $_msg2 = is_null($msg2) ? null : $formatter->format($msg2);
 
             if ($margin + $indent && strpos($msg1, "\n") !== false) {
                 $_msg1 = str_replace("\n", "\n" . str_repeat(' ', $margin + $indent), $_msg1);
@@ -754,8 +804,8 @@ final class ConsoleWriter implements ReceivesFacade
 
             if (!is_null($_msg2)) {
                 $_msg2 = strpos($msg2, "\n") !== false
-                             ? str_replace("\n", "\n" . str_repeat(' ', $margin + $indent + 2), "\n" . ltrim($_msg2))
-                             : ($_msg1 ? ' ' : '') . $_msg2;
+                    ? str_replace("\n", "\n" . str_repeat(' ', $margin + $indent + 2), "\n" . ltrim($_msg2))
+                    : ($_msg1 ? ' ' : '') . $_msg2;
             }
 
             $message = $target->getMessageFormat($level)->apply($_msg1, $_msg2, $prefix);

@@ -57,8 +57,12 @@ trait TConstructible
      * {@see \Lkrms\Contract\IHierarchy::setParent()}.
      * @return iterable<static>
      */
-    final public static function constructList(iterable $dataList, int $conformity = ArrayKeyConformity::NONE, ?IContainer $container = null, $parent = null): iterable
-    {
+    final public static function constructList(
+        iterable $dataList,
+        int $conformity = ArrayKeyConformity::NONE,
+        ?IContainer $container = null,
+        $parent = null
+    ): iterable {
         if (!$container) {
             $container = Container::requireGlobalContainer();
         }

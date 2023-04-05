@@ -7,20 +7,25 @@ use Lkrms\Curler\Curler;
 /**
  * Implements retrieval and extraction of paginated data
  *
+ * Instances may be reused. If necessary, cleanup between requests should be
+ * performed in {@see ICurlerPager::prepareQuery()}.
+ *
+ * Inheritors may be expected to service requests for entities via
+ * {@see ICurlerPager::getPage()} in scenarios where paging is unnecessary
+ * and/or unsupported. This may require deferral of pagination-related checks
+ * until page 2 is requested.
  */
 interface ICurlerPager
 {
     /**
      * Prepare a query string for the first page request
      *
-     * Do not include a leading question mark (`?`) in the query string. This
-     * will be added by {@see Curler}.
-     *
-     * Return `null` if no special query handling is required.
+     * Return `$query` if no special handling is required.
      *
      * @param mixed[]|null $query
+     * @return mixed[]|null
      */
-    public function prepareQuery(?array $query): ?string;
+    public function prepareQuery(?array $query): ?array;
 
     /**
      * Prepare a Curler instance to request the first page from an endpoint

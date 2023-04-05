@@ -88,7 +88,7 @@ trait HasParent
     {
         [$_parent] = self::getHierarchyProperties();
 
-        $depth  = 0;
+        $depth = 0;
         $parent = $this->{$_parent};
         while (!is_null($parent)) {
             $depth++;

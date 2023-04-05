@@ -12,21 +12,21 @@ $loader->addPsr4('Lkrms\\Tests\\', __DIR__);
 Err::load();
 
 $distances = [
-    'DELIVERY,milk delivery,false'  => Compute::textDistance('DELIVERY', 'milk delivery', false),
-    'DELIVERY,milk deliverer'       => Compute::textDistance('DELIVERY', 'milk deliverer'),
-    'DELIVERY,milk delivery'        => Compute::textDistance('DELIVERY', 'milk delivery'),
+    'DELIVERY,milk delivery,false' => Compute::textDistance('DELIVERY', 'milk delivery', false),
+    'DELIVERY,milk deliverer' => Compute::textDistance('DELIVERY', 'milk deliverer'),
+    'DELIVERY,milk delivery' => Compute::textDistance('DELIVERY', 'milk delivery'),
     'DELIVERY - MILK,milk delivery' => Compute::textDistance('DELIVERY - MILK', 'milk delivery'),
-    'DELIVERY,delivery'             => Compute::textDistance('DELIVERY', 'delivery'),
+    'DELIVERY,delivery' => Compute::textDistance('DELIVERY', 'delivery'),
 ];
 
 print_r($distances);
 
 $similarities = [
-    'DELIVERY,milk delivery,false'  => Compute::textSimilarity('DELIVERY', 'milk delivery', false),
-    'DELIVERY,milk deliverer'       => Compute::textSimilarity('DELIVERY', 'milk deliverer'),
-    'DELIVERY,milk delivery'        => Compute::textSimilarity('DELIVERY', 'milk delivery'),
+    'DELIVERY,milk delivery,false' => Compute::textSimilarity('DELIVERY', 'milk delivery', false),
+    'DELIVERY,milk deliverer' => Compute::textSimilarity('DELIVERY', 'milk deliverer'),
+    'DELIVERY,milk delivery' => Compute::textSimilarity('DELIVERY', 'milk delivery'),
     'DELIVERY - MILK,milk delivery' => Compute::textSimilarity('DELIVERY - MILK', 'milk delivery'),
-    'DELIVERY,delivery'             => Compute::textSimilarity('DELIVERY', 'delivery'),
+    'DELIVERY,delivery' => Compute::textSimilarity('DELIVERY', 'delivery'),
 ];
 
 print_r($similarities);

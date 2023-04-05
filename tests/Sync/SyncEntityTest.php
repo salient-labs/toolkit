@@ -11,17 +11,17 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
 {
     public function testToArrayRecursionDetection()
     {
-        $user     = new User();
+        $user = new User();
         $user->Id = 1;
 
-        $post          = new Post();
-        $post->Id      = 101;
-        $post->User    = $user;
+        $post = new Post();
+        $post->Id = 101;
+        $post->User = $user;
         $user->Posts[] = $post;
 
-        $post          = new Post();
-        $post->Id      = 102;
-        $post->User    = $user;
+        $post = new Post();
+        $post->Id = 102;
+        $post->User = $user;
         $user->Posts[] = $post;
 
         $container = new Container();
@@ -42,60 +42,60 @@ final class SyncEntityTest extends \Lkrms\Tests\TestCase
         $this->assertSame([
             'address' => null,
             'company' => null,
-            'email'   => null,
-            'id'      => 1,
-            'name'    => null,
-            'phone'   => null,
-            'posts'   => [
+            'email' => null,
+            'id' => 1,
+            'name' => null,
+            'phone' => null,
+            'posts' => [
                 [
-                    'body'  => null,
-                    'id'    => 101,
+                    'body' => null,
+                    'id' => 101,
                     'title' => null,
-                    'user'  => [
+                    'user' => [
                         '@type' => '/Lkrms/Tests/Sync/Entity/User',
-                        '@id'   => 1,
-                        '@why'  => 'Circular reference detected',
+                        '@id' => 1,
+                        '@why' => 'Circular reference detected',
                     ],
                 ],
                 [
-                    'body'  => null,
-                    'id'    => 102,
+                    'body' => null,
+                    'id' => 102,
                     'title' => null,
-                    'user'  => [
+                    'user' => [
                         '@type' => '/Lkrms/Tests/Sync/Entity/User',
-                        '@id'   => 1,
-                        '@why'  => 'Circular reference detected',
+                        '@id' => 1,
+                        '@why' => 'Circular reference detected',
                     ],
                 ]
             ],
             'username' => null,
         ], $_user);
         $this->assertSame([
-            'body'  => null,
-            'id'    => 102,
+            'body' => null,
+            'id' => 102,
             'title' => null,
-            'user'  => [
+            'user' => [
                 'address' => null,
                 'company' => null,
-                'email'   => null,
-                'id'      => 1,
-                'name'    => null,
-                'phone'   => null,
-                'posts'   => [
+                'email' => null,
+                'id' => 1,
+                'name' => null,
+                'phone' => null,
+                'posts' => [
                     [
-                        'body'  => null,
-                        'id'    => 101,
+                        'body' => null,
+                        'id' => 101,
                         'title' => null,
-                        'user'  => [
+                        'user' => [
                             '@type' => '/Lkrms/Tests/Sync/Entity/User',
-                            '@id'   => 1,
-                            '@why'  => 'Circular reference detected',
+                            '@id' => 1,
+                            '@why' => 'Circular reference detected',
                         ],
                     ],
                     [
                         '@type' => '/Lkrms/Tests/Sync/Entity/Post',
-                        '@id'   => 102,
-                        '@why'  => 'Circular reference detected',
+                        '@id' => 102,
+                        '@why' => 'Circular reference detected',
                     ],
                 ],
                 'username' => null,
