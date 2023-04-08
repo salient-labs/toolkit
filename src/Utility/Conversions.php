@@ -46,6 +46,22 @@ final class Conversions
     public const IDENTIFIER_CASE_CAMEL = 3;
 
     /**
+     * Cast a value to a boolean, preserving null and converting boolean strings
+     *
+     * Returns `false` if `$value` is `"off"`, `"n"`, `"no"`, `"f"` or `"false"`
+     * (case-insensitive), otherwise casts `$value` to `bool`.
+     *
+     */
+    public function toBoolOrNull($value): ?bool
+    {
+        return is_null($value)
+            ? null
+            : (is_string($value) && preg_match('/^(off|no?|f(alse)?)$/i', $value)
+                ? false
+                : (bool) $value);
+    }
+
+    /**
      * Cast a value to an integer, preserving null
      *
      */

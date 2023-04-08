@@ -7,53 +7,105 @@ use UnexpectedValueException;
 
 final class ConversionsTest extends \Lkrms\Tests\TestCase
 {
-    /*
-    public function testToIntOrNull()
+    /**
+     * @dataProvider toBoolOrNullProvider
+     */
+    public function testToBoolOrNull($value, $expected)
     {
+        $this->assertSame($expected, Convert::toBoolOrNull($value));
     }
-    public function testToArray()
-    {
-    }
-    public function testToList()
-    {
-    }
-    */
 
-    public function testFlatten()
+    public static function toBoolOrNullProvider()
     {
-        $data = [
-            [[['id' => 1]]],
-            ['nested scalar'],
-            ['nested associative' => 1],
-            [[1, 'links' => [2, 3]]],
-            'plain scalar',
+        return [
+            "''" => [
+                '',
+                false,
+            ],
+            "'0'" => [
+                '0',
+                false,
+            ],
+            "'1'" => [
+                '1',
+                true,
+            ],
+            "'f'" => [
+                'f',
+                false,
+            ],
+            "'false'" => [
+                'false',
+                false,
+            ],
+            "'n'" => [
+                'n',
+                false,
+            ],
+            "'no'" => [
+                'no',
+                false,
+            ],
+            "'off'" => [
+                'off',
+                false,
+            ],
+            "'on'" => [
+                'on',
+                true,
+            ],
+            "'t'" => [
+                't',
+                true,
+            ],
+            "'true'" => [
+                'true',
+                true,
+            ],
+            "'y'" => [
+                'y',
+                true,
+            ],
+            "'yes'" => [
+                'yes',
+                true,
+            ],
         ];
-
-        $flattened = array_map(fn($value) => Convert::flatten($value), $data);
-
-        $this->assertSame([
-            ['id' => 1],
-            'nested scalar',
-            ['nested associative' => 1],
-            [1, 'links' => [2, 3]],
-            'plain scalar',
-        ], $flattened);
     }
 
-    /*
-    public function testToUniqueList()
+    /**
+     * @dataProvider flattenProvider
+     */
+    public function testFlatten($value, $expected)
     {
+        $this->assertSame($expected, Convert::flatten($value));
     }
-    public function testStringsToUniqueList()
+
+    public static function flattenProvider()
     {
+        return [
+            [
+                [[['id' => 1]]],
+                ['id' => 1],
+            ],
+            [
+                ['nested scalar'],
+                'nested scalar',
+            ],
+            [
+                ['nested associative' => 1],
+                ['nested associative' => 1],
+            ],
+            [
+                [[1, 'links' => [2, 3]]],
+                [1, 'links' => [2, 3]],
+            ],
+            [
+                'plain scalar',
+                'plain scalar',
+            ],
+        ];
     }
-    public function testToScalarArray()
-    {
-    }
-    public function testStringToList()
-    {
-    }
-    */
 
     public function testArrayKeyToOffset()
     {
@@ -150,33 +202,6 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
         $this->expectException(UnexpectedValueException::class);
         $slice = Convert::renameArrayKey('c', 2, $data);
     }
-
-    /*
-    public function testIntervalToSeconds()
-    {
-    }
-    public function testToDateTimeImmutable()
-    {
-    }
-    public function testToTimezone()
-    {
-    }
-    public function testEmptyToNull()
-    {
-    }
-    public function testCoalesce()
-    {
-    }
-    public function testIterableToArray()
-    {
-    }
-    public function testIterableToIterator()
-    {
-    }
-    public function testPathToBasename()
-    {
-    }
-    */
 
     public function testResolvePath()
     {
@@ -430,21 +455,6 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
         ];
     }
 
-    /*
-    public function testClassToBasename()
-    {
-    }
-    public function testClassToNamespace()
-    {
-    }
-    public function testMethodToFunction()
-    {
-    }
-    public function testListToMap()
-    {
-    }
-    */
-
     public function testIterableToItem()
     {
         $data = [
@@ -491,21 +501,6 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
         $this->assertSame(['id' => 10, 'name' => 'A'], Convert::iterableToItem($iterator, 'id', 10));
     }
 
-    /*
-    public function testSparseToString()
-    {
-    }
-    public function testScalarToString()
-    {
-    }
-    public function testPlural()
-    {
-    }
-    public function testNounToPlural()
-    {
-    }
-    */
-
     public function testQueryToData()
     {
         $this->assertSame([
@@ -515,21 +510,6 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
         ], Convert::queryToData(['key1=value1', 'key2=value2', 'key3=value3', 'key3=', 'key4', '=value5']));
     }
 
-    /*
-    public function testLinesToLists()
-    {
-    }
-    public function testUuidToHex()
-    {
-    }
-    public function testSizeToBytes()
-    {
-    }
-    public function testToStrings()
-    {
-    }
-    */
-
     public function testToShellArg()
     {
         $this->assertSame("''", Convert::toShellArg(''));
@@ -538,40 +518,4 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
         $this->assertSame("'/some/path with spaces'", Convert::toShellArg('/some/path with spaces'));
         $this->assertSame("''\\''quotable'\\'' \"quotes\"'", Convert::toShellArg('\'quotable\' "quotes"'));
     }
-
-    /*
-    public function testToCase()
-    {
-    }
-    public function testToSnakeCase()
-    {
-    }
-    public function testToKebabCase()
-    {
-    }
-    public function testToPascalCase()
-    {
-    }
-    public function testToCamelCase()
-    {
-    }
-    public function testToNormal()
-    {
-    }
-    public function testObjectToArray()
-    {
-    }
-    public function testDataToQuery()
-    {
-    }
-    public function testValueToCode()
-    {
-    }
-    public function testArrayToCode()
-    {
-    }
-    public function testNumberToNoun()
-    {
-    }
-    */
 }
