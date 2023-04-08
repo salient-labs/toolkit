@@ -174,7 +174,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
     }
 
     /**
-     * @param SyncErrorBuilder|SyncError|null $object
+     * @param SyncErrorBuilder|SyncError $object
      */
     public static function resolve($object): SyncError
     {

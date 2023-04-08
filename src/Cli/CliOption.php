@@ -489,7 +489,7 @@ final class CliOption implements IReadable, IImmutable, HasBuilder
     }
 
     /**
-     * @param CliOptionBuilder|CliOption|null $object
+     * @param CliOptionBuilder|CliOption $object
      */
     public static function resolve($object): CliOption
     {

@@ -425,7 +425,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     }
 
     /**
-     * @param HttpSyncDefinitionBuilder|HttpSyncDefinition|null $object
+     * @param HttpSyncDefinitionBuilder|HttpSyncDefinition $object
      */
     public static function resolve($object): HttpSyncDefinition
     {

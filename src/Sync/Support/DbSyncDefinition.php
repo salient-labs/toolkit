@@ -102,7 +102,7 @@ class DbSyncDefinition extends SyncDefinition implements HasBuilder
     }
 
     /**
-     * @param DbSyncDefinitionBuilder|DbSyncDefinition|null $object
+     * @param DbSyncDefinitionBuilder|DbSyncDefinition $object
      */
     public static function resolve($object): DbSyncDefinition
     {

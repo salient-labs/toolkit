@@ -23,7 +23,7 @@ interface HasBuilder
      * This method simplifies working with instances and unterminated
      * {@see Builder}s interchangeably.
      *
-     * @param Builder|static|null $object
+     * @param Builder|static $object
      * @return static
      */
     public static function resolve($object);

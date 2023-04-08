@@ -531,7 +531,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     }
 
     /**
-     * @param SerializeRulesBuilder|SyncSerializeRules|null $object
+     * @param SerializeRulesBuilder|SyncSerializeRules $object
      */
     public static function resolve($object): SyncSerializeRules
     {
