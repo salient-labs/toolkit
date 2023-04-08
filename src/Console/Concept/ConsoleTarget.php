@@ -103,36 +103,36 @@ abstract class ConsoleTarget
         switch ($level) {
             case Level::DEBUG:
                 return new ConsoleMessageFormat(
-                    new ConsoleFormat(Colour::DIM, Colour::UNDIM, [Colour::UNBOLD => Colour::UNBOLD . Colour::DIM]),
-                    new ConsoleFormat(Colour::DIM, Colour::UNDIM, [Colour::UNBOLD => Colour::UNBOLD . Colour::DIM]),
-                    new ConsoleFormat(Colour::BOLD . Colour::DIM, Colour::UNDIM . Colour::UNBOLD)
+                    new ConsoleFormat(Colour::DIM, Colour::UNBOLD_UNDIM, [Colour::UNBOLD_UNDIM => Colour::UNBOLD_DIM]),
+                    new ConsoleFormat(Colour::DIM, Colour::UNBOLD_UNDIM, [Colour::UNBOLD_UNDIM => Colour::UNBOLD_DIM]),
+                    new ConsoleFormat(Colour::BOLD . Colour::DIM, Colour::UNBOLD_UNDIM)
                 );
             case Level::INFO:
                 return new ConsoleMessageFormat(
                     new ConsoleFormat(),
                     new ConsoleFormat(Colour::YELLOW, Colour::DEFAULT),
-                    new ConsoleFormat(Colour::BOLD . Colour::YELLOW, Colour::DEFAULT . Colour::UNBOLD)
+                    new ConsoleFormat(Colour::BOLD . Colour::YELLOW, Colour::DEFAULT . Colour::UNBOLD_UNDIM)
                 );
             case Level::NOTICE:
                 return new ConsoleMessageFormat(
-                    new ConsoleFormat(Colour::BOLD, Colour::UNBOLD),
+                    new ConsoleFormat(Colour::BOLD, Colour::UNBOLD_UNDIM),
                     new ConsoleFormat(Colour::CYAN, Colour::DEFAULT),
-                    new ConsoleFormat(Colour::BOLD . Colour::CYAN, Colour::DEFAULT . Colour::UNBOLD)
+                    new ConsoleFormat(Colour::BOLD . Colour::CYAN, Colour::DEFAULT . Colour::UNBOLD_UNDIM)
                 );
             case Level::WARNING:
                 return new ConsoleMessageFormat(
-                    new ConsoleFormat(Colour::BOLD . Colour::YELLOW, Colour::DEFAULT . Colour::UNBOLD),
+                    new ConsoleFormat(Colour::BOLD . Colour::YELLOW, Colour::DEFAULT . Colour::UNBOLD_UNDIM),
                     new ConsoleFormat(),
-                    new ConsoleFormat(Colour::BOLD . Colour::YELLOW, Colour::DEFAULT . Colour::UNBOLD)
+                    new ConsoleFormat(Colour::BOLD . Colour::YELLOW, Colour::DEFAULT . Colour::UNBOLD_UNDIM)
                 );
             case Level::ERROR:
             case Level::CRITICAL:
             case Level::ALERT:
             case Level::EMERGENCY:
                 return new ConsoleMessageFormat(
-                    new ConsoleFormat(Colour::BOLD . Colour::RED, Colour::DEFAULT . Colour::UNBOLD),
+                    new ConsoleFormat(Colour::BOLD . Colour::RED, Colour::DEFAULT . Colour::UNBOLD_UNDIM),
                     new ConsoleFormat(),
-                    new ConsoleFormat(Colour::BOLD . Colour::RED, Colour::DEFAULT . Colour::UNBOLD)
+                    new ConsoleFormat(Colour::BOLD . Colour::RED, Colour::DEFAULT . Colour::UNBOLD_UNDIM)
                 );
         }
 
@@ -147,13 +147,13 @@ abstract class ConsoleTarget
 
         switch ($tag) {
             case Tag::HEADING:
-                return new ConsoleFormat(Colour::BOLD . Colour::CYAN, Colour::DEFAULT . Colour::UNBOLD);
+                return new ConsoleFormat(Colour::BOLD . Colour::CYAN, Colour::DEFAULT . Colour::UNBOLD_UNDIM);
             case Tag::SUBHEADING:
-                return new ConsoleFormat(Colour::BOLD, Colour::UNBOLD);
+                return new ConsoleFormat(Colour::BOLD, Colour::UNBOLD_UNDIM);
             case Tag::TITLE:
                 return new ConsoleFormat(Colour::YELLOW, Colour::DEFAULT);
             case Tag::LOW_PRIORITY:
-                return new ConsoleFormat(Colour::DIM, Colour::UNDIM);
+                return new ConsoleFormat(Colour::DIM, Colour::UNBOLD_UNDIM, [Colour::UNBOLD_UNDIM => Colour::UNBOLD_DIM]);
         }
 
         throw new UnexpectedValueException("Invalid ConsoleTextTag: $tag");
