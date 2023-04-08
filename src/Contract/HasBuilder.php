@@ -14,6 +14,7 @@ interface HasBuilder
     /**
      * Create a new instance
      *
+     * @return Builder<static>
      */
     public static function build(?IContainer $container = null): Builder;
 
@@ -23,7 +24,7 @@ interface HasBuilder
      * This method simplifies working with instances and unterminated
      * {@see Builder}s interchangeably.
      *
-     * @param Builder|static $object
+     * @param Builder<static>|static $object
      * @return static
      */
     public static function resolve($object);

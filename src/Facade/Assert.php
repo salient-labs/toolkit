@@ -19,7 +19,9 @@ use Lkrms\Utility\Assertions;
  * @method static void sapiIsCli() A facade for Assertions::sapiIsCli()
  *
  * @uses Assertions
+ *
  * @extends Facade<Assertions>
+ *
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Assertions' 'Lkrms\Facade\Assert'
  */
 final class Assert extends Facade

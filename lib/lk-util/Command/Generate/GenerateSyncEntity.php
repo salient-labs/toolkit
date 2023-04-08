@@ -142,6 +142,7 @@ class GenerateSyncEntity extends GenerateCommand
         $desc = $this->getOptionValue('desc');
         $visibility = $this->getOptionValue('visibility');
         $json = $this->getOptionValue('json');
+        /** @var class-string<HttpSyncProvider>|null */
         $provider = $this->getOptionValue('provider');
 
         $props = ['Id' => 'int|string|null'];

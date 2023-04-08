@@ -10,6 +10,7 @@ use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
 
@@ -67,16 +68,23 @@ abstract class HttpSyncProvider extends SyncProvider
         return $curlerB->go();
     }
 
+    /**
+     * @template T of ISyncEntity
+     * @param class-string<T> $entity
+     * @return ISyncDefinition<T,static>
+     */
     final public function getDefinition(string $entity): ISyncDefinition
     {
-        return
-            $this->getHttpDefinition(
-                     $entity,
-                     HttpSyncDefinition::build()
-                         ->entity($entity)
-                         ->provider($this)
-                 )
-                 ->go();
+        /** @var ISyncDefinition<T,static> */
+        $def = $this->getHttpDefinition(
+                        $entity,
+                        HttpSyncDefinition::build()
+                            ->entity($entity)
+                            ->provider($this)
+                    )
+                    ->go();
+
+        return $def;
     }
 
     /**
@@ -124,8 +132,11 @@ abstract class HttpSyncProvider extends SyncProvider
      *
      * Return `$defB` if no sync operations are implemented for the entity.
      *
-     * @param HttpSyncDefinitionBuilder $defB A definition builder with
-     * `entity()` and `provider()` already applied.
+     * @template T of ISyncEntity
+     * @param class-string<T> $entity
+     * @param HttpSyncDefinitionBuilder<T,static> $defB A definition builder
+     * with `entity()` and `provider()` already applied.
+     * @return HttpSyncDefinitionBuilder<T,static>
      */
     protected function getHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
     {

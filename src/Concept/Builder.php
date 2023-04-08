@@ -22,11 +22,15 @@ use UnexpectedValueException;
  * ```
  *
  * A `RuntimeException` will be thrown if no service container is available.
+ *
+ * @template TClass of object
  */
 abstract class Builder extends FluentInterface implements IImmutable
 {
     /**
-     * Return the name of the underlying class
+     * Get the name of the underlying class
+     *
+     * @return class-string<TClass>
      */
     abstract protected static function getClassName(): string;
 

@@ -123,7 +123,7 @@ abstract class CliCommand implements ReturnsContainer
     private $Arguments;
 
     /**
-     * @var array<string,string|array|bool|null>|null
+     * @var array<string,mixed>|null
      */
     private $OptionValues;
 
@@ -214,6 +214,9 @@ abstract class CliCommand implements ReturnsContainer
         return $this->Name ?: [];
     }
 
+    /**
+     * @return $this
+     */
     private function addOption(CliOption $option)
     {
         try {
@@ -527,19 +530,27 @@ abstract class CliCommand implements ReturnsContainer
     /**
      * Record an option-related error
      *
+     * @return $this
+     * @phpstan-impure
      */
     private function optionError(string $message)
     {
         $this->OptionErrors[] = $message;
+
+        return $this;
     }
 
     /**
      * Record an option-related error to report only if the command is running
      *
+     * @return $this
+     * @phpstan-impure
      */
     private function deferOptionError(string $message)
     {
         $this->DeferredOptionErrors[] = $message;
+
+        return $this;
     }
 
     /**
@@ -856,11 +867,16 @@ abstract class CliCommand implements ReturnsContainer
         return array_values(array_filter($args, fn($arg) => !is_null($arg)));
     }
 
+    /**
+     * @return $this
+     */
     private function assertHasRun()
     {
         if (is_null($this->OptionValues)) {
             throw new RuntimeException('Command must be invoked first');
         }
+
+        return $this;
     }
 
     /**
@@ -924,11 +940,14 @@ abstract class CliCommand implements ReturnsContainer
     /**
      * Set the command's return value / exit status
      *
+     * @return $this
      * @see CliCommand::run()
      */
     final protected function setExitStatus(int $status)
     {
         $this->ExitStatus = $status;
+
+        return $this;
     }
 
     /**

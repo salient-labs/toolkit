@@ -7,6 +7,7 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
+use Lkrms\Sync\Contract\ISyncEntity;
 
 /**
  * A fluent interface for creating DbSyncDefinition objects
@@ -27,6 +28,12 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method static DbSyncDefinition resolve(DbSyncDefinition|DbSyncDefinitionBuilder $object) Resolve a DbSyncDefinitionBuilder or DbSyncDefinition object to a DbSyncDefinition object
  *
  * @uses DbSyncDefinition
+ *
+ * @template TEntity of ISyncEntity
+ * @template TProvider of DbSyncProvider
+ *
+ * @extends Builder<DbSyncDefinition<TEntity,TProvider>>
+ *
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\DbSyncDefinition'
  */
 final class DbSyncDefinitionBuilder extends Builder

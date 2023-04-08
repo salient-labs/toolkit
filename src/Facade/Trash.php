@@ -21,7 +21,9 @@ use Lkrms\Store\TrashStore;
  * @method static TrashStore put(?string $key, array|object $object, ?string $type = null, ?string $deletedFrom = null, ?int $createdAt = null, ?int $modifiedAt = null) Add a deleted object to the store (see {@see TrashStore::put()})
  *
  * @uses TrashStore
+ *
  * @extends Facade<TrashStore>
+ *
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Store\TrashStore' 'Lkrms\Facade\Trash'
  */
 final class Trash extends Facade

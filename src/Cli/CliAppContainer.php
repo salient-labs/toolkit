@@ -10,7 +10,7 @@ use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sys;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * A service container for CLI applications
@@ -21,12 +21,7 @@ use UnexpectedValueException;
 final class CliAppContainer extends AppContainer
 {
     /**
-     * @var array<string,string>
-     */
-    private $Commands = [];
-
-    /**
-     * @var array<string,array|string>
+     * @var array<string,class-string<CliCommand>|mixed[]>
      */
     private $CommandTree = [];
 
@@ -71,14 +66,13 @@ final class CliAppContainer extends AppContainer
      * @internal
      * @param string $name The name of the node as a space-delimited list of
      * subcommands.
-     * @param array<string,array|string>|string|false|null $node The node as
-     * returned by {@see CliAppContainer::getCommandTree()}.
+     * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand>|false|null $node The node as returned by {@see CliAppContainer::getNode()}.
      */
     protected function getNodeCommand(string $name, $node): ?CliCommand
     {
         if (is_string($node)) {
             if (!(($command = $this->get($node)) instanceof CliCommand)) {
-                throw new UnexpectedValueException("Not a subclass of CliCommand: $node");
+                throw new LogicException("Not a subclass of CliCommand: $node");
             }
             $command->setName($name ? explode(' ', $name) : []);
 
@@ -104,7 +98,7 @@ final class CliAppContainer extends AppContainer
      *
      * @internal
      * @param string[] $name
-     * @return array<string,array|string>|string|false|null
+     * @return array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand>|false|null
      */
     protected function getNode(array $name = [])
     {
@@ -144,11 +138,10 @@ final class CliAppContainer extends AppContainer
      * @param string[] $name The command name as an array of subcommands. Valid
      * subcommands start with a letter, followed by any number of letters,
      * numbers, hyphens, or underscores.
-     * @param string $id The {@see CliCommand} class to request from the
-     * container when an instance is required.
+     * @param class-string<CliCommand> $id The {@see CliCommand} class to
+     * request from the container when an instance is required.
      * @return $this
-     * @throws UnexpectedValueException if `$name` is invalid or has already
-     * been used.
+     * @throws LogicException if `$name` is invalid or has already been used.
      */
     public function command(array $name, string $id)
     {
@@ -157,7 +150,7 @@ final class CliAppContainer extends AppContainer
         }
 
         if (!is_null($this->getNode($name))) {
-            throw new UnexpectedValueException("Another command has been registered at '" . implode(' ', $name) . "'");
+            throw new LogicException("Another command has been registered at '" . implode(' ', $name) . "'");
         }
 
         $tree = &$this->CommandTree;
@@ -178,15 +171,13 @@ final class CliAppContainer extends AppContainer
             $tree = $id;
         }
 
-        $this->Commands[implode(' ', $name)] = $id;
-
         return $this;
     }
 
     /**
      * Generate a usage message for a command tree node
      *
-     * @param array|string $node
+     * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
      */
     private function getUsage(string $name, $node, bool $terse = false): ?string
     {

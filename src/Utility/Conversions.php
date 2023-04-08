@@ -343,7 +343,6 @@ final class Conversions
         } elseif (is_string($value)) {
             return new DateTimeZone($value);
         }
-        throw new UnexpectedValueException('Invalid timezone');
     }
 
     /**

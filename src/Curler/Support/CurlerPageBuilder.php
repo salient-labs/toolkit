@@ -25,6 +25,9 @@ use Lkrms\Curler\Curler;
  * @method static CurlerPage resolve(CurlerPage|CurlerPageBuilder $object) Resolve a CurlerPageBuilder or CurlerPage object to a CurlerPage object
  *
  * @uses CurlerPage
+ *
+ * @extends Builder<CurlerPage>
+ *
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Curler\Support\CurlerPage'
  */
 final class CurlerPageBuilder extends Builder

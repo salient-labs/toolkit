@@ -73,7 +73,9 @@ use Lkrms\Utility\Conversions;
  * @method static string valueToCode($value, string $delimiter = "\054 ", string $arrow = ' => ', ?string $escapeCharacters = null) Like var_export but with more compact output
  *
  * @uses Conversions
+ *
  * @extends Facade<Conversions>
+ *
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Conversions' 'Lkrms\Facade\Convert'
  */
 final class Convert extends Facade

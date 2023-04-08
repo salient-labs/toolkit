@@ -40,6 +40,9 @@ use Lkrms\Support\DateFormatter;
  * @method static Curler resolve(Curler|CurlerBuilder $object) Resolve a CurlerBuilder or Curler object to a Curler object
  *
  * @uses Curler
+ *
+ * @extends Builder<Curler>
+ *
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Curler\Curler'
  */
 final class CurlerBuilder extends Builder

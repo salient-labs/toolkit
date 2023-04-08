@@ -80,8 +80,10 @@ class SendHttpRequest extends Command
 
     protected function run(string ...$args)
     {
+        /** @var class-string<HttpSyncProvider> */
+        $provider = $this->getOptionValue('provider');
         /** @var HttpSyncProvider */
-        $provider = $this->getProvider($this->getOptionValue('provider'), HttpSyncProvider::class);
+        $provider = $this->getProvider($provider, HttpSyncProvider::class);
         $endpoint = $this->getOptionValue('endpoint');
         $query = Convert::queryToData($this->getOptionValue('query')) ?: null;
         $data = $this->hasOption('data') ? $this->getOptionValue('data') : null;

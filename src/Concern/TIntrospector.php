@@ -12,7 +12,7 @@ use Lkrms\Support\IntrospectionClass;
 trait TIntrospector
 {
     /**
-     * @var TIntrospectionClass
+     * @var TIntrospectionClass<TClass>
      */
     protected $_Class;
 
@@ -28,7 +28,7 @@ trait TIntrospector
 
     /**
      * @param class-string<TClass> $class
-     * @return TIntrospectionClass
+     * @return TIntrospectionClass<TClass>
      */
     abstract protected function getIntrospectionClass(string $class): IntrospectionClass;
 
@@ -40,11 +40,11 @@ trait TIntrospector
      *
      * @template T of object
      * @param class-string<T> $service
-     * @phpstan-return self<T,TIntrospectionClass>
+     * @phpstan-return self<T,TIntrospectionClass<T>>
      */
     public static function getService(IContainer $container, string $service): self
     {
-        /** @var self<T,TIntrospectionClass> */
+        /** @var self<T,TIntrospectionClass<T>> */
         $instance = new self($container->getName($service));
         $instance->_Service = $service;
 
@@ -56,11 +56,11 @@ trait TIntrospector
      *
      * @template T of object
      * @param class-string<T> $class
-     * @phpstan-return self<T,TIntrospectionClass>
+     * @phpstan-return self<T,TIntrospectionClass<T>>
      */
     public static function get(string $class): self
     {
-        /** @var self<T,TIntrospectionClass> */
+        /** @var self<T,TIntrospectionClass<T>> */
         $instance = new self($class);
 
         return $instance;

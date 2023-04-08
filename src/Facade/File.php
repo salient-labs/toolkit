@@ -23,7 +23,9 @@ use Lkrms\Utility\Filesystem;
  * @method static string|false realpath(string $filename) A Phar-friendly realpath() (see {@see Filesystem::realpath()})
  *
  * @uses Filesystem
+ *
  * @extends Facade<Filesystem>
+ *
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Filesystem' 'Lkrms\Facade\File'
  */
 final class File extends Facade

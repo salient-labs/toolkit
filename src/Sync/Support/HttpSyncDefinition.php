@@ -418,6 +418,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     /**
      * Use a fluent interface to create a new HttpSyncDefinition object
      *
+     * @return HttpSyncDefinitionBuilder<ISyncEntity,HttpSyncProvider>
      */
     public static function build(?IContainer $container = null): HttpSyncDefinitionBuilder
     {
@@ -425,7 +426,10 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     }
 
     /**
-     * @param HttpSyncDefinitionBuilder|HttpSyncDefinition $object
+     * @template T0 of ISyncEntity
+     * @template T1 of HttpSyncProvider
+     * @param HttpSyncDefinitionBuilder<T0,T1>|HttpSyncDefinition<T0,T1> $object
+     * @return HttpSyncDefinition<T0,T1>
      */
     public static function resolve($object): HttpSyncDefinition
     {

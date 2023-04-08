@@ -256,8 +256,14 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      */
     protected $Hide;
 
+    /**
+     * @var mixed
+     */
     private $BindTo;
 
+    /**
+     * @var string|string[]|bool|int|null
+     */
     private $OriginalDefaultValue;
 
     /**
@@ -266,8 +272,8 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      * @param string[]|null $allowedValues
      * @phpstan-param CliOptionUnknownValuePolicy::* $unknownValuePolicy
      * @param string|string[]|bool|int|null $defaultValue
-     * @param $bindTo Assign user-supplied values to a variable before running
-     * the command.
+     * @param mixed $bindTo Assign user-supplied values to a variable before
+     * running the command.
      */
     public function __construct(
         ?string $long,

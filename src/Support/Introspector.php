@@ -345,10 +345,8 @@ class Introspector
      */
     protected function _getConstructor(array $parameterKeys, array $passByRefKeys): Closure
     {
-        [$defaultArgs, $class] = [
-            $this->_Class->DefaultArguments,
-            $this->_Class->Class,
-        ];
+        $defaultArgs = $this->_Class->DefaultArguments;
+        $class = $this->_Class->Class;
 
         return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service) use ($parameterKeys, $passByRefKeys, $defaultArgs, $class) {
             $args = $defaultArgs;

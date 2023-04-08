@@ -357,10 +357,13 @@ final class GenerateFacade extends GenerateCommand
         }
         if ($package) {
             $docBlock[] = " * @package $package";
+            $docBlock[] = ' *';
         }
         $docBlock[] = " * @uses $service";
+        $docBlock[] = ' *';
         $docBlock[] = " * @extends $extends<$service>";
         if (!$this->getOptionValue('no-meta')) {
+            $docBlock[] = ' *';
             $docBlock[] = ' * @lkrms-generate-command '
                 . implode(
                     ' ',

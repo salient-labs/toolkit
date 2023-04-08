@@ -9,6 +9,7 @@ use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
+use Lkrms\Sync\Contract\ISyncEntity;
 
 /**
  * A fluent interface for creating HttpSyncDefinition objects
@@ -35,6 +36,12 @@ use Lkrms\Sync\Concept\SyncDefinition;
  * @method static HttpSyncDefinition resolve(HttpSyncDefinition|HttpSyncDefinitionBuilder $object) Resolve a HttpSyncDefinitionBuilder or HttpSyncDefinition object to a HttpSyncDefinition object
  *
  * @uses HttpSyncDefinition
+ *
+ * @template TEntity of ISyncEntity
+ * @template TProvider of HttpSyncProvider
+ *
+ * @extends Builder<HttpSyncDefinition<TEntity,TProvider>>
+ *
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\HttpSyncDefinition'
  */
 final class HttpSyncDefinitionBuilder extends Builder

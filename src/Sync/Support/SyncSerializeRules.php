@@ -12,6 +12,7 @@ use Lkrms\Contract\ISerializeRules;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Enumeration\NormaliserFlag;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use UnexpectedValueException;
 
@@ -68,7 +69,7 @@ use UnexpectedValueException;
  * ];
  * ```
  *
- * @property-read string $Entity The class name of the SyncEntity being serialized (required)
+ * @property-read class-string<ISyncEntity> $Entity The class name of the SyncEntity being serialized (required)
  * @property-read DateFormatter|null $DateFormatter Override the default date formatter (default: null)
  * @property-read bool|null $IncludeMeta Include undeclared property values? (default: true)
  * @property-read bool|null $SortByKey Sort arrays by key? (default: false)
@@ -92,7 +93,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     /**
      * The class name of the SyncEntity being serialized (required)
      *
-     * @var string
+     * @var class-string<ISyncEntity>
      */
     protected $Entity;
 
@@ -213,6 +214,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     private $Introspector;
 
     /**
+     * @param class-string<ISyncEntity> $entity
      * @param array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $remove
      * @param array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $replace
      * @param SyncSerializeRules|SerializeRulesBuilder|null $inherit

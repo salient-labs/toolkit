@@ -31,6 +31,9 @@ abstract class SyncProvider implements ISyncProvider, IService
      * Surface the provider's implementation of sync operations for an entity
      * via an ISyncDefinition object
      *
+     * @template T of ISyncEntity
+     * @param class-string<T> $entity
+     * @return ISyncDefinition<T,static>
      */
     abstract public function getDefinition(string $entity): ISyncDefinition;
 

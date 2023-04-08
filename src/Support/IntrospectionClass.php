@@ -32,7 +32,7 @@ class IntrospectionClass
     /**
      * The name of the class under introspection
      *
-     * @var string
+     * @var class-string<TClass>
      */
     public $Class;
 

@@ -20,17 +20,17 @@ use RuntimeException;
  *
  * @template TClass of object
  * @template TIntrospectionClass of SyncIntrospectionClass
- * @extends Introspector<TClass,TIntrospectionClass>
+ * @extends Introspector<TClass,TIntrospectionClass<TClass>>
  */
 final class SyncIntrospector extends Introspector
 {
     /**
-     * @use TIntrospector<TClass,TIntrospectionClass>
+     * @use TIntrospector<TClass,TIntrospectionClass<TClass>>
      */
     use TIntrospector;
 
     /**
-     * @var TIntrospectionClass
+     * @var TIntrospectionClass<TClass>
      * @todo Remove this property when Intelephense resolves trait generics
      */
     protected $_Class;
@@ -198,9 +198,11 @@ final class SyncIntrospector extends Introspector
      * - the {@see ISyncProvider} class doesn't implement the given
      *   {@see SyncOperation} via a method
      *
+     * @template T of ISyncEntity
      * @param int $operation A {@see SyncOperation} value.
      * @phpstan-param SyncOperation::* $operation
-     * @param string|SyncIntrospector $entity
+     * @param class-string<T>|SyncIntrospector<T,TIntrospectionClass<T>> $entity
+     * @phpstan-param class-string<T>|self<T,TIntrospectionClass<T>> $entity
      * @return Closure(ISyncContext, mixed...)|null
      * ```php
      * fn(ISyncContext $ctx, ...$args)
@@ -209,6 +211,7 @@ final class SyncIntrospector extends Introspector
     final public function getDeclaredSyncOperationClosure(int $operation, $entity, ISyncProvider $provider): ?Closure
     {
         if (!($entity instanceof SyncIntrospector)) {
+            /** @var self<T,TIntrospectionClass<T>> */
             $entity = static::get($entity);
         }
         $_entity = $entity->_Class;
@@ -258,7 +261,8 @@ final class SyncIntrospector extends Introspector
         if ($closure === false) {
             $operation = $this->_Class->SyncOperationMagicMethods[$method] ?? null;
             if ($operation) {
-                [$operation, $entity] = $operation;
+                $entity = $operation[1];
+                $operation = $operation[0];
                 $closure =
                     function (ISyncContext $ctx, ...$args) use ($entity, $operation) {
                         /** @var ISyncProvider $this */

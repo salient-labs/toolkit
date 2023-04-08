@@ -103,6 +103,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
     public function testInvalid()
     {
         $this->expectException(UnexpectedValueException::class);
+        // @phpstan-ignore-next-line
         CliOptionBuilder::build(new Container())
             ->long('dest')
             ->short('d')

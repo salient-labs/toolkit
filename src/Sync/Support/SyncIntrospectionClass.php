@@ -78,8 +78,8 @@ final class SyncIntrospectionClass extends IntrospectionClass
      * Used only to map "magic" method names to sync operations. Providers
      * aren't required to service any of them.
      *
-     * @var array<string,array{0:int,1:string}>
-     * @phpstan-var array<string,array{0:SyncOperation::*,1:string}>
+     * @var array<string,array{0:int,1:class-string<ISyncEntity>}>
+     * @phpstan-var array<string,array{0:SyncOperation::*,1:class-string<ISyncEntity>}>
      */
     public $SyncOperationMagicMethods = [];
 
@@ -119,6 +119,9 @@ final class SyncIntrospectionClass extends IntrospectionClass
      */
     public $MagicSyncOperationClosures = [];
 
+    /**
+     * @param class-string<TClass> $class
+     */
     public function __construct(string $class)
     {
         parent::__construct($class);

@@ -33,6 +33,9 @@ use Lkrms\Contract\IContainer;
  * @method static CliOption resolve(CliOption|CliOptionBuilder $object) Resolve a CliOptionBuilder or CliOption object to a CliOption object
  *
  * @uses CliOption
+ *
+ * @extends Builder<CliOption>
+ *
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Cli\CliOption'
  */
 final class CliOptionBuilder extends Builder
@@ -48,6 +51,7 @@ final class CliOptionBuilder extends Builder
     /**
      * Assign user-supplied values to a variable before running the command
      *
+     * @param mixed $variable
      * @return $this
      */
     public function bindTo(&$variable)
