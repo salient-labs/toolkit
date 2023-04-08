@@ -740,17 +740,21 @@ class Introspector
             sort($keys);
         }
 
-        $closure = (static function ($instance) use ($keys, $methods, $props) {
+        // Iterators aren't serializable, so they're converted to arrays
+        $resolveIterator = function (&$value): void {
+            if (is_iterable($value) && !is_array($value)) {
+                $value = iterator_to_array($value);
+            }
+        };
+        $closure = (static function ($instance) use ($keys, $methods, $props, $resolveIterator) {
             $arr = [];
             foreach ($keys as $key) {
                 if ($method = $methods[$key] ?? null) {
                     $arr[$key] = $instance->{$method}();
+                    $resolveIterator($arr[$key]);
                 } else {
+                    $resolveIterator($instance->{$props[$key]});
                     $arr[$key] = $instance->{$props[$key]};
-                }
-                // Iterators aren't serializable, so convert them to arrays
-                if (is_iterable($arr[$key]) && !is_array($arr[$key])) {
-                    $arr[$key] = iterator_to_array($arr[$key]);
                 }
             }
 
