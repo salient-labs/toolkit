@@ -342,6 +342,7 @@ EOF;
             }
         } catch (CliArgumentsInvalidException $ex) {
             $this->RunningCommand = null;
+            $ex->reportErrors();
             if (($node && ($usage = $this->getUsage($name, $node, true))) ||
                     ($lastNode && ($usage = $this->getUsage($lastName, $lastNode, true)))) {
                 Console::out($usage);

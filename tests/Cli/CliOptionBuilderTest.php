@@ -2,51 +2,113 @@
 
 namespace Lkrms\Tests\Cli;
 
-use Lkrms\Cli\CliOption;
+use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Container\Container;
 use UnexpectedValueException;
 
 final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
 {
-    public function testBuild()
+    public function testFlag()
     {
-        $container = new Container();
-        $option = CliOption::build($container)
+        $option = CliOptionBuilder::build(new Container())
+            ->long('verbose')
+            ->short('v')
+            ->description('Increase verbosity')
+            ->multipleAllowed()
+            ->go()
+            ->validate();
+        $this->assertSame('verbose', $option->Long);
+        $this->assertSame('v', $option->Short);
+        $this->assertSame('v|verbose', $option->Key);
+        $this->assertSame('--verbose', $option->DisplayName);
+        $this->assertSame(CliOptionType::FLAG, $option->OptionType);
+        $this->assertSame(true, $option->IsFlag);
+        $this->assertSame(false, $option->IsPositional);
+        $this->assertSame(false, $option->Required);
+        $this->assertSame(false, $option->ValueRequired);
+        $this->assertSame(true, $option->MultipleAllowed);
+        $this->assertSame(null, $option->Delimiter);
+        $this->assertSame(null, $option->ValueName);
+        $this->assertSame('Increase verbosity', $option->Description);
+        $this->assertSame(null, $option->AllowedValues);
+        $this->assertSame(null, $option->UnknownValuePolicy);
+        $this->assertSame(false, $option->AddAll);
+        $this->assertSame(0, $option->DefaultValue);
+        $this->assertSame(false, $option->KeepDefault);
+        $this->assertSame(null, $option->EnvVariable);
+        $this->assertSame(false, $option->KeepEnv);
+
+        $option = CliOptionBuilder::build(new Container())
+            ->long('recursive')
+            ->short('r')
+            ->description('Recurse into directories')
+            ->go()
+            ->validate();
+        $this->assertSame('recursive', $option->Long);
+        $this->assertSame('r', $option->Short);
+        $this->assertSame('r|recursive', $option->Key);
+        $this->assertSame('--recursive', $option->DisplayName);
+        $this->assertSame(CliOptionType::FLAG, $option->OptionType);
+        $this->assertSame(true, $option->IsFlag);
+        $this->assertSame(false, $option->IsPositional);
+        $this->assertSame(false, $option->Required);
+        $this->assertSame(false, $option->ValueRequired);
+        $this->assertSame(false, $option->MultipleAllowed);
+        $this->assertSame(null, $option->Delimiter);
+        $this->assertSame(null, $option->ValueName);
+        $this->assertSame('Recurse into directories', $option->Description);
+        $this->assertSame(null, $option->AllowedValues);
+        $this->assertSame(null, $option->UnknownValuePolicy);
+        $this->assertSame(false, $option->AddAll);
+        $this->assertSame(false, $option->DefaultValue);
+        $this->assertSame(false, $option->KeepDefault);
+        $this->assertSame(null, $option->EnvVariable);
+        $this->assertSame(false, $option->KeepEnv);
+    }
+
+    public function testValue()
+    {
+        $option = CliOptionBuilder::build(new Container())
             ->long('dest')
             ->short('d')
             ->valueName('DIR')
             ->description('Sync files to DIR')
             ->optionType(CliOptionType::VALUE)
-            ->required(true)
-            ->go();
-        $this->assertEquals('dest', $option->Long);
-        $this->assertEquals('d', $option->Short);
-        $this->assertEquals('d|dest', $option->Key);
-        $this->assertEquals('--dest', $option->DisplayName);
-        $this->assertEquals(CliOptionType::VALUE, $option->OptionType);
-        $this->assertEquals(false, $option->IsFlag);
-        $this->assertEquals(true, $option->Required);
-        $this->assertEquals(true, $option->ValueRequired);
-        $this->assertEquals(false, $option->MultipleAllowed);
-        $this->assertEquals(NULL, $option->Delimiter);
-        $this->assertEquals('DIR', $option->ValueName);
-        $this->assertEquals('Sync files to DIR', $option->Description);
-        $this->assertEquals(NULL, $option->AllowedValues);
-        $this->assertEquals(NULL, $option->DefaultValue);
-        $this->assertEquals(NULL, $option->EnvVariable);
+            ->required()
+            ->go()
+            ->validate();
+        $this->assertSame('dest', $option->Long);
+        $this->assertSame('d', $option->Short);
+        $this->assertSame('d|dest', $option->Key);
+        $this->assertSame('--dest', $option->DisplayName);
+        $this->assertSame(CliOptionType::VALUE, $option->OptionType);
+        $this->assertSame(false, $option->IsFlag);
+        $this->assertSame(false, $option->IsPositional);
+        $this->assertSame(true, $option->Required);
+        $this->assertSame(true, $option->ValueRequired);
+        $this->assertSame(false, $option->MultipleAllowed);
+        $this->assertSame(null, $option->Delimiter);
+        $this->assertSame('DIR', $option->ValueName);
+        $this->assertSame('Sync files to DIR', $option->Description);
+        $this->assertSame(null, $option->AllowedValues);
+        $this->assertSame(null, $option->UnknownValuePolicy);
+        $this->assertSame(false, $option->AddAll);
+        $this->assertSame(null, $option->DefaultValue);
+        $this->assertSame(false, $option->KeepDefault);
+        $this->assertSame(null, $option->EnvVariable);
+        $this->assertSame(false, $option->KeepEnv);
     }
 
-    public function testInvalidBuild()
+    public function testInvalid()
     {
-        $container = new Container();
         $this->expectException(UnexpectedValueException::class);
-        CliOption::build($container)
+        CliOptionBuilder::build(new Container())
             ->long('dest')
             ->short('d')
-            ->value('DIR')
-            ->desc('Sync files to DIR')
-            ->type(CliOptionType::VALUE)
+            ->value('DIR')  // "valueName"
+            ->desc('Sync files to DIR')  // "description"
+            ->type(CliOptionType::VALUE)  // "optionType"
             ->required(true)
             ->go();
     }
