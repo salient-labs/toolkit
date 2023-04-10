@@ -31,8 +31,6 @@
                 <ignore-tag>phpstan-param</ignore-tag>
                 <ignore-tag>phpstan-return</ignore-tag>
                 <ignore-tag>phpstan-var</ignore-tag>
-                <ignore-tag>psalm-require-extends</ignore-tag>
-                <ignore-tag>psalm-require-implements</ignore-tag>
             </ignore-tags>
         </api>
         <guide>

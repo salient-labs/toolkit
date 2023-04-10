@@ -667,6 +667,9 @@ abstract class CliCommand implements ReturnsContainer
 
         $this->NextArgumentIndex = $i;
 
+        /**
+         * @var string|string[]|bool|int|null $value
+         */
         foreach ($merged as $key => &$value) {
             $option = $this->Options[$key];
 
@@ -684,13 +687,11 @@ abstract class CliCommand implements ReturnsContainer
                 $this->optionError("{$option->DisplayName} cannot be used multiple times");
             }
 
-            if (!is_null($option->AllowedValues) && !is_null($value)) {
+            if ($option->AllowedValues && !is_null($value)) {
                 try {
                     $value = $option->applyUnknownValuePolicy($value);
-                } catch (CliArgumentsInvalidException $ex) {
-                    if ($error = $ex->getErrors()[0] ?? null) {
-                        $this->optionError($error);
-                    }
+                } catch (CliInvalidValueException $ex) {
+                    $this->optionError($ex->getMessage());
                 }
             }
         }

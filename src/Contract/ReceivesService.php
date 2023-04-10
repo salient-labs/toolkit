@@ -11,7 +11,7 @@ interface ReceivesService
     /**
      * Called immediately after instantiation by a container
      *
-     * @param string $id The class or interface the container resolved by
+     * @param class-string $id The class or interface the container resolved by
      * creating the instance.
      * @return $this
      */

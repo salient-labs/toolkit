@@ -12,20 +12,24 @@ use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TResolvable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Test;
+use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Enumeration\NormaliserFlag;
+use Lkrms\Support\IterableIterator;
 use Lkrms\Sync\Concern\HasSyncIntrospector;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
+use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeLinkType as SerializeLinkType;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
@@ -60,9 +64,10 @@ use UnexpectedValueException;
  */
 abstract class SyncEntity implements ISyncEntity
 {
+    /**
+     * @use TProvidable<ISyncProvider,ISyncContext>
+     */
     use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer, HasSyncIntrospector {
-        TProvidable::setProvider as private _setProvider;
-        TProvidable::setContext as private _setContext;
         HasSyncIntrospector::introspector insteadof TReadable, TWritable, TExtensible;
     }
 
@@ -572,48 +577,84 @@ abstract class SyncEntity implements ISyncEntity
         return self::$TypeId[static::class] ?? null;
     }
 
-    final public function setProvider(IProvider $provider)
-    {
-        if (!($provider instanceof ISyncProvider)) {
-            throw new RuntimeException(get_class($provider) . ' does not implement ' . ISyncProvider::class);
-        }
-
-        return $this->_setProvider($provider);
-    }
-
-    final public function provider(): ?ISyncProvider
-    {
-        return $this->_Provider;
-    }
-
-    final public function setContext(IProviderContext $context)
-    {
-        if (!($context instanceof ISyncContext)) {
-            throw new RuntimeException(get_class($context) . ' does not implement ' . ISyncContext::class);
-        }
-
-        return $this->_setContext($context);
-    }
-
-    final public function context(): ?ISyncContext
-    {
-        return $this->_Context;
-    }
-
-    final public function requireContext(): ISyncContext
-    {
-        if (!$this->_Context) {
-            throw new RuntimeException('Context required');
-        }
-
-        return $this->_Context;
-    }
-
     /**
      * @internal
      */
     final public function jsonSerialize(): array
     {
         return $this->toArray();
+    }
+
+    /**
+     * @param mixed[] $data
+     * @param ISyncProvider $provider
+     * @param ISyncContext|null $context
+     */
+    final public static function provide(
+        array $data,
+        IProvider $provider,
+        ?IProviderContext $context = null
+    ) {
+        $container = ($context
+            ? $context->container()
+            : $provider->container())->inContextOf(get_class($provider));
+        $context = $context
+            ? $context->withContainer($container)
+            : $container->get(SyncContext::class);
+        $introspector = SyncIntrospector::getService($container, static::class);
+        $closure = $introspector->getCreateSyncEntityFromClosure();
+
+        return $closure($data, $provider, $context);
+    }
+
+    /**
+     * @param iterable<mixed[]> $dataList
+     * @param ISyncProvider $provider
+     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param ISyncContext|null $context
+     * @return IIterable<static>
+     */
+    final public static function provideList(
+        iterable $dataList,
+        IProvider $provider,
+        int $conformity = ArrayKeyConformity::NONE,
+        ?IProviderContext $context = null
+    ): IIterable {
+        return IterableIterator::from(
+            self::_provideList($dataList, $provider, $conformity, $context)
+        );
+    }
+
+    /**
+     * @param iterable<mixed[]> $dataList
+     * @param ISyncProvider $provider
+     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param ISyncContext|null $context
+     * @return iterable<static>
+     */
+    private static function _provideList(
+        iterable $dataList,
+        IProvider $provider,
+        int $conformity,
+        ?IProviderContext $context
+    ): iterable {
+        $container = ($context
+            ? $context->container()
+            : $provider->container())->inContextOf(get_class($provider));
+        $context = ($context
+            ? $context->withContainer($container)
+            : $container->get(SyncContext::class))->withConformity($conformity);
+        $introspector = SyncIntrospector::getService($container, static::class);
+
+        foreach ($dataList as $data) {
+            if (!isset($closure)) {
+                $closure =
+                    in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                        ? $introspector->getCreateSyncEntityFromSignatureClosure(array_keys($data))
+                        : $introspector->getCreateSyncEntityFromClosure();
+            }
+
+            yield $closure($data, $provider, $context);
+        }
     }
 }

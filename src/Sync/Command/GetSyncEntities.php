@@ -161,7 +161,9 @@ final class GetSyncEntities extends CliCommand
 
         Console::info(
             'Retrieving from ' . $provider->name() . ':',
-            $this->Store->getEntityTypeUri($class) . (is_null($id) ? '' : "/$id")
+            ($this->Store->getEntityTypeUri($class)
+                    ?: '/' . str_replace('\\', '/', ltrim($class, '\\')))
+                . (is_null($id) ? '' : "/$id")
         );
 
         $this->app()->bindIf(ISyncContext::class, SyncContext::class);

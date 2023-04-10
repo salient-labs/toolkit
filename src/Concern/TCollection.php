@@ -10,7 +10,6 @@ use ReturnTypeWillChange;
  * Implements ICollection to provide array-like objects
  *
  * @template T
- * @psalm-require-implements \Lkrms\Contract\ICollection<T>
  * @see \Lkrms\Contract\ICollection
  * @see \Lkrms\Concept\TypedCollection
  */

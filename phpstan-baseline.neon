@@ -286,16 +286,6 @@ parameters:
 			path: src/Container/Container.php
 
 		-
-			message: "#^Method Lkrms\\\\Contract\\\\IConstructible\\:\\:construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contract/IConstructible.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IConstructible\\:\\:constructList\\(\\) has parameter \\$dataList with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contract/IConstructible.php
-
-		-
 			message: "#^Method Lkrms\\\\Contract\\\\IContainer\\:\\:bind\\(\\) has parameter \\$constructParams with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Contract/IContainer.php
@@ -414,16 +404,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Contract\\\\IPipeline\\:\\:unlessIf\\(\\) has parameter \\$filter with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
 			count: 1
 			path: src/Contract/IPipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IProvidable\\:\\:provide\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contract/IProvidable.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IProvidable\\:\\:provideList\\(\\) has parameter \\$dataList with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contract/IProvidable.php
 
 		-
 			message: "#^Interface Lkrms\\\\Contract\\\\IProvider extends generic interface Lkrms\\\\Contract\\\\ReturnsContainer but does not specify its types\\: T$#"
@@ -1461,11 +1441,6 @@ parameters:
 			path: src/Sync/Concept/SyncDefinition.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_provideList\\(\\) has parameter \\$dataList with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_serialize\\(\\) has parameter \\$node with no type specified\\.$#"
 			count: 1
 			path: src/Sync/Concept/SyncEntity.php
@@ -1496,16 +1471,6 @@ parameters:
 			path: src/Sync/Concept/SyncEntity.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:constructList\\(\\) has parameter \\$dataList with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:getMetaProperty\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Sync/Concept/SyncEntity.php
@@ -1517,16 +1482,6 @@ parameters:
 
 		-
 			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:jsonSerialize\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:provide\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:provideList\\(\\) has parameter \\$dataList with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Sync/Concept/SyncEntity.php
 

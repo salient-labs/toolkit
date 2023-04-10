@@ -11,12 +11,13 @@ use Lkrms\Support\ArrayKeyConformity;
 interface IConstructible
 {
     /**
+     * @param mixed[] $data
      * @return static
      */
     public static function construct(array $data, ?IContainer $container = null);
 
     /**
-     * @param iterable<array> $dataList
+     * @param iterable<mixed[]> $dataList
      * @return iterable<static>
      */
     public static function constructList(

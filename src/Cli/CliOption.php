@@ -315,7 +315,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         $this->Description = $description;
         $this->AllowedValues = $this->IsOneOf ? $allowedValues : null;
         $this->UnknownValuePolicy = $this->IsOneOf ? $unknownValuePolicy : null;
-        $this->AddAll = $this->IsOneOf ? $addAll && $multipleAllowed : false;
+        $this->AddAll = $this->IsOneOf ? $addAll && $multipleAllowed && $allowedValues : false;
         $this->DefaultValue = $this->Required ? null : ($this->IsFlag ? ($multipleAllowed ? 0 : false) : ($multipleAllowed ? $this->maybeSplitValue($defaultValue) : $defaultValue));
         $this->KeepDefault = $keepDefault && $this->DefaultValue && is_array($this->DefaultValue);
         $this->KeepEnv = $this->EnvVariable && ($this->KeepDefault || ($keepEnv && !$this->IsFlag && $multipleAllowed));
@@ -495,26 +495,30 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      * UnknownValuePolicy
      *
      * @internal
-     * @param string|string[]|bool|int|null $value
-     * @return string[]
+     * @template T of string|string[]|bool|int|null
+     * @param T $value
+     * @return T
      */
-    public function applyUnknownValuePolicy($value, ?string $source = null): array
+    public function applyUnknownValuePolicy($value, ?string $source = null)
     {
         if (!$this->AllowedValues) {
-            return [];
+            return $value;
         }
 
-        $value = $this->maybeSplitValue($value);
         switch ($this->UnknownValuePolicy) {
             case CliOptionUnknownValuePolicy::ACCEPT:
                 return $value;
 
             case CliOptionUnknownValuePolicy::DISCARD:
-                return array_intersect($value, $this->AllowedValues);
+                $value = array_intersect($this->maybeSplitValue($value), $this->AllowedValues);
+
+                return $this->MultipleAllowed
+                    ? $value
+                    : $value[0] ?? null;
 
             case CliOptionUnknownValuePolicy::REJECT:
             default:
-                if ($invalid = array_diff($value, $this->AllowedValues)) {
+                if ($invalid = array_diff($this->maybeSplitValue($value), $this->AllowedValues)) {
                     throw new CliInvalidValueException(
                         // "invalid --field values 'title','name' (expected one
                         // of: first,last)"
