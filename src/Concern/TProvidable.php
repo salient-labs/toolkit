@@ -14,26 +14,32 @@ use RuntimeException;
 /**
  * Implements IProvidable to represent an external entity
  *
+ * @template TProvider of IProvider
+ * @template TProviderContext of IProviderContext
+ *
  * @see \Lkrms\Contract\IProvidable
- * @psalm-require-implements \Lkrms\Contract\IProvidable
  */
 trait TProvidable
 {
     /**
-     * @var IProvider|null
+     * @var TProvider|null
      */
     private $_Provider;
 
     /**
-     * @var IProviderContext|null
+     * @var TProviderContext|null
      */
     private $_Context;
 
     /**
-     * @var string|null
+     * @var class-string|null
      */
     private $_Service;
 
+    /**
+     * @param TProvider $provider
+     * @return $this
+     */
     final public function setProvider(IProvider $provider)
     {
         if ($this->_Provider) {
@@ -44,11 +50,18 @@ trait TProvidable
         return $this;
     }
 
+    /**
+     * @return TProvider|null
+     */
     final public function provider(): ?IProvider
     {
         return $this->_Provider;
     }
 
+    /**
+     * @param TProviderContext $context
+     * @return $this
+     */
     final public function setContext(IProviderContext $context)
     {
         $this->_Context = $context;
@@ -56,11 +69,18 @@ trait TProvidable
         return $this;
     }
 
+    /**
+     * @return TProviderContext|null
+     */
     final public function context(): ?IProviderContext
     {
         return $this->_Context;
     }
 
+    /**
+     * @param class-string $id
+     * @return $this
+     */
     final public function setService(string $id)
     {
         $this->_Service = $id;
@@ -68,11 +88,17 @@ trait TProvidable
         return $this;
     }
 
+    /**
+     * @return class-string
+     */
     final public function service(): string
     {
         return $this->_Service ?: static::class;
     }
 
+    /**
+     * @return TProviderContext
+     */
     final public function requireContext(): IProviderContext
     {
         if (!$this->_Context) {
@@ -94,10 +120,15 @@ trait TProvidable
      * `$data` keys, constructor parameters and writable properties are
      * normalised for comparison.
      *
+     * @param TProvider $provider
+     * @param TProviderContext|null $context
      * @return static
      */
-    final public static function provide(array $data, IProvider $provider, ?IProviderContext $context = null)
-    {
+    final public static function provide(
+        array $data,
+        IProvider $provider,
+        ?IProviderContext $context = null
+    ) {
         $container = ($context
             ? $context->container()
             : $provider->container())->inContextOf(get_class($provider));
@@ -116,7 +147,9 @@ trait TProvidable
      * See {@see TProvidable::provide()} for more information.
      *
      * @param iterable<array> $dataList
+     * @param TProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param TProviderContext|null $context
      * @return IIterable<static>
      */
     final public static function provideList(
@@ -132,7 +165,9 @@ trait TProvidable
 
     /**
      * @param iterable<array> $dataList
+     * @param TProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param TProviderContext|null $context
      * @return iterable<static>
      */
     private static function _provideList(

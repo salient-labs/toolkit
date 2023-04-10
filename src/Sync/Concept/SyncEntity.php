@@ -12,8 +12,6 @@ use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TResolvable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IProvider;
-use Lkrms\Contract\IProviderContext;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
@@ -60,9 +58,10 @@ use UnexpectedValueException;
  */
 abstract class SyncEntity implements ISyncEntity
 {
+    /**
+     * @use TProvidable<ISyncProvider,ISyncContext>
+     */
     use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer, HasSyncIntrospector {
-        TProvidable::setProvider as private _setProvider;
-        TProvidable::setContext as private _setContext;
         HasSyncIntrospector::introspector insteadof TReadable, TWritable, TExtensible;
     }
 
@@ -570,43 +569,6 @@ abstract class SyncEntity implements ISyncEntity
     final public static function entityTypeId(): ?int
     {
         return self::$TypeId[static::class] ?? null;
-    }
-
-    final public function setProvider(IProvider $provider)
-    {
-        if (!($provider instanceof ISyncProvider)) {
-            throw new RuntimeException(get_class($provider) . ' does not implement ' . ISyncProvider::class);
-        }
-
-        return $this->_setProvider($provider);
-    }
-
-    final public function provider(): ?ISyncProvider
-    {
-        return $this->_Provider;
-    }
-
-    final public function setContext(IProviderContext $context)
-    {
-        if (!($context instanceof ISyncContext)) {
-            throw new RuntimeException(get_class($context) . ' does not implement ' . ISyncContext::class);
-        }
-
-        return $this->_setContext($context);
-    }
-
-    final public function context(): ?ISyncContext
-    {
-        return $this->_Context;
-    }
-
-    final public function requireContext(): ISyncContext
-    {
-        if (!$this->_Context) {
-            throw new RuntimeException('Context required');
-        }
-
-        return $this->_Context;
     }
 
     /**

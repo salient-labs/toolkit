@@ -92,12 +92,25 @@ interface IProvidable extends ReceivesService, ReturnsService
     public function setContext(IProviderContext $context);
 
     /**
+     * Create an instance of the class from an array on behalf of a provider
+     *
+     * @param TProvider $provider
+     * @param TProviderContext|null $context
      * @return static
      */
-    public static function provide(array $data, IProvider $provider, ?IProviderContext $context = null);
+    public static function provide(
+        array $data,
+        IProvider $provider,
+        ?IProviderContext $context = null
+    );
 
     /**
+     * Create instances of the class from arrays on behalf of a provider
+     *
      * @param iterable<array> $dataList
+     * @param TProvider $provider
+     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param TProviderContext|null $context
      * @return IIterable<static>
      */
     public static function provideList(

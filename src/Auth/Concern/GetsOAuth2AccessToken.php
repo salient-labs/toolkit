@@ -28,7 +28,7 @@ use Throwable;
  * @property-read AbstractProvider $OAuth2Provider
  * @property-read string $OAuth2TokenKey
  *
- * @psalm-require-implements \Lkrms\Contract\IReadable
+ * @see \Lkrms\Contract\IReadable
  */
 trait GetsOAuth2AccessToken
 {
