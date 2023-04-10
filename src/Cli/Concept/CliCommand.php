@@ -103,19 +103,19 @@ abstract class CliCommand implements ReturnsContainer
     private $Options;
 
     /**
-     * @var array<string,CliOption>|null
+     * @var array<string,CliOption>
      */
-    private $OptionsByName;
+    private $OptionsByName = [];
 
     /**
-     * @var array<string,CliOption>|null
+     * @var array<string,CliOption>
      */
-    private $PositionalOptions;
+    private $PositionalOptions = [];
 
     /**
-     * @var array<string,CliOption>|null
+     * @var array<string,CliOption>
      */
-    private $HiddenOptions;
+    private $HiddenOptions = [];
 
     /**
      * @var string[]|null
@@ -229,7 +229,7 @@ abstract class CliCommand implements ReturnsContainer
 
         if (array_intersect_key(
             array_flip($names),
-            $this->OptionsByName ?: []
+            $this->OptionsByName
         )) {
             throw new LogicException('Option names must be unique: ' . implode(', ', $names));
         }
@@ -237,7 +237,7 @@ abstract class CliCommand implements ReturnsContainer
         if ($option->IsPositional) {
             if ($option->Required &&
                     array_filter(
-                        $this->PositionalOptions ?: [],
+                        $this->PositionalOptions,
                         fn(CliOption $opt) =>
                             !$opt->Required && !$opt->MultipleAllowed
                     )) {
@@ -245,7 +245,7 @@ abstract class CliCommand implements ReturnsContainer
             }
             if (!$option->Required &&
                     array_filter(
-                        $this->PositionalOptions ?: [],
+                        $this->PositionalOptions,
                         fn(CliOption $opt) =>
                             $opt->MultipleAllowed
                     )) {
@@ -253,7 +253,7 @@ abstract class CliCommand implements ReturnsContainer
             }
             if ($option->MultipleAllowed &&
                     array_filter(
-                        $this->PositionalOptions ?: [],
+                        $this->PositionalOptions,
                         fn(CliOption $opt) =>
                             $opt->MultipleAllowed
                     )) {
@@ -294,9 +294,9 @@ abstract class CliCommand implements ReturnsContainer
                         ->maybeAddHiddenOption('version', 'v');
         } catch (Throwable $ex) {
             $this->Options = null;
-            $this->OptionsByName = null;
-            $this->PositionalOptions = null;
-            $this->HiddenOptions = null;
+            $this->OptionsByName = [];
+            $this->PositionalOptions = [];
+            $this->HiddenOptions = [];
 
             throw $ex;
         }
