@@ -95,6 +95,7 @@ class DbSyncDefinition extends SyncDefinition implements HasBuilder
     /**
      * Use a fluent interface to create a new DbSyncDefinition object
      *
+     * @return DbSyncDefinitionBuilder<ISyncEntity,DbSyncProvider>
      */
     public static function build(?IContainer $container = null): DbSyncDefinitionBuilder
     {
@@ -102,7 +103,10 @@ class DbSyncDefinition extends SyncDefinition implements HasBuilder
     }
 
     /**
-     * @param DbSyncDefinitionBuilder|DbSyncDefinition|null $object
+     * @template T0 of ISyncEntity
+     * @template T1 of DbSyncProvider
+     * @param DbSyncDefinitionBuilder<T0,T1>|DbSyncDefinition<T0,T1> $object
+     * @return DbSyncDefinition<T0,T1>
      */
     public static function resolve($object): DbSyncDefinition
     {

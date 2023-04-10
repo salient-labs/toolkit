@@ -142,6 +142,7 @@ final class Reflection
     {
         return $type instanceof ReflectionNamedType
             ? $type->getName()
+            // @phpstan-ignore-next-line
             : (string) $type;
     }
 
@@ -222,7 +223,7 @@ final class Reflection
             }
             // Interfaces don't have traits, so there's nothing else to do here
             if ($method->getDeclaringClass()->isInterface()) {
-                break;
+                return $comments;
             }
             // getTraits() doesn't return inherited traits, so recurse into them
             foreach ($method->getDeclaringClass()->getTraits() as $trait) {
@@ -237,11 +238,12 @@ final class Reflection
                     );
                 }
             }
-        } while (($parent = $method->getDeclaringClass()->getParentClass()) &&
-            $parent->hasMethod($name) &&
-            ($method = $parent->getMethod($name)));
-
-        return $comments;
+            if (!($parent = $method->getDeclaringClass()->getParentClass()) ||
+                    !$parent->hasMethod($name)) {
+                return $comments;
+            }
+            $method = $parent->getMethod($name);
+        } while (true);
     }
 
     /**
@@ -298,11 +300,12 @@ final class Reflection
                     );
                 }
             }
-        } while (($parent = $property->getDeclaringClass()->getParentClass()) &&
-            $parent->hasProperty($name) &&
-            ($property = $parent->getProperty($name)));
-
-        return $comments;
+            if (!($parent = $property->getDeclaringClass()->getParentClass()) ||
+                    !$parent->hasProperty($name)) {
+                return $comments;
+            }
+            $property = $parent->getProperty($name);
+        } while (true);
     }
 
     /**

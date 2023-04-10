@@ -6,13 +6,15 @@ use Lkrms\Cli\CliAppContainer;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
+use Lkrms\Cli\Exception\CliInvalidValueException;
 use Lkrms\Concern\HasCliAppContainer;
 use Lkrms\Contract\ReturnsContainer;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
+use LogicException;
 use RuntimeException;
-use UnexpectedValueException;
+use Throwable;
 
 /**
  * Base class for CLI commands
@@ -30,7 +32,7 @@ abstract class CliCommand implements ReturnsContainer
     abstract public function getShortDescription(): string;
 
     /**
-     * Return a list of options for the command
+     * Get a list of options for the command
      *
      * Example:
      *
@@ -58,7 +60,7 @@ abstract class CliCommand implements ReturnsContainer
     abstract public function getLongDescription(): ?string;
 
     /**
-     * Get content for the command's usage information / help page
+     * Get content for the command's usage information / help messages
      *
      * `NAME`, `SYNOPSIS`, `OPTIONS` and `DESCRIPTION` are generated
      * automatically and will be ignored if returned by this method.
@@ -80,15 +82,15 @@ abstract class CliCommand implements ReturnsContainer
     /**
      * Run the command
      *
-     * PHP's exit status will be:
+     * The command's return value will be:
      * 1. the return value of this method (if an `int` is returned)
      * 2. the last value passed to {@see CliCommand::setExitStatus()}, or
-     * 3. `0`, indicating success, unless an unhandled error occurs
+     * 3. `0`, indicating success
      *
-     * @param string ...$params
+     * @param string ...$args Non-option arguments passed to the command.
      * @return int|void
      */
-    abstract protected function run(string ...$params);
+    abstract protected function run(string ...$args);
 
     /**
      * @var string[]|null
@@ -96,29 +98,24 @@ abstract class CliCommand implements ReturnsContainer
     private $Name;
 
     /**
-     * @var CliOption[]|null
+     * @var array<string,CliOption>|null
      */
     private $Options;
 
     /**
-     * @var array<string,CliOption>
+     * @var array<string,CliOption>|null
      */
-    private $OptionsByName = [];
+    private $OptionsByName;
 
     /**
-     * @var array<string,CliOption>
+     * @var array<string,CliOption>|null
      */
-    private $OptionsByKey = [];
+    private $PositionalOptions;
 
     /**
-     * @var array<string,CliOption>
+     * @var array<string,CliOption>|null
      */
-    private $PositionalOptions = [];
-
-    /**
-     * @var array<string,CliOption>
-     */
-    private $HiddenOptions = [];
+    private $HiddenOptions;
 
     /**
      * @var string[]|null
@@ -126,7 +123,7 @@ abstract class CliCommand implements ReturnsContainer
     private $Arguments;
 
     /**
-     * @var array<string,string|array|bool|null>|null
+     * @var array<string,mixed>|null
      */
     private $OptionValues;
 
@@ -134,6 +131,11 @@ abstract class CliCommand implements ReturnsContainer
      * @var string[]
      */
     private $OptionErrors = [];
+
+    /**
+     * @var string[]
+     */
+    private $DeferredOptionErrors = [];
 
     /**
      * @var int|null
@@ -149,6 +151,11 @@ abstract class CliCommand implements ReturnsContainer
      * @var bool
      */
     private $IsVersion;
+
+    /**
+     * @var bool
+     */
+    private $IsRunning = false;
 
     /**
      * @var int
@@ -167,7 +174,7 @@ abstract class CliCommand implements ReturnsContainer
     final public function setName(array $name): void
     {
         if (!is_null($this->Name)) {
-            throw new RuntimeException('Name already set');
+            throw new LogicException('Name already set');
         }
 
         $this->Name = $name;
@@ -207,85 +214,108 @@ abstract class CliCommand implements ReturnsContainer
         return $this->Name ?: [];
     }
 
-    private function addOption(CliOption $option, array &$options, bool $hide = false)
+    /**
+     * @return $this
+     */
+    private function addOption(CliOption $option)
     {
-        $this->applyOption($option, true, $options, $hide);
-    }
-
-    private function applyOption(CliOption $option, bool $validate = false, ?array &$options = null, bool $hide = false)
-    {
-        $names = array_filter([$option->Short, $option->Long]);
-
-        if ($validate) {
-            $option->validate($this->app()->getRunningCommand() === $this);
-
-            if (!empty(array_intersect($names, array_keys($this->OptionsByName)))) {
-                throw new UnexpectedValueException('Option names must be unique: ' . implode(', ', $names));
-            }
-
-            if ($option->IsPositional) {
-                if ($option->Required &&
-                        !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => !$opt->Required && !$opt->MultipleAllowed))) {
-                    throw new UnexpectedValueException('Required positional options must be added before optional ones');
-                }
-                if (!$option->Required &&
-                        !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => $opt->MultipleAllowed))) {
-                    throw new UnexpectedValueException("'multipleAllowed' positional options must be added after optional ones");
-                }
-                if ($option->MultipleAllowed &&
-                        !empty(array_filter($this->PositionalOptions, fn(CliOption $opt) => $opt->MultipleAllowed))) {
-                    throw new UnexpectedValueException("'multipleAllowed' cannot be set on more than one positional option");
-                }
-            }
+        try {
+            $option->validate();
+        } catch (CliInvalidValueException $ex) {
+            $this->deferOptionError($ex->getMessage());
         }
 
-        foreach ($names as $key) {
-            $this->OptionsByName[$key] = $option;
-        }
+        $names = $option->getNames();
 
-        $this->OptionsByKey[$option->Key] = $option;
+        if (array_intersect_key(
+            array_flip($names),
+            $this->OptionsByName ?: []
+        )) {
+            throw new LogicException('Option names must be unique: ' . implode(', ', $names));
+        }
 
         if ($option->IsPositional) {
+            if ($option->Required &&
+                    array_filter(
+                        $this->PositionalOptions ?: [],
+                        fn(CliOption $opt) =>
+                            !$opt->Required && !$opt->MultipleAllowed
+                    )) {
+                throw new LogicException('Required positional options must be added before optional ones');
+            }
+            if (!$option->Required &&
+                    array_filter(
+                        $this->PositionalOptions ?: [],
+                        fn(CliOption $opt) =>
+                            $opt->MultipleAllowed
+                    )) {
+                throw new LogicException("'multipleAllowed' positional options must be added after optional ones");
+            }
+            if ($option->MultipleAllowed &&
+                    array_filter(
+                        $this->PositionalOptions ?: [],
+                        fn(CliOption $opt) =>
+                            $opt->MultipleAllowed
+                    )) {
+                throw new LogicException("'multipleAllowed' cannot be set on more than one positional option");
+            }
+
             $this->PositionalOptions[$option->Key] = $option;
         }
 
-        if ($hide || array_key_exists($option->Key, $this->HiddenOptions)) {
+        $this->Options[$option->Key] = $option;
+
+        foreach ($names as $name) {
+            $this->OptionsByName[$name] = $option;
+        }
+
+        if ($option->Hide) {
             $this->HiddenOptions[$option->Key] = $option;
         }
 
-        if (!is_null($options)) {
-            $options[] = $option;
-        }
+        return $this;
     }
 
+    /**
+     * @return $this
+     */
     private function loadOptions()
     {
         if (!is_null($this->Options)) {
-            return;
+            return $this;
         }
 
-        $_options = $this->getOptionList();
-        $options = [];
+        try {
+            foreach ($this->getOptionList() as $option) {
+                $this->addOption(CliOption::resolve($option));
+            }
 
-        foreach ($_options as $option) {
-            $this->addOption(CliOption::resolve($option), $options);
+            return $this->maybeAddHiddenOption('help', 'h')
+                        ->maybeAddHiddenOption('version', 'v');
+        } catch (Throwable $ex) {
+            $this->Options = null;
+            $this->OptionsByName = null;
+            $this->PositionalOptions = null;
+            $this->HiddenOptions = null;
+
+            throw $ex;
+        }
+    }
+
+    /**
+     * @return $this
+     */
+    private function maybeAddHiddenOption(string $long, string $short)
+    {
+        if (array_key_exists($long, $this->OptionsByName)) {
+            return $this;
         }
 
-        if (!array_key_exists('help', $this->OptionsByName)) {
-            $this->addOption(CliOption::build()
-                ->long('help')
-                ->short(array_key_exists('h', $this->OptionsByName) ? null : 'h')
-                ->go(), $options, true);
-        }
-
-        if (!array_key_exists('version', $this->OptionsByName)) {
-            $this->addOption(CliOption::build()
-                ->long('version')
-                ->short(array_key_exists('v', $this->OptionsByName) ? null : 'v')
-                ->go(), $options, true);
-        }
-
-        $this->Options = $options;
+        return $this->addOption(CliOption::build()
+            ->long($long)
+            ->short(array_key_exists($short, $this->OptionsByName) ? null : $short)
+            ->hide()
+            ->go());
     }
 
     /**
@@ -294,34 +324,34 @@ abstract class CliCommand implements ReturnsContainer
      */
     final public function getOptions(): array
     {
-        $this->loadOptions();
-
-        return $this->Options;
+        return
+            array_values($this->loadOptions()
+                              ->Options);
     }
 
     final public function hasOption(string $name): bool
     {
-        $this->loadOptions();
-
-        return !is_null($this->OptionsByName[$name] ?? null);
+        return
+            array_key_exists($name, $this->loadOptions()
+                                         ->OptionsByName);
     }
 
     final public function getOption(string $name): ?CliOption
     {
-        $this->loadOptions();
-
-        return $this->OptionsByName[$name] ?? null;
+        return
+            $this->loadOptions()
+                 ->OptionsByName[$name] ?? null;
     }
 
     final public function getUsage(bool $oneline = false): string
     {
         $options = '';
 
-        // To produce a one-line summary like this:
+        // Produce a synopsis like this:
         //
         //     sync [-ny] [--verbose] [--exclude PATTERN] --from SOURCE DEST
         //
-        // Generate values like these:
+        // By generating arrays like this:
         //
         //     $shortFlag  = ['n', 'y'];
         //     $longFlag   = ['verbose'];
@@ -497,19 +527,44 @@ abstract class CliCommand implements ReturnsContainer
         return $description;
     }
 
+    /**
+     * Record an option-related error
+     *
+     * @return $this
+     * @phpstan-impure
+     */
     private function optionError(string $message)
     {
         $this->OptionErrors[] = $message;
+
+        return $this;
     }
 
+    /**
+     * Record an option-related error to report only if the command is running
+     *
+     * @return $this
+     * @phpstan-impure
+     */
+    private function deferOptionError(string $message)
+    {
+        $this->DeferredOptionErrors[] = $message;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
     private function loadOptionValues()
     {
         if (!is_null($this->OptionValues)) {
-            return;
+            return $this;
         }
 
-        $this->loadOptions();
         $this->OptionErrors = [];
+        $this->DeferredOptionErrors = [];
+        $this->loadOptions();
         $this->NextArgumentIndex = null;
         $this->IsHelp = false;
         $this->IsVersion = false;
@@ -528,9 +583,9 @@ abstract class CliCommand implements ReturnsContainer
                 $name = $matches[1];
                 $value = ($matches[2] ?? null) ? $matches[3] : null;
             } else {
-                if ($arg == '--') {
+                if ($arg === '--') {
                     $i++;
-                } elseif (substr($arg, 0, 1) == '-') {
+                } elseif (substr($arg, 0, 1) === '-') {
                     $this->optionError("invalid argument '$arg'");
 
                     continue;
@@ -613,17 +668,15 @@ abstract class CliCommand implements ReturnsContainer
         $this->NextArgumentIndex = $i;
 
         foreach ($merged as $key => &$value) {
-            $option = $this->OptionsByKey[$key];
+            $option = $this->Options[$key];
 
-            if ($option->Long == 'help') {
+            if ($option->Long === 'help') {
                 $this->IsHelp = true;
-
                 continue;
             }
 
-            if ($option->Long == 'version') {
+            if ($option->Long === 'version') {
                 $this->IsVersion = true;
-
                 continue;
             }
 
@@ -631,21 +684,26 @@ abstract class CliCommand implements ReturnsContainer
                 $this->optionError("{$option->DisplayName} cannot be used multiple times");
             }
 
-            if (!is_null($option->AllowedValues) && !is_null($value) &&
-                    !empty($invalid = $option->getInvalid($value))) {
-                $this->optionError($option->getInvalidMessage($invalid));
+            if (!is_null($option->AllowedValues) && !is_null($value)) {
+                try {
+                    $value = $option->applyUnknownValuePolicy($value);
+                } catch (CliArgumentsInvalidException $ex) {
+                    if ($error = $ex->getErrors()[0] ?? null) {
+                        $this->optionError($error);
+                    }
+                }
             }
         }
         unset($value);
 
-        foreach ($this->Options as &$option) {
+        foreach ($this->Options as $option) {
             if ($option->Required &&
                 (!array_key_exists($option->Key, $merged) ||
                     // The test before `&&` is sufficient, but if required
                     // options are ever allowed to have optional values, the
                     // second test will be required
                     ($merged[$option->Key] === [] && $option->ValueRequired))) {
-                if (!(count($args) == 1 && ($this->IsHelp || $this->IsVersion))) {
+                if (!(count($args) === 1 && ($this->IsHelp || $this->IsVersion))) {
                     $this->optionError(
                         "{$option->DisplayName} required" . $option->maybeGetAllowedValues()
                     );;
@@ -654,25 +712,32 @@ abstract class CliCommand implements ReturnsContainer
                 continue;
             }
 
-            $value = $merged[$option->Key] ?? (!$option->ValueRequired ? null : $option->DefaultValue);
+            $value = $merged[$option->Key]
+                ?? ($option->ValueRequired
+                    ? $option->DefaultValue
+                    : null);
 
             if ($option->AddAll && !is_null($value) && in_array('ALL', (array) $value)) {
                 $value = array_diff($option->AllowedValues, ['ALL']);
             } elseif ($option->IsFlag && $option->MultipleAllowed) {
-                $value = count(Convert::toArray($value, true));
+                $value = count((array) $value);
             } elseif ($option->MultipleAllowed) {
-                $value = Convert::toArray($value, true);
+                $value = (array) $value;
             }
-
-            $option = $option->withValue($value);
-            $this->applyOption($option, false);
+            $value = $option->applyValue($value);
+            if ($value !== null) {
+                $this->OptionValues[$option->Key] = $value;
+            }
         }
 
         if ($this->OptionErrors) {
-            throw new CliArgumentsInvalidException($this->OptionErrors);
+            throw new CliArgumentsInvalidException(
+                ...$this->OptionErrors,
+                ...$this->DeferredOptionErrors
+            );
         }
 
-        $this->OptionValues = $merged;
+        return $this;
     }
 
     /**
@@ -690,10 +755,10 @@ abstract class CliCommand implements ReturnsContainer
         $this->assertHasRun();
 
         if (!($option = $this->getOption($name))) {
-            throw new UnexpectedValueException("No option with name '$name'");
+            throw new LogicException("No option with name '$name'");
         }
 
-        return $option->Value;
+        return $this->OptionValues[$option->Key] ?? null;
     }
 
     /**
@@ -706,7 +771,7 @@ abstract class CliCommand implements ReturnsContainer
         $values = [];
         foreach ($this->Options as $option) {
             $name = $option->Long ?: $option->Short;
-            $values[$name] = $option->Value;
+            $values[$name] = $this->OptionValues[$option->Key] ?? null;
         }
 
         return $values;
@@ -726,44 +791,42 @@ abstract class CliCommand implements ReturnsContainer
      */
     final public function getEffectiveArgument($option, bool $shellEscape = false, $value = null): ?string
     {
+        $this->assertHasRun();
         if (is_string($option)) {
-            $this->assertHasRun();
-
             if (!($option = $this->getOption($option))) {
-                throw new UnexpectedValueException("No option with name '$option'");
+                throw new LogicException("No option with name '$option'");
             }
+        } elseif ($this->Options[$option->Key] !== $option) {
+            throw new LogicException('No matching option');
         }
 
-        if (func_num_args() > 2) {
-            $option = $option->withValue($value);
+        if (func_num_args() < 3) {
+            $value = $this->OptionValues[$option->Key] ?? null;
         }
 
-        if (is_null($option->Value) || $option->Value === [] || $option->Value === false || $option->Value === 0) {
+        if (is_null($value) || $value === [] || $value === false || $value === 0) {
             return null;
         }
 
-        if (is_int($option->Value)) {
+        if (is_int($value)) {
             if ($option->Short) {
-                return '-' . str_repeat($option->Short, $option->Value);
+                return '-' . str_repeat($option->Short, $value);
             }
 
-            return implode(' ', array_fill(0, $option->Value, "--{$option->Long}"));
+            return implode(' ', array_fill(0, $value, "--{$option->Long}"));
         }
 
-        $value = null;
-        if (is_array($option->Value)) {
-            $value = implode(',', $option->Value);
-        } elseif (is_string($option->Value)) {
-            $value = $option->Value;
+        if (is_array($value)) {
+            $value = implode(',', $value);
         }
-        if ($shellEscape && !is_null($value)) {
+        if ($shellEscape && is_string($value)) {
             $value = Convert::toShellArg($value);
         }
 
         return $option->IsPositional
             ? $value
             : ($option->Long
-                ? "--{$option->Long}" . (is_null($value) ? '' : "=$value")
+                ? "--{$option->Long}" . (is_string($value) ? "=$value" : '')
                 : "-{$option->Short}" . $value);
     }
 
@@ -804,11 +867,16 @@ abstract class CliCommand implements ReturnsContainer
         return array_values(array_filter($args, fn($arg) => !is_null($arg)));
     }
 
+    /**
+     * @return $this
+     */
     private function assertHasRun()
     {
         if (is_null($this->OptionValues)) {
             throw new RuntimeException('Command must be invoked first');
         }
+
+        return $this;
     }
 
     /**
@@ -840,7 +908,20 @@ abstract class CliCommand implements ReturnsContainer
             return 0;
         }
 
-        if (is_int($return = $this->run(...array_slice($this->Arguments, $this->NextArgumentIndex)))) {
+        if ($this->DeferredOptionErrors) {
+            throw new CliArgumentsInvalidException(
+                ...$this->DeferredOptionErrors
+            );
+        }
+
+        $this->IsRunning = true;
+        try {
+            $return = $this->run(...array_slice($this->Arguments, $this->NextArgumentIndex));
+        } finally {
+            $this->IsRunning = false;
+        }
+
+        if (is_int($return)) {
             return $return;
         }
 
@@ -848,13 +929,25 @@ abstract class CliCommand implements ReturnsContainer
     }
 
     /**
+     * True if the command is currently running
+     *
+     */
+    final protected function isRunning(): bool
+    {
+        return $this->IsRunning;
+    }
+
+    /**
      * Set the command's return value / exit status
      *
+     * @return $this
      * @see CliCommand::run()
      */
     final protected function setExitStatus(int $status)
     {
         $this->ExitStatus = $status;
+
+        return $this;
     }
 
     /**
@@ -870,6 +963,7 @@ abstract class CliCommand implements ReturnsContainer
 
     /**
      * Get the number of times the command has run, including the current run
+     * (if applicable)
      *
      */
     final protected function getRuns(): int

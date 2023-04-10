@@ -27,7 +27,7 @@ final class GetSyncEntities extends CliCommand
     /**
      * Unambiguous lowercase entity basename => entity
      *
-     * @var array<string,string|null>
+     * @var array<string,class-string<ISyncEntity>|null>
      */
     private $Entities = [];
 
@@ -139,7 +139,7 @@ final class GetSyncEntities extends CliCommand
         return null;
     }
 
-    protected function run(string ...$params)
+    protected function run(string ...$args)
     {
         Console::registerStderrTarget(true);
 

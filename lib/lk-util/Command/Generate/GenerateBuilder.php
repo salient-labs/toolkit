@@ -221,6 +221,9 @@ class GenerateBuilder extends GenerateCommand
             throw new CliArgumentsInvalidException("class does not exist: $classFqcn");
         }
 
+        $_docBlocks = Reflect::getAllClassDocComments($_class);
+        $classPhpDoc = PhpDocParser::fromDocBlocks($_docBlocks);
+
         $files = [];
         $maybeAddFile =
             function ($file) use (&$files) {
@@ -322,8 +325,8 @@ class GenerateBuilder extends GenerateCommand
             );
         };
 
-        $docBlocks = Reflect::getAllMethodDocComments($_constructor, $classDocBlocks);
-        $_phpDoc = PhpDocParser::fromDocBlocks($docBlocks, $classDocBlocks);
+        $_docBlocks = Reflect::getAllMethodDocComments($_constructor, $classDocBlocks);
+        $_phpDoc = PhpDocParser::fromDocBlocks($_docBlocks, $classDocBlocks);
 
         $names = array_keys($_params + $_properties);
         //sort($names);
@@ -340,8 +343,8 @@ class GenerateBuilder extends GenerateCommand
                     continue;
                 }
 
-                $docBlocks = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
-                $phpDoc = PhpDocParser::fromDocBlocks($docBlocks, $classDocBlocks);
+                $_docBlocks = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
+                $phpDoc = PhpDocParser::fromDocBlocks($_docBlocks, $classDocBlocks);
                 $propertyFile = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
 
@@ -414,8 +417,8 @@ class GenerateBuilder extends GenerateCommand
 
             // If the parameter has a matching property, retrieve its DocBlock
             if ($_property = $_allProperties[$name] ?? null) {
-                $docBlocks = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
-                $phpDoc = PhpDocParser::fromDocBlocks($docBlocks, $classDocBlocks);
+                $_docBlocks = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
+                $phpDoc = PhpDocParser::fromDocBlocks($_docBlocks, $classDocBlocks);
             } else {
                 $phpDoc = null;
             }
@@ -514,22 +517,39 @@ class GenerateBuilder extends GenerateCommand
         $methods[] = " * @method static $service $staticResolver($service|$builderClass \$object) Resolve a $builderClass or $classClass object to a $classClass object";
         $methods = implode(PHP_EOL, $methods);
 
-        $imports = $this->getImports();
-
         $docBlock[] = '/**';
         if ($desc) {
             $docBlock[] = " * $desc";
             $docBlock[] = ' *';
         }
-        if ($methods) {
-            $docBlock[] = $methods;
-            $docBlock[] = ' *';
-        }
+        $docBlock[] = $methods;
+        $docBlock[] = ' *';
         if ($package) {
             $docBlock[] = " * @package $package";
+            $docBlock[] = ' *';
         }
         $docBlock[] = " * @uses $service";
+        $docBlock[] = ' *';
+        $templates = '';
+        if ($classPhpDoc->Templates) {
+            $templates = [];
+            foreach (
+                $classPhpDoc->Templates as $template => ['type' => $templateOf]
+            ) {
+                if (!Test::isPhpReservedWord($templateOf) &&
+                        !array_key_exists($templateOf, $classPhpDoc->Templates)) {
+                    $templateOf = $phpDocTypeCallback($templateOf, []);
+                }
+                $templates[] = $template;
+                $docBlock[] = " * @template $template"
+                    . ($templateOf === 'mixed' ? '' : " of $templateOf");
+            }
+            $docBlock[] = ' *';
+            $templates = '<' . implode(',', $templates) . '>';
+        }
+        $docBlock[] = " * @extends $extends<$service$templates>";
         if (!$this->getOptionValue('no-meta')) {
+            $docBlock[] = ' *';
             $docBlock[] = ' * @lkrms-generate-command '
                 . implode(
                     ' ',
@@ -540,6 +560,8 @@ class GenerateBuilder extends GenerateCommand
                 );
         }
         $docBlock[] = ' */';
+
+        $imports = $this->getImports();
 
         $blocks = [
             '<?php declare(strict_types=1);',

@@ -30,7 +30,9 @@ use ReflectionType;
  * @method static string getTypeDeclaration(?ReflectionType $type, string $classPrefix = '\\', ?callable $typeNameCallback = null) Convert the given ReflectionType to a PHP type declaration (see {@see Reflection::getTypeDeclaration()})
  *
  * @uses Reflection
+ *
  * @extends Facade<Reflection>
+ *
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Reflection' 'Lkrms\Facade\Reflect'
  */
 final class Reflect extends Facade

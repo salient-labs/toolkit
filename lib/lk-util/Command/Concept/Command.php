@@ -71,9 +71,10 @@ abstract class Command extends CliCommand
     }
 
     /**
-     * @template TProvider of IProvider
+     * @template TBaseProvider of IProvider
+     * @template TProvider of TBaseProvider
      * @param class-string<TProvider> $provider
-     * @param class-string<IProvider> $class
+     * @param class-string<TBaseProvider> $class
      * @return TProvider
      */
     protected function getProvider(string $provider, string $class = IProvider::class): IProvider

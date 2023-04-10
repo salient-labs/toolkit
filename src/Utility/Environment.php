@@ -199,9 +199,9 @@ final class Environment
     /**
      * Get a boolean value from the environment
      *
-     * Returns `$default` if `$name` is empty or unset, `false` if it's `"n"`,
-     * `"no"`, `"false"` or `"0"`, otherwise `true`. Comparison is not
-     * case-sensitive.
+     * Returns `$default` if `$name` is empty or unset, `false` if it's `"off"`,
+     * `"n"`, `"no"`, `"f"`, `"false"` or `"0"`, otherwise `true`. Comparison is
+     * not case-sensitive.
      *
      * @template T of bool
      * @phpstan-param T|null $default
@@ -219,7 +219,7 @@ final class Environment
         if (trim((string) $value) === '') {
             return $default;
         }
-        if (preg_match('/^(no?|false)/i', $value)) {
+        if (preg_match('/^(off|no?|f(alse)?)$/i', $value)) {
             return false;
         }
 

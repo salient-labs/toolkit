@@ -20,6 +20,7 @@ use Lkrms\Utility\Tests;
  * @method static bool isArrayOfIntOrString(mixed $value, bool $allowEmpty = false) True if $value is a string[] or int[]
  * @method static bool isAssociativeArray(mixed $value, bool $allowEmpty = false) True if $value is an array with one or more string keys
  * @method static bool isBetween(int|float $value, int|float $min, int|float $max) True if $value is a number within a range (see {@see Tests::isBetween()})
+ * @method static bool isBoolValue(mixed $value) True if $value is a boolean or boolean string (see {@see Tests::isBoolValue()})
  * @method static bool isIndexedArray(mixed $value, bool $allowEmpty = false) True if $value is an array with no string keys
  * @method static bool isIntValue(mixed $value) True if $value is an integer or integer string
  * @method static bool isListArray(mixed $value, bool $allowEmpty = false) True if $value is an array with consecutive integer keys numbered from 0
@@ -27,7 +28,9 @@ use Lkrms\Utility\Tests;
  * @method static bool isPhpReservedWord(string $value) True if $value is a PHP reserved word (see {@see Tests::isPhpReservedWord()})
  *
  * @uses Tests
+ *
  * @extends Facade<Tests>
+ *
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Tests' 'Lkrms\Facade\Test'
  */
 final class Test extends Facade

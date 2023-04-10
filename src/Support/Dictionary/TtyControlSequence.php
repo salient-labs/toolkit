@@ -19,7 +19,6 @@ final class TtyControlSequence extends Dictionary
     public const CYAN = "\x1b[36m";
     public const WHITE = "\x1b[37m";
     public const DEFAULT = "\x1b[39m";
-    public const GREY = "\x1b[90m";
     public const BLACK_BG = "\x1b[40m";
     public const RED_BG = "\x1b[41m";
     public const GREEN_BG = "\x1b[42m";
@@ -29,14 +28,33 @@ final class TtyControlSequence extends Dictionary
     public const CYAN_BG = "\x1b[46m";
     public const WHITE_BG = "\x1b[47m";
     public const DEFAULT_BG = "\x1b[49m";
-    public const GREY_BG = "\x1b[100m";
     public const BOLD = "\x1b[1m";
-    public const UNBOLD = "\x1b[22m";
     public const DIM = "\x1b[2m";
-    public const UNDIM = "\x1b[22m";
+    public const UNDERLINE = "\x1b[4m";
+    public const NO_UNDERLINE = "\x1b[24m";
 
     /**
-     * Turn off all attributes
+     * Reset BOLD and DIM
+     *
+     * @see TtyControlSequence::UNBOLD_DIM
+     * @see TtyControlSequence::UNDIM_BOLD
+     */
+    public const UNBOLD_UNDIM = "\x1b[22m";
+
+    /**
+     * Reset BOLD, set DIM
+     *
+     */
+    public const UNBOLD_DIM = "\x1b[22;2m";
+
+    /**
+     * Reset DIM, set BOLD
+     *
+     */
+    public const UNDIM_BOLD = "\x1b[22;1m";
+
+    /**
+     * Reset all colours and styles
      *
      */
     public const RESET = "\x1b[m";

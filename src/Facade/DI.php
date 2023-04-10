@@ -41,7 +41,9 @@ use Lkrms\Contract\IContainer;
  * @method static Container unbind(string $id) Remove a binding from the container
  *
  * @uses Container
+ *
  * @extends Facade<Container>
+ *
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Container\Container' 'Lkrms\Facade\DI'
  */
 final class DI extends Facade

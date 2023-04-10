@@ -62,7 +62,9 @@ use Lkrms\Utility\Environment;
  * @method static AppContainer writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10) Print a summary of the script's timers (see {@see AppContainer::writeTimers()})
  *
  * @uses AppContainer
+ *
  * @extends Facade<AppContainer>
+ *
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Container\AppContainer' 'Lkrms\Facade\App'
  */
 final class App extends Facade

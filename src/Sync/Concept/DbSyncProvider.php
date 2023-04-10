@@ -8,6 +8,7 @@ use Lkrms\Facade\Assert;
 use Lkrms\Support\SqlQuery;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
 use RuntimeException;
@@ -63,15 +64,22 @@ abstract class DbSyncProvider extends SyncProvider
      *
      * Return `null` if no sync operations are implemented for the entity.
      *
-     * @param DbSyncDefinitionBuilder $define A definition builder with
-     * `entity()` and `provider()` already applied.
-     * @return DbSyncDefinition|DbSyncDefinitionBuilder|null
+     * @template T of ISyncEntity
+     * @param class-string<T> $entity
+     * @param DbSyncDefinitionBuilder<T,static> $define A definition builder
+     * with `entity()` and `provider()` already applied.
+     * @return DbSyncDefinition|DbSyncDefinitionBuilder<T,static>|null
      */
     protected function getDbDefinition(string $entity, DbSyncDefinitionBuilder $define)
     {
         return null;
     }
 
+    /**
+     * @template T of ISyncEntity
+     * @param class-string<T> $entity
+     * @return ISyncDefinition<T,static>
+     */
     final public function getDefinition(string $entity): ISyncDefinition
     {
         $builder = DbSyncDefinition::build()
@@ -79,9 +87,12 @@ abstract class DbSyncProvider extends SyncProvider
             ->provider($this);
         $def = $this->getDbDefinition($entity, $builder);
 
-        return $def
+        /** @var ISyncDefinition<T,static> */
+        $def = $def
             ? DbSyncDefinitionBuilder::resolve($def)
             : $builder->go();
+
+        return $def;
     }
 
     final public function getDbConnector(): DbConnector

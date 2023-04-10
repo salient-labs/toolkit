@@ -3,32 +3,34 @@ includes:
   - tests/phpstan-conditional.php
 
 parameters:
-  level: 5
+  level: 6
   paths:
-    - bootstrap.php
     - src
     - lib
     - bin/lk-util
+    - bootstrap.php
     - tests
-    - tests/app
-    - tests/cache
-    - tests/Cli/app
-    - tests/Cli/test-options
-    - tests/closure
-    - tests/console
-    - tests/convert
-    - tests/env
-    - tests/err
-    - tests/file
-    - tests/generate
-    - tests/ioc
-    - tests/lk-util
-    - tests/Reflect/property_resolver
-    - tests/sql
-    - tests/Support/http_server
-    - tests/Sync/sync
-    - tests/Template/tconstructible
-    - tests/Template/tgettable
-    - tests/trash
-  bootstrapFiles:
-    - tests/bootstrap.php
+  ignoreErrors:
+    -
+      message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateBuilder\\:\\:\\$[a-z0-9_]+ is never written, only read\\.$#i"
+      path: lib/lk-util/Command/Generate/GenerateBuilder.php
+
+    -
+      message: "#^Property Lkrms\\\\Cli\\\\CliOption\\:\\:\\$BindTo is never read, only written\\.$#"
+      path: src/Cli/CliOption.php
+
+    -
+      message: "#^Property Lkrms\\\\Container\\\\Container\\:\\:\\$Context(Stack)? is never read, only written\\.$#"
+      path: src/Container/Container.php
+
+    -
+      message: "#^Property Lkrms\\\\Curler\\\\CurlerHeaders\\:\\:\\$Trailers is never read, only written\\.$#"
+      path: src/Curler/CurlerHeaders.php
+
+    -
+      message: "#^Parameter \\#2 \\$value of method ADOConnection\\:\\:setConnectionParameter\\(\\) expects string, [a-z]+ given\\.$#"
+      path: src/Db/DbConnector.php
+
+    -
+      message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$GetFromSyncStore is never read, only written\\.$#"
+      path: src/Sync/Support/SyncEntityProvider.php

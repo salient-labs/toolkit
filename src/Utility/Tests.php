@@ -9,6 +9,32 @@ namespace Lkrms\Utility;
 final class Tests
 {
     /**
+     * True if $value is a boolean or boolean string
+     *
+     * The following are regarded as boolean strings (case-insensitive):
+     *
+     * - `"0"`
+     * - `"1"`
+     * - `"f"`
+     * - `"false"`
+     * - `"n"`
+     * - `"no"`
+     * - `"off"`
+     * - `"on"`
+     * - `"t"`
+     * - `"true"`
+     * - `"y"`
+     * - `"yes"`
+     *
+     * @param mixed $value
+     */
+    public static function isBoolValue($value): bool
+    {
+        return is_bool($value) ||
+            (is_string($value) && preg_match('/^(1|on|y(es)?|t(rue)?|0|off|no?|f(alse)?)$/i', $value));
+    }
+
+    /**
      * True if $value is an integer or integer string
      *
      * @param mixed $value

@@ -51,6 +51,7 @@ use Lkrms\Utility\Conversions;
  * @method static string[] stringToList(string $separator, string $string, ?string $trim = null) Explode a string, trim each substring, remove empty strings
  * @method static string[] stringsToUniqueList(string[] $array) A faster array_unique with reindexing
  * @method static array toArray($value, bool $emptyIfNull = false) If a value isn't an array, make it the first element of one (see {@see Conversions::toArray()})
+ * @method static bool|null toBoolOrNull($value) Cast a value to a boolean, preserving null and converting boolean strings (see {@see Conversions::toBoolOrNull()})
  * @method static string toCamelCase(string $text) Convert an identifier to camelCase
  * @method static string toCase(string $text, int $case = self::IDENTIFIER_CASE_SNAKE) Perform the given case conversion
  * @method static DateTimeImmutable toDateTimeImmutable(DateTimeInterface $date) A shim for DateTimeImmutable::createFromInterface() (PHP 8+)
@@ -72,7 +73,9 @@ use Lkrms\Utility\Conversions;
  * @method static string valueToCode($value, string $delimiter = "\054 ", string $arrow = ' => ', ?string $escapeCharacters = null) Like var_export but with more compact output
  *
  * @uses Conversions
+ *
  * @extends Facade<Conversions>
+ *
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Conversions' 'Lkrms\Facade\Convert'
  */
 final class Convert extends Facade

@@ -1405,7 +1405,10 @@ final class Curler implements IReadable, IWritable, HasBuilder
         return new CurlerBuilder($container);
     }
 
-    public static function resolve($object)
+    /**
+     * @param CurlerBuilder|Curler $object
+     */
+    public static function resolve($object): Curler
     {
         return CurlerBuilder::resolve($object);
     }

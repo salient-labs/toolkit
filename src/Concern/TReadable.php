@@ -20,11 +20,17 @@ trait TReadable
 
     abstract public static function getReadable(): array;
 
+    /**
+     * @return mixed
+     */
     private function getProperty(string $action, string $name)
     {
         return $this->introspector()->getPropertyActionClosure($name, $action)($this);
     }
 
+    /**
+     * @return mixed
+     */
     final public function __get(string $name)
     {
         return $this->getProperty('get', $name);

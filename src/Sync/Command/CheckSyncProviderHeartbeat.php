@@ -116,7 +116,7 @@ EOF;
         return null;
     }
 
-    protected function run(string ...$params)
+    protected function run(string ...$args)
     {
         Console::registerStderrTarget(true);
 

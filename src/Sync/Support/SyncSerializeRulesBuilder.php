@@ -10,7 +10,7 @@ use Lkrms\Support\DateFormatter;
  * A fluent interface for creating SyncSerializeRules objects
  *
  * @method static $this build(?IContainer $container = null) Create a new SyncSerializeRulesBuilder (syntactic sugar for 'new SyncSerializeRulesBuilder()')
- * @method $this entity(string $value) The class name of the SyncEntity being serialized (required)
+ * @method $this entity(string $value) The class name of the SyncEntity being serialized (required) (see {@see SyncSerializeRules::$Entity})
  * @method $this dateFormatter(?DateFormatter $value) Override the default date formatter (default: null)
  * @method $this includeMeta(?bool $value = true) Include undeclared property values? (default: true)
  * @method $this sortByKey(?bool $value = true) Sort arrays by key? (default: false)
@@ -28,6 +28,9 @@ use Lkrms\Support\DateFormatter;
  * @method static SyncSerializeRules resolve(SyncSerializeRules|SyncSerializeRulesBuilder $object) Resolve a SyncSerializeRulesBuilder or SyncSerializeRules object to a SyncSerializeRules object
  *
  * @uses SyncSerializeRules
+ *
+ * @extends Builder<SyncSerializeRules>
+ *
  * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\SyncSerializeRules'
  */
 final class SyncSerializeRulesBuilder extends Builder

@@ -18,7 +18,9 @@ use Lkrms\Support\ArrayMapperFlag;
  * @method static Closure getKeyMapClosure(array $keyMap, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED) Get a closure to move array values from one set of keys to another (see {@see ArrayMapper::getKeyMapClosure()})
  *
  * @uses ArrayMapper
+ *
  * @extends Facade<ArrayMapper>
+ *
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Support\ArrayMapper' 'Lkrms\Facade\Mapper'
  */
 final class Mapper extends Facade

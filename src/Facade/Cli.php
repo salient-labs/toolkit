@@ -69,7 +69,9 @@ use Lkrms\Utility\Environment;
  * @method static CliAppContainer writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10) Print a summary of the script's timers (see {@see AppContainer::writeTimers()})
  *
  * @uses CliAppContainer
+ *
  * @extends Facade<CliAppContainer>
+ *
  * @lkrms-generate-command lk-util generate facade 'Lkrms\Cli\CliAppContainer' 'Lkrms\Facade\Cli'
  */
 final class Cli extends Facade

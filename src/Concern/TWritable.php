@@ -20,11 +20,17 @@ trait TWritable
 
     abstract public static function getWritable(): array;
 
-    private function setProperty(string $action, string $name, ...$params)
+    /**
+     * @param mixed ...$params
+     */
+    private function setProperty(string $action, string $name, ...$params): void
     {
-        return $this->introspector()->getPropertyActionClosure($name, $action)($this, ...$params);
+        $this->introspector()->getPropertyActionClosure($name, $action)($this, ...$params);
     }
 
+    /**
+     * @param mixed $value
+     */
     final public function __set(string $name, $value): void
     {
         $this->setProperty('set', $name, $value);

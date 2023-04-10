@@ -27,37 +27,83 @@ final class Filesystem
     /**
      * Iterate over files in a directory
      *
-     * @param null|string $exclude A regex that matches paths to exclude.
-     * Applied before `$include`. No files are excluded if `null`.
+     * Exclusions are applied before inclusions.
      *
-     * To exclude a directory, provide a regex that matches its name and a
+     * @param string|null $exclude A regular expression that specifies paths to
+     * exclude. No files are excluded if `null`.
+     *
+     * To exclude a directory, provide an expression that matches its name and a
      * subsequent `DIRECTORY_SEPARATOR`.
      *
-     * @param null|string $include A regex that matches paths to include. All
-     * files are included if `null`.
+     * @param string|null $include A regular expression that specifies paths to
+     * include. All files are included if `null`.
+     * @param array<string,callable> $excludeCallbacks An array that maps
+     * regular expressions to callbacks that return `true` for matching files or
+     * directories to exclude.
+     *
+     * To exclude a directory, provide an expression that matches its name and a
+     * subsequent `DIRECTORY_SEPARATOR`.
+     *
+     * @phpstan-param array<string,callable(SplFileInfo): bool> $excludeCallbacks
+     * @param array<string,callable> $includeCallbacks An array that maps
+     * regular expressions to callbacks that return `true` for matching files to
+     * include.
+     * ```php
+     * [$regex => fn(SplFileInfo $file) => $file->isExecutable()]
+     * ```
+     * @phpstan-param array<string,callable(SplFileInfo): bool> $includeCallbacks
      * @return IIterable<SplFileInfo>
      */
     public function find(
         string $directory,
         ?string $exclude = null,
         ?string $include = null,
+        ?array $excludeCallbacks = null,
+        ?array $includeCallbacks = null,
         bool $recursive = true
     ): IIterable {
         $flags = FilesystemIterator::KEY_AS_PATHNAME
             | FilesystemIterator::CURRENT_AS_FILEINFO
             | FilesystemIterator::SKIP_DOTS;
 
-        if ($exclude || $include) {
+        if ($exclude || $include || $excludeCallbacks || $includeCallbacks) {
             $callback =
-                function (SplFileInfo $current, string $key) use ($exclude, $include): bool {
+                function (SplFileInfo $current, string $key) use (
+                    $exclude, $include, $excludeCallbacks, $includeCallbacks
+                ): bool {
                     if ($exclude && preg_match($exclude, $key)) {
                         return false;
                     }
+                    if ($excludeCallbacks) {
+                        foreach ($excludeCallbacks as $regex => $callback) {
+                            if (!preg_match($regex, $key) &&
+                                !($current->isDir() &&
+                                    preg_match($regex, $key . DIRECTORY_SEPARATOR))) {
+                                continue;
+                            }
+                            if ($callback($current)) {
+                                return false;
+                            }
+                        }
+                    }
                     if ($current->isDir()) {
-                        return !($exclude && preg_match($exclude, "$key" . DIRECTORY_SEPARATOR));
+                        return !($exclude && preg_match($exclude, $key . DIRECTORY_SEPARATOR));
+                    }
+                    if ($include && preg_match($include, $key)) {
+                        return true;
+                    }
+                    if ($includeCallbacks) {
+                        foreach ($includeCallbacks as $regex => $callback) {
+                            if (!preg_match($regex, $key)) {
+                                continue;
+                            }
+                            if ($callback($current)) {
+                                return true;
+                            }
+                        }
                     }
 
-                    return !$include || preg_match($include, $key);
+                    return !$include && !$includeCallbacks;
                 };
         }
 
@@ -89,9 +135,9 @@ final class Filesystem
      */
     public function getEol(string $filename)
     {
-        if (($handle = fopen($filename, 'r')) === false ||
-                ($line = fgets($handle)) === false ||
-                fclose($handle) === false) {
+        if (($f = fopen($filename, 'r')) === false ||
+                ($line = fgets($f)) === false ||
+                fclose($f) === false) {
             return false;
         }
 
@@ -102,6 +148,27 @@ final class Filesystem
         }
 
         return false;
+    }
+
+    /**
+     * True if a file appears to contain PHP code
+     *
+     * @param string $filename
+     */
+    public function isPhp(string $filename): bool
+    {
+        if (!($f = fopen($filename, 'r'))) {
+            return false;
+        }
+        try {
+            if (($line = fgets($f)) && substr($line, 0, 2) === '#!') {
+                $line = fgets($f);
+            }
+
+            return $line && preg_match('/^<\?(php\s|(?!php))/', $line);
+        } finally {
+            fclose($f);
+        }
     }
 
     /**

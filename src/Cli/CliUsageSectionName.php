@@ -5,12 +5,16 @@ namespace Lkrms\Cli;
 use Lkrms\Concept\Dictionary;
 
 /**
- * Section names commonly used in usage information / help pages
+ * Section names commonly used in usage information / help messages
  *
  * @see \Lkrms\Cli\Concept\CliCommand::getUsageSections()
  */
 final class CliUsageSectionName extends Dictionary
 {
+    public const NAME = 'NAME';
+    public const SYNOPSIS = 'SYNOPSIS';
+    public const OPTIONS = 'OPTIONS';
+    public const DESCRIPTION = 'DESCRIPTION';
     public const EXIT_STATUS = 'EXIT STATUS';
     public const RETURN_VALUE = 'EXIT STATUS';
     public const ENVIRONMENT = 'ENVIRONMENT';
