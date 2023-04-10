@@ -26,6 +26,7 @@ trait TConstructible
      * Array keys, constructor parameters and public property names are
      * normalised for comparison.
      *
+     * @param mixed[] $data
      * @param IContainer|null $container Used to create the instance if set.
      * @param static|null $parent If the class implements
      * {@see \Lkrms\Contract\IHierarchy}, pass `$parent` to the instance via
@@ -47,7 +48,7 @@ trait TConstructible
      *
      * See {@see TConstructible::construct()} for more information.
      *
-     * @param iterable<array> $dataList
+     * @param iterable<mixed[]> $dataList
      * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
      * `COMPLETE` or `PARTIAL` wherever possible to improve performance.
      * @phpstan-param ArrayKeyConformity::* $conformity

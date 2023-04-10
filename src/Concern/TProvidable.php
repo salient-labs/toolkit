@@ -120,6 +120,7 @@ trait TProvidable
      * `$data` keys, constructor parameters and writable properties are
      * normalised for comparison.
      *
+     * @param mixed[] $data
      * @param TProvider $provider
      * @param TProviderContext|null $context
      * @return static
@@ -146,7 +147,7 @@ trait TProvidable
      *
      * See {@see TProvidable::provide()} for more information.
      *
-     * @param iterable<array> $dataList
+     * @param iterable<mixed[]> $dataList
      * @param TProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
@@ -164,7 +165,7 @@ trait TProvidable
     }
 
     /**
-     * @param iterable<array> $dataList
+     * @param iterable<mixed[]> $dataList
      * @param TProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
@@ -181,7 +182,7 @@ trait TProvidable
             : $provider->container())->inContextOf(get_class($provider));
         $context = ($context
             ? $context->withContainer($container)
-            : new ProviderContext($container))->withConformity($conformity);
+            : $container->get(ProviderContext::class))->withConformity($conformity);
         $introspector = Introspector::getService($container, static::class);
 
         foreach ($dataList as $data) {

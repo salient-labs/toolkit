@@ -94,6 +94,7 @@ interface IProvidable extends ReceivesService, ReturnsService
     /**
      * Create an instance of the class from an array on behalf of a provider
      *
+     * @param mixed[] $data
      * @param TProvider $provider
      * @param TProviderContext|null $context
      * @return static
@@ -107,7 +108,7 @@ interface IProvidable extends ReceivesService, ReturnsService
     /**
      * Create instances of the class from arrays on behalf of a provider
      *
-     * @param iterable<array> $dataList
+     * @param iterable<mixed[]> $dataList
      * @param TProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
