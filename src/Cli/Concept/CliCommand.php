@@ -8,6 +8,7 @@ use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Cli\Exception\CliInvalidValueException;
 use Lkrms\Concern\HasCliAppContainer;
+use Lkrms\Console\ConsoleFormatter;
 use Lkrms\Contract\ReturnsContainer;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
@@ -70,10 +71,11 @@ abstract class CliCommand implements ReturnsContainer
      * ```php
      * [
      *   CliUsageSectionName::EXIT_STATUS => <<<EOF
-     *   0  Data was retrieved successfully
-     *   1  There was no data in the result set
-     *   2  An error occurred
-     *   EOF,
+     * _0_   Command succeeded  
+     * _1_   Invalid arguments  
+     * _2_   Empty result set  
+     * _15_  Operational error
+     * EOF,
      * ];
      * ```
      */
@@ -111,11 +113,6 @@ abstract class CliCommand implements ReturnsContainer
      * @var array<string,CliOption>
      */
     private $PositionalOptions = [];
-
-    /**
-     * @var array<string,CliOption>
-     */
-    private $HiddenOptions = [];
 
     /**
      * @var string[]|null
@@ -269,10 +266,6 @@ abstract class CliCommand implements ReturnsContainer
             $this->OptionsByName[$name] = $option;
         }
 
-        if ($option->Hide) {
-            $this->HiddenOptions[$option->Key] = $option;
-        }
-
         return $this;
     }
 
@@ -296,7 +289,7 @@ abstract class CliCommand implements ReturnsContainer
             $this->Options = null;
             $this->OptionsByName = [];
             $this->PositionalOptions = [];
-            $this->HiddenOptions = [];
+            $this->DeferredOptionErrors = [];
 
             throw $ex;
         }
@@ -343,15 +336,39 @@ abstract class CliCommand implements ReturnsContainer
                  ->OptionsByName[$name] ?? null;
     }
 
-    final public function getUsage(bool $oneline = false): string
+    final public function getSynopsis(bool $withMarkup = true): string
     {
-        $options = '';
+        $tag = $withMarkup ? '__' : '';
 
-        // Produce a synopsis like this:
+        return
+            implode(' ', array_filter([
+                $tag . $this->getNameWithProgram() . $tag,
+                $this->getOptionsSynopsis($withMarkup),
+            ]));
+    }
+
+    final public function getSubcommandSynopsis(bool $withMarkup = true): string
+    {
+        $name = $this->getNameParts();
+        $name = array_pop($name);
+        $name = $name && $withMarkup ? "__{$name}__" : $name;
+
+        return
+            implode(' ', array_filter([
+                $name ?: '',
+                $this->getOptionsSynopsis(),
+            ]));
+    }
+
+    final public function getOptionsSynopsis(bool $withMarkup = true): string
+    {
+        $tag = $withMarkup ? '__' : '';
+
+        // Produce this:
         //
-        //     sync [-ny] [--verbose] [--exclude PATTERN] --from SOURCE DEST
+        //     [-ny] [--verbose] [--exclude PATTERN] --from SOURCE DEST
         //
-        // By generating arrays like this:
+        // By generating this:
         //
         //     $shortFlag  = ['n', 'y'];
         //     $longFlag   = ['verbose'];
@@ -366,26 +383,78 @@ abstract class CliCommand implements ReturnsContainer
         $positional = [];
 
         foreach ($this->getOptions() as $option) {
-            if (array_key_exists($option->Key, $this->HiddenOptions)) {
+            if ($option->Hide) {
                 continue;
             }
 
-            [$short, $long, $line, $value, $valueName, $list] = [
-                $option->Short,
-                $option->Long,
-                [],
-                [],
-                '',
-                '',
-            ];
+            if ($option->IsFlag) {
+                if ($option->Short) {
+                    $shortFlag[] = $option->Short;
+                    continue;
+                }
+                $longFlag[] = $option->Long;
+                continue;
+            }
+
+            $valueName = $option->getFriendlyValueName();
+
+            if ($option->IsPositional) {
+                $valueName .= $option->MultipleAllowed ? '...' : '';
+                $positional[] = $option->Required ? "$valueName" : "[$valueName]";
+                continue;
+            }
+
+            $valueName .= $option->MultipleAllowed && $option->Delimiter ? "{$option->Delimiter}..." : '';
+
+            $valueName = $option->Short
+                ? "{$tag}-{$option->Short}{$tag}" . ($option->ValueRequired ? " $valueName" : "[$valueName]")
+                : "{$tag}--{$option->Long}{$tag}" . ($option->ValueRequired ? " $valueName" : "[=$valueName]");
+
+            if ($option->Required) {
+                $required[] = $valueName;
+            } else {
+                $optional[] = $valueName;
+            }
+        }
+
+        return implode(' ', array_filter([
+            $shortFlag ? "[$tag-" . implode('', $shortFlag) . "$tag]" : '',
+            $longFlag ? "[$tag--" . implode("$tag] [$tag--", $longFlag) . "$tag]" : '',
+            $optional ? '[' . implode('] [', $optional) . ']' : '',
+            $required ? implode(' ', $required) : '',
+            $positional ? implode(' ', $positional) : '',
+        ]));
+    }
+
+    final public function getUsage(bool $oneline = false): string
+    {
+        $options = '';
+
+        $shortFlag = [];
+        $longFlag = [];
+        $optional = [];
+        $required = [];
+        $positional = [];
+
+        foreach ($this->getOptions() as $option) {
+            if ($option->Hide) {
+                continue;
+            }
+
+            $short = $option->Short;
+            $long = $option->Long;
+            $line = [];
+            $value = [];
+            $valueName = '';
+            $list = '';
 
             if ($option->IsFlag) {
                 if ($short) {
-                    $line[] = "-{$short}";
+                    $line[] = "__-{$short}__";
                     $shortFlag[] = $short;
                 }
                 if ($long) {
-                    $line[] = "--{$long}";
+                    $line[] = "__--{$long}__";
                     if (!$short) {
                         $longFlag[] = $long;
                     }
@@ -401,11 +470,11 @@ abstract class CliCommand implements ReturnsContainer
                         $list = "{$option->Delimiter}...";
                     }
                     if ($short) {
-                        $line[] = "-{$short}";
+                        $line[] = "__-{$short}__";
                         $value[] = $option->ValueRequired ? " $valueName$list" : "[$valueName$list]";
                     }
                     if ($long) {
-                        $line[] = "--{$long}";
+                        $line[] = "__--{$long}__";
                         $value[] = $option->ValueRequired ? " $valueName$list" : "[=$valueName$list]";
                     }
                     if ($option->Required) {
@@ -430,55 +499,66 @@ abstract class CliCommand implements ReturnsContainer
             //         - _option2_                    - _option3_
             //         - _option3_
             //
-            $line = '_' . implode(', ', $line) . '_';
-            if ($value = array_pop($value) ?: '') {
-                $value = str_replace($valueName, '__' . $valueName . '__', $value);
-            }
+            $line = implode(', ', $line);
+            $value = array_pop($value) ?: '';
             $options .= "\n$line$value";
 
             $optionLines = [];
-            if ($option->DefaultValue) {
-                $optionLines[] = sprintf(
-                    '__Default:__ ___%s___',
-                    implode('___,___', (array) $option->DefaultValue)
-                ) . ($option->KeepDefault || $option->KeepEnv
-                    ? '  ~~(command-line values are appended)~~'
-                    : '');
-            }
-            if ($option->AllowedValues) {
-                if (mb_strlen(implode(' ', $option->AllowedValues)) < 67) {
-                    $optionLines[] =
-                        '__Values:__ _' . implode('_ _', $option->AllowedValues) . '_';
-                } else {
-                    $optionLines[] = '__Values:__';
-                    array_push(
-                        $optionLines,
-                        ...array_map(
-                            fn(string $v): string => sprintf('- _%s_', $v),
-                            $option->AllowedValues
-                        )
-                    );
-                }
-            }
-            $optionLines = $optionLines
-                ? "\n  " . implode("\n  ", $optionLines)
-                : '';
+            $indent = '    ';
 
             if ($description = trim($option->Description)) {
-                $options .= "\n  " . $this->prepareUsage($description, '  ');
-                // Increase the indentation of "Default:" and "Values:" to
-                // separate them from the description
-                $optionLines = $optionLines ? str_replace("\n", "\n  ", $optionLines) : '';
-                if ($optionLines && strpos($description, "\n") !== false) {
-                    $options .= "\n";
+                $optionLines[] = $this->prepareUsage($description, $indent);
+            }
+
+            $generatedLines = [];
+            $compact = true;
+            if ($option->AllowedValues) {
+                $allowedValues = array_map(
+                    fn(string $value): string => ConsoleFormatter::escape($value, true),
+                    $option->AllowedValues
+                );
+                $start = "{$indent}__Values:__";
+                if (mb_strlen(implode(' ', $option->AllowedValues)) < 78 - mb_strlen($start)) {
+                    $generatedLines[] = "$start _" . implode('_ _', $allowedValues) . '_';
+                } else {
+                    $generatedLines[] =
+                        "$start  \n$indent" . implode(
+                            "  \n$indent",
+                            array_map(
+                                fn(string $value): string => sprintf('- _%s_', $value),
+                                $allowedValues
+                            )
+                        );
+                    $compact = false;
                 }
             }
 
-            $options .= $optionLines . "\n";
+            if ($option->DefaultValue) {
+                $defaultValue = array_map(
+                    fn(string $value): string => ConsoleFormatter::escape($value, true),
+                    (array) $option->DefaultValue
+                );
+                $generatedLines[] = sprintf(
+                    '%s__Default:__ _%s_',
+                    $indent,
+                    implode(
+                        sprintf('_%s_', $option->Delimiter ?: ' '),
+                        $defaultValue
+                    )
+                );
+            }
+
+            if ($generatedLines) {
+                $optionLines[] = implode($compact ? "\n" : "\n\n", $generatedLines);
+            }
+            $options .=
+                ($optionLines
+                    ? "\n" . implode("\n\n", $optionLines)
+                    : '') . "\n";
         }
 
-        $synopsis = ($shortFlag ? ' [-' . implode('', $shortFlag) . ']' : '')
-            . ($longFlag ? ' [--' . implode('] [--', $longFlag) . ']' : '')
+        $synopsis = ($shortFlag ? ' [__-' . implode('', $shortFlag) . '__]' : '')
+            . ($longFlag ? ' [__--' . implode('__] [__--', $longFlag) . '__]' : '')
             . ($optional ? ' [' . implode('] [', $optional) . ']' : '')
             . ($required ? ' ' . implode(' ', $required) : '')
             . ($positional ? ' ' . implode(' ', $positional) : '');
@@ -496,7 +576,7 @@ abstract class CliCommand implements ReturnsContainer
         }
 
         $sections = [
-            'NAME' => '__' . $name . '__ - ' . $this->getShortDescription(),
+            'NAME' => $name . ' - ' . $this->getShortDescription(),
             'SYNOPSIS' => '__' . $name . '__' . $synopsis,
             'OPTIONS' => trim($options),
             'DESCRIPTION' => $this->prepareUsage($this->getLongDescription()),
@@ -517,11 +597,11 @@ abstract class CliCommand implements ReturnsContainer
                 $this->getNameWithProgram(),
                 Convert::unwrap($description)
             ),
-            78 - ($indent ? strlen($indent) : 0)
+            76 - ($indent ? strlen($indent) : 0)
         );
 
         if ($indent) {
-            return str_replace("\n", "\n" . $indent, $description);
+            return $indent . str_replace("\n", "\n" . $indent, $description);
         }
 
         return $description;
@@ -563,7 +643,6 @@ abstract class CliCommand implements ReturnsContainer
         }
 
         $this->OptionErrors = [];
-        $this->DeferredOptionErrors = [];
         $this->loadOptions();
         $this->NextArgumentIndex = null;
         $this->IsHelp = false;
@@ -700,10 +779,7 @@ abstract class CliCommand implements ReturnsContainer
         foreach ($this->Options as $option) {
             if ($option->Required &&
                 (!array_key_exists($option->Key, $merged) ||
-                    // The test before `&&` is sufficient, but if required
-                    // options are ever allowed to have optional values, the
-                    // second test will be required
-                    ($merged[$option->Key] === [] && $option->ValueRequired))) {
+                    $merged[$option->Key] === [])) {
                 if (!(count($args) === 1 && ($this->IsHelp || $this->IsVersion))) {
                     $this->optionError(
                         "{$option->DisplayName} required" . $option->maybeGetAllowedValues()
@@ -713,10 +789,7 @@ abstract class CliCommand implements ReturnsContainer
                 continue;
             }
 
-            $value = $merged[$option->Key]
-                ?? ($option->ValueRequired
-                    ? $option->DefaultValue
-                    : null);
+            $value = $merged[$option->Key] ?? ($option->ValueRequired ? $option->DefaultValue : null);
 
             if ($option->AddAll && !is_null($value) && in_array('ALL', (array) $value)) {
                 $value = array_diff($option->AllowedValues, ['ALL']);

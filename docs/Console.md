@@ -65,13 +65,14 @@ called, preferably while bootstrapping your application.
 
 The following Markdown-like syntax is supported in [Console][Console] messages:
 
-| Style        | Tag                      | Appearance          | Example                                                                                 |
-| ------------ | ------------------------ | ------------------- | --------------------------------------------------------------------------------------- |
-| Heading      | `___` or `***`           | ***Bold + colour*** | `___DESCRIPTION___` or<br>`***DESCRIPTION***`                                           |
-| Subheading   | `__` or `**`             | **Bold**            | `__command__` or<br>`**command**`                                                       |
-| Title        | `_` or `*`               | *Secondary colour*  | `_options:_` or<br>`*options:*`                                                         |
-| Low priority | `~~`                     | Dim                 | `~~/path/to/script.php:42~~`                                                            |
-| Preformatted | `` ` `` or ```` ``` ```` | `Unchanged`         | `` `<untrusted text>` `` or<br><pre>\`\`\`&#10;&lt;untrusted block&gt;&#10;\`\`\`</pre> |
+| Style        | Tag                                                                         | Appearance                            | Example                                                                                              |
+| ------------ | --------------------------------------------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Heading      | `___` *text* `___`<br>`***` *text* `***`<br>`##` *text*                     | ***Bold + colour***                   | `___NAME___`<br>`***NAME***`<br>`## NAME` (closing hashes are optional)                              |
+| "Bold"       | `__` *text* `__`<br>`**` *text* `**`                                        | **Bold**                              | `__command__`<br>`**command**`                                                                       |
+| "Italic"     | `_` *text* `_`<br>`*` *text* `*`                                            | *Secondary colour*                    | `_argument_`<br>`*argument*`                                                                         |
+| "Underline"  | `<` *text* `>`                                                              | *<u>Secondary colour + underline</u>* | `<argument>`                                                                                         |
+| Low priority | `~~` *text* `~~`                                                            | ~~Dim~~                               | `~~/path/to/script.php:42~~`                                                                         |
+| Preformatted | `` ` `` *preformatted text* `` ` ``<br>` ``` ` *preformatted block* ` ``` ` | **`Bold`**<br>`Unchanged`             | `` `<inline-code>` `` (bold applied as above)<br><pre>\`\`\`&#10;&lt;code-block&gt;&#10;\`\`\`</pre> |
 
 
 [AppContainer]: https://lkrms.github.io/php-util/classes/Lkrms-Container-AppContainer.html

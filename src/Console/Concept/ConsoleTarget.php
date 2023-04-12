@@ -148,10 +148,12 @@ abstract class ConsoleTarget
         switch ($tag) {
             case Tag::HEADING:
                 return new ConsoleFormat(Colour::BOLD . Colour::CYAN, Colour::DEFAULT . Colour::UNBOLD_UNDIM);
-            case Tag::SUBHEADING:
+            case Tag::BOLD:
                 return new ConsoleFormat(Colour::BOLD, Colour::UNBOLD_UNDIM);
-            case Tag::TITLE:
+            case Tag::ITALIC:
                 return new ConsoleFormat(Colour::YELLOW, Colour::DEFAULT);
+            case Tag::UNDERLINE:
+                return new ConsoleFormat(Colour::YELLOW . Colour::UNDERLINE, Colour::NO_UNDERLINE . Colour::DEFAULT);
             case Tag::LOW_PRIORITY:
                 return new ConsoleFormat(Colour::DIM, Colour::UNBOLD_UNDIM, [Colour::UNBOLD_UNDIM => Colour::UNBOLD_DIM]);
         }

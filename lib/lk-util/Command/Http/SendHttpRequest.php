@@ -39,21 +39,21 @@ class SendHttpRequest extends Command
         $options = [
             CliOption::build()
                 ->long('provider')
-                ->valueName('PROVIDER')
+                ->valueName('provider')
                 ->description('The HttpSyncProvider class to use')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
                 ->required(),
             CliOption::build()
                 ->long('endpoint')
-                ->valueName('ENDPOINT')
+                ->valueName('endpoint')
                 ->description("The endpoint to {$this->getMethod()}, e.g. '/posts'")
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->required(),
             CliOption::build()
                 ->long('query')
                 ->short('q')
-                ->valueName('FIELD=VALUE')
+                ->valueName('field=value')
                 ->description('A query parameter')
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed(),
@@ -63,7 +63,7 @@ class SendHttpRequest extends Command
             $options[] = CliOption::build()
                 ->long('data')
                 ->short('o')
-                ->valueName('FILE')
+                ->valueName('file')
                 ->description('The path to JSON-serialized data to submit with the request')
                 ->optionType(CliOptionType::VALUE);
         }

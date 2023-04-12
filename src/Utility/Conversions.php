@@ -26,26 +26,6 @@ use UnexpectedValueException;
 final class Conversions
 {
     /**
-     * "snake_case"
-     */
-    public const IDENTIFIER_CASE_SNAKE = 0;
-
-    /**
-     * "kebab-case"
-     */
-    public const IDENTIFIER_CASE_KEBAB = 1;
-
-    /**
-     * "PascalCase"
-     */
-    public const IDENTIFIER_CASE_PASCAL = 2;
-
-    /**
-     * "camelCase"
-     */
-    public const IDENTIFIER_CASE_CAMEL = 3;
-
-    /**
      * Cast a value to a boolean, preserving null and converting boolean strings
      *
      * Returns `false` if `$value` is `"off"`, `"n"`, `"no"`, `"f"` or `"false"`
@@ -950,35 +930,13 @@ final class Conversions
     }
 
     /**
-     * Perform the given case conversion
-     *
-     */
-    public function toCase(string $text, int $case = self::IDENTIFIER_CASE_SNAKE): string
-    {
-        switch ($case) {
-            case self::IDENTIFIER_CASE_SNAKE:
-                return $this->toSnakeCase($text);
-
-            case self::IDENTIFIER_CASE_KEBAB:
-                return $this->toKebabCase($text);
-
-            case self::IDENTIFIER_CASE_PASCAL:
-                return $this->toPascalCase($text);
-
-            case self::IDENTIFIER_CASE_CAMEL:
-                return $this->toCamelCase($text);
-        }
-
-        throw new UnexpectedValueException("Invalid case: $case");
-    }
-
-    /**
      * Convert an identifier to snake_case
      *
      */
-    public function toSnakeCase(string $text): string
+    public function toSnakeCase(string $text, ?string $preserve = null): string
     {
-        $text = preg_replace('/[^[:alnum:]]+/', '_', $text);
+        $preserve = $this->_toCaseEscapePreserve($preserve);
+        $text = preg_replace("/[^[:alnum:]$preserve]+/", '_', $text);
         $text = preg_replace('/([[:lower:]])([[:upper:]])/', '$1_$2', $text);
 
         return strtolower(trim($text, '_'));
@@ -988,9 +946,10 @@ final class Conversions
      * Convert an identifier to kebab-case
      *
      */
-    public function toKebabCase(string $text): string
+    public function toKebabCase(string $text, ?string $preserve = null): string
     {
-        $text = preg_replace('/[^[:alnum:]]+/', '-', $text);
+        $preserve = $this->_toCaseEscapePreserve($preserve);
+        $text = preg_replace("/[^[:alnum:]$preserve]+/", '-', $text);
         $text = preg_replace('/([[:lower:]])([[:upper:]])/', '$1-$2', $text);
 
         return strtolower(trim($text, '-'));
@@ -1000,24 +959,38 @@ final class Conversions
      * Convert an identifier to PascalCase
      *
      */
-    public function toPascalCase(string $text): string
+    public function toPascalCase(string $text, ?string $preserve = null): string
     {
         $text = preg_replace_callback(
             '/([[:upper:]]?[[:lower:][:digit:]]+|([[:upper:]](?![[:lower:]]))+)/',
             function (array $matches) { return ucfirst(strtolower($matches[0])); },
             $text
         );
+        $preserve = $this->_toCaseEscapePreserve($preserve);
 
-        return preg_replace('/[^[:alnum:]]+/', '', $text);
+        return preg_replace("/[^[:alnum:]$preserve]+/", '', $text);
     }
 
     /**
      * Convert an identifier to camelCase
      *
      */
-    public function toCamelCase(string $text): string
+    public function toCamelCase(string $text, ?string $preserve = null): string
     {
-        return lcfirst($this->toPascalCase($text));
+        return lcfirst($this->toPascalCase($text, $preserve));
+    }
+
+    private function _toCaseEscapePreserve(?string $preserve): string
+    {
+        if (!$preserve) {
+            return '';
+        }
+
+        return str_replace(
+            ['-', '/', '\\', ']', '^'],
+            ['\-', '\/', '\\\\', '\]', '\^'],
+            $preserve
+        );
     }
 
     /**

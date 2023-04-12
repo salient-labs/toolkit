@@ -185,7 +185,7 @@ final class CliAppContainer extends AppContainer
         $fullName = trim("$progName $name");
         if ($command = $this->getNodeCommand($name, $node)) {
             return $terse
-                ? $fullName . $command->getUsage(true)
+                ? $command->getSynopsis(false)
                     . "\n\nSee '"
                     . ($name ? "$progName help $name" : "$progName --help")
                     . "' for more information."
@@ -196,13 +196,10 @@ final class CliAppContainer extends AppContainer
 
         $synopses = [];
         foreach ($node as $childName => $childNode) {
-            $prefix = $terse
-                ? "$fullName $childName"
-                : "_{$childName}_";
             if ($command = $this->getNodeCommand($name . ($name ? ' ' : '') . $childName, $childNode)) {
-                $synopses[] = $prefix . $command->getUsage(true);
+                $synopses[] = $terse ? $command->getSynopsis(false) : $command->getSubcommandSynopsis();
             } elseif (is_array($childNode)) {
-                $synopses[] = "$prefix <command>";
+                $synopses[] = ($terse ? "$fullName $childName" : "__{$childName}__") . ' <command>';
             }
         }
         $synopses = implode("\n", $synopses);
@@ -214,8 +211,8 @@ final class CliAppContainer extends AppContainer
         }
 
         $sections = [
-            'NAME' => '__' . $fullName . '__',
-            'SYNOPSIS' => '__' . $fullName . '__ <command>',
+            CliUsageSectionName::NAME => $fullName,
+            CliUsageSectionName::SYNOPSIS => '__' . $fullName . '__ <command>',
             'SUBCOMMANDS' => $synopses,
         ];
 
@@ -233,10 +230,10 @@ final class CliAppContainer extends AppContainer
             if (!trim($content)) {
                 continue;
             }
-            $content = str_replace("\n", "\n  ", $content);
+            $content = str_replace("\n", "\n    ", rtrim($content));
             $usage .= <<<EOF
-___{$heading}___
-  {$content}
+## {$heading}
+    {$content}
 
 
 EOF;

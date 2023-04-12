@@ -7,43 +7,58 @@ use Lkrms\Concept\Enumeration;
 /**
  * Inline formatting tags for console messages
  *
- * A tiny subset of Markdown syntax.
+ * Markdown-like syntax. Ronn-compatible.
+ *
+ * @link https://github.com/apjanke/ronn-ng
  */
 final class ConsoleTag extends Enumeration
 {
     /**
      * Heading
      *
-     * - `___` or `***`
-     * - Appearance: bold + colour
-     * - Example: `___DESCRIPTION___` or `***DESCRIPTION***`
+     * - `___` *text* `___`, `***` *text* `***`, `##` *text*
+     * - Appearance: ***bold + colour***
+     * - Example: `___NAME___`, `***NAME***`, `## NAME` (closing hashes are
+     *   optional)
      */
     public const HEADING = 0;
 
     /**
-     * Subheading
+     * "Bold", or strong importance
      *
-     * - `__` or `**`
-     * - Appearance: bold
-     * - Example: `__command__` or `**command**`
+     * - `__` *text* `__`, `**` *text* `**`
+     * - Appearance: **bold**
+     * - Example: `__command__`, `**command**`
      */
-    public const SUBHEADING = 1;
+    public const BOLD = 1;
 
     /**
-     * Title
+     * "Italic", or emphasis
      *
-     * - `_` or `*`
-     * - Appearance: secondary colour
-     * - Example: `_options:_` or `*options:*`
+     * - `_` *text* `_`, `*` *text* `*`
+     * - Appearance: *secondary colour*
+     * - Example: `_argument_`, `*argument*`
      */
-    public const TITLE = 2;
+    public const ITALIC = 2;
+
+    /**
+     * "Underline", or emphasis
+     *
+     * Intended for documentation of arguments, variables and other
+     * user-supplied values.
+     *
+     * - `<` *text* `>`
+     * - Appearance: *secondary colour + <u>underline</u>*
+     * - Example: `<argument>`
+     */
+    public const UNDERLINE = 3;
 
     /**
      * Low priority
      *
-     * - `~~`
-     * - Appearance: dim
+     * - `~~` *text* `~~`
+     * - Appearance: ~~dim~~
      * - Example: `~~/path/to/script.php:42~~`
      */
-    public const LOW_PRIORITY = 3;
+    public const LOW_PRIORITY = 4;
 }
