@@ -51,14 +51,14 @@ final class GenerateFacade extends GenerateCommand
         return [
             CliOption::build()
                 ->long('class')
-                ->valueName('CLASS')
+                ->valueName('class')
                 ->description('The class to generate a facade for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
                 ->required(),
             CliOption::build()
                 ->long('generate')
-                ->valueName('FACADE')
+                ->valueName('facade')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
@@ -66,14 +66,14 @@ final class GenerateFacade extends GenerateCommand
             CliOption::build()
                 ->long('package')
                 ->short('p')
-                ->valueName('PACKAGE')
+                ->valueName('package')
                 ->description('The PHPDoc package')
                 ->optionType(CliOptionType::VALUE)
                 ->envVariable('PHPDOC_PACKAGE'),
             CliOption::build()
                 ->long('desc')
                 ->short('d')
-                ->valueName('DESCRIPTION')
+                ->valueName('description')
                 ->description('A short description of the facade')
                 ->optionType(CliOptionType::VALUE),
             CliOption::build()

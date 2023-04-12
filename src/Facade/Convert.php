@@ -52,17 +52,16 @@ use Lkrms\Utility\Conversions;
  * @method static string[] stringsToUniqueList(string[] $array) A faster array_unique with reindexing
  * @method static array toArray($value, bool $emptyIfNull = false) If a value isn't an array, make it the first element of one (see {@see Conversions::toArray()})
  * @method static bool|null toBoolOrNull($value) Cast a value to a boolean, preserving null and converting boolean strings (see {@see Conversions::toBoolOrNull()})
- * @method static string toCamelCase(string $text) Convert an identifier to camelCase
- * @method static string toCase(string $text, int $case = self::IDENTIFIER_CASE_SNAKE) Perform the given case conversion
+ * @method static string toCamelCase(string $text, ?string $preserve = null) Convert an identifier to camelCase
  * @method static DateTimeImmutable toDateTimeImmutable(DateTimeInterface $date) A shim for DateTimeImmutable::createFromInterface() (PHP 8+)
  * @method static int|null toIntOrNull($value) Cast a value to an integer, preserving null
- * @method static string toKebabCase(string $text) Convert an identifier to kebab-case
+ * @method static string toKebabCase(string $text, ?string $preserve = null) Convert an identifier to kebab-case
  * @method static array toList($value, bool $emptyIfNull = false) If a value isn't a list, make it the first element of one (see {@see Conversions::toList()})
  * @method static string toNormal(string $text) Clean up a string for comparison with other strings (see {@see Conversions::toNormal()})
- * @method static string toPascalCase(string $text) Convert an identifier to PascalCase
+ * @method static string toPascalCase(string $text, ?string $preserve = null) Convert an identifier to PascalCase
  * @method static array toScalarArray(array $array) JSON-encode non-scalar values in an array (see {@see Conversions::toScalarArray()})
  * @method static string toShellArg(string $value) A platform-agnostic escapeshellarg that only adds quotes if necessary
- * @method static string toSnakeCase(string $text) Convert an identifier to snake_case
+ * @method static string toSnakeCase(string $text, ?string $preserve = null) Convert an identifier to snake_case
  * @method static string[] toStrings(...$value) Convert the given strings and Stringables to an array of strings
  * @method static DateTimeZone toTimezone(DateTimeZone|string $value) Convert a value to a DateTimeZone instance
  * @method static mixed[] toUniqueList(mixed[] $array) A type-agnostic array_unique with reindexing (see {@see Conversions::toUniqueList()})

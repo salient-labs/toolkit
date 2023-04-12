@@ -34,3 +34,6 @@ parameters:
     -
       message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$GetFromSyncStore is never read, only written\\.$#"
       path: src/Sync/Support/SyncEntityProvider.php
+
+    -
+      message: "#^Method Lkrms\\\\Tests\\\\(.+Test|TestCase)\\:\\:.+\\(\\) has no return type specified\\.$#"

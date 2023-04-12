@@ -308,7 +308,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         $this->Long = $long ?: null;
         $this->Short = $this->IsPositional ? null : ($short ?: null);
         $this->Key = $this->IsPositional ? $long : ($short . '|' . $long);
-        $this->ValueName = $this->IsFlag ? null : ($valueName ?: ($this->IsPositional ? Convert::toSnakeCase($long) : null) ?: 'value');
+        $this->ValueName = $this->IsFlag ? null : ($valueName ?: ($this->IsPositional ? Convert::toSnakeCase($long, '=') : null) ?: 'value');
         $this->DisplayName = $this->IsPositional ? $this->getFriendlyValueName() : ($long ? '--' . $long : '-' . $short);
         $this->ValueType = $this->IsFlag ? ($multipleAllowed ? CliOptionValueType::INTEGER : CliOptionValueType::BOOLEAN) : $valueType;
         $this->Delimiter = $multipleAllowed && !$this->IsFlag ? $delimiter : null;
@@ -391,19 +391,17 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     /**
      * Format the option's value name
      *
-     * For compatibility with {@link http://docopt.org docopt} and similar
-     * conventions, upper-case value names are returned as-is, otherwise they
-     * are converted to kebab-case and enclosed in angle brackets (`<` and `>`).
-     *
      */
     public function getFriendlyValueName(): ?string
     {
         $name = $this->ValueName;
-        if ($name !== strtoupper($name)) {
-            $name = '<' . Convert::toKebabCase($name) . '>';
+        $upper = $name === strtoupper($name);
+        $name = Convert::toKebabCase($name, '=');
+        if ($upper) {
+            return '<' . strtoupper($name) . '>';
         }
 
-        return $name;
+        return "<$name>";
     }
 
     /**

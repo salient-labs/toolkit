@@ -81,11 +81,6 @@ parameters:
 			path: src/Console/Concept/ConsoleTarget.php
 
 		-
-			message: "#^Property Lkrms\\\\Console\\\\ConsoleFormatter\\:\\:\\$PregReplace has no type specified\\.$#"
-			count: 1
-			path: src/Console/ConsoleFormatter.php
-
-		-
 			message: "#^Method Lkrms\\\\Console\\\\ConsoleLevel\\:\\:getNameMap\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Console/ConsoleLevel.php
@@ -2156,21 +2151,6 @@ parameters:
 			path: src/Utility/Tests.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Cli\\\\CliOptionBuilderTest\\:\\:testFlag\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Cli/CliOptionBuilderTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Cli\\\\CliOptionBuilderTest\\:\\:testInvalid\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Cli/CliOptionBuilderTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Cli\\\\CliOptionBuilderTest\\:\\:testValue\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Cli/CliOptionBuilderTest.php
-
-		-
 			message: "#^Property Lkrms\\\\Tests\\\\Cli\\\\Command\\\\TestOptions\\:\\:\\$flag1 has no type specified\\.$#"
 			count: 1
 			path: tests/Cli/Command/TestOptions.php
@@ -2219,11 +2199,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\Facade\\\\MyUnderlyingClass\\:\\:checkFuncNumArgs\\(\\) has parameter \\$values with no type specified\\.$#"
 			count: 1
 			path: tests/Concept/Facade/MyUnderlyingClass.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\FacadeTest\\:\\:testGetFuncNumArgs\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Concept/FacadeTest.php
 
 		-
 			message: "#^Class Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyArrayAccessClass extends generic class Lkrms\\\\Concept\\\\TypedCollection but does not specify its types\\: T$#"
@@ -2281,24 +2256,9 @@ parameters:
 			path: tests/Concept/HasMutator/MyMutatingClass.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\HasMutatorTest\\:\\:testWithPropertyValue\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Concept/HasMutatorTest.php
-
-		-
 			message: "#^Property Lkrms\\\\Tests\\\\Concept\\\\TypedCollection\\\\MyClass\\:\\:\\$Name has no type specified\\.$#"
 			count: 1
 			path: tests/Concept/TypedCollection/MyClass.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\TypedCollectionTest\\:\\:testTypedCollection\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Concept/TypedCollectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceShared\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceShared\\(\\) has parameter \\$concrete with no type specified\\.$#"
@@ -2307,11 +2267,6 @@ parameters:
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceShared\\(\\) has parameter \\$container with no type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSharedSingleton\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: tests/Container/ContainerTest.php
 
@@ -2326,22 +2281,12 @@ parameters:
 			path: tests/Container/ContainerTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSingleton\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
 			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSingleton\\(\\) has parameter \\$concrete with no type specified\\.$#"
 			count: 1
 			path: tests/Container/ContainerTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSingleton\\(\\) has parameter \\$container with no type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceTransient\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: tests/Container/ContainerTest.php
 
@@ -2356,139 +2301,14 @@ parameters:
 			path: tests/Container/ContainerTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:testServiceBindings\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:testServiceInherit\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:testServiceShared\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:testServiceSharedSingleton\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:testServiceSingleton\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:testServiceTransient\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
 			message: "#^Property Lkrms\\\\Tests\\\\Container\\\\A\\:\\:\\$Service has no type specified\\.$#"
 			count: 1
 			path: tests/Container/ContainerTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Curler\\\\CurlerHeadersTest\\:\\:testImmutability\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Curler/CurlerHeadersTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Curler\\\\CurlerHeadersTest\\:\\:testPattern\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Curler/CurlerHeadersTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Curler\\\\CurlerTest\\:\\:testCurler\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Curler/CurlerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\DateFormatterTest\\:\\:testDotNet\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/DateFormatterTest.php
-
-		-
 			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:invalidDocBlockProvider\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: tests/Support/PhpDocParserTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:testBlankLines\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PhpDocParserTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:testEol\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PhpDocParserTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:testFences\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PhpDocParserTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:testFromDocBlocks\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PhpDocParserTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:testInvalidDocBlock\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PhpDocParserTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:testMultiLineTagDescription\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PhpDocParserTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:testNoBlankLineAfterSummary\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PhpDocParserTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:testTemplateInheritance\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PhpDocParserTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:testTemplateTags\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PhpDocParserTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:testVarTags\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PhpDocParserTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PipelineTest\\:\\:testAfter\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PipelineTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PipelineTest\\:\\:testStream\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PipelineTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PipelineTest\\:\\:testThroughKeyMap\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PipelineTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PipelineTest\\:\\:testUnless\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PipelineTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PipelineTest\\:\\:testWithConformity\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Support/PipelineTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\CustomEntity\\\\Post\\:\\:_setUserId\\(\\) has no return type specified\\.$#"
@@ -2516,41 +2336,6 @@ parameters:
 			path: tests/Sync/Provider/JsonPlaceholderApi.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\Support\\\\DeferredSyncEntityTest\\:\\:testList\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Sync/Support/DeferredSyncEntityTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\Support\\\\SerializeRulesTest\\:\\:testApply\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Sync/Support/SerializeRulesTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\Support\\\\SyncIntrospectorTest\\:\\:testEntityToProvider\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Sync/Support/SyncIntrospectorTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\Support\\\\SyncIntrospectorTest\\:\\:testGetSyncOperationMethod\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Sync/Support/SyncIntrospectorTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\Support\\\\SyncIntrospectorTest\\:\\:testProviderToEntity\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Sync/Support/SyncIntrospectorTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\SyncEntityTest\\:\\:testToArrayRecursionDetection\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Sync/SyncEntityTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSignature\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
 			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSignature\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: tests/TestCase.php
@@ -2561,22 +2346,12 @@ parameters:
 			path: tests/TestCase.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArray\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
 			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArray\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: tests/TestCase.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArray\\(\\) has parameter \\$subArray with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArrayAndKeys\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: tests/TestCase.php
 
@@ -2596,77 +2371,7 @@ parameters:
 			path: tests/TestCase.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ComposerTest\\:\\:testGetClassPath\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ComposerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ComposerTest\\:\\:testGetNamespacePath\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ComposerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ComposerTest\\:\\:testGetPackagePath\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ComposerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ComposerTest\\:\\:testGetPackageReference\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ComposerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ComposerTest\\:\\:testGetPackageVersion\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ComposerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ComposerTest\\:\\:testGetRootPackageName\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ComposerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ComposerTest\\:\\:testGetRootPackagePath\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ComposerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ComposerTest\\:\\:testGetRootPackageReference\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ComposerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ComposerTest\\:\\:testGetRootPackageVersion\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ComposerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ComposerTest\\:\\:testHasDevDependencies\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ComposerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:flattenProvider\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:getUrls\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testArrayKeyToOffset\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testArraySpliceAtKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testFlatten\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: tests/Utility/ConversionsTest.php
 
@@ -2681,62 +2386,12 @@ parameters:
 			path: tests/Utility/ConversionsTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testIterableToItem\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testParseUrl\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testQueryToData\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testRenameArrayKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testResolvePath\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testResolveRelativeUrl\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testToBoolOrNull\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testToBoolOrNull\\(\\) has parameter \\$expected with no type specified\\.$#"
 			count: 1
 			path: tests/Utility/ConversionsTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testToBoolOrNull\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testToShellArg\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testUnparseUrl\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:toBoolOrNullProvider\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: tests/Utility/ConversionsTest.php
 
@@ -2819,11 +2474,6 @@ parameters:
 			message: "#^Function Lkrms_Tests_Runtime_getFunctionCallback\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: tests/Utility/Debugging/GetCallerFile.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\DebuggingTest\\:\\:testGetCaller\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/DebuggingTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyBaseClass\\:\\:MyDocumentedMethod\\(\\) has no return type specified\\.$#"
@@ -2916,37 +2566,12 @@ parameters:
 			path: tests/Utility/Reflection/MySubclass.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:getAllClassDocCommentsProvider\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:getAllMethodDocCommentsProvider\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:getAllPropertyDocCommentsProvider\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllClassDocComments\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllClassDocComments\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
 			path: tests/Utility/ReflectionTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllClassDocComments\\(\\) has parameter \\$expected with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllMethodDocComments\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: tests/Utility/ReflectionTest.php
 
@@ -2961,11 +2586,6 @@ parameters:
 			path: tests/Utility/ReflectionTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllPropertyDocComments\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllPropertyDocComments\\(\\) has parameter \\$expected with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: tests/Utility/ReflectionTest.php
@@ -2974,73 +2594,3 @@ parameters:
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllPropertyDocComments\\(\\) has parameter \\$expectedClassDocComments with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllTypeNames\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllTypes\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetClassNamesBetweenChildAndGrandparent\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetClassNamesBetweenChildAndParent\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetClassNamesBetweenClassAndInterface\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetClassNamesBetweenInterfaces\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetClassNamesBetweenParentAndChild\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetClassNamesBetweenSameClass\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetClassNamesBetweenSubclassAndInterface\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetClassNamesBetweenUnrelatedClasses\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetParameterDeclaration\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetTypeDeclaration\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/ReflectionTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\SystemTest\\:\\:testStartTimer\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/SystemTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\SystemTest\\:\\:testStopTimer\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/Utility/SystemTest.php

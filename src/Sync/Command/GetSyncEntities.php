@@ -114,7 +114,7 @@ final class GetSyncEntities extends CliCommand
             CliOption::build()
                 ->long('filter')
                 ->short('f')
-                ->valueName('TERM=VALUE')
+                ->valueName('term=value')
                 ->description('Pass a filter to the provider')
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed(),

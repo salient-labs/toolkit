@@ -54,7 +54,7 @@ class GenerateSyncProvider extends GenerateCommand
         return [
             CliOption::build()
                 ->long('class')
-                ->valueName('CLASS')
+                ->valueName('class')
                 ->description('The SyncEntity subclass to generate a provider for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get(EnvVar::NS_DEFAULT, '')))
@@ -62,7 +62,7 @@ class GenerateSyncProvider extends GenerateCommand
             CliOption::build()
                 ->long('extend')
                 ->short('x')
-                ->valueName('CLASS')
+                ->valueName('class')
                 ->description('An interface to extend (must extend ISyncProvider)')
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
@@ -74,14 +74,14 @@ class GenerateSyncProvider extends GenerateCommand
             CliOption::build()
                 ->long('package')
                 ->short('p')
-                ->valueName('PACKAGE')
+                ->valueName('package')
                 ->description('The PHPDoc package')
                 ->optionType(CliOptionType::VALUE)
                 ->envVariable('PHPDOC_PACKAGE'),
             CliOption::build()
                 ->long('desc')
                 ->short('d')
-                ->valueName('DESCRIPTION')
+                ->valueName('description')
                 ->description('A short description of the interface')
                 ->optionType(CliOptionType::VALUE),
             CliOption::build()
@@ -99,7 +99,7 @@ class GenerateSyncProvider extends GenerateCommand
             CliOption::build()
                 ->long('op')
                 ->short('o')
-                ->valueName('OPERATION')
+                ->valueName('operation')
                 ->description('A sync operation to include in the interface')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(self::OPERATIONS)
@@ -109,7 +109,7 @@ class GenerateSyncProvider extends GenerateCommand
             CliOption::build()
                 ->long('plural')
                 ->short('l')
-                ->valueName('PLURAL')
+                ->valueName('plural')
                 ->description('Specify the plural form of CLASS')
                 ->optionType(CliOptionType::VALUE),
         ];
