@@ -119,4 +119,19 @@ final class Convert extends Facade
             static::clearFuncNumArgs(__FUNCTION__);
         }
     }
+
+    /**
+     * array_walk_recursive for arbitrarily nested objects and arrays
+     *
+     * @param object|mixed[] $objectOrArray
+     */
+    public static function walkRecursive(&$objectOrArray, callable $callback, int $mode = \RecursiveIteratorIterator::LEAVES_ONLY): void
+    {
+        static::setFuncNumArgs(__FUNCTION__, func_num_args());
+        try {
+            static::getInstance()->walkRecursive($objectOrArray, $callback, $mode);
+        } finally {
+            static::clearFuncNumArgs(__FUNCTION__);
+        }
+    }
 }
