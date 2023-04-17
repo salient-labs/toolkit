@@ -4,13 +4,12 @@ namespace Lkrms\Utility;
 
 use CallbackFilterIterator;
 use FilesystemIterator;
-use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
-use Lkrms\Support\IterableIterator;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Phar;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
@@ -52,7 +51,7 @@ final class Filesystem
      * [$regex => fn(SplFileInfo $file) => $file->isExecutable()]
      * ```
      * @phpstan-param array<string,callable(SplFileInfo): bool> $includeCallbacks
-     * @return IIterable<SplFileInfo>
+     * @return FluentIteratorInterface<string,SplFileInfo>
      */
     public function find(
         string $directory,
@@ -61,7 +60,7 @@ final class Filesystem
         ?array $excludeCallbacks = null,
         ?array $includeCallbacks = null,
         bool $recursive = true
-    ): IIterable {
+    ): FluentIteratorInterface {
         $flags = FilesystemIterator::KEY_AS_PATHNAME
             | FilesystemIterator::CURRENT_AS_FILEINFO
             | FilesystemIterator::SKIP_DOTS;
@@ -113,8 +112,10 @@ final class Filesystem
                 $iterator = new RecursiveCallbackFilterIterator($iterator, $callback);
             }
             $iterator = new RecursiveIteratorIterator($iterator);
+            /** @var FluentIteratorInterface<string,SplFileInfo> */
+            $iterator = new \Lkrms\Support\Iterator\FluentIterator($iterator);
 
-            return new IterableIterator($iterator);
+            return $iterator;
         }
 
         $iterator = new FilesystemIterator($directory, $flags);
@@ -122,8 +123,10 @@ final class Filesystem
             $iterator = new CallbackFilterIterator($iterator, $callback);
         }
         $iterator = new CallbackFilterIterator($iterator, fn(SplFileInfo $current) => !$current->isDir());
+        /** @var FluentIteratorInterface<string,SplFileInfo> */
+        $iterator = new \Lkrms\Support\Iterator\FluentIterator($iterator);
 
-        return new IterableIterator($iterator);
+        return $iterator;
     }
 
     /**

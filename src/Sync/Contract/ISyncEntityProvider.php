@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\IIterable;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Sync\Support\SyncOperation;
 
 /**
@@ -19,10 +19,10 @@ interface ISyncEntityProvider
      * @internal
      * @param int $operation A {@see SyncOperation} value.
      * @phpstan-param SyncOperation::* $operation
-     * @return IIterable<TEntity>|TEntity
+     * @return FluentIteratorInterface<int|string,TEntity>|TEntity
      * @phpstan-return (
      *     $operation is SyncOperation::*_LIST
-     *     ? IIterable<TEntity>
+     *     ? FluentIteratorInterface<int|string,TEntity>
      *     : TEntity
      * )
      */
@@ -64,32 +64,32 @@ interface ISyncEntityProvider
      * Add a list of entities to the backend
      *
      * @param iterable<TEntity> $entities
-     * @return IIterable<TEntity>
+     * @return FluentIteratorInterface<int|string,TEntity>
      */
-    public function createList(iterable $entities, ...$args): IIterable;
+    public function createList(iterable $entities, ...$args): FluentIteratorInterface;
 
     /**
      * Get a list of entities from the backend
      *
-     * @return IIterable<TEntity>
+     * @return FluentIteratorInterface<int|string,TEntity>
      */
-    public function getList(...$args): IIterable;
+    public function getList(...$args): FluentIteratorInterface;
 
     /**
      * Update a list of entities in the backend
      *
      * @param iterable<TEntity> $entities
-     * @return IIterable<TEntity>
+     * @return FluentIteratorInterface<int|string,TEntity>
      */
-    public function updateList(iterable $entities, ...$args): IIterable;
+    public function updateList(iterable $entities, ...$args): FluentIteratorInterface;
 
     /**
      * Delete a list of entities from the backend
      *
      * @param iterable<TEntity> $entities
-     * @return IIterable<TEntity>
+     * @return FluentIteratorInterface<int|string,TEntity>
      */
-    public function deleteList(iterable $entities, ...$args): IIterable;
+    public function deleteList(iterable $entities, ...$args): FluentIteratorInterface;
 
     /**
      * Perform an arbitrary sync operation on a list of backend entities and

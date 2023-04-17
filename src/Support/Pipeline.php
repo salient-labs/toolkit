@@ -229,7 +229,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         }
 
         $closure = $this->getClosure();
-        foreach ($this->Payload as $payload) {
+        foreach ($this->Payload as $key => $payload) {
             $result = $closure(
                 $this->After
                     ? ($this->After)($payload, $this, $this->Arg)
@@ -241,7 +241,7 @@ final class Pipeline extends FluentInterface implements IPipeline
                 continue;
             }
 
-            yield $result;
+            yield $key => $result;
         }
     }
 

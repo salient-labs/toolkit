@@ -4,9 +4,9 @@ namespace Lkrms\Sync\Contract;
 
 use JsonSerializable;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\ReturnsDescription;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Sync\Support\SyncSerializeLinkType;
 use Lkrms\Sync\Support\SyncSerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder;

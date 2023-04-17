@@ -69,7 +69,7 @@ trait TConstructible
         }
 
         $closure = null;
-        foreach ($dataList as $data) {
+        foreach ($dataList as $key => $data) {
             if (!$closure) {
                 $builder = Introspector::getService($container, static::class);
                 $closure =
@@ -78,7 +78,7 @@ trait TConstructible
                         : $builder->getCreateFromClosure(true);
             }
 
-            yield $closure($data, $container, $parent);
+            yield $key => $closure($data, $container, $parent);
         }
     }
 }

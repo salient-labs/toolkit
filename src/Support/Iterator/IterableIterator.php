@@ -1,33 +1,45 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Lkrms\Support\Iterator;
 
-use Lkrms\Contract\IIterable;
+use ArrayIterator;
+use IteratorIterator;
+use Lkrms\Support\Iterator\Concern\FluentIteratorTrait;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Traversable;
 
 /**
- * Converts an iterable to an Iterator with expressive helper methods
+ * Iterates over an iterable
  *
+ * @template TKey of int|string
  * @template TValue
- * @template TIterable of \Traversable<int,TValue>
- * @extends \IteratorIterator<int,TValue,TIterable>
- * @implements IIterable<TValue>
+ * @extends IteratorIterator<TKey,TValue,Traversable<TKey,TValue>>
+ * @implements FluentIteratorInterface<TKey,TValue>
  */
-final class IterableIterator extends \IteratorIterator implements IIterable
+final class IterableIterator extends IteratorIterator implements FluentIteratorInterface
 {
     /**
-     * @param iterable<TValue> $iterable
+     * @use FluentIteratorTrait<TKey,TValue>
+     */
+    use FluentIteratorTrait;
+
+    /**
+     * @param iterable<TKey,TValue> $iterable
      */
     public function __construct(iterable $iterable)
     {
-        if (!($iterable instanceof \Traversable)) {
-            $iterable = new \ArrayIterator($iterable);
+        if (is_array($iterable)) {
+            $iterable = new ArrayIterator($iterable);
         }
+
         parent::__construct($iterable);
-        $this->rewind();
     }
 
     /**
-     * @param iterable<TValue> $iterable
+     * @template T0 of int|string
+     * @template T1
+     * @param iterable<T0,T1> $iterable
+     * @return self<T0,T1>
      */
     public static function from(iterable $iterable): self
     {
@@ -36,44 +48,5 @@ final class IterableIterator extends \IteratorIterator implements IIterable
         }
 
         return new self($iterable);
-    }
-
-    public function toArray(): array
-    {
-        while ($this->valid()) {
-            $array[] = $this->current();
-            $this->next();
-        }
-
-        return $array ?? [];
-    }
-
-    public function forEach(callable $callback)
-    {
-        while ($this->valid()) {
-            $callback($this->current());
-            $this->next();
-        }
-
-        return $this;
-    }
-
-    public function nextWithValue($key, $value, bool $strict = false)
-    {
-        while ($this->valid()) {
-            $item = $this->current();
-            $this->next();
-            if (is_array($item) || $item instanceof \ArrayAccess) {
-                $_value = $item[$key];
-            } else {
-                $_value = $item->$key;
-            }
-            if (($strict && $_value === $value) ||
-                    (!$strict && $_value == $value)) {
-                return $item;
-            }
-        }
-
-        return false;
     }
 }

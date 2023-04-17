@@ -2,8 +2,8 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Convert;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;

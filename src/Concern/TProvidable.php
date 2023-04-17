@@ -2,12 +2,12 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\Introspector;
-use Lkrms\Support\IterableIterator;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Support\Iterator\IterableIterator;
 use Lkrms\Support\ProviderContext;
 use RuntimeException;
 
@@ -151,14 +151,14 @@ trait TProvidable
      * @param TProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
-     * @return IIterable<static>
+     * @return FluentIteratorInterface<int|string,static>
      */
     final public static function provideList(
         iterable $dataList,
         IProvider $provider,
         int $conformity = ArrayKeyConformity::NONE,
         ?IProviderContext $context = null
-    ): IIterable {
+    ): FluentIteratorInterface {
         return IterableIterator::from(
             self::_provideList($dataList, $provider, $conformity, $context)
         );
@@ -169,7 +169,7 @@ trait TProvidable
      * @param TProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
-     * @return iterable<static>
+     * @return iterable<int|string,static>
      */
     private static function _provideList(
         iterable $dataList,
@@ -185,7 +185,7 @@ trait TProvidable
             : $container->get(ProviderContext::class))->withConformity($conformity);
         $introspector = Introspector::getService($container, static::class);
 
-        foreach ($dataList as $data) {
+        foreach ($dataList as $key => $data) {
             if (!isset($closure)) {
                 $closure =
                     in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
@@ -193,7 +193,7 @@ trait TProvidable
                         : $introspector->getCreateProvidableFromClosure();
             }
 
-            yield $closure($data, $provider, $context);
+            yield $key => $closure($data, $provider, $context);
         }
     }
 }

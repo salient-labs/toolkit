@@ -3,8 +3,8 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IIterable;
-use Lkrms\Support\IterableIterator;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Support\Iterator\IterableIterator;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -128,7 +128,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
         }
 
         $result = $this->_run($operation, ...$args);
-        if (!($result instanceof IIterable)) {
+        if (!($result instanceof FluentIteratorInterface)) {
             return new IterableIterator($result);
         }
 
@@ -291,9 +291,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must be required
      *
      * @param iterable<TEntity> $entities
-     * @return IIterable<TEntity>
+     * @return FluentIteratorInterface<int|string,TEntity>
      */
-    public function createList(iterable $entities, ...$args): IIterable
+    public function createList(iterable $entities, ...$args): FluentIteratorInterface
     {
         return $this->run(SyncOperation::CREATE_LIST, $entities, ...$args);
     }
@@ -313,9 +313,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * public function getList_Faculty(ISyncContext $ctx): iterable;
      * ```
      *
-     * @return IIterable<TEntity>
+     * @return FluentIteratorInterface<int|string,TEntity>
      */
-    public function getList(...$args): IIterable
+    public function getList(...$args): FluentIteratorInterface
     {
         return $this->run(SyncOperation::READ_LIST, ...$args);
     }
@@ -341,9 +341,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must be required
      *
      * @param iterable<TEntity> $entities
-     * @return IIterable<TEntity>
+     * @return FluentIteratorInterface<int|string,TEntity>
      */
-    public function updateList(iterable $entities, ...$args): IIterable
+    public function updateList(iterable $entities, ...$args): FluentIteratorInterface
     {
         return $this->run(SyncOperation::UPDATE_LIST, $entities, ...$args);
     }
@@ -372,9 +372,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must represent the final state of the entities before they were deleted
      *
      * @param iterable<TEntity> $entities
-     * @return IIterable<TEntity>
+     * @return FluentIteratorInterface<int|string,TEntity>
      */
-    public function deleteList(iterable $entities, ...$args): IIterable
+    public function deleteList(iterable $entities, ...$args): FluentIteratorInterface
     {
         return $this->run(SyncOperation::DELETE_LIST, $entities, ...$args);
     }

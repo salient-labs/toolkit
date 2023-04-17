@@ -12,7 +12,6 @@ use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TResolvable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Facade\Convert;
@@ -22,7 +21,8 @@ use Lkrms\Facade\Test;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Enumeration\NormaliserFlag;
-use Lkrms\Support\IterableIterator;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Support\Iterator\IterableIterator;
 use Lkrms\Sync\Concern\HasSyncIntrospector;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -612,14 +612,14 @@ abstract class SyncEntity implements ISyncEntity
      * @param ISyncProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param ISyncContext|null $context
-     * @return IIterable<static>
+     * @return FluentIteratorInterface<int|string,static>
      */
     final public static function provideList(
         iterable $dataList,
         IProvider $provider,
         int $conformity = ArrayKeyConformity::NONE,
         ?IProviderContext $context = null
-    ): IIterable {
+    ): FluentIteratorInterface {
         return IterableIterator::from(
             self::_provideList($dataList, $provider, $conformity, $context)
         );
@@ -630,7 +630,7 @@ abstract class SyncEntity implements ISyncEntity
      * @param ISyncProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param ISyncContext|null $context
-     * @return iterable<static>
+     * @return iterable<int|string,static>
      */
     private static function _provideList(
         iterable $dataList,
@@ -646,7 +646,7 @@ abstract class SyncEntity implements ISyncEntity
             : $container->get(SyncContext::class))->withConformity($conformity);
         $introspector = SyncIntrospector::getService($container, static::class);
 
-        foreach ($dataList as $data) {
+        foreach ($dataList as $key => $data) {
             if (!isset($closure)) {
                 $closure =
                     in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
@@ -654,7 +654,7 @@ abstract class SyncEntity implements ISyncEntity
                         : $introspector->getCreateSyncEntityFromClosure();
             }
 
-            yield $closure($data, $provider, $context);
+            yield $key => $closure($data, $provider, $context);
         }
     }
 }

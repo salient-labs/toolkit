@@ -376,16 +376,6 @@ parameters:
 			path: src/Contract/IExtensible.php
 
 		-
-			message: "#^Method Lkrms\\\\Contract\\\\IIterable\\:\\:nextWithValue\\(\\) has parameter \\$key with no type specified\\.$#"
-			count: 1
-			path: src/Contract/IIterable.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IIterable\\:\\:nextWithValue\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Contract/IIterable.php
-
-		-
 			message: "#^Method Lkrms\\\\Contract\\\\IPipe\\:\\:handle\\(\\) has parameter \\$pipeline with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
 			count: 1
 			path: src/Contract/IPipe.php
@@ -1204,21 +1194,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Support\\\\IntrospectorKeyTargets\\:\\:__construct\\(\\) has parameter \\$properties with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Support/IntrospectorKeyTargets.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\IterableIterator\\:\\:from\\(\\) return type with generic class Lkrms\\\\Support\\\\IterableIterator does not specify its types\\: TValue, TIterable$#"
-			count: 1
-			path: src/Support/IterableIterator.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\IterableIterator\\:\\:nextWithValue\\(\\) has parameter \\$key with no type specified\\.$#"
-			count: 1
-			path: src/Support/IterableIterator.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\IterableIterator\\:\\:nextWithValue\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Support/IterableIterator.php
 
 		-
 			message: "#^Method Lkrms\\\\Support\\\\PhpDocParser\\:\\:getValue\\(\\) has parameter \\$initial with no value type specified in iterable type array\\.$#"
