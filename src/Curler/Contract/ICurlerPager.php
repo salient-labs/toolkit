@@ -38,10 +38,10 @@ interface ICurlerPager
      *
      * Return `$data` if no special handling is required.
      *
-     * @param mixed[]|null $data
-     * @return mixed[]|null
+     * @param mixed[]|object|null $data
+     * @return mixed[]|object|null
      */
-    public function prepareData(?array $data): ?array;
+    public function prepareData($data);
 
     /**
      * Convert data returned by an endpoint to a page object

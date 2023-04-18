@@ -35,7 +35,7 @@ final class ODataPager implements ICurlerPager
         return $query;
     }
 
-    public function prepareData(?array $data): ?array
+    public function prepareData($data)
     {
         return $data;
     }

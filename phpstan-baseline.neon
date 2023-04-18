@@ -476,11 +476,6 @@ parameters:
 			path: src/Curler/Contract/ICurlerPage.php
 
 		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:applyData\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
 			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:collateNested\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Curler/Curler.php
@@ -501,21 +496,6 @@ parameters:
 			path: src/Curler/Curler.php
 
 		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:delete\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:delete\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:delete\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
 			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:deleteJson\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Curler/Curler.php
@@ -527,31 +507,6 @@ parameters:
 
 		-
 			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:deleteJson\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:deleteP\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:deleteP\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:deleteP\\(\\) return type has no value type specified in iterable type iterable\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:get\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:get\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Curler/Curler.php
 
@@ -596,16 +551,6 @@ parameters:
 			path: src/Curler/Curler.php
 
 		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:getP\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:getP\\(\\) return type has no value type specified in iterable type iterable\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
 			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:getQueryString\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Curler/Curler.php
@@ -616,42 +561,7 @@ parameters:
 			path: src/Curler/Curler.php
 
 		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:head\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
 			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:initialise\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:paginate\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:paginate\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:paginate\\(\\) return type has no value type specified in iterable type iterable\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:patch\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:patch\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:patch\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Curler/Curler.php
 
@@ -671,36 +581,6 @@ parameters:
 			path: src/Curler/Curler.php
 
 		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:patchP\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:patchP\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:patchP\\(\\) return type has no value type specified in iterable type iterable\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:post\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:post\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:post\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
 			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:postJson\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Curler/Curler.php
@@ -716,66 +596,6 @@ parameters:
 			path: src/Curler/Curler.php
 
 		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:postP\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:postP\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:postP\\(\\) return type has no value type specified in iterable type iterable\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:prepareData\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:prepareData\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:prepareDataValue\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:process\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:process\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:process\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:put\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:put\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:put\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
 			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:putJson\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Curler/Curler.php
@@ -787,21 +607,6 @@ parameters:
 
 		-
 			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:putJson\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:putP\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:putP\\(\\) has parameter \\$query with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:putP\\(\\) return type has no value type specified in iterable type iterable\\.$#"
 			count: 1
 			path: src/Curler/Curler.php
 
@@ -862,21 +667,6 @@ parameters:
 
 		-
 			message: "#^Method Lkrms\\\\Curler\\\\Curler\\:\\:walkGraphQL\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Property Lkrms\\\\Curler\\\\Curler\\:\\:\\$Body type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Property Lkrms\\\\Curler\\\\Curler\\:\\:\\$CurlInfo type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
-			message: "#^Property Lkrms\\\\Curler\\\\Curler\\:\\:\\$Data type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Curler/Curler.php
 
