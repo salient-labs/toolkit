@@ -12,6 +12,9 @@ use Iterator;
 use IteratorIterator;
 use Lkrms\Facade\Test;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Iterator\Contract\MutableIterator;
+use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
+use RecursiveIteratorIterator;
 use UnexpectedValueException;
 
 /**
@@ -114,6 +117,26 @@ final class Conversions
         }
 
         return $this->flatten(reset($value));
+    }
+
+    /**
+     * array_walk_recursive for arbitrarily nested objects and arrays
+     *
+     * @param object|mixed[] $objectOrArray
+     * @param callable(mixed, int|string, MutableIterator<int|string,mixed>&\RecursiveIterator<int|string,mixed>): bool $callback Return `false` to stop iterating over `$objectOrArray`.
+     */
+    public function walkRecursive(
+        &$objectOrArray,
+        callable $callback,
+        int $mode = RecursiveIteratorIterator::LEAVES_ONLY
+    ): void {
+        $iterator = new RecursiveObjectOrArrayIterator($objectOrArray);
+        $iterator = new RecursiveIteratorIterator($iterator, $mode);
+        foreach ($iterator as $key => $value) {
+            if (!$callback($value, $key, $iterator->getSubIterator())) {
+                return;
+            }
+        }
     }
 
     /**

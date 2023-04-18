@@ -1,24 +1,27 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Contract;
+namespace Lkrms\Support\Iterator\Contract;
+
+use Iterator;
 
 /**
- * An iterable iterator with a fluent interface
+ * An iterator with a fluent interface
  *
+ * @template TKey of int|string
  * @template TValue
- * @extends \Iterator<int,TValue>
+ * @extends Iterator<TKey,TValue>
  */
-interface IIterable extends \Iterator
+interface FluentIteratorInterface extends Iterator
 {
     /**
-     * Convert the iterator's remaining elements to an array
+     * Convert the iterator's (remaining) elements to an array
      *
-     * @return TValue[]
+     * @return array<TKey,TValue>
      */
     public function toArray(): array;
 
     /**
-     * Apply a callback to the iterator's remaining elements
+     * Apply a callback to the iterator's (remaining) elements
      *
      * @param callable(TValue): mixed $callback
      * @return $this
@@ -31,6 +34,8 @@ interface IIterable extends \Iterator
      * If the current element has `$value` at `$key`, it is returned after
      * moving the iterator forward.
      *
+     * @param TKey $key
+     * @param TValue $value
      * @return TValue|false `false` if no matching element is found.
      */
     public function nextWithValue($key, $value, bool $strict = false);

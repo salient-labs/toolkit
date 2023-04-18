@@ -71,31 +71,7 @@ class GenerateSyncProvider extends GenerateCommand
                 ->long('magic')
                 ->short('v')
                 ->description('Generate @method tags instead of declarations'),
-            CliOption::build()
-                ->long('package')
-                ->short('p')
-                ->valueName('package')
-                ->description('The PHPDoc package')
-                ->optionType(CliOptionType::VALUE)
-                ->envVariable('PHPDOC_PACKAGE'),
-            CliOption::build()
-                ->long('desc')
-                ->short('d')
-                ->valueName('description')
-                ->description('A short description of the interface')
-                ->optionType(CliOptionType::VALUE),
-            CliOption::build()
-                ->long('stdout')
-                ->short('s')
-                ->description('Write to standard output'),
-            CliOption::build()
-                ->long('force')
-                ->short('f')
-                ->description('Overwrite the class file if it already exists'),
-            CliOption::build()
-                ->long('no-meta')
-                ->short('m')
-                ->description("Suppress '@lkrms-*' metadata tags"),
+            ...$this->getOutputOptionList('interface'),
             CliOption::build()
                 ->long('op')
                 ->short('o')
@@ -132,7 +108,6 @@ class GenerateSyncProvider extends GenerateCommand
         $class = array_pop($namespace);
         $namespace = implode('\\', $namespace);
         $fqcn = $namespace . '\\' . $class;
-        $classPrefix = '\\';
 
         if (!$class) {
             throw new CliArgumentsInvalidException("invalid class: $classArg");
@@ -156,7 +131,6 @@ class GenerateSyncProvider extends GenerateCommand
 
         $this->OutputClass = $interface;
         $this->OutputNamespace = $namespace;
-        $this->ClassPrefix = $classPrefix;
 
         $service = $this->getFqcnAlias($fqcn, $class);
         $extends = [];
@@ -168,8 +142,8 @@ class GenerateSyncProvider extends GenerateCommand
         $camelClass = Convert::toCamelCase($class);
 
         $magic = $this->getOptionValue('magic');
-        $package = $this->getOptionValue('package');
-        $desc = $this->getOptionValue('desc');
+        $package = $this->OutputPackage;
+        $desc = $this->OutputDescription;
         $desc = is_null($desc) ? "Syncs $class objects with a backend" : $desc;
         $ops = array_map(
             function ($op) use ($operationMap) { return $operationMap[$op]; },
@@ -274,7 +248,7 @@ class GenerateSyncProvider extends GenerateCommand
         if ($package) {
             $docBlock[] = " * @package $package";
         }
-        if (!$this->getOptionValue('no-meta')) {
+        if (!$this->NoMetaTags) {
             $docBlock[] = ' * @lkrms-generate-command '
                 . implode(
                     ' ',

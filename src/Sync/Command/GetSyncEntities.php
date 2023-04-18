@@ -7,7 +7,6 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
-use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;

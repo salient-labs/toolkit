@@ -63,31 +63,7 @@ final class GenerateFacade extends GenerateCommand
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
                 ->required(),
-            CliOption::build()
-                ->long('package')
-                ->short('p')
-                ->valueName('package')
-                ->description('The PHPDoc package')
-                ->optionType(CliOptionType::VALUE)
-                ->envVariable('PHPDOC_PACKAGE'),
-            CliOption::build()
-                ->long('desc')
-                ->short('d')
-                ->valueName('description')
-                ->description('A short description of the facade')
-                ->optionType(CliOptionType::VALUE),
-            CliOption::build()
-                ->long('stdout')
-                ->short('s')
-                ->description('Write to standard output'),
-            CliOption::build()
-                ->long('force')
-                ->short('f')
-                ->description('Overwrite the class file if it already exists'),
-            CliOption::build()
-                ->long('no-meta')
-                ->short('m')
-                ->description("Suppress '@lkrms-*' metadata tags"),
+            ...$this->getOutputOptionList('facade'),
             CliOption::build()
                 ->long('declared')
                 ->short('e')
@@ -106,17 +82,16 @@ final class GenerateFacade extends GenerateCommand
         $facadeClass = array_pop($facadeNamespace);
         $facadeNamespace = implode('\\', $facadeNamespace) ?: Env::get(EnvVar::NS_FACADE, $namespace);
         $facadeFqcn = $facadeNamespace ? $facadeNamespace . '\\' . $facadeClass : $facadeClass;
-        $classPrefix = $facadeNamespace ? '\\' : '';
 
         $this->OutputClass = $facadeClass;
         $this->OutputNamespace = $facadeNamespace;
-        $this->ClassPrefix = $classPrefix;
+        $classPrefix = $this->getClassPrefix();
 
         $extends = $this->getFqcnAlias(Facade::class, 'Facade');
         $service = $this->getFqcnAlias($fqcn, $class);
 
-        $package = $this->getOptionValue('package');
-        $desc = $this->getOptionValue('desc');
+        $package = $this->OutputPackage;
+        $desc = $this->OutputDescription;
         $desc = is_null($desc) ? "A facade for $classPrefix$fqcn" : $desc;
         $declared = $this->getOptionValue('declared');
 
@@ -226,6 +201,7 @@ final class GenerateFacade extends GenerateCommand
             $declare = (bool) array_filter($_params, fn(ReflectionParameter $p) => $p->isPassedByReference());
             $internal = (bool) ($phpDoc->Tags['internal'] ?? null);
             $link = !$internal && $phpDoc && $phpDoc->hasDetail();
+            $returnsVoid = false;
 
             if ($_method->isConstructor()) {
                 $method = 'load';
@@ -265,6 +241,9 @@ final class GenerateFacade extends GenerateCommand
                         break;
                     case 'self':
                         $type = $declaring;
+                        break;
+                    case 'void':
+                        $returnsVoid = true;
                         break;
                 }
                 $summary = $phpDoc->Summary ?? null;
@@ -331,7 +310,7 @@ final class GenerateFacade extends GenerateCommand
                     unset($lines[3]);
                 }
 
-                $toDeclare[] = [$_method, implode(PHP_EOL, $lines)];
+                $toDeclare[] = [$_method, implode(PHP_EOL, $lines), !$returnsVoid];
             } else {
                 $methods[] = " * @method static $type $method("
                     . str_replace(PHP_EOL, PHP_EOL . ' * ', implode(', ', $params)) . ')'
@@ -362,7 +341,7 @@ final class GenerateFacade extends GenerateCommand
         $docBlock[] = " * @uses $service";
         $docBlock[] = ' *';
         $docBlock[] = " * @extends $extends<$service>";
-        if (!$this->getOptionValue('no-meta')) {
+        if (!$this->NoMetaTags) {
             $docBlock[] = ' *';
             $docBlock[] = ' * @lkrms-generate-command '
                 . implode(
@@ -400,12 +379,13 @@ final class GenerateFacade extends GenerateCommand
         );
 
         /** @var ReflectionMethod $_method */
-        foreach ($toDeclare as [$_method, $docBlock]) {
+        foreach ($toDeclare as [$_method, $docBlock, $return]) {
             $_params = $_method->getParameters();
+            $return = $return ? 'return ' : '';
             $code = [
                 'static::setFuncNumArgs(__FUNCTION__, func_num_args());',
                 'try {',
-                "    return static::getInstance()->{$_method->name}("
+                "    {$return}static::getInstance()->{$_method->name}("
                     . implode(', ', array_map(
                         fn(ReflectionParameter $p) =>
                             ($p->isVariadic() ? '...' : '') . "\${$p->name}",

@@ -2,10 +2,10 @@
 
 namespace Lkrms\Store\Concept;
 
+use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
-use ReflectionClass;
 use RuntimeException;
 use SQLite3;
 use Throwable;
@@ -32,9 +32,14 @@ abstract class SqliteStore implements ReceivesFacade
     private $IsTransactionOpen;
 
     /**
-     * @var string|null
+     * @var class-string<IFacade<static>>|null
      */
     private $Facade;
+
+    /**
+     * @var bool
+     */
+    private $CheckIsRunning = false;
 
     final public function setFacade(string $name)
     {
@@ -86,12 +91,13 @@ abstract class SqliteStore implements ReceivesFacade
             }
 
             $this->Db->close();
-            [$this->Db, $this->Filename] = [null, null];
+            $this->Db = null;
+            $this->Filename = null;
 
             return $this;
         } finally {
             if ($unloadFacade && $this->Facade) {
-                (new ReflectionClass($this->Facade))->getMethod('unload')->invoke(null);
+                [$this->Facade, 'unload']();
                 $this->Facade = null;
             }
         }
@@ -111,14 +117,13 @@ abstract class SqliteStore implements ReceivesFacade
      * Override to perform an action whenever the open SQLite3 instance is
      * accessed
      *
-     * To prevent infinite recursion, subclasses must not call
-     * {@see SqliteStore::db()} from this method unless `$noCheck` is `true`.
-     *
      * Called once per call to {@see SqliteStore::db()}.
      *
+     * @return $this
      */
-    protected function check(): void
+    protected function check()
     {
+        return $this;
     }
 
     /**
@@ -140,16 +145,45 @@ abstract class SqliteStore implements ReceivesFacade
     }
 
     /**
+     * True if check() is currently running
+     *
+     * @return bool
+     */
+    final protected function isCheckRunning(): bool
+    {
+        return $this->CheckIsRunning;
+    }
+
+    /**
+     * Call from check() and return if isCheckRunning() returns false
+     *
+     * Recommended if `check()` has callers other than {@see SqliteStore::db()}.
+     *
+     * @return $this
+     */
+    final protected function safeCheck()
+    {
+        $this->CheckIsRunning = true;
+        try {
+            return $this->check();
+        } finally {
+            $this->CheckIsRunning = false;
+        }
+    }
+
+    /**
      * Get the open SQLite3 instance
      *
      * @throws RuntimeException if no database is open.
      */
-    final protected function db(bool $noCheck = false): SQLite3
+    final protected function db(): SQLite3
     {
         if ($this->Db) {
-            $noCheck || $this->check();
+            if ($this->CheckIsRunning) {
+                return $this->Db;
+            }
 
-            return $this->Db;
+            return $this->safeCheck()->Db;
         }
 
         throw new RuntimeException('No database open');

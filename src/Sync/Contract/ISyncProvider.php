@@ -2,8 +2,8 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\IIterable;
 use Lkrms\Contract\IProvider;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Sync\Support\SyncStore;
 
 /**

@@ -3,6 +3,7 @@
 namespace Lkrms\Contract;
 
 use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 
 /**
  * Can be instantiated by an IProvider
@@ -112,12 +113,12 @@ interface IProvidable extends ReceivesService, ReturnsService
      * @param TProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
-     * @return IIterable<static>
+     * @return FluentIteratorInterface<int|string,static>
      */
     public static function provideList(
         iterable $dataList,
         IProvider $provider,
         int $conformity = ArrayKeyConformity::NONE,
         ?IProviderContext $context = null
-    ): IIterable;
+    ): FluentIteratorInterface;
 }

@@ -6,6 +6,9 @@
 
 namespace Lkrms\LkUtil\Command\Generate\Concept;
 
+use Lkrms\Cli\CliOption;
+use Lkrms\Cli\CliOptionBuilder;
+use Lkrms\Cli\CliOptionType;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
@@ -36,9 +39,14 @@ abstract class GenerateCommand extends Command
     protected $OutputNamespace;
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $ClassPrefix;
+    protected $OutputPackage;
+
+    /**
+     * @var string|null
+     */
+    protected $OutputDescription;
 
     /**
      * Lowercase alias => qualified name
@@ -53,6 +61,67 @@ abstract class GenerateCommand extends Command
      * @var array<string,string>
      */
     protected $ImportMap = [];
+
+    /**
+     * @var bool|null
+     */
+    protected $ToStdout;
+
+    /**
+     * @var bool|null
+     */
+    protected $ReplaceIfExists;
+
+    /**
+     * @var bool|null
+     */
+    protected $NoMetaTags;
+
+    /**
+     * Get mandatory options
+     *
+     * @return array<CliOption|CliOptionBuilder>
+     */
+    protected function getOutputOptionList(string $outputType): array
+    {
+        return [
+            CliOption::build()
+                ->long('package')
+                ->short('p')
+                ->valueName('package')
+                ->description('The PHPDoc package')
+                ->optionType(CliOptionType::VALUE)
+                ->envVariable('PHPDOC_PACKAGE')
+                ->bindTo($this->OutputPackage),
+            CliOption::build()
+                ->long('desc')
+                ->short('d')
+                ->valueName('description')
+                ->description("A short description of the $outputType")
+                ->optionType(CliOptionType::VALUE)
+                ->bindTo($this->OutputDescription),
+            CliOption::build()
+                ->long('stdout')
+                ->short('s')
+                ->description('Write to standard output')
+                ->bindTo($this->ToStdout),
+            CliOption::build()
+                ->long('force')
+                ->short('f')
+                ->description('Overwrite the output file if it already exists')
+                ->bindTo($this->ReplaceIfExists),
+            CliOption::build()
+                ->long('no-meta')
+                ->short('m')
+                ->description('Suppress metadata tags')
+                ->bindTo($this->NoMetaTags),
+        ];
+    }
+
+    protected function getClassPrefix(): string
+    {
+        return $this->OutputNamespace ? '\\' : '';
+    }
 
     /**
      * Resolve PHPDoc templates to concrete types if possible
@@ -113,7 +182,7 @@ abstract class GenerateCommand extends Command
         // Don't allow a conflict with the name of the generated class
         if (!strcasecmp($alias, $this->OutputClass) ||
                 array_key_exists($_alias, $this->AliasMap)) {
-            return $returnFqcn ? $this->ClassPrefix . $fqcn : null;
+            return $returnFqcn ? $this->getClassPrefix() . $fqcn : null;
         }
 
         $this->AliasMap[$_alias] = $fqcn;
@@ -202,13 +271,13 @@ abstract class GenerateCommand extends Command
         $rawParams = [];
         foreach ($params as $param) {
             if ($param instanceof ReflectionParameter) {
-                $param = Reflect::getParameterDeclaration($param, $this->ClassPrefix, $callback);
+                $param = Reflect::getParameterDeclaration($param, $this->getClassPrefix(), $callback);
             }
             $rawParams[] = $param;
         }
         $rawParams = implode(', ', $rawParams);
         if ($returnType instanceof ReflectionType) {
-            $returnType = Reflect::getTypeDeclaration($returnType, $this->ClassPrefix, $callback);
+            $returnType = Reflect::getTypeDeclaration($returnType, $this->getClassPrefix(), $callback);
         }
 
         $modifiers = [$visibility];
@@ -238,7 +307,7 @@ abstract class GenerateCommand extends Command
 
         $verb = 'Creating';
 
-        if ($this->getOptionValue('stdout')) {
+        if ($this->ToStdout) {
             $file = 'php://stdout';
             $verb = null;
         } else {
@@ -254,7 +323,7 @@ abstract class GenerateCommand extends Command
 
                     return;
                 }
-                if (!$this->getOptionValue('force')) {
+                if (!$this->ReplaceIfExists) {
                     Console::warn('File already exists:', $file);
                     $file = substr($file, 0, -4) . '.generated.php';
                 }

@@ -8,14 +8,15 @@ use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Store\Concept\SqliteStore;
+use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\SyncErrorBuilder as ErrorBuilder;
+use LogicException;
 use ReflectionClass;
 use RuntimeException;
 use Throwable;
-use UnexpectedValueException;
 
 /**
  * Tracks the state of entities synced to and from third-party backends in a
@@ -74,6 +75,13 @@ final class SyncStore extends SqliteStore
     private $NamespaceUrisByPrefix;
 
     /**
+     * Prefix => resolver
+     *
+     * @var array<string,ISyncClassResolver>|null
+     */
+    private $NamespaceResolversByPrefix;
+
+    /**
      * @var SyncErrorCollection
      */
     private $Errors;
@@ -115,9 +123,9 @@ final class SyncStore extends SqliteStore
     /**
      * Deferred namespace registrations
      *
-     * [ Prefix, namespace base URI, PHP namespace ]
+     * [ Prefix, namespace base URI, PHP namespace, class resolver ]
      *
-     * @var array<array{string,string,string}>
+     * @var array<array{string,string,string,ISyncClassResolver|null}>
      */
     private $DeferredNamespaces = [];
 
@@ -133,18 +141,9 @@ final class SyncStore extends SqliteStore
         $this->Arguments = $arguments;
 
         $this->requireUpsert()
-             ->open($filename);
-    }
-
-    /**
-     * Create or open a sync entity database
-     *
-     */
-    private function open(string $filename): void
-    {
-        $this->openDb(
-            $filename,
-            <<<SQL
+             ->openDb(
+                 $filename,
+                 <<<SQL
 CREATE TABLE IF NOT EXISTS
   _sync_run (
     run_id INTEGER NOT NULL PRIMARY KEY,
@@ -215,7 +214,7 @@ CREATE TABLE IF NOT EXISTS
   );
 
 SQL
-        );
+             );
     }
 
     /**
@@ -306,7 +305,7 @@ SQL;
         $hash = Compute::binaryHash($class, ...$provider->getBackendIdentifier());
 
         if (!is_null($this->ProvidersByHash[$hash] ?? null)) {
-            throw new RuntimeException("Provider already registered: $class");
+            throw new LogicException("Provider already registered: $class");
         }
 
         // Update `last_seen` if the provider is already in the database
@@ -353,6 +352,7 @@ SQL;
     /**
      * Register a sync entity type and set its ID (unless already registered)
      *
+     * @param class-string<ISyncEntity> $entity
      * @return $this
      */
     public function entityType(string $entity)
@@ -363,7 +363,7 @@ SQL;
 
         $class = new ReflectionClass($entity);
         if (!$class->implementsInterface(ISyncEntity::class)) {
-            throw new UnexpectedValueException("Does not implement ISyncEntity: $entity");
+            throw new LogicException("Does not implement ISyncEntity: $entity");
         }
 
         // Update `last_seen` if the entity type is already in the database
@@ -418,28 +418,28 @@ SQL;
      * to facilitate refactoring.
      *
      * @param string $prefix A short alternative to `$uri`. Case-insensitive.
-     * Must be unique within the scope of the {@see SyncStore}. Must be a scheme
-     * name that complies with Section 3.1 of [RFC3986], i.e. a match for the
-     * regular expression `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
+     * Must be unique to the {@see SyncStore}. Must be a scheme name that
+     * complies with Section 3.1 of [RFC3986], i.e. a match for the regular
+     * expression `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
      * @param string $uri A globally unique namespace URI.
      * @param string $namespace A fully-qualified PHP namespace.
      * @return $this
      */
-    public function namespace(string $prefix, string $uri, string $namespace)
+    public function namespace(string $prefix, string $uri, string $namespace, ?ISyncClassResolver $resolver = null)
     {
         // Don't start a run just to register a namespace
         if (is_null($this->RunId)) {
-            $this->DeferredNamespaces[] = [$prefix, $uri, $namespace];
+            $this->DeferredNamespaces[] = [$prefix, $uri, $namespace, $resolver];
 
             return $this;
         }
 
         if (!preg_match('/^[a-zA-Z][a-zA-Z0-9+.-]*$/', $prefix)) {
-            throw new UnexpectedValueException("Invalid prefix: $prefix");
+            throw new LogicException("Invalid prefix: $prefix");
         }
         $prefix = strtolower($prefix);
         if ($this->RegisteredNamespaces[$prefix] ?? false) {
-            throw new UnexpectedValueException("Prefix already registered: $prefix");
+            throw new LogicException("Prefix already registered: $prefix");
         }
 
         // Update `last_seen` if the namespace is already in the database
@@ -468,6 +468,10 @@ SQL;
 
         $this->RegisteredNamespaces[$prefix] = true;
 
+        if ($resolver) {
+            $this->NamespaceResolversByPrefix[$prefix] = $resolver;
+        }
+
         // Don't reload while bootstrapping
         if (is_null($this->NamespacesByPrefix)) {
             return $this;
@@ -479,6 +483,7 @@ SQL;
     /**
      * Get the canonical URI of a sync entity type
      *
+     * @param class-string<ISyncEntity> $entity
      * @return string|null `null` if `$entity` is not in a registered sync
      * entity namespace.
      * @see SyncStore::namespace()
@@ -499,25 +504,46 @@ SQL;
     /**
      * Get the namespace of a sync entity type
      *
+     * @param class-string<ISyncEntity> $entity
      * @return string|null `null` if `$entity` is not in a registered sync
      * entity namespace.
      * @see SyncStore::namespace()
      */
-    public function getEntityTypeNamespace(string $entity, bool $uri = false): ?string
+    public function getEntityTypeNamespace(string $entity): ?string
     {
         if (!is_a($entity, ISyncEntity::class, true)) {
-            throw new UnexpectedValueException("Does not implement ISyncEntity: $entity");
+            throw new LogicException("Does not implement ISyncEntity: $entity");
         }
 
+        return $this->classToNamespace($entity);
+    }
+
+    /**
+     * Get the class resolver for an entity or provider's namespace
+     *
+     * @param class-string<ISyncEntity|ISyncProvider> $class
+     */
+    public function getNamespaceResolver(string $class): ?ISyncClassResolver
+    {
+        if (!($prefix = $this->classToNamespace($class))) {
+            return null;
+        }
+
+        return $this->NamespaceResolversByPrefix[$prefix] ?? null;
+    }
+
+    /**
+     * @param class-string<ISyncEntity|ISyncProvider> $class
+     */
+    private function classToNamespace(string $class): ?string
+    {
         $this->check();
 
-        $entity = ltrim($entity, '\\');
-        $lower = strtolower($entity);
+        $class = ltrim($class, '\\');
+        $lower = strtolower($class);
         foreach ($this->NamespacesByPrefix as $prefix => $namespace) {
             if (strpos($lower, $namespace) === 0) {
-                return $uri
-                    ? $this->NamespaceUrisByPrefix[$prefix]
-                    : $prefix;
+                return $prefix;
             }
         }
 
@@ -635,10 +661,14 @@ SQL;
         return clone $this->Errors;
     }
 
-    protected function check(): void
+    protected function check()
     {
         if (!is_null($this->RunId)) {
-            return;
+            return $this;
+        }
+
+        if (!$this->isCheckRunning()) {
+            return $this->safeCheck();
         }
 
         $sql = <<<SQL
@@ -650,7 +680,7 @@ VALUES (
   );
 SQL;
 
-        $db = $this->db(true);
+        $db = $this->db();
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':run_uuid', $uuid = Compute::uuid(true), SQLITE3_BLOB);
         $stmt->bindValue(':run_command', $this->Command, SQLITE3_TEXT);
@@ -668,12 +698,12 @@ SQL;
         }
         unset($this->DeferredProviders);
 
-        foreach ($this->DeferredNamespaces as [$prefix, $uri, $namespace]) {
-            $this->namespace($prefix, $uri, $namespace);
+        foreach ($this->DeferredNamespaces as [$prefix, $uri, $namespace, $resolver]) {
+            $this->namespace($prefix, $uri, $namespace, $resolver);
         }
         unset($this->DeferredNamespaces);
 
-        $this->reload();
+        return $this->reload();
     }
 
     /**

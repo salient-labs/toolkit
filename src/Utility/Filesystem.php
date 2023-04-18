@@ -4,13 +4,12 @@ namespace Lkrms\Utility;
 
 use CallbackFilterIterator;
 use FilesystemIterator;
-use Lkrms\Contract\IIterable;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Facade\Test;
-use Lkrms\Support\IterableIterator;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Phar;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
@@ -52,7 +51,7 @@ final class Filesystem
      * [$regex => fn(SplFileInfo $file) => $file->isExecutable()]
      * ```
      * @phpstan-param array<string,callable(SplFileInfo): bool> $includeCallbacks
-     * @return IIterable<SplFileInfo>
+     * @return FluentIteratorInterface<string,SplFileInfo>
      */
     public function find(
         string $directory,
@@ -61,7 +60,7 @@ final class Filesystem
         ?array $excludeCallbacks = null,
         ?array $includeCallbacks = null,
         bool $recursive = true
-    ): IIterable {
+    ): FluentIteratorInterface {
         $flags = FilesystemIterator::KEY_AS_PATHNAME
             | FilesystemIterator::CURRENT_AS_FILEINFO
             | FilesystemIterator::SKIP_DOTS;
@@ -113,8 +112,10 @@ final class Filesystem
                 $iterator = new RecursiveCallbackFilterIterator($iterator, $callback);
             }
             $iterator = new RecursiveIteratorIterator($iterator);
+            /** @var FluentIteratorInterface<string,SplFileInfo> */
+            $iterator = new \Lkrms\Support\Iterator\FluentIterator($iterator);
 
-            return new IterableIterator($iterator);
+            return $iterator;
         }
 
         $iterator = new FilesystemIterator($directory, $flags);
@@ -122,8 +123,10 @@ final class Filesystem
             $iterator = new CallbackFilterIterator($iterator, $callback);
         }
         $iterator = new CallbackFilterIterator($iterator, fn(SplFileInfo $current) => !$current->isDir());
+        /** @var FluentIteratorInterface<string,SplFileInfo> */
+        $iterator = new \Lkrms\Support\Iterator\FluentIterator($iterator);
 
-        return new IterableIterator($iterator);
+        return $iterator;
     }
 
     /**
@@ -223,20 +226,30 @@ final class Filesystem
     }
 
     /**
-     * A Phar-friendly realpath()
+     * A Phar-friendly, file descriptor-aware realpath()
      *
-     * If a Phar archive is running and `$filename` is a `phar://` URL:
-     * - relative path segments in `$filename` (e.g. `/../..`) are resolved by
-     *   {@see Conversions::resolvePath()}
-     * - if the file or directory exists, the resolved pathname is returned
-     * - if `$filename` doesn't exist, `false` is returned
+     * 1. If `$filename` is a file descriptor in `/dev/fd` or `/proc`,
+     *    `php://fd/<DESCRIPTOR>` is returned.
      *
-     * Otherwise, the return value of `realpath($filename)` is returned.
+     * 2. If a Phar archive is running and `$filename` is a `phar://` URL:
+     *    - relative path segments in `$filename` (e.g. `/../..`) are resolved
+     *      by {@see Conversions::resolvePath()}
+     *    - if the file or directory exists, the resolved pathname is returned
+     *    - if `$filename` doesn't exist, `false` is returned
+     *
+     * 3. The return value of `realpath($filename)` is returned.
      *
      * @return string|false
      */
     public function realpath(string $filename)
     {
+        if (preg_match(
+            '#^/(?:dev|proc/(?:self|[0-9]+))/fd/([0-9]+)$#',
+            $filename,
+            $matches
+        )) {
+            return 'php://fd/' . $matches[1];
+        }
         if (Test::isPharUrl($filename) && Phar::running()) {
             $filename = Convert::resolvePath($filename);
 

@@ -23,6 +23,9 @@ use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Dictionary\HttpHeader;
 use Lkrms\Support\Dictionary\HttpRequestMethod;
 use Lkrms\Support\Dictionary\MimeType;
+use Lkrms\Support\Iterator\RecursiveHasChildrenCallbackIterator;
+use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
+use RecursiveIteratorIterator;
 use UnexpectedValueException;
 
 /**
@@ -32,15 +35,15 @@ use UnexpectedValueException;
  * @property-read ICurlerHeaders $Headers Request headers
  * @property-read string|null $Method Last request method
  * @property-read string|null $QueryString Query string last added to request URL
- * @property-read string|array|null $Body Request body, as passed to cURL
- * @property-read string|array|null $Data Request body, before serialization
+ * @property-read string|mixed[]|null $Body Request body, as passed to cURL
+ * @property-read string|mixed[]|object|null $Data Request body, before serialization
  * @property-read ICurlerPager|null $Pager Pagination handler
  * @property-read ICurlerHeaders|null $ResponseHeaders Response headers
  * @property-read array<string,string>|null $ResponseHeadersByName An array that maps lowercase response headers to their combined values
  * @property-read int|null $StatusCode Response status code
  * @property-read string|null $ReasonPhrase Response status explanation
  * @property-read string|null $ResponseBody Response body
- * @property-read array|null $CurlInfo curl_getinfo()'s last return value
+ * @property-read mixed[]|null $CurlInfo curl_getinfo()'s last return value
  * @property bool $CacheResponse Cache responses to GET and HEAD requests?
  * @property bool $CachePostResponse Cache responses to eligible POST requests?
  * @property int $Expiry Seconds before cached responses expire
@@ -96,14 +99,14 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * Request body, as passed to cURL
      *
-     * @var string|array|null
+     * @var string|mixed[]|null
      */
     protected $Body;
 
     /**
      * Request body, before serialization
      *
-     * @var string|array|null
+     * @var string|mixed[]|object|null
      */
     protected $Data;
 
@@ -154,7 +157,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      *
      * Set by {@see Curler::withCurlInfo()}.
      *
-     * @var array|null
+     * @var mixed[]|null
      */
     protected $CurlInfo;
 
@@ -607,6 +610,10 @@ final class Curler implements IReadable, IWritable, HasBuilder
         // Return the transfer as a string
         curl_setopt($this->Handle, CURLOPT_RETURNTRANSFER, true);
 
+        // Enable all supported encoding types (e.g. gzip, deflate) and set
+        // Accept-Encoding header accordingly
+        curl_setopt($this->Handle, CURLOPT_ENCODING, '');
+
         // Collect response headers
         curl_setopt(
             $this->Handle,
@@ -687,7 +694,10 @@ final class Curler implements IReadable, IWritable, HasBuilder
         $this->CurlInfo = null;
     }
 
-    private function applyData(array $data): void
+    /**
+     * @param mixed[]|object $data
+     */
+    private function applyData($data): void
     {
         curl_setopt(
             $this->Handle,
@@ -697,46 +707,67 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     * @return string|array
+     * @param mixed[]|object $data
+     * @return string|mixed[]
      */
-    private function prepareData(array $data)
+    private function prepareData($data)
     {
-        $file = false;
-        array_walk_recursive(
-            $data,
-            function (&$value) use (&$file) { $file = $this->prepareDataValue($value) || $file; }
+        // Iterate over `$data` recursively
+        $iterator = new RecursiveObjectOrArrayIterator($data);
+        // Treat `CurlerFile` and `DateTimeInterface` instances as leaf nodes
+        $iterator = new RecursiveHasChildrenCallbackIterator(
+            $iterator,
+            fn($value) =>
+                !($value instanceof CurlerFile ||
+                    $value instanceof DateTimeInterface)
         );
+        $leafIterator = new RecursiveIteratorIterator($iterator);
+
+        // Does `$data` contain a `CurlerFile`?
+        $file = false;
+        foreach ($leafIterator as $value) {
+            if ($value instanceof CurlerFile) {
+                $file = true;
+                break;
+            }
+        }
+
+        // With that answered, start over, replacing `CurlerFile` and
+        // `DateTimeInterface` instances
+        /** @var RecursiveObjectOrArrayIterator $iterator */
+        foreach ($iterator as $value) {
+            if ($value instanceof CurlerFile) {
+                $value = $value->getCurlFile();
+            } elseif ($value instanceof DateTimeInterface) {
+                $value = $this->getDateFormatter()->format($value);
+            } elseif ($file) {
+                // And if uploading a file, replace every object that isn't a
+                // CURLFile with an array cURL can encode
+                $iterator->maybeReplaceCurrentWithArray();
+                continue;
+            } else {
+                continue;
+            }
+            $iterator->replace($value);
+        }
 
         if ($file) {
             return $data;
         }
+
         if ($this->PostJson) {
             $this->setContentType(MimeType::JSON);
 
             return json_encode($data);
-        } else {
-            $this->setContentType(MimeType::WWW_FORM);
-
-            return Convert::dataToQuery(
-                $data,
-                $this->PreserveKeys,
-                $this->DateFormatter
-            );
-        }
-    }
-
-    private function prepareDataValue(&$value): bool
-    {
-        if ($value instanceof CurlerFile) {
-            $value = $value->getCurlFile();
-
-            return true;
-        }
-        if ($value instanceof DateTimeInterface) {
-            $value = $this->getDateFormatter()->format($value);
         }
 
-        return false;
+        $this->setContentType(MimeType::WWW_FORM);
+
+        return Convert::dataToQuery(
+            $data,
+            $this->PreserveKeys,
+            $this->DateFormatter
+        );
     }
 
     private function getCookieKey(): ?string
@@ -925,57 +956,119 @@ final class Curler implements IReadable, IWritable, HasBuilder
         ]);
     }
 
+    /**
+     *
+     * @param mixed[]|null $query
+     */
     final public function head(?array $query = null): ICurlerHeaders
     {
         return $this->process(HttpRequestMethod::HEAD, $query);
     }
 
+    /**
+     *
+     * @param mixed[]|null $query
+     * @return mixed
+     */
     final public function get(?array $query = null)
     {
         return $this->process(HttpRequestMethod::GET, $query);
     }
 
-    final public function post(?array $data = null, ?array $query = null)
+    /**
+     *
+     * @param mixed[]|object|null $data
+     * @param mixed[]|null $query
+     * @return mixed
+     */
+    final public function post($data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::POST, $query, $data);
     }
 
-    final public function put(?array $data = null, ?array $query = null)
+    /**
+     *
+     * @param mixed[]|object|null $data
+     * @param mixed[]|null $query
+     * @return mixed
+     */
+    final public function put($data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PUT, $query, $data);
     }
 
-    final public function patch(?array $data = null, ?array $query = null)
+    /**
+     *
+     * @param mixed[]|object|null $data
+     * @param mixed[]|null $query
+     * @return mixed
+     */
+    final public function patch($data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PATCH, $query, $data);
     }
 
-    final public function delete(?array $data = null, ?array $query = null)
+    /**
+     *
+     * @param mixed[]|object|null $data
+     * @param mixed[]|null $query
+     * @return mixed
+     */
+    final public function delete($data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::DELETE, $query, $data);
     }
 
+    /**
+     *
+     * @param mixed[]|null $query
+     * @return iterable<mixed>
+     */
     final public function getP(?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::GET, $query);
     }
 
-    final public function postP(?array $data = null, ?array $query = null): iterable
+    /**
+     *
+     * @param mixed[]|object|null $data
+     * @param mixed[]|null $query
+     * @return iterable<mixed>
+     */
+    final public function postP($data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::POST, $query, $data);
     }
 
-    final public function putP(?array $data = null, ?array $query = null): iterable
+    /**
+     *
+     * @param mixed[]|object|null $data
+     * @param mixed[]|null $query
+     * @return iterable<mixed>
+     */
+    final public function putP($data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::PUT, $query, $data);
     }
 
-    final public function patchP(?array $data = null, ?array $query = null): iterable
+    /**
+     *
+     * @param mixed[]|object|null $data
+     * @param mixed[]|null $query
+     * @return iterable<mixed>
+     */
+    final public function patchP($data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::PATCH, $query, $data);
     }
 
-    final public function deleteP(?array $data = null, ?array $query = null): iterable
+    /**
+     *
+     * @param mixed[]|object|null $data
+     * @param mixed[]|null $query
+     * @return iterable<mixed>
+     */
+    final public function deleteP($data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::DELETE, $query, $data);
     }
@@ -1001,7 +1094,9 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     * @param array|string|null $data
+     * @param mixed[]|null $query
+     * @param string|mixed[]|object|null $data
+     * @return mixed
      */
     private function process(string $method, ?array $query, $data = null, ?string $mimeType = null)
     {
@@ -1016,7 +1111,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         $this->initialise($method, $query, $pager ?? null);
 
         $this->Data = $data;
-        if (is_array($data)) {
+        if (is_array($data) || is_object($data)) {
             $this->applyData($data);
         } elseif (is_string($data) && $mimeType) {
             curl_setopt($this->Handle, CURLOPT_POSTFIELDS, $data);
@@ -1046,7 +1141,12 @@ final class Curler implements IReadable, IWritable, HasBuilder
         return $this->ResponseBody ?: '';
     }
 
-    private function paginate(string $method, ?array $query, ?array $data = null): iterable
+    /**
+     * @param mixed[]|null $query
+     * @param mixed[]|object|null $data
+     * @return iterable<mixed>
+     */
+    private function paginate(string $method, ?array $query, $data = null): iterable
     {
         if (!$this->Pager) {
             throw new UnexpectedValueException(static::class . '::$Pager is not set');
@@ -1123,6 +1223,11 @@ final class Curler implements IReadable, IWritable, HasBuilder
             'ReasonPhrase',
             'ResponseBody',
             'CurlInfo',
+            'CacheResponse',
+            'CachePostResponse',
+            'Expiry',
+            'Flush',
+            'ResponseCacheKeyCallback',
             'ThrowHttpErrors',
             'FollowRedirects',
             'MaxRedirects',
@@ -1137,7 +1242,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
             'UserAgent',
             'AlwaysPaginate',
             'ObjectAsArray',
-            ...self::getWritable(),
         ];
     }
 

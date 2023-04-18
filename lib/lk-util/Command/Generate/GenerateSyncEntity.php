@@ -11,10 +11,8 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionType;
 use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Env;
 use Lkrms\Facade\Test;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\LkUtil\Dictionary\EnvVar;
 use Lkrms\Support\Dictionary\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
@@ -33,6 +31,46 @@ class GenerateSyncEntity extends GenerateCommand
 
     private const DEFAULT_METHOD = 'get';
 
+    /**
+     * @var string
+     */
+    private $OutputClassFqcn;
+
+    /**
+     * @var string
+     */
+    private $MemberVisibility;
+
+    /**
+     * @var string|null
+     */
+    private $ReferenceEntityFile;
+
+    /**
+     * @var class-string<HttpSyncProvider>|null
+     */
+    private $Provider;
+
+    /**
+     * @var string|null
+     */
+    private $HttpEndpoint;
+
+    /**
+     * @var string
+     */
+    private $HttpMethod;
+
+    /**
+     * @var string[]|null
+     */
+    private $HttpQuery;
+
+    /**
+     * @var string|null
+     */
+    private $HttpDataFile;
+
     public function getShortDescription(): string
     {
         return 'Generate a sync entity class';
@@ -46,33 +84,10 @@ class GenerateSyncEntity extends GenerateCommand
                 ->valueName('class')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
-                ->required(),
-            CliOption::build()
-                ->long('package')
-                ->short('p')
-                ->valueName('package')
-                ->description('The PHPDoc package')
-                ->optionType(CliOptionType::VALUE)
-                ->envVariable('PHPDOC_PACKAGE'),
-            CliOption::build()
-                ->long('desc')
-                ->short('d')
-                ->valueName('description')
-                ->description('A short description of the entity')
-                ->optionType(CliOptionType::VALUE),
-            CliOption::build()
-                ->long('stdout')
-                ->short('s')
-                ->description('Write to standard output'),
-            CliOption::build()
-                ->long('force')
-                ->short('f')
-                ->description('Overwrite the class file if it already exists'),
-            CliOption::build()
-                ->long('no-meta')
-                ->short('m')
-                ->description("Suppress '@lkrms-*' metadata tags"),
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, null, $this->OutputClass, $this->OutputNamespace))
+                ->required()
+                ->bindTo($this->OutputClassFqcn),
+            ...$this->getOutputOptionList('entity'),
             CliOption::build()
                 ->long('visibility')
                 ->short('v')
@@ -80,26 +95,30 @@ class GenerateSyncEntity extends GenerateCommand
                 ->description("The visibility of the entity's properties")
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(['public', 'protected', 'private'])
-                ->defaultValue('public'),
+                ->defaultValue('public')
+                ->bindTo($this->MemberVisibility),
             CliOption::build()
                 ->long('json')
                 ->short('j')
                 ->valueName('file')
                 ->description('The path to a JSON-serialized reference entity')
-                ->optionType(CliOptionType::VALUE),
+                ->optionType(CliOptionType::VALUE)
+                ->bindTo($this->ReferenceEntityFile),
             CliOption::build()
                 ->long('provider')
                 ->short('i')
                 ->valueName('class')
                 ->description('The HttpSyncProvider class to retrieve a reference entity from')
                 ->optionType(CliOptionType::VALUE)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value)),
+                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
+                ->bindTo($this->Provider),
             CliOption::build()
                 ->long('endpoint')
                 ->short('e')
                 ->valueName('endpoint')
                 ->description("The endpoint to retrieve a reference entity from, e.g. '/user'")
-                ->optionType(CliOptionType::VALUE),
+                ->optionType(CliOptionType::VALUE)
+                ->bindTo($this->HttpEndpoint),
             CliOption::build()
                 ->long('method')
                 ->short('h')
@@ -107,43 +126,43 @@ class GenerateSyncEntity extends GenerateCommand
                 ->description('The HTTP method to use when requesting a reference entity')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(array_keys(self::METHODS))
-                ->defaultValue(self::DEFAULT_METHOD),
+                ->defaultValue(self::DEFAULT_METHOD)
+                ->bindTo($this->HttpMethod),
             CliOption::build()
                 ->long('query')
                 ->short('q')
                 ->valueName('field=value')
                 ->description('A query parameter to use when requesting a reference entity')
                 ->optionType(CliOptionType::VALUE)
-                ->multipleAllowed(),
+                ->multipleAllowed()
+                ->bindTo($this->HttpQuery),
             CliOption::build()
                 ->long('data')
-                ->short('o')
+                ->short('J')
                 ->valueName('file')
                 ->description('The path to JSON-serialized data to submit when requesting a reference entity')
-                ->optionType(CliOptionType::VALUE),
+                ->optionType(CliOptionType::VALUE)
+                ->bindTo($this->HttpDataFile),
         ];
     }
 
     protected function run(string ...$args)
     {
-        $namespace = explode('\\', ltrim($this->getOptionValue('generate'), '\\'));
-        $class = array_pop($namespace);
-        $namespace = implode('\\', $namespace) ?: Env::get(EnvVar::NS_DEFAULT, '');
-        $fqcn = $namespace ? $namespace . '\\' . $class : $class;
-        $classPrefix = $namespace ? '\\' : '';
-
-        $this->OutputClass = $class;
-        $this->OutputNamespace = $namespace;
-        $this->ClassPrefix = $classPrefix;
+        $class = $this->OutputClass;
+        $namespace = $this->OutputNamespace;
+        $fqcn = $this->OutputClassFqcn;
 
         $extends = $this->getFqcnAlias(SyncEntity::class);
 
-        $package = $this->getOptionValue('package');
-        $desc = $this->getOptionValue('desc');
-        $visibility = $this->getOptionValue('visibility');
-        $json = $this->getOptionValue('json');
-        /** @var class-string<HttpSyncProvider>|null */
-        $provider = $this->getOptionValue('provider');
+        $package = $this->OutputPackage;
+        $desc = $this->OutputDescription;
+        $visibility = $this->MemberVisibility;
+        $json = $this->ReferenceEntityFile;
+
+        if ($provider = $this->Provider) {
+            /** @var HttpSyncProvider */
+            $provider = $this->getProvider($provider, HttpSyncProvider::class);
+        }
 
         $props = ['Id' => 'int|string|null'];
         $entity = null;
@@ -162,13 +181,11 @@ class GenerateSyncEntity extends GenerateCommand
                 throw new RuntimeException("Could not decode $json");
             }
         } elseif ($provider) {
-            /** @var HttpSyncProvider */
-            $provider = $this->getProvider($provider, HttpSyncProvider::class);
-            $endpoint = $this->getOptionValue('endpoint');
-            $query = Convert::queryToData($this->getOptionValue('query')) ?: null;
-            $data = $this->getOptionValue('data');
-            $data = $data ? $this->getJson($data, $dataUri) : null;
-            $method = $data && $endpoint ? HttpRequestMethod::POST : self::METHODS[$this->getOptionValue('method')];
+            $endpoint = $this->HttpEndpoint;
+            $query = Convert::queryToData($this->HttpQuery) ?: null;
+            $data = $this->HttpDataFile;
+            $data = $data ? $this->getJson($data, $dataUri, false) : null;
+            $method = $data && $endpoint ? HttpRequestMethod::POST : self::METHODS[$this->HttpMethod];
             $endpoint = $endpoint ?: '/' . Convert::toKebabCase($class);
 
             $curler = $provider->getCurler($endpoint);
@@ -186,7 +203,7 @@ class GenerateSyncEntity extends GenerateCommand
         }
 
         if ($entity) {
-            foreach (['data', 'Result'] as $prop) {
+            foreach (['data', 'Result', 'Items'] as $prop) {
                 if (is_array($entity[$prop] ?? null)) {
                     $entity = $entity[$prop];
                     break;
@@ -230,7 +247,8 @@ class GenerateSyncEntity extends GenerateCommand
                         continue;
                     }
 
-                    if (is_string($value) &&
+                    if ($provider &&
+                            is_string($value) &&
                             !is_null($provider->dateFormatter()->parse($value))) {
                         $props[$key] = $this->getFqcnAlias(DateTimeImmutable::class, 'DateTime') . '|null';
                         continue;
@@ -261,7 +279,7 @@ class GenerateSyncEntity extends GenerateCommand
         if ($package) {
             $docBlock[] = " * @package $package";
         }
-        if (!$this->getOptionValue('no-meta')) {
+        if (!$this->NoMetaTags) {
             if ($entityUri) {
                 $docBlock[] = " * @lkrms-reference-entity $entityUri";
             }
@@ -275,12 +293,15 @@ class GenerateSyncEntity extends GenerateCommand
                 'query' => null,
                 'data' => null,
             ];
+            if ($provider) {
+                unset($values['provider']);
+            }
             if ($json) {
-                $values['json'] = $entityUri ?: $this->getOptionValue('json');
+                $values['json'] = $entityUri ?: $this->ReferenceEntityFile;
             } elseif ($provider) {
-                unset($values['provider'], $values['endpoint'], $values['query']);
+                unset($values['endpoint'], $values['query']);
                 $values['method'] = array_search($method ?? null, self::METHODS, true) ?: null;
-                $values['data'] = $dataUri ?: $this->getOptionValue('data');
+                $values['data'] = $dataUri ?: $this->HttpDataFile;
             }
             $docBlock[] = ' * @lkrms-generate-command '
                 . implode(' ', $this->getEffectiveCommandLine(true, $values));

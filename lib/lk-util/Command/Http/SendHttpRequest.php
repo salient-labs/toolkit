@@ -62,7 +62,7 @@ class SendHttpRequest extends Command
         if (!in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::HEAD])) {
             $options[] = CliOption::build()
                 ->long('data')
-                ->short('o')
+                ->short('J')
                 ->valueName('file')
                 ->description('The path to JSON-serialized data to submit with the request')
                 ->optionType(CliOptionType::VALUE);
