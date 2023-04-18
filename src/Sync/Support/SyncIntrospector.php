@@ -6,6 +6,7 @@ use Closure;
 use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Convert;
+use Lkrms\Facade\Sync;
 use Lkrms\Support\Dictionary\RegularExpression as Regex;
 use Lkrms\Support\Introspector;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -36,20 +37,38 @@ final class SyncIntrospector extends Introspector
     protected $_Class;
 
     /**
+     * Get the name of a sync entity's provider interface
+     *
      * @param class-string<ISyncEntity> $entity
      * @return class-string<ISyncProvider>
      */
-    final public static function entityToProvider(string $entity): string
+    final public static function entityToProvider(string $entity, ?SyncStore $store = null): string
     {
-        return sprintf('%s\Provider\%sProvider', Convert::classToNamespace($entity), Convert::classToBasename($entity));
+        if (($store || Sync::isLoaded()) &&
+                $resolver = ($store ?: Sync::getInstance())->getNamespaceResolver($entity)) {
+            return $resolver->entityToProvider($entity);
+        }
+
+        return sprintf(
+            '%s\Provider\%sProvider',
+            Convert::classToNamespace($entity),
+            Convert::classToBasename($entity)
+        );
     }
 
     /**
+     * Get the name of the sync entity serviced by a provider interface
+     *
      * @param class-string<ISyncProvider> $provider
      * @return class-string<ISyncEntity>|null
      */
-    final public static function providerToEntity(string $provider): ?string
+    final public static function providerToEntity(string $provider, ?SyncStore $store = null): ?string
     {
+        if (($store || Sync::isLoaded()) &&
+                $resolver = ($store ?: Sync::getInstance())->getNamespaceResolver($provider)) {
+            return $resolver->providerToEntity($provider);
+        }
+
         if (preg_match(
             '/^(?P<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\'
                 . '(?P<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U',
