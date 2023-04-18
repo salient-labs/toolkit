@@ -11,6 +11,7 @@ use Lkrms\Cli\Exception\CliArgumentsInvalidException;
 use Lkrms\Contract\IProvider;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
+use Lkrms\Facade\File;
 use Lkrms\LkUtil\Dictionary\EnvVar;
 
 /**
@@ -30,6 +31,9 @@ abstract class Command extends CliCommand
     }
 
     /**
+     * Normalise a user-supplied class name, optionally assigning its base name
+     * and/or namespace to variables passed by reference
+     *
      * @return class-string<object>
      */
     protected function getFqcnOptionValue(
@@ -57,17 +61,19 @@ abstract class Command extends CliCommand
     }
 
     /**
+     * Normalise user-supplied class names
+     *
      * @param string[] $values
      * @return array<class-string<object>>
      */
     protected function getMultipleFqcnOptionValue(array $values, ?string $namespaceEnvVar = null): array
     {
-        $_values = [];
+        $fqcn = [];
         foreach ($values as $value) {
-            $_values[] = $this->getFqcnOptionValue($value, $namespaceEnvVar);
+            $fqcn[] = $this->getFqcnOptionValue($value, $namespaceEnvVar);
         }
 
-        return $_values;
+        return $fqcn;
     }
 
     /**
@@ -89,11 +95,14 @@ abstract class Command extends CliCommand
             : new CliArgumentsInvalidException("class does not exist: $provider");
     }
 
-    protected function getJson(string $file, ?string &$path = null)
+    /**
+     * @return mixed
+     */
+    protected function getJson(string $file, ?string &$path = null, bool $associative = true)
     {
         if ($file === '-') {
             $file = 'php://stdin';
-        } elseif (($file = realpath($_file = $file)) === false) {
+        } elseif (($file = File::realpath($_file = $file)) === false) {
             throw new CliArgumentsInvalidException("file not found: $_file");
         } elseif (strpos($file, $this->app()->BasePath) === 0) {
             $path = './' . ltrim(substr($file, strlen($this->app()->BasePath)), '/');
@@ -101,6 +110,6 @@ abstract class Command extends CliCommand
             $path = $file;
         }
 
-        return json_decode(file_get_contents($file), true);
+        return json_decode(file_get_contents($file), $associative);
     }
 }

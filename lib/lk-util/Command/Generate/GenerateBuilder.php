@@ -119,31 +119,7 @@ class GenerateBuilder extends GenerateCommand
                 ->long('no-final')
                 ->short('a')
                 ->description("Do not declare the generated class 'final'"),
-            CliOption::build()
-                ->long('package')
-                ->short('p')
-                ->valueName('package')
-                ->description('The PHPDoc package')
-                ->optionType(CliOptionType::VALUE)
-                ->envVariable('PHPDOC_PACKAGE'),
-            CliOption::build()
-                ->long('desc')
-                ->short('d')
-                ->valueName('description')
-                ->description('A short description of the builder')
-                ->optionType(CliOptionType::VALUE),
-            CliOption::build()
-                ->long('stdout')
-                ->short('s')
-                ->description('Write to standard output'),
-            CliOption::build()
-                ->long('force')
-                ->short('f')
-                ->description('Overwrite the class file if it already exists'),
-            CliOption::build()
-                ->long('no-meta')
-                ->short('m')
-                ->description("Suppress '@lkrms-*' metadata tags"),
+            ...$this->getOutputOptionList('builder'),
             CliOption::build()
                 ->long('declared')
                 ->short('e')
@@ -174,7 +150,7 @@ class GenerateBuilder extends GenerateCommand
 
         $this->OutputClass = $builderClass;
         $this->OutputNamespace = $builderNamespace;
-        $this->ClassPrefix = $classPrefix = $builderNamespace ? '\\' : '';
+        $classPrefix = $this->getClassPrefix();
 
         $extends = $this->getFqcnAlias($extendsFqcn, $extendsClass);
         $service = $this->getFqcnAlias($classFqcn, $classClass);
@@ -189,8 +165,8 @@ class GenerateBuilder extends GenerateCommand
             $staticResolver = $this->getOptionValue('static-resolver')
         );
 
-        $package = $this->getOptionValue('package');
-        $desc = $this->getOptionValue('desc');
+        $package = $this->OutputPackage;
+        $desc = $this->OutputDescription;
         $desc = is_null($desc)
             ? "A fluent interface for creating $classClass objects"
             : $desc;
@@ -548,7 +524,7 @@ class GenerateBuilder extends GenerateCommand
             $templates = '<' . implode(',', $templates) . '>';
         }
         $docBlock[] = " * @extends $extends<$service$templates>";
-        if (!$this->getOptionValue('no-meta')) {
+        if (!$this->NoMetaTags) {
             $docBlock[] = ' *';
             $docBlock[] = ' * @lkrms-generate-command '
                 . implode(

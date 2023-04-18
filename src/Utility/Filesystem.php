@@ -223,20 +223,30 @@ final class Filesystem
     }
 
     /**
-     * A Phar-friendly realpath()
+     * A Phar-friendly, file descriptor-aware realpath()
      *
-     * If a Phar archive is running and `$filename` is a `phar://` URL:
-     * - relative path segments in `$filename` (e.g. `/../..`) are resolved by
-     *   {@see Conversions::resolvePath()}
-     * - if the file or directory exists, the resolved pathname is returned
-     * - if `$filename` doesn't exist, `false` is returned
+     * 1. If `$filename` is a file descriptor in `/dev/fd` or `/proc`,
+     *    `php://fd/<DESCRIPTOR>` is returned.
      *
-     * Otherwise, the return value of `realpath($filename)` is returned.
+     * 2. If a Phar archive is running and `$filename` is a `phar://` URL:
+     *    - relative path segments in `$filename` (e.g. `/../..`) are resolved
+     *      by {@see Conversions::resolvePath()}
+     *    - if the file or directory exists, the resolved pathname is returned
+     *    - if `$filename` doesn't exist, `false` is returned
+     *
+     * 3. The return value of `realpath($filename)` is returned.
      *
      * @return string|false
      */
     public function realpath(string $filename)
     {
+        if (preg_match(
+            '#^/(?:dev|proc/(?:self|[0-9]+))/fd/([0-9]+)$#',
+            $filename,
+            $matches
+        )) {
+            return 'php://fd/' . $matches[1];
+        }
         if (Test::isPharUrl($filename) && Phar::running()) {
             $filename = Convert::resolvePath($filename);
 

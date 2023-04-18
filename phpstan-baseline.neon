@@ -1,9 +1,44 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Method Lkrms\\\\LkUtil\\\\Command\\\\Concept\\\\Command\\:\\:getJson\\(\\) has no return type specified\\.$#"
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$HttpDataFile is never written, only read\\.$#"
 			count: 1
-			path: lib/lk-util/Command/Concept/Command.php
+			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$HttpEndpoint is never written, only read\\.$#"
+			count: 1
+			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$HttpMethod is never written, only read\\.$#"
+			count: 1
+			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$HttpQuery is never written, only read\\.$#"
+			count: 1
+			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$MemberVisibility is never written, only read\\.$#"
+			count: 1
+			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$OutputClassFqcn is never written, only read\\.$#"
+			count: 1
+			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$Provider is never written, only read\\.$#"
+			count: 1
+			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
+
+		-
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$ReferenceEntityFile is never written, only read\\.$#"
+			count: 1
+			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
 
 		-
 			message: "#^Method Lkrms\\\\LkUtil\\\\Command\\\\Http\\\\SendHttpRequest\\:\\:getMethod\\(\\) has no return type specified\\.$#"
