@@ -22,23 +22,32 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Configure GitHub Pages
         if: ${{ !env.ACT }}
-        uses: actions/configure-pages@v1
-      - name: Cache phpDocumentor build files
-        id: phpdocumentor-cache
-        if: ${{ !env.ACT }}
-        uses: actions/cache@v3
+        uses: actions/configure-pages@v3
+
+      - name: Setup PHP and Composer
+        uses: shivammathur/setup-php@v2
         with:
-          path: .ci/cache/docs/api
-          key: ${{ runner.os }}-phpdocumentor-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-phpdocumentor-
-      - name: Build with phpDocumentor
-        run: docker run --rm --volume "$(pwd):/data" phpdoc/phpdoc:3 -vv --target .ci/docs/api --cache-folder .ci/cache/docs/api --template default --sourcecode
+          php-version: "8.2"
+          coverage: none
+        env:
+          fail-fast: true
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Install ApiGen
+        run: composer create-project --no-dev --no-interaction --no-progress apigen/apigen:^7@alpha apigen
+
+      - name: Build API documentation
+        run: apigen/bin/apigen src --output .ci/docs/api
+
       - name: Upload artifact to GitHub Pages
         if: ${{ !env.ACT }}
         uses: actions/upload-pages-artifact@v1
@@ -47,10 +56,13 @@ jobs:
 
   deploy:
     needs: build
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
