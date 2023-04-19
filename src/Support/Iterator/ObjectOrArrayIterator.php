@@ -61,16 +61,21 @@ class ObjectOrArrayIterator implements Iterator, MutableIterator
             : $this->ObjectOrArray[$key];
     }
 
-    public function replace(&$value)
+    public function replace($value)
     {
         if (($key = current($this->Keys)) === false) {
             throw new RuntimeException('Current position is not valid');
         }
+
         if ($this->IsObject) {
-            return $this->ObjectOrArray->{$key} = &$value;
+            $this->ObjectOrArray->{$key} = $value;
+
+            return $this;
         }
 
-        return $this->ObjectOrArray[$key] = &$value;
+        $this->ObjectOrArray[$key] = $value;
+
+        return $this;
     }
 
     /**
