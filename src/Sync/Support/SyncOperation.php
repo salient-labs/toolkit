@@ -3,7 +3,7 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Enumeration;
-use Lkrms\Concern\IsConvertibleEnumeration;
+use Lkrms\Concern\HasConvertibleConstants;
 use Lkrms\Contract\IConvertibleEnumeration;
 use UnexpectedValueException;
 
@@ -13,7 +13,7 @@ use UnexpectedValueException;
  */
 final class SyncOperation extends Enumeration implements IConvertibleEnumeration
 {
-    use IsConvertibleEnumeration;
+    use HasConvertibleConstants;
 
     /**
      * Add an entity to the backend

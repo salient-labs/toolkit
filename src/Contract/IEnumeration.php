@@ -3,8 +3,7 @@
 namespace Lkrms\Contract;
 
 /**
- * Defines one or more public constants, each with a unique integer value, and
- * has no other members except helper methods to service them
+ * Defines public constants with unique integer values
  *
  */
 interface IEnumeration

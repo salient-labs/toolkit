@@ -86,11 +86,6 @@ parameters:
 			path: src/Concept/Builder.php
 
 		-
-			message: "#^Method Lkrms\\\\Concept\\\\ConvertibleEnumeration\\:\\:getMap\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Concept/ConvertibleEnumeration.php
-
-		-
 			message: "#^Method Lkrms\\\\Concept\\\\Facade\\:\\:__callStatic\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Concept/Facade.php

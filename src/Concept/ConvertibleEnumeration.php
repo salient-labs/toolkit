@@ -2,61 +2,77 @@
 
 namespace Lkrms\Concept;
 
+use Lkrms\Concern\HasConvertibleConstants;
 use Lkrms\Contract\IConvertibleEnumeration;
-use Lkrms\Facade\Convert;
+use LogicException;
 use ReflectionClass;
-use ReflectionClassConstant;
-use RuntimeException;
-use UnexpectedValueException;
 
 /**
- * Base class for enumerations that use reflection to convert the integer values
- * of their public constants to and from their names
+ * Uses reflection to convert the class's public constants to and from their
+ * names
+ *
+ * @see HasConvertibleConstants A trait that provides an alternative
+ * implementation.
  */
 abstract class ConvertibleEnumeration extends Enumeration implements IConvertibleEnumeration
 {
     /**
-     * Class names => [ constant names => values ]
+     * Class name => [ constant name => value ]
      *
      * @var array<string,array<string,int>>
      */
     private static $ValueMaps = [];
 
     /**
-     * Class names => [ constant values => names ]
+     * Class name => [ constant value => name ]
      *
      * @var array<string,array<int,string>>
      */
     private static $NameMaps = [];
 
-    private static function getMap(bool $flipped = false): array
+    private static function loadMaps(): void
     {
-        $constants = (new ReflectionClass(static::class))->getReflectionConstants();
+        $constants =
+            (new ReflectionClass(static::class))
+                ->getReflectionConstants();
 
-        $map = $flippedMap = [];
+        $valueMap = [];
+        $nameMap = [];
         foreach ($constants as $constant) {
             if (!$constant->isPublic()) {
                 continue;
             }
-
-            [$name, $value] = [$constant->getName(), $constant->getValue()];
-            $map[$name] = $value;
-            $flippedMap[$value] = $name;
+            $name = $constant->getName();
+            $value = $constant->getValue();
+            $valueMap[$name] = $value;
+            $nameMap[$value] = $name;
         }
-        if (count($map) != count($flippedMap)) {
-            throw new RuntimeException('Public constants are not unique: ' . static::class);
-        }
-        self::$ValueMaps[static::class] = $map;
-        self::$NameMaps[static::class] = $flippedMap;
+        if (!$valueMap) {
+            self::$ValueMaps[static::class] = [];
+            self::$NameMaps[static::class] = [];
 
-        return $flipped ? $flippedMap : $map;
+            return;
+        }
+        if (count($valueMap) != count($nameMap)) {
+            throw new LogicException(
+                sprintf('Public constants are not unique: %s', static::class)
+            );
+        }
+        // Add UPPER_CASE names to $valueMap if necessary
+        $valueMap += array_combine(array_map('strtoupper', array_keys($valueMap)), $valueMap);
+        self::$ValueMaps[static::class] = $valueMap;
+        self::$NameMaps[static::class] = $nameMap;
     }
 
     final public static function fromName(string $name): int
     {
-        if (is_null($value = (self::$ValueMaps[static::class] ?? self::getMap())[$name] ?? null)) {
-            throw new UnexpectedValueException(
-                'Invalid ' . Convert::classToBasename(static::class) . " name: $name"
+        if (($map = self::$ValueMaps[static::class] ?? null) === null) {
+            self::loadMaps();
+            $map = self::$ValueMaps[static::class];
+        }
+        if (($value = $map[$name] ?? $map[strtoupper($name)] ?? null) === null) {
+            throw new LogicException(
+                sprintf('Argument #1 ($name) is invalid: %s', $name)
             );
         }
 
@@ -65,9 +81,12 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
 
     final public static function toName(int $value): string
     {
-        if (is_null($name = (self::$NameMaps[static::class] ?? self::getMap(true))[$value] ?? null)) {
-            throw new UnexpectedValueException(
-                'Invalid ' . Convert::classToBasename(static::class) . ": $value"
+        if ((self::$NameMaps[static::class] ?? null) === null) {
+            self::loadMaps();
+        }
+        if (($name = self::$NameMaps[static::class][$value] ?? null) === null) {
+            throw new LogicException(
+                sprintf('Argument #1 ($value) is invalid: %d', $value)
             );
         }
 
