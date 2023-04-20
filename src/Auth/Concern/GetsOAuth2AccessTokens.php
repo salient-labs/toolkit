@@ -9,6 +9,7 @@ use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Lkrms\Auth\AccessToken;
 use Lkrms\Concern\TReadable;
+use Lkrms\Contract\IReadable;
 use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
@@ -28,9 +29,11 @@ use Throwable;
  * @property-read AbstractProvider $OAuth2Provider
  * @property-read string $OAuth2TokenKey
  *
- * @see \Lkrms\Contract\IReadable
+ * @see IReadable Must be implemented by classes that use this trait.
+ *
+ * @psalm-require-implements IReadable
  */
-trait GetsOAuth2AccessToken
+trait GetsOAuth2AccessTokens
 {
     use TReadable;
 

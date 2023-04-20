@@ -16,6 +16,5 @@ values are taken from the environment:
 | `DEFAULT_NAMESPACE`  | Applied to unqualified class names                  | `Lkrms\Tests\Sync\Entity`   |
 | `BUILDER_NAMESPACE`  | Overrides `DEFAULT_NAMESPACE` for `Builder` classes | `Lkrms\Tests\Builder`       |
 | `FACADE_NAMESPACE`   | Overrides `DEFAULT_NAMESPACE` for `Facade` classes  | `Lkrms\Tests\Facade`        |
-| `PHPDOC_PACKAGE`     | Used if `--package` is not specified                | `Lkrms\Tests`               |
 | `PROVIDER_NAMESPACE` | Applied to unqualified `--provider` class names     | `Lkrms\Tests\Sync\Provider` |
 

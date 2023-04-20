@@ -97,7 +97,7 @@ final class SyncStore extends SqliteStore
     private $WarningCount = 0;
 
     /**
-     * [ Prefix => true ]
+     * Prefix => true
      *
      * @var array<string,true>
      */
@@ -123,9 +123,9 @@ final class SyncStore extends SqliteStore
     /**
      * Deferred namespace registrations
      *
-     * [ Prefix, namespace base URI, PHP namespace, class resolver ]
+     * Prefix => [ namespace base URI, PHP namespace, class resolver ]
      *
-     * @var array<array{string,string,string,ISyncClassResolver|null}>
+     * @var array<string,array{string,string,ISyncClassResolver|null}>
      */
     private $DeferredNamespaces = [];
 
@@ -427,19 +427,24 @@ SQL;
      */
     public function namespace(string $prefix, string $uri, string $namespace, ?ISyncClassResolver $resolver = null)
     {
-        // Don't start a run just to register a namespace
-        if (is_null($this->RunId)) {
-            $this->DeferredNamespaces[] = [$prefix, $uri, $namespace, $resolver];
-
-            return $this;
-        }
-
         if (!preg_match('/^[a-zA-Z][a-zA-Z0-9+.-]*$/', $prefix)) {
             throw new LogicException("Invalid prefix: $prefix");
         }
+
         $prefix = strtolower($prefix);
-        if ($this->RegisteredNamespaces[$prefix] ?? false) {
+        if (($this->RegisteredNamespaces[$prefix] ?? false) ||
+                ($this->DeferredNamespaces[$prefix] ?? false)) {
             throw new LogicException("Prefix already registered: $prefix");
+        }
+
+        $uri = rtrim($uri, '/') . '/';
+        $namespace = trim($namespace, '\\') . '\\';
+
+        // Don't start a run just to register a namespace
+        if (is_null($this->RunId)) {
+            $this->DeferredNamespaces[$prefix] = [$uri, $namespace, $resolver];
+
+            return $this;
         }
 
         // Update `last_seen` if the namespace is already in the database
@@ -461,8 +466,8 @@ SET
 SQL;
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':entity_namespace_prefix', $prefix, SQLITE3_TEXT);
-        $stmt->bindValue(':base_uri', rtrim($uri, '/') . '/', SQLITE3_TEXT);
-        $stmt->bindValue(':php_namespace', trim($namespace, '\\') . '\\', SQLITE3_TEXT);
+        $stmt->bindValue(':base_uri', $uri, SQLITE3_TEXT);
+        $stmt->bindValue(':php_namespace', $namespace, SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
@@ -490,15 +495,14 @@ SQL;
      */
     public function getEntityTypeUri(string $entity, bool $compact = true): ?string
     {
-        if (!($prefix = $this->getEntityTypeNamespace($entity))) {
+        if (!($prefix = $this->classToNamespace($entity, $uri, $namespace))) {
             return null;
         }
-        $namespace = $this->NamespacesByPrefix[$prefix];
         $entity = str_replace('\\', '/', substr(ltrim($entity, '\\'), strlen($namespace)));
 
         return $compact
             ? "{$prefix}:{$entity}"
-            : "{$this->NamespaceUrisByPrefix[$prefix]}{$entity}";
+            : "{$uri}{$entity}";
     }
 
     /**
@@ -511,10 +515,6 @@ SQL;
      */
     public function getEntityTypeNamespace(string $entity): ?string
     {
-        if (!is_a($entity, ISyncEntity::class, true)) {
-            throw new LogicException("Does not implement ISyncEntity: $entity");
-        }
-
         return $this->classToNamespace($entity);
     }
 
@@ -525,24 +525,47 @@ SQL;
      */
     public function getNamespaceResolver(string $class): ?ISyncClassResolver
     {
-        if (!($prefix = $this->classToNamespace($class))) {
+        if (!$this->classToNamespace($class, $uri, $namespace, $resolver)) {
             return null;
         }
 
-        return $this->NamespaceResolversByPrefix[$prefix] ?? null;
+        return $resolver;
     }
 
     /**
      * @param class-string<ISyncEntity|ISyncProvider> $class
      */
-    private function classToNamespace(string $class): ?string
-    {
-        $this->check();
-
+    private function classToNamespace(
+        string $class,
+        ?string &$uri = null,
+        ?string &$namespace = null,
+        ?ISyncClassResolver &$resolver = null
+    ): ?string {
         $class = ltrim($class, '\\');
         $lower = strtolower($class);
-        foreach ($this->NamespacesByPrefix as $prefix => $namespace) {
-            if (strpos($lower, $namespace) === 0) {
+
+        // Don't start a run just to resolve a class to a namespace
+        if (is_null($this->RunId)) {
+            foreach ($this->DeferredNamespaces as $prefix => [$_uri, $_namespace, $_resolver]) {
+                $_namespace = strtolower($_namespace);
+                if (strpos($lower, $_namespace) === 0) {
+                    $uri = $_uri;
+                    $namespace = $_namespace;
+                    $resolver = $_resolver;
+
+                    return $prefix;
+                }
+            }
+
+            return null;
+        }
+
+        foreach ($this->NamespacesByPrefix as $prefix => $_namespace) {
+            if (strpos($lower, $_namespace) === 0) {
+                $uri = $this->NamespaceUrisByPrefix[$prefix];
+                $namespace = $this->NamespacesByPrefix[$prefix];
+                $resolver = $this->NamespaceResolversByPrefix[$prefix];
+
                 return $prefix;
             }
         }
@@ -698,7 +721,7 @@ SQL;
         }
         unset($this->DeferredProviders);
 
-        foreach ($this->DeferredNamespaces as [$prefix, $uri, $namespace, $resolver]) {
+        foreach ($this->DeferredNamespaces as $prefix => [$uri, $namespace, $resolver]) {
             $this->namespace($prefix, $uri, $namespace, $resolver);
         }
         unset($this->DeferredNamespaces);

@@ -16,9 +16,8 @@ interface MutableIterator extends Iterator
     /**
      * Replace the value at the current position
      *
-     * @template T of TValue
-     * @param T $value
-     * @return T
+     * @param TValue $value
+     * @return $this
      */
-    public function replace(&$value);
+    public function replace($value);
 }

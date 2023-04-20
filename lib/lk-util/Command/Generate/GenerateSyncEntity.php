@@ -1,9 +1,5 @@
 <?php declare(strict_types=1);
 
-/**
- * @package Lkrms\LkUtil
- */
-
 namespace Lkrms\LkUtil\Command\Generate;
 
 use DateTimeImmutable;
@@ -154,7 +150,6 @@ class GenerateSyncEntity extends GenerateCommand
 
         $extends = $this->getFqcnAlias(SyncEntity::class);
 
-        $package = $this->OutputPackage;
         $desc = $this->OutputDescription;
         $visibility = $this->MemberVisibility;
         $json = $this->ReferenceEntityFile;
@@ -275,9 +270,6 @@ class GenerateSyncEntity extends GenerateCommand
                 $docBlock[] = " * @property $type \$$prop";
             }
             $docBlock[] = ' *';
-        }
-        if ($package) {
-            $docBlock[] = " * @package $package";
         }
         if (!$this->NoMetaTags) {
             if ($entityUri) {
