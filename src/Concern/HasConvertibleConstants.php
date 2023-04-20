@@ -16,7 +16,7 @@ use LogicException;
  *
  * @psalm-require-implements IConvertibleEnumeration
  */
-trait IsConvertibleEnumeration
+trait HasConvertibleConstants
 {
     /**
      * Get an array that maps values to names

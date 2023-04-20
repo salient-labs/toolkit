@@ -3,7 +3,7 @@
 namespace Lkrms\Console;
 
 use Lkrms\Concept\Enumeration;
-use Lkrms\Concern\IsConvertibleEnumeration;
+use Lkrms\Concern\HasConvertibleConstants;
 use Lkrms\Contract\IConvertibleEnumeration;
 use Psr\Log\LogLevel;
 use UnexpectedValueException;
@@ -16,7 +16,7 @@ use UnexpectedValueException;
  */
 final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
 {
-    use IsConvertibleEnumeration;
+    use HasConvertibleConstants;
 
     public const EMERGENCY = 0;
     public const ALERT = 1;

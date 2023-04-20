@@ -2,7 +2,7 @@
 
 namespace Lkrms\Concept;
 
-use Lkrms\Concern\IsConvertibleEnumeration;
+use Lkrms\Concern\HasConvertibleConstants;
 use Lkrms\Contract\IConvertibleEnumeration;
 use LogicException;
 use ReflectionClass;
@@ -11,7 +11,7 @@ use ReflectionClass;
  * Uses reflection to convert the class's public constants to and from their
  * names
  *
- * @see IsConvertibleEnumeration A trait that provides an alternative
+ * @see HasConvertibleConstants A trait that provides an alternative
  * implementation.
  */
 abstract class ConvertibleEnumeration extends Enumeration implements IConvertibleEnumeration
