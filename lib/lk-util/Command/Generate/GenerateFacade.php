@@ -1,9 +1,5 @@
 <?php declare(strict_types=1);
 
-/**
- * @package Lkrms\LkUtil
- */
-
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\CliOption;
@@ -90,7 +86,6 @@ final class GenerateFacade extends GenerateCommand
         $extends = $this->getFqcnAlias(Facade::class, 'Facade');
         $service = $this->getFqcnAlias($fqcn, $class);
 
-        $package = $this->OutputPackage;
         $desc = $this->OutputDescription;
         $desc = is_null($desc) ? "A facade for $classPrefix$fqcn" : $desc;
         $declared = $this->getOptionValue('declared');
@@ -332,10 +327,6 @@ final class GenerateFacade extends GenerateCommand
         }
         if ($methods) {
             $docBlock[] = $methods;
-            $docBlock[] = ' *';
-        }
-        if ($package) {
-            $docBlock[] = " * @package $package";
             $docBlock[] = ' *';
         }
         $docBlock[] = " * @uses $service";

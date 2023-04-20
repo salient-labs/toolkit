@@ -1,9 +1,5 @@
 <?php declare(strict_types=1);
 
-/**
- * @package Lkrms\LkUtil
- */
-
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Closure;
@@ -165,7 +161,6 @@ class GenerateBuilder extends GenerateCommand
             $staticResolver = $this->getOptionValue('static-resolver')
         );
 
-        $package = $this->OutputPackage;
         $desc = $this->OutputDescription;
         $desc = is_null($desc)
             ? "A fluent interface for creating $classClass objects"
@@ -500,10 +495,6 @@ class GenerateBuilder extends GenerateCommand
         }
         $docBlock[] = $methods;
         $docBlock[] = ' *';
-        if ($package) {
-            $docBlock[] = " * @package $package";
-            $docBlock[] = ' *';
-        }
         $docBlock[] = " * @uses $service";
         $docBlock[] = ' *';
         $templates = '';

@@ -1,9 +1,5 @@
 <?php declare(strict_types=1);
 
-/**
- * @package Lkrms\LkUtil
- */
-
 namespace Lkrms\LkUtil\Command\Generate\Concept;
 
 use Lkrms\Cli\CliOption;
@@ -37,11 +33,6 @@ abstract class GenerateCommand extends Command
      * @var string|null
      */
     protected $OutputNamespace;
-
-    /**
-     * @var string|null
-     */
-    protected $OutputPackage;
 
     /**
      * @var string|null
@@ -85,14 +76,6 @@ abstract class GenerateCommand extends Command
     protected function getOutputOptionList(string $outputType): array
     {
         return [
-            CliOption::build()
-                ->long('package')
-                ->short('p')
-                ->valueName('package')
-                ->description('The PHPDoc package')
-                ->optionType(CliOptionType::VALUE)
-                ->envVariable('PHPDOC_PACKAGE')
-                ->bindTo($this->OutputPackage),
             CliOption::build()
                 ->long('desc')
                 ->short('d')

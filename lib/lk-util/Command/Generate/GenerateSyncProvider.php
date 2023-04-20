@@ -1,9 +1,5 @@
 <?php declare(strict_types=1);
 
-/**
- * @package Lkrms\LkUtil
- */
-
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\CliOption;
@@ -142,7 +138,6 @@ class GenerateSyncProvider extends GenerateCommand
         $camelClass = Convert::toCamelCase($class);
 
         $magic = $this->getOptionValue('magic');
-        $package = $this->OutputPackage;
         $desc = $this->OutputDescription;
         $desc = is_null($desc) ? "Syncs $class objects with a backend" : $desc;
         $ops = array_map(
@@ -244,9 +239,6 @@ class GenerateSyncProvider extends GenerateCommand
         if ($methods) {
             $docBlock[] = $methods;
             $docBlock[] = ' *';
-        }
-        if ($package) {
-            $docBlock[] = " * @package $package";
         }
         if (!$this->NoMetaTags) {
             $docBlock[] = ' * @lkrms-generate-command '
