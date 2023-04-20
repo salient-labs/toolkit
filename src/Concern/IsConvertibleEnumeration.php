@@ -2,38 +2,62 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Facade\Convert;
-use UnexpectedValueException;
+use Lkrms\Concept\ConvertibleEnumeration;
+use Lkrms\Contract\IConvertibleEnumeration;
+use LogicException;
 
 /**
- * Implements IConvertibleEnumeration to convert the integer values of public
- * constants to and from their names
+ * Uses arrays provided by the class to map its public constants to and from
+ * their names
  *
- * An alternative to {@see \Lkrms\Concept\ConvertibleEnumeration}, which uses
- * reflection.
+ * @see IConvertibleEnumeration Implemented by this trait.
+ * @see ConvertibleEnumeration An abstract class that provides an alternative
+ * implementation using reflection.
+ *
+ * @psalm-require-implements IConvertibleEnumeration
  */
 trait IsConvertibleEnumeration
 {
     /**
-     * Return an array that maps values to names
+     * Get an array that maps values to names
      *
      * @return array<int,string> Value => name
      */
     abstract protected static function getNameMap(): array;
 
     /**
-     * Return an array that maps names to values
-     *
-     * Array keys must be lowercase.
+     * Get an array that maps names to values
      *
      * @return array<string,int> Lowercase name => value
      */
     abstract protected static function getValueMap(): array;
 
+    /**
+     * Class name => [ constant name => value ]
+     *
+     * @var array<string,array<string,int>>
+     */
+    private static $ValueMaps = [];
+
+    /**
+     * Class name => [ constant value => name ]
+     *
+     * @var array<string,array<int,string>>
+     */
+    private static $NameMaps = [];
+
     public static function fromName(string $name): int
     {
-        if (is_null($value = static::getValueMap()[strtolower($name)] ?? null)) {
-            throw new UnexpectedValueException('Invalid ' . Convert::classToBasename(static::class) . " name: $name");
+        if (($map = self::$ValueMaps[static::class] ?? null) === null) {
+            // Add UPPER_CASE names to the map if necessary
+            $map = static::getValueMap();
+            $map += array_combine(array_map('strtoupper', array_keys($map)), $map);
+            self::$ValueMaps[static::class] = $map;
+        }
+        if (($value = $map[$name] ?? $map[strtoupper($name)] ?? null) === null) {
+            throw new LogicException(
+                sprintf('Argument #1 ($name) is invalid: %s', $name)
+            );
         }
 
         return $value;
@@ -41,8 +65,13 @@ trait IsConvertibleEnumeration
 
     public static function toName(int $value): string
     {
-        if (is_null($name = static::getNameMap()[$value] ?? null)) {
-            throw new UnexpectedValueException('Invalid ' . Convert::classToBasename(static::class) . ": $value");
+        if ((self::$NameMaps[static::class] ?? null) === null) {
+            self::$NameMaps[static::class] = static::getNameMap();
+        }
+        if (($name = self::$NameMaps[static::class][$value] ?? null) === null) {
+            throw new LogicException(
+                sprintf('Argument #1 ($value) is invalid: %d', $value)
+            );
         }
 
         return $name;

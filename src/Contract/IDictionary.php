@@ -3,8 +3,7 @@
 namespace Lkrms\Contract;
 
 /**
- * Defines one or more public constants, each with a value of the same type, and
- * has no other members except helper methods to service them
+ * Defines public constants with values of the same type
  *
  */
 interface IDictionary
