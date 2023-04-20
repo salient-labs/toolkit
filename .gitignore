@@ -1,23 +1,20 @@
-composer.lock
+/composer.lock
+/vendor
 composer.phar
-/vendor/
+
+.env
+*.generated.php
+*.log
+/var
+!/tests/.env
+/tests/.tmp
+
+/build
+/docs/api
+
+/.ci
 
 phpstan.neon
 
 phpunit.xml
 .phpunit.*
-
-.env
-*.generated.php
-*.log
-/var/
-
-!/tests/.env
-/tests/.tmp
-
-/build/
-/docs/api/
-
-phpdoc.xml
-
-/.ci/

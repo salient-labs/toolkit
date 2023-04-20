@@ -42,11 +42,12 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
-      - name: Install ApiGen
-        run: composer create-project --no-dev --no-interaction --no-progress apigen/apigen:^7@alpha apigen
+      - name: Install ApiGen and its dependencies
+        working-directory: lib/apigen
+        run: composer install --no-interaction --no-progress
 
       - name: Build API documentation
-        run: apigen/bin/apigen src --output .ci/docs/api
+        run: lib/apigen/vendor/bin/apigen -c lib/apigen/apigen.neon --output .ci/docs/api
 
       - name: Upload artifact to GitHub Pages
         if: ${{ !env.ACT }}

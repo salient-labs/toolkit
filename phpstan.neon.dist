@@ -1,39 +1,41 @@
 includes:
-  - phpstan-baseline.neon
-  - tests/phpstan-conditional.php
+	- phpstan-baseline.neon
+	- tests/phpstan-conditional.php
 
 parameters:
-  level: 6
-  paths:
-    - src
-    - lib
-    - bin/lk-util
-    - bootstrap.php
-    - tests
-  ignoreErrors:
-    -
-      message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateBuilder\\:\\:\\$[a-z0-9_]+ is never written, only read\\.$#i"
-      path: lib/lk-util/Command/Generate/GenerateBuilder.php
+	level: 6
+	paths:
+		- src
+		- lib
+		- bin/lk-util
+		- bootstrap.php
+		- tests
+	excludePaths:
+		- lib/apigen
+	ignoreErrors:
+		-
+			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateBuilder\\:\\:\\$[a-z0-9_]+ is never written, only read\\.$#i"
+			path: lib/lk-util/Command/Generate/GenerateBuilder.php
 
-    -
-      message: "#^Property Lkrms\\\\Cli\\\\CliOption\\:\\:\\$BindTo is never read, only written\\.$#"
-      path: src/Cli/CliOption.php
+		-
+			message: "#^Property Lkrms\\\\Cli\\\\CliOption\\:\\:\\$BindTo is never read, only written\\.$#"
+			path: src/Cli/CliOption.php
 
-    -
-      message: "#^Property Lkrms\\\\Container\\\\Container\\:\\:\\$Context(Stack)? is never read, only written\\.$#"
-      path: src/Container/Container.php
+		-
+			message: "#^Property Lkrms\\\\Container\\\\Container\\:\\:\\$Context(Stack)? is never read, only written\\.$#"
+			path: src/Container/Container.php
 
-    -
-      message: "#^Property Lkrms\\\\Curler\\\\CurlerHeaders\\:\\:\\$Trailers is never read, only written\\.$#"
-      path: src/Curler/CurlerHeaders.php
+		-
+			message: "#^Property Lkrms\\\\Curler\\\\CurlerHeaders\\:\\:\\$Trailers is never read, only written\\.$#"
+			path: src/Curler/CurlerHeaders.php
 
-    -
-      message: "#^Parameter \\#2 \\$value of method ADOConnection\\:\\:setConnectionParameter\\(\\) expects string, [a-z]+ given\\.$#"
-      path: src/Db/DbConnector.php
+		-
+			message: "#^Parameter \\#2 \\$value of method ADOConnection\\:\\:setConnectionParameter\\(\\) expects string, [a-z]+ given\\.$#"
+			path: src/Db/DbConnector.php
 
-    -
-      message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$GetFromSyncStore is never read, only written\\.$#"
-      path: src/Sync/Support/SyncEntityProvider.php
+		-
+			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$GetFromSyncStore is never read, only written\\.$#"
+			path: src/Sync/Support/SyncEntityProvider.php
 
-    -
-      message: "#^Method Lkrms\\\\Tests\\\\(.+Test|TestCase)\\:\\:.+\\(\\) has no return type specified\\.$#"
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\(.+Test|TestCase)\\:\\:.+\\(\\) has no return type specified\\.$#"
