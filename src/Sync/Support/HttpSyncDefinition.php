@@ -166,8 +166,8 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      * @phpstan-param SyncFilterPolicy::* $filterPolicy
      * @param array<int,Closure> $overrides
      * @phpstan-param array<SyncOperation::*,Closure> $overrides
-     * @phpstan-param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
-     * @phpstan-param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
+     * @phpstan-param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
+     * @phpstan-param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
      * @param mixed[]|null $query
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
      * @param array<int,string> $methodMap
@@ -383,6 +383,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      *
      * @phpstan-param (Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]) $httpClosure
      * @phpstan-param SyncOperation::* $operation
+     * @param mixed ...$args
      * @return mixed[]
      */
     private function runHttpOperation(Closure $httpClosure, int $operation, ISyncContext $ctx, ...$args)

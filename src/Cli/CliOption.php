@@ -3,10 +3,11 @@
 namespace Lkrms\Cli;
 
 use DateTimeImmutable;
-use Lkrms\Cli\Enumeration\CliOptionUnknownValuePolicy;
-use Lkrms\Cli\Enumeration\CliOptionValueType;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
-use Lkrms\Cli\Exception\CliInvalidValueException;
+use Lkrms\Cli\Catalog\CliOptionType;
+use Lkrms\Cli\Catalog\CliOptionValueType;
+use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
+use Lkrms\Cli\Exception\CliInvalidArgumentsException;
+use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IContainer;
@@ -188,7 +189,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      * Ignored if {@see CliOption::$IsOneOf} is `false`.
      *
      * @var int|null
-     * @phpstan-var CliOptionUnknownValuePolicy::*|null
+     * @phpstan-var CliOptionValueUnknownPolicy::*|null
      */
     protected $UnknownValuePolicy;
 
@@ -270,7 +271,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      * @phpstan-param CliOptionType::* $optionType
      * @phpstan-param CliOptionValueType::* $valueType
      * @param string[]|null $allowedValues
-     * @phpstan-param CliOptionUnknownValuePolicy::* $unknownValuePolicy
+     * @phpstan-param CliOptionValueUnknownPolicy::* $unknownValuePolicy
      * @param string|string[]|bool|int|null $defaultValue
      * @param mixed $bindTo Assign user-supplied values to a variable before
      * running the command.
@@ -283,7 +284,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         int $optionType = CliOptionType::FLAG,
         int $valueType = CliOptionValueType::STRING,
         ?array $allowedValues = null,
-        int $unknownValuePolicy = CliOptionUnknownValuePolicy::REJECT,
+        int $unknownValuePolicy = CliOptionValueUnknownPolicy::REJECT,
         bool $required = false,
         bool $multipleAllowed = false,
         bool $addAll = false,
@@ -461,7 +462,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                         $this->OriginalDefaultValue,
                         'defaultValue'
                     );
-                } catch (CliInvalidValueException $ex) {
+                } catch (CliUnknownValueException $ex) {
                     throw new LogicException('defaultValue must satisfy unknownValuePolicy', 0, $ex);
                 }
             }
@@ -474,11 +475,11 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                         $this->DefaultValue,
                         sprintf("environment variable '%s'", $this->EnvVariable)
                     );
-                } catch (CliInvalidValueException $ex) {
+                } catch (CliUnknownValueException $ex) {
                     // Discard rejected values to ensure they're not displayed
                     // in help messages
                     $clone = clone $this;
-                    $clone->UnknownValuePolicy = CliOptionUnknownValuePolicy::DISCARD;
+                    $clone->UnknownValuePolicy = CliOptionValueUnknownPolicy::DISCARD;
                     $this->DefaultValue = $clone->applyUnknownValuePolicy($this->DefaultValue);
                     throw $ex;
                 }
@@ -504,20 +505,20 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         }
 
         switch ($this->UnknownValuePolicy) {
-            case CliOptionUnknownValuePolicy::ACCEPT:
+            case CliOptionValueUnknownPolicy::ACCEPT:
                 return $value;
 
-            case CliOptionUnknownValuePolicy::DISCARD:
+            case CliOptionValueUnknownPolicy::DISCARD:
                 $value = array_intersect($this->maybeSplitValue($value), $this->AllowedValues);
 
                 return $this->MultipleAllowed
                     ? $value
                     : $value[0] ?? null;
 
-            case CliOptionUnknownValuePolicy::REJECT:
+            case CliOptionValueUnknownPolicy::REJECT:
             default:
                 if ($invalid = array_diff($this->maybeSplitValue($value), $this->AllowedValues)) {
-                    throw new CliInvalidValueException(
+                    throw new CliUnknownValueException(
                         // "invalid --field values 'title','name' (expected one
                         // of: first,last)"
                         "invalid {$this->DisplayName} "
@@ -635,7 +636,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                 $fileType = $fileType ?? 'directory';
                 $callable = $callable ?? 'is_dir';
                 if (!$callable($value)) {
-                    throw new CliArgumentsInvalidException(
+                    throw new CliInvalidArgumentsException(
                         sprintf('%s not found: %s', $fileType, $value)
                     );
                 }
@@ -655,7 +656,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         } else {
             $message = sprintf("invalid %s value '%s' (%s expected)", $this->DisplayName, $value, $type);
         }
-        throw new CliArgumentsInvalidException($message);
+        throw new CliInvalidArgumentsException($message);
     }
 
     /**

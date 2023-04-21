@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests\Cli;
 
-use Lkrms\Facade\Cli;
+use Lkrms\Cli\Facade\Cli;
 use Lkrms\Tests\Cli\Command\TestOptions;
 
 $loader = require __DIR__ . '/../../vendor/autoload.php';

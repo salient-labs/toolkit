@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Cli;
+namespace Lkrms\Cli\Catalog;
 
 use Lkrms\Concept\Dictionary;
 
 /**
  * Section names commonly used in usage information / help messages
  *
- * @see \Lkrms\Cli\Concept\CliCommand::getUsageSections()
+ * @see \Lkrms\Cli\CliCommand::getUsageSections()
  */
 final class CliUsageSectionName extends Dictionary
 {

@@ -2,11 +2,11 @@
 
 namespace Lkrms\Sync\Command;
 
-use Lkrms\Cli\CliAppContainer;
+use Lkrms\Cli\Catalog\CliOptionType;
+use Lkrms\Cli\CliApplication;
+use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
-use Lkrms\Cli\CliOptionType;
-use Lkrms\Cli\Concept\CliCommand;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
+use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
@@ -49,7 +49,7 @@ final class GetSyncEntities extends CliCommand
      */
     private $Store;
 
-    public function __construct(CliAppContainer $container, SyncStore $store)
+    public function __construct(CliApplication $container, SyncStore $store)
     {
         parent::__construct($container);
 
@@ -153,7 +153,7 @@ final class GetSyncEntities extends CliCommand
             $this->app()->getName(SyncIntrospector::entityToProvider($class)),
             $this->Providers
         ))) {
-            throw new CliArgumentsInvalidException('no default provider: ' . $class);
+            throw new CliInvalidArgumentsException('no default provider: ' . $class);
         }
         /** @var ISyncProvider */
         $provider = $this->app()->get($this->Providers[$provider]);

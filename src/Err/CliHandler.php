@@ -6,7 +6,7 @@ use Lkrms\Facade\Console;
 use Whoops\Handler\Handler;
 use Whoops\Handler\PlainTextHandler;
 
-class CliHandler extends PlainTextHandler
+final class CliHandler extends PlainTextHandler
 {
     public function handle()
     {

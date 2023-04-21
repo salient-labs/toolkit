@@ -1,14 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Cli;
+namespace Lkrms\Cli\Catalog;
 
 use Lkrms\Concept\Enumeration;
 
 /**
  * Command line option types
  *
- * See {@see \Lkrms\Cli\Concept\CliCommand::getOptionList()} for more
- * information.
+ * See {@see \Lkrms\Cli\CliCommand::getOptionList()} for more information.
  *
  */
 final class CliOptionType extends Enumeration

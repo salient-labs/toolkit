@@ -95,8 +95,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * entities--if not all of them--the default policy if there are unclaimed
      * filters is {@see SyncFilterPolicy::THROW_EXCEPTION}. See
      * {@see SyncFilterPolicy} for alternative policies or
-     * {@see \Lkrms\Sync\Contract\ISyncContext::withArgs()} for more information
-     * about filters.
+     * {@see ISyncContext::withArgs()} for more information about filters.
      *
      * @var int
      * @phpstan-var SyncFilterPolicy::*

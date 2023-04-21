@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Cli\Enumeration;
+namespace Lkrms\Cli\Catalog;
 
 use Lkrms\Concept\Enumeration;
 

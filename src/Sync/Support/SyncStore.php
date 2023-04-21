@@ -228,7 +228,7 @@ SQL
         }
 
         // Don't start a run now
-        if (is_null($this->RunId)) {
+        if ($this->RunId === null) {
             return parent::close();
         }
 
@@ -295,7 +295,7 @@ SQL;
     public function provider(ISyncProvider $provider)
     {
         // Don't start a run just to register a provider
-        if (is_null($this->RunId)) {
+        if ($this->RunId === null) {
             $this->DeferredProviders[] = $provider;
 
             return $this;
@@ -304,7 +304,7 @@ SQL;
         $class = get_class($provider);
         $hash = Compute::binaryHash($class, ...$provider->getBackendIdentifier());
 
-        if (!is_null($this->ProvidersByHash[$hash] ?? null)) {
+        if (($this->ProvidersByHash[$hash] ?? null) !== null) {
             throw new LogicException("Provider already registered: $class");
         }
 
@@ -357,7 +357,7 @@ SQL;
      */
     public function entityType(string $entity)
     {
-        if (!is_null($this->EntityTypes[$entity] ?? null)) {
+        if (($this->EntityTypes[$entity] ?? null) !== null) {
             return $this;
         }
 
@@ -433,7 +433,7 @@ SQL;
 
         $prefix = strtolower($prefix);
         if (($this->RegisteredNamespaces[$prefix] ?? false) ||
-                ($this->DeferredNamespaces[$prefix] ?? false)) {
+                ($this->RunId === null && ($this->DeferredNamespaces[$prefix] ?? false))) {
             throw new LogicException("Prefix already registered: $prefix");
         }
 
@@ -441,7 +441,7 @@ SQL;
         $namespace = trim($namespace, '\\') . '\\';
 
         // Don't start a run just to register a namespace
-        if (is_null($this->RunId)) {
+        if ($this->RunId === null) {
             $this->DeferredNamespaces[$prefix] = [$uri, $namespace, $resolver];
 
             return $this;
@@ -478,7 +478,7 @@ SQL;
         }
 
         // Don't reload while bootstrapping
-        if (is_null($this->NamespacesByPrefix)) {
+        if ($this->NamespacesByPrefix === null) {
             return $this;
         }
 
@@ -545,7 +545,7 @@ SQL;
         $lower = strtolower($class);
 
         // Don't start a run just to resolve a class to a namespace
-        if (is_null($this->RunId)) {
+        if ($this->RunId === null) {
             foreach ($this->DeferredNamespaces as $prefix => [$_uri, $_namespace, $_resolver]) {
                 $_namespace = strtolower($_namespace);
                 if (strpos($lower, $_namespace) === 0) {
@@ -564,7 +564,7 @@ SQL;
             if (strpos($lower, $_namespace) === 0) {
                 $uri = $this->NamespaceUrisByPrefix[$prefix];
                 $namespace = $this->NamespacesByPrefix[$prefix];
-                $resolver = $this->NamespaceResolversByPrefix[$prefix];
+                $resolver = $this->NamespaceResolversByPrefix[$prefix] ?? null;
 
                 return $prefix;
             }
@@ -599,7 +599,7 @@ SQL;
         foreach ($providers as $provider) {
             $name = $provider->name() ?: get_class($provider);
             $id = $provider->getProviderId();
-            if (is_null($id)) {
+            if ($id === null) {
                 $name .= ' [unregistered]';
             } else {
                 $name .= " [#$id]";
@@ -686,7 +686,7 @@ SQL;
 
     protected function check()
     {
-        if (!is_null($this->RunId)) {
+        if (($this->RunId) !== null) {
             return $this;
         }
 

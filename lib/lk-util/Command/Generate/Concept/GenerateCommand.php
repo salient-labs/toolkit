@@ -2,9 +2,9 @@
 
 namespace Lkrms\LkUtil\Command\Generate\Concept;
 
+use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
-use Lkrms\Cli\CliOptionType;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;

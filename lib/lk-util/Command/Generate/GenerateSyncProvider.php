@@ -2,9 +2,9 @@
 
 namespace Lkrms\LkUtil\Command\Generate;
 
+use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
-use Lkrms\Cli\CliOptionType;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
+use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
@@ -106,11 +106,11 @@ class GenerateSyncProvider extends GenerateCommand
         $fqcn = $namespace . '\\' . $class;
 
         if (!$class) {
-            throw new CliArgumentsInvalidException("invalid class: $classArg");
+            throw new CliInvalidArgumentsException("invalid class: $classArg");
         }
 
         if (!is_a($fqcn, SyncEntity::class, true)) {
-            throw new CliArgumentsInvalidException("not a subclass of SyncEntity: $classArg");
+            throw new CliInvalidArgumentsException("not a subclass of SyncEntity: $classArg");
         }
 
         $namespace = explode('\\', SyncIntrospector::entityToProvider($fqcn));

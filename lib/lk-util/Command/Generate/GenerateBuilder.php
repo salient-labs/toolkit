@@ -3,9 +3,9 @@
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Closure;
+use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
-use Lkrms\Cli\CliOptionType;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
+use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Convert;
@@ -168,28 +168,28 @@ class GenerateBuilder extends GenerateCommand
         $declared = $this->getOptionValue('declared');
 
         if (!$classFqcn) {
-            throw new CliArgumentsInvalidException("invalid class: $classFqcn");
+            throw new CliInvalidArgumentsException("invalid class: $classFqcn");
         }
 
         if (!$builderFqcn) {
-            throw new CliArgumentsInvalidException("invalid builder: $builderFqcn");
+            throw new CliInvalidArgumentsException("invalid builder: $builderFqcn");
         }
 
         if (!$extendsFqcn) {
-            throw new CliArgumentsInvalidException("invalid builder subclass: $extendsFqcn");
+            throw new CliInvalidArgumentsException("invalid builder subclass: $extendsFqcn");
         }
 
         if (!is_a($extendsFqcn, Builder::class, true)) {
-            throw new CliArgumentsInvalidException("not a subclass of Builder: $extendsFqcn");
+            throw new CliInvalidArgumentsException("not a subclass of Builder: $extendsFqcn");
         }
 
         try {
             $_class = new ReflectionClass($classFqcn);
             if (!$_class->isInstantiable() && !$_class->isAbstract()) {
-                throw new CliArgumentsInvalidException("not an instantiable class: $classFqcn");
+                throw new CliInvalidArgumentsException("not an instantiable class: $classFqcn");
             }
         } catch (ReflectionException $ex) {
-            throw new CliArgumentsInvalidException("class does not exist: $classFqcn");
+            throw new CliInvalidArgumentsException("class does not exist: $classFqcn");
         }
 
         $_docBlocks = Reflect::getAllClassDocComments($_class);

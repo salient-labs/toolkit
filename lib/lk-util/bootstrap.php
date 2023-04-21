@@ -2,7 +2,7 @@
 
 namespace Lkrms\LkUtil;
 
-use Lkrms\Facade\Cli;
+use Lkrms\Cli\Facade\Cli;
 use Lkrms\LkUtil\Command\Generate\GenerateBuilder;
 use Lkrms\LkUtil\Command\Generate\GenerateFacade;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;

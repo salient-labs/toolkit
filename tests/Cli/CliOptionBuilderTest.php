@@ -2,11 +2,11 @@
 
 namespace Lkrms\Tests\Cli;
 
+use Lkrms\Cli\Catalog\CliOptionType;
+use Lkrms\Cli\Catalog\CliOptionValueType;
+use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
-use Lkrms\Cli\CliOptionType;
-use Lkrms\Cli\Enumeration\CliOptionUnknownValuePolicy;
-use Lkrms\Cli\Enumeration\CliOptionValueType;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 
@@ -140,7 +140,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
                 ->valueName('Start Date')
                 ->valueType(CliOptionValueType::DATE)
                 ->allowedValues(['today', 'yesterday', 'tomorrow'])
-                ->unknownValuePolicy(CliOptionUnknownValuePolicy::ACCEPT)
+                ->unknownValuePolicy(CliOptionValueUnknownPolicy::ACCEPT)
                 ->required()
                 ->addAll()
                 ->defaultValue(['today'])
