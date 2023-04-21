@@ -9,7 +9,7 @@ use Lkrms\Facade\Console;
  * Thrown when an invalid command-line argument is given
  *
  */
-class CliArgumentsInvalidException extends \Lkrms\Exception\Exception
+class CliInvalidArgumentsException extends \Lkrms\Exception\Exception
 {
     /**
      * @var string[]

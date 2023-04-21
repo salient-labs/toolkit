@@ -3,9 +3,9 @@
 namespace Lkrms\LkUtil\Command\Generate;
 
 use DateTimeImmutable;
+use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
-use Lkrms\Cli\CliOptionType;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
+use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Test;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
@@ -166,7 +166,7 @@ class GenerateSyncEntity extends GenerateCommand
         $dataUri = null;
 
         if (!$fqcn) {
-            throw new CliArgumentsInvalidException("invalid class: $fqcn");
+            throw new CliInvalidArgumentsException("invalid class: $fqcn");
         }
 
         if ($json) {

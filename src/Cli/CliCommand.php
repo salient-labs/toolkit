@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Cli\Concept;
+namespace Lkrms\Cli;
 
-use Lkrms\Cli\CliAppContainer;
+use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
-use Lkrms\Cli\Exception\CliInvalidValueException;
-use Lkrms\Concern\HasCliAppContainer;
+use Lkrms\Cli\Concern\HasCliApplication;
+use Lkrms\Cli\Exception\CliInvalidArgumentsException;
+use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Console\ConsoleFormatter;
 use Lkrms\Contract\ReturnsContainer;
 use Lkrms\Facade\Composer;
@@ -20,11 +20,11 @@ use Throwable;
 /**
  * Base class for CLI commands
  *
- * @implements ReturnsContainer<CliAppContainer>
+ * @implements ReturnsContainer<CliApplication>
  */
 abstract class CliCommand implements ReturnsContainer
 {
-    use HasCliAppContainer;
+    use HasCliApplication;
 
     /**
      * Get a one-line description of the command
@@ -67,7 +67,8 @@ abstract class CliCommand implements ReturnsContainer
      * automatically and will be ignored if returned by this method.
      *
      * @return array<string,string>|null An array that maps
-     * {@see \Lkrms\Cli\CliUsageSectionName} values to content, e.g.:
+     * {@see \Lkrms\Cli\Catalog\CliUsageSectionName} values to content, e.g.:
+     *
      * ```php
      * [
      *   CliUsageSectionName::EXIT_STATUS => <<<EOF
@@ -218,7 +219,7 @@ abstract class CliCommand implements ReturnsContainer
     {
         try {
             $option->validate();
-        } catch (CliInvalidValueException $ex) {
+        } catch (CliUnknownValueException $ex) {
             $this->deferOptionError($ex->getMessage());
         }
 
@@ -769,7 +770,7 @@ abstract class CliCommand implements ReturnsContainer
             if ($option->AllowedValues && !is_null($value)) {
                 try {
                     $value = $option->applyUnknownValuePolicy($value);
-                } catch (CliInvalidValueException $ex) {
+                } catch (CliUnknownValueException $ex) {
                     $this->optionError($ex->getMessage());
                 }
             }
@@ -805,7 +806,7 @@ abstract class CliCommand implements ReturnsContainer
         }
 
         if ($this->OptionErrors) {
-            throw new CliArgumentsInvalidException(
+            throw new CliInvalidArgumentsException(
                 ...$this->OptionErrors,
                 ...$this->DeferredOptionErrors
             );
@@ -983,7 +984,7 @@ abstract class CliCommand implements ReturnsContainer
         }
 
         if ($this->DeferredOptionErrors) {
-            throw new CliArgumentsInvalidException(
+            throw new CliInvalidArgumentsException(
                 ...$this->DeferredOptionErrors
             );
         }

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Cli\Enumeration;
+namespace Lkrms\Cli\Catalog;
 
 use Lkrms\Concept\Enumeration;
 
@@ -9,7 +9,7 @@ use Lkrms\Concept\Enumeration;
  * and ONE_OF_POSITIONAL
  *
  */
-final class CliOptionUnknownValuePolicy extends Enumeration
+final class CliOptionValueUnknownPolicy extends Enumeration
 {
     /**
      * Throw exceptions over unknown values

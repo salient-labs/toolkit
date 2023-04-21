@@ -90,7 +90,7 @@ final class DbConnector implements IReadable
      * - `<name>_schema`
      * @param int|null $driver A {@see DbDriver} value, or `null` to use
      * environment variable `<name>_driver`.
-     * @phpstan-param DbDriver::*|null $driver
+     * @phpstan-param (int&DbDriver::*)|null $driver
      */
     public function __construct(string $name, int $driver = null)
     {

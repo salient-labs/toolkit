@@ -22,7 +22,7 @@ use UnexpectedValueException;
  * @template TProvider of DbSyncProvider
  * @extends SyncDefinition<TEntity,TProvider>
  */
-class DbSyncDefinition extends SyncDefinition implements HasBuilder
+final class DbSyncDefinition extends SyncDefinition implements HasBuilder
 {
     /**
      * @var string|null

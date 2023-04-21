@@ -2,8 +2,9 @@
 
 namespace Lkrms\Cli;
 
-use Lkrms\Cli\Concept\CliCommand;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
+use Lkrms\Cli\Catalog\CliUsageSectionName;
+use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Container\AppContainer;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Composer;
@@ -18,7 +19,7 @@ use LogicException;
  * Typically accessed via the {@see \Lkrms\Facade\Cli} facade.
  *
  */
-final class CliAppContainer extends AppContainer
+final class CliApplication extends AppContainer
 {
     /**
      * @var array<string,class-string<CliCommand>|mixed[]>
@@ -326,9 +327,9 @@ EOF;
 
                 return $result;
             } else {
-                throw new CliArgumentsInvalidException("no command registered at '$name'");
+                throw new CliInvalidArgumentsException("no command registered at '$name'");
             }
-        } catch (CliArgumentsInvalidException $ex) {
+        } catch (CliInvalidArgumentsException $ex) {
             $this->RunningCommand = null;
             $ex->reportErrors();
             if (($node && ($usage = $this->getUsage($name, $node, true))) ||

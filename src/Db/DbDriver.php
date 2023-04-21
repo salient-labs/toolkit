@@ -3,7 +3,7 @@
 namespace Lkrms\Db;
 
 use Lkrms\Concept\ConvertibleEnumeration;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * Database connection drivers
@@ -31,7 +31,10 @@ final class DbDriver extends ConvertibleEnumeration
      */
     public const SQLITE = 3;
 
-    private static $AdodbDriverMap = [
+    /**
+     * @var array<int,string>
+     */
+    private const ADODB_DRIVER_MAP = [
         self::DB2 => 'db2',
         self::MSSQL => 'mssqlnative',
         self::MYSQL => 'mysqli',
@@ -43,8 +46,10 @@ final class DbDriver extends ConvertibleEnumeration
      */
     public static function toAdodbDriver(int $driver): string
     {
-        if (is_null($adodbDriver = self::$AdodbDriverMap[$driver] ?? null)) {
-            throw new UnexpectedValueException("Invalid DbDriver: $driver");
+        if (($adodbDriver = self::ADODB_DRIVER_MAP[$driver] ?? null) === null) {
+            throw new LogicException(
+                sprintf('Argument #1 ($driver) is invalid: %d', $driver)
+            );
         }
 
         return $adodbDriver;

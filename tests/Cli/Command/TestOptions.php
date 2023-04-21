@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Cli\Command;
 
+use Lkrms\Cli\Catalog\CliOptionType;
+use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
-use Lkrms\Cli\CliOptionType;
-use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Facade\Convert;
 
 class TestOptions extends CliCommand

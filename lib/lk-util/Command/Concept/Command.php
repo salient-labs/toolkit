@@ -2,8 +2,8 @@
 
 namespace Lkrms\LkUtil\Command\Concept;
 
-use Lkrms\Cli\Concept\CliCommand;
-use Lkrms\Cli\Exception\CliArgumentsInvalidException;
+use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Contract\IProvider;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
@@ -87,8 +87,8 @@ abstract class Command extends CliCommand
         }
 
         throw class_exists($provider)
-            ? new CliArgumentsInvalidException("not a subclass of $class: $provider")
-            : new CliArgumentsInvalidException("class does not exist: $provider");
+            ? new CliInvalidArgumentsException("not a subclass of $class: $provider")
+            : new CliInvalidArgumentsException("class does not exist: $provider");
     }
 
     /**
@@ -99,7 +99,7 @@ abstract class Command extends CliCommand
         if ($file === '-') {
             $file = 'php://stdin';
         } elseif (($file = File::realpath($_file = $file)) === false) {
-            throw new CliArgumentsInvalidException("file not found: $_file");
+            throw new CliInvalidArgumentsException("file not found: $_file");
         } elseif (strpos($file, $this->app()->BasePath) === 0) {
             $path = './' . ltrim(substr($file, strlen($this->app()->BasePath)), '/');
         } else {

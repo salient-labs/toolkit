@@ -2,11 +2,11 @@
 
 namespace Lkrms\Sync\Command;
 
-use Lkrms\Cli\CliAppContainer;
+use Lkrms\Cli\Catalog\CliOptionType;
+use Lkrms\Cli\CliApplication;
+use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
-use Lkrms\Cli\CliOptionType;
-use Lkrms\Cli\Concept\CliCommand;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -30,7 +30,7 @@ final class CheckSyncProviderHeartbeat extends CliCommand
      */
     private $Store;
 
-    public function __construct(CliAppContainer $container, SyncStore $store)
+    public function __construct(CliApplication $container, SyncStore $store)
     {
         parent::__construct($container);
 
