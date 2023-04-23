@@ -16,8 +16,11 @@ use Lkrms\Utility\Tests;
  * @method static bool classImplements(object|class-string $class, class-string $interface) True if an object or class implements an interface
  * @method static bool firstExistingDirectoryIsWritable(string $dir) True if a directory exists and is writable, or doesn't exist but can be created
  * @method static bool isAbsolutePath(string $path) True if $path is an absolute path (see {@see Tests::isAbsolutePath()})
- * @method static bool isArrayOf($value, string $class, bool $allowEmpty = false) True if $value is an array of instances of $class
- * @method static bool isArrayOfIntOrString(mixed $value, bool $allowEmpty = false) True if $value is a string[] or int[]
+ * @method static bool isArrayOf(mixed $value, string $class, bool $allowEmpty = false) True if $value is an array of instances of $class
+ * @method static bool isArrayOfArrayKey(mixed $value, bool $allowEmpty = false) True if $value is a string[] or int[]
+ * @method static bool isArrayOfInt(mixed $value, bool $allowEmpty = false) True if $value is an int[]
+ * @method static bool isArrayOfString(mixed $value, bool $allowEmpty = false) True if $value is a string[]
+ * @method static bool isArrayOfValue(mixed $value, mixed $itemValue, bool $strict = true, bool $allowEmpty = false) True if $value is an array filled exclusively with $itemValue
  * @method static bool isAssociativeArray(mixed $value, bool $allowEmpty = false) True if $value is an array with one or more string keys
  * @method static bool isBetween(int|float $value, int|float $min, int|float $max) True if $value is a number within a range (see {@see Tests::isBetween()})
  * @method static bool isBoolValue(mixed $value) True if $value is a boolean or boolean string (see {@see Tests::isBoolValue()})

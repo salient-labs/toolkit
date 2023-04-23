@@ -98,18 +98,108 @@ final class Tests
      *
      * @param mixed $value
      */
-    public static function isArrayOfIntOrString($value, bool $allowEmpty = false): bool
+    public static function isArrayOfArrayKey($value, bool $allowEmpty = false): bool
     {
-        return is_array($value) &&
-            ($value
-                ? count(array_filter($value, fn($item) => is_string($item))) === count($value) ||
-                    count(array_filter($value, fn($item) => is_int($item))) === count($value)
-                : $allowEmpty);
+        if (!is_array($value)) {
+            return false;
+        }
+        if (!$value) {
+            return $allowEmpty;
+        }
+        if (is_int($last = array_pop($value))) {
+            foreach ($value as $item) {
+                if (!is_int($item)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        if (is_string($last)) {
+            foreach ($value as $item) {
+                if (!is_string($item)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * True if $value is an int[]
+     *
+     * @param mixed $value
+     */
+    public static function isArrayOfInt($value, bool $allowEmpty = false): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+        if (!$value) {
+            return $allowEmpty;
+        }
+        foreach ($value as $item) {
+            if (!is_int($item)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * True if $value is a string[]
+     *
+     * @param mixed $value
+     */
+    public static function isArrayOfString($value, bool $allowEmpty = false): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+        if (!$value) {
+            return $allowEmpty;
+        }
+        foreach ($value as $item) {
+            if (!is_string($item)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * True if $value is an array filled exclusively with $itemValue
+     *
+     * @param mixed $value
+     * @param mixed $itemValue
+     */
+    public static function isArrayOfValue($value, $itemValue, bool $strict = true, bool $allowEmpty = false): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+        if (!$value) {
+            return $allowEmpty;
+        }
+        foreach ($value as $item) {
+            if (($strict && $item !== $itemValue) ||
+                    (!$strict && $item != $itemValue)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
      * True if $value is an array of instances of $class
      *
+     * @param mixed $value
      */
     public static function isArrayOf($value, string $class, bool $allowEmpty = false): bool
     {

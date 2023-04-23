@@ -63,7 +63,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
             ));
         }
 
-        if (Test::isArrayOfIntOrString($args)) {
+        if (Test::isArrayOfArrayKey($args)) {
             return $this->withPropertyValue('Filter', ['id' => $args]);
         }
 

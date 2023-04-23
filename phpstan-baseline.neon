@@ -1921,11 +1921,6 @@ parameters:
 			path: src/Utility/Reflection.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Tests\\:\\:isArrayOf\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Utility/Tests.php
-
-		-
 			message: "#^Property Lkrms\\\\Tests\\\\Cli\\\\Command\\\\TestOptions\\:\\:\\$flag1 has no type specified\\.$#"
 			count: 1
 			path: tests/Cli/Command/TestOptions.php
