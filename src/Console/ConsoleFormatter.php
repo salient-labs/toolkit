@@ -125,21 +125,26 @@ REGEX;
 
     /**
      * Escape backslashes and backticks in a string
+     */
+    public static function escape(string $string): string
+    {
+        return str_replace(['\\', '`'], ['\\\\', '\`'], $string);
+    }
+
+    /**
+     * Escape backslashes and backticks in a string before adding backticks
+     * around it
      *
      * Example:
      *
      * ```php
-     * Console::info('Message:', ConsoleFormatter::escape($message, true));
+     * Console::info('Message:', ConsoleFormatter::escapeAndEnclose($message));
      * ```
      *
      */
-    public static function escape(string $string, bool $enclose = false): string
+    public static function escapeAndEnclose(string $string): string
     {
-        $escaped = str_replace(['\\', '`'], ['\\\\', '\`'], $string);
-
-        return $enclose
-            ? "`$escaped`"
-            : $escaped;
+        return '`' . self::escape($string) . '`';
     }
 
     /**

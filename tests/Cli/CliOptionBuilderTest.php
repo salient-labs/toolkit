@@ -5,6 +5,7 @@ namespace Lkrms\Tests\Cli;
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
+use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Container\Container;
@@ -86,6 +87,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(false, $option->IsPositional);
         $this->assertSame(true, $option->Required);
         $this->assertSame(true, $option->ValueRequired);
+        $this->assertSame(false, $option->ValueOptional);
         $this->assertSame(false, $option->MultipleAllowed);
         $this->assertSame(null, $option->Delimiter);
         $this->assertSame('Sync files to DIR', $option->Description);
@@ -97,7 +99,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(null, $option->EnvVariable);
         $this->assertSame(false, $option->KeepEnv);
         $this->assertSame(null, $option->ValueCallback);
-        $this->assertSame(false, $option->Hide);
+        $this->assertSame(CliOptionVisibility::ALL, $option->Visibility);
     }
 
     private function assertIsFlag(CliOption $option)
@@ -113,6 +115,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(false, $option->IsPositional);
         $this->assertSame(false, $option->Required);
         $this->assertSame(false, $option->ValueRequired);
+        $this->assertSame(false, $option->ValueOptional);
         $this->assertSame(null, $option->Delimiter);
         $this->assertSame('Description of flag', $option->Description);
         $this->assertSame(null, $option->AllowedValues);
@@ -120,7 +123,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(false, $option->AddAll);
         $this->assertSame(false, $option->KeepDefault);
         $this->assertSame(false, $option->KeepEnv);
-        $this->assertSame(false, $option->Hide);
+        $this->assertSame(CliOptionVisibility::ALL, $option->Visibility);
     }
 
     private function getFlag(?CliOptionBuilder $option = null): CliOptionBuilder

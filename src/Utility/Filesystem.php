@@ -59,11 +59,15 @@ final class Filesystem
         ?string $include = null,
         ?array $excludeCallbacks = null,
         ?array $includeCallbacks = null,
-        bool $recursive = true
+        bool $recursive = true,
+        bool $withDirectories = false
     ): FluentIteratorInterface {
         $flags = FilesystemIterator::KEY_AS_PATHNAME
             | FilesystemIterator::CURRENT_AS_FILEINFO
             | FilesystemIterator::SKIP_DOTS;
+        $mode = $withDirectories
+            ? RecursiveIteratorIterator::SELF_FIRST
+            : RecursiveIteratorIterator::LEAVES_ONLY;
 
         if ($exclude || $include || $excludeCallbacks || $includeCallbacks) {
             $callback =
@@ -111,7 +115,7 @@ final class Filesystem
             if ($callback ?? null) {
                 $iterator = new RecursiveCallbackFilterIterator($iterator, $callback);
             }
-            $iterator = new RecursiveIteratorIterator($iterator);
+            $iterator = new RecursiveIteratorIterator($iterator, $mode);
             /** @var FluentIteratorInterface<string,SplFileInfo> */
             $iterator = new \Lkrms\Support\Iterator\FluentIterator($iterator);
 
@@ -122,7 +126,9 @@ final class Filesystem
         if ($callback ?? null) {
             $iterator = new CallbackFilterIterator($iterator, $callback);
         }
-        $iterator = new CallbackFilterIterator($iterator, fn(SplFileInfo $current) => !$current->isDir());
+        if (!$withDirectories) {
+            $iterator = new CallbackFilterIterator($iterator, fn(SplFileInfo $current) => !$current->isDir());
+        }
         /** @var FluentIteratorInterface<string,SplFileInfo> */
         $iterator = new \Lkrms\Support\Iterator\FluentIterator($iterator);
 

@@ -6,6 +6,7 @@ use DateTimeImmutable;
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
+use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Concern\TFullyReadable;
@@ -35,6 +36,7 @@ use Throwable;
  * @property-read bool $IsPositional
  * @property-read bool $Required
  * @property-read bool $ValueRequired
+ * @property-read bool $ValueOptional
  * @property-read bool $MultipleAllowed
  * @property-read string|null $Delimiter
  * @property-read string|null $Description
@@ -42,11 +44,12 @@ use Throwable;
  * @property-read int|null $UnknownValuePolicy
  * @property-read bool $AddAll
  * @property-read string|string[]|bool|int|null $DefaultValue
+ * @property-read string|string[]|bool|int|null $OriginalDefaultValue
  * @property-read bool $KeepDefault
  * @property-read string|null $EnvVariable
  * @property-read bool $KeepEnv
  * @property-read callable|null $ValueCallback
- * @property-read bool $Hide
+ * @property-read int $Visibility
  */
 final class CliOption implements HasBuilder, IImmutable, IReadable
 {
@@ -135,18 +138,25 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     protected $IsPositional;
 
     /**
-     * True if the option is required
+     * True if the option is mandatory
      *
      * @var bool
      */
     protected $Required;
 
     /**
-     * True if the option has a required value
+     * True if the option has a mandatory value
      *
      * @var bool
      */
     protected $ValueRequired;
+
+    /**
+     * True if the option has an optional value
+     *
+     * @var bool
+     */
+    protected $ValueOptional;
 
     /**
      * True if the option may be given more than once
@@ -212,6 +222,13 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     protected $DefaultValue;
 
     /**
+     * The default value passed to the option's constructor
+     *
+     * @var string|string[]|bool|int|null
+     */
+    protected $OriginalDefaultValue;
+
+    /**
      * True if environment- and/or user-supplied values extend the option's
      * default value instead of replacing it
      *
@@ -251,11 +268,12 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     protected $ValueCallback;
 
     /**
-     * True if the option should be excluded from help messages
+     * A bitmask of CliOptionVisibility values
      *
-     * @var bool
+     * @var int
+     * @phpstan-var int-mask-of<CliOptionVisibility::*>
      */
-    protected $Hide;
+    protected $Visibility;
 
     /**
      * @var mixed
@@ -263,16 +281,15 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     private $BindTo;
 
     /**
-     * @var string|string[]|bool|int|null
-     */
-    private $OriginalDefaultValue;
-
-    /**
      * @phpstan-param CliOptionType::* $optionType
      * @phpstan-param CliOptionValueType::* $valueType
      * @param string[]|null $allowedValues
      * @phpstan-param CliOptionValueUnknownPolicy::* $unknownValuePolicy
      * @param string|string[]|bool|int|null $defaultValue
+     * @param int $visibility A bitmask of {@see CliOptionVisibility} values.
+     * @phpstan-param int-mask-of<CliOptionVisibility::*> $visibility
+     * @param bool $hide True if the option's visibility should be
+     * {@see CliOptionVisibility::NONE}.
      * @param mixed $bindTo Assign user-supplied values to a variable before
      * running the command.
      */
@@ -294,6 +311,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         bool $keepEnv = false,
         ?string $delimiter = ',',
         ?callable $valueCallback = null,
+        int $visibility = CliOptionVisibility::ALL,
         bool $hide = false,
         &$bindTo = null
     ) {
@@ -302,7 +320,8 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         $this->IsOneOf = in_array($optionType, [CliOptionType::ONE_OF, CliOptionType::ONE_OF_OPTIONAL, CliOptionType::ONE_OF_POSITIONAL], true);
         $this->IsPositional = in_array($optionType, [CliOptionType::VALUE_POSITIONAL, CliOptionType::ONE_OF_POSITIONAL], true);
         $this->Required = $required && !$this->IsFlag;
-        $this->ValueRequired = !in_array($optionType, [CliOptionType::FLAG, CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL], true);
+        $this->ValueRequired = in_array($optionType, [CliOptionType::VALUE, CliOptionType::VALUE_POSITIONAL, CliOptionType::ONE_OF, CliOptionType::ONE_OF_POSITIONAL], true);
+        $this->ValueOptional = in_array($optionType, [CliOptionType::VALUE_OPTIONAL, CliOptionType::ONE_OF_OPTIONAL], true);
         $this->MultipleAllowed = $multipleAllowed;
         $this->EnvVariable = $this->IsPositional ? null : ($envVariable ?: null);
 
@@ -321,7 +340,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         $this->KeepDefault = $keepDefault && $this->DefaultValue && is_array($this->DefaultValue);
         $this->KeepEnv = $this->EnvVariable && ($this->KeepDefault || ($keepEnv && !$this->IsFlag && $multipleAllowed));
         $this->ValueCallback = $valueCallback;
-        $this->Hide = $hide;
+        $this->Visibility = $hide ? CliOptionVisibility::NONE : $visibility;
         $this->BindTo = &$bindTo;
         $this->OriginalDefaultValue = $this->DefaultValue;
 
@@ -413,41 +432,41 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     public function validate()
     {
         if ($this->IsPositional) {
-            if (is_null($this->Long)) {
-                throw new LogicException('long must be set');
+            if ($this->Long === null) {
+                throw new LogicException("'long' must be set");
             }
-        } elseif (is_null($this->Long) && is_null($this->Short)) {
-            throw new LogicException('At least one must be set: long, short');
+        } elseif ($this->Long === null && $this->Short === null) {
+            throw new LogicException("At least one of 'long' and 'short' must be set");
         }
 
-        if (!is_null($this->Long) &&
+        if ($this->Long !== null &&
                 !preg_match($regex = '/^[a-z0-9_][-a-z0-9_]+$/i', $this->Long)) {
-            throw new LogicException(sprintf("long must match pattern '%s'", $regex));
+            throw new LogicException(sprintf("'long' must match pattern '%s'", $regex));
         }
 
-        if (!is_null($this->Short) &&
+        if ($this->Short !== null &&
                 !preg_match($regex = '/^[a-z0-9_]$/i', $this->Short)) {
-            throw new LogicException(sprintf("short must match pattern '%s'", $regex));
+            throw new LogicException(sprintf("'short' must match pattern '%s'", $regex));
         }
 
         if ($this->Required && !$this->ValueRequired) {
-            throw new LogicException('required must be false when value is optional');
+            throw new LogicException("'required' must be false when value is optional");
         }
 
-        if (!is_null($this->DefaultValue) && !$this->IsFlag) {
+        if ($this->DefaultValue !== null && !$this->IsFlag) {
             if ($this->MultipleAllowed) {
                 array_walk(
                     $this->DefaultValue,
                     function (&$value) {
                         if (($default = Convert::scalarToString($value)) === false) {
-                            throw new LogicException('defaultValue must be a scalar or an array of scalars');
+                            throw new LogicException("'defaultValue' must be a scalar or an array of scalars");
                         }
                         $value = $default;
                     }
                 );
             } else {
                 if (($default = Convert::scalarToString($this->DefaultValue)) === false) {
-                    throw new LogicException('defaultValue must be a scalar');
+                    throw new LogicException("'defaultValue' must be a scalar");
                 }
                 $this->DefaultValue = $default;
             }
@@ -463,7 +482,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                         'defaultValue'
                     );
                 } catch (CliUnknownValueException $ex) {
-                    throw new LogicException('defaultValue must satisfy unknownValuePolicy', 0, $ex);
+                    throw new LogicException("'defaultValue' must satisfy 'unknownValuePolicy'", 0, $ex);
                 }
             }
 
@@ -524,7 +543,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                         "invalid {$this->DisplayName} "
                             . Convert::plural(count($invalid), 'value') . " '" . implode("','", $invalid) . "'"
                             . ($source ? " in $source" : '')
-                            . $this->maybeGetAllowedValues(' (expected one? of: {})')
+                            . $this->getFriendlyAllowedValues(' (expected one? of: {})')
                     );
                 }
 
@@ -537,7 +556,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      *
      * @internal
      */
-    public function maybeGetAllowedValues(string $message = ' (one? of: {})'): string
+    public function getFriendlyAllowedValues(string $message = ' (one? of: {})'): string
     {
         if (!$this->AllowedValues) {
             return '';
@@ -558,42 +577,127 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     }
 
     /**
-     * Apply ValueCallback (if provided) to $value, otherwise convert it to
-     * ValueType, then assign it to the option's bound variable and return it to
-     * the caller
+     * True if a value is identical to the option's original default value
+     *
+     * `$value` is compared with the default value passed to the option's
+     * constructor (and normalised by {@see CliOption::maybeSplitValue()} if
+     * {@see CliOption::$MultipleAllowed} is `true`).
+     *
+     * @param mixed $value
+     */
+    public function isOriginalDefaultValue($value): bool
+    {
+        return $this->OriginalDefaultValue === $value;
+    }
+
+    /**
+     * Normalise a value, assign it to the option's bound variable, and return
+     * it to the caller
      *
      * @internal
      * @param string|string[]|bool|int|null $value
+     * @param bool $normalise `false` if `$value` has already been normalised.
+     * @param bool $expand If `true`, replace `null` with the default value of
+     * the option if it has an optional value. Ignored if `$normalise` is
+     * `false`.
      * @return mixed
-     * @see CliOption::$ValueType
-     * @see CliOption::$ValueCallback
+     * @see CliOption::normaliseValue()
      */
-    public function applyValue($value)
-    {
-        if ($value === null) {
-            return $this->BindTo = $value;
-        }
-
-        if ($this->ValueCallback) {
-            return $this->BindTo = ($this->ValueCallback)($value);
-        }
-
-        if (!is_array($value)) {
-            return $this->BindTo = $this->applyValueType($value);
-        }
-
-        foreach ($value as &$_value) {
-            $_value = $this->applyValueType($_value);
+    public function applyValue(
+        $value,
+        bool $normalise = true,
+        bool $expand = false
+    ) {
+        if ($normalise) {
+            return $this->BindTo = $this->normaliseValue($value, $expand);
         }
 
         return $this->BindTo = $value;
     }
 
     /**
+     * If the option has a callback, apply it to a value, otherwise convert the
+     * value to the option's value type
+     *
+     * @internal
+     * @param string|string[]|bool|int|null $value
+     * @param bool $expand If `true`, replace `null` with the default value of
+     * the option if it has an optional value.
+     * @return mixed
+     * @see CliOption::$ValueType
+     * @see CliOption::$ValueCallback
+     */
+    public function normaliseValue(
+        $value,
+        bool $expand = false
+    ) {
+        if ($expand &&
+                $this->ValueOptional &&
+                $this->DefaultValue !== null &&
+                $value === null) {
+            $value = $this->DefaultValue;
+        }
+
+        if ($value === null) {
+            return $this->OptionType === CliOptionType::FLAG
+                ? ($this->MultipleAllowed ? 0 : false)
+                : null;
+        }
+
+        if ($this->AllowedValues) {
+            $value = $this->applyUnknownValuePolicy($value);
+            if ($this->AddAll && in_array('ALL', (array) $value)) {
+                $value = array_diff($this->AllowedValues, ['ALL']);
+            }
+        } else {
+            if (is_array($value)) {
+                if ($this->IsFlag &&
+                        (!$this->MultipleAllowed || !Test::isArrayOfValue($value, true))) {
+                    $this->throwValueTypeException(
+                        $value,
+                        $this->MultipleAllowed
+                            ? 'integer or array<true>'
+                            : 'boolean'
+                    );
+                } elseif (!$this->MultipleAllowed) {
+                    throw new CliInvalidArgumentsException(
+                        sprintf('%s does not accept multiple values', $this->DisplayName)
+                    );
+                } else {
+                    $value = (array) $value;
+                }
+            }
+            if ($this->IsFlag && $this->MultipleAllowed) {
+                $value = is_int($value)
+                    ? $value
+                    : (is_array($value)
+                        ? count($value)
+                        : (Test::isBoolValue($value)
+                            ? (Convert::toBoolOrNull($value) ? 1 : 0)
+                            : $value));
+            }
+        }
+
+        if ($this->ValueCallback) {
+            return ($this->ValueCallback)($value);
+        }
+
+        if (!is_array($value)) {
+            return $this->normaliseValueType($value);
+        }
+
+        foreach ($value as &$_value) {
+            $_value = $this->normaliseValueType($_value);
+        }
+
+        return $value;
+    }
+
+    /**
      * @param string|bool|int|null $value
      * @return mixed
      */
-    private function applyValueType($value)
+    private function normaliseValueType($value)
     {
         switch ($this->ValueType) {
             case CliOptionValueType::BOOLEAN:
@@ -617,7 +721,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                 return (int) $value;
 
             case CliOptionValueType::STRING:
-                return $value;
+                return (string) $value;
 
             case CliOptionValueType::DATE:
                 try {
@@ -649,8 +753,11 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      * @param mixed $value
      * @return never
      */
-    private function throwValueTypeException($value, string $type, ?string $message = null)
-    {
+    private function throwValueTypeException(
+        $value,
+        string $type,
+        ?string $message = null
+    ) {
         if ($message) {
             $message = sprintf("invalid %s value '%s' (%s expected): %s", $this->DisplayName, $value, $type, $message);
         } else {
