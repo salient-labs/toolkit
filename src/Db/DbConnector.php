@@ -7,7 +7,7 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Format;
-use Lkrms\Facade\Test;
+use Lkrms\Utility\Test;
 use UnexpectedValueException;
 
 /**

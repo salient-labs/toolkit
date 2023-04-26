@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Utility;
 
-use Lkrms\Utility\Tests;
+use Lkrms\Utility\Test;
 
-final class TestsTest extends \Lkrms\Tests\TestCase
+final class TestTest extends \Lkrms\Tests\TestCase
 {
     /**
      * @dataProvider isArrayOfArrayKeyProvider
@@ -13,8 +13,8 @@ final class TestsTest extends \Lkrms\Tests\TestCase
      */
     public function testIsArrayOfArrayKey($value, bool $expected, bool $expectedIfAllowEmpty)
     {
-        $this->assertSame($expected, Tests::isArrayOfArrayKey($value));
-        $this->assertSame($expectedIfAllowEmpty, Tests::isArrayOfArrayKey($value, true));
+        $this->assertSame($expected, Test::isArrayOfArrayKey($value));
+        $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfArrayKey($value, true));
     }
 
     public static function isArrayOfArrayKeyProvider()
@@ -41,8 +41,8 @@ final class TestsTest extends \Lkrms\Tests\TestCase
      */
     public function testIsArrayOfInt($value, bool $expected, bool $expectedIfAllowEmpty)
     {
-        $this->assertSame($expected, Tests::isArrayOfInt($value));
-        $this->assertSame($expectedIfAllowEmpty, Tests::isArrayOfInt($value, true));
+        $this->assertSame($expected, Test::isArrayOfInt($value));
+        $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfInt($value, true));
     }
 
     public static function isArrayOfIntProvider()
@@ -69,8 +69,8 @@ final class TestsTest extends \Lkrms\Tests\TestCase
      */
     public function testIsArrayOfString($value, bool $expected, bool $expectedIfAllowEmpty)
     {
-        $this->assertSame($expected, Tests::isArrayOfString($value));
-        $this->assertSame($expectedIfAllowEmpty, Tests::isArrayOfString($value, true));
+        $this->assertSame($expected, Test::isArrayOfString($value));
+        $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfString($value, true));
     }
 
     public static function isArrayOfStringProvider()
@@ -98,8 +98,8 @@ final class TestsTest extends \Lkrms\Tests\TestCase
      */
     public function testIsArrayOfValue($value, $itemValue, bool $strict, bool $expected, bool $expectedIfAllowEmpty)
     {
-        $this->assertSame($expected, Tests::isArrayOfValue($value, $itemValue, $strict));
-        $this->assertSame($expectedIfAllowEmpty, Tests::isArrayOfValue($value, $itemValue, $strict, true));
+        $this->assertSame($expected, Test::isArrayOfValue($value, $itemValue, $strict));
+        $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfValue($value, $itemValue, $strict, true));
     }
 
     public static function isArrayOfValueProvider()

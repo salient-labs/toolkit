@@ -6,7 +6,7 @@ namespace Lkrms\Utility;
  * Perform true/false tests on values
  *
  */
-final class Tests
+final class Test
 {
     /**
      * True if $value is a boolean or boolean string

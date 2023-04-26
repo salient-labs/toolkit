@@ -8,7 +8,7 @@ use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Concept\Facade;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
-use Lkrms\Facade\Test;
+use Lkrms\Utility\Test;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\LkUtil\Dictionary\EnvVar;
 use Lkrms\Support\PhpDocParser;

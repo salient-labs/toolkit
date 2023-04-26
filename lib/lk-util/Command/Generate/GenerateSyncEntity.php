@@ -7,7 +7,7 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Test;
+use Lkrms\Utility\Test;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\Dictionary\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;

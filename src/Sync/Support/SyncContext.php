@@ -3,10 +3,10 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Test;
 use Lkrms\Support\ProviderContext;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Utility\Test;
 use UnexpectedValueException;
 
 /**
