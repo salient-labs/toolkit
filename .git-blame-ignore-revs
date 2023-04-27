@@ -1,3 +1,5 @@
 # .git-blame-ignore-revs
 # Update formatting
 c81cea1c82fb2b4c049939d0b4344ebbc29387f1
+# Update formatting (add `.prettyphp.dist`, reinstate heredoc indentation)
+34c5a7370e6e34bdbbfe7ac8efea832be3d723b2
