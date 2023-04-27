@@ -17,7 +17,6 @@ use Lkrms\Contract\IProviderContext;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
-use Lkrms\Facade\Test;
 use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Enumeration\NormaliserFlag;
@@ -35,6 +34,7 @@ use Lkrms\Sync\Support\SyncSerializeLinkType as SerializeLinkType;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
+use Lkrms\Utility\Test;
 use RuntimeException;
 use UnexpectedValueException;
 

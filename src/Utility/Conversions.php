@@ -10,10 +10,10 @@ use DateTimeInterface;
 use DateTimeZone;
 use Iterator;
 use IteratorIterator;
-use Lkrms\Facade\Test;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Iterator\Contract\MutableIterator;
 use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
+use Lkrms\Utility\Test;
 use RecursiveIteratorIterator;
 use UnexpectedValueException;
 
@@ -55,6 +55,9 @@ final class Conversions
 
     /**
      * If a value isn't an array, make it the first element of one
+     *
+     * Cast `$value` to `array` instead of calling this method unless you need a
+     * non-empty array (`[null]` instead of `[]`) when `$value` is `null`.
      *
      * @return array Either `$value`, `[$value]`, or `[]` (only if
      * `$emptyIfNull` is set and `$value` is `null`).

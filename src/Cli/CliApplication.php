@@ -106,7 +106,7 @@ final class CliApplication extends AppContainer
         $tree = $this->CommandTree;
 
         foreach ($name as $subcommand) {
-            if (is_null($tree)) {
+            if ($tree === null) {
                 return null;
             } elseif (!is_array($tree)) {
                 return false;
@@ -150,7 +150,7 @@ final class CliApplication extends AppContainer
             Assert::patternMatches($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
         }
 
-        if (!is_null($this->getNode($name))) {
+        if ($this->getNode($name) !== null) {
             throw new LogicException("Another command has been registered at '" . implode(' ', $name) . "'");
         }
 
@@ -166,7 +166,7 @@ final class CliApplication extends AppContainer
             $tree = &$tree[$subcommand];
         }
 
-        if (!is_null($leaf)) {
+        if ($leaf !== null) {
             $tree[$leaf] = $id;
         } else {
             $tree = $id;
@@ -314,7 +314,7 @@ EOF;
                     Console::out($this->getUsage($name, $node, true));
 
                     // Exit without error unless there are unconsumed arguments
-                    return is_null($arg) ? 0 : 1;
+                    return $arg === null ? 0 : 1;
                 }
             }
 

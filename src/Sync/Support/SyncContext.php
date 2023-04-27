@@ -3,10 +3,10 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Test;
 use Lkrms\Support\ProviderContext;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Utility\Test;
 use UnexpectedValueException;
 
 /**
@@ -63,7 +63,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
             ));
         }
 
-        if (Test::isArrayOfIntOrString($args)) {
+        if (Test::isArrayOfArrayKey($args)) {
             return $this->withPropertyValue('Filter', ['id' => $args]);
         }
 

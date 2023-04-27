@@ -20,7 +20,7 @@ class CliInvalidArgumentsException extends \Lkrms\Exception\Exception
     {
         $this->Errors = $errors;
 
-        parent::__construct();
+        parent::__construct($errors[0] ?? '');
     }
 
     /**

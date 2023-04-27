@@ -10,7 +10,7 @@ use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
-use Lkrms\Facade\Test;
+use Lkrms\Utility\Test;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\LkUtil\Dictionary\EnvVar;
 use Lkrms\Support\Introspector;

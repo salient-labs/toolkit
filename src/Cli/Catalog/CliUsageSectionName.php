@@ -17,6 +17,7 @@ final class CliUsageSectionName extends Dictionary
     public const DESCRIPTION = 'DESCRIPTION';
     public const EXIT_STATUS = 'EXIT STATUS';
     public const RETURN_VALUE = 'EXIT STATUS';
+    public const CONFIGURATION = 'CONFIGURATION';
     public const ENVIRONMENT = 'ENVIRONMENT';
     public const FILES = 'FILES';
     public const EXAMPLES = 'EXAMPLES';

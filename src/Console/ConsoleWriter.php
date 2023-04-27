@@ -750,7 +750,7 @@ final class ConsoleWriter implements ReceivesFacade
         $this->write(
             $stackTraceLevel,
             '__Stack trace:__',
-            "\n`" . ConsoleFormatter::escape($exception->getTraceAsString()) . '`',
+            "\n" . ConsoleFormatter::escapeAndEnclose($exception->getTraceAsString()),
             '--- '
         );
         if ($exception instanceof \Lkrms\Exception\Exception) {
@@ -758,7 +758,7 @@ final class ConsoleWriter implements ReceivesFacade
                 $this->write(
                     $stackTraceLevel,
                     "__{$section}:__",
-                    "\n`" . ConsoleFormatter::escape($text ?: '') . '`',
+                    "\n" . ConsoleFormatter::escapeAndEnclose($text ?: ''),
                     '--- '
                 );
             }

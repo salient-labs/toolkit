@@ -18,13 +18,13 @@ use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
-use Lkrms\Facade\Test;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Dictionary\HttpHeader;
 use Lkrms\Support\Dictionary\HttpRequestMethod;
 use Lkrms\Support\Dictionary\MimeType;
 use Lkrms\Support\Iterator\RecursiveHasChildrenCallbackIterator;
 use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
+use Lkrms\Utility\Test;
 use RecursiveIteratorIterator;
 use UnexpectedValueException;
 

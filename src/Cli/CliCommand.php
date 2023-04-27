@@ -2,6 +2,7 @@
 
 namespace Lkrms\Cli;
 
+use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
@@ -116,9 +117,14 @@ abstract class CliCommand implements ReturnsContainer
     private $PositionalOptions = [];
 
     /**
-     * @var string[]|null
+     * @var string[]
      */
-    private $Arguments;
+    private $Arguments = [];
+
+    /**
+     * @var array<string,mixed>
+     */
+    private $ArgumentValues = [];
 
     /**
      * @var array<string,mixed>|null
@@ -143,12 +149,12 @@ abstract class CliCommand implements ReturnsContainer
     /**
      * @var bool
      */
-    private $IsHelp;
+    private $HasHelpArgument = false;
 
     /**
      * @var bool
      */
-    private $IsVersion;
+    private $HasVersionArgument = false;
 
     /**
      * @var bool
@@ -171,7 +177,7 @@ abstract class CliCommand implements ReturnsContainer
      */
     final public function setName(array $name): void
     {
-        if (!is_null($this->Name)) {
+        if ($this->Name !== null) {
             throw new LogicException('Name already set');
         }
 
@@ -275,7 +281,7 @@ abstract class CliCommand implements ReturnsContainer
      */
     private function loadOptions()
     {
-        if (!is_null($this->Options)) {
+        if ($this->Options !== null) {
             return $this;
         }
 
@@ -305,47 +311,41 @@ abstract class CliCommand implements ReturnsContainer
             return $this;
         }
 
-        return $this->addOption(CliOption::build()
-            ->long($long)
-            ->short(array_key_exists($short, $this->OptionsByName) ? null : $short)
-            ->hide()
-            ->go());
+        return $this->addOption(
+            CliOption::build()
+                ->long($long)
+                ->short(array_key_exists($short, $this->OptionsByName) ? null : $short)
+                ->hide()
+                ->go()
+        );
     }
 
     /**
-     *
      * @return CliOption[]
      */
     final public function getOptions(): array
     {
-        return
-            array_values($this->loadOptions()
-                              ->Options);
+        return array_values($this->loadOptions()->Options);
     }
 
     final public function hasOption(string $name): bool
     {
-        return
-            array_key_exists($name, $this->loadOptions()
-                                         ->OptionsByName);
+        return array_key_exists($name, $this->loadOptions()->OptionsByName);
     }
 
     final public function getOption(string $name): ?CliOption
     {
-        return
-            $this->loadOptions()
-                 ->OptionsByName[$name] ?? null;
+        return $this->loadOptions()->OptionsByName[$name] ?? null;
     }
 
     final public function getSynopsis(bool $withMarkup = true): string
     {
         $tag = $withMarkup ? '__' : '';
 
-        return
-            implode(' ', array_filter([
-                $tag . $this->getNameWithProgram() . $tag,
-                $this->getOptionsSynopsis($withMarkup),
-            ]));
+        return implode(' ', array_filter([
+            $tag . $this->getNameWithProgram() . $tag,
+            $this->getOptionsSynopsis($withMarkup),
+        ]));
     }
 
     final public function getSubcommandSynopsis(bool $withMarkup = true): string
@@ -354,11 +354,10 @@ abstract class CliCommand implements ReturnsContainer
         $name = array_pop($name);
         $name = $name && $withMarkup ? "__{$name}__" : $name;
 
-        return
-            implode(' ', array_filter([
-                $name ?: '',
-                $this->getOptionsSynopsis(),
-            ]));
+        return implode(' ', array_filter([
+            $name ?: '',
+            $this->getOptionsSynopsis(),
+        ]));
     }
 
     final public function getOptionsSynopsis(bool $withMarkup = true): string
@@ -367,24 +366,22 @@ abstract class CliCommand implements ReturnsContainer
 
         // Produce this:
         //
-        //     [-ny] [--verbose] [--exclude PATTERN] --from SOURCE DEST
+        //     [-ny] [--exclude PATTERN] [--verbose] --from SOURCE DEST
         //
         // By generating this:
         //
-        //     $shortFlag  = ['n', 'y'];
-        //     $longFlag   = ['verbose'];
-        //     $optional   = ['--exclude PATTERN'];
-        //     $required   = ['--from SOURCE'];
+        //     $shortFlag = ['n', 'y'];
+        //     $optional = ['--exclude PATTERN', '--verbose'];
+        //     $required = ['--from SOURCE'];
         //     $positional = ['DEST'];
         //
         $shortFlag = [];
-        $longFlag = [];
         $optional = [];
         $required = [];
         $positional = [];
 
         foreach ($this->getOptions() as $option) {
-            if ($option->Hide) {
+            if (!($option->Visibility & CliOptionVisibility::SYNOPSIS)) {
                 continue;
             }
 
@@ -393,7 +390,7 @@ abstract class CliCommand implements ReturnsContainer
                     $shortFlag[] = $option->Short;
                     continue;
                 }
-                $longFlag[] = $option->Long;
+                $optional[] = "{$tag}--{$option->Long}{$tag}";
                 continue;
             }
 
@@ -420,25 +417,18 @@ abstract class CliCommand implements ReturnsContainer
 
         return implode(' ', array_filter([
             $shortFlag ? "[$tag-" . implode('', $shortFlag) . "$tag]" : '',
-            $longFlag ? "[$tag--" . implode("$tag] [$tag--", $longFlag) . "$tag]" : '',
             $optional ? '[' . implode('] [', $optional) . ']' : '',
             $required ? implode(' ', $required) : '',
             $positional ? implode(' ', $positional) : '',
         ]));
     }
 
-    final public function getUsage(bool $oneline = false): string
+    final public function getUsage(): string
     {
         $options = '';
 
-        $shortFlag = [];
-        $longFlag = [];
-        $optional = [];
-        $required = [];
-        $positional = [];
-
         foreach ($this->getOptions() as $option) {
-            if ($option->Hide) {
+            if (!($option->Visibility & CliOptionVisibility::HELP)) {
                 continue;
             }
 
@@ -447,29 +437,21 @@ abstract class CliCommand implements ReturnsContainer
             $line = [];
             $value = [];
             $valueName = '';
-            $list = '';
 
             if ($option->IsFlag) {
                 if ($short) {
                     $line[] = "__-{$short}__";
-                    $shortFlag[] = $short;
                 }
                 if ($long) {
                     $line[] = "__--{$long}__";
-                    if (!$short) {
-                        $longFlag[] = $long;
-                    }
                 }
             } else {
                 $valueName = $option->getFriendlyValueName();
                 if ($option->IsPositional) {
                     $list = $option->MultipleAllowed ? '...' : '';
                     $line[] = $valueName . $list;
-                    $positional[] = $option->Required ? "$valueName$list" : "[$valueName$list]";
                 } else {
-                    if ($option->MultipleAllowed && $option->Delimiter) {
-                        $list = "{$option->Delimiter}...";
-                    }
+                    $list = $option->MultipleAllowed && $option->Delimiter ? "{$option->Delimiter}..." : '';
                     if ($short) {
                         $line[] = "__-{$short}__";
                         $value[] = $option->ValueRequired ? " $valueName$list" : "[$valueName$list]";
@@ -478,28 +460,9 @@ abstract class CliCommand implements ReturnsContainer
                         $line[] = "__--{$long}__";
                         $value[] = $option->ValueRequired ? " $valueName$list" : "[=$valueName$list]";
                     }
-                    if ($option->Required) {
-                        $required[] = $line[0] . $value[0];
-                    } else {
-                        $optional[] = $line[0] . $value[0];
-                    }
                 }
             }
 
-            if ($oneline) {
-                continue;
-            }
-
-            // Format:                          Or:
-            //
-            //     _-o, --option_[=__VALUE__]       _-o, --option_[=__VALUE__]
-            //       Option description               __Default:__ ___auto___
-            //         __Default:__ ___auto___        __Values:__
-            //         __Values:__                    - _option1_
-            //         - _option1_                    - _option2_
-            //         - _option2_                    - _option3_
-            //         - _option3_
-            //
             $line = implode(', ', $line);
             $value = array_pop($value) ?: '';
             $options .= "\n$line$value";
@@ -515,7 +478,7 @@ abstract class CliCommand implements ReturnsContainer
             $compact = true;
             if ($option->AllowedValues) {
                 $allowedValues = array_map(
-                    fn(string $value): string => ConsoleFormatter::escape($value, true),
+                    [ConsoleFormatter::class, 'escapeAndEnclose'],
                     $option->AllowedValues
                 );
                 $start = "{$indent}__Values:__";
@@ -536,7 +499,7 @@ abstract class CliCommand implements ReturnsContainer
 
             if ($option->DefaultValue) {
                 $defaultValue = array_map(
-                    fn(string $value): string => ConsoleFormatter::escape($value, true),
+                    [ConsoleFormatter::class, 'escapeAndEnclose'],
                     (array) $option->DefaultValue
                 );
                 $generatedLines[] = sprintf(
@@ -558,15 +521,8 @@ abstract class CliCommand implements ReturnsContainer
                     : '') . "\n";
         }
 
-        $synopsis = ($shortFlag ? ' [__-' . implode('', $shortFlag) . '__]' : '')
-            . ($longFlag ? ' [__--' . implode('__] [__--', $longFlag) . '__]' : '')
-            . ($optional ? ' [' . implode('] [', $optional) . ']' : '')
-            . ($required ? ' ' . implode(' ', $required) : '')
-            . ($positional ? ' ' . implode(' ', $positional) : '');
-
-        if ($oneline) {
-            return $synopsis;
-        }
+        $synopsis = $this->getOptionsSynopsis();
+        $synopsis = ($synopsis ? ' ' : '') . $synopsis;
 
         $name = $this->getNameWithProgram();
         if ($sections = $this->getUsageSections() ?: []) {
@@ -639,90 +595,179 @@ abstract class CliCommand implements ReturnsContainer
      */
     private function loadOptionValues()
     {
-        if (!is_null($this->OptionValues)) {
+        if ($this->OptionValues !== null) {
             return $this;
         }
 
+        $this->ArgumentValues = [];
         $this->OptionErrors = [];
-        $this->loadOptions();
         $this->NextArgumentIndex = null;
-        $this->IsHelp = false;
-        $this->IsVersion = false;
+        $this->HasHelpArgument = false;
+        $this->HasVersionArgument = false;
 
-        $args = $this->Arguments;
-        $merged = [];
+        $this->loadOptions();
 
-        for ($i = 0; $i < count($args); $i++) {
-            list($arg, $short, $matches) = [$args[$i], false, null];
+        try {
+            $merged = $this->mergeArguments(
+                $this->Arguments,
+                $this->ArgumentValues,
+                $this->NextArgumentIndex,
+                $this->HasHelpArgument,
+                $this->HasVersionArgument
+            );
 
-            if (preg_match('/^-([0-9a-z])(.*)/i', $arg, $matches)) {
-                $name = $matches[1];
-                $value = $matches[2] ?: null;
-                $short = true;
-            } elseif (preg_match('/^--([0-9a-z_-]+)(=(.*))?$/i', $arg, $matches)) {
-                $name = $matches[1];
-                $value = ($matches[2] ?? null) ? $matches[3] : null;
-            } else {
-                if ($arg === '--') {
-                    $i++;
-                } elseif (substr($arg, 0, 1) === '-') {
-                    $this->optionError("invalid argument '$arg'");
+            foreach ($this->Options as $option) {
+                if ($option->Required &&
+                        (!array_key_exists($option->Key, $merged) || $merged[$option->Key] === [])) {
+                    if (!(count($this->Arguments) === 1 && ($this->HasHelpArgument || $this->HasVersionArgument))) {
+                        $this->optionError(sprintf(
+                            '%s required%s',
+                            $option->DisplayName,
+                            $option->getFriendlyAllowedValues()
+                        ));
+                    }
 
                     continue;
                 }
 
+                $value = $merged[$option->Key] ?? ($option->ValueRequired ? $option->DefaultValue : null);
+                try {
+                    $value = $option->applyValue($value);
+                    if ($value !== null || array_key_exists($option->Key, $merged)) {
+                        $this->OptionValues[$option->Key] = $value;
+                    }
+                } catch (CliInvalidArgumentsException | CliUnknownValueException $ex) {
+                    $this->optionError($ex->getMessage());
+                }
+            }
+
+            if ($this->OptionErrors) {
+                throw new CliInvalidArgumentsException(
+                    ...$this->OptionErrors,
+                    ...$this->DeferredOptionErrors
+                );
+            }
+
+            return $this;
+        } catch (Throwable $ex) {
+            $this->OptionValues = null;
+
+            throw $ex;
+        }
+    }
+
+    /**
+     * @param string[] $args
+     * @param array<string,string|string[]|bool|int|null> $argValues
+     * @return array<string,string|string[]|bool|int|null>
+     */
+    private function mergeArguments(
+        array $args,
+        ?array &$argValues,
+        ?int &$nextArgumentIndex,
+        ?bool &$hasHelpArgument,
+        ?bool &$hasVersionArgument
+    ): array {
+        $saveArgValue =
+            function (string $key, $value) use (&$argValues, &$saved) {
+                if ($saved) {
+                    return;
+                }
+                $saved = true;
+                if (!array_key_exists($key, $argValues)) {
+                    $argValues[$key] = $value;
+                } else {
+                    $argValues[$key] = array_merge((array) $argValues[$key], Convert::toArray($value));
+                }
+            };
+        $merged = [];
+
+        for ($i = 0; $i < count($args); $i++) {
+            $arg = $args[$i];
+            $short = false;
+            $saved = false;
+            if (preg_match('/^-([a-z0-9_])(.*)/i', $arg, $matches)) {
+                $name = $matches[1];
+                $value = $matches[2] ?: null;
+                $short = true;
+            } elseif (preg_match('/^--([a-z0-9_][-a-z0-9_]+)(?:=(.*))?$/i', $arg, $matches, PREG_UNMATCHED_AS_NULL)) {
+                $name = $matches[1];
+                $value = $matches[2];
+            } else {
+                if ($arg === '--') {
+                    $i++;
+                } elseif (($arg[0] ?? null) === '-') {
+                    $this->optionError(sprintf("invalid argument '%s'", $arg));
+                    continue;
+                }
                 break;
             }
 
             $option = $this->OptionsByName[$name] ?? null;
-            $isDefault = false;
-
-            if (is_null($option) || $option->IsPositional) {
-                $this->optionError("unknown option '$name'");
-
+            if (!$option || $option->IsPositional) {
+                $this->optionError(sprintf("unknown option '%s'", $name));
                 continue;
-            } elseif ($option->IsFlag) {
+            }
+
+            if ($option->Long === 'help') {
+                $hasHelpArgument = true;
+            } elseif ($option->Long === 'version') {
+                $hasVersionArgument = true;
+            }
+
+            $key = $option->Key;
+            $valueIsDefault = false;
+            if ($option->IsFlag) {
                 // Handle multiple short flags per argument, e.g. `cp -rv`
                 if ($short && $value) {
                     $args[$i] = "-$value";
                     $i--;
                 }
-
                 $value = true;
-            } elseif (!$option->ValueRequired) {
+                $saveArgValue($key, $value);
+            } elseif ($option->ValueOptional) {
                 // Don't use the default value if `--option=` was given
-                if (is_null($value) && !is_null($option->DefaultValue)) {
+                if ($value === null && $option->DefaultValue !== null) {
+                    $saveArgValue($key, $value);
                     $value = $option->DefaultValue;
-                    $isDefault = true;
+                    $valueIsDefault = true;
                 }
-            } elseif (is_null($value)) {
+            } elseif ($value === null) {
                 $i++;
-                if (is_null($value = $args[$i] ?? null)) {
+                if (($value = $args[$i] ?? null) === null) {
                     // Allow null to be stored to prevent an additional
                     // "argument required" error
-                    $this->optionError(
-                        "{$option->DisplayName} requires a value" . $option->maybeGetAllowedValues()
-                    );
+                    $this->optionError(sprintf(
+                        '%s requires a value%s',
+                        $option->DisplayName,
+                        $option->getFriendlyAllowedValues()
+                    ));
                     $i--;
                 }
             }
-
-            $key = $option->Key;
 
             if ($option->MultipleAllowed && !$option->IsFlag) {
                 // Interpret "--option=" as "clear previous --option values"
                 if ($option->ValueRequired && $value === '') {
                     $merged[$key] = [];
+                    $argValues[$key] = [];
                     continue;
                 }
+                // Use $value to extend $option->DefaultValue if:
+                // - $option->DefaultValue wasn't just assigned to $value
+                // - extension of default values is enabled, and
+                // - this is $option's first appearance in $args
                 $value = $option->maybeSplitValue($value);
-                if (!$isDefault && ($option->KeepDefault || $option->KeepEnv) && !array_key_exists($key, $merged)) {
+                $saveArgValue($key, $value);
+                if (!$valueIsDefault &&
+                        ($option->KeepDefault || $option->KeepEnv) &&
+                        !array_key_exists($key, $merged)) {
                     $value = array_merge($option->DefaultValue, $value);
                 }
             }
 
-            if (isset($merged[$key])) {
-                $merged[$key] = array_merge((array) $merged[$key], (array) $value);
+            if (array_key_exists($key, $merged)) {
+                $merged[$key] = array_merge((array) $merged[$key], Convert::toArray($value));
             } else {
                 $merged[$key] = $value;
             }
@@ -734,85 +779,29 @@ abstract class CliCommand implements ReturnsContainer
                 break;
             }
             $pending--;
+            $key = $option->Key;
+            $saved = false;
             if ($option->Required || !$option->MultipleAllowed) {
-                $merged[$option->Key] = $option->MultipleAllowed ? [$args[$i++]] : $args[$i++];
+                $arg = $args[$i++];
+                $merged[$key] = $option->MultipleAllowed ? [$arg] : $arg;
+                $saveArgValue($key, $arg);
                 if (!$option->MultipleAllowed) {
                     continue;
                 }
             }
+            // Only one positional option can accept multiple values, so collect
+            // arguments until all that remains is one per pending option
             while (count($args) - $i - $pending > 0) {
-                $merged[$option->Key][] = $args[$i++];
+                $saved = false;
+                $arg = $args[$i++];
+                $merged[$key][] = $arg;
+                $saveArgValue($key, $arg);
             }
         }
 
-        $this->NextArgumentIndex = $i;
+        $nextArgumentIndex = $i;
 
-        /**
-         * @var string|string[]|bool|int|null $value
-         */
-        foreach ($merged as $key => &$value) {
-            $option = $this->Options[$key];
-
-            if ($option->Long === 'help') {
-                $this->IsHelp = true;
-                continue;
-            }
-
-            if ($option->Long === 'version') {
-                $this->IsVersion = true;
-                continue;
-            }
-
-            if (!$option->MultipleAllowed && is_array($value)) {
-                $this->optionError("{$option->DisplayName} cannot be used multiple times");
-            }
-
-            if ($option->AllowedValues && !is_null($value)) {
-                try {
-                    $value = $option->applyUnknownValuePolicy($value);
-                } catch (CliUnknownValueException $ex) {
-                    $this->optionError($ex->getMessage());
-                }
-            }
-        }
-        unset($value);
-
-        foreach ($this->Options as $option) {
-            if ($option->Required &&
-                (!array_key_exists($option->Key, $merged) ||
-                    $merged[$option->Key] === [])) {
-                if (!(count($args) === 1 && ($this->IsHelp || $this->IsVersion))) {
-                    $this->optionError(
-                        "{$option->DisplayName} required" . $option->maybeGetAllowedValues()
-                    );;
-                }
-
-                continue;
-            }
-
-            $value = $merged[$option->Key] ?? ($option->ValueRequired ? $option->DefaultValue : null);
-
-            if ($option->AddAll && !is_null($value) && in_array('ALL', (array) $value)) {
-                $value = array_diff($option->AllowedValues, ['ALL']);
-            } elseif ($option->IsFlag && $option->MultipleAllowed) {
-                $value = count((array) $value);
-            } elseif ($option->MultipleAllowed) {
-                $value = (array) $value;
-            }
-            $value = $option->applyValue($value);
-            if ($value !== null) {
-                $this->OptionValues[$option->Key] = $value;
-            }
-        }
-
-        if ($this->OptionErrors) {
-            throw new CliInvalidArgumentsException(
-                ...$this->OptionErrors,
-                ...$this->DeferredOptionErrors
-            );
-        }
-
-        return $this;
+        return $merged;
     }
 
     /**
@@ -837,19 +826,141 @@ abstract class CliCommand implements ReturnsContainer
     }
 
     /**
+     * Get an array that maps options to values
+     *
+     * The long form of the option (e.g. 'verbose') is used if available. The
+     * short form (e.g. 'v') is only used if the option has no long form.
+     *
+     * @param bool $export If `true`, only options with user-supplied values are
+     * returned, otherwise the value of every option is returned.
+     * @param (callable(string): string)|null $nameCallback
      * @return array<string,string|string[]|bool|int|null>
      */
-    final public function getOptionValues(): array
-    {
+    final public function getOptionValues(
+        bool $export = false,
+        ?callable $nameCallback = null
+    ): array {
         $this->assertHasRun();
 
         $values = [];
         foreach ($this->Options as $option) {
+            $value = $this->OptionValues[$option->Key] ?? null;
+            $wasArg = array_key_exists($option->Key, $this->ArgumentValues);
+            if ($export && !$wasArg &&
+                (($option->IsFlag && !$value) ||
+                    ($option->ValueRequired && $option->isOriginalDefaultValue($value)) ||
+                    ($option->ValueOptional && $value === null))) {
+                continue;
+            }
             $name = $option->Long ?: $option->Short;
-            $values[$name] = $this->OptionValues[$option->Key] ?? null;
+            if ($nameCallback) {
+                $name = $nameCallback($name);
+            }
+            $values[$name] = $export && $wasArg && $option->ValueOptional
+                ? $this->ArgumentValues[$option->Key]
+                : $value;
         }
 
         return $values;
+    }
+
+    /**
+     * Get an array that maps options to default values
+     *
+     * The long form of the option (e.g. 'verbose') is used if available. The
+     * short form (e.g. 'v') is only used if the option has no long form.
+     *
+     * @param (callable(string): string)|null $nameCallback
+     * @return array<string,string|string[]|bool|int|null>
+     */
+    final protected function getDefaultOptionValues(?callable $nameCallback = null): array
+    {
+        $this->loadOptions();
+
+        $values = [];
+        foreach ($this->Options as $option) {
+            $value = $option->ValueOptional ? null : $option->OriginalDefaultValue;
+            $name = $option->Long ?: $option->Short;
+            if ($nameCallback) {
+                $name = $nameCallback($name);
+            }
+            $values[$name] = $value;
+        }
+
+        return $values;
+    }
+
+    /**
+     * Normalise an array of option values, assign them to the command, and
+     * return them to the caller
+     *
+     * @param array<string,string|string[]|bool|int|null> $values An array that
+     * maps options to values.
+     * @param bool $normalise `false` if `$value` has already been normalised.
+     * @param bool $expand If `true`, replace `null` with the default value of
+     * the option if it has an optional value. Ignored if `$normalise` is
+     * `false`.
+     * @return array<string,mixed>
+     * @see CliCommand::normaliseOptionValues()
+     */
+    final protected function applyOptionValues(
+        array $values,
+        bool $normalise = true,
+        bool $expand = false
+    ): array {
+        $this->assertHasRun();
+
+        $_values = [];
+        foreach ($values as $name => $value) {
+            if ($name === '@internal') {
+                $_values[$name] = $value;
+                continue;
+            }
+            $option = $this->OptionsByName[$name] ?? null;
+            if (!$option) {
+                throw new LogicException(sprintf('Option not found: %s', $name));
+            }
+            $value = $option->applyValue($value, $normalise, $expand);
+            $this->OptionValues[$option->Key] = $_values[$name] = $value;
+        }
+
+        return $_values;
+    }
+
+    /**
+     * Normalise an array that maps options to user-supplied values
+     *
+     * @param array<string,string|string[]|bool|int|null> $values
+     * @param bool $expand If `true`, replace `null` with the default value of
+     * the option if it has an optional value.
+     * @param (callable(string): string)|null $nameCallback
+     * @param array<string,string|string[]|bool|int|null>|null $invalid
+     * @return array<string,mixed>
+     */
+    final protected function normaliseOptionValues(
+        array $values,
+        bool $expand = false,
+        ?callable $nameCallback = null,
+        ?array &$invalid = null
+    ): array {
+        $this->loadOptions();
+
+        $_values = [];
+        foreach ($values as $name => $value) {
+            if ($name === '@internal') {
+                $_values[$name] = $value;
+                continue;
+            }
+            $_name = $nameCallback ? $nameCallback($name) : $name;
+            $option = $this->OptionsByName[$_name] ?? null;
+            if (!$option) {
+                $invalid[$name] = $value;
+                continue;
+            }
+            $_values[$_name] = $option->normaliseValue($value, $expand);
+        }
+
+        return $_values;
     }
 
     /**
@@ -864,8 +975,11 @@ abstract class CliCommand implements ReturnsContainer
      * @param string|CliOption $option
      * @param string|string[]|bool|int|null $value
      */
-    final public function getEffectiveArgument($option, bool $shellEscape = false, $value = null): ?string
-    {
+    final public function getEffectiveArgument(
+        $option,
+        bool $shellEscape = false,
+        $value = null
+    ): ?string {
         $this->assertHasRun();
         if (is_string($option)) {
             if (!($option = $this->getOption($option))) {
@@ -879,7 +993,7 @@ abstract class CliCommand implements ReturnsContainer
             $value = $this->OptionValues[$option->Key] ?? null;
         }
 
-        if (is_null($value) || $value === [] || $value === false || $value === 0) {
+        if ($value === null || $value === [] || $value === false || $value === 0) {
             return null;
         }
 
@@ -912,8 +1026,10 @@ abstract class CliCommand implements ReturnsContainer
      * @param array<string,string|string[]|bool|int|null> $values
      * @return string[]
      */
-    final public function getEffectiveCommandLine(bool $shellEscape = false, array $values = []): array
-    {
+    final public function getEffectiveCommandLine(
+        bool $shellEscape = false,
+        array $values = []
+    ): array {
         $this->assertHasRun();
 
         $args = $this->getNameParts();
@@ -939,7 +1055,7 @@ abstract class CliCommand implements ReturnsContainer
         }
         array_push($args, ...($positional ?? []));
 
-        return array_values(array_filter($args, fn($arg) => !is_null($arg)));
+        return array_values(array_filter($args, fn($arg) => $arg !== null));
     }
 
     /**
@@ -947,7 +1063,7 @@ abstract class CliCommand implements ReturnsContainer
      */
     private function assertHasRun()
     {
-        if (is_null($this->OptionValues)) {
+        if ($this->OptionValues === null) {
             throw new RuntimeException('Command must be invoked first');
         }
 
@@ -969,13 +1085,13 @@ abstract class CliCommand implements ReturnsContainer
 
         $this->loadOptionValues();
 
-        if ($this->IsHelp) {
+        if ($this->HasHelpArgument) {
             Console::out($this->getUsage());
 
             return 0;
         }
 
-        if ($this->IsVersion) {
+        if ($this->HasVersionArgument) {
             $appName = $this->app()->getAppName();
             $version = Composer::getRootPackageVersion(true, true);
             Console::out("__{$appName}__ $version");
