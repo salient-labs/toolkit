@@ -1,0 +1,19 @@
+{
+    "src": [
+        "bin",
+        "lib",
+        "src",
+        "tests",
+        "bootstrap.php"
+    ],
+    "includeIfPhp": null,
+    "enable": [
+        "align-chains",
+        "align-fn",
+        "preserve-one-line",
+        "strict-lists"
+    ],
+    "preserveTrailingSpaces": [
+        "2"
+    ]
+}

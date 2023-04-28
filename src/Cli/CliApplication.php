@@ -233,11 +233,11 @@ final class CliApplication extends AppContainer
             }
             $content = str_replace("\n", "\n    ", rtrim($content));
             $usage .= <<<EOF
-## {$heading}
-    {$content}
+                ## {$heading}
+                    {$content}
 
 
-EOF;
+                EOF;
         }
 
         return rtrim($usage);

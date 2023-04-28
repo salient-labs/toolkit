@@ -17,29 +17,29 @@ final class ConsoleFormatter
      *
      */
     private const REGEX_PREFORMATTED = <<<'REGEX'
-(?xs)
-# The end of the previous match
-\G
-# Text before a preformatted block or span, including recognised escapes
-(?P<text> (?: [^\\`]++ | \\ [\\`] | \\ )*+ )
-# A preformatted block
-(?: (?<= \n | ^) ``` \n (?P<block> .*? ) \n ``` (?= \n | $) |
-  # ...or span
-  ` (?P<span> (?: [^\\`]++ | \\ [\\`] | \\ )*+ ) ` |
-  # ...or invalid syntax
-  (?P<invalid> `++ ) |
-  # ...or the end of the subject
-  $)
-REGEX;
+        (?xs)
+        # The end of the previous match
+        \G
+        # Text before a preformatted block or span, including recognised escapes
+        (?P<text> (?: [^\\`]++ | \\ [\\`] | \\ )*+ )
+        # A preformatted block
+        (?: (?<= \n | ^) ``` \n (?P<block> .*? ) \n ``` (?= \n | $) |
+          # ...or span
+          ` (?P<span> (?: [^\\`]++ | \\ [\\`] | \\ )*+ ) ` |
+          # ...or invalid syntax
+          (?P<invalid> `++ ) |
+          # ...or the end of the subject
+          $)
+        REGEX;
 
     /**
      * Matches an escaped backslash or backtick (other escapes are ignored)
      *
      */
     private const REGEX_ESCAPED = <<<'REGEX'
-(?xs)
-\\ ( [\\`] )
-REGEX;
+        (?xs)
+        \\ ( [\\`] )
+        REGEX;
 
     private const REGEX_MAP = [
         Tag::HEADING => '(?|\b___(?!\s)(.+?)(?<!\s)___\b|\*\*\*(?!\s)(.+?)(?<!\s)\*\*\*|(?<=\n|^)##\h+([^\n]+)(?:\h+#+|\h*)(?=\n|$))',

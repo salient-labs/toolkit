@@ -215,40 +215,40 @@ print_r([
 ]);
 
 $text = <<<EOF
-- Before lists
+    - Before lists
 
-Section:
-- d
-Other section:
-- <not a letter>
-Without a subsequent list
-Section:
-- a
-- b
-Section:
-- c
-- b
-- d
-EOF;
+    Section:
+    - d
+    Other section:
+    - <not a letter>
+    Without a subsequent list
+    Section:
+    - a
+    - b
+    Section:
+    - c
+    - b
+    - d
+    EOF;
 
 $mbText = <<<EOF
-- Before lists
-📍 Section:
-- list item
-- another
+    - Before lists
+    📍 Section:
+    - list item
+    - another
 
-Other section:
-- item i
-- item ii
+    Other section:
+    - item i
+    - item ii
 
-- Standalone
+    - Standalone
 
-Also standalone
+    Also standalone
 
-Section:
-- another
-- and another
-EOF;
+    Section:
+    - another
+    - and another
+    EOF;
 
 print_r([
     'from' => $text,

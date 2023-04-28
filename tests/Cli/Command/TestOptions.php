@@ -135,13 +135,13 @@ class TestOptions extends CliCommand
     public function getLongDescription(): ?string
     {
         return <<<EOF
-Variations tested:
+            Variations tested:
 
-- Short option names that vary only by case  
-- UPPER_CASE, lower_case and null `valueName`  
-- Legal combinations of `multipleAllowed` and `required`  
-- Bound to class properties, and unbound  
-EOF;
+            - Short option names that vary only by case  
+            - UPPER_CASE, lower_case and null `valueName`  
+            - Legal combinations of `multipleAllowed` and `required`  
+            - Bound to class properties, and unbound  
+            EOF;
     }
 
     public function getUsageSections(): ?array
