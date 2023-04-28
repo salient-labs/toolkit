@@ -6,7 +6,7 @@ use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Concept\Facade;
 use Lkrms\Concept\FluentInterface;
-use Lkrms\Console\ConsoleLevel as Level;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Container\AppContainer;
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;

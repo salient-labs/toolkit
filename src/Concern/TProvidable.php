@@ -4,7 +4,7 @@ namespace Lkrms\Concern;
 
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
-use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Iterator\IterableIterator;

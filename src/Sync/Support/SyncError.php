@@ -3,7 +3,7 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\TFullyReadable;
-use Lkrms\Console\ConsoleLevel;
+use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IComparable;
 use Lkrms\Contract\IContainer;
@@ -11,6 +11,7 @@ use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
+use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 

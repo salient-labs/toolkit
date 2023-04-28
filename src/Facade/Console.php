@@ -3,9 +3,9 @@
 namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
+use Lkrms\Console\Catalog\ConsoleLevels;
 use Lkrms\Console\Concept\ConsoleTarget;
-use Lkrms\Console\ConsoleLevel as Level;
-use Lkrms\Console\ConsoleLevels;
 use Lkrms\Console\ConsoleWriter;
 use Throwable;
 

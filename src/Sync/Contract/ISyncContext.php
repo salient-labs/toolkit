@@ -3,7 +3,7 @@
 namespace Lkrms\Sync\Contract;
 
 use Lkrms\Contract\IProviderContext;
-use Lkrms\Sync\Support\SyncFilterPolicy;
+use Lkrms\Sync\Catalog\SyncFilterPolicy;
 
 /**
  * The context within which a sync entity is instantiated

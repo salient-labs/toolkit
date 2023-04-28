@@ -11,7 +11,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Facade\Reflect;
-use Lkrms\Support\Enumeration\NormaliserFlag;
+use Lkrms\Support\Catalog\NormaliserFlag;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;

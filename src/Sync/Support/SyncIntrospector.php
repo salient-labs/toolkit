@@ -7,12 +7,12 @@ use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sync;
-use Lkrms\Support\Dictionary\RegularExpression as Regex;
+use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Introspector;
+use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncOperation;
 use RuntimeException;
 
 /**

@@ -6,12 +6,13 @@ use Closure;
 use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
-use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Sync\Catalog\SyncFilterPolicy;
+use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
-use Lkrms\Sync\Support\SyncOperation;
 use UnexpectedValueException;
 
 /**

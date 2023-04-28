@@ -1,15 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Console;
+namespace Lkrms\Console\Catalog;
 
 use Lkrms\Concept\Enumeration;
 
 /**
  * Inline formatting tags for console messages
  *
- * Markdown-like syntax. Ronn-compatible.
+ * Markdown-like syntax.
  *
- * @link https://github.com/apjanke/ronn-ng
  */
 final class ConsoleTag extends Enumeration
 {

@@ -4,10 +4,10 @@ namespace Lkrms\Sync\Support;
 
 use JsonSerializable;
 use Lkrms\Concept\TypedCollection;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleFormatter as Formatter;
-use Lkrms\Console\ConsoleLevel as Level;
 use Lkrms\Facade\Convert;
-use Lkrms\Sync\Support\SyncErrorType as ErrorType;
+use Lkrms\Sync\Catalog\SyncErrorType as ErrorType;
 
 /**
  * A collection of SyncError objects

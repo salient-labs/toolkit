@@ -2,12 +2,13 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Console\ConsoleLevel as Level;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Store\Concept\SqliteStore;
+use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;

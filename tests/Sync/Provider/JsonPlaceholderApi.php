@@ -4,13 +4,13 @@ namespace Lkrms\Tests\Sync\Provider;
 
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Curler\CurlerHeaders;
-use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Sync\Catalog\SyncFilterPolicy;
+use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
 use Lkrms\Sync\Support\SyncContext;
-use Lkrms\Sync\Support\SyncFilterPolicy;
-use Lkrms\Sync\Support\SyncOperation as OP;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
 use Lkrms\Tests\Sync\Entity\Provider\UserProvider;

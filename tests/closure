@@ -5,8 +5,8 @@ namespace Lkrms\Tests;
 
 use Lkrms\Err\Err;
 use Lkrms\Facade\Mapper;
-use Lkrms\Support\ArrayKeyConformity;
-use Lkrms\Support\ArrayMapperFlag;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Throwable;
 
 $loader = require __DIR__ . '/../vendor/autoload.php';

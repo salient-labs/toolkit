@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Console;
+namespace Lkrms\Console\Catalog;
 
 use Lkrms\Concept\Enumeration;
 use Lkrms\Concern\HasConvertibleConstants;

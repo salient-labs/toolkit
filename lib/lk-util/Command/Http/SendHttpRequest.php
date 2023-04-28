@@ -6,7 +6,7 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Convert;
 use Lkrms\LkUtil\Command\Concept\Command;
-use Lkrms\Support\Dictionary\HttpRequestMethod;
+use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use UnexpectedValueException;
 

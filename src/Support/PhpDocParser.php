@@ -4,7 +4,7 @@ namespace Lkrms\Support;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Support\Dictionary\RegularExpression as Regex;
+use Lkrms\Support\Catalog\RegularExpression as Regex;
 use UnexpectedValueException;
 
 /**

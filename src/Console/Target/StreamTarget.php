@@ -6,7 +6,7 @@ use DateTime;
 use Lkrms\Console\Concept\ConsoleTarget;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
-use Lkrms\Support\Dictionary\TtyControlSequence;
+use Lkrms\Support\Catalog\TtyControlSequence;
 use RuntimeException;
 
 /**
