@@ -2,7 +2,7 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 
 /**

@@ -4,7 +4,7 @@ namespace Lkrms\Sync\Contract;
 
 use Closure;
 use Lkrms\Contract\IImmutable;
-use Lkrms\Sync\Support\SyncOperation;
+use Lkrms\Sync\Catalog\SyncOperation;
 
 /**
  * Provides direct access to an ISyncProvider's implementation of sync

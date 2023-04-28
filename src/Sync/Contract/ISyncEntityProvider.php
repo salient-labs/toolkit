@@ -3,7 +3,7 @@
 namespace Lkrms\Sync\Contract;
 
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
-use Lkrms\Sync\Support\SyncOperation;
+use Lkrms\Sync\Catalog\SyncOperation;
 
 /**
  * Provides an entity-agnostic interface to an ISyncProvider's implementation of

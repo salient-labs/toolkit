@@ -4,7 +4,7 @@ namespace Lkrms\Tests\Curler;
 
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Curler\CurlerHeadersFlag;
-use Lkrms\Support\Dictionary\HttpHeader;
+use Lkrms\Support\Catalog\HttpHeader;
 
 final class CurlerHeadersTest extends \Lkrms\Tests\TestCase
 {

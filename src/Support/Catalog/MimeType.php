@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Dictionary;
+namespace Lkrms\Support\Catalog;
 
 use Lkrms\Concept\Dictionary;
 use Lkrms\Facade\Convert;

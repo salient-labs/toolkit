@@ -2,12 +2,12 @@
 
 namespace Lkrms\Console\Concept;
 
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
+use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\ConsoleFormat;
 use Lkrms\Console\ConsoleFormatter;
-use Lkrms\Console\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleMessageFormat;
-use Lkrms\Console\ConsoleTag as Tag;
-use Lkrms\Support\Dictionary\TtyControlSequence as Colour;
+use Lkrms\Support\Catalog\TtyControlSequence as Colour;
 use UnexpectedValueException;
 
 /**

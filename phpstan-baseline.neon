@@ -101,6 +101,16 @@ parameters:
 			path: src/Concept/FluentInterface.php
 
 		-
+			message: "#^Method Lkrms\\\\Console\\\\Catalog\\\\ConsoleLevel\\:\\:getNameMap\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Console/Catalog/ConsoleLevel.php
+
+		-
+			message: "#^Method Lkrms\\\\Console\\\\Catalog\\\\ConsoleLevel\\:\\:getValueMap\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Console/Catalog/ConsoleLevel.php
+
+		-
 			message: "#^Method Lkrms\\\\Console\\\\Concept\\\\ConsoleTarget\\:\\:write\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Console/Concept/ConsoleTarget.php
@@ -109,16 +119,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Console\\\\Concept\\\\ConsoleTarget\\:\\:writeToTarget\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Console/Concept/ConsoleTarget.php
-
-		-
-			message: "#^Method Lkrms\\\\Console\\\\ConsoleLevel\\:\\:getNameMap\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Console/ConsoleLevel.php
-
-		-
-			message: "#^Method Lkrms\\\\Console\\\\ConsoleLevel\\:\\:getValueMap\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Console/ConsoleLevel.php
 
 		-
 			message: "#^Property Lkrms\\\\Console\\\\ConsoleMessageFormat\\:\\:\\$Msg1Format has no type specified\\.$#"
@@ -1181,6 +1181,16 @@ parameters:
 			path: src/Support/TokenExtractor.php
 
 		-
+			message: "#^Method Lkrms\\\\Sync\\\\Catalog\\\\SyncOperation\\:\\:getNameMap\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Sync/Catalog/SyncOperation.php
+
+		-
+			message: "#^Method Lkrms\\\\Sync\\\\Catalog\\\\SyncOperation\\:\\:getValueMap\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Sync/Catalog/SyncOperation.php
+
+		-
 			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\DbSyncProvider\\:\\:getDbDefinition\\(\\) return type with generic class Lkrms\\\\Sync\\\\Support\\\\DbSyncDefinition does not specify its types\\: TEntity, TProvider$#"
 			count: 1
 			path: src/Sync/Concept/DbSyncProvider.php
@@ -1589,16 +1599,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector\\:\\:getSyncOperationMethod\\(\\) has parameter \\$entity with generic class Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector but does not specify its types\\: TClass, TIntrospectionClass$#"
 			count: 1
 			path: src/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncOperation\\:\\:getNameMap\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncOperation.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncOperation\\:\\:getValueMap\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncOperation.php
 
 		-
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncSerializeRules\\:\\:_apply\\(\\) has no return type specified\\.$#"

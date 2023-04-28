@@ -2,7 +2,7 @@
 
 namespace Lkrms\Cli\Exception;
 
-use Lkrms\Console\ConsoleLevel as Level;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Facade\Console;
 
 /**

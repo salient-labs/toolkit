@@ -2,8 +2,8 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Support\ArrayKeyConformity;
-use Lkrms\Support\ArrayMapperFlag;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayMapperFlag;
 
 /**
  * Sends a payload through a series of pipes to a destination

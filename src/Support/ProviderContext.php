@@ -7,6 +7,7 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderContext;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
 
 /**
  * The context within which an IProvidable is instantiated

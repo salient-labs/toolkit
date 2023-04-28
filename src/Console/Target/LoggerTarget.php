@@ -2,8 +2,8 @@
 
 namespace Lkrms\Console\Target;
 
+use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Console\Concept\ConsoleTarget;
-use Lkrms\Console\ConsoleLevel;
 use Psr\Log\LoggerInterface;
 
 /**

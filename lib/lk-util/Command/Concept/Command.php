@@ -8,7 +8,7 @@ use Lkrms\Contract\IProvider;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
-use Lkrms\LkUtil\Dictionary\EnvVar;
+use Lkrms\LkUtil\Catalog\EnvVar;
 
 /**
  * Base class for lk-util commands

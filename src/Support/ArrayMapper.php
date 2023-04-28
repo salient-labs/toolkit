@@ -3,6 +3,8 @@
 namespace Lkrms\Support;
 
 use Closure;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayMapperFlag;
 use UnexpectedValueException;
 
 /**

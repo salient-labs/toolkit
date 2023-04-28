@@ -2,8 +2,8 @@
 
 namespace Lkrms\Console;
 
+use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Concept\ConsoleTarget;
-use Lkrms\Console\ConsoleTag as Tag;
 use RuntimeException;
 
 /**

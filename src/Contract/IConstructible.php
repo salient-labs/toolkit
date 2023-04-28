@@ -2,7 +2,7 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
 
 /**
  * Instantiates itself from associative arrays

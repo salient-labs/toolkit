@@ -4,9 +4,9 @@ namespace Lkrms\Facade;
 
 use Closure;
 use Lkrms\Concept\Facade;
-use Lkrms\Support\ArrayKeyConformity;
 use Lkrms\Support\ArrayMapper;
-use Lkrms\Support\ArrayMapperFlag;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayMapperFlag;
 
 /**
  * A facade for \Lkrms\Support\ArrayMapper

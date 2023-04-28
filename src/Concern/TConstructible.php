@@ -4,7 +4,7 @@ namespace Lkrms\Concern;
 
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
-use Lkrms\Support\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Introspector;
 
 /**

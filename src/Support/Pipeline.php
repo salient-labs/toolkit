@@ -10,6 +10,8 @@ use Lkrms\Contract\IPipe;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Exception\PipelineException;
 use Lkrms\Facade\Mapper;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayMapperFlag;
 use RuntimeException;
 use Throwable;
 use UnexpectedValueException;

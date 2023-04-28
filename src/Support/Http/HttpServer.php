@@ -8,7 +8,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Curler\CurlerHeadersFlag;
 use Lkrms\Facade\Console;
-use Lkrms\Support\Dictionary\HttpRequestMethods;
+use Lkrms\Support\Catalog\HttpRequestMethods;
 use Lkrms\Support\Http\HttpRequest;
 use Lkrms\Support\Http\HttpResponse;
 use RuntimeException;

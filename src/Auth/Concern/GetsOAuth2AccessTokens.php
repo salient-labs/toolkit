@@ -13,7 +13,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
-use Lkrms\Support\Dictionary\HttpRequestMethod;
+use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Support\Http\HttpRequest;
 use Lkrms\Support\Http\HttpResponse;
 use Lkrms\Support\Http\HttpServer;

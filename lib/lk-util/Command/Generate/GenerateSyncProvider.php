@@ -7,13 +7,13 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
+use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\LkUtil\Dictionary\EnvVar;
+use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
-use Lkrms\Sync\Support\SyncOperation;
 
 /**
  * Generates provider interfaces for SyncEntity subclasses

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Sync\Support;
+namespace Lkrms\Sync\Catalog;
 
 use Lkrms\Concept\ConvertibleEnumeration;
 

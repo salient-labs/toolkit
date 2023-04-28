@@ -9,14 +9,15 @@ use Lkrms\Contract\IPipeline;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
-use Lkrms\Support\ArrayKeyConformity;
-use Lkrms\Support\Dictionary\HttpRequestMethod;
+use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Catalog\HttpRequestMethod;
+use Lkrms\Sync\Catalog\SyncFilterPolicy;
+use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
-use Lkrms\Sync\Support\SyncOperation;
 use UnexpectedValueException;
 
 /**

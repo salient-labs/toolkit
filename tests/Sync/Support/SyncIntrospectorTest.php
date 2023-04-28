@@ -4,9 +4,9 @@ namespace Lkrms\Tests\Sync\Support;
 
 use Closure;
 use Lkrms\Container\Container;
+use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Support\SyncIntrospector;
-use Lkrms\Sync\Support\SyncOperation;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Tests\Sync\CustomEntity\Post;
 use Lkrms\Tests\Sync\Entity\Provider\PostProvider;

@@ -7,8 +7,6 @@ use Lkrms\Concept\Enumeration;
 /**
  * Command line option types
  *
- * See {@see \Lkrms\Cli\CliCommand::getOptionList()} for more information.
- *
  */
 final class CliOptionType extends Enumeration
 {
@@ -16,6 +14,7 @@ final class CliOptionType extends Enumeration
      * Enable a setting
      *
      * Examples:
+     *
      * - `-v`
      * - `--verbose`
      */
@@ -25,6 +24,7 @@ final class CliOptionType extends Enumeration
      * Set a value
      *
      * Examples:
+     *
      * - `-v <level>`
      * - `--verbosity <level>`
      */
@@ -34,6 +34,7 @@ final class CliOptionType extends Enumeration
      * Set a value, or don't
      *
      * Examples (note the lack of whitespace):
+     *
      * - `-v<level>`
      * - `--verbosity=<level>`
      */
@@ -49,6 +50,7 @@ final class CliOptionType extends Enumeration
      * Choose from a list of values
      *
      * Examples:
+     *
      * - `-f (yes|no|ask)`
      * - `--force (yes|no|ask)`
      */
@@ -58,6 +60,7 @@ final class CliOptionType extends Enumeration
      * Choose from a list of values, or don't
      *
      * Examples (note the lack of whitespace):
+     *
      * - `-f(yes|no|ask)`
      * - `--force=(yes|no|ask)`
      */
