@@ -122,7 +122,7 @@ final class TestTest extends \Lkrms\Tests\TestCase
             'ints #2' => [[1, '1'], 1, false, true, true],
             'ints #3' => [[1, 1], 1, true, true, true],
             'strings #1' => [['a', 'a'], 'a', true, true, true],
-            'strings #2' => [['a', 'a'], 0, false, false, false],
+            'strings #2' => [['a', 'a'], 0, false, PHP_VERSION_ID < 80000, PHP_VERSION_ID < 80000],
             'strings #3' => [['a', 'b'], 'a', false, false, false],
             'nulls' => [[null, null], null, true, true, true],
             'mixed #1' => [['', 0, [], false, null], null, true, false, false],

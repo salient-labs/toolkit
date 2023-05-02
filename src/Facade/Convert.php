@@ -32,6 +32,7 @@ use Lkrms\Utility\Conversions;
  * @method static array iterableToArray(iterable $iterable, bool $preserveKeys = false) If an iterable isn't already an array, make it one
  * @method static array|object|false iterableToItem(iterable $list, int|string|Closure $key, $value, bool $strict = false) Get the first item in $list where the value at $key is $value (see {@see Conversions::iterableToItem()})
  * @method static Iterator iterableToIterator(iterable $iterable) If an iterable isn't already an Iterator, enclose it in one
+ * @method static string lineEndingsToUnix(string $string) Replace a string's CRLF, LFCR or CR end-of-line sequences with LF
  * @method static string linesToLists(string $text, string $separator = "\n", ?string $marker = null, string $regex = '/^\\h*[-*] /', bool $clean = false) Remove duplicates in a string where 'top-level' lines ("section names") are grouped with any subsequent 'child' lines ("list items") (see {@see Conversions::linesToLists()})
  * @method static array listToMap(array $list, int|string|Closure $key) Create a map from a list (see {@see Conversions::listToMap()})
  * @method static string methodToFunction(string $method) Remove the class from a method name

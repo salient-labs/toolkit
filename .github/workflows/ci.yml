@@ -81,6 +81,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
+          extensions: sqlite3
           coverage: none
 
       - name: Install dependencies

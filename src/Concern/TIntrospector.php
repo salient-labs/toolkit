@@ -40,9 +40,9 @@ trait TIntrospector
      *
      * @template T of object
      * @param class-string<T> $service
-     * @phpstan-return self<T,TIntrospectionClass<T>>
+     * @return self<T,TIntrospectionClass<T>>
      */
-    public static function getService(IContainer $container, string $service): self
+    public static function getService(IContainer $container, string $service)
     {
         /** @var self<T,TIntrospectionClass<T>> */
         $instance = new self($container->getName($service));
@@ -56,9 +56,9 @@ trait TIntrospector
      *
      * @template T of object
      * @param class-string<T> $class
-     * @phpstan-return self<T,TIntrospectionClass<T>>
+     * @return self<T,TIntrospectionClass<T>>
      */
-    public static function get(string $class): self
+    public static function get(string $class)
     {
         /** @var self<T,TIntrospectionClass<T>> */
         $instance = new self($class);

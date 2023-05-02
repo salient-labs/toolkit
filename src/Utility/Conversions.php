@@ -1048,6 +1048,19 @@ final class Conversions
     }
 
     /**
+     * Replace a string's CRLF, LFCR or CR end-of-line sequences with LF
+     *
+     */
+    public function lineEndingsToUnix(string $string): string
+    {
+        if (strpos($string, "\r") === false) {
+            return $string;
+        }
+
+        return preg_replace("/(\r\n|\n\r|\r)/", "\n", $string);
+    }
+
+    /**
      * A wrapper for get_object_vars
      *
      * Because you can't exclude `private` and `protected` properties from
