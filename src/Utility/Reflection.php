@@ -160,13 +160,13 @@ final class Reflection
         $comments = [];
         do {
             if (($comment = $class->getDocComment()) !== false) {
-                $comments[] = $comment;
+                $comments[] = Convert::lineEndingsToUnix($comment);
             }
         } while ($class = $class->getParentClass());
 
         foreach ($interfaces as $interface) {
             if (($comment = $interface->getDocComment()) !== false) {
-                $comments[] = $comment;
+                $comments[] = Convert::lineEndingsToUnix($comment);
             }
         }
 
@@ -198,9 +198,11 @@ final class Reflection
         foreach ($this->getInterfaces($method->getDeclaringClass()) as $interface) {
             if ($interface->hasMethod($name) &&
                     ($comment = $interface->getMethod($name)->getDocComment()) !== false) {
-                $comments[] = $comment;
-                is_null($classDocComments) ||
-                    $classDocComments[] = $interface->getDocComment() ?: null;
+                $comments[] = Convert::lineEndingsToUnix($comment);
+                if (!is_null($classDocComments)) {
+                    $comment = $interface->getDocComment() ?: null;
+                    $classDocComments[] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
+                }
             }
         }
 
@@ -217,9 +219,11 @@ final class Reflection
         $comments = [];
         do {
             if (($comment = $method->getDocComment()) !== false) {
-                $comments[] = $comment;
-                is_null($classDocComments) ||
-                    $classDocComments[] = $method->getDeclaringClass()->getDocComment() ?: null;
+                $comments[] = Convert::lineEndingsToUnix($comment);
+                if (!is_null($classDocComments)) {
+                    $comment = $method->getDeclaringClass()->getDocComment() ?: null;
+                    $classDocComments[] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
+                };
             }
             // Interfaces don't have traits, so there's nothing else to do here
             if ($method->getDeclaringClass()->isInterface()) {
@@ -284,9 +288,11 @@ final class Reflection
         $comments = [];
         do {
             if (($comment = $property->getDocComment()) !== false) {
-                $comments[] = $comment;
-                is_null($classDocComments) ||
-                    $classDocComments[] = $property->getDeclaringClass()->getDocComment() ?: null;
+                $comments[] = Convert::lineEndingsToUnix($comment);
+                if (!is_null($classDocComments)) {
+                    $comment = $property->getDeclaringClass()->getDocComment() ?: null;
+                    $classDocComments[] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
+                }
             }
             foreach ($property->getDeclaringClass()->getTraits() as $trait) {
                 if ($trait->hasProperty($name)) {
