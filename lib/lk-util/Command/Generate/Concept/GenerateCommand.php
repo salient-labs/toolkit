@@ -298,7 +298,7 @@ abstract class GenerateCommand extends Command
 
             if ($dir = Composer::getNamespacePath($namespace)) {
                 File::maybeCreateDirectory($dir);
-                $file = $dir . DIRECTORY_SEPARATOR . $file;
+                $file = $dir . '/' . $file;
             }
             if (file_exists($file)) {
                 if (rtrim(file_get_contents($file)) == rtrim($output)) {

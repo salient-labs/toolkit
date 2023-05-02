@@ -32,7 +32,7 @@ final class Filesystem
      * exclude. No files are excluded if `null`.
      *
      * To exclude a directory, provide an expression that matches its name and a
-     * subsequent `DIRECTORY_SEPARATOR`.
+     * subsequent forward slash (`/`).
      *
      * @param string|null $include A regular expression that specifies paths to
      * include. All files are included if `null`.
@@ -41,7 +41,7 @@ final class Filesystem
      * directories to exclude.
      *
      * To exclude a directory, provide an expression that matches its name and a
-     * subsequent `DIRECTORY_SEPARATOR`.
+     * subsequent forward slash (`/`).
      *
      * @phpstan-param array<string,callable(SplFileInfo): bool> $excludeCallbacks
      * @param array<string,callable> $includeCallbacks An array that maps
@@ -82,7 +82,7 @@ final class Filesystem
                         foreach ($excludeCallbacks as $regex => $callback) {
                             if (!preg_match($regex, $key) &&
                                 !($current->isDir() &&
-                                    preg_match($regex, $key . DIRECTORY_SEPARATOR))) {
+                                    preg_match($regex, $key . '/'))) {
                                 continue;
                             }
                             if ($callback($current)) {
@@ -91,7 +91,7 @@ final class Filesystem
                         }
                     }
                     if ($current->isDir()) {
-                        return !($exclude && preg_match($exclude, $key . DIRECTORY_SEPARATOR));
+                        return !($exclude && preg_match($exclude, $key . '/'));
                     }
                     if ($include && preg_match($include, $key)) {
                         return true;
@@ -366,8 +366,8 @@ final class Filesystem
         $euid = posix_geteuid();
 
         return (is_null($dir)
-                ? realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR
-                : ($dir ? rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : ''))
+                ? realpath(sys_get_temp_dir()) . '/'
+                : ($dir ? rtrim($dir, '/\\') . '/' : ''))
             . "$basename-$hash-$euid$suffix";
     }
 }

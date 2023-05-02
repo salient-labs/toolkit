@@ -189,8 +189,8 @@ final class Composer
             if (!strcasecmp(substr($namespace . '\\', 0, strlen($prefix)), $prefix)) {
                 foreach ((array) $dirs as $dir) {
                     if (($dir = File::realpath($dir)) && is_dir($dir)) {
-                        if ($subdir = strtr(substr($namespace, strlen($prefix)), '\\', DIRECTORY_SEPARATOR)) {
-                            return $dir . DIRECTORY_SEPARATOR . $subdir;
+                        if ($subdir = strtr(substr($namespace, strlen($prefix)), '\\', '/')) {
+                            return $dir . '/' . $subdir;
                         }
 
                         return $dir;

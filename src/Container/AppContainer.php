@@ -147,7 +147,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
 
             return $this->_getPath(
                 Convert::sparseToString(
-                    DIRECTORY_SEPARATOR, [$path, $app, $windowsChild]
+                    '/', [$path, $app, $windowsChild]
                 ),
                 $name
             );
@@ -172,7 +172,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
 
         return $this->_getPath(
             Convert::sparseToString(
-                DIRECTORY_SEPARATOR, [$path, $app, $child]
+                '/', [$path, $app, $child]
             ),
             $name
         );
