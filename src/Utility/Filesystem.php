@@ -64,7 +64,8 @@ final class Filesystem
     ): FluentIteratorInterface {
         $flags = FilesystemIterator::KEY_AS_PATHNAME
             | FilesystemIterator::CURRENT_AS_FILEINFO
-            | FilesystemIterator::SKIP_DOTS;
+            | FilesystemIterator::SKIP_DOTS
+            | FilesystemIterator::UNIX_PATHS;
         $mode = $withDirectories
             ? RecursiveIteratorIterator::SELF_FIRST
             : RecursiveIteratorIterator::LEAVES_ONLY;
