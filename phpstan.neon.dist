@@ -11,7 +11,7 @@ parameters:
 		- bootstrap.php
 		- tests
 	excludePaths:
-		- lib/apigen
+		- apigen
 	ignoreErrors:
 		-
 			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateBuilder\\:\\:\\$[a-z0-9_]+ is never written, only read\\.$#i"
