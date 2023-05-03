@@ -133,7 +133,7 @@ final class GetSyncEntities extends CliCommand
         return null;
     }
 
-    public function getUsageSections(): ?array
+    public function getHelpSections(): ?array
     {
         return null;
     }

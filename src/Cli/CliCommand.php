@@ -3,14 +3,13 @@
 namespace Lkrms\Cli;
 
 use Lkrms\Cli\Catalog\CliOptionVisibility;
-use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Cli\Concern\HasCliApplication;
+use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Console\ConsoleFormatter;
-use Lkrms\Contract\ReturnsContainer;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
@@ -19,19 +18,12 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Base class for CLI commands
+ * Base class for runnable CLI commands
  *
- * @implements ReturnsContainer<CliApplication>
  */
-abstract class CliCommand implements ReturnsContainer
+abstract class CliCommand implements ICliCommand
 {
     use HasCliApplication;
-
-    /**
-     * Get a one-line description of the command
-     *
-     */
-    abstract public function getShortDescription(): string;
 
     /**
      * Get a list of options for the command
@@ -59,7 +51,7 @@ abstract class CliCommand implements ReturnsContainer
      * Get a detailed description of the command
      *
      */
-    abstract public function getLongDescription(): ?string;
+    abstract protected function getLongDescription(): ?string;
 
     /**
      * Get content for the command's usage information / help messages
@@ -81,7 +73,7 @@ abstract class CliCommand implements ReturnsContainer
      * ];
      * ```
      */
-    abstract public function getUsageSections(): ?array;
+    abstract protected function getHelpSections(): ?array;
 
     /**
      * Run the command
@@ -171,10 +163,6 @@ abstract class CliCommand implements ReturnsContainer
      */
     private $Runs = 0;
 
-    /**
-     * @internal
-     * @param string[] $name
-     */
     final public function setName(array $name): void
     {
         if ($this->Name !== null) {
@@ -189,7 +177,7 @@ abstract class CliCommand implements ReturnsContainer
      *
      * @return string
      */
-    final public function getName(): string
+    final protected function getName(): string
     {
         return implode(' ', $this->getNameParts());
     }
@@ -200,7 +188,7 @@ abstract class CliCommand implements ReturnsContainer
      *
      * @return string
      */
-    final public function getNameWithProgram(): string
+    final protected function getNameWithProgram(): string
     {
         $name = $this->getNameParts();
         array_unshift($name, $this->app()->getProgramName());
@@ -213,7 +201,7 @@ abstract class CliCommand implements ReturnsContainer
      *
      * @return string[]
      */
-    final public function getNameParts(): array
+    final protected function getNameParts(): array
     {
         return $this->Name ?: [];
     }
@@ -323,17 +311,17 @@ abstract class CliCommand implements ReturnsContainer
     /**
      * @return CliOption[]
      */
-    final public function getOptions(): array
+    final protected function getOptions(): array
     {
         return array_values($this->loadOptions()->Options);
     }
 
-    final public function hasOption(string $name): bool
+    final protected function hasOption(string $name): bool
     {
         return array_key_exists($name, $this->loadOptions()->OptionsByName);
     }
 
-    final public function getOption(string $name): ?CliOption
+    final protected function getOption(string $name): ?CliOption
     {
         return $this->loadOptions()->OptionsByName[$name] ?? null;
     }
@@ -356,11 +344,11 @@ abstract class CliCommand implements ReturnsContainer
 
         return implode(' ', array_filter([
             $name ?: '',
-            $this->getOptionsSynopsis(),
+            $this->getOptionsSynopsis($withMarkup),
         ]));
     }
 
-    final public function getOptionsSynopsis(bool $withMarkup = true): string
+    private function getOptionsSynopsis(bool $withMarkup = true): string
     {
         $tag = $withMarkup ? '__' : '';
 
@@ -423,7 +411,7 @@ abstract class CliCommand implements ReturnsContainer
         ]));
     }
 
-    final public function getUsage(): string
+    final public function getHelp(bool $withMarkup = true, ?int $width = 80): string
     {
         $options = '';
 
@@ -525,7 +513,7 @@ abstract class CliCommand implements ReturnsContainer
         $synopsis = ($synopsis ? ' ' : '') . $synopsis;
 
         $name = $this->getNameWithProgram();
-        if ($sections = $this->getUsageSections() ?: []) {
+        if ($sections = $this->getHelpSections() ?: []) {
             $sections = array_map(
                 fn(string $section) => $this->prepareUsage($section),
                 $sections
@@ -814,7 +802,7 @@ abstract class CliCommand implements ReturnsContainer
      * @param string $name Either the `Short` or `Long` name of the option
      * @return string|string[]|bool|int|null
      */
-    final public function getOptionValue(string $name)
+    final protected function getOptionValue(string $name)
     {
         $this->assertHasRun();
 
@@ -836,7 +824,7 @@ abstract class CliCommand implements ReturnsContainer
      * @param (callable(string): string)|null $nameCallback
      * @return array<string,string|string[]|bool|int|null>
      */
-    final public function getOptionValues(
+    final protected function getOptionValues(
         bool $export = false,
         ?callable $nameCallback = null
     ): array {
@@ -975,7 +963,7 @@ abstract class CliCommand implements ReturnsContainer
      * @param string|CliOption $option
      * @param string|string[]|bool|int|null $value
      */
-    final public function getEffectiveArgument(
+    final protected function getEffectiveArgument(
         $option,
         bool $shellEscape = false,
         $value = null
@@ -1026,7 +1014,7 @@ abstract class CliCommand implements ReturnsContainer
      * @param array<string,string|string[]|bool|int|null> $values
      * @return string[]
      */
-    final public function getEffectiveCommandLine(
+    final protected function getEffectiveCommandLine(
         bool $shellEscape = false,
         array $values = []
     ): array {
@@ -1071,12 +1059,11 @@ abstract class CliCommand implements ReturnsContainer
     }
 
     /**
-     * Parse the arguments and run the command
+     * {@inheritDoc}
      *
-     * @param string[] $args
      * @see CliCommand::run()
      */
-    final public function __invoke(array $args): int
+    final public function __invoke(string ...$args): int
     {
         $this->Arguments = $args;
         $this->OptionValues = null;
@@ -1086,7 +1073,7 @@ abstract class CliCommand implements ReturnsContainer
         $this->loadOptionValues();
 
         if ($this->HasHelpArgument) {
-            Console::out($this->getUsage());
+            Console::out($this->getHelp());
 
             return 0;
         }

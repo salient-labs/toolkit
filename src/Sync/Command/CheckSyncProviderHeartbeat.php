@@ -111,7 +111,7 @@ final class CheckSyncProviderHeartbeat extends CliCommand
             EOF;
     }
 
-    public function getUsageSections(): ?array
+    public function getHelpSections(): ?array
     {
         return null;
     }

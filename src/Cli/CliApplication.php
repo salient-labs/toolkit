@@ -119,30 +119,46 @@ final class CliApplication extends AppContainer
     }
 
     /**
+     * Register one, and only one, CliCommand for the lifetime of the container
+     *
+     * The command is registered with an empty name, placing it at the root of
+     * the container's subcommand tree.
+     *
+     * @param class-string<CliCommand> $id The name of the class to instantiate.
+     * @return $this
+     * @throws LogicException if another command has already been registered.
+     */
+    public function oneCommand(string $id)
+    {
+        return $this->command([], $id);
+    }
+
+    /**
      * Register a CliCommand with the container
      *
-     * For example, a PHP script called `sync-util` could register
-     * `Acme\Canvas\SyncFromSis`, a `CliCommand` subclass, as follows:
+     * For example, an executable PHP script called `sync-util` could register
+     * `Acme\Canvas\Sync`, a {@see CliCommand} inheritor, as follows:
      *
      * ```php
      * Cli::load()
-     *     ->command(["sync", "canvas", "from-sis"], \Acme\Canvas\SyncFromSis::class)
+     *     ->command(["sync", "canvas"], \Acme\Canvas\Sync::class)
      *     ->runAndExit();
      * ```
      *
-     * Then, `Acme\Canvas\SyncFromSis` could be invoked with:
+     * Then, `Acme\Canvas\Sync` could be invoked with:
      *
      * ```shell
-     * php sync-util sync canvas from-sis
+     * ./sync-util sync canvas
      * ```
      *
-     * @param string[] $name The command name as an array of subcommands. Valid
-     * subcommands start with a letter, followed by any number of letters,
-     * numbers, hyphens, or underscores.
-     * @param class-string<CliCommand> $id The {@see CliCommand} class to
-     * request from the container when an instance is required.
+     * @param string[] $name The name of the command as an array of subcommands.
+     *
+     * Valid subcommands start with a letter, followed by any number of letters,
+     * numbers, hyphens and underscores.
+     * @param class-string<CliCommand> $id The name of the class to instantiate.
      * @return $this
-     * @throws LogicException if `$name` is invalid or has already been used.
+     * @throws LogicException if `$name` is invalid or conflicts with a
+     * registered command.
      */
     public function command(array $name, string $id)
     {
@@ -190,7 +206,7 @@ final class CliApplication extends AppContainer
                     . "\n\nSee '"
                     . ($name ? "$progName help $name" : "$progName --help")
                     . "' for more information."
-                : $command->getUsage();
+                : $command->getHelp();
         } elseif (!is_array($node)) {
             return null;
         }
@@ -321,7 +337,7 @@ final class CliApplication extends AppContainer
             if ($command = $this->getNodeCommand($name, $node)) {
                 $this->RunningCommand = $command;
 
-                $result = $command($args);
+                $result = $command(...$args);
 
                 $this->RunningCommand = null;
 
