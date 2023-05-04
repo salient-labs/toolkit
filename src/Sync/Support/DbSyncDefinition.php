@@ -21,6 +21,9 @@ use UnexpectedValueException;
  *
  * @template TEntity of ISyncEntity
  * @template TProvider of DbSyncProvider
+ *
+ * @property-read string|null $Table
+ *
  * @extends SyncDefinition<TEntity,TProvider>
  */
 final class DbSyncDefinition extends SyncDefinition implements HasBuilder
@@ -112,5 +115,13 @@ final class DbSyncDefinition extends SyncDefinition implements HasBuilder
     public static function resolve($object): DbSyncDefinition
     {
         return DbSyncDefinitionBuilder::resolve($object);
+    }
+
+    public static function getReadable(): array
+    {
+        return [
+            ...parent::getReadable(),
+            'Table',
+        ];
     }
 }
