@@ -40,8 +40,8 @@ trait FluentIteratorTrait
     }
 
     /**
-     * @param TKey $key
-     * @param TValue $value
+     * @param int|string $key
+     * @param mixed $value
      * @return TValue|false `false` if no matching element is found.
      */
     public function nextWithValue($key, $value, bool $strict = false)

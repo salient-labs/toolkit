@@ -34,8 +34,8 @@ interface FluentIteratorInterface extends Iterator
      * If the current element has `$value` at `$key`, it is returned after
      * moving the iterator forward.
      *
-     * @param TKey $key
-     * @param TValue $value
+     * @param int|string $key
+     * @param mixed $value
      * @return TValue|false `false` if no matching element is found.
      */
     public function nextWithValue($key, $value, bool $strict = false);
