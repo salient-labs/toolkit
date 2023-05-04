@@ -46,6 +46,15 @@ use UnexpectedValueException;
  *
  * @template TEntity of ISyncEntity
  * @template TProvider of HttpSyncProvider
+ *
+ * @property-read string|null $Path The path to the provider endpoint servicing the entity, e.g. "/v1/user"
+ * @property-read mixed[]|null $Query Query parameters applied to the sync operation URL
+ * @property-read ICurlerHeaders|null $Headers HTTP headers applied to the sync operation request
+ * @property-read ICurlerPager|null $Pager The pagination handler for the endpoint servicing the entity
+ * @property-read int|null $Expiry The time, in seconds, before responses from the provider expire
+ * @property-read array<SyncOperation::*,string> $MethodMap An array that maps sync operations to HTTP request methods
+ * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before every sync operation
+ *
  * @extends SyncDefinition<TEntity,TProvider>
  */
 final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
@@ -144,7 +153,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      * ]
      * ```
      *
-     * @var array<int,string>
+     * @var array<SyncOperation::*,string>
      */
     protected $MethodMap;
 
@@ -171,7 +180,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      * @phpstan-param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
      * @param mixed[]|null $query
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
-     * @param array<int,string> $methodMap
+     * @param array<SyncOperation::*,string> $methodMap
      */
     public function __construct(
         string $entity,
@@ -436,5 +445,19 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     public static function resolve($object): HttpSyncDefinition
     {
         return HttpSyncDefinitionBuilder::resolve($object);
+    }
+
+    public static function getReadable(): array
+    {
+        return [
+            ...parent::getReadable(),
+            'Path',
+            'Query',
+            'Headers',
+            'Pager',
+            'Expiry',
+            'MethodMap',
+            'Callback',
+        ];
     }
 }
