@@ -7,7 +7,7 @@ use Lkrms\Concept\Dictionary;
 /**
  * Section names commonly used in usage information / help messages
  *
- * @see \Lkrms\Cli\CliCommand::getUsageSections()
+ * @see \Lkrms\Cli\CliCommand::getHelpSections()
  */
 final class CliUsageSectionName extends Dictionary
 {
