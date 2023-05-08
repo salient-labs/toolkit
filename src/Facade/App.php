@@ -38,7 +38,7 @@ use Lkrms\Utility\Environment;
  * @method static string getTempPath() Get a writable directory for the application's ephemeral data
  * @method static bool has(string $id) True if a class or service interface resolves to a concrete class that actually exists (see {@see Container::has()})
  * @method static bool hasGlobalContainer() True if a global container has been loaded
- * @method static AppContainer if(bool $condition, callable $then, ?callable $else = null) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
+ * @method static AppContainer if(bool $condition, callable $then, callable|null $else = null) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of a class or interface have been applied to the container itself
  * @method static bool inProduction() Return true if the application is in production, false if it's running from source (see {@see AppContainer::inProduction()})
  * @method static AppContainer instance(string $id, $instance) Add an existing instance to the container as a shared binding
@@ -46,9 +46,9 @@ use Lkrms\Utility\Environment;
  * @method static AppContainer loadCache() Load the application's CacheStore, creating a backing database if needed (see {@see AppContainer::loadCache()})
  * @method static AppContainer loadCacheIfExists() Load the application's CacheStore if a backing database already exists (see {@see AppContainer::loadCacheIfExists()})
  * @method static AppContainer loadSync(?string $command = null, ?array $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see AppContainer::loadSync()})
- * @method static AppContainer logConsoleMessages(?bool $debug = null, ?string $name = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
+ * @method static AppContainer logConsoleMessages(?bool $debug = null, string|null $name = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Get the global container, returning null if no global container has been loaded
- * @method static AppContainer registerShutdownReport($level = Level::DEBUG, ?array $timers = ['*'], bool $resourceUsage = true) Report timers and resource usage when the application terminates (see {@see AppContainer::registerShutdownReport()})
+ * @method static AppContainer registerShutdownReport($level = Level::DEBUG, array|null $timers = ['*'], bool $resourceUsage = true) Report timers and resource usage when the application terminates (see {@see AppContainer::registerShutdownReport()})
  * @method static IContainer requireGlobalContainer() Get the global container, throwing an exception if no global container has been loaded
  * @method static AppContainer service(string $id, string[]|null $services = null, string[]|null $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT) Add bindings to the container for an IService, optionally specifying services to include or exclude (see {@see Container::service()})
  * @method static AppContainer services(array<string,string> $serviceMap, int $lifetime = ServiceLifetime::INHERIT) Consolidate a service map and call service() once per concrete class (see {@see Container::services()})

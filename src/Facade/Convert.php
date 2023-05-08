@@ -33,15 +33,15 @@ use Lkrms\Utility\Conversions;
  * @method static array|object|false iterableToItem(iterable $list, int|string|Closure $key, $value, bool $strict = false) Get the first item in $list where the value at $key is $value (see {@see Conversions::iterableToItem()})
  * @method static Iterator iterableToIterator(iterable $iterable) If an iterable isn't already an Iterator, enclose it in one
  * @method static string lineEndingsToUnix(string $string) Replace a string's CRLF or CR end-of-line sequences with LF
- * @method static string linesToLists(string $text, string $separator = "\n", ?string $marker = null, string $regex = '/^\\h*[-*] /', bool $clean = false) Remove duplicates in a string where 'top-level' lines ("section names") are grouped with any subsequent 'child' lines ("list items") (see {@see Conversions::linesToLists()})
+ * @method static string linesToLists(string $text, string $separator = "\n", string|null $marker = null, string $regex = '/^\\h*[-*] /', bool $clean = false) Remove duplicates in a string where 'top-level' lines ("section names") are grouped with any subsequent 'child' lines ("list items") (see {@see Conversions::linesToLists()})
  * @method static array listToMap(array $list, int|string|Closure $key) Create a map from a list (see {@see Conversions::listToMap()})
  * @method static string methodToFunction(string $method) Remove the class from a method name
  * @method static string nounToPlural(string $noun) Get the plural of a singular noun
  * @method static array objectToArray(object $object) A wrapper for get_object_vars (see {@see Conversions::objectToArray()})
  * @method static array|false parseUrl(string $url) Parse a URL and return its components, including "params" if FTP parameters are present (see {@see Conversions::parseUrl()})
  * @method static string pathToBasename(string $path, int $extLimit = 0) Remove the directory and up to the given number of extensions from a path (see {@see Conversions::pathToBasename()})
- * @method static string plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false) If $number is 1, return $singular, otherwise return $plural (see {@see Conversions::plural()})
- * @method static string pluralRange(int $from, int $to, string $singular, ?string $plural = null, string $preposition = 'on') Get a phrase like "between lines 3 and 11" or "on platform 23" (see {@see Conversions::pluralRange()})
+ * @method static string plural(int $number, string $singular, string|null $plural = null, bool $includeNumber = false) If $number is 1, return $singular, otherwise return $plural (see {@see Conversions::plural()})
+ * @method static string pluralRange(int $from, int $to, string $singular, string|null $plural = null, string $preposition = 'on') Get a phrase like "between lines 3 and 11" or "on platform 23" (see {@see Conversions::pluralRange()})
  * @method static array<string,string> queryToData(string[] $query) Convert a list of "key=value" strings to an array like ["key" => "value"]
  * @method static array renameArrayKey(string|int $key, string|int $newKey, array $array) Rename an array key without changing the order of values in the array
  * @method static string resolvePath(string $path) Resolve relative segments in a pathname (see {@see Conversions::resolvePath()})

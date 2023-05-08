@@ -35,7 +35,7 @@ class PhpDocTag
         ?string $name = null,
         ?string $type = null,
         ?string $description = null,
-        bool $legacyNullable = true
+        bool $legacyNullable = false
     ) {
         $this->Tag = $tag;
         $this->Name = $name === null ? null : self::sanitiseString($name);
@@ -64,7 +64,7 @@ class PhpDocTag
      * @param bool $legacyNullable If `true`, nullable types are returned as
      * `"?<type>"` instead of `"<type>|null"`.
      */
-    final public static function normaliseType(?string $type, bool $legacyNullable = true): ?string
+    final public static function normaliseType(?string $type, bool $legacyNullable = false): ?string
     {
         if (!($type = self::sanitiseString($type))) {
             return null;

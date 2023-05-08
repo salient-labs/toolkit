@@ -25,7 +25,7 @@ class PhpDocTemplateTag extends PhpDocTag
      */
     public $IsClassTemplate;
 
-    public function __construct(string $name, ?string $type = null, bool $legacyNullable = true)
+    public function __construct(string $name, ?string $type = null, bool $legacyNullable = false)
     {
         parent::__construct('template', $name, $type, null, $legacyNullable);
         if (!$this->Name) {

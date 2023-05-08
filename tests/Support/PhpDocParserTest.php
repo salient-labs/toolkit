@@ -221,7 +221,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
                 null,
                 [0],
                 [null],
-                ['?string'],
+                ['string|null'],
                 [null],
             ],
             [
@@ -312,7 +312,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         $this->assertSame('mixed', $phpDoc->Templates['T']->Type);
         $this->assertSame(null, $phpDoc->Templates['T']->Description);
         $this->assertSame('TArray', $phpDoc->Templates['TArray']->Name);
-        $this->assertSame('?array', $phpDoc->Templates['TArray']->Type);
+        $this->assertSame('array|null', $phpDoc->Templates['TArray']->Type);
         $this->assertSame(null, $phpDoc->Templates['TArray']->Description);
         $this->assertSame('TKey', $phpDoc->Templates['TKey']->Name);
         $this->assertSame('int|string', $phpDoc->Templates['TKey']->Type);
