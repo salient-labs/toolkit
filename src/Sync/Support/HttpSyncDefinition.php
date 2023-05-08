@@ -409,14 +409,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             ? ($def->Callback)($def, $operation, $ctx, ...$args)
             : $def;
 
-        /** @var Curler $curler */
-        $curler = $this->Provider->getCurler($def->Path, $def->Expiry);
-        if ($def->Headers) {
-            $curler = $curler->withHeaders($def->Headers);
-        }
-        if ($def->Pager) {
-            $curler = $curler->withPager($def->Pager);
-        }
+        $curler = $this->Provider->getCurler($def->Path, $def->Expiry, $def->Headers, $def->Pager);
 
         $this->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
         if ($returnEmpty) {
