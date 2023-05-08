@@ -11,6 +11,7 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Reflect;
 use Lkrms\LkUtil\Command\Concept\Command;
+use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
 use ReflectionParameter;
 use ReflectionType;
 
@@ -109,12 +110,12 @@ abstract class GenerateCommand extends Command
     /**
      * Resolve PHPDoc templates to concrete types if possible
      *
-     * @param array<string,array{type:string|null}> $templates
+     * @param array<string,PhpDocTemplateTag> $templates
      */
     protected function resolveTemplates(string $type, array $templates): string
     {
         $seen = [];
-        while (($_type = $templates[$type]['type'] ?? null) && !($seen[$_type] ?? null)) {
+        while (($_type = $templates[$type]->Type ?? null) && !($seen[$_type] ?? null)) {
             $seen[$_type] = true;
             $type = $_type;
         }
@@ -321,10 +322,5 @@ abstract class GenerateCommand extends Command
         }
 
         file_put_contents($file, $output);
-    }
-
-    protected function cleanPhpDocTag(string $tag): string
-    {
-        return preg_replace('/^(@(?:param|return|var|property-(?:read|write)|property)\h+)\?([^\s&|]+)(\h+\$)/', '$1$2|null$3', $tag);
     }
 }

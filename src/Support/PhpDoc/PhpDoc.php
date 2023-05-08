@@ -1,53 +1,43 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Lkrms\Support\PhpDoc;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Facade\Convert;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use UnexpectedValueException;
 
 /**
  * Parses PSR-5 PHPDocs
  *
- * Newlines and other formatting are preserved unless otherwise noted.
+ * Newlines are preserved and Markdown code fences are honoured unless otherwise
+ * noted.
  *
  * @property-read string|null $Summary
  * @property-read string|null $Description
- * @property-read string[] $TagLines
- * @property-read array<string,string[]|true> $Tags
- * @property-read array<string,array{type:string|null,description:string|null}> $Params
- * @property-read array{type:string,description:string|null}|null $Return
- * @property-read array<int,array{name:string|null,type:string,description:string|null}> $Var
- * @property-read array<string,array{type:string|null}> $Templates
+ * @property-read string[] $Tags
+ * @property-read array<string,string[]|true> $TagsByName
+ * @property-read array<string,PhpDocParamTag> $Params
+ * @property-read PhpDocReturnTag|null $Return
+ * @property-read PhpDocVarTag[] $Vars
+ * @property-read array<string,PhpDocTemplateTag> $Templates
  */
-final class PhpDocParser implements IReadable
+final class PhpDoc implements IReadable
 {
     use TFullyReadable;
 
     /**
-     * @link https://github.com/php-fig/fig-standards/blob/master/proposed/phpdoc.md#53-tags
-     */
-    public const TAG_REGEX = '/^@(?P<tag>[[:alpha:]\\\\][[:alnum:]\\\\_-]*)(?:\h|[(:]|$)/';
-
-    /**
-     * @link https://github.com/php-fig/fig-standards/blob/master/proposed/phpdoc.md#appendix-a-types
-     */
-    public const TYPE_PATTERN = '(?:\\\\?[[:alpha:]_\x80-\xff][[:alnum:]_\x80-\xff]*)+';
-
-    public const TYPE_REGEX = '/^' . self::TYPE_PATTERN . '$/';
-
-    /**
-     * The summary, if provided
+     * The summary
      *
-     * Newlines are removed.
+     * Newlines are removed and Markdown code fences are not honoured.
      *
      * @var string|null
      */
     protected $Summary;
 
     /**
-     * The description, if provided
+     * The description
      *
      * @var string|null
      */
@@ -58,43 +48,49 @@ final class PhpDocParser implements IReadable
      *
      * @var string[]
      */
-    protected $TagLines = [];
-
-    /**
-     * Tag name => tag content, in order of appearance
-     *
-     * Tags that only appear by themselves (i.e. without a description or any
-     * other metadata) are added with the boolean value `true`.
-     *
-     * @var array<string,string[]|true>
-     */
     protected $Tags = [];
 
     /**
-     * Parameter name => parameter metadata
+     * [ Tag name => content, in order of appearance ]
      *
-     * @var array<string,array{type:string|null,description:string|null}>
+     * Text between a tag's name and the next tag is regarded as the tag's
+     * content.
+     *
+     * If no content is associated with a tag, its content array is replaced
+     * with the boolean value `true`.
+     *
+     * @var array<string,string[]|true>
+     */
+    protected $TagsByName = [];
+
+    /**
+     * [ Parameter name => parameter metadata ]
+     *
+     * @var array<string,PhpDocParamTag>
      */
     protected $Params = [];
 
     /**
-     * Return value metadata, if provided
+     * Return value metadata
      *
-     * @var array{type:string,description:string|null}|null
+     * @var PhpDocReturnTag|null
      */
     protected $Return;
 
     /**
-     * Property or constant metadata, if provided
+     * Property or constant metadata
      *
-     * @var array<int,array{name:string|null,type:string,description:string|null}>
+     * May be given more than once per PHPDoc, e.g. when documenting multiple
+     * properties declared in one statement.
+     *
+     * @var PhpDocVarTag[]
      */
-    protected $Var = [];
+    protected $Vars = [];
 
     /**
-     * Template type => template metadata
+     * [ Template name => template metadata ]
      *
-     * @var array<string,array{type:string|null}>
+     * @var array<string,PhpDocTemplateTag>
      */
     protected $Templates = [];
 
@@ -114,128 +110,160 @@ final class PhpDocParser implements IReadable
     private $NextLine;
 
     /**
-     * @param bool $legacyNullable If set (the default), convert `<type>|null`
-     * and `null|<type>` to `?<type>`.
+     * @param bool $legacyNullable If `true`, convert `<type>|null` and
+     * `null|<type>` to `?<type>`.
      */
-    public function __construct(string $docBlock, string $classDocBlock = null, bool $legacyNullable = true)
-    {
+    public function __construct(
+        string $docBlock,
+        string $classDocBlock = null,
+        bool $legacyNullable = true
+    ) {
         // Check for a leading "*" after every newline as per PSR-5
         if (!preg_match(Regex::delimit(Regex::PHP_DOCBLOCK), $docBlock, $matches)) {
             throw new UnexpectedValueException('Invalid DocBlock');
         }
         $this->LegacyNullable = $legacyNullable;
 
-        // - Extract text between "/**" and "*/"
-        // - Remove trailing spaces and leading "* " or "*" from each line
-        // - Trim the entire PHPDoc
-        // - Split into string[]
-        $this->Lines = preg_split(
-            '/\r?\n/u',
-            trim(preg_replace(
-                '/(^\h*\* ?|\h+(?=\r?$))/um',
-                '',
-                $matches['content']
-            ))
+        // 5. Split into string[]
+        $this->Lines = explode(
+            "\n",
+            // 4. Trim the entire PHPDoc
+            trim(
+                // 3. Remove trailing spaces and leading "* " or "*"
+                preg_replace(
+                    '/(^\h*\* ?|\h+$)/um',
+                    '',
+                    // 2. Normalise line endings
+                    Convert::lineEndingsToUnix(
+                        // 1. Extract text between "/**" and "*/"
+                        $matches['content']
+                    )
+                )
+            )
         );
         $this->NextLine = reset($this->Lines);
 
-        if ($this->NextLine !== false && !preg_match(self::TAG_REGEX, $this->NextLine)) {
+        $tagRegex = Regex::delimit('^' . Regex::PHPDOC_TAG);
+        if ($this->NextLine !== false && !preg_match($tagRegex, $this->NextLine)) {
             $this->Summary = $this->getLinesUntil('/^$/', true, true);
 
-            if ($this->NextLine !== false && !preg_match(self::TAG_REGEX, $this->NextLine)) {
-                $this->Description = rtrim($this->getLinesUntil(self::TAG_REGEX));
+            if ($this->NextLine !== false && !preg_match($tagRegex, $this->NextLine)) {
+                $this->Description = rtrim($this->getLinesUntil($tagRegex));
             }
         }
 
-        while ($this->Lines &&
-                preg_match(self::TAG_REGEX, $lines = $this->getLinesUntil(self::TAG_REGEX), $matches)) {
-            $this->TagLines[] = $lines;
+        while ($this->Lines && preg_match(
+            $tagRegex, $text = $this->getLinesUntil($tagRegex), $matches
+        )) {
+            $this->Tags[] = $text;
 
-            $lines = preg_replace('/^@' . preg_quote($matches['tag'], '/') . '\h*/', '', $lines);
+            // Remove the tag name and any subsequent whitespace
+            $text = preg_replace('/^@' . preg_quote($matches['tag'], '/') . '\s*/', '', $text);
             $tag = ltrim($matches['tag'], '\\');
-            $this->Tags[$tag][] = $lines;
+            $this->TagsByName[$tag][] = $text;
 
-            if (!$lines) {
+            if (!$text) {
                 continue;
             }
 
-            // - If the tag may have an implicit multi-line description, collect
-            //   metadata by calling `strtok($lines, " \t")` for each value up
-            //   to but NOT including the last value before the description
-            //   starts, otherwise the value will not be tokenised correctly
-            //   when the description starts on a new line
-            // - Collect the last value by calling `strtok($lines, " \t\n\r")`
-            // - Call `$this->getValue()` to finalise the tag's metadata and
-            //   collect its description (if applicable)
-            // - To collect metadata for a one-line tag (i.e. with no
-            //   description), call `strtok($lines, " \t")` for each value
-            $meta = 0;
+            // Use `strtok(" \t\n\r")` to extract metadata that may be followed
+            // by a multi-line description, otherwise the first word of any
+            // descriptions that start on the next line will be extracted too
+            $metaCount = 0;
             switch ($tag) {
                 // @param [type] $<name> [description]
                 case 'param':
-                    $token = strtok($lines, " \t\n\r");
+                    $token = strtok($text, " \t\n\r");
                     $type = null;
-                    if (!preg_match('/^\$/', $token)) {
+                    if (($token[0] ?? null) !== '$') {
                         $type = $token;
-                        $meta++;
+                        $metaCount++;
                         $token = strtok(" \t\n\r");
-                        if ($token === false || !preg_match('/^\$/', $token)) {
+                        if ($token === false || ($token[0] ?? null) !== '$') {
+                            /**
+                             * @todo Report an invalid tag here
+                             */
                             continue 2;
                         }
                     }
                     if ($name = substr($token, 1)) {
-                        $meta++;
-                        $this->Params[$name] = $this->getValue($type, $lines, $meta);
+                        $metaCount++;
+                        $this->Params[$name] = new PhpDocParamTag(
+                            $name,
+                            $type,
+                            $this->getTagDescription($text, $metaCount),
+                            $this->LegacyNullable
+                        );
                     }
                     break;
 
                 // @return <type> [description]
                 case 'return':
-                    $token = strtok($lines, " \t\n\r");
+                    $token = strtok($text, " \t\n\r");
                     $type = $token;
-                    $meta++;
-                    $this->Return = $this->getValue($type, $lines, $meta);
+                    $metaCount++;
+                    $this->Return = new PhpDocReturnTag(
+                        $type,
+                        $this->getTagDescription($text, $metaCount),
+                        $this->LegacyNullable
+                    );
                     break;
 
                 // @var [type] [$<name>] [description]
                 case 'var':
                     unset($name);
-                    $token = strtok($lines, " \t\n\r");
+                    // Assume the first token is a type
+                    $token = strtok($text, " \t\n\r");
                     $type = $token;
-                    $meta++;
+                    $metaCount++;
                     $token = strtok(" \t");
-                    if ($token !== false && preg_match('/^\$/', $token)) {
+                    // Also assume that if a name is given, it's for a variable
+                    // and not a constant
+                    if ($token !== false && ($token[0] ?? null) === '$') {
                         $name = $token;
-                        $meta++;
+                        $metaCount++;
                     }
-                    $var = $this->getValue($type, $lines, $meta, true, ['name' => $name ?? null]);
-                    if ($var['description'] && $this->Summary) {
-                        $this->Description .= ($this->Description ? str_repeat(PHP_EOL, 2) : '') . $var['description'];
-                        $var['description'] = $this->Summary;
+
+                    /**
+                     * @todo Use optional context information from the caller
+                     * (via a `ReflectionProperty|ReflectionClassConstant`
+                     * parameter, perhaps?) to resolve entity names
+                     */
+                    $var = new PhpDocVarTag(
+                        $type,
+                        $name ?? null,
+                        $this->getTagDescription($text, $metaCount),
+                        $this->LegacyNullable
+                    );
+                    if ($name ?? null) {
+                        $this->Vars[$name] = $var;
                     } else {
-                        $var['description'] = $var['description'] ?: $this->Summary;
+                        $this->Vars[] = $var;
                     }
-                    $this->Var[] = $var;
                     break;
 
                 // @template <name> [of <type>]
-                // @template-covariant <name> [of <type>]
                 case 'template':
+                // @template-covariant <name> [of <type>]
                 case 'template-covariant':
-                    $token = strtok($lines, " \t");
+                    $token = strtok($text, " \t");
                     $name = $token;
-                    $meta++;
+                    $metaCount++;
                     $token = strtok(" \t");
                     $type = 'mixed';
                     if ($token === 'of') {
-                        $meta++;
+                        $metaCount++;
                         $token = strtok(" \t");
                         if ($token !== false) {
-                            $meta++;
+                            $metaCount++;
                             $type = $token;
                         }
                     }
-                    $this->Templates[$name] = $this->getValue($type, $lines, $meta, false);
+                    $this->Templates[$name] = new PhpDocTemplateTag(
+                        $name,
+                        $type,
+                        $this->LegacyNullable
+                    );
                     break;
             }
         }
@@ -243,43 +271,67 @@ final class PhpDocParser implements IReadable
         // Release strtok's copy of the string most recently passed to it
         strtok('', '');
 
+        // Rearrange this:
+        //
+        //     /**
+        //      * Summary
+        //      *
+        //      * @var int Description.
+        //      */
+        //
+        // Like this:
+        //
+        //     /**
+        //      * Summary
+        //      *
+        //      * Description.
+        //      *
+        //      * @var int
+        //      */
+        //
+        if (count($this->Vars) === 1) {
+            $var = reset($this->Vars);
+            if ($var->Description) {
+                if (!$this->Summary) {
+                    $this->Summary = $var->Description;
+                } elseif ($this->Summary !== $var->Description) {
+                    $this->Description .=
+                        ($this->Description ? "\n\n" : '')
+                            . $var->Description;
+                }
+                $var->Description = null;
+            }
+        }
+
         // Replace tags that have no content with `true`
-        $this->Tags = array_map(
+        $this->TagsByName = array_map(
             fn(array $tag) => count(array_filter($tag)) ? $tag : true,
-            $this->Tags
+            $this->TagsByName
         );
 
         // Merge @template types from the declaring class, if available
         if ($classDocBlock) {
             $class = new self($classDocBlock, null, $legacyNullable);
-            foreach ($class->Templates as $template => $data) {
-                $this->mergeType($this->Templates[$template], $data, false);
+            foreach ($class->Templates as $name => $tag) {
+                $tag->IsClassTemplate = true;
+                $this->mergeValue($this->Templates[$name], $tag);
             }
         }
-    }
-
-    private function getValue(
-        ?string $type,
-        string $lines,
-        int $meta,
-        bool $withDesc = true,
-        array $initial = []
-    ): array {
-        if ($this->LegacyNullable && !is_null($type)) {
-            $nullable = preg_replace('/^null\||\|null$/', '', $type, 1, $count);
-            if ($count && preg_match(self::TYPE_REGEX, $nullable)) {
-                $type = "?$nullable";
-            }
-        }
-        $initial += ['type' => $type];
-        if ($withDesc) {
-            return $initial + ['description' => preg_split('/\s+/', $lines, $meta + 1)[$meta] ?? null];
-        }
-
-        return $initial;
     }
 
     /**
+     * Extract a description from $text after removing $metaCount values
+     *
+     */
+    private function getTagDescription(string $text, int $metaCount): ?string
+    {
+        return preg_split('/\s+/', $text, $metaCount + 1)[$metaCount] ?? null;
+    }
+
+    /**
+     * Shift the next line off the beginning of $this->Lines and return it after
+     * assigning its successor to $this->NextLine
+     *
      * @phpstan-impure
      */
     private function getLine(): string
@@ -291,22 +343,38 @@ final class PhpDocParser implements IReadable
     }
 
     /**
+     * Collect and implode $this->NextLine and subsequent lines until, but not
+     * including, the next line that matches $pattern
+     *
+     * If `$unwrap` is `false`, `$pattern` is ignored between code fences, which
+     * start and end when a line contains 3 or more backticks or tildes and no
+     * other text aside from an optional info string after the opening fence.
+     *
+     * @param bool $discard If `true`, lines matching `$pattern` are discarded,
+     * otherwise they are left in {@see $this->Lines}.
+     * @param bool $unwrap If `true`, lines are joined with " " instead of "\n".
+     *
      * @phpstan-impure
      */
-    private function getLinesUntil(string $pattern, bool $discard = false, bool $unwrap = false): string
-    {
+    private function getLinesUntil(
+        string $pattern,
+        bool $discard = false,
+        bool $unwrap = false
+    ): string {
         $lines = [];
         $inFence = false;
 
         do {
             $lines[] = $line = $this->getLine();
 
-            if ((!$inFence && preg_match('/^```+/', $line, $fence)) ||
-                    ($inFence && $line == ($fence[0] ?? null))) {
-                $inFence = !$inFence;
-            }
-            if ($inFence) {
-                continue;
+            if (!$unwrap) {
+                if ((!$inFence && preg_match('/^(```+|~~~+)/', $line, $fence)) ||
+                        ($inFence && $line == ($fence[0] ?? null))) {
+                    $inFence = !$inFence;
+                }
+                if ($inFence) {
+                    continue;
+                }
             }
 
             if (!$this->Lines) {
@@ -322,6 +390,10 @@ final class PhpDocParser implements IReadable
             }
             break;
         } while ($this->Lines);
+
+        if ($inFence) {
+            throw new UnexpectedValueException('Unterminated code fence in DocBlock');
+        }
 
         return implode($unwrap ? ' ' : PHP_EOL, $lines);
     }
@@ -341,68 +413,83 @@ final class PhpDocParser implements IReadable
         if ($this->Description) {
             return true;
         }
-        foreach ([...$this->Params, $this->Return, ...$this->Var] as $entity) {
-            if (($description = $entity['description'] ?? null) && $description !== $this->Summary) {
+        foreach ([...$this->Params, $this->Return, ...$this->Vars] as $entity) {
+            if (($entity->Description ?? null) && $entity->Description !== $this->Summary) {
                 return true;
             }
         }
-        if (array_diff_key($this->Tags, array_flip(['param', 'return', 'var', 'internal']))) {
+        if (array_diff_key($this->TagsByName, array_flip(['param', 'return', 'var', 'template', 'internal']))) {
             return true;
         }
 
         return false;
     }
 
-    private function mergeValue(?string &$ours, ?string $theirs): void
+    /**
+     * @internal
+     * @param PhpDocTag|string|null $ours
+     * @param PhpDocTag|string|null $theirs
+     */
+    public static function mergeValue(&$ours, $theirs): void
     {
         // Do nothing if there's nothing to merge
-        if (is_null($theirs) || !trim($theirs)) {
+        if ($theirs === null) {
             return;
         }
 
         // If we have nothing to keep, use the incoming value
-        if (is_null($ours) || !trim($ours)) {
+        if ($ours === null) {
             $ours = $theirs;
-
-            return;
         }
     }
 
-    private function mergeLines(?array &$ours, ?array $theirs): void
+    /**
+     * @param string[] $ours
+     * @param string[] $theirs
+     */
+    private function mergeStrings(array &$ours, array $theirs): void
     {
         // Add unique incoming lines
         array_push($ours, ...array_diff($theirs, $ours));
     }
 
-    private function mergeType(?array &$ours, ?array $theirs, bool $withDesc = true): void
+    private function mergeTag(?PhpDocTag &$ours, ?PhpDocTag $theirs): void
     {
-        $this->mergeValue($ours['type'], $theirs['type'] ?? null);
-        if ($withDesc) {
-            $this->mergeValue($ours['description'], $theirs['description'] ?? null);
+        if ($theirs === null) {
+            return;
         }
+
+        if ($ours === null) {
+            $ours = clone $theirs;
+            return;
+        }
+
+        $ours->mergeInherited($theirs);
     }
 
     /**
-     * Add missing values from a PhpDocParser representing the same structural
-     * element in a parent class or interface
+     * Add missing values from a PhpDocParser that represents the same
+     * structural element in a parent class or interface
      *
      */
-    public function mergeInherited(PhpDocParser $parent)
+    public function mergeInherited(PhpDoc $parent): void
     {
         $this->mergeValue($this->Summary, $parent->Summary);
         $this->mergeValue($this->Description, $parent->Description);
-        $this->mergeLines($this->TagLines, $parent->TagLines);
-        foreach ($parent->Tags as $tag => $content) {
-            if (!is_array($this->Tags[$tag] ?? null)) {
-                $this->Tags[$tag] = $content;
-            } elseif (is_array($content)) {
-                $this->mergeLines($this->Tags[$tag], $content);
+        $this->mergeStrings($this->Tags, $parent->Tags);
+        foreach ($parent->TagsByName as $name => $tags) {
+            // Whether $this->TagsByName[$name] is unset or boolean, assigning
+            // $tags won't result in loss of information
+            if (!is_array($this->TagsByName[$name] ?? null)) {
+                $this->TagsByName[$name] = $tags;
+            } elseif (is_array($tags)) {
+                $this->mergeStrings($this->TagsByName[$name], $tags);
             }
         }
-        foreach ($parent->Params as $name => $data) {
-            $this->mergeType($this->Params[$name], $data);
+        foreach ($parent->Params as $name => $theirs) {
+            $this->mergeTag($this->Params[$name], $theirs);
         }
-        $this->mergeType($this->Return, $parent->Return);
+        $this->mergeTag($this->Return, $parent->Return);
     }
 
     /**

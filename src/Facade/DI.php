@@ -19,10 +19,10 @@ use Lkrms\Contract\IContainer;
  * @method static Container bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})
  * @method static Container call(callable $callback) Move to the next method in the chain after passing the object to a callback (see {@see FluentInterface::call()})
  * @method static Container forEach(array|object $array, callable $callback) Move to the next method in the chain after passing the object to a callback for each key-value pair in an array (see {@see FluentInterface::forEach()})
- * @method static mixed get(string $id, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier (see {@see Container::get()})
- * @method static mixed getAs(string $id, string $serviceId, mixed[] $params = []) Apply an explicit service name while creating a new instance of a class or service interface or getting a shared instance created earlier (see {@see Container::getAs()})
+ * @method static mixed get(class-string $id, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier (see {@see Container::get()})
+ * @method static mixed getAs(class-string $id, string $serviceId, mixed[] $params = []) Apply an explicit service name while creating a new instance of a class or service interface or getting a shared instance created earlier (see {@see Container::getAs()})
  * @method static IContainer getGlobalContainer() Get the global container, loading it if necessary
- * @method static mixed getIf(string $id, string $serviceId, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier, if the instance inherits a class or implements an interface (see {@see Container::getIf()})
+ * @method static mixed getIf(class-string $id, class-string $serviceId, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier, if the instance inherits a class or implements an interface (see {@see Container::getIf()})
  * @method static string getName(string $id) Resolve a class or interface to a concrete class name (see {@see Container::getName()})
  * @method static string[] getServices() Get a list of classes bound to the container by calling service()
  * @method static bool has(string $id) True if a class or service interface resolves to a concrete class that actually exists (see {@see Container::has()})
@@ -34,7 +34,7 @@ use Lkrms\Contract\IContainer;
  * @method static IContainer|null maybeGetGlobalContainer() Get the global container, returning null if no global container has been loaded
  * @method static IContainer requireGlobalContainer() Get the global container, throwing an exception if no global container has been loaded
  * @method static Container service(string $id, string[]|null $services = null, string[]|null $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT) Add bindings to the container for an IService, optionally specifying services to include or exclude (see {@see Container::service()})
- * @method static Container services(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT) Consolidate a service map and call service() once per concrete class (see {@see Container::services()})
+ * @method static Container services(array<string,string> $serviceMap, int $lifetime = ServiceLifetime::INHERIT) Consolidate a service map and call service() once per concrete class (see {@see Container::services()})
  * @method static IContainer|null setGlobalContainer(?IContainer $container) Set (or unset) the global container
  * @method static Container singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})
  * @method static Container singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})

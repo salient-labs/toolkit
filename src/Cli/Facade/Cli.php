@@ -22,19 +22,19 @@ use Lkrms\Utility\Environment;
  * @method static void unload() Clear the underlying CliApplication instance
  * @method static CliApplication bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static CliApplication bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})
- * @method static string buildUsageSections(array $sections) A facade for CliApplication::buildUsageSections()
+ * @method static string buildUsageSections(array<string,string> $sections) A facade for CliApplication::buildUsageSections()
  * @method static CliApplication call(callable $callback) Move to the next method in the chain after passing the object to a callback (see {@see FluentInterface::call()})
- * @method static CliApplication command(string[] $name, string $id) Register a CliCommand with the container (see {@see CliApplication::command()})
+ * @method static CliApplication command(string[] $name, class-string<CliCommand> $id) Register a CliCommand with the container (see {@see CliApplication::command()})
  * @method static Environment env() Get the Environment instance that underpins the Env facade
  * @method static CliApplication forEach(array|object $array, callable $callback) Move to the next method in the chain after passing the object to a callback for each key-value pair in an array (see {@see FluentInterface::forEach()})
- * @method static mixed get(string $id, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier (see {@see Container::get()})
+ * @method static mixed get(class-string $id, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier (see {@see Container::get()})
  * @method static string getAppName() Get the basename of the file used to run the script, removing known PHP file extensions and recognised version numbers
- * @method static mixed getAs(string $id, string $serviceId, mixed[] $params = []) Apply an explicit service name while creating a new instance of a class or service interface or getting a shared instance created earlier (see {@see Container::getAs()})
+ * @method static mixed getAs(class-string $id, string $serviceId, mixed[] $params = []) Apply an explicit service name while creating a new instance of a class or service interface or getting a shared instance created earlier (see {@see Container::getAs()})
  * @method static string getCachePath() Get a writable cache directory for the application (see {@see AppContainer::getCachePath()})
  * @method static string getConfigPath() Get a writable directory for the application's configuration files
  * @method static string getDataPath() Get a writable data directory for the application (see {@see AppContainer::getDataPath()})
  * @method static IContainer getGlobalContainer() Get the global container, loading it if necessary
- * @method static mixed getIf(string $id, string $serviceId, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier, if the instance inherits a class or implements an interface (see {@see Container::getIf()})
+ * @method static mixed getIf(class-string $id, class-string $serviceId, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier, if the instance inherits a class or implements an interface (see {@see Container::getIf()})
  * @method static string getLogPath() Get a writable directory for the application's log files
  * @method static string getName(string $id) Resolve a class or interface to a concrete class name (see {@see Container::getName()})
  * @method static string getProgramName() Get the basename of the file used to run the script
@@ -53,13 +53,13 @@ use Lkrms\Utility\Environment;
  * @method static CliApplication loadSync(?string $command = null, ?array $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see AppContainer::loadSync()})
  * @method static CliApplication logConsoleMessages(?bool $debug = null, ?string $name = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Get the global container, returning null if no global container has been loaded
- * @method static CliApplication oneCommand(string $id) Register one, and only one, CliCommand for the lifetime of the container (see {@see CliApplication::oneCommand()})
+ * @method static CliApplication oneCommand(class-string<CliCommand> $id) Register one, and only one, CliCommand for the lifetime of the container (see {@see CliApplication::oneCommand()})
  * @method static CliApplication registerShutdownReport($level = Level::DEBUG, ?array $timers = ['*'], bool $resourceUsage = true) Report timers and resource usage when the application terminates (see {@see AppContainer::registerShutdownReport()})
  * @method static IContainer requireGlobalContainer() Get the global container, throwing an exception if no global container has been loaded
  * @method static int run() Process command-line arguments passed to the script (see {@see CliApplication::run()})
  * @method static never runAndExit() Exit after processing command-line arguments passed to the script (see {@see CliApplication::runAndExit()})
  * @method static CliApplication service(string $id, string[]|null $services = null, string[]|null $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT) Add bindings to the container for an IService, optionally specifying services to include or exclude (see {@see Container::service()})
- * @method static CliApplication services(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT) Consolidate a service map and call service() once per concrete class (see {@see Container::services()})
+ * @method static CliApplication services(array<string,string> $serviceMap, int $lifetime = ServiceLifetime::INHERIT) Consolidate a service map and call service() once per concrete class (see {@see Container::services()})
  * @method static IContainer|null setGlobalContainer(?IContainer $container) Set (or unset) the global container
  * @method static CliApplication singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})
  * @method static CliApplication singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})

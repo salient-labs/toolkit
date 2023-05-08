@@ -10,7 +10,9 @@ use Lkrms\Facade\Env;
 use Lkrms\Facade\Reflect;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\Support\PhpDocParser;
+use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Lkrms\Support\PhpDoc\PhpDoc;
+use Lkrms\Support\PhpDoc\PhpDocTag;
 use Lkrms\Support\TokenExtractor;
 use Lkrms\Utility\Test;
 use ReflectionClass;
@@ -137,10 +139,8 @@ final class GenerateFacade extends GenerateCommand
                     : $this->getFqcnAlias($name, null, $returnFqcn));
         };
         $phpDocTypeCallback = function (string $type, array $templates) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback): string {
-            $type = $this->resolveTemplates($type, $templates);
-
-            return preg_replace_callback(
-                '/(?<!\$)([a-z]+(-[a-z]+)+|(?=\\\\?\b)' . PhpDocParser::TYPE_PATTERN . ')\b/',
+            return PhpDocTag::normaliseType(preg_replace_callback(
+                '/(?<!\$)([a-z]+(-[a-z]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/',
                 function ($match) use ($templates, &$methodFile, &$methodNamespace, $useMap, $typeNameCallback) {
                     $type = $this->resolveTemplates($match[0], $templates);
 
@@ -160,7 +160,7 @@ final class GenerateFacade extends GenerateCommand
                     );
                 },
                 $type
-            );
+            ));
         };
 
         usort(
@@ -182,7 +182,7 @@ final class GenerateFacade extends GenerateCommand
         $toDeclare = [];
         foreach ($_methods as $_method) {
             $docBlocks = Reflect::getAllMethodDocComments($_method, $classDocBlocks);
-            $phpDoc = PhpDocParser::fromDocBlocks($docBlocks, $classDocBlocks);
+            $phpDoc = PhpDoc::fromDocBlocks($docBlocks, $classDocBlocks);
             $methodFile = $_method->getFileName();
             $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
             $declaring = $typeNameCallback($_method->getDeclaringClass()->getName(), true);
@@ -194,7 +194,7 @@ final class GenerateFacade extends GenerateCommand
             // this method has any parameters that are passed by reference, it
             // needs a declared facade
             $declare = (bool) array_filter($_params, fn(ReflectionParameter $p) => $p->isPassedByReference());
-            $internal = (bool) ($phpDoc->Tags['internal'] ?? null);
+            $internal = (bool) ($phpDoc->TagsByName['internal'] ?? null);
             $link = !$internal && $phpDoc && $phpDoc->hasDetail();
             $returnsVoid = false;
 
@@ -204,7 +204,7 @@ final class GenerateFacade extends GenerateCommand
                 $summary = "Load and return an instance of the underlying $class class";
                 unset($facadeMethods[0]);
             } else {
-                if ($phpDoc->Tags['deprecated'] ?? null) {
+                if ($phpDoc->TagsByName['deprecated'] ?? null) {
                     continue;
                 }
                 $method = $methodName;
@@ -214,8 +214,8 @@ final class GenerateFacade extends GenerateCommand
                     continue;
                 }
 
-                $_type = $phpDoc->Return['type'] ?? null;
-                if ($_type && strpbrk($_type, '&<>') === false) {
+                $_type = $phpDoc->Return->Type ?? null;
+                if ($_type /*&& strpbrk($_type, '&<>') === false*/) {
                     $type = $phpDocTypeCallback($_type, $phpDoc->Templates);
                 } else {
                     $type = $_method->hasReturnType()
@@ -224,6 +224,8 @@ final class GenerateFacade extends GenerateCommand
 
                     // If the underlying method has more type information,
                     // provide a link to it
+                    //
+                    // @phpstan-ignore-next-line
                     if ($_type) {
                         $link = !$internal;
                     }
@@ -246,8 +248,7 @@ final class GenerateFacade extends GenerateCommand
                     ? ($declare || !$link ? $summary : "$summary (see {@see $methodFqsen})")
                     : ($declare || !$link ? "A facade for $methodFqsen" : "See {@see $methodFqsen}");
 
-                // Work around phpDocumentor's inability to parse "?<type>"
-                // return types
+                // Convert "?<type>" to "<type>|null"
                 if (!$declare && strpos($type, '?') === 0) {
                     $type = substr($type, 1) . '|null';
                 }
@@ -256,10 +257,10 @@ final class GenerateFacade extends GenerateCommand
             $params = [];
             foreach ($_params as $_param) {
                 // Override the declared type if defined in the PHPDoc
-                $_type = ($_type = $phpDoc->Params[$_param->getName()]['type'] ?? null) &&
-                    strpbrk($_type, '&<>') === false
-                        ? $phpDocTypeCallback($_type, $phpDoc->Templates)
-                        : null;
+                $_type = ($_type = $phpDoc->Params[$_param->getName()]->Type ?? null)
+                    //&& strpbrk($_type, '&<>') === false
+                    ? $phpDocTypeCallback($_type, $phpDoc->Templates)
+                    : null;
                 $params[] = $declare
                     ? Reflect::getParameterPhpDoc($_param, $classPrefix, $typeNameCallback, $_type)
                     : Reflect::getParameterDeclaration($_param, $classPrefix, $typeNameCallback, $_type, null, true);
@@ -271,7 +272,7 @@ final class GenerateFacade extends GenerateCommand
 
             if ($declare) {
                 $params = implode(PHP_EOL . ' * ', array_map(
-                    fn(string $p) => str_replace(PHP_EOL, PHP_EOL . ' * ', $this->cleanPhpDocTag($p)),
+                    fn(string $p) => str_replace(PHP_EOL, PHP_EOL . ' * ', $p),
                     array_filter($params)
                 ));
                 $return = ($type && (!$_method->hasReturnType() ||
@@ -280,7 +281,7 @@ final class GenerateFacade extends GenerateCommand
                             $classPrefix,
                             $typeNameCallback
                         ) !== $type))
-                    ? $this->cleanPhpDocTag("@return $type")
+                    ? "@return $type"
                     : '';
 
                 $lines = [];

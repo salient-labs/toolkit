@@ -32,7 +32,7 @@ use Lkrms\Utility\Conversions;
  * @method static array iterableToArray(iterable $iterable, bool $preserveKeys = false) If an iterable isn't already an array, make it one
  * @method static array|object|false iterableToItem(iterable $list, int|string|Closure $key, $value, bool $strict = false) Get the first item in $list where the value at $key is $value (see {@see Conversions::iterableToItem()})
  * @method static Iterator iterableToIterator(iterable $iterable) If an iterable isn't already an Iterator, enclose it in one
- * @method static string lineEndingsToUnix(string $string) Replace a string's CRLF, LFCR or CR end-of-line sequences with LF
+ * @method static string lineEndingsToUnix(string $string) Replace a string's CRLF or CR end-of-line sequences with LF
  * @method static string linesToLists(string $text, string $separator = "\n", ?string $marker = null, string $regex = '/^\\h*[-*] /', bool $clean = false) Remove duplicates in a string where 'top-level' lines ("section names") are grouped with any subsequent 'child' lines ("list items") (see {@see Conversions::linesToLists()})
  * @method static array listToMap(array $list, int|string|Closure $key) Create a map from a list (see {@see Conversions::listToMap()})
  * @method static string methodToFunction(string $method) Remove the class from a method name
@@ -42,7 +42,7 @@ use Lkrms\Utility\Conversions;
  * @method static string pathToBasename(string $path, int $extLimit = 0) Remove the directory and up to the given number of extensions from a path (see {@see Conversions::pathToBasename()})
  * @method static string plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false) If $number is 1, return $singular, otherwise return $plural (see {@see Conversions::plural()})
  * @method static string pluralRange(int $from, int $to, string $singular, ?string $plural = null, string $preposition = 'on') Get a phrase like "between lines 3 and 11" or "on platform 23" (see {@see Conversions::pluralRange()})
- * @method static array queryToData(string[] $query) Convert a list of "key=value" strings to an array like ["key" => "value"] (see {@see Conversions::queryToData()})
+ * @method static array<string,string> queryToData(string[] $query) Convert a list of "key=value" strings to an array like ["key" => "value"]
  * @method static array renameArrayKey(string|int $key, string|int $newKey, array $array) Rename an array key without changing the order of values in the array
  * @method static string resolvePath(string $path) Resolve relative segments in a pathname (see {@see Conversions::resolvePath()})
  * @method static string resolveRelativeUrl(string $embeddedUrl, string $baseUrl) Get the absolute form of a URL relative to a base URL, as per [RFC1808]
@@ -60,13 +60,13 @@ use Lkrms\Utility\Conversions;
  * @method static array toList($value, bool $emptyIfNull = false) If a value isn't a list, make it the first element of one (see {@see Conversions::toList()})
  * @method static string toNormal(string $text) Clean up a string for comparison with other strings (see {@see Conversions::toNormal()})
  * @method static string toPascalCase(string $text, ?string $preserve = null) Convert an identifier to PascalCase
- * @method static array toScalarArray(array $array) JSON-encode non-scalar values in an array (see {@see Conversions::toScalarArray()})
+ * @method static array<int,int|float|string|bool|null> toScalarArray(array $array) JSON-encode non-scalar values in an array
  * @method static string toShellArg(string $value) A platform-agnostic escapeshellarg that only adds quotes if necessary
  * @method static string toSnakeCase(string $text, ?string $preserve = null) Convert an identifier to snake_case
  * @method static string[] toStrings(...$value) Convert the given strings and Stringables to an array of strings
  * @method static DateTimeZone toTimezone(DateTimeZone|string $value) Convert a value to a DateTimeZone instance
- * @method static mixed[] toUniqueList(mixed[] $array) A type-agnostic array_unique with reindexing (see {@see Conversions::toUniqueList()})
- * @method static string unparseUrl(array $url) Convert a parse_url array to a string (see {@see Conversions::unparseUrl()})
+ * @method static mixed[] toUniqueList(mixed[] $array) A type-agnostic array_unique with reindexing
+ * @method static string unparseUrl(array<string,string|int> $url) Convert a parse_url array to a string (see {@see Conversions::unparseUrl()})
  * @method static string unwrap(string $string, string $break = "\n") Undo wordwrap(), preserving line breaks that appear consecutively, immediately after 2 spaces, or immediately before 4 spaces
  * @method static string uuidToHex(string $bytes) Convert a 16-byte UUID to its 36-byte hexadecimal representation
  * @method static mixed valueAtKey(array|ArrayAccess|object $item, int|string $key) Get the value at $key in $item, where $item is an array or object
