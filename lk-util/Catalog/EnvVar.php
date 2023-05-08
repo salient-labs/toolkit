@@ -12,7 +12,12 @@ use Lkrms\Concept\Dictionary;
 final class EnvVar extends Dictionary
 {
     public const NS_DEFAULT = 'DEFAULT_NAMESPACE';
-    public const NS_BUILDER = 'BUILDER_NAMESPACE';
-    public const NS_FACADE = 'FACADE_NAMESPACE';
+
     public const NS_PROVIDER = 'PROVIDER_NAMESPACE';
+
+    public const NS_BUILDER = 'BUILDER_NAMESPACE';
+
+    public const NS_FACADE = 'FACADE_NAMESPACE';
+
+    public const NS_TESTS = 'TESTS_NAMESPACE';
 }

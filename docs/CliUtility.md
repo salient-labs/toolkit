@@ -11,10 +11,10 @@ information, run `lk-util help <subcommand>` or add `--help` to any subcommand.
 To make it easier to work with PHP namespaces on the command line, the following
 values are taken from the environment:
 
-| Variable             | Description                                         | Example                     |
-| -------------------- | --------------------------------------------------- | --------------------------- |
-| `DEFAULT_NAMESPACE`  | Applied to unqualified class names                  | `Lkrms\Tests\Sync\Entity`   |
-| `BUILDER_NAMESPACE`  | Overrides `DEFAULT_NAMESPACE` for `Builder` classes | `Lkrms\Tests\Builder`       |
-| `FACADE_NAMESPACE`   | Overrides `DEFAULT_NAMESPACE` for `Facade` classes  | `Lkrms\Tests\Facade`        |
-| `PROVIDER_NAMESPACE` | Applied to unqualified `--provider` class names     | `Lkrms\Tests\Sync\Provider` |
-
+| Variable             | Description                                         | Example              |
+| -------------------- | --------------------------------------------------- | -------------------- |
+| `DEFAULT_NAMESPACE`  | Applied to unqualified class names                  | `Acme\Sync\Entity`   |
+| `PROVIDER_NAMESPACE` | Applied to unqualified `--provider` class names     | `Acme\Sync\Provider` |
+| `BUILDER_NAMESPACE`  | Overrides `DEFAULT_NAMESPACE` for `Builder` classes | `Acme\Builder`       |
+| `FACADE_NAMESPACE`   | Overrides `DEFAULT_NAMESPACE` for `Facade` classes  | `Acme\Facade`        |
+| `TESTS_NAMESPACE`    | Overrides `DEFAULT_NAMESPACE` for PHPUnit tests     | `Acme\Tests`         |

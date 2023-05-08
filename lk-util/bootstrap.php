@@ -7,6 +7,7 @@ use Lkrms\LkUtil\Command\Generate\GenerateBuilder;
 use Lkrms\LkUtil\Command\Generate\GenerateFacade;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncProvider;
+use Lkrms\LkUtil\Command\Generate\GenerateTests;
 use Lkrms\LkUtil\Command\Http\SendHttpRequest;
 use Lkrms\Sync\Command\CheckSyncProviderHeartbeat;
 
@@ -20,6 +21,7 @@ $loader->addPsr4('Lkrms\\LkUtil\\', __DIR__);
     ->logOutput()
     ->command(['generate', 'builder'], GenerateBuilder::class)
     ->command(['generate', 'facade'], GenerateFacade::class)
+    ->command(['generate', 'tests'], GenerateTests::class)
     ->command(['generate', 'sync', 'entity'], GenerateSyncEntity::class)
     ->command(['generate', 'sync', 'provider'], GenerateSyncProvider::class)
     ->command(['heartbeat'], CheckSyncProviderHeartbeat::class)
