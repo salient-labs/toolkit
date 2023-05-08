@@ -49,12 +49,12 @@ interface IPipeline extends IImmutable
      * method must be called **after** providing the payload to which it
      * applies.
      *
-     * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
-     * `COMPLETE` wherever possible to improve performance.
-     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param ArrayKeyConformity::* $conformity Use
+     * {@see ArrayKeyConformity::COMPLETE} wherever possible to improve
+     * performance.
      * @return $this
      */
-    public function withConformity(int $conformity = ArrayKeyConformity::PARTIAL);
+    public function withConformity($conformity = ArrayKeyConformity::PARTIAL);
 
     /**
      * Apply a callback to each payload before it is sent

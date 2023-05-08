@@ -57,12 +57,12 @@ interface IProviderContext extends IImmutable, ReturnsContainer
     /**
      * Propagate the current payload's array key conformity
      *
-     * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
-     * `COMPLETE` wherever possible to improve performance.
-     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param ArrayKeyConformity::* $conformity Use
+     * {@see ArrayKeyConformity::COMPLETE} wherever possible to improve
+     * performance.
      * @return $this
      */
-    public function withConformity(int $conformity);
+    public function withConformity($conformity);
 
     /**
      * Get the value most recently passed to set($key)

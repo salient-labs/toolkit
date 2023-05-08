@@ -89,7 +89,7 @@ class ProviderContext implements IProviderContext
         return $this->withPropertyValue('Parent', $parent);
     }
 
-    final public function withConformity(int $conformity)
+    final public function withConformity($conformity)
     {
         return $this->withPropertyValue('Conformity', $conformity);
     }
