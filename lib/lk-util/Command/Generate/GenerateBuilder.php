@@ -12,8 +12,10 @@ use Lkrms\Facade\Convert;
 use Lkrms\Facade\Reflect;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
+use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Introspector;
-use Lkrms\Support\PhpDocParser;
+use Lkrms\Support\PhpDoc\PhpDoc;
+use Lkrms\Support\PhpDoc\PhpDocTag;
 use Lkrms\Support\TokenExtractor;
 use Lkrms\Utility\Test;
 use ReflectionClass;
@@ -193,7 +195,7 @@ class GenerateBuilder extends GenerateCommand
         }
 
         $_docBlocks = Reflect::getAllClassDocComments($_class);
-        $classPhpDoc = PhpDocParser::fromDocBlocks($_docBlocks);
+        $classPhpDoc = PhpDoc::fromDocBlocks($_docBlocks);
 
         $files = [];
         $maybeAddFile =
@@ -270,10 +272,8 @@ class GenerateBuilder extends GenerateCommand
                     : $this->getFqcnAlias($name, null, $returnFqcn));
         };
         $phpDocTypeCallback = function (string $type, array $templates) use (&$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback): string {
-            $type = $this->resolveTemplates($type, $templates);
-
-            return preg_replace_callback(
-                '/(?<!\$)([a-z]+(-[a-z]+)+|(?=\\\\?\b)' . PhpDocParser::TYPE_PATTERN . ')\b/',
+            return PhpDocTag::normaliseType(preg_replace_callback(
+                '/(?<!\$)([a-z]+(-[a-z]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/',
                 function ($match) use ($templates, &$propertyFile, &$propertyNamespace, $useMap, $typeNameCallback) {
                     $type = $this->resolveTemplates($match[0], $templates);
 
@@ -293,11 +293,11 @@ class GenerateBuilder extends GenerateCommand
                     );
                 },
                 $type
-            );
+            ));
         };
 
         $_docBlocks = Reflect::getAllMethodDocComments($_constructor, $classDocBlocks);
-        $_phpDoc = PhpDocParser::fromDocBlocks($_docBlocks, $classDocBlocks);
+        $_phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks);
 
         $names = array_keys($_params + $_properties);
         //sort($names);
@@ -315,15 +315,15 @@ class GenerateBuilder extends GenerateCommand
                 }
 
                 $_docBlocks = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
-                $phpDoc = PhpDocParser::fromDocBlocks($_docBlocks, $classDocBlocks);
+                $phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks);
                 $propertyFile = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
 
-                $internal = (bool) ($phpDoc->Tags['internal'] ?? null);
+                $internal = (bool) ($phpDoc->TagsByName['internal'] ?? null);
                 $link = !$internal && $phpDoc && $phpDoc->hasDetail();
 
-                $_type = $phpDoc->Var[0]['type'] ?? null;
-                if ($_type && strpbrk($_type, '&<>') === false) {
+                $_type = $phpDoc->Vars[0]->Type ?? $phpDoc->Vars[$_property->getName()]->Type ?? null;
+                if ($_type /*&& strpbrk($_type, '&<>') === false*/) {
                     $type = $phpDocTypeCallback($_type, $phpDoc->Templates);
                 } else {
                     $type = $_property->hasType()
@@ -332,6 +332,8 @@ class GenerateBuilder extends GenerateCommand
 
                     // If the underlying property has more type information,
                     // provide a link to it
+                    //
+                    // @phpstan-ignore-next-line
                     if ($_type) {
                         $link = !$internal;
                     }
@@ -362,7 +364,7 @@ class GenerateBuilder extends GenerateCommand
                 }
                 $summary = $phpDoc->Summary ?? null;
                 if (!$summary && ($_param = $_params[$name] ?? null)) {
-                    $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_param->getName()]['description'] ?? null) : null;
+                    $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_param->getName()]->Description ?? null) : null;
                 }
 
                 $type = $type ? "$type " : '';
@@ -389,18 +391,18 @@ class GenerateBuilder extends GenerateCommand
             // If the parameter has a matching property, retrieve its DocBlock
             if ($_property = $_allProperties[$name] ?? null) {
                 $_docBlocks = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
-                $phpDoc = PhpDocParser::fromDocBlocks($_docBlocks, $classDocBlocks);
+                $phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks);
             } else {
                 $phpDoc = null;
             }
-            $internal = (bool) ($phpDoc->Tags['internal'] ?? null);
+            $internal = (bool) ($phpDoc->TagsByName['internal'] ?? null);
             $link = !$internal && $phpDoc && $phpDoc->hasDetail();
 
             $_param = $_params[$name];
             $_name = $_param->getName();
 
-            $_type = $_phpDoc->Params[$_name]['type'] ?? null;
-            if ($_type && strpbrk($_type, '&<>') === false) {
+            $_type = $_phpDoc->Params[$_name]->Type ?? null;
+            if ($_type /*&& strpbrk($_type, '&<>') === false*/) {
                 $type = $phpDocTypeCallback($_type, $_phpDoc->Templates);
             } else {
                 $type = $_param->hasType()
@@ -409,10 +411,16 @@ class GenerateBuilder extends GenerateCommand
 
                 // If the underlying parameter has more type information,
                 // provide a link to it
+                //
+                // @phpstan-ignore-next-line
                 if ($_type) {
                     // Ensure the link is to the constructor, not the property,
                     // unless both are annotated with the same type
-                    if ($_property && $phpDoc && ($phpDoc->Var[0]['type'] ?? null) !== $_type) {
+                    if ($_property &&
+                            $phpDoc &&
+                            ($_propertyType = $phpDoc->Vars[0]->Type ?? $phpDoc->Vars[$_property->getName()]->Type ?? null) &&
+                            // strpbrk($_propertyType, '&<>') === false &&
+                            $_propertyType !== $_type) {
                         $_property = null;
                     }
                     $link = true;
@@ -443,15 +451,16 @@ class GenerateBuilder extends GenerateCommand
                     break;
             }
 
-            $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_name]['description'] ?? null) : null;
+            $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_name]->Description ?? null) : null;
             if (!$summary && $phpDoc) {
                 $summary = $phpDoc->Summary;
             }
 
             if ($declare) {
-                if ($param = Reflect::getParameterPhpDoc($_param, $classPrefix, $typeNameCallback, $_type, 'variable')) {
-                    $param = $this->cleanPhpDocTag($param);
-                }
+                $param = Reflect::getParameterPhpDoc(
+                    $_param, $classPrefix, $typeNameCallback, $_type, 'variable'
+                );
+
                 $lines = [];
                 $lines[] = '/**';
                 $lines[] = ' * ' . $this->getSummary($summary, $_property, $typeNameCallback, $declaringClass, $name, null, true, $link, $see);
@@ -500,9 +509,8 @@ class GenerateBuilder extends GenerateCommand
         $templates = '';
         if ($classPhpDoc->Templates) {
             $templates = [];
-            foreach (
-                $classPhpDoc->Templates as $template => ['type' => $templateOf]
-            ) {
+            foreach ($classPhpDoc->Templates as $template => $tag) {
+                $templateOf = $tag->Type;
                 if (!Test::isPhpReservedWord($templateOf) &&
                         !array_key_exists($templateOf, $classPhpDoc->Templates)) {
                     $templateOf = $phpDocTypeCallback($templateOf, []);

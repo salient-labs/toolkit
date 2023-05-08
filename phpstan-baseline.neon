@@ -766,16 +766,6 @@ parameters:
 			path: src/Facade/File.php
 
 		-
-			message: "#^Method Lkrms\\\\Facade\\\\Reflect\\:\\:getAllMethodDocComments\\(\\) has parameter \\$classDocComments with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Facade/Reflect.php
-
-		-
-			message: "#^Method Lkrms\\\\Facade\\\\Reflect\\:\\:getAllPropertyDocComments\\(\\) has parameter \\$classDocComments with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Facade/Reflect.php
-
-		-
 			message: "#^Method Lkrms\\\\Store\\\\CacheStore\\:\\:get\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Store/CacheStore.php
@@ -974,41 +964,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Support\\\\IntrospectorKeyTargets\\:\\:__construct\\(\\) has parameter \\$properties with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Support/IntrospectorKeyTargets.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\PhpDocParser\\:\\:getValue\\(\\) has parameter \\$initial with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/PhpDocParser.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\PhpDocParser\\:\\:getValue\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/PhpDocParser.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\PhpDocParser\\:\\:mergeInherited\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Support/PhpDocParser.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\PhpDocParser\\:\\:mergeLines\\(\\) has parameter \\$ours with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/PhpDocParser.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\PhpDocParser\\:\\:mergeLines\\(\\) has parameter \\$theirs with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/PhpDocParser.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\PhpDocParser\\:\\:mergeType\\(\\) has parameter \\$ours with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/PhpDocParser.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\PhpDocParser\\:\\:mergeType\\(\\) has parameter \\$theirs with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/PhpDocParser.php
 
 		-
 			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:after\\(\\) has parameter \\$callback with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"

@@ -5,6 +5,7 @@ namespace Lkrms\Facade;
 use Lkrms\Concept\Facade;
 use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Contract\ISyncClassResolver;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncError;
 use Lkrms\Sync\Support\SyncErrorBuilder as ErrorBuilder;
@@ -20,13 +21,13 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static void unload() Clear the underlying SyncStore instance
  * @method static SyncStore checkHeartbeats(int $ttl = 300, bool $failEarly = true, ISyncProvider ...$providers) Throw an exception if a provider has an unreachable backend (see {@see SyncStore::checkHeartbeats()})
  * @method static SyncStore close(?int $exitStatus = 0) Terminate the current run and close the database
- * @method static SyncStore entityType(string $entity) Register a sync entity type and set its ID (unless already registered)
+ * @method static SyncStore entityType(class-string<ISyncEntity> $entity) Register a sync entity type and set its ID (unless already registered)
  * @method static SyncStore error(SyncError|ErrorBuilder $error, bool $deduplicate = false, bool $toConsole = false) Report an error that occurred during a sync operation
- * @method static string|null getEntityTypeNamespace(string $entity) Get the namespace of a sync entity type (see {@see SyncStore::getEntityTypeNamespace()})
- * @method static string|null getEntityTypeUri(string $entity, bool $compact = true) Get the canonical URI of a sync entity type (see {@see SyncStore::getEntityTypeUri()})
+ * @method static string|null getEntityTypeNamespace(class-string<ISyncEntity> $entity) Get the namespace of a sync entity type (see {@see SyncStore::getEntityTypeNamespace()})
+ * @method static string|null getEntityTypeUri(class-string<ISyncEntity> $entity, bool $compact = true) Get the canonical URI of a sync entity type (see {@see SyncStore::getEntityTypeUri()})
  * @method static SyncErrorCollection getErrors() Get sync operation errors recorded so far
  * @method static string|null getFilename() Get the filename of the database
- * @method static ISyncClassResolver|null getNamespaceResolver(string $class) Get the class resolver for an entity or provider's namespace
+ * @method static ISyncClassResolver|null getNamespaceResolver(class-string<ISyncEntity|ISyncProvider> $class) Get the class resolver for an entity or provider's namespace
  * @method static int getRunId() Get the run ID of the current run
  * @method static string getRunUuid(bool $binary = false) Get the UUID of the current run (see {@see SyncStore::getRunUuid()})
  * @method static bool isOpen() Check if a database is open

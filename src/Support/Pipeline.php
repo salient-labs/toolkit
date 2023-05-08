@@ -108,7 +108,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $clone;
     }
 
-    public function withConformity(int $conformity = ArrayKeyConformity::PARTIAL)
+    public function withConformity($conformity = ArrayKeyConformity::PARTIAL)
     {
         $clone = clone $this;
         $clone->PayloadConformity = $conformity;

@@ -3,7 +3,6 @@
 namespace Lkrms\Concern;
 
 use LogicException;
-use UnexpectedValueException;
 
 /**
  * Implements IHierarchy
@@ -12,30 +11,68 @@ use UnexpectedValueException;
  */
 trait HasParent
 {
-    private static function getParentProperty(): string
-    {
-        throw new LogicException('Method not defined: ' . __METHOD__);
-    }
+    /**
+     * Get the name of the object's declared or magic parent property
+     *
+     */
+    abstract protected static function getParentProperty(): string;
 
-    private static function getChildrenProperty(): string
+    /**
+     * Get the name of the object's declared or magic child array property
+     *
+     */
+    abstract protected static function getChildrenProperty(): string;
+
+    /**
+     * @var array<class-string<self>,string>
+     */
+    private static $_ParentProperties = [];
+
+    /**
+     * @var array<class-string<self>,string>
+     */
+    private static $_ChildrenProperties = [];
+
+    private static function loadHierarchyProperties(): void
     {
-        throw new LogicException('Method not defined: ' . __METHOD__);
+        if (!property_exists(
+            static::class, $parentProperty = static::getParentProperty()
+        ) || !property_exists(
+            static::class, $childrenProperty = static::getChildrenProperty()
+        )) {
+            throw new LogicException(
+                sprintf(
+                    'Undefined property: %s::$%s',
+                    static::class,
+                    $childrenProperty ?? $parentProperty
+                )
+            );
+        }
+
+        self::$_ParentProperties[static::class] = $parentProperty;
+        self::$_ChildrenProperties[static::class] = $childrenProperty;
     }
 
     /**
-     * @var string[]|null
+     * @return static|null
      */
-    private static $_HierarchyProperties;
-
-    private static function getHierarchyProperties()
+    final public function getParent()
     {
-        if (is_null(self::$_HierarchyProperties)) {
-            // Subclasses can't override these properties, hence `self::`
-            // instead of `static::`
-            return self::$_HierarchyProperties = [self::getParentProperty(), self::getChildrenProperty()];
-        }
+        (self::$_ParentProperties[static::class] ?? null) !== null ||
+            static::loadHierarchyProperties();
 
-        return self::$_HierarchyProperties;
+        return $this->{self::$_ParentProperties[static::class]};
+    }
+
+    /**
+     * @return static[]
+     */
+    final public function getChildren(): array
+    {
+        (self::$_ChildrenProperties[static::class] ?? null) !== null ||
+            static::loadHierarchyProperties();
+
+        return $this->{self::$_ChildrenProperties[static::class]} ?: [];
     }
 
     /**
@@ -44,24 +81,36 @@ trait HasParent
      */
     final public function setParent($parent)
     {
-        [$_parent, $_children] = self::getHierarchyProperties();
+        (self::$_ParentProperties[static::class] ?? null) !== null ||
+            static::loadHierarchyProperties();
 
-        if ($parent === $this->{$_parent} &&
-                (is_null($parent) || in_array($this, $parent->{$_children} ?: [], true))) {
+        if ($parent === $this->{self::$_ParentProperties[static::class]} &&
+                ($parent === null || in_array(
+                    $this,
+                    $parent->{self::$_ChildrenProperties[static::class]} ?: [],
+                    true
+                ))) {
             return $this;
         }
 
-        if (!is_null($this->{$_parent})) {
-            $this->{$_parent}->{$_children} = array_values(array_filter(
-                $this->{$_parent}->{$_children},
-                fn($child) => $child !== $this
-            ));
+        // Remove the object from its current parent
+        if ($this->{self::$_ParentProperties[static::class]} !== null) {
+            $this->{self::$_ParentProperties[static::class]}
+                 ->{self::$_ChildrenProperties[static::class]} =
+                array_values(
+                    array_filter(
+                        $this->{self::$_ParentProperties[static::class]}
+                             ->{self::$_ChildrenProperties[static::class]},
+                        fn($child) => $child !== $this
+                    )
+                );
         }
 
-        $this->{$_parent} = $parent;
+        $this->{self::$_ParentProperties[static::class]} = $parent;
 
-        if (!is_null($parent)) {
-            $this->{$_parent}->{$_children}[] = $this;
+        if ($parent !== null) {
+            return $this->{self::$_ParentProperties[static::class]}
+                        ->{self::$_ChildrenProperties[static::class]}[] = $this;
         }
 
         return $this;
@@ -71,28 +120,37 @@ trait HasParent
      * @param static $child
      * @return $this
      */
+    final public function addChild($child)
+    {
+        return $child->setParent($this);
+    }
+
+    /**
+     * @param static $child
+     * @return $this
+     */
     final public function removeChild($child)
     {
-        [$_parent] = self::getHierarchyProperties();
+        (self::$_ParentProperties[static::class] ?? null) !== null ||
+            static::loadHierarchyProperties();
 
-        if ($child->{$_parent} !== $this) {
-            throw new UnexpectedValueException("\$child->{$_parent} is not \$this");
+        if ($child->{self::$_ParentProperties[static::class]} !== $this) {
+            throw new LogicException('Argument #1 ($child) is not a child of this object');
         }
 
-        $child->setParent(null);
-
-        return $this;
+        return $child->setParent(null);
     }
 
     final public function getDepth(): int
     {
-        [$_parent] = self::getHierarchyProperties();
+        (self::$_ParentProperties[static::class] ?? null) !== null ||
+            static::loadHierarchyProperties();
 
         $depth = 0;
-        $parent = $this->{$_parent};
+        $parent = $this->{self::$_ParentProperties[static::class]};
         while (!is_null($parent)) {
             $depth++;
-            $parent = $parent->{$_parent};
+            $parent = $parent->{self::$_ParentProperties[static::class]};
         }
 
         return $depth;

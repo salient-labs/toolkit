@@ -5,6 +5,7 @@ namespace Lkrms\Facade;
 use Lkrms\Concept\Facade;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Utility\Filesystem;
+use SplFileInfo;
 
 /**
  * A facade for \Lkrms\Utility\Filesystem
@@ -13,7 +14,7 @@ use Lkrms\Utility\Filesystem;
  * @method static Filesystem getInstance() Get the underlying Filesystem instance
  * @method static bool isLoaded() True if an underlying Filesystem instance has been loaded
  * @method static void unload() Clear the underlying Filesystem instance
- * @method static FluentIteratorInterface find(string $directory, ?string $exclude = null, ?string $include = null, ?array $excludeCallbacks = null, ?array $includeCallbacks = null, bool $recursive = true, bool $withDirectories = false) Iterate over files in a directory (see {@see Filesystem::find()})
+ * @method static FluentIteratorInterface<string,SplFileInfo> find(string $directory, ?string $exclude = null, ?string $include = null, array<string,callable> $excludeCallbacks = null, array<string,callable> $includeCallbacks = null, bool $recursive = true, bool $withDirectories = false) Iterate over files in a directory (see {@see Filesystem::find()})
  * @method static string|false getEol(string $filename) Get a file's end-of-line sequence (see {@see Filesystem::getEol()})
  * @method static string getStablePath(string $suffix = '.log', ?string $dir = null) Return the name of a file unique to the current script and user (see {@see Filesystem::getStablePath()})
  * @method static string|null getStreamUri(resource $stream) Get the URI or filename associated with a stream (see {@see Filesystem::getStreamUri()})

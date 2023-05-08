@@ -839,7 +839,7 @@ final class Conversions
         $markerIsItem = $marker && preg_match($regex, $marker);
 
         $sections = [];
-        foreach (preg_split('/\r\n|\n/', $text) as $line) {
+        foreach (preg_split('/\r\n|\n|\r/', $text) as $line) {
             // Remove pre-existing markers early to ensure sections with the
             // same name are combined
             if ($marker && !$markerIsItem && strpos($line, $marker) === 0) {
@@ -1048,7 +1048,7 @@ final class Conversions
     }
 
     /**
-     * Replace a string's CRLF, LFCR or CR end-of-line sequences with LF
+     * Replace a string's CRLF or CR end-of-line sequences with LF
      *
      */
     public function lineEndingsToUnix(string $string): string
@@ -1057,7 +1057,7 @@ final class Conversions
             return $string;
         }
 
-        return preg_replace("/(\r\n|\n\r|\r)/", "\n", $string);
+        return preg_replace("/(\r\n|\r)/", "\n", $string);
     }
 
     /**
