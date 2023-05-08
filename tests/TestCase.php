@@ -68,4 +68,13 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
         return implode("\n", $output);
     }
+
+    /**
+     * Replace newlines with PHP_EOL
+     *
+     */
+    public function lineEndingsToNative(?string $string): ?string
+    {
+        return $string === null ? null : str_replace("\n", PHP_EOL, $string);
+    }
 }

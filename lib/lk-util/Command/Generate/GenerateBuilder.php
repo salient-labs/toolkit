@@ -341,7 +341,7 @@ class GenerateBuilder extends GenerateCommand
 
                 $default = '';
                 $defaultText = null;
-                switch (ltrim($type, '?')) {
+                switch (preg_replace('/^(\?|null\|)|\|null$/', '', $type)) {
                     case 'static':
                     case '$this':
                         $type = $service;
@@ -429,7 +429,7 @@ class GenerateBuilder extends GenerateCommand
 
             $default = '';
             $defaultText = null;
-            switch (ltrim($type, '?')) {
+            switch (preg_replace('/^(\?|null\|)|\|null$/', '', $type)) {
                 case 'static':
                 case '$this':
                     $type = $service;

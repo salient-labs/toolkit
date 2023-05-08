@@ -43,7 +43,7 @@ use Lkrms\Utility\Environment;
  * @method static string getTempPath() Get a writable directory for the application's ephemeral data
  * @method static bool has(string $id) True if a class or service interface resolves to a concrete class that actually exists (see {@see Container::has()})
  * @method static bool hasGlobalContainer() True if a global container has been loaded
- * @method static CliApplication if(bool $condition, callable $then, ?callable $else = null) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
+ * @method static CliApplication if(bool $condition, callable $then, callable|null $else = null) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of a class or interface have been applied to the container itself
  * @method static bool inProduction() Return true if the application is in production, false if it's running from source (see {@see AppContainer::inProduction()})
  * @method static CliApplication instance(string $id, $instance) Add an existing instance to the container as a shared binding
@@ -51,10 +51,10 @@ use Lkrms\Utility\Environment;
  * @method static CliApplication loadCache() Load the application's CacheStore, creating a backing database if needed (see {@see AppContainer::loadCache()})
  * @method static CliApplication loadCacheIfExists() Load the application's CacheStore if a backing database already exists (see {@see AppContainer::loadCacheIfExists()})
  * @method static CliApplication loadSync(?string $command = null, ?array $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see AppContainer::loadSync()})
- * @method static CliApplication logConsoleMessages(?bool $debug = null, ?string $name = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
+ * @method static CliApplication logConsoleMessages(?bool $debug = null, string|null $name = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Get the global container, returning null if no global container has been loaded
  * @method static CliApplication oneCommand(class-string<CliCommand> $id) Register one, and only one, CliCommand for the lifetime of the container (see {@see CliApplication::oneCommand()})
- * @method static CliApplication registerShutdownReport($level = Level::DEBUG, ?array $timers = ['*'], bool $resourceUsage = true) Report timers and resource usage when the application terminates (see {@see AppContainer::registerShutdownReport()})
+ * @method static CliApplication registerShutdownReport($level = Level::DEBUG, array|null $timers = ['*'], bool $resourceUsage = true) Report timers and resource usage when the application terminates (see {@see AppContainer::registerShutdownReport()})
  * @method static IContainer requireGlobalContainer() Get the global container, throwing an exception if no global container has been loaded
  * @method static int run() Process command-line arguments passed to the script (see {@see CliApplication::run()})
  * @method static never runAndExit() Exit after processing command-line arguments passed to the script (see {@see CliApplication::runAndExit()})

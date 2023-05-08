@@ -642,7 +642,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
             }
         }
         if ($lines ?? null) {
-            Console::print(implode(PHP_EOL, $lines), $level);
+            Console::print(implode("\n", $lines), $level);
         }
 
         return $this;

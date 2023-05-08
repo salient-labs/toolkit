@@ -116,7 +116,7 @@ final class PhpDoc implements IReadable
     public function __construct(
         string $docBlock,
         string $classDocBlock = null,
-        bool $legacyNullable = true
+        bool $legacyNullable = false
     ) {
         // Check for a leading "*" after every newline as per PSR-5
         if (!preg_match(Regex::delimit(Regex::PHP_DOCBLOCK), $docBlock, $matches)) {
@@ -395,12 +395,12 @@ final class PhpDoc implements IReadable
             throw new UnexpectedValueException('Unterminated code fence in DocBlock');
         }
 
-        return implode($unwrap ? ' ' : PHP_EOL, $lines);
+        return implode($unwrap ? ' ' : "\n", $lines);
     }
 
     public function unwrap(?string $value): ?string
     {
-        return is_null($value) ? null : str_replace(PHP_EOL, ' ', $value);
+        return is_null($value) ? null : str_replace("\n", ' ', $value);
     }
 
     /**
@@ -499,7 +499,7 @@ final class PhpDoc implements IReadable
     public static function fromDocBlocks(
         array $docBlocks,
         ?array $classDocBlocks = null,
-        bool $legacyNullable = true
+        bool $legacyNullable = false
     ): ?self {
         if (!$docBlocks) {
             return null;

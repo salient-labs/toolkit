@@ -15,7 +15,7 @@ class PhpDocVarTag extends PhpDocTag
      */
     public $Type;
 
-    public function __construct(string $type, ?string $name = null, ?string $description = null, bool $legacyNullable = true)
+    public function __construct(string $type, ?string $name = null, ?string $description = null, bool $legacyNullable = false)
     {
         parent::__construct('var', $name, $type, $description, $legacyNullable);
         if (!$this->Type) {

@@ -58,7 +58,7 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
     {
         $summary = $this->toSummary();
         $lines = [];
-        $separator = PHP_EOL . '  ';
+        $separator = "\n" . '  ';
         foreach ($summary as $error) {
             $lines[] = sprintf(
                 "~~{~~_%d_~~}~~ ___%s___ ~~[~~__%s__~~]~~ ~~(~~_'%s'_~~)~~:",
@@ -75,7 +75,7 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
             );
         }
 
-        return implode(PHP_EOL, $lines);
+        return implode("\n", $lines);
     }
 
     public function jsonSerialize(): array

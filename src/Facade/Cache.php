@@ -17,7 +17,7 @@ use Lkrms\Store\Concept\SqliteStore;
  * @method static CacheStore delete(string $key) Delete an item (see {@see CacheStore::delete()})
  * @method static CacheStore flush() Delete all items
  * @method static CacheStore flushExpired() Delete expired items
- * @method static mixed get(string $key, ?int $maxAge = null) Retrieve an item (see {@see CacheStore::get()})
+ * @method static mixed get(string $key, int|null $maxAge = null) Retrieve an item (see {@see CacheStore::get()})
  * @method static string|null getFilename() Get the filename of the database
  * @method static bool isOpen() Check if a database is open
  * @method static mixed maybeGet(string $key, callable $callback, int $expiry = 0) Retrieve an item, or get it from a callback and store it for next time

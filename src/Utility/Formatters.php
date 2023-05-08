@@ -31,8 +31,8 @@ final class Formatters
             if (!is_scalar($value)) {
                 $value = json_encode($value);
             }
-            $value = str_replace("\r\n", "\n", (string) $value);
-            $value = str_replace("\n", PHP_EOL . $indent, $value, $count);
+            $value = str_replace(["\r\n", "\r"], "\n", (string) $value);
+            $value = str_replace("\n", "\n" . $indent, $value, $count);
 
             $string .= sprintf($format, $value);
         }
@@ -58,10 +58,10 @@ final class Formatters
             if (!is_scalar($value)) {
                 $value = json_encode($value);
             }
-            $value = str_replace("\r\n", "\n", (string) $value);
-            $value = str_replace("\n", PHP_EOL . $indent, $value, $count);
+            $value = str_replace(["\r\n", "\r"], "\n", (string) $value);
+            $value = str_replace("\n", "\n" . $indent, $value, $count);
             if ($count) {
-                $value = PHP_EOL . $indent . $value;
+                $value = "\n" . $indent . $value;
             }
 
             $string .= sprintf($format, $key, $value);

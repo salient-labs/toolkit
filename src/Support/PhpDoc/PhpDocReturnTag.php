@@ -20,7 +20,7 @@ class PhpDocReturnTag extends PhpDocTag
      */
     public $Name;
 
-    public function __construct(string $type, ?string $description = null, bool $legacyNullable = true)
+    public function __construct(string $type, ?string $description = null, bool $legacyNullable = false)
     {
         parent::__construct('return', null, $type, $description, $legacyNullable);
         if (!$this->Type) {
