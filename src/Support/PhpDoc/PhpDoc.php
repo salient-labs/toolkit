@@ -395,12 +395,12 @@ final class PhpDoc implements IReadable
             throw new UnexpectedValueException('Unterminated code fence in DocBlock');
         }
 
-        return implode($unwrap ? ' ' : PHP_EOL, $lines);
+        return implode($unwrap ? ' ' : "\n", $lines);
     }
 
     public function unwrap(?string $value): ?string
     {
-        return is_null($value) ? null : str_replace(PHP_EOL, ' ', $value);
+        return is_null($value) ? null : str_replace("\n", ' ', $value);
     }
 
     /**

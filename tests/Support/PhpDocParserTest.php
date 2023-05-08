@@ -22,7 +22,11 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
     {
         return [
             'missing asterisk' => [
-                "/**\n\n*/",
+                <<<'EOF'
+                /**
+
+                */
+                EOF,
             ],
         ];
     }
@@ -73,7 +77,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
             ```php
             // code here
             ```
-            EOF, $phpDoc->Description);
+            EOF, $this->lineEndingsToNative($phpDoc->Description));
         $this->assertSame([
             '@param $arg1 Description from ClassC (untyped)',
             '@param string[] $arg3',
@@ -134,13 +138,13 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
     ) {
         $phpDoc = new PhpDoc($docBlock);
         $this->assertSame($summary, $phpDoc->Summary);
-        $this->assertSame($description, $phpDoc->Description);
+        $this->assertSame($description, $this->lineEndingsToNative($phpDoc->Description));
         $this->assertCount(count($varKeys), $phpDoc->Vars);
         foreach ($varKeys as $i => $key) {
             $this->assertArrayHasKey($key, $phpDoc->Vars);
-            $this->assertSame($phpDoc->Vars[$key]->Name, $varNames[$i]);
-            $this->assertSame($phpDoc->Vars[$key]->Type, $varTypes[$i]);
-            $this->assertSame($phpDoc->Vars[$key]->Description, $varDescriptions[$i]);
+            $this->assertSame($varNames[$i], $phpDoc->Vars[$key]->Name);
+            $this->assertSame($varTypes[$i], $phpDoc->Vars[$key]->Type);
+            $this->assertSame($varDescriptions[$i], $phpDoc->Vars[$key]->Description);
         }
     }
 
@@ -169,7 +173,11 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
                  */
                 EOF,
                 'Full docblock with a summary.',
-                "And a description.\n\nAnd a variable description.",
+                <<<'EOF'
+                And a description.
+
+                And a variable description.
+                EOF,
                 [0],
                 [null],
                 ['int'],
@@ -267,9 +275,9 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
              */
             EOF;
         $phpDoc = new PhpDoc($docBlock);
-        $this->assertEquals('Summary', $phpDoc->Summary);
-        $this->assertEquals(null, $phpDoc->Description);
-        $this->assertEquals('mixed', $phpDoc->Templates['T']->Type);
+        $this->assertSame('Summary', $phpDoc->Summary);
+        $this->assertSame(null, $phpDoc->Description);
+        $this->assertSame('mixed', $phpDoc->Templates['T']->Type);
     }
 
     public function testTemplateInheritance()
@@ -297,8 +305,8 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
              */
             EOF;
         $phpDoc = new PhpDoc($docBlock, $classDocBlock);
-        $this->assertEquals('Summary', $phpDoc->Summary);
-        $this->assertEquals(null, $phpDoc->Description);
+        $this->assertSame('Summary', $phpDoc->Summary);
+        $this->assertSame(null, $phpDoc->Description);
         $this->assertCount(4, $phpDoc->Templates);
         $this->assertSame('T', $phpDoc->Templates['T']->Name);
         $this->assertSame('mixed', $phpDoc->Templates['T']->Type);
@@ -342,8 +350,8 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
 
         $phpDoc = new PhpDoc($docBlock, null, true);
 
-        $this->assertEquals($phpDoc->Summary, 'Summary');
-        $this->assertEquals($phpDoc->Description, <<<'EOF'
+        $this->assertSame('Summary', $phpDoc->Summary);
+        $this->assertSame(<<<'EOF'
             Description with multiple code blocks:
 
             ```php
@@ -360,7 +368,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
             ```php
             callback(string $value): string
             ```
-            EOF);
+            EOF, $this->lineEndingsToNative($phpDoc->Description));
         $this->assertCount(1, $phpDoc->Vars);
         $this->assertSame(null, $phpDoc->Vars[0]->Name ?? null);
         $this->assertSame('?callable', $phpDoc->Vars[0]->Type ?? null);
@@ -424,12 +432,34 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         $this->assertSame('Description of $arg', $phpDoc->Params['arg']->Description ?? null);
     }
 
-    public function testEol()
+    /**
+     * @dataProvider eolProvider
+     */
+    public function testEol(string $docBlock, string $summary, string $description)
     {
-        $docBlock =
-            "/**\r\n * Summary \r\n *  \r\n * Has trailing spaces and CRLF end-of-lines. \r\n *  \r\n * @internal \r\n */";
         $phpDoc = new PhpDoc($docBlock);
-        $this->assertEquals('Summary', $phpDoc->Summary);
-        $this->assertEquals('Has trailing spaces and CRLF end-of-lines.', $phpDoc->Description);
+        $this->assertSame($summary, $phpDoc->Summary);
+        $this->assertSame($description, $phpDoc->Description);
+    }
+
+    public static function eolProvider()
+    {
+        return [
+            'CRLF' => [
+                "/**\r\n * Summary \r\n *  \r\n * Has trailing spaces and CRLF end-of-lines. \r\n *  \r\n * @internal \r\n */",
+                'Summary',
+                'Has trailing spaces and CRLF end-of-lines.',
+            ],
+            'LF' => [
+                "/**\n * Summary \n *  \n * Has trailing spaces and LF end-of-lines. \n *  \n * @internal \n */",
+                'Summary',
+                'Has trailing spaces and LF end-of-lines.',
+            ],
+            'CR' => [
+                "/**\r * Summary \r *  \r * Has trailing spaces and CR end-of-lines. \r *  \r * @internal \r */",
+                'Summary',
+                'Has trailing spaces and CR end-of-lines.',
+            ],
+        ];
     }
 }
