@@ -879,8 +879,8 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
-     * Normalise an array of option values, assign them to the command, and
-     * return them to the caller
+     * Optionally normalise an array of option values, assign them to the
+     * command, and return them to the caller
      *
      * @param array<string,string|string[]|bool|int|null> $values An array that
      * maps options to values.
@@ -888,13 +888,16 @@ abstract class CliCommand implements ICliCommand
      * @param bool $expand If `true`, replace `null` with the default value of
      * the option if it has an optional value. Ignored if `$normalise` is
      * `false`.
+     * @param bool $asArguments If `true`, assign the values to the command as
+     * if they had been given on the command line.
      * @return array<string,mixed>
      * @see CliCommand::normaliseOptionValues()
      */
     final protected function applyOptionValues(
         array $values,
         bool $normalise = true,
-        bool $expand = false
+        bool $expand = false,
+        bool $asArguments = false
     ): array {
         $this->assertHasRun();
 
@@ -908,8 +911,11 @@ abstract class CliCommand implements ICliCommand
             if (!$option) {
                 throw new LogicException(sprintf('Option not found: %s', $name));
             }
-            $value = $option->applyValue($value, $normalise, $expand);
+            $value = $option->applyValue($_value = $value, $normalise, $expand);
             $this->OptionValues[$option->Key] = $_values[$name] = $value;
+            if ($asArguments) {
+                $this->ArgumentValues[$option->Key] = $_value;
+            }
         }
 
         return $_values;
