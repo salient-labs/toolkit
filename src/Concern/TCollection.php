@@ -2,7 +2,6 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Concern\HasItems;
 use LogicException;
 use ReturnTypeWillChange;
 
@@ -18,7 +17,7 @@ trait TCollection
     /**
      * @use HasItems<T>
      */
-    use HasItems;
+    use HasItems, IsMutable;
 
     /**
      * @param callable $callback
@@ -30,18 +29,20 @@ trait TCollection
      */
     final public function forEach(callable $callback)
     {
-        $items = $this->_Items;
-        $items[] = null;
-
         $prev = null;
         $item = null;
-        $i = -1;
-        foreach ($items as $next) {
-            if ($i++ > -1) {
+        $i = 0;
+
+        // foreach doesn't change the internal array pointer
+        foreach ($this->_Items as $next) {
+            if ($i++) {
                 $callback($item, $next, $prev);
                 $prev = $item;
             }
             $item = $next;
+        }
+        if ($i) {
+            $callback($item, null, $prev);
         }
 
         return $this;
@@ -60,14 +61,13 @@ trait TCollection
         $clone = clone $this;
         $clone->_Items = [];
 
-        $items = $this->_Items;
-        $items[] = null;
-
         $prev = null;
         $item = null;
-        $i = -1;
-        foreach ($items as $next) {
-            if ($i++ > -1) {
+        $i = 0;
+
+        // foreach doesn't change the internal array pointer
+        foreach ($this->_Items as $next) {
+            if ($i++) {
                 if ($callback($item, $next, $prev)) {
                     $clone->_Items[] = $item;
                 }
@@ -75,8 +75,11 @@ trait TCollection
             }
             $item = $next;
         }
+        if ($i && $callback($item, null, $prev)) {
+            $clone->_Items[] = $item;
+        }
 
-        return $clone;
+        return $clone->mutate(__FUNCTION__, static::class);
     }
 
     /**
@@ -89,20 +92,22 @@ trait TCollection
      */
     final public function find(callable $callback)
     {
-        $items = $this->_Items;
-        $items[] = null;
-
         $prev = null;
         $item = null;
-        $i = -1;
-        foreach ($items as $next) {
-            if ($i++ > -1) {
+        $i = 0;
+
+        // foreach doesn't change the internal array pointer
+        foreach ($this->_Items as $next) {
+            if ($i++) {
                 if ($callback($item, $next, $prev)) {
                     return $item;
                 }
                 $prev = $item;
             }
             $item = $next;
+        }
+        if ($i && $callback($item, null, $prev)) {
+            return $item;
         }
 
         return false;
@@ -119,7 +124,7 @@ trait TCollection
             $clone->_Items = array_values($clone->_Items);
         }
 
-        return $clone;
+        return $clone->mutate(__FUNCTION__, static::class);
     }
 
     /**
@@ -190,18 +195,17 @@ trait TCollection
         if ($n === 0) {
             throw new LogicException('Argument #1 ($n) is 1-based, 0 given');
         }
-        $copy = $this->_Items;
-        $keys = array_keys($copy);
+        $keys = array_keys($this->_Items);
         if ($n < 0) {
             $keys = array_reverse($keys);
             $n = -$n;
         }
         $key = $keys[$n - 1] ?? null;
-        if (is_null($key)) {
+        if ($key === null) {
             return false;
         }
 
-        return $copy[$key];
+        return $this->_Items[$key];
     }
 
     /**
@@ -209,11 +213,13 @@ trait TCollection
      */
     final public function shift()
     {
+        if (!$this->_Items) {
+            return false;
+        }
         $item = array_shift($this->_Items);
+        $this->mutate(__FUNCTION__, static::class);
 
-        return is_null($item)
-            ? false
-            : $item;
+        return $item;
     }
 
     // Implementation of `Iterator`:
@@ -248,7 +254,7 @@ trait TCollection
 
     final public function valid(): bool
     {
-        return !is_null(key($this->_Items));
+        return key($this->_Items) !== null;
     }
 
     // Implementation of `ArrayAccess`:
@@ -277,7 +283,7 @@ trait TCollection
      */
     final public function offsetSet($offset, $value): void
     {
-        if (is_null($offset)) {
+        if ($offset === null) {
             $this->_Items[] = $value;
 
             return;

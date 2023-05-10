@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Concept;
 
 use Lkrms\Tests\Concept\HasMutator\MyMutatingClass;
-use RuntimeException;
+use LogicException;
 
 final class HasMutatorTest extends \Lkrms\Tests\TestCase
 {
@@ -20,7 +20,7 @@ final class HasMutatorTest extends \Lkrms\Tests\TestCase
                ->with('Arr4', 'fff', 'f');
         $e = $d->with('Obj', 'aa', 'A')
                ->with('Obj', 'bb', 'B');
-        $f = $e->with('A', 1)
+        $f = $e->with('A', 1)  // Changes to $f should be no-ops
                ->with('Obj', 'aa', 'A')
                ->with('Obj', 'bb', 'B');
         $g = $f->with('Coll', new \stdClass(), 'g');
@@ -65,10 +65,13 @@ final class HasMutatorTest extends \Lkrms\Tests\TestCase
         $A->Obj->A = 'aa';
         $A->Obj->B = 'bb';
         $A->Coll['g'] = new \stdClass();
+        for ($i = 0; $i < 11; $i++) {
+            $A->mutate('withPropertyValue', MyMutatingClass::class);
+        }
 
         $this->assertEquals($A, $g);
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(LogicException::class);
         $g->with('B', 5, 'index');
     }
 }
