@@ -3,7 +3,7 @@
 namespace Lkrms\Concern;
 
 use ArrayAccess;
-use RuntimeException;
+use LogicException;
 
 /**
  * Returns an updated clone of itself
@@ -11,6 +11,8 @@ use RuntimeException;
  */
 trait HasMutator
 {
+    use IsMutable;
+
     /**
      * @param mixed $value
      * @return $this
@@ -19,13 +21,21 @@ trait HasMutator
     {
         if ($key) {
             if (!isset($this->$property) || is_array($this->$property)) {
-                return $this->applyPropertyKeyValue($property, $value, $key);
+                return $this->applyPropertyKeyValue(
+                    __FUNCTION__, $property, $value, $key
+                );
             } elseif ($this->$property instanceof ArrayAccess) {
-                return $this->applyPropertyKeyValue($property, $value, $key, true);
+                return $this->applyPropertyKeyValue(
+                    __FUNCTION__, $property, $value, $key, true
+                );
             } elseif (is_object($this->$property)) {
-                return $this->applyPropertyKeyValue($property, $value, $key, true, false);
+                return $this->applyPropertyKeyValue(
+                    __FUNCTION__, $property, $value, $key, true, false
+                );
             } else {
-                throw new RuntimeException("\$this->$property is not an array or object");
+                throw new LogicException(
+                    sprintf('%s::$%s is not an array or object', static::class, $property)
+                );
             }
         }
 
@@ -35,7 +45,7 @@ trait HasMutator
         $clone = clone $this;
         $clone->$property = $value;
 
-        return $clone;
+        return $clone->mutate(__FUNCTION__, static::class);
     }
 
     /**
@@ -43,6 +53,7 @@ trait HasMutator
      * @return $this
      */
     private function applyPropertyKeyValue(
+        string $mutator,
         string $property,
         $value,
         string $key,
@@ -57,7 +68,7 @@ trait HasMutator
         }
         $_value = $clone
             ? clone $this->$property
-            : $this->$property ?? null;
+            : ($this->$property ?? null);
         if ($array) {
             $_value[$key] = $value;
         } else {
@@ -66,6 +77,6 @@ trait HasMutator
         $clone = clone $this;
         $clone->$property = $_value;
 
-        return $clone;
+        return $clone->mutate($mutator, static::class);
     }
 }
