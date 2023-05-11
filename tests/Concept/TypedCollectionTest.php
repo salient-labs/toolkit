@@ -4,7 +4,7 @@ namespace Lkrms\Tests\Concept;
 
 use Lkrms\Tests\Concept\TypedCollection\MyClass;
 use Lkrms\Tests\Concept\TypedCollection\MyCollection;
-use UnexpectedValueException;
+use LogicException;
 
 final class TypedCollectionTest extends \Lkrms\Tests\TestCase
 {
@@ -86,7 +86,7 @@ final class TypedCollectionTest extends \Lkrms\Tests\TestCase
 
         $this->assertFalse($collection->find(fn() => false));
 
-        $this->expectException(UnexpectedValueException::class);
+        $this->expectException(LogicException::class);
         // @phpstan-ignore-next-line
         $collection[] = 'romeo';
     }

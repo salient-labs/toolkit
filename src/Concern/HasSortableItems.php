@@ -10,7 +10,7 @@ trait HasSortableItems
     /**
      * @use HasItems<T>
      */
-    use HasItems;
+    use HasItems, IsMutable;
 
     /**
      * @param T $a
@@ -38,7 +38,7 @@ trait HasSortableItems
         $clone = clone $this;
         $clone->sortItems($preserveKeys);
 
-        return $clone;
+        return $clone->mutate(__FUNCTION__, static::class);
     }
 
     /**
@@ -53,6 +53,6 @@ trait HasSortableItems
             $clone->_Items = array_values($clone->_Items);
         }
 
-        return $clone;
+        return $clone->mutate(__FUNCTION__, static::class);
     }
 }
