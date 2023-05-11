@@ -55,7 +55,7 @@ final class GetSyncEntities extends CliCommand
 
         $this->Store = $store;
 
-        foreach ($this->app()->getServices() as $provider) {
+        foreach ($this->App->getServices() as $provider) {
             if (!is_a($provider, ISyncProvider::class, true)) {
                 continue;
             }
@@ -150,13 +150,13 @@ final class GetSyncEntities extends CliCommand
         $csv = $this->getOptionValue('csv');
 
         if (!($provider = $provider ?: array_search(
-            $this->app()->getName(SyncIntrospector::entityToProvider($class)),
+            $this->App->getName(SyncIntrospector::entityToProvider($class)),
             $this->Providers
         ))) {
             throw new CliInvalidArgumentsException('no default provider: ' . $class);
         }
         /** @var ISyncProvider */
-        $provider = $this->app()->get($this->Providers[$provider]);
+        $provider = $this->App->get($this->Providers[$provider]);
 
         Console::info(
             'Retrieving from ' . $provider->name() . ':',
@@ -165,8 +165,8 @@ final class GetSyncEntities extends CliCommand
                 . (is_null($id) ? '' : "/$id")
         );
 
-        $this->app()->bindIf(ISyncContext::class, SyncContext::class);
-        $context = $this->app()->get(ISyncContext::class);
+        $this->App->bindIf(ISyncContext::class, SyncContext::class);
+        $context = $this->App->get(ISyncContext::class);
 
         $result = !is_null($id)
             ? $provider->with($class, $context)->get($id, $filter)
@@ -174,7 +174,7 @@ final class GetSyncEntities extends CliCommand
                 ? $provider->with($class, $context)->getList($filter)
                 : $provider->with($class, $context)->getListA($filter));
 
-        $rules = $class::buildSerializeRules($this->app())->includeMeta(false);
+        $rules = $class::buildSerializeRules($this->App)->includeMeta(false);
 
         if ($csv) {
             if (!is_null($id)) {

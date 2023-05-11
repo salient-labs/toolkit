@@ -36,7 +36,7 @@ final class CheckSyncProviderHeartbeat extends CliCommand
 
         $this->Store = $store;
 
-        foreach ($this->app()->getServices() as $provider) {
+        foreach ($this->App->getServices() as $provider) {
             if (!is_a($provider, ISyncProvider::class, true)) {
                 continue;
             }
@@ -125,7 +125,7 @@ final class CheckSyncProviderHeartbeat extends CliCommand
         if ($this->Providers) {
             $providers = array_map(
                 fn(string $providerClass) =>
-                    $this->app()->get($providerClass),
+                    $this->App->get($providerClass),
                 array_intersect_key(
                     $this->Providers,
                     array_flip($providers)
@@ -134,7 +134,7 @@ final class CheckSyncProviderHeartbeat extends CliCommand
         } else {
             $providers = array_map(
                 fn(string $providerClass) =>
-                    $this->app()->getIf($providerClass, ISyncProvider::class),
+                    $this->App->getIf($providerClass, ISyncProvider::class),
                 $providers
             );
         }
