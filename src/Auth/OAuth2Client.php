@@ -1,13 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Auth\Concern;
+namespace Lkrms\Auth;
 
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
 use Firebase\JWT\SignatureInvalidException;
-use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessTokenInterface;
-use Lkrms\Auth\AccessToken;
+use Lkrms\Auth\Catalog\OAuth2Flow;
 use Lkrms\Concern\TReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Curler\CurlerBuilder;
@@ -17,45 +16,54 @@ use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Support\Http\HttpRequest;
 use Lkrms\Support\Http\HttpResponse;
 use Lkrms\Support\Http\HttpServer;
+use LogicException;
 use RuntimeException;
 use Throwable;
 
 /**
- * An OAuth 2.0 client that uses the Authorization Code flow to acquire and
- * validate tokens for access to endpoints on a resource server
+ * An OAuth 2.0 client that acquires and validates tokens required for access to
+ * endpoints on a resource server
  *
- * @property-read HttpServer $OAuth2Listener
- * @property-read string $OAuth2RedirectUri
- * @property-read AbstractProvider $OAuth2Provider
+ * To use this trait in a class:
+ *
+ * 1. Implement the {@see IReadable} interface
+ * 2. Insert {@see OAuth2Client} and implement its abstract methods
+ * 3. Use {@see OAuth2Client::getAccessToken()} to acquire a token at the last
+ *    possible moment before it's needed
+ *
+ * @property-read ?HttpServer $OAuth2Listener
+ * @property-read ?string $OAuth2RedirectUri
+ * @property-read OAuth2Provider $OAuth2Provider
  * @property-read string $OAuth2TokenKey
  *
  * @see IReadable Must be implemented by classes that use this trait.
  *
  * @psalm-require-implements IReadable
  */
-trait GetsOAuth2AccessTokens
+trait OAuth2Client
 {
     use TReadable;
 
     /**
-     * Return an HTTP listener to receive OAuth 2.0 redirects from the provider
+     * Return an HTTP listener to receive OAuth 2.0 redirects from the provider,
+     * or null to disable flows that require it
      *
      * Reference implementation:
      *
      * ```php
-     * protected function getOAuth2Listener(): \Lkrms\Support\Http\HttpServer
+     * protected function getOAuth2Listener(): ?\Lkrms\Support\Http\HttpServer
      * {
      *     $listener = new \Lkrms\Support\Http\HttpServer(
-     *         Env::get('app_host', 'localhost'),
-     *         Env::getInt('app_port', 27755)
+     *         $this->Env->get('app_host', 'localhost'),
+     *         $this->Env->getInt('app_port', 27755)
      *     );
-     *     $proxyHost = Env::get('app_proxy_host', null);
-     *     $proxyPort = Env::getInt('app_proxy_port', null);
-     *     if ($proxyHost && !is_null($proxyPort)) {
+     *     $proxyHost = $this->Env->get('app_proxy_host', null);
+     *     $proxyPort = $this->Env->getInt('app_proxy_port', null);
+     *     if ($proxyHost && $proxyPort !== null) {
      *         return $listener->withProxy(
      *             $proxyHost,
      *             $proxyPort,
-     *             Env::getBool('app_proxy_tls', null)
+     *             $this->Env->getBool('app_proxy_tls', null)
      *         );
      *     }
      *     return $listener;
@@ -63,7 +71,7 @@ trait GetsOAuth2AccessTokens
      * ```
      *
      */
-    abstract protected function getOAuth2Listener(): HttpServer;
+    abstract protected function getOAuth2Listener(): ?HttpServer;
 
     /**
      * Return an OAuth 2.0 provider to request and validate tokens that
@@ -71,34 +79,48 @@ trait GetsOAuth2AccessTokens
      *
      * Example:
      *
+     * The following provider could be used to authorize access to the Microsoft
+     * Graph API on behalf of a user or application. `redirectUri` can be
+     * omitted if support for the Authorization Code flow is not required.
+     *
+     * > The `openid`, `profile`, `email` and `offline_access` scopes are not
+     * > required for access to the Graph API.
+     *
      * ```php
-     * protected function getOAuth2Provider(): \League\OAuth2\Client\Provider\AbstractProvider
+     * protected function getOAuth2Provider(): \Lkrms\Auth\OAuth2Provider
      * {
-     *     $tenant = Env::get('backend_tenant');
-     *     return new \League\OAuth2\Client\Provider\GenericProvider([
-     *         'clientId'                => Env::get('backend_client_id'),
-     *         'clientSecret'            => Env::get('backend_client_secret'),
-     *         'redirectUri'             => sprintf('%s/oauth2/callback', $this->OAuth2Listener->getBaseUrl()),
-     *         'urlAuthorize'            => sprintf('https://login.microsoftonline.com/%s/oauth2/authorize', $tenant),
-     *         'urlAccessToken'          => sprintf('https://login.microsoftonline.com/%s/oauth2/v2.0/token', $tenant),
-     *         'urlResourceOwnerDetails' => sprintf('https://login.microsoftonline.com/%s/openid/userinfo', $tenant),
-     *         'scopes'                  => ['openid', 'offline_access', 'https://graph.microsoft.com/.default'],
+     *     return new \Lkrms\Auth\OAuth2Provider([
+     *         'clientId'                => $this->ClientId,
+     *         'clientSecret'            => $this->ClientSecret,
+     *         'redirectUri'             => $this->OAuth2RedirectUri,
+     *         'urlAuthorize'            => sprintf('https://login.microsoftonline.com/%s/oauth2/authorize', $this->TenantId),
+     *         'urlAccessToken'          => sprintf('https://login.microsoftonline.com/%s/oauth2/v2.0/token', $this->TenantId),
+     *         'urlResourceOwnerDetails' => sprintf('https://login.microsoftonline.com/%s/openid/userinfo', $this->TenantId),
+     *         'scopes'                  => ['openid', 'profile', 'email', 'offline_access', 'https://graph.microsoft.com/.default'],
      *         'scopeSeparator'          => ' ',
      *     ]);
      * }
      * ```
      *
      */
-    abstract protected function getOAuth2Provider(): AbstractProvider;
+    abstract protected function getOAuth2Provider(): OAuth2Provider;
 
     /**
-     * Return the URL of the OAuth 2.0 provider's JSON Web Key Set
+     * Return the OAuth 2.0 flow to use
+     *
+     * @return OAuth2Flow::*
+     */
+    abstract protected function getOAuth2Flow(): int;
+
+    /**
+     * Return the URL of the OAuth 2.0 provider's JSON Web Key Set, or null to
+     * disable JWT signature validation and decoding
      *
      * Required for token signature validation. Check the provider's
      * `https://server.com/.well-known/openid-configuration` if unsure.
      *
      */
-    abstract protected function getOAuth2JsonWebKeySetUrl(): string;
+    abstract protected function getOAuth2JsonWebKeySetUrl(): ?string;
 
     /**
      * Called when an access token is received from the OAuth 2.0 provider
@@ -112,17 +134,17 @@ trait GetsOAuth2AccessTokens
     }
 
     /**
-     * @var HttpServer|null
+     * @var HttpServer|false|null
      */
     private $_OAuth2Listener;
 
     /**
-     * @var string|null
+     * @var string|false|null
      */
     private $_OAuth2RedirectUri;
 
     /**
-     * @var AbstractProvider|null
+     * @var OAuth2Provider|null
      */
     private $_OAuth2Provider;
 
@@ -134,29 +156,29 @@ trait GetsOAuth2AccessTokens
     /**
      * @internal
      */
-    final protected function _getOAuth2Listener(): HttpServer
+    final protected function _getOAuth2Listener(): ?HttpServer
     {
-        return $this->_OAuth2Listener
-            ?: ($this->_OAuth2Listener = $this->getOAuth2Listener());
+        return $this->_OAuth2Listener !== null
+            ? ($this->_OAuth2Listener ?: null)
+            : (($this->_OAuth2Listener = $this->getOAuth2Listener() ?: false) ?: null);
     }
 
     /**
      * @internal
      */
-    final protected function _getOAuth2RedirectUri(): string
+    final protected function _getOAuth2RedirectUri(): ?string
     {
-        return $this->_OAuth2RedirectUri
-            ?: $this->_OAuth2RedirectUri =
-                sprintf(
-                    '%s/oauth2/callback',
-                    $this->OAuth2Listener->getBaseUrl()
-                );
+        return $this->_OAuth2RedirectUri !== null
+            ? ($this->_OAuth2RedirectUri ?: null)
+            : (($this->_OAuth2RedirectUri = $this->OAuth2Listener
+                ? sprintf('%s/oauth2/callback', $this->OAuth2Listener->getBaseUrl())
+                : false) ?: null);
     }
 
     /**
      * @internal
      */
-    final protected function _getOAuth2Provider(): AbstractProvider
+    final protected function _getOAuth2Provider(): OAuth2Provider
     {
         return $this->_OAuth2Provider
             ?: ($this->_OAuth2Provider = $this->getOAuth2Provider());
@@ -173,6 +195,7 @@ trait GetsOAuth2AccessTokens
                     static::class,
                     'oauth2',
                     $this->OAuth2Provider->getBaseAuthorizationUrl(),
+                    $this->getOAuth2Flow(),
                     'token',
                 ]))) . ($type ? ":$type" : '');
     }
@@ -199,7 +222,9 @@ trait GetsOAuth2AccessTokens
     /**
      * Get an OAuth 2.0 access token from the cache if possible, otherwise use a
      * refresh token to acquire one from the provider, or if that's not
-     * possible, authenticate with the provider interactively
+     * possible, flush all tokens and authorize with the provider from scratch
+     *
+     * This may be the only {@see OAuth2Client} method inheritors need to call.
      *
      */
     final protected function getAccessToken(?array $scopes = null): AccessToken
@@ -237,7 +262,7 @@ trait GetsOAuth2AccessTokens
     private function checkAccessTokenScopes(AccessToken $token, ?array $scopes): bool
     {
         return !$scopes ||
-            !array_diff($scopes, $token->Claims['scope'] ?? []);
+            !array_diff($scopes, (array) ($token->Scopes ?: $token->Claims['scope'] ?? []));
     }
 
     /**
@@ -251,20 +276,40 @@ trait GetsOAuth2AccessTokens
         if ($refreshToken === false) {
             return false;
         }
-        Console::debug('Requesting access token with refresh_token');
         $token = $this->requestAccessToken('refresh_token', ['refresh_token' => $refreshToken]);
 
         return true;
     }
 
     /**
-     * Get an access token from the OAuth 2.0 provider using the Authorization
-     * Code Flow
+     * Get an access token from the OAuth 2.0 provider
      *
      */
     final protected function authorize(): AccessToken
     {
         $this->flushAccessToken();
+
+        switch ($flow = $this->getOAuth2Flow()) {
+            case OAuth2Flow::CLIENT_CREDENTIALS:
+                // league/oauth2-client doesn't add scopes to client_credentials
+                // requests, but if scopes have been provided, it's not like
+                // there's anywhere else to request them
+                $options = [];
+                if ($scopes = $this->OAuth2Provider->getDefaultScopes()) {
+                    $options['scope'] = implode($this->OAuth2Provider->getScopeSeparator(), $scopes);
+                }
+                return $this->requestAccessToken('client_credentials', $options);
+
+            case OAuth2Flow::AUTHORIZATION_CODE:
+                break;
+
+            default:
+                throw new LogicException(sprintf('Invalid OAuth2Flow: %d', $flow));
+        }
+
+        if (!$this->OAuth2Listener) {
+            throw new LogicException('Cannot use the Authorization Code flow without an OAuth2Listener');
+        }
 
         $url = $this->OAuth2Provider->getAuthorizationUrl();
         $state = $this->OAuth2Provider->getState();
@@ -319,8 +364,6 @@ trait GetsOAuth2AccessTokens
             throw new RuntimeException('OAuth 2.0 provider did not return an authorization code');
         }
 
-        Console::debug('Requesting access token with authorization_code');
-
         return $this->requestAccessToken('authorization_code', ['code' => $code]);
     }
 
@@ -332,21 +375,38 @@ trait GetsOAuth2AccessTokens
      */
     private function requestAccessToken(string $grant, array $parameters = []): AccessToken
     {
-        $_token = $this->OAuth2Provider->getAccessToken($grant, $parameters);
+        Console::debug('Requesting access token with ' . $grant);
 
-        $tokenString = $_token->getToken();
-        $claims = $this->getValidJsonWebToken($tokenString);
+        $_token = $this->OAuth2Provider->getAccessToken($grant, $parameters);
+        $_values = $_token->getValues();
+        $accessToken = $_token->getToken();
+        $claims = $this->getValidJsonWebToken($accessToken) ?: [];
+        $expires = $_token->getExpires() ?: $claims['exp'] ?? null;
+
+        if (($tokenType = $_values['token_type'] ?? null) === null) {
+            throw new RuntimeException('OAuth 2.0 provider did not return a token type');
+        }
+
+        if ($scope = $_values['scope'] ?? null) {
+            $scope = strtok($scope, $separator = $this->OAuth2Provider->getScopeSeparator());
+            while ($scope !== false) {
+                $scopes[] = $scope;
+                $scope = strtok($separator);
+            }
+        }
 
         $token = new AccessToken(
-            $tokenString,
-            $_token->getExpires() ?: $claims['exp'] ?? 0,
+            $accessToken,
+            $tokenType,
+            $expires,
+            $scopes ?? $this->OAuth2Provider->getDefaultScopes(),
             $claims
         );
 
         Cache::set($this->OAuth2TokenKey, $token, $token->Expires->getTimestamp());
 
-        if ($id = $_token->getValues()['id_token'] ?? null) {
-            $id = $this->getValidJsonWebToken($id);
+        if ($id = $_values['id_token'] ?? null) {
+            $id = $this->getValidJsonWebToken($id, true);
             // Keep the ID token until access and/or refresh tokens expire
             Cache::set("{$this->OAuth2TokenKey}:id", $id);
         }
@@ -363,8 +423,8 @@ trait GetsOAuth2AccessTokens
     /**
      * Remove any tokens issued by the OAuth 2.0 provider from the cache
      *
-     * Call this method to force interactive authentication when an access token
-     * is next requested.
+     * Call this method to authorize with the provider from scratch when an
+     * access token is next requested.
      *
      * @return $this
      */
@@ -382,27 +442,56 @@ trait GetsOAuth2AccessTokens
     /**
      * Validates and decodes a token issued by the OAuth 2.0 provider
      *
-     * The provider's JSON Web Key Set (JWKS) is used to perform signature
-     * validation.
+     * The provider's JSON Web Key Set (JWKS) is required for signature
+     * validation, so {@see OAuth2Client::getOAuth2JsonWebKeySetUrl()} must
+     * return a URL.
+     *
+     * If JWT signature validation fails, an exception is thrown if `$required`
+     * is `true`, otherwise `null` is returned to the caller.
+     *
+     * Access tokens should be presented to resource servers even if they can't
+     * be validated. Technically, the only party inspecting an OAuth 2.0 token
+     * should be its intended "aud"ience, and in some cases (e.g. when the
+     * Microsoft Identity Platform issues an access token for the Microsoft
+     * Graph API), token signatures are deliberately broken to discourage
+     * inspection (e.g. by adding a nonce to the header).
      *
      * @return array<string,mixed>
      */
-    private function getValidJsonWebToken(string $token): array
+    private function getValidJsonWebToken(string $token, bool $required = false): ?array
     {
         $refreshKeys = false;
 
         // Replace the JWKS (which is cached indefinitely) when signature
         // validation fails
         do {
+            if (!($jwks = $this->getJsonWebKeySet($refreshKeys))) {
+                return false;
+            }
+            // If there are any keys with no "alg"orithm (hello, Microsoft
+            // Identity Platform), `JWK::parseKeySet()` fails, so extract "alg"
+            // from the token and pass it to `JWK::parseKeySet()`
+            if (!($alg ?? null) && array_filter(
+                $jwks['keys'] ?? [], fn(array $key) => !array_key_exists('alg', $key)
+            )) {
+                if (count($parts = explode('.', $token)) === 3 &&
+                        ($header = base64_decode(strtr($parts[0], '-_', '+/'), true)) &&
+                        ($header = json_decode($header, true))) {
+                    $alg = $header['alg'] ?? null;
+                }
+            }
             try {
                 return (array) JWT::decode(
                     $token,
-                    JWK::parseKeySet($this->getJsonWebKeySet($refreshKeys))
+                    JWK::parseKeySet($jwks, $alg ?? null)
                 );
             } catch (SignatureInvalidException $ex) {
                 // If validation failed after refreshing the JWKS, bail out
                 if ($refreshKeys) {
-                    throw $ex;
+                    if ($required) {
+                        throw $ex;
+                    }
+                    return null;
                 }
                 $refreshKeys = true;
             }
@@ -428,6 +517,11 @@ trait GetsOAuth2AccessTokens
      */
     final protected function getIdToken(): ?array
     {
+        // Don't [re-]authorize for an ID token that won't be issued
+        if (Cache::has($this->OAuth2TokenKey, 0) &&
+                !Cache::has("{$this->OAuth2TokenKey}:id", 0)) {
+            return null;
+        }
         // Don't return stale identity information
         if (!$this->hasAccessToken()) {
             $this->getAccessToken();

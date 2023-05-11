@@ -6,7 +6,6 @@ use JsonSerializable;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\ReturnsDescription;
-use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Sync\Catalog\SyncSerializeLinkType;
 use Lkrms\Sync\Support\SyncSerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder;

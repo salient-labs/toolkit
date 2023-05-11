@@ -6,7 +6,7 @@ use Lkrms\Concern\HasSortableItems;
 use Lkrms\Concern\TCollection;
 use Lkrms\Contract\ICollection;
 use Lkrms\Contract\IComparable;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * Base class for collections of objects of a particular type
@@ -54,8 +54,8 @@ abstract class TypedCollection implements ICollection
      */
     final public function offsetSet($offset, $value): void
     {
-        if (!is_a($value, $this->ItemClass)) {
-            throw new UnexpectedValueException('Expected an instance of ' . $this->ItemClass);
+        if (!($value instanceof $this->ItemClass)) {
+            throw new LogicException(sprintf('Expected an instance of %s', $this->ItemClass));
         }
 
         $this->_offsetSet($offset, $value);
@@ -107,15 +107,15 @@ abstract class TypedCollection implements ICollection
     }
 
     /**
-     * @param T $a
-     * @param T $b
+     * @param T&IComparable $a
+     * @param T&IComparable $b
      */
     protected function compareItems($a, $b, bool $strict = false): int
     {
         switch (true) {
-            case $a instanceof IComparable && is_a($b, get_class($a)):
+            case is_a($b, get_class($a)):
                 return $a->compare($b, $strict);
-            case $b instanceof IComparable && is_a($a, get_class($b)):
+            case is_a($a, get_class($b)):
                 return -$b->compare($a, $strict);
             default:
                 return $a <=> $b;
