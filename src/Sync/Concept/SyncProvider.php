@@ -95,11 +95,6 @@ abstract class SyncProvider implements ISyncProvider, IService
         return [];
     }
 
-    public function name(?int $maxLength = null): ?string
-    {
-        return Convert::classToBasename(static::class, 'SyncProvider', 'Provider');
-    }
-
     public function description(?int $maxLength = null): ?string
     {
         return null;
@@ -108,17 +103,17 @@ abstract class SyncProvider implements ISyncProvider, IService
     /**
      * @var Container
      */
-    private $Container;
+    protected $App;
 
     /**
      * @var Environment
      */
-    private $Environment;
+    protected $Env;
 
     /**
      * @var SyncStore
      */
-    private $Store;
+    protected $Store;
 
     /**
      * @var int|null
@@ -140,10 +135,10 @@ abstract class SyncProvider implements ISyncProvider, IService
      */
     private $MagicMethodClosures = [];
 
-    public function __construct(Container $container, Environment $environment, SyncStore $store)
+    public function __construct(Container $app, Environment $environment, SyncStore $store)
     {
-        $this->Container = $container;
-        $this->Environment = $environment;
+        $this->App = $app;
+        $this->Env = $environment;
         $this->Store = $store;
 
         $this->Store->provider($this);
@@ -159,17 +154,17 @@ abstract class SyncProvider implements ISyncProvider, IService
 
     final public function app(): Container
     {
-        return $this->Container;
+        return $this->App;
     }
 
     final public function container(): Container
     {
-        return $this->Container;
+        return $this->App;
     }
 
     final public function env(): Environment
     {
-        return $this->Environment;
+        return $this->Env;
     }
 
     final public function store(): SyncStore
@@ -183,7 +178,7 @@ abstract class SyncProvider implements ISyncProvider, IService
      */
     final protected function pipeline(): IPipeline
     {
-        return Pipeline::create($this->Container);
+        return Pipeline::create($this->App);
     }
 
     final public function dateFormatter(): DateFormatter

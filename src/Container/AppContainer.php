@@ -54,7 +54,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
     /**
      * @var Environment
      */
-    protected $Env;
+    public $Env;
 
     /**
      * @var string

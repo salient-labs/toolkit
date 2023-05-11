@@ -53,6 +53,11 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return new DateFormatter();
     }
 
+    public function name(?int $maxLength = null): ?string
+    {
+        return 'JSONPlaceholder {jsonplaceholder.typicode.com}';
+    }
+
     protected function getExpiry(?string $path): ?int
     {
         return 24 * 60 * 60;

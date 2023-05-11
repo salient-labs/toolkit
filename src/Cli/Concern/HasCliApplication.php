@@ -9,20 +9,20 @@ trait HasCliApplication
     /**
      * @var CliApplication
      */
-    private $_Container;
+    protected $App;
 
-    public function __construct(CliApplication $container)
+    public function __construct(CliApplication $app)
     {
-        $this->_Container = $container;
+        $this->App = $app;
     }
 
     final public function app(): CliApplication
     {
-        return $this->_Container;
+        return $this->App;
     }
 
     final public function container(): CliApplication
     {
-        return $this->_Container;
+        return $this->App;
     }
 }

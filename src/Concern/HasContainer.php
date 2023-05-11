@@ -9,20 +9,20 @@ trait HasContainer
     /**
      * @var Container
      */
-    private $_Container;
+    protected $App;
 
-    public function __construct(Container $container)
+    public function __construct(Container $app)
     {
-        $this->_Container = $container;
+        $this->App = $app;
     }
 
     final public function app(): Container
     {
-        return $this->_Container;
+        return $this->App;
     }
 
     final public function container(): Container
     {
-        return $this->_Container;
+        return $this->App;
     }
 }
