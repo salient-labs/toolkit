@@ -126,6 +126,43 @@ final class CacheStore extends SqliteStore
     }
 
     /**
+     * True if an item exists and has not expired
+     *
+     * @param int|null $maxAge The time in seconds before stored values should
+     * be considered expired (maximum 30 days). Overrides stored expiry times
+     * for this request only. `0` = no expiry.
+     */
+    public function has(string $key, ?int $maxAge = null): bool
+    {
+        $where[] = 'item_key = :item_key';
+        $bind[] = [':item_key', $key, SQLITE3_TEXT];
+
+        if (is_null($maxAge) || $maxAge > 2592000) {
+            $where[] = '(expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)';
+        } elseif ($maxAge) {
+            $where[] = 'DATETIME(set_at, :max_age) > CURRENT_TIMESTAMP';
+            $bind[] = [':max_age', "+$maxAge seconds", SQLITE3_TEXT];
+        }
+
+        $db = $this->db();
+        $sql = <<<SQL
+            SELECT
+              COUNT(*)
+            FROM
+              _cache_item
+            SQL;
+        $stmt = $db->prepare("$sql WHERE " . implode(' AND ', $where));
+        foreach ($bind as $param) {
+            $stmt->bindValue(...$param);
+        }
+        $result = $stmt->execute();
+        $row = $result->fetchArray(SQLITE3_NUM);
+        $stmt->close();
+
+        return (bool) $row[0];
+    }
+
+    /**
      * Retrieve an item
      *
      * Returns the value previously stored under `$key`, or `false` if it has

@@ -12,9 +12,10 @@ use Lkrms\Facade\Convert;
  * An immutable access token
  *
  * @property-read string $Token
- * @property-read DateTimeImmutable $Expires
+ * @property-read string $Type
+ * @property-read DateTimeImmutable|null $Expires
+ * @property-read string[] $Scopes
  * @property-read array<string,mixed> $Claims
- * @property-read string|null $Type
  */
 final class AccessToken implements IReadable
 {
@@ -26,9 +27,19 @@ final class AccessToken implements IReadable
     protected $Token;
 
     /**
-     * @var DateTimeImmutable
+     * @var string
+     */
+    protected $Type;
+
+    /**
+     * @var DateTimeImmutable|null
      */
     protected $Expires;
+
+    /**
+     * @var string[]
+     */
+    protected $Scopes;
 
     /**
      * @var array<string,mixed>
@@ -36,21 +47,18 @@ final class AccessToken implements IReadable
     protected $Claims;
 
     /**
-     * @var string|null
-     */
-    protected $Type;
-
-    /**
-     * @param DateTimeInterface|int $expires
+     * @param DateTimeInterface|int|null $expires
+     * @param string[] $scopes
      * @param array<string,mixed> $claims
      */
-    public function __construct(string $token, $expires, array $claims = [], ?string $type = null)
+    public function __construct(string $token, string $type, $expires, array $scopes = [], array $claims = [])
     {
         $this->Token = $token;
+        $this->Type = $type;
         $this->Expires = $expires instanceof DateTimeInterface
             ? Convert::toDateTimeImmutable($expires)
-            : ($expires > 0 ? new DateTimeImmutable("@$expires") : 0);
+            : ($expires !== null && $expires > 0 ? new DateTimeImmutable("@$expires") : null);
+        $this->Scopes = $scopes;
         $this->Claims = $claims;
-        $this->Type = $type;
     }
 }
