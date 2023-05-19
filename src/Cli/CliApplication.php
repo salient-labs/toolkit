@@ -2,7 +2,7 @@
 
 namespace Lkrms\Cli;
 
-use Lkrms\Cli\Catalog\CliUsageSectionName;
+use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Console\Catalog\ConsoleLevel;
@@ -229,8 +229,8 @@ final class CliApplication extends AppContainer
         }
 
         $sections = [
-            CliUsageSectionName::NAME => $fullName,
-            CliUsageSectionName::SYNOPSIS => '__' . $fullName . '__ <command>',
+            CliHelpSectionName::NAME => $fullName,
+            CliHelpSectionName::SYNOPSIS => '__' . $fullName . '__ <command>',
             'SUBCOMMANDS' => $synopses,
         ];
 

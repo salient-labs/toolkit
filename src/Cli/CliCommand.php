@@ -60,11 +60,11 @@ abstract class CliCommand implements ICliCommand
      * automatically and will be ignored if returned by this method.
      *
      * @return array<string,string>|null An array that maps
-     * {@see \Lkrms\Cli\Catalog\CliUsageSectionName} values to content, e.g.:
+     * {@see \Lkrms\Cli\Catalog\CliHelpSectionName} values to content, e.g.:
      *
      * ```php
      * [
-     *   CliUsageSectionName::EXIT_STATUS => <<<EOF
+     *   CliHelpSectionName::EXIT_STATUS => <<<EOF
      * _0_   Command succeeded  
      * _1_   Invalid arguments  
      * _2_   Empty result set  

@@ -9,7 +9,7 @@ use Lkrms\Concept\Dictionary;
  *
  * @see \Lkrms\Cli\CliCommand::getHelpSections()
  */
-final class CliUsageSectionName extends Dictionary
+final class CliHelpSectionName extends Dictionary
 {
     public const NAME = 'NAME';
     public const SYNOPSIS = 'SYNOPSIS';
