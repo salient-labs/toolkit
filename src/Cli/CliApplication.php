@@ -5,6 +5,7 @@ namespace Lkrms\Cli;
 use Lkrms\Cli\Catalog\CliUsageSectionName;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
+use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Container\AppContainer;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Composer;
@@ -350,6 +351,7 @@ final class CliApplication extends AppContainer
             $ex->reportErrors();
             if (($node && ($usage = $this->getUsage($name, $node, true))) ||
                     ($lastNode && ($usage = $this->getUsage($lastName, $lastNode, true)))) {
+                Console::print('', ConsoleLevel::ERROR, false);
                 Console::out($usage);
             }
 

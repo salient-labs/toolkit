@@ -624,7 +624,7 @@ abstract class CliCommand implements ICliCommand
                     if ($value !== null || array_key_exists($option->Key, $merged)) {
                         $this->OptionValues[$option->Key] = $value;
                     }
-                } catch (CliInvalidArgumentsException | CliUnknownValueException $ex) {
+                } catch (CliInvalidArgumentsException|CliUnknownValueException $ex) {
                     $this->optionError($ex->getMessage());
                 }
             }

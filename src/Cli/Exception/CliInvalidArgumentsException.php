@@ -36,7 +36,6 @@ class CliInvalidArgumentsException extends \Lkrms\Exception\Exception
         foreach ($this->Errors as $error) {
             Console::message(Level::ERROR, '__Error:__', $error, null, false, false);
         }
-        Console::print('', Level::ERROR, false);
     }
 
     public function getDetail(): array
