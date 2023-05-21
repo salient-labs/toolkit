@@ -27,19 +27,19 @@ And when running on the command line:
 - Otherwise, errors and warnings are written to `STDERR`, and informational
   messages are written to `STDOUT`
 - Environment variable `CONSOLE_OUTPUT` may be set to `stderr` or `stdout` to
-  override [Console][Console]'s default output stream(s)
+  override [Console][Console]'s default behaviour
 - Debug messages are suppressed if environment variable `DEBUG` is unset or
   empty
 
 To override these defaults, register at least one [Console][Console] output
 target by calling [registerStdioTargets()][registerStdioTargets],
 [registerStderrTarget()][registerStderrTarget], or
-[registerTarget()][registerTarget] before any other `Console` methods can be
+[registerTarget()][registerTarget] before any other `Console` methods are
 called, preferably while bootstrapping your application.
 
-> [AppContainer][AppContainer] and [CliAppContainer][CliAppContainer] always
-> call [registerStdioTargets()][registerStdioTargets]. This registers the
-> default `STDOUT` and `STDERR` targets explicitly and prevents creation of the
+> [Application][Application] and [CliApplication][CliApplication] always call
+> [registerStdioTargets()][registerStdioTargets]. This registers the default
+> `STDOUT` and `STDERR` targets explicitly and prevents creation of the
 > temporary default output log. To create a log file that persists between
 > reboots (in your project's `var/log` directory by default), call the app
 > container's [logConsoleMessages()][logConsoleMessages] method.
@@ -75,12 +75,12 @@ The following Markdown-like syntax is supported in [Console][Console] messages:
 | Preformatted | `` ` `` *preformatted text* `` ` ``<br>` ``` ` *preformatted block* ` ``` ` | **`Bold`**<br>`Unchanged`             | `` `<inline-code>` `` (bold applied as above)<br><pre>\`\`\`&#10;&lt;code-block&gt;&#10;\`\`\`</pre> |
 
 
-[AppContainer]: https://lkrms.github.io/php-util/classes/Lkrms-Container-AppContainer.html
-[CliAppContainer]: https://lkrms.github.io/php-util/classes/Lkrms-Cli-CliAppContainer.html
-[Console]: https://lkrms.github.io/php-util/classes/Lkrms-Facade-Console.html
-[ConsoleWriter]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html
-[logConsoleMessages]: https://lkrms.github.io/php-util/classes/Lkrms-Container-AppContainer.html#method_logConsoleMessages
-[registerStderrTarget]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html#method_registerStderrTarget
-[registerStdioTargets]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html#method_registerStdioTargets
-[registerTarget]: https://lkrms.github.io/php-util/classes/Lkrms-Console-ConsoleWriter.html#method_registerTarget
+[Application]: https://lkrms.github.io/php-util/Lkrms.Container.Application.html
+[CliApplication]: https://lkrms.github.io/php-util/Lkrms.Cli.CliApplication.html
+[Console]: https://lkrms.github.io/php-util/Lkrms.Facade.Console.html
+[ConsoleWriter]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html
+[logConsoleMessages]: https://lkrms.github.io/php-util/Lkrms.Container.Application.html#_logConsoleMessages
+[registerStderrTarget]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerStderrTarget
+[registerStdioTargets]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerStdioTargets
+[registerTarget]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerTarget
 

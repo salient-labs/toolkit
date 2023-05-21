@@ -206,19 +206,19 @@ parameters:
 			path: src/Console/Target/StreamTarget.php
 
 		-
-			message: "#^Method Lkrms\\\\Container\\\\AppContainer\\:\\:loadSync\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Container\\\\Application\\:\\:loadSync\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Container/AppContainer.php
+			path: src/Container/Application.php
 
 		-
-			message: "#^Method Lkrms\\\\Container\\\\AppContainer\\:\\:registerShutdownReport\\(\\) has parameter \\$level with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Container\\\\Application\\:\\:registerShutdownReport\\(\\) has parameter \\$level with no type specified\\.$#"
 			count: 1
-			path: src/Container/AppContainer.php
+			path: src/Container/Application.php
 
 		-
-			message: "#^Method Lkrms\\\\Container\\\\AppContainer\\:\\:registerShutdownReport\\(\\) has parameter \\$timers with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Container\\\\Application\\:\\:registerShutdownReport\\(\\) has parameter \\$timers with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Container/AppContainer.php
+			path: src/Container/Application.php
 
 		-
 			message: "#^Method Lkrms\\\\Container\\\\Container\\:\\:_bind\\(\\) has parameter \\$constructParams with no value type specified in iterable type array\\.$#"

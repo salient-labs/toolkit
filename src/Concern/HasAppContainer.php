@@ -2,26 +2,26 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Container\AppContainer;
+use Lkrms\Container\Application;
 
 trait HasAppContainer
 {
     /**
-     * @var AppContainer
+     * @var Application
      */
     protected $App;
 
-    public function __construct(AppContainer $app)
+    public function __construct(Application $app)
     {
         $this->App = $app;
     }
 
-    final public function app(): AppContainer
+    final public function app(): Application
     {
         return $this->App;
     }
 
-    final public function container(): AppContainer
+    final public function container(): Application
     {
         return $this->App;
     }

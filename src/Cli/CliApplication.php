@@ -6,7 +6,7 @@ use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Console\Catalog\ConsoleLevel;
-use Lkrms\Container\AppContainer;
+use Lkrms\Container\Application;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
@@ -20,7 +20,7 @@ use LogicException;
  * Typically accessed via the {@see \Lkrms\Facade\Cli} facade.
  *
  */
-final class CliApplication extends AppContainer
+final class CliApplication extends Application
 {
     /**
      * @var array<string,class-string<CliCommand>|mixed[]>
@@ -68,7 +68,7 @@ final class CliApplication extends AppContainer
      * @internal
      * @param string $name The name of the node as a space-delimited list of
      * subcommands.
-     * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand>|false|null $node The node as returned by {@see CliAppContainer::getNode()}.
+     * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand>|false|null $node The node as returned by {@see CliApplication::getNode()}.
      */
     protected function getNodeCommand(string $name, $node): ?CliCommand
     {
@@ -362,7 +362,7 @@ final class CliApplication extends AppContainer
     /**
      * Exit after processing command-line arguments passed to the script
      *
-     * The value returned by {@see CliAppContainer::run()} is used as the exit
+     * The value returned by {@see CliApplication::run()} is used as the exit
      * status.
      *
      * @return never

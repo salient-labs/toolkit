@@ -100,8 +100,8 @@ abstract class Command extends CliCommand
             $file = 'php://stdin';
         } elseif (($file = File::realpath($_file = $file)) === false) {
             throw new CliInvalidArgumentsException("file not found: $_file");
-        } elseif (strpos($file, $this->App->BasePath) === 0) {
-            $path = './' . ltrim(substr($file, strlen($this->App->BasePath)), '/');
+        } elseif (strpos($file, $this->App->getBasePath()) === 0) {
+            $path = './' . ltrim(substr($file, strlen($this->App->getBasePath())), '/');
         } else {
             $path = $file;
         }
