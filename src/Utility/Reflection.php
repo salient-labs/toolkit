@@ -36,32 +36,34 @@ final class Reflection
     }
 
     /**
-     * Get the names of a class and its parents, up to and optionally including
-     * $parent
+     * Get a list of classes between a child and one of its parents
      *
-     * @param string|ReflectionClass $child
-     * @param string|ReflectionClass $parent
-     * @param bool $includeParent If `true`, include `$parent` in the returned
-     * array.
-     * @return string[]
+     * Returns the canonical name of `$child`, followed by the names of its
+     * parent classes up to and optionally including `$parent`.
+     *
+     * @template TParent of object
+     * @template TChild of TParent
+     * @param class-string<TChild> $child
+     * @param class-string<TParent> $parent
+     * @return class-string<TParent>[]
      */
-    public function getClassNamesBetween($child, $parent, bool $includeParent = true): array
+    public function getClassesBetween(string $child, string $parent, bool $withParent = true): array
     {
-        $child = $this->toReflectionClass($child);
-        $parent = $this->toReflectionClass($parent);
-
-        if ($parent->isInterface() ||
-                !($child->isSubclassOf($parent) || $child == $parent)) {
-            throw new UnexpectedValueException("{$child->name} is not a subclass of {$parent->name}");
+        if (!is_a($child, $parent, true) || interface_exists($parent)) {
+            return [];
         }
 
+        $child = new ReflectionClass($child);
+        $parent = new ReflectionClass($parent);
+
         $names = [];
-        do {
-            if ($child == $parent && !$includeParent) {
-                break;
-            }
-            $names[] = $child->name;
-        } while ($child != $parent && $child = $child->getParentClass());
+        while ($child->isSubclassOf($parent)) {
+            $names[] = $child->getName();
+            $child = $child->getParentClass();
+        }
+        if ($withParent) {
+            $names[] = $parent->getName();
+        }
 
         return $names;
     }
@@ -473,16 +475,6 @@ final class Reflection
         }
 
         return $allTraits;
-    }
-
-    /**
-     * @param ReflectionClass|string $class
-     */
-    private function toReflectionClass($class): ReflectionClass
-    {
-        return $class instanceof ReflectionClass
-            ? $class
-            : new ReflectionClass($class);
     }
 
     /**

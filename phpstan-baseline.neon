@@ -1836,16 +1836,6 @@ parameters:
 			path: src/Utility/Reflection.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getClassNamesBetween\\(\\) has parameter \\$child with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Utility/Reflection.php
-
-		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getClassNamesBetween\\(\\) has parameter \\$parent with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Utility/Reflection.php
-
-		-
 			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getInterfaces\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
 			path: src/Utility/Reflection.php
@@ -1862,16 +1852,6 @@ parameters:
 
 		-
 			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getNames\\(\\) has parameter \\$reflectors with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Utility/Reflection.php
-
-		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:toReflectionClass\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Utility/Reflection.php
-
-		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:toReflectionClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
 			count: 1
 			path: src/Utility/Reflection.php
 
