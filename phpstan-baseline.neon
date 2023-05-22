@@ -2041,41 +2041,6 @@ parameters:
 			path: tests/Sync/Provider/JsonPlaceholderApi.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSignature\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSignature\\(\\) has parameter \\$keys with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArray\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArray\\(\\) has parameter \\$subArray with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArrayAndKeys\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArrayAndKeys\\(\\) has parameter \\$keys with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArrayAndKeys\\(\\) has parameter \\$subArray with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:getUrls\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: tests/Utility/ConversionsTest.php

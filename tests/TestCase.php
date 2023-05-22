@@ -8,6 +8,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * Asserts that `$array` contains every key-value pair in `$subArray`, in
      * the same order
      *
+     * @param mixed[] $subArray
+     * @param mixed[] $array
      */
     public function assertArrayHasSubArray(array $subArray, array $array, string $message = '')
     {
@@ -21,6 +23,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * Asserts that `array_keys($array)` is equal to `$keys`
      *
+     * @param array<int|string> $keys
+     * @param mixed[] $array
      */
     public function assertArrayHasSignature(array $keys, array $array, string $message = '')
     {
@@ -41,6 +45,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * For the assertion to pass, `array_keys($array)` must equal
      * `array_keys($subArray + array_flip($keys))`
      *
+     * @param mixed[] $subArray
+     * @param array<int|string> $keys
+     * @param mixed[] $array
      */
     public function assertArrayHasSubArrayAndKeys(array $subArray, array $keys, array $array, string $message = '')
     {
@@ -50,23 +57,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             $array,
             $message
         );
-    }
-
-    /**
-     * Runs a command and returns its output, failing a test if there are any
-     * errors
-     *
-     */
-    public function shellExec(string $command): string
-    {
-        if (exec($command, $output, $exitCode) === false) {
-            $this->fail("Command failed: $command");
-        }
-        if ($exitCode) {
-            $this->fail("Command failed with exit code $exitCode: $command");
-        }
-
-        return implode("\n", $output);
     }
 
     /**
