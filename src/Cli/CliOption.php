@@ -10,11 +10,13 @@ use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Concern\TFullyReadable;
+use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Assert;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Env;
 use Lkrms\Utility\Test;
@@ -528,7 +530,15 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                 return $value;
 
             case CliOptionValueUnknownPolicy::DISCARD:
-                $value = array_intersect($this->maybeSplitValue($value), $this->AllowedValues);
+                $value = $this->maybeSplitValue($value);
+                if ($invalid = array_diff($value, $this->AllowedValues)) {
+                    Console::message(
+                        ConsoleLevel::WARNING, '__Warning:__', $this->getUnknownValueMessage(
+                            $invalid, $source
+                        ), null, false, false
+                    );
+                }
+                $value = array_intersect($value, $this->AllowedValues);
 
                 return $this->MultipleAllowed
                     ? $value
@@ -537,18 +547,24 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
             case CliOptionValueUnknownPolicy::REJECT:
             default:
                 if ($invalid = array_diff($this->maybeSplitValue($value), $this->AllowedValues)) {
-                    throw new CliUnknownValueException(
-                        // "invalid --field values 'title','name' (expected one
-                        // of: first,last)"
-                        "invalid {$this->DisplayName} "
-                            . Convert::plural(count($invalid), 'value') . " '" . implode("','", $invalid) . "'"
-                            . ($source ? " in $source" : '')
-                            . $this->getFriendlyAllowedValues(' (expected one? of: {})')
-                    );
+                    throw new CliUnknownValueException($this->getUnknownValueMessage($invalid, $source));
                 }
 
                 return $value;
         }
+    }
+
+    /**
+     * @param string[] $invalid
+     */
+    private function getUnknownValueMessage(array $invalid, ?string $source): string
+    {
+        // "invalid --field values 'title','name' (expected one
+        // of: first,last)"
+        return "invalid {$this->DisplayName} "
+            . Convert::plural(count($invalid), 'value') . " '" . implode("','", $invalid) . "'"
+            . ($source ? " in $source" : '')
+            . $this->getFriendlyAllowedValues(' (expected one? of: {})');
     }
 
     /**

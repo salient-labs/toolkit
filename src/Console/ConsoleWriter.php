@@ -364,9 +364,15 @@ final class ConsoleWriter implements ReceivesFacade
      *
      * @return $this
      */
-    private function writeTty(int $level, string $msg1, ?string $msg2, string $prefix, ?Throwable $ex = null)
-    {
-        return $this->_write($level, $msg1, $msg2, $prefix, $ex, $this->TtyTargets);
+    private function writeTty(
+        int $level,
+        string $msg1,
+        ?string $msg2,
+        string $prefix,
+        ?Throwable $ex = null,
+        bool $formatByLevel = true
+    ) {
+        return $this->_write($level, $msg1, $msg2, $prefix, $ex, $this->TtyTargets, $formatByLevel);
     }
 
     /**
@@ -397,7 +403,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function print(string $msg, int $level = Level::INFO, bool $formatByLevel = true)
     {
-        return $this->write($level, $msg, null, '', null, $formatByLevel);
+        return $this->_write($level, $msg, null, '', null, $this->Targets, $formatByLevel);
     }
 
     /**

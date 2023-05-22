@@ -189,7 +189,7 @@ abstract class SyncEntity implements ISyncEntity
     {
         return array_map(
             fn(string $name): string => Convert::classToBasename($name),
-            Reflect::getClassNamesBetween(static::class, self::class, false)
+            Reflect::getClassesBetween(static::class, self::class, false)
         );
     }
 

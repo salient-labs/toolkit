@@ -5,84 +5,97 @@ namespace Lkrms\Tests\Utility;
 use Lkrms\Facade\Reflect;
 use Lkrms\Tests\Utility\Reflection\MyBaseClass;
 use Lkrms\Tests\Utility\Reflection\MyBaseInterface;
+use Lkrms\Tests\Utility\Reflection\MyBaseTrait;
 use Lkrms\Tests\Utility\Reflection\MyClass;
 use Lkrms\Tests\Utility\Reflection\MyClassWithUnionsAndIntersections;
 use Lkrms\Tests\Utility\Reflection\MyInterface;
 use Lkrms\Tests\Utility\Reflection\MyOtherClass;
 use Lkrms\Tests\Utility\Reflection\MySubclass;
-use Lkrms\Utility\Reflection;
+use Lkrms\Tests\Utility\Reflection\MyTrait;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionProperty;
-use UnexpectedValueException;
 
 final class ReflectionTest extends \Lkrms\Tests\TestCase
 {
-    public function testGetClassNamesBetweenInterfaces()
+    /**
+     * @dataProvider getClassesBetweenProvider
+     *
+     * @param string[] $expected
+     */
+    public function testGetClassesBetween(array $expected, string $child, string $parent, bool $withParent = true)
     {
-        $this->expectException(UnexpectedValueException::class);
-        Reflect::getClassNamesBetween(MyInterface::class, MyBaseInterface::class);
+        $this->assertSame($expected, Reflect::getClassesBetween($child, $parent, $withParent));
     }
 
-    public function testGetClassNamesBetweenClassAndInterface()
+    public static function getClassesBetweenProvider()
     {
-        $this->expectException(UnexpectedValueException::class);
-        Reflect::getClassNamesBetween(MyClass::class, MyInterface::class);
-    }
-
-    public function testGetClassNamesBetweenSubclassAndInterface()
-    {
-        $this->expectException(UnexpectedValueException::class);
-        Reflect::getClassNamesBetween(MySubclass::class, MyInterface::class);
-    }
-
-    public function testGetClassNamesBetweenUnrelatedClasses()
-    {
-        $this->expectException(UnexpectedValueException::class);
-        Reflect::getClassNamesBetween(MyOtherClass::class, MyClass::class);
-    }
-
-    public function testGetClassNamesBetweenParentAndChild()
-    {
-        $this->expectException(UnexpectedValueException::class);
-        Reflect::getClassNamesBetween(MyClass::class, MySubclass::class);
-    }
-
-    public function testGetClassNamesBetweenSameClass()
-    {
-        $this->assertEquals(
-            [],
-            Reflect::getClassNamesBetween(MyClass::class, MyClass::class, false)
-        );
-        $this->assertEquals(
-            [MyClass::class],
-            Reflect::getClassNamesBetween(MyClass::class, MyClass::class)
-        );
-    }
-
-    public function testGetClassNamesBetweenChildAndParent()
-    {
-        $this->assertEquals(
-            [MySubclass::class],
-            Reflect::getClassNamesBetween(MySubclass::class, MyClass::class, false)
-        );
-        $this->assertEquals(
-            [MySubclass::class, MyClass::class],
-            Reflect::getClassNamesBetween(MySubclass::class, MyClass::class)
-        );
-    }
-
-    public function testGetClassNamesBetweenChildAndGrandparent()
-    {
-        $this->assertEquals(
-            [MySubclass::class, MyClass::class],
-            Reflect::getClassNamesBetween(MySubclass::class, MyBaseClass::class, false)
-        );
-        $this->assertEquals(
-            [MySubclass::class, MyClass::class, MyBaseClass::class],
-            Reflect::getClassNamesBetween(MySubclass::class, MyBaseClass::class)
-        );
+        return [
+            'interface to interface' => [
+                [],
+                MyInterface::class,
+                MyBaseInterface::class,
+            ],
+            'trait to trait' => [
+                [],
+                MyTrait::class,
+                MyBaseTrait::class,
+            ],
+            'class to interface' => [
+                [],
+                MyClass::class,
+                MyInterface::class,
+            ],
+            'subclass to interface' => [
+                [],
+                MySubclass::class,
+                MyInterface::class,
+            ],
+            'unrelated classes' => [
+                [],
+                MyOtherClass::class,
+                MyClass::class,
+            ],
+            'parent to child' => [
+                [],
+                MyClass::class,
+                MySubclass::class,
+            ],
+            'same class #1' => [
+                [],
+                MyClass::class,
+                MyClass::class,
+                false,
+            ],
+            'same class #2' => [
+                [MyClass::class],
+                MyClass::class,
+                MyClass::class,
+            ],
+            'child to parent #1' => [
+                [MySubclass::class],
+                MySubclass::class,
+                MyClass::class,
+                false,
+            ],
+            'child to parent #2' => [
+                [MySubclass::class, MyClass::class],
+                MySubclass::class,
+                MyClass::class,
+            ],
+            'child to grandparent #1' => [
+                [MySubclass::class, MyClass::class],
+                MySubclass::class,
+                MyBaseClass::class,
+                false,
+            ],
+            'child to grandparent #2' => [
+                [MySubclass::class, MyClass::class, MyBaseClass::class],
+                MySubclass::class,
+                MyBaseClass::class,
+            ],
+        ];
     }
 
     public function testGetAllTypes()
@@ -95,7 +108,7 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
                     /** @var ReflectionNamedType $type */
                     return $type->getName();
                 },
-                (new Reflection())->getAllTypes($param->getType())
+                Reflect::getAllTypes($param->getType())
             );
         }
         $this->assertSame([

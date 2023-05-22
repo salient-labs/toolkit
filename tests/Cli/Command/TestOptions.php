@@ -151,7 +151,7 @@ class TestOptions extends CliCommand
 
     protected function run(string ...$args)
     {
-        if ($this->app()->getRunningCommand() === $this) {
+        if ($this->App->getRunningCommand() === $this) {
             echo json_encode(
                 [
                     'args' => $args,

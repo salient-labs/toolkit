@@ -45,7 +45,7 @@ interface IProvidable extends ReceivesService, ReturnsService
      * - `CustomFaculty` is a subclass of `Faculty`
      * - `CustomFaculty` is bound to the service container as `Faculty`:
      *   ```php
-     *   $this->app()->bind(Faculty::class, CustomFaculty::class);
+     *   $this->App->bind(Faculty::class, CustomFaculty::class);
      *   ```
      * - `$provider` implements `FacultyProvider`
      * - A `Faculty` object is requested from `$provider` for faculty #1:

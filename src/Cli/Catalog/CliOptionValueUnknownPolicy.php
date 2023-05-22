@@ -12,13 +12,14 @@ use Lkrms\Concept\Enumeration;
 final class CliOptionValueUnknownPolicy extends Enumeration
 {
     /**
-     * Throw exceptions over unknown values
+     * Throw an exception if an unknown value is given
      *
+     * This is the default.
      */
     public const REJECT = 0;
 
     /**
-     * Silently discard unknown values
+     * If an unknown value is given, print a warning and discard it
      *
      */
     public const DISCARD = 1;

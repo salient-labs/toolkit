@@ -7,7 +7,7 @@ use Lkrms\Cli\CliCommand;
 use Lkrms\Concept\Facade;
 use Lkrms\Concept\FluentInterface;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Container\AppContainer;
+use Lkrms\Container\Application;
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\IContainer;
@@ -30,9 +30,10 @@ use Lkrms\Utility\Environment;
  * @method static mixed get(class-string $id, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier (see {@see Container::get()})
  * @method static string getAppName() Get the basename of the file used to run the script, removing known PHP file extensions and recognised version numbers
  * @method static mixed getAs(class-string $id, string $serviceId, mixed[] $params = []) Apply an explicit service name while creating a new instance of a class or service interface or getting a shared instance created earlier (see {@see Container::getAs()})
- * @method static string getCachePath() Get a writable cache directory for the application (see {@see AppContainer::getCachePath()})
+ * @method static string getBasePath() Get the application's root directory
+ * @method static string getCachePath() Get a writable cache directory for the application (see {@see Application::getCachePath()})
  * @method static string getConfigPath() Get a writable directory for the application's configuration files
- * @method static string getDataPath() Get a writable data directory for the application (see {@see AppContainer::getDataPath()})
+ * @method static string getDataPath() Get a writable data directory for the application (see {@see Application::getDataPath()})
  * @method static IContainer getGlobalContainer() Get the global container, loading it if necessary
  * @method static mixed getIf(class-string $id, class-string $serviceId, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier, if the instance inherits a class or implements an interface (see {@see Container::getIf()})
  * @method static string getLogPath() Get a writable directory for the application's log files
@@ -45,16 +46,16 @@ use Lkrms\Utility\Environment;
  * @method static bool hasGlobalContainer() True if a global container has been loaded
  * @method static CliApplication if(bool $condition, callable $then, callable|null $else = null) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of a class or interface have been applied to the container itself
- * @method static bool inProduction() Return true if the application is in production, false if it's running from source (see {@see AppContainer::inProduction()})
+ * @method static bool inProduction() Return true if the application is in production, false if it's running from source (see {@see Application::inProduction()})
  * @method static CliApplication instance(string $id, $instance) Add an existing instance to the container as a shared binding
  * @method static CliApplication instanceIf(string $id, $instance) Add an existing instance to the container as a shared binding if it hasn't already been bound
- * @method static CliApplication loadCache() Load the application's CacheStore, creating a backing database if needed (see {@see AppContainer::loadCache()})
- * @method static CliApplication loadCacheIfExists() Load the application's CacheStore if a backing database already exists (see {@see AppContainer::loadCacheIfExists()})
- * @method static CliApplication loadSync(?string $command = null, ?array $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see AppContainer::loadSync()})
- * @method static CliApplication logConsoleMessages(?bool $debug = null, string|null $name = null) Log console messages to a file in the application's log directory (see {@see AppContainer::logConsoleMessages()})
+ * @method static CliApplication loadCache() Load the application's CacheStore, creating a backing database if needed (see {@see Application::loadCache()})
+ * @method static CliApplication loadCacheIfExists() Load the application's CacheStore if a backing database already exists (see {@see Application::loadCacheIfExists()})
+ * @method static CliApplication loadSync(?string $command = null, ?array $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see Application::loadSync()})
+ * @method static CliApplication logConsoleMessages(?bool $debug = null, string|null $name = null) Log console messages to a file in the application's log directory (see {@see Application::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Get the global container, returning null if no global container has been loaded
  * @method static CliApplication oneCommand(class-string<CliCommand> $id) Register one, and only one, CliCommand for the lifetime of the container (see {@see CliApplication::oneCommand()})
- * @method static CliApplication registerShutdownReport($level = Level::DEBUG, array|null $timers = ['*'], bool $resourceUsage = true) Report timers and resource usage when the application terminates (see {@see AppContainer::registerShutdownReport()})
+ * @method static CliApplication registerShutdownReport($level = Level::DEBUG, array|null $timers = ['*'], bool $resourceUsage = true) Report timers and resource usage when the application terminates (see {@see Application::registerShutdownReport()})
  * @method static IContainer requireGlobalContainer() Get the global container, throwing an exception if no global container has been loaded
  * @method static int run() Process command-line arguments passed to the script (see {@see CliApplication::run()})
  * @method static never runAndExit() Exit after processing command-line arguments passed to the script (see {@see CliApplication::runAndExit()})
@@ -63,11 +64,11 @@ use Lkrms\Utility\Environment;
  * @method static IContainer|null setGlobalContainer(?IContainer $container) Set (or unset) the global container
  * @method static CliApplication singleton(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container (see {@see Container::singleton()})
  * @method static CliApplication singletonIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a shared binding to the container if it hasn't already been bound (see {@see Container::singletonIf()})
- * @method static CliApplication syncNamespace(string $prefix, string $uri, string $namespace) Register a sync entity namespace with the application's SyncStore (see {@see AppContainer::syncNamespace()})
+ * @method static CliApplication syncNamespace(string $prefix, string $uri, string $namespace) Register a sync entity namespace with the application's SyncStore (see {@see Application::syncNamespace()})
  * @method static CliApplication unbind(string $id) Remove a binding from the container
- * @method static CliApplication unloadSync(bool $silent = false) Close the application's SyncStore (see {@see AppContainer::unloadSync()})
- * @method static CliApplication writeResourceUsage(int $level = Level::INFO) Print a summary of the script's system resource usage (see {@see AppContainer::writeResourceUsage()})
- * @method static CliApplication writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10) Print a summary of the script's timers (see {@see AppContainer::writeTimers()})
+ * @method static CliApplication unloadSync(bool $silent = false) Close the application's SyncStore (see {@see Application::unloadSync()})
+ * @method static CliApplication writeResourceUsage(int $level = Level::INFO) Print a summary of the script's system resource usage (see {@see Application::writeResourceUsage()})
+ * @method static CliApplication writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10) Print a summary of the script's timers (see {@see Application::writeTimers()})
  *
  * @uses CliApplication
  *

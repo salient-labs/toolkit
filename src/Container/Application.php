@@ -2,12 +2,10 @@
 
 namespace Lkrms\Container;
 
-use Lkrms\Concern\TReadable;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevels;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IReadable;
 use Lkrms\Contract\ReturnsEnvironment;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Cache;
@@ -28,14 +26,9 @@ use UnexpectedValueException;
 /**
  * A service container for applications
  *
- * Typically accessed via the {@see \Lkrms\Facade\App} facade.
- *
- * @property-read string $BasePath
  */
-class AppContainer extends Container implements IReadable, ReturnsEnvironment
+class Application extends Container implements ReturnsEnvironment
 {
-    use TReadable;
-
     /**
      * Typically ~/.config/<app>
      */
@@ -54,12 +47,12 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
     /**
      * @var Environment
      */
-    public $Env;
+    protected $Env;
 
     /**
      * @var string
      */
-    protected $BasePath;
+    private $BasePath;
 
     /**
      * @var string
@@ -245,28 +238,20 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
             ?: ($this->_TempPath = $this->getPath('temp', self::DIR_STATE, 'tmp', 'var/tmp', 'tmp'));
     }
 
-    public static function getReadable(): array
-    {
-        return ['BasePath'];
-    }
-
     public function __construct(?string $basePath = null)
     {
         $this->StartTime = hrtime(true);
 
         parent::__construct();
 
-        if (self::hasGlobalContainer() &&
-                ($global = get_class(self::getGlobalContainer())) !== Container::class) {
-            throw new RuntimeException('Global container already loaded: ' . $global);
-        }
-
-        self::setGlobalContainer($this);
+        static::setGlobalContainer($this);
 
         $this->Env = Env::getInstance();
-
-        if (is_null($basePath)) {
-            $basePath = $this->Env->get('app_base_path', null) ?: Composer::getRootPackagePath();
+        if ($basePath === null) {
+            $basePath = $this->Env->get('app_base_path', null);
+            if ($basePath === null) {
+                $basePath = Composer::getRootPackagePath();
+            }
         }
         if (!is_dir($basePath) ||
                 ($basePath = File::realpath($basePath)) === false) {
@@ -274,7 +259,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
         }
         $this->BasePath = $basePath;
 
-        if (!Phar::running() &&
+        if ((!extension_loaded('Phar') || !Phar::running()) &&
                 is_file($env = $this->BasePath . '/.env')) {
             $this->Env->loadFile($env);
         }
@@ -289,6 +274,15 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
     }
 
     /**
+     * Get the application's root directory
+     *
+     */
+    final public function getBasePath(): string
+    {
+        return $this->BasePath;
+    }
+
+    /**
      * Report timers and resource usage when the application terminates
      *
      * Use {@see \Lkrms\Utility\System::startTimer()} and
@@ -298,8 +292,8 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
      * `['*']` (the default), all timers are reported. Otherwise, only timers of
      * the specified types are reported.
      * @return $this
-     * @see AppContainer::writeResourceUsage()
-     * @see AppContainer::writeTimers()
+     * @see Application::writeResourceUsage()
+     * @see Application::writeTimers()
      */
     public function registerShutdownReport($level = Level::DEBUG, ?array $timers = ['*'], bool $resourceUsage = true)
     {
@@ -380,7 +374,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
     /**
      * Load the application's CacheStore, creating a backing database if needed
      *
-     * The backing database is created in {@see AppContainer::getCachePath()}.
+     * The backing database is created in {@see Application::getCachePath()}.
      *
      * @return $this
      * @see \Lkrms\Store\CacheStore
@@ -402,8 +396,8 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
      * Load the application's CacheStore if a backing database already exists
      *
      * Caching is only enabled if a backing database created by
-     * {@see AppContainer::loadCache()} is found in
-     * {@see AppContainer::getCachePath()}.
+     * {@see Application::loadCache()} is found in
+     * {@see Application::getCachePath()}.
      *
      * @return $this
      * @see \Lkrms\Store\CacheStore
@@ -451,9 +445,9 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
     /**
      * Load the application's SyncStore, creating a backing database if needed
      *
-     * The backing database is created in {@see AppContainer::getDataPath()}.
+     * The backing database is created in {@see Application::getDataPath()}.
      *
-     * Call {@see AppContainer::unloadSync()} before the application terminates,
+     * Call {@see Application::unloadSync()} before the application terminates,
      * otherwise a failed run will be recorded.
      *
      * @return $this
@@ -513,7 +507,7 @@ class AppContainer extends Container implements IReadable, ReturnsEnvironment
      * Close the application's SyncStore
      *
      * If this method is not called after calling
-     * {@see AppContainer::loadSync()}, a failed run will be recorded.
+     * {@see Application::loadSync()}, a failed run will be recorded.
      *
      * @return $this
      */

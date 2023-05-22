@@ -25,7 +25,7 @@ class MyClassWithUnionsAndIntersections extends MyClass
         array|MyClass $optionalArrayUnion = ['key' => 'value'],
         string|MyClass|null &$nullableUnionByRef = null,
         string&...$variadicByRef
-    ): MyClass | string | null {
+    ): MyClass|string|null {
         return null;
     }
 }

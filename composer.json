@@ -15,7 +15,7 @@
         "adodb/adodb-php": "Required for access to databases",
         "league/oauth2-client": "Required for integration with OAuth 2.0 service providers",
         "firebase/php-jwt": "Required for validation of OAuth 2.0 access tokens",
-        "analog/analog": "Allows Analog handlers to be used as Lkrms\\Console\\Console message targets",
+        "analog/analog": "Allows Analog handlers to be used as console message targets",
         "clue/phar-composer": "Simplifies creation of phar archives"
     },
     "require-dev": {
@@ -33,6 +33,9 @@
         "psr-4": {
             "Lkrms\\": "src/"
         },
+        "classmap": [
+            "stubs/"
+        ],
         "files": [
             "bootstrap.php"
         ]

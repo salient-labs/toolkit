@@ -206,19 +206,19 @@ parameters:
 			path: src/Console/Target/StreamTarget.php
 
 		-
-			message: "#^Method Lkrms\\\\Container\\\\AppContainer\\:\\:loadSync\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Container\\\\Application\\:\\:loadSync\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Container/AppContainer.php
+			path: src/Container/Application.php
 
 		-
-			message: "#^Method Lkrms\\\\Container\\\\AppContainer\\:\\:registerShutdownReport\\(\\) has parameter \\$level with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Container\\\\Application\\:\\:registerShutdownReport\\(\\) has parameter \\$level with no type specified\\.$#"
 			count: 1
-			path: src/Container/AppContainer.php
+			path: src/Container/Application.php
 
 		-
-			message: "#^Method Lkrms\\\\Container\\\\AppContainer\\:\\:registerShutdownReport\\(\\) has parameter \\$timers with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Container\\\\Application\\:\\:registerShutdownReport\\(\\) has parameter \\$timers with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Container/AppContainer.php
+			path: src/Container/Application.php
 
 		-
 			message: "#^Method Lkrms\\\\Container\\\\Container\\:\\:_bind\\(\\) has parameter \\$constructParams with no value type specified in iterable type array\\.$#"
@@ -1836,16 +1836,6 @@ parameters:
 			path: src/Utility/Reflection.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getClassNamesBetween\\(\\) has parameter \\$child with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Utility/Reflection.php
-
-		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getClassNamesBetween\\(\\) has parameter \\$parent with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Utility/Reflection.php
-
-		-
 			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getInterfaces\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
 			path: src/Utility/Reflection.php
@@ -1862,16 +1852,6 @@ parameters:
 
 		-
 			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getNames\\(\\) has parameter \\$reflectors with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Utility/Reflection.php
-
-		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:toReflectionClass\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Utility/Reflection.php
-
-		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:toReflectionClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
 			count: 1
 			path: src/Utility/Reflection.php
 
@@ -2059,41 +2039,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\Provider\\\\JsonPlaceholderApi\\:\\:getPosts\\(\\) return type has no value type specified in iterable type iterable\\.$#"
 			count: 1
 			path: tests/Sync/Provider/JsonPlaceholderApi.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSignature\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSignature\\(\\) has parameter \\$keys with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArray\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArray\\(\\) has parameter \\$subArray with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArrayAndKeys\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArrayAndKeys\\(\\) has parameter \\$keys with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\TestCase\\:\\:assertArrayHasSubArrayAndKeys\\(\\) has parameter \\$subArray with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/TestCase.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:getUrls\\(\\) return type has no value type specified in iterable type array\\.$#"

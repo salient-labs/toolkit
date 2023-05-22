@@ -10,6 +10,8 @@ use Lkrms\Contract\IServiceShared;
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Contract\ReceivesContainer;
 use Lkrms\Contract\ReceivesService;
+use Psr\Container\ContainerInterface;
+use ReflectionClass;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -55,22 +57,26 @@ class Container extends FluentInterface implements IContainer
     public function __construct()
     {
         $this->Dice = new Dice();
-        $this->load();
+        $this->bindContainer();
     }
 
-    private function load(): void
+    private function bindContainer(): void
     {
-        $this->Dice = $this->Dice->addShared(\Psr\Container\ContainerInterface::class, $this)
-                                 ->addShared(IContainer::class, $this);
-        $class = static::class;
+        $class = new ReflectionClass(static::class);
+        foreach ($class->getInterfaces() as $name => $interface) {
+            if ($interface->implementsInterface(ContainerInterface::class)) {
+                $this->instance($name, $this);
+            }
+        }
         do {
-            $this->Dice = $this->Dice->addShared($class, $this);
-        } while (self::class != $class && ($class = get_parent_class($class)));
+            $this->instance($class->getName(), $this);
+            $class = $class->getParentClass();
+        } while ($class->implementsInterface(ContainerInterface::class));
+
         $this->Dice = $this->Dice->addCallback(
             '*',
-            function (object $instance, string $name): object {
-                return $this->callback($instance, $name);
-            }
+            fn(object $instance, string $name): object =>
+                $this->callback($instance, $name)
         );
     }
 
@@ -227,7 +233,7 @@ class Container extends FluentInterface implements IContainer
         }
 
         $clone->Context = $clone->ContextStack[] = $id;
-        $clone->load();
+        $clone->bindContainer();
 
         return $clone;
     }

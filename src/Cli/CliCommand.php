@@ -60,11 +60,11 @@ abstract class CliCommand implements ICliCommand
      * automatically and will be ignored if returned by this method.
      *
      * @return array<string,string>|null An array that maps
-     * {@see \Lkrms\Cli\Catalog\CliUsageSectionName} values to content, e.g.:
+     * {@see \Lkrms\Cli\Catalog\CliHelpSectionName} values to content, e.g.:
      *
      * ```php
      * [
-     *   CliUsageSectionName::EXIT_STATUS => <<<EOF
+     *   CliHelpSectionName::EXIT_STATUS => <<<EOF
      * _0_   Command succeeded  
      * _1_   Invalid arguments  
      * _2_   Empty result set  
@@ -191,7 +191,7 @@ abstract class CliCommand implements ICliCommand
     final protected function getNameWithProgram(): string
     {
         $name = $this->getNameParts();
-        array_unshift($name, $this->app()->getProgramName());
+        array_unshift($name, $this->App->getProgramName());
 
         return implode(' ', $name);
     }
@@ -527,7 +527,7 @@ abstract class CliCommand implements ICliCommand
             'DESCRIPTION' => $this->prepareUsage($this->getLongDescription()),
         ] + $sections;
 
-        return $this->app()->buildUsageSections($sections);
+        return $this->App->buildUsageSections($sections);
     }
 
     private function prepareUsage(?string $description, ?string $indent = null): string
@@ -624,7 +624,7 @@ abstract class CliCommand implements ICliCommand
                     if ($value !== null || array_key_exists($option->Key, $merged)) {
                         $this->OptionValues[$option->Key] = $value;
                     }
-                } catch (CliInvalidArgumentsException | CliUnknownValueException $ex) {
+                } catch (CliInvalidArgumentsException|CliUnknownValueException $ex) {
                     $this->optionError($ex->getMessage());
                 }
             }
@@ -1027,7 +1027,7 @@ abstract class CliCommand implements ICliCommand
         $this->assertHasRun();
 
         $args = $this->getNameParts();
-        array_unshift($args, $this->app()->getProgramName());
+        array_unshift($args, $this->App->getProgramName());
         foreach ($this->Options as $option) {
             $name = null;
             foreach (array_filter([$option->Long, $option->Short]) as $key) {
@@ -1085,7 +1085,7 @@ abstract class CliCommand implements ICliCommand
         }
 
         if ($this->HasVersionArgument) {
-            $appName = $this->app()->getAppName();
+            $appName = $this->App->getAppName();
             $version = Composer::getRootPackageVersion(true, true);
             Console::out("__{$appName}__ $version");
 

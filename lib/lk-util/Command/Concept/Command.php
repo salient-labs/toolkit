@@ -83,7 +83,7 @@ abstract class Command extends CliCommand
     {
         $provider = $this->getFqcnOptionValue($provider, EnvVar::NS_PROVIDER);
         if (is_a($provider, $class, true)) {
-            return $this->app()->get($provider);
+            return $this->App->get($provider);
         }
 
         throw class_exists($provider)
@@ -100,8 +100,8 @@ abstract class Command extends CliCommand
             $file = 'php://stdin';
         } elseif (($file = File::realpath($_file = $file)) === false) {
             throw new CliInvalidArgumentsException("file not found: $_file");
-        } elseif (strpos($file, $this->app()->BasePath) === 0) {
-            $path = './' . ltrim(substr($file, strlen($this->app()->BasePath)), '/');
+        } elseif (strpos($file, $this->App->getBasePath()) === 0) {
+            $path = './' . ltrim(substr($file, strlen($this->App->getBasePath())), '/');
         } else {
             $path = $file;
         }
