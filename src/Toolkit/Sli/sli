@@ -3,6 +3,7 @@
 
 use Composer\Autoload\ClassLoader;
 use Salient\Cli\CliApplication;
+use Salient\Sli\Command\Analyse\AnalyseClass;
 use Salient\Sli\Command\Generate\GenerateBuilder;
 use Salient\Sli\Command\Generate\GenerateFacade;
 use Salient\Sli\Command\Generate\GenerateSyncEntity;
@@ -30,6 +31,7 @@ $loader = require $_composer_autoload_path
     ->command(['sync', 'http', 'put'], SendHttpSyncProviderRequest::class)
     ->command(['sync', 'http', 'delete'], SendHttpSyncProviderRequest::class)
     ->command(['sync', 'http', 'patch'], SendHttpSyncProviderRequest::class)
+    ->command(['analyse'], AnalyseClass::class)
     ->resumeCache()
     ->logOutput()
     ->runAndExit();
