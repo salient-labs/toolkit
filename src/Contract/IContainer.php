@@ -10,9 +10,6 @@ use Lkrms\Container\ServiceLifetime;
  */
 interface IContainer extends \Psr\Container\ContainerInterface
 {
-    /**
-     * @internal
-     */
     public function __construct();
 
     /**

@@ -17,16 +17,12 @@ interface ReturnsDescription
      * - unique enough that duplicates are rare
      * - easy to read
      *
-     * @param int|null $maxLength Advisory only. The return value will be
-     * truncated to `$maxLength` bytes if set.
      */
-    public function name(?int $maxLength = null): ?string;
+    public function name(): ?string;
 
     /**
      * Get a brief description of the object
      *
-     * @param int|null $maxLength Advisory only. The return value will be
-     * truncated to `$maxLength` bytes if set.
      */
-    public function description(?int $maxLength = null): ?string;
+    public function description(): ?string;
 }

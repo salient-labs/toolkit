@@ -3,9 +3,9 @@
 namespace Lkrms\Sync\Command;
 
 use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
+use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
@@ -40,7 +40,7 @@ final class GetSyncEntities extends CliCommand
     /**
      * Unambiguous lowercase provider basename => provider
      *
-     * @var array<string,string>
+     * @var array<string,class-string<ISyncProvider>>
      */
     private $Providers = [];
 
@@ -49,7 +49,7 @@ final class GetSyncEntities extends CliCommand
      */
     private $Store;
 
-    public function __construct(CliApplication $container, SyncStore $store)
+    public function __construct(ICliApplication $container, SyncStore $store)
     {
         parent::__construct($container);
 
@@ -82,7 +82,7 @@ final class GetSyncEntities extends CliCommand
         natsort($this->Providers);
     }
 
-    public function getShortDescription(): string
+    public function description(): string
     {
         return 'Get data from a provider';
     }

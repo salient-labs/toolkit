@@ -14,7 +14,7 @@ final class PhpTokenTest extends \Lkrms\Tests\TestCase
      */
     public function testTokenize(string $input, array $expected)
     {
-        $actual = PhpToken::tokenize($input, TOKEN_PARSE);
+        $actual = PhpToken::tokenize(Convert::lineEndingsToUnix($input), TOKEN_PARSE);
         $actualCode = array_reduce(
             $actual,
             fn(string $code, PhpToken $token) => sprintf(

@@ -22,10 +22,10 @@ use Lkrms\Utility\Environment;
  * @method static void unload() Clear the underlying CliApplication instance
  * @method static CliApplication bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static CliApplication bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})
- * @method static string buildUsageSections(array<string,string> $sections) A facade for CliApplication::buildUsageSections()
+ * @method static string buildHelp(array<string,string> $sections) A facade for CliApplication::buildHelp()
  * @method static CliApplication call(callable $callback) Move to the next method in the chain after passing the object to a callback (see {@see FluentInterface::call()})
  * @method static CliApplication command(string[] $name, class-string<CliCommand> $id) Register a CliCommand with the container (see {@see CliApplication::command()})
- * @method static Environment env() Get the Environment instance that underpins the Env facade
+ * @method static Environment env() Get the Env facade's underlying Environment instance
  * @method static CliApplication forEach(array|object $array, callable $callback) Move to the next method in the chain after passing the object to a callback for each key-value pair in an array (see {@see FluentInterface::forEach()})
  * @method static mixed get(class-string $id, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier (see {@see Container::get()})
  * @method static string getAppName() Get the basename of the file used to run the script, removing known PHP file extensions and recognised version numbers
@@ -39,23 +39,23 @@ use Lkrms\Utility\Environment;
  * @method static string getLogPath() Get a writable directory for the application's log files
  * @method static string getName(string $id) Resolve a class or interface to a concrete class name (see {@see Container::getName()})
  * @method static string getProgramName() Get the basename of the file used to run the script
- * @method static CliCommand|null getRunningCommand() Return the CliCommand started from the command line
+ * @method static CliCommand|null getRunningCommand() Get the command started from the command line
  * @method static string[] getServices() Get a list of classes bound to the container by calling service()
  * @method static string getTempPath() Get a writable directory for the application's ephemeral data
  * @method static bool has(string $id) True if a class or service interface resolves to a concrete class that actually exists (see {@see Container::has()})
  * @method static bool hasGlobalContainer() True if a global container has been loaded
  * @method static CliApplication if(bool $condition, callable $then, callable|null $else = null) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of a class or interface have been applied to the container itself
- * @method static bool inProduction() Return true if the application is in production, false if it's running from source (see {@see Application::inProduction()})
+ * @method static bool inProduction() True if the application is in production, false if it's running from source (see {@see Application::inProduction()})
  * @method static CliApplication instance(string $id, $instance) Add an existing instance to the container as a shared binding
  * @method static CliApplication instanceIf(string $id, $instance) Add an existing instance to the container as a shared binding if it hasn't already been bound
  * @method static CliApplication loadCache() Load the application's CacheStore, creating a backing database if needed (see {@see Application::loadCache()})
  * @method static CliApplication loadCacheIfExists() Load the application's CacheStore if a backing database already exists (see {@see Application::loadCacheIfExists()})
- * @method static CliApplication loadSync(?string $command = null, ?array $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see Application::loadSync()})
+ * @method static CliApplication loadSync(?string $command = null, mixed[] $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see Application::loadSync()})
  * @method static CliApplication logConsoleMessages(?bool $debug = null, string|null $name = null) Log console messages to a file in the application's log directory (see {@see Application::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Get the global container, returning null if no global container has been loaded
  * @method static CliApplication oneCommand(class-string<CliCommand> $id) Register one, and only one, CliCommand for the lifetime of the container (see {@see CliApplication::oneCommand()})
- * @method static CliApplication registerShutdownReport($level = Level::DEBUG, array|null $timers = ['*'], bool $resourceUsage = true) Report timers and resource usage when the application terminates (see {@see Application::registerShutdownReport()})
+ * @method static CliApplication registerShutdownReport(int $level = Level::INFO, string[]|null $timers = ['*'], bool $resourceUsage = true) Print a summary of the script's timers and system resource usage when the application terminates (see {@see Application::registerShutdownReport()})
  * @method static IContainer requireGlobalContainer() Get the global container, throwing an exception if no global container has been loaded
  * @method static int run() Process command-line arguments passed to the script (see {@see CliApplication::run()})
  * @method static never runAndExit() Exit after processing command-line arguments passed to the script (see {@see CliApplication::runAndExit()})
@@ -68,7 +68,7 @@ use Lkrms\Utility\Environment;
  * @method static CliApplication unbind(string $id) Remove a binding from the container
  * @method static CliApplication unloadSync(bool $silent = false) Close the application's SyncStore (see {@see Application::unloadSync()})
  * @method static CliApplication writeResourceUsage(int $level = Level::INFO) Print a summary of the script's system resource usage (see {@see Application::writeResourceUsage()})
- * @method static CliApplication writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10) Print a summary of the script's timers (see {@see Application::writeTimers()})
+ * @method static CliApplication writeTimers(int $level = Level::INFO, bool $includeRunning = true, ?string $type = null, ?int $limit = 10) Print a summary of the script's timers (see {@see Application::writeTimers()})
  *
  * @uses CliApplication
  *
