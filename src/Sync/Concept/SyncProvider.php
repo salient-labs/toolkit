@@ -95,7 +95,7 @@ abstract class SyncProvider implements ISyncProvider, IService
         return [];
     }
 
-    public function description(?int $maxLength = null): ?string
+    public function description(): ?string
     {
         return null;
     }

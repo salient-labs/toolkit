@@ -4,6 +4,7 @@ namespace Lkrms\Cli;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Container\Application;
@@ -17,10 +18,8 @@ use LogicException;
 /**
  * A service container for CLI applications
  *
- * Typically accessed via the {@see \Lkrms\Facade\Cli} facade.
- *
  */
-final class CliApplication extends Application
+class CliApplication extends Application implements ICliApplication
 {
     /**
      * @var array<string,class-string<CliCommand>|mixed[]>
@@ -51,10 +50,6 @@ final class CliApplication extends Application
         Sys::handleExitSignals();
     }
 
-    /**
-     * Return the CliCommand started from the command line
-     *
-     */
     public function getRunningCommand(): ?CliCommand
     {
         return $this->RunningCommand;
@@ -234,14 +229,14 @@ final class CliApplication extends Application
             'SUBCOMMANDS' => $synopses,
         ];
 
-        return $this->buildUsageSections($sections);
+        return self::buildHelp($sections);
     }
 
     /**
      * @internal
      * @param array<string,string> $sections
      */
-    public function buildUsageSections(array $sections): string
+    public static function buildHelp(array $sections): string
     {
         $usage = '';
         foreach ($sections as $heading => $content) {
@@ -260,24 +255,6 @@ final class CliApplication extends Application
         return rtrim($usage);
     }
 
-    /**
-     * Process command-line arguments passed to the script
-     *
-     * One of the following actions will be taken:
-     * - if subcommand arguments resolve to a registered command, invoke it and
-     *   return its exit status
-     * - if `--help` is the only remaining argument after processing subcommand
-     *   arguments, print a usage message and return `0`
-     * - if `--version` is the only remaining argument, print the application's
-     *   name and version number and return `0`
-     * - if, after processing subcommand arguments, there are no further
-     *   arguments but there are further subcommands, print a one-line synopsis
-     *   of each registered subcommand and return `0`
-     * - report an error, print a one-line synopsis of each registered
-     *   subcommand and return `1`
-     *
-     * @return int
-     */
     public function run(): int
     {
         $args = array_slice($_SERVER['argv'], 1);
@@ -359,14 +336,6 @@ final class CliApplication extends Application
         }
     }
 
-    /**
-     * Exit after processing command-line arguments passed to the script
-     *
-     * The value returned by {@see CliApplication::run()} is used as the exit
-     * status.
-     *
-     * @return never
-     */
     public function runAndExit()
     {
         exit ($this->run());

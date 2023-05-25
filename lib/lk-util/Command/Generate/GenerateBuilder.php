@@ -40,7 +40,7 @@ class GenerateBuilder extends GenerateCommand
      */
     private array $SkipProperties = [];
 
-    public function getShortDescription(): string
+    public function description(): string
     {
         return 'Generate a fluent interface that creates instances of a class';
     }

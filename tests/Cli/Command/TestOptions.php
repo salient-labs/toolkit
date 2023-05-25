@@ -23,7 +23,7 @@ class TestOptions extends CliCommand
 
     public $oneOfOpt3;
 
-    public function getShortDescription(): string
+    public function description(): string
     {
         return 'Test various permutations of each CliOption type';
     }

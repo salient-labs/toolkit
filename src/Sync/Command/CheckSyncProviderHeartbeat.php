@@ -3,10 +3,9 @@
 namespace Lkrms\Sync\Command;
 
 use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
-use Lkrms\Cli\CliOptionBuilder;
+use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -21,16 +20,26 @@ final class CheckSyncProviderHeartbeat extends CliCommand
     /**
      * Unambiguous lowercase provider basename => provider
      *
-     * @var array<string,string>
+     * @var array<string,class-string<ISyncProvider>>
      */
     private $Providers = [];
+
+    /**
+     * @var string[]
+     */
+    private $ProviderBasename;
+
+    /**
+     * @var array<class-string<ISyncProvider>>
+     */
+    private $Provider;
 
     /**
      * @var SyncStore
      */
     private $Store;
 
-    public function __construct(CliApplication $container, SyncStore $store)
+    public function __construct(ICliApplication $container, SyncStore $store)
     {
         parent::__construct($container);
 
@@ -52,7 +61,7 @@ final class CheckSyncProviderHeartbeat extends CliCommand
         natsort($this->Providers);
     }
 
-    public function getShortDescription(): string
+    public function description(): string
     {
         return 'Send a heartbeat request to '
             . (count($this->Providers) > 1
@@ -62,23 +71,26 @@ final class CheckSyncProviderHeartbeat extends CliCommand
 
     protected function getOptionList(): array
     {
+        $optB = CliOption::build()
+            ->long('provider')
+            ->valueName('provider')
+            ->description('The provider to check')
+            ->multipleAllowed();
+
+        if ($this->Providers) {
+            $optB = $optB->optionType(CliOptionType::ONE_OF_POSITIONAL)
+                         ->allowedValues(array_keys($this->Providers))
+                         ->addAll()
+                         ->defaultValue('ALL')
+                         ->bindTo($this->ProviderBasename);
+        } else {
+            $optB = $optB->optionType(CliOptionType::VALUE_POSITIONAL)
+                         ->required()
+                         ->bindTo($this->Provider);
+        }
+
         return [
-            CliOption::build()
-                ->long('provider')
-                ->valueName('provider')
-                ->description('The provider to check')
-                ->multipleAllowed()
-                ->if(
-                    (bool) $this->Providers,
-                    fn(CliOptionBuilder $build) =>
-                        $build->optionType(CliOptionType::ONE_OF_POSITIONAL)
-                              ->allowedValues(array_keys($this->Providers))
-                              ->addAll()
-                              ->defaultValue('ALL'),
-                    fn(CliOptionBuilder $build) =>
-                        $build->optionType(CliOptionType::VALUE_POSITIONAL)
-                              ->required()
-                ),
+            $optB,
             CliOption::build()
                 ->long('ttl')
                 ->short('t')
@@ -120,22 +132,20 @@ final class CheckSyncProviderHeartbeat extends CliCommand
     {
         Console::registerStderrTarget(true);
 
-        $providers = $this->getOptionValue('provider');
-
         if ($this->Providers) {
             $providers = array_map(
                 fn(string $providerClass) =>
                     $this->App->get($providerClass),
                 array_intersect_key(
                     $this->Providers,
-                    array_flip($providers)
+                    array_flip($this->ProviderBasename)
                 )
             );
         } else {
             $providers = array_map(
                 fn(string $providerClass) =>
                     $this->App->getIf($providerClass, ISyncProvider::class),
-                $providers
+                $this->Provider
             );
         }
 

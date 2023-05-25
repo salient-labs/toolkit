@@ -6,7 +6,7 @@ use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevels;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Container\Container;
-use Lkrms\Contract\ReturnsEnvironment;
+use Lkrms\Contract\IApplication;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Composer;
@@ -27,7 +27,7 @@ use UnexpectedValueException;
  * A service container for applications
  *
  */
-class Application extends Container implements ReturnsEnvironment
+class Application extends Container implements IApplication
 {
     /**
      * Typically ~/.config/<app>
@@ -181,57 +181,30 @@ class Application extends Container implements ReturnsEnvironment
         return $path;
     }
 
-    /**
-     * Get a writable cache directory for the application
-     *
-     * The application's cache directory is appropriate for data that should
-     * persist between runs, but isn't important or portable enough for the data
-     * directory.
-     *
-     */
     final public function getCachePath(): string
     {
         return $this->_CachePath
             ?: ($this->_CachePath = $this->getPath('cache', self::DIR_STATE, 'cache', 'var/cache', 'cache'));
     }
 
-    /**
-     * Get a writable directory for the application's configuration files
-     *
-     */
     final public function getConfigPath(): string
     {
         return $this->_ConfigPath
             ?: ($this->_ConfigPath = $this->getPath('config', self::DIR_CONFIG, null, 'config', 'config'));
     }
 
-    /**
-     * Get a writable data directory for the application
-     *
-     * The application's data directory is appropriate for data that should
-     * persist indefinitely.
-     *
-     */
     final public function getDataPath(): string
     {
         return $this->_DataPath
             ?: ($this->_DataPath = $this->getPath('data', self::DIR_DATA, null, 'var/lib', 'data'));
     }
 
-    /**
-     * Get a writable directory for the application's log files
-     *
-     */
     final public function getLogPath(): string
     {
         return $this->_LogPath
             ?: ($this->_LogPath = $this->getPath('log', self::DIR_STATE, 'log', 'var/log', 'log'));
     }
 
-    /**
-     * Get a writable directory for the application's ephemeral data
-     *
-     */
     final public function getTempPath(): string
     {
         return $this->_TempPath
@@ -273,30 +246,16 @@ class Application extends Container implements ReturnsEnvironment
         }
     }
 
-    /**
-     * Get the application's root directory
-     *
-     */
     final public function getBasePath(): string
     {
         return $this->BasePath;
     }
 
-    /**
-     * Report timers and resource usage when the application terminates
-     *
-     * Use {@see \Lkrms\Utility\System::startTimer()} and
-     * {@see \Lkrms\Utility\System::stopTimer()} to collect timing information.
-     *
-     * @param array|null $timers If `null` or empty, timers aren't reported. If
-     * `['*']` (the default), all timers are reported. Otherwise, only timers of
-     * the specified types are reported.
-     * @return $this
-     * @see Application::writeResourceUsage()
-     * @see Application::writeTimers()
-     */
-    public function registerShutdownReport($level = Level::DEBUG, ?array $timers = ['*'], bool $resourceUsage = true)
-    {
+    public function registerShutdownReport(
+        int $level = Level::INFO,
+        ?array $timers = ['*'],
+        bool $resourceUsage = true
+    ) {
         if (!$timers && !$resourceUsage) {
             return $this;
         }
@@ -306,10 +265,10 @@ class Application extends Container implements ReturnsEnvironment
         register_shutdown_function(
             function () use ($level, $timers, $resourceUsage) {
                 if ($timers === ['*']) {
-                    $this->writeTimers(true, null, $level);
+                    $this->writeTimers($level);
                 } elseif ($timers) {
                     foreach ($timers as $timer) {
-                        $this->writeTimers(true, $timer, $level);
+                        $this->writeTimers($level, true, $timer);
                     }
                 }
                 if ($resourceUsage) {
@@ -322,36 +281,17 @@ class Application extends Container implements ReturnsEnvironment
         return $this;
     }
 
-    /**
-     * Return true if the application is in production, false if it's running
-     * from source
-     *
-     * "In production" means one of the following is true:
-     * - a Phar archive is currently executing, or
-     * - the application was installed with `composer --no-dev`
-     *
-     * @see \Lkrms\Utility\Composer::hasDevDependencies()
-     */
     public function inProduction(): bool
     {
         return Phar::running() ||
             !Composer::hasDevDependencies();
     }
 
-    /**
-     * Get the basename of the file used to run the script
-     *
-     */
     public function getProgramName(): string
     {
         return Sys::getProgramBasename();
     }
 
-    /**
-     * Get the basename of the file used to run the script, removing known PHP
-     * file extensions and recognised version numbers
-     *
-     */
     final public function getAppName(): string
     {
         return preg_replace(
@@ -362,23 +302,11 @@ class Application extends Container implements ReturnsEnvironment
         );
     }
 
-    /**
-     * Get the Environment instance that underpins the Env facade
-     *
-     */
     final public function env(): Environment
     {
         return $this->Env;
     }
 
-    /**
-     * Load the application's CacheStore, creating a backing database if needed
-     *
-     * The backing database is created in {@see Application::getCachePath()}.
-     *
-     * @return $this
-     * @see \Lkrms\Store\CacheStore
-     */
     final public function loadCache()
     {
         $cacheDb = $this->getCachePath() . '/cache.db';
@@ -392,16 +320,6 @@ class Application extends Container implements ReturnsEnvironment
         return $this;
     }
 
-    /**
-     * Load the application's CacheStore if a backing database already exists
-     *
-     * Caching is only enabled if a backing database created by
-     * {@see Application::loadCache()} is found in
-     * {@see Application::getCachePath()}.
-     *
-     * @return $this
-     * @see \Lkrms\Store\CacheStore
-     */
     final public function loadCacheIfExists()
     {
         if (file_exists($this->getCachePath() . '/cache.db')) {
@@ -411,21 +329,6 @@ class Application extends Container implements ReturnsEnvironment
         return $this;
     }
 
-    /**
-     * Log console messages to a file in the application's log directory
-     *
-     * Registers a {@see StreamTarget} to log subsequent
-     * {@see ConsoleLevels::ALL} messages to `<name>.log`.
-     *
-     * {@see ConsoleLevels::ALL_DEBUG} messages are simultaneously logged to
-     * `<name>.debug.log` in the same location if:
-     * - `$debug` is `true`, or
-     * - `$debug` is `null` and {@see \Lkrms\Utility\Environment::debug()}
-     *   returns `true`
-     *
-     * @param string|null $name Defaults to the name used to run the script.
-     * @return $this
-     */
     final public function logConsoleMessages(?bool $debug = null, ?string $name = null)
     {
         $name = $name ? basename($name, '.log') : $this->getAppName();
@@ -442,17 +345,6 @@ class Application extends Container implements ReturnsEnvironment
         return $this;
     }
 
-    /**
-     * Load the application's SyncStore, creating a backing database if needed
-     *
-     * The backing database is created in {@see Application::getDataPath()}.
-     *
-     * Call {@see Application::unloadSync()} before the application terminates,
-     * otherwise a failed run will be recorded.
-     *
-     * @return $this
-     * @see \Lkrms\Sync\Support\SyncStore
-     */
     final public function loadSync(?string $command = null, ?array $arguments = null)
     {
         $syncDb = $this->getDataPath() . '/sync.db';
@@ -474,25 +366,6 @@ class Application extends Container implements ReturnsEnvironment
         return $this;
     }
 
-    /**
-     * Register a sync entity namespace with the application's SyncStore
-     *
-     * A prefix can only be associated with one namespace per application and
-     * cannot be changed unless the {@see \Lkrms\Sync\Support\SyncStore}'s
-     * backing database has been reset.
-     *
-     * If `$prefix` has already been registered, its previous URI and PHP
-     * namespace are updated if they differ.
-     *
-     * @param string $prefix A short alternative to `$uri`. Case-insensitive.
-     * Must be unique within the scope of the application. Must be a scheme name
-     * that complies with Section 3.1 of [RFC3986], i.e. a match for the regular
-     * expression `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
-     * @param string $uri A globally unique namespace URI.
-     * @param string $namespace A fully-qualified PHP namespace.
-     * @return $this
-     * @see \Lkrms\Sync\Support\SyncStore::namespace()
-     */
     final public function syncNamespace(string $prefix, string $uri, string $namespace)
     {
         if (!Sync::isLoaded()) {
@@ -503,14 +376,6 @@ class Application extends Container implements ReturnsEnvironment
         return $this;
     }
 
-    /**
-     * Close the application's SyncStore
-     *
-     * If this method is not called after calling
-     * {@see Application::loadSync()}, a failed run will be recorded.
-     *
-     * @return $this
-     */
     final public function unloadSync(bool $silent = false)
     {
         if (!Sync::isLoaded()) {
@@ -541,18 +406,6 @@ class Application extends Container implements ReturnsEnvironment
         return $this;
     }
 
-    /**
-     * Print a summary of the script's system resource usage
-     *
-     * Example output:
-     *
-     * ```
-     * CPU time: 0.011s elapsed, 0.035s user, 0.016s system; memory: 3.817MiB peak
-     *
-     * ```
-     *
-     * @return $this
-     */
     final public function writeResourceUsage(int $level = Level::INFO)
     {
         [$endTime, $peakMemory, $userTime, $systemTime] = [
@@ -571,34 +424,10 @@ class Application extends Container implements ReturnsEnvironment
         return $this;
     }
 
-    /**
-     * Print a summary of the script's timers
-     *
-     * Example output:
-     *
-     * ```
-     * Timing: 6.281ms recorded by 1 timer with type 'file':
-     *   6.281ms {1} lk-util
-     *
-     * Timing: 1.863ms recorded by 26 timers with type 'rule':
-     *   0.879ms {2} PreserveOneLineStatements
-     *   0.153ms {2} AddStandardWhitespace
-     *   0.145ms {2} AddHangingIndentation
-     *   ...
-     *   0.042ms {2} AlignArguments
-     *               (and 16 more)
-     *
-     * ```
-     *
-     * @return $this
-     * @see \Lkrms\Utility\System::startTimer()
-     * @see \Lkrms\Utility\System::stopTimer()
-     * @see \Lkrms\Utility\System::getTimers()
-     */
     final public function writeTimers(
+        int $level = Level::INFO,
         bool $includeRunning = true,
         ?string $type = null,
-        int $level = Level::INFO,
         ?int $limit = 10
     ) {
         foreach (Sys::getTimers($includeRunning, $type) as $_type => $timers) {

@@ -206,21 +206,6 @@ parameters:
 			path: src/Console/Target/StreamTarget.php
 
 		-
-			message: "#^Method Lkrms\\\\Container\\\\Application\\:\\:loadSync\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Container/Application.php
-
-		-
-			message: "#^Method Lkrms\\\\Container\\\\Application\\:\\:registerShutdownReport\\(\\) has parameter \\$level with no type specified\\.$#"
-			count: 1
-			path: src/Container/Application.php
-
-		-
-			message: "#^Method Lkrms\\\\Container\\\\Application\\:\\:registerShutdownReport\\(\\) has parameter \\$timers with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Container/Application.php
-
-		-
 			message: "#^Method Lkrms\\\\Container\\\\Container\\:\\:_bind\\(\\) has parameter \\$constructParams with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Container/Container.php
@@ -1144,6 +1129,16 @@ parameters:
 			message: "#^Method Lkrms\\\\Sync\\\\Catalog\\\\SyncOperation\\:\\:getValueMap\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Sync/Catalog/SyncOperation.php
+
+		-
+			message: "#^Property Lkrms\\\\Sync\\\\Command\\\\CheckSyncProviderHeartbeat\\:\\:\\$Provider is never written, only read\\.$#"
+			count: 1
+			path: src/Sync/Command/CheckSyncProviderHeartbeat.php
+
+		-
+			message: "#^Property Lkrms\\\\Sync\\\\Command\\\\CheckSyncProviderHeartbeat\\:\\:\\$ProviderBasename is never written, only read\\.$#"
+			count: 1
+			path: src/Sync/Command/CheckSyncProviderHeartbeat.php
 
 		-
 			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\DbSyncProvider\\:\\:getDbDefinition\\(\\) return type with generic class Lkrms\\\\Sync\\\\Support\\\\DbSyncDefinition does not specify its types\\: TEntity, TProvider$#"

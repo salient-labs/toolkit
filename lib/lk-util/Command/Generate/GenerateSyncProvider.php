@@ -40,7 +40,7 @@ class GenerateSyncProvider extends GenerateCommand
         'get-list',
     ];
 
-    public function getShortDescription(): string
+    public function description(): string
     {
         return 'Generate a provider interface for a sync entity class';
     }

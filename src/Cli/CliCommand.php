@@ -5,10 +5,11 @@ namespace Lkrms\Cli;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
-use Lkrms\Cli\Concern\HasCliApplication;
+use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
+use Lkrms\Concern\HasEnvironment;
 use Lkrms\Console\ConsoleFormatter;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
@@ -23,7 +24,10 @@ use Throwable;
  */
 abstract class CliCommand implements ICliCommand
 {
-    use HasCliApplication;
+    /**
+     * @use HasEnvironment<ICliApplication>
+     */
+    use HasEnvironment;
 
     /**
      * Get a list of options for the command
@@ -87,6 +91,12 @@ abstract class CliCommand implements ICliCommand
      * @return int|void
      */
     abstract protected function run(string ...$args);
+
+    /**
+     * @var ICliApplication
+     * @todo Remove this property when Intelephense resolves trait generics
+     */
+    protected $App;
 
     /**
      * @var string[]|null
@@ -175,9 +185,8 @@ abstract class CliCommand implements ICliCommand
     /**
      * Get the command name as a string of space-delimited subcommands
      *
-     * @return string
      */
-    final protected function getName(): string
+    final public function name(): string
     {
         return implode(' ', $this->getNameParts());
     }
@@ -186,7 +195,6 @@ abstract class CliCommand implements ICliCommand
      * Get the command name, including the name used to run the script, as a
      * string of space-delimited subcommands
      *
-     * @return string
      */
     final protected function getNameWithProgram(): string
     {
@@ -521,13 +529,13 @@ abstract class CliCommand implements ICliCommand
         }
 
         $sections = [
-            'NAME' => $name . ' - ' . $this->getShortDescription(),
+            'NAME' => $name . ' - ' . $this->description(),
             'SYNOPSIS' => '__' . $name . '__' . $synopsis,
             'OPTIONS' => trim($options),
             'DESCRIPTION' => $this->prepareUsage($this->getLongDescription()),
         ] + $sections;
 
-        return $this->App->buildUsageSections($sections);
+        return CliApplication::buildHelp($sections);
     }
 
     private function prepareUsage(?string $description, ?string $indent = null): string

@@ -67,7 +67,7 @@ class GenerateSyncEntity extends GenerateCommand
      */
     private $HttpDataFile;
 
-    public function getShortDescription(): string
+    public function description(): string
     {
         return 'Generate a sync entity class';
     }

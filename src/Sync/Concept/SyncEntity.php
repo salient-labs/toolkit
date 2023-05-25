@@ -137,12 +137,12 @@ abstract class SyncEntity implements ISyncEntity
         return [];
     }
 
-    public function name(?int $maxLength = null): ?string
+    public function name(): ?string
     {
         return $this->introspector()->getGetNameClosure()($this);
     }
 
-    public function description(?int $maxLength = null): ?string
+    public function description(): ?string
     {
         return null;
     }

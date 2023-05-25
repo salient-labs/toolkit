@@ -25,7 +25,7 @@ class SendHttpRequest extends Command
         return $this->Method = strtoupper(array_pop($name));
     }
 
-    public function getShortDescription(): string
+    public function description(): string
     {
         return "Send a {$this->getMethod()} request to an HttpSyncProvider endpoint";
     }

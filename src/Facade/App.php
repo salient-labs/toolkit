@@ -21,7 +21,7 @@ use Lkrms\Utility\Environment;
  * @method static Application bind(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container (see {@see Container::bind()})
  * @method static Application bindIf(string $id, ?string $instanceOf = null, ?array $constructParams = null, ?array $shareInstances = null) Add a binding to the container if it hasn't already been bound (see {@see Container::bindIf()})
  * @method static Application call(callable $callback) Move to the next method in the chain after passing the object to a callback (see {@see FluentInterface::call()})
- * @method static Environment env() Get the Environment instance that underpins the Env facade
+ * @method static Environment env() Get the Env facade's underlying Environment instance
  * @method static Application forEach(array|object $array, callable $callback) Move to the next method in the chain after passing the object to a callback for each key-value pair in an array (see {@see FluentInterface::forEach()})
  * @method static mixed get(class-string $id, mixed[] $params = []) Create a new instance of a class or service interface, or get a shared instance created earlier (see {@see Container::get()})
  * @method static string getAppName() Get the basename of the file used to run the script, removing known PHP file extensions and recognised version numbers
@@ -41,15 +41,15 @@ use Lkrms\Utility\Environment;
  * @method static bool hasGlobalContainer() True if a global container has been loaded
  * @method static Application if(bool $condition, callable $then, callable|null $else = null) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
  * @method static Container inContextOf(string $id) Get a copy of the container where the contextual bindings of a class or interface have been applied to the container itself
- * @method static bool inProduction() Return true if the application is in production, false if it's running from source (see {@see Application::inProduction()})
+ * @method static bool inProduction() True if the application is in production, false if it's running from source (see {@see Application::inProduction()})
  * @method static Application instance(string $id, $instance) Add an existing instance to the container as a shared binding
  * @method static Application instanceIf(string $id, $instance) Add an existing instance to the container as a shared binding if it hasn't already been bound
  * @method static Application loadCache() Load the application's CacheStore, creating a backing database if needed (see {@see Application::loadCache()})
  * @method static Application loadCacheIfExists() Load the application's CacheStore if a backing database already exists (see {@see Application::loadCacheIfExists()})
- * @method static Application loadSync(?string $command = null, ?array $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see Application::loadSync()})
+ * @method static Application loadSync(?string $command = null, mixed[] $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see Application::loadSync()})
  * @method static Application logConsoleMessages(?bool $debug = null, string|null $name = null) Log console messages to a file in the application's log directory (see {@see Application::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Get the global container, returning null if no global container has been loaded
- * @method static Application registerShutdownReport($level = Level::DEBUG, array|null $timers = ['*'], bool $resourceUsage = true) Report timers and resource usage when the application terminates (see {@see Application::registerShutdownReport()})
+ * @method static Application registerShutdownReport(int $level = Level::INFO, string[]|null $timers = ['*'], bool $resourceUsage = true) Print a summary of the script's timers and system resource usage when the application terminates (see {@see Application::registerShutdownReport()})
  * @method static IContainer requireGlobalContainer() Get the global container, throwing an exception if no global container has been loaded
  * @method static Application service(string $id, string[]|null $services = null, string[]|null $exceptServices = null, int $lifetime = ServiceLifetime::INHERIT) Add bindings to the container for an IService, optionally specifying services to include or exclude (see {@see Container::service()})
  * @method static Application services(array<string,string> $serviceMap, int $lifetime = ServiceLifetime::INHERIT) Consolidate a service map and call service() once per concrete class (see {@see Container::services()})
@@ -60,7 +60,7 @@ use Lkrms\Utility\Environment;
  * @method static Application unbind(string $id) Remove a binding from the container
  * @method static Application unloadSync(bool $silent = false) Close the application's SyncStore (see {@see Application::unloadSync()})
  * @method static Application writeResourceUsage(int $level = Level::INFO) Print a summary of the script's system resource usage (see {@see Application::writeResourceUsage()})
- * @method static Application writeTimers(bool $includeRunning = true, ?string $type = null, int $level = Level::INFO, ?int $limit = 10) Print a summary of the script's timers (see {@see Application::writeTimers()})
+ * @method static Application writeTimers(int $level = Level::INFO, bool $includeRunning = true, ?string $type = null, ?int $limit = 10) Print a summary of the script's timers (see {@see Application::writeTimers()})
  *
  * @uses Application
  *
