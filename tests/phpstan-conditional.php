@@ -27,6 +27,9 @@ if (\PHP_VERSION_ID < 80000) {
                 [
                     'message' => '#^Parameter \#1 \$ch of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects resource, CurlHandle\|resource(\|null)? given\.$#',
                 ],
+                [
+                    'message' => '#^Call to an undefined method ReflectionClass\<object\>\:\:isReadOnly\(\)\.$#',
+                ],
             ],
         ] + $parameters,
     ];

@@ -6,11 +6,18 @@ use Salient\Polyfill\PhpToken as SalientPhpToken;
 use PhpToken;
 
 // @codeCoverageIgnoreStart
+
+// Extend a trusted polyfill on PHP 7.4, otherwise extend the native class
 if (\PHP_VERSION_ID < 80000) {
-    // Extend a trusted polyfill on PHP 7.4
+    /**
+     * @internal
+     */
     class GenericToken extends SalientPhpToken {}
 } else {
-    // Otherwise, extend the native class
+    /**
+     * @internal
+     */
     class GenericToken extends PhpToken {}
 }
+
 // @codeCoverageIgnoreEnd

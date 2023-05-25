@@ -32,6 +32,7 @@ use Salient\Sli\Command\Generate\GenerateBuilder;
 use Salient\Sli\Command\Generate\GenerateFacade;
 use Salient\Sli\Command\Generate\GenerateSyncEntity;
 use Salient\Sli\Command\Generate\GenerateSyncProvider;
+use Salient\Sli\Command\AnalyseClass;
 use Salient\Sli\EnvVar;
 use Salient\Sync\Db\DbSyncDefinition;
 use Salient\Sync\Db\DbSyncDefinitionBuilder;
@@ -42,6 +43,7 @@ use Salient\Sync\SyncErrorBuilder;
 use Salient\Sync\SyncSerializeRules;
 use Salient\Sync\SyncSerializeRulesBuilder;
 use Salient\Sync\SyncStore;
+use Salient\Testing\Console\MockTarget;
 use Salient\Tests\Core\AbstractFacade\MyBrokenFacade;
 use Salient\Tests\Core\AbstractFacade\MyClassFacade;
 use Salient\Tests\Core\AbstractFacade\MyHasFacadeClass;
@@ -123,6 +125,21 @@ $data = [
         'https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedGeneralCategory.txt',
 ];
 
+$commands = [
+    AnalyseClass::class => [
+        'tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output0.json' => [
+            ['.'],
+            'tests/fixtures/Toolkit/Sli/Command/AnalyseClass',
+        ],
+        'tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output1.csv' => [
+            ['--format', 'csv', '.'],
+        ],
+        'tests/fixtures/Toolkit/Sli/Command/AnalyseClass/output2.md' => [
+            ['--format', 'md', '.'],
+        ],
+    ],
+];
+
 $app = new CliApplication($dir);
 $generateFacade = new GenerateFacade($app);
 $generateBuilder = new GenerateBuilder($app);
@@ -201,13 +218,13 @@ foreach ($builders as $class => $builder) {
 
 foreach ($entities as $class => $entityArgs) {
     $entity = array_shift($entityArgs);
-    $file = "{$dir}/tests/data/entity/{$entity}.json";
+    $file = "$dir/tests/data/entity/{$entity}.json";
     $save = false;
     if (is_file($file)) {
         array_unshift($entityArgs, '--json', $file);
         generated($file);
     } else {
-        array_unshift($entityArgs, '--provider', JsonPlaceholderApi::class, '--endpoint', "/{$entity}");
+        array_unshift($entityArgs, '--provider', JsonPlaceholderApi::class, '--endpoint', "/$entity");
         $save = true;
     }
     $status |= $generateEntity(...[...$args, ...$entityArgs, $class]);
@@ -225,7 +242,7 @@ foreach ($providers as $class => $providerArgs) {
 }
 
 foreach ($data as $file => $uri) {
-    $file = "{$dir}/tests/data/{$file}";
+    $file = "$dir/tests/data/$file";
     $exists = file_exists($file);
     if ($exists && !$online) {
         Console::log('Skipping', $file);
@@ -253,6 +270,44 @@ foreach (File::find()
         ->include('%/phpstan-baseline.*\.neon$%')
         ->doNotRecurse() as $file) {
     generated((string) $file);
+}
+
+foreach ($commands as $class => $runs) {
+    $command = new $class($app);
+    foreach ($runs as $file => $run) {
+        $file = "$dir/$file";
+        $exists = file_exists($file);
+        if (in_array('--check', $args)) {
+            if ($exists) {
+                generated($file);
+            }
+            continue;
+        }
+        if (isset($run[1])) {
+            File::chdir("$dir/{$run[1]}");
+        }
+        foreach (Console::getTargets() as $target) {
+            Console::deregisterTarget($target);
+        }
+        Console::registerTarget($mockTarget = new MockTarget());
+        ob_start();
+        $status |= $result = $command(...$run[0]);
+        /** @var string */
+        $content = ob_get_clean();
+        Console::deregisterTarget($mockTarget);
+        Console::registerStdioTargets();
+        if ($result !== 0) {
+            continue;
+        }
+        if (!$exists || File::getContents($file) !== $content) {
+            Console::info('Replacing', $file);
+            File::createDir(dirname($file));
+            File::writeContents($file, $content);
+        } else {
+            Console::log('Nothing to do:', $file);
+        }
+        generated($file);
+    }
 }
 
 $file = "$dir/.gitattributes";
