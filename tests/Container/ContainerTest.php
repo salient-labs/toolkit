@@ -4,9 +4,16 @@ namespace Lkrms\Tests\Container;
 
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 use Lkrms\Contract\IServiceShared;
 use Lkrms\Contract\IServiceSingleton;
+use Lkrms\Contract\ReceivesContainer;
+use Lkrms\Contract\ReceivesService;
+use Lkrms\Contract\ReturnsContainer;
+use Lkrms\Contract\ReturnsService;
+use Lkrms\Exception\ContainerServiceNotFoundException;
+use RuntimeException;
 
 final class ContainerTest extends \Lkrms\Tests\TestCase
 {
@@ -54,11 +61,36 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
         $container = (new Container())->service(TestServiceImplB::class);
         $ts1 = $container->get(ITestService1::class);
         $o1 = $container->get(A::class);
-        $container = $container->inContextOf(get_class($ts1));
-        $o2 = $container->get(A::class);
+
+        $container2 = $container->inContextOf(get_class($ts1));
+        $container3 = $container2->inContextOf(get_class($ts1));
+        $o2 = $container2->get(A::class);
+
+        $this->assertNotSame($container, $container2);
+        $this->assertSame($container2, $container3);
+
         $this->assertInstanceOf(A::class, $o1);
         $this->assertNotInstanceOf(B::class, $o1);
         $this->assertInstanceOf(B::class, $o2);
+
+        $this->assertSame($ts1, $o1->TestService);
+        $this->assertSame($o1->TestService, $o2->TestService);
+        $this->assertSame($container, $o1->container());
+        $this->assertSame($container2, $o2->container());
+        $this->assertSame(A::class, $o1->service());
+        $this->assertSame(A::class, $o2->service());
+
+        // `TestServiceImplB` is only bound to itself, so the container can't
+        // inject `ITestService1` into `A::construct()` unless it's passed as a
+        // parameter
+        $container = (new Container())->inContextOf(TestServiceImplB::class);
+        $ts2 = $container->get(TestServiceImplB::class);
+        $o3 = $container->get(A::class, [$ts2]);
+        $this->assertInstanceOf(B::class, $o3);
+
+        // Without `$ts2`, the container throws an exception
+        $this->expectException(ContainerServiceNotFoundException::class);
+        $container->get(A::class);
     }
 
     private function _testServiceTransient($container, $concrete = TestServiceImplA::class)
@@ -161,16 +193,63 @@ class TestServiceImplD extends TestServiceImplB implements IServiceShared
 {
 }
 
-class A
+/**
+ * @template T of IContainer
+ * @implements ReturnsContainer<T>
+ */
+class A implements ReceivesContainer, ReceivesService, ReturnsContainer, ReturnsService
 {
-    public $Service;
+    public ITestService1 $TestService;
 
-    public function __construct(ITestService1 $service)
+    protected ?IContainer $Container = null;
+
+    protected ?string $Service = null;
+
+    public function __construct(ITestService1 $testService)
     {
-        $this->Service = $service;
+        $this->TestService = $testService;
+    }
+
+    public function service()
+    {
+        return $this->Service;
+    }
+
+    public function app(): IContainer
+    {
+        return $this->container();
+    }
+
+    public function container(): IContainer
+    {
+        return $this->Container ?: ($this->Container = new Container());
+    }
+
+    public function setContainer(IContainer $container)
+    {
+        if ($this->Container) {
+            throw new RuntimeException('setContainer already called');
+        }
+        $this->Container = $container;
+
+        return $this;
+    }
+
+    public function setService(string $id)
+    {
+        if ($this->Service) {
+            throw new RuntimeException('setService already called');
+        }
+        $this->Service = $id;
+
+        return $this;
     }
 }
 
+/**
+ * @template T of IContainer
+ * @extends A<T>
+ */
 class B extends A
 {
 }

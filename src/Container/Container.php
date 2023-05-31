@@ -3,6 +3,7 @@
 namespace Lkrms\Container;
 
 use Dice\Dice;
+use Dice\DiceException;
 use Lkrms\Concept\FluentInterface;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
@@ -10,6 +11,7 @@ use Lkrms\Contract\IServiceShared;
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Contract\ReceivesContainer;
 use Lkrms\Contract\ReceivesService;
+use Lkrms\Exception\ContainerServiceNotFoundException;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use RuntimeException;
@@ -71,12 +73,13 @@ class Container extends FluentInterface implements IContainer
         do {
             $this->instance($class->getName(), $this);
             $class = $class->getParentClass();
-        } while ($class->implementsInterface(ContainerInterface::class));
+        } while ($class && $class->implementsInterface(ContainerInterface::class));
 
         $this->Dice = $this->Dice->addCallback(
             '*',
             fn(object $instance, string $name): object =>
-                $this->callback($instance, $name)
+                $this->callback($instance, $name),
+            __METHOD__
         );
     }
 
@@ -135,22 +138,26 @@ class Container extends FluentInterface implements IContainer
 
     final public function get(string $id, array $params = [])
     {
-        return $this->Dice->create($id, $params);
+        try {
+            return $this->Dice->create($id, $params);
+        } catch (DiceException $ex) {
+            throw new ContainerServiceNotFoundException($ex->getMessage(), $ex);
+        }
     }
 
     final public function getIf(string $id, string $serviceId, array $params = [])
     {
         if (!is_a($this->getName($id), $serviceId, true)) {
-            throw new RuntimeException(sprintf('%s does not inherit %s', $id, $serviceId));
+            throw new ContainerServiceNotFoundException(sprintf('%s does not inherit %s', $id, $serviceId));
         }
 
-        return $this->Dice->create($id, $params);
+        return $this->get($id, $params);
     }
 
     final public function getAs(string $id, string $serviceId, array $params = [])
     {
         if ($this->Dice->hasShared($id)) {
-            $instance = $this->Dice->create($id);
+            $instance = $this->get($id);
             if ($instance instanceof ReceivesService) {
                 return $instance->setService($serviceId);
             }
@@ -158,20 +165,24 @@ class Container extends FluentInterface implements IContainer
             return $instance;
         }
 
-        return $this->Dice->addCallback(
-            '*',
-            function (object $instance, string $name, bool &$continue) use ($id, $serviceId): object {
-                if (!strcasecmp(get_class($instance), $id)) {
-                    $continue = false;
+        try {
+            return $this->Dice->addCallback(
+                '*',
+                function (object $instance, string $name, bool &$continue) use ($id, $serviceId): object {
+                    if (!strcasecmp(get_class($instance), $id)) {
+                        $continue = false;
 
-                    return $this->callback($instance, $serviceId);
-                }
+                        return $this->callback($instance, $serviceId);
+                    }
 
-                return $this->callback($instance, $name);
-            },
-            null,
-            true
-        )->create($id, $params);
+                    return $this->callback($instance, $name);
+                },
+                null,
+                true
+            )->create($id, $params);
+        } catch (DiceException $ex) {
+            throw new ContainerServiceNotFoundException($ex->getMessage(), $ex);
+        }
     }
 
     final public function getName(string $id): string
@@ -247,7 +258,7 @@ class Container extends FluentInterface implements IContainer
                     $this->addRule($key, ['instanceOf' => $value]);
                 }
             } elseif (is_object($value)) {
-                if (!$this->Dice->hasShared($key) || $this->Dice->create($key) !== $value) {
+                if (!$this->Dice->hasShared($key) || $this->get($key) !== $value) {
                     $this->Dice = $this->Dice->addShared($key, $value);
                 }
             } elseif (($this->Dice->getDefaultRule()['substitutions'][ltrim($key, '\\')] ?? null) !== $value) {
