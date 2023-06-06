@@ -29,20 +29,20 @@ final class RegularExpression extends Dictionary
      * A PHP union type, e.g. "A|B|C"
      *
      */
-    public const PHP_UNION_TYPE = self::PHP_TYPE . '(\|' . self::PHP_TYPE . ')+';
+    public const PHP_UNION_TYPE = self::PHP_TYPE . '(?:\|' . self::PHP_TYPE . ')+';
 
     /**
      * A PHP intersection type, e.g. "A&B&C"
      *
      */
-    public const PHP_INTERSECTION_TYPE = self::PHP_TYPE . '(&' . self::PHP_TYPE . ')+';
+    public const PHP_INTERSECTION_TYPE = self::PHP_TYPE . '(?:&' . self::PHP_TYPE . ')+';
 
     /**
      * One of the segments in a PHP DNF type, e.g. "A" or "(B&C)"
      *
      * @link https://wiki.php.net/rfc/dnf_types
      */
-    public const PHP_DNF_SEGMENT = '(' . self::PHP_TYPE . '|\(' . self::PHP_INTERSECTION_TYPE . '\))';
+    public const PHP_DNF_SEGMENT = '(?:' . self::PHP_TYPE . '|\(' . self::PHP_INTERSECTION_TYPE . '\))';
 
     /**
      * A PHP DNF type, e.g. "A|(B&C)|D|E"
@@ -53,7 +53,13 @@ final class RegularExpression extends Dictionary
      *
      * @link https://wiki.php.net/rfc/dnf_types
      */
-    public const PHP_DNF_TYPE = self::PHP_DNF_SEGMENT . '(\|' . self::PHP_DNF_SEGMENT . ')+';
+    public const PHP_DNF_TYPE = self::PHP_DNF_SEGMENT . '(?:\|' . self::PHP_DNF_SEGMENT . ')+';
+
+    /**
+     * A valid PHP type, including union, intersection, and DNF types
+     *
+     */
+    public const PHP_FULL_TYPE = self::PHP_DNF_SEGMENT . '(?:\|' . self::PHP_DNF_SEGMENT . ')*';
 
     /**
      * A valid PHP DocBlock, i.e. a DocComment containing a single PHPDoc
@@ -82,6 +88,12 @@ final class RegularExpression extends Dictionary
      * @link https://github.com/php-fig/fig-standards/blob/master/proposed/phpdoc.md#53-tags
      */
     public const PHPDOC_TAG = '(^|(?<=\r\n|\n|\r))@(?P<tag>[[:alpha:]\\\\][[:alnum:]\\\\_-]*)(?=\s|[(:]|$)';
+
+    /**
+     * A valid PHPDoc type
+     *
+     */
+    public const PHPDOC_TYPE = '(' . self::PHP_FULL_TYPE . '|[[:alpha:]_\x80-\xff](?:(?:-|::)?[[:alnum:]_\x80-\xff]+)*(?:\*)?(?:\[\])?(?:<(?-1)(?:,(?-1))*>)?)';
 
     public static function delimit(
         string $regex,

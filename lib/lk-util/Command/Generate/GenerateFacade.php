@@ -138,11 +138,14 @@ final class GenerateFacade extends GenerateCommand
                     ? ($returnFqcn ? $name : null)
                     : $this->getFqcnAlias($name, null, $returnFqcn));
         };
-        $phpDocTypeCallback = function (string $type, array $templates) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback): string {
+        $phpDocTypeCallback = function (string $type, array $templates) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback, &$phpDocTypeCallback): string {
             return PhpDocTag::normaliseType(preg_replace_callback(
                 '/(?<!\$)([a-z]+(-[a-z]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/',
-                function ($match) use ($templates, &$methodFile, &$methodNamespace, $useMap, $typeNameCallback) {
+                function ($match) use ($templates, &$methodFile, &$methodNamespace, $useMap, $typeNameCallback, &$phpDocTypeCallback) {
                     $type = $this->resolveTemplates($match[0], $templates);
+                    if ($type !== $match[0]) {
+                        return $phpDocTypeCallback($type, $templates);
+                    }
 
                     // Use reserved words and hyphenated types (e.g. `class-string`) as-is
                     if (Test::isPhpReservedWord($type) || strpbrk($type, '-') !== false) {
