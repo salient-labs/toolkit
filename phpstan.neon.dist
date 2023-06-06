@@ -10,13 +10,9 @@ parameters:
 		- bin/lk-util
 		- bootstrap.php
 		- tests
-	excludePaths:
-		- apigen
 	ignoreErrors:
-		-
-			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateBuilder\\:\\:\\$[a-z0-9_]+ is never written, only read\\.$#i"
-			path: lib/lk-util/Command/Generate/GenerateBuilder.php
-
+		- "#^Property Lkrms\\\\.+\\\\Command\\\\.+\\:\\:\\$[a-zA-Z0-9_]+ is never written, only read\\.$#"
+		- "#^Method Lkrms\\\\Tests\\\\(.+Test|TestCase)\\:\\:.+\\(\\) has no return type specified\\.$#"
 		-
 			message: "#^Property Lkrms\\\\Cli\\\\CliOption\\:\\:\\$BindTo is never read, only written\\.$#"
 			path: src/Cli/CliOption.php
@@ -36,6 +32,3 @@ parameters:
 		-
 			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$GetFromSyncStore is never read, only written\\.$#"
 			path: src/Sync/Support/SyncEntityProvider.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\(.+Test|TestCase)\\:\\:.+\\(\\) has no return type specified\\.$#"

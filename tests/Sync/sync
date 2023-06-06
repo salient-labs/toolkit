@@ -14,8 +14,7 @@ use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Throwable;
 
-$loader = require __DIR__ . '/../../vendor/autoload.php';
-$loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
+require __DIR__ . '/../../vendor/autoload.php';
 
 // Register JsonPlaceholderApi as the provider for Post and User objects
 $app = App::load(dirname(__DIR__))

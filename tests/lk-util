@@ -5,8 +5,7 @@ namespace Lkrms\Tests;
 
 use Lkrms\Facade\Env;
 
-$loader = require __DIR__ . '/../vendor/autoload.php';
-$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
+require __DIR__ . '/../vendor/autoload.php';
 
 Env::set('app_base_path', __DIR__);
 

@@ -18,8 +18,7 @@ use function My\Full\functionName;
 use function My\Full\functionName as func;
 use function some\namespace\{fn_a, fn_b, fn_c};
 
-$loader = require __DIR__ . '/../../vendor/autoload.php';
-$loader->addPsr4('Lkrms\\Tests\\', dirname(__DIR__));
+require __DIR__ . '/../../vendor/autoload.php';
 
 Err::load();
 

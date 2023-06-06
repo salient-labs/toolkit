@@ -58,4 +58,11 @@ final class SystemTest extends \Lkrms\Tests\TestCase
         $system = new System();
         $system->stopTimer('primary');
     }
+
+    public function testGetWorkingDirectory()
+    {
+        $system = new System();
+        $cwd = $system->getCwd();
+        $this->assertSame(fileinode($cwd), fileinode(getcwd()));
+    }
 }

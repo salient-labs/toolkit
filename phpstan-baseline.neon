@@ -1,46 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$HttpDataFile is never written, only read\\.$#"
-			count: 1
-			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$HttpEndpoint is never written, only read\\.$#"
-			count: 1
-			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$HttpMethod is never written, only read\\.$#"
-			count: 1
-			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$HttpQuery is never written, only read\\.$#"
-			count: 1
-			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$MemberVisibility is never written, only read\\.$#"
-			count: 1
-			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$OutputClassFqcn is never written, only read\\.$#"
-			count: 1
-			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$Provider is never written, only read\\.$#"
-			count: 1
-			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
-
-		-
-			message: "#^Property Lkrms\\\\LkUtil\\\\Command\\\\Generate\\\\GenerateSyncEntity\\:\\:\\$ReferenceEntityFile is never written, only read\\.$#"
-			count: 1
-			path: lib/lk-util/Command/Generate/GenerateSyncEntity.php
-
-		-
 			message: "#^Method Lkrms\\\\LkUtil\\\\Command\\\\Http\\\\SendHttpRequest\\:\\:getMethod\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: lib/lk-util/Command/Http/SendHttpRequest.php
@@ -1131,16 +1091,6 @@ parameters:
 			path: src/Sync/Catalog/SyncOperation.php
 
 		-
-			message: "#^Property Lkrms\\\\Sync\\\\Command\\\\CheckSyncProviderHeartbeat\\:\\:\\$Provider is never written, only read\\.$#"
-			count: 1
-			path: src/Sync/Command/CheckSyncProviderHeartbeat.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Command\\\\CheckSyncProviderHeartbeat\\:\\:\\$ProviderBasename is never written, only read\\.$#"
-			count: 1
-			path: src/Sync/Command/CheckSyncProviderHeartbeat.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\DbSyncProvider\\:\\:getDbDefinition\\(\\) return type with generic class Lkrms\\\\Sync\\\\Support\\\\DbSyncDefinition does not specify its types\\: TEntity, TProvider$#"
 			count: 1
 			path: src/Sync/Concept/DbSyncProvider.php
@@ -1997,11 +1947,6 @@ parameters:
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceTransient\\(\\) has parameter \\$container with no type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Property Lkrms\\\\Tests\\\\Container\\\\A\\:\\:\\$Service has no type specified\\.$#"
 			count: 1
 			path: tests/Container/ContainerTest.php
 

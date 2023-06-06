@@ -10,8 +10,7 @@ use Lkrms\Err\Err;
 use Lkrms\Facade\DI;
 use UnexpectedValueException;
 
-$loader = require __DIR__ . '/../vendor/autoload.php';
-$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
+require __DIR__ . '/../vendor/autoload.php';
 
 Err::load();
 
