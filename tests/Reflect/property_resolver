@@ -17,8 +17,7 @@ use Lkrms\Contract\IWritable;
 use Lkrms\Err\Err;
 use Lkrms\Support\Introspector;
 
-$loader = require __DIR__ . '/../../vendor/autoload.php';
-$loader->addPsr4('Lkrms\\Tests\\', __DIR__ . '/..');
+require __DIR__ . '/../../vendor/autoload.php';
 
 Err::load();
 

@@ -256,11 +256,8 @@ class Application extends Container implements IApplication
         ?array $timers = ['*'],
         bool $resourceUsage = true
     ) {
-        if (!$timers && !$resourceUsage) {
+        if ($this->ShutdownReportIsRegistered || (!$timers && !$resourceUsage)) {
             return $this;
-        }
-        if ($this->ShutdownReportIsRegistered) {
-            throw new RuntimeException('Shutdown report already registered');
         }
         register_shutdown_function(
             function () use ($level, $timers, $resourceUsage) {

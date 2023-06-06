@@ -6,8 +6,7 @@ namespace Lkrms\Tests;
 use Lkrms\Facade\App;
 use Lkrms\Facade\Cache;
 
-$loader = require __DIR__ . '/../vendor/autoload.php';
-$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
+require __DIR__ . '/../vendor/autoload.php';
 
 $app = App::load(__DIR__)->loadCache();
 

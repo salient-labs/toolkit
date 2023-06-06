@@ -8,8 +8,7 @@ use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Console;
 
-$loader = require __DIR__ . '/../vendor/autoload.php';
-$loader->addPsr4('Lkrms\\Tests\\', __DIR__);
+require __DIR__ . '/../vendor/autoload.php';
 
 Err::load();
 

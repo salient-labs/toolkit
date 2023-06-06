@@ -2,7 +2,7 @@
 
 namespace Lkrms\LkUtil;
 
-use Lkrms\Cli\Facade\Cli;
+use Lkrms\Cli\CliApplication;
 use Lkrms\LkUtil\Command\Generate\GenerateBuilder;
 use Lkrms\LkUtil\Command\Generate\GenerateFacade;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;
@@ -13,7 +13,7 @@ use Lkrms\Sync\Command\CheckSyncProviderHeartbeat;
 $loader = require $GLOBALS['_composer_autoload_path'] ?? dirname(dirname(__DIR__)) . '/vendor/autoload.php';
 $loader->addPsr4('Lkrms\\LkUtil\\', __DIR__);
 
-Cli::load()
+(new CliApplication())
     ->loadCacheIfExists()
     ->logConsoleMessages()
     ->command(['generate', 'builder'], GenerateBuilder::class)

@@ -136,8 +136,8 @@ class CliApplication extends Application implements ICliApplication
      * `Acme\Canvas\Sync`, a {@see CliCommand} inheritor, as follows:
      *
      * ```php
-     * Cli::load()
-     *     ->command(["sync", "canvas"], \Acme\Canvas\Sync::class)
+     * (new CliApplication())
+     *     ->command(['sync', 'canvas'], \Acme\Canvas\Sync::class)
      *     ->runAndExit();
      * ```
      *
