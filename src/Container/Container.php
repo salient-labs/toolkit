@@ -20,7 +20,8 @@ use UnexpectedValueException;
 /**
  * A service container with support for contextual bindings
  *
- * Typically accessed via the {@see \Lkrms\Facade\DI} facade.
+ * A static interface to the global service container is provided by
+ * {@see \Lkrms\Facade\DI}.
  *
  */
 class Container extends FluentInterface implements IContainer
@@ -31,20 +32,15 @@ class Container extends FluentInterface implements IContainer
     private static $GlobalContainer;
 
     /**
-     * @var Dice|null
+     * @var Dice
      */
     private $Dice;
-
-    /**
-     * @var string|null
-     */
-    private $Context;
 
     /**
      * Whenever `inContextOf($id)` clones the container, `$id` is pushed onto
      * the end
      *
-     * @var string[]
+     * @var class-string[]
      */
     private $ContextStack = [];
 
@@ -52,7 +48,7 @@ class Container extends FluentInterface implements IContainer
      * When an `IService` class is bound to the container,
      * `$this->Services[$name] = true` is applied
      *
-     * @var array<string,true>
+     * @var array<class-string<IService>,true>
      */
     private $Services = [];
 
@@ -110,8 +106,8 @@ class Container extends FluentInterface implements IContainer
     }
 
     /**
-     * Get the global container, returning null if no global container has been
-     * loaded
+     * Get the global container if set
+     *
      */
     final public static function maybeGetGlobalContainer(): ?IContainer
     {
@@ -119,8 +115,8 @@ class Container extends FluentInterface implements IContainer
     }
 
     /**
-     * Get the global container, throwing an exception if no global container
-     * has been loaded
+     * Get the global container if set, otherwise throw an exception
+     *
      */
     final public static function requireGlobalContainer(): IContainer
     {
@@ -145,15 +141,6 @@ class Container extends FluentInterface implements IContainer
         }
     }
 
-    final public function getIf(string $id, string $serviceId, array $params = [])
-    {
-        if (!is_a($this->getName($id), $serviceId, true)) {
-            throw new ContainerServiceNotFoundException(sprintf('%s does not inherit %s', $id, $serviceId));
-        }
-
-        return $this->get($id, $params);
-    }
-
     final public function getAs(string $id, string $serviceId, array $params = [])
     {
         if ($this->Dice->hasShared($id)) {
@@ -167,15 +154,11 @@ class Container extends FluentInterface implements IContainer
 
         try {
             return $this->Dice->addCallback(
-                '*',
-                function (object $instance, string $name, bool &$continue) use ($id, $serviceId): object {
-                    if (!strcasecmp(get_class($instance), $id)) {
-                        $continue = false;
+                $id,
+                function (object $instance, string $name, bool &$continue) use ($serviceId): object {
+                    $continue = false;
 
-                        return $this->callback($instance, $serviceId);
-                    }
-
-                    return $this->callback($instance, $name);
+                    return $this->callback($instance, $serviceId);
                 },
                 null,
                 true
@@ -195,6 +178,9 @@ class Container extends FluentInterface implements IContainer
         return class_exists($this->getName($id));
     }
 
+    /**
+     * @param array<string,mixed> $rule
+     */
     private function checkRule(array $rule): void
     {
         if (!empty(
@@ -207,6 +193,9 @@ class Container extends FluentInterface implements IContainer
         }
     }
 
+    /**
+     * @param array<string,mixed> $rule
+     */
     private function addRule(string $id, array $rule): void
     {
         $_dice = $this->Dice->addRule($id, $rule);
@@ -243,12 +232,15 @@ class Container extends FluentInterface implements IContainer
             return $this;
         }
 
-        $clone->Context = $clone->ContextStack[] = $id;
+        $clone->ContextStack[] = $id;
         $clone->bindContainer();
 
         return $clone;
     }
 
+    /**
+     * @param array<string,string|object|array<string,mixed>> $subs
+     */
     private function applyBindings(array $subs): void
     {
         $defaultRule = [];
@@ -279,6 +271,13 @@ class Container extends FluentInterface implements IContainer
     }
 
     /**
+     * @template T0
+     * @template T1 of T0
+     * @param class-string<T0> $id
+     * @param class-string<T1>|null $instanceOf
+     * @param mixed[]|null $constructParams
+     * @param class-string[]|null $shareInstances
+     * @param array<string,mixed> $rule
      * @return $this
      */
     private function _bind(
@@ -302,9 +301,6 @@ class Container extends FluentInterface implements IContainer
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     final public function bind(
         string $id,
         ?string $instanceOf = null,
@@ -314,9 +310,6 @@ class Container extends FluentInterface implements IContainer
         return $this->_bind($id, $instanceOf, $constructParams, $shareInstances);
     }
 
-    /**
-     * @return $this
-     */
     final public function bindIf(
         string $id,
         ?string $instanceOf = null,
@@ -330,9 +323,6 @@ class Container extends FluentInterface implements IContainer
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     final public function singleton(
         string $id,
         ?string $instanceOf = null,
@@ -342,9 +332,6 @@ class Container extends FluentInterface implements IContainer
         return $this->_bind($id, $instanceOf, $constructParams, $shareInstances, ['shared' => true]);
     }
 
-    /**
-     * @return $this
-     */
     final public function singletonIf(
         string $id,
         ?string $instanceOf = null,
@@ -358,11 +345,6 @@ class Container extends FluentInterface implements IContainer
         return $this;
     }
 
-    /**
-     * @param string[]|null $services
-     * @param string[]|null $exceptServices
-     * @return $this
-     */
     final public function service(
         string $id,
         ?array $services = null,
@@ -378,6 +360,11 @@ class Container extends FluentInterface implements IContainer
         return $this;
     }
 
+    /**
+     * @param class-string[]|null $services
+     * @param class-string[]|null $exceptServices
+     * @param int-mask-of<ServiceLifetime::*> $lifetime
+     */
     private function applyService(
         string $id,
         ?array $services = null,
@@ -437,9 +424,6 @@ class Container extends FluentInterface implements IContainer
         }
     }
 
-    /**
-     * @return $this
-     */
     final public function instance(string $id, $instance)
     {
         $this->Dice = $this->Dice->addShared($id, $instance);
@@ -447,9 +431,6 @@ class Container extends FluentInterface implements IContainer
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     final public function instanceIf(string $id, $instance)
     {
         if (!$this->Dice->hasRule($id)) {
@@ -459,9 +440,6 @@ class Container extends FluentInterface implements IContainer
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     final public function services(array $serviceMap, int $lifetime = ServiceLifetime::INHERIT)
     {
         $idMap = [];

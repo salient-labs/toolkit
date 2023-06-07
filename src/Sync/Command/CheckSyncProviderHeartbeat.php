@@ -10,6 +10,7 @@ use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncStore;
+use RuntimeException;
 
 /**
  * A generic sync provider heartbeat check command
@@ -143,9 +144,14 @@ final class CheckSyncProviderHeartbeat extends CliCommand
             );
         } else {
             $providers = array_map(
-                fn(string $providerClass) =>
-                    $this->App->getIf($providerClass, ISyncProvider::class),
-                $this->Provider
+                function (string $providerClass) {
+                    if (is_a($this->App->getName($providerClass), ISyncProvider::class, true)) {
+                        return $this->App->get($providerClass);
+                    }
+                    throw new RuntimeException(sprintf(
+                        '%s does not implement %s', $providerClass, ISyncProvider::class
+                    ));
+                }, $this->Provider
             );
         }
 

@@ -70,14 +70,15 @@ class PhpDocTag
             return null;
         }
 
+        $search = '/(^|(?<=\||&))class-string<mixed>($|(?=\||&))/';
+        $replace = 'class-string';
+
         // Normalise nullable types, e.g. `?string` and `null|string`
         $nullable = preg_replace('/^(\?|null\|)|\|null$/', '', $type, -1, $count);
-        if ($count && preg_match(Regex::anchorAndDelimit(Regex::PHP_TYPE), $nullable)) {
+        if ($count && preg_match(Regex::anchorAndDelimit(Regex::PHPDOC_TYPE), $nullable)) {
+            $nullable = preg_replace($search, $replace, $nullable);
             return $legacyNullable ? "?$nullable" : "$nullable|null";
         }
-
-        $search = '/^class-string<mixed>$/';
-        $replace = 'class-string';
 
         $types = explode('|', $type);
         // Leave invalid types alone

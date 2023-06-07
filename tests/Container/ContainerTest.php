@@ -93,6 +93,56 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
         $container->get(A::class);
     }
 
+    public function testGetAs()
+    {
+        $container = (new Container())->service(TestServiceImplB::class);
+
+        $o1 = $container->get(C::class);
+        $this->assertInstanceOf(C::class, $o1);
+        $this->assertSame(C::class, $o1->service());
+        $this->assertInstanceOf(A::class, $o1->a);
+        $this->assertNotInstanceOf(B::class, $o1->a);
+
+        $o2 = $container->getAs(C::class, D::class);
+        $this->assertInstanceOf(C::class, $o2);
+        $this->assertNotInstanceOf(D::class, $o2);
+        $this->assertSame(D::class, $o2->service());
+        $this->assertInstanceOf(A::class, $o2->a);
+        $this->assertNotInstanceOf(B::class, $o2->a);
+
+        $o3 = $container->get(A::class);
+        $this->assertInstanceOf(A::class, $o3);
+        $this->assertNotInstanceOf(B::class, $o3);
+        $this->assertSame(A::class, $o3->service());
+
+        $o4 = $container->getAs(A::class, B::class);
+        $this->assertInstanceOf(A::class, $o4);
+        $this->assertNotInstanceOf(B::class, $o4);
+        $this->assertSame(B::class, $o4->service());
+
+        $ts1 = $container->get(ITestService1::class);
+        $container2 = $container->inContextOf(get_class($ts1));
+
+        $o5 = $container2->get(C::class);
+        $this->assertInstanceOf(C::class, $o5);
+        $this->assertSame(C::class, $o5->service());
+        $this->assertInstanceOf(B::class, $o5->a);
+
+        $o6 = $container2->getAs(C::class, D::class);
+        $this->assertInstanceOf(C::class, $o6);
+        $this->assertNotInstanceOf(D::class, $o6);
+        $this->assertSame(D::class, $o6->service());
+        $this->assertInstanceOf(B::class, $o6->a);
+
+        $o7 = $container2->get(A::class);
+        $this->assertInstanceOf(B::class, $o7);
+        $this->assertSame(A::class, $o7->service());
+
+        $o8 = $container2->getAs(A::class, B::class);
+        $this->assertInstanceOf(B::class, $o8);
+        $this->assertSame(B::class, $o8->service());
+    }
+
     private function _testServiceTransient($container, $concrete = TestServiceImplA::class)
     {
         $c1 = $container->get($concrete);
@@ -193,22 +243,11 @@ class TestServiceImplD extends TestServiceImplB implements IServiceShared
 {
 }
 
-/**
- * @template T of IContainer
- * @implements ReturnsContainer<T>
- */
-class A implements ReceivesContainer, ReceivesService, ReturnsContainer, ReturnsService
+trait TestTrait
 {
-    public ITestService1 $TestService;
-
     protected ?IContainer $Container = null;
 
     protected ?string $Service = null;
-
-    public function __construct(ITestService1 $testService)
-    {
-        $this->TestService = $testService;
-    }
 
     public function service()
     {
@@ -248,8 +287,54 @@ class A implements ReceivesContainer, ReceivesService, ReturnsContainer, Returns
 
 /**
  * @template T of IContainer
+ * @implements ReturnsContainer<T>
+ */
+class A implements ReceivesContainer, ReceivesService, ReturnsContainer, ReturnsService
+{
+    use TestTrait;
+
+    public ITestService1 $TestService;
+
+    public function __construct(ITestService1 $testService)
+    {
+        $this->TestService = $testService;
+    }
+}
+
+/**
+ * @template T of IContainer
  * @extends A<T>
  */
 class B extends A
+{
+}
+
+/**
+ * @template T of IContainer
+ * @implements ReturnsContainer<T>
+ */
+class C implements ReceivesContainer, ReceivesService, ReturnsContainer, ReturnsService
+{
+    use TestTrait;
+
+    /**
+     * @var A<T>
+     */
+    public A $a;
+
+    /**
+     * @param A<T> $a
+     */
+    public function __construct(A $a)
+    {
+        $this->a = $a;
+    }
+}
+
+/**
+ * @template T of IContainer
+ * @extends C<T>
+ */
+class D extends C
 {
 }
