@@ -311,10 +311,26 @@ class IntrospectionClass
             $methodFilter |= ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED;
         }
 
+        $parent = $class;
+        do {
+            $parents[] = $parent->getName();
+        } while ($parent = $parent->getParentClass());
+        $parents = array_flip($parents);
+
         // Get instance properties
         $properties = array_filter(
             $class->getProperties($propertyFilter),
             fn(ReflectionProperty $prop) => !$prop->isStatic()
+        );
+        // Sort by order of declaration, starting with the base class
+        uksort(
+            $properties,
+            function (int $a, int $b) use ($parents, $properties) {
+                $depthA = $parents[$properties[$a]->getDeclaringClass()->getName()];
+                $depthB = $parents[$properties[$b]->getDeclaringClass()->getName()];
+
+                return $depthB <=> $depthA ?: $a <=> $b;
+            }
         );
         $names = Reflect::getNames($properties);
         $this->Properties = array_combine(

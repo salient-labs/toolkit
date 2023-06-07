@@ -996,71 +996,6 @@ parameters:
 			path: src/Sync/Concept/SyncDefinition.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_serialize\\(\\) has parameter \\$node with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_serialize\\(\\) has parameter \\$parents with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_serialize\\(\\) has parameter \\$path with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_serializeId\\(\\) has parameter \\$node with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_serializeId\\(\\) has parameter \\$path with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:getMetaProperty\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:introspector\\(\\) return type with generic class Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector does not specify its types\\: TClass, TIntrospectionClass$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:jsonSerialize\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:serialize\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:setMetaProperty\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:toArrayWith\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncProvider\\:\\:__call\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Sync/Concept/SyncProvider.php
@@ -1084,16 +1019,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncContext\\:\\:maybeApplyFilterPolicy\\(\\) has parameter \\$empty with no type specified\\.$#"
 			count: 1
 			path: src/Sync/Contract/ISyncContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncEntity\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Contract/ISyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncEntity\\:\\:toArrayWith\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Contract/ISyncEntity.php
 
 		-
 			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncEntityProvider\\:\\:create\\(\\) has parameter \\$args with no type specified\\.$#"
@@ -1359,31 +1284,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector\\:\\:getSyncOperationMethod\\(\\) has parameter \\$entity with generic class Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector but does not specify its types\\: TClass, TIntrospectionClass$#"
 			count: 1
 			path: src/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncSerializeRules\\:\\:_apply\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncSerializeRules.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncSerializeRules\\:\\:flattenRules\\(\\) has parameter \\$base with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncSerializeRules.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncSerializeRules\\:\\:flattenRules\\(\\) has parameter \\$merge with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncSerializeRules.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncSerializeRules\\:\\:flattenRules\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncSerializeRules.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncSerializeRules\\:\\:\\$Introspector with generic class Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector does not specify its types\\: TClass, TIntrospectionClass$#"
-			count: 1
-			path: src/Sync/Support/SyncSerializeRules.php
 
 		-
 			message: "#^Method Lkrms\\\\Utility\\\\Assertions\\:\\:notEmpty\\(\\) has parameter \\$value with no type specified\\.$#"

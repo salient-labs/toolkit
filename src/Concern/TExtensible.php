@@ -2,7 +2,7 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Support\Introspector;
+use Lkrms\Support\Introspector as IS;
 
 /**
  * Implements IExtensible to store arbitrary property values
@@ -11,8 +11,6 @@ use Lkrms\Support\Introspector;
  */
 trait TExtensible
 {
-    use HasIntrospector;
-
     /**
      * Normalised property name => value
      *
@@ -35,28 +33,34 @@ trait TExtensible
         return $this;
     }
 
+    /**
+     * @param mixed $value
+     */
     final public function setMetaProperty(string $name, $value): void
     {
-        $normalised = $this->introspector()->maybeNormalise($name);
+        $normalised = IS::get(static::class)->maybeNormalise($name);
         $this->_MetaProperties[$normalised] = $value;
         if (!array_key_exists($normalised, $this->_MetaPropertyNames)) {
             $this->_MetaPropertyNames[$normalised] = $name;
         }
     }
 
+    /**
+     * @return mixed
+     */
     final public function getMetaProperty(string $name)
     {
-        return $this->_MetaProperties[$this->introspector()->maybeNormalise($name)] ?? null;
+        return $this->_MetaProperties[IS::get(static::class)->maybeNormalise($name)] ?? null;
     }
 
     final public function isMetaPropertySet(string $name): bool
     {
-        return isset($this->_MetaProperties[$this->introspector()->maybeNormalise($name)]);
+        return isset($this->_MetaProperties[IS::get(static::class)->maybeNormalise($name)]);
     }
 
     final public function unsetMetaProperty(string $name): void
     {
-        unset($this->_MetaProperties[$this->introspector()->maybeNormalise($name)]);
+        unset($this->_MetaProperties[IS::get(static::class)->maybeNormalise($name)]);
     }
 
     final public function getMetaProperties(): array
