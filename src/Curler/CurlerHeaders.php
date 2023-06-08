@@ -2,9 +2,11 @@
 
 namespace Lkrms\Curler;
 
+use Lkrms\Auth\AccessToken;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\CurlerHeadersFlag as Flag;
 use Lkrms\Curler\Support\CurlerHeader;
+use Lkrms\Support\Catalog\HttpHeader;
 
 /**
  * A collection of HTTP headers
@@ -77,6 +79,11 @@ final class CurlerHeaders implements ICurlerHeaders
     public function setHeader(string $name, string $value, bool $private = false)
     {
         return $this->unsetHeader($name)->_addHeader($name, $value, $private);
+    }
+
+    public function applyAccessToken(AccessToken $token, string $name = HttpHeader::AUTHORIZATION)
+    {
+        return $this->setHeader($name, sprintf('%s %s', $token->Type, $token->Token));
     }
 
     public function addPrivateHeaderName(string $name)
