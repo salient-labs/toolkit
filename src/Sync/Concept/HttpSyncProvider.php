@@ -7,6 +7,7 @@ use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerBuilder;
+use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
@@ -106,6 +107,15 @@ abstract class HttpSyncProvider extends SyncProvider
     }
 
     /**
+     * Get a new CurlerHeaders instance
+     *
+     */
+    final protected function headers(): CurlerHeaders
+    {
+        return CurlerHeaders::create();
+    }
+
+    /**
      * Configure an unresolved Curler instance for upstream requests
      *
      * `baseUrl()` has already been applied to {@see CurlerBuilder} instances
@@ -186,29 +196,4 @@ abstract class HttpSyncProvider extends SyncProvider
     {
         return null;
     }
-
-    /**
-     * @internal Override {@see HttpSyncProvider::getHeaders()} instead
-     */
-    final protected function getCurlerHeaders(): void {}
-
-    /**
-     * @internal Override {@see HttpSyncProvider::getPager()} instead
-     */
-    final protected function getCurlerPager(): void {}
-
-    /**
-     * @internal Override {@see HttpSyncProvider::getExpiry()} instead
-     */
-    final protected function getCurlerCacheExpiry(): void {}
-
-    /**
-     * @internal Override {@see HttpSyncProvider::buildCurler()} instead
-     */
-    final protected function getCurlerCacheKey(): void {}
-
-    /**
-     * @internal Override {@see HttpSyncProvider::buildCurler()} instead
-     */
-    final protected function prepareCurler(): void {}
 }

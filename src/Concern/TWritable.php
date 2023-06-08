@@ -5,7 +5,7 @@ namespace Lkrms\Concern;
 use Lkrms\Support\Introspector as IS;
 
 /**
- * Implements IWritable (mostly)
+ * Implements IWritable
  *
  * - If `_set<Property>($value)` is defined, it will be called instead of
  *   assigning `$value` to `<Property>`.
@@ -18,7 +18,10 @@ use Lkrms\Support\Introspector as IS;
  */
 trait TWritable
 {
-    abstract public static function getWritable(): array;
+    public static function getWritable(): array
+    {
+        return [];
+    }
 
     /**
      * @param mixed ...$params

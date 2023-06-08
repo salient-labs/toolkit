@@ -5,7 +5,7 @@ namespace Lkrms\Concern;
 use Lkrms\Support\Introspector as IS;
 
 /**
- * Implements IReadable (mostly)
+ * Implements IReadable
  *
  * - If `_get<Property>()` is defined, `__get` will use its return value instead
  *   of returning the value of `<Property>`.
@@ -18,7 +18,10 @@ use Lkrms\Support\Introspector as IS;
  */
 trait TReadable
 {
-    abstract public static function getReadable(): array;
+    public static function getReadable(): array
+    {
+        return [];
+    }
 
     /**
      * @return mixed

@@ -6,7 +6,6 @@ use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IService;
-use Lkrms\Facade\Convert;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Contract\ISyncContext;
