@@ -5,16 +5,17 @@ namespace Lkrms\Utility;
 use CallbackFilterIterator;
 use FilesystemIterator;
 use Lkrms\Facade\Compute;
+use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Utility\Test;
+use LogicException;
 use Phar;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use RuntimeException;
 use SplFileInfo;
 
 /**
@@ -269,7 +270,7 @@ final class Filesystem
     /**
      * Get the URI or filename associated with a stream
      *
-     * @param resource $stream Any stream created by `fopen()`, `fsockopen()`,
+     * @param resource $stream A stream opened by `fopen()`, `fsockopen()`,
      * `pfsockopen()` or `stream_socket_client()`.
      * @return string|null `null` if `$stream` is not an open stream resource.
      */
@@ -283,32 +284,59 @@ final class Filesystem
     }
 
     /**
-     * Convert data to CSV
+     * Write data to a CSV file or stream
      *
-     * @param iterable $data A series of arrays (rows) to convert to CSV.
-     * @param string|null $filename Path to the output file, or `null` to return
-     * the CSV as a string.
-     * @param bool $headerRow If `true`, add `array_keys($row)` before the first
-     * row.
-     * @param string $nullValue What should appear in cells that are `null`?
-     * @return string|false|void
-     * @throws RuntimeException
+     * For maximum interoperability with Excel across all platforms, data is
+     * written in UTF-16LE by default.
+     *
+     * @param iterable<mixed[]> $data Data to write.
+     * @param string|resource|null $target Either a filename, a stream opened by
+     * `fopen()`, `fsockopen()` or similar, or `null`. If `null`, data is
+     * returned as a string.
+     * @param bool $headerRow If `true`, write the first record's array keys
+     * before the first row.
+     * @param int|string|null $nullValue Optionally replace `null` values before
+     * writing data.
+     * @param callable(mixed[]): mixed[] $callback Applied to each record before
+     * it is written.
+     * @param int|null $count Receives the number of records written.
+     * @param bool $utf16le If `true` (the default), encode output in UTF-16LE.
+     * @param bool $bom If `true` (the default), add a BOM (byte order mark) to
+     * the output.
+     * @return string|true
      */
     public function writeCsv(
         iterable $data,
-        ?string $filename = null,
+        $target = null,
         bool $headerRow = true,
-        ?string $nullValue = null,
+        $nullValue = null,
+        ?callable $callback = null,
         ?int &$count = null,
-        ?callable $callback = null
+        string $eol = "\r\n",
+        bool $utf16le = true,
+        bool $bom = true
     ) {
-        if (is_null($filename)) {
-            $filename = 'php://temp';
-            $return = true;
+        if (is_resource($target)) {
+            if (($type = get_resource_type($target)) !== 'stream') {
+                throw new LogicException(sprintf('Invalid resource type: %s', $type));
+            }
+            $f = $target;
+        } elseif (is_string($target)) {
+            $f = fopen($target, 'wb');
+        } else {
+            $target = null;
+            $f = fopen('php://memory', 'w+b');
         }
 
-        if (($f = fopen($filename, 'w')) === false) {
-            throw new RuntimeException("Could not open $filename");
+        if ($utf16le) {
+            if (extension_loaded('iconv')) {
+                stream_filter_append($f, 'convert.iconv.UTF-8.UTF-16LE', STREAM_FILTER_WRITE);
+            } else {
+                Console::warnOnce("'iconv' extension required for UTF-16LE encoding");
+            }
+        }
+        if ($bom) {
+            fwrite($f, '﻿');
         }
 
         $count = 0;
@@ -317,36 +345,34 @@ final class Filesystem
                 $row = $callback($row);
             }
 
-            if ($headerRow) {
-                if (fputcsv($f, array_keys($row)) === false) {
-                    throw new RuntimeException("Could not write to $filename");
-                }
-                $headerRow = false;
-            }
-
             foreach ($row as &$value) {
-                if (is_null($value)) {
+                if ($value === null) {
                     $value = $nullValue;
                 } elseif (!is_scalar($value)) {
                     $value = json_encode($value);
                 }
             }
 
-            if (fputcsv($f, $row) === false) {
-                throw new RuntimeException("Could not write to $filename");
+            if (!$count && $headerRow) {
+                fputcsv($f, array_keys($row), ',', '"', '\\', $eol);
             }
+
+            fputcsv($f, $row, ',', '"', '\\', $eol);
             $count++;
         }
 
-        if ($return ?? false) {
+        if ($target === null) {
             rewind($f);
             $csv = stream_get_contents($f);
             fclose($f);
 
             return $csv;
-        } else {
+        }
+        if (is_string($target)) {
             fclose($f);
         }
+
+        return true;
     }
 
     /**

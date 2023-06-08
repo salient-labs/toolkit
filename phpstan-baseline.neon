@@ -566,11 +566,6 @@ parameters:
 			path: src/Facade/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Facade\\\\File\\:\\:writeCsv\\(\\) has parameter \\$data with no value type specified in iterable type iterable\\.$#"
-			count: 1
-			path: src/Facade/File.php
-
-		-
 			message: "#^Method Lkrms\\\\Store\\\\CacheStore\\:\\:get\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Store/CacheStore.php
@@ -1484,11 +1479,6 @@ parameters:
 			message: "#^Property Lkrms\\\\Utility\\\\Debugging\\:\\:\\$Facade with generic interface Lkrms\\\\Contract\\\\IFacade does not specify its types\\: TClass$#"
 			count: 1
 			path: src/Utility/Debugging.php
-
-		-
-			message: "#^Method Lkrms\\\\Utility\\\\Filesystem\\:\\:writeCsv\\(\\) has parameter \\$data with no value type specified in iterable type iterable\\.$#"
-			count: 1
-			path: src/Utility/Filesystem.php
 
 		-
 			message: "#^Method Lkrms\\\\Utility\\\\Formatters\\:\\:array\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
