@@ -2,8 +2,10 @@
 
 namespace Lkrms\Curler\Contract;
 
+use Lkrms\Auth\AccessToken;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Curler\CurlerHeadersFlag as Flag;
+use Lkrms\Support\Catalog\HttpHeader;
 
 /**
  * A collection of HTTP headers
@@ -32,6 +34,11 @@ interface ICurlerHeaders extends IImmutable
      * @return $this
      */
     public function setHeader(string $name, string $value, bool $private = false);
+
+    /**
+     * @return $this
+     */
+    public function applyAccessToken(AccessToken $token, string $name = HttpHeader::AUTHORIZATION);
 
     /**
      * @return $this
