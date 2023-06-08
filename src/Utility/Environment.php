@@ -151,8 +151,8 @@ final class Environment
      * Returns `$default` if `$name` is not found in the environment.
      *
      * @template T of string
-     * @phpstan-param T|null $default
-     * @phpstan-return T|string
+     * @param T|null $default
+     * @return T|string
      * @throws RuntimeException if `$name` is not set and `$default` is not
      * given.
      */
@@ -161,7 +161,7 @@ final class Environment
         $value = $this->_get($name);
         if ($value === false) {
             if (func_num_args() < 2) {
-                throw new RuntimeException("Environment variable $name is not set");
+                throw new RuntimeException(sprintf('Value not found in environment: %s', $name));
             } else {
                 return $default;
             }
@@ -177,8 +177,8 @@ final class Environment
      * `int` before returning.
      *
      * @template T of int
-     * @phpstan-param T|null $default
-     * @phpstan-return T|int
+     * @param T|null $default
+     * @return T|int
      * @throws RuntimeException if `$name` is not set and `$default` is not
      * given.
      */
@@ -204,8 +204,8 @@ final class Environment
      * not case-sensitive.
      *
      * @template T of bool
-     * @phpstan-param T|null $default
-     * @phpstan-return T|bool
+     * @param T|null $default
+     * @return T|bool
      * @throws RuntimeException if `$name` is not set and `$default` is not
      * given.
      */
@@ -233,10 +233,8 @@ final class Environment
      * otherwise splits it into an array on `$delimiter` before returning.
      *
      * @template T of string[]
-     * @phpstan-param T|null $default
-     * @phpstan-return T|string[]
-     * @param string[]|null $default
-     * @return string[]|null
+     * @param T|null $default
+     * @return T|string[]
      * @throws RuntimeException if `$name` is not set and `$default` is not
      * given.
      */
@@ -257,6 +255,84 @@ final class Environment
         }
 
         return $value ? explode($delimiter, $value) : [];
+    }
+
+    /**
+     * Get the value of an environment variable, or null if it's set but empty
+     *
+     * Returns `$default` if `$name` is not found in the environment.
+     *
+     * @throws RuntimeException if `$name` is not set and `$default` is not
+     * given.
+     */
+    public function getNullable(string $name, ?string $default = null): ?string
+    {
+        $value = $this->_get($name);
+        if ($value === false) {
+            if (func_num_args() < 2) {
+                throw new RuntimeException(sprintf('Value not found in environment: %s', $name));
+            } else {
+                return $default;
+            }
+        }
+        if (trim($value) === '') {
+            return null;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Get an integer value from the environment, or null if it's set but empty
+     *
+     * Returns `$default` if `$name` is not found in the environment.
+     *
+     * @throws RuntimeException if `$name` is not set and `$default` is not
+     * given.
+     */
+    public function getNullableInt(string $name, ?int $default = null): ?int
+    {
+        if (func_num_args() < 2) {
+            $value = $this->getNullable($name);
+        } else {
+            $value = $this->getNullable($name, '');
+        }
+        if ($value === null) {
+            return null;
+        }
+        if ($value === '') {
+            return $default;
+        }
+
+        return (int) $value;
+    }
+
+    /**
+     * Get a boolean value from the environment, or null if it's set but empty
+     *
+     * Returns `$default` if `$name` is not found in the environment.
+     *
+     * @throws RuntimeException if `$name` is not set and `$default` is not
+     * given.
+     */
+    public function getNullableBool(string $name, ?bool $default = null): ?bool
+    {
+        if (func_num_args() < 2) {
+            $value = $this->getNullable($name);
+        } else {
+            $value = $this->getNullable($name, '');
+        }
+        if ($value === null) {
+            return null;
+        }
+        if ($value === '') {
+            return $default;
+        }
+        if (preg_match('/^(off|no?|f(alse)?)$/i', $value)) {
+            return false;
+        }
+
+        return (bool) $value;
     }
 
     private function getOrSetBool(string $name, ?bool $newState = null): bool

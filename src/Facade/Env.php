@@ -19,6 +19,9 @@ use Lkrms\Utility\Environment;
  * @method static bool|null getBool(string $name, ?bool $default = null) Get a boolean value from the environment (see {@see Environment::getBool()})
  * @method static int|null getInt(string $name, ?int $default = null) Get an integer value from the environment (see {@see Environment::getInt()})
  * @method static string[]|null getList(string $name, string[]|null $default = null, string $delimiter = "\054") Get a list of strings from the environment (see {@see Environment::getList()})
+ * @method static string|null getNullable(string $name, ?string $default = null) Get the value of an environment variable, or null if it's set but empty (see {@see Environment::getNullable()})
+ * @method static bool|null getNullableBool(string $name, ?bool $default = null) Get a boolean value from the environment, or null if it's set but empty (see {@see Environment::getNullableBool()})
+ * @method static int|null getNullableInt(string $name, ?int $default = null) Get an integer value from the environment, or null if it's set but empty (see {@see Environment::getNullableInt()})
  * @method static bool has(string $name) True if a variable exists in the environment
  * @method static string|null home() Get the current user's home directory from the environment
  * @method static bool isLocaleUtf8() True if the current locale for character classification and conversion (LC_CTYPE) supports UTF-8

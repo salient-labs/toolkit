@@ -56,7 +56,7 @@ final class CurlerHeaders implements ICurlerHeaders
         'proxy-authorization',
     ];
 
-    public static function create(): ICurlerHeaders
+    public static function create(): self
     {
         return new self();
     }
