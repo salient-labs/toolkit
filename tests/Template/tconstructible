@@ -28,16 +28,6 @@ class A implements IReadable, IWritable, IResolvable
     public $Id;
 
     public $Name;
-
-    public static function getReadable(): array
-    {
-        return [];
-    }
-
-    public static function getWritable(): array
-    {
-        return [];
-    }
 }
 
 class B extends A implements IExtensible

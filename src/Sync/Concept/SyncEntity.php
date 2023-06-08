@@ -119,16 +119,6 @@ abstract class SyncEntity implements ISyncEntity
         return Convert::nounToPlural(Convert::classToBasename(static::class));
     }
 
-    public static function getReadable(): array
-    {
-        return [];
-    }
-
-    public static function getWritable(): array
-    {
-        return [];
-    }
-
     public static function getDateProperties(): array
     {
         return [];

@@ -128,11 +128,6 @@ trait OAuth2Client
      */
     abstract protected function receiveOAuth2Token(AccessTokenInterface $token): void;
 
-    public static function getReadable(): array
-    {
-        return [];
-    }
-
     /**
      * @var HttpServer|false|null
      */
