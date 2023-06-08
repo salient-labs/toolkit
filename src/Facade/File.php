@@ -41,18 +41,20 @@ final class File extends Facade
     }
 
     /**
-     * Convert data to CSV
+     * Write data to a CSV file or stream
      *
-     * @param string|null $filename
-     * @param string $nullValue
-     * @return string|false|void
+     * @param iterable<mixed[]> $data
+     * @param string|resource|null $target
+     * @param int|string|null $nullValue
+     * @param int|null $count
+     * @return string|true
      * @see Filesystem::writeCsv()
      */
-    public static function writeCsv(iterable $data, ?string $filename = null, bool $headerRow = true, ?string $nullValue = null, ?int &$count = null, ?callable $callback = null)
+    public static function writeCsv(iterable $data, $target = null, bool $headerRow = true, $nullValue = null, ?callable $callback = null, ?int &$count = null, string $eol = "\r\n", bool $utf16le = true, bool $bom = true)
     {
         static::setFuncNumArgs(__FUNCTION__, func_num_args());
         try {
-            return static::getInstance()->writeCsv($data, $filename, $headerRow, $nullValue, $count, $callback);
+            return static::getInstance()->writeCsv($data, $target, $headerRow, $nullValue, $callback, $count, $eol, $utf16le, $bom);
         } finally {
             static::clearFuncNumArgs(__FUNCTION__);
         }

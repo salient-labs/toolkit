@@ -2,6 +2,8 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Support\Introspector as IS;
+
 /**
  * Implements IReadable (mostly)
  *
@@ -16,8 +18,6 @@ namespace Lkrms\Concern;
  */
 trait TReadable
 {
-    use HasIntrospector;
-
     abstract public static function getReadable(): array;
 
     /**
@@ -25,7 +25,7 @@ trait TReadable
      */
     private function getProperty(string $action, string $name)
     {
-        return $this->introspector()->getPropertyActionClosure($name, $action)($this);
+        return IS::get(static::class)->getPropertyActionClosure($name, $action)($this);
     }
 
     /**

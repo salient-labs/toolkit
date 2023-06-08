@@ -566,11 +566,6 @@ parameters:
 			path: src/Facade/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Facade\\\\File\\:\\:writeCsv\\(\\) has parameter \\$data with no value type specified in iterable type iterable\\.$#"
-			count: 1
-			path: src/Facade/File.php
-
-		-
 			message: "#^Method Lkrms\\\\Store\\\\CacheStore\\:\\:get\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Store/CacheStore.php
@@ -996,71 +991,6 @@ parameters:
 			path: src/Sync/Concept/SyncDefinition.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_serialize\\(\\) has parameter \\$node with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_serialize\\(\\) has parameter \\$parents with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_serialize\\(\\) has parameter \\$path with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_serializeId\\(\\) has parameter \\$node with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_serializeId\\(\\) has parameter \\$path with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:_toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:getMetaProperty\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:introspector\\(\\) return type with generic class Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector does not specify its types\\: TClass, TIntrospectionClass$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:jsonSerialize\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:serialize\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:setMetaProperty\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncEntity\\:\\:toArrayWith\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncEntity.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncProvider\\:\\:__call\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Sync/Concept/SyncProvider.php
@@ -1084,16 +1014,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncContext\\:\\:maybeApplyFilterPolicy\\(\\) has parameter \\$empty with no type specified\\.$#"
 			count: 1
 			path: src/Sync/Contract/ISyncContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncEntity\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Contract/ISyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncEntity\\:\\:toArrayWith\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Contract/ISyncEntity.php
 
 		-
 			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncEntityProvider\\:\\:create\\(\\) has parameter \\$args with no type specified\\.$#"
@@ -1361,31 +1281,6 @@ parameters:
 			path: src/Sync/Support/SyncIntrospector.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncSerializeRules\\:\\:_apply\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncSerializeRules.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncSerializeRules\\:\\:flattenRules\\(\\) has parameter \\$base with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncSerializeRules.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncSerializeRules\\:\\:flattenRules\\(\\) has parameter \\$merge with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncSerializeRules.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncSerializeRules\\:\\:flattenRules\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncSerializeRules.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncSerializeRules\\:\\:\\$Introspector with generic class Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector does not specify its types\\: TClass, TIntrospectionClass$#"
-			count: 1
-			path: src/Sync/Support/SyncSerializeRules.php
-
-		-
 			message: "#^Method Lkrms\\\\Utility\\\\Assertions\\:\\:notEmpty\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
 			path: src/Utility/Assertions.php
@@ -1584,11 +1479,6 @@ parameters:
 			message: "#^Property Lkrms\\\\Utility\\\\Debugging\\:\\:\\$Facade with generic interface Lkrms\\\\Contract\\\\IFacade does not specify its types\\: TClass$#"
 			count: 1
 			path: src/Utility/Debugging.php
-
-		-
-			message: "#^Method Lkrms\\\\Utility\\\\Filesystem\\:\\:writeCsv\\(\\) has parameter \\$data with no value type specified in iterable type iterable\\.$#"
-			count: 1
-			path: src/Utility/Filesystem.php
 
 		-
 			message: "#^Method Lkrms\\\\Utility\\\\Formatters\\:\\:array\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"

@@ -2,6 +2,8 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Support\Introspector as IS;
+
 /**
  * Implements IWritable (mostly)
  *
@@ -16,8 +18,6 @@ namespace Lkrms\Concern;
  */
 trait TWritable
 {
-    use HasIntrospector;
-
     abstract public static function getWritable(): array;
 
     /**
@@ -25,7 +25,7 @@ trait TWritable
      */
     private function setProperty(string $action, string $name, ...$params): void
     {
-        $this->introspector()->getPropertyActionClosure($name, $action)($this, ...$params);
+        IS::get(static::class)->getPropertyActionClosure($name, $action)($this, ...$params);
     }
 
     /**

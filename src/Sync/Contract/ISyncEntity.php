@@ -36,6 +36,7 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
      * Get a SyncSerializeRules builder for the entity, optionally inheriting
      * its default rules
      *
+     * @return SyncSerializeRulesBuilder<static>
      */
     public static function buildSerializeRules(
         ?IContainer $container = null,
@@ -45,6 +46,7 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
     /**
      * Get the entity's default serialization rules
      *
+     * @return SyncSerializeRules<static>
      */
     public static function serializeRules(?IContainer $container = null): SyncSerializeRules;
 
@@ -90,6 +92,7 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
      * The entity's {@see SyncSerializeRules} are applied to each
      * {@see ISyncEntity} encountered during this recursive operation.
      *
+     * @return array<string,mixed>
      * @see ISyncEntity::serializeRules()
      */
     public function toArray(): array;
@@ -97,7 +100,8 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
     /**
      * Use custom rules to serialize the entity and any nested entities
      *
-     * @param SyncSerializeRulesBuilder|SyncSerializeRules $rules
+     * @param SyncSerializeRulesBuilder<static>|SyncSerializeRules<static> $rules
+     * @return array<string,mixed>
      */
     public function toArrayWith($rules): array;
 
@@ -106,7 +110,7 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
      *
      * Inspired by JSON-LD.
      *
-     * @phpstan-param SyncSerializeLinkType::* $type
+     * @param SyncSerializeLinkType::* $type
      * @return array<string,int|string>
      * @see SyncSerializeLinkType
      */

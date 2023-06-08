@@ -23,14 +23,13 @@ use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Iterator\IterableIterator;
 use Lkrms\Sync\Catalog\SyncSerializeLinkType as SerializeLinkType;
-use Lkrms\Sync\Concern\HasSyncIntrospector;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncContext;
-use Lkrms\Sync\Support\SyncIntrospector;
+use Lkrms\Sync\Support\SyncIntrospector as IS;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
@@ -67,9 +66,7 @@ abstract class SyncEntity implements ISyncEntity
     /**
      * @use TProvidable<ISyncProvider,ISyncContext>
      */
-    use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer, HasSyncIntrospector {
-        HasSyncIntrospector::introspector insteadof TReadable, TWritable, TExtensible;
-    }
+    use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer;
 
     /**
      * The unique identifier assigned to the entity by its provider
@@ -139,7 +136,7 @@ abstract class SyncEntity implements ISyncEntity
 
     public function name(): ?string
     {
-        return $this->introspector()->getGetNameClosure()($this);
+        return IS::get(static::class)->getGetNameClosure()($this);
     }
 
     public function description(): ?string
@@ -166,7 +163,8 @@ abstract class SyncEntity implements ISyncEntity
      * {@see SerializeRulesBuilder} object configured to remove or replace
      * circular references.
      *
-     * @return SerializeRules|SerializeRulesBuilder
+     * @param SerializeRulesBuilder<static> $build
+     * @return SerializeRules<static>|SerializeRulesBuilder<static>
      */
     protected static function getSerializeRules(SerializeRulesBuilder $build)
     {
@@ -196,7 +194,7 @@ abstract class SyncEntity implements ISyncEntity
     final public static function defaultProvider(?IContainer $container = null): ISyncProvider
     {
         return self::requireContainer($container)
-            ->get(SyncIntrospector::entityToProvider(static::class));
+            ->get(IS::entityToProvider(static::class));
     }
 
     final public static function withDefaultProvider(?IContainer $container = null): ISyncEntityProvider
@@ -209,11 +207,8 @@ abstract class SyncEntity implements ISyncEntity
         bool $inherit = true
     ): SerializeRulesBuilder {
         return (new SerializeRulesBuilder($container = self::requireContainer($container)))
-            ->if(
-                $inherit,
-                fn(SerializeRulesBuilder $builder) =>
-                    $builder->inherit(static::serializeRules($container))
-            )
+            ->if($inherit, fn(SerializeRulesBuilder $builder) =>
+                               $builder->inherit(static::serializeRules($container)))
             ->entity(static::class);
     }
 
@@ -388,6 +383,10 @@ abstract class SyncEntity implements ISyncEntity
         ]);
     }
 
+    /**
+     * @param SerializeRules<static> $rules
+     * @return array<string,mixed>
+     */
     private function _toArray(SerializeRules $rules): array
     {
         $array = $this;
@@ -396,6 +395,12 @@ abstract class SyncEntity implements ISyncEntity
         return (array) $array;
     }
 
+    /**
+     * @param SyncEntity|mixed[] $node
+     * @param string[] $path
+     * @param SerializeRules<static> $rules
+     * @param array<string,true> $parents
+     */
     private function _serialize(&$node, array $path, SerializeRules $rules, array $parents = []): void
     {
         if (!is_null($maxDepth = $rules->getMaxDepth()) && count($path) > $maxDepth) {
@@ -443,8 +448,8 @@ abstract class SyncEntity implements ISyncEntity
 
                 while ($rule) {
                     $arg = array_shift($rule);
-                    if (is_int($arg) || is_string($arg)) {
-                        $newKey = is_string($arg) ? $this->introspector()->maybeNormalise($arg, NormaliserFlag::CAREFUL) : $arg;
+                    if (is_string($arg)) {
+                        $newKey = IS::get(static::class)->maybeNormalise($arg, NormaliserFlag::CAREFUL);
                         continue;
                     }
                     if ($arg instanceof Closure) {
@@ -528,6 +533,10 @@ abstract class SyncEntity implements ISyncEntity
         }
     }
 
+    /**
+     * @param SyncEntity[]|SyncEntity|null $node
+     * @param string[] $path
+     */
     private function _serializeId(&$node, array $path): void
     {
         if (is_null($node)) {
@@ -556,12 +565,14 @@ abstract class SyncEntity implements ISyncEntity
      * Nested objects and lists are returned as-is. Only the top-level entity is
      * replaced.
      *
+     * @param SerializeRules<static> $rules
+     * @return array<string,mixed>
      */
     private function serialize(SerializeRules $rules): array
     {
-        $array = $this->introspector()->getSerializeClosure($rules)($this);
+        $array = IS::get(static::class)->getSerializeClosure($rules)($this);
         if ($rules->getRemoveCanonicalId()) {
-            unset($array[$this->introspector()->maybeNormalise('CanonicalId', NormaliserFlag::CAREFUL)]);
+            unset($array[IS::get(static::class)->maybeNormalise('CanonicalId', NormaliserFlag::CAREFUL)]);
         }
 
         return $array;
@@ -579,6 +590,8 @@ abstract class SyncEntity implements ISyncEntity
 
     /**
      * @internal
+     *
+     * @return array<string,mixed>
      */
     final public function jsonSerialize(): array
     {
@@ -601,7 +614,7 @@ abstract class SyncEntity implements ISyncEntity
         $context = $context
             ? $context->withContainer($container)
             : $container->get(SyncContext::class);
-        $introspector = SyncIntrospector::getService($container, static::class);
+        $introspector = IS::getService($container, static::class);
         $closure = $introspector->getCreateSyncEntityFromClosure();
 
         return $closure($data, $provider, $context);
@@ -644,7 +657,7 @@ abstract class SyncEntity implements ISyncEntity
         $context = ($context
             ? $context->withContainer($container)
             : $container->get(SyncContext::class))->withConformity($conformity);
-        $introspector = SyncIntrospector::getService($container, static::class);
+        $introspector = IS::getService($container, static::class);
 
         foreach ($dataList as $key => $data) {
             if (!isset($closure)) {

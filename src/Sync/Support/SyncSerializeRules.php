@@ -14,7 +14,7 @@ use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * Instructions for serializing nested sync entities
@@ -29,10 +29,10 @@ use UnexpectedValueException;
  *     '.manager.org_unit',
  *     '.Manager.OrgUnit',
  *
+ *     // And these resolve to the same property
  *     User::class => [
- *         // And these resolve to the same property
- *         "OrgUnit",
- *         "org_unit",
+ *         'OrgUnit',
+ *         'org_unit',
  *     ],
  * ];
  * ```
@@ -45,12 +45,13 @@ use UnexpectedValueException;
  *
  * Each rule must be either a `string` containing the path or key to act upon,
  * or an `array` with up to 3 elements:
- * - the path or key to act upon (`string`; required)
- * - a new name for the key (`int|string`; optional)
- * - a closure to return a new value for the key (`Closure`; optional; not
- *   required for {@see \Lkrms\Sync\Concept\SyncEntity} objects)
  *
- * Optional elements may be omitted and can be given in any order.
+ * 1. the path or key to act upon (`string`; required)
+ * 2. a new name for the key (`int|string`; optional)
+ * 3. a closure to return a new value for the key (`Closure`; optional; not
+ *    required for {@see \Lkrms\Sync\Concept\SyncEntity} objects)
+ *
+ * Optional elements may be omitted.
  *
  * If multiple rules apply to the same key, path-based rules take precedence
  * over class-based ones, and later rules take precedence over earlier ones.
@@ -58,26 +59,29 @@ use UnexpectedValueException;
  * ```php
  * $rules = [
  *     '.manager.org_unit',
- *
- *     ['.manager.org_unit', 'org_unit_id', fn($ou) => $ou->Id],
- *
+ *     [
+ *         '.manager.org_unit',
+ *         'org_unit_id',
+ *         fn($ou) => $ou->Id,
+ *     ],
  *     User::class => [
  *         'org_unit',
- *
  *         ['org_unit', 'org_unit_id'],
  *     ],
  * ];
  * ```
  *
- * @property-read class-string<ISyncEntity> $Entity The class name of the SyncEntity being serialized (required)
+ * @template-covariant TEntity of ISyncEntity
+ *
+ * @property-read class-string<TEntity> $Entity The class name of the SyncEntity being serialized (required)
  * @property-read DateFormatter|null $DateFormatter Override the default date formatter (default: null)
  * @property-read bool|null $IncludeMeta Include undeclared property values? (default: true)
  * @property-read bool|null $SortByKey Sort arrays by key? (default: false)
  * @property-read int|null $MaxDepth Throw an exception when values are nested beyond this depth (default: 99)
  * @property-read bool|null $DetectRecursion Check for recursion? (default: true)
  * @property-read bool|null $RemoveCanonicalId Remove CanonicalId from sync entities? (default: true)
- * @property-read array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $Remove Values to remove
- * @property-read array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $Replace Values to replace with IDs
+ * @property-read array<array<array<string|Closure>|string>|array<string|Closure>|string> $Remove Values to remove
+ * @property-read array<array<array<string|Closure>|string>|array<string|Closure>|string> $Replace Values to replace with IDs
  * @property-read bool|null $RecurseRules Apply path-based rules to every instance of $Entity? (default: true)
  * @property-read int $Flags
  */
@@ -93,7 +97,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     /**
      * The class name of the SyncEntity being serialized (required)
      *
-     * @var class-string<ISyncEntity>
+     * @var class-string<TEntity>
      */
     protected $Entity;
 
@@ -161,7 +165,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      * ];
      * ```
      *
-     * @var array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string>
+     * @var array<array<array<string|Closure>|string>|array<string|Closure>|string>
      */
     protected $Remove;
 
@@ -180,7 +184,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      * ];
      * ```
      *
-     * @var array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string>
+     * @var array<array<array<string|Closure>|string>|array<string|Closure>|string>
      */
     protected $Replace;
 
@@ -197,27 +201,27 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     protected $Flags;
 
     /**
-     * @var array<string,array<string,array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string>>>
+     * @var array<string,array<string,array<array<array<string|Closure>|string>|array<string|Closure>|string>>>
      */
     private $RuleCache = [];
 
     /**
-     * Depth => path => true
+     * Path => true
      *
-     * @var array<int,array<string,true>>
+     * @var array<string,true>
      */
     private $RootPaths = [];
 
     /**
-     * @var SyncIntrospector
+     * @var SyncIntrospector<TEntity,SyncIntrospectionClass<TEntity>>
      */
     private $Introspector;
 
     /**
-     * @param class-string<ISyncEntity> $entity
-     * @param array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $remove
-     * @param array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $replace
-     * @param SyncSerializeRules|SerializeRulesBuilder|null $inherit
+     * @param class-string<TEntity> $entity
+     * @param array<array<array<string|Closure>|string>|array<string|Closure>|string> $remove
+     * @param array<array<array<string|Closure>|string>|array<string|Closure>|string> $replace
+     * @param SyncSerializeRules<TEntity>|SerializeRulesBuilder<TEntity>|null $inherit
      */
     public function __construct(
         string $entity,
@@ -248,8 +252,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
         $this->Introspector = SyncIntrospector::get($this->Entity);
 
         if ($inherit) {
-            $this->_apply(self::resolve($inherit), true);
-
+            $this->applyRules(self::resolve($inherit), true);
             return;
         }
 
@@ -258,154 +261,60 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     }
 
     /**
-     * Use $allRules to compile a list of rules that apply to $class and its
-     * ancestors up to (but not including) $untilClass, and to values at $path
-     *
-     * @param string[] $path
-     * @param array<array<array<int|string|Closure>|string>|array<int|string|Closure>|string> $allRules
-     * @return array<string,array<array<int|string|Closure>|string>|array<int|string|Closure>|string>
-     */
-    private function compile(?string $class, ?string $untilClass, array $path, array $allRules, string $cacheKey): array
-    {
-        $depth = count($path);
-        $path = '.' . implode('.', $path);
-        $key = Convert::sparseToString("\0", [$class, $untilClass, $path]);
-
-        if (!is_null($rules = $this->RuleCache[$cacheKey][$key] ?? null)) {
-            return $rules;
-        }
-
-        if ($this->getRecurseRules()) {
-            [$_depth, $_path, $paths] = [$depth, $path, [$path]];
-
-            while ($_depth-- > 1) {
-                $_path = substr($_path, 0, strrpos($_path, '.'));
-                foreach (array_keys($this->RootPaths[$_depth] ?? []) as $root) {
-                    if ($_path === $root) {
-                        $paths[] = substr($path, strlen($root));
-                    }
-                }
-            }
-
-            if ($depth && $class === $this->Entity) {
-                if (!($this->RootPaths[$depth][$path] ?? false)) {
-                    $this->RootPaths[$depth][$path] = true;
-                }
-                $paths[] = '.';
-            }
-        }
-
-        // Extract rules like:
-        // - [0 => ".path.to.key"]
-        // - [0 => [".path.to.key", "key_id", fn($value) => $value["id"]]]
-        $pathRules = array_filter(
-            $allRules,
-            fn($key) => is_int($key),
-            ARRAY_FILTER_USE_KEY
-        );
-        // Discard if ".path.to" is not in $paths
-        $pathRules = array_filter(
-            $pathRules,
-            fn($rule) => in_array($this->getPath($this->getRuleTarget($rule)), $paths ?? [$path])
-        );
-        // Remove ".path.to" from the remaining rules
-        $pathRules = array_map(
-            fn($rule) => $this->setRuleTarget($rule, $this->getKey($this->getRuleTarget($rule))),
-            $pathRules
-        );
-
-        // And rules like:
-        // - [<Entity>::class => "key"]
-        // - [<Entity>::class => ["key", "key_id", fn($value) => $value["id"]]]
-        $classRules = [];
-        if ($class) {
-            do {
-                if (!($_rules = $allRules[$class] ?? null)) {
-                    continue;
-                }
-                array_push($classRules, ...$_rules);
-            } while (($class = get_parent_class($class)) && (!$untilClass || $class != $untilClass));
-        }
-
-        // Only return the highest-precedence rule for each key
-        $rules = [];
-        foreach (array_reverse([...$classRules, ...$pathRules]) as $rule) {
-            $target = $this->getRuleTarget($rule);
-            if (array_key_exists($target, $rules)) {
-                continue;
-            }
-            $rules[$target] = $rule;
-        }
-
-        return $this->RuleCache[$cacheKey][$key] = $rules;
-    }
-
-    /**
-     * @param array<string|Closure>|string|array<array<int|string|Closure>|string> $rule
-     */
-    private function getRuleTarget($rule): string
-    {
-        return is_array($rule) ? reset($rule) : $rule;
-    }
-
-    /**
-     * @param array<string|Closure>|string|array<array<int|string|Closure>|string> $rule
-     * @return array<string|Closure>|string|array<array<int|string|Closure>|string>
-     */
-    private function setRuleTarget($rule, string $target)
-    {
-        if (is_array($rule)) {
-            $rule = array_values($rule);
-            $rule[0] = $target;
-
-            return $rule;
-        };
-
-        return $target;
-    }
-
-    private function getPath(string $path): string
-    {
-        return ((substr($path, -2) === '[]')
-            ? substr($path, 0, -2)
-            : substr($path, 0, max(0, strrpos('.' . $path, '.') - 1))) ?: '.';
-    }
-
-    private function getKey(string $path): string
-    {
-        return (substr($path, -2) === '[]')
-            ? '[]'
-            : substr(strrchr('.' . $path, '.'), 1);
-    }
-
-    /**
      * Apply rules from another instance
      *
-     * Merged recursively:
-     * - {@see SyncSerializeRules::$Remove}
-     * - {@see SyncSerializeRules::$Replace}
+     * Properties are copied from `$rules` to the receiving instance unless they
+     * are `null`. Rules in {@see SyncSerializeRules::$Remove} and
+     * {@see SyncSerializeRules::$Replace} are merged recursively. Precedence is
+     * given to incoming rules if there are duplicates.
      *
-     * @return $this
+     * @template T of TEntity
+     * @param SyncSerializeRules<T> $rules
+     * @return SyncSerializeRules<TEntity>
      */
     public function apply(SyncSerializeRules $rules)
     {
         $clone = clone $this;
-        $clone->_apply($rules);
-
-        return $clone;
+        return $clone->applyRules($rules);
     }
 
-    private function __clone()
+    /**
+     * Get a list of keys to remove from a serialized $class encountered at
+     * $path
+     *
+     * @param string[] $path
+     * @return array<string,string>
+     */
+    public function getRemove(?string $class, ?string $untilClass, array $path): array
     {
-        $this->RuleCache = [];
+        return array_map(
+            fn($rule) => is_array($rule) ? reset($rule) : $rule,
+            $this->compileRules($class, $untilClass, $path, $this->Remove, __FUNCTION__)
+        );
     }
 
-    private function _apply(SyncSerializeRules $rules, bool $inherit = false)
+    /**
+     * Get a list of value replacement rules for a serialized $class encountered
+     * at $path
+     *
+     * @param string[] $path
+     * @return array<string,array<array<string|Closure>|string>|array<string|Closure>|string>
+     */
+    public function getReplace(?string $class, ?string $untilClass, array $path): array
+    {
+        return $this->compileRules($class, $untilClass, $path, $this->Replace, __FUNCTION__);
+    }
+
+    /**
+     * @param SyncSerializeRules<TEntity> $rules
+     * @return $this
+     */
+    private function applyRules(SyncSerializeRules $rules, bool $inherit = false)
     {
         [$base, $merge] = $inherit ? [$rules, $this] : [$this, $rules];
 
         if (!is_a($merge->Entity, $base->Entity, true)) {
-            throw new UnexpectedValueException("Not a subclass of {$base->Entity}: {$merge->Entity}");
+            throw new LogicException(sprintf('Not a subclass of %s: %s', $base->Entity, $merge->Entity));
         }
 
         $this->Entity = $merge->Entity;
@@ -419,32 +328,145 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
         $this->Replace = $this->flattenRules($base->Replace, $merge->Replace);
         $this->RecurseRules = Convert::coalesce($merge->RecurseRules, $base->RecurseRules);
         $this->Flags = Convert::coalesce($merge->Flags, $base->Flags);
+
+        return $this;
     }
 
+    /**
+     * Merge, remove duplicates and normalise field/property names
+     *
+     * @param array<array<array<string|Closure>|string>|array<string|Closure>|string> $base
+     * @param array<array<array<string|Closure>|string>|array<string|Closure>|string> $merge
+     * @return array<array<array<string|Closure>|string>|array<string|Closure>|string>
+     */
     private function flattenRules(array $base, array ...$merge): array
     {
         $paths = $classes = [];
         foreach ([$base, ...$merge] as $array) {
             foreach ($array as $key => $rule) {
                 if (is_int($key)) {
-                    $target = $this->normaliseTarget($this->getRuleTarget($rule));
-                    $rule = $this->setRuleTarget($rule, $target);
+                    /** @var array{string,...}|string $rule */
+                    $target = $this->normaliseTarget($this->getTarget($rule));
+                    $rule = $this->setTarget($rule, $target);
 
                     $paths[$target] = $rule;
 
                     continue;
                 }
                 foreach ($rule as $_rule) {
-                    $target = $this->normaliseTarget($this->getRuleTarget($_rule));
-                    $_rule = $this->setRuleTarget($_rule, $target);
+                    /** @var array{string,...}|string $_rule */
+                    $target = $this->normaliseTarget($this->getTarget($_rule));
+                    $_rule = $this->setTarget($_rule, $target);
 
                     $classes[$key][$target] = $_rule;
                 }
             }
         }
 
+        // Return path-based rules followed by class-based rules
         return array_values($paths)
             + array_map(fn(array $rules) => array_values($rules), $classes);
+    }
+
+    /**
+     * Use $allRules to compile a list of rules that apply to $class and its
+     * ancestors up to (but not including) $untilClass, and to instances of
+     * $class at $path
+     *
+     * @param string[] $path
+     * @param array<array<array<string|Closure>|string>|array<string|Closure>|string> $allRules
+     * @return array<string,array<array<string|Closure>|string>|array<string|Closure>|string>
+     */
+    private function compileRules(
+        ?string $class,
+        ?string $untilClass,
+        array $path,
+        array $allRules,
+        string $cacheKey
+    ): array {
+        $depth = count($path);
+        $path = '.' . implode('.', $path);
+        $key = Convert::sparseToString("\0", [$class, $untilClass, $path]);
+
+        if (!is_null($rules = $this->RuleCache[$cacheKey][$key] ?? null)) {
+            return $rules;
+        }
+
+        if ($this->getRecurseRules()) {
+            $_depth = $depth;
+            $_path = $path;
+            $paths = [$path];
+
+            // If `$this->RootPaths['.path.to.key']` is `true`, an instance of
+            // the class these rules apply to (`$this->Entity`) was found at
+            // '.path.to.key' (relative to another instance of the same class).
+            //
+            // Then, if `$path` is '.path.to.key.of.child', the following loop
+            // adds '.of.child' to `$paths`.
+            while ($_depth-- > 1) {
+                $_path = substr($_path, 0, strrpos($_path, '.'));
+                if ($this->RootPaths[$_path] ?? false) {
+                    $paths[] = substr($path, strlen($_path));
+                }
+            }
+
+            if ($depth && $class === $this->Entity) {
+                if (!($this->RootPaths[$path] ?? false)) {
+                    $this->RootPaths[$path] = true;
+                }
+                $paths[] = '.';
+            }
+        }
+
+        // Extract rules like:
+        // - [0 => ".path.to.key"]
+        // - [0 => [".path.to.key", "key_id", fn($value) => $value["id"]]]
+        /** @var array<array{string,...}|string> $pathRules */
+        $pathRules = array_filter(
+            $allRules,
+            fn($key) => is_int($key),
+            ARRAY_FILTER_USE_KEY
+        );
+        // Discard if ".path.to" is not in $paths
+        $pathRules = array_filter(
+            $pathRules,
+            fn($rule) => in_array($this->getPath($this->getTarget($rule)), $paths ?? [$path])
+        );
+        // Remove ".path.to" from the remaining rules
+        $pathRules = array_map(
+            fn($rule) => $this->setTarget($rule, $this->getKey($this->getTarget($rule))),
+            $pathRules
+        );
+
+        // And rules like:
+        // - [<Entity>::class => "key"]
+        // - [<Entity>::class => ["key", "key_id", fn($value) => $value["id"]]]
+        $classRules = [];
+        if ($class) {
+            do {
+                if (!($rules = $allRules[$class] ?? null)) {
+                    continue;
+                }
+                array_push($classRules, ...$rules);
+            } while (($class = get_parent_class($class)) && (!$untilClass || $class != $untilClass));
+        }
+
+        // Only return the highest-precedence rule for each key
+        $rules = [];
+        foreach ([...$classRules, ...$pathRules] as $rule) {
+            $target = $this->getTarget($rule);
+            $rules[$target] = $rule;
+        }
+
+        return $this->RuleCache[$cacheKey][$key] = $rules;
+    }
+
+    /**
+     * @param array{string,...}|string $rule
+     */
+    private function getTarget($rule): string
+    {
+        return is_array($rule) ? reset($rule) : $rule;
     }
 
     private function normaliseTarget(string $target): string
@@ -454,6 +476,50 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
             fn($matches) => $this->Introspector->maybeNormalise($matches[0], NormaliserFlag::LAZY),
             $target
         );
+    }
+
+    /**
+     * @template T of array{string,...}|string
+     * @param T $rule
+     * @return T
+     */
+    private function setTarget($rule, string $target)
+    {
+        if (is_array($rule)) {
+            $rule = array_values($rule);
+            $rule[0] = $target;
+
+            return $rule;
+        };
+
+        return $target;
+    }
+
+    /**
+     * Remove the last component of $path
+     *
+     */
+    private function getPath(string $path): string
+    {
+        return ((substr($path, -2) === '[]')
+            ? substr($path, 0, -2)
+            : substr($path, 0, max(0, strrpos('.' . $path, '.') - 1))) ?: '.';
+    }
+
+    /**
+     * Get the last component of $path
+     *
+     */
+    private function getKey(string $path): string
+    {
+        return (substr($path, -2) === '[]')
+            ? '[]'
+            : substr(strrchr('.' . $path, '.'), 1);
+    }
+
+    private function __clone()
+    {
+        $this->RuleCache = [];
     }
 
     public function getDateFormatter(): ?DateFormatter
@@ -486,33 +552,6 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
         return Convert::coalesce($this->RemoveCanonicalId, true);
     }
 
-    /**
-     * Get a list of keys to remove from a serialized $class encountered at
-     * $path
-     *
-     * @param string[] $path
-     * @return array<string,string>
-     */
-    public function getRemove(?string $class, ?string $untilClass, array $path): array
-    {
-        return array_map(
-            fn($rule) => is_array($rule) ? reset($rule) : $rule,
-            $this->compile($class, $untilClass, $path, $this->Remove, __FUNCTION__)
-        );
-    }
-
-    /**
-     * Get a list of rules for values to replace in a serialized $class
-     * encountered at $path
-     *
-     * @param string[] $path
-     * @return array<string,array<array<int|string|Closure>|string>|array<int|string|Closure>|string>
-     */
-    public function getReplace(?string $class, ?string $untilClass, array $path): array
-    {
-        return $this->compile($class, $untilClass, $path, $this->Replace, __FUNCTION__);
-    }
-
     public function getRecurseRules(): bool
     {
         return Convert::coalesce($this->RecurseRules, true);
@@ -526,6 +565,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     /**
      * Use a fluent interface to create a new SyncSerializeRules object
      *
+     * @return SerializeRulesBuilder<ISyncEntity>
      */
     public static function build(?IContainer $container = null): SerializeRulesBuilder
     {
@@ -533,7 +573,9 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     }
 
     /**
-     * @param SerializeRulesBuilder|SyncSerializeRules $object
+     * @template T of ISyncEntity
+     * @param SerializeRulesBuilder<T>|SyncSerializeRules<T> $object
+     * @return SyncSerializeRules<T>
      */
     public static function resolve($object): SyncSerializeRules
     {
