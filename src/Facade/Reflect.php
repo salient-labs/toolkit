@@ -35,8 +35,6 @@ use ReflectionType;
  * @uses Reflection
  *
  * @extends Facade<Reflection>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Reflection' 'Lkrms\Facade\Reflect'
  */
 final class Reflect extends Facade
 {

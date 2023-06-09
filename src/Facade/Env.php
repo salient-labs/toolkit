@@ -32,8 +32,6 @@ use Lkrms\Utility\Environment;
  * @uses Environment
  *
  * @extends Facade<Environment>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Environment' 'Lkrms\Facade\Env'
  */
 final class Env extends Facade
 {

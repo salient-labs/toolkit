@@ -43,8 +43,6 @@ use Lkrms\Sync\Contract\ISyncEntity;
  * @template TProvider of HttpSyncProvider
  *
  * @extends Builder<HttpSyncDefinition<TEntity,TProvider>>
- *
- * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\HttpSyncDefinition'
  */
 final class HttpSyncDefinitionBuilder extends Builder
 {

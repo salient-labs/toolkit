@@ -42,8 +42,6 @@ use Lkrms\Support\DateFormatter;
  * @uses Curler
  *
  * @extends Builder<Curler>
- *
- * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Curler\Curler'
  */
 final class CurlerBuilder extends Builder
 {

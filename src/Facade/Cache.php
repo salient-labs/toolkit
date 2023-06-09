@@ -28,8 +28,6 @@ use Lkrms\Store\Concept\SqliteStore;
  * @uses CacheStore
  *
  * @extends Facade<CacheStore>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Store\CacheStore' 'Lkrms\Facade\Cache'
  */
 final class Cache extends Facade
 {

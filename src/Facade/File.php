@@ -27,8 +27,6 @@ use SplFileInfo;
  * @uses Filesystem
  *
  * @extends Facade<Filesystem>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Filesystem' 'Lkrms\Facade\File'
  */
 final class File extends Facade
 {

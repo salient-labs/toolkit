@@ -24,8 +24,6 @@ use Lkrms\Utility\Formatters;
  * @uses Formatters
  *
  * @extends Facade<Formatters>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Formatters' 'Lkrms\Facade\Format'
  */
 final class Format extends Facade
 {

@@ -49,8 +49,6 @@ use Throwable;
  * @uses ConsoleWriter
  *
  * @extends Facade<ConsoleWriter>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Console\ConsoleWriter' 'Lkrms\Facade\Console'
  */
 final class Console extends Facade
 {

@@ -25,8 +25,6 @@ use Lkrms\Concept\Facade;
  * @uses \Lkrms\Utility\Composer
  *
  * @extends Facade<\Lkrms\Utility\Composer>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Composer' 'Lkrms\Facade\Composer'
  */
 final class Composer extends Facade
 {

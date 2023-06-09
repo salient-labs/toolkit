@@ -43,8 +43,6 @@ use Lkrms\Contract\IService;
  * @uses Container
  *
  * @extends Facade<Container>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Container\Container' 'Lkrms\Facade\DI'
  */
 final class DI extends Facade
 {

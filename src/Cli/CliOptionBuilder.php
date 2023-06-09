@@ -36,8 +36,6 @@ use Lkrms\Contract\IContainer;
  * @uses CliOption
  *
  * @extends Builder<CliOption>
- *
- * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Cli\CliOption'
  */
 final class CliOptionBuilder extends Builder
 {

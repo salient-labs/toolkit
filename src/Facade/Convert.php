@@ -75,8 +75,6 @@ use Lkrms\Utility\Conversions;
  * @uses Conversions
  *
  * @extends Facade<Conversions>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Conversions' 'Lkrms\Facade\Convert'
  */
 final class Convert extends Facade
 {
