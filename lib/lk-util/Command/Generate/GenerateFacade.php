@@ -71,6 +71,8 @@ final class GenerateFacade extends GenerateCommand
 
     protected function run(string ...$args)
     {
+        $this->reset();
+
         $namespace = explode('\\', ltrim($this->getOptionValue('class'), '\\'));
         $class = array_pop($namespace);
         $namespace = implode('\\', $namespace) ?: Env::get(EnvVar::NS_DEFAULT, '');
