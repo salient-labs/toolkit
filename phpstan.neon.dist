@@ -9,6 +9,7 @@ parameters:
 		- lib
 		- bin/lk-util
 		- bootstrap.php
+		- scripts
 		- tests
 	ignoreErrors:
 		- "#^Property Lkrms\\\\.+\\\\Command\\\\.+\\:\\:\\$[a-zA-Z0-9_]+ is never written, only read\\.$#"

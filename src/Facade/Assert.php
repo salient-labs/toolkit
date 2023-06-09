@@ -21,8 +21,6 @@ use Lkrms\Utility\Assertions;
  * @uses Assertions
  *
  * @extends Facade<Assertions>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Assertions' 'Lkrms\Facade\Assert'
  */
 final class Assert extends Facade
 {

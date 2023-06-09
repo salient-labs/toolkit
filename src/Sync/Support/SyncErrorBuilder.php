@@ -26,8 +26,6 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @uses SyncError
  *
  * @extends Builder<SyncError>
- *
- * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\SyncError'
  */
 final class SyncErrorBuilder extends Builder
 {

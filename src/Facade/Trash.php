@@ -23,8 +23,6 @@ use Lkrms\Store\TrashStore;
  * @uses TrashStore
  *
  * @extends Facade<TrashStore>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Store\TrashStore' 'Lkrms\Facade\Trash'
  */
 final class Trash extends Facade
 {

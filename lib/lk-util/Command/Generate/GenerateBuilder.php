@@ -61,10 +61,9 @@ class GenerateBuilder extends GenerateCommand
                 ->bindTo($this->ClassFqcn),
             CliOption::build()
                 ->long('generate')
-                ->short('g')
-                ->valueName('class')
+                ->valueName('builder_class')
                 ->description('The class to generate')
-                ->optionType(CliOptionType::VALUE)
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->bindTo($this->BuilderFqcn),
             CliOption::build()
                 ->long('static-builder')
@@ -127,6 +126,9 @@ class GenerateBuilder extends GenerateCommand
 
     protected function run(string ...$args)
     {
+        $this->reset();
+        $this->SkipProperties = [];
+
         $classFqcn = $this->getFqcnOptionValue(
             $this->ClassFqcn,
             null,

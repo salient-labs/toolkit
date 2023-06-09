@@ -21,8 +21,6 @@ use Lkrms\Utility\Computations;
  * @uses Computations
  *
  * @extends Facade<Computations>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Computations' 'Lkrms\Facade\Compute'
  */
 final class Compute extends Facade
 {

@@ -29,8 +29,6 @@ use Lkrms\Utility\System;
  * @uses System
  *
  * @extends Facade<System>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\System' 'Lkrms\Facade\Sys'
  */
 final class Sys extends Facade
 {

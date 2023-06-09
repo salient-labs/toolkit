@@ -33,8 +33,6 @@ use Lkrms\Sync\Contract\ISyncEntity;
  * @uses SyncSerializeRules
  *
  * @extends Builder<SyncSerializeRules<TEntity>>
- *
- * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\SyncSerializeRules'
  */
 final class SyncSerializeRulesBuilder extends Builder
 {

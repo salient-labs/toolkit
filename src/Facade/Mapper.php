@@ -20,8 +20,6 @@ use Lkrms\Support\Catalog\ArrayMapperFlag;
  * @uses ArrayMapper
  *
  * @extends Facade<ArrayMapper>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Support\ArrayMapper' 'Lkrms\Facade\Mapper'
  */
 final class Mapper extends Facade
 {

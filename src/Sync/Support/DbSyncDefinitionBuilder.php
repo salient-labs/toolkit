@@ -34,8 +34,6 @@ use Lkrms\Sync\Contract\ISyncEntity;
  * @template TProvider of DbSyncProvider
  *
  * @extends Builder<DbSyncDefinition<TEntity,TProvider>>
- *
- * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Sync\Support\DbSyncDefinition'
  */
 final class DbSyncDefinitionBuilder extends Builder
 {

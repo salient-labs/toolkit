@@ -25,11 +25,6 @@ class A implements IWritable, IReadable
         return ['Id', 'Name'];
     }
 
-    public static function getReadable(): array
-    {
-        return [];
-    }
-
     protected $Id;
 
     protected $Name;
@@ -88,16 +83,6 @@ class B extends A
 class C implements IReadable, IWritable
 {
     use TReadable, TWritable;
-
-    public static function getReadable(): array
-    {
-        return [];
-    }
-
-    public static function getWritable(): array
-    {
-        return [];
-    }
 
     protected $Id = 0;
 

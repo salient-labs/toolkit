@@ -27,8 +27,6 @@ use Lkrms\Curler\Curler;
  * @uses CurlerPage
  *
  * @extends Builder<CurlerPage>
- *
- * @lkrms-generate-command lk-util generate builder --static-builder=build --value-getter=get --value-checker=isset --terminator=go --static-resolver=resolve 'Lkrms\Curler\Support\CurlerPage'
  */
 final class CurlerPageBuilder extends Builder
 {

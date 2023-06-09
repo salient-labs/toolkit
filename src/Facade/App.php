@@ -65,8 +65,6 @@ use Lkrms\Utility\Environment;
  * @uses Application
  *
  * @extends Facade<Application>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Container\Application' 'Lkrms\Facade\App'
  */
 final class App extends Facade
 {

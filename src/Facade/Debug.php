@@ -17,8 +17,6 @@ use Lkrms\Utility\Debugging;
  * @uses Debugging
  *
  * @extends Facade<Debugging>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Utility\Debugging' 'Lkrms\Facade\Debug'
  */
 final class Debug extends Facade
 {

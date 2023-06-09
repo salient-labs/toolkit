@@ -26,7 +26,7 @@ abstract class GenerateCommand extends Command
     protected const VISIBILITY_PRIVATE = 'private';
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $OutputClass;
 
@@ -100,6 +100,14 @@ abstract class GenerateCommand extends Command
                 ->description('Suppress metadata tags')
                 ->bindTo($this->NoMetaTags),
         ];
+    }
+
+    protected function reset(): void
+    {
+        $this->OutputClass = null;
+        $this->OutputNamespace = null;
+        $this->AliasMap = [];
+        $this->ImportMap = [];
     }
 
     protected function getClassPrefix(): string

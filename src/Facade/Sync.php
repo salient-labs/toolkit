@@ -37,8 +37,6 @@ use Lkrms\Sync\Support\SyncStore;
  * @uses SyncStore
  *
  * @extends Facade<SyncStore>
- *
- * @lkrms-generate-command lk-util generate facade 'Lkrms\Sync\Support\SyncStore' 'Lkrms\Facade\Sync'
  */
 final class Sync extends Facade
 {
