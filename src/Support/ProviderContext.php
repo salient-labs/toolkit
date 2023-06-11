@@ -73,7 +73,7 @@ class ProviderContext implements IProviderContext
 
     final public function push(IProvidable $entity)
     {
-        $clone = clone $this;
+        $clone = $this->mutate();
         $clone->Stack[] = $entity;
 
         return $clone;

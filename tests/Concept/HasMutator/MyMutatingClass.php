@@ -6,7 +6,9 @@ use Lkrms\Concern\HasMutator;
 
 class MyMutatingClass
 {
-    use HasMutator;
+    use HasMutator {
+        asNew as public;
+    }
 
     public int $A;
 

@@ -10,7 +10,7 @@ trait HasSortableItems
     /**
      * @use HasItems<T>
      */
-    use HasItems, IsMutable;
+    use HasItems, HasMutator;
 
     /**
      * @param T $a
@@ -31,28 +31,28 @@ trait HasSortableItems
     }
 
     /**
-     * @return $this
+     * @return static
      */
     final public function sort(bool $preserveKeys = true)
     {
-        $clone = clone $this;
+        $clone = $this->mutate();
         $clone->sortItems($preserveKeys);
 
-        return $clone->mutate(__FUNCTION__, static::class);
+        return $clone;
     }
 
     /**
-     * @return $this
+     * @return static
      */
     final public function reverse(bool $preserveKeys = true)
     {
-        $clone = clone $this;
+        $clone = $this->mutate();
         $clone->_Items = array_reverse($clone->_Items, $preserveKeys);
         // clear non-numeric keys too
         if (!$preserveKeys) {
             $clone->_Items = array_values($clone->_Items);
         }
 
-        return $clone->mutate(__FUNCTION__, static::class);
+        return $clone;
     }
 }

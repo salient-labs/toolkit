@@ -17,7 +17,7 @@ trait TCollection
     /**
      * @use HasItems<T>
      */
-    use HasItems, IsMutable;
+    use HasItems, HasMutator;
 
     /**
      * @param callable $callback
@@ -58,7 +58,7 @@ trait TCollection
      */
     final public function filter(callable $callback)
     {
-        $clone = clone $this;
+        $clone = $this->mutate();
         $clone->_Items = [];
 
         $prev = null;
@@ -79,7 +79,7 @@ trait TCollection
             $clone->_Items[] = $item;
         }
 
-        return $clone->mutate(__FUNCTION__, static::class);
+        return $clone;
     }
 
     /**
@@ -118,13 +118,13 @@ trait TCollection
      */
     final public function slice(int $offset, ?int $length = null, bool $preserveKeys = true)
     {
-        $clone = clone $this;
+        $clone = $this->mutate();
         $clone->_Items = array_slice($clone->_Items, $offset, $length, $preserveKeys);
         if (!$preserveKeys) {
             $clone->_Items = array_values($clone->_Items);
         }
 
-        return $clone->mutate(__FUNCTION__, static::class);
+        return $clone;
     }
 
     /**
@@ -216,10 +216,8 @@ trait TCollection
         if (!$this->_Items) {
             return false;
         }
-        $item = array_shift($this->_Items);
-        $this->mutate(__FUNCTION__, static::class);
 
-        return $item;
+        return array_shift($this->_Items);
     }
 
     // Implementation of `Iterator`:
