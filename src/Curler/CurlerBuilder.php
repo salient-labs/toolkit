@@ -21,6 +21,8 @@ use Lkrms\Support\DateFormatter;
  * @method $this flush(bool $value = true) Replace cached responses that haven't expired? (default: false)
  * @method $this responseCacheKeyCallback(?callable $value) Override the default cache key when saving and loading cached responses (see {@see Curler::$ResponseCacheKeyCallback})
  * @method $this throwHttpErrors(bool $value = true) Throw an exception if the status code is >= 400? (default: true)
+ * @method $this connectTimeout(?int $value) Override the default number of seconds the connection phase of the transfer is allowed to take (see {@see Curler::$ConnectTimeout})
+ * @method $this timeout(?int $value) Limit the number of seconds the transfer is allowed to take
  * @method $this followRedirects(bool $value = true) Follow "Location:" headers? (default: false; see {@see Curler::$FollowRedirects})
  * @method $this maxRedirects(?int $value) Limit the number of redirections followed when FollowRedirects is set
  * @method $this handleCookies(bool $value = true) Send and receive cookies? (default: false; see {@see Curler::$HandleCookies})
