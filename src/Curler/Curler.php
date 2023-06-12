@@ -472,10 +472,9 @@ final class Curler implements IReadable, IWritable, HasBuilder
      */
     public function setContentType(?string $mimeType)
     {
-        $this->Headers =
-            is_null($mimeType)
-                ? $this->Headers->unsetHeader(HttpHeader::CONTENT_TYPE)
-                : $this->Headers->setHeader(HttpHeader::CONTENT_TYPE, $mimeType);
+        $this->Headers = $mimeType === null
+            ? $this->Headers->unsetHeader(HttpHeader::CONTENT_TYPE)
+            : $this->Headers->setHeader(HttpHeader::CONTENT_TYPE, $mimeType);
 
         return $this;
     }
@@ -538,7 +537,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         );
 
         // Assume JSON if it's expected and no Content-Type is specified
-        if (is_null($contentType)) {
+        if ($contentType === null) {
             return !strcasecmp($mimeType, MimeType::JSON) && $this->ExpectJson;
         }
 
@@ -569,7 +568,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
     protected function close(): void
     {
-        if (is_null($this->Handle)) {
+        if ($this->Handle === null) {
             return;
         }
 
@@ -583,18 +582,84 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
     private function initialise(string $method, ?array $query, ?ICurlerPager $pager = null): void
     {
+        $this->ExecuteCount = 0;
+
         if ($pager) {
             $query = $pager->prepareQuery($query);
         }
         $this->QueryString = $this->getQueryString($query);
 
-        $this->createHandle($this->BaseUrl . $this->QueryString);
+        $this->Handle = curl_init($this->BaseUrl . $this->QueryString);
 
-        if ($method === HttpRequestMethod::GET) {
-            $this->Method = $method;
-        } else {
-            $this->applyMethod($method);
+        // Return the transfer as a string
+        curl_setopt($this->Handle, CURLOPT_RETURNTRANSFER, true);
+
+        // Enable all supported encoding types (e.g. gzip, deflate) and set
+        // Accept-Encoding header accordingly
+        curl_setopt($this->Handle, CURLOPT_ENCODING, '');
+
+        // Collect response headers
+        curl_setopt(
+            $this->Handle,
+            CURLOPT_HEADERFUNCTION,
+            fn($curl, $header) => strlen($this->processHeader($header))
+        );
+
+        if ($this->ConnectTimeout !== null) {
+            curl_setopt($this->Handle, CURLOPT_CONNECTTIMEOUT, $this->ConnectTimeout);
         }
+
+        if ($this->Timeout !== null) {
+            curl_setopt($this->Handle, CURLOPT_TIMEOUT, $this->Timeout);
+        }
+
+        if ($this->FollowRedirects) {
+            curl_setopt($this->Handle, CURLOPT_FOLLOWLOCATION, true);
+            if ($this->MaxRedirects !== null) {
+                curl_setopt($this->Handle, CURLOPT_MAXREDIRS, $this->MaxRedirects);
+            }
+        }
+
+        if ($this->CookieKey = $this->getCookieKey()) {
+            // Enable cookies without loading them from a file
+            curl_setopt($this->Handle, CURLOPT_COOKIEFILE, '');
+
+            foreach (Cache::get($this->CookieKey) ?: [] as $cookie) {
+                curl_setopt($this->Handle, CURLOPT_COOKIELIST, $cookie);
+            }
+        }
+
+        // In debug mode, collect request headers
+        if (Env::debug()) {
+            curl_setopt($this->Handle, CURLINFO_HEADER_OUT, true);
+        }
+
+        switch ($method) {
+            case HttpRequestMethod::GET:
+                break;
+
+            case HttpRequestMethod::HEAD:
+                curl_setopt($this->Handle, CURLOPT_NOBODY, true);
+                break;
+
+            case HttpRequestMethod::POST:
+                curl_setopt($this->Handle, CURLOPT_POST, true);
+                break;
+
+            case HttpRequestMethod::PUT:
+            case HttpRequestMethod::PATCH:
+            case HttpRequestMethod::DELETE:
+            case HttpRequestMethod::CONNECT:
+            case HttpRequestMethod::OPTIONS:
+            case HttpRequestMethod::TRACE:
+                curl_setopt($this->Handle, CURLOPT_CUSTOMREQUEST, $method);
+                break;
+
+            default:
+                throw new UnexpectedValueException("Invalid HTTP request method: $method");
+        }
+
+        $this->Method = $method;
 
         $this->clearResponse();
         $this->setContentType(null);
@@ -637,59 +702,9 @@ final class Curler implements IReadable, IWritable, HasBuilder
         );
     }
 
-    private function createHandle(string $url): void
-    {
-        $this->ExecuteCount = 0;
-
-        $this->Handle = curl_init($url);
-
-        // Return the transfer as a string
-        curl_setopt($this->Handle, CURLOPT_RETURNTRANSFER, true);
-
-        // Enable all supported encoding types (e.g. gzip, deflate) and set
-        // Accept-Encoding header accordingly
-        curl_setopt($this->Handle, CURLOPT_ENCODING, '');
-
-        // Collect response headers
-        curl_setopt(
-            $this->Handle,
-            CURLOPT_HEADERFUNCTION,
-            fn($curl, $header) => strlen($this->processHeader($header))
-        );
-
-        if ($this->ConnectTimeout !== null) {
-            curl_setopt($this->Handle, CURLOPT_CONNECTTIMEOUT, $this->ConnectTimeout);
-        }
-
-        if ($this->Timeout !== null) {
-            curl_setopt($this->Handle, CURLOPT_TIMEOUT, $this->Timeout);
-        }
-
-        if ($this->FollowRedirects) {
-            curl_setopt($this->Handle, CURLOPT_FOLLOWLOCATION, true);
-            if (!is_null($this->MaxRedirects)) {
-                curl_setopt($this->Handle, CURLOPT_MAXREDIRS, $this->MaxRedirects);
-            }
-        }
-
-        if ($this->CookieKey = $this->getCookieKey()) {
-            // Enable cookies without loading them from a file
-            curl_setopt($this->Handle, CURLOPT_COOKIEFILE, '');
-
-            foreach (Cache::get($this->CookieKey) ?: [] as $cookie) {
-                curl_setopt($this->Handle, CURLOPT_COOKIELIST, $cookie);
-            }
-        }
-
-        // In debug mode, collect request headers
-        if (Env::debug()) {
-            curl_setopt($this->Handle, CURLINFO_HEADER_OUT, true);
-        }
-    }
-
     private function processHeader(string $header): string
     {
-        if (!is_null($this->ReasonPhrase)) {
+        if ($this->ReasonPhrase !== null) {
             $this->ResponseHeaders = $this->ResponseHeaders->addRawHeader($header);
         } elseif (count($split = explode(' ', $header, 3)) > 1 && explode('/', $split[0])[0] === 'HTTP') {
             $this->ReasonPhrase = trim($split[2] ?? '');
@@ -698,34 +713,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
         }
 
         return $header;
-    }
-
-    private function applyMethod(string $method): void
-    {
-        switch ($method) {
-            case HttpRequestMethod::GET:
-                curl_setopt($this->Handle, CURLOPT_HTTPGET, true);
-                break;
-
-            case HttpRequestMethod::POST:
-                curl_setopt($this->Handle, CURLOPT_POST, true);
-                break;
-
-            case HttpRequestMethod::HEAD:
-            case HttpRequestMethod::PUT:
-            case HttpRequestMethod::PATCH:
-            case HttpRequestMethod::DELETE:
-            case HttpRequestMethod::CONNECT:
-            case HttpRequestMethod::OPTIONS:
-            case HttpRequestMethod::TRACE:
-                curl_setopt($this->Handle, CURLOPT_CUSTOMREQUEST, $method);
-                break;
-
-            default:
-                throw new UnexpectedValueException("Invalid HTTP request method: $method");
-        }
-
-        $this->Method = $method;
     }
 
     private function clearResponse(): void
@@ -864,18 +851,17 @@ final class Curler implements IReadable, IWritable, HasBuilder
         curl_setopt($this->Handle, CURLOPT_HTTPHEADER, $this->Headers->getHeaders());
 
         // Use a cURL multi handle for upcoming simultaneous request handling
-        if (is_null($this->MultiHandle)) {
+        if ($this->MultiHandle === null) {
             $this->MultiHandle = curl_multi_init();
         }
 
         for ($attempt = 0; $attempt < 2; $attempt++) {
-            if (Env::debug() || $this->Method != HttpRequestMethod::GET) {
+            if (!in_array($this->Method, [HttpRequestMethod::GET, HttpRequestMethod::HEAD]) || Env::debug()) {
                 // Console::debug() should print the details of whatever called
                 // one of Curler's public methods, i.e. not execute(), not
                 // get(), but one frame deeper
                 Console::debug(
-                    "{$this->Method} "
-                        . rawurldecode(curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)),
+                    "{$this->Method} " . rawurldecode(curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)),
                     null,
                     null,
                     $depth + 3
@@ -918,7 +904,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
             curl_multi_remove_handle($this->MultiHandle, $this->Handle);
 
-            if (is_null($error)) {
+            if ($error === null) {
                 // ReasonPhrase is collected by processHeader()
                 $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE);
                 $this->StatusCode = (int) curl_getinfo($this->Handle, CURLINFO_RESPONSE_CODE);
@@ -934,7 +920,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
             if ($this->StatusCode === 429 &&
                     $this->RetryAfterTooManyRequests &&
                     $attempt === 0 &&
-                    !is_null($after = $this->getRetryAfter()) &&
+                    ($after = $this->getRetryAfter()) !== null &&
                     ($this->RetryAfterMaxSeconds === 0 || $after <= $this->RetryAfterMaxSeconds)) {
                 // Sleep for at least one second
                 $after = max(1, $after);
@@ -1144,10 +1130,10 @@ final class Curler implements IReadable, IWritable, HasBuilder
      */
     private function process(string $method, ?array $query, $data = null, ?string $mimeType = null)
     {
-        $isRaw = !is_null($mimeType);
+        $isRaw = $mimeType !== null;
         if ($this->Pager && $this->AlwaysPaginate && !$isRaw) {
             $pager = $this->Pager;
-            if ($method !== HttpRequestMethod::GET) {
+            if (!in_array($method, [HttpRequestMethod::GET, HttpRequestMethod::HEAD])) {
                 $data = $pager->prepareData($data);
             }
         }
@@ -1195,14 +1181,14 @@ final class Curler implements IReadable, IWritable, HasBuilder
         if (!$this->Pager) {
             throw new UnexpectedValueException(static::class . '::$Pager is not set');
         }
-        if ($method !== HttpRequestMethod::GET) {
+        if (!in_array($method, [HttpRequestMethod::GET, HttpRequestMethod::HEAD])) {
             $data = $this->Pager->prepareData($data);
         }
 
         $this->initialise($method, $query, $this->Pager);
 
         do {
-            if (!is_null($data)) {
+            if ($data !== null) {
                 $this->Data = $data;
                 $this->applyData($data);
             }
@@ -1227,7 +1213,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
             [$url, $data, $headers] =
                 [$page->nextUrl(), $page->nextData(), $page->nextHeaders()];
             curl_setopt($this->Handle, CURLOPT_URL, $url);
-            if (!is_null($headers)) {
+            if ($headers !== null) {
                 $this->Headers = $headers;
             }
             $this->clearResponse();
@@ -1444,7 +1430,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         callable $filter = null,
         int $requestLimit = null
     ): array {
-        if (!is_null($pagePath) && !(($variables['first'] ?? null) && array_key_exists('after', $variables))) {
+        if ($pagePath !== null && !(($variables['first'] ?? null) && array_key_exists('after', $variables))) {
             throw new UnexpectedValueException('$first and $after variables are required for pagination');
         }
 
@@ -1455,7 +1441,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         ];
 
         do {
-            if (!is_null($requestLimit)) {
+            if ($requestLimit !== null) {
                 if ($requestLimit === 0) {
                     break;
                 }
@@ -1477,7 +1463,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
             $entities = array_merge($entities, $objects);
 
-            if (!is_null($pagePath)) {
+            if ($pagePath !== null) {
                 $page = [];
                 self::collateNested($result['data'], explode('.', $pagePath), $page);
 
