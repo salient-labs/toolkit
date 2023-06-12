@@ -7,6 +7,7 @@ use Lkrms\Concept\Enumeration;
 /**
  * Command line option display locations
  *
+ * @extends Enumeration<int>
  */
 final class CliOptionVisibility extends Enumeration
 {

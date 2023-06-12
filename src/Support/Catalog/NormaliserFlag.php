@@ -9,6 +9,8 @@ use Lkrms\Concept\Enumeration;
  *
  * @see \Lkrms\Contract\IResolvable::normaliser()
  * @see \Lkrms\Contract\IResolvable::normalise()
+ *
+ * @extends Enumeration<int>
  */
 final class NormaliserFlag extends Enumeration
 {

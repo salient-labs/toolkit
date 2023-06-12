@@ -7,6 +7,7 @@ use Lkrms\Concept\Enumeration;
 /**
  * Groups of console message levels
  *
+ * @extends Enumeration<int[]>
  */
 final class ConsoleLevels extends Enumeration
 {

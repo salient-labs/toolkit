@@ -7,6 +7,7 @@ use Lkrms\Concept\Enumeration;
 /**
  * Policies for unclaimed sync operation filter values
  *
+ * @extends Enumeration<int>
  */
 final class SyncFilterPolicy extends Enumeration
 {

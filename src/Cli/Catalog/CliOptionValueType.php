@@ -7,6 +7,7 @@ use Lkrms\Concept\Enumeration;
 /**
  * Command line option value types
  *
+ * @extends Enumeration<int>
  */
 final class CliOptionValueType extends Enumeration
 {

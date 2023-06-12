@@ -7,6 +7,7 @@ use Lkrms\Concept\Enumeration;
 /**
  * Serialized sync entity link types
  *
+ * @extends Enumeration<int>
  */
 final class SyncSerializeLinkType extends Enumeration
 {

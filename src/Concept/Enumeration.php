@@ -7,6 +7,9 @@ use Lkrms\Contract\IEnumeration;
 /**
  * Base class for enumerations
  *
+ * @template TValue
+ *
+ * @implements IEnumeration<TValue>
  */
 abstract class Enumeration implements IEnumeration
 {

@@ -8,6 +8,7 @@ use LogicException;
 /**
  * Database connection drivers
  *
+ * @extends ConvertibleEnumeration<int>
  */
 final class DbDriver extends ConvertibleEnumeration
 {

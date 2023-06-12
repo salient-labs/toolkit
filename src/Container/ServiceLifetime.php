@@ -7,6 +7,7 @@ use Lkrms\Concept\Enumeration;
 /**
  * Service lifetimes relative to the container
  *
+ * @extends Enumeration<int>
  */
 final class ServiceLifetime extends Enumeration
 {

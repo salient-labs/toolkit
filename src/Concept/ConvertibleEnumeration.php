@@ -11,6 +11,11 @@ use ReflectionClass;
  * Uses reflection to convert the class's public constants to and from their
  * names
  *
+ * @template TValue
+ *
+ * @extends Enumeration<TValue>
+ * @implements IConvertibleEnumeration<TValue>
+ *
  * @see HasConvertibleConstants A trait that provides an alternative
  * implementation.
  */
@@ -19,14 +24,14 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
     /**
      * Class name => [ constant name => value ]
      *
-     * @var array<string,array<string,int>>
+     * @var array<string,array<string,TValue>>
      */
     private static $ValueMaps = [];
 
     /**
      * Class name => [ constant value => name ]
      *
-     * @var array<string,array<int,string>>
+     * @var array<string,array<TValue,string>>
      */
     private static $NameMaps = [];
 
@@ -64,7 +69,7 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
         self::$NameMaps[static::class] = $nameMap;
     }
 
-    final public static function fromName(string $name): int
+    final public static function fromName(string $name)
     {
         if (($map = self::$ValueMaps[static::class] ?? null) === null) {
             self::loadMaps();
@@ -79,7 +84,7 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
         return $value;
     }
 
-    final public static function toName(int $value): string
+    final public static function toName($value): string
     {
         if ((self::$NameMaps[static::class] ?? null) === null) {
             self::loadMaps();
