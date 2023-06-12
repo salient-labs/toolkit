@@ -2,28 +2,25 @@
 
 namespace Lkrms\Sync\Exception;
 
-use Lkrms\Facade\Convert;
 use Lkrms\Sync\Catalog\SyncOperation;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 
 /**
  * Thrown when an unimplemented sync operation is attempted
  *
  */
-class SyncOperationNotImplementedException extends \Lkrms\Exception\Exception
+class SyncOperationNotImplementedException extends SyncException
 {
     /**
-     * @param ISyncProvider|string $provider
+     * @param class-string<ISyncEntity> $entity
+     * @param SyncOperation::* $operation
      */
-    public function __construct($provider, string $entity, int $operation)
+    public function __construct(ISyncProvider $provider, string $entity, int $operation)
     {
-        if ($provider instanceof ISyncProvider) {
-            $provider = get_class($provider);
-        }
-
         parent::__construct(sprintf(
             '%s has not implemented SyncOperation::%s for %s',
-            Convert::classToBasename($provider),
+            get_class($provider),
             SyncOperation::toName($operation),
             $entity
         ));

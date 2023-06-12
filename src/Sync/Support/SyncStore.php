@@ -12,7 +12,7 @@ use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
+use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Lkrms\Sync\Support\SyncErrorBuilder as ErrorBuilder;
 use LogicException;
 use ReflectionClass;
@@ -633,7 +633,7 @@ final class SyncStore extends SqliteStore
         }
 
         if ($failed) {
-            throw new SyncProviderBackendUnreachableException(...$failed);
+            throw new SyncProviderHeartbeatCheckFailedException(...$failed);
         }
 
         return $this;

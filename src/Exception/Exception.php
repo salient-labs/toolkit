@@ -17,7 +17,7 @@ abstract class Exception extends RuntimeException
     }
 
     /**
-     * Return an array that maps section names to content
+     * Get an array that maps section names to content
      *
      * See {@see \Lkrms\Curler\Exception\CurlerException} for an example.
      *
@@ -30,12 +30,11 @@ abstract class Exception extends RuntimeException
 
     public function __toString(): string
     {
-        $detail = $this->getDetail();
+        $detail = '';
+        foreach ($this->getDetail() as $key => $value) {
+            $detail .= sprintf("\n\n%s:\n%s", $key, $value);
+        }
 
-        return parent::__toString() . implode('', array_map(
-            fn(string $key, string $value) => "\n\n$key:\n$value",
-            array_keys($detail),
-            $detail
-        ));
+        return parent::__toString() . $detail;
     }
 }

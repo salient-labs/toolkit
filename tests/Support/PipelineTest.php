@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Support;
 
 use Closure;
-use Lkrms\Exception\PipelineException;
+use Lkrms\Exception\PipelineResultRejectedException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Pipeline;
@@ -73,7 +73,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
             $out
         );
 
-        $this->expectException(PipelineException::class);
+        $this->expectException(PipelineResultRejectedException::class);
         (new Pipeline())->send(23)
                         ->through(
                             fn($payload, Closure $next) => $payload % 2 ? null : $next($payload * 3),

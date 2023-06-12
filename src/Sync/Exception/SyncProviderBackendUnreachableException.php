@@ -2,22 +2,25 @@
 
 namespace Lkrms\Sync\Exception;
 
-use Lkrms\Facade\Convert;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Throwable;
 
 /**
- * Thrown when a sync provider's heartbeat check fails
+ * May be thrown by a provider when it can't establish a connection with its
+ * backend
  *
  */
-class SyncProviderBackendUnreachableException extends \Lkrms\Exception\Exception
+class SyncProviderBackendUnreachableException extends SyncException
 {
-    public function __construct(ISyncProvider ...$provider)
+    /**
+     * @var ISyncProvider|null
+     */
+    protected $Provider;
+
+    public function __construct(string $message = '', ?ISyncProvider $provider = null, ?Throwable $previous = null)
     {
-        $count = count($provider);
-        parent::__construct(
-            $count === 1
-                ? 'Provider backend unreachable'
-                : sprintf('%d provider backends unreachable', $count)
-        );
+        $this->Provider = $provider;
+
+        parent::__construct($message, $previous);
     }
 }

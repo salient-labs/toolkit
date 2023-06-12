@@ -8,13 +8,12 @@ use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipe;
 use Lkrms\Contract\IPipeline;
-use Lkrms\Exception\PipelineException;
+use Lkrms\Exception\PipelineResultRejectedException;
 use Lkrms\Facade\Mapper;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
-use RuntimeException;
+use LogicException;
 use Throwable;
-use UnexpectedValueException;
 
 /**
  * Sends a payload through a series of pipes to a destination
@@ -119,7 +118,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     public function after(callable $callback)
     {
         if ($this->After) {
-            throw new RuntimeException(static::class . '::after() has already been applied');
+            throw new LogicException(static::class . '::after() has already been applied');
         }
         $clone = clone $this;
         $clone->After = $callback;
@@ -167,7 +166,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     public function then(callable $callback)
     {
         if ($this->Then) {
-            throw new RuntimeException(static::class . '::then() has already been applied');
+            throw new LogicException(static::class . '::then() has already been applied');
         }
         $clone = clone $this;
         $clone->Then = $callback;
@@ -187,7 +186,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     public function unless(callable $filter)
     {
         if ($this->Unless) {
-            throw new RuntimeException(static::class . '::unless() has already been applied');
+            throw new LogicException(static::class . '::unless() has already been applied');
         }
         $clone = clone $this;
         $clone->Unless = $filter;
@@ -207,7 +206,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     public function run()
     {
         if ($this->Stream) {
-            throw new RuntimeException(static::class . '::run() cannot be called after ' . static::class . '::stream()');
+            throw new LogicException(static::class . '::run() cannot be called after ' . static::class . '::stream()');
         }
 
         $result = $this->getClosure()(
@@ -218,7 +217,7 @@ final class Pipeline extends FluentInterface implements IPipeline
 
         if ($this->Unless &&
                 ($this->Unless)($result, $this, $this->Arg) === true) {
-            throw new PipelineException('Result rejected by filter');
+            throw new PipelineResultRejectedException($this->Payload, $result);
         }
 
         return $result;
@@ -227,7 +226,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     public function start(): iterable
     {
         if (!$this->Stream) {
-            throw new RuntimeException(static::class . '::stream() must be called before ' . static::class . '::start()');
+            throw new LogicException(static::class . '::stream() must be called before ' . static::class . '::start()');
         }
 
         $closure = $this->getClosure();
@@ -280,7 +279,7 @@ final class Pipeline extends FluentInterface implements IPipeline
                         $pipe = $container ? $container->get($pipe) : new $pipe();
                     }
                     if (!($pipe instanceof IPipe)) {
-                        throw new UnexpectedValueException('Pipe does not implement ' . IPipe::class);
+                        throw new LogicException('Pipe does not implement ' . IPipe::class);
                     }
                     $closure = fn($payload) => $pipe->handle($payload, $next, $this, $this->Arg);
                 }
