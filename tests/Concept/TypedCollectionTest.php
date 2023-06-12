@@ -24,16 +24,15 @@ final class TypedCollectionTest extends \Lkrms\Tests\TestCase
         unset($collection[1]);
         $this->assertFalse(isset($collection[1]));
         $collection['n'] = $e1;
-        $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e1], $collection->toArray());
-        $this->assertSame([$e0, $e2, $e1], $collection->toArray(false));
+        $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e1], $collection->all());
         $sorted = $collection->sort();
+        $sorted2 = $sorted->sort();
         $this->assertNotSame($sorted, $collection);
-        $this->assertSame(['n' => $e1, 2 => $e2, 0 => $e0], $sorted->toArray());
-        $this->assertSame([$e1, $e2, $e0], $collection->sort(false)->toArray());
+        $this->assertNotSame($sorted2, $sorted);
+        $this->assertSame(['n' => $e1, 2 => $e2, 0 => $e0], $sorted->all());
         $reversed = $sorted->reverse();
         $this->assertNotSame($reversed, $sorted);
-        $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e1], $reversed->toArray());
-        $this->assertSame([$e0, $e2, $e1], $sorted->reverse(false)->toArray());
+        $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e1], $reversed->all());
         $this->assertCount(3, $collection);
 
         foreach ($collection as $key => $value) {
@@ -64,7 +63,7 @@ final class TypedCollectionTest extends \Lkrms\Tests\TestCase
                 return (bool) $prev;
             }
         );
-        $this->assertSame([$e2, $e1], $coll->toArray());
+        $this->assertSame([2 => $e2, 'n' => $e1], $coll->all());
         $this->assertSame([$e0, $e2, $e1], $arr);
         $this->assertSame([$e2, $e1, null], $arrNext);
         $this->assertSame([null, $e0, $e2], $arrPrev);

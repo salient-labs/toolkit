@@ -2,39 +2,108 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\IComparable;
 use LogicException;
 use ReturnTypeWillChange;
 
 /**
- * Implements ICollection to provide array-like objects
+ * Implements ICollection to provide a flexible array-like collection of values
  *
- * @template T
+ * @template TKey of array-key
+ * @template TValue
+ *
  * @see \Lkrms\Contract\ICollection
- * @see \Lkrms\Concept\TypedCollection
  */
 trait TCollection
 {
-    /**
-     * @use HasItems<T>
-     */
-    use HasItems, HasMutator;
+    use HasMutator;
 
     /**
-     * @param callable $callback
-     * ```php
-     * fn(T $item, ?T $nextItem, ?T $prevItem): mixed
-     * ```
-     * @phpstan-param callable(T, ?T, ?T): mixed $callback
+     * @var TValue[]
+     */
+    private $Items;
+
+    /**
+     * @param TValue[] $items
+     */
+    public function __construct($items = [])
+    {
+        $this->Items = $items;
+    }
+
+    /**
+     * Push one or more items onto the end of the collection
+     *
+     * {@inheritDoc}
+     *
+     * Returns a new instance of the collection.
+     *
+     * @param TValue ...$item
      * @return $this
      */
-    final public function forEach(callable $callback)
+    public function push(...$item)
+    {
+        $clone = $this->mutate();
+        array_push($clone->Items, ...$item);
+        return $clone;
+    }
+
+    /**
+     * @return TValue|false
+     */
+    public function pop()
+    {
+        if (!$this->Items) {
+            return false;
+        }
+        $this->markAsMutant();
+        return array_pop($this->Items);
+    }
+
+    /**
+     * Sort items in the collection
+     *
+     * {@inheritDoc}
+     *
+     * Returns a new instance of the collection.
+     *
+     * @return $this
+     */
+    public function sort()
+    {
+        $clone = $this->mutate();
+        uasort($clone->Items, fn($a, $b) => $this->compareItems($a, $b));
+        return $clone;
+    }
+
+    /**
+     * Reverse the order of items in the collection
+     *
+     * {@inheritDoc}
+     *
+     * Returns a new instance of the collection.
+     *
+     * @return $this
+     */
+    public function reverse()
+    {
+        $clone = $this->mutate();
+        $clone->Items = array_reverse($clone->Items, true);
+        return $clone;
+    }
+
+    /**
+     * @param callable(TValue, ?TValue, ?TValue): mixed $callback Parameters: `$item`, `$nextItem`, `$prevItem`
+     * @return $this
+     */
+    public function forEach(callable $callback)
     {
         $prev = null;
         $item = null;
         $i = 0;
 
         // foreach doesn't change the internal array pointer
-        foreach ($this->_Items as $next) {
+        foreach ($this->Items as $next) {
             if ($i++) {
                 $callback($item, $next, $prev);
                 $prev = $item;
@@ -49,55 +118,55 @@ trait TCollection
     }
 
     /**
-     * @param callable $callback
-     * ```php
-     * fn(T $item, ?T $nextItem, ?T $prevItem): bool
-     * ```
-     * @phpstan-param callable(T, ?T, ?T): bool $callback
-     * @return static
+     * Reduce the collection to items that satisfy a callback
+     *
+     * {@inheritDoc}
+     *
+     * Returns a new instance of the collection.
+     *
+     * @param callable(TValue, ?TValue, ?TValue): bool $callback Parameters: `$item`, `$nextItem`, `$prevItem`
+     * @return $this
      */
-    final public function filter(callable $callback)
+    public function filter(callable $callback)
     {
         $clone = $this->mutate();
-        $clone->_Items = [];
+        $clone->Items = [];
 
         $prev = null;
         $item = null;
+        $key = null;
         $i = 0;
 
         // foreach doesn't change the internal array pointer
-        foreach ($this->_Items as $next) {
+        foreach ($this->Items as $nextKey => $next) {
             if ($i++) {
                 if ($callback($item, $next, $prev)) {
-                    $clone->_Items[] = $item;
+                    $clone->Items[$key] = $item;
                 }
                 $prev = $item;
             }
             $item = $next;
+            $key = $nextKey;
         }
         if ($i && $callback($item, null, $prev)) {
-            $clone->_Items[] = $item;
+            $clone->Items[$key] = $item;
         }
 
         return $clone;
     }
 
     /**
-     * @param callable $callback
-     * ```php
-     * fn(T $item, ?T $nextItem, ?T $prevItem): bool
-     * ```
-     * @phpstan-param callable(T, ?T, ?T): bool $callback
-     * @return T|false
+     * @param callable(TValue, ?TValue, ?TValue): bool $callback Parameters: `$item`, `$nextItem`, `$prevItem`
+     * @return TValue|false
      */
-    final public function find(callable $callback)
+    public function find(callable $callback)
     {
         $prev = null;
         $item = null;
         $i = 0;
 
         // foreach doesn't change the internal array pointer
-        foreach ($this->_Items as $next) {
+        foreach ($this->Items as $next) {
             if ($i++) {
                 if ($callback($item, $next, $prev)) {
                     return $item;
@@ -114,88 +183,99 @@ trait TCollection
     }
 
     /**
-     * @return static
+     * @return $this
      */
-    final public function slice(int $offset, ?int $length = null, bool $preserveKeys = true)
+    public function slice(int $offset, ?int $length = null)
     {
         $clone = $this->mutate();
-        $clone->_Items = array_slice($clone->_Items, $offset, $length, $preserveKeys);
-        if (!$preserveKeys) {
-            $clone->_Items = array_values($clone->_Items);
-        }
-
+        $clone->Items = array_slice($clone->Items, $offset, $length, true);
         return $clone;
     }
 
     /**
-     * @param T $item
+     * @param TValue $item
      */
-    final public function has($item, bool $strict = false): bool
+    public function has($item, bool $strict = false): bool
     {
-        return in_array($item, $this->_Items, $strict);
-    }
-
-    /**
-     * @param T $item
-     * @return int|string|false
-     */
-    final public function keyOf($item, bool $strict = false)
-    {
-        return array_search($item, $this->_Items, $strict);
-    }
-
-    /**
-     * @param T $item
-     * @return T|false
-     */
-    final public function get($item)
-    {
-        if (($key = array_search($item, $this->_Items)) === false) {
-            return false;
+        if ($strict) {
+            return in_array($item, $this->Items, true);
         }
 
-        return $this->_Items[$key];
+        foreach ($this->Items as $_item) {
+            if (!$this->compareItems($item, $_item)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * @return T[]
+     * @param TValue $item
+     * @return TKey|false
      */
-    final public function toArray(bool $preserveKeys = true): array
+    public function keyOf($item, bool $strict = false)
     {
-        return $preserveKeys
-            ? $this->_Items
-            : array_values($this->_Items);
+        if ($strict) {
+            return array_search($item, $this->Items, true);
+        }
+
+        foreach ($this->Items as $key => $_item) {
+            if (!$this->compareItems($item, $_item)) {
+                return $key;
+            }
+        }
+        return false;
     }
 
     /**
-     * @return T|false
+     * @param TValue $item
+     * @return TValue|false
      */
-    final public function first()
+    public function get($item)
     {
-        $copy = $this->_Items;
+        foreach ($this->Items as $_item) {
+            if (!$this->compareItems($item, $_item)) {
+                return $_item;
+            }
+        }
+        return false;
+    }
 
+    /**
+     * @return TValue[]
+     */
+    public function all(): array
+    {
+        return $this->Items;
+    }
+
+    /**
+     * @return TValue|false
+     */
+    public function first()
+    {
+        $copy = $this->Items;
         return reset($copy);
     }
 
     /**
-     * @return T|false
+     * @return TValue|false
      */
-    final public function last()
+    public function last()
     {
-        $copy = $this->_Items;
-
+        $copy = $this->Items;
         return end($copy);
     }
 
     /**
-     * @return T|false
+     * @return TValue|false
      */
-    final public function nth(int $n)
+    public function nth(int $n)
     {
         if ($n === 0) {
             throw new LogicException('Argument #1 ($n) is 1-based, 0 given');
         }
-        $keys = array_keys($this->_Items);
+        $keys = array_keys($this->Items);
         if ($n < 0) {
             $keys = array_reverse($keys);
             $n = -$n;
@@ -205,102 +285,137 @@ trait TCollection
             return false;
         }
 
-        return $this->_Items[$key];
+        return $this->Items[$key];
     }
 
     /**
-     * @return T|false
+     * @return TValue|false
      */
-    final public function shift()
+    public function shift()
     {
-        if (!$this->_Items) {
+        if (!$this->Items) {
             return false;
         }
+        $this->markAsMutant();
+        return array_shift($this->Items);
+    }
 
-        return array_shift($this->_Items);
+    /**
+     * Add one or more items to the beginning of the collection
+     *
+     * {@inheritDoc}
+     *
+     * Returns a new instance of the collection.
+     *
+     * @param TValue ...$item
+     * @return $this
+     */
+    public function unshift(...$item)
+    {
+        $clone = $this->mutate();
+        array_unshift($clone->Items, ...$item);
+        return $clone;
     }
 
     // Implementation of `Iterator`:
 
     /**
-     * @return T|false
+     * @return TValue|false
      */
     #[ReturnTypeWillChange]
-    final public function current()
+    public function current()
     {
-        return current($this->_Items);
+        return current($this->Items);
     }
 
     /**
-     * @return int|string|null
+     * @return TKey
      */
     #[ReturnTypeWillChange]
-    final public function key()
+    public function key()
     {
-        return key($this->_Items);
+        return key($this->Items);
     }
 
-    final public function next(): void
+    public function next(): void
     {
-        next($this->_Items);
+        next($this->Items);
     }
 
-    final public function rewind(): void
+    public function rewind(): void
     {
-        reset($this->_Items);
+        reset($this->Items);
     }
 
-    final public function valid(): bool
+    public function valid(): bool
     {
-        return key($this->_Items) !== null;
+        return key($this->Items) !== null;
     }
 
     // Implementation of `ArrayAccess`:
 
     /**
-     * @param int|string|null $offset
+     * @param TKey $offset
      */
-    final public function offsetExists($offset): bool
+    public function offsetExists($offset): bool
     {
-        return array_key_exists($offset, $this->_Items);
+        return array_key_exists($offset, $this->Items);
     }
 
     /**
-     * @param int|string|null $offset
-     * @return T
+     * @param TKey $offset
+     * @return TValue
      */
     #[ReturnTypeWillChange]
-    final public function offsetGet($offset)
+    public function offsetGet($offset)
     {
-        return $this->_Items[$offset];
+        return $this->Items[$offset];
     }
 
     /**
-     * @param int|string|null $offset
-     * @param T $value
+     * @param TKey|null $offset
+     * @param TValue $value
      */
-    final public function offsetSet($offset, $value): void
+    public function offsetSet($offset, $value): void
     {
         if ($offset === null) {
-            $this->_Items[] = $value;
-
+            $this->Items[] = $value;
             return;
         }
-        $this->_Items[$offset] = $value;
+        $this->Items[$offset] = $value;
     }
 
     /**
-     * @param int|string|null $offset
+     * @param TKey $offset
      */
-    final public function offsetUnset($offset): void
+    public function offsetUnset($offset): void
     {
-        unset($this->_Items[$offset]);
+        unset($this->Items[$offset]);
     }
 
     // Implementation of `Countable`:
 
-    final public function count(): int
+    public function count(): int
     {
-        return count($this->_Items);
+        return count($this->Items);
+    }
+
+    /**
+     * Compare items using IComparable::compare() if implemented
+     *
+     * @param TValue $a
+     * @param TValue $b
+     */
+    protected function compareItems($a, $b): int
+    {
+        if ($a instanceof IComparable && is_a($b, get_class($a))) {
+            return $a::compare($a, $b);
+        }
+
+        if ($b instanceof IComparable && is_a($a, get_class($b))) {
+            return -$b::compare($a, $b);
+        }
+
+        return $a <=> $b;
     }
 }

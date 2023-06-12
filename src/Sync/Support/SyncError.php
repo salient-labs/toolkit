@@ -130,15 +130,15 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
         return $this;
     }
 
-    public function compare($b, bool $strict = false): int
+    public static function compare($a, $b): int
     {
-        return $this->Level <=> $b->Level
-            ?: $this->ErrorType <=> $b->ErrorType
-            ?: $this->Message <=> $b->Message
-            ?: $this->Values <=> $b->Values
-            ?: $this->EntityName <=> $b->EntityName
-            ?: ($this->Provider ? $this->Provider->getProviderId() : null) <=> ($b->Provider ? $b->Provider->getProviderId() : null)
-            ?: ($this->Entity ? $this->Entity->id() : null) <=> ($b->Entity ? $b->Entity->id() : null);
+        return $a->Level <=> $b->Level
+            ?: $a->ErrorType <=> $b->ErrorType
+            ?: $a->Message <=> $b->Message
+            ?: $a->Values <=> $b->Values
+            ?: $a->EntityName <=> $b->EntityName
+            ?: ($a->Provider ? $a->Provider->getProviderId() : null) <=> ($b->Provider ? $b->Provider->getProviderId() : null)
+            ?: ($a->Entity ? $a->Entity->id() : null) <=> ($b->Entity ? $b->Entity->id() : null);
     }
 
     public function getCode(): string

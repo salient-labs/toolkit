@@ -1601,11 +1601,6 @@ parameters:
 			path: tests/Concept/Facade/MyUnderlyingClass.php
 
 		-
-			message: "#^Class Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyArrayAccessClass extends generic class Lkrms\\\\Concept\\\\TypedCollection but does not specify its types\\: T$#"
-			count: 1
-			path: tests/Concept/HasMutator/MyArrayAccessClass.php
-
-		-
 			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:with\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: tests/Concept/HasMutator/MyMutatingClass.php

@@ -16,7 +16,7 @@ trait HasMutator
     /**
      * Get a clone of the object and mark it as a mutant
      *
-     * @return static
+     * @return $this
      */
     final protected function mutate()
     {
@@ -26,10 +26,23 @@ trait HasMutator
     }
 
     /**
+     * Mark the object as a mutant
+     *
+     * Useful when the class can be modified directly.
+     *
+     * @return $this
+     */
+    final protected function markAsMutant()
+    {
+        $this->_IsMutant = true;
+        return $this;
+    }
+
+    /**
      * If the object is marked as a mutant, get a clone with the "mutant" flag
      * cleared
      *
-     * @return static|$this
+     * @return $this
      */
     final protected function asNew()
     {
@@ -68,7 +81,7 @@ trait HasMutator
      * object is returned as-is.
      *
      * @param mixed $value
-     * @return static|$this
+     * @return $this
      */
     final protected function withPropertyValue(string $property, $value, ?string $key = null)
     {
@@ -97,7 +110,7 @@ trait HasMutator
 
     /**
      * @param mixed $value
-     * @return static|$this
+     * @return $this
      */
     private function applyPropertyKeyValue(
         string $property,

@@ -12,14 +12,11 @@ use Lkrms\Sync\Catalog\SyncErrorType as ErrorType;
 /**
  * A collection of SyncError objects
  *
- * @extends TypedCollection<SyncError>
+ * @extends TypedCollection<int,SyncError>
  */
 final class SyncErrorCollection extends TypedCollection implements JsonSerializable
 {
-    protected function getItemClass(): string
-    {
-        return SyncError::class;
-    }
+    protected const ITEM_CLASS = SyncError::class;
 
     /**
      * Get a JSON:API-compatible representation of the errors

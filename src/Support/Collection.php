@@ -6,15 +6,17 @@ use Lkrms\Concern\TCollection;
 use Lkrms\Contract\ICollection;
 
 /**
- * An array-like collection of values
+ * A flexible array-like collection of values
  *
- * @template T
- * @implements ICollection<T>
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @implements ICollection<TKey,TValue>
  */
 final class Collection implements ICollection
 {
     /**
-     * @use TCollection<T>
+     * @use TCollection<TKey,TValue>
      */
     use TCollection;
 }

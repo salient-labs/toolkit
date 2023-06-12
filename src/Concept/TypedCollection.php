@@ -2,123 +2,83 @@
 
 namespace Lkrms\Concept;
 
-use Lkrms\Concern\HasSortableItems;
 use Lkrms\Concern\TCollection;
 use Lkrms\Contract\ICollection;
-use Lkrms\Contract\IComparable;
+use Lkrms\Contract\IImmutable;
 use LogicException;
 
 /**
- * Base class for collections of objects of a particular type
+ * Base class for collections of objects of a given type
  *
- * @template T of object
- * @implements ICollection<T>
+ * @template TKey of array-key
+ * @template TValue of object
+ *
+ * @implements ICollection<TKey,TValue>
  */
-abstract class TypedCollection implements ICollection
+abstract class TypedCollection implements ICollection, IImmutable
 {
     /**
-     * @use TCollection<T>
-     * @use HasSortableItems<T>
+     * @var class-string<TValue>
      */
-    use TCollection, HasSortableItems {
-        TCollection::has as private _has;
-        TCollection::keyOf as private _keyOf;
-        TCollection::get as private _get;
-        TCollection::offsetSet as private _offsetSet;
+    protected const ITEM_CLASS = \stdClass::class;
+
+    /**
+     * @use TCollection<TKey,TValue>
+     */
+    use TCollection {
+        push as private _push;
+        unshift as private _unshift;
+        offsetSet as private _offsetSet;
     }
 
-    /**
-     * @var class-string<T>
-     */
-    private $ItemClass;
-
-    /**
-     * @var bool
-     */
-    private $HasComparableItems;
-
-    /**
-     * @return class-string<T>
-     */
-    abstract protected function getItemClass(): string;
-
-    public function __construct()
+    public function __construct($items = [])
     {
-        $this->ItemClass = $this->getItemClass();
-        $this->HasComparableItems = is_a($this->ItemClass, IComparable::class, true);
-    }
-
-    /**
-     * @param int|string|null $offset
-     * @param T $value
-     */
-    final public function offsetSet($offset, $value): void
-    {
-        if (!($value instanceof $this->ItemClass)) {
-            throw new LogicException(sprintf('Expected an instance of %s', $this->ItemClass));
+        foreach ($items as $item) {
+            if (!is_object($item) || !is_a($item, static::ITEM_CLASS)) {
+                $this->throwItemTypeException($item);
+            }
         }
+        $this->Items = $items;
+    }
 
+    public function push(...$item)
+    {
+        foreach ($item as $_item) {
+            if (!is_object($_item) || !is_a($_item, static::ITEM_CLASS)) {
+                $this->throwItemTypeException($_item);
+            }
+        }
+        return $this->_push(...$item);
+    }
+
+    public function unshift(...$item)
+    {
+        foreach ($item as $_item) {
+            if (!is_object($_item) || !is_a($_item, static::ITEM_CLASS)) {
+                $this->throwItemTypeException($_item);
+            }
+        }
+        return $this->_unshift(...$item);
+    }
+
+    public function offsetSet($offset, $value): void
+    {
+        if (!is_object($value) || !is_a($value, static::ITEM_CLASS)) {
+            $this->throwItemTypeException($value);
+        }
         $this->_offsetSet($offset, $value);
     }
 
-    final public function has($item, bool $strict = false): bool
-    {
-        if (!$this->HasComparableItems) {
-            return $this->_has($item, $strict);
-        }
-
-        foreach ($this->_Items as $_item) {
-            if (!$this->compareItems($item, $_item, $strict)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    final public function keyOf($item, bool $strict = false)
-    {
-        if (!$this->HasComparableItems) {
-            return $this->_keyOf($item, $strict);
-        }
-
-        foreach ($this->_Items as $key => $_item) {
-            if (!$this->compareItems($item, $_item, $strict)) {
-                return $key;
-            }
-        }
-
-        return false;
-    }
-
-    final public function get($item)
-    {
-        if (!$this->HasComparableItems) {
-            return $this->_get($item);
-        }
-
-        foreach ($this->_Items as $_item) {
-            if (!$this->compareItems($item, $_item)) {
-                return $_item;
-            }
-        }
-
-        return false;
-    }
-
     /**
-     * @param T&IComparable $a
-     * @param T&IComparable $b
+     * @param mixed $item
+     * @return never
      */
-    protected function compareItems($a, $b, bool $strict = false): int
+    private function throwItemTypeException($item)
     {
-        switch (true) {
-            case is_a($b, get_class($a)):
-                return $a->compare($b, $strict);
-            case is_a($a, get_class($b)):
-                return -$b->compare($a, $strict);
-            default:
-                return $a <=> $b;
-        }
+        throw new LogicException(sprintf(
+            'Not a subclass of %s: %s',
+            static::ITEM_CLASS,
+            is_object($item) ? get_class($item) : gettype($item)
+        ));
     }
 }
