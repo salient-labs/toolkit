@@ -3,6 +3,7 @@
 namespace Lkrms\Curler;
 
 use DateTimeInterface;
+use Lkrms\Concern\HasMutator;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Contract\HasBuilder;
@@ -50,6 +51,8 @@ use UnexpectedValueException;
  * @property bool $Flush Replace cached responses that haven't expired?
  * @property callable|null $ResponseCacheKeyCallback Override the default cache key when saving and loading cached responses
  * @property bool $ThrowHttpErrors Throw an exception if the status code is >= 400?
+ * @property int|null $ConnectTimeout Override the default number of seconds the connection phase of the transfer is allowed to take
+ * @property int|null $Timeout Limit the number of seconds the transfer is allowed to take
  * @property bool $FollowRedirects Follow "Location:" headers?
  * @property int|null $MaxRedirects Limit the number of redirections followed when FollowRedirects is set
  * @property bool $HandleCookies Send and receive cookies?
@@ -66,7 +69,7 @@ use UnexpectedValueException;
  */
 final class Curler implements IReadable, IWritable, HasBuilder
 {
-    use TReadable, TWritable;
+    use TReadable, TWritable, HasMutator;
 
     /**
      * Request URL
@@ -218,6 +221,23 @@ final class Curler implements IReadable, IWritable, HasBuilder
     protected $ThrowHttpErrors = true;
 
     /**
+     * Override the default number of seconds the connection phase of the
+     * transfer is allowed to take
+     *
+     * cURL's default connection timeout is 300 seconds.
+     *
+     * @var int|null
+     */
+    protected $ConnectTimeout;
+
+    /**
+     * Limit the number of seconds the transfer is allowed to take
+     *
+     * @var int|null
+     */
+    protected $Timeout;
+
+    /**
      * Follow "Location:" headers?
      *
      * Use {@see Curler::$MaxRedirects} to limit the number of redirections.
@@ -365,6 +385,8 @@ final class Curler implements IReadable, IWritable, HasBuilder
         bool $flush = false,
         ?callable $responseCacheKeyCallback = null,
         bool $throwHttpErrors = true,
+        ?int $connectTimeout = null,
+        ?int $timeout = null,
         bool $followRedirects = false,
         ?int $maxRedirects = null,
         bool $handleCookies = false,
@@ -388,6 +410,8 @@ final class Curler implements IReadable, IWritable, HasBuilder
         $this->Flush = $flush;
         $this->ResponseCacheKeyCallback = $responseCacheKeyCallback;
         $this->ThrowHttpErrors = $throwHttpErrors;
+        $this->ConnectTimeout = $connectTimeout;
+        $this->Timeout = $timeout;
         $this->FollowRedirects = $followRedirects;
         $this->MaxRedirects = $maxRedirects;
         $this->HandleCookies = $handleCookies;
@@ -406,7 +430,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * @return $this
      */
-    final public function addHeader(string $name, string $value, bool $private = false)
+    public function addHeader(string $name, string $value, bool $private = false)
     {
         $this->Headers = $this->Headers->addHeader($name, $value, $private);
 
@@ -416,7 +440,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * @return $this
      */
-    final public function unsetHeader(string $name, ?string $pattern = null)
+    public function unsetHeader(string $name, ?string $pattern = null)
     {
         $this->Headers = $this->Headers->unsetHeader($name, $pattern);
 
@@ -426,7 +450,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * @return $this
      */
-    final public function setHeader(string $name, string $value, bool $private = false)
+    public function setHeader(string $name, string $value, bool $private = false)
     {
         $this->Headers = $this->Headers->setHeader($name, $value, $private);
 
@@ -436,7 +460,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * @return $this
      */
-    final public function addPrivateHeaderName(string $name)
+    public function addPrivateHeaderName(string $name)
     {
         $this->Headers = $this->Headers->addPrivateHeaderName($name);
 
@@ -446,7 +470,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * @return $this
      */
-    final public function setContentType(?string $mimeType)
+    public function setContentType(?string $mimeType)
     {
         $this->Headers =
             is_null($mimeType)
@@ -461,9 +485,9 @@ final class Curler implements IReadable, IWritable, HasBuilder
      *
      * @return $this
      */
-    final public function withHeaders(ICurlerHeaders $headers)
+    public function withHeaders(ICurlerHeaders $headers)
     {
-        $clone = clone $this;
+        $clone = $this->mutate();
         $clone->Headers = $headers;
 
         return $clone;
@@ -474,18 +498,30 @@ final class Curler implements IReadable, IWritable, HasBuilder
      *
      * @return $this
      */
-    final public function withPager(ICurlerPager $pager)
+    public function withPager(ICurlerPager $pager)
     {
-        $clone = clone $this;
+        $clone = $this->mutate();
         $clone->Pager = $pager;
 
         return $clone;
     }
 
     /**
+     * Apply a value to a clone of the instance
+     *
+     * @param string $property
+     * @param mixed $value
      * @return $this
      */
-    final public function flushCookies()
+    public function with($property, $value)
+    {
+        return $this->withPropertyValue($property, $value);
+    }
+
+    /**
+     * @return $this
+     */
+    public function flushCookies()
     {
         if ($cookieKey = $this->getCookieKey()) {
             Cache::delete($cookieKey);
@@ -494,7 +530,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         return $this;
     }
 
-    final public function responseContentTypeIs(string $mimeType): bool
+    public function responseContentTypeIs(string $mimeType): bool
     {
         $contentType = $this->ResponseHeaders->getHeaderValue(
             HttpHeader::CONTENT_TYPE,
@@ -514,9 +550,9 @@ final class Curler implements IReadable, IWritable, HasBuilder
      *
      * @return $this
      */
-    final public function withCurlInfo()
+    public function withCurlInfo()
     {
-        $clone = clone $this;
+        $clone = $this->mutate();
         if ($clone->Handle) {
             $clone->CurlInfo = $clone->CurlInfo ?: curl_getinfo($clone->Handle);
         }
@@ -524,14 +560,14 @@ final class Curler implements IReadable, IWritable, HasBuilder
         return $clone;
     }
 
-    final protected function getEffectiveUrl(): ?string
+    protected function getEffectiveUrl(): ?string
     {
         return $this->Handle
             ? curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)
             : null;
     }
 
-    final protected function close(): void
+    protected function close(): void
     {
         if (is_null($this->Handle)) {
             return;
@@ -583,7 +619,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         }
     }
 
-    final public function getQueryUrl(?array $query): string
+    public function getQueryUrl(?array $query): string
     {
         return $this->BaseUrl . $this->getQueryString($query);
     }
@@ -620,6 +656,14 @@ final class Curler implements IReadable, IWritable, HasBuilder
             CURLOPT_HEADERFUNCTION,
             fn($curl, $header) => strlen($this->processHeader($header))
         );
+
+        if ($this->ConnectTimeout !== null) {
+            curl_setopt($this->Handle, CURLOPT_CONNECTTIMEOUT, $this->ConnectTimeout);
+        }
+
+        if ($this->Timeout !== null) {
+            curl_setopt($this->Handle, CURLOPT_TIMEOUT, $this->Timeout);
+        }
 
         if ($this->FollowRedirects) {
             curl_setopt($this->Handle, CURLOPT_FOLLOWLOCATION, true);
@@ -960,7 +1004,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      *
      * @param mixed[]|null $query
      */
-    final public function head(?array $query = null): ICurlerHeaders
+    public function head(?array $query = null): ICurlerHeaders
     {
         return $this->process(HttpRequestMethod::HEAD, $query);
     }
@@ -970,7 +1014,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param mixed[]|null $query
      * @return mixed
      */
-    final public function get(?array $query = null)
+    public function get(?array $query = null)
     {
         return $this->process(HttpRequestMethod::GET, $query);
     }
@@ -981,7 +1025,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param mixed[]|null $query
      * @return mixed
      */
-    final public function post($data = null, ?array $query = null)
+    public function post($data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::POST, $query, $data);
     }
@@ -992,7 +1036,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param mixed[]|null $query
      * @return mixed
      */
-    final public function put($data = null, ?array $query = null)
+    public function put($data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PUT, $query, $data);
     }
@@ -1003,7 +1047,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param mixed[]|null $query
      * @return mixed
      */
-    final public function patch($data = null, ?array $query = null)
+    public function patch($data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PATCH, $query, $data);
     }
@@ -1014,7 +1058,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param mixed[]|null $query
      * @return mixed
      */
-    final public function delete($data = null, ?array $query = null)
+    public function delete($data = null, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::DELETE, $query, $data);
     }
@@ -1024,7 +1068,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param mixed[]|null $query
      * @return iterable<mixed>
      */
-    final public function getP(?array $query = null): iterable
+    public function getP(?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::GET, $query);
     }
@@ -1035,7 +1079,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param mixed[]|null $query
      * @return iterable<mixed>
      */
-    final public function postP($data = null, ?array $query = null): iterable
+    public function postP($data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::POST, $query, $data);
     }
@@ -1046,7 +1090,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param mixed[]|null $query
      * @return iterable<mixed>
      */
-    final public function putP($data = null, ?array $query = null): iterable
+    public function putP($data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::PUT, $query, $data);
     }
@@ -1057,7 +1101,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param mixed[]|null $query
      * @return iterable<mixed>
      */
-    final public function patchP($data = null, ?array $query = null): iterable
+    public function patchP($data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::PATCH, $query, $data);
     }
@@ -1068,27 +1112,27 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param mixed[]|null $query
      * @return iterable<mixed>
      */
-    final public function deleteP($data = null, ?array $query = null): iterable
+    public function deleteP($data = null, ?array $query = null): iterable
     {
         return $this->paginate(HttpRequestMethod::DELETE, $query, $data);
     }
 
-    final public function rawPost(string $data, string $mimeType, ?array $query = null)
+    public function rawPost(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::POST, $query, $data, $mimeType);
     }
 
-    final public function rawPut(string $data, string $mimeType, ?array $query = null)
+    public function rawPut(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PUT, $query, $data, $mimeType);
     }
 
-    final public function rawPatch(string $data, string $mimeType, ?array $query = null)
+    public function rawPatch(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PATCH, $query, $data, $mimeType);
     }
 
-    final public function rawDelete(string $data, string $mimeType, ?array $query = null)
+    public function rawDelete(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::DELETE, $query, $data, $mimeType);
     }
@@ -1229,6 +1273,8 @@ final class Curler implements IReadable, IWritable, HasBuilder
             'Flush',
             'ResponseCacheKeyCallback',
             'ThrowHttpErrors',
+            'ConnectTimeout',
+            'Timeout',
             'FollowRedirects',
             'MaxRedirects',
             'HandleCookies',
@@ -1257,6 +1303,8 @@ final class Curler implements IReadable, IWritable, HasBuilder
             'Flush',
             'ResponseCacheKeyCallback',
             'ThrowHttpErrors',
+            'ConnectTimeout',
+            'Timeout',
             'FollowRedirects',
             'MaxRedirects',
             'HandleCookies',
@@ -1279,7 +1327,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param array $query
      * @return array All returned entities.
      */
-    final public function getAllLinked(?array $query = null): array
+    public function getAllLinked(?array $query = null): array
     {
         $this->initialise(HttpRequestMethod::GET, $query);
         $entities = [];
@@ -1313,7 +1361,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @param array $query
      * @return array All returned entities.
      */
-    final public function getAllLinkedByEntity($entityName, ?array $query = null): array
+    public function getAllLinkedByEntity($entityName, ?array $query = null): array
     {
         $this->initialise(HttpRequestMethod::GET, $query);
         $entities = [];
@@ -1388,7 +1436,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         }
     }
 
-    final public function getByGraphQL(
+    public function getByGraphQL(
         string $query,
         array $variables = null,
         string $entityPath = null,
@@ -1450,54 +1498,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
         } while ($nextQuery);
 
         return $entities;
-    }
-
-    /**
-     * @deprecated
-     */
-    final public function rawPostJson(string $data, string $mimeType, ?array $query = null)
-    {
-        return $this->process(HttpRequestMethod::POST, $query, $data, $mimeType);
-    }
-
-    /**
-     * @deprecated
-     */
-    final public function getJson(?array $query = null)
-    {
-        return $this->process(HttpRequestMethod::GET, $query);
-    }
-
-    /**
-     * @deprecated
-     */
-    final public function postJson(?array $data = null, ?array $query = null)
-    {
-        return $this->process(HttpRequestMethod::POST, $query, $data);
-    }
-
-    /**
-     * @deprecated
-     */
-    final public function putJson(?array $data = null, ?array $query = null)
-    {
-        return $this->process(HttpRequestMethod::PUT, $query, $data);
-    }
-
-    /**
-     * @deprecated
-     */
-    final public function patchJson(?array $data = null, ?array $query = null)
-    {
-        return $this->process(HttpRequestMethod::PATCH, $query, $data);
-    }
-
-    /**
-     * @deprecated
-     */
-    final public function deleteJson(?array $data = null, ?array $query = null)
-    {
-        return $this->process(HttpRequestMethod::DELETE, $query, $data);
     }
 
     /**

@@ -3,15 +3,23 @@
 namespace Lkrms\Contract;
 
 /**
- * Compares itself with others of the same type
+ * Able to compare instances of itself, e.g. for sorting purposes
  *
  */
 interface IComparable
 {
     /**
-     * Return the equivalent of $this <=> $b
+     * Get an integer less than, equal to, or greater than zero when $a is less
+     * than, equal to, or greater than $b, respectively
      *
+     * This method returns the equivalent of:
+     *
+     * ```php
+     * $a <=> $b
+     * ```
+     *
+     * @param static $a
      * @param static $b
      */
-    public function compare($b, bool $strict = false): int;
+    public static function compare($a, $b): int;
 }
