@@ -3,20 +3,25 @@
 namespace Lkrms\Contract;
 
 /**
- * Converts the integer values of its public constants to and from their names
+ * Converts the values of its public constants to and from their names
  *
+ * @template TValue
+ *
+ * @extends IEnumeration<TValue>
  */
 interface IConvertibleEnumeration extends IEnumeration
 {
     /**
      * Get the value of a constant from its name
      *
+     * @return TValue
      */
-    public static function fromName(string $name): int;
+    public static function fromName(string $name);
 
     /**
      * Get the name of a constant from its value
      *
+     * @param TValue $value
      */
-    public static function toName(int $value): string;
+    public static function toName($value): string;
 }

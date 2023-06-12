@@ -7,6 +7,7 @@ use Lkrms\Concept\ConvertibleEnumeration;
 /**
  * Sync error types
  *
+ * @extends ConvertibleEnumeration<int>
  */
 final class SyncErrorType extends ConvertibleEnumeration
 {

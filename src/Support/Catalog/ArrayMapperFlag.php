@@ -15,6 +15,7 @@ use Lkrms\Concept\Enumeration;
  * To override these defaults, use one or more {@see ArrayMapperFlag} constants
  * to create a bitmask.
  *
+ * @extends Enumeration<int>
  */
 final class ArrayMapperFlag extends Enumeration
 {

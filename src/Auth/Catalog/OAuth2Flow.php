@@ -7,6 +7,7 @@ use Lkrms\Concept\Enumeration;
 /**
  * Supported OAuth 2.0 flows
  *
+ * @extends Enumeration<int>
  */
 class OAuth2Flow extends Enumeration
 {

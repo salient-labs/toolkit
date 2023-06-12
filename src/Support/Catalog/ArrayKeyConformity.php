@@ -7,6 +7,7 @@ use Lkrms\Concept\Enumeration;
 /**
  * Array key conformity levels
  *
+ * @extends Enumeration<int>
  */
 final class ArrayKeyConformity extends Enumeration
 {

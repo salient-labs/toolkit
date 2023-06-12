@@ -10,43 +10,46 @@ use LogicException;
  * Uses arrays provided by the class to map its public constants to and from
  * their names
  *
+ * @template TValue
+ *
  * @see IConvertibleEnumeration Implemented by this trait.
  * @see ConvertibleEnumeration An abstract class that provides an alternative
  * implementation using reflection.
- *
- * @psalm-require-implements IConvertibleEnumeration
  */
 trait HasConvertibleConstants
 {
     /**
      * Get an array that maps values to names
      *
-     * @return array<int,string> Value => name
+     * @return array<TValue,string> Value => name
      */
     abstract protected static function getNameMap(): array;
 
     /**
      * Get an array that maps names to values
      *
-     * @return array<string,int> Lowercase name => value
+     * @return array<string,TValue> Lowercase name => value
      */
     abstract protected static function getValueMap(): array;
 
     /**
      * Class name => [ constant name => value ]
      *
-     * @var array<string,array<string,int>>
+     * @var array<string,array<string,TValue>>
      */
     private static $ValueMaps = [];
 
     /**
      * Class name => [ constant value => name ]
      *
-     * @var array<string,array<int,string>>
+     * @var array<string,array<TValue,string>>
      */
     private static $NameMaps = [];
 
-    public static function fromName(string $name): int
+    /**
+     * @return TValue
+     */
+    public static function fromName(string $name)
     {
         if (($map = self::$ValueMaps[static::class] ?? null) === null) {
             // Add UPPER_CASE names to the map if necessary
@@ -63,7 +66,10 @@ trait HasConvertibleConstants
         return $value;
     }
 
-    public static function toName(int $value): string
+    /**
+     * @param TValue $value
+     */
+    public static function toName($value): string
     {
         if ((self::$NameMaps[static::class] ?? null) === null) {
             self::$NameMaps[static::class] = static::getNameMap();

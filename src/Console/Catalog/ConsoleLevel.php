@@ -13,9 +13,14 @@ use UnexpectedValueException;
  *
  * Constants have the same values as their syslog / journalctl counterparts.
  *
+ * @extends Enumeration<int>
+ * @implements IConvertibleEnumeration<int>
  */
 final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
 {
+    /**
+     * @use HasConvertibleConstants<int>
+     */
     use HasConvertibleConstants;
 
     public const EMERGENCY = 0;

@@ -12,7 +12,7 @@ use ReflectionClass;
 class MethodNotImplementedException extends \Lkrms\Exception\Exception
 {
     /**
-     * @var string
+     * @var class-string
      */
     protected $Class;
 
@@ -22,10 +22,14 @@ class MethodNotImplementedException extends \Lkrms\Exception\Exception
     protected $Method;
 
     /**
-     * @var string
+     * @var class-string
      */
     protected $PrototypeClass;
 
+    /**
+     * @param class-string $class
+     * @param class-string|null $prototypeClass
+     */
     public function __construct(string $class, string $method, ?string $prototypeClass = null)
     {
         if (!$prototypeClass &&
@@ -43,5 +47,26 @@ class MethodNotImplementedException extends \Lkrms\Exception\Exception
             $prototypeClass,
             $method
         ));
+    }
+
+    /**
+     * @return class-string
+     */
+    public function getClass(): string
+    {
+        return $this->Class;
+    }
+
+    public function getMethod(): string
+    {
+        return $this->Method;
+    }
+
+    /**
+     * @return class-string
+     */
+    public function getPrototypeClass(): string
+    {
+        return $this->PrototypeClass;
     }
 }

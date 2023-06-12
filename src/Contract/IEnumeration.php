@@ -3,8 +3,9 @@
 namespace Lkrms\Contract;
 
 /**
- * Defines public constants with unique integer values
+ * Defines public constants with unique values
  *
+ * @template TValue
  */
 interface IEnumeration
 {

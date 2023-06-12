@@ -9,9 +9,14 @@ use Lkrms\Contract\IConvertibleEnumeration;
 /**
  * Sync operation types
  *
+ * @extends Enumeration<int>
+ * @implements IConvertibleEnumeration<int>
  */
 final class SyncOperation extends Enumeration implements IConvertibleEnumeration
 {
+    /**
+     * @use HasConvertibleConstants<int>
+     */
     use HasConvertibleConstants;
 
     /**

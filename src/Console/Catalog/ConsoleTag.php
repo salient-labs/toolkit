@@ -9,6 +9,7 @@ use Lkrms\Concept\Enumeration;
  *
  * Markdown-like syntax.
  *
+ * @extends Enumeration<int>
  */
 final class ConsoleTag extends Enumeration
 {

@@ -7,6 +7,7 @@ use Lkrms\Concept\Enumeration;
 /**
  * ICurlerHeaders flags
  *
+ * @extends Enumeration<int>
  */
 final class CurlerHeadersFlag extends Enumeration
 {
