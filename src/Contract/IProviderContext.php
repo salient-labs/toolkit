@@ -13,7 +13,7 @@ interface IProviderContext extends IImmutable, ReturnsContainer
     /**
      * Apply an arbitrary value to the context
      *
-     * @return static
+     * @return $this
      */
     public function set(string $key, $value);
 
@@ -35,14 +35,14 @@ interface IProviderContext extends IImmutable, ReturnsContainer
      * retrieve `Staff` instances for its `DirectReports` property, **and** pass
      * itself to `withParent()` as the parent (a.k.a. manager) of those `Staff`.
      *
-     * @return static
+     * @return $this
      */
     public function push(IProvidable $entity);
 
     /**
      * Set the context's container
      *
-     * @return static
+     * @return $this
      */
     public function withContainer(IContainer $container);
 
@@ -50,7 +50,7 @@ interface IProviderContext extends IImmutable, ReturnsContainer
      * Set the parent of IHierarchy entities instantiated within the context
      *
      * @see IProviderContext::push()
-     * @return static
+     * @return $this
      */
     public function withParent(?IHierarchy $parent);
 
@@ -60,7 +60,7 @@ interface IProviderContext extends IImmutable, ReturnsContainer
      * @param ArrayKeyConformity::* $conformity Use
      * {@see ArrayKeyConformity::COMPLETE} wherever possible to improve
      * performance.
-     * @return static
+     * @return $this
      */
     public function withConformity($conformity);
 
