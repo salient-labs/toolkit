@@ -5,7 +5,7 @@ namespace Lkrms\Tests;
 
 use Lkrms\Err\Err;
 use Lkrms\Facade\File;
-use Lkrms\Facade\Test;
+use Lkrms\Utility\Test;
 
 require __DIR__ . '/../vendor/autoload.php';
 
