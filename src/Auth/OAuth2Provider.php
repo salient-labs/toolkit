@@ -20,7 +20,7 @@ use League\OAuth2\Client\Provider\GenericProvider;
  * implementation.
  *
  */
-final class OAuth2Provider extends GenericProvider
+class OAuth2Provider extends GenericProvider
 {
     public function getScopeSeparator()
     {
