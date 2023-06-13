@@ -48,17 +48,17 @@ final class AccessToken implements IReadable
 
     /**
      * @param DateTimeInterface|int|null $expires
-     * @param string[] $scopes
-     * @param array<string,mixed> $claims
+     * @param string[]|null $scopes
+     * @param array<string,mixed>|null $claims
      */
-    public function __construct(string $token, string $type, $expires, array $scopes = [], array $claims = [])
+    public function __construct(string $token, string $type, $expires, ?array $scopes = null, ?array $claims = null)
     {
         $this->Token = $token;
         $this->Type = $type;
         $this->Expires = $expires instanceof DateTimeInterface
             ? Convert::toDateTimeImmutable($expires)
             : ($expires !== null && $expires > 0 ? new DateTimeImmutable("@$expires") : null);
-        $this->Scopes = $scopes;
-        $this->Claims = $claims;
+        $this->Scopes = $scopes ?: [];
+        $this->Claims = $claims ?: [];
     }
 }

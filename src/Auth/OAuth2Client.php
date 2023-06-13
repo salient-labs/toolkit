@@ -461,7 +461,7 @@ trait OAuth2Client
         // validation fails
         do {
             if (!($jwks = $this->getJsonWebKeySet($refreshKeys))) {
-                return false;
+                return null;
             }
             // If there are any keys with no "alg"orithm (hello, Microsoft
             // Identity Platform), `JWK::parseKeySet()` fails, so extract "alg"
@@ -493,10 +493,14 @@ trait OAuth2Client
         } while (true);
     }
 
-    private function getJsonWebKeySet(bool $refresh = false): array
+    private function getJsonWebKeySet(bool $refresh = false): ?array
     {
+        if (!($url = $this->getOAuth2JsonWebKeySetUrl())) {
+            return null;
+        }
+
         return CurlerBuilder::build()
-            ->baseUrl($this->getOAuth2JsonWebKeySetUrl())
+            ->baseUrl($url)
             ->cacheResponse()
             ->expiry(0)
             ->if($refresh, fn(CurlerBuilder $curlerB) => $curlerB->flush())
