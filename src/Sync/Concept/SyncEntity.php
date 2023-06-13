@@ -101,6 +101,11 @@ abstract class SyncEntity implements ISyncEntity
     private $_Context;
 
     /**
+     * @var bool
+     */
+    private $DoNotHydrate = false;
+
+    /**
      * Class name => entity type ID
      *
      * @var array<string,int>
@@ -358,6 +363,19 @@ abstract class SyncEntity implements ISyncEntity
         );
     }
 
+    /**
+     * If true, data should not be retrieved to hydrate the entity or resolve
+     * any deferred values
+     *
+     * Used in scenarios where retrieving additional data is unnecessary and
+     * would be wasteful or slow, e.g. during serialization.
+     *
+     */
+    final protected function doNotHydrate(): bool
+    {
+        return $this->DoNotHydrate;
+    }
+
     private function typeUri(bool $compact): string
     {
         return $this->store()->getEntityTypeUri($this->service(), $compact)
@@ -386,7 +404,7 @@ abstract class SyncEntity implements ISyncEntity
     }
 
     /**
-     * @param SyncEntity|mixed[] $node
+     * @param SyncEntity|DeferredSyncEntity|mixed[] $node
      * @param string[] $path
      * @param SerializeRules<static> $rules
      * @param array<string,true> $parents
@@ -395,6 +413,14 @@ abstract class SyncEntity implements ISyncEntity
     {
         if (!is_null($maxDepth = $rules->getMaxDepth()) && count($path) > $maxDepth) {
             throw new RuntimeException('In too deep: ' . implode('.', $path));
+        }
+
+        if ($node instanceof DeferredSyncEntity) {
+            $node = $node->toLink($rules->getFlags() & SerializeRules::SYNC_STORE
+                ? SerializeLinkType::INTERNAL
+                : SerializeLinkType::DEFAULT);
+
+            return;
         }
 
         if ($node instanceof SyncEntity) {
@@ -560,7 +586,9 @@ abstract class SyncEntity implements ISyncEntity
      */
     private function serialize(SerializeRules $rules): array
     {
-        $array = IS::get(static::class)->getSerializeClosure($rules)($this);
+        $clone = clone $this;
+        $clone->DoNotHydrate = true;
+        $array = IS::get(static::class)->getSerializeClosure($rules)($clone);
         if ($rules->getRemoveCanonicalId()) {
             unset($array[IS::get(static::class)->maybeNormalise('CanonicalId', NormaliserFlag::CAREFUL)]);
         }
