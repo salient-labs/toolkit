@@ -18,11 +18,6 @@ use Iterator;
 interface ICollection extends Iterator, ArrayAccess, Countable
 {
     /**
-     * @param TValue[] $items
-     */
-    public function __construct($items = []);
-
-    /**
      * Push one or more items onto the end of the collection
      *
      * @param TValue ...$item

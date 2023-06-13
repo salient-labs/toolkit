@@ -31,6 +31,9 @@ abstract class TypedCollection implements ICollection, IImmutable
         offsetSet as private _offsetSet;
     }
 
+    /**
+     * @param TValue[] $items
+     */
     public function __construct($items = [])
     {
         foreach ($items as $item) {
