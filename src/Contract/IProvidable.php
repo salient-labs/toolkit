@@ -109,11 +109,11 @@ interface IProvidable extends ReceivesService, ReturnsService
     /**
      * Create instances of the class from arrays on behalf of a provider
      *
-     * @param iterable<mixed[]> $dataList
+     * @param iterable<array-key,mixed[]> $dataList
      * @param TProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
-     * @return FluentIteratorInterface<int|string,static>
+     * @return FluentIteratorInterface<array-key,static>
      */
     public static function provideList(
         iterable $dataList,

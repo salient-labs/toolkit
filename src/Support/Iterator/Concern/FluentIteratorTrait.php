@@ -7,7 +7,7 @@ use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 /**
  * Implements FluentIteratorInterface
  *
- * @template TKey of int|string
+ * @template TKey of array-key
  * @template TValue
  *
  * @see FluentIteratorInterface
@@ -40,7 +40,7 @@ trait FluentIteratorTrait
     }
 
     /**
-     * @param int|string $key
+     * @param array-key $key
      * @param mixed $value
      * @return TValue|false `false` if no matching element is found.
      */

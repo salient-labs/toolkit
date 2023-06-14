@@ -42,7 +42,7 @@ abstract class FluentInterface
      * callback for each key-value pair in an array
      *
      * @param array|object $array
-     * @param callable($this, mixed, int|string): $this $callback Receives and must return the object. Called once per element in `$array`.
+     * @param callable($this, mixed, array-key): $this $callback Receives and must return the object. Called once per element in `$array`.
      * @return $this
      */
     final public function forEach($array, callable $callback)

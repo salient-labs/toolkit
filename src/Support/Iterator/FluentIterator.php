@@ -10,7 +10,7 @@ use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 /**
  * Uses a fluent interface to iterate over another iterator
  *
- * @template TKey of int|string
+ * @template TKey of array-key
  * @template TValue
  * @extends IteratorIterator<TKey,TValue,Iterator<TKey,TValue>>
  * @implements FluentIteratorInterface<TKey,TValue>
@@ -23,7 +23,7 @@ final class FluentIterator extends IteratorIterator implements FluentIteratorInt
     use FluentIteratorTrait;
 
     /**
-     * @template T0 of int|string
+     * @template T0 of array-key
      * @template T1
      * @param Iterator<T0,T1> $iterator
      * @return self<T0,T1>

@@ -639,11 +639,11 @@ abstract class SyncEntity implements ISyncEntity
     }
 
     /**
-     * @param iterable<mixed[]> $dataList
+     * @param iterable<array-key,mixed[]> $dataList
      * @param ISyncProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param ISyncContext|null $context
-     * @return FluentIteratorInterface<int|string,static>
+     * @return FluentIteratorInterface<array-key,static>
      */
     final public static function provideList(
         iterable $dataList,
@@ -657,11 +657,11 @@ abstract class SyncEntity implements ISyncEntity
     }
 
     /**
-     * @param iterable<mixed[]> $dataList
+     * @param iterable<array-key,mixed[]> $dataList
      * @param ISyncProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param ISyncContext|null $context
-     * @return iterable<int|string,static>
+     * @return iterable<array-key,static>
      */
     private static function _provideList(
         iterable $dataList,

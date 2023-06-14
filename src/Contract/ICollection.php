@@ -9,7 +9,7 @@ use Iterator;
 /**
  * A flexible array-like collection of values
  *
- * @template TKey of array-key
+ * @template TKey
  * @template TValue
  *
  * @extends Iterator<TKey,TValue>
