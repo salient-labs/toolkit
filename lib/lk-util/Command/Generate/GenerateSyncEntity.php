@@ -102,7 +102,7 @@ class GenerateSyncEntity extends GenerateCommand
                 ->bindTo($this->ReferenceEntityFile),
             CliOption::build()
                 ->long('provider')
-                ->short('i')
+                ->short('p')
                 ->valueName('class')
                 ->description('The HttpSyncProvider class to retrieve a reference entity from')
                 ->optionType(CliOptionType::VALUE)

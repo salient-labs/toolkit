@@ -67,7 +67,7 @@ class SendHttpRequest extends Command
         if (in_array($this->getMethod(), [HttpRequestMethod::GET, HttpRequestMethod::POST])) {
             $options[] = CliOption::build()
                 ->long('paginate')
-                ->short('p')
+                ->short('P')
                 ->description('Retrieve every available response page');
         }
 
