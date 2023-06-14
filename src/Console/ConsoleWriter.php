@@ -717,7 +717,7 @@ final class ConsoleWriter implements ReceivesFacade
     /**
      * Report an uncaught exception
      *
-     * Prints " !! Uncaught <exception>: <message> in <file>:<line>" with level
+     * Prints " !! <exception>: <message> in <file>:<line>" with level
      * `$messageLevel` (default: ERROR), followed by the exception's stack trace
      * with level `$stackTraceLevel` (default: DEBUG).
      *
@@ -733,7 +733,7 @@ final class ConsoleWriter implements ReceivesFacade
         $ex = $exception;
         $i = 0;
         do {
-            $msg2 = ($msg2 ?? '') . (($i++ ? "\nCaused by __" . get_class($ex) . '__: ' : '')
+            $msg2 = ($msg2 ?? '') . (($i++ ? "\nCaused by __" . Convert::classToBasename(get_class($ex)) . '__: ' : '')
                 . sprintf(
                     '`%s` ~~in %s:%d~~',
                     ConsoleFormatter::escape($ex->getMessage()),
@@ -746,7 +746,7 @@ final class ConsoleWriter implements ReceivesFacade
         $this->count($messageLevel)
              ->write(
                  $messageLevel,
-                 'Uncaught __' . get_class($exception) . '__:',
+                 '__' . Convert::classToBasename(get_class($exception)) . '__:',
                  $msg2,
                  ' !! ',
                  $exception
