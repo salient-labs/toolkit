@@ -13,7 +13,7 @@ use UnexpectedValueException;
  * @template TKey of array-key
  * @template TValue
  */
-final class Arr implements IImmutable
+final class FluentArray implements IImmutable
 {
     use HasMutator;
 
@@ -42,7 +42,7 @@ final class Arr implements IImmutable
     /**
      * @template T
      * @param callable(TValue, mixed...): T $callback
-     * @param array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed> ...$arrays
+     * @param array<array-key,mixed>|Iterator<array-key,mixed>|FluentArray<array-key,mixed> ...$arrays
      * @return $this<TKey,T>
      */
     public function map(?callable $callback, ...$arrays)
@@ -67,7 +67,7 @@ final class Arr implements IImmutable
      * @template T0 of array-key
      * @template T1
      *
-     * @param array<T0,T1>|Iterator<T0,T1>|Arr<T0,T1> ...$arrays
+     * @param array<T0,T1>|Iterator<T0,T1>|FluentArray<T0,T1> ...$arrays
      * @return $this<TKey|T0,TValue|T1>
      */
     public function merge(...$arrays)
@@ -80,7 +80,7 @@ final class Arr implements IImmutable
     /**
      * Keep entries whose values are absent from all $arrays, preserving keys
      *
-     * @param array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed> ...$arrays
+     * @param array<array-key,mixed>|Iterator<array-key,mixed>|FluentArray<array-key,mixed> ...$arrays
      * @return $this
      */
     public function diff(...$arrays)
@@ -93,7 +93,7 @@ final class Arr implements IImmutable
     /**
      * Keep entries whose keys are absent from all $arrays
      *
-     * @param array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed> ...$arrays
+     * @param array<array-key,mixed>|Iterator<array-key,mixed>|FluentArray<array-key,mixed> ...$arrays
      * @return $this
      */
     public function diffKey(...$arrays)
@@ -106,7 +106,7 @@ final class Arr implements IImmutable
     /**
      * Keep entries whose values exist in all $arrays
      *
-     * @param array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed> ...$arrays
+     * @param array<array-key,mixed>|Iterator<array-key,mixed>|FluentArray<array-key,mixed> ...$arrays
      * @return $this
      */
     public function intersect(...$arrays)
@@ -119,7 +119,7 @@ final class Arr implements IImmutable
     /**
      * Keep entries whose keys exist in all $arrays
      *
-     * @param array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed> ...$arrays
+     * @param array<array-key,mixed>|Iterator<array-key,mixed>|FluentArray<array-key,mixed> ...$arrays
      * @return $this
      */
     public function intersectKey(...$arrays)
@@ -141,12 +141,12 @@ final class Arr implements IImmutable
      * @template T0 of array-key
      * @template T1
      *
-     * @param array<T0,T1>|Iterator<T0,T1>|Arr<T0,T1> $array
+     * @param array<T0,T1>|Iterator<T0,T1>|FluentArray<T0,T1> $array
      * @return array<T0,T1>
      */
     private function getArray($array): array
     {
-        if ($array instanceof Arr) {
+        if ($array instanceof FluentArray) {
             return $array->Array;
         }
         if ($array instanceof Iterator) {
@@ -165,7 +165,7 @@ final class Arr implements IImmutable
     }
 
     /**
-     * @param array<array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed>> $arrays
+     * @param array<array<array-key,mixed>|Iterator<array-key,mixed>|FluentArray<array-key,mixed>> $arrays
      * @return array<array<array-key,mixed>>
      */
     private function getArrays(array $arrays)
