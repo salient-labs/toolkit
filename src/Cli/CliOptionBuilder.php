@@ -41,6 +41,7 @@ final class CliOptionBuilder extends Builder
 {
     /**
      * @internal
+     * @return class-string<CliOption>
      */
     protected static function getClassName(): string
     {

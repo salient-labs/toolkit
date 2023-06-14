@@ -21,23 +21,24 @@ use Lkrms\Sync\Contract\ISyncEntity;
 /**
  * A fluent interface for creating HttpSyncDefinition objects
  *
+ * @template TEntity of ISyncEntity
+ * @template TProvider of HttpSyncProvider
+ *
  * @method static $this build(?IContainer $container = null) Create a new HttpSyncDefinitionBuilder (syntactic sugar for 'new HttpSyncDefinitionBuilder()')
- * @method $this entity(class-string<ISyncEntity> $value) The ISyncEntity being serviced
- * @method $this provider(HttpSyncProvider $value) The ISyncProvider servicing the entity
  * @method $this operations(array<SyncOperation::*> $value) A list of supported sync operations
  * @method $this path(?string $value) The path to the provider endpoint servicing the entity, e.g. "/v1/user" (see {@see HttpSyncDefinition::$Path})
  * @method $this query(mixed[]|null $value) Query parameters applied to the sync operation URL (see {@see HttpSyncDefinition::$Query})
  * @method $this headers(?ICurlerHeaders $value) HTTP headers applied to the sync operation request (see {@see HttpSyncDefinition::$Headers})
  * @method $this pager(?ICurlerPager $value) The pagination handler for the endpoint servicing the entity (see {@see HttpSyncDefinition::$Pager})
- * @method $this callback((callable(HttpSyncDefinition<ISyncEntity,HttpSyncProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<ISyncEntity,HttpSyncProvider>)|null $value) A callback applied to the definition before every sync operation (see {@see HttpSyncDefinition::$Callback})
+ * @method $this callback((callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $value) A callback applied to the definition before every sync operation (see {@see HttpSyncDefinition::$Callback})
  * @method $this conformity(ArrayKeyConformity::* $value) The conformity level of data returned by the provider for this entity (see {@see SyncDefinition::$Conformity})
  * @method $this filterPolicy(SyncFilterPolicy::* $value) The action to take when filters are ignored by the provider (see {@see SyncDefinition::$FilterPolicy})
  * @method $this expiry(?int $value) The time, in seconds, before responses from the provider expire (see {@see HttpSyncDefinition::$Expiry})
  * @method $this methodMap(array<SyncOperation::*,string> $value) An array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})
  * @method $this syncOneEntityPerRequest(bool $value = true) If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request (default: false)
- * @method $this overrides(array<SyncOperation::*,Closure(ISyncDefinition<ISyncEntity,HttpSyncProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $value) An array that maps sync operations to closures that override any other implementations (see {@see SyncDefinition::$Overrides})
- * @method $this pipelineFromBackend(IPipeline<mixed[],ISyncEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $value) A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
- * @method $this pipelineToBackend(IPipeline<ISyncEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $value) A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
+ * @method $this overrides(array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $value) An array that maps sync operations to closures that override any other implementations (see {@see SyncDefinition::$Overrides})
+ * @method $this pipelineFromBackend(IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $value) A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
+ * @method $this pipelineToBackend(IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $value) A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
  * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
  * @method mixed get(string $name) The value of $name if applied to the unresolved HttpSyncDefinition by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved HttpSyncDefinition by calling $name()
@@ -46,18 +47,40 @@ use Lkrms\Sync\Contract\ISyncEntity;
  *
  * @uses HttpSyncDefinition
  *
- * @template TEntity of ISyncEntity
- * @template TProvider of HttpSyncProvider
- *
  * @extends Builder<HttpSyncDefinition<TEntity,TProvider>>
  */
 final class HttpSyncDefinitionBuilder extends Builder
 {
     /**
      * @internal
+     * @return class-string<HttpSyncDefinition<TEntity,TProvider>>
      */
     protected static function getClassName(): string
     {
         return HttpSyncDefinition::class;
+    }
+
+    /**
+     * The ISyncEntity being serviced
+     *
+     * @template T of ISyncEntity
+     * @param class-string<T> $value
+     * @return $this<T,TProvider>
+     */
+    public function entity(string $value)
+    {
+        return $this->getWithValue(__FUNCTION__, $value);
+    }
+
+    /**
+     * The ISyncProvider servicing the entity
+     *
+     * @template T of HttpSyncProvider
+     * @param T $value
+     * @return $this<TEntity,T>
+     */
+    public function provider(HttpSyncProvider $value)
+    {
+        return $this->getWithValue(__FUNCTION__, $value);
     }
 }

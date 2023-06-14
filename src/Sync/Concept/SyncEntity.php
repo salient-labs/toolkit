@@ -114,7 +114,7 @@ abstract class SyncEntity implements ISyncEntity
     private static $TypeId = [];
 
     /**
-     * Class name => [ Property name => normalised property name ]
+     * Class name => [ property name => normalised property name ]
      *
      * @var array<string,array<string,string>>
      */

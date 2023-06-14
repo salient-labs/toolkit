@@ -416,6 +416,11 @@ parameters:
 			path: src/Facade/Convert.php
 
 		-
+			message: "#^Method Lkrms\\\\Facade\\\\Convert\\:\\:columnsToUnique\\(\\) has parameter \\$columns with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Facade/Convert.php
+
+		-
 			message: "#^Method Lkrms\\\\Facade\\\\Convert\\:\\:columnsToUniqueList\\(\\) has parameter \\$columns with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Facade/Convert.php
@@ -504,26 +509,6 @@ parameters:
 			message: "#^Property Lkrms\\\\Support\\\\SqlQuery\\:\\:\\$Where type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\TokenExtractor\\:\\:_getUseMap\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Support/TokenExtractor.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\TokenExtractor\\:\\:_getUseMap\\(\\) has parameter \\$map with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/TokenExtractor.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\TokenExtractor\\:\\:getUseMap\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/TokenExtractor.php
-
-		-
-			message: "#^Property Lkrms\\\\Support\\\\TokenExtractor\\:\\:\\$Tokens type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/TokenExtractor.php
 
 		-
 			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\DbSyncProvider\\:\\:getDbDefinition\\(\\) return type with generic class Lkrms\\\\Sync\\\\Support\\\\DbSyncDefinition does not specify its types\\: TEntity, TProvider$#"
@@ -831,11 +816,6 @@ parameters:
 			path: src/Utility/Conversions.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:columnsToUniqueList\\(\\) has parameter \\$columns with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Utility/Conversions.php
-
-		-
 			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:dataToQuery\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Utility/Conversions.php
@@ -1064,16 +1044,6 @@ parameters:
 			message: "#^Class Lkrms\\\\Tests\\\\Concept\\\\Facade\\\\MyFacade extends generic class Lkrms\\\\Concept\\\\Facade but does not specify its types\\: TClass$#"
 			count: 1
 			path: tests/fixtures/Concept/Facade/MyFacade.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\Facade\\\\MyFacade\\:\\:checkFuncNumArgs\\(\\) has parameter \\$values with no type specified\\.$#"
-			count: 1
-			path: tests/fixtures/Concept/Facade/MyFacade.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\Facade\\\\MyUnderlyingClass\\:\\:checkFuncNumArgs\\(\\) has parameter \\$values with no type specified\\.$#"
-			count: 1
-			path: tests/fixtures/Concept/Facade/MyUnderlyingClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:with\\(\\) has no return type specified\\.$#"

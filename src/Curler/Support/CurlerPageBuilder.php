@@ -32,6 +32,7 @@ final class CurlerPageBuilder extends Builder
 {
     /**
      * @internal
+     * @return class-string<CurlerPage>
      */
     protected static function getClassName(): string
     {

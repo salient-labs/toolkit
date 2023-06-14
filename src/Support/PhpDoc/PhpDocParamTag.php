@@ -15,9 +15,15 @@ class PhpDocParamTag extends PhpDocTag
      */
     public $Name;
 
-    public function __construct(string $name, ?string $type = null, ?string $description = null, bool $legacyNullable = false)
-    {
-        parent::__construct('param', $name, $type, $description, $legacyNullable);
+    public function __construct(
+        string $name,
+        ?string $type = null,
+        ?string $description = null,
+        ?string $class = null,
+        ?string $member = null,
+        bool $legacyNullable = false
+    ) {
+        parent::__construct('param', $name, $type, $description, $class, $member, $legacyNullable);
         if (!$this->Name) {
             throw new UnexpectedValueException(sprintf('Invalid name: %s', $name));
         }

@@ -15,9 +15,15 @@ class PhpDocVarTag extends PhpDocTag
      */
     public $Type;
 
-    public function __construct(string $type, ?string $name = null, ?string $description = null, bool $legacyNullable = false)
-    {
-        parent::__construct('var', $name, $type, $description, $legacyNullable);
+    public function __construct(
+        string $type,
+        ?string $name = null,
+        ?string $description = null,
+        ?string $class = null,
+        ?string $member = null,
+        bool $legacyNullable = false
+    ) {
+        parent::__construct('var', $name, $type, $description, $class, $member, $legacyNullable);
         if (!$this->Type) {
             throw new UnexpectedValueException(sprintf('Invalid type: %s', $type));
         }

@@ -154,7 +154,7 @@ final class Reflection
      * Returns an empty array if no doc comments are found for the class or any
      * inherited classes or interfaces.
      *
-     * @return string[]
+     * @return array<class-string,string>
      */
     public function getAllClassDocComments(ReflectionClass $class): array
     {
@@ -162,17 +162,17 @@ final class Reflection
         $comments = [];
         do {
             if (($comment = $class->getDocComment()) !== false) {
-                $comments[] = Convert::lineEndingsToUnix($comment);
+                $comments[$class->getName()] = Convert::lineEndingsToUnix($comment);
             }
         } while ($class = $class->getParentClass());
 
         foreach ($interfaces as $interface) {
             if (($comment = $interface->getDocComment()) !== false) {
-                $comments[] = Convert::lineEndingsToUnix($comment);
+                $comments[$interface->getName()] = Convert::lineEndingsToUnix($comment);
             }
         }
 
-        return Convert::stringsToUniqueList($comments);
+        return Convert::stringsToUnique($comments);
     }
 
     /**
@@ -182,12 +182,12 @@ final class Reflection
      * Returns an empty array if no doc comments are found in the declaring
      * class or in any inherited classes, traits or interfaces.
      *
-     * @param array<string|null>|null $classDocComments If provided,
+     * @param array<class-string,string|null>|null $classDocComments If provided,
      * `$classDocComments` is populated with one of the following for each doc
      * comment returned:
      * - the doc comment of the method's declaring class, or
      * - `null` if the declaring class has no doc comment
-     * @return string[]
+     * @return array<class-string,string>
      */
     public function getAllMethodDocComments(ReflectionMethod $method, ?array &$classDocComments = null): array
     {
@@ -200,31 +200,33 @@ final class Reflection
         foreach ($this->getInterfaces($method->getDeclaringClass()) as $interface) {
             if ($interface->hasMethod($name) &&
                     ($comment = $interface->getMethod($name)->getDocComment()) !== false) {
-                $comments[] = Convert::lineEndingsToUnix($comment);
+                $class = $interface->getName();
+                $comments[$class] = Convert::lineEndingsToUnix($comment);
                 if (!is_null($classDocComments)) {
                     $comment = $interface->getDocComment() ?: null;
-                    $classDocComments[] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
+                    $classDocComments[$class] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
                 }
             }
         }
 
         return is_null($classDocComments)
-            ? Convert::stringsToUniqueList($comments)
-            : Convert::columnsToUniqueList($comments, $classDocComments);
+            ? Convert::stringsToUnique($comments)
+            : Convert::columnsToUnique($comments, $classDocComments);
     }
 
     /**
-     * @return string[]
+     * @return array<class-string,string>
      */
     private function _getAllMethodDocComments(ReflectionMethod $method, string $name, ?array &$classDocComments): array
     {
         $comments = [];
         do {
             if (($comment = $method->getDocComment()) !== false) {
-                $comments[] = Convert::lineEndingsToUnix($comment);
+                $class = $method->getDeclaringClass()->getName();
+                $comments[$class] = Convert::lineEndingsToUnix($comment);
                 if (!is_null($classDocComments)) {
                     $comment = $method->getDeclaringClass()->getDocComment() ?: null;
-                    $classDocComments[] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
+                    $classDocComments[$class] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
                 };
             }
             // Interfaces don't have traits, so there's nothing else to do here
@@ -234,9 +236,9 @@ final class Reflection
             // getTraits() doesn't return inherited traits, so recurse into them
             foreach ($method->getDeclaringClass()->getTraits() as $trait) {
                 if ($trait->hasMethod($name)) {
-                    array_push(
+                    $comments = array_merge(
                         $comments,
-                        ...$this->_getAllMethodDocComments(
+                        $this->_getAllMethodDocComments(
                             $trait->getMethod($name),
                             $name,
                             $classDocComments
@@ -259,12 +261,12 @@ final class Reflection
      * Returns an empty array if no doc comments are found in the declaring
      * class or in any inherited classes or traits.
      *
-     * @param array<string|null>|null $classDocComments If provided,
+     * @param array<class-string,string|null>|null $classDocComments If provided,
      * `$classDocComments` is populated with one of the following for each doc
      * comment returned:
      * - the doc comment of the property's declaring class, or
      * - `null` if the declaring class has no doc comment
-     * @return string[]
+     * @return array<class-string,string>
      */
     public function getAllPropertyDocComments(ReflectionProperty $property, ?array &$classDocComments = null): array
     {
@@ -275,12 +277,12 @@ final class Reflection
         $comments = $this->_getAllPropertyDocComments($property, $name, $classDocComments);
 
         return is_null($classDocComments)
-            ? Convert::stringsToUniqueList($comments)
-            : Convert::columnsToUniqueList($comments, $classDocComments);
+            ? Convert::stringsToUnique($comments)
+            : Convert::columnsToUnique($comments, $classDocComments);
     }
 
     /**
-     * @return string[]
+     * @return array<class-string,string>
      */
     private function _getAllPropertyDocComments(
         ReflectionProperty $property,
@@ -290,17 +292,18 @@ final class Reflection
         $comments = [];
         do {
             if (($comment = $property->getDocComment()) !== false) {
-                $comments[] = Convert::lineEndingsToUnix($comment);
+                $class = $property->getDeclaringClass()->getName();
+                $comments[$class] = Convert::lineEndingsToUnix($comment);
                 if (!is_null($classDocComments)) {
                     $comment = $property->getDeclaringClass()->getDocComment() ?: null;
-                    $classDocComments[] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
+                    $classDocComments[$class] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
                 }
             }
             foreach ($property->getDeclaringClass()->getTraits() as $trait) {
                 if ($trait->hasProperty($name)) {
-                    array_push(
+                    $comments = array_merge(
                         $comments,
-                        ...$this->_getAllPropertyDocComments(
+                        $this->_getAllPropertyDocComments(
                             $trait->getProperty($name),
                             $name,
                             $classDocComments

@@ -237,7 +237,7 @@ class GenerateSyncProvider extends GenerateCommand
         $lines[] = '}';
         $methods = implode(PHP_EOL, $methods);
 
-        $imports = $this->getImports();
+        $imports = $this->generateImports();
 
         $docBlock[] = '/**';
         if ($desc) {
@@ -277,6 +277,6 @@ class GenerateSyncProvider extends GenerateCommand
 
         array_unshift($lines, implode(PHP_EOL . PHP_EOL, $blocks));
 
-        $this->handleOutput($interface, $namespace, $lines);
+        $this->handleOutput($lines);
     }
 }

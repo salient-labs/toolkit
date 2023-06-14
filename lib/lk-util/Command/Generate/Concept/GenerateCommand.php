@@ -5,13 +5,23 @@ namespace Lkrms\LkUtil\Command\Generate\Concept;
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
+use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Reflect;
 use Lkrms\LkUtil\Command\Concept\Command;
+use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Lkrms\Support\IntrospectionClass;
+use Lkrms\Support\Introspector;
+use Lkrms\Support\PhpDoc\PhpDoc;
+use Lkrms\Support\PhpDoc\PhpDocTag;
 use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
+use Lkrms\Support\TokenExtractor;
+use Lkrms\Utility\Test;
+use ReflectionClass;
+use ReflectionException;
 use ReflectionParameter;
 use ReflectionType;
 
@@ -25,49 +35,91 @@ abstract class GenerateCommand extends Command
     protected const VISIBILITY_PROTECTED = 'protected';
     protected const VISIBILITY_PRIVATE = 'private';
 
-    /**
-     * @var string|null
-     */
-    protected $OutputClass;
+    private const TAB = '    ';
+
+    protected ?string $OutputDescription;
+    protected ?bool $ToStdout;
+    protected ?bool $ReplaceIfExists;
+    protected ?bool $NoMetaTags;
 
     /**
-     * @var string|null
+     * The unqualified name of the entity to generate
+     *
      */
-    protected $OutputNamespace;
+    protected string $OutputClass;
 
     /**
-     * @var string|null
+     * The namespace of the entity being generated (may be empty)
+     *
      */
-    protected $OutputDescription;
+    protected string $OutputNamespace;
+
+    /**
+     * A PHPDoc for the generated entity (may be empty)
+     *
+     */
+    protected string $ClassPhpDoc;
 
     /**
      * Lowercase alias => qualified name
      *
-     * @var array<string,string>
+     * @var array<string,class-string>
      */
     protected $AliasMap = [];
 
     /**
      * Lowercase qualified name => alias
      *
-     * @var array<string,string>
+     * @var array<class-string,string>
      */
     protected $ImportMap = [];
 
     /**
-     * @var bool|null
+     * @var ReflectionClass<object>
      */
-    protected $ToStdout;
+    protected ReflectionClass $InputClass;
 
     /**
-     * @var bool|null
+     * @var class-string
      */
-    protected $ReplaceIfExists;
+    protected string $InputClassName;
+
+    protected PhpDoc $InputClassPhpDoc;
 
     /**
-     * @var bool|null
+     * @var PhpDocTemplateTag[]
      */
-    protected $NoMetaTags;
+    protected array $InputClassTemplates;
+
+    /**
+     * "<TTemplate[,...]>"
+     *
+     */
+    protected string $InputClassType;
+
+    /**
+     * @var Introspector<object,IntrospectionClass<object>>
+     */
+    protected Introspector $InputIntrospector;
+
+    /**
+     * @var array<class-string,string>
+     */
+    protected array $InputFiles;
+
+    /**
+     * Filename => [ alias => class name (as imported) ]
+     *
+     * @var array<string,array<string,class-string>>
+     */
+    protected array $InputFileUseMaps;
+
+    /**
+     * Filename => [ lowercase class name => alias ]
+     *
+     * @var array<string,array<class-string,string>>
+     */
+    protected array $InputFileTypeMaps;
 
     /**
      * Get mandatory options
@@ -104,10 +156,83 @@ abstract class GenerateCommand extends Command
 
     protected function reset(): void
     {
-        $this->OutputClass = null;
-        $this->OutputNamespace = null;
+        unset($this->OutputClass);
+        unset($this->OutputNamespace);
+        unset($this->ClassPhpDoc);
         $this->AliasMap = [];
         $this->ImportMap = [];
+
+        $this->clearInputClass();
+    }
+
+    /**
+     * @param class-string $fqcn
+     */
+    protected function assertClassIsInstantiable(string $fqcn): void
+    {
+        try {
+            $class = new ReflectionClass($fqcn);
+            if (!$class->isInstantiable()) {
+                throw new CliInvalidArgumentsException(sprintf('not an instantiable class: %s', $fqcn));
+            }
+        } catch (ReflectionException $ex) {
+            throw new CliInvalidArgumentsException(sprintf('class not found: %s', $fqcn));
+        }
+    }
+
+    /**
+     * @param class-string $fqcn
+     */
+    protected function loadInputClass(string $fqcn): void
+    {
+        $this->InputClass = new ReflectionClass($fqcn);
+        $this->InputClassName = $this->InputClass->getName();
+        $this->InputClassPhpDoc = PhpDoc::fromDocBlocks(Reflect::getAllClassDocComments($this->InputClass));
+        $this->InputClassTemplates = $this->InputClassPhpDoc->Templates;
+        $this->InputClassType = $this->InputClassTemplates
+            ? '<' . implode(',', array_keys($this->InputClassTemplates)) . '>'
+            : '';
+        $this->InputIntrospector = Introspector::get($fqcn);
+
+        $this->InputFiles = [];
+        $files = [];
+
+        $class = $this->InputClass;
+        do {
+            $file = $class->getFileName();
+            if ($file) {
+                $this->InputFiles[$class->getName()] = $file;
+                $files[$file] = true;
+            }
+        } while ($class = $class->getParentClass());
+
+        foreach ($this->InputClass->getInterfaces() as $interface) {
+            $file = $interface->getFileName();
+            if ($file) {
+                $this->InputFiles[$interface->getName()] = $file;
+                $files[$file] = true;
+            }
+        }
+
+        foreach (array_keys($files) as $file) {
+            $extractor = new TokenExtractor($file);
+            $useMap = $extractor->getUseMap();
+            $this->InputFileUseMaps[$file] = $useMap;
+            $this->InputFileTypeMaps[$file] = array_change_key_case(array_flip($useMap));
+        }
+    }
+
+    protected function clearInputClass(): void
+    {
+        unset($this->InputClass);
+        unset($this->InputClassName);
+        unset($this->InputClassPhpDoc);
+        unset($this->InputClassTemplates);
+        unset($this->InputClassType);
+        unset($this->InputIntrospector);
+        unset($this->InputFiles);
+        unset($this->InputFileUseMaps);
+        unset($this->InputFileTypeMaps);
     }
 
     protected function getClassPrefix(): string
@@ -119,21 +244,100 @@ abstract class GenerateCommand extends Command
      * Resolve PHPDoc templates to concrete types if possible
      *
      * @param array<string,PhpDocTemplateTag> $templates
+     * @param array<string,PhpDocTemplateTag> $inputClassTemplates
      */
-    protected function resolveTemplates(string $type, array $templates): string
+    protected function resolveTemplates(string $type, array $templates, ?PhpDocTemplateTag &$template = null, array &$inputClassTemplates = []): string
     {
         $seen = [];
-        while (($_type = $templates[$type]->Type ?? null) && !($seen[$_type] ?? null)) {
-            $seen[$_type] = true;
-            $type = $_type;
+        while ($tag = $templates[$type] ?? null) {
+            $template = $tag;
+            // Don't resolve templates that will appear in the output
+            if ($tag->Class === $this->InputClassName && $tag->Member === null &&
+                    ($_template = $this->InputClassTemplates[$type] ?? null)) {
+                $inputClassTemplates[$type] = $_template;
+                return $type;
+            }
+            // Prevent recursion
+            if (!$tag->Type || ($seen[$tag->Type] ?? null)) {
+                break;
+            }
+            $seen[$tag->Type] = true;
+            $type = $tag->Type;
         }
-
         return $type;
     }
 
     /**
-     * Create an alias for a namespaced name and return an identifier to use in
-     * generated code
+     * Resolve a PHPDoc type to a code-safe identifier where templates and PHP
+     * types are resolved, using aliases from declaring classes if possible
+     *
+     * @param PhpDocTag|string $type
+     * @param array<string,PhpDocTemplateTag> $templates
+     * @param array<string,PhpDocTemplateTag> $inputClassTemplates
+     */
+    protected function getPhpDocTypeAlias($type, array $templates, string $namespace, ?string $filename = null, array &$inputClassTemplates = []): string
+    {
+        return PhpDocTag::normaliseType(preg_replace_callback(
+            '/(?<!\$)([a-z_]+(-[a-z0-9_]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/i',
+            function ($match) use ($type, $namespace, $templates, $filename, &$inputClassTemplates) {
+                $t = $this->resolveTemplates($match[0], $templates, $template, $inputClassTemplates);
+                $type = $template ?: $type;
+                if ($type instanceof PhpDocTag && $type->Class) {
+                    $class = new ReflectionClass($type->Class);
+                    $namespace = $class->getNamespaceName();
+                    $filename = $class->getFileName();
+                }
+                // Recurse if template expansion occurred
+                if ($t !== $match[0]) {
+                    return $this->getPhpDocTypeAlias($t, $templates, $namespace, $filename);
+                }
+                // Leave reserved words and PHPDoc types (e.g. `class-string`)
+                // alone
+                if (Test::isPhpReservedWord($t) || strpos($t, '-') !== false) {
+                    return $t;
+                }
+                // Don't waste time trying to find a FQCN in $InputFileUseMaps
+                if (($t[0] ?? null) === '\\') {
+                    return $this->getTypeAlias($t);
+                }
+                return $this->getTypeAlias(
+                    $this->InputFileUseMaps[$filename][$t]
+                        ?? '\\' . $namespace . '\\' . $t,
+                    $filename
+                );
+            },
+            $type instanceof PhpDocTag
+                ? ($type->Type ?: '')
+                : $type
+        ));
+    }
+
+    /**
+     * Convert a built-in or user-defined type to a code-safe identifier, using
+     * the same alias as the declaring class if possible
+     *
+     * @param string $type Either a built-in type (e.g. `bool`) or a FQCN.
+     * @param string|null $filename File where `$type` is declared (if
+     * applicable).
+     * @param bool $returnFqcn If `false`, return `null` instead of `$type` if
+     * the alias has already been claimed.
+     */
+    protected function getTypeAlias(string $type, ?string $filename = null, bool $returnFqcn = true): ?string
+    {
+        $type = ltrim($type, '\\');
+        $lower = strtolower($type);
+        if ($filename !== null &&
+                ($alias = $this->InputFileTypeMaps[$filename][$lower] ?? null)) {
+            return $this->getFqcnAlias($type, $alias, $returnFqcn);
+        }
+        if (Test::isPhpReservedWord($type)) {
+            return $returnFqcn ? $lower : null;
+        }
+        return $this->getFqcnAlias($type, null, $returnFqcn);
+    }
+
+    /**
+     * Create an alias for a namespaced name and return a code-safe identifier
      *
      * If an alias for `$fqcn` has already been assigned, the existing alias
      * will be returned. Similarly, if `$alias` has already been claimed, the
@@ -193,21 +397,62 @@ abstract class GenerateCommand extends Command
     }
 
     /**
-     * Get a list of `use $fqcn[ as $alias];` statements
+     * @param string[] $extends
+     * @param string[] $implements
+     * @param string[] $modifiers
+     */
+    protected function generate(
+        string $type = 'class',
+        array $extends = [],
+        array $implements = [],
+        array $modifiers = []
+    ): string {
+        $lines = [
+            ...$this->generatePhpDocBlock($this->ClassPhpDoc),
+            Convert::sparseToString(' ', [
+                ...$modifiers,
+                $type,
+                $this->OutputClass,
+                $extends ? 'extends' : '',
+                implode(', ', $extends),
+                $implements ? 'implements' : '',
+                implode(', ', $implements),
+            ]),
+            '{',
+            '}',
+        ];
+
+        $blocks[] = '<?php declare(strict_types=1);';
+
+        if ($this->OutputNamespace) {
+            $blocks[] = sprintf('namespace %s;', $this->OutputNamespace);
+        }
+
+        if ($this->ImportMap) {
+            $blocks[] = implode(PHP_EOL, $this->generateImports());
+        }
+
+        $blocks[] = implode(PHP_EOL, $lines);
+
+        return implode(PHP_EOL . PHP_EOL, $blocks);
+    }
+
+    /**
+     * Generate a list of `use $fqcn[ as $alias];` statements
      *
      * @return string[]
      * @see GenerateCommand::getFqcnAlias()
      */
-    protected function getImports(): array
+    protected function generateImports(): array
     {
         $imports = [];
         foreach ($this->ImportMap as $alias) {
             $import = $this->AliasMap[strtolower($alias)];
             if (!strcasecmp($alias, Convert::classToBasename($import))) {
-                $imports[] = "use $import;";
+                $imports[] = sprintf('use %s;', $import);
                 continue;
             }
-            $imports[] = "use $import as $alias;";
+            $imports[] = sprintf('use %s as %s;', $import, $alias);
         }
         sort($imports);
 
@@ -217,27 +462,24 @@ abstract class GenerateCommand extends Command
     /**
      * Generate a `protected static function` that returns a fixed value
      *
+     * @param string|string[] $phpDoc
      * @return string[]
      */
-    protected function getStaticGetter(
+    protected function generateGetter(
         string $name,
-        string $rawValue,
-        string $rawParams = '',
-        string $returnType = 'string',
-        int $tabs = 1,
-        string $tab = '    '
+        string $valueCode,
+        $phpDoc = '@internal',
+        string $returnType = 'string'
     ): array {
         $lines = [
-            '/**',
-            ' * @internal',
-            ' */',
-            "protected static function {$name}({$rawParams}): {$returnType}",
+            ...$this->generatePhpDocBlock($phpDoc),
+            sprintf('protected static function %s(): %s', $name, $returnType),
             '{',
-            "{$tab}return {$rawValue};",
+            sprintf('%sreturn %s;', self::TAB, $valueCode),
             '}'
         ];
 
-        return array_map(fn($line) => str_repeat($tab, $tabs) . $line, $lines);
+        return array_map(fn(string $line) => self::TAB . $line, $lines);
     }
 
     /**
@@ -248,54 +490,54 @@ abstract class GenerateCommand extends Command
      * @param ReflectionType|string $returnType
      * @return string[]
      */
-    protected function getMethod(
+    protected function generateMethod(
         string $name,
         array $code,
         array $params = [],
         $returnType = null,
-        ?string $docBlock = null,
+        string $phpDoc = '',
         bool $static = true,
-        string $visibility = GenerateCommand::VISIBILITY_PUBLIC,
-        int $tabs = 1,
-        string $tab = '    '
+        string $visibility = GenerateCommand::VISIBILITY_PUBLIC
     ): array {
         $callback = fn(string $name): ?string => $this->getFqcnAlias($name, null, false);
-        $rawParams = [];
-        foreach ($params as $param) {
+
+        foreach ($params as &$param) {
             if ($param instanceof ReflectionParameter) {
                 $param = Reflect::getParameterDeclaration($param, $this->getClassPrefix(), $callback);
             }
-            $rawParams[] = $param;
         }
-        $rawParams = implode(', ', $rawParams);
+        $params = implode(', ', $params);
+
         if ($returnType instanceof ReflectionType) {
             $returnType = Reflect::getTypeDeclaration($returnType, $this->getClassPrefix(), $callback);
         }
 
-        $modifiers = [$visibility];
+        $modifiers = [];
+        $modifiers[] = $visibility;
         if ($static) {
             $modifiers[] = 'static';
         }
-        $modifiers = implode(' ', $modifiers);
 
         $lines = [
-            ...($docBlock ? explode(PHP_EOL, $docBlock) : []),
-            $modifiers . " function {$name}({$rawParams})" . ($returnType ? ": {$returnType}" : ''),
+            ...$this->generatePhpDocBlock($phpDoc),
+            sprintf('%s function %s(%s)' . ($returnType ? ': %s' : ''), implode(' ', $modifiers), $name, $params, $returnType),
             '{',
-            ...array_map(fn($line) => "{$tab}$line", $code),
+            ...array_map(fn(string $line) => self::TAB . $line, $code),
             '}'
         ];
 
-        return array_map(fn($line) => str_repeat($tab, $tabs) . $line, $lines);
+        return array_map(fn(string $line) => self::TAB . $line, $lines);
     }
 
     /**
      *
-     * @param string[] $lines
+     * @param string[]|string $lines
      */
-    protected function handleOutput(string $class, string $namespace, array $lines): void
+    protected function handleOutput($lines): void
     {
-        $output = implode(PHP_EOL, $lines) . PHP_EOL;
+        $output = is_array($lines)
+            ? implode(PHP_EOL, $lines) . PHP_EOL
+            : rtrim($lines) . PHP_EOL;
 
         $verb = 'Creating';
 
@@ -303,12 +545,13 @@ abstract class GenerateCommand extends Command
             $file = 'php://stdout';
             $verb = null;
         } else {
-            $file = "$class.php";
+            $file = sprintf('%s.php', $this->OutputClass);
 
-            if ($dir = Composer::getNamespacePath($namespace)) {
+            if ($dir = Composer::getNamespacePath($this->OutputNamespace)) {
                 File::maybeCreateDirectory($dir);
                 $file = $dir . '/' . $file;
             }
+
             if (file_exists($file)) {
                 if (rtrim(file_get_contents($file)) == rtrim($output)) {
                     Console::log('Unchanged:', $file);
@@ -330,5 +573,27 @@ abstract class GenerateCommand extends Command
         }
 
         file_put_contents($file, $output);
+    }
+
+    /**
+     * @param string|string[] $phpDoc
+     * @return string[]
+     */
+    private function generatePhpDocBlock($phpDoc): array
+    {
+        if (!$phpDoc) {
+            return [];
+        }
+        return [
+            '/**',
+            ...array_map(
+                fn(string $line) => $line
+                    ? ' * ' . $line
+                    : ' *',
+                // Implode and explode to allow for multi-line elements
+                explode(PHP_EOL, implode(PHP_EOL, (array) $phpDoc))
+            ),
+            ' */'
+        ];
     }
 }

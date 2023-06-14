@@ -54,6 +54,7 @@ use RecursiveIterator;
  * @method static string[] splitAndTrim(string $separator, string $string, string|null $characters = null) Split a string by a string, remove whitespace from the beginning and end of each substring, remove empty strings (see {@see Conversions::splitAndTrim()})
  * @method static string[] splitAndTrimOutsideBrackets(string $separator, string $string, string|null $characters = null) Split a string by a string without separating substrings enclosed by brackets, remove whitespace from the beginning and end of each substring, remove empty strings (see {@see Conversions::splitAndTrimOutsideBrackets()})
  * @method static string[] splitOutsideBrackets(string $separator, string $string) Split a string by a string without separating substrings enclosed by brackets
+ * @method static array<array-key,string> stringsToUnique(array<array-key,string> $array) A faster array_unique
  * @method static string[] stringsToUniqueList(string[] $array) A faster array_unique with reindexing
  * @method static array toArray($value, bool $emptyIfNull = false) If a value isn't an array, make it the first element of one (see {@see Conversions::toArray()})
  * @method static bool|null toBoolOrNull($value) Cast a value to a boolean, preserving null and converting boolean strings (see {@see Conversions::toBoolOrNull()})
@@ -69,6 +70,7 @@ use RecursiveIterator;
  * @method static string toSnakeCase(string $text, ?string $preserve = null) Convert an identifier to snake_case
  * @method static string[] toStrings(...$value) Convert the given strings and Stringables to an array of strings
  * @method static DateTimeZone toTimezone(DateTimeZone|string $value) Convert a value to a DateTimeZone instance
+ * @method static array<array-key,mixed> toUnique(array<array-key,mixed> $array) A type-agnostic array_unique
  * @method static mixed[] toUniqueList(mixed[] $array) A type-agnostic array_unique with reindexing
  * @method static string unparseUrl(array<string,string|int> $url) Convert a parse_url array to a string (see {@see Conversions::unparseUrl()})
  * @method static string unwrap(string $string, string $break = "\n") Undo wordwrap(), preserving line breaks that appear consecutively, immediately after 2 spaces, or immediately before 4 spaces
@@ -98,12 +100,19 @@ final class Convert extends Facade
      */
     public static function arraySpliceAtKey(array &$array, $key, ?int $length = null, array $replacement = []): array
     {
-        static::setFuncNumArgs(__FUNCTION__, func_num_args());
-        try {
-            return static::getInstance()->arraySpliceAtKey($array, $key, $length, $replacement);
-        } finally {
-            static::clearFuncNumArgs(__FUNCTION__);
-        }
+        return static::getInstance()->arraySpliceAtKey($array, $key, $length, $replacement);
+    }
+
+    /**
+     * A type-agnostic multi-column array_unique
+     *
+     * @param array<array-key,mixed> $array
+     * @return array<array-key,mixed>
+     * @see Conversions::columnsToUnique()
+     */
+    public static function columnsToUnique(array $array, array &...$columns): array
+    {
+        return static::getInstance()->columnsToUnique($array, ...$columns);
     }
 
     /**
@@ -115,12 +124,7 @@ final class Convert extends Facade
      */
     public static function columnsToUniqueList(array $array, array &...$columns): array
     {
-        static::setFuncNumArgs(__FUNCTION__, func_num_args());
-        try {
-            return static::getInstance()->columnsToUniqueList($array, ...$columns);
-        } finally {
-            static::clearFuncNumArgs(__FUNCTION__);
-        }
+        return static::getInstance()->columnsToUniqueList($array, ...$columns);
     }
 
     /**
@@ -132,11 +136,6 @@ final class Convert extends Facade
      */
     public static function walkRecursive(&$objectOrArray, callable $callback, int $mode = \RecursiveIteratorIterator::LEAVES_ONLY): void
     {
-        static::setFuncNumArgs(__FUNCTION__, func_num_args());
-        try {
-            static::getInstance()->walkRecursive($objectOrArray, $callback, $mode);
-        } finally {
-            static::clearFuncNumArgs(__FUNCTION__);
-        }
+        static::getInstance()->walkRecursive($objectOrArray, $callback, $mode);
     }
 }
