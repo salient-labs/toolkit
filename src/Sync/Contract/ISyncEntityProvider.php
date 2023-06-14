@@ -19,10 +19,10 @@ interface ISyncEntityProvider
      * @internal
      * @param int $operation A {@see SyncOperation} value.
      * @phpstan-param SyncOperation::* $operation
-     * @return FluentIteratorInterface<int|string,TEntity>|TEntity
+     * @return FluentIteratorInterface<array-key,TEntity>|TEntity
      * @phpstan-return (
      *     $operation is SyncOperation::*_LIST
-     *     ? FluentIteratorInterface<int|string,TEntity>
+     *     ? FluentIteratorInterface<array-key,TEntity>
      *     : TEntity
      * )
      */
@@ -64,14 +64,14 @@ interface ISyncEntityProvider
      * Add a list of entities to the backend
      *
      * @param iterable<TEntity> $entities
-     * @return FluentIteratorInterface<int|string,TEntity>
+     * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function createList(iterable $entities, ...$args): FluentIteratorInterface;
 
     /**
      * Get a list of entities from the backend
      *
-     * @return FluentIteratorInterface<int|string,TEntity>
+     * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function getList(...$args): FluentIteratorInterface;
 
@@ -79,7 +79,7 @@ interface ISyncEntityProvider
      * Update a list of entities in the backend
      *
      * @param iterable<TEntity> $entities
-     * @return FluentIteratorInterface<int|string,TEntity>
+     * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function updateList(iterable $entities, ...$args): FluentIteratorInterface;
 
@@ -87,7 +87,7 @@ interface ISyncEntityProvider
      * Delete a list of entities from the backend
      *
      * @param iterable<TEntity> $entities
-     * @return FluentIteratorInterface<int|string,TEntity>
+     * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function deleteList(iterable $entities, ...$args): FluentIteratorInterface;
 

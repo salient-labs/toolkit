@@ -2,164 +2,178 @@
 
 namespace Lkrms\Support;
 
+use Iterator;
+use Lkrms\Concern\HasMutator;
 use Lkrms\Contract\IImmutable;
+use UnexpectedValueException;
 
 /**
  * Wraps (some of) PHP's array functions in a fluent interface
+ *
+ * @template TKey of array-key
+ * @template TValue
  */
 final class Arr implements IImmutable
 {
+    use HasMutator;
+
     /**
-     * @var array
+     * @var array<TKey,TValue>
      */
     private $Array;
 
-    public function __construct(array $array)
+    /**
+     * @param array<TKey,TValue>|Iterator<TKey,TValue> $array
+     */
+    public function __construct($array)
     {
-        $this->Array = $array;
+        $this->Array = $this->getArray($array);
     }
 
-    public static function from(array $array): self
+    /**
+     * @param array<TKey,TValue>|Iterator<TKey,TValue> $array
+     * @return self<TKey,TValue>
+     */
+    public static function from($array): self
     {
         return new self($array);
     }
 
     /**
-     * @return $this
+     * @template T
+     * @param callable(TValue, mixed...): T $callback
+     * @param array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed> ...$arrays
+     * @return $this<TKey,T>
      */
-    public function map(?callable $callback, array ...$arrays)
+    public function map(?callable $callback, ...$arrays)
     {
-        return (clone $this)->_map($callback, ...$arrays);
+        $clone = $this->mutate();
+        $clone->Array = array_map($callback, $clone->Array, ...$this->getArrays($arrays));
+        return $clone;
     }
 
     /**
+     * @param (callable(TValue): bool)|(callable(TKey): bool)|(callable(TValue, TKey): bool) $callback
      * @return $this
      */
     public function filter(?callable $callback, int $mode = 0)
     {
-        return (clone $this)->_filter($callback, $mode);
+        $clone = $this->mutate();
+        $clone->Array = array_filter($clone->Array, $callback, $mode);
+        return $clone;
     }
 
     /**
-     * @return $this
+     * @template T0 of array-key
+     * @template T1
+     *
+     * @param array<T0,T1>|Iterator<T0,T1>|Arr<T0,T1> ...$arrays
+     * @return $this<TKey|T0,TValue|T1>
      */
-    public function merge(array ...$arrays)
+    public function merge(...$arrays)
     {
-        return (clone $this)->_merge(...$arrays);
+        $clone = $this->mutate();
+        $clone->Array = array_merge($clone->Array, ...$this->getArrays($arrays));
+        return $clone;
     }
 
     /**
      * Keep entries whose values are absent from all $arrays, preserving keys
      *
+     * @param array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed> ...$arrays
      * @return $this
      */
-    public function diff(array ...$arrays)
+    public function diff(...$arrays)
     {
-        return (clone $this)->_diff(...$arrays);
+        $clone = $this->mutate();
+        $clone->Array = array_diff($clone->Array, ...$this->getArrays($arrays));
+        return $clone;
     }
 
     /**
      * Keep entries whose keys are absent from all $arrays
      *
+     * @param array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed> ...$arrays
      * @return $this
      */
-    public function diffKey(array ...$arrays)
+    public function diffKey(...$arrays)
     {
-        return (clone $this)->_diff_key(...$arrays);
+        $clone = $this->mutate();
+        $clone->Array = array_diff_key($clone->Array, ...$this->getArrays($arrays));
+        return $clone;
     }
 
     /**
      * Keep entries whose values exist in all $arrays
      *
+     * @param array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed> ...$arrays
      * @return $this
      */
-    public function intersect(array ...$arrays)
+    public function intersect(...$arrays)
     {
-        return (clone $this)->_intersect(...$arrays);
+        $clone = $this->mutate();
+        $clone->Array = array_intersect($clone->Array, ...$this->getArrays($arrays));
+        return $clone;
     }
 
     /**
      * Keep entries whose keys exist in all $arrays
      *
+     * @param array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed> ...$arrays
      * @return $this
      */
-    public function intersectKey(array ...$arrays)
+    public function intersectKey(...$arrays)
     {
-        return (clone $this)->_intersect_key(...$arrays);
+        $clone = $this->mutate();
+        $clone->Array = array_intersect_key($clone->Array, ...$this->getArrays($arrays));
+        return $clone;
     }
 
+    /**
+     * @return array<TKey,TValue>
+     */
     public function toArray(): array
     {
         return $this->Array;
     }
 
     /**
-     * @return $this
+     * @template T0 of array-key
+     * @template T1
+     *
+     * @param array<T0,T1>|Iterator<T0,T1>|Arr<T0,T1> $array
+     * @return array<T0,T1>
      */
-    private function _map(?callable $callback, array ...$arrays)
+    private function getArray($array): array
     {
-        $this->Array = array_map($callback, $this->Array, ...$arrays);
+        if ($array instanceof Arr) {
+            return $array->Array;
+        }
+        if ($array instanceof Iterator) {
+            return iterator_to_array($array);
+        }
+        if (is_array($array)) {
+            return $array;
+        }
 
-        return $this;
+        // @phpstan-ignore-next-line
+        throw new UnexpectedValueException(sprintf(
+            'Argument #1 ($array) must be of type array|Iterator|%s, %s given',
+            static::class,
+            is_object($array) ? get_class($array) : gettype($array)
+        ));
     }
 
     /**
-     * @return $this
+     * @param array<array<array-key,mixed>|Iterator<array-key,mixed>|Arr<array-key,mixed>> $arrays
+     * @return array<array<array-key,mixed>>
      */
-    private function _filter(?callable $callback, int $mode)
+    private function getArrays(array $arrays)
     {
-        $this->Array = array_filter($this->Array, $callback, $mode);
+        foreach ($arrays as &$array) {
+            $array = $this->getArray($array);
+        }
 
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    private function _merge(array ...$arrays)
-    {
-        $this->Array = array_merge($this->Array, ...$arrays);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    private function _diff(array ...$arrays)
-    {
-        $this->Array = array_diff($this->Array, ...$arrays);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    private function _diff_key(array ...$arrays)
-    {
-        $this->Array = array_diff_key($this->Array, ...$arrays);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    private function _intersect(array ...$arrays)
-    {
-        $this->Array = array_intersect($this->Array, ...$arrays);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    private function _intersect_key(array ...$arrays)
-    {
-        $this->Array = array_intersect_key($this->Array, ...$arrays);
-
-        return $this;
+        return $arrays;
     }
 }

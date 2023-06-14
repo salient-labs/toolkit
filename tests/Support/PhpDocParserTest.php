@@ -300,7 +300,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
              * Class summary
              *
              * @template T of string
-             * @template TKey of int|string
+             * @template TKey of array-key
              * @template TValue of object
              */
             EOF;
@@ -315,7 +315,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         $this->assertSame('array|null', $phpDoc->Templates['TArray']->Type);
         $this->assertSame(null, $phpDoc->Templates['TArray']->Description);
         $this->assertSame('TKey', $phpDoc->Templates['TKey']->Name);
-        $this->assertSame('int|string', $phpDoc->Templates['TKey']->Type);
+        $this->assertSame('array-key', $phpDoc->Templates['TKey']->Type);
         $this->assertSame(null, $phpDoc->Templates['TKey']->Description);
         $this->assertSame('TValue', $phpDoc->Templates['TValue']->Name);
         $this->assertSame('object', $phpDoc->Templates['TValue']->Type);

@@ -10,8 +10,8 @@ use RuntimeException;
 /**
  * Iterates over an object's properties or an array's elements
  *
- * @implements Iterator<int|string,mixed>
- * @implements MutableIterator<int|string,mixed>
+ * @implements Iterator<array-key,mixed>
+ * @implements MutableIterator<array-key,mixed>
  */
 class ObjectOrArrayIterator implements Iterator, MutableIterator
 {
@@ -21,7 +21,7 @@ class ObjectOrArrayIterator implements Iterator, MutableIterator
     protected $ObjectOrArray;
 
     /**
-     * @var array<int|string>
+     * @var array<array-key>
      */
     protected array $Keys = [];
 
@@ -79,7 +79,7 @@ class ObjectOrArrayIterator implements Iterator, MutableIterator
     }
 
     /**
-     * @return int|string|null
+     * @return array-key|null
      */
     #[ReturnTypeWillChange]
     public function key()

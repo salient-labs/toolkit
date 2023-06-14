@@ -6,7 +6,7 @@ namespace Lkrms\Support\Iterator;
  * Iterates over object properties and array elements, descending into them
  * recursively
  *
- * @implements \RecursiveIterator<int|string,mixed>
+ * @implements \RecursiveIterator<array-key,mixed>
  */
 class RecursiveObjectOrArrayIterator extends ObjectOrArrayIterator implements \RecursiveIterator
 {

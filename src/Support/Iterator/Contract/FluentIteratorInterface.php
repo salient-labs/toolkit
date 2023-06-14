@@ -7,7 +7,7 @@ use Iterator;
 /**
  * An iterator with a fluent interface
  *
- * @template TKey of int|string
+ * @template TKey of array-key
  * @template TValue
  * @extends Iterator<TKey,TValue>
  */
@@ -34,7 +34,7 @@ interface FluentIteratorInterface extends Iterator
      * If the current element has `$value` at `$key`, it is returned after
      * moving the iterator forward.
      *
-     * @param int|string $key
+     * @param array-key $key
      * @param mixed $value
      * @return TValue|false `false` if no matching element is found.
      */

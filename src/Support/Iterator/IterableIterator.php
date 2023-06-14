@@ -11,7 +11,7 @@ use Traversable;
 /**
  * Iterates over an iterable
  *
- * @template TKey of int|string
+ * @template TKey of array-key
  * @template TValue
  * @extends IteratorIterator<TKey,TValue,Traversable<TKey,TValue>>
  * @implements FluentIteratorInterface<TKey,TValue>
@@ -36,7 +36,7 @@ final class IterableIterator extends IteratorIterator implements FluentIteratorI
     }
 
     /**
-     * @template T0 of int|string
+     * @template T0 of array-key
      * @template T1
      * @param iterable<T0,T1> $iterable
      * @return self<T0,T1>

@@ -126,7 +126,7 @@ final class Conversions
      * array_walk_recursive for arbitrarily nested objects and arrays
      *
      * @param object|mixed[] $objectOrArray
-     * @param callable(mixed, int|string, MutableIterator<int|string,mixed>&\RecursiveIterator<int|string,mixed>): bool $callback Return `false` to stop iterating over `$objectOrArray`.
+     * @param callable(mixed, array-key, MutableIterator<array-key,mixed>&\RecursiveIterator<array-key,mixed>): bool $callback Return `false` to stop iterating over `$objectOrArray`.
      */
     public function walkRecursive(
         &$objectOrArray,

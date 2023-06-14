@@ -23,7 +23,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * Asserts that `array_keys($array)` is equal to `$keys`
      *
-     * @param array<int|string> $keys
+     * @param array<array-key> $keys
      * @param mixed[] $array
      */
     public function assertArrayHasSignature(array $keys, array $array, string $message = '')
@@ -46,7 +46,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * `array_keys($subArray + array_flip($keys))`
      *
      * @param mixed[] $subArray
-     * @param array<int|string> $keys
+     * @param array<array-key> $keys
      * @param mixed[] $array
      */
     public function assertArrayHasSubArrayAndKeys(array $subArray, array $keys, array $array, string $message = '')

@@ -291,7 +291,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must be required
      *
      * @param iterable<TEntity> $entities
-     * @return FluentIteratorInterface<int|string,TEntity>
+     * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function createList(iterable $entities, ...$args): FluentIteratorInterface
     {
@@ -313,7 +313,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * public function getList_Faculty(ISyncContext $ctx): iterable;
      * ```
      *
-     * @return FluentIteratorInterface<int|string,TEntity>
+     * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function getList(...$args): FluentIteratorInterface
     {
@@ -341,7 +341,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must be required
      *
      * @param iterable<TEntity> $entities
-     * @return FluentIteratorInterface<int|string,TEntity>
+     * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function updateList(iterable $entities, ...$args): FluentIteratorInterface
     {
@@ -372,7 +372,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * - must represent the final state of the entities before they were deleted
      *
      * @param iterable<TEntity> $entities
-     * @return FluentIteratorInterface<int|string,TEntity>
+     * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function deleteList(iterable $entities, ...$args): FluentIteratorInterface
     {
