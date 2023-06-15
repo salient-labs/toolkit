@@ -26,16 +26,18 @@ use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Iterator\RecursiveHasChildrenCallbackIterator;
 use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
 use Lkrms\Utility\Test;
+use LogicException;
 use RecursiveIteratorIterator;
-use UnexpectedValueException;
 
 /**
  * A cURL wrapper optimised for consumption of REST APIs
  *
- * @property-read string $BaseUrl Request URL
+ * A (very) lightweight Guzzle alternative.
+ *
+ * @property-read string $BaseUrl Request endpoint
  * @property-read ICurlerHeaders $Headers Request headers
- * @property-read string|null $Method Last request method
- * @property-read string|null $QueryString Query string last added to request URL
+ * @property-read string|null $Method Most recent request method
+ * @property-read string|null $QueryString Query string most recently added to request URL
  * @property-read string|mixed[]|null $Body Request body, as passed to cURL
  * @property-read string|mixed[]|object|null $Data Request body, before serialization
  * @property-read ICurlerPager|null $Pager Pagination handler
@@ -44,13 +46,14 @@ use UnexpectedValueException;
  * @property-read int|null $StatusCode Response status code
  * @property-read string|null $ReasonPhrase Response status explanation
  * @property-read string|null $ResponseBody Response body
- * @property-read mixed[]|null $CurlInfo curl_getinfo()'s last return value
- * @property bool $CacheResponse Cache responses to GET and HEAD requests?
+ * @property-read mixed[]|null $CurlInfo curl_getinfo()'s most recent return value
+ * @property bool $CacheResponse Cache responses to GET and HEAD requests? (HTTP caching directives are ignored)
  * @property bool $CachePostResponse Cache responses to eligible POST requests?
- * @property int $Expiry Seconds before cached responses expire
+ * @property int $Expiry Seconds before cached responses expire (0 = no expiry)
  * @property bool $Flush Replace cached responses that haven't expired?
  * @property callable|null $ResponseCacheKeyCallback Override the default cache key when saving and loading cached responses
  * @property bool $ThrowHttpErrors Throw an exception if the status code is >= 400?
+ * @property callable|null $ResponseCallback Apply a callback to responses before they are returned
  * @property int|null $ConnectTimeout Override the default number of seconds the connection phase of the transfer is allowed to take
  * @property int|null $Timeout Limit the number of seconds the transfer is allowed to take
  * @property bool $FollowRedirects Follow "Location:" headers?
@@ -72,7 +75,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     use TReadable, TWritable, HasMutator;
 
     /**
-     * Request URL
+     * Request endpoint
      *
      * @var string
      */
@@ -86,14 +89,17 @@ final class Curler implements IReadable, IWritable, HasBuilder
     protected $Headers;
 
     /**
-     * Last request method
+     * Most recent request method
      *
      * @var string|null
      */
     protected $Method;
 
     /**
-     * Query string last added to request URL
+     * Query string most recently added to request URL
+     *
+     * Unless empty, {@see Curler::$QueryString} starts with a `?` followed by
+     * the query string.
      *
      * @var string|null
      */
@@ -156,16 +162,25 @@ final class Curler implements IReadable, IWritable, HasBuilder
     protected $ResponseBody;
 
     /**
-     * curl_getinfo()'s last return value
-     *
-     * Set by {@see Curler::withCurlInfo()}.
+     * curl_getinfo()'s most recent return value
      *
      * @var mixed[]|null
      */
     protected $CurlInfo;
 
     /**
-     * Cache responses to GET and HEAD requests?
+     * Cache responses to GET and HEAD requests? (HTTP caching directives are
+     * ignored)
+     *
+     * If `true`, the shared {@see \Lkrms\Store\CacheStore} instance serviced by
+     * {@see Cache} is used as an HTTP response cache. Set
+     * {@see Curler::$CachePostResponse} to cache `POST` responses too.
+     *
+     * Not compliant with [RFC9111], obviously. Use responsibly.
+     *
+     * @see Curler::$Expiry
+     * @see Curler::$Flush
+     * @see Curler::$ResponseCacheKeyCallback
      *
      * @var bool
      */
@@ -181,9 +196,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     protected $CachePostResponse = false;
 
     /**
-     * Seconds before cached responses expire
-     *
-     * `0` = no expiry.
+     * Seconds before cached responses expire (0 = no expiry)
      *
      * Ignored unless {@see Curler::$CacheResponse} is `true`.
      *
@@ -193,6 +206,8 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
     /**
      * Replace cached responses that haven't expired?
+     *
+     * Ignored unless {@see Curler::$CacheResponse} is `true`.
      *
      * @var bool
      */
@@ -219,6 +234,16 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * @var bool
      */
     protected $ThrowHttpErrors = true;
+
+    /**
+     * Apply a callback to responses before they are returned
+     *
+     * {@see Curler::$ResponseCallback} is called between loading an HTTP
+     * response and performing status code checks.
+     *
+     * @var (callable(Curler): Curler)|null
+     */
+    protected $ResponseCallback;
 
     /**
      * Override the default number of seconds the connection phase of the
@@ -258,7 +283,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      * Send and receive cookies?
      *
      * If set, the shared {@see \Lkrms\Store\CacheStore} instance serviced by
-     * {@see \Lkrms\Facade\Cache} will be used for cookie storage.
+     * {@see Cache} will be used for cookie storage.
      *
      * @var bool
      */
@@ -291,7 +316,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
      *
      * @var int
      */
-    protected $RetryAfterMaxSeconds = 60;
+    protected $RetryAfterMaxSeconds = 300;
 
     /**
      * Request JSON from upstream?
@@ -324,6 +349,9 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * Override the default User-Agent header
      *
+     * The default user agent is derived from the name and version of the root
+     * package, e.g. `lkrms~util/v0.20.26-ca5d50e7 php/8.2.7`.
+     *
      * @var string|null
      */
     protected $UserAgent;
@@ -345,17 +373,12 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * @var \CurlHandle|resource|null
      */
-    private $Handle;
+    private static $Handle;
 
     /**
-     * @var \CurlMultiHandle|resource|null
+     * @var bool|null
      */
-    private $MultiHandle;
-
-    /**
-     * @var array[]
-     */
-    private $MultiInfo = [];
+    private static $HandleIsReset;
 
     /**
      * @var int
@@ -374,6 +397,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
     /**
      * @param (callable(Curler): string[])|null $responseCacheKeyCallback
+     * @param (callable(Curler): Curler)|null $responseCallback
      */
     public function __construct(
         string $baseUrl,
@@ -385,6 +409,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         bool $flush = false,
         ?callable $responseCacheKeyCallback = null,
         bool $throwHttpErrors = true,
+        ?callable $responseCallback = null,
         ?int $connectTimeout = null,
         ?int $timeout = null,
         bool $followRedirects = false,
@@ -392,7 +417,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         bool $handleCookies = false,
         ?string $cookieCacheKey = null,
         bool $retryAfterTooManyRequests = false,
-        int $retryAfterMaxSeconds = 60,
+        int $retryAfterMaxSeconds = 300,
         bool $expectJson = true,
         bool $postJson = true,
         bool $preserveKeys = false,
@@ -410,6 +435,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         $this->Flush = $flush;
         $this->ResponseCacheKeyCallback = $responseCacheKeyCallback;
         $this->ThrowHttpErrors = $throwHttpErrors;
+        $this->ResponseCallback = $responseCallback;
         $this->ConnectTimeout = $connectTimeout;
         $this->Timeout = $timeout;
         $this->FollowRedirects = $followRedirects;
@@ -472,9 +498,10 @@ final class Curler implements IReadable, IWritable, HasBuilder
      */
     public function setContentType(?string $mimeType)
     {
-        $this->Headers = $mimeType === null
-            ? $this->Headers->unsetHeader(HttpHeader::CONTENT_TYPE)
-            : $this->Headers->setHeader(HttpHeader::CONTENT_TYPE, $mimeType);
+        $this->Headers =
+            $mimeType === null
+                ? $this->Headers->unsetHeader(HttpHeader::CONTENT_TYPE)
+                : $this->Headers->setHeader(HttpHeader::CONTENT_TYPE, $mimeType);
 
         return $this;
     }
@@ -544,40 +571,25 @@ final class Curler implements IReadable, IWritable, HasBuilder
         return MimeType::is($mimeType, $contentType);
     }
 
-    /**
-     * Create a clone of the instance with CurlInfo set
-     *
-     * @return $this
-     */
-    public function withCurlInfo()
-    {
-        $clone = $this->mutate();
-        if ($clone->Handle) {
-            $clone->CurlInfo = $clone->CurlInfo ?: curl_getinfo($clone->Handle);
-        }
-
-        return $clone;
-    }
-
     protected function getEffectiveUrl(): ?string
     {
-        return $this->Handle
-            ? curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)
+        return self::$Handle
+            ? curl_getinfo(self::$Handle, CURLINFO_EFFECTIVE_URL)
             : null;
     }
 
     protected function close(): void
     {
-        if ($this->Handle === null) {
+        if (!self::$Handle) {
             return;
         }
 
         if ($this->CookieKey && $this->ExecuteCount) {
-            Cache::set($this->CookieKey, curl_getinfo($this->Handle, CURLINFO_COOKIELIST));
+            Cache::set($this->CookieKey, curl_getinfo(self::$Handle, CURLINFO_COOKIELIST));
         }
 
-        curl_close($this->Handle);
-        $this->Handle = null;
+        curl_reset(self::$Handle);
+        self::$HandleIsReset = true;
     }
 
     private function initialise(string $method, ?array $query, ?ICurlerPager $pager = null): void
@@ -589,49 +601,57 @@ final class Curler implements IReadable, IWritable, HasBuilder
         }
         $this->QueryString = $this->getQueryString($query);
 
-        $this->Handle = curl_init($this->BaseUrl . $this->QueryString);
+        if (self::$Handle) {
+            if (!self::$HandleIsReset) {
+                curl_reset(self::$Handle);
+            }
+            self::$HandleIsReset = false;
+            curl_setopt(self::$Handle, CURLOPT_URL, $this->BaseUrl . $this->QueryString);
+        } else {
+            self::$Handle = curl_init($this->BaseUrl . $this->QueryString);
+        }
 
         // Return the transfer as a string
-        curl_setopt($this->Handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt(self::$Handle, CURLOPT_RETURNTRANSFER, true);
 
         // Enable all supported encoding types (e.g. gzip, deflate) and set
         // Accept-Encoding header accordingly
-        curl_setopt($this->Handle, CURLOPT_ENCODING, '');
+        curl_setopt(self::$Handle, CURLOPT_ENCODING, '');
 
         // Collect response headers
         curl_setopt(
-            $this->Handle,
+            self::$Handle,
             CURLOPT_HEADERFUNCTION,
             fn($curl, $header) => strlen($this->processHeader($header))
         );
 
         if ($this->ConnectTimeout !== null) {
-            curl_setopt($this->Handle, CURLOPT_CONNECTTIMEOUT, $this->ConnectTimeout);
+            curl_setopt(self::$Handle, CURLOPT_CONNECTTIMEOUT, $this->ConnectTimeout);
         }
 
         if ($this->Timeout !== null) {
-            curl_setopt($this->Handle, CURLOPT_TIMEOUT, $this->Timeout);
+            curl_setopt(self::$Handle, CURLOPT_TIMEOUT, $this->Timeout);
         }
 
         if ($this->FollowRedirects) {
-            curl_setopt($this->Handle, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt(self::$Handle, CURLOPT_FOLLOWLOCATION, true);
             if ($this->MaxRedirects !== null) {
-                curl_setopt($this->Handle, CURLOPT_MAXREDIRS, $this->MaxRedirects);
+                curl_setopt(self::$Handle, CURLOPT_MAXREDIRS, $this->MaxRedirects);
             }
         }
 
         if ($this->CookieKey = $this->getCookieKey()) {
             // Enable cookies without loading them from a file
-            curl_setopt($this->Handle, CURLOPT_COOKIEFILE, '');
+            curl_setopt(self::$Handle, CURLOPT_COOKIEFILE, '');
 
             foreach (Cache::get($this->CookieKey) ?: [] as $cookie) {
-                curl_setopt($this->Handle, CURLOPT_COOKIELIST, $cookie);
+                curl_setopt(self::$Handle, CURLOPT_COOKIELIST, $cookie);
             }
         }
 
         // In debug mode, collect request headers
         if (Env::debug()) {
-            curl_setopt($this->Handle, CURLINFO_HEADER_OUT, true);
+            curl_setopt(self::$Handle, CURLINFO_HEADER_OUT, true);
         }
 
         switch ($method) {
@@ -639,11 +659,11 @@ final class Curler implements IReadable, IWritable, HasBuilder
                 break;
 
             case HttpRequestMethod::HEAD:
-                curl_setopt($this->Handle, CURLOPT_NOBODY, true);
+                curl_setopt(self::$Handle, CURLOPT_NOBODY, true);
                 break;
 
             case HttpRequestMethod::POST:
-                curl_setopt($this->Handle, CURLOPT_POST, true);
+                curl_setopt(self::$Handle, CURLOPT_POST, true);
                 break;
 
             case HttpRequestMethod::PUT:
@@ -652,11 +672,11 @@ final class Curler implements IReadable, IWritable, HasBuilder
             case HttpRequestMethod::CONNECT:
             case HttpRequestMethod::OPTIONS:
             case HttpRequestMethod::TRACE:
-                curl_setopt($this->Handle, CURLOPT_CUSTOMREQUEST, $method);
+                curl_setopt(self::$Handle, CURLOPT_CUSTOMREQUEST, $method);
                 break;
 
             default:
-                throw new UnexpectedValueException("Invalid HTTP request method: $method");
+                throw new LogicException("Invalid HTTP request method: $method");
         }
 
         $this->Method = $method;
@@ -666,7 +686,11 @@ final class Curler implements IReadable, IWritable, HasBuilder
         $this->Body = $this->Data = null;
 
         if ($pager) {
-            $pager->prepareCurler($this);
+            if ($pager->prepareCurler($this) !== $this) {
+                throw new LogicException(sprintf(
+                    '%s::prepareCurler() returned a different instance', get_class($pager)
+                ));
+            }
         }
 
         if ($this->ExpectJson) {
@@ -731,7 +755,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     private function applyData($data): void
     {
         curl_setopt(
-            $this->Handle,
+            self::$Handle,
             CURLOPT_POSTFIELDS,
             ($this->Body = $this->prepareData($data))
         );
@@ -840,28 +864,23 @@ final class Curler implements IReadable, IWritable, HasBuilder
             $this->ResponseBody = $last[3];
 
             $this->ResponseHeadersByName =
-                $this->ResponseHeaders
-                     ->getHeaderValues(CurlerHeadersFlag::COMBINE);
+                $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE);
 
             return $this->ResponseBody;
         }
 
         $this->ExecuteCount++;
 
-        curl_setopt($this->Handle, CURLOPT_HTTPHEADER, $this->Headers->getHeaders());
+        curl_setopt(self::$Handle, CURLOPT_HTTPHEADER, $this->Headers->getHeaders());
 
-        // Use a cURL multi handle for upcoming simultaneous request handling
-        if ($this->MultiHandle === null) {
-            $this->MultiHandle = curl_multi_init();
-        }
-
-        for ($attempt = 0; $attempt < 2; $attempt++) {
+        $attempt = 0;
+        while ($attempt++ < 2) {
             if (!in_array($this->Method, [HttpRequestMethod::GET, HttpRequestMethod::HEAD]) || Env::debug()) {
                 // Console::debug() should print the details of whatever called
                 // one of Curler's public methods, i.e. not execute(), not
                 // get(), but one frame deeper
                 Console::debug(
-                    "{$this->Method} " . rawurldecode(curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)),
+                    "{$this->Method} " . rawurldecode($this->getEffectiveUrl()),
                     null,
                     null,
                     $depth + 3
@@ -869,67 +888,37 @@ final class Curler implements IReadable, IWritable, HasBuilder
             }
 
             // Execute the request
-            curl_multi_add_handle($this->MultiHandle, $this->Handle);
-            $active = null;
-            $error = null;
+            $result = curl_exec(self::$Handle);
+            $this->CurlInfo = curl_getinfo(self::$Handle);
 
-            do {
-                if (($status = curl_multi_exec($this->MultiHandle, $active)) !== CURLM_OK) {
-                    throw new CurlerException($this, 'cURL error: ' . curl_multi_strerror($status));
-                }
-
-                if ($active) {
-                    if (curl_multi_select($this->MultiHandle) === -1) {
-                        // 100 milliseconds, as suggested here:
-                        // https://curl.se/libcurl/c/curl_multi_fdset.html
-                        usleep(100000);
-                    }
-                }
-
-                while (($message = curl_multi_info_read($this->MultiHandle)) !== false) {
-                    $this->MultiInfo[] = $message;
-                }
-            } while ($active);
-
-            // Claim messages related to this request
-            foreach ($this->MultiInfo as $i => $message) {
-                if ($message['handle'] === $this->Handle) {
-                    if ($message['result'] !== CURLE_OK) {
-                        $error = $message['result'];
-                    }
-
-                    unset($this->MultiInfo[$i]);
-                }
+            if ($result === false) {
+                $error = curl_errno(self::$Handle);
+                throw new CurlerException($this, sprintf('cURL error %d: %s', $error, curl_strerror($error)));
             }
 
-            curl_multi_remove_handle($this->MultiHandle, $this->Handle);
+            // ReasonPhrase is set by processHeader()
+            $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE);
+            $this->StatusCode = $this->CurlInfo['http_code'];
+            $this->ResponseBody = $result;
 
-            if ($error === null) {
-                // ReasonPhrase is collected by processHeader()
-                $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE);
-                $this->StatusCode = (int) curl_getinfo($this->Handle, CURLINFO_RESPONSE_CODE);
-                $this->ResponseBody = curl_multi_getcontent($this->Handle);
-
-                if (Env::debug()) {
-                    $this->CurlInfo = curl_getinfo($this->Handle);
+            if ($this->ResponseCallback) {
+                if (($this->ResponseCallback)($this) !== $this) {
+                    throw new LogicException(sprintf(
+                        '%s::$ResponseCallback returned a different instance', static::class
+                    ));
                 }
-            } else {
-                throw new CurlerException($this, 'cURL error: ' . curl_strerror($error));
             }
 
             if ($this->StatusCode === 429 &&
                     $this->RetryAfterTooManyRequests &&
-                    $attempt === 0 &&
+                    $attempt === 1 &&
                     ($after = $this->getRetryAfter()) !== null &&
                     ($this->RetryAfterMaxSeconds === 0 || $after <= $this->RetryAfterMaxSeconds)) {
                 // Sleep for at least one second
                 $after = max(1, $after);
-                Console::debug(
-                    "Received HTTP error 429 Too Many Requests, sleeping for {$after}s",
-                    null,
-                    null,
-                    $depth + 3
-                );
+                Console::debug(sprintf(
+                    'Received "429 Too Many Requests", sleeping for %ds', $after
+                ), null, null, $depth + 3);
                 sleep($after);
 
                 $this->clearResponse();
@@ -1144,7 +1133,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         if (is_array($data) || is_object($data)) {
             $this->applyData($data);
         } elseif (is_string($data) && $mimeType) {
-            curl_setopt($this->Handle, CURLOPT_POSTFIELDS, $data);
+            curl_setopt(self::$Handle, CURLOPT_POSTFIELDS, $data);
             $this->setContentType($mimeType);
         }
 
@@ -1179,7 +1168,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
     private function paginate(string $method, ?array $query, $data = null): iterable
     {
         if (!$this->Pager) {
-            throw new UnexpectedValueException(static::class . '::$Pager is not set');
+            throw new LogicException(static::class . '::$Pager is not set');
         }
         if (!in_array($method, [HttpRequestMethod::GET, HttpRequestMethod::HEAD])) {
             $data = $this->Pager->prepareData($data);
@@ -1212,7 +1201,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
             }
             [$url, $data, $headers] =
                 [$page->nextUrl(), $page->nextData(), $page->nextHeaders()];
-            curl_setopt($this->Handle, CURLOPT_URL, $url);
+            curl_setopt(self::$Handle, CURLOPT_URL, $url);
             if ($headers !== null) {
                 $this->Headers = $headers;
             }
@@ -1321,7 +1310,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
         do {
             if ($nextUrl) {
-                curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
+                curl_setopt(self::$Handle, CURLOPT_URL, $nextUrl);
                 $this->clearResponse();
                 $nextUrl = null;
             }
@@ -1355,7 +1344,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
         do {
             if ($nextUrl) {
-                curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
+                curl_setopt(self::$Handle, CURLOPT_URL, $nextUrl);
                 $this->clearResponse();
             }
 
@@ -1431,7 +1420,7 @@ final class Curler implements IReadable, IWritable, HasBuilder
         int $requestLimit = null
     ): array {
         if ($pagePath !== null && !(($variables['first'] ?? null) && array_key_exists('after', $variables))) {
-            throw new UnexpectedValueException('$first and $after variables are required for pagination');
+            throw new LogicException('$first and $after variables are required for pagination');
         }
 
         $entities = [];

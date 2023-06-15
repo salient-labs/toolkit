@@ -391,11 +391,6 @@ parameters:
 			path: src/Curler/Curler.php
 
 		-
-			message: "#^Property Lkrms\\\\Curler\\\\Curler\\:\\:\\$MultiInfo type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Curler/Curler.php
-
-		-
 			message: "#^Property Lkrms\\\\Curler\\\\CurlerFile\\:\\:\\$Filename has no type specified\\.$#"
 			count: 1
 			path: src/Curler/CurlerFile.php

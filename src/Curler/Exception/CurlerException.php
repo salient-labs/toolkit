@@ -3,8 +3,8 @@
 namespace Lkrms\Curler\Exception;
 
 use Lkrms\Curler\Curler;
-use Lkrms\Facade\Env;
 use Lkrms\Facade\Format;
+use Throwable;
 
 /**
  * Thrown when an HTTP request fails
@@ -17,12 +17,11 @@ class CurlerException extends \Lkrms\Exception\Exception
      */
     protected $Curler;
 
-    public function __construct(Curler $curler, string $message)
+    public function __construct(Curler $curler, string $message, ?Throwable $previous = null)
     {
-        // Save a clone of the Curler instance
-        $this->Curler = $curler->withCurlInfo();
+        $this->Curler = clone $curler;
 
-        parent::__construct($message);
+        parent::__construct($message, $previous);
     }
 
     public function getDetail(): array
