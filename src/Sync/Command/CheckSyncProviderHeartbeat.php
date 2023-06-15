@@ -3,64 +3,32 @@
 namespace Lkrms\Sync\Command;
 
 use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\CliCommand;
+use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\CliOption;
-use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncStore;
 use RuntimeException;
 
 /**
  * A generic sync provider heartbeat check command
  *
  */
-final class CheckSyncProviderHeartbeat extends CliCommand
+final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
 {
-    /**
-     * Unambiguous lowercase provider basename => provider
-     *
-     * @var array<string,class-string<ISyncProvider>>
-     */
-    private $Providers = [];
-
     /**
      * @var string[]
      */
-    private $ProviderBasename;
+    private ?array $ProviderBasename;
 
     /**
      * @var array<class-string<ISyncProvider>>
      */
-    private $Provider;
+    private ?array $Provider;
 
-    /**
-     * @var SyncStore
-     */
-    private $Store;
+    private ?int $Ttl;
 
-    public function __construct(ICliApplication $container, SyncStore $store)
-    {
-        parent::__construct($container);
-
-        $this->Store = $store;
-
-        foreach ($this->App->getServices() as $provider) {
-            if (!is_a($provider, ISyncProvider::class, true)) {
-                continue;
-            }
-            $key = strtolower(Convert::classToBasename($provider, 'SyncProvider', 'Provider'));
-            if (array_key_exists($key, $this->Providers)) {
-                $this->Providers[$key] = null;
-                continue;
-            }
-            $this->Providers[$key] = $provider;
-        }
-        $this->Providers = array_filter($this->Providers);
-
-        natsort($this->Providers);
-    }
+    private ?bool $FailEarly;
 
     public function description(): string
     {
@@ -98,11 +66,14 @@ final class CheckSyncProviderHeartbeat extends CliCommand
                 ->valueName('seconds')
                 ->description('The time-to-live of a positive result')
                 ->optionType(CliOptionType::VALUE)
-                ->defaultValue('300'),
+                ->valueType(CliOptionValueType::INTEGER)
+                ->defaultValue(300)
+                ->bindTo($this->Ttl),
             CliOption::build()
                 ->long('fail-early')
                 ->short('f')
-                ->description('If a check fails, exit without checking other providers'),
+                ->description('If a check fails, exit without checking other providers')
+                ->bindTo($this->FailEarly),
         ];
     }
 
@@ -122,11 +93,6 @@ final class CheckSyncProviderHeartbeat extends CliCommand
             The command exits with a non-zero status if a provider backend is
             unreachable.
             EOF;
-    }
-
-    public function getHelpSections(): ?array
-    {
-        return null;
     }
 
     protected function run(string ...$args)
@@ -165,11 +131,7 @@ final class CheckSyncProviderHeartbeat extends CliCommand
             ),
         );
 
-        $this->Store->checkHeartbeats(
-            (int) $this->getOptionValue('ttl'),
-            (bool) $this->getOptionValue('fail-early'),
-            ...$providers
-        );
+        $this->Store->checkHeartbeats(max(1, $this->Ttl), $this->FailEarly, ...$providers);
 
         Console::summary(Convert::plural($count, 'provider', null, true) . ' checked');
     }

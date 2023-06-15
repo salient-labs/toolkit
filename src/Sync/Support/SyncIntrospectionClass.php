@@ -48,21 +48,21 @@ final class SyncIntrospectionClass extends IntrospectionClass
     /**
      * Interfaces that extend ISyncProvider
      *
-     * @var string[]
+     * @var array<class-string<ISyncProvider>>
      */
     public $SyncProviderInterfaces = [];
 
     /**
      * Entities serviced by ISyncProvider interfaces
      *
-     * @var string[]
+     * @var array<class-string<ISyncEntity>>
      */
     public $SyncProviderEntities = [];
 
     /**
-     * Unambiguous lowercase entity basename => entity
+     * Unambiguous kebab-case entity basename => entity
      *
-     * @var array<string,string>
+     * @var array<string,class-string<ISyncEntity>>
      */
     public $SyncProviderEntityBasenames = [];
 
@@ -108,8 +108,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
     /**
      * Entity => sync operation => closure
      *
-     * @var array<string,array<int,\Closure|null>>
-     * @phpstan-var array<string,array<SyncOperation::*,\Closure|null>>
+     * @var array<class-string<ISyncEntity>,array<SyncOperation::*,\Closure|null>>
      */
     public $DeclaredSyncOperationClosures = [];
 
@@ -159,9 +158,9 @@ final class SyncIntrospectionClass extends IntrospectionClass
             $entity = SyncIntrospector::get($entity);
             $this->SyncProviderEntities[] = $entity->Class;
 
-            // Map unambiguous lowercase entity basenames to qualified names in
+            // Map unambiguous kebab-case entity basenames to qualified names in
             // SyncProviderEntityBasenames
-            $basename = strtolower(Convert::classToBasename($entity->Class));
+            $basename = Convert::toKebabCase(Convert::classToBasename($entity->Class));
             $this->SyncProviderEntityBasenames[$basename] =
                 array_key_exists($basename, $this->SyncProviderEntityBasenames)
                     ? null
@@ -195,10 +194,8 @@ final class SyncIntrospectionClass extends IntrospectionClass
                 $this->SyncOperationMagicMethods[$method] = [$operation, $entity->Class];
             };
 
-            [$noun, $plural] = [
-                strtolower($entity->EntityNoun),
-                strtolower($entity->EntityPlural)
-            ];
+            $noun = strtolower($entity->EntityNoun);
+            $plural = strtolower($entity->EntityPlural);
 
             if ($plural) {
                 $fn(SyncOperation::CREATE_LIST, 'create' . $plural);
