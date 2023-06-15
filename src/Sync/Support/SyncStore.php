@@ -78,7 +78,7 @@ final class SyncStore extends SqliteStore
     /**
      * Prefix => resolver
      *
-     * @var array<string,ISyncClassResolver>|null
+     * @var array<string,class-string<ISyncClassResolver>>|null
      */
     private $NamespaceResolversByPrefix;
 
@@ -126,7 +126,7 @@ final class SyncStore extends SqliteStore
      *
      * Prefix => [ namespace base URI, PHP namespace, class resolver ]
      *
-     * @var array<string,array{string,string,ISyncClassResolver|null}>
+     * @var array<string,array{string,string,class-string<ISyncClassResolver>|null}>
      */
     private $DeferredNamespaces = [];
 
@@ -424,9 +424,10 @@ final class SyncStore extends SqliteStore
      * expression `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
      * @param string $uri A globally unique namespace URI.
      * @param string $namespace A fully-qualified PHP namespace.
+     * @param class-string<ISyncClassResolver>|null $resolver
      * @return $this
      */
-    public function namespace(string $prefix, string $uri, string $namespace, ?ISyncClassResolver $resolver = null)
+    public function namespace(string $prefix, string $uri, string $namespace, ?string $resolver = null)
     {
         if (!preg_match('/^[a-zA-Z][a-zA-Z0-9+.-]*$/', $prefix)) {
             throw new LogicException("Invalid prefix: $prefix");
@@ -440,6 +441,13 @@ final class SyncStore extends SqliteStore
 
         $uri = rtrim($uri, '/') . '/';
         $namespace = trim($namespace, '\\') . '\\';
+
+        if (!$resolver) {
+            $class = $namespace . 'SyncClassResolver';
+            if (is_a($class, ISyncClassResolver::class, true)) {
+                $resolver = $class;
+            }
+        }
 
         // Don't start a run just to register a namespace
         if ($this->RunId === null) {
@@ -523,8 +531,9 @@ final class SyncStore extends SqliteStore
      * Get the class resolver for an entity or provider's namespace
      *
      * @param class-string<ISyncEntity|ISyncProvider> $class
+     * @return class-string<ISyncClassResolver>|null
      */
-    public function getNamespaceResolver(string $class): ?ISyncClassResolver
+    public function getNamespaceResolver(string $class): ?string
     {
         if (!$this->classToNamespace($class, $uri, $namespace, $resolver)) {
             return null;
@@ -535,12 +544,13 @@ final class SyncStore extends SqliteStore
 
     /**
      * @param class-string<ISyncEntity|ISyncProvider> $class
+     * @param class-string<ISyncClassResolver>|null $resolver
      */
     private function classToNamespace(
         string $class,
         ?string &$uri = null,
         ?string &$namespace = null,
-        ?ISyncClassResolver &$resolver = null
+        ?string &$resolver = null
     ): ?string {
         $class = ltrim($class, '\\');
         $lower = strtolower($class);

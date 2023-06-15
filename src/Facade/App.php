@@ -10,6 +10,7 @@ use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
+use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Utility\Environment;
 
 /**
@@ -56,7 +57,7 @@ use Lkrms\Utility\Environment;
  * @method static IContainer|null setGlobalContainer(IContainer|null $container) Set the global container
  * @method static Application singleton(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a shared binding with the container (see {@see Container::singleton()})
  * @method static Application singletonIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a shared binding with the container if it isn't already registered
- * @method static Application syncNamespace(string $prefix, string $uri, string $namespace) Register a sync entity namespace with the application's SyncStore (see {@see Application::syncNamespace()})
+ * @method static Application syncNamespace(string $prefix, string $uri, string $namespace, class-string<ISyncClassResolver>|null $resolver = null) Register a sync entity namespace with the application's SyncStore (see {@see Application::syncNamespace()})
  * @method static Application unbind(class-string $id) Remove a binding from the container
  * @method static Application unloadSync(bool $silent = false) Close the application's SyncStore (see {@see Application::unloadSync()})
  * @method static Application writeResourceUsage(int $level = Level::INFO) Print a summary of the script's system resource usage (see {@see Application::writeResourceUsage()})
