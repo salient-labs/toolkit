@@ -46,7 +46,7 @@ final class SyncIntrospector extends Introspector
     {
         if (($store || Sync::isLoaded()) &&
                 $resolver = ($store ?: Sync::getInstance())->getNamespaceResolver($entity)) {
-            return $resolver->entityToProvider($entity);
+            return $resolver::entityToProvider($entity);
         }
 
         return sprintf(
@@ -66,7 +66,7 @@ final class SyncIntrospector extends Introspector
     {
         if (($store || Sync::isLoaded()) &&
                 $resolver = ($store ?: Sync::getInstance())->getNamespaceResolver($provider)) {
-            return $resolver->providerToEntity($provider);
+            return $resolver::providerToEntity($provider);
         }
 
         if (preg_match(

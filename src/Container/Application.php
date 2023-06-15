@@ -17,6 +17,7 @@ use Lkrms\Facade\File;
 use Lkrms\Facade\Format;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
+use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Utility\Environment;
 use Lkrms\Utility\Test;
 use Phar;
@@ -363,12 +364,12 @@ class Application extends Container implements IApplication
         return $this;
     }
 
-    final public function syncNamespace(string $prefix, string $uri, string $namespace)
+    final public function syncNamespace(string $prefix, string $uri, string $namespace, ?string $resolver = null)
     {
         if (!Sync::isLoaded()) {
             throw new RuntimeException('Sync database not loaded');
         }
-        Sync::namespace($prefix, $uri, $namespace);
+        Sync::namespace($prefix, $uri, $namespace, $resolver);
 
         return $this;
     }

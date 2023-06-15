@@ -5,7 +5,6 @@ namespace Lkrms\Tests\Sync\Support;
 use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Sync\Catalog\SyncOperation;
-use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Tests\Sync\CustomEntity\Post;
@@ -13,6 +12,7 @@ use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
 use Lkrms\Tests\Sync\Entity\Provider\UserProvider;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
+use Lkrms\Tests\Sync\SyncClassResolver;
 use ReflectionFunction;
 
 final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase
@@ -57,41 +57,7 @@ final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase
             'component',
             'https://sync.lkrms.github.io/component',
             'Component\Sync',
-            new class implements ISyncClassResolver {
-                public function entityToProvider(string $entity): string
-                {
-                    return preg_replace(
-                        [
-                            '/(?<=\\\\)Entity(?=\\\\)/i',
-                            '/(?<=\\\\)([^\\\\]+)$/',
-                            '/^\\\\+/',
-                        ],
-                        [
-                            'Contract',
-                            'Provides$1',
-                            '',
-                        ],
-                        "\\$entity"
-                    );;
-                }
-
-                public function providerToEntity(string $provider): ?string
-                {
-                    return preg_replace(
-                        [
-                            '/(?<=\\\\)Contract(?=\\\\)/i',
-                            '/(?<=\\\\)Provides([^\\\\]+)$/',
-                            '/^\\\\+/',
-                        ],
-                        [
-                            'Entity',
-                            '$1',
-                            '',
-                        ],
-                        "\\$provider"
-                    );
-                }
-            }
+            SyncClassResolver::class
         );
     }
 

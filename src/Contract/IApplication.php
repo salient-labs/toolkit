@@ -4,6 +4,7 @@ namespace Lkrms\Contract;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevels;
+use Lkrms\Sync\Contract\ISyncClassResolver;
 
 /**
  * A service container for applications
@@ -161,10 +162,11 @@ interface IApplication extends IContainer, ReturnsEnvironment
      * expression `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
      * @param string $uri A globally unique namespace URI.
      * @param string $namespace A fully-qualified PHP namespace.
+     * @param class-string<ISyncClassResolver>|null $resolver
      * @return $this
      * @see \Lkrms\Sync\Support\SyncStore::namespace()
      */
-    public function syncNamespace(string $prefix, string $uri, string $namespace);
+    public function syncNamespace(string $prefix, string $uri, string $namespace, ?string $resolver = null);
 
     /**
      * Print a summary of the script's timers and system resource usage when the

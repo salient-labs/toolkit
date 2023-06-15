@@ -27,11 +27,11 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static string|null getEntityTypeUri(class-string<ISyncEntity> $entity, bool $compact = true) Get the canonical URI of a sync entity type (see {@see SyncStore::getEntityTypeUri()})
  * @method static SyncErrorCollection getErrors() Get sync operation errors recorded so far
  * @method static string|null getFilename() Get the filename of the database
- * @method static ISyncClassResolver|null getNamespaceResolver(class-string<ISyncEntity|ISyncProvider> $class) Get the class resolver for an entity or provider's namespace
+ * @method static class-string<ISyncClassResolver>|null getNamespaceResolver(class-string<ISyncEntity|ISyncProvider> $class) Get the class resolver for an entity or provider's namespace
  * @method static int getRunId() Get the run ID of the current run
  * @method static string getRunUuid(bool $binary = false) Get the UUID of the current run (see {@see SyncStore::getRunUuid()})
  * @method static bool isOpen() Check if a database is open
- * @method static SyncStore namespace(string $prefix, string $uri, string $namespace, ?ISyncClassResolver $resolver = null) Register a sync entity namespace (see {@see SyncStore::namespace()})
+ * @method static SyncStore namespace(string $prefix, string $uri, string $namespace, class-string<ISyncClassResolver>|null $resolver = null) Register a sync entity namespace (see {@see SyncStore::namespace()})
  * @method static SyncStore provider(ISyncProvider $provider) Register a sync provider and set its provider ID (see {@see SyncStore::provider()})
  *
  * @uses SyncStore
