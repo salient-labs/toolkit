@@ -35,6 +35,13 @@ jobs:
     name: PHPStan
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "8.2"
+          - "7.4"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -42,7 +49,7 @@ jobs:
       - name: Setup PHP and Composer
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
+          php-version: ${{ matrix.php-version }}
           coverage: none
 
       - name: Install dependencies
