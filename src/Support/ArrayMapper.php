@@ -74,7 +74,7 @@ final class ArrayMapper
             $outKeys = array_keys($flipped);
             $closure =
                 static function (array $in) use ($outKeys): array {
-                    $out = array_combine($outKeys, $in);
+                    $out = @array_combine($outKeys, $in);
                     if ($out === false) {
                         throw new UnexpectedValueException('Invalid input array');
                     }

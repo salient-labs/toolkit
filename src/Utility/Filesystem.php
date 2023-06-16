@@ -335,6 +335,7 @@ final class Filesystem
                 Console::warnOnce("'iconv' extension required for UTF-16LE encoding");
             }
         }
+
         if ($bom) {
             fwrite($f, '﻿');
         }
@@ -354,10 +355,10 @@ final class Filesystem
             }
 
             if (!$count && $headerRow) {
-                fputcsv($f, array_keys($row), ',', '"', '\\', $eol);
+                $this->fputcsv($f, array_keys($row), ',', '"', $eol);
             }
 
-            fputcsv($f, $row, ',', '"', '\\', $eol);
+            $this->fputcsv($f, $row, ',', '"', $eol);
             $count++;
         }
 
@@ -373,6 +374,31 @@ final class Filesystem
         }
 
         return true;
+    }
+
+    /**
+     * A polyfill for PHP 8.1's fputcsv, minus $escape
+     *
+     * @param resource $stream
+     * @param mixed[] $fields
+     * @return int|false
+     */
+    private function fputcsv(
+        $stream,
+        array $fields,
+        string $separator = ',',
+        string $enclosure = '"',
+        string $eol = "\n"
+    ) {
+        $special = $separator . $enclosure . "\n\r\t ";
+        foreach ($fields as &$field) {
+            if (strpbrk($field, $special) !== false) {
+                $field = $enclosure
+                    . str_replace($enclosure, $enclosure . $enclosure, $field)
+                    . $enclosure;
+            }
+        }
+        return fwrite($stream, implode($separator, $fields) . $eol);
     }
 
     /**
