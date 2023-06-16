@@ -392,7 +392,7 @@ final class Filesystem
     ) {
         $special = $separator . $enclosure . "\n\r\t ";
         foreach ($fields as &$field) {
-            if (strpbrk($field, $special) !== false) {
+            if (strpbrk((string) $field, $special) !== false) {
                 $field = $enclosure
                     . str_replace($enclosure, $enclosure . $enclosure, $field)
                     . $enclosure;
