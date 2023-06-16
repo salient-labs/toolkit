@@ -12,6 +12,7 @@ use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Contract\ReceivesContainer;
 use Lkrms\Contract\ReceivesService;
 use Lkrms\Exception\ContainerServiceNotFoundException;
+use Lkrms\Facade\Event;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use RuntimeException;
@@ -129,6 +130,8 @@ class Container extends FluentInterface implements IContainer
 
     final public static function setGlobalContainer(?IContainer $container): ?IContainer
     {
+        Event::dispatch('container.global.set', $container);
+
         return self::$GlobalContainer = $container;
     }
 

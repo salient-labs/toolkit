@@ -3,8 +3,11 @@
 namespace Lkrms\Concept;
 
 use Lkrms\Container\Container;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Facade\Event;
+use Lkrms\Support\EventDispatcher;
 use RuntimeException;
 
 /**
@@ -28,6 +31,11 @@ abstract class Facade implements IFacade
     private static $Instances = [];
 
     /**
+     * @var array<string,int>
+     */
+    private static $ListenerIds = [];
+
+    /**
      * @var array<string,array<string,int|null>>
      */
     private static $FuncNumArgs = [];
@@ -39,8 +47,7 @@ abstract class Facade implements IFacade
     {
         $service = static::getServiceName();
 
-        if (Container::hasGlobalContainer()) {
-            $container = Container::getGlobalContainer();
+        if ($container = Container::maybeGetGlobalContainer()) {
             $instance = $container->singletonIf($service)
                                   ->get($service, func_get_args());
         } else {
@@ -50,6 +57,16 @@ abstract class Facade implements IFacade
         if ($instance instanceof ReceivesFacade) {
             $instance->setFacade(static::class);
         }
+
+        $dispatcher = $instance instanceof EventDispatcher
+            ? $instance
+            : Event::getInstance();
+        $id = $dispatcher->listen(
+            'container.global.set',
+            fn(?IContainer $container) =>
+                $container && $container->instanceIf($service, $instance)
+        );
+        self::$ListenerIds[static::class] = $id;
 
         return self::$Instances[static::class] = $instance;
     }
@@ -80,8 +97,12 @@ abstract class Facade implements IFacade
      */
     final public static function unload(): void
     {
-        if (Container::hasGlobalContainer()) {
-            Container::getGlobalContainer()->unbind(static::getServiceName());
+        if ($id = self::$ListenerIds[static::class] ?? null) {
+            Event::removeListener($id);
+            unset(self::$ListenerIds[static::class]);
+        }
+        if ($container = Container::maybeGetGlobalContainer()) {
+            $container->unbind(static::getServiceName());
         }
         unset(self::$Instances[static::class]);
     }

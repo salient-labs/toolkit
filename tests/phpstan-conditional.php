@@ -33,7 +33,7 @@ return [
     'parameters' => [
         'ignoreErrors' => [
             [
-                'message' => '#^Strict comparison using \=\=\= between array\<array\<int, int\|string\>\|int\|string, mixed\> and false will always evaluate to false\.$#',
+                'message' => '#^Strict comparison using \=\=\= between array and false will always evaluate to false\.$#',
                 'count' => 1,
                 'path' => '../src/Support/ArrayMapper.php',
             ],

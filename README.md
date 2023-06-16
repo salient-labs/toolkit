@@ -17,11 +17,12 @@ API documentation for `lkrms/util` is [available online][api-docs]. It tracks
 release tags pushed to the project's [GitHub repository][repo] and is generated
 by [ApiGen].
 
-You can build the API documentation by running the following commands in the
-top-level directory. It should appear in `docs/api` after a few seconds.
+You can build the API documentation locally by running the following commands in
+the top-level directory. It should appear in `docs/api` after a few seconds.
 
 ```shell
 composer -d apigen install
+
 apigen/vendor/bin/apigen -c apigen/apigen.neon
 ```
 
