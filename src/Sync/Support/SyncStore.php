@@ -7,6 +7,7 @@ use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
+use Lkrms\Facade\Event;
 use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncClassResolver;
@@ -216,6 +217,8 @@ final class SyncStore extends SqliteStore
 
                  SQL
              );
+
+        Event::dispatch('sync.store.load', $this);
     }
 
     /**
@@ -441,13 +444,6 @@ final class SyncStore extends SqliteStore
 
         $uri = rtrim($uri, '/') . '/';
         $namespace = trim($namespace, '\\') . '\\';
-
-        if (!$resolver) {
-            $class = $namespace . 'SyncClassResolver';
-            if (is_a($class, ISyncClassResolver::class, true)) {
-                $resolver = $class;
-            }
-        }
 
         // Don't start a run just to register a namespace
         if ($this->RunId === null) {
