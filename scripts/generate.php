@@ -14,6 +14,7 @@ use Lkrms\LkUtil\Command\Generate\GenerateFacade;
 use Lkrms\Store\CacheStore;
 use Lkrms\Store\TrashStore;
 use Lkrms\Support\ArrayMapper;
+use Lkrms\Support\EventDispatcher;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\SyncError;
@@ -45,6 +46,7 @@ $facades = [
     Conversions::class => \Lkrms\Facade\Convert::class,
     Debugging::class => \Lkrms\Facade\Debug::class,
     Environment::class => \Lkrms\Facade\Env::class,
+    EventDispatcher::class => \Lkrms\Facade\Event::class,
     Filesystem::class => \Lkrms\Facade\File::class,
     Formatters::class => \Lkrms\Facade\Format::class,
     Reflection::class => \Lkrms\Facade\Reflect::class,
