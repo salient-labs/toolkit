@@ -14,16 +14,6 @@ if (PHP_VERSION_ID < 80000) {
                     'count' => 1,
                     'path' => '../src/Curler/Curler.php',
                 ],
-                [
-                    'message' => '#^Property Lkrms\\\\Curler\\\\Curler\:\:\$MultiHandle has unknown class CurlMultiHandle as its type\.$#',
-                    'count' => 1,
-                    'path' => '../src/Curler/Curler.php',
-                ],
-                [
-                    'message' => '#^Strict comparison using \=\=\= between string and false will always evaluate to false\.$#',
-                    'count' => 1,
-                    'path' => '../tests/TestCase.php',
-                ],
             ],
         ]
     ];
