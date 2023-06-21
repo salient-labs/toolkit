@@ -37,13 +37,17 @@ class Introspector
     use TIntrospector;
 
     /**
-     * @internal
+     * @return mixed
      */
     final public function __get(string $name)
     {
         return $this->_Class->{$name};
     }
 
+    /**
+     * @param class-string<TClass> $class
+     * @return IntrospectionClass<TClass>
+     */
     private function getIntrospectionClass(string $class): IntrospectionClass
     {
         return new IntrospectionClass($class);
@@ -109,9 +113,10 @@ class Introspector
      * Get a closure to create instances of the class from arrays with a given
      * signature
      *
+     * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(array, IContainer, IHierarchy|null=, DateFormatter|null=)
+     * @return Closure(mixed[], IContainer, IHierarchy|null=, DateFormatter|null=)
      * ```php
      * function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null)
      * ```
@@ -149,9 +154,10 @@ class Introspector
      * Get a closure to create instances of the class on behalf of a provider
      * from arrays with a given signature
      *
+     * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(array, IProvider, IContainer|IProviderContext|null=)
+     * @return Closure(mixed[], IProvider, IContainer|IProviderContext|null=)
      * ```php
      * function (array $array, IProvider $provider, IContainer|IProviderContext|null $context = null)
      * ```
@@ -195,18 +201,20 @@ class Introspector
      * Get a list of actions required to apply values from an array with a given
      * signature to the properties of a new or existing instance
      *
+     * @param string[] $keys
+     * @param array<string,Closure(mixed[], TClass): void> $keyClosures Normalised key => closure
+     * @return IntrospectorKeyTargets<TClass>
      */
-    final protected function getKeyTargets(array $keys, bool $withParameters, bool $strict): IntrospectorKeyTargets
+    protected function getKeyTargets(array $keys, bool $withParameters, bool $strict, array $keyClosures = []): IntrospectorKeyTargets
     {
         // Normalise array keys (i.e. field/property names)
-        if ($this->_Class->Normaliser) {
-            $keys = array_combine(
-                array_map($this->_Class->CarefulNormaliser, $keys),
-                $keys
-            );
-        } else {
-            $keys = array_combine($keys, $keys);
-        }
+        $keys = $this->_Class->Normaliser
+            ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
+            : array_combine($keys, $keys);
+
+        // Remove keys for which a closure is provided, because they can't be
+        // resolved before instantiation
+        $keys = array_diff_key($keys, $keyClosures);
 
         // Check for missing constructor parameters if preparing an
         // instantiator, otherwise check for readonly properties
@@ -219,7 +227,8 @@ class Introspector
             // any that don't also match a writable property or "magic" method
             $parameters = array_intersect_key(
                 $this->_Class->Parameters,
-                $keys
+                $keys,
+                $keyClosures
             );
             $readonly = array_diff(
                 array_keys($parameters),
@@ -230,17 +239,24 @@ class Introspector
             }
         }
 
+        $keys = array_merge($keys, $keyClosures);
+
         // Resolve $keys to:
         // - constructor parameters ($parameterKeys, $passByRefKeys)
+        // - callbacks ($callbackKeys)
         // - "magic" property methods ($methodKeys)
         // - properties ($propertyKeys)
         // - arbitrary properties ($metaKeys)
         //
         // Keys that correspond to date parameters or properties are also added
         // to $dateKeys
-        $parameterKeys = $passByRefKeys = $methodKeys = $propertyKeys = $metaKeys = $dateKeys = [];
+        $parameterKeys = $passByRefKeys = $callbackKeys = $methodKeys = $propertyKeys = $metaKeys = $dateKeys = [];
 
         foreach ($keys as $normalisedKey => $key) {
+            if ($key instanceof Closure) {
+                $callbackKeys[] = $key;
+                continue;
+            }
             if ($withParameters && ($param = $this->_Class->Parameters[$normalisedKey] ?? null)) {
                 $parameterKeys[$key] = $this->_Class->ParameterIndex[$param];
                 if ($this->_Class->PassByRefParameters[$normalisedKey] ?? null) {
@@ -273,19 +289,23 @@ class Introspector
             }
         }
 
-        return new IntrospectorKeyTargets(
+        /** @var IntrospectorKeyTargets<TClass> */
+        $targets = new IntrospectorKeyTargets(
             $parameterKeys,
             $passByRefKeys,
+            $callbackKeys,
             $methodKeys,
             $propertyKeys,
             $metaKeys,
             $dateKeys
         );
+
+        return $targets;
     }
 
     /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
-     * IHierarchy|null, DateFormatter|null, string|null)
+     * @param string[] $keys
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
      * ```php
      * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
@@ -298,9 +318,10 @@ class Introspector
         }
 
         $targets = $this->getKeyTargets($keys, true, $strict);
-        [$parameterKeys, $passByRefKeys, $propertyKeys, $methodKeys, $metaKeys, $dateKeys] = [
+        [$parameterKeys, $passByRefKeys, $callbackKeys, $propertyKeys, $methodKeys, $metaKeys, $dateKeys] = [
             $targets->Parameters,
             $targets->PassByRefParameters,
+            $targets->Callbacks,
             $targets->Properties,
             $targets->Methods,
             $targets->MetaProperties,
@@ -326,6 +347,9 @@ class Introspector
         if ($methodKeys) {
             $closure = $this->_getMethodClosure($methodKeys, $closure);
         }
+        if ($callbackKeys) {
+            $closure = $this->_getCallbackClosure($callbackKeys, $closure);
+        }
         if ($metaKeys) {
             $closure = $this->_getMetaClosure($metaKeys, $closure);
         }
@@ -337,8 +361,9 @@ class Introspector
     }
 
     /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
-     * IHierarchy|null, DateFormatter|null, string|null)
+     * @param array<string,int> $parameterKeys
+     * @param array<string,true> $passByRefKeys
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
      * ```php
      * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
@@ -366,8 +391,7 @@ class Introspector
     }
 
     /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
-     * IHierarchy|null, DateFormatter|null, string|null)
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
      * ```php
      * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
@@ -389,8 +413,8 @@ class Introspector
     }
 
     /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
-     * IHierarchy|null, DateFormatter|null, string|null)
+     * @param array<string,string> $propertyKeys
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
      * ```php
      * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
@@ -409,8 +433,7 @@ class Introspector
     }
 
     /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
-     * IHierarchy|null, DateFormatter|null, string|null)
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
      * ```php
      * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
@@ -418,7 +441,7 @@ class Introspector
     protected function _getProvidableClosure(Closure $closure): Closure
     {
         return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ...$args) use ($closure) {
-            /** @var \Lkrms\Contract\IProvidable $obj */
+            /** @var \Lkrms\Contract\IProvidable<IProvider,IProviderContext> $obj */
             $obj = $closure($container, $array, $provider, $context, ...$args);
             if ($provider) {
                 if (!$context) {
@@ -434,8 +457,7 @@ class Introspector
     }
 
     /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
-     * IHierarchy|null, DateFormatter|null, string|null)
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
      * ```php
      * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
@@ -454,8 +476,8 @@ class Introspector
     }
 
     /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
-     * IHierarchy|null, DateFormatter|null, string|null)
+     * @param array<string,string> $methodKeys
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
      * ```php
      * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
@@ -474,8 +496,27 @@ class Introspector
     }
 
     /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
-     * IHierarchy|null, DateFormatter|null, string|null)
+     * @param array<Closure(mixed[], TClass): void> $callbacks
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
+     * ```php
+     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
+     * ```
+     */
+    protected function _getCallbackClosure(array $callbacks, Closure $closure): Closure
+    {
+        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ...$args) use ($callbacks, $closure) {
+            $obj = $closure($container, $array, $provider, $context, ...$args);
+            foreach ($callbacks as $callback) {
+                $callback($array, $obj);
+            }
+
+            return $obj;
+        };
+    }
+
+    /**
+     * @param string[] $metaKeys
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
      * ```php
      * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
@@ -493,8 +534,8 @@ class Introspector
     }
 
     /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null,
-     * IHierarchy|null, DateFormatter|null, string|null)
+     * @param string[] $dateKeys
+     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
      * ```php
      * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
      * ```
@@ -530,7 +571,7 @@ class Introspector
      *
      * @param bool $strict If `true`, return a closure that throws an exception
      * if any data would be discarded.
-     * @return Closure(array, IContainer, IHierarchy|null=, DateFormatter|null=)
+     * @return Closure(mixed[], IContainer, IHierarchy|null=, DateFormatter|null=)
      * ```php
      * function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null)
      * ```
@@ -561,7 +602,7 @@ class Introspector
      *
      * @param bool $strict If `true`, return a closure that throws an exception
      * if any data would be discarded.
-     * @return Closure(array, IProvider, IContainer|IProviderContext|null=)
+     * @return Closure(mixed[], IProvider, IContainer|IProviderContext|null=)
      * ```php
      * function (array $array, IProvider $provider, IContainer|IProviderContext|null $context = null)
      * ```

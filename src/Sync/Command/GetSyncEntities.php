@@ -13,16 +13,20 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncIntrospector;
+use Lkrms\Sync\Support\SyncSerializeRulesBuilder;
 
 /**
  * A generic sync entity retrieval command
  *
+ * @template T of ISyncEntity
  */
 final class GetSyncEntities extends AbstractSyncCommand
 {
     private ?string $Entity;
     private ?string $EntityId;
     private ?string $Provider;
+    private ?bool $IncludeCanonical;
+    private ?bool $IncludeMeta;
     private ?bool $Stream;
     private ?bool $Csv;
 
@@ -70,6 +74,16 @@ final class GetSyncEntities extends AbstractSyncCommand
                 ->multipleAllowed()
                 ->bindTo($this->Filter),
             CliOption::build()
+                ->long('include-canonical-id')
+                ->short('I')
+                ->description('Include canonical_id in the output')
+                ->bindTo($this->IncludeCanonical),
+            CliOption::build()
+                ->long('include-meta')
+                ->short('M')
+                ->description('Include meta values in the output')
+                ->bindTo($this->IncludeMeta),
+            CliOption::build()
                 ->long('stream')
                 ->short('s')
                 ->description('Output a stream of entities')
@@ -116,7 +130,14 @@ final class GetSyncEntities extends AbstractSyncCommand
                 ? $provider->with($entity, $context)->getList($filter)
                 : $provider->with($entity, $context)->getListA($filter));
 
-        $rules = $entity::buildSerializeRules($this->App)->includeMeta(false);
+        /** @var SyncSerializeRulesBuilder<T>  */
+        $rules = $entity::buildSerializeRules($this->App);
+        if (!$this->IncludeMeta) {
+            $rules = $rules->includeMeta(false);
+        }
+        if ($this->IncludeCanonical) {
+            $rules = $rules->removeCanonicalId(false);
+        }
 
         if ($this->Csv) {
             if ($this->EntityId !== null) {

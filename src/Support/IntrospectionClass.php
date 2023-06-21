@@ -276,7 +276,7 @@ class IntrospectionClass
     public $SerializeClosures = [];
 
     /**
-     * @var ReflectionClass
+     * @var ReflectionClass<TClass>
      */
     protected $Reflector;
 

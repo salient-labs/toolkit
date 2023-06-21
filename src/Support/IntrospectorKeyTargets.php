@@ -2,6 +2,7 @@
 
 namespace Lkrms\Support;
 
+use Closure;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 
@@ -10,12 +11,15 @@ use Lkrms\Contract\IReadable;
  *
  * @property-read array<string,int> $Parameters Key => constructor parameter index
  * @property-read array<string,true> $PassByRefParameters Key => `true`
+ * @property-read array<Closure(mixed[], TClass): void> $Callbacks Arbitrary callbacks
  * @property-read array<string,string> $Methods Key => "magic" property method
  * @property-read array<string,string> $Properties Key => declared property name
  * @property-read string[] $MetaProperties Arbitrary keys
  * @property-read string[] $DateProperties Date keys
  *
  * @see Introspector
+ *
+ * @template TClass of object
  */
 final class IntrospectorKeyTargets implements IReadable
 {
@@ -34,6 +38,13 @@ final class IntrospectorKeyTargets implements IReadable
      * @var array<string,true>
      */
     protected $PassByRefParameters;
+
+    /**
+     * Arbitrary callbacks
+     *
+     * @var array<Closure(mixed[], TClass): void>
+     */
+    protected $Callbacks;
 
     /**
      * Key => "magic" property method
@@ -63,9 +74,19 @@ final class IntrospectorKeyTargets implements IReadable
      */
     protected $DateProperties;
 
+    /**
+     * @param array<string,int> $parameters
+     * @param array<string,true> $passByRefProperties
+     * @param array<Closure(mixed[], TClass): void> $callbacks
+     * @param array<string,string> $methods
+     * @param array<string,string> $properties
+     * @param string[] $metaProperties
+     * @param string[] $dateProperties
+     */
     public function __construct(
         array $parameters,
         array $passByRefProperties,
+        array $callbacks,
         array $methods,
         array $properties,
         array $metaProperties,
@@ -73,6 +94,7 @@ final class IntrospectorKeyTargets implements IReadable
     ) {
         $this->Parameters = $parameters;
         $this->PassByRefParameters = $passByRefProperties;
+        $this->Callbacks = $callbacks;
         $this->Methods = $methods;
         $this->Properties = $properties;
         $this->MetaProperties = $metaProperties;
