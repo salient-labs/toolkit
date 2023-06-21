@@ -447,6 +447,10 @@ class Container extends FluentInterface implements IContainer
     {
         $idMap = [];
         foreach ($serviceMap as $id => $instanceOf) {
+            if (is_int($id)) {
+                $idMap[$instanceOf] = $idMap[$instanceOf] ?? [];
+                continue;
+            }
             $idMap[$instanceOf][] = $id;
         }
 

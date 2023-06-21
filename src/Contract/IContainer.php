@@ -224,8 +224,10 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * This method simplifies bootstrapping, especially when the same class may
      * be configured at runtime to provide multiple services.
      *
-     * @param array<class-string,class-string<IService>> $serviceMap An array
-     * that maps service names to concrete class names.
+     * @param array<class-string|int,class-string<IService>> $serviceMap An
+     * array that maps service names to concrete class names. Entries with
+     * integer keys are registered without any service names. This allows
+     * inactive services to be available for ad-hoc use.
      * @param int-mask-of<ServiceLifetime::*> $lifetime
      * @return $this
      */
