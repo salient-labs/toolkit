@@ -229,10 +229,16 @@ abstract class SyncEntity implements ISyncEntity
                 };
         }
 
-        $prefixes = array_unique(array_map(
-            fn(string $prefix): string => Convert::toSnakeCase($prefix),
-            $prefixes
-        ));
+        // ['admin_user_group'] -> ['admin_user_group', 'user_group', 'group']
+        foreach ($prefixes as $prefix) {
+            $prefix = Convert::toSnakeCase($prefix);
+            $expanded[$prefix] = true;
+            $prefix = explode('_', $prefix);
+            while (array_shift($prefix)) {
+                $expanded[implode('_', $prefix)] = true;
+            }
+        }
+        $prefixes = array_keys($expanded);
         $regex = implode('|', $prefixes);
         $regex = count($prefixes) > 1 ? "($regex)" : $regex;
         $regex = "/^{$regex}_/";

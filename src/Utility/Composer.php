@@ -179,8 +179,7 @@ final class Composer
         $namespace = trim($namespace, '\\');
         $prefixes = [];
         foreach (ClassLoader::getRegisteredLoaders() as $loader) {
-            // If multiple loaders return the same prefix, prefer the first one
-            $prefixes = array_merge($loader->getPrefixesPsr4(), $prefixes);
+            $prefixes = array_merge_recursive($loader->getPrefixesPsr4(), $prefixes);
         }
         // Sort prefixes from longest to shortest
         uksort($prefixes, fn($p1, $p2) => strlen($p2) <=> strlen($p1));
@@ -189,17 +188,20 @@ final class Composer
             if (!strcasecmp(substr($namespace . '\\', 0, strlen($prefix)), $prefix)) {
                 foreach ((array) $dirs as $dir) {
                     if (($dir = File::realpath($dir)) && is_dir($dir)) {
-                        if ($subdir = strtr(substr($namespace, strlen($prefix)), '\\', '/')) {
-                            return $dir . '/' . $subdir;
+                        $subdir = strtr(substr($namespace, strlen($prefix)), '\\', '/');
+                        $path = $subdir
+                            ? $dir . '/' . $subdir
+                            : $dir;
+                        if (is_dir($path)) {
+                            return $path;
                         }
-
-                        return $dir;
+                        $fallback = $fallback ?? $path;
                     }
                 }
             }
         }
 
-        return null;
+        return $fallback ?? null;
     }
 
     /**
