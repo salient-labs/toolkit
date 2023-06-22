@@ -3,16 +3,17 @@
 namespace Lkrms\Sync\Support;
 
 use Closure;
+use Lkrms\Concern\HasMutator;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Contract\ISerializeRules;
 use Lkrms\Facade\Convert;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Sync\Contract\ISyncSerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use LogicException;
 
@@ -85,8 +86,9 @@ use LogicException;
  * @property-read bool|null $RecurseRules Apply path-based rules to every instance of $Entity? (default: true)
  * @property-read int $Flags
  */
-final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable, HasBuilder
+final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmutable, HasBuilder
 {
+    use HasMutator;
     use TFullyReadable;
 
     /**
@@ -221,7 +223,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
      * @param class-string<TEntity> $entity
      * @param array<array<array<string|Closure>|string>|array<string|Closure>|string> $remove
      * @param array<array<array<string|Closure>|string>|array<string|Closure>|string> $replace
-     * @param SyncSerializeRules<TEntity>|SerializeRulesBuilder<TEntity>|null $inherit
+     * @param SyncSerializeRules<TEntity>|null $inherit
      */
     public function __construct(
         string $entity,
@@ -235,7 +237,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
         array $replace = [],
         ?bool $recurseRules = null,
         ?int $flags = null,
-        $inherit = null
+        ?SyncSerializeRules $inherit = null
     ) {
         $this->Entity = $entity;
         $this->DateFormatter = $dateFormatter;
@@ -252,7 +254,7 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
         $this->Introspector = SyncIntrospector::get($this->Entity);
 
         if ($inherit) {
-            $this->applyRules(self::resolve($inherit), true);
+            $this->applyRules($inherit, true);
             return;
         }
 
@@ -560,6 +562,26 @@ final class SyncSerializeRules implements ISerializeRules, IReadable, IImmutable
     public function getFlags(): int
     {
         return Convert::coalesce($this->Flags, 0);
+    }
+
+    public function withIncludeMeta(?bool $value)
+    {
+        return $this->withPropertyValue('IncludeMeta', $value);
+    }
+
+    public function withSortByKey(?bool $value)
+    {
+        return $this->withPropertyValue('SortByKey', $value);
+    }
+
+    public function withRemoveCanonicalId(?bool $value)
+    {
+        return $this->withPropertyValue('RemoveCanonicalId', $value);
+    }
+
+    public function withMaxDepth(?int $value)
+    {
+        return $this->withPropertyValue('MaxDepth', $value);
     }
 
     /**

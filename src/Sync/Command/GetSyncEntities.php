@@ -13,7 +13,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncIntrospector;
-use Lkrms\Sync\Support\SyncSerializeRulesBuilder;
+use Lkrms\Sync\Support\SyncSerializeRules;
 
 /**
  * A generic sync entity retrieval command
@@ -130,13 +130,13 @@ final class GetSyncEntities extends AbstractSyncCommand
                 ? $provider->with($entity, $context)->getList($filter)
                 : $provider->with($entity, $context)->getListA($filter));
 
-        /** @var SyncSerializeRulesBuilder<T>  */
-        $rules = $entity::buildSerializeRules($this->App);
+        /** @var SyncSerializeRules<T> */
+        $rules = $entity::getSerializeRules($this->App);
         if (!$this->IncludeMeta) {
-            $rules = $rules->includeMeta(false);
+            $rules = $rules->withIncludeMeta(false);
         }
         if ($this->IncludeCanonical) {
-            $rules = $rules->removeCanonicalId(false);
+            $rules = $rules->withRemoveCanonicalId(false);
         }
 
         if ($this->Csv) {

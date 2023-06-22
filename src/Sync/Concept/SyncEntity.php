@@ -57,7 +57,7 @@ use UnexpectedValueException;
  *
  * Accessible properties are mapped to associative arrays with snake_case keys
  * when {@see SyncEntity} objects are serialized. Override
- * {@see SyncEntity::getSerializeRules()} to provide serialization rules for
+ * {@see SyncEntity::buildSerializeRules()} to provide serialization rules for
  * nested entities.
  *
  */
@@ -154,16 +154,16 @@ abstract class SyncEntity implements ISyncEntity
      * serialized
      *
      * To prevent infinite recursion when `json_encode()` or similar is used to
-     * serialize an instance of this class, return a {@see SerializeRules} or
+     * serialize an instance of this class, return a
      * {@see SerializeRulesBuilder} object configured to remove or replace
      * circular references.
      *
-     * @param SerializeRulesBuilder<static> $build
-     * @return SerializeRules<static>|SerializeRulesBuilder<static>
+     * @param SerializeRulesBuilder<static> $rulesB
+     * @return SerializeRulesBuilder<static>
      */
-    protected static function getSerializeRules(SerializeRulesBuilder $build)
+    protected static function buildSerializeRules(SerializeRulesBuilder $rulesB): SerializeRulesBuilder
     {
-        return $build->go();
+        return $rulesB;
     }
 
     /**
@@ -197,14 +197,14 @@ abstract class SyncEntity implements ISyncEntity
         return static::defaultProvider()->with(static::class);
     }
 
-    final public static function buildSerializeRules(
-        ?IContainer $container = null,
-        bool $inherit = true
-    ): SerializeRulesBuilder {
-        return (new SerializeRulesBuilder($container = self::requireContainer($container)))
-            ->if($inherit, fn(SerializeRulesBuilder $builder) =>
-                               $builder->inherit(static::serializeRules($container)))
-            ->entity(static::class);
+    final public static function getSerializeRules(?IContainer $container = null): SerializeRules
+    {
+        $rulesB = static::buildSerializeRules(
+            SerializeRulesBuilder::build(self::requireContainer($container))
+                ->entity(static::class)
+        );
+
+        return $rulesB->go();
     }
 
     /**
@@ -259,16 +259,9 @@ abstract class SyncEntity implements ISyncEntity
             };
     }
 
-    final public static function serializeRules(?IContainer $container = null): SerializeRules
-    {
-        return SerializeRules::resolve(
-            static::getSerializeRules(static::buildSerializeRules($container, false))
-        );
-    }
-
     final public function toArray(): array
     {
-        return $this->_toArray(static::serializeRules());
+        return $this->_toArray(static::getSerializeRules());
     }
 
     final public function toArrayWith($rules): array
