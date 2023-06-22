@@ -24,7 +24,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
  * @method $this replace(array<array<array<string|Closure>|string>|array<string|Closure>|string> $value) Values to replace with IDs (see {@see SyncSerializeRules::$Replace})
  * @method $this recurseRules(?bool $value = true) Apply path-based rules to every instance of $Entity? (default: true)
  * @method $this flags(?int $value) Set SyncSerializeRules::$Flags
- * @method $this inherit(SyncSerializeRules<TEntity>|SyncSerializeRulesBuilder<TEntity>|null $value) Pass $value to `$inherit` in SyncSerializeRules::__construct()
+ * @method $this inherit(SyncSerializeRules<TEntity>|null $value) Pass $value to `$inherit` in SyncSerializeRules::__construct()
  * @method mixed get(string $name) The value of $name if applied to the unresolved SyncSerializeRules by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved SyncSerializeRules by calling $name()
  * @method SyncSerializeRules go() Get a new SyncSerializeRules object

@@ -15,6 +15,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
+use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Environment;
 use RuntimeException;
@@ -178,6 +179,20 @@ abstract class SyncProvider implements ISyncProvider, IService
     final protected function pipeline(): IPipeline
     {
         return Pipeline::create($this->App);
+    }
+
+    /**
+     * Use the provider's container to get a serialization rules builder
+     * for an entity
+     *
+     * @template T of ISyncEntity
+     * @param class-string<T> $entity
+     * @return SerializeRulesBuilder<T>
+     */
+    final protected function buildSerializeRules(string $entity): SerializeRulesBuilder
+    {
+        return SerializeRulesBuilder::build($this->App)
+            ->entity($entity);
     }
 
     final public function dateFormatter(): DateFormatter

@@ -8,7 +8,6 @@ use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\ReturnsDescription;
 use Lkrms\Sync\Catalog\SyncSerializeLinkType;
 use Lkrms\Sync\Support\SyncSerializeRules;
-use Lkrms\Sync\Support\SyncSerializeRulesBuilder;
 
 /**
  * Represents the state of an entity in an external system
@@ -33,22 +32,11 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
     public static function withDefaultProvider(?IContainer $container = null): ISyncEntityProvider;
 
     /**
-     * Get a SyncSerializeRules builder for the entity, optionally inheriting
-     * its default rules
-     *
-     * @return SyncSerializeRulesBuilder<static>
-     */
-    public static function buildSerializeRules(
-        ?IContainer $container = null,
-        bool $inherit = true
-    ): SyncSerializeRulesBuilder;
-
-    /**
      * Get the entity's default serialization rules
      *
      * @return SyncSerializeRules<static>
      */
-    public static function serializeRules(?IContainer $container = null): SyncSerializeRules;
+    public static function getSerializeRules(?IContainer $container = null): SyncSerializeRules;
 
     /**
      * Called when the class is registered with an entity store
@@ -93,17 +81,17 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
      * {@see ISyncEntity} encountered during this recursive operation.
      *
      * @return array<string,mixed>
-     * @see ISyncEntity::serializeRules()
+     * @see ISyncEntity::getSerializeRules()
      */
     public function toArray(): array;
 
     /**
      * Use custom rules to serialize the entity and any nested entities
      *
-     * @param SyncSerializeRulesBuilder<static>|SyncSerializeRules<static> $rules
+     * @param SyncSerializeRules<static> $rules
      * @return array<string,mixed>
      */
-    public function toArrayWith($rules): array;
+    public function toArrayWith(SyncSerializeRules $rules): array;
 
     /**
      * Get the entity's canonical location in the form of an array
