@@ -7,6 +7,4 @@ namespace Lkrms\Contract;
  * return a modified instance
  *
  */
-interface IImmutable
-{
-}
+interface IImmutable {}

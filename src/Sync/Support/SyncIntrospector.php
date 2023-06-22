@@ -5,14 +5,18 @@ namespace Lkrms\Sync\Support;
 use Closure;
 use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IProvider;
+use Lkrms\Contract\IProviderContext;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Introspector;
+use Lkrms\Support\IntrospectorKeyTargets;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Utility\Test;
 use RuntimeException;
 
 /**
@@ -135,7 +139,7 @@ final class SyncIntrospector extends Introspector
      *
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(array, ISyncProvider, IContainer|ISyncContext|null=)
+     * @return Closure(mixed[], ISyncProvider, IContainer|ISyncContext|null=)
      * ```php
      * function (array $array, ISyncProvider $provider, IContainer|ISyncContext|null $context = null)
      * ```
@@ -186,7 +190,7 @@ final class SyncIntrospector extends Introspector
      *
      * @param bool $strict If `true`, return a closure that throws an exception
      * if any data would be discarded.
-     * @return Closure(array, ISyncProvider, IContainer|ISyncContext|null=)
+     * @return Closure(mixed[], ISyncProvider, IContainer|ISyncContext|null=)
      * ```php
      * function (array $array, ISyncProvider $provider, IContainer|ISyncContext|null $context = null)
      * ```
@@ -294,6 +298,66 @@ final class SyncIntrospector extends Introspector
         return $closure ? $closure->bindTo($provider) : null;
     }
 
+    protected function getKeyTargets(array $keys, bool $withParameters, bool $strict, array $keyClosures = []): IntrospectorKeyTargets
+    {
+        $keys = $this->_Class->Normaliser
+            ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
+            : array_combine($keys, $keys);
+
+        // Get keys left behind by constructor parameters, declared properties
+        // and magic methods
+        $unclaimed = array_diff_key(
+            $keys,
+            $this->_Class->Parameters,
+            array_flip($this->_Class->NormalisedKeys),
+        );
+
+        if (!$unclaimed) {
+            return parent::getKeyTargets($keys, $withParameters, $strict);
+        }
+
+        // Check for any that end with `_id`, `_ids` or similar that would match
+        // a property or magic method otherwise
+        foreach ($unclaimed as $normalisedKey => $key) {
+            if (!preg_match('/^(.*)(?:_|\b|(?<=[[:lower:]])(?=[[:upper:]]))id(s?)$/i', $key, $matches)) {
+                continue;
+            }
+            $match = $this->_Class->Normaliser
+                ? ($this->_Class->CarefulNormaliser)($matches[1])
+                : $matches[1];
+            if (!in_array($match, $this->_Class->NormalisedKeys, true)) {
+                continue;
+            }
+            // Require a list of values if the key is plural (`_ids` as opposed
+            // to `_id`)
+            $list = (bool) $matches[2];
+            $closures[$match] =
+                function (array $data, $entity, ?IProvider $provider, ?IProviderContext $context) use ($key, $match, $list): void {
+                    if (!($isList = Test::isListArray($data[$key])) && $list) {
+                        $entity->{$key} = $data[$key];
+                        return;
+                    }
+                    if (!($entity instanceof ISyncEntity) ||
+                            !($provider instanceof ISyncProvider) ||
+                            !($context instanceof ISyncContext)) {
+                        $entity->{$match} = $isList
+                            ? array_map(fn($id) => ['@id' => $id], $data[$key])
+                            : ['@id' => $data[$key]];
+                        return;
+                    }
+                    if ($isList) {
+                        DeferredSyncEntity::deferList($provider, $context, [get_class($entity), $match], $data[$key], $entity->{$match});
+                        return;
+                    }
+                    DeferredSyncEntity::defer($provider, $context, [get_class($entity), $match], $data[$key], $entity->{$match});
+                };
+            // Prevent duplication of the key as a meta value
+            unset($keys[$normalisedKey]);
+        }
+
+        return parent::getKeyTargets($keys, $withParameters, $strict, $closures ?? []);
+    }
+
     /**
      * @return Closure(IContainer, array, ISyncProvider|null, ISyncContext|null,
      * IHierarchy|null, DateFormatter|null, string|null)
@@ -309,9 +373,10 @@ final class SyncIntrospector extends Introspector
         }
 
         $targets = $this->getKeyTargets($keys, true, $strict);
-        [$parameterKeys, $passByRefKeys, $propertyKeys, $methodKeys, $metaKeys, $dateKeys] = [
+        [$parameterKeys, $passByRefKeys, $callbackKeys, $propertyKeys, $methodKeys, $metaKeys, $dateKeys] = [
             $targets->Parameters,
             $targets->PassByRefParameters,
+            $targets->Callbacks,
             $targets->Properties,
             $targets->Methods,
             $targets->MetaProperties,
@@ -336,6 +401,9 @@ final class SyncIntrospector extends Introspector
         }
         if ($methodKeys) {
             $closure = $this->_getMethodClosure($methodKeys, $closure);
+        }
+        if ($callbackKeys) {
+            $closure = $this->_getCallbackClosure($callbackKeys, $closure);
         }
         if ($metaKeys) {
             $closure = $this->_getMetaClosure($metaKeys, $closure);

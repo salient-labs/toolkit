@@ -108,7 +108,5 @@ final class Err implements IFacade
         }
     }
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

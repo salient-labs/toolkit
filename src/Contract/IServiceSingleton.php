@@ -6,6 +6,4 @@ namespace Lkrms\Contract;
  * Provides services via a shared instance created once per container
  *
  */
-interface IServiceSingleton extends IService
-{
-}
+interface IServiceSingleton extends IService {}

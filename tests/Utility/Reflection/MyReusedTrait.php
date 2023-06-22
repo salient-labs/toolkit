@@ -15,7 +15,5 @@ trait MyReusedTrait
     /**
      * MyReusedTrait::MyDocumentedMethod() PHPDoc
      */
-    public function MyDocumentedMethod()
-    {
-    }
+    public function MyDocumentedMethod() {}
 }

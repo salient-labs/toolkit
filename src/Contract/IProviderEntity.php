@@ -9,6 +9,4 @@ namespace Lkrms\Contract;
  * @template TProviderContext of IProviderContext
  * @extends IProvidable<TProvider,TProviderContext>
  */
-interface IProviderEntity extends IEntity, IProvidable
-{
-}
+interface IProviderEntity extends IEntity, IProvidable {}
