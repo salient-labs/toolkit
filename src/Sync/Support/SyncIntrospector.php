@@ -346,10 +346,10 @@ final class SyncIntrospector extends Introspector
                         return;
                     }
                     if ($isList) {
-                        DeferredSyncEntity::deferList($provider, $context, [get_class($entity), $match], $data[$key], $entity->{$match});
+                        DeferredSyncEntity::deferList($provider, $context, [$entity, $match], $data[$key]);
                         return;
                     }
-                    DeferredSyncEntity::defer($provider, $context, [get_class($entity), $match], $data[$key], $entity->{$match});
+                    DeferredSyncEntity::defer($provider, $context, [$entity, $match], $data[$key]);
                 };
             // Prevent duplication of the key as a meta value
             unset($keys[$normalisedKey]);
