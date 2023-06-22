@@ -15,7 +15,5 @@ abstract class MyBaseClass
     /**
      * MyBaseClass::MyDocumentedMethod() PHPDoc
      */
-    public function MyDocumentedMethod()
-    {
-    }
+    public function MyDocumentedMethod() {}
 }

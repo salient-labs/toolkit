@@ -10,7 +10,5 @@ use Lkrms\Contract\IDictionary;
  */
 abstract class Dictionary implements IDictionary
 {
-    final private function __construct()
-    {
-    }
+    final private function __construct() {}
 }

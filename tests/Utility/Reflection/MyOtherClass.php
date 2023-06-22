@@ -5,6 +5,4 @@ namespace Lkrms\Tests\Utility\Reflection;
 /**
  * MyOtherClass
  */
-class MyOtherClass
-{
-}
+class MyOtherClass {}

@@ -7,6 +7,4 @@ namespace Lkrms\Contract;
  *
  * @template TValue
  */
-interface IEnumeration
-{
-}
+interface IEnumeration {}

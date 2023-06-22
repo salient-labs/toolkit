@@ -41,7 +41,5 @@ class MyClass extends MyBaseClass implements MyInterface
     /**
      * MyClass::MyDocumentedMethod() PHPDoc
      */
-    public function MyDocumentedMethod()
-    {
-    }
+    public function MyDocumentedMethod() {}
 }

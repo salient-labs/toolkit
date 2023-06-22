@@ -13,7 +13,5 @@ use Lkrms\Contract\IEnumeration;
  */
 abstract class Enumeration implements IEnumeration
 {
-    final private function __construct()
-    {
-    }
+    final private function __construct() {}
 }

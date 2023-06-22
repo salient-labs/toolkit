@@ -9,6 +9,4 @@ use Psr\Container\NotFoundExceptionInterface;
  * to an instance
  *
  */
-class ContainerServiceNotFoundException extends ContainerException implements NotFoundExceptionInterface
-{
-}
+class ContainerServiceNotFoundException extends ContainerException implements NotFoundExceptionInterface {}

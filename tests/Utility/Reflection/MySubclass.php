@@ -15,7 +15,5 @@ class MySubclass extends MyClass implements MyOtherInterface
     /**
      * MySubclass::MyDocumentedMethod() PHPDoc
      */
-    public function MyDocumentedMethod()
-    {
-    }
+    public function MyDocumentedMethod() {}
 }

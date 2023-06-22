@@ -17,7 +17,5 @@ trait MyBaseTrait
     /**
      * MyBaseTrait::MyDocumentedMethod() PHPDoc
      */
-    public function MyDocumentedMethod()
-    {
-    }
+    public function MyDocumentedMethod() {}
 }

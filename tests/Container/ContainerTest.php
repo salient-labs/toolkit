@@ -210,13 +210,9 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
     }
 }
 
-interface ITestService1
-{
-}
+interface ITestService1 {}
 
-interface ITestService2
-{
-}
+interface ITestService2 {}
 
 class TestServiceImplA implements IService, ITestService1, ITestService2
 {
@@ -231,17 +227,11 @@ class TestServiceImplA implements IService, ITestService1, ITestService2
     }
 }
 
-class TestServiceImplB extends TestServiceImplA implements IServiceSingleton
-{
-}
+class TestServiceImplB extends TestServiceImplA implements IServiceSingleton {}
 
-class TestServiceImplC extends TestServiceImplA implements IServiceShared
-{
-}
+class TestServiceImplC extends TestServiceImplA implements IServiceShared {}
 
-class TestServiceImplD extends TestServiceImplB implements IServiceShared
-{
-}
+class TestServiceImplD extends TestServiceImplB implements IServiceShared {}
 
 trait TestTrait
 {
@@ -305,9 +295,7 @@ class A implements ReceivesContainer, ReceivesService, ReturnsContainer, Returns
  * @template T of IContainer
  * @extends A<T>
  */
-class B extends A
-{
-}
+class B extends A {}
 
 /**
  * @template T of IContainer
@@ -335,6 +323,4 @@ class C implements ReceivesContainer, ReceivesService, ReturnsContainer, Returns
  * @template T of IContainer
  * @extends C<T>
  */
-class D extends C
-{
-}
+class D extends C {}

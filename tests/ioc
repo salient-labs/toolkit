@@ -39,9 +39,7 @@ class Office
     }
 }
 
-class FancyOffice extends Office
-{
-}
+class FancyOffice extends Office {}
 
 class User
 {
