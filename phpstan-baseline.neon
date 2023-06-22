@@ -836,26 +836,6 @@ parameters:
 			path: src/Sync/Support/DbSyncDefinition.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\DeferredSyncEntity\\:\\:__construct\\(\\) has parameter \\$deferred with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Support/DeferredSyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\DeferredSyncEntity\\:\\:__construct\\(\\) has parameter \\$replace with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Support/DeferredSyncEntity.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\DeferredSyncEntity\\:\\:deferList\\(\\) has parameter \\$replace with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Support/DeferredSyncEntity.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\DeferredSyncEntity\\:\\:\\$Replace has no type specified\\.$#"
-			count: 1
-			path: src/Sync/Support/DeferredSyncEntity.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncContext\\:\\:getFilter\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Sync/Support/SyncContext.php

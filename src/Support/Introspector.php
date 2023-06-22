@@ -202,7 +202,7 @@ class Introspector
      * signature to the properties of a new or existing instance
      *
      * @param string[] $keys
-     * @param array<string,Closure(mixed[], TClass): void> $keyClosures Normalised key => closure
+     * @param array<string,Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void> $keyClosures Normalised key => closure
      * @return IntrospectorKeyTargets<TClass>
      */
     protected function getKeyTargets(array $keys, bool $withParameters, bool $strict, array $keyClosures = []): IntrospectorKeyTargets
@@ -496,7 +496,7 @@ class Introspector
     }
 
     /**
-     * @param array<Closure(mixed[], TClass): void> $callbacks
+     * @param array<Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void> $callbacks
      * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
      * ```php
      * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
@@ -507,7 +507,7 @@ class Introspector
         return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ...$args) use ($callbacks, $closure) {
             $obj = $closure($container, $array, $provider, $context, ...$args);
             foreach ($callbacks as $callback) {
-                $callback($array, $obj);
+                $callback($array, $obj, $provider, $context);
             }
 
             return $obj;

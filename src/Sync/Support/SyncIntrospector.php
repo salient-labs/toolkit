@@ -5,6 +5,8 @@ namespace Lkrms\Sync\Support;
 use Closure;
 use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IProvider;
+use Lkrms\Contract\IProviderContext;
 use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
@@ -330,12 +332,24 @@ final class SyncIntrospector extends Introspector
             // to `_id`)
             $list = (bool) $matches[2];
             $closures[$match] =
-                function (array $data, $entity) use ($key, $match, $list): void {
-                    if (!$list || Test::isListArray($data[$key])) {
-                        $entity->{$match} = $data[$key];
+                function (array $data, $entity, ?IProvider $provider, ?IProviderContext $context) use ($key, $match, $list): void {
+                    if (!($isList = Test::isListArray($data[$key])) && $list) {
+                        $entity->{$key} = $data[$key];
                         return;
                     }
-                    $entity->{$key} = $data[$key];
+                    if (!($entity instanceof ISyncEntity) ||
+                            !($provider instanceof ISyncProvider) ||
+                            !($context instanceof ISyncContext)) {
+                        $entity->{$match} = $isList
+                            ? array_map(fn($id) => ['@id' => $id], $data[$key])
+                            : ['@id' => $data[$key]];
+                        return;
+                    }
+                    if ($isList) {
+                        DeferredSyncEntity::deferList($provider, $context, [get_class($entity), $match], $data[$key], $entity->{$match});
+                        return;
+                    }
+                    DeferredSyncEntity::defer($provider, $context, [get_class($entity), $match], $data[$key], $entity->{$match});
                 };
             // Prevent duplication of the key as a meta value
             unset($keys[$normalisedKey]);

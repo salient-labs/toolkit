@@ -4,6 +4,8 @@ namespace Lkrms\Support;
 
 use Closure;
 use Lkrms\Concern\TFullyReadable;
+use Lkrms\Contract\IProvider;
+use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\IReadable;
 
 /**
@@ -11,7 +13,7 @@ use Lkrms\Contract\IReadable;
  *
  * @property-read array<string,int> $Parameters Key => constructor parameter index
  * @property-read array<string,true> $PassByRefParameters Key => `true`
- * @property-read array<Closure(mixed[], TClass): void> $Callbacks Arbitrary callbacks
+ * @property-read array<Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void> $Callbacks Arbitrary callbacks
  * @property-read array<string,string> $Methods Key => "magic" property method
  * @property-read array<string,string> $Properties Key => declared property name
  * @property-read string[] $MetaProperties Arbitrary keys
@@ -42,7 +44,7 @@ final class IntrospectorKeyTargets implements IReadable
     /**
      * Arbitrary callbacks
      *
-     * @var array<Closure(mixed[], TClass): void>
+     * @var array<Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void>
      */
     protected $Callbacks;
 
@@ -77,7 +79,7 @@ final class IntrospectorKeyTargets implements IReadable
     /**
      * @param array<string,int> $parameters
      * @param array<string,true> $passByRefProperties
-     * @param array<Closure(mixed[], TClass): void> $callbacks
+     * @param array<Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void> $callbacks
      * @param array<string,string> $methods
      * @param array<string,string> $properties
      * @param string[] $metaProperties
