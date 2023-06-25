@@ -206,16 +206,6 @@ parameters:
 			path: src/Contract/IProviderContext.php
 
 		-
-			message: "#^Method Lkrms\\\\Contract\\\\IReadable\\:\\:__get\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Contract/IReadable.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IWritable\\:\\:__set\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Contract/IWritable.php
-
-		-
 			message: "#^Method Lkrms\\\\Curler\\\\Contract\\\\ICurlerPage\\:\\:entities\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Curler/Contract/ICurlerPage.php

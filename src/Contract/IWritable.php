@@ -16,6 +16,9 @@ interface IWritable
      */
     public static function getWritable(): array;
 
+    /**
+     * @param mixed $value
+     */
     public function __set(string $name, $value): void;
 
     public function __unset(string $name): void;
