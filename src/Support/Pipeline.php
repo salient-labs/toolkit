@@ -36,8 +36,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     private $Payload;
 
     /**
-     * @var int
-     * @phpstan-var ArrayKeyConformity::*
+     * @var ArrayKeyConformity::*
      */
     private $PayloadConformity;
 
@@ -52,26 +51,27 @@ final class Pipeline extends FluentInterface implements IPipeline
     private $Stream;
 
     /**
-     * @var array<IPipe|callable|class-string<IPipe>>
-     * @phpstan-var array<IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline, TArgument): (TInput|TOutput))|class-string<IPipe>>
+     * @var array<IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>>>
      */
     private $Pipes = [];
 
     /**
-     * @var callable|null
-     * @phpstan-var (callable(TInput, IPipeline, TArgument): (TInput|TOutput))|null
+     * @var (callable(TInput, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput))|null
      */
     private $After;
 
     /**
-     * @var callable|null
-     * @phpstan-var (callable(TInput, IPipeline, TArgument): TOutput)|null
+     * @var (callable(TInput, IPipeline<TInput,TOutput,TArgument>, TArgument): TOutput)|null
      */
     private $Then;
 
     /**
-     * @var callable|null
-     * @phpstan-var (callable(TOutput, IPipeline, TArgument): bool)|null
+     * @var bool
+     */
+    private $CollectThen = false;
+
+    /**
+     * @var (callable(TOutput, IPipeline<TInput,TOutput,TArgument>, TArgument): bool)|null
      */
     private $Unless;
 
@@ -80,6 +80,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         $this->Container = $container;
     }
 
+    /**
+     * @return IPipeline<TInput,TOutput,TArgument>
+     */
     public static function create(?IContainer $container = null): IPipeline
     {
         return new self($container);
@@ -183,6 +186,18 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $this->then($callback);
     }
 
+    public function collectThen(callable $callback)
+    {
+        if ($this->Then) {
+            throw new LogicException(static::class . '::then() has already been applied');
+        }
+        $clone = clone $this;
+        $clone->Then = $callback;
+        $clone->CollectThen = true;
+
+        return $clone;
+    }
+
     public function unless(callable $filter)
     {
         if ($this->Unless) {
@@ -205,8 +220,12 @@ final class Pipeline extends FluentInterface implements IPipeline
 
     public function run()
     {
-        if ($this->Stream) {
-            throw new LogicException(static::class . '::run() cannot be called after ' . static::class . '::stream()');
+        if ($this->Stream || $this->CollectThen) {
+            throw new LogicException(
+                static::class . '::run() cannot be called after '
+                    . static::class . '::stream() or '
+                    . static::class . '::collectThen()'
+            );
         }
 
         $result = $this->getClosure()(
@@ -226,10 +245,14 @@ final class Pipeline extends FluentInterface implements IPipeline
     public function start(): iterable
     {
         if (!$this->Stream) {
-            throw new LogicException(static::class . '::stream() must be called before ' . static::class . '::start()');
+            throw new LogicException(
+                static::class . '::stream() must be called before '
+                    . static::class . '::start()'
+            );
         }
 
         $closure = $this->getClosure();
+        $results = [];
         foreach ($this->Payload as $key => $payload) {
             $result = $closure(
                 $this->After
@@ -242,6 +265,20 @@ final class Pipeline extends FluentInterface implements IPipeline
                 continue;
             }
 
+            if ($this->CollectThen) {
+                $results[$key] = $result;
+                continue;
+            }
+
+            yield $key => $result;
+        }
+
+        if (!$this->CollectThen || !$results) {
+            return;
+        }
+
+        $results = ($this->Then)($results, $this, $this->Arg);
+        foreach ($results as $key => $result) {
             yield $key => $result;
         }
     }
@@ -251,16 +288,20 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $this->PayloadConformity;
     }
 
-    public function runThrough(IPipeline $next)
+    public function runInto(IPipeline $next)
     {
         return $next->send($this->run(), $this->Arg);
     }
 
-    public function startThrough(IPipeline $next)
+    public function startInto(IPipeline $next)
     {
         return $next->stream($this->start(), $this->Arg);
     }
 
+    /**
+     * @param mixed $payload
+     * @return never
+     */
     private function handleException($payload, Throwable $ex)
     {
         throw $ex;
@@ -293,7 +334,7 @@ final class Pipeline extends FluentInterface implements IPipeline
                         }
                     };
             },
-            $this->Then
+            $this->Then && !$this->CollectThen
                 ? fn($result) => ($this->Then)($result, $this, $this->Arg)
                 : fn($result) => $result
         );

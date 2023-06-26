@@ -329,7 +329,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                         $this->getPipelineToBackend()
                              ->send($entity, [$operation, $ctx, $entity, ...$args])
                              ->then(fn($data) => ($httpRunner)($ctx, $data, ...$args))
-                             ->runThrough($this->getPipelineToEntity())
+                             ->runInto($this->getPipelineToEntity())
                              ->withConformity($this->Conformity)
                              ->run();
 
@@ -352,7 +352,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                                     ->stream($entities, [$operation, $ctx, &$entity, ...$args])
                                     ->after(function (ISyncEntity $e) use (&$entity) { return $entity = $e; })
                                     ->then(fn($data) => ($httpRunner)($ctx, $data, ...$args))
-                                    ->startThrough($this->getPipelineToEntity())
+                                    ->startInto($this->getPipelineToEntity())
                                     ->withConformity($this->Conformity)
                                     ->start();
                     };
