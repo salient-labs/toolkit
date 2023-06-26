@@ -42,8 +42,8 @@ final class DbSyncDefinition extends SyncDefinition implements HasBuilder
      * @phpstan-param SyncFilterPolicy::* $filterPolicy
      * @param array<int,Closure> $overrides
      * @phpstan-param array<SyncOperation::*,Closure> $overrides
-     * @phpstan-param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
-     * @phpstan-param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
+     * @phpstan-param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
+     * @phpstan-param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
      */
     public function __construct(
         string $entity,

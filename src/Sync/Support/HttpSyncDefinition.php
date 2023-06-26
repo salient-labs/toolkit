@@ -27,10 +27,9 @@ use UnexpectedValueException;
  * Providers can use {@see HttpSyncDefinition} instead of hand-coded sync
  * operations to service HTTP backends declaratively.
  *
- * For entities that should be serviced this way, override
- * {@see HttpSyncProvider::getHttpDefinition()} and return an
- * {@see HttpSyncDefinition} or {@see HttpSyncDefinitionBuilder} that describes
- * the relevant endpoints.
+ * To service entities this way, override
+ * {@see HttpSyncProvider::buildHttpDefinition()} and return an
+ * {@see HttpSyncDefinitionBuilder} that describes the relevant endpoints.
  *
  * If more than one implementation of a sync operation is available for an
  * entity, the order of precedence is as follows:
@@ -168,6 +167,11 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     protected $Callback;
 
     /**
+     * @var mixed[]|null
+     */
+    private $Args;
+
+    /**
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param int[] $operations
@@ -290,6 +294,20 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         return $clone;
     }
 
+    /**
+     * Replace the arguments passed to the operation
+     *
+     * @param mixed ...$args
+     * @return $this
+     */
+    public function withArgs(...$args)
+    {
+        $clone = clone $this;
+        $clone->Args = $args;
+
+        return $clone;
+    }
+
     protected function getClosure(int $operation): ?Closure
     {
         // Return null if no endpoint path has been provided
@@ -408,6 +426,10 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         $def = $def->Callback
             ? ($def->Callback)($def, $operation, $ctx, ...$args)
             : $def;
+
+        if ($def->Args !== null) {
+            $args = $def->Args;
+        }
 
         $curler = $this->Provider->getCurler($def->Path, $def->Expiry, $def->Headers, $def->Pager);
 

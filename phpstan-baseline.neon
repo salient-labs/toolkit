@@ -686,46 +686,6 @@ parameters:
 			path: src/Sync/Concept/DbSyncProvider.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:__construct\\(\\) has parameter \\$dataToEntityPipeline with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:__construct\\(\\) has parameter \\$entityToDataPipeline with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:applyFilterPolicy\\(\\) has parameter \\$empty with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:getPipelineToBackend\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:getPipelineToEntity\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^PHPDoc tag @var has no value type specified in iterable type array\\.$#"
-			count: 3
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:\\$DataToEntityPipeline type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:\\$EntityToDataPipeline type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncProvider\\:\\:__call\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Sync/Concept/SyncProvider.php
@@ -824,16 +784,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncProvider\\:\\:getDefinition\\(\\) return type with generic interface Lkrms\\\\Sync\\\\Contract\\\\ISyncDefinition does not specify its types\\: TEntity, TProvider$#"
 			count: 1
 			path: src/Sync/Contract/ISyncProvider.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\DbSyncDefinition\\:\\:__construct\\(\\) has parameter \\$dataToEntityPipeline with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/DbSyncDefinition.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\DbSyncDefinition\\:\\:__construct\\(\\) has parameter \\$entityToDataPipeline with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/DbSyncDefinition.php
 
 		-
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncContext\\:\\:getFilter\\(\\) return type has no value type specified in iterable type array\\.$#"

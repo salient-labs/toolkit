@@ -77,7 +77,7 @@ abstract class HttpSyncProvider extends SyncProvider
     final public function getDefinition(string $entity): ISyncDefinition
     {
         /** @var ISyncDefinition<T,static> */
-        $def = $this->getHttpDefinition(
+        $def = $this->buildHttpDefinition(
                         $entity,
                         HttpSyncDefinition::build()
                             ->entity($entity)
@@ -148,7 +148,7 @@ abstract class HttpSyncProvider extends SyncProvider
      * with `entity()` and `provider()` already applied.
      * @return HttpSyncDefinitionBuilder<T,static>
      */
-    protected function getHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
+    protected function buildHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
     {
         return $defB;
     }
