@@ -12,7 +12,7 @@ use Lkrms\Support\Catalog\ArrayMapperFlag;
  * @template TOutput
  * @template TArgument
  */
-interface IPipeline extends IImmutable
+interface IPipeline extends IFluentInterface, IImmutable
 {
     /**
      * Set the payload

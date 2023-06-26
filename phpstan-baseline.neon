@@ -56,11 +56,6 @@ parameters:
 			path: src/Concept/Facade.php
 
 		-
-			message: "#^Method Lkrms\\\\Concept\\\\FluentInterface\\:\\:forEach\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Concept/FluentInterface.php
-
-		-
 			message: "#^Method Lkrms\\\\Console\\\\Catalog\\\\ConsoleLevel\\:\\:getNameMap\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Console/Catalog/ConsoleLevel.php
