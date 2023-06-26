@@ -111,14 +111,14 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     protected static function getValueMap(): array
     {
         return [
-            'create' => self::CREATE,
-            'read' => self::READ,
-            'update' => self::UPDATE,
-            'delete' => self::DELETE,
-            'create_list' => self::CREATE_LIST,
-            'read_list' => self::READ_LIST,
-            'update_list' => self::UPDATE_LIST,
-            'delete_list' => self::DELETE_LIST,
+            'CREATE' => self::CREATE,
+            'READ' => self::READ,
+            'UPDATE' => self::UPDATE,
+            'DELETE' => self::DELETE,
+            'CREATE_LIST' => self::CREATE_LIST,
+            'READ_LIST' => self::READ_LIST,
+            'UPDATE_LIST' => self::UPDATE_LIST,
+            'DELETE_LIST' => self::DELETE_LIST,
         ];
     }
 
