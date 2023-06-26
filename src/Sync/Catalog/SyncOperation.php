@@ -26,7 +26,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * - `POST /<entity_name>`
      * - `INSERT INTO <entity_name> ...`
      */
-    public const CREATE = 0;
+    public const CREATE = 1;
 
     /**
      * Get an entity from the backend
@@ -36,7 +36,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * - `GET /<entity_name>`
      * - `SELECT ... FROM <entity_name> WHERE <id_field> = <id>`
      */
-    public const READ = 1;
+    public const READ = 2;
 
     /**
      * Update an entity in the backend
@@ -46,7 +46,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * - `PATCH /<entity_name>/<id>`
      * - `UPDATE <entity_name> WHERE ...`
      */
-    public const UPDATE = 2;
+    public const UPDATE = 4;
 
     /**
      * Delete an entity from the backend
@@ -55,7 +55,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * - `DELETE /<entity_name>/<id>`
      * - `DELETE FROM <entity_name> WHERE ...`
      */
-    public const DELETE = 3;
+    public const DELETE = 8;
 
     /**
      * Add a list of entities to the backend
@@ -64,7 +64,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * - `POST /<entity_name>`
      * - `INSERT INTO <entity_name> ...`
      */
-    public const CREATE_LIST = 4;
+    public const CREATE_LIST = 16;
 
     /**
      * Get a list of entities from the backend
@@ -73,7 +73,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * - `GET /<entity_name>`
      * - `SELECT ... FROM <entity_name>`
      */
-    public const READ_LIST = 5;
+    public const READ_LIST = 32;
 
     /**
      * Update a list of entities in the backend
@@ -83,7 +83,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * - `PATCH /<entity_name>`
      * - `UPDATE <entity_name> WHERE ...`
      */
-    public const UPDATE_LIST = 6;
+    public const UPDATE_LIST = 64;
 
     /**
      * Delete a list of entities from the backend
@@ -92,7 +92,7 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      * - `DELETE /<entity_name>`
      * - `DELETE FROM <entity_name> WHERE ...`
      */
-    public const DELETE_LIST = 7;
+    public const DELETE_LIST = 128;
 
     protected static function getNameMap(): array
     {
@@ -123,33 +123,14 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
     }
 
     /**
-     * Get a list of all operations
-     *
-     * @phpstan-return (SyncOperation::*)[]
-     */
-    public static function getAll(): array
-    {
-        return [
-            self::CREATE,
-            self::READ,
-            self::UPDATE,
-            self::DELETE,
-            self::CREATE_LIST,
-            self::READ_LIST,
-            self::UPDATE_LIST,
-            self::DELETE_LIST,
-        ];
-    }
-
-    /**
      * True if an operation is CREATE_LIST, READ_LIST, UPDATE_LIST or
      * DELETE_LIST
      *
-     * @phpstan-param SyncOperation::* $operation
-     * @phpstan-return ($operation is SyncOperation::*_LIST ? true : false)
+     * @param SyncOperation::* $operation
+     * @return ($operation is SyncOperation::*_LIST ? true : false)
      */
     public static function isList(int $operation): bool
     {
-        return (bool) ($operation & 4);
+        return in_array($operation, SyncOperations::ALL_LIST, true);
     }
 }

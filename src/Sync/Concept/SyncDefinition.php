@@ -11,6 +11,7 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
+use Lkrms\Sync\Catalog\SyncOperations;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -201,7 +202,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         // Combine overridden operations with $operations and discard any
         // invalid values
         $this->Operations = array_intersect(
-            SyncOperation::getAll(),
+            SyncOperations::ALL,
             array_merge(array_values($operations), array_keys($overrides))
         );
         // Discard any overrides for invalid operations
