@@ -19,7 +19,7 @@ interface ISyncDefinition extends IImmutable
      * Return a closure that uses the provider to perform a sync operation on
      * the entity
      *
-     * @phpstan-param SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @return Closure|null `null` if `$operation` is not supported, otherwise a
      * closure with the correct signature for the sync operation.
      * @phpstan-return (

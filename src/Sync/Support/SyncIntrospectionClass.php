@@ -79,8 +79,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
      * Used only to map "magic" method names to sync operations. Providers
      * aren't required to service any of them.
      *
-     * @var array<string,array{0:int,1:class-string<ISyncEntity>}>
-     * @phpstan-var array<string,array{0:SyncOperation::*,1:class-string<ISyncEntity>}>
+     * @var array<string,array{0:SyncOperation::*,1:class-string<ISyncEntity>}>
      */
     public $SyncOperationMagicMethods = [];
 

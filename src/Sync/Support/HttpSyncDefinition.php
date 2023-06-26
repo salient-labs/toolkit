@@ -9,14 +9,19 @@ use Lkrms\Contract\IPipeline;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
+use Lkrms\Facade\Convert;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\HttpRequestMethod;
+use Lkrms\Support\Pipeline;
+use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use UnexpectedValueException;
 
@@ -52,6 +57,7 @@ use UnexpectedValueException;
  * @property-read ICurlerPager|null $Pager The pagination handler for the endpoint servicing the entity
  * @property-read int|null $Expiry The time, in seconds, before responses from the provider expire
  * @property-read array<SyncOperation::*,string> $MethodMap An array that maps sync operations to HTTP request methods
+ * @property-read bool $SyncOneEntityPerRequest If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request
  * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before every sync operation
  *
  * @extends SyncDefinition<TEntity,TProvider>
@@ -157,6 +163,14 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     protected $MethodMap;
 
     /**
+     * If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on
+     * one entity per HTTP request
+     *
+     * @var bool
+     */
+    protected $SyncOneEntityPerRequest;
+
+    /**
      * A callback applied to the definition before every sync operation
      *
      * The callback must return the {@see HttpSyncDefinition} it receives even
@@ -174,14 +188,13 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     /**
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
-     * @param int[] $operations
-     * @phpstan-param array<SyncOperation::*> $operations
-     * @phpstan-param ArrayKeyConformity::* $conformity
-     * @phpstan-param SyncFilterPolicy::* $filterPolicy
-     * @param array<int,Closure> $overrides
-     * @phpstan-param array<SyncOperation::*,Closure> $overrides
-     * @phpstan-param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
-     * @phpstan-param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
+     * @param array<SyncOperation::*> $operations
+     * @param ArrayKeyConformity::* $conformity
+     * @param SyncFilterPolicy::* $filterPolicy
+     * @param array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $overrides
+     * @param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $pipelineFromBackend
+     * @param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $pipelineToBackend
+     * @param SyncEntitySource::*|null $returnEntitiesFrom
      * @param mixed[]|null $query
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
      * @param array<SyncOperation::*,string> $methodMap
@@ -199,9 +212,11 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
         ?int $expiry = -1,
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,
+        bool $syncOneEntityPerRequest = false,
         array $overrides = [],
-        ?IPipeline $dataToEntityPipeline = null,
-        ?IPipeline $entityToDataPipeline = null
+        ?IPipeline $pipelineFromBackend = null,
+        ?IPipeline $pipelineToBackend = null,
+        ?int $returnEntitiesFrom = SyncEntitySource::HTTP_WRITE
     ) {
         parent::__construct(
             $entity,
@@ -210,8 +225,9 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             $conformity,
             $filterPolicy,
             $overrides,
-            $dataToEntityPipeline,
-            $entityToDataPipeline
+            $pipelineFromBackend,
+            $pipelineToBackend,
+            $returnEntitiesFrom
         );
 
         $this->Path = $path;
@@ -221,6 +237,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         $this->Callback = $callback;
         $this->Expiry = $expiry;
         $this->MethodMap = $methodMap;
+        $this->SyncOneEntityPerRequest = $syncOneEntityPerRequest;
     }
 
     /**
@@ -329,14 +346,13 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                         $this->getPipelineToBackend()
                              ->send($entity, [$operation, $ctx, $entity, ...$args])
                              ->then(fn($data) => ($httpRunner)($ctx, $data, ...$args))
-                             ->runInto($this->getPipelineToEntity())
-                             ->withConformity($this->Conformity)
+                             ->runInto($this->getRoundTripPipeline($operation))
                              ->run();
 
             case SyncOperation::READ:
                 return
                     fn(ISyncContext $ctx, $id, ...$args): ISyncEntity =>
-                        $this->getPipelineToEntity()
+                        $this->getPipelineFromBackend()
                              ->send(($httpRunner)($ctx, $id, ...$args), [$operation, $ctx, $id, ...$args])
                              ->withConformity($this->Conformity)
                              ->run();
@@ -345,22 +361,24 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             case SyncOperation::UPDATE_LIST:
             case SyncOperation::DELETE_LIST:
                 $entity = null;
-
                 return
                     function (ISyncContext $ctx, iterable $entities, ...$args) use (&$entity, $operation, $httpRunner): iterable {
                         return $this->getPipelineToBackend()
                                     ->stream($entities, [$operation, $ctx, &$entity, ...$args])
                                     ->after(function (ISyncEntity $e) use (&$entity) { return $entity = $e; })
-                                    ->then(fn($data) => ($httpRunner)($ctx, $data, ...$args))
-                                    ->startInto($this->getPipelineToEntity())
-                                    ->withConformity($this->Conformity)
+                                    ->if(
+                                        $this->SyncOneEntityPerRequest,
+                                        fn(IPipeline $p) => $p->then(fn($data) => ($httpRunner)($ctx, $data, ...$args)),
+                                        fn(IPipeline $p) => $p->collectThen(fn($data) => Convert::toList(($httpRunner)($ctx, $data, ...$args)))
+                                    )
+                                    ->startInto($this->getRoundTripPipeline($operation))
                                     ->start();
                     };
 
             case SyncOperation::READ_LIST:
                 return
                     fn(ISyncContext $ctx, ...$args): iterable =>
-                        $this->getPipelineToEntity()
+                        $this->getPipelineFromBackend()
                              ->stream(($httpRunner)($ctx, ...$args), [$operation, $ctx, ...$args])
                              ->withConformity($this->Conformity)
                              ->start();
@@ -372,8 +390,8 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     /**
      * Get a closure to perform a sync operation via HTTP
      *
-     * @phpstan-param SyncOperation::* $operation
-     * @phpstan-return Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]
+     * @param SyncOperation::* $operation
+     * @return Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]
      */
     private function getHttpOperationClosure(int $operation): Closure
     {
@@ -409,8 +427,8 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     /**
      * Run a sync operation closure prepared earlier
      *
-     * @phpstan-param (Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]) $httpClosure
-     * @phpstan-param SyncOperation::* $operation
+     * @param (Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]) $httpClosure
+     * @param int&SyncOperation::* $operation
      * @param mixed ...$args
      * @return mixed[]
      */
@@ -439,6 +457,27 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         }
 
         return ($httpClosure)($curler, $def->Query, $args[0] ?? null);
+    }
+
+    /**
+     * @param int&SyncOperation::* $operation
+     * @return IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>
+     */
+    private function getRoundTripPipeline(int $operation): IPipeline
+    {
+        switch ($this->ReturnEntitiesFrom) {
+            case SyncEntitySource::SYNC_OPERATION:
+                return (new Pipeline())
+                    ->through(fn($payload, Closure $next, $pipeline, array $arg) => $next($arg[2]));
+
+            case SyncEntitySource::HTTP_WRITE:
+                return $this->getPipelineFromBackend();
+
+            default:
+                throw new SyncInvalidEntitySourceException(
+                    $this->Provider, $this->Entity, $operation, $this->ReturnEntitiesFrom
+                );
+        }
     }
 
     /**
@@ -472,6 +511,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             'Pager',
             'Expiry',
             'MethodMap',
+            'SyncOneEntityPerRequest',
             'Callback',
         ];
     }
