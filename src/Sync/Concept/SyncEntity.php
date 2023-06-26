@@ -640,7 +640,7 @@ abstract class SyncEntity implements ISyncEntity
     /**
      * @param iterable<array-key,mixed[]> $dataList
      * @param ISyncProvider $provider
-     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param ArrayKeyConformity::* $conformity
      * @param ISyncContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */
@@ -658,7 +658,7 @@ abstract class SyncEntity implements ISyncEntity
     /**
      * @param iterable<array-key,mixed[]> $dataList
      * @param ISyncProvider $provider
-     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param ArrayKeyConformity::* $conformity
      * @param ISyncContext|null $context
      * @return iterable<array-key,static>
      */

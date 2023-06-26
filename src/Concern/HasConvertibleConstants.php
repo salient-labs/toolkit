@@ -26,9 +26,9 @@ trait HasConvertibleConstants
     abstract protected static function getNameMap(): array;
 
     /**
-     * Get an array that maps names to values
+     * Get an array that maps uppercase names to values
      *
-     * @return array<string,TValue> Lowercase name => value
+     * @return array<string,TValue> UPPERCASE NAME => value
      */
     abstract protected static function getValueMap(): array;
 
@@ -51,18 +51,16 @@ trait HasConvertibleConstants
      */
     public static function fromName(string $name)
     {
-        if (($map = self::$ValueMaps[static::class] ?? null) === null) {
-            // Add UPPER_CASE names to the map if necessary
-            $map = static::getValueMap();
-            $map += array_combine(array_map('strtoupper', array_keys($map)), $map);
-            self::$ValueMaps[static::class] = $map;
+        if ((self::$ValueMaps[static::class] ?? null) === null) {
+            self::$ValueMaps[static::class] = static::getValueMap();
         }
-        if (($value = $map[$name] ?? $map[strtoupper($name)] ?? null) === null) {
+        if (($value = self::$ValueMaps[static::class][$name]
+                ?? self::$ValueMaps[static::class][strtoupper($name)]
+                ?? null) === null) {
             throw new LogicException(
                 sprintf('Argument #1 ($name) is invalid: %s', $name)
             );
         }
-
         return $value;
     }
 
@@ -76,10 +74,9 @@ trait HasConvertibleConstants
         }
         if (($name = self::$NameMaps[static::class][$value] ?? null) === null) {
             throw new LogicException(
-                sprintf('Argument #1 ($value) is invalid: %d', $value)
+                sprintf('Argument #1 ($value) is invalid: %s', $value)
             );
         }
-
         return $name;
     }
 }

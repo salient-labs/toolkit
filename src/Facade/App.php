@@ -20,11 +20,10 @@ use Lkrms\Utility\Environment;
  * @method static Application getInstance() Get the underlying Application instance
  * @method static bool isLoaded() True if an underlying Application instance has been loaded
  * @method static void unload() Clear the underlying Application instance
+ * @method static Application apply(callable $callback) Move to the next method in the chain after applying a callback to the object (see {@see FluentInterface::apply()})
  * @method static Application bind(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container (see {@see Container::bind()})
  * @method static Application bindIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container if it isn't already registered
- * @method static Application call(callable $callback) Move to the next method in the chain after passing the object to a callback (see {@see FluentInterface::call()})
  * @method static Environment env() Get the Env facade's underlying Environment instance
- * @method static Application forEach(array|object $array, callable $callback) Move to the next method in the chain after passing the object to a callback for each key-value pair in an array (see {@see FluentInterface::forEach()})
  * @method static mixed get(class-string $id, mixed[] $params = []) Get an instance from the container (see {@see Container::get()})
  * @method static string getAppName() Get the basename of the file used to run the script, removing known PHP file extensions and recognised version numbers
  * @method static mixed getAs(class-string $id, class-string $serviceId, mixed[] $params = []) Use one identifier to get an instance from the container and another as its service name (see {@see Container::getAs()})
@@ -40,7 +39,7 @@ use Lkrms\Utility\Environment;
  * @method static string getTempPath() Get a writable directory for the application's ephemeral data
  * @method static bool has(class-string $id) True if the container can resolve an identifier to an instance (see {@see Container::has()})
  * @method static bool hasGlobalContainer() True if the global container is set
- * @method static Application if(bool $condition, callable $then, callable|null $else = null) Move to the next method in the chain after conditionally passing the object to a callback (see {@see FluentInterface::if()})
+ * @method static Application if($condition, callable $then, ?callable $else = null) Move to the next method in the chain after applying a conditional callback to the object (see {@see FluentInterface::if()})
  * @method static Container inContextOf(class-string $id) Apply the contextual bindings of a service to a copy of the container
  * @method static bool inProduction() True if the application is in production, false if it's running from source (see {@see Application::inProduction()})
  * @method static Application instance(class-string $id, mixed $instance) Register an existing instance with the container as a shared binding

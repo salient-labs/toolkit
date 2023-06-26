@@ -222,14 +222,9 @@ final class SyncIntrospector extends Introspector
      *   {@see SyncOperation} via a method
      *
      * @template T of ISyncEntity
-     * @param int $operation A {@see SyncOperation} value.
-     * @phpstan-param SyncOperation::* $operation
-     * @param class-string<T>|SyncIntrospector<T,TIntrospectionClass<T>> $entity
-     * @phpstan-param class-string<T>|self<T,TIntrospectionClass<T>> $entity
+     * @param SyncOperation::* $operation
+     * @param class-string<T>|self<T,TIntrospectionClass<T>> $entity
      * @return Closure(ISyncContext, mixed...)|null
-     * ```php
-     * fn(ISyncContext $ctx, ...$args)
-     * ```
      */
     final public function getDeclaredSyncOperationClosure(int $operation, $entity, ISyncProvider $provider): ?Closure
     {

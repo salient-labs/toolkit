@@ -17,8 +17,7 @@ interface ISyncEntityProvider
      * Perform an arbitrary sync operation on one or more backend entities
      *
      * @internal
-     * @param int $operation A {@see SyncOperation} value.
-     * @phpstan-param SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @return FluentIteratorInterface<array-key,TEntity>|TEntity
      * @phpstan-return (
      *     $operation is SyncOperation::*_LIST
@@ -96,8 +95,7 @@ interface ISyncEntityProvider
      * return an array
      *
      * @internal
-     * @param int $operation One of the {@see SyncOperation}::*_LIST values.
-     * @phpstan-param SyncOperation::*_LIST $operation
+     * @param SyncOperation::*_LIST $operation
      * @return array<TEntity>
      */
     public function runA(int $operation, ...$args): array;

@@ -93,7 +93,26 @@ final class RegularExpression extends Dictionary
      * A valid PHPDoc type
      *
      */
-    public const PHPDOC_TYPE = '(' . self::PHP_FULL_TYPE . '|[[:alpha:]_\x80-\xff](?:(?:-|::)?[[:alnum:]_\x80-\xff]+)*(?:\*)?(?:\[\])?(?:<(?-1)(?:,(?-1))*>)?)';
+    public const PHPDOC_TYPE = '(?x)
+(?(DEFINE)
+  (?<php_type> ' . self::PHP_FULL_TYPE . ' )
+  (?<phpdoc_type> [[:alpha:]_\x80-\xff] (?: -? [[:alnum:]_\x80-\xff]++ )*+ )
+  (?<php_variable> (?: = | \s*+ (?: & \s*+ )? (?: \.\.\. \s*+ )? \$ [[:alpha:]_\x80-\xff] [[:alnum:]_\x80-\xff]*+ \s*+ (?: = \s*+ )? ) )
+)
+(
+  (?: callable | Closure ) \s*+ \(
+    \s*+ (?: (?-1) (?&php_variable)? (?: , \s*+ (?-1) (?&php_variable)? )*+ )?
+  \) (?: \s*+ : \s*+ (?-1) )? |
+  (?: (?&phpdoc_type) | (?&php_type) )
+  (?: :: (?= \* | [[:alpha:]_\x80-\xff] )
+    (?: [[:alpha:]_\x80-\xff] [[:alnum:]_\x80-\xff]*+ )?
+    (?: \* )?
+  )?
+  (?: < (?-1) (?: \s*+ , \s*+ (?-1) )*+ > )?
+  (?: \[\] )?
+  (?: \s*+ (?: \| | & ) \s*+ (?-1) )? |
+  \( \s*+ (?-1) \s*+ \)
+)';
 
     public static function delimit(
         string $regex,

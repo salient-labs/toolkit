@@ -10,6 +10,7 @@ use Lkrms\Facade\Env;
 use Lkrms\Facade\Sync;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -186,8 +187,9 @@ class GenerateSyncProvider extends GenerateCommand
             if (SyncOperation::isList($op)) {
                 $paramDoc = 'iterable<' . $service . '> $' . $camelPlural;
                 $paramCode = 'iterable $' . $camelPlural;
-                $returnDoc = 'iterable<' . $service . '>';
-                $returnCode = 'iterable';
+                $iterator = $this->getFqcnAlias(FluentIteratorInterface::class);
+                $returnDoc = $iterator . '<array-key,' . $service . '>';
+                $returnCode = $iterator;
             } else {
                 $paramDoc = $service . ' $' . $camelClass;
                 $paramCode = $paramDoc;

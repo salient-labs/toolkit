@@ -60,14 +60,14 @@ final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
     protected static function getValueMap(): array
     {
         return [
-            'emergency' => self::EMERGENCY,
-            'alert' => self::ALERT,
-            'critical' => self::CRITICAL,
-            'error' => self::ERROR,
-            'warning' => self::WARNING,
-            'notice' => self::NOTICE,
-            'info' => self::INFO,
-            'debug' => self::DEBUG,
+            'EMERGENCY' => self::EMERGENCY,
+            'ALERT' => self::ALERT,
+            'CRITICAL' => self::CRITICAL,
+            'ERROR' => self::ERROR,
+            'WARNING' => self::WARNING,
+            'NOTICE' => self::NOTICE,
+            'INFO' => self::INFO,
+            'DEBUG' => self::DEBUG,
         ];
     }
 

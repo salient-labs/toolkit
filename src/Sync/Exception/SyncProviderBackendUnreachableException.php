@@ -6,7 +6,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use Throwable;
 
 /**
- * May be thrown by a provider when it can't establish a connection with its
+ * Thrown by a sync provider when it can't establish a connection with its
  * backend
  *
  */

@@ -56,11 +56,6 @@ parameters:
 			path: src/Concept/Facade.php
 
 		-
-			message: "#^Method Lkrms\\\\Concept\\\\FluentInterface\\:\\:forEach\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Concept/FluentInterface.php
-
-		-
 			message: "#^Method Lkrms\\\\Console\\\\Catalog\\\\ConsoleLevel\\:\\:getNameMap\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Console/Catalog/ConsoleLevel.php
@@ -179,51 +174,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Contract\\\\IPipe\\:\\:handle\\(\\) has parameter \\$pipeline with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
 			count: 1
 			path: src/Contract/IPipe.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IPipeline\\:\\:after\\(\\) has parameter \\$callback with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Contract/IPipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IPipeline\\:\\:afterIf\\(\\) has parameter \\$callback with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Contract/IPipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IPipeline\\:\\:then\\(\\) has parameter \\$callback with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Contract/IPipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IPipeline\\:\\:thenIf\\(\\) has parameter \\$callback with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Contract/IPipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IPipeline\\:\\:through\\(\\) has parameter \\$pipes with generic interface Lkrms\\\\Contract\\\\IPipe but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Contract/IPipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IPipeline\\:\\:through\\(\\) has parameter \\$pipes with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Contract/IPipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IPipeline\\:\\:throughCallback\\(\\) has parameter \\$callback with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Contract/IPipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IPipeline\\:\\:unless\\(\\) has parameter \\$filter with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Contract/IPipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IPipeline\\:\\:unlessIf\\(\\) has parameter \\$filter with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Contract/IPipeline.php
 
 		-
 			message: "#^Interface Lkrms\\\\Contract\\\\IProvider extends generic interface Lkrms\\\\Contract\\\\ReturnsContainer but does not specify its types\\: T$#"
@@ -501,91 +451,6 @@ parameters:
 			path: src/Store/TrashStore.php
 
 		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:after\\(\\) has parameter \\$callback with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:afterIf\\(\\) has parameter \\$callback with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:create\\(\\) return type with generic interface Lkrms\\\\Contract\\\\IPipeline does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:handleException\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:handleException\\(\\) has parameter \\$payload with no type specified\\.$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:then\\(\\) has parameter \\$callback with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:thenIf\\(\\) has parameter \\$callback with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:through\\(\\) has parameter \\$pipes with generic interface Lkrms\\\\Contract\\\\IPipe but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:through\\(\\) has parameter \\$pipes with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:throughCallback\\(\\) has parameter \\$callback with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:unless\\(\\) has parameter \\$filter with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\Pipeline\\:\\:unlessIf\\(\\) has parameter \\$filter with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Property Lkrms\\\\Support\\\\Pipeline\\:\\:\\$After with generic interface Lkrms\\\\Contract\\\\IPipeline does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Property Lkrms\\\\Support\\\\Pipeline\\:\\:\\$Pipes with generic interface Lkrms\\\\Contract\\\\IPipe does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Property Lkrms\\\\Support\\\\Pipeline\\:\\:\\$Pipes with generic interface Lkrms\\\\Contract\\\\IPipeline does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Property Lkrms\\\\Support\\\\Pipeline\\:\\:\\$Then with generic interface Lkrms\\\\Contract\\\\IPipeline does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
-			message: "#^Property Lkrms\\\\Support\\\\Pipeline\\:\\:\\$Unless with generic interface Lkrms\\\\Contract\\\\IPipeline does not specify its types\\: TInput, TOutput, TArgument$#"
-			count: 1
-			path: src/Support/Pipeline.php
-
-		-
 			message: "#^Method Lkrms\\\\Support\\\\ProviderContext\\:\\:get\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Support/ProviderContext.php
@@ -686,46 +551,6 @@ parameters:
 			path: src/Sync/Concept/DbSyncProvider.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:__construct\\(\\) has parameter \\$dataToEntityPipeline with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:__construct\\(\\) has parameter \\$entityToDataPipeline with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:applyFilterPolicy\\(\\) has parameter \\$empty with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:getPipelineToBackend\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:getPipelineToEntity\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^PHPDoc tag @var has no value type specified in iterable type array\\.$#"
-			count: 3
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:\\$DataToEntityPipeline type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Concept\\\\SyncDefinition\\:\\:\\$EntityToDataPipeline type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Concept/SyncDefinition.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Concept\\\\SyncProvider\\:\\:__call\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Sync/Concept/SyncProvider.php
@@ -824,16 +649,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncProvider\\:\\:getDefinition\\(\\) return type with generic interface Lkrms\\\\Sync\\\\Contract\\\\ISyncDefinition does not specify its types\\: TEntity, TProvider$#"
 			count: 1
 			path: src/Sync/Contract/ISyncProvider.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\DbSyncDefinition\\:\\:__construct\\(\\) has parameter \\$dataToEntityPipeline with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/DbSyncDefinition.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\DbSyncDefinition\\:\\:__construct\\(\\) has parameter \\$entityToDataPipeline with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/DbSyncDefinition.php
 
 		-
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncContext\\:\\:getFilter\\(\\) return type has no value type specified in iterable type array\\.$#"

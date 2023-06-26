@@ -7,11 +7,13 @@ use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use UnexpectedValueException;
 
@@ -36,14 +38,13 @@ final class DbSyncDefinition extends SyncDefinition implements HasBuilder
     /**
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
-     * @param int[] $operations
-     * @phpstan-param array<SyncOperation::*> $operations
-     * @phpstan-param ArrayKeyConformity::* $conformity
-     * @phpstan-param SyncFilterPolicy::* $filterPolicy
-     * @param array<int,Closure> $overrides
-     * @phpstan-param array<SyncOperation::*,Closure> $overrides
-     * @phpstan-param IPipeline<array,TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $dataToEntityPipeline
-     * @phpstan-param IPipeline<TEntity,array,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $entityToDataPipeline
+     * @param array<SyncOperation::*> $operations
+     * @param ArrayKeyConformity::* $conformity
+     * @param SyncFilterPolicy::* $filterPolicy
+     * @param array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $overrides
+     * @param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $pipelineFromBackend
+     * @param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $pipelineToBackend
+     * @param SyncEntitySource::*|null $returnEntitiesFrom
      */
     public function __construct(
         string $entity,
@@ -53,8 +54,9 @@ final class DbSyncDefinition extends SyncDefinition implements HasBuilder
         int $conformity = ArrayKeyConformity::PARTIAL,
         int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
         array $overrides = [],
-        ?IPipeline $dataToEntityPipeline = null,
-        ?IPipeline $entityToDataPipeline = null
+        ?IPipeline $pipelineFromBackend = null,
+        ?IPipeline $pipelineToBackend = null,
+        ?int $returnEntitiesFrom = null
     ) {
         parent::__construct(
             $entity,
@@ -63,8 +65,9 @@ final class DbSyncDefinition extends SyncDefinition implements HasBuilder
             $conformity,
             $filterPolicy,
             $overrides,
-            $dataToEntityPipeline,
-            $entityToDataPipeline
+            $pipelineFromBackend,
+            $pipelineToBackend,
+            $returnEntitiesFrom
         );
 
         $this->Table = $table;

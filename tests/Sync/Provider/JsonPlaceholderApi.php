@@ -71,7 +71,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         ];
     }
 
-    protected function getHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
+    protected function buildHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
     {
         switch ($entity) {
             case Post::class:

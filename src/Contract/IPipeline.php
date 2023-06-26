@@ -12,7 +12,7 @@ use Lkrms\Support\Catalog\ArrayMapperFlag;
  * @template TOutput
  * @template TArgument
  */
-interface IPipeline extends IImmutable
+interface IPipeline extends IFluentInterface, IImmutable
 {
     /**
      * Set the payload
@@ -61,11 +61,10 @@ interface IPipeline extends IImmutable
      *
      * This method can only be called once per pipeline.
      *
-     * @param callable $callback
+     * @param callable(TInput, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput) $callback
      * ```php
      * fn($payload, IPipeline $pipeline, $arg)
      * ```
-     * @phpstan-param callable(TInput, IPipeline, TArgument): (TInput|TOutput) $callback
      * @return $this
      */
     public function after(callable $callback);
@@ -74,11 +73,10 @@ interface IPipeline extends IImmutable
      * Apply a callback to each payload before it is sent if an after() callback
      * hasn't already been applied
      *
-     * @param callable $callback
+     * @param callable(TInput, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput) $callback
      * ```php
      * fn($payload, IPipeline $pipeline, $arg)
      * ```
-     * @phpstan-param callable(TInput, IPipeline, TArgument): (TInput|TOutput) $callback
      * @return $this
      */
     public function afterIf(callable $callback);
@@ -103,13 +101,12 @@ interface IPipeline extends IImmutable
      *   (this bypasses any remaining pipes and the callback passed to
      *   {@see IPipeline::then()}, if applicable)
      *
-     * @param IPipe|callable|class-string<IPipe> ...$pipes Each pipe must be an
-     * `IPipe` object, the name of an `IPipe` class to instantiate, or a closure
-     * with the following signature:
+     * @param IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>> ...$pipes
+     * Each pipe must be an `IPipe` object, the name of an `IPipe` class to
+     * instantiate, or a closure with the following signature:
      * ```php
      * function ($payload, Closure $next, IPipeline $pipeline, $arg)
      * ```
-     * @phpstan-param IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline, TArgument): (TInput|TOutput))|class-string<IPipe> ...$pipes
      * @return $this
      */
     public function through(...$pipes);
@@ -117,11 +114,10 @@ interface IPipeline extends IImmutable
     /**
      * Add a simple callback to the pipeline
      *
-     * @param callable $callback
+     * @param (callable(TInput, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput)) $callback
      * ```php
      * fn($payload, IPipeline $pipeline, $arg)
      * ```
-     * @phpstan-param (callable(TInput, IPipeline, TArgument): (TInput|TOutput)) $callback
      * @return $this
      */
     public function throughCallback(callable $callback);
@@ -131,8 +127,7 @@ interface IPipeline extends IImmutable
      *
      * @param array<int|string,int|string|array<int,int|string>> $keyMap An
      * array that maps input keys to one or more output keys.
-     * @param int $flags A bitmask of {@see ArrayMapperFlag} values.
-     * @phpstan-param int-mask-of<ArrayMapperFlag::*> $flags
+     * @param int-mask-of<ArrayMapperFlag::*> $flags
      * @return $this
      */
     public function throughKeyMap(array $keyMap, int $flags = ArrayMapperFlag::ADD_UNMAPPED);
@@ -140,16 +135,15 @@ interface IPipeline extends IImmutable
     /**
      * Apply a callback to each result
      *
-     * This method can only be called once per pipeline.
+     * This method can only be called once per pipeline, and only if
+     * {@see IPipeline::collectThen()} is not also called.
      *
      * @template TThenOutput
-     * @param callable $callback
+     * @param callable(TInput|TOutput, IPipeline<TInput,TOutput,TArgument>, TArgument): TThenOutput $callback
      * ```php
      * fn($result, IPipeline $pipeline, $arg)
      * ```
-     * @phpstan-param callable(TInput|TOutput, IPipeline, TArgument): TThenOutput $callback
-     * @return $this
-     * @phpstan-return IPipeline<TInput,TThenOutput,TArgument>
+     * @return IPipeline<TInput,TThenOutput,TArgument>
      */
     public function then(callable $callback);
 
@@ -158,15 +152,36 @@ interface IPipeline extends IImmutable
      * applied
      *
      * @template TThenOutput
-     * @param callable $callback
+     * @param callable(TInput|TOutput, IPipeline<TInput,TOutput,TArgument>, TArgument): TThenOutput $callback
      * ```php
      * fn($result, IPipeline $pipeline, $arg)
      * ```
-     * @phpstan-param callable(TInput|TOutput, IPipeline, TArgument): TThenOutput $callback
-     * @return $this
-     * @phpstan-return IPipeline<TInput,TThenOutput,TArgument>
+     * @return IPipeline<TInput,TThenOutput,TArgument>
      */
     public function thenIf(callable $callback);
+
+    /**
+     * Collect results from the pipeline and pass them to a callback in batches
+     *
+     * {@see IPipeline::stream()} and {@see IPipeline::start()} must be used
+     * with this method. It cannot be combined with {@see IPipeline::send()} and
+     * {@see IPipeline::run()}.
+     *
+     * {@see IPipeline::collectThen()} can only be called once per pipeline, and
+     * only if {@see IPipeline::then()} is not also called.
+     *
+     * The callback should return an array with the same signature as the array
+     * it receives, i.e. the same keys in the same order. Its contents are
+     * returned to the caller via a forward-only iterator.
+     *
+     * @template TThenOutput
+     * @param callable(array<TInput|TOutput>, IPipeline<TInput,TOutput,TArgument>, TArgument): TThenOutput[] $callback
+     * ```php
+     * fn(array $results, IPipeline $pipeline, $arg): array
+     * ```
+     * @return IPipeline<TInput,TThenOutput,TArgument>
+     */
+    public function collectThen(callable $callback);
 
     /**
      * Apply a filter to each result
@@ -185,7 +200,7 @@ interface IPipeline extends IImmutable
      * ```php
      * fn($result, IPipeline $pipeline, $arg): bool
      * ```
-     * @phpstan-param callable(TOutput|null, IPipeline, TArgument): bool $filter
+     * @param callable(TOutput|null, IPipeline<TInput,TOutput,TArgument>, TArgument): bool $filter
      * @return $this
      */
     public function unless(callable $filter);
@@ -200,7 +215,7 @@ interface IPipeline extends IImmutable
      * ```php
      * fn($result, IPipeline $pipeline, $arg): bool
      * ```
-     * @phpstan-param callable(TOutput|null, IPipeline, TArgument): bool $filter
+     * @param callable(TOutput|null, IPipeline<TInput,TOutput,TArgument>, TArgument): bool $filter
      * @return $this
      */
     public function unlessIf(callable $filter);
@@ -226,8 +241,7 @@ interface IPipeline extends IImmutable
     /**
      * Get the payload's array key conformity
      *
-     * @return int One of the {@see ArrayKeyConformity} values.
-     * @phpstan-return ArrayKeyConformity::*
+     * @return ArrayKeyConformity::*
      * @see IPipeline::withConformity()
      */
     public function getConformity(): int;
@@ -236,22 +250,20 @@ interface IPipeline extends IImmutable
      * Run the pipeline and pass the result to another pipeline
      *
      * @template TNextOutput
-     * @phpstan-param IPipeline<TOutput,TNextOutput,TArgument> $next
-     * @return $this
-     * @phpstan-return IPipeline<TOutput,TNextOutput,TArgument>
+     * @param IPipeline<TOutput,TNextOutput,TArgument> $next
+     * @return IPipeline<TOutput,TNextOutput,TArgument>
      */
-    public function runThrough(IPipeline $next);
+    public function runInto(IPipeline $next);
 
     /**
      * Run the pipeline and pass each result to another pipeline
      *
      * {@see IPipeline::stream()} must be called before
-     * {@see IPipeline::startThrough()} can be used to run the pipeline.
+     * {@see IPipeline::startInto()} can be used to run the pipeline.
      *
      * @template TNextOutput
-     * @phpstan-param IPipeline<TOutput,TNextOutput,TArgument> $next
-     * @return $this
-     * @phpstan-return IPipeline<TOutput,TNextOutput,TArgument>
+     * @param IPipeline<TOutput,TNextOutput,TArgument> $next
+     * @return IPipeline<TOutput,TNextOutput,TArgument>
      */
-    public function startThrough(IPipeline $next);
+    public function startInto(IPipeline $next);
 }
