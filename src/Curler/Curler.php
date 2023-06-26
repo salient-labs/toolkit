@@ -728,20 +728,23 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
     private function processHeader(string $header): string
     {
-        if ($this->ReasonPhrase !== null) {
-            $this->ResponseHeaders = $this->ResponseHeaders->addRawHeader($header);
-        } elseif (count($split = explode(' ', $header, 3)) > 1 && explode('/', $split[0])[0] === 'HTTP') {
+        if (substr($header, 0, 5) === 'HTTP/') {
+            if (count($split = explode(' ', $header, 3)) < 2) {
+                throw new CurlerException($this, 'Invalid status line in response');
+            }
+            $this->ResponseHeaders = new CurlerHeaders();
             $this->ReasonPhrase = trim($split[2] ?? '');
-        } else {
-            throw new CurlerException($this, 'Invalid status line in response');
+            return $header;
         }
-
+        if ($this->ReasonPhrase === null) {
+            throw new CurlerException($this, 'No status line in response');
+        }
+        $this->ResponseHeaders = $this->ResponseHeaders->addRawHeader($header);
         return $header;
     }
 
     private function clearResponse(): void
     {
-        $this->ResponseHeaders = new CurlerHeaders();
         $this->ResponseHeadersByName = null;
         $this->StatusCode = null;
         $this->ReasonPhrase = null;
