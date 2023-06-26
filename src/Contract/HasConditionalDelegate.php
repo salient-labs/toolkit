@@ -12,15 +12,32 @@ namespace Lkrms\Contract;
 interface HasConditionalDelegate extends HasDelegate
 {
     /**
-     * @param bool $suppress If `true`, method calls will not be delegated to
-     * `$object`, and property actions may raise exceptions.
+     * @param bool $suppress If `true`, disable delegation of method calls to
+     * `$delegate` until {@see HasConditionalDelegate::elseIf()} or
+     * {@see HasConditionalDelegate::else()} are called.
      */
-    public static function withDelegate(object $delegate, bool $suppress = false);
+    public static function withDelegate($delegate, bool $suppress = false);
 
     /**
      * @return $this
      */
     public function __call(string $name, array $arguments);
+
+    /**
+     * Conditionally enable or disable delegation of method calls to the
+     * delegate
+     *
+     * @param (callable(TDelegate): bool)|bool $condition
+     * @return $this
+     */
+    public function elseIf($condition);
+
+    /**
+     * Enable or disable delegation of method calls to the delegate
+     *
+     * @return $this
+     */
+    public function else();
 
     /**
      * Terminate conditional delegation of method calls and property actions

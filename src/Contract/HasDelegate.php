@@ -6,7 +6,6 @@ namespace Lkrms\Contract;
  * Method calls and property actions are delegated to a receiving object
  *
  * @template TDelegate of object
- * @mixin TDelegate
  */
 interface HasDelegate
 {
@@ -16,18 +15,17 @@ interface HasDelegate
      * Returns a "sending object" that delegates calls and property actions to a
      * "receiving object".
      *
-     * @template T of object
-     * @param T $delegate
-     * @return self<T>
+     * @param TDelegate $delegate
+     * @return self<TDelegate>
      */
-    public static function withDelegate(object $delegate);
+    public static function withDelegate($delegate);
 
     /**
      * Get the object's delegate
      *
      * @return TDelegate
      */
-    public function getDelegate(): object;
+    public function getDelegate();
 
     /**
      * Call a method on the delegate
