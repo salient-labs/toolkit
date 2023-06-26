@@ -258,4 +258,45 @@ final class Arr
         natcasesort($array);
         return $array;
     }
+
+    /**
+     * Apply a callback to the elements of an array
+     *
+     * @template TKey of array-key
+     * @template TValue
+     * @param callable(TValue, TKey): mixed $callback
+     * @param array<TKey,TValue> $array
+     * @return array<TKey,TValue>
+     */
+    public static function forEach(callable $callback, array $array)
+    {
+        foreach ($array as $key => $value) {
+            $callback($value, $key);
+        }
+        return $array;
+    }
+
+    /**
+     * Apply a callback to a value for each of the elements of an array
+     *
+     * The return value of each call is passed to the next or returned to the
+     * caller.
+     *
+     * Similar to `array_reduce()`.
+     *
+     * @template TKey of array-key
+     * @template TValue
+     * @template T
+     * @param callable(T, TValue, TKey): T $callback
+     * @param array<TKey,TValue> $array
+     * @param T $value
+     * @return T
+     */
+    public static function with(callable $callback, array $array, $value)
+    {
+        foreach ($array as $key => $_value) {
+            $value = $callback($value, $_value, $key);
+        }
+        return $value;
+    }
 }
