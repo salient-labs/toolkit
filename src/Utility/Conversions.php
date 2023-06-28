@@ -10,12 +10,13 @@ use DateTimeInterface;
 use DateTimeZone;
 use Iterator;
 use IteratorIterator;
+use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Iterator\Contract\MutableIterator;
 use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
 use Lkrms\Utility\Test;
+use LogicException;
 use RecursiveIteratorIterator;
-use UnexpectedValueException;
 
 /**
  * Convert data from one type/format/structure to another
@@ -35,7 +36,7 @@ final class Conversions
      * (case-insensitive), otherwise casts `$value` to `bool`.
      *
      */
-    public function toBoolOrNull($value): ?bool
+    public static function toBoolOrNull($value): ?bool
     {
         return is_null($value)
             ? null
@@ -48,7 +49,7 @@ final class Conversions
      * Cast a value to an integer, preserving null
      *
      */
-    public function toIntOrNull($value): ?int
+    public static function toIntOrNull($value): ?int
     {
         return is_null($value) ? null : (int) $value;
     }
@@ -62,7 +63,7 @@ final class Conversions
      * @return array Either `$value`, `[$value]`, or `[]` (only if
      * `$emptyIfNull` is set and `$value` is `null`).
      */
-    public function toArray($value, bool $emptyIfNull = false): array
+    public static function toArray($value, bool $emptyIfNull = false): array
     {
         return is_array($value)
             ? $value
@@ -75,7 +76,7 @@ final class Conversions
      * @return array Either `$value`, `[$value]`, or `[]` (only if
      * `$emptyIfNull` is set and `$value` is `null`).
      */
-    public function toList($value, bool $emptyIfNull = false): array
+    public static function toList($value, bool $emptyIfNull = false): array
     {
         return Test::isListArray($value, true)
             ? $value
@@ -113,13 +114,13 @@ final class Conversions
      * )
      * ```
      */
-    public function flatten($value)
+    public static function flatten($value)
     {
         if (!is_array($value) || count($value) !== 1 || array_key_first($value) !== 0) {
             return $value;
         }
 
-        return $this->flatten(reset($value));
+        return self::flatten(reset($value));
     }
 
     /**
@@ -128,7 +129,7 @@ final class Conversions
      * @param object|mixed[] $objectOrArray
      * @param callable(mixed, array-key, MutableIterator<array-key,mixed>&\RecursiveIterator<array-key,mixed>): bool $callback Return `false` to stop iterating over `$objectOrArray`.
      */
-    public function walkRecursive(
+    public static function walkRecursive(
         &$objectOrArray,
         callable $callback,
         int $mode = RecursiveIteratorIterator::LEAVES_ONLY
@@ -149,7 +150,7 @@ final class Conversions
      * @param T[] $array
      * @return T[]
      */
-    public function toUniqueList(array $array): array
+    public static function toUniqueList(array $array): array
     {
         $list = [];
         foreach ($array as $value) {
@@ -176,7 +177,7 @@ final class Conversions
      * @param T[] $array
      * @return T[]
      */
-    public function columnsToUniqueList(array $array, array &...$columns): array
+    public static function columnsToUniqueList(array $array, array &...$columns): array
     {
         $list = [];
         foreach ($array as $rowIndex => $value) {
@@ -201,7 +202,7 @@ final class Conversions
      * @param string[] $array
      * @return string[]
      */
-    public function stringsToUniqueList(array $array): array
+    public static function stringsToUniqueList(array $array): array
     {
         $list = [];
         $seen = [];
@@ -221,7 +222,7 @@ final class Conversions
      *
      * @return array<int,int|float|string|bool|null>
      */
-    public function toScalarArray(array $array): array
+    public static function toScalarArray(array $array): array
     {
         foreach ($array as &$value) {
             if (is_scalar($value) || is_null($value)) {
@@ -234,22 +235,78 @@ final class Conversions
     }
 
     /**
-     * Explode a string, trim each substring, remove empty strings
+     * Split a string by a string, remove whitespace from the beginning and end
+     * of each substring, remove empty strings
+     *
+     * @param string|null $characters Optionally specify characters to remove
+     * instead of whitespace.
+     * @return string[]
+     */
+    public static function splitAndTrim(string $separator, string $string, ?string $characters = null): array
+    {
+        // 3. Reindex
+        return array_values(
+            // 2. Trim each substring, remove empty strings
+            Arr::trimAndCompact(
+                // 1. Split the string
+                explode($separator, $string),
+                $characters
+            )
+        );
+    }
+
+    /**
+     * Split a string by a string without separating substrings enclosed by
+     * brackets, remove whitespace from the beginning and end of each substring,
+     * remove empty strings
+     *
+     * @param string|null $characters Optionally specify characters to remove
+     * instead of whitespace.
+     * @return string[]
+     */
+    public static function splitAndTrimOutsideBrackets(string $separator, string $string, ?string $characters = null): array
+    {
+        return Arr::trimAndCompact(
+            self::splitOutsideBrackets($separator, $string),
+            $characters
+        );
+    }
+
+    /**
+     * Split a string by a string without separating substrings enclosed by
+     * brackets
      *
      * @return string[]
      */
-    public function stringToList(string $separator, string $string, ?string $trim = null): array
+    public static function splitOutsideBrackets(string $separator, string $string): array
     {
-        if (!$separator) {
-            throw new UnexpectedValueException("Invalid separator: $separator");
+        if (strlen($separator) !== 1) {
+            throw new LogicException('Argument #1 ($separator) must be a single character');
         }
-
-        return array_values(array_filter(array_map(
-            is_null($trim)
-                ? fn(string $item) => trim($item)
-                : fn(string $item) => trim($item, $trim),
-            explode($separator, $string)
-        )));
+        if (strpos('()<>[]{}', $separator) !== false) {
+            throw new LogicException('Argument #1 ($separator) cannot be a bracket character');
+        }
+        $quoted = preg_quote($separator, '/');
+        $escaped = $separator;
+        if (strpos('\-', $separator) !== false) {
+            $escaped = '\\' . $separator;
+        }
+        $regex = <<<REGEX
+            (?x)
+            (?: [^()<>[\]{}{$escaped}]++ |
+              ( \( (?: [^()<>[\]{}]*+ (?-1)? )*+ \) |
+                <  (?: [^()<>[\]{}]*+ (?-1)? )*+ >  |
+                \[ (?: [^()<>[\]{}]*+ (?-1)? )*+ \] |
+                \{ (?: [^()<>[\]{}]*+ (?-1)? )*+ \} ) |
+              # Match empty substrings
+              (?<= $quoted ) (?= $quoted ) )+
+            REGEX;
+        preg_match_all(
+            Regex::delimit($regex),
+            $string,
+            $matches
+        );
+        return $matches[0];
     }
 
     /**
@@ -258,7 +315,7 @@ final class Conversions
      * @param string|int $key
      * @return int|null `null` if `$key` is not found in `$array`.
      */
-    public function arrayKeyToOffset($key, array $array): ?int
+    public static function arrayKeyToOffset($key, array $array): ?int
     {
         return array_flip(array_keys($array))[$key] ?? null;
     }
@@ -274,12 +331,12 @@ final class Conversions
      * @param string|int $key
      * @return array The removed portion of the array.
      */
-    public function arraySpliceAtKey(array &$array, $key, ?int $length = null, array $replacement = []): array
+    public static function arraySpliceAtKey(array &$array, $key, ?int $length = null, array $replacement = []): array
     {
         $keys = array_keys($array);
         $offset = array_flip($keys)[$key] ?? null;
         if (is_null($offset)) {
-            throw new UnexpectedValueException("Array key not found: $key");
+            throw new LogicException("Array key not found: $key");
         }
         // $length can't be null in PHP 7.4
         if (is_null($length)) {
@@ -299,9 +356,9 @@ final class Conversions
      * @param string|int $key
      * @param string|int $newKey
      */
-    public function renameArrayKey($key, $newKey, array $array): array
+    public static function renameArrayKey($key, $newKey, array $array): array
     {
-        $this->arraySpliceAtKey($array, $key, 1, [$newKey => $array[$key] ?? null]);
+        self::arraySpliceAtKey($array, $key, 1, [$newKey => $array[$key] ?? null]);
 
         return $array;
     }
@@ -314,7 +371,7 @@ final class Conversions
      * @param DateInterval|string $value
      * @return int
      */
-    public function intervalToSeconds($value): int
+    public static function intervalToSeconds($value): int
     {
         if (!($value instanceof DateInterval)) {
             $value = new DateInterval($value);
@@ -329,7 +386,7 @@ final class Conversions
      * A shim for DateTimeImmutable::createFromInterface() (PHP 8+)
      *
      */
-    public function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
+    public static function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
     {
         return $date instanceof DateTimeImmutable
             ? $date
@@ -342,7 +399,7 @@ final class Conversions
      * @param DateTimeZone|string $value
      * @return DateTimeZone
      */
-    public function toTimezone($value): DateTimeZone
+    public static function toTimezone($value): DateTimeZone
     {
         if ($value instanceof DateTimeZone) {
             return $value;
@@ -356,7 +413,7 @@ final class Conversions
      *
      * @return mixed Either `$value` or `null`.
      */
-    public function emptyToNull($value)
+    public static function emptyToNull($value)
     {
         return !$value ? null : $value;
     }
@@ -365,7 +422,7 @@ final class Conversions
      * Get the first value that is not null
      *
      */
-    public function coalesce(...$values)
+    public static function coalesce(...$values)
     {
         while ($values) {
             if (!is_null($value = array_shift($values))) {
@@ -380,7 +437,7 @@ final class Conversions
      * If an iterable isn't already an array, make it one
      *
      */
-    public function iterableToArray(iterable $iterable, bool $preserveKeys = false): array
+    public static function iterableToArray(iterable $iterable, bool $preserveKeys = false): array
     {
         return is_array($iterable) ? $iterable : iterator_to_array($iterable, $preserveKeys);
     }
@@ -389,7 +446,7 @@ final class Conversions
      * If an iterable isn't already an Iterator, enclose it in one
      *
      */
-    public function iterableToIterator(iterable $iterable): Iterator
+    public static function iterableToIterator(iterable $iterable): Iterator
     {
         if ($iterable instanceof Iterator) {
             return $iterable;
@@ -409,7 +466,7 @@ final class Conversions
      * - `<0`: remove all extensions
      * - `>0`: remove up to the given number of extensions
      */
-    public function pathToBasename(string $path, int $extLimit = 0): string
+    public static function pathToBasename(string $path, int $extLimit = 0): string
     {
         $path = basename($path);
         if ($extLimit) {
@@ -427,7 +484,7 @@ final class Conversions
      *
      * @see Conversions::resolveRelativeUrl()
      */
-    public function resolvePath(string $path): string
+    public static function resolvePath(string $path): string
     {
         $path = preg_replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
         do {
@@ -441,7 +498,7 @@ final class Conversions
     /**
      * Get the absolute form of a URL relative to a base URL, as per [RFC1808]
      */
-    public function resolveRelativeUrl(string $embeddedUrl, string $baseUrl): string
+    public static function resolveRelativeUrl(string $embeddedUrl, string $baseUrl): string
     {
         // Step 1
         if (!$baseUrl) {
@@ -451,22 +508,22 @@ final class Conversions
         if (!$embeddedUrl) {
             return $baseUrl;
         }
-        $url = $this->parseUrl($embeddedUrl);
+        $url = self::parseUrl($embeddedUrl);
         // Step 2b
         if ($url['scheme'] ?? null) {
             return $embeddedUrl;
         }
-        $base = $this->parseUrl($baseUrl);
+        $base = self::parseUrl($baseUrl);
         // Step 2c
         $url['scheme'] = $base['scheme'] ?? null;
         // Step 3
-        if ($this->netLoc($url)) {
-            return $this->unparseUrl($url);
+        if (self::netLoc($url)) {
+            return self::unparseUrl($url);
         }
-        $url = $this->netLoc($base) + $url;
+        $url = self::netLoc($base) + $url;
         // Step 4
         if (substr($path = $url['path'] ?? '', 0, 1) === '/') {
-            return $this->unparseUrl($url);
+            return self::unparseUrl($url);
         }
         // Step 5
         if (!$path) {
@@ -480,7 +537,7 @@ final class Conversions
                 }
             }
 
-            return $this->unparseUrl($url);
+            return self::unparseUrl($url);
         }
         $base['path'] = $base['path'] ?? '';
         // Step 6
@@ -494,10 +551,10 @@ final class Conversions
         // Step 6d
         $url['path'] = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\.$@', '', $path, 1, $count);
 
-        return $this->unparseUrl($url);
+        return self::unparseUrl($url);
     }
 
-    private function netLoc(array $url): array
+    private static function netLoc(array $url): array
     {
         return array_intersect_key($url, array_flip(['host', 'port', 'user', 'pass']));
     }
@@ -510,7 +567,7 @@ final class Conversions
      *
      * @return array|false `false` if `$url` cannot be parsed.
      */
-    public function parseUrl(string $url)
+    public static function parseUrl(string $url)
     {
         // Extract "params" early because parse_url doesn't accept URLs where
         // "path" has a leading ";"
@@ -536,7 +593,7 @@ final class Conversions
      *
      * @param array<string,string|int> $url
      */
-    public function unparseUrl(array $url): string
+    public static function unparseUrl(array $url): string
     {
         [$u, $url] = [$url, ''];
         !($u['scheme'] ?? null) || $url .= "{$u['scheme']}:";
@@ -560,7 +617,7 @@ final class Conversions
      * Remove the namespace and the first matched suffix from a class name
      *
      */
-    public function classToBasename(string $class, string ...$suffixes): string
+    public static function classToBasename(string $class, string ...$suffixes): string
     {
         $class = substr(strrchr('\\' . $class, '\\'), 1);
         while ($suffixes) {
@@ -579,7 +636,7 @@ final class Conversions
      * the namespace without adding or removing the global prefix operator.
      *
      */
-    public function classToNamespace(string $class): string
+    public static function classToNamespace(string $class): string
     {
         return substr($class, 0, max(0, strrpos('\\' . $class, '\\') - 1));
     }
@@ -588,7 +645,7 @@ final class Conversions
      * Remove the class from a method name
      *
      */
-    public function methodToFunction(string $method): string
+    public static function methodToFunction(string $method): string
     {
         return preg_replace('/^.*?([a-z0-9_]*)$/i', '$1', $method);
     }
@@ -631,10 +688,10 @@ final class Conversions
      * when retrieving keys from arrays or objects in `$list`, or a closure that
      * returns a key for each item in `$list`.
      */
-    public function listToMap(array $list, $key): array
+    public static function listToMap(array $list, $key): array
     {
         return array_combine(
-            array_map($this->_keyToClosure($key), $list),
+            array_map(self::_keyToClosure($key), $list),
             $list
         );
     }
@@ -648,10 +705,10 @@ final class Conversions
      * @return array|object|false `false` if no item was found in `$list` with
      * `$value` at `$key`.
      */
-    public function iterableToItem(iterable $list, $key, $value, bool $strict = false)
+    public static function iterableToItem(iterable $list, $key, $value, bool $strict = false)
     {
-        $list = $this->iterableToIterator($list);
-        $closure = $this->_keyToClosure($key);
+        $list = self::iterableToIterator($list);
+        $closure = self::_keyToClosure($key);
 
         while ($list->valid()) {
             $item = $list->current();
@@ -668,11 +725,11 @@ final class Conversions
     /**
      * @param int|string|Closure $key
      */
-    private function _keyToClosure($key): Closure
+    private static function _keyToClosure($key): Closure
     {
         return $key instanceof Closure
             ? $key
-            : fn($item) => $this->valueAtKey($item, $key);
+            : fn($item) => self::valueAtKey($item, $key);
     }
 
     /**
@@ -682,7 +739,7 @@ final class Conversions
      * @param int|string $key
      * @return mixed
      */
-    public function valueAtKey($item, $key)
+    public static function valueAtKey($item, $key)
     {
         return is_array($item) || $item instanceof \ArrayAccess
             ? $item[$key]
@@ -693,7 +750,7 @@ final class Conversions
      * Remove zero-width values from an array before imploding it
      *
      */
-    public function sparseToString(string $separator, array $array): string
+    public static function sparseToString(string $separator, array $array): string
     {
         return implode($separator, array_filter(
             $array,
@@ -706,7 +763,7 @@ final class Conversions
      *
      * @return string|false Returns `false` if `$value` is not a scalar
      */
-    public function scalarToString($value)
+    public static function scalarToString($value)
     {
         if (is_scalar($value)) {
             return (string) $value;
@@ -720,7 +777,7 @@ final class Conversions
      * length exceeds a limit
      *
      */
-    public function ellipsize(string $value, int $length): string
+    public static function ellipsize(string $value, int $length): string
     {
         if (mb_strlen($value) > $length) {
             return rtrim(mb_substr($value, 0, $length - 3)) . '...';
@@ -737,7 +794,7 @@ final class Conversions
      * @param bool $includeNumber If `true`, `"$number $noun"` is returned
      * instead of `"$noun"`.
      */
-    public function plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false): string
+    public static function plural(int $number, string $singular, ?string $plural = null, bool $includeNumber = false): string
     {
         $noun = $number == 1
             ? $singular
@@ -754,7 +811,7 @@ final class Conversions
      * @param string|null $plural `"{$singular}s"` is used if `$plural` is
      * `null`.
      */
-    public function pluralRange(
+    public static function pluralRange(
         int $from,
         int $to,
         string $singular,
@@ -770,7 +827,7 @@ final class Conversions
      * Get the plural of a singular noun
      *
      */
-    public function nounToPlural(string $noun): string
+    public static function nounToPlural(string $noun): string
     {
         if (preg_match('/(?:(sh?|ch|x|z|(?<!^phot)(?<!^pian)(?<!^hal)o)|([^aeiou]y)|(is)|(on))$/i', $noun, $matches)) {
             if ($matches[1]) {
@@ -793,7 +850,7 @@ final class Conversions
      * @param string[] $query
      * @return array<string,string>
      */
-    public function queryToData(array $query): array
+    public static function queryToData(array $query): array
     {
         // 1. "key=value" to ["key", "value"]
         // 2. Discard "value", "=value", etc.
@@ -827,7 +884,7 @@ final class Conversions
      * @param bool $clean If `true`, the first match of `$regex` in each section
      * name is removed.
      */
-    public function linesToLists(
+    public static function linesToLists(
         string $text,
         string $separator = "\n",
         ?string $marker = null,
@@ -889,7 +946,7 @@ final class Conversions
      * immediately after 2 spaces, or immediately before 4 spaces
      *
      */
-    public function unwrap(string $string, string $break = "\n"): string
+    public static function unwrap(string $string, string $break = "\n"): string
     {
         $break = preg_quote($break, '/');
 
@@ -900,7 +957,7 @@ final class Conversions
      * Convert a 16-byte UUID to its 36-byte hexadecimal representation
      *
      */
-    public function uuidToHex(string $bytes): string
+    public static function uuidToHex(string $bytes): string
     {
         $uuid = [];
         $uuid[] = substr($bytes, 0, 4);
@@ -920,10 +977,10 @@ final class Conversions
      * case-insensitive."
      * @return int
      */
-    public function sizeToBytes(string $size): int
+    public static function sizeToBytes(string $size): int
     {
         if (!preg_match('/^(.+?)([KMG]?)$/', strtoupper($size), $match) || !is_numeric($match[1])) {
-            throw new UnexpectedValueException("Invalid shorthand: '$size'");
+            throw new LogicException("Invalid shorthand: '$size'");
         }
 
         $power = ['' => 0, 'K' => 1, 'M' => 2, 'G' => 3];
@@ -937,7 +994,7 @@ final class Conversions
      * @param string|\Stringable ...$value
      * @return string[]
      */
-    public function toStrings(...$value): array
+    public static function toStrings(...$value): array
     {
         return array_map(function ($string) { return (string) $string; }, $value);
     }
@@ -946,7 +1003,7 @@ final class Conversions
      * A platform-agnostic escapeshellarg that only adds quotes if necessary
      *
      */
-    public function toShellArg(string $value): string
+    public static function toShellArg(string $value): string
     {
         if (!$value || preg_match('/[^a-z0-9+.\/@_-]/i', $value)) {
             return "'" . str_replace("'", "'\\''", $value) . "'";
@@ -959,9 +1016,9 @@ final class Conversions
      * Convert an identifier to snake_case
      *
      */
-    public function toSnakeCase(string $text, ?string $preserve = null): string
+    public static function toSnakeCase(string $text, ?string $preserve = null): string
     {
-        $preserve = $this->_toCaseEscapePreserve($preserve);
+        $preserve = self::_toCaseEscapePreserve($preserve);
         $text = preg_replace("/[^[:alnum:]$preserve]+/", '_', $text);
         $text = preg_replace('/([[:lower:]])([[:upper:]])/', '$1_$2', $text);
 
@@ -972,9 +1029,9 @@ final class Conversions
      * Convert an identifier to kebab-case
      *
      */
-    public function toKebabCase(string $text, ?string $preserve = null): string
+    public static function toKebabCase(string $text, ?string $preserve = null): string
     {
-        $preserve = $this->_toCaseEscapePreserve($preserve);
+        $preserve = self::_toCaseEscapePreserve($preserve);
         $text = preg_replace("/[^[:alnum:]$preserve]+/", '-', $text);
         $text = preg_replace('/([[:lower:]])([[:upper:]])/', '$1-$2', $text);
 
@@ -985,14 +1042,14 @@ final class Conversions
      * Convert an identifier to PascalCase
      *
      */
-    public function toPascalCase(string $text, ?string $preserve = null): string
+    public static function toPascalCase(string $text, ?string $preserve = null): string
     {
         $text = preg_replace_callback(
             '/([[:upper:]]?[[:lower:][:digit:]]+|([[:upper:]](?![[:lower:]]))+)/',
             function (array $matches) { return ucfirst(strtolower($matches[0])); },
             $text
         );
-        $preserve = $this->_toCaseEscapePreserve($preserve);
+        $preserve = self::_toCaseEscapePreserve($preserve);
 
         return preg_replace("/[^[:alnum:]$preserve]+/", '', $text);
     }
@@ -1001,12 +1058,12 @@ final class Conversions
      * Convert an identifier to camelCase
      *
      */
-    public function toCamelCase(string $text, ?string $preserve = null): string
+    public static function toCamelCase(string $text, ?string $preserve = null): string
     {
-        return lcfirst($this->toPascalCase($text, $preserve));
+        return lcfirst(self::toPascalCase($text, $preserve));
     }
 
-    private function _toCaseEscapePreserve(?string $preserve): string
+    private static function _toCaseEscapePreserve(?string $preserve): string
     {
         if (!$preserve) {
             return '';
@@ -1032,7 +1089,7 @@ final class Conversions
      * 5. Makes letters uppercase
      *
      */
-    public function toNormal(string $text): string
+    public static function toNormal(string $text): string
     {
         $replace = [
             '/(?<=[^&])&(?=[^&])/u' => ' and ',
@@ -1051,7 +1108,7 @@ final class Conversions
      * Replace a string's CRLF or CR end-of-line sequences with LF
      *
      */
-    public function lineEndingsToUnix(string $string): string
+    public static function lineEndingsToUnix(string $string): string
     {
         if (strpos($string, "\r") === false) {
             return $string;
@@ -1067,12 +1124,12 @@ final class Conversions
      * inside the class. (Not easily, anyway.)
      *
      */
-    public function objectToArray(object $object): array
+    public static function objectToArray(object $object): array
     {
         return get_object_vars($object);
     }
 
-    private function _dataToQuery(
+    private static function _dataToQuery(
         array $data,
         bool $preserveKeys,
         DateFormatter $dateFormatter,
@@ -1103,7 +1160,7 @@ final class Conversions
                 $_format = '[%s]';
             }
 
-            $this->_dataToQuery($value, $preserveKeys, $dateFormatter, $query, $name . $_name, $_format);
+            self::_dataToQuery($value, $preserveKeys, $dateFormatter, $query, $name . $_name, $_format);
         }
 
         return $query;
@@ -1120,9 +1177,9 @@ final class Conversions
      * strings. Set `$preserveKeys` to override this behaviour.
      *
      */
-    public function dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null): string
+    public static function dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null): string
     {
-        return $this->_dataToQuery(
+        return self::_dataToQuery(
             $data,
             $preserveKeys,
             $dateFormatter ?: new DateFormatter()
@@ -1133,7 +1190,7 @@ final class Conversions
      * Like var_export but with more compact output
      *
      */
-    public function valueToCode(
+    public static function valueToCode(
         $value,
         string $delimiter = ', ',
         string $arrow = ' => ',
@@ -1165,14 +1222,14 @@ final class Conversions
         if (Test::isListArray($value)) {
             foreach ($value as $value) {
                 $code .= ($code ? $delimiter : '[')
-                    . $this->valueToCode($value, $delimiter, $arrow, $escapeCharacters);
+                    . self::valueToCode($value, $delimiter, $arrow, $escapeCharacters);
             }
         } else {
             foreach ($value as $key => $value) {
                 $code .= ($code ? $delimiter : '[')
-                    . $this->valueToCode($key, $delimiter, $arrow, $escapeCharacters)
+                    . self::valueToCode($key, $delimiter, $arrow, $escapeCharacters)
                     . $arrow
-                    . $this->valueToCode($value, $delimiter, $arrow, $escapeCharacters);
+                    . self::valueToCode($value, $delimiter, $arrow, $escapeCharacters);
             }
         }
 

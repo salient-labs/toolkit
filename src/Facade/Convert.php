@@ -11,7 +11,9 @@ use DateTimeZone;
 use Iterator;
 use Lkrms\Concept\Facade;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Support\Iterator\Contract\MutableIterator;
 use Lkrms\Utility\Conversions;
+use RecursiveIterator;
 
 /**
  * A facade for \Lkrms\Utility\Conversions
@@ -49,7 +51,9 @@ use Lkrms\Utility\Conversions;
  * @method static string|false scalarToString($value) Convert a scalar to a string (see {@see Conversions::scalarToString()})
  * @method static int sizeToBytes(string $size) Convert php.ini values like "128M" to bytes (see {@see Conversions::sizeToBytes()})
  * @method static string sparseToString(string $separator, array $array) Remove zero-width values from an array before imploding it
- * @method static string[] stringToList(string $separator, string $string, ?string $trim = null) Explode a string, trim each substring, remove empty strings
+ * @method static string[] splitAndTrim(string $separator, string $string, string|null $characters = null) Split a string by a string, remove whitespace from the beginning and end of each substring, remove empty strings (see {@see Conversions::splitAndTrim()})
+ * @method static string[] splitAndTrimOutsideBrackets(string $separator, string $string, string|null $characters = null) Split a string by a string without separating substrings enclosed by brackets, remove whitespace from the beginning and end of each substring, remove empty strings (see {@see Conversions::splitAndTrimOutsideBrackets()})
+ * @method static string[] splitOutsideBrackets(string $separator, string $string) Split a string by a string without separating substrings enclosed by brackets
  * @method static string[] stringsToUniqueList(string[] $array) A faster array_unique with reindexing
  * @method static array toArray($value, bool $emptyIfNull = false) If a value isn't an array, make it the first element of one (see {@see Conversions::toArray()})
  * @method static bool|null toBoolOrNull($value) Cast a value to a boolean, preserving null and converting boolean strings (see {@see Conversions::toBoolOrNull()})
@@ -123,6 +127,8 @@ final class Convert extends Facade
      * array_walk_recursive for arbitrarily nested objects and arrays
      *
      * @param object|mixed[] $objectOrArray
+     * @param callable(mixed, array-key, MutableIterator<array-key,mixed>&RecursiveIterator<array-key,mixed>): bool $callback
+     * @see Conversions::walkRecursive()
      */
     public static function walkRecursive(&$objectOrArray, callable $callback, int $mode = \RecursiveIteratorIterator::LEAVES_ONLY): void
     {

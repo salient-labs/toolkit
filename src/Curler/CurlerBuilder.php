@@ -19,9 +19,9 @@ use Lkrms\Support\DateFormatter;
  * @method $this cachePostResponse(bool $value = true) Cache responses to eligible POST requests? (default: false; see {@see Curler::$CachePostResponse})
  * @method $this expiry(int $value) Seconds before cached responses expire (0 = no expiry) (see {@see Curler::$Expiry})
  * @method $this flush(bool $value = true) Replace cached responses that haven't expired? (default: false; see {@see Curler::$Flush})
- * @method $this responseCacheKeyCallback(?callable $value) Override the default cache key when saving and loading cached responses (see {@see Curler::$ResponseCacheKeyCallback})
+ * @method $this responseCacheKeyCallback((callable(Curler): string[])|null $value) Override the default cache key when saving and loading cached responses (see {@see Curler::$ResponseCacheKeyCallback})
  * @method $this throwHttpErrors(bool $value = true) Throw an exception if the status code is >= 400? (default: true)
- * @method $this responseCallback(?callable $value) Apply a callback to responses before they are returned (see {@see Curler::$ResponseCallback})
+ * @method $this responseCallback((callable(Curler): Curler)|null $value) Apply a callback to responses before they are returned (see {@see Curler::$ResponseCallback})
  * @method $this connectTimeout(?int $value) Override the default number of seconds the connection phase of the transfer is allowed to take (see {@see Curler::$ConnectTimeout})
  * @method $this timeout(?int $value) Limit the number of seconds the transfer is allowed to take
  * @method $this followRedirects(bool $value = true) Follow "Location:" headers? (default: false; see {@see Curler::$FollowRedirects})

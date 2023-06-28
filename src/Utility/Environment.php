@@ -150,8 +150,8 @@ final class Environment
      *
      * Returns `$default` if `$name` is not found in the environment.
      *
-     * @template T of string
-     * @param T|null $default
+     * @template T of string|null
+     * @param T $default
      * @return T|string
      * @throws RuntimeException if `$name` is not set and `$default` is not
      * given.
@@ -176,8 +176,8 @@ final class Environment
      * Returns `$default` if `$name` is empty or unset, otherwise casts it as an
      * `int` before returning.
      *
-     * @template T of int
-     * @param T|null $default
+     * @template T of int|null
+     * @param T $default
      * @return T|int
      * @throws RuntimeException if `$name` is not set and `$default` is not
      * given.
@@ -203,8 +203,8 @@ final class Environment
      * `"n"`, `"no"`, `"f"`, `"false"` or `"0"`, otherwise `true`. Comparison is
      * not case-sensitive.
      *
-     * @template T of bool
-     * @param T|null $default
+     * @template T of bool|null
+     * @param T $default
      * @return T|bool
      * @throws RuntimeException if `$name` is not set and `$default` is not
      * given.
@@ -232,8 +232,8 @@ final class Environment
      * Returns `$default` if `$name` is not set or an empty array if it's empty,
      * otherwise splits it into an array on `$delimiter` before returning.
      *
-     * @template T of string[]
-     * @param T|null $default
+     * @template T of string[]|null
+     * @param T $default
      * @return T|string[]
      * @throws RuntimeException if `$name` is not set and `$default` is not
      * given.
