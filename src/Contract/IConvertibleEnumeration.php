@@ -3,7 +3,7 @@
 namespace Lkrms\Contract;
 
 /**
- * Converts the values of its public constants to and from their names
+ * Converts the values of public constants to and from their names
  *
  * @template TValue
  *
@@ -24,4 +24,11 @@ interface IConvertibleEnumeration extends IEnumeration
      * @param TValue $value
      */
     public static function toName($value): string;
+
+    /**
+     * Get an array that maps constant names to values
+     *
+     * @return array<string,TValue>
+     */
+    public static function cases(): array;
 }

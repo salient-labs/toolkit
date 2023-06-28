@@ -2,23 +2,15 @@
 
 namespace Lkrms\Sync\Catalog;
 
-use Lkrms\Concept\Enumeration;
-use Lkrms\Concern\HasConvertibleConstants;
-use Lkrms\Contract\IConvertibleEnumeration;
+use Lkrms\Concept\ConvertibleEnumeration;
 
 /**
  * Sync operation types
  *
- * @extends Enumeration<int>
- * @implements IConvertibleEnumeration<int>
+ * @extends ConvertibleEnumeration<int>
  */
-final class SyncOperation extends Enumeration implements IConvertibleEnumeration
+final class SyncOperation extends ConvertibleEnumeration
 {
-    /**
-     * @use HasConvertibleConstants<int>
-     */
-    use HasConvertibleConstants;
-
     /**
      * Add an entity to the backend
      *
@@ -94,33 +86,27 @@ final class SyncOperation extends Enumeration implements IConvertibleEnumeration
      */
     public const DELETE_LIST = 128;
 
-    protected static function getNameMap(): array
-    {
-        return [
-            self::CREATE => 'CREATE',
-            self::READ => 'READ',
-            self::UPDATE => 'UPDATE',
-            self::DELETE => 'DELETE',
-            self::CREATE_LIST => 'CREATE_LIST',
-            self::READ_LIST => 'READ_LIST',
-            self::UPDATE_LIST => 'UPDATE_LIST',
-            self::DELETE_LIST => 'DELETE_LIST',
-        ];
-    }
+    protected static $NameMap = [
+        self::CREATE => 'CREATE',
+        self::READ => 'READ',
+        self::UPDATE => 'UPDATE',
+        self::DELETE => 'DELETE',
+        self::CREATE_LIST => 'CREATE_LIST',
+        self::READ_LIST => 'READ_LIST',
+        self::UPDATE_LIST => 'UPDATE_LIST',
+        self::DELETE_LIST => 'DELETE_LIST',
+    ];
 
-    protected static function getValueMap(): array
-    {
-        return [
-            'CREATE' => self::CREATE,
-            'READ' => self::READ,
-            'UPDATE' => self::UPDATE,
-            'DELETE' => self::DELETE,
-            'CREATE_LIST' => self::CREATE_LIST,
-            'READ_LIST' => self::READ_LIST,
-            'UPDATE_LIST' => self::UPDATE_LIST,
-            'DELETE_LIST' => self::DELETE_LIST,
-        ];
-    }
+    protected static $ValueMap = [
+        'CREATE' => self::CREATE,
+        'READ' => self::READ,
+        'UPDATE' => self::UPDATE,
+        'DELETE' => self::DELETE,
+        'CREATE_LIST' => self::CREATE_LIST,
+        'READ_LIST' => self::READ_LIST,
+        'UPDATE_LIST' => self::UPDATE_LIST,
+        'DELETE_LIST' => self::DELETE_LIST,
+    ];
 
     /**
      * True if an operation is CREATE_LIST, READ_LIST, UPDATE_LIST or

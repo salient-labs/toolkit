@@ -3,8 +3,7 @@
 namespace Lkrms\Utility;
 
 /**
- * Array functions for functional programming
- *
+ * Manipulate arrays
  *
  */
 final class Arr
@@ -260,7 +259,7 @@ final class Arr
     }
 
     /**
-     * Remove whitespace from the beginning and end of the elements of an array
+     * Remove whitespace from the beginning and end of an array's elements
      *
      * @template TKey of array-key
      * @template TValue of string|\Stringable
@@ -284,8 +283,8 @@ final class Arr
     }
 
     /**
-     * Remove whitespace from the beginning and end of the elements of an array,
-     * then remove empty elements from the array
+     * Remove whitespace from the beginning and end of an array's elements, then
+     * remove empty elements from the array
      *
      * @template TKey of array-key
      * @template TValue of string|\Stringable

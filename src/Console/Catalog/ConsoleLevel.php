@@ -2,27 +2,19 @@
 
 namespace Lkrms\Console\Catalog;
 
-use Lkrms\Concept\Enumeration;
-use Lkrms\Concern\HasConvertibleConstants;
-use Lkrms\Contract\IConvertibleEnumeration;
+use Lkrms\Concept\ConvertibleEnumeration;
+use LogicException;
 use Psr\Log\LogLevel;
-use UnexpectedValueException;
 
 /**
  * Console message levels
  *
  * Constants have the same values as their syslog / journalctl counterparts.
  *
- * @extends Enumeration<int>
- * @implements IConvertibleEnumeration<int>
+ * @extends ConvertibleEnumeration<int>
  */
-final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
+final class ConsoleLevel extends ConvertibleEnumeration
 {
-    /**
-     * @use HasConvertibleConstants<int>
-     */
-    use HasConvertibleConstants;
-
     public const EMERGENCY = 0;
     public const ALERT = 1;
     public const CRITICAL = 2;
@@ -31,6 +23,28 @@ final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
     public const NOTICE = 5;
     public const INFO = 6;
     public const DEBUG = 7;
+
+    protected static $NameMap = [
+        self::EMERGENCY => 'EMERGENCY',
+        self::ALERT => 'ALERT',
+        self::CRITICAL => 'CRITICAL',
+        self::ERROR => 'ERROR',
+        self::WARNING => 'WARNING',
+        self::NOTICE => 'NOTICE',
+        self::INFO => 'INFO',
+        self::DEBUG => 'DEBUG',
+    ];
+
+    protected static $ValueMap = [
+        'EMERGENCY' => self::EMERGENCY,
+        'ALERT' => self::ALERT,
+        'CRITICAL' => self::CRITICAL,
+        'ERROR' => self::ERROR,
+        'WARNING' => self::WARNING,
+        'NOTICE' => self::NOTICE,
+        'INFO' => self::INFO,
+        'DEBUG' => self::DEBUG,
+    ];
 
     private const LOG_LEVEL_MAP = [
         self::EMERGENCY => LogLevel::EMERGENCY,
@@ -43,49 +57,19 @@ final class ConsoleLevel extends Enumeration implements IConvertibleEnumeration
         self::DEBUG => LogLevel::DEBUG,
     ];
 
-    protected static function getNameMap(): array
-    {
-        return [
-            self::EMERGENCY => 'EMERGENCY',
-            self::ALERT => 'ALERT',
-            self::CRITICAL => 'CRITICAL',
-            self::ERROR => 'ERROR',
-            self::WARNING => 'WARNING',
-            self::NOTICE => 'NOTICE',
-            self::INFO => 'INFO',
-            self::DEBUG => 'DEBUG',
-        ];
-    }
-
-    protected static function getValueMap(): array
-    {
-        return [
-            'EMERGENCY' => self::EMERGENCY,
-            'ALERT' => self::ALERT,
-            'CRITICAL' => self::CRITICAL,
-            'ERROR' => self::ERROR,
-            'WARNING' => self::WARNING,
-            'NOTICE' => self::NOTICE,
-            'INFO' => self::INFO,
-            'DEBUG' => self::DEBUG,
-        ];
-    }
-
     public static function toCode(int $level, int $width = 1): string
     {
-        if (!array_key_exists($level, self::getNameMap())) {
-            throw new UnexpectedValueException("Invalid ConsoleLevel: $level");
+        if ((self::$NameMap[$level] ?? null) === null) {
+            throw new LogicException("Invalid ConsoleLevel: $level");
         }
-
         return sprintf("%0{$width}d", $level);
     }
 
     public static function toPsrLogLevel(int $level): string
     {
-        if (is_null($logLevel = self::LOG_LEVEL_MAP[$level] ?? null)) {
-            throw new UnexpectedValueException("Invalid ConsoleLevel: $level");
+        if (($logLevel = self::LOG_LEVEL_MAP[$level] ?? null) === null) {
+            throw new LogicException("Invalid ConsoleLevel: $level");
         }
-
         return $logLevel;
     }
 

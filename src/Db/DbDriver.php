@@ -2,15 +2,15 @@
 
 namespace Lkrms\Db;
 
-use Lkrms\Concept\ConvertibleEnumeration;
+use Lkrms\Concept\ReflectiveEnumeration;
 use LogicException;
 
 /**
  * Database connection drivers
  *
- * @extends ConvertibleEnumeration<int>
+ * @extends ReflectiveEnumeration<int>
  */
-final class DbDriver extends ConvertibleEnumeration
+final class DbDriver extends ReflectiveEnumeration
 {
     /**
      * IBM Db2
