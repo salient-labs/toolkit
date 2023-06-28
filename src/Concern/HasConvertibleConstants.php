@@ -79,4 +79,15 @@ trait HasConvertibleConstants
         }
         return $name;
     }
+
+    /**
+     * @return array<string,TValue>
+     */
+    public static function cases(): array
+    {
+        if ((self::$ValueMaps[static::class] ?? null) === null) {
+            self::$ValueMaps[static::class] = static::getValueMap();
+        }
+        return self::$ValueMaps[static::class];
+    }
 }

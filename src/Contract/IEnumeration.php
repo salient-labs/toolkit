@@ -3,7 +3,7 @@
 namespace Lkrms\Contract;
 
 /**
- * Defines public constants with unique values
+ * Has public constants with unique values
  *
  * @template TValue
  */

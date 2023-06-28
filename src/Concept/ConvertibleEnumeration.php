@@ -8,8 +8,7 @@ use LogicException;
 use ReflectionClass;
 
 /**
- * Uses reflection to convert the class's public constants to and from their
- * names
+ * Uses reflection to convert public constants to and from their names
  *
  * @template TValue
  *
@@ -37,10 +36,7 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
 
     private static function loadMaps(): void
     {
-        $constants =
-            (new ReflectionClass(static::class))
-                ->getReflectionConstants();
-
+        $constants = (new ReflectionClass(static::class))->getReflectionConstants();
         $valueMap = [];
         $nameMap = [];
         foreach ($constants as $constant) {
@@ -55,10 +51,9 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
         if (!$valueMap) {
             self::$ValueMaps[static::class] = [];
             self::$NameMaps[static::class] = [];
-
             return;
         }
-        if (count($valueMap) != count($nameMap)) {
+        if (count($valueMap) !== count($nameMap)) {
             throw new LogicException(
                 sprintf('Public constants are not unique: %s', static::class)
             );
@@ -71,16 +66,16 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
 
     final public static function fromName(string $name)
     {
-        if (($map = self::$ValueMaps[static::class] ?? null) === null) {
+        if ((self::$ValueMaps[static::class] ?? null) === null) {
             self::loadMaps();
-            $map = self::$ValueMaps[static::class];
         }
-        if (($value = $map[$name] ?? $map[strtoupper($name)] ?? null) === null) {
+        if (($value = self::$ValueMaps[static::class][$name]
+                ?? self::$ValueMaps[static::class][strtoupper($name)]
+                ?? null) === null) {
             throw new LogicException(
                 sprintf('Argument #1 ($name) is invalid: %s', $name)
             );
         }
-
         return $value;
     }
 
@@ -94,7 +89,42 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
                 sprintf('Argument #1 ($value) is invalid: %d', $value)
             );
         }
-
         return $name;
+    }
+
+    final public static function cases(): array
+    {
+        if ((self::$ValueMaps[static::class] ?? null) === null) {
+            self::loadMaps();
+        }
+        return self::$ValueMaps[static::class];
+    }
+
+    /**
+     * Get the values of constants from their names
+     *
+     * @param string[] $names
+     * @return TValue[]
+     */
+    final public static function fromNames(array $names): array
+    {
+        return array_map(
+            fn(string $name) => self::fromName($name),
+            $names
+        );
+    }
+
+    /**
+     * Get the names of constants from their values
+     *
+     * @param TValue[] $values
+     * @return string[]
+     */
+    final public static function toNames(array $values): array
+    {
+        return array_map(
+            fn($value): string => self::toName($value),
+            $values
+        );
     }
 }
