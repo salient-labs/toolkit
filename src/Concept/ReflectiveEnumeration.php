@@ -2,7 +2,6 @@
 
 namespace Lkrms\Concept;
 
-use Lkrms\Concern\HasConvertibleConstants;
 use Lkrms\Contract\IConvertibleEnumeration;
 use LogicException;
 use ReflectionClass;
@@ -15,24 +14,22 @@ use ReflectionClass;
  * @extends Enumeration<TValue>
  * @implements IConvertibleEnumeration<TValue>
  *
- * @see HasConvertibleConstants A trait that provides an alternative
- * implementation.
  */
 abstract class ReflectiveEnumeration extends Enumeration implements IConvertibleEnumeration
 {
-    /**
-     * Class name => [ constant name => value ]
-     *
-     * @var array<string,array<string,TValue>>
-     */
-    private static $ValueMaps = [];
-
     /**
      * Class name => [ constant value => name ]
      *
      * @var array<string,array<TValue,string>>
      */
     private static $NameMaps = [];
+
+    /**
+     * Class name => [ constant name => value ]
+     *
+     * @var array<string,array<string,TValue>>
+     */
+    private static $ValueMaps = [];
 
     private static function loadMaps(): void
     {
