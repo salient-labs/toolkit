@@ -25,9 +25,15 @@ class PhpDocTemplateTag extends PhpDocTag
      */
     public $IsClassTemplate;
 
-    public function __construct(string $name, ?string $type = null, bool $legacyNullable = false)
+    /**
+     * @var string|null
+     */
+    public $Variance;
+
+    public function __construct(string $name, ?string $type = null, ?string $variance = null, bool $legacyNullable = false)
     {
         parent::__construct('template', $name, $type, null, $legacyNullable);
+        $this->Variance = $variance;
         if (!$this->Name) {
             throw new UnexpectedValueException(sprintf('Invalid name: %s', $name));
         }

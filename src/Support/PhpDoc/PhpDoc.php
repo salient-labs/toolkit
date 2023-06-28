@@ -110,6 +110,11 @@ final class PhpDoc implements IReadable
     private $NextLine;
 
     /**
+     * @var string|null
+     */
+    private static $PhpDocTypeRegex;
+
+    /**
      * @param bool $legacyNullable If `true`, convert `<type>|null` and
      * `null|<type>` to `?<type>`.
      */
@@ -170,21 +175,15 @@ final class PhpDoc implements IReadable
             // by a multi-line description, otherwise the first word of any
             // descriptions that start on the next line will be extracted too
             $metaCount = 0;
+            unset($name, $covariant);
             switch ($tag) {
                 // @param [type] $<name> [description]
                 case 'param':
+                    $text = $this->getTagType($text, $type);
                     $token = strtok($text, " \t\n\r");
-                    $type = null;
-                    if (($token[0] ?? null) !== '$') {
-                        $type = $token;
-                        $metaCount++;
-                        $token = strtok(" \t\n\r");
-                        if ($token === false || ($token[0] ?? null) !== '$') {
-                            /**
-                             * @todo Report an invalid tag here
-                             */
-                            continue 2;
-                        }
+                    if ($token === false || ($token[0] ?? null) !== '$') {
+                        /** @todo Report an invalid tag here */
+                        continue 2;
                     }
                     if ($name = substr($token, 1)) {
                         $metaCount++;
@@ -199,9 +198,7 @@ final class PhpDoc implements IReadable
 
                 // @return <type> [description]
                 case 'return':
-                    $token = strtok($text, " \t\n\r");
-                    $type = $token;
-                    $metaCount++;
+                    $text = $this->getTagType($text, $type);
                     $this->Return = new PhpDocReturnTag(
                         $type,
                         $this->getTagDescription($text, $metaCount),
@@ -211,12 +208,9 @@ final class PhpDoc implements IReadable
 
                 // @var [type] [$<name>] [description]
                 case 'var':
-                    unset($name);
                     // Assume the first token is a type
-                    $token = strtok($text, " \t\n\r");
-                    $type = $token;
-                    $metaCount++;
-                    $token = strtok(" \t");
+                    $text = $this->getTagType($text, $type);
+                    $token = strtok($text, " \t");
                     // Also assume that if a name is given, it's for a variable
                     // and not a constant
                     if ($token !== false && ($token[0] ?? null) === '$') {
@@ -242,10 +236,12 @@ final class PhpDoc implements IReadable
                     }
                     break;
 
-                // @template <name> [of <type>]
-                case 'template':
-                // @template-covariant <name> [of <type>]
+                // - @template <name> [of <type>]
+                // - @template-covariant <name> [of <type>]
                 case 'template-covariant':
+                    $covariant = true;
+                case 'template':
+                    $covariant = $covariant ?? false;
                     $token = strtok($text, " \t");
                     $name = $token;
                     $metaCount++;
@@ -253,15 +249,16 @@ final class PhpDoc implements IReadable
                     $type = 'mixed';
                     if ($token === 'of') {
                         $metaCount++;
-                        $token = strtok(" \t");
+                        $token = strtok('');
                         if ($token !== false) {
                             $metaCount++;
-                            $type = $token;
+                            $this->getTagType($token, $type);
                         }
                     }
                     $this->Templates[$name] = new PhpDocTemplateTag(
                         $name,
                         $type,
+                        $covariant ? 'covariant' : null,
                         $this->LegacyNullable
                     );
                     break;
@@ -317,6 +314,24 @@ final class PhpDoc implements IReadable
                 $this->mergeValue($this->Templates[$name], $tag);
             }
         }
+    }
+
+    /**
+     * Extract a PHPDoc type from $text if present
+     *
+     */
+    private function getTagType(string $text, ?string &$type): string
+    {
+        $regex = self::$PhpDocTypeRegex
+            ?: (self::$PhpDocTypeRegex = Regex::delimit('^' . Regex::PHPDOC_TYPE, '/', false));
+        $type = null;
+        if (preg_match($regex, $text, $matches, PREG_OFFSET_CAPTURE)) {
+            /** @var array<array{0:string,1:int}> $matches */
+            $type = $matches[0][0];
+            return ltrim(substr_replace($text, '', $matches[0][1], strlen($matches[0][0])));
+        }
+
+        return $text;
     }
 
     /**

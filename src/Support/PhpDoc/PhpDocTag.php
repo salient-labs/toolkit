@@ -2,6 +2,7 @@
 
 namespace Lkrms\Support\PhpDoc;
 
+use Lkrms\Facade\Convert;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 
 /**
@@ -70,46 +71,59 @@ class PhpDocTag
             return null;
         }
 
-        $search = '/(^|(?<=\||&))class-string<mixed>($|(?=\||&))/';
-        $replace = 'class-string';
+        $replace = [
+            '/\bclass-string<mixed>/i' => 'class-string',
+        ];
+        $replace =
+            fn(array $types): array =>
+                preg_replace(array_keys($replace), array_values($replace), $types);
 
-        // Normalise nullable types, e.g. `?string` and `null|string`
-        $nullable = preg_replace('/^(\?|null\|)|\|null$/', '', $type, -1, $count);
-        if ($count && preg_match(Regex::anchorAndDelimit(Regex::PHPDOC_TYPE), $nullable)) {
-            $nullable = preg_replace($search, $replace, $nullable);
-            return $legacyNullable ? "?$nullable" : "$nullable|null";
+        if (!preg_match(
+            Regex::anchorAndDelimit(Regex::PHPDOC_TYPE, '/', false),
+            trim($type),
+            $matches
+        )) {
+            return $replace([$type])[0];
         }
 
-        $types = explode('|', $type);
-        // Leave invalid types alone
-        $regex = count($types) > 1
-            ? Regex::anchorAndDelimit(Regex::PHP_DNF_SEGMENT)
-            : Regex::anchorAndDelimit('(' . Regex::PHP_TYPE . '|' . Regex::PHP_INTERSECTION_TYPE . ')');
-        if (array_filter($types, fn(string $t) => !preg_match($regex, $t))) {
-            return preg_replace($search, $replace, $type);
+        $types = Convert::splitAndTrimOutsideBrackets('|', $type);
+
+        // Move `null` to the end of union types
+        $notNull = array_filter(
+            array_map(
+                fn(string $t): string => ltrim($t, '?'),
+                $types
+            ),
+            fn(string $t): bool => (bool) strcasecmp($t, 'null')
+        );
+        if ($notNull !== $types) {
+            $types = $notNull;
+            $nullable = true;
         }
-        // Move `null` to the end of a union or DNF type
-        $notNullTypes = array_filter($types, fn(string $t) => $t !== 'null');
-        if ($types !== $notNullTypes) {
-            $types = $notNullTypes;
-            $types[] = 'null';
-        }
+
         // Simplify composite types
+        $phpTypeRegex = Regex::anchorAndDelimit(Regex::PHP_TYPE);
         foreach ($types as &$type) {
             $brackets = false;
-            if (($type[0] ?? null) === '(') {
+            if ($type && $type[0] === '(' && $type[-1] === ')') {
                 $brackets = true;
                 $type = substr($type, 1, -1);
             }
-            $_types = array_unique(explode('&', $type));
-            $_types = preg_replace($search, $replace, $_types);
-            $type = implode('&', $_types);
-            if ($brackets && count($_types) > 1) {
+            $type = implode('&', $_types = array_unique($replace(explode('&', $type))));
+            if ($brackets && (count($_types) > 1 ||
+                    !preg_match($phpTypeRegex, $type))) {
                 $type = "($type)";
             }
         }
-        $types = array_unique($types);
-        $types = preg_replace($search, $replace, $types);
+        $types = array_unique($replace($types));
+        if ($nullable ?? false) {
+            if ($legacyNullable && count($types) === 1) {
+                $types[0] = '?' . $types[0];
+            } else {
+                $types[] = 'null';
+            }
+        }
+
         return implode('|', $types);
     }
 

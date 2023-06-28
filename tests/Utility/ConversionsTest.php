@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Facade\Convert;
-use UnexpectedValueException;
+use LogicException;
 
 final class ConversionsTest extends \Lkrms\Tests\TestCase
 {
@@ -172,7 +172,7 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
             'B' => 'value3',
         ], $data4);
 
-        $this->expectException(UnexpectedValueException::class);
+        $this->expectException(LogicException::class);
         $slice = Convert::getInstance()->arraySpliceAtKey($data5, 'c', 2);
     }
 
@@ -199,7 +199,7 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
             0 => 'value3',
         ], Convert::renameArrayKey('B', 0, $data));
 
-        $this->expectException(UnexpectedValueException::class);
+        $this->expectException(LogicException::class);
         $slice = Convert::renameArrayKey('c', 2, $data);
     }
 

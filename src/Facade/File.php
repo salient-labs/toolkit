@@ -44,6 +44,7 @@ final class File extends Facade
      * @param iterable<mixed[]> $data
      * @param string|resource|null $target
      * @param int|string|null $nullValue
+     * @param callable(mixed): mixed[] $callback
      * @param int|null $count
      * @return string|true
      * @see Filesystem::writeCsv()

@@ -297,7 +297,7 @@ final class Filesystem
      * before the first row.
      * @param int|string|null $nullValue Optionally replace `null` values before
      * writing data.
-     * @param callable(mixed[]): mixed[] $callback Applied to each record before
+     * @param callable(mixed): mixed[] $callback Applied to each record before
      * it is written.
      * @param int|null $count Receives the number of records written.
      * @param bool $utf16le If `true` (the default), encode output in UTF-16LE.

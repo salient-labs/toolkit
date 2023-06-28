@@ -20,7 +20,7 @@ use Lkrms\Utility\Environment;
  * @method static Application getInstance() Get the underlying Application instance
  * @method static bool isLoaded() True if an underlying Application instance has been loaded
  * @method static void unload() Clear the underlying Application instance
- * @method static Application apply(callable $callback) Move to the next method in the chain after applying a callback to the object (see {@see FluentInterface::apply()})
+ * @method static Application apply(callable($this): $this $callback) Move to the next method in the chain after applying a callback to the object
  * @method static Application bind(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container (see {@see Container::bind()})
  * @method static Application bindIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container if it isn't already registered
  * @method static Environment env() Get the Env facade's underlying Environment instance
@@ -39,7 +39,7 @@ use Lkrms\Utility\Environment;
  * @method static string getTempPath() Get a writable directory for the application's ephemeral data
  * @method static bool has(class-string $id) True if the container can resolve an identifier to an instance (see {@see Container::has()})
  * @method static bool hasGlobalContainer() True if the global container is set
- * @method static Application if($condition, callable $then, ?callable $else = null) Move to the next method in the chain after applying a conditional callback to the object (see {@see FluentInterface::if()})
+ * @method static Application if((callable($this): bool)|bool $condition, (callable($this): $this) $then, (callable($this): $this)|null $else = null) Move to the next method in the chain after applying a conditional callback to the object (see {@see FluentInterface::if()})
  * @method static Container inContextOf(class-string $id) Apply the contextual bindings of a service to a copy of the container
  * @method static bool inProduction() True if the application is in production, false if it's running from source (see {@see Application::inProduction()})
  * @method static Application instance(class-string $id, mixed $instance) Register an existing instance with the container as a shared binding

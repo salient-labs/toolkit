@@ -93,26 +93,76 @@ final class RegularExpression extends Dictionary
      * A valid PHPDoc type
      *
      */
-    public const PHPDOC_TYPE = '(?x)
-(?(DEFINE)
-  (?<php_type> ' . self::PHP_FULL_TYPE . ' )
-  (?<phpdoc_type> [[:alpha:]_\x80-\xff] (?: -? [[:alnum:]_\x80-\xff]++ )*+ )
-  (?<php_variable> (?: = | \s*+ (?: & \s*+ )? (?: \.\.\. \s*+ )? \$ [[:alpha:]_\x80-\xff] [[:alnum:]_\x80-\xff]*+ \s*+ (?: = \s*+ )? ) )
-)
-(
-  (?: callable | Closure ) \s*+ \(
-    \s*+ (?: (?-1) (?&php_variable)? (?: , \s*+ (?-1) (?&php_variable)? )*+ )?
-  \) (?: \s*+ : \s*+ (?-1) )? |
-  (?: (?&phpdoc_type) | (?&php_type) )
-  (?: :: (?= \* | [[:alpha:]_\x80-\xff] )
-    (?: [[:alpha:]_\x80-\xff] [[:alnum:]_\x80-\xff]*+ )?
-    (?: \* )?
-  )?
-  (?: < (?-1) (?: \s*+ , \s*+ (?-1) )*+ > )?
-  (?: \[\] )?
-  (?: \s*+ (?: \| | & ) \s*+ (?-1) )? |
-  \( \s*+ (?-1) \s*+ \)
-)';
+    public const PHPDOC_TYPE = <<<'REGEX'
+        (?xi)
+        (?(DEFINE)
+          # \s matches non-breaking space (\xA0) in some locales, so (?&sp) is used instead
+          (?<sp> [\f\n\r\t\x0b ] )
+          (?<lnum> [0-9]+ (?: _ [0-9]+ )* )
+          (?<dnum> (?: [0-9]* (?: _ [0-9]+ )* \. (?&lnum) ) | (?: (?&lnum) \. [0-9]* (?: _ [0-9]+ )* ) )
+          (?<exponent_dnum> (?: (?&lnum) | (?&dnum) ) e [+-]? (?&lnum) )
+          (?<php_identifier> [[:alpha:]_\x80-\xff] [[:alnum:]_\x80-\xff]* )
+          (?<php_type> \\ (?&php_identifier) (?: \\ (?&php_identifier) )* | (?&php_identifier) (?: \\ (?&php_identifier) )+ )
+          (?<phpdoc_type> (?&php_identifier) (?: - [[:alnum:]_\x80-\xff]+ )+ )
+          (?<variable> \$ (?&php_identifier) )
+          (?<variance> covariant | contravariant )
+          (?<param> \s*+ (?: & \s*+ )? (?: \.\.\. \s*+ )? (?: (?&variable) \s*+ )? =? )
+          (?<trailing> (?: \s*+ , (?: \s*+ \.\.\. (?: \s*+ , )? )? )? \s*+ )
+        )
+        (
+          (?:
+            \* |
+
+            \$this |
+
+            # String
+            ' (?: [^'\\]*+ | \\' | \\ )*+ ' |
+            " (?: [^"\\]*+ | \\" | \\ )*+ " |
+
+            # Number
+            [+-]? (?:
+              (?&exponent_dnum) |
+              (?&dnum) |
+              0x    [0-9a-f]++ (?: _ [0-9a-f]++ )*+ |
+              0b    [01]++     (?: _ [01]++     )*+ |
+              0o?   [0-7]++    (?: _ [0-7]++    )*+ |
+              [1-9] [0-9]*+    (?: _ [0-9]++    )*+ |
+              0
+            ) |
+
+            # Closure with optional parameter and return types
+            (?: callable | Closure ) \s*+ \(
+                (?&sp)*+ (?: (?-1) (?&param)
+                    (?: \s*+ , (?&sp)*+ (?-1) (?&param) )*+
+                    (?&trailing) | \.\.\. \s*+ )?
+            \)
+            (?: \s* : (?&sp)*+ (?-1) )? |
+
+            # Native or PHPDoc type, possibly nullable, with optional
+            # "::CONST_*", "<Type,...>", and/or "{0?:Type,...}"
+            (?: \? (?&sp)*+ )?
+            (?: (?&php_type) | (?&phpdoc_type) | (?&php_identifier) )
+            (?: :: [[:alpha:]_\x80-\xff*] [[:alnum:]_\x80-\xff*]*+ )?
+            (?: \s* < (?&sp)*+ (?: (?&variance) (?&sp)*+ )? (?! (?&variance) \b ) (?-1)
+                (?: \s*+ , (?&sp)*+ (?: (?&variance) (?&sp)*+ )? (?! (?&variance) \b ) (?-1) )*+
+                (?&trailing) > )?
+            (?: \s* \{ (?&sp)*+ (?:
+                (?: (?-1) \s*+ (?: \? \s*+ )? : (?&sp)*+ )? (?-1)
+                (?: \s*+ , (?&sp)*+ (?: (?-1) \s*+ (?: \? \s*+ )? : (?&sp)*+ )? (?-1) )*+
+                (?&trailing) | \.\.\. \s*+ )? \} )*+ |
+
+            # Conditional return type
+            (?: (?&variable) | (?&php_identifier) ) \s+ is (?: \s++ not )? \b (?&sp)*+ (?-1)
+                \s*+ \? (?&sp)*+ (?-1)
+                \s*+ :  (?&sp)*+ (?-1) |
+
+            # Enclosing parentheses
+            (?: \? \s*+ )? \( (?&sp)*+ (?-1) \s*+ \)
+          )
+          (?: \s* \[ (?&sp)*+ (?: (?-1) \s*+ )? \] )*+
+          (?: \s* (?: \| | & ) (?&sp)* (?-1) )?
+        )
+        REGEX;
 
     public static function delimit(
         string $regex,

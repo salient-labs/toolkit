@@ -260,6 +260,48 @@ final class Arr
     }
 
     /**
+     * Remove whitespace from the beginning and end of the elements of an array
+     *
+     * @template TKey of array-key
+     * @template TValue of string|\Stringable
+     * @param array<TKey,TValue> $array
+     * @param string|null $characters Optionally specify characters to remove
+     * instead of whitespace.
+     * @return array<TKey,string>
+     */
+    public static function trim(array $array, ?string $characters = null): array
+    {
+        if ($characters === null) {
+            foreach ($array as $key => $value) {
+                $trimmed[$key] = trim((string) $value);
+            }
+            return $trimmed ?? [];
+        }
+        foreach ($array as $key => $value) {
+            $trimmed[$key] = trim((string) $value, $characters);
+        }
+        return $trimmed ?? [];
+    }
+
+    /**
+     * Remove whitespace from the beginning and end of the elements of an array,
+     * then remove empty elements from the array
+     *
+     * @template TKey of array-key
+     * @template TValue of string|\Stringable
+     * @param array<TKey,TValue> $array
+     * @param string|null $characters Optionally specify characters to remove
+     * instead of whitespace.
+     * @return array<TKey,non-empty-string>
+     */
+    public static function trimAndCompact(array $array, ?string $characters = null): array
+    {
+        return array_filter(
+            self::trim($array, $characters)
+        );
+    }
+
+    /**
      * Apply a callback to the elements of an array
      *
      * @template TKey of array-key
@@ -268,7 +310,7 @@ final class Arr
      * @param array<TKey,TValue> $array
      * @return array<TKey,TValue>
      */
-    public static function forEach(callable $callback, array $array)
+    public static function forEach(callable $callback, array $array): array
     {
         foreach ($array as $key => $value) {
             $callback($value, $key);
