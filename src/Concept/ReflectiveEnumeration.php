@@ -18,7 +18,7 @@ use ReflectionClass;
  * @see HasConvertibleConstants A trait that provides an alternative
  * implementation.
  */
-abstract class ConvertibleEnumeration extends Enumeration implements IConvertibleEnumeration
+abstract class ReflectiveEnumeration extends Enumeration implements IConvertibleEnumeration
 {
     /**
      * Class name => [ constant name => value ]

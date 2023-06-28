@@ -2,14 +2,14 @@
 
 namespace Lkrms\Sync\Catalog;
 
-use Lkrms\Concept\ConvertibleEnumeration;
+use Lkrms\Concept\ReflectiveEnumeration;
 
 /**
  * Sync entity data sources
  *
- * @extends ConvertibleEnumeration<int>
+ * @extends ReflectiveEnumeration<int>
  */
-final class SyncEntitySource extends ConvertibleEnumeration
+final class SyncEntitySource extends ReflectiveEnumeration
 {
     /**
      * An HTTP GET response

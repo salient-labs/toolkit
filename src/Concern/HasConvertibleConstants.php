@@ -2,7 +2,7 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Concept\ConvertibleEnumeration;
+use Lkrms\Concept\ReflectiveEnumeration;
 use Lkrms\Contract\IConvertibleEnumeration;
 use LogicException;
 
@@ -13,7 +13,7 @@ use LogicException;
  * @template TValue
  *
  * @see IConvertibleEnumeration Implemented by this trait.
- * @see ConvertibleEnumeration An abstract class that provides an alternative
+ * @see ReflectiveEnumeration An abstract class that provides an alternative
  * implementation using reflection.
  */
 trait HasConvertibleConstants

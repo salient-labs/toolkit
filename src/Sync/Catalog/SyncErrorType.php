@@ -2,14 +2,14 @@
 
 namespace Lkrms\Sync\Catalog;
 
-use Lkrms\Concept\ConvertibleEnumeration;
+use Lkrms\Concept\ReflectiveEnumeration;
 
 /**
  * Sync error types
  *
- * @extends ConvertibleEnumeration<int>
+ * @extends ReflectiveEnumeration<int>
  */
-final class SyncErrorType extends ConvertibleEnumeration
+final class SyncErrorType extends ReflectiveEnumeration
 {
     /**
      * No entities matching the criteria were returned by the provider
