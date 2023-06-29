@@ -17,7 +17,6 @@ use Lkrms\Facade\File;
 use Lkrms\Facade\Format;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
-use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Utility\Environment;
 use Lkrms\Utility\Test;
 use Phar;

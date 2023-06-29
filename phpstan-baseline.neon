@@ -1061,41 +1061,6 @@ parameters:
 			path: src/Utility/Reflection.php
 
 		-
-			message: "#^Property Lkrms\\\\Tests\\\\Cli\\\\Command\\\\TestOptions\\:\\:\\$flag1 has no type specified\\.$#"
-			count: 1
-			path: tests/Cli/Command/TestOptions.php
-
-		-
-			message: "#^Property Lkrms\\\\Tests\\\\Cli\\\\Command\\\\TestOptions\\:\\:\\$oneOf1 has no type specified\\.$#"
-			count: 1
-			path: tests/Cli/Command/TestOptions.php
-
-		-
-			message: "#^Property Lkrms\\\\Tests\\\\Cli\\\\Command\\\\TestOptions\\:\\:\\$oneOfOpt3 has no type specified\\.$#"
-			count: 1
-			path: tests/Cli/Command/TestOptions.php
-
-		-
-			message: "#^Property Lkrms\\\\Tests\\\\Cli\\\\Command\\\\TestOptions\\:\\:\\$oneOfPos1 has no type specified\\.$#"
-			count: 1
-			path: tests/Cli/Command/TestOptions.php
-
-		-
-			message: "#^Property Lkrms\\\\Tests\\\\Cli\\\\Command\\\\TestOptions\\:\\:\\$val1 has no type specified\\.$#"
-			count: 1
-			path: tests/Cli/Command/TestOptions.php
-
-		-
-			message: "#^Property Lkrms\\\\Tests\\\\Cli\\\\Command\\\\TestOptions\\:\\:\\$valOpt1 has no type specified\\.$#"
-			count: 1
-			path: tests/Cli/Command/TestOptions.php
-
-		-
-			message: "#^Property Lkrms\\\\Tests\\\\Cli\\\\Command\\\\TestOptions\\:\\:\\$valPos1 has no type specified\\.$#"
-			count: 1
-			path: tests/Cli/Command/TestOptions.php
-
-		-
 			message: "#^Class Lkrms\\\\Tests\\\\Concept\\\\Facade\\\\MyFacade extends generic class Lkrms\\\\Concept\\\\Facade but does not specify its types\\: TClass$#"
 			count: 1
 			path: tests/Concept/Facade/MyFacade.php

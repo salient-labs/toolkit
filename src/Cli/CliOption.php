@@ -559,8 +559,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      */
     private function getUnknownValueMessage(array $invalid, ?string $source): string
     {
-        // "invalid --field values 'title','name' (expected one
-        // of: first,last)"
+        // "invalid --field values 'title','name' (expected one of: first,last)"
         return "invalid {$this->DisplayName} "
             . Convert::plural(count($invalid), 'value') . " '" . implode("','", $invalid) . "'"
             . ($source ? " in $source" : '')
@@ -613,9 +612,10 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      * @internal
      * @param string|string[]|bool|int|null $value
      * @param bool $normalise `false` if `$value` has already been normalised.
-     * @param bool $expand If `true`, replace `null` with the default value of
-     * the option if it has an optional value. Ignored if `$normalise` is
-     * `false`.
+     * @param bool $expand If `true`, replace `null` (or `true`, if the option
+     * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
+     * with the default value of the option if it has an optional value. Ignored
+     * if `$normalise` is `false`.
      * @return mixed
      * @see CliOption::normaliseValue()
      */
@@ -637,8 +637,9 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      *
      * @internal
      * @param string|string[]|bool|int|null $value
-     * @param bool $expand If `true`, replace `null` with the default value of
-     * the option if it has an optional value.
+     * @param bool $expand If `true`, replace `null` (or `true`, if the option
+     * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
+     * with the default value of the option if it has an optional value.
      * @return mixed
      * @see CliOption::$ValueType
      * @see CliOption::$ValueCallback
@@ -648,9 +649,11 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         bool $expand = false
     ) {
         if ($expand &&
-                $this->ValueOptional &&
-                $this->DefaultValue !== null &&
-                $value === null) {
+            $this->ValueOptional &&
+            $this->DefaultValue !== null &&
+            ($value === null ||
+                ($this->ValueType !== CliOptionValueType::BOOLEAN &&
+                    $value === true))) {
             $value = $this->DefaultValue;
         }
 
