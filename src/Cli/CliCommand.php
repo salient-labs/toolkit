@@ -2,6 +2,7 @@
 
 namespace Lkrms\Cli;
 
+use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
@@ -842,7 +843,11 @@ abstract class CliCommand implements ICliCommand
         foreach ($this->Options as $option) {
             $value = $this->OptionValues[$option->Key] ?? null;
             $wasArg = array_key_exists($option->Key, $this->ArgumentValues);
-            if ($export && !$wasArg &&
+            if ($export &&
+                (!$wasArg ||
+                    // Skip this option if `$value` is empty because
+                    // user-supplied values were discarded
+                    ($value === [] && $option->isOriginalDefaultValue($value))) &&
                 (($option->IsFlag && !$value) ||
                     ($option->ValueRequired && $option->isOriginalDefaultValue($value)) ||
                     ($option->ValueOptional && $value === null))) {
@@ -853,7 +858,10 @@ abstract class CliCommand implements ICliCommand
                 $name = $nameCallback($name);
             }
             $values[$name] = $export && $wasArg && $option->ValueOptional
-                ? $this->ArgumentValues[$option->Key]
+                ? Convert::coalesce(
+                    $this->ArgumentValues[$option->Key],
+                    $option->ValueType !== CliOptionValueType::BOOLEAN ? true : null
+                )
                 : $value;
         }
 
@@ -893,9 +901,10 @@ abstract class CliCommand implements ICliCommand
      * @param array<string,string|string[]|bool|int|null> $values An array that
      * maps options to values.
      * @param bool $normalise `false` if `$value` has already been normalised.
-     * @param bool $expand If `true`, replace `null` with the default value of
-     * the option if it has an optional value. Ignored if `$normalise` is
-     * `false`.
+     * @param bool $expand If `true`, replace `null` (or `true`, if the option
+     * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
+     * with the default value of the option if it has an optional value. Ignored
+     * if `$normalise` is `false`.
      * @param bool $asArguments If `true`, assign the values to the command as
      * if they had been given on the command line.
      * @return array<string,mixed>
@@ -933,8 +942,9 @@ abstract class CliCommand implements ICliCommand
      * Normalise an array that maps options to user-supplied values
      *
      * @param array<string,string|string[]|bool|int|null> $values
-     * @param bool $expand If `true`, replace `null` with the default value of
-     * the option if it has an optional value.
+     * @param bool $expand If `true`, replace `null` (or `true`, if the option
+     * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
+     * with the default value of the option if it has an optional value.
      * @param (callable(string): string)|null $nameCallback
      * @param array<string,string|string[]|bool|int|null>|null $invalid
      * @return array<string,mixed>

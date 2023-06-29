@@ -9,18 +9,39 @@ use Lkrms\Facade\Convert;
 
 class TestOptions extends CliCommand
 {
+    /**
+     * @var bool
+     */
     public $flag1;
 
+    /**
+     * @var string
+     */
     public $valPos1;
 
+    /**
+     * @var string|null
+     */
     public $val1;
 
+    /**
+     * @var string|null
+     */
     public $valOpt1;
 
+    /**
+     * @var string
+     */
     public $oneOfPos1;
 
+    /**
+     * @var string|null
+     */
     public $oneOf1;
 
+    /**
+     * @var string[]|null
+     */
     public $oneOfOpt3;
 
     public function description(): string
