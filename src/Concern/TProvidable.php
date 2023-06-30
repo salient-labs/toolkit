@@ -2,6 +2,7 @@
 
 namespace Lkrms\Concern;
 
+use Generator;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
@@ -169,14 +170,14 @@ trait TProvidable
      * @param TProvider $provider
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
-     * @return iterable<array-key,static>
+     * @return Generator<array-key,static>
      */
     private static function _provideList(
         iterable $dataList,
         IProvider $provider,
         int $conformity,
         ?IProviderContext $context
-    ): iterable {
+    ): Generator {
         $container = ($context
             ? $context->container()
             : $provider->container())->inContextOf(get_class($provider));

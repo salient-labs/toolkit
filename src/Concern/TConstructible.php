@@ -2,6 +2,7 @@
 
 namespace Lkrms\Concern;
 
+use Generator;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
@@ -56,14 +57,14 @@ trait TConstructible
      * @param static|null $parent If the class implements
      * {@see \Lkrms\Contract\IHierarchy}, pass `$parent` to each instance via
      * {@see \Lkrms\Contract\IHierarchy::setParent()}.
-     * @return iterable<static>
+     * @return Generator<static>
      */
     final public static function constructList(
         iterable $dataList,
         int $conformity = ArrayKeyConformity::NONE,
         ?IContainer $container = null,
         $parent = null
-    ): iterable {
+    ): Generator {
         if (!$container) {
             $container = Container::requireGlobalContainer();
         }

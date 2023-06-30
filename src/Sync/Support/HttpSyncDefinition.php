@@ -9,7 +9,6 @@ use Lkrms\Contract\IPipeline;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
-use Lkrms\Facade\Convert;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Support\Pipeline;
@@ -192,8 +191,8 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
      * @param array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $overrides
-     * @param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $pipelineFromBackend
-     * @param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $pipelineToBackend
+     * @param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
+     * @param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
      * @param mixed[]|null $query
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
@@ -345,7 +344,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                     fn(ISyncContext $ctx, ISyncEntity $entity, ...$args): ISyncEntity =>
                         $this->getPipelineToBackend()
                              ->send($entity, [$operation, $ctx, $entity, ...$args])
-                             ->then(fn($data) => ($httpRunner)($ctx, $data, ...$args))
+                             ->then(fn($data) => $this->getRoundTripPayload(($httpRunner)($ctx, $data, ...$args), $entity, $operation))
                              ->runInto($this->getRoundTripPipeline($operation))
                              ->run();
 
@@ -360,16 +359,27 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             case SyncOperation::CREATE_LIST:
             case SyncOperation::UPDATE_LIST:
             case SyncOperation::DELETE_LIST:
-                $entity = null;
                 return
-                    function (ISyncContext $ctx, iterable $entities, ...$args) use (&$entity, $operation, $httpRunner): iterable {
+                    function (ISyncContext $ctx, iterable $entities, ...$args) use ($operation, $httpRunner): iterable {
+                        $entity = null;
+                        if ($this->SyncOneEntityPerRequest) {
+                            $payload = &$entity;
+                            $after = function (ISyncEntity $e) use (&$entity) { return $entity = $e; };
+                        } else {
+                            $payload = [];
+                            $after = function (ISyncEntity $e) use (&$entity, &$payload) { return $payload[] = $entity = $e; };
+                        }
+                        $then = function ($data) use ($operation, $httpRunner, $ctx, $args, &$payload) {
+                            return $this->getRoundTripPayload(($httpRunner)($ctx, $data, ...$args), $payload, $operation);
+                        };
+
                         return $this->getPipelineToBackend()
                                     ->stream($entities, [$operation, $ctx, &$entity, ...$args])
-                                    ->after(function (ISyncEntity $e) use (&$entity) { return $entity = $e; })
+                                    ->after($after)
                                     ->if(
                                         $this->SyncOneEntityPerRequest,
-                                        fn(IPipeline $p) => $p->then(fn($data) => ($httpRunner)($ctx, $data, ...$args)),
-                                        fn(IPipeline $p) => $p->collectThen(fn($data) => Convert::toList(($httpRunner)($ctx, $data, ...$args)))
+                                        fn(IPipeline $p) => $p->then($then),
+                                        fn(IPipeline $p) => $p->collectThen($then)
                                     )
                                     ->startInto($this->getRoundTripPipeline($operation))
                                     ->start();
@@ -390,7 +400,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     /**
      * Get a closure to perform a sync operation via HTTP
      *
-     * @param SyncOperation::* $operation
+     * @param int&SyncOperation::* $operation
      * @return Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]
      */
     private function getHttpOperationClosure(int $operation): Closure
@@ -460,16 +470,40 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     }
 
     /**
+     * Get a payload for the round trip pipeline
+     *
+     * @param mixed[] $response
+     * @param TEntity[]|TEntity $requestPayload
      * @param int&SyncOperation::* $operation
-     * @return IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>
+     * @return mixed[]
+     */
+    private function getRoundTripPayload($response, $requestPayload, int $operation)
+    {
+        switch ($this->ReturnEntitiesFrom) {
+            case SyncEntitySource::HTTP_WRITE:
+                return $response;
+
+            case SyncEntitySource::SYNC_OPERATION:
+                return $requestPayload;
+
+            default:
+                throw new SyncInvalidEntitySourceException(
+                    $this->Provider, $this->Entity, $operation, $this->ReturnEntitiesFrom
+                );
+        }
+    }
+
+    /**
+     * @param int&SyncOperation::* $operation
+     * @return IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
      */
     private function getRoundTripPipeline(int $operation): IPipeline
     {
         switch ($this->ReturnEntitiesFrom) {
             case SyncEntitySource::SYNC_OPERATION:
-                return (new Pipeline())
-                    ->through(fn($payload, Closure $next, $pipeline, array $arg) => $next($arg[2]));
+                return new Pipeline();
 
+            case SyncEntitySource::HTTP_READ:
             case SyncEntitySource::HTTP_WRITE:
                 return $this->getPipelineFromBackend();
 

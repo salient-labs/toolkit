@@ -42,8 +42,8 @@ final class DbSyncDefinition extends SyncDefinition implements HasBuilder
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
      * @param array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $overrides
-     * @param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $pipelineFromBackend
-     * @param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|ISyncEntity|ISyncEntity[]|null,...}>|null $pipelineToBackend
+     * @param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
+     * @param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
      */
     public function __construct(

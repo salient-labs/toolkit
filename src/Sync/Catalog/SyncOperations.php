@@ -28,4 +28,18 @@ final class SyncOperations extends Enumeration
         SyncOperation::UPDATE_LIST,
         SyncOperation::DELETE_LIST,
     ];
+
+    public const ALL_READ = [
+        SyncOperation::READ,
+        SyncOperation::READ_LIST,
+    ];
+
+    public const ALL_WRITE = [
+        SyncOperation::CREATE,
+        SyncOperation::UPDATE,
+        SyncOperation::DELETE,
+        SyncOperation::CREATE_LIST,
+        SyncOperation::UPDATE_LIST,
+        SyncOperation::DELETE_LIST,
+    ];
 }

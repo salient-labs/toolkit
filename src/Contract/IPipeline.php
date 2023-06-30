@@ -170,12 +170,11 @@ interface IPipeline extends IFluentInterface, IImmutable
      * {@see IPipeline::collectThen()} can only be called once per pipeline, and
      * only if {@see IPipeline::then()} is not also called.
      *
-     * The callback should return an array with the same signature as the array
-     * it receives, i.e. the same keys in the same order. Its contents are
-     * returned to the caller via a forward-only iterator.
+     * Values returned by the callback are returned to the caller via a
+     * forward-only iterator.
      *
      * @template TThenOutput
-     * @param callable(array<TInput|TOutput>, IPipeline<TInput,TOutput,TArgument>, TArgument): TThenOutput[] $callback
+     * @param callable(array<TInput|TOutput>, IPipeline<TInput,TOutput,TArgument>, TArgument): iterable<TThenOutput> $callback
      * ```php
      * fn(array $results, IPipeline $pipeline, $arg): array
      * ```

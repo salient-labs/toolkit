@@ -3,6 +3,7 @@
 namespace Lkrms\Curler;
 
 use DateTimeInterface;
+use Generator;
 use Lkrms\Concern\HasMutator;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
@@ -1166,9 +1167,9 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * @param mixed[]|null $query
      * @param mixed[]|object|null $data
-     * @return iterable<mixed>
+     * @return Generator<mixed>
      */
-    private function paginate(string $method, ?array $query, $data = null): iterable
+    private function paginate(string $method, ?array $query, $data = null): Generator
     {
         if (!$this->Pager) {
             throw new LogicException(static::class . '::$Pager is not set');

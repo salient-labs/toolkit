@@ -112,11 +112,34 @@ final class SyncOperation extends ConvertibleEnumeration
      * True if an operation is CREATE_LIST, READ_LIST, UPDATE_LIST or
      * DELETE_LIST
      *
-     * @param SyncOperation::* $operation
+     * @param int&SyncOperation::* $operation
      * @return ($operation is SyncOperation::*_LIST ? true : false)
      */
     public static function isList(int $operation): bool
     {
         return in_array($operation, SyncOperations::ALL_LIST, true);
+    }
+
+    /**
+     * True if an operation is READ or READ_LIST
+     *
+     * @param int&SyncOperation::* $operation
+     * @return ($operation is SyncOperation::READ* ? true : false)
+     */
+    public static function isRead(int $operation): bool
+    {
+        return in_array($operation, SyncOperations::ALL_READ, true);
+    }
+
+    /**
+     * True if an operation is CREATE, UPDATE, DELETE, CREATE_LIST, UPDATE_LIST
+     * or DELETE_LIST
+     *
+     * @param int&SyncOperation::* $operation
+     * @return ($operation is SyncOperation::READ* ? false : true)
+     */
+    public static function isWrite(int $operation): bool
+    {
+        return in_array($operation, SyncOperations::ALL_WRITE, true);
     }
 }

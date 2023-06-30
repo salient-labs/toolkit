@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Concept;
 
 use Closure;
 use DateTimeInterface;
+use Generator;
 use Lkrms\Concern\RequiresContainer;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
@@ -660,14 +661,14 @@ abstract class SyncEntity implements ISyncEntity
      * @param ISyncProvider $provider
      * @param ArrayKeyConformity::* $conformity
      * @param ISyncContext|null $context
-     * @return iterable<array-key,static>
+     * @return Generator<array-key,static>
      */
     private static function _provideList(
         iterable $dataList,
         IProvider $provider,
         int $conformity,
         ?IProviderContext $context
-    ): iterable {
+    ): Generator {
         $container = ($context
             ? $context->container()
             : $provider->container())->inContextOf(get_class($provider));

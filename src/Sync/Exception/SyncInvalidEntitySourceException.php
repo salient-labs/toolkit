@@ -16,7 +16,7 @@ class SyncInvalidEntitySourceException extends SyncException
 {
     /**
      * @param class-string<ISyncEntity> $entity
-     * @param SyncOperation::* $operation
+     * @param int&SyncOperation::* $operation
      * @param SyncEntitySource::*|null $source
      */
     public function __construct(ISyncProvider $provider, string $entity, int $operation, ?int $source)
