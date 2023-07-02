@@ -11,7 +11,7 @@ use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 use Lkrms\Sync\Contract\ISyncClassResolver;
-use Lkrms\Utility\Environment;
+use Lkrms\Utility\Env;
 
 /**
  * A facade for \Lkrms\Container\Application
@@ -23,7 +23,7 @@ use Lkrms\Utility\Environment;
  * @method static Application apply(callable($this): $this $callback) Move to the next method in the chain after applying a callback to the object
  * @method static Application bind(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container (see {@see Container::bind()})
  * @method static Application bindIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container if it isn't already registered
- * @method static Environment env() Get the Env facade's underlying Environment instance
+ * @method static Env env() Get the Env facade's underlying Environment instance
  * @method static mixed get(class-string $id, mixed[] $params = []) Get an instance from the container (see {@see Container::get()})
  * @method static string getAppName() Get the basename of the file used to run the script, removing known PHP file extensions and recognised version numbers
  * @method static mixed getAs(class-string $id, class-string $serviceId, mixed[] $params = []) Use one identifier to get an instance from the container and another as its service name (see {@see Container::getAs()})

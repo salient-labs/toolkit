@@ -6,9 +6,9 @@ use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Contract\IProvider;
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Lkrms\LkUtil\Catalog\EnvVar;
+use Lkrms\Utility\Env;
 
 /**
  * Base class for lk-util commands

@@ -12,12 +12,11 @@ use Lkrms\Facade\Cache;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Env;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Format;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
-use Lkrms\Utility\Environment;
+use Lkrms\Utility\Env;
 use Lkrms\Utility\Test;
 use Phar;
 use RuntimeException;
@@ -45,7 +44,7 @@ class Application extends Container implements IApplication
     private const DIR_STATE = 'STATE';
 
     /**
-     * @var Environment
+     * @var Env
      */
     protected $Env;
 
@@ -219,7 +218,9 @@ class Application extends Container implements IApplication
 
         static::setGlobalContainer($this);
 
-        $this->Env = Env::getInstance();
+        $this->Env = $this->singletonIf(Env::class)
+                          ->get(Env::class);
+
         if ($basePath === null) {
             $basePath = $this->Env->get('app_base_path', null);
             if ($basePath === null) {
@@ -234,7 +235,7 @@ class Application extends Container implements IApplication
 
         if ((!extension_loaded('Phar') || !Phar::running()) &&
                 is_file($env = $this->BasePath . '/.env')) {
-            $this->Env->loadFile($env);
+            $this->Env->load($env);
         }
         $this->Env->apply();
 
@@ -299,7 +300,7 @@ class Application extends Container implements IApplication
         );
     }
 
-    final public function env(): Environment
+    final public function env(): Env
     {
         return $this->Env;
     }

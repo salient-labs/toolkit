@@ -2,6 +2,8 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Support\Catalog\RegularExpression as Regex;
+
 /**
  * Perform true/false tests on values
  *
@@ -15,6 +17,10 @@ final class Test
      *
      * - `"0"`
      * - `"1"`
+     * - `"disable"`
+     * - `"disabled"`
+     * - `"enable"`
+     * - `"enabled"`
      * - `"f"`
      * - `"false"`
      * - `"n"`
@@ -31,7 +37,7 @@ final class Test
     public static function isBoolValue($value): bool
     {
         return is_bool($value) ||
-            (is_string($value) && preg_match('/^(1|on|y(es)?|t(rue)?|0|off|no?|f(alse)?)$/i', $value));
+            (is_string($value) && preg_match('/^' . Regex::BOOLEAN_STRING . '$/', $value));
     }
 
     /**

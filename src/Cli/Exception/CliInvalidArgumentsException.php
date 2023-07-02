@@ -2,46 +2,14 @@
 
 namespace Lkrms\Cli\Exception;
 
-use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Facade\Console;
-
 /**
- * Thrown when an invalid command-line argument is given
+ * Thrown when one or more invalid command-line arguments are given
  *
  */
-class CliInvalidArgumentsException extends \Lkrms\Exception\Exception
+class CliInvalidArgumentsException extends \Lkrms\Exception\MultipleErrorException
 {
-    /**
-     * @var string[]
-     */
-    private $Errors = [];
-
     public function __construct(string ...$errors)
     {
-        $this->Errors = $errors;
-
-        parent::__construct($errors[0] ?? '');
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getErrors(): array
-    {
-        return $this->Errors;
-    }
-
-    public function reportErrors(): void
-    {
-        foreach ($this->Errors as $error) {
-            Console::message(Level::ERROR, '__Error:__', $error, null, false, false);
-        }
-    }
-
-    public function getDetail(): array
-    {
-        return [
-            'Errors' => implode("\n", $this->Errors),
-        ];
+        parent::__construct('Invalid arguments', ...$errors);
     }
 }

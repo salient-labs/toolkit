@@ -32,16 +32,14 @@ final class Conversions
     /**
      * Cast a value to a boolean, preserving null and converting boolean strings
      *
-     * Returns `false` if `$value` is `"off"`, `"n"`, `"no"`, `"f"` or `"false"`
-     * (case-insensitive), otherwise casts `$value` to `bool`.
-     *
+     * @see Test::isBoolValue()
      */
     public static function toBoolOrNull($value): ?bool
     {
         return is_null($value)
             ? null
-            : (is_string($value) && preg_match('/^(off|no?|f(alse)?)$/i', $value)
-                ? false
+            : (is_string($value) && preg_match('/^' . Regex::BOOLEAN_STRING . '$/', $value, $match)
+                ? ($match['true'] ? true : false)
                 : (bool) $value);
     }
 

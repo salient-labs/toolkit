@@ -5,13 +5,13 @@ namespace Lkrms\Tests;
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     /**
-     * Asserts that `$array` contains every key-value pair in `$subArray`, in
+     * Asserts that an array contains every key-value pair in a sub-array, in
      * the same order
      *
      * @param mixed[] $subArray
      * @param mixed[] $array
      */
-    public function assertArrayHasSubArray(array $subArray, array $array, string $message = '')
+    public function assertArrayHasSubArray(array $subArray, array $array, string $message = ''): void
     {
         $this->assertSame(
             $subArray,
@@ -21,12 +21,12 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * Asserts that `array_keys($array)` is equal to `$keys`
+     * Asserts that an array has the given keys in the given order
      *
-     * @param array<array-key> $keys
+     * @param array-key[] $keys
      * @param mixed[] $array
      */
-    public function assertArrayHasSignature(array $keys, array $array, string $message = '')
+    public function assertArrayHasSignature(array $keys, array $array, string $message = ''): void
     {
         // Improve diff readability by adding "<value>" where missing keys
         // should be
@@ -39,17 +39,14 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * Asserts that `$array` and `$subArray` are identical, except that `$array`
-     * has additional values at subsequent `$keys`
-     *
-     * For the assertion to pass, `array_keys($array)` must equal
-     * `array_keys($subArray + array_flip($keys))`
+     * Asserts that an array contains every key-value pair in a sub-array, in
+     * the same order, followed by values with the given keys in the given order
      *
      * @param mixed[] $subArray
-     * @param array<array-key> $keys
+     * @param array-key[] $keys
      * @param mixed[] $array
      */
-    public function assertArrayHasSubArrayAndKeys(array $subArray, array $keys, array $array, string $message = '')
+    public function assertArrayHasSubArrayAndKeys(array $subArray, array $keys, array $array, string $message = ''): void
     {
         $this->assertArrayHasSubArray($subArray, $array, $message);
         $this->assertArrayHasSignature(
@@ -60,10 +57,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * Replace newlines with PHP_EOL
+     * Replace newlines in a string with PHP_EOL
      *
      */
-    public function lineEndingsToNative(?string $string): ?string
+    public function newlinesToNative(?string $string): ?string
     {
         return $string === null ? null : str_replace("\n", PHP_EOL, $string);
     }

@@ -91,8 +91,8 @@ interface IApplication extends IContainer, ReturnsEnvironment
      * {@see ConsoleLevels::ALL_DEBUG} messages are simultaneously logged to
      * `<name>.debug.log` in the same location if:
      * - `$debug` is `true`, or
-     * - `$debug` is `null` and {@see \Lkrms\Utility\Environment::debug()}
-     *   returns `true`
+     * - `$debug` is `null` and {@see \Lkrms\Utility\Env::debug()} returns
+     *   `true`
      *
      * @param string|null $name Defaults to the name returned by
      * {@see IApplication::getAppName()}.

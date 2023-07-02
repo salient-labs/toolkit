@@ -2,95 +2,150 @@
 
 namespace Lkrms\Utility;
 
-use DateTimeZone;
+use Lkrms\Exception\InvalidDotenvSyntaxException;
+use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Console;
+use Lkrms\Facade\Convert;
+use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Lkrms\Utility\Catalog\EnvFlag;
+use LogicException;
 use RuntimeException;
-use Throwable;
-use UnexpectedValueException;
 
 /**
  * Work with .env files and environment variables
  *
+ * Non-empty lines in `.env` files may contain either a shell-compatible
+ * variable assignment or a comment.
+ *
+ * Example:
+ *
+ * ```shell
+ * LANG=en_US.UTF-8
+ * TZ=Australia/Sydney
+ *
+ * # app_secret is parsed as: '^K&4nnE
+ * app_client_id=d8f024b9-1dfb-4dde-8f29-db98eefa317c
+ * app_secret='\\''^K&4nnE'
+ * ```
+ *
+ * - Unquoted values cannot contain unescaped whitespace, `"`, `'`, `$`,
+ *   backticks, or glob characters (`*`, `?`, `[`, `]`).
+ * - Quoted values must be fully enclosed by one pair of single or double
+ *   quotes.
+ * - Double-quoted values cannot contain `"`, `$`, or backticks unless they are
+ *   escaped.
+ * - Single-quoted values may contain single quotes if this syntax is used:
+ *   `'\''`
+ * - Variable expansion and command substitution are not supported.
+ * - Comment lines must start with `#`.
  */
-final class Environment
+final class Env
 {
     /**
-     * Load values into the environment from a file
+     * Load one or more .env files
      *
-     * Values are loaded from a .env file to `getenv()`, `$_ENV` and `$_SERVER`.
-     * Variables already present in the environment are never overwritten, but
-     * if they appear in the .env file multiple times, the last value is used.
+     * Values are applied to `$_ENV`, `$_SERVER` and `putenv()` unless already
+     * present in the environment.
      *
-     * Each line in `$filename` should be a shell-compatible variable
-     * assignment. Unquoted values cannot contain whitespace, `"`, `'`, `$`,
-     * backticks or glob characters. Double-quoted values cannot contain `"`,
-     * `$`, or backticks unless they are escaped. Single-quoted values may
-     * contain single quotes as long as they look like this: `'\''`. Lines
-     * starting with `#` are ignored.
+     * Changes are applied after parsing all files in the given order. If a file
+     * contains invalid syntax, an exception is thrown and no changes are
+     * applied.
      *
-     * @throws RuntimeException if `$filename` cannot be opened.
-     * @throws UnexpectedValueException if `$filename` cannot be parsed.
+     * Later values override earlier ones.
+     *
+     * @throws InvalidDotenvSyntaxException if invalid syntax is found.
      */
-    public function loadFile(string $filename): void
+    public static function load(string ...$path): void
     {
-        $lines = file($filename, FILE_IGNORE_NEW_LINES);
-        if ($lines === false) {
-            throw new RuntimeException("Could not open $filename");
-        }
-
         $queue = [];
+        $errors = [];
+        foreach ($path as $filename) {
+            $lines = explode("\n", Convert::lineEndingsToUnix(file_get_contents($filename)));
+            self::parse($lines, $queue, $errors, $filename);
+        }
+        self::doLoad($queue, $errors);
+    }
+
+    /**
+     * @param string[] $lines
+     * @param array<string,string> $queue
+     * @param string[] $errors
+     * @param string|null $filename
+     */
+    private static function parse(array $lines, array &$queue, array &$errors, ?string $filename = null): void
+    {
         foreach ($lines as $i => $line) {
-            $l = $i + 1;
-            if (!trim($line) || substr($line, 0, 1) === '#') {
+            if (!trim($line) || $line[0] === '#') {
                 continue;
             }
-            if (!preg_match(
-                '/^([A-Z_][A-Z0-9_]*)=("(([^"$`]|\\\\["$`])*)"|\'(([^\']|\'\\\\\'\')*)\'|[^]"$\'*?`\s[]*)$/i',
-                $line,
-                $match
-            )) {
-                throw new UnexpectedValueException("Invalid entry at line $l in $filename");
-            }
-            $name = $match[1];
-            if (getenv($name) !== false ||
-                    array_key_exists($name, $_ENV) ||
-                    array_key_exists($name, $_SERVER)) {
+            if (!preg_match(<<<'REGEX'
+                    / ^
+                    (?P<name> [a-z_] [a-z0-9_]*+ ) = (?:
+                    " (?P<double> (?: [^"$\\`]++ | \\ ["$\\`] | \\ )*+ ) " |
+                    ' (?P<single> (?: [^']++            | ' \\ ' ' )*+ ) ' |
+                      (?P<none>   (?: [^]"$'*?\\`\s[]++     | \\ . )*+ )
+                    ) $ /xi
+                    REGEX, $line, $match, PREG_UNMATCHED_AS_NULL)) {
+                $errors[] = $filename === null
+                    ? sprintf('invalid syntax at index %d', $i)
+                    : sprintf('invalid syntax at %s:%d', $filename, $i + 1);
                 continue;
             }
-            if ($match[3] ?? null) {
-                $value = preg_replace('/\\\\(["$\`])/', '\1', $match[3]);
-            } elseif ($match[5] ?? null) {
-                $value = str_replace("'\\''", "'", $match[5]);
-            } else {
-                $value = $match[2];
+            $name = $match['name'];
+            if (array_key_exists($name, $_ENV) ||
+                    array_key_exists($name, $_SERVER) ||
+                    getenv($name) !== false) {
+                continue;
             }
-            $queue[$name] = $value;
+            if (($double = $match['double']) !== null) {
+                $queue[$name] = preg_replace('/\\\\(["$\\\\`])/', '\1', $double);
+                continue;
+            }
+            if (($single = $match['single']) !== null) {
+                $queue[$name] = str_replace("'\\''", "'", $single);
+                continue;
+            }
+            $queue[$name] = preg_replace('/\\\\(.)/', '\1', $match['none']);
+        }
+    }
+
+    /**
+     * @param array<string,string> $queue
+     * @param string[] $errors
+     */
+    private static function doLoad(array $queue, array $errors): void
+    {
+        if ($errors) {
+            $ex = (new InvalidDotenvSyntaxException('Unable to load .env files', ...$errors))
+                ->reportErrors();
+            throw $ex;
         }
         foreach ($queue as $name => $value) {
-            $this->set($name, $value);
+            self::set($name, $value);
         }
     }
 
     /**
      * Apply values from the environment to the running script
      *
-     * Specifically:
-     * - Set locale from `LC_ALL`, `LC_COLLATE`, `LC_CTYPE`, `LC_MONETARY`,
-     *   `LC_NUMERIC`, `LC_TIME`, `LC_MESSAGES` and/or `LANG`
-     * - If `TZ` is a valid timezone, pass it to `date_default_timezone_set`
+     * @param int-mask-of<EnvFlag::*> $flags
      */
-    public function apply(): void
+    public static function apply(int $flags = EnvFlag::ALL): void
     {
-        if (setlocale(LC_ALL, '') === false) {
-            Console::debug('Invalid locale');
+        if ($flags & EnvFlag::LOCALE) {
+            if (($locale = setlocale(LC_ALL, '')) === false) {
+                throw new InvalidEnvironmentException('Unable to set locale from environment');
+            }
+            Console::debug('Locale:', $locale);
         }
 
-        if ($tz = preg_replace('/^:?(.*\/zoneinfo\/)?/', '', $this->get('TZ', ''))) {
-            try {
-                $timezone = new DateTimeZone($tz);
-                date_default_timezone_set($timezone->getName());
-            } catch (Throwable $ex) {
-                Console::debug('Not a valid timezone:', $tz, $ex);
+        if ($flags & EnvFlag::TIMEZONE &&
+                ($tz = preg_replace('/^:?(.*\/zoneinfo\/)?/', '', self::get('TZ', '')))) {
+            if (($timezone = timezone_open($tz)) === false) {
+                Console::debug('Invalid timezone:', $tz);
+            } else {
+                date_default_timezone_set($tz = $timezone->getName());
+                Console::debug('Timezone:', $tz);
             }
         }
     }
@@ -98,12 +153,14 @@ final class Environment
     /**
      * Set an environment variable
      *
-     * `$value` is loaded to `getenv()`, `$_ENV` and `$_SERVER`.
+     * The value is applied to `$_ENV`, `$_SERVER` and `putenv()`.
      *
      */
-    public function set(string $name, string $value): void
+    public static function set(string $name, string $value): void
     {
-        putenv($name . '=' . $value);
+        if (putenv($name . '=' . $value) === false) {
+            throw new RuntimeException(sprintf('Unable to set environment variable: %s', $name));
+        }
         $_ENV[$name] = $value;
         $_SERVER[$name] = $value;
     }
@@ -111,12 +168,14 @@ final class Environment
     /**
      * Unset an environment variable
      *
-     * The value is removed from `getenv()`, `$_ENV` and `$_SERVER`.
+     * The change is applied to `$_ENV`, `$_SERVER` and `putenv()`.
      *
      */
-    public function unset(string $name): void
+    public static function unset(string $name): void
     {
-        putenv($name);
+        if (putenv($name) === false) {
+            throw new RuntimeException(sprintf('Unable to unset environment variable: %s', $name));
+        }
         unset($_ENV[$name]);
         unset($_SERVER[$name]);
     }
@@ -124,106 +183,138 @@ final class Environment
     /**
      * @return string|false
      */
-    private function _get(string $name)
+    private static function _get(string $name, bool $assertValueIsString = true)
     {
-        return $_ENV[$name]
-            ?? $_SERVER[$name]
-            ?? (($local = getenv($name, true)) !== false
-                ? $local
-                : getenv($name));
+        if (array_key_exists($name, $_ENV)) {
+            $value = $_ENV[$name];
+        } elseif (array_key_exists($name, $_SERVER)) {
+            $value = $_SERVER[$name];
+        } else {
+            return ($value = getenv($name, true)) === false
+                ? getenv($name)
+                : $value;
+        }
+        if ($assertValueIsString && !is_string($value)) {
+            throw new InvalidEnvironmentException(sprintf('Environment variable is not a string: %s', $name));
+        }
+        return $value;
     }
 
     /**
-     * True if a variable exists in the environment
+     * True if a variable is present in the environment
      *
      */
-    public function has(string $name): bool
+    public static function has(string $name): bool
     {
-        return $this->_get($name) !== false;
+        return self::_get($name, false) !== false;
     }
 
     /**
-     * Get an environment variable
+     * Get a value from the environment
      *
-     * Looks for `$name` in `$_ENV`, `$_SERVER` and `getenv()`, in that order,
-     * and returns the first value it finds.
+     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
+     * the first value found.
      *
-     * Returns `$default` if `$name` is not found in the environment.
+     * If the variable is not found, `$default` is returned if given, otherwise
+     * an {@see InvalidEnvironmentException} is thrown.
      *
      * @template T of string|null
      * @param T $default
      * @return T|string
-     * @throws RuntimeException if `$name` is not set and `$default` is not
-     * given.
+     * @throws InvalidEnvironmentException if `$name` is not present in the
+     * environment and `$default` is not given.
      */
-    public function get(string $name, ?string $default = null): ?string
+    public static function get(string $name, ?string $default = null): ?string
     {
-        $value = $this->_get($name);
+        $value = self::_get($name);
         if ($value === false) {
             if (func_num_args() < 2) {
-                throw new RuntimeException(sprintf('Value not found in environment: %s', $name));
-            } else {
-                return $default;
+                self::throwValueNotFoundException($name);
             }
+            return $default;
         }
-
         return $value;
     }
 
     /**
      * Get an integer value from the environment
      *
-     * Returns `$default` if `$name` is empty or unset, otherwise casts it as an
-     * `int` before returning.
+     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
+     * the first value found.
+     *
+     * If the value is not an integer, an {@see InvalidEnvironmentException} is
+     * thrown.
+     *
+     * If the variable is not found, `$default` is returned if given, otherwise
+     * an {@see InvalidEnvironmentException} is thrown.
      *
      * @template T of int|null
      * @param T $default
      * @return T|int
-     * @throws RuntimeException if `$name` is not set and `$default` is not
-     * given.
+     * @throws InvalidEnvironmentException if `$name` is not present in the
+     * environment and `$default` is not given, or if the value of `$name` is
+     * not an integer.
      */
-    public function getInt(string $name, ?int $default = null): ?int
+    public static function getInt(string $name, ?int $default = null): ?int
     {
-        if (func_num_args() < 2) {
-            $value = $this->get($name);
-        } else {
-            $value = $this->get($name, null);
-        }
-        if (trim((string) $value) === '') {
+        $value = self::_get($name);
+        if ($value === false) {
+            if (func_num_args() < 2) {
+                self::throwValueNotFoundException($name);
+            }
             return $default;
         }
-
+        if (!preg_match('/^[0-9]+$/', $value)) {
+            throw new InvalidEnvironmentException(sprintf('Value is not an integer: %s', $name));
+        }
         return (int) $value;
     }
 
     /**
      * Get a boolean value from the environment
      *
-     * Returns `$default` if `$name` is empty or unset, `false` if it's `"off"`,
-     * `"n"`, `"no"`, `"f"`, `"false"` or `"0"`, otherwise `true`. Comparison is
-     * not case-sensitive.
+     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
+     * the first value found.
+     *
+     * If the value is not boolean, an {@see InvalidEnvironmentException} is
+     * thrown.
+     *
+     * If the variable is not found, `$default` is returned if given, otherwise
+     * an {@see InvalidEnvironmentException} is thrown.
+     *
+     * - Values equivalent to `false`: `""`, `"0"`, `"n"`, `"no"`, `"off"`,
+     *   `"f"`, `"false"`, `"disable"` `"disabled"`
+     * - Values equivalent to `true`: `"1"`, `"y"`, `"yes"`, `"on"`, `"t"`,
+     *   `"true"`, `"enable"`, `"enabled"`
      *
      * @template T of bool|null
      * @param T $default
      * @return T|bool
-     * @throws RuntimeException if `$name` is not set and `$default` is not
-     * given.
+     * @throws InvalidEnvironmentException if `$name` is not present in the
+     * environment and `$default` is not given, or if the value of `$name` is
+     * not boolean.
      */
-    public function getBool(string $name, ?bool $default = null): ?bool
+    public static function getBool(string $name, ?bool $default = null): ?bool
     {
-        if (func_num_args() < 2) {
-            $value = $this->get($name);
-        } else {
-            $value = $this->get($name, null);
-        }
-        if (trim((string) $value) === '') {
+        $value = self::_get($name);
+        if ($value === false) {
+            if (func_num_args() < 2) {
+                self::throwValueNotFoundException($name);
+            }
             return $default;
         }
-        if (preg_match('/^(off|no?|f(alse)?)$/i', $value)) {
+        if ($value === '') {
             return false;
         }
-
-        return (bool) $value;
+        if (!preg_match(
+            Regex::anchorAndDelimit(Regex::BOOLEAN_STRING),
+            $value,
+            $match,
+            PREG_UNMATCHED_AS_NULL
+        )) {
+            throw new InvalidEnvironmentException(sprintf('Value is not boolean: %s', $name));
+        }
+        return $match['true'] ? true : false;
     }
 
     /**
@@ -235,117 +326,137 @@ final class Environment
      * @template T of string[]|null
      * @param T $default
      * @return T|string[]
-     * @throws RuntimeException if `$name` is not set and `$default` is not
-     * given.
+     * @throws InvalidEnvironmentException if `$name` is not present in the
+     * environment and `$default` is not given.
      */
-    public function getList(string $name, ?array $default = null, string $delimiter = ','): ?array
+    public static function getList(string $name, ?array $default = null, string $delimiter = ','): ?array
     {
         if (!$delimiter) {
-            throw new UnexpectedValueException('Invalid delimiter');
+            throw new LogicException('Invalid delimiter');
         }
-
-        if (func_num_args() < 2) {
-            $value = $this->get($name);
-        } else {
-            $value = $this->get($name, null);
-
-            if (is_null($value)) {
-                return $default;
+        $value = self::_get($name);
+        if ($value === false) {
+            if (func_num_args() < 2) {
+                self::throwValueNotFoundException($name);
             }
+            return $default;
         }
-
         return $value ? explode($delimiter, $value) : [];
     }
 
     /**
-     * Get the value of an environment variable, or null if it's set but empty
+     * Get a value from the environment, returning null if it's empty
      *
-     * Returns `$default` if `$name` is not found in the environment.
+     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
+     * the first value found.
      *
-     * @throws RuntimeException if `$name` is not set and `$default` is not
-     * given.
+     * If the variable is not found, `$default` is returned if given, otherwise
+     * an {@see InvalidEnvironmentException} is thrown.
+     *
+     * @throws InvalidEnvironmentException if `$name` is not present in the
+     * environment and `$default` is not given.
      */
-    public function getNullable(string $name, ?string $default = null): ?string
+    public static function getNullable(string $name, ?string $default = null): ?string
     {
-        $value = $this->_get($name);
+        $value = self::_get($name);
         if ($value === false) {
             if (func_num_args() < 2) {
-                throw new RuntimeException(sprintf('Value not found in environment: %s', $name));
-            } else {
-                return $default;
+                self::throwValueNotFoundException($name);
             }
+            return $default;
         }
-        if (trim($value) === '') {
-            return null;
-        }
-
-        return $value;
+        return trim($value) === '' ? null : $value;
     }
 
     /**
-     * Get an integer value from the environment, or null if it's set but empty
+     * Get an integer value from the environment, returning null if it's empty
      *
-     * Returns `$default` if `$name` is not found in the environment.
+     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
+     * the first value found.
      *
-     * @throws RuntimeException if `$name` is not set and `$default` is not
-     * given.
+     * If the value is not empty and not an integer, an
+     * {@see InvalidEnvironmentException} is thrown.
+     *
+     * If the variable is not found, `$default` is returned if given, otherwise
+     * an {@see InvalidEnvironmentException} is thrown.
+     *
+     * @throws InvalidEnvironmentException if `$name` is not present in the
+     * environment and `$default` is not given, or if the value of `$name` is
+     * neither an integer nor an empty string.
      */
-    public function getNullableInt(string $name, ?int $default = null): ?int
+    public static function getNullableInt(string $name, ?int $default = null): ?int
     {
-        if (func_num_args() < 2) {
-            $value = $this->getNullable($name);
-        } else {
-            $value = $this->getNullable($name, '');
-        }
-        if ($value === null) {
-            return null;
-        }
-        if ($value === '') {
+        $value = self::_get($name);
+        if ($value === false) {
+            if (func_num_args() < 2) {
+                self::throwValueNotFoundException($name);
+            }
             return $default;
         }
-
+        if ($value === '') {
+            return null;
+        }
+        if (!preg_match('/^[0-9]+$/', $value)) {
+            throw new InvalidEnvironmentException(sprintf('Value is not an integer: %s', $name));
+        }
         return (int) $value;
     }
 
     /**
-     * Get a boolean value from the environment, or null if it's set but empty
+     * Get a boolean value from the environment, returning null if it's empty
      *
-     * Returns `$default` if `$name` is not found in the environment.
+     * Checks `$_ENV`, `$_SERVER` and `getenv()` for the variable and returns
+     * the first value found.
      *
-     * @throws RuntimeException if `$name` is not set and `$default` is not
-     * given.
+     * If the value is not empty and not boolean, an
+     * {@see InvalidEnvironmentException} is thrown.
+     *
+     * If the variable is not found, `$default` is returned if given, otherwise
+     * an {@see InvalidEnvironmentException} is thrown.
+     *
+     * - Values equivalent to `false`: `"0"`, `"n"`, `"no"`, `"off"`, `"f"`,
+     *   `"false"`, `"disable"` `"disabled"`
+     * - Values equivalent to `true`: `"1"`, `"y"`, `"yes"`, `"on"`, `"t"`,
+     *   `"true"`, `"enable"`, `"enabled"`
+     *
+     * @throws InvalidEnvironmentException if `$name` is not present in the
+     * environment and `$default` is not given, or if the value of `$name` is
+     * neither boolean nor an empty string.
      */
-    public function getNullableBool(string $name, ?bool $default = null): ?bool
+    public static function getNullableBool(string $name, ?bool $default = null): ?bool
     {
-        if (func_num_args() < 2) {
-            $value = $this->getNullable($name);
-        } else {
-            $value = $this->getNullable($name, '');
-        }
-        if ($value === null) {
-            return null;
-        }
-        if ($value === '') {
+        $value = self::_get($name);
+        if ($value === false) {
+            if (func_num_args() < 2) {
+                self::throwValueNotFoundException($name);
+            }
             return $default;
         }
-        if (preg_match('/^(off|no?|f(alse)?)$/i', $value)) {
-            return false;
+        if ($value === '') {
+            return null;
         }
-
-        return (bool) $value;
+        if (!preg_match(
+            Regex::anchorAndDelimit(Regex::BOOLEAN_STRING),
+            $value,
+            $match,
+            PREG_UNMATCHED_AS_NULL
+        )) {
+            throw new InvalidEnvironmentException(sprintf('Value is not boolean: %s', $name));
+        }
+        return $match['true'] ? true : false;
     }
 
-    private function getOrSetBool(string $name, ?bool $newState = null): bool
+    private static function getOrSetBool(string $name, ?bool $newState = null): bool
     {
         if (func_num_args() > 1 && !is_null($newState)) {
             if ($newState) {
-                $this->set($name, '1');
+                self::set($name, '1');
             } else {
-                $this->unset($name);
+                self::unset($name);
             }
         }
 
-        return (bool) $this->get($name, '');
+        return (bool) self::get($name, '');
     }
 
     /**
@@ -355,9 +466,9 @@ final class Environment
      * variable.
      *
      */
-    public function dryRun(?bool $newState = null): bool
+    public static function dryRun(?bool $newState = null): bool
     {
-        return $this->getOrSetBool('DRY_RUN', ...func_get_args());
+        return self::getOrSetBool('DRY_RUN', ...func_get_args());
     }
 
     /**
@@ -367,9 +478,9 @@ final class Environment
      * variable.
      *
      */
-    public function debug(?bool $newState = null): bool
+    public static function debug(?bool $newState = null): bool
     {
-        return $this->getOrSetBool('DEBUG', ...func_get_args());
+        return self::getOrSetBool('DEBUG', ...func_get_args());
     }
 
     /**
@@ -377,7 +488,7 @@ final class Environment
      * (LC_CTYPE) supports UTF-8
      *
      */
-    public function isLocaleUtf8(): bool
+    public static function isLocaleUtf8(): bool
     {
         if (($locale = setlocale(LC_CTYPE, '0')) === false) {
             Console::warnOnce('Invalid locale settings');
@@ -392,16 +503,24 @@ final class Environment
      * Get the current user's home directory from the environment
      *
      */
-    public function home(): ?string
+    public static function home(): ?string
     {
-        if ($home = $this->get('HOME', null)) {
+        if ($home = self::get('HOME', null)) {
             return $home;
         }
-        if (($homeDrive = $this->get('HOMEDRIVE', null)) &&
-                ($homePath = $this->get('HOMEPATH', null))) {
+        if (($homeDrive = self::get('HOMEDRIVE', null)) &&
+                ($homePath = self::get('HOMEPATH', null))) {
             return $homeDrive . $homePath;
         }
 
         return null;
+    }
+
+    /**
+     * @return never
+     */
+    private static function throwValueNotFoundException(string $name)
+    {
+        throw new InvalidEnvironmentException(sprintf('Value not found in environment: %s', $name));
     }
 }

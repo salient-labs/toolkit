@@ -10,11 +10,11 @@ use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
-use Lkrms\Concern\HasEnvironment;
 use Lkrms\Console\ConsoleFormatter;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
+use Lkrms\Utility\Env;
 use LogicException;
 use RuntimeException;
 use Throwable;
@@ -25,11 +25,6 @@ use Throwable;
  */
 abstract class CliCommand implements ICliCommand
 {
-    /**
-     * @use HasEnvironment<ICliApplication>
-     */
-    use HasEnvironment;
-
     /**
      * Get a list of options for the command
      *
@@ -95,9 +90,13 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * @var ICliApplication
-     * @todo Remove this property when Intelephense resolves trait generics
      */
     protected $App;
+
+    /**
+     * @var Env
+     */
+    protected $Env;
 
     /**
      * @var string[]|null
@@ -173,6 +172,27 @@ abstract class CliCommand implements ICliCommand
      * @var int
      */
     private $Runs = 0;
+
+    public function __construct(ICliApplication $app)
+    {
+        $this->App = $app->singletonIf(Env::class);
+        $this->Env = $this->App->get(Env::class);
+    }
+
+    final public function app(): ICliApplication
+    {
+        return $this->App;
+    }
+
+    final public function container(): ICliApplication
+    {
+        return $this->App;
+    }
+
+    final public function env(): Env
+    {
+        return $this->Env;
+    }
 
     final public function setName(array $name): void
     {
