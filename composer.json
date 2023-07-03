@@ -42,8 +42,14 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Lkrms\\Tests\\": "tests/"
-        }
+            "Lkrms\\Tests\\": [
+                "tests/unit/",
+                "tests/fixtures/"
+            ]
+        },
+        "files": [
+            "tests/fixtures/Utility/Debugging/GetCallerFile.php"
+        ]
     },
     "bin": [
         "bin/lk-util"

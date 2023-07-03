@@ -86,7 +86,7 @@ final class DebuggingTest extends \Lkrms\Tests\TestCase
         $this->assertArrayHasSubArrayAndKeys($expected, ['line'], (getFunctionCallback())(1));
         $this->assertArrayHasSubArrayAndKeys($thisMethod, ['line'], (getFunctionCallback())(2));
 
-        $expectedPath = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Debugging', 'GetCallerFile.php']);
+        $expectedPath = implode(DIRECTORY_SEPARATOR, [dirname(__DIR__, 2), 'fixtures', 'Utility', 'Debugging', 'GetCallerFile.php']);
         $expected = [
             'file' => $expectedPath,
             0 => '::',
@@ -106,5 +106,3 @@ final class DebuggingTest extends \Lkrms\Tests\TestCase
         $this->assertArrayHasSubArrayAndKeys($thisMethod, ['line'], (Lkrms_Tests_Runtime_getFunctionCallback())(2));
     }
 }
-
-require __DIR__ . '/Debugging/GetCallerFile.php';
