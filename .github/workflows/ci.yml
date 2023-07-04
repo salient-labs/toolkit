@@ -89,10 +89,15 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           extensions: sqlite3
-          coverage: none
+          coverage: pcov
 
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
-      - name: Run PHPUnit tests
-        run: vendor/bin/phpunit --no-coverage
+      - name: Run PHPUnit tests and generate code coverage report
+        run: vendor/bin/phpunit --coverage-clover=coverage.xml
+
+      - name: Upload code coverage report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
