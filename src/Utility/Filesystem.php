@@ -16,6 +16,7 @@ use Phar;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use RuntimeException;
 use SplFileInfo;
 
 /**
@@ -37,21 +38,19 @@ final class Filesystem
      *
      * @param string|null $include A regular expression that specifies paths to
      * include. All files are included if `null`.
-     * @param array<string,callable> $excludeCallbacks An array that maps
-     * regular expressions to callbacks that return `true` for matching files or
-     * directories to exclude.
+     * @param array<string,callable(SplFileInfo): bool> $excludeCallbacks An
+     * array that maps regular expressions to callbacks that return `true` for
+     * matching files or directories to exclude.
      *
      * To exclude a directory, provide an expression that matches its name and a
      * subsequent forward slash (`/`).
      *
-     * @phpstan-param array<string,callable(SplFileInfo): bool> $excludeCallbacks
-     * @param array<string,callable> $includeCallbacks An array that maps
-     * regular expressions to callbacks that return `true` for matching files to
-     * include.
+     * @param array<string,callable(SplFileInfo): bool> $includeCallbacks An
+     * array that maps regular expressions to callbacks that return `true` for
+     * matching files to include.
      * ```php
      * [$regex => fn(SplFileInfo $file) => $file->isExecutable()]
      * ```
-     * @phpstan-param array<string,callable(SplFileInfo): bool> $includeCallbacks
      * @return FluentIteratorInterface<string,SplFileInfo>
      */
     public function find(
@@ -61,14 +60,17 @@ final class Filesystem
         ?array $excludeCallbacks = null,
         ?array $includeCallbacks = null,
         bool $recursive = true,
-        bool $withDirectories = false
+        bool $withDirectories = false,
+        bool $withDirectoriesFirst = true
     ): FluentIteratorInterface {
         $flags = FilesystemIterator::KEY_AS_PATHNAME
             | FilesystemIterator::CURRENT_AS_FILEINFO
             | FilesystemIterator::SKIP_DOTS
             | FilesystemIterator::UNIX_PATHS;
         $mode = $withDirectories
-            ? RecursiveIteratorIterator::SELF_FIRST
+            ? ($withDirectoriesFirst
+                ? RecursiveIteratorIterator::SELF_FIRST
+                : RecursiveIteratorIterator::CHILD_FIRST)
             : RecursiveIteratorIterator::LEAVES_ONLY;
 
         if ($exclude || $include || $excludeCallbacks || $includeCallbacks) {
@@ -206,13 +208,13 @@ final class Filesystem
     /**
      * Create a directory if it doesn't exist
      *
-     * @param string $filename Full path to the directory.
+     * @param string $directory Full path to the directory.
      * @param int $permissions Only used if `$filename` needs to be created.
      * @return bool `true` on success or `false` on failure.
      */
-    public function maybeCreateDirectory(string $filename, int $permissions = 0777): bool
+    public function maybeCreateDirectory(string $directory, int $permissions = 0777): bool
     {
-        if (is_dir($filename) || mkdir($filename, $permissions, true)) {
+        if (is_dir($directory) || mkdir($directory, $permissions, true)) {
             return true;
         }
 
@@ -226,11 +228,75 @@ final class Filesystem
      */
     public function maybeDelete(string $filename): bool
     {
-        if (!is_file($filename)) {
+        if (!file_exists($filename)) {
             return true;
+        }
+        if (!is_file($filename)) {
+            Console::warn('Not a file:', $filename);
+            return false;
         }
 
         return unlink($filename);
+    }
+
+    /**
+     * Delete a directory if it exists
+     *
+     * @return bool `true` on success or `false` on failure.
+     */
+    public function maybeDeleteDirectory(string $directory, bool $recursive = false): bool
+    {
+        if (!file_exists($directory)) {
+            return true;
+        }
+        if (!is_dir($directory)) {
+            Console::warn('Not a directory:', $directory);
+            return false;
+        }
+
+        return (!$recursive || $this->pruneDirectory($directory)) &&
+            rmdir($directory);
+    }
+
+    /**
+     * Recursively delete the contents of a directory without deleting the
+     * directory itself
+     *
+     * @return bool `true` on success or `false` on failure.
+     */
+    public function pruneDirectory(string $directory): bool
+    {
+        if (!is_dir($directory)) {
+            throw new RuntimeException(sprintf('Not a directory: %s', $directory));
+        }
+
+        $this->find($directory, null, null, null, null, true, true, false)
+             ->forEachWhileTrue(
+                 fn(SplFileInfo $file) =>
+                     $file->isDir()
+                         ? rmdir((string) $file)
+                         : unlink((string) $file),
+                 $result
+             );
+
+        return $result;
+    }
+
+    /**
+     * Create a temporary directory
+     *
+     */
+    public function createTemporaryDirectory(): string
+    {
+        $tmp = realpath($_tmp = sys_get_temp_dir());
+        if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
+            throw new RuntimeException(sprintf('Not a writable directory: %s', $_tmp));
+        }
+        $program = Sys::getProgramBasename();
+        do {
+            $dir = sprintf('%s/%s%s.tmp', $tmp, $program, Compute::randomText(8));
+        } while (!@mkdir($dir, 0700));
+        return $dir;
     }
 
     /**
@@ -258,7 +324,8 @@ final class Filesystem
         )) {
             return 'php://fd/' . $matches[1];
         }
-        if (Test::isPharUrl($filename) && Phar::running()) {
+        if (Test::isPharUrl($filename) &&
+                extension_loaded('Phar') && Phar::running()) {
             $filename = Convert::resolvePath($filename);
 
             return file_exists($filename) ? $filename : false;

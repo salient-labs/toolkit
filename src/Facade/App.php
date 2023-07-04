@@ -28,20 +28,20 @@ use Lkrms\Utility\Env;
  * @method static string getAppName() Get the basename of the file used to run the script, removing known PHP file extensions and recognised version numbers
  * @method static mixed getAs(class-string $id, class-string $serviceId, mixed[] $params = []) Use one identifier to get an instance from the container and another as its service name (see {@see Container::getAs()})
  * @method static string getBasePath() Get the application's root directory
- * @method static string getCachePath() Get a writable cache directory for the application (see {@see Application::getCachePath()})
- * @method static string getConfigPath() Get a writable directory for the application's configuration files
- * @method static string getDataPath() Get a writable data directory for the application (see {@see Application::getDataPath()})
+ * @method static string getCachePath(bool $create = true) Get a writable cache directory for the application (see {@see Application::getCachePath()})
+ * @method static string getConfigPath(bool $create = true) Get a writable directory for the application's configuration files
+ * @method static string getDataPath(bool $create = true) Get a writable data directory for the application (see {@see Application::getDataPath()})
  * @method static IContainer getGlobalContainer() Get the global container
- * @method static string getLogPath() Get a writable directory for the application's log files
+ * @method static string getLogPath(bool $create = true) Get a writable directory for the application's log files
  * @method static class-string getName(class-string $id) Get a concrete class name from the container (see {@see Container::getName()})
  * @method static string getProgramName() Get the basename of the file used to run the script
  * @method static array<class-string<IService>> getServices() Get a list of classes bound to the container by calling service()
- * @method static string getTempPath() Get a writable directory for the application's ephemeral data
+ * @method static string getTempPath(bool $create = true) Get a writable directory for the application's ephemeral data
  * @method static bool has(class-string $id) True if the container can resolve an identifier to an instance (see {@see Container::has()})
  * @method static bool hasGlobalContainer() True if the global container is set
  * @method static Application if((callable($this): bool)|bool $condition, (callable($this): $this) $then, (callable($this): $this)|null $else = null) Move to the next method in the chain after applying a conditional callback to the object (see {@see FluentInterface::if()})
  * @method static Container inContextOf(class-string $id) Apply the contextual bindings of a service to a copy of the container
- * @method static bool inProduction() True if the application is in production, false if it's running from source (see {@see Application::inProduction()})
+ * @method static bool inProduction() True if the application is in production (see {@see Application::inProduction()})
  * @method static Application instance(class-string $id, mixed $instance) Register an existing instance with the container as a shared binding
  * @method static Application instanceIf(class-string $id, mixed $instance) Register an existing instance with the container as a shared binding if it isn't already registered
  * @method static Application loadCache() Load the application's CacheStore, creating a backing database if needed (see {@see Application::loadCache()})
@@ -58,6 +58,7 @@ use Lkrms\Utility\Env;
  * @method static Application singletonIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a shared binding with the container if it isn't already registered
  * @method static Application syncNamespace(string $prefix, string $uri, string $namespace, class-string<ISyncClassResolver>|null $resolver = null) Register a sync entity namespace with the application's SyncStore (see {@see Application::syncNamespace()})
  * @method static Application unbind(class-string $id) Remove a binding from the container
+ * @method static Application unloadCache() Close the application's CacheStore
  * @method static Application unloadSync(bool $silent = false) Close the application's SyncStore (see {@see Application::unloadSync()})
  * @method static Application writeResourceUsage(int $level = Level::INFO) Print a summary of the script's system resource usage (see {@see Application::writeResourceUsage()})
  * @method static Application writeTimers(int $level = Level::INFO, bool $includeRunning = true, ?string $type = null, ?int $limit = 10) Print a summary of the script's timers (see {@see Application::writeTimers()})

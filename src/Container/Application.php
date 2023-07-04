@@ -103,15 +103,16 @@ class Application extends Container implements IApplication
         string $parent,
         ?string $child,
         string $sourceChild,
-        string $windowsChild
+        string $windowsChild,
+        bool $create
     ): string {
         $name = "app_{$name}_path";
+
         if ($path = $this->Env->get($name, null)) {
             if (!Test::isAbsolutePath($path)) {
                 $path = $this->BasePath . '/' . $path;
             }
-
-            return $this->_getPath($path, $name);
+            return $this->_getPath($path, $name, $create);
         }
 
         // If running from source, return `$this->BasePath/$sourceChild` if it
@@ -119,7 +120,7 @@ class Application extends Container implements IApplication
         if (!$this->inProduction()) {
             $path = "{$this->BasePath}/$sourceChild";
             if (Test::firstExistingDirectoryIsWritable($path)) {
-                return $this->_getPath($path, $name);
+                return $this->_getPath($path, $name, $create);
             }
         }
 
@@ -141,7 +142,8 @@ class Application extends Container implements IApplication
                 Convert::sparseToString(
                     '/', [$path, $app, $windowsChild]
                 ),
-                $name
+                $name,
+                $create
             );
         }
 
@@ -166,48 +168,50 @@ class Application extends Container implements IApplication
             Convert::sparseToString(
                 '/', [$path, $app, $child]
             ),
-            $name
+            $name,
+            $create
         );
     }
 
-    private function _getPath(string $path, string $name): string
+    private function _getPath(string $path, string $name, bool $create): string
     {
         if (!Test::isAbsolutePath($path)) {
             throw new UnexpectedValueException("Absolute path required: $name");
         }
-        File::maybeCreateDirectory($path);
-
+        if ($create) {
+            File::maybeCreateDirectory($path);
+        }
         return $path;
     }
 
-    final public function getCachePath(): string
+    final public function getCachePath(bool $create = true): string
     {
         return $this->_CachePath
-            ?: ($this->_CachePath = $this->getPath('cache', self::DIR_STATE, 'cache', 'var/cache', 'cache'));
+            ?: ($this->_CachePath = $this->getPath('cache', self::DIR_STATE, 'cache', 'var/cache', 'cache', $create));
     }
 
-    final public function getConfigPath(): string
+    final public function getConfigPath(bool $create = true): string
     {
         return $this->_ConfigPath
-            ?: ($this->_ConfigPath = $this->getPath('config', self::DIR_CONFIG, null, 'config', 'config'));
+            ?: ($this->_ConfigPath = $this->getPath('config', self::DIR_CONFIG, null, 'config', 'config', $create));
     }
 
-    final public function getDataPath(): string
+    final public function getDataPath(bool $create = true): string
     {
         return $this->_DataPath
-            ?: ($this->_DataPath = $this->getPath('data', self::DIR_DATA, null, 'var/lib', 'data'));
+            ?: ($this->_DataPath = $this->getPath('data', self::DIR_DATA, null, 'var/lib', 'data', $create));
     }
 
-    final public function getLogPath(): string
+    final public function getLogPath(bool $create = true): string
     {
         return $this->_LogPath
-            ?: ($this->_LogPath = $this->getPath('log', self::DIR_STATE, 'log', 'var/log', 'log'));
+            ?: ($this->_LogPath = $this->getPath('log', self::DIR_STATE, 'log', 'var/log', 'log', $create));
     }
 
-    final public function getTempPath(): string
+    final public function getTempPath(bool $create = true): string
     {
         return $this->_TempPath
-            ?: ($this->_TempPath = $this->getPath('temp', self::DIR_STATE, 'tmp', 'var/tmp', 'tmp'));
+            ?: ($this->_TempPath = $this->getPath('temp', self::DIR_STATE, 'tmp', 'var/tmp', 'tmp', $create));
     }
 
     public function __construct(?string $basePath = null)
@@ -241,10 +245,23 @@ class Application extends Container implements IApplication
 
         Console::registerStdioTargets();
 
-        Err::load();
+        if (!Err::isLoaded()) {
+            Err::load();
+        }
         if ($path = Composer::getPackagePath('adodb/adodb-php')) {
             Err::silencePaths($path);
         }
+    }
+
+    public function unload(): void
+    {
+        $this->unloadSync()
+             ->unloadCache();
+
+        // @phpstan-ignore-next-line
+        $this->Env = null;
+
+        parent::unload();
     }
 
     final public function getBasePath(): string
@@ -281,7 +298,8 @@ class Application extends Container implements IApplication
 
     public function inProduction(): bool
     {
-        return Phar::running() ||
+        return $this->Env->get('PHP_ENV', null) === 'production' ||
+            (extension_loaded('Phar') && Phar::running()) ||
             !Composer::hasDevDependencies();
     }
 
@@ -307,23 +325,31 @@ class Application extends Container implements IApplication
 
     final public function loadCache()
     {
-        $cacheDb = $this->getCachePath() . '/cache.db';
-
-        if (!Cache::isLoaded()) {
-            Cache::load($cacheDb);
-        } elseif (!Test::areSameFile($cacheDb, $file = Cache::getFilename() ?: '')) {
-            throw new RuntimeException("Cache database already loaded: $file");
+        $cacheFile = $this->getCacheFile();
+        if (Cache::isLoaded()) {
+            if (Test::areSameFile($cacheFile, Cache::getFilename() ?: '')) {
+                return $this;
+            }
+            throw new RuntimeException('Cache already loaded');
         }
-
+        Cache::load($cacheFile);
         return $this;
     }
 
     final public function loadCacheIfExists()
     {
-        if (file_exists($this->getCachePath() . '/cache.db')) {
-            $this->loadCache();
-        }
+        return file_exists($this->getCacheFile(false))
+            ? $this->loadCache()
+            : $this;
+    }
 
+    final public function unloadCache()
+    {
+        if (!Cache::isLoaded() ||
+                !Test::areSameFile($this->getCacheFile(false), Cache::getFilename() ?: '')) {
+            return $this;
+        }
+        Cache::close();
         return $this;
     }
 
@@ -467,5 +493,10 @@ class Application extends Container implements IApplication
         }
 
         return $this;
+    }
+
+    private function getCacheFile(bool $create = true): string
+    {
+        return $this->getCachePath($create) . '/cache.db';
     }
 }

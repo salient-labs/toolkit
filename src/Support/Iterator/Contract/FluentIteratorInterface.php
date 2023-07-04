@@ -29,6 +29,18 @@ interface FluentIteratorInterface extends Iterator
     public function forEach(callable $callback);
 
     /**
+     * Apply a callback to the iterator's (remaining) elements until the
+     * iterator is empty or the callback returns a value other than true
+     *
+     * @param callable(TValue): bool $callback Return `false` to cancel the
+     * operation.
+     * @param bool|null $result Receives `false` if the operation is cancelled
+     * by the callback, `true` otherwise.
+     * @return $this
+     */
+    public function forEachWhileTrue(callable $callback, ?bool &$result = null);
+
+    /**
      * Get the next element with a key or property that matches a value
      *
      * If the current element has `$value` at `$key`, it is returned after

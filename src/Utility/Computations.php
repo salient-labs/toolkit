@@ -2,9 +2,7 @@
 
 namespace Lkrms\Utility;
 
-use Closure;
 use Lkrms\Facade\Convert;
-use ReflectionFunction;
 
 /**
  * Generate values like hashes and secure UUIDs
@@ -37,6 +35,20 @@ final class Computations
         }
 
         return implode('-', array_map(fn(string $bin): string => bin2hex($bin), $uuid));
+    }
+
+    /**
+     * Generate a cryptographically secure string
+     *
+     */
+    public function randomText(int $length, string $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'): string
+    {
+        $max = strlen($chars) - 1;
+        $text = '';
+        for ($i = 0; $i < $length; $i++) {
+            $text .= $chars[random_int(0, $max)];
+        }
+        return $text;
     }
 
     /**

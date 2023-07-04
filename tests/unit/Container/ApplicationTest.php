@@ -2,25 +2,47 @@
 
 namespace Lkrms\Tests\Container;
 
-use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Container\Application;
-use Lkrms\Container\Container;
-use Lkrms\Contract\IApplication;
-use Lkrms\Contract\IContainer;
-use Lkrms\Exception\ContainerServiceNotFoundException;
-use Psr\Container\ContainerInterface;
+use Lkrms\Facade\File;
+use Lkrms\Utility\Env;
 
 final class ApplicationTest extends \Lkrms\Tests\TestCase
 {
-    public function testBindContainer()
+    /**
+     * @backupGlobals enabled
+     */
+    public function testPaths(): void
     {
-        $app = new Application();
-        $this->assertSame($app, $app->get(ContainerInterface::class));
-        $this->assertSame($app, $app->get(IContainer::class));
-        $this->assertSame($app, $app->get(IApplication::class));
-        $this->assertSame($app, $app->get(Container::class));
-        $this->assertSame($app, $app->get(Application::class));
-        $this->expectException(ContainerServiceNotFoundException::class);
-        $app->get(ICliApplication::class);
+        $basePath = File::createTemporaryDirectory();
+        $homeDir = realpath(Env::home()) ?: '';
+        $this->assertDirectoryExists($basePath);
+        $this->assertDirectoryExists($homeDir);
+
+        $_ENV['PHP_ENV'] = 'test';
+        $app = new Application($basePath);
+        $this->assertSame($basePath, $app->getBasePath());
+        $this->assertSame($basePath . '/var/cache', $cachePath = $app->getCachePath());
+        $this->assertSame($basePath . '/config', $configPath = $app->getConfigPath());
+        $this->assertSame($basePath . '/var/lib', $dataPath = $app->getDataPath());
+        $this->assertSame($basePath . '/var/log', $logPath = $app->getLogPath());
+        $this->assertSame($basePath . '/var/tmp', $tempPath = $app->getTempPath());
+        $this->assertDirectoryExists($cachePath);
+        $this->assertDirectoryExists($configPath);
+        $this->assertDirectoryExists($dataPath);
+        $this->assertDirectoryExists($logPath);
+        $this->assertDirectoryExists($tempPath);
+        $app->unload();
+
+        $_ENV['PHP_ENV'] = 'production';
+        $app = new Application($basePath);
+        $this->assertSame($basePath, $app->getBasePath());
+        $this->assertStringStartsWith("$homeDir/", $app->getCachePath(false));
+        $this->assertStringStartsWith("$homeDir/", $app->getConfigPath(false));
+        $this->assertStringStartsWith("$homeDir/", $app->getDataPath(false));
+        $this->assertStringStartsWith("$homeDir/", $app->getLogPath(false));
+        $this->assertStringStartsWith("$homeDir/", $app->getTempPath(false));
+
+        File::pruneDirectory($basePath);
+        rmdir($basePath);
     }
 }

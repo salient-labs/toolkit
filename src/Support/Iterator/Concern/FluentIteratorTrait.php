@@ -22,7 +22,6 @@ trait FluentIteratorTrait
         foreach ($this as $current) {
             $array[] = $current;
         }
-
         return $array ?? [];
     }
 
@@ -35,7 +34,22 @@ trait FluentIteratorTrait
         foreach ($this as $current) {
             $callback($current);
         }
+        return $this;
+    }
 
+    /**
+     * @param callable(TValue): bool $callback
+     * @return $this
+     */
+    public function forEachWhileTrue(callable $callback, ?bool &$result = null)
+    {
+        foreach ($this as $current) {
+            if ($callback($current) !== true) {
+                $result = false;
+                return $this;
+            }
+        }
+        $result = true;
         return $this;
     }
 
@@ -57,7 +71,6 @@ trait FluentIteratorTrait
                 return $current;
             }
         }
-
         return false;
     }
 }

@@ -28,10 +28,11 @@ interface IApplication extends IContainer, ReturnsEnvironment
     public function getAppName(): string;
 
     /**
-     * True if the application is in production, false if it's running from
-     * source
+     * True if the application is in production
      *
      * "In production" means one of the following is true:
+     *
+     * - the value of environment variable `PHP_ENV` is `"production"`
      * - a Phar archive is currently executing, or
      * - the application was installed with `composer --no-dev`
      *
@@ -121,6 +122,13 @@ interface IApplication extends IContainer, ReturnsEnvironment
      * @see \Lkrms\Store\CacheStore
      */
     public function loadCacheIfExists();
+
+    /**
+     * Close the application's CacheStore
+     *
+     * @return $this
+     */
+    public function unloadCache();
 
     /**
      * Load the application's SyncStore, creating a backing database if needed
