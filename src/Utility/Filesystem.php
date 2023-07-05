@@ -469,24 +469,39 @@ final class Filesystem
     }
 
     /**
-     * Return the name of a file unique to the current script and user
+     * Generate a filename unique to the current user and the path of the
+     * running script
      *
-     * Unlike with `tempnam()`, nothing is created on the filesystem.
+     * If `$dir` is not given, a filename in `sys_get_temp_dir()` is returned.
      *
-     * @param string $suffix
-     * @param string|null $dir If null, `sys_get_temp_dir()` is used.
-     * @return string
+     * No changes are made to the filesystem.
+     *
      */
-    public function getStablePath(string $suffix = '.log', string $dir = null)
+    public function getStablePath(string $suffix = '', ?string $dir = null): string
     {
-        $program = Sys::getProgramName();
-        $basename = basename($program);
-        $hash = Compute::hash(File::realpath($program));
-        $euid = posix_geteuid();
+        $path = $this->realpath($program = Sys::getProgramName());
+        if ($path === false) {
+            throw new RuntimeException('Unable to resolve filename used to run the script');
+        }
+        $program = basename($program);
+        $hash = Compute::hash($path);
+        if (function_exists('posix_geteuid')) {
+            $user = posix_geteuid();
+        } else {
+            $user = Env::get('USERNAME', null) ?: Env::get('USER', null);
+            if (!$user) {
+                throw new RuntimeException('Unable to identify user');
+            }
+        }
+        if ($dir === null) {
+            $dir = realpath($tmp = sys_get_temp_dir());
+            if ($dir === false || !is_dir($dir) || !is_writable($dir)) {
+                throw new RuntimeException(sprintf('Not a writable directory: %s', $tmp));
+            }
+        } else {
+            $dir = rtrim($dir, '/\\') ?: $dir;
+        }
 
-        return (is_null($dir)
-                ? realpath(sys_get_temp_dir()) . '/'
-                : ($dir ? rtrim($dir, '/\\') . '/' : ''))
-            . "$basename-$hash-$euid$suffix";
+        return sprintf('%s/%s-%s-%s%s', $dir ?: '.', $program, $hash, $user, $suffix);
     }
 }

@@ -13,7 +13,7 @@ final class ApplicationTest extends \Lkrms\Tests\TestCase
      */
     public function testPaths(): void
     {
-        $basePath = File::createTemporaryDirectory();
+        $basePath = realpath(File::createTemporaryDirectory()) ?: '';
         $homeDir = realpath(Env::home()) ?: '';
         $this->assertDirectoryExists($basePath);
         $this->assertDirectoryExists($homeDir);
@@ -36,11 +36,11 @@ final class ApplicationTest extends \Lkrms\Tests\TestCase
         $_ENV['PHP_ENV'] = 'production';
         $app = new Application($basePath);
         $this->assertSame($basePath, $app->getBasePath());
-        $this->assertStringStartsWith("$homeDir/", $app->getCachePath(false));
-        $this->assertStringStartsWith("$homeDir/", $app->getConfigPath(false));
-        $this->assertStringStartsWith("$homeDir/", $app->getDataPath(false));
-        $this->assertStringStartsWith("$homeDir/", $app->getLogPath(false));
-        $this->assertStringStartsWith("$homeDir/", $app->getTempPath(false));
+        $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getCachePath(false));
+        $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getConfigPath(false));
+        $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getDataPath(false));
+        $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getLogPath(false));
+        $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getTempPath(false));
 
         File::pruneDirectory($basePath);
         rmdir($basePath);

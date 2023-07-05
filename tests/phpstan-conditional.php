@@ -5,7 +5,7 @@ if (PHP_VERSION_ID < 80000) {
         'parameters' => [
             'excludePaths' => [
                 'analyseAndScan' => [
-                    'tests/Utility/Reflection/MyClassWithUnionsAndIntersections.php',
+                    'tests/fixtures/Utility/Reflection/MyClassWithUnionsAndIntersections.php',
                 ],
             ],
             'ignoreErrors' => [
