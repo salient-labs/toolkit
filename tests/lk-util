@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Facade\Env;
+use Lkrms\Utility\Env;
 
 require __DIR__ . '/../vendor/autoload.php';
 

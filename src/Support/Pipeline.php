@@ -3,6 +3,7 @@
 namespace Lkrms\Support;
 
 use Closure;
+use Generator;
 use Lkrms\Concept\FluentInterface;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
@@ -242,7 +243,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $result;
     }
 
-    public function start(): iterable
+    public function start(): Generator
     {
         if (!$this->Stream) {
             throw new LogicException(

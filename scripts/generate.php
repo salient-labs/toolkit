@@ -25,7 +25,6 @@ use Lkrms\Utility\Composer;
 use Lkrms\Utility\Computations;
 use Lkrms\Utility\Conversions;
 use Lkrms\Utility\Debugging;
-use Lkrms\Utility\Environment;
 use Lkrms\Utility\Filesystem;
 use Lkrms\Utility\Formatters;
 use Lkrms\Utility\Reflection;
@@ -45,7 +44,6 @@ $facades = [
     Container::class => \Lkrms\Facade\DI::class,
     Conversions::class => \Lkrms\Facade\Convert::class,
     Debugging::class => \Lkrms\Facade\Debug::class,
-    Environment::class => \Lkrms\Facade\Env::class,
     EventDispatcher::class => \Lkrms\Facade\Event::class,
     Filesystem::class => \Lkrms\Facade\File::class,
     Formatters::class => \Lkrms\Facade\Format::class,

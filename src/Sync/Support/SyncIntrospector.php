@@ -222,7 +222,7 @@ final class SyncIntrospector extends Introspector
      *   {@see SyncOperation} via a method
      *
      * @template T of ISyncEntity
-     * @param SyncOperation::* $operation
+     * @param int&SyncOperation::* $operation
      * @param class-string<T>|self<T,TIntrospectionClass<T>> $entity
      * @return Closure(ISyncContext, mixed...)|null
      */

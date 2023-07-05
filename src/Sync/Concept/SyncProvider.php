@@ -17,7 +17,7 @@ use Lkrms\Sync\Support\SyncEntityProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
-use Lkrms\Utility\Environment;
+use Lkrms\Utility\Env;
 use RuntimeException;
 
 /**
@@ -106,7 +106,7 @@ abstract class SyncProvider implements ISyncProvider, IService
     protected $App;
 
     /**
-     * @var Environment
+     * @var Env
      */
     protected $Env;
 
@@ -135,7 +135,7 @@ abstract class SyncProvider implements ISyncProvider, IService
      */
     private $MagicMethodClosures = [];
 
-    public function __construct(Container $app, Environment $environment, SyncStore $store)
+    public function __construct(Container $app, Env $environment, SyncStore $store)
     {
         $this->App = $app;
         $this->Env = $environment;
@@ -162,7 +162,7 @@ abstract class SyncProvider implements ISyncProvider, IService
         return $this->App;
     }
 
-    final public function env(): Environment
+    final public function env(): Env
     {
         return $this->Env;
     }

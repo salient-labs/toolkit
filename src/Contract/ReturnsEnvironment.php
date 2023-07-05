@@ -2,7 +2,7 @@
 
 namespace Lkrms\Contract;
 
-use Lkrms\Utility\Environment;
+use Lkrms\Utility\Env;
 
 /**
  * Returns the Env facade's underlying Environment instance
@@ -14,5 +14,5 @@ interface ReturnsEnvironment
      * Get the Env facade's underlying Environment instance
      *
      */
-    public function env(): Environment;
+    public function env(): Env;
 }

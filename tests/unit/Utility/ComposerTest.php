@@ -29,7 +29,7 @@ final class ComposerTest extends \Lkrms\Tests\TestCase
 
     public function testGetRootPackagePath()
     {
-        $this->assertSame(realpath(dirname(__DIR__, 2)), Composer::getRootPackagePath());
+        $this->assertSame(realpath(dirname(__DIR__, 3)), Composer::getRootPackagePath());
     }
 
     public function testGetPackageReference()

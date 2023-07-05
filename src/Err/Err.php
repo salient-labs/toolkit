@@ -81,16 +81,19 @@ final class Err implements IFacade
     public static function silencePaths(string ...$paths): void
     {
         self::assertIsLoaded();
+        $levels = E_STRICT | E_DEPRECATED | E_USER_DEPRECATED;
         foreach ($paths as $path) {
             if (($path = File::realpath($path)) === false) {
                 continue;
             }
-
-            $regex = preg_quote(rtrim($path, '/') . '/', '/');
-            self::$Whoops->silenceErrorsInPaths(
-                "/^$regex/",
-                E_STRICT | E_DEPRECATED | E_USER_DEPRECATED
-            );
+            $pattern = '/^' . preg_quote($path . '/', '/') . '/';
+            if (in_array(
+                ['pattern' => $pattern, 'levels' => $levels],
+                self::$Whoops->getSilenceErrorsInPaths()
+            )) {
+                continue;
+            }
+            self::$Whoops->silenceErrorsInPaths($pattern, $levels);
         }
     }
 

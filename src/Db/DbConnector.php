@@ -5,8 +5,8 @@ namespace Lkrms\Db;
 use ADOConnection;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Facade\Env;
 use Lkrms\Facade\Format;
+use Lkrms\Utility\Env;
 use Lkrms\Utility\Test;
 use UnexpectedValueException;
 

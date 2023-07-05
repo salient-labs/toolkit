@@ -76,7 +76,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
             ```php
             // code here
             ```
-            EOF, $this->lineEndingsToNative($phpDoc->Description));
+            EOF, $this->newlinesToNative($phpDoc->Description));
         $this->assertSame([
             '@param $arg1 Description from ClassC (untyped)',
             '@param string[] $arg3',
@@ -137,7 +137,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
     ) {
         $phpDoc = new PhpDoc($docBlock);
         $this->assertSame($summary, $phpDoc->Summary);
-        $this->assertSame($description, $this->lineEndingsToNative($phpDoc->Description));
+        $this->assertSame($description, $this->newlinesToNative($phpDoc->Description));
         $this->assertCount(count($varKeys), $phpDoc->Vars);
         foreach ($varKeys as $i => $key) {
             $this->assertArrayHasKey($key, $phpDoc->Vars);
@@ -367,7 +367,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
             ```php
             callback(string $value): string
             ```
-            EOF, $this->lineEndingsToNative($phpDoc->Description));
+            EOF, $this->newlinesToNative($phpDoc->Description));
         $this->assertCount(1, $phpDoc->Vars);
         $this->assertSame(null, $phpDoc->Vars[0]->Name ?? null);
         $this->assertSame('?callable', $phpDoc->Vars[0]->Type ?? null);
@@ -467,7 +467,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
      */
     public function testTypeRegex(string $phpDocType, bool $expectMatch = true)
     {
-        $regex = Regex::anchorAndDelimit(Regex::PHPDOC_TYPE, '/', false);
+        $regex = Regex::anchorAndDelimit(Regex::PHPDOC_TYPE);
         if ($expectMatch) {
             $this->assertMatchesRegularExpression($regex, trim($phpDocType));
         } else {

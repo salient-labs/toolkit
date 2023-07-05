@@ -59,6 +59,16 @@ class Container extends FluentInterface implements IContainer
         $this->bindContainer();
     }
 
+    public function unload(): void
+    {
+        if ($this === self::$GlobalContainer) {
+            self::setGlobalContainer(null);
+        }
+
+        // @phpstan-ignore-next-line
+        $this->Dice = null;
+    }
+
     private function bindContainer(): void
     {
         $class = new ReflectionClass(static::class);

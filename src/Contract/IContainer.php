@@ -247,4 +247,10 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * @return $this
      */
     public function unbind(string $id);
+
+    /**
+     * Prepare the container for garbage collection
+     *
+     */
+    public function unload(): void;
 }

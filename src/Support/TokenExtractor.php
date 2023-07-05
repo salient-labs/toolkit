@@ -2,6 +2,7 @@
 
 namespace Lkrms\Support;
 
+use Generator;
 use Lkrms\Facade\Convert;
 use UnexpectedValueException;
 
@@ -27,9 +28,9 @@ final class TokenExtractor
     }
 
     /**
-     * @return iterable<int>
+     * @return Generator<int>
      */
-    private function getTokensByType(int ...$id): iterable
+    private function getTokensByType(int ...$id): Generator
     {
         for ($i = 0; $i < count($this->Tokens); $i++) {
             $token = $this->Tokens[$i];

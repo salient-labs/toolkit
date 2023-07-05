@@ -3,6 +3,7 @@
 namespace Lkrms\Curler;
 
 use DateTimeInterface;
+use Generator;
 use Lkrms\Concern\HasMutator;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
@@ -18,13 +19,13 @@ use Lkrms\Facade\Composer;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Convert;
-use Lkrms\Facade\Env;
 use Lkrms\Support\Catalog\HttpHeader;
 use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Support\Catalog\MimeType;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Iterator\RecursiveHasChildrenCallbackIterator;
 use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
+use Lkrms\Utility\Env;
 use Lkrms\Utility\Test;
 use LogicException;
 use RecursiveIteratorIterator;
@@ -1166,9 +1167,9 @@ final class Curler implements IReadable, IWritable, HasBuilder
     /**
      * @param mixed[]|null $query
      * @param mixed[]|object|null $data
-     * @return iterable<mixed>
+     * @return Generator<mixed>
      */
-    private function paginate(string $method, ?array $query, $data = null): iterable
+    private function paginate(string $method, ?array $query, $data = null): Generator
     {
         if (!$this->Pager) {
             throw new LogicException(static::class . '::$Pager is not set');

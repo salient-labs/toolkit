@@ -11,6 +11,18 @@ use Lkrms\Concept\Dictionary;
 final class RegularExpression extends Dictionary
 {
     /**
+     * A boolean string, e.g. "yes", "Y", "On", "TRUE", "enabled"
+     *
+     */
+    public const BOOLEAN_STRING = <<<'REGEX'
+        (?xi)
+        (?:
+          (?P<true>  1 | on  | y(?:es)? | t(?:rue)?  | enabled?  ) |
+          (?P<false> 0 | off | no?      | f(?:alse)? | disabled? )
+        )
+        REGEX;
+
+    /**
      * A valid PHP identifier, e.g. for variable names and classes
      *
      * @link https://www.php.net/manual/en/language.variables.basics.php
@@ -68,35 +80,36 @@ final class RegularExpression extends Dictionary
      * @link https://github.com/php-fig/fig-standards/blob/master/proposed/phpdoc.md#3-definitions
      */
     public const PHP_DOCBLOCK = <<<'REGEX'
-        (?x) ^ /\*\*
-        (?P<content>
-          # Text immediately after the opening delimiter
-          .*
-          # Newlines and any subsequent text
-          (?: ( \r \n | \n | \r ) \h * \* .* )*
-          # Optional newline and whitespace before the closing delimiter
-          (?: ( \r \n | \n | \r ) \h * )?
-        )
-        \*/ $
+        (?x)
+        /\*\*
+        (?P<content> (?:
+          (?: (?! \*/ ) . )*+
+          (?: (?<line> (?: \r\n | \n | \r ) \h* ) (?! \*/ ) \* )?
+        )*+ (?&line)? )
+        \*/
         REGEX;
 
     /**
      * A valid PHPDoc tag
      *
-     * Inline tags are matched. Metadata and descriptions are not.
-     *
      * @link https://github.com/php-fig/fig-standards/blob/master/proposed/phpdoc.md#53-tags
      */
-    public const PHPDOC_TAG = '(^|(?<=\r\n|\n|\r))@(?P<tag>[[:alpha:]\\\\][[:alnum:]\\\\_-]*)(?=\s|[(:]|$)';
+    public const PHPDOC_TAG = <<<'REGEX'
+        (?x)
+        (?<= ^ | \r\n | \n | \r )
+        @ (?P<tag> [[:alpha:]\\] [[:alnum:]\\_-]*+ ) (?= [\s(:] | $ )
+        REGEX;
 
     /**
      * A valid PHPDoc type
      *
+     * In some locales, `\s` matches non-breaking space (`\xA0`), so an
+     * alternative (`(?&sp)`) is used in contexts where the start of a PHP
+     * identifier would otherwise be parsed as whitespace.
      */
     public const PHPDOC_TYPE = <<<'REGEX'
         (?xi)
         (?(DEFINE)
-          # \s matches non-breaking space (\xA0) in some locales, so (?&sp) is used instead
           (?<sp> [\f\n\r\t\x0b ] )
           (?<lnum> [0-9]+ (?: _ [0-9]+ )* )
           (?<dnum> (?: [0-9]* (?: _ [0-9]+ )* \. (?&lnum) ) | (?: (?&lnum) \. [0-9]* (?: _ [0-9]+ )* ) )
@@ -166,25 +179,21 @@ final class RegularExpression extends Dictionary
 
     public static function delimit(
         string $regex,
-        string $delimiter = '/',
-        bool $utf8 = true
+        string $delimiter = '/'
     ): string {
         return $delimiter
             . str_replace($delimiter, '\\' . $delimiter, $regex)
-            . $delimiter
-            . ($utf8 ? 'u' : '');
+            . $delimiter;
     }
 
     public static function anchorAndDelimit(
         string $regex,
-        string $delimiter = '/',
-        bool $utf8 = true
+        string $delimiter = '/'
     ): string {
         return $delimiter
             . '^'
             . str_replace($delimiter, '\\' . $delimiter, $regex)
             . '$'
-            . $delimiter
-            . ($utf8 ? 'u' : '');
+            . $delimiter;
     }
 }

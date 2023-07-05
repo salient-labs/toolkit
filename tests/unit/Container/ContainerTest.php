@@ -4,6 +4,7 @@ namespace Lkrms\Tests\Container;
 
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
+use Lkrms\Contract\IApplication;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 use Lkrms\Contract\IServiceShared;
@@ -13,10 +14,20 @@ use Lkrms\Contract\ReceivesService;
 use Lkrms\Contract\ReturnsContainer;
 use Lkrms\Contract\ReturnsService;
 use Lkrms\Exception\ContainerServiceNotFoundException;
+use Psr\Container\ContainerInterface;
 use RuntimeException;
 
 final class ContainerTest extends \Lkrms\Tests\TestCase
 {
+    public function testBindContainer(): void
+    {
+        $container = new Container();
+        $this->assertSame($container, $container->get(ContainerInterface::class));
+        $this->assertSame($container, $container->get(IContainer::class));
+        $this->expectException(ContainerServiceNotFoundException::class);
+        $container->get(IApplication::class);
+    }
+
     public function testServiceTransient()
     {
         $container = (new Container())->service(TestServiceImplA::class, null, null, ServiceLifetime::TRANSIENT);

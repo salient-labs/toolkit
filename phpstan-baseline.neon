@@ -1063,364 +1063,364 @@ parameters:
 		-
 			message: "#^Class Lkrms\\\\Tests\\\\Concept\\\\Facade\\\\MyFacade extends generic class Lkrms\\\\Concept\\\\Facade but does not specify its types\\: TClass$#"
 			count: 1
-			path: tests/Concept/Facade/MyFacade.php
+			path: tests/fixtures/Concept/Facade/MyFacade.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\Facade\\\\MyFacade\\:\\:checkFuncNumArgs\\(\\) has parameter \\$values with no type specified\\.$#"
 			count: 1
-			path: tests/Concept/Facade/MyFacade.php
+			path: tests/fixtures/Concept/Facade/MyFacade.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\Facade\\\\MyUnderlyingClass\\:\\:checkFuncNumArgs\\(\\) has parameter \\$values with no type specified\\.$#"
 			count: 1
-			path: tests/Concept/Facade/MyUnderlyingClass.php
+			path: tests/fixtures/Concept/Facade/MyUnderlyingClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:with\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Concept/HasMutator/MyMutatingClass.php
+			path: tests/fixtures/Concept/HasMutator/MyMutatingClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:with\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: tests/Concept/HasMutator/MyMutatingClass.php
+			path: tests/fixtures/Concept/HasMutator/MyMutatingClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:\\$Arr1 has no type specified\\.$#"
 			count: 1
-			path: tests/Concept/HasMutator/MyMutatingClass.php
+			path: tests/fixtures/Concept/HasMutator/MyMutatingClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:\\$Arr2 has no type specified\\.$#"
 			count: 1
-			path: tests/Concept/HasMutator/MyMutatingClass.php
+			path: tests/fixtures/Concept/HasMutator/MyMutatingClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:\\$Arr3 type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/Concept/HasMutator/MyMutatingClass.php
+			path: tests/fixtures/Concept/HasMutator/MyMutatingClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:\\$Arr4 has no type specified\\.$#"
 			count: 1
-			path: tests/Concept/HasMutator/MyMutatingClass.php
+			path: tests/fixtures/Concept/HasMutator/MyMutatingClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:\\$B has no type specified\\.$#"
 			count: 1
-			path: tests/Concept/HasMutator/MyMutatingClass.php
+			path: tests/fixtures/Concept/HasMutator/MyMutatingClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:\\$C has no type specified\\.$#"
 			count: 1
-			path: tests/Concept/HasMutator/MyMutatingClass.php
+			path: tests/fixtures/Concept/HasMutator/MyMutatingClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:\\$Coll has no type specified\\.$#"
 			count: 1
-			path: tests/Concept/HasMutator/MyMutatingClass.php
+			path: tests/fixtures/Concept/HasMutator/MyMutatingClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Concept\\\\HasMutator\\\\MyMutatingClass\\:\\:\\$Obj has no type specified\\.$#"
 			count: 1
-			path: tests/Concept/HasMutator/MyMutatingClass.php
+			path: tests/fixtures/Concept/HasMutator/MyMutatingClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Concept\\\\TypedCollection\\\\MyClass\\:\\:\\$Name has no type specified\\.$#"
 			count: 1
-			path: tests/Concept/TypedCollection/MyClass.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceShared\\(\\) has parameter \\$concrete with no type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceShared\\(\\) has parameter \\$container with no type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSharedSingleton\\(\\) has parameter \\$concrete with no type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSharedSingleton\\(\\) has parameter \\$container with no type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSingleton\\(\\) has parameter \\$concrete with no type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSingleton\\(\\) has parameter \\$container with no type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceTransient\\(\\) has parameter \\$concrete with no type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceTransient\\(\\) has parameter \\$container with no type specified\\.$#"
-			count: 1
-			path: tests/Container/ContainerTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:invalidDocBlockProvider\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/Support/PhpDocParserTest.php
+			path: tests/fixtures/Concept/TypedCollection/MyClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\CustomEntity\\\\Post\\:\\:_setUserId\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Sync/CustomEntity/Post.php
+			path: tests/fixtures/Sync/CustomEntity/Post.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\CustomEntity\\\\Post\\:\\:_setUserId\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: tests/Sync/CustomEntity/Post.php
+			path: tests/fixtures/Sync/CustomEntity/Post.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\CustomEntity\\\\User\\:\\:_setId\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Sync/CustomEntity/User.php
+			path: tests/fixtures/Sync/CustomEntity/User.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\CustomEntity\\\\User\\:\\:_setId\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: tests/Sync/CustomEntity/User.php
+			path: tests/fixtures/Sync/CustomEntity/User.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\Provider\\\\JsonPlaceholderApi\\:\\:getPosts\\(\\) return type has no value type specified in iterable type iterable\\.$#"
 			count: 1
-			path: tests/Sync/Provider/JsonPlaceholderApi.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:getUrls\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testFlatten\\(\\) has parameter \\$expected with no type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testFlatten\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testToBoolOrNull\\(\\) has parameter \\$expected with no type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testToBoolOrNull\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: tests/Utility/ConversionsTest.php
+			path: tests/fixtures/Sync/Provider/JsonPlaceholderApi.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\GetCallerClass\\:\\:getCallback\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerClass.php
+			path: tests/fixtures/Utility/Debugging/GetCallerClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\GetCallerClass\\:\\:getCaller\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerClass.php
+			path: tests/fixtures/Utility/Debugging/GetCallerClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\GetCallerClass\\:\\:getCaller\\(\\) has parameter \\$depth with no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerClass.php
+			path: tests/fixtures/Utility/Debugging/GetCallerClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\GetCallerClass\\:\\:getCallerViaMethod\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerClass.php
+			path: tests/fixtures/Utility/Debugging/GetCallerClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\GetCallerClass\\:\\:getCallerViaMethod\\(\\) has parameter \\$depth with no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerClass.php
+			path: tests/fixtures/Utility/Debugging/GetCallerClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\GetCallerClass\\:\\:getCallerViaStaticMethod\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerClass.php
+			path: tests/fixtures/Utility/Debugging/GetCallerClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\GetCallerClass\\:\\:getCallerViaStaticMethod\\(\\) has parameter \\$depth with no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerClass.php
+			path: tests/fixtures/Utility/Debugging/GetCallerClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\GetCallerClass\\:\\:getStaticCallback\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerClass.php
+			path: tests/fixtures/Utility/Debugging/GetCallerClass.php
 
 		-
 			message: "#^Function Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\getCaller\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerFile.php
+			path: tests/fixtures/Utility/Debugging/GetCallerFile.php
 
 		-
 			message: "#^Function Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\getCaller\\(\\) has parameter \\$depth with no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerFile.php
+			path: tests/fixtures/Utility/Debugging/GetCallerFile.php
 
 		-
 			message: "#^Function Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\getCallerViaFunction\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerFile.php
+			path: tests/fixtures/Utility/Debugging/GetCallerFile.php
 
 		-
 			message: "#^Function Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\getCallerViaFunction\\(\\) has parameter \\$depth with no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerFile.php
+			path: tests/fixtures/Utility/Debugging/GetCallerFile.php
 
 		-
 			message: "#^Function Lkrms\\\\Tests\\\\Utility\\\\Debugging\\\\getFunctionCallback\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerFile.php
+			path: tests/fixtures/Utility/Debugging/GetCallerFile.php
 
 		-
 			message: "#^Function Lkrms_Tests_Runtime_getCallerViaFunction\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerFile.php
+			path: tests/fixtures/Utility/Debugging/GetCallerFile.php
 
 		-
 			message: "#^Function Lkrms_Tests_Runtime_getCallerViaFunction\\(\\) has parameter \\$depth with no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerFile.php
+			path: tests/fixtures/Utility/Debugging/GetCallerFile.php
 
 		-
 			message: "#^Function Lkrms_Tests_Runtime_getFunctionCallback\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Debugging/GetCallerFile.php
+			path: tests/fixtures/Utility/Debugging/GetCallerFile.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyBaseClass\\:\\:MyDocumentedMethod\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyBaseClass.php
+			path: tests/fixtures/Utility/Reflection/MyBaseClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyBaseClass\\:\\:\\$MyDocumentedProperty has no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyBaseClass.php
+			path: tests/fixtures/Utility/Reflection/MyBaseClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyBaseInterface\\:\\:MyDocumentedMethod\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyBaseInterface.php
+			path: tests/fixtures/Utility/Reflection/MyBaseInterface.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyClass\\:\\:MyDocumentedMethod\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyClass.php
+			path: tests/fixtures/Utility/Reflection/MyClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyClass\\:\\:__construct\\(\\) has parameter \\$id with no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyClass.php
+			path: tests/fixtures/Utility/Reflection/MyClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyClass\\:\\:\\$AltId has no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyClass.php
+			path: tests/fixtures/Utility/Reflection/MyClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyClass\\:\\:\\$AltParent has no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyClass.php
+			path: tests/fixtures/Utility/Reflection/MyClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyClass\\:\\:\\$Id has no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyClass.php
+			path: tests/fixtures/Utility/Reflection/MyClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyClass\\:\\:\\$MyDocumentedProperty has no type specified\\.$#"
 			count: 5
-			path: tests/Utility/Reflection/MyClass.php
+			path: tests/fixtures/Utility/Reflection/MyClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyClass\\:\\:\\$Name has no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyClass.php
+			path: tests/fixtures/Utility/Reflection/MyClass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyClass\\:\\:\\$Parent has no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyClass.php
+			path: tests/fixtures/Utility/Reflection/MyClass.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyClassWithUnionsAndIntersections\\:\\:MyMethod\\(\\) has parameter \\$intersection with generic interface ArrayAccess but does not specify its types\\: TKey, TValue$#"
 			count: 1
-			path: tests/Utility/Reflection/MyClassWithUnionsAndIntersections.php
+			path: tests/fixtures/Utility/Reflection/MyClassWithUnionsAndIntersections.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyClassWithUnionsAndIntersections\\:\\:MyMethod\\(\\) has parameter \\$mixed with no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyClassWithUnionsAndIntersections.php
+			path: tests/fixtures/Utility/Reflection/MyClassWithUnionsAndIntersections.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyClassWithUnionsAndIntersections\\:\\:MyMethod\\(\\) has parameter \\$optionalArrayUnion with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyClassWithUnionsAndIntersections.php
+			path: tests/fixtures/Utility/Reflection/MyClassWithUnionsAndIntersections.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyInterface\\:\\:MyDocumentedMethod\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyInterface.php
+			path: tests/fixtures/Utility/Reflection/MyInterface.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MyOtherInterface\\:\\:MyDocumentedMethod\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MyOtherInterface.php
+			path: tests/fixtures/Utility/Reflection/MyOtherInterface.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MySubclass\\:\\:MyDocumentedMethod\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MySubclass.php
+			path: tests/fixtures/Utility/Reflection/MySubclass.php
 
 		-
 			message: "#^Property Lkrms\\\\Tests\\\\Utility\\\\Reflection\\\\MySubclass\\:\\:\\$MyDocumentedProperty has no type specified\\.$#"
 			count: 1
-			path: tests/Utility/Reflection/MySubclass.php
+			path: tests/fixtures/Utility/Reflection/MySubclass.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceShared\\(\\) has parameter \\$concrete with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Container/ContainerTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceShared\\(\\) has parameter \\$container with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Container/ContainerTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSharedSingleton\\(\\) has parameter \\$concrete with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Container/ContainerTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSharedSingleton\\(\\) has parameter \\$container with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Container/ContainerTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSingleton\\(\\) has parameter \\$concrete with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Container/ContainerTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceSingleton\\(\\) has parameter \\$container with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Container/ContainerTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceTransient\\(\\) has parameter \\$concrete with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Container/ContainerTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Container\\\\ContainerTest\\:\\:_testServiceTransient\\(\\) has parameter \\$container with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Container/ContainerTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Support\\\\PhpDocParserTest\\:\\:invalidDocBlockProvider\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: tests/unit/Support/PhpDocParserTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:getUrls\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: tests/unit/Utility/ConversionsTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testFlatten\\(\\) has parameter \\$expected with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Utility/ConversionsTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testFlatten\\(\\) has parameter \\$value with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Utility/ConversionsTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testToBoolOrNull\\(\\) has parameter \\$expected with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Utility/ConversionsTest.php
+
+		-
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testToBoolOrNull\\(\\) has parameter \\$value with no type specified\\.$#"
+			count: 1
+			path: tests/unit/Utility/ConversionsTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllClassDocComments\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
-			path: tests/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectionTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllClassDocComments\\(\\) has parameter \\$expected with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectionTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllMethodDocComments\\(\\) has parameter \\$expected with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectionTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllMethodDocComments\\(\\) has parameter \\$expectedClassDocComments with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectionTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllPropertyDocComments\\(\\) has parameter \\$expected with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectionTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllPropertyDocComments\\(\\) has parameter \\$expectedClassDocComments with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectionTest.php

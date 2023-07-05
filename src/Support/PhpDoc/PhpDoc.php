@@ -124,7 +124,7 @@ final class PhpDoc implements IReadable
         bool $legacyNullable = false
     ) {
         // Check for a leading "*" after every newline as per PSR-5
-        if (!preg_match(Regex::delimit(Regex::PHP_DOCBLOCK), $docBlock, $matches)) {
+        if (!preg_match(Regex::anchorAndDelimit(Regex::PHP_DOCBLOCK), $docBlock, $matches)) {
             throw new UnexpectedValueException('Invalid DocBlock');
         }
         $this->LegacyNullable = $legacyNullable;
@@ -323,7 +323,7 @@ final class PhpDoc implements IReadable
     private function getTagType(string $text, ?string &$type): string
     {
         $regex = self::$PhpDocTypeRegex
-            ?: (self::$PhpDocTypeRegex = Regex::delimit('^' . Regex::PHPDOC_TYPE, '/', false));
+            ?: (self::$PhpDocTypeRegex = Regex::delimit('^' . Regex::PHPDOC_TYPE));
         $type = null;
         if (preg_match($regex, $text, $matches, PREG_OFFSET_CAPTURE)) {
             /** @var array<array{0:string,1:int}> $matches */

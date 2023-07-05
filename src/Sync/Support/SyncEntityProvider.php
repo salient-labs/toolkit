@@ -91,7 +91,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     }
 
     /**
-     * @param SyncOperation::* $operation
+     * @param int&SyncOperation::* $operation
      * @return iterable<TEntity>|TEntity
      * @phpstan-return (
      *     $operation is SyncOperation::*_LIST

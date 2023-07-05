@@ -79,7 +79,7 @@ class PhpDocTag
                 preg_replace(array_keys($replace), array_values($replace), $types);
 
         if (!preg_match(
-            Regex::anchorAndDelimit(Regex::PHPDOC_TYPE, '/', false),
+            Regex::anchorAndDelimit(Regex::PHPDOC_TYPE),
             trim($type),
             $matches
         )) {
