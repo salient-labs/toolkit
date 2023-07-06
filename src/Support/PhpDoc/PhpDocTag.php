@@ -31,17 +31,31 @@ class PhpDocTag
      */
     public $Description;
 
+    /**
+     * @var class-string|null
+     */
+    public $Class;
+
+    /**
+     * @var string|null
+     */
+    public $Member;
+
     public function __construct(
         string $tag,
         ?string $name = null,
         ?string $type = null,
         ?string $description = null,
+        ?string $class = null,
+        ?string $member = null,
         bool $legacyNullable = false
     ) {
         $this->Tag = $tag;
         $this->Name = $name === null ? null : self::sanitiseString($name);
         $this->Type = $type === null ? null : self::normaliseType($type, $legacyNullable);
         $this->Description = $description === null ? null : self::sanitiseString($description);
+        $this->Class = $class;
+        $this->Member = $member;
     }
 
     /**

@@ -4,19 +4,11 @@ namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
-use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Concept\Facade;
 use Lkrms\Facade\Reflect;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\PhpDoc\PhpDoc;
-use Lkrms\Support\PhpDoc\PhpDocTag;
-use Lkrms\Support\TokenExtractor;
-use Lkrms\Utility\Env;
-use Lkrms\Utility\Test;
-use ReflectionClass;
-use ReflectionException;
 use ReflectionMethod;
 use ReflectionParameter;
 
@@ -26,12 +18,20 @@ use ReflectionParameter;
  */
 final class GenerateFacade extends GenerateCommand
 {
-    private const SKIP_METHODS = [
+    private ?string $ClassFqcn;
+    private ?string $FacadeFqcn;
+
+    /**
+     * Methods that shouldn't be surfaced by the Facade
+     *
+     * @var string[]
+     */
+    private array $SkipMethods = [
         'getReadable',
         'getWritable',
         'setFacade',
 
-        // These are displaced by Facade if the underlying class has them
+        // These are displaced by Facade
         'isLoaded',
         'load',
         'unload',
@@ -52,20 +52,16 @@ final class GenerateFacade extends GenerateCommand
                 ->valueName('class')
                 ->description('The class to generate a facade for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
-                ->required(),
+                ->required()
+                ->bindTo($this->ClassFqcn),
             CliOption::build()
                 ->long('generate')
-                ->valueName('facade')
+                ->valueName('facade_class')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
-                ->required(),
+                ->required()
+                ->bindTo($this->FacadeFqcn),
             ...$this->getOutputOptionList('facade'),
-            CliOption::build()
-                ->long('declared')
-                ->short('e')
-                ->description('Ignore inherited methods'),
         ];
     }
 
@@ -73,100 +69,38 @@ final class GenerateFacade extends GenerateCommand
     {
         $this->reset();
 
-        $namespace = explode('\\', ltrim($this->getOptionValue('class'), '\\'));
-        $class = array_pop($namespace);
-        $namespace = implode('\\', $namespace) ?: Env::get(EnvVar::NS_DEFAULT, '');
-        $fqcn = $namespace ? $namespace . '\\' . $class : $class;
+        $classFqcn = $this->getRequiredFqcnOptionValue(
+            'class',
+            $this->ClassFqcn,
+            null,
+            $classClass
+        );
 
-        $facadeNamespace = explode('\\', ltrim($this->getOptionValue('generate'), '\\'));
-        $facadeClass = array_pop($facadeNamespace);
-        $facadeNamespace = implode('\\', $facadeNamespace) ?: Env::get(EnvVar::NS_FACADE, $namespace);
-        $facadeFqcn = $facadeNamespace ? $facadeNamespace . '\\' . $facadeClass : $facadeClass;
+        $this->getRequiredFqcnOptionValue(
+            'facade',
+            $this->FacadeFqcn,
+            EnvVar::NS_FACADE,
+            $facadeClass,
+            $facadeNamespace
+        );
+
+        $this->assertClassIsInstantiable($classFqcn);
 
         $this->OutputClass = $facadeClass;
         $this->OutputNamespace = $facadeNamespace;
+
+        $this->loadInputClass($classFqcn);
+
         $classPrefix = $this->getClassPrefix();
 
-        $extends = $this->getFqcnAlias(Facade::class, 'Facade');
-        $service = $this->getFqcnAlias($fqcn, $class);
+        $service = $this->getFqcnAlias($classFqcn, $classClass);
+        $extends = $this->getFqcnAlias(Facade::class);
 
-        $desc = $this->OutputDescription;
-        $desc = is_null($desc) ? "A facade for $classPrefix$fqcn" : $desc;
-        $declared = $this->getOptionValue('declared');
+        $desc = $this->OutputDescription === null
+            ? "A facade for $classPrefix$classFqcn"
+            : $this->OutputDescription;
 
-        if (!$fqcn) {
-            throw new CliInvalidArgumentsException("invalid class: $fqcn");
-        }
-
-        if (!$facadeFqcn) {
-            throw new CliInvalidArgumentsException("invalid facade: $facadeFqcn");
-        }
-
-        try {
-            $_class = new ReflectionClass($fqcn);
-
-            if (!$_class->isInstantiable()) {
-                throw new CliInvalidArgumentsException("not an instantiable class: $fqcn");
-            }
-        } catch (ReflectionException $ex) {
-            throw new CliInvalidArgumentsException("class does not exist: $fqcn");
-        }
-
-        $files = [];
-        $maybeAddFile =
-            function ($file) use (&$files) {
-                if ($file !== false) {
-                    $files[$file] = $file;
-                }
-            };
-
-        $maybeAddFile($_class->getFileName());
-        foreach (($_methods = $_class->getMethods(ReflectionMethod::IS_PUBLIC)) as $_method) {
-            $maybeAddFile($_method->getFileName());
-        }
-
-        $useMap = [];
-        $typeMap = [];
-        foreach ($files as $file) {
-            $useMap[$file] = (new TokenExtractor($file))->getUseMap();
-            $typeMap[$file] = array_change_key_case(array_flip($useMap[$file]), CASE_LOWER);
-        }
-
-        $typeNameCallback = function (string $name, bool $returnFqcn = false) use ($typeMap, &$methodFile): ?string {
-            $alias = $typeMap[$methodFile][ltrim(strtolower($name), '\\')] ?? null;
-
-            return ($alias ? $this->getFqcnAlias($name, $alias, $returnFqcn) : null)
-                ?: (Test::isPhpReservedWord($name)
-                    ? ($returnFqcn ? $name : null)
-                    : $this->getFqcnAlias($name, null, $returnFqcn));
-        };
-        $phpDocTypeCallback = function (string $type, array $templates) use (&$methodFile, &$methodNamespace, $useMap, $typeNameCallback, &$phpDocTypeCallback): string {
-            return PhpDocTag::normaliseType(preg_replace_callback(
-                '/(?<!\$)([a-z]+(-[a-z]+)+|(?=\\\\?\b)' . Regex::PHP_TYPE . ')\b/',
-                function ($match) use ($templates, &$methodFile, &$methodNamespace, $useMap, $typeNameCallback, &$phpDocTypeCallback) {
-                    $type = $this->resolveTemplates($match[0], $templates);
-                    if ($type !== $match[0]) {
-                        return $phpDocTypeCallback($type, $templates);
-                    }
-
-                    // Use reserved words and hyphenated types (e.g. `class-string`) as-is
-                    if (Test::isPhpReservedWord($type) || strpbrk($type, '-') !== false) {
-                        return $type;
-                    }
-
-                    if (preg_match('/^\\\\/', $type)) {
-                        return $typeNameCallback($type, true);
-                    }
-
-                    return $typeNameCallback(
-                        $useMap[$methodFile][$type]
-                            ?? '\\' . $methodNamespace . '\\' . $type,
-                        true
-                    );
-                },
-                $type
-            ));
-        };
+        $_methods = $this->InputClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
         usort(
             $_methods,
@@ -178,27 +112,31 @@ final class GenerateFacade extends GenerateCommand
                         : $a->getName() <=> $b->getName())
         );
         $facadeMethods = [
-            " * @method static $service load() Load and return an instance of the underlying $class class",
-            " * @method static $service getInstance() Get the underlying $class instance",
-            " * @method static bool isLoaded() True if an underlying $class instance has been loaded",
-            " * @method static void unload() Clear the underlying $class instance",
+            " * @method static $service load() Load and return an instance of the underlying $classClass class",
+            " * @method static $service getInstance() Get the underlying $classClass instance",
+            " * @method static bool isLoaded() True if an underlying $classClass instance has been loaded",
+            " * @method static void unload() Clear the underlying $classClass instance",
         ];
         $methods = [];
         $toDeclare = [];
         foreach ($_methods as $_method) {
-            $docBlocks = Reflect::getAllMethodDocComments($_method, $classDocBlocks);
-            $phpDoc = PhpDoc::fromDocBlocks($docBlocks, $classDocBlocks);
-            $methodFile = $_method->getFileName();
-            $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
-            $declaring = $typeNameCallback($_method->getDeclaringClass()->getName(), true);
+            $declaring = $this->getTypeAlias($_method->getDeclaringClass()->getName());
             $methodName = $_method->getName();
             $methodFqsen = "{$declaring}::{$methodName}()";
             $_params = $_method->getParameters();
+            $docBlocks = Reflect::getAllMethodDocComments($_method, $classDocBlocks);
+            $phpDoc = PhpDoc::fromDocBlocks($docBlocks, $classDocBlocks, $methodName . '()');
+            $methodFilename = $_method->getFileName() ?: null;
+            $methodNamespace = $_method->getDeclaringClass()->getNamespaceName();
 
             // Variables can't be passed to __callStatic by reference, so if
             // this method has any parameters that are passed by reference, it
             // needs a declared facade
-            $declare = (bool) array_filter($_params, fn(ReflectionParameter $p) => $p->isPassedByReference());
+            $declare = (bool) array_filter(
+                $_params,
+                fn(ReflectionParameter $p) =>
+                    $p->isPassedByReference()
+            );
             $internal = (bool) ($phpDoc->TagsByName['internal'] ?? null);
             $link = !$internal && $phpDoc && $phpDoc->hasDetail();
             $returnsVoid = false;
@@ -206,7 +144,7 @@ final class GenerateFacade extends GenerateCommand
             if ($_method->isConstructor()) {
                 $method = 'load';
                 $type = $service;
-                $summary = "Load and return an instance of the underlying $class class";
+                $summary = "Load and return an instance of the underlying $classClass class";
                 unset($facadeMethods[0]);
             } else {
                 if ($phpDoc->TagsByName['deprecated'] ?? null) {
@@ -214,17 +152,26 @@ final class GenerateFacade extends GenerateCommand
                 }
                 $method = $methodName;
                 if (strpos($method, '__') === 0 ||
-                        in_array($method, self::SKIP_METHODS) ||
-                        ($declared && $_method->getDeclaringClass() != $_class)) {
+                        in_array($method, $this->SkipMethods)) {
                     continue;
                 }
 
                 $_type = $phpDoc->Return->Type ?? null;
-                if ($_type /*&& strpbrk($_type, '&<>') === false*/) {
-                    $type = $phpDocTypeCallback($_type, $phpDoc->Templates);
+                if ($_type) {
+                    $type = $this->getPhpDocTypeAlias(
+                        $phpDoc->Return,
+                        $phpDoc->Templates,
+                        $methodNamespace,
+                        $methodFilename
+                    );
                 } else {
                     $type = $_method->hasReturnType()
-                        ? Reflect::getTypeDeclaration($_method->getReturnType(), $classPrefix, $typeNameCallback)
+                        ? Reflect::getTypeDeclaration(
+                            $_method->getReturnType(),
+                            $classPrefix,
+                            fn(string $type): ?string =>
+                                $this->getTypeAlias($type, $methodFilename, false)
+                        )
                         : 'mixed';
 
                     // If the underlying method has more type information,
@@ -261,14 +208,34 @@ final class GenerateFacade extends GenerateCommand
 
             $params = [];
             foreach ($_params as $_param) {
+                $tag = $phpDoc->Params[$_param->getName()] ?? null;
                 // Override the declared type if defined in the PHPDoc
-                $_type = ($_type = $phpDoc->Params[$_param->getName()]->Type ?? null)
-                    //&& strpbrk($_type, '&<>') === false
-                    ? $phpDocTypeCallback($_type, $phpDoc->Templates)
+                $_type = ($tag->Type ?? null)
+                    ? $this->getPhpDocTypeAlias(
+                        $tag,
+                        $phpDoc->Templates,
+                        $methodNamespace,
+                        $methodFilename
+                    )
                     : null;
-                $params[] = $declare
-                    ? Reflect::getParameterPhpDoc($_param, $classPrefix, $typeNameCallback, $_type)
-                    : Reflect::getParameterDeclaration($_param, $classPrefix, $typeNameCallback, $_type, null, true);
+                $params[] =
+                    $declare
+                        ? Reflect::getParameterPhpDoc(
+                            $_param,
+                            $classPrefix,
+                            fn(string $type): ?string =>
+                                $this->getTypeAlias($type, $methodFilename, false),
+                            $_type
+                        )
+                        : Reflect::getParameterDeclaration(
+                            $_param,
+                            $classPrefix,
+                            fn(string $type): ?string =>
+                                $this->getTypeAlias($type, $methodFilename, false),
+                            $_type,
+                            null,
+                            true
+                        );
             }
 
             if (!$methods && !$_method->isConstructor()) {
@@ -276,39 +243,31 @@ final class GenerateFacade extends GenerateCommand
             }
 
             if ($declare) {
-                $params = implode(PHP_EOL . ' * ', array_map(
-                    fn(string $p) => str_replace(PHP_EOL, PHP_EOL . ' * ', $p),
-                    array_filter($params)
-                ));
+                $params = array_filter($params);
                 $return = ($type && (!$_method->hasReturnType() ||
                         Reflect::getTypeDeclaration(
                             $_method->getReturnType(),
                             $classPrefix,
-                            $typeNameCallback
+                            fn(string $type): ?string =>
+                                $this->getTypeAlias($type, $methodFilename, false)
                         ) !== $type))
                     ? "@return $type"
                     : '';
 
                 $lines = [];
-                $lines[] = '/**';  // 0
-                $lines[] = " * $summary";  // 1
-                $lines[] = ' *';  // 2
-                $lines[] = ' * @internal';  // 3
-                $lines[] = " * $params";  // 4
-                $lines[] = " * $return";  // 5
-                $lines[] = " * @see $methodFqsen";  // 6
-                $lines[] = ' */';
-                if (!$link) {
-                    unset($lines[6]);
+                $lines[] = $summary;
+                $lines[] = '';
+                if ($internal) {
+                    $lines[] = '@internal';
                 }
-                if (!$return) {
-                    unset($lines[5]);
+                if ($params) {
+                    array_push($lines, ...$params);
                 }
-                if (!$params) {
-                    unset($lines[4]);
+                if ($return) {
+                    $lines[] = $return;
                 }
-                if (!$internal) {
-                    unset($lines[3]);
+                if ($link) {
+                    $lines[] = "@see $methodFqsen";
                 }
 
                 $toDeclare[] = [$_method, implode(PHP_EOL, $lines), !$returnsVoid];
@@ -324,7 +283,7 @@ final class GenerateFacade extends GenerateCommand
         }
         $methods = implode(PHP_EOL, $methods);
 
-        $imports = $this->getImports();
+        $imports = $this->generateImports();
 
         $docBlock[] = '/**';
         if ($desc) {
@@ -371,36 +330,33 @@ final class GenerateFacade extends GenerateCommand
 
         array_push(
             $lines,
-            ...$this->getStaticGetter('getServiceName', "$service::class")
+            ...$this->generateGetter('getServiceName', "$service::class")
         );
 
         /** @var ReflectionMethod $_method */
         foreach ($toDeclare as [$_method, $docBlock, $return]) {
             $_params = $_method->getParameters();
             $return = $return ? 'return ' : '';
-            $code = [
-                'static::setFuncNumArgs(__FUNCTION__, func_num_args());',
-                'try {',
-                "    {$return}static::getInstance()->{$_method->name}("
-                    . implode(', ', array_map(
-                        fn(ReflectionParameter $p) =>
-                            ($p->isVariadic() ? '...' : '') . "\${$p->name}",
-                        $_params
-                    )) . ');',
-                '} finally {',
-                '    static::clearFuncNumArgs(__FUNCTION__);',
-                '}',
-            ];
+            $code = [sprintf(
+                '%sstatic::getInstance()->%s(%s);',
+                $return,
+                $_method->name,
+                implode(', ', array_map(
+                    fn(ReflectionParameter $p) =>
+                        ($p->isVariadic() ? '...' : '') . "\${$p->name}",
+                    $_params
+                ))
+            )];
 
             array_push(
                 $lines,
                 '',
-                ...$this->getMethod($_method->name, $code, $_params, $_method->getReturnType(), $docBlock)
+                ...$this->generateMethod($_method->name, $code, $_params, $_method->getReturnType(), $docBlock)
             );
         }
 
         $lines[] = '}';
 
-        $this->handleOutput($facadeClass, $facadeNamespace, $lines);
+        $this->handleOutput($lines);
     }
 }

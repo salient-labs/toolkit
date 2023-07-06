@@ -54,11 +54,6 @@ final class File extends Facade
      */
     public static function writeCsv(iterable $data, $target = null, bool $headerRow = true, $nullValue = null, ?callable $callback = null, ?int &$count = null, string $eol = "\r\n", bool $utf16le = true, bool $bom = true)
     {
-        static::setFuncNumArgs(__FUNCTION__, func_num_args());
-        try {
-            return static::getInstance()->writeCsv($data, $target, $headerRow, $nullValue, $callback, $count, $eol, $utf16le, $bom);
-        } finally {
-            static::clearFuncNumArgs(__FUNCTION__);
-        }
+        return static::getInstance()->writeCsv($data, $target, $headerRow, $nullValue, $callback, $count, $eol, $utf16le, $bom);
     }
 }

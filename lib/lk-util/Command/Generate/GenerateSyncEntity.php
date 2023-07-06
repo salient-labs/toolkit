@@ -258,7 +258,7 @@ class GenerateSyncEntity extends GenerateCommand
             }
         }
 
-        $imports = $this->getImports();
+        $imports = $this->generateImports();
 
         $docBlock[] = '/**';
         if ($desc) {
@@ -336,6 +336,6 @@ class GenerateSyncEntity extends GenerateCommand
 
         $lines[] = '}';
 
-        $this->handleOutput($class, $namespace, $lines);
+        $this->handleOutput($lines);
     }
 }

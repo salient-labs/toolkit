@@ -50,6 +50,7 @@ final class CurlerBuilder extends Builder
 {
     /**
      * @internal
+     * @return class-string<Curler>
      */
     protected static function getClassName(): string
     {

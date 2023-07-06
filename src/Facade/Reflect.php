@@ -20,7 +20,7 @@ use ReflectionType;
  * @method static Reflection getInstance() Get the underlying Reflection instance
  * @method static bool isLoaded() True if an underlying Reflection instance has been loaded
  * @method static void unload() Clear the underlying Reflection instance
- * @method static string[] getAllClassDocComments(ReflectionClass $class) Get an array of doc comments for a ReflectionClass and any ancestors (see {@see Reflection::getAllClassDocComments()})
+ * @method static array<class-string,string> getAllClassDocComments(ReflectionClass $class) Get an array of doc comments for a ReflectionClass and any ancestors (see {@see Reflection::getAllClassDocComments()})
  * @method static array<string,ReflectionClass> getAllTraits(ReflectionClass $class) Get an array of traits used by this class and its parent classes (see {@see Reflection::getAllTraits()})
  * @method static string[] getAllTypeNames(?ReflectionType $type) Get the names of all types in a ReflectionType (see {@see Reflection::getAllTypeNames()})
  * @method static array<ReflectionNamedType|ReflectionType> getAllTypes(?ReflectionType $type) Get all types in a ReflectionType (see {@see Reflection::getAllTypes()})
@@ -49,34 +49,24 @@ final class Reflect extends Facade
     /**
      * Get an array of doc comments for a ReflectionMethod from its declaring class and any ancestors that declare the same method
      *
-     * @param array<string|null>|null $classDocComments
-     * @return string[]
+     * @param array<class-string,string|null>|null $classDocComments
+     * @return array<class-string,string>
      * @see Reflection::getAllMethodDocComments()
      */
     public static function getAllMethodDocComments(ReflectionMethod $method, ?array &$classDocComments = null): array
     {
-        static::setFuncNumArgs(__FUNCTION__, func_num_args());
-        try {
-            return static::getInstance()->getAllMethodDocComments($method, $classDocComments);
-        } finally {
-            static::clearFuncNumArgs(__FUNCTION__);
-        }
+        return static::getInstance()->getAllMethodDocComments($method, $classDocComments);
     }
 
     /**
      * Get an array of doc comments for a ReflectionProperty from its declaring class and any ancestors that declare the same property
      *
-     * @param array<string|null>|null $classDocComments
-     * @return string[]
+     * @param array<class-string,string|null>|null $classDocComments
+     * @return array<class-string,string>
      * @see Reflection::getAllPropertyDocComments()
      */
     public static function getAllPropertyDocComments(ReflectionProperty $property, ?array &$classDocComments = null): array
     {
-        static::setFuncNumArgs(__FUNCTION__, func_num_args());
-        try {
-            return static::getInstance()->getAllPropertyDocComments($property, $classDocComments);
-        } finally {
-            static::clearFuncNumArgs(__FUNCTION__);
-        }
+        return static::getInstance()->getAllPropertyDocComments($property, $classDocComments);
     }
 }

@@ -38,7 +38,7 @@ final class SyncSerializeRulesBuilder extends Builder
 {
     /**
      * @internal
-     * @return class-string<SyncSerializeRules<ISyncEntity>>
+     * @return class-string<SyncSerializeRules<TEntity>>
      */
     protected static function getClassName(): string
     {
@@ -50,7 +50,7 @@ final class SyncSerializeRulesBuilder extends Builder
      *
      * @template T of ISyncEntity
      * @param class-string<T> $value
-     * @return static<T>
+     * @return $this<T>
      */
     public function entity(string $value)
     {

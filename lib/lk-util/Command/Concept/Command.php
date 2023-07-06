@@ -57,6 +57,27 @@ abstract class Command extends CliCommand
     }
 
     /**
+     * Normalise a mandatory user-supplied class name, optionally assigning its
+     * base name and/or namespace to variables passed by reference
+     *
+     * @return class-string<object>
+     */
+    protected function getRequiredFqcnOptionValue(
+        string $valueName,
+        string $value,
+        ?string $namespaceEnvVar = null,
+        ?string &$class = null,
+        ?string &$namespace = null
+    ): string {
+        $fqcn = $this->getFqcnOptionValue($value, $namespaceEnvVar, $class, $namespace);
+        if (!$fqcn) {
+            throw new CliInvalidArgumentsException(sprintf('invalid %s: %s', $valueName, $value));
+        }
+
+        return $fqcn;
+    }
+
+    /**
      * Normalise user-supplied class names
      *
      * @param string[] $values
@@ -73,6 +94,8 @@ abstract class Command extends CliCommand
     }
 
     /**
+     * Resolve a user-supplied provider name to a concrete instance
+     *
      * @template TBaseProvider of IProvider
      * @template TProvider of TBaseProvider
      * @param class-string<TProvider> $provider
@@ -92,6 +115,9 @@ abstract class Command extends CliCommand
     }
 
     /**
+     * Get data from a user-supplied JSON file, optionally assigning the file's
+     * "friendly pathname" to a variable before returning
+     *
      * @return mixed
      */
     protected function getJson(string $file, ?string &$path = null, bool $associative = true)

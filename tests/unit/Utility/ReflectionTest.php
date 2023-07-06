@@ -10,6 +10,8 @@ use Lkrms\Tests\Utility\Reflection\MyClass;
 use Lkrms\Tests\Utility\Reflection\MyClassWithUnionsAndIntersections;
 use Lkrms\Tests\Utility\Reflection\MyInterface;
 use Lkrms\Tests\Utility\Reflection\MyOtherClass;
+use Lkrms\Tests\Utility\Reflection\MyOtherInterface;
+use Lkrms\Tests\Utility\Reflection\MyReusedTrait;
 use Lkrms\Tests\Utility\Reflection\MySubclass;
 use Lkrms\Tests\Utility\Reflection\MyTrait;
 use ReflectionClass;
@@ -150,12 +152,12 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
             MySubclass::class => [
                 new ReflectionClass(MySubclass::class),
                 [
-                    "/**\n * MySubclass\n */",
-                    "/**\n * MyClass\n */",
-                    "/**\n * MyBaseClass\n */",
-                    "/**\n * MyInterface\n */",
-                    "/**\n * MyBaseInterface\n */",
-                    "/**\n * MyOtherInterface\n */",
+                    MySubclass::class => "/**\n * MySubclass\n */",
+                    MyClass::class => "/**\n * MyClass\n */",
+                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                    MyInterface::class => "/**\n * MyInterface\n */",
+                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
+                    MyOtherInterface::class => "/**\n * MyOtherInterface\n */",
                 ],
             ],
         ];
@@ -182,15 +184,15 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
     public static function getAllMethodDocCommentsProvider()
     {
         $expected = [
-            "/**\n     * MySubclass::MyDocumentedMethod() PHPDoc\n     */",
-            "/**\n     * MyClass::MyDocumentedMethod() PHPDoc\n     */",
-            "/**\n     * MyTrait::MyDocumentedMethod() PHPDoc\n     */",
-            "/**\n     * MyBaseTrait::MyDocumentedMethod() PHPDoc\n     */",
-            "/**\n     * MyReusedTrait::MyDocumentedMethod() PHPDoc\n     */",
-            "/**\n     * MyBaseClass::MyDocumentedMethod() PHPDoc\n     */",
-            "/**\n     * MyInterface::MyDocumentedMethod() PHPDoc\n     */",
-            "/**\n     * MyBaseInterface::MyDocumentedMethod() PHPDoc\n     */",
-            "/**\n     * MyOtherInterface::MyDocumentedMethod() PHPDoc\n     */",
+            MySubclass::class => "/**\n     * MySubclass::MyDocumentedMethod() PHPDoc\n     */",
+            MyClass::class => "/**\n     * MyClass::MyDocumentedMethod() PHPDoc\n     */",
+            MyTrait::class => "/**\n     * MyTrait::MyDocumentedMethod() PHPDoc\n     */",
+            MyBaseTrait::class => "/**\n     * MyBaseTrait::MyDocumentedMethod() PHPDoc\n     */",
+            MyReusedTrait::class => "/**\n     * MyReusedTrait::MyDocumentedMethod() PHPDoc\n     */",
+            MyBaseClass::class => "/**\n     * MyBaseClass::MyDocumentedMethod() PHPDoc\n     */",
+            MyInterface::class => "/**\n     * MyInterface::MyDocumentedMethod() PHPDoc\n     */",
+            MyBaseInterface::class => "/**\n     * MyBaseInterface::MyDocumentedMethod() PHPDoc\n     */",
+            MyOtherInterface::class => "/**\n     * MyOtherInterface::MyDocumentedMethod() PHPDoc\n     */",
         ];
 
         return [
@@ -202,15 +204,15 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
                 (new ReflectionClass(MySubclass::class))->getMethod('MyDocumentedMethod'),
                 $expected,
                 [
-                    "/**\n * MySubclass\n */",
-                    "/**\n * MyClass\n */",
-                    "/**\n * MyTrait\n */",
-                    "/**\n * MyBaseTrait\n */",
-                    "/**\n * MyReusedTrait\n */",
-                    "/**\n * MyBaseClass\n */",
-                    "/**\n * MyInterface\n */",
-                    "/**\n * MyBaseInterface\n */",
-                    "/**\n * MyOtherInterface\n */",
+                    MySubclass::class => "/**\n * MySubclass\n */",
+                    MyClass::class => "/**\n * MyClass\n */",
+                    MyTrait::class => "/**\n * MyTrait\n */",
+                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                    MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
+                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                    MyInterface::class => "/**\n * MyInterface\n */",
+                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
+                    MyOtherInterface::class => "/**\n * MyOtherInterface\n */",
                 ],
             ],
         ];
@@ -237,12 +239,12 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
     public static function getAllPropertyDocCommentsProvider()
     {
         $expected = [
-            "/**\n     * MySubclass::\$MyDocumentedProperty PHPDoc\n     */",
-            "/**\n     * MyClass::\$MyDocumentedProperty PHPDoc\n     */",
-            "/**\n     * MyTrait::\$MyDocumentedProperty PHPDoc\n     */",
-            "/**\n     * MyBaseTrait::\$MyDocumentedProperty PHPDoc\n     */",
-            "/**\n     * MyReusedTrait::\$MyDocumentedProperty PHPDoc\n     */",
-            "/**\n     * MyBaseClass::\$MyDocumentedProperty PHPDoc\n     */",
+            MySubclass::class => "/**\n     * MySubclass::\$MyDocumentedProperty PHPDoc\n     */",
+            MyClass::class => "/**\n     * MyClass::\$MyDocumentedProperty PHPDoc\n     */",
+            MyTrait::class => "/**\n     * MyTrait::\$MyDocumentedProperty PHPDoc\n     */",
+            MyBaseTrait::class => "/**\n     * MyBaseTrait::\$MyDocumentedProperty PHPDoc\n     */",
+            MyReusedTrait::class => "/**\n     * MyReusedTrait::\$MyDocumentedProperty PHPDoc\n     */",
+            MyBaseClass::class => "/**\n     * MyBaseClass::\$MyDocumentedProperty PHPDoc\n     */",
         ];
 
         return [
@@ -254,12 +256,12 @@ final class ReflectionTest extends \Lkrms\Tests\TestCase
                 (new ReflectionClass(MySubclass::class))->getProperty('MyDocumentedProperty'),
                 $expected,
                 [
-                    "/**\n * MySubclass\n */",
-                    "/**\n * MyClass\n */",
-                    "/**\n * MyTrait\n */",
-                    "/**\n * MyBaseTrait\n */",
-                    "/**\n * MyReusedTrait\n */",
-                    "/**\n * MyBaseClass\n */",
+                    MySubclass::class => "/**\n * MySubclass\n */",
+                    MyClass::class => "/**\n * MyClass\n */",
+                    MyTrait::class => "/**\n * MyTrait\n */",
+                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                    MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
+                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
                 ],
             ],
         ];

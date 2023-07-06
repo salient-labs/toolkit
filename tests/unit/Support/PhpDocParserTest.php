@@ -347,7 +347,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
              */
             EOF;
 
-        $phpDoc = new PhpDoc($docBlock, null, true);
+        $phpDoc = new PhpDoc($docBlock, null, null, null, true);
 
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertSame(<<<'EOF'

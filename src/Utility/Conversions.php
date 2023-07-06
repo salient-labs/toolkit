@@ -142,6 +142,27 @@ final class Conversions
     }
 
     /**
+     * A type-agnostic array_unique
+     *
+     * @template TKey of array-key
+     * @template TValue
+     * @param array<TKey,TValue> $array
+     * @return array<TKey,TValue>
+     */
+    public function toUnique(array $array): array
+    {
+        $list = [];
+        foreach ($array as $key => $value) {
+            if (in_array($value, $list, true)) {
+                continue;
+            }
+            $list[$key] = $value;
+        }
+
+        return $list;
+    }
+
+    /**
      * A type-agnostic array_unique with reindexing
      *
      * @template T
@@ -162,17 +183,53 @@ final class Conversions
     }
 
     /**
+     * A type-agnostic multi-column array_unique
+     *
+     * It is assumed that every array provided has the same signature (i.e.
+     * identical lengths and keys).
+     *
+     * Whenever a value is excluded from `$array`, its counterparts in the
+     * `$columns` arrays are also excluded. Only values in `$array` are checked
+     * for uniqueness.
+     *
+     * @template TKey of array-key
+     * @template TValue
+     * @param array<TKey,TValue> $array
+     * @param array<TKey,mixed> ...$columns
+     * @return array<TKey,TValue>
+     */
+    public function columnsToUnique(array $array, array &...$columns): array
+    {
+        $list = [];
+        foreach ($array as $key => $value) {
+            if (in_array($value, $list, true)) {
+                continue;
+            }
+            $list[$key] = $value;
+            foreach ($columns as $columnIndex => $column) {
+                $columns2[$columnIndex][$key] = $column[$key];
+            }
+        }
+        foreach ($columns as $columnIndex => &$column) {
+            $column = $columns2[$columnIndex] ?? [];
+        }
+
+        return $list;
+    }
+
+    /**
      * A type-agnostic multi-column array_unique with reindexing
      *
      * It is assumed that every array provided has the same signature (i.e.
      * identical lengths and keys).
      *
-     * Whenever a value is excluded from `$array`, its counterpart in each
-     * `$columns` array is also excluded. Only values in `$array` are checked
+     * Whenever a value is excluded from `$array`, its counterparts in the
+     * `$columns` arrays are also excluded. Only values in `$array` are checked
      * for uniqueness.
      *
      * @template T
      * @param T[] $array
+     * @param mixed[] ...$columns
      * @return T[]
      */
     public static function columnsToUniqueList(array $array, array &...$columns): array
@@ -189,6 +246,28 @@ final class Conversions
         }
         foreach ($columns as $columnIndex => &$column) {
             $column = $columns2[$columnIndex] ?? [];
+        }
+
+        return $list;
+    }
+
+    /**
+     * A faster array_unique
+     *
+     * @template TKey of array-key
+     * @param array<TKey,string> $array
+     * @return array<TKey,string>
+     */
+    public function stringsToUnique(array $array): array
+    {
+        $list = [];
+        $seen = [];
+        foreach ($array as $key => $value) {
+            if ($seen[$value] ?? null) {
+                continue;
+            }
+            $list[$key] = $value;
+            $seen[$value] = true;
         }
 
         return $list;

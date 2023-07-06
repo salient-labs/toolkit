@@ -31,6 +31,7 @@ final class SyncErrorBuilder extends Builder
 {
     /**
      * @internal
+     * @return class-string<SyncError>
      */
     protected static function getClassName(): string
     {

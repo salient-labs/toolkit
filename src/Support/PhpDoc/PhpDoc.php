@@ -120,7 +120,9 @@ final class PhpDoc implements IReadable
      */
     public function __construct(
         string $docBlock,
-        string $classDocBlock = null,
+        ?string $classDocBlock = null,
+        ?string $class = null,
+        ?string $member = null,
         bool $legacyNullable = false
     ) {
         // Check for a leading "*" after every newline as per PSR-5
@@ -191,6 +193,8 @@ final class PhpDoc implements IReadable
                             $name,
                             $type,
                             $this->getTagDescription($text, $metaCount),
+                            $class,
+                            $member,
                             $this->LegacyNullable
                         );
                     }
@@ -202,6 +206,8 @@ final class PhpDoc implements IReadable
                     $this->Return = new PhpDocReturnTag(
                         $type,
                         $this->getTagDescription($text, $metaCount),
+                        $class,
+                        $member,
                         $this->LegacyNullable
                     );
                     break;
@@ -227,6 +233,8 @@ final class PhpDoc implements IReadable
                         $type,
                         $name ?? null,
                         $this->getTagDescription($text, $metaCount),
+                        $class,
+                        $member,
                         $this->LegacyNullable
                     );
                     if ($name ?? null) {
@@ -259,6 +267,8 @@ final class PhpDoc implements IReadable
                         $name,
                         $type,
                         $covariant ? 'covariant' : null,
+                        $class,
+                        $member,
                         $this->LegacyNullable
                     );
                     break;
@@ -308,9 +318,8 @@ final class PhpDoc implements IReadable
 
         // Merge @template types from the declaring class, if available
         if ($classDocBlock) {
-            $class = new self($classDocBlock, null, $legacyNullable);
-            foreach ($class->Templates as $name => $tag) {
-                $tag->IsClassTemplate = true;
+            $phpDoc = new self($classDocBlock, null, $class, null, $legacyNullable);
+            foreach ($phpDoc->Templates as $name => $tag) {
                 $this->mergeValue($this->Templates[$name], $tag);
             }
         }
@@ -508,34 +517,35 @@ final class PhpDoc implements IReadable
     }
 
     /**
-     * @param string[] $docBlocks
-     * @param array<string|null>|null $classDocBlocks
+     * @param array<class-string,string>|string[] $docBlocks
+     * @param array<class-string,string|null>|array<string|null>|null $classDocBlocks
+     * @param class-string $fallbackClass
      */
     public static function fromDocBlocks(
         array $docBlocks,
         ?array $classDocBlocks = null,
+        ?string $member = null,
+        ?string $fallbackClass = null,
         bool $legacyNullable = false
     ): ?self {
         if (!$docBlocks) {
             return null;
         }
-        $parser = new self(
-            array_shift($docBlocks),
-            $classDocBlocks
-                ? array_shift($classDocBlocks)
-                : null,
-            $legacyNullable
-        );
-        while ($docBlocks) {
-            $parser->mergeInherited(
-                new self(
-                    array_shift($docBlocks),
-                    $classDocBlocks
-                        ? array_shift($classDocBlocks)
-                        : null,
-                    $legacyNullable
-                )
+        foreach ($docBlocks as $key => $docBlock) {
+            $class = is_string($key) ? $key : null;
+            $phpDoc = new self(
+                $docBlock,
+                $classDocBlocks[$key] ?? null,
+                $class ?: $fallbackClass,
+                $member,
+                $legacyNullable
             );
+
+            if (isset($parser)) {
+                $parser->mergeInherited($phpDoc);
+            } else {
+                $parser = $phpDoc;
+            };
         }
 
         return $parser;

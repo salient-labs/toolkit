@@ -6,7 +6,9 @@ use Generator;
 use Lkrms\Facade\Convert;
 use UnexpectedValueException;
 
-defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10001);
+defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10007);
+defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10008);
+defined('T_NAME_RELATIVE') || define('T_NAME_RELATIVE', 10009);
 
 /**
  * Reflection for files
@@ -15,7 +17,7 @@ defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10001);
 final class TokenExtractor
 {
     /**
-     * @var array<string|array>
+     * @var array<string|array{0:int,1:string,2:int}>
      */
     private $Tokens;
 
@@ -25,6 +27,53 @@ final class TokenExtractor
             token_get_all(file_get_contents($filename), TOKEN_PARSE),
             fn($t) => !is_array($t) || !in_array($t[0], [T_WHITESPACE])
         ));
+    }
+
+    public function dumpTokens(): void
+    {
+        foreach ($this->Tokens as $token) {
+            if (is_array($token)) {
+                printf("[%4d] %s: %s\n", $token[2], token_name($token[0]), preg_replace('/\s+/', ' ', $token[1]));
+            } else {
+                printf("[%'-4s] %s\n", '', $token);
+            }
+        }
+    }
+
+    /**
+     * Get an array that maps the file's import/alias names to qualified names
+     *
+     * Limitations:
+     * - `namespace` boundaries are ignored
+     * - processing halts at the first `class` or `trait` encountered
+     * - no distinction is made between `use`, `use function` and `use const`
+     *
+     * @return array<string,class-string>
+     */
+    public function getUseMap(): array
+    {
+        /** @todo: Revisit this with navigable tokens */
+        $map = [];
+        foreach ($this->getTokensByType(T_USE, T_CLASS, T_TRAIT) as $i) {
+            // Ignore:
+            // - `class <class> { use <trait> ...`
+            // - `trait <trait> { use <trait> ...`
+            // - `function() use (<variable> ...`
+            if (in_array($this->Tokens[$i][0], [T_CLASS, T_TRAIT], true)) {
+                break;
+            }
+            if ($this->Tokens[$i - 1] === ')') {
+                continue;
+            }
+            $index = $i + 1;
+            if (in_array($this->Tokens[$index][0] ?? null, [T_CONST, T_FUNCTION], true)) {
+                $index++;
+            }
+            $this->_getUseMap($index, $map);
+            unset($index);
+        }
+
+        return array_map(fn(string $import) => ltrim($import, '\\'), $map);
     }
 
     /**
@@ -42,27 +91,21 @@ final class TokenExtractor
         }
     }
 
-    public function dumpTokens(): void
-    {
-        foreach ($this->Tokens as $token) {
-            if (is_array($token)) {
-                printf("[%4d] %s: %s\n", $token[2], token_name($token[0]), preg_replace('/\s+/', ' ', $token[1]));
-            } else {
-                printf("[%'-4s] %s\n", '', $token);
-            }
-        }
-    }
-
-    private function _getUseMap(int &$index, array &$map, string $namespace = '')
+    /**
+     * @param array<string,class-string> $map
+     */
+    private function _getUseMap(int &$index, array &$map, string $namespace = ''): void
     {
         $current = $namespace;
         $pending = true;
         do {
             $token = $this->Tokens[$index++];
             switch ($token[0] ?? $token) {
+                case T_NAME_FULLY_QUALIFIED:
                 case T_NAME_QUALIFIED:
-                case T_STRING:
+                case T_NAME_RELATIVE:
                 case T_NS_SEPARATOR:
+                case T_STRING:
                     $current .= $token[1];
                     break;
 
@@ -71,6 +114,7 @@ final class TokenExtractor
                     $pending = false;
                     break;
 
+                case T_CLOSE_TAG:
                 case '}':
                 case ';':
                     if ($pending) {
@@ -96,23 +140,5 @@ final class TokenExtractor
                     break;
             }
         } while (true);
-    }
-
-    public function getUseMap(): array
-    {
-        $map = [];
-        foreach ($this->getTokensByType(T_USE) as $i) {
-            // Ignore:
-            // - `class <class> { use <trait> ...`
-            // - `function() use (<variable> ...`
-            if (in_array($this->Tokens[$i - 1] ?? null, ['{', ')'])) {
-                continue;
-            }
-            $index = $i + 1;
-            $this->_getUseMap($index, $map);
-            unset($index);
-        }
-
-        return $map;
     }
 }
