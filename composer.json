@@ -25,7 +25,7 @@
         "firebase/php-jwt": "^6",
         "league/oauth2-client": "^2",
         "phpstan/extension-installer": "^1",
-        "phpstan/phpstan": "1.10.22",
+        "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",
         "phpunit/phpunit": "^9"
     },
