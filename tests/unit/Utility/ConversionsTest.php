@@ -107,6 +107,49 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
         ];
     }
 
+    /**
+     * @dataProvider expandTabsProvider
+     */
+    public function testExpandTabs(string $expected, string $text, int $tabSize, int $column = 1)
+    {
+        $this->assertSame($expected, Convert::expandTabs($text, $tabSize, $column));
+    }
+
+    public static function expandTabsProvider()
+    {
+        return [
+            ['', '', 4],
+            ["\n", "\n", 4],
+            ["\n\n", "\n\n", 4],
+            ["\n    ", "\n\t", 4],
+            ["\n    \n", "\n\t\n", 4],
+            ['    ', "\t", 4],
+            ['a   ', "a\t", 4],
+            ['abcdef  ', "abcdef\t", 4],
+            ['abc de  f       ', "abc\tde\tf\t\t", 4],
+            ['   ', "\t", 4, 2],
+            ['a ', "a\t", 4, 3],
+            ['abcdef   ', "abcdef\t", 4, 4],
+            ['abc   de  f       ', "abc\tde\tf\t\t", 4, 7],
+            ['        ', "\t", 8],
+            ['a       ', "a\t", 8],
+            ['abcdef  ', "abcdef\t", 8],
+            ['abc     de      f               ', "abc\tde\tf\t\t", 8],
+            ["   \nabc ", "\t\nabc\t", 4, 2],
+            [
+                <<<EOF
+                    abc de  f       g
+                1   23  4
+                EOF,
+                <<<EOF
+                \tabc\tde\tf\t\tg
+                1\t23\t4
+                EOF,
+                4,
+            ],
+        ];
+    }
+
     public function testArrayKeyToOffset()
     {
         $data = [
