@@ -387,6 +387,37 @@ final class Conversions
     }
 
     /**
+     * Expand tabs to spaces
+     *
+     */
+    public static function expandTabs(string $text, int $tabSize, int $column = 1): string
+    {
+        if (strpos($text, "\t") === false) {
+            return $text;
+        }
+        $eol = Inspect::getEol($text) ?: "\n";
+        $expanded = '';
+        foreach (explode($eol, $text) as $i => $line) {
+            !$i || $expanded .= $eol;
+            $parts = explode("\t", $line);
+            $last = array_key_last($parts);
+            foreach ($parts as $p => $part) {
+                $expanded .= $part;
+                if ($p === $last) {
+                    break;
+                }
+                $column += mb_strlen($part);
+                // e.g. with $tabSize 4, a tab at $column 2 occupies 3 spaces
+                $spaces = $tabSize - (($column - 1) % $tabSize);
+                $expanded .= str_repeat(' ', $spaces);
+                $column += $spaces;
+            }
+            $column = 1;
+        }
+        return $expanded;
+    }
+
+    /**
      * Get the offset of a key in an array
      *
      * @param string|int $key
