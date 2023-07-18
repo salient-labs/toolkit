@@ -7,7 +7,6 @@ use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
-use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Introspector;
@@ -16,6 +15,7 @@ use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
 use RuntimeException;
 

@@ -4,8 +4,8 @@ namespace Lkrms\Support\PhpDoc;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Facade\Convert;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Lkrms\Utility\Convert;
 use UnexpectedValueException;
 
 /**

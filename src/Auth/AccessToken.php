@@ -6,7 +6,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Facade\Convert;
+use Lkrms\Utility\Convert;
 
 /**
  * An immutable access token

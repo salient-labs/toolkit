@@ -13,7 +13,7 @@ use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Console\ConsoleFormatter;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
+use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use LogicException;
 use RuntimeException;

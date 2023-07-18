@@ -5,7 +5,6 @@ namespace Lkrms\LkUtil\Command\Generate;
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
-use Lkrms\Facade\Convert;
 use Lkrms\Facade\Sync;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
@@ -15,6 +14,7 @@ use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
+use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 
 /**

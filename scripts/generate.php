@@ -23,7 +23,6 @@ use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Assertions;
 use Lkrms\Utility\Composer;
 use Lkrms\Utility\Computations;
-use Lkrms\Utility\Conversions;
 use Lkrms\Utility\Debugging;
 use Lkrms\Utility\Filesystem;
 use Lkrms\Utility\Formatters;
@@ -42,7 +41,6 @@ $facades = [
     Computations::class => \Lkrms\Facade\Compute::class,
     ConsoleWriter::class => \Lkrms\Facade\Console::class,
     Container::class => \Lkrms\Facade\DI::class,
-    Conversions::class => \Lkrms\Facade\Convert::class,
     Debugging::class => \Lkrms\Facade\Debug::class,
     EventDispatcher::class => \Lkrms\Facade\Event::class,
     Filesystem::class => \Lkrms\Facade\File::class,

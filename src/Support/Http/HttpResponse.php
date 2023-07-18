@@ -6,7 +6,7 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\CurlerHeaders;
-use Lkrms\Facade\Convert;
+use Lkrms\Utility\Convert;
 
 /**
  * Represents an outgoing HTTP response

@@ -4,10 +4,10 @@ namespace Lkrms\LkUtil\Command\Http;
 
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
-use Lkrms\Facade\Convert;
 use Lkrms\LkUtil\Command\Concept\Command;
 use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
+use Lkrms\Utility\Convert;
 use UnexpectedValueException;
 
 class SendHttpRequest extends Command

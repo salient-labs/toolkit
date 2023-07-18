@@ -2,11 +2,11 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Facade\Convert;
 use Lkrms\Support\ProviderContext;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
 use UnexpectedValueException;
 

@@ -4,12 +4,12 @@ namespace Lkrms\Sync\Command;
 
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\Contract\ICliApplication;
-use Lkrms\Facade\Convert;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospectionClass;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
+use Lkrms\Utility\Convert;
 
 /**
  * Base class for generic sync commands

@@ -3,7 +3,7 @@
 namespace Lkrms\Concern;
 
 use Closure;
-use Lkrms\Facade\Convert;
+use Lkrms\Utility\Convert;
 
 /**
  * Implements IResolvable

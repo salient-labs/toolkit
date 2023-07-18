@@ -3,89 +3,12 @@
 
 namespace Lkrms\Tests;
 
-use DateTime;
-use DateTimeInterface;
 use Lkrms\Err\Err;
-use Lkrms\Facade\Convert;
-use Lkrms\Support\DateFormatter;
+use Lkrms\Utility\Convert;
 
 require __DIR__ . '/../vendor/autoload.php';
 
 Err::load();
-
-$data = [
-    'user_id' => 7654,
-    'fields' => [
-        'surname' => 'Williams',
-        'email' => 'JWilliams432@gmail.com',
-        'notify_by' => [
-            'email',
-            'sms',
-        ],
-        'created' => new DateTime('2021-10-02T17:23:14+10:00')
-    ],
-];
-
-$queries = [
-    'no_force_numeric_keys' => Convert::dataToQuery($data),
-    'force_numeric_keys' => Convert::dataToQuery($data, true),
-    'date_format_rss' => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::RSS)),
-    'date_format_utc' => Convert::dataToQuery($data, false, new DateFormatter(DateTimeInterface::ATOM, 'UTC')),
-];
-
-$decoded = array_map(fn($q) => urldecode($q), $queries);
-
-print_r([$queries, $decoded]);
-
-$identifiers = array_merge(
-    ['twowords', 'TWOWORDS', 'twoWords', 'TwoWords'],
-    ['two_words', 'TWO_WORDS', 'two_Words', 'Two_Words'],
-    ['_two_words_', '_TWO_WORDS_', '_two_Words_', '_Two_Words_'],
-    ['-two_words-', '-TWO_WORDS-', '-two_Words-', '-Two_Words-'],
-    ['two-words', 'TWO-WORDS', 'Two-Words'],
-    ['12twowords', 'two12words', 'twowords12'],
-    ['12TWOWORDS', 'TWO12WORDS', 'TWOWORDS12'],
-    ['12twoWords', 'two12Words', 'twoWords12'],
-    ['12TwoWords', 'Two12Words', 'TwoWords12'],
-    ['12two_words', 'two12_words', 'two_12words', 'two_words12'],
-    ['12TWO_WORDS', 'TWO12_WORDS', 'TWO_12WORDS', 'TWO_WORDS12'],
-    ['12two_Words', 'two12_Words', 'two_12Words', 'two_Words12'],
-    ['12Two_Words', 'Two12_Words', 'Two_12Words', 'Two_Words12'],
-);
-
-$snakeCase = array_combine($identifiers, array_map(
-    fn($i) => Convert::toSnakeCase($i),
-    $identifiers
-));
-
-print_r($snakeCase);
-
-$kebabCase = array_combine($identifiers, array_map(
-    fn($i) => Convert::toKebabCase($i),
-    $identifiers
-));
-
-print_r($kebabCase);
-
-$pascalCase = array_combine($identifiers, array_map(
-    fn($i) => Convert::toPascalCase($i),
-    $identifiers
-));
-
-print_r($pascalCase);
-
-$normalise = [
-    'History & Geography',
-    '& Mathematics',
-    'Languages — Modern',
-    'I.T.',
-    'IT. ',
-    'it',
-];
-var_dump(array_combine($normalise, array_map(
-    fn($i) => Convert::toNormal($i),
-    $normalise
-)));
 
 $list = [
     ['id' => 38, 'name' => 'Amir'],

@@ -27,7 +27,7 @@ use RecursiveIteratorIterator;
  * - pluralise a singular noun
  * - extract a class name from a FQCN
  */
-final class Conversions
+final class Convert
 {
     /**
      * Cast a value to a boolean, preserving null and converting boolean strings
@@ -149,7 +149,7 @@ final class Conversions
      * @param array<TKey,TValue> $array
      * @return array<TKey,TValue>
      */
-    public function toUnique(array $array): array
+    public static function toUnique(array $array): array
     {
         $list = [];
         foreach ($array as $key => $value) {
@@ -198,7 +198,7 @@ final class Conversions
      * @param array<TKey,mixed> ...$columns
      * @return array<TKey,TValue>
      */
-    public function columnsToUnique(array $array, array &...$columns): array
+    public static function columnsToUnique(array $array, array &...$columns): array
     {
         $list = [];
         foreach ($array as $key => $value) {
@@ -258,7 +258,7 @@ final class Conversions
      * @param array<TKey,string> $array
      * @return array<TKey,string>
      */
-    public function stringsToUnique(array $array): array
+    public static function stringsToUnique(array $array): array
     {
         $list = [];
         $seen = [];
@@ -390,8 +390,11 @@ final class Conversions
      * Expand tabs to spaces
      *
      */
-    public static function expandTabs(string $text, int $tabSize, int $column = 1): string
-    {
+    public static function expandTabs(
+        string $text,
+        int $tabSize = 8,
+        int $column = 1
+    ): string {
         if (strpos($text, "\t") === false) {
             return $text;
         }
@@ -413,6 +416,51 @@ final class Conversions
                 $column += $spaces;
             }
             $column = 1;
+        }
+        return $expanded;
+    }
+
+    /**
+     * Expand leading tabs to spaces
+     *
+     */
+    public static function expandLeadingTabs(
+        string $text,
+        int $tabSize = 8,
+        bool $preserveLine1 = false,
+        int $column = 1
+    ): string {
+        if (strpos($text, "\t") === false) {
+            return $text;
+        }
+        $eol = Inspect::getEol($text) ?: "\n";
+        $softTab = str_repeat(' ', $tabSize);
+        $expanded = '';
+        foreach (explode($eol, $text) as $i => $line) {
+            !$i || $expanded .= $eol;
+            if ($i || (!$preserveLine1 && $column === 1)) {
+                $expanded .= preg_replace('/(?<=\n|\G)\t/', $softTab, $line);
+                continue;
+            }
+            if (!$i && $preserveLine1) {
+                $expanded .= $line;
+                continue;
+            }
+            $parts = explode("\t", $line);
+            while (($part = array_shift($parts)) !== null) {
+                $expanded .= $part;
+                if (!$parts) {
+                    break;
+                }
+                if ($part) {
+                    $expanded .= "\t" . implode("\t", $parts);
+                    break;
+                }
+                $column += mb_strlen($part);
+                $spaces = $tabSize - (($column - 1) % $tabSize);
+                $expanded .= str_repeat(' ', $spaces);
+                $column += $spaces;
+            }
         }
         return $expanded;
     }
@@ -1127,8 +1175,8 @@ final class Conversions
     public static function toSnakeCase(string $text, ?string $preserve = null): string
     {
         $preserve = self::_toCaseEscapePreserve($preserve);
-        $text = preg_replace("/[^[:alnum:]$preserve]+/", '_', $text);
-        $text = preg_replace('/([[:lower:]])([[:upper:]])/', '$1_$2', $text);
+        $text = preg_replace('/(?:[[:upper:]]?[[:lower:][:digit:]]++|(?:[[:upper:]](?![[:lower:]]))++[[:digit:]]*+)/', '_$0', $text);
+        $text = preg_replace("/[^[:alnum:]$preserve]++/", '_', $text);
 
         return strtolower(trim($text, '_'));
     }
@@ -1140,8 +1188,8 @@ final class Conversions
     public static function toKebabCase(string $text, ?string $preserve = null): string
     {
         $preserve = self::_toCaseEscapePreserve($preserve);
-        $text = preg_replace("/[^[:alnum:]$preserve]+/", '-', $text);
-        $text = preg_replace('/([[:lower:]])([[:upper:]])/', '$1-$2', $text);
+        $text = preg_replace('/(?:[[:upper:]]?[[:lower:][:digit:]]++|(?:[[:upper:]](?![[:lower:]]))++[[:digit:]]*+)/', '-$0', $text);
+        $text = preg_replace("/[^[:alnum:]$preserve]++/", '-', $text);
 
         return strtolower(trim($text, '-'));
     }
@@ -1152,14 +1200,14 @@ final class Conversions
      */
     public static function toPascalCase(string $text, ?string $preserve = null): string
     {
+        $preserve = self::_toCaseEscapePreserve($preserve);
         $text = preg_replace_callback(
-            '/([[:upper:]]?[[:lower:][:digit:]]+|([[:upper:]](?![[:lower:]]))+)/',
+            '/(?:[[:upper:]]?[[:lower:][:digit:]]++|(?:[[:upper:]](?![[:lower:]]))++[[:digit:]]*+)/',
             function (array $matches) { return ucfirst(strtolower($matches[0])); },
             $text
         );
-        $preserve = self::_toCaseEscapePreserve($preserve);
 
-        return preg_replace("/[^[:alnum:]$preserve]+/", '', $text);
+        return preg_replace("/[^[:alnum:]$preserve]++/", '', $text);
     }
 
     /**

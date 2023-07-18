@@ -3,7 +3,7 @@
 namespace Lkrms\Support\Catalog;
 
 use Lkrms\Concept\Dictionary;
-use Lkrms\Facade\Convert;
+use Lkrms\Utility\Convert;
 
 /**
  * Frequently-used MIME types

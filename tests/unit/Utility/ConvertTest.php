@@ -2,103 +2,118 @@
 
 namespace Lkrms\Tests\Utility;
 
-use Lkrms\Facade\Convert;
+use DateTimeImmutable;
+use DateTimeInterface;
+use Generator;
+use Lkrms\Support\DateFormatter;
+use Lkrms\Utility\Convert;
 use LogicException;
 
-final class ConversionsTest extends \Lkrms\Tests\TestCase
+final class ConvertTest extends \Lkrms\Tests\TestCase
 {
     /**
      * @dataProvider toBoolOrNullProvider
+     *
+     * @param mixed $value
      */
-    public function testToBoolOrNull($value, $expected)
+    public function testToBoolOrNull(?bool $expected, $value): void
     {
         $this->assertSame($expected, Convert::toBoolOrNull($value));
     }
 
-    public static function toBoolOrNullProvider()
+    /**
+     * @return array<string,array{bool|null,mixed}>
+     */
+    public static function toBoolOrNullProvider(): array
     {
         return [
             "''" => [
-                '',
                 false,
+                '',
             ],
             "'0'" => [
-                '0',
                 false,
+                '0',
             ],
             "'1'" => [
-                '1',
                 true,
+                '1',
             ],
             "'f'" => [
-                'f',
                 false,
+                'f',
             ],
             "'false'" => [
-                'false',
                 false,
+                'false',
             ],
             "'n'" => [
-                'n',
                 false,
+                'n',
             ],
             "'no'" => [
-                'no',
                 false,
+                'no',
             ],
             "'off'" => [
-                'off',
                 false,
+                'off',
             ],
             "'on'" => [
-                'on',
                 true,
+                'on',
             ],
             "'t'" => [
-                't',
                 true,
+                't',
             ],
             "'true'" => [
-                'true',
                 true,
+                'true',
             ],
             "'y'" => [
-                'y',
                 true,
+                'y',
             ],
             "'yes'" => [
-                'yes',
                 true,
+                'yes',
             ],
         ];
     }
 
     /**
      * @dataProvider flattenProvider
+     *
+     * @param mixed $expected
+     * @param mixed $value
      */
-    public function testFlatten($value, $expected)
+    public function testFlatten($expected, $value): void
     {
         $this->assertSame($expected, Convert::flatten($value));
     }
 
-    public static function flattenProvider()
+    /**
+     * @return array<mixed[]>
+     */
+    public static function flattenProvider(): array
     {
         return [
             [
-                [[['id' => 1]]],
                 ['id' => 1],
+                [[['id' => 1]]],
             ],
             [
-                ['nested scalar'],
                 'nested scalar',
+                ['nested scalar'],
             ],
             [
                 ['nested associative' => 1],
                 ['nested associative' => 1],
             ],
             [
-                [[1, 'links' => [2, 3]]],
                 [1, 'links' => [2, 3]],
+                [[1, 'links' => [2, 3]]],
             ],
             [
                 'plain scalar',
@@ -110,12 +125,22 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
     /**
      * @dataProvider expandTabsProvider
      */
-    public function testExpandTabs(string $expected, string $text, int $tabSize, int $column = 1)
-    {
-        $this->assertSame($expected, Convert::expandTabs($text, $tabSize, $column));
+    public function testExpandTabs(
+        string $expected,
+        string $text,
+        int $tabSize = 8,
+        int $column = 1
+    ): void {
+        $this->assertSame(
+            $expected,
+            Convert::expandTabs($text, $tabSize, $column)
+        );
     }
 
-    public static function expandTabsProvider()
+    /**
+     * @return array<array{0:string,1:string,2?:int,3?:int}>
+     */
+    public static function expandTabsProvider(): array
     {
         return [
             ['', '', 4],
@@ -140,6 +165,63 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
                 <<<EOF
                     abc de  f       g
                 1   23  4
+                EOF,
+                <<<EOF
+                \tabc\tde\tf\t\tg
+                1\t23\t4
+                EOF,
+                4,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider expandLeadingTabsProvider
+     */
+    public function testExpandLeadingTabs(
+        string $expected,
+        string $text,
+        int $tabSize = 8,
+        bool $preserveLine1 = false,
+        int $column = 1
+    ): void {
+        $this->assertSame(
+            $expected,
+            Convert::expandLeadingTabs($text, $tabSize, $preserveLine1, $column)
+        );
+    }
+
+    /**
+     * @return array<array{0:string,1:string,2?:int,3?:bool,4?:int}>
+     */
+    public static function expandLeadingTabsProvider(): array
+    {
+        return [
+            ['', '', 4],
+            ["\n", "\n", 4],
+            ["\n\n", "\n\n", 4],
+            ["\n    ", "\n\t", 4],
+            ["\n    \n", "\n\t\n", 4],
+            ['    ', "\t", 4],
+            ["a\t", "a\t", 4],
+            ['    a', "\ta", 4],
+            ["    a\t", "\ta\t", 4],
+            ["abcdef\t", "abcdef\t", 4],
+            ["    abc\tde\tf\t\t", "\tabc\tde\tf\t\t", 4],
+            ['   ', "\t", 4, false, 2],
+            ['  a', "\ta", 4, false, 3],
+            [' abcdef', "\tabcdef", 4, false, 4],
+            ["\tabcdef", "\tabcdef", 4, true, 4],
+            ["  abc\tde\tf\t\t", "\tabc\tde\tf\t\t", 4, false, 7],
+            ['        ', "\t", 8],
+            ["a\t", "a\t", 8],
+            ['        a', "\ta", 8],
+            ["   \nabc\t", "\t\nabc\t", 4, false, 2],
+            ["   \n    abc\t", "\t\n\tabc\t", 4, false, 2],
+            [
+                <<<EOF
+                    abc\tde\tf\t\tg
+                1\t23\t4
                 EOF,
                 <<<EOF
                 \tabc\tde\tf\t\tg
@@ -175,7 +257,7 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
             'B' => 'value3',
         ];
 
-        $slice = Convert::getInstance()->arraySpliceAtKey($data1, 'b');
+        $slice = Convert::arraySpliceAtKey($data1, 'b');
         $this->assertSame([
             'b' => 'value1',
             'A' => 'value2',
@@ -185,7 +267,7 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
             'a' => 'value0',
         ], $data1);
 
-        $slice = Convert::getInstance()->arraySpliceAtKey($data2, 'A', 1, ['A2' => 10]);
+        $slice = Convert::arraySpliceAtKey($data2, 'A', 1, ['A2' => 10]);
         $this->assertSame([
             'A' => 'value2',
         ], $slice);
@@ -196,7 +278,7 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
             'B' => 'value3',
         ], $data2);
 
-        $slice = Convert::getInstance()->arraySpliceAtKey($data3, 'B', 0, ['a' => 20]);
+        $slice = Convert::arraySpliceAtKey($data3, 'B', 0, ['a' => 20]);
         $this->assertSame([], $slice);
         $this->assertSame([
             'a' => 20,
@@ -205,7 +287,7 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
             'B' => 'value3',
         ], $data3);
 
-        $slice = Convert::getInstance()->arraySpliceAtKey($data4, 'B', 0, ['A2' => 10]);
+        $slice = Convert::arraySpliceAtKey($data4, 'B', 0, ['A2' => 10]);
         $this->assertSame([], $slice);
         $this->assertSame([
             'a' => 'value0',
@@ -216,7 +298,7 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
         ], $data4);
 
         $this->expectException(LogicException::class);
-        $slice = Convert::getInstance()->arraySpliceAtKey($data5, 'c', 2);
+        $slice = Convert::arraySpliceAtKey($data5, 'c', 2);
     }
 
     public function testRenameArrayKey()
@@ -560,5 +642,253 @@ final class ConversionsTest extends \Lkrms\Tests\TestCase
         $this->assertSame('/some/path', Convert::toShellArg('/some/path'));
         $this->assertSame("'/some/path with spaces'", Convert::toShellArg('/some/path with spaces'));
         $this->assertSame("''\\''quotable'\\'' \"quotes\"'", Convert::toShellArg('\'quotable\' "quotes"'));
+    }
+
+    /**
+     * @dataProvider toSnakeCaseProvider
+     */
+    public function testToSnakeCase(
+        string $expected,
+        string $text
+    ) {
+        $this->assertSame($expected, Convert::toSnakeCase($text));
+    }
+
+    public static function toSnakeCaseProvider(): Generator
+    {
+        yield from self::getMixedCaseIdentifiers(
+            'two_words',
+            '12two_words',
+            '12_two_words',
+            'two12words',
+            'two12_words',
+            'two_12words',
+            'two_12_words',
+            'two_words12'
+        );
+    }
+
+    /**
+     * @dataProvider toKebabCaseProvider
+     */
+    public function testToKebabCase(
+        string $expected,
+        string $text
+    ) {
+        $this->assertSame($expected, Convert::toKebabCase($text));
+    }
+
+    public static function toKebabCaseProvider(): Generator
+    {
+        yield from self::getMixedCaseIdentifiers(
+            'two-words',
+            '12two-words',
+            '12-two-words',
+            'two12words',
+            'two12-words',
+            'two-12words',
+            'two-12-words',
+            'two-words12'
+        );
+    }
+
+    /**
+     * @dataProvider toPascalCaseProvider
+     */
+    public function testToPascalCase(
+        string $expected,
+        string $text
+    ) {
+        $this->assertSame($expected, Convert::toPascalCase($text));
+    }
+
+    public static function toPascalCaseProvider(): Generator
+    {
+        yield from self::getMixedCaseIdentifiers(
+            'TwoWords',
+            '12twoWords',
+            '12TwoWords',
+            'Two12words',
+            'Two12Words',
+            'Two12words',
+            'Two12Words',
+            'TwoWords12'
+        );
+    }
+
+    /**
+     * @dataProvider toCamelCaseProvider
+     */
+    public function testToCamelCase(
+        string $expected,
+        string $text
+    ) {
+        $this->assertSame($expected, Convert::toCamelCase($text));
+    }
+
+    public static function toCamelCaseProvider(): Generator
+    {
+        yield from self::getMixedCaseIdentifiers(
+            'twoWords',
+            '12twoWords',
+            '12TwoWords',
+            'two12words',
+            'two12Words',
+            'two12words',
+            'two12Words',
+            'twoWords12'
+        );
+    }
+
+    private static function getMixedCaseIdentifiers(
+        string ...$expected
+    ): Generator {
+        $groups = [
+            [
+                'TWOWords',
+                'TwoWords',
+                'twoWords',
+                'TWO-WORDS',
+                'TWO_WORDS',
+                'Two-Words',
+                'Two_Words',
+                'two-Words',
+                'two-words',
+                'two_Words',
+                'two_words',
+                '_TWO_WORDS_',
+                '_Two_Words_',
+                '_two_Words_',
+                '_two_words_',
+                '~TWO.WORDS~',
+                '~Two.Words~',
+                '~two.Words~',
+                '~two.words~',
+            ],
+            [
+                '12twoWords',
+                '12two_Words',
+                '12two_words',
+            ],
+            [
+                '12TWOWords',
+                '12TwoWords',
+                '12TWO_WORDS',
+                '12Two_Words',
+            ],
+            [
+                'two12words',
+            ],
+            [
+                'TWO12WORDS',
+                'Two12Words',
+                'two12Words',
+                'TWO12_WORDS',
+                'Two12_Words',
+                'two12_Words',
+                'two12_words',
+            ],
+            [
+                'two_12words',
+            ],
+            [
+                'TWO_12WORDS',
+                'Two_12Words',
+                'two_12Words',
+            ],
+            [
+                'TWOWords12',
+                'TwoWords12',
+                'twoWords12',
+                'TWO_WORDS12',
+                'Two_Words12',
+                'two_Words12',
+                'two_words12',
+            ],
+        ];
+
+        foreach ($groups as $i => $group) {
+            foreach ($group as $identifier) {
+                yield [$expected[$i] ?? $i, $identifier];
+            }
+        }
+    }
+
+    /**
+     * @dataProvider toNormalProvider
+     */
+    public function testToNormal(
+        string $expected,
+        string $text
+    ) {
+        $this->assertSame($expected, Convert::toNormal($text));
+    }
+
+    public static function toNormalProvider(): array
+    {
+        return [
+            ['HISTORY AND GEOGRAPHY', 'History & Geography'],
+            ['MATHEMATICS', '& Mathematics'],
+            ['LANGUAGES MODERN', 'Languages — Modern'],
+            ['IT', 'I.T.'],
+            ['IT', 'IT. '],
+            ['IT', 'it'],
+        ];
+    }
+
+    /**
+     * @dataProvider dataToQueryProvider
+     */
+    public function testDataToQuery(
+        string $expected,
+        array $data,
+        bool $preserveKeys = false,
+        ?DateFormatter $dateFormatter = null
+    ) {
+        $this->assertSame($expected, Convert::dataToQuery($data, $preserveKeys, $dateFormatter));
+    }
+
+    public static function dataToQueryProvider(): array
+    {
+        $data = [
+            'user_id' => 7654,
+            'fields' => [
+                'surname' => 'Williams',
+                'email' => 'JWilliams432@gmail.com',
+                'notify_by' => [
+                    'email',
+                    'sms',
+                ],
+                'created' => new DateTimeImmutable('2021-10-02T17:23:14+10:00'),
+            ],
+        ];
+
+        return [
+            [
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][]=email&fields[notify_by][]=sms&fields[created]=2021-10-02T17:23:14+10:00
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B%5D=email&fields%5Bnotify_by%5D%5B%5D=sms&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
+                $data,
+            ],
+            [
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][0]=email&fields[notify_by][1]=sms&fields[created]=2021-10-02T17:23:14+10:00
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D=email&fields%5Bnotify_by%5D%5B1%5D=sms&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
+                $data,
+                true,
+            ],
+            [
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][]=email&fields[notify_by][]=sms&fields[created]=Sat, 02 Oct 2021 17:23:14 +1000
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B%5D=email&fields%5Bnotify_by%5D%5B%5D=sms&fields%5Bcreated%5D=Sat%2C%2002%20Oct%202021%2017%3A23%3A14%20%2B1000',
+                $data,
+                false,
+                new DateFormatter(DateTimeInterface::RSS),
+            ],
+            [
+                // user_id=7654&fields[surname]=Williams&fields[email]=JWilliams432@gmail.com&fields[notify_by][]=email&fields[notify_by][]=sms&fields[created]=2021-10-02T07:23:14+00:00
+                'user_id=7654&fields%5Bsurname%5D=Williams&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B%5D=email&fields%5Bnotify_by%5D%5B%5D=sms&fields%5Bcreated%5D=2021-10-02T07%3A23%3A14%2B00%3A00',
+                $data,
+                false,
+                new DateFormatter(DateTimeInterface::ATOM, 'UTC'),
+            ],
+        ];
     }
 }

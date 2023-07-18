@@ -10,10 +10,10 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Utility\Convert;
 
 /**
  * An error that occurred during a sync operation

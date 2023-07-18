@@ -5,7 +5,7 @@ namespace Lkrms\Tests\Cli\Command;
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\CliOption;
-use Lkrms\Facade\Convert;
+use Lkrms\Utility\Convert;
 
 class TestOptions extends CliCommand
 {

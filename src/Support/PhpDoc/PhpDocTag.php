@@ -2,8 +2,8 @@
 
 namespace Lkrms\Support\PhpDoc;
 
-use Lkrms\Facade\Convert;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Lkrms\Utility\Convert;
 
 /**
  * A tag extracted from a PHP DocBlock

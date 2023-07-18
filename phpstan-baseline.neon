@@ -401,31 +401,6 @@ parameters:
 			path: src/Err/Err.php
 
 		-
-			message: "#^Method Lkrms\\\\Facade\\\\Convert\\:\\:arraySpliceAtKey\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Facade/Convert.php
-
-		-
-			message: "#^Method Lkrms\\\\Facade\\\\Convert\\:\\:arraySpliceAtKey\\(\\) has parameter \\$replacement with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Facade/Convert.php
-
-		-
-			message: "#^Method Lkrms\\\\Facade\\\\Convert\\:\\:arraySpliceAtKey\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Facade/Convert.php
-
-		-
-			message: "#^Method Lkrms\\\\Facade\\\\Convert\\:\\:columnsToUnique\\(\\) has parameter \\$columns with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Facade/Convert.php
-
-		-
-			message: "#^Method Lkrms\\\\Facade\\\\Convert\\:\\:columnsToUniqueList\\(\\) has parameter \\$columns with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Facade/Convert.php
-
-		-
 			message: "#^Method Lkrms\\\\Store\\\\CacheStore\\:\\:get\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Store/CacheStore.php
@@ -781,184 +756,189 @@ parameters:
 			path: src/Utility/Assertions.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:_dataToQuery\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:_dataToQuery\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:arrayKeyToOffset\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:arrayKeyToOffset\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:arraySpliceAtKey\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:arraySpliceAtKey\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:arraySpliceAtKey\\(\\) has parameter \\$replacement with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:arraySpliceAtKey\\(\\) has parameter \\$replacement with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:arraySpliceAtKey\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:arraySpliceAtKey\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:coalesce\\(\\) has no return type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:coalesce\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:coalesce\\(\\) has parameter \\$values with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:coalesce\\(\\) has parameter \\$values with no type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:dataToQuery\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:dataToQuery\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:emptyToNull\\(\\) has parameter \\$value with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:emptyToNull\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:flatten\\(\\) has no return type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:flatten\\(\\) has no return type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:flatten\\(\\) has parameter \\$value with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:flatten\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:iterableToArray\\(\\) has parameter \\$iterable with no value type specified in iterable type iterable\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:iterableToArray\\(\\) has parameter \\$iterable with no value type specified in iterable type iterable\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:iterableToArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:iterableToArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:iterableToItem\\(\\) has parameter \\$list with no value type specified in iterable type iterable\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:iterableToItem\\(\\) has parameter \\$list with no value type specified in iterable type iterable\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:iterableToItem\\(\\) has parameter \\$value with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:iterableToItem\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:iterableToItem\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:iterableToItem\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:iterableToIterator\\(\\) has parameter \\$iterable with no value type specified in iterable type iterable\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:iterableToIterator\\(\\) has parameter \\$iterable with no value type specified in iterable type iterable\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:listToMap\\(\\) has parameter \\$list with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:listToMap\\(\\) has parameter \\$list with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:listToMap\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:listToMap\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:netLoc\\(\\) has parameter \\$url with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:netLoc\\(\\) has parameter \\$url with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:netLoc\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:netLoc\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:objectToArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:objectToArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:parseUrl\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:parseUrl\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:renameArrayKey\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:renameArrayKey\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:renameArrayKey\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:renameArrayKey\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:scalarToString\\(\\) has parameter \\$value with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:scalarToString\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:sparseToString\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:sparseToString\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:toArray\\(\\) has parameter \\$value with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:toArray\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:toArray\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:toBoolOrNull\\(\\) has parameter \\$value with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:toBoolOrNull\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:toIntOrNull\\(\\) has parameter \\$value with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:toIntOrNull\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:toList\\(\\) has parameter \\$value with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:toList\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:toList\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:toList\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:toScalarArray\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:toScalarArray\\(\\) has parameter \\$array with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:valueAtKey\\(\\) has parameter \\$item with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:valueAtKey\\(\\) has parameter \\$item with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Conversions\\:\\:valueToCode\\(\\) has parameter \\$value with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Convert\\:\\:valueToCode\\(\\) has parameter \\$value with no type specified\\.$#"
 			count: 1
-			path: src/Utility/Conversions.php
+			path: src/Utility/Convert.php
+
+		-
+			message: "#^Negated boolean expression is always true\\.$#"
+			count: 1
+			path: src/Utility/Convert.php
 
 		-
 			message: "#^Method Lkrms\\\\Utility\\\\Debugging\\:\\:getCaller\\(\\) return type has no value type specified in iterable type array\\.$#"
@@ -1341,29 +1321,24 @@ parameters:
 			path: tests/unit/Support/PhpDocParserTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:getUrls\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConvertTest\\:\\:dataToQueryProvider\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/unit/Utility/ConversionsTest.php
+			path: tests/unit/Utility/ConvertTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testFlatten\\(\\) has parameter \\$expected with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConvertTest\\:\\:getUrls\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/unit/Utility/ConversionsTest.php
+			path: tests/unit/Utility/ConvertTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testFlatten\\(\\) has parameter \\$value with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConvertTest\\:\\:testDataToQuery\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/unit/Utility/ConversionsTest.php
+			path: tests/unit/Utility/ConvertTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testToBoolOrNull\\(\\) has parameter \\$expected with no type specified\\.$#"
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConvertTest\\:\\:toNormalProvider\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/unit/Utility/ConversionsTest.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ConversionsTest\\:\\:testToBoolOrNull\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: tests/unit/Utility/ConversionsTest.php
+			path: tests/unit/Utility/ConvertTest.php
 
 		-
 			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllClassDocComments\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"

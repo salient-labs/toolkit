@@ -9,12 +9,12 @@ use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Facade\Convert;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncSerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
+use Lkrms\Utility\Convert;
 use LogicException;
 
 /**

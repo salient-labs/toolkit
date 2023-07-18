@@ -9,8 +9,8 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IDateParser;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Facade\Convert;
 use Lkrms\Support\DateParser\CreateFromFormatDateParser;
+use Lkrms\Utility\Convert;
 
 /**
  * An immutable date formatter and parser that optionally applies a preferred
