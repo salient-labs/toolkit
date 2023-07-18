@@ -3,8 +3,8 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
 use Lkrms\Facade\File;
+use Lkrms\Utility\Convert;
 use RuntimeException;
 use SQLite3;
 

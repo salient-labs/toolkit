@@ -5,9 +5,9 @@ namespace Lkrms\Utility;
 use Lkrms\Exception\InvalidDotenvSyntaxException;
 use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Catalog\EnvFlag;
+use Lkrms\Utility\Convert;
 use LogicException;
 use RuntimeException;
 

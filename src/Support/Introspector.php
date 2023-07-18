@@ -11,9 +11,9 @@ use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ISerializeRules;
-use Lkrms\Facade\Convert;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Utility\Convert;
 use RuntimeException;
 use UnexpectedValueException;
 

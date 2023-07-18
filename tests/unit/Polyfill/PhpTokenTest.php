@@ -2,8 +2,8 @@
 
 namespace Lkrms\Tests\Polyfill;
 
-use Lkrms\Facade\Convert;
 use Lkrms\Polyfill\PhpToken;
+use Lkrms\Utility\Convert;
 
 final class PhpTokenTest extends \Lkrms\Tests\TestCase
 {

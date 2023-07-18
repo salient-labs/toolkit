@@ -2,7 +2,7 @@
 
 namespace Lkrms\Utility;
 
-use Lkrms\Facade\Convert;
+use Lkrms\Utility\Convert;
 
 /**
  * Generate values like hashes and secure UUIDs

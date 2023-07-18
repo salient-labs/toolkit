@@ -6,8 +6,8 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Utility\Convert;
 use RuntimeException;
 
 /**

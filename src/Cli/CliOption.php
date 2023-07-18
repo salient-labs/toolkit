@@ -17,7 +17,7 @@ use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Convert;
+use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Test;
 use LogicException;

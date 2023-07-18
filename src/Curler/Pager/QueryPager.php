@@ -7,7 +7,7 @@ use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\Support\CurlerPageBuilder;
-use Lkrms\Facade\Convert;
+use Lkrms\Utility\Convert;
 
 /**
  * Increments a value in the query string and repeats the request until no
