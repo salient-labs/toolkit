@@ -653,7 +653,11 @@ abstract class CliCommand implements ICliCommand
                     if ($value !== null || array_key_exists($option->Key, $merged)) {
                         $this->OptionValues[$option->Key] = $value;
                     }
-                } catch (CliInvalidArgumentsException|CliUnknownValueException $ex) {
+                } catch (CliInvalidArgumentsException $ex) {
+                    foreach ($ex->getErrors() as $error) {
+                        $this->optionError($error);
+                    }
+                } catch (CliUnknownValueException $ex) {
                     $this->optionError($ex->getMessage());
                 }
             }
@@ -686,12 +690,14 @@ abstract class CliCommand implements ICliCommand
         ?bool &$hasVersionArgument
     ): array {
         $saveArgValue =
-            function (string $key, $value) use (&$argValues, &$saved) {
+            function (string $key, $value) use (&$argValues, &$saved, &$option) {
                 if ($saved) {
                     return;
                 }
                 $saved = true;
-                if (!array_key_exists($key, $argValues)) {
+                /** @var CliOption $option */
+                if (!array_key_exists($key, $argValues) ||
+                        ($option->IsFlag && !$option->MultipleAllowed)) {
                     $argValues[$key] = $value;
                 } else {
                     $argValues[$key] = array_merge((array) $argValues[$key], Convert::toArray($value));
@@ -783,7 +789,8 @@ abstract class CliCommand implements ICliCommand
                 }
             }
 
-            if (array_key_exists($key, $merged)) {
+            if (array_key_exists($key, $merged) &&
+                    !($option->IsFlag && !$option->MultipleAllowed)) {
                 $merged[$key] = array_merge((array) $merged[$key], Convert::toArray($value));
             } else {
                 $merged[$key] = $value;
