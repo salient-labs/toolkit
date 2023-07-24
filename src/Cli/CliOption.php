@@ -778,9 +778,9 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         ?string $message = null
     ) {
         if ($message) {
-            $message = sprintf("invalid %s value '%s' (%s expected): %s", $this->DisplayName, $value, $type, $message);
+            $message = sprintf('invalid %s value %s (%s expected): %s', $this->DisplayName, Convert::valueToCode($value), $type, $message);
         } else {
-            $message = sprintf("invalid %s value '%s' (%s expected)", $this->DisplayName, $value, $type);
+            $message = sprintf('invalid %s value %s (%s expected)', $this->DisplayName, Convert::valueToCode($value), $type);
         }
         throw new CliInvalidArgumentsException($message);
     }
