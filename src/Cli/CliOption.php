@@ -42,11 +42,11 @@ use Throwable;
  * @property-read bool $MultipleAllowed
  * @property-read string|null $Delimiter
  * @property-read string|null $Description
- * @property-read string[]|null $AllowedValues
+ * @property-read array<string|int>|null $AllowedValues
  * @property-read int|null $UnknownValuePolicy
  * @property-read bool $AddAll
- * @property-read string|string[]|bool|int|null $DefaultValue
- * @property-read string|string[]|bool|int|null $OriginalDefaultValue
+ * @property-read array<string|int>|string|int|bool|null $DefaultValue
+ * @property-read array<string|int>|string|int|bool|null $OriginalDefaultValue
  * @property-read bool $KeepDefault
  * @property-read string|null $EnvVariable
  * @property-read bool $KeepEnv
@@ -191,7 +191,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      *
      * Ignored if {@see CliOption::$IsOneOf} is `false`.
      *
-     * @var string[]|null
+     * @var array<string|int>|null
      */
     protected $AllowedValues;
 
@@ -219,14 +219,14 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     /**
      * Assigned to the option if no value is given on the command line
      *
-     * @var string|string[]|bool|int|null
+     * @var array<string|int>|string|int|bool|null
      */
     protected $DefaultValue;
 
     /**
      * The default value passed to the option's constructor
      *
-     * @var string|string[]|bool|int|null
+     * @var array<string|int>|string|int|bool|null
      */
     protected $OriginalDefaultValue;
 
@@ -285,9 +285,9 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     /**
      * @phpstan-param CliOptionType::* $optionType
      * @phpstan-param CliOptionValueType::* $valueType
-     * @param string[]|null $allowedValues
+     * @param array<string|int>|null $allowedValues
      * @phpstan-param CliOptionValueUnknownPolicy::* $unknownValuePolicy
-     * @param string|string[]|bool|int|null $defaultValue
+     * @param array<string|int>|string|int|bool|null $defaultValue
      * @param int $visibility A bitmask of {@see CliOptionVisibility} values.
      * @phpstan-param int-mask-of<CliOptionVisibility::*> $visibility
      * @param bool $hide True if the option's visibility should be
@@ -376,8 +376,8 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      * Split delimited values into an array, if possible
      *
      * @internal
-     * @param string|string[]|bool|int|null $value
-     * @return string[]
+     * @param array<string|int>|string|int|bool|null $value
+     * @return array<string|int>
      */
     public function maybeSplitValue($value): array
     {
@@ -390,7 +390,9 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         if ($this->Delimiter && is_string($value)) {
             return explode($this->Delimiter, $value);
         }
-
+        if (is_int($value)) {
+            return [$value];
+        }
         return [(string) $value];
     }
 
@@ -422,7 +424,6 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         if ($upper) {
             return '<' . strtoupper($name) . '>';
         }
-
         return "<$name>";
     }
 
@@ -515,7 +516,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      * UnknownValuePolicy
      *
      * @internal
-     * @template T of string|string[]|bool|int|null
+     * @template T of array<string|int>|string|int|bool|null
      * @param T $value
      * @return T
      */
@@ -539,7 +540,6 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                     );
                 }
                 $value = array_intersect($value, $this->AllowedValues);
-
                 return $this->MultipleAllowed
                     ? $value
                     : $value[0] ?? null;
@@ -549,13 +549,12 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                 if ($invalid = array_diff($this->maybeSplitValue($value), $this->AllowedValues)) {
                     throw new CliUnknownValueException($this->getUnknownValueMessage($invalid, $source));
                 }
-
                 return $value;
         }
     }
 
     /**
-     * @param string[] $invalid
+     * @param array<string|int> $invalid
      */
     private function getUnknownValueMessage(array $invalid, ?string $source): string
     {
@@ -577,7 +576,6 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
             return '';
         }
         $delimiter = ($this->MultipleAllowed ? $this->Delimiter : null) ?: ',';
-
         return str_replace(
             [
                 '?',
@@ -610,7 +608,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      * it to the caller
      *
      * @internal
-     * @param string|string[]|bool|int|null $value
+     * @param array<string|int>|string|int|bool|null $value
      * @param bool $normalise `false` if `$value` has already been normalised.
      * @param bool $expand If `true`, replace `null` (or `true`, if the option
      * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
@@ -627,7 +625,6 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         if ($normalise) {
             return $this->BindTo = $this->normaliseValue($value, $expand);
         }
-
         return $this->BindTo = $value;
     }
 
@@ -636,7 +633,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      * value to the option's value type
      *
      * @internal
-     * @param string|string[]|bool|int|null $value
+     * @param array<string|int>|string|int|bool|null $value
      * @param bool $expand If `true`, replace `null` (or `true`, if the option
      * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
      * with the default value of the option if it has an optional value.
@@ -682,18 +679,14 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                     throw new CliInvalidArgumentsException(
                         sprintf('%s does not accept multiple values', $this->DisplayName)
                     );
-                } else {
-                    $value = (array) $value;
                 }
             }
-            if ($this->IsFlag && $this->MultipleAllowed) {
-                $value = is_int($value)
-                    ? $value
-                    : (is_array($value)
-                        ? count($value)
-                        : (Test::isBoolValue($value)
-                            ? (Convert::toBoolOrNull($value) ? 1 : 0)
-                            : $value));
+            if ($this->IsFlag && $this->MultipleAllowed && !is_int($value)) {
+                $value = is_array($value)
+                    ? count($value)
+                    : (Test::isBoolValue($value)
+                        ? (Convert::toBoolOrNull($value) ? 1 : 0)
+                        : $value);
             }
         }
 
@@ -708,12 +701,11 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         foreach ($value as &$_value) {
             $_value = $this->normaliseValueType($_value);
         }
-
         return $value;
     }
 
     /**
-     * @param string|bool|int|null $value
+     * @param string|int|bool|null $value
      * @return mixed
      */
     private function normaliseValueType($value)
@@ -726,7 +718,6 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                 if (!Test::isBoolValue($value)) {
                     $this->throwValueTypeException($value, 'boolean');
                 }
-
                 return Convert::toBoolOrNull($value);
 
             case CliOptionValueType::INTEGER:
@@ -736,7 +727,6 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                 if (!Test::isIntValue($value)) {
                     $this->throwValueTypeException($value, 'integer');
                 }
-
                 return (int) $value;
 
             case CliOptionValueType::STRING:
@@ -763,7 +753,6 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                         sprintf('%s not found: %s', $fileType, $value)
                     );
                 }
-
                 return $value;
         }
     }
