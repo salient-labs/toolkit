@@ -679,8 +679,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * @param string[] $args
-     * @param array<string,string|string[]|bool|int|null> $argValues
-     * @return array<string,string|string[]|bool|int|null>
+     * @param array<string,array<string|int>|string|int|bool|null> $argValues
+     * @return array<string,array<string|int>|string|int|bool|null>
      */
     private function mergeArguments(
         array $args,
@@ -836,7 +836,7 @@ abstract class CliCommand implements ICliCommand
      * will be returned.
      *
      * @param string $name Either the `Short` or `Long` name of the option
-     * @return string|string[]|bool|int|null
+     * @return array<string|int>|string|int|bool|null
      */
     final protected function getOptionValue(string $name)
     {
@@ -858,7 +858,7 @@ abstract class CliCommand implements ICliCommand
      * @param bool $export If `true`, only options with user-supplied values are
      * returned, otherwise the value of every option is returned.
      * @param (callable(string): string)|null $nameCallback
-     * @return array<string,string|string[]|bool|int|null>
+     * @return array<string,array<string|int>|string|int|bool|null>
      */
     final protected function getOptionValues(
         bool $export = false,
@@ -902,7 +902,7 @@ abstract class CliCommand implements ICliCommand
      * short form (e.g. 'v') is only used if the option has no long form.
      *
      * @param (callable(string): string)|null $nameCallback
-     * @return array<string,string|string[]|bool|int|null>
+     * @return array<string,array<string|int>|string|int|bool|null>
      */
     final protected function getDefaultOptionValues(?callable $nameCallback = null): array
     {
@@ -925,7 +925,7 @@ abstract class CliCommand implements ICliCommand
      * Optionally normalise an array of option values, assign them to the
      * command, and return them to the caller
      *
-     * @param array<string,string|string[]|bool|int|null> $values An array that
+     * @param array<string,array<string|int>|string|int|bool|null> $values An array that
      * maps options to values.
      * @param bool $normalise `false` if `$value` has already been normalised.
      * @param bool $expand If `true`, replace `null` (or `true`, if the option
@@ -968,12 +968,12 @@ abstract class CliCommand implements ICliCommand
     /**
      * Normalise an array that maps options to user-supplied values
      *
-     * @param array<string,string|string[]|bool|int|null> $values
+     * @param array<string,array<string|int>|string|int|bool|null> $values
      * @param bool $expand If `true`, replace `null` (or `true`, if the option
      * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
      * with the default value of the option if it has an optional value.
      * @param (callable(string): string)|null $nameCallback
-     * @param array<string,string|string[]|bool|int|null>|null $invalid
+     * @param array<string,array<string|int>|string|int|bool|null>|null $invalid
      * @return array<string,mixed>
      */
     final protected function normaliseOptionValues(
@@ -1012,7 +1012,7 @@ abstract class CliCommand implements ICliCommand
      *
      * @internal
      * @param string|CliOption $option
-     * @param string|string[]|bool|int|null $value
+     * @param array<string|int>|string|int|bool|null $value
      */
     final protected function getEffectiveArgument(
         $option,
@@ -1062,7 +1062,7 @@ abstract class CliCommand implements ICliCommand
      * Get a command line that would unambiguously repeat the current invocation
      *
      * @internal
-     * @param array<string,string|string[]|bool|int|null> $values
+     * @param array<string,array<string|int>|string|int|bool|null> $values
      * @return string[]
      */
     final protected function getEffectiveCommandLine(

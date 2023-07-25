@@ -15,12 +15,12 @@ use Lkrms\Contract\IContainer;
  * @method $this description(?string $value) A description of the option (see {@see CliOption::$Description})
  * @method $this optionType(int $value) The option's type (see {@see CliOption::$OptionType})
  * @method $this valueType(int $value) The data type of the option's value (see {@see CliOption::$ValueType})
- * @method $this allowedValues(string[]|null $value) A list of the option's possible values (see {@see CliOption::$AllowedValues})
+ * @method $this allowedValues(array<string|int>|null $value) A list of the option's possible values (see {@see CliOption::$AllowedValues})
  * @method $this unknownValuePolicy(int $value) The action taken if an unknown value is given (see {@see CliOption::$UnknownValuePolicy})
  * @method $this required(bool $value = true) True if the option is mandatory (default: false)
  * @method $this multipleAllowed(bool $value = true) True if the option may be given more than once (default: false)
  * @method $this addAll(bool $value = true) True if 'ALL' should be added to the list of possible values when the option can be given more than once (default: false; see {@see CliOption::$AddAll})
- * @method $this defaultValue(string|string[]|bool|int|null $value) Assigned to the option if no value is given on the command line
+ * @method $this defaultValue(array<string|int>|string|int|bool|null $value) Assigned to the option if no value is given on the command line
  * @method $this envVariable(?string $value) The name of an environment variable that replaces or extends the option's default value (see {@see CliOption::$EnvVariable})
  * @method $this keepDefault(bool $value = true) True if environment- and/or user-supplied values extend the option's default value instead of replacing it (default: false)
  * @method $this keepEnv(bool $value = true) True if user-supplied values extend values from the environment instead of replacing them (default: false; see {@see CliOption::$KeepEnv})
