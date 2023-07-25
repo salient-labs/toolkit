@@ -95,12 +95,14 @@ trait HasParent
 
         // Remove the object from its current parent
         if ($this->{self::$_ParentProperties[static::class]} !== null) {
-            $this->{self::$_ParentProperties[static::class]}
-                 ->{self::$_ChildrenProperties[static::class]} =
+            $this
+                ->{self::$_ParentProperties[static::class]}
+                ->{self::$_ChildrenProperties[static::class]} =
                 array_values(
                     array_filter(
-                        $this->{self::$_ParentProperties[static::class]}
-                             ->{self::$_ChildrenProperties[static::class]},
+                        $this
+                            ->{self::$_ParentProperties[static::class]}
+                            ->{self::$_ChildrenProperties[static::class]},
                         fn($child) => $child !== $this
                     )
                 );
@@ -109,8 +111,9 @@ trait HasParent
         $this->{self::$_ParentProperties[static::class]} = $parent;
 
         if ($parent !== null) {
-            return $this->{self::$_ParentProperties[static::class]}
-                        ->{self::$_ChildrenProperties[static::class]}[] = $this;
+            return $this
+                ->{self::$_ParentProperties[static::class]}
+                ->{self::$_ChildrenProperties[static::class]}[] = $this;
         }
 
         return $this;

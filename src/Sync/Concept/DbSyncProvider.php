@@ -119,8 +119,9 @@ abstract class DbSyncProvider extends SyncProvider
 
     public function checkHeartbeat(int $ttl = 300)
     {
-        $this->getDbConnector()
-             ->getConnection(5);
+        $this
+            ->getDbConnector()
+            ->getConnection(5);
 
         return $this;
     }

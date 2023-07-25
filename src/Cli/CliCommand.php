@@ -307,8 +307,9 @@ abstract class CliCommand implements ICliCommand
                 $this->addOption(CliOption::resolve($option));
             }
 
-            return $this->maybeAddHiddenOption('help', 'h')
-                        ->maybeAddHiddenOption('version', 'v');
+            return $this
+                ->maybeAddHiddenOption('help', 'h')
+                ->maybeAddHiddenOption('version', 'v');
         } catch (Throwable $ex) {
             $this->Options = null;
             $this->OptionsByName = [];

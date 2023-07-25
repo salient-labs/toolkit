@@ -48,8 +48,9 @@ abstract class HttpSyncProvider extends SyncProvider
             $expiry = $this->getExpiry($path);
         }
         if (!is_null($expiry)) {
-            $curlerB = $curlerB->cacheResponse()
-                               ->expiry($expiry);
+            $curlerB = $curlerB
+                ->cacheResponse()
+                ->expiry($expiry);
         } else {
             $curlerB = $curlerB->cacheResponse(false);
         }
@@ -77,13 +78,14 @@ abstract class HttpSyncProvider extends SyncProvider
     final public function getDefinition(string $entity): ISyncDefinition
     {
         /** @var ISyncDefinition<T,static> */
-        $def = $this->buildHttpDefinition(
-                        $entity,
-                        HttpSyncDefinition::build()
-                            ->entity($entity)
-                            ->provider($this)
-                    )
-                    ->go();
+        $def = $this
+            ->buildHttpDefinition(
+                $entity,
+                HttpSyncDefinition::build()
+                    ->entity($entity)
+                    ->provider($this)
+            )
+            ->go();
 
         return $def;
     }

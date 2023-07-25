@@ -441,15 +441,16 @@ final class ConsoleWriter implements ReceivesFacade
         bool $prefixByLevel = true,
         bool $formatByLevel = true
     ) {
-        return $this->count($level)
-                    ->write(
-                        $level,
-                        $msg1,
-                        $msg2,
-                        $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
-                        $ex,
-                        $formatByLevel
-                    );
+        return $this
+            ->count($level)
+            ->write(
+                $level,
+                $msg1,
+                $msg2,
+                $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
+                $ex,
+                $formatByLevel
+            );
     }
 
     /**
@@ -468,15 +469,16 @@ final class ConsoleWriter implements ReceivesFacade
         bool $prefixByLevel = true,
         bool $formatByLevel = true
     ) {
-        return $this->count($level)
-                    ->writeOnce(
-                        $level,
-                        $msg1,
-                        $msg2,
-                        $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
-                        $ex,
-                        $formatByLevel
-                    );
+        return $this
+            ->count($level)
+            ->writeOnce(
+                $level,
+                $msg1,
+                $msg2,
+                $prefixByLevel ? self::LEVEL_PREFIX[$level] : '',
+                $ex,
+                $formatByLevel
+            );
     }
 
     /**
@@ -743,14 +745,15 @@ final class ConsoleWriter implements ReceivesFacade
             $ex = $ex->getPrevious();
         } while ($ex);
 
-        $this->count($messageLevel)
-             ->write(
-                 $messageLevel,
-                 '__' . Convert::classToBasename(get_class($exception)) . '__:',
-                 $msg2,
-                 ' !! ',
-                 $exception
-             );
+        $this
+            ->count($messageLevel)
+            ->write(
+                $messageLevel,
+                '__' . Convert::classToBasename(get_class($exception)) . '__:',
+                $msg2,
+                ' !! ',
+                $exception
+            );
         if (is_null($stackTraceLevel)) {
             return $this;
         }

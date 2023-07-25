@@ -6,14 +6,9 @@
         "tests",
         "bootstrap.php"
     ],
-    "includeIfPhp": null,
+    "includeIfPhp": true,
     "enable": [
-        "align-chains",
-        "align-fn",
         "preserve-one-line",
         "strict-lists"
-    ],
-    "preserveTrailingSpaces": [
-        "2"
     ]
 }

@@ -47,15 +47,17 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
             ->multipleAllowed();
 
         if ($this->Providers) {
-            $optB = $optB->optionType(CliOptionType::ONE_OF_POSITIONAL)
-                         ->allowedValues(array_keys($this->Providers))
-                         ->addAll()
-                         ->defaultValue('ALL')
-                         ->bindTo($this->ProviderBasename);
+            $optB = $optB
+                ->optionType(CliOptionType::ONE_OF_POSITIONAL)
+                ->allowedValues(array_keys($this->Providers))
+                ->addAll()
+                ->defaultValue('ALL')
+                ->bindTo($this->ProviderBasename);
         } else {
-            $optB = $optB->optionType(CliOptionType::VALUE_POSITIONAL)
-                         ->required()
-                         ->bindTo($this->Provider);
+            $optB = $optB
+                ->optionType(CliOptionType::VALUE_POSITIONAL)
+                ->required()
+                ->bindTo($this->Provider);
         }
 
         return [

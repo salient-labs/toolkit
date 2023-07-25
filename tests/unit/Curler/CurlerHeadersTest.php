@@ -55,8 +55,9 @@ final class CurlerHeadersTest extends \Lkrms\Tests\TestCase
             [
                 $headers->getHeaderValues(),
                 $headers->getHeaderValues(CurlerHeadersFlag::COMBINE),
-                $headers->addHeader(HttpHeader::PREFER, 'odata.track-changes')
-                        ->getHeaderValue(HttpHeader::PREFER, CurlerHeadersFlag::COMBINE, '/^odata\./i'),
+                $headers
+                    ->addHeader(HttpHeader::PREFER, 'odata.track-changes')
+                    ->getHeaderValue(HttpHeader::PREFER, CurlerHeadersFlag::COMBINE, '/^odata\./i'),
             ]
         );
     }

@@ -43,8 +43,9 @@ final class ODataPager implements ICurlerPager
     public function prepareCurler(Curler $curler): Curler
     {
         if (!is_null($this->MaxPageSize)) {
-            return $curler->unsetHeader(HttpHeader::PREFER, '/^odata\.maxpagesize\h*=/')
-                          ->addHeader(HttpHeader::PREFER, sprintf('odata.maxpagesize=%d', $this->MaxPageSize));
+            return $curler
+                ->unsetHeader(HttpHeader::PREFER, '/^odata\.maxpagesize\h*=/')
+                ->addHeader(HttpHeader::PREFER, sprintf('odata.maxpagesize=%d', $this->MaxPageSize));
         }
 
         return $curler;

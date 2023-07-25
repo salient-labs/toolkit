@@ -142,81 +142,82 @@ final class SyncStore extends SqliteStore
         $this->Command = $command;
         $this->Arguments = $arguments;
 
-        $this->requireUpsert()
-             ->openDb(
-                 $filename,
-                 <<<SQL
-                 CREATE TABLE IF NOT EXISTS
-                   _sync_run (
-                     run_id INTEGER NOT NULL PRIMARY KEY,
-                     run_uuid BLOB NOT NULL UNIQUE,
-                     run_command TEXT NOT NULL,
-                     run_arguments_json TEXT NOT NULL,
-                     started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                     finished_at DATETIME,
-                     exit_status INTEGER,
-                     error_count INTEGER,
-                     warning_count INTEGER,
-                     errors_json TEXT
-                   );
+        $this
+            ->requireUpsert()
+            ->openDb(
+                $filename,
+                <<<SQL
+                CREATE TABLE IF NOT EXISTS
+                  _sync_run (
+                    run_id INTEGER NOT NULL PRIMARY KEY,
+                    run_uuid BLOB NOT NULL UNIQUE,
+                    run_command TEXT NOT NULL,
+                    run_arguments_json TEXT NOT NULL,
+                    started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    finished_at DATETIME,
+                    exit_status INTEGER,
+                    error_count INTEGER,
+                    warning_count INTEGER,
+                    errors_json TEXT
+                  );
 
-                 CREATE TABLE IF NOT EXISTS
-                   _sync_provider (
-                     provider_id INTEGER NOT NULL PRIMARY KEY,
-                     provider_hash BLOB NOT NULL UNIQUE,
-                     provider_class TEXT NOT NULL,
-                     added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                     last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
-                   );
+                CREATE TABLE IF NOT EXISTS
+                  _sync_provider (
+                    provider_id INTEGER NOT NULL PRIMARY KEY,
+                    provider_hash BLOB NOT NULL UNIQUE,
+                    provider_class TEXT NOT NULL,
+                    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
+                  );
 
-                 CREATE TABLE IF NOT EXISTS
-                   _sync_entity_type (
-                     entity_type_id INTEGER NOT NULL PRIMARY KEY,
-                     entity_type_class TEXT NOT NULL UNIQUE,
-                     added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                     last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
-                   );
+                CREATE TABLE IF NOT EXISTS
+                  _sync_entity_type (
+                    entity_type_id INTEGER NOT NULL PRIMARY KEY,
+                    entity_type_class TEXT NOT NULL UNIQUE,
+                    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
+                  );
 
-                 CREATE TABLE IF NOT EXISTS
-                   _sync_entity_type_state (
-                     provider_id INTEGER NOT NULL,
-                     entity_type_id INTEGER NOT NULL,
-                     last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-                     last_sync DATETIME,
-                     PRIMARY KEY (provider_id, entity_type_id),
-                     FOREIGN KEY (provider_id) REFERENCES _sync_provider,
-                     FOREIGN KEY (entity_type_id) REFERENCES _sync_entity_type
-                   );
+                CREATE TABLE IF NOT EXISTS
+                  _sync_entity_type_state (
+                    provider_id INTEGER NOT NULL,
+                    entity_type_id INTEGER NOT NULL,
+                    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    last_sync DATETIME,
+                    PRIMARY KEY (provider_id, entity_type_id),
+                    FOREIGN KEY (provider_id) REFERENCES _sync_provider,
+                    FOREIGN KEY (entity_type_id) REFERENCES _sync_entity_type
+                  );
 
-                 CREATE TABLE IF NOT EXISTS
-                   _sync_entity (
-                     provider_id INTEGER NOT NULL,
-                     entity_type_id INTEGER NOT NULL,
-                     entity_id TEXT NOT NULL,
-                     canonical_id TEXT,
-                     is_dirty INTEGER NOT NULL DEFAULT 0,
-                     is_deleted INTEGER NOT NULL DEFAULT 0,
-                     added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                     last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-                     last_sync DATETIME,
-                     entity_json TEXT NOT NULL,
-                     PRIMARY KEY (provider_id, entity_type_id, entity_id),
-                     FOREIGN KEY (provider_id) REFERENCES _sync_provider,
-                     FOREIGN KEY (entity_type_id) REFERENCES _sync_entity_type
-                   ) WITHOUT ROWID;
+                CREATE TABLE IF NOT EXISTS
+                  _sync_entity (
+                    provider_id INTEGER NOT NULL,
+                    entity_type_id INTEGER NOT NULL,
+                    entity_id TEXT NOT NULL,
+                    canonical_id TEXT,
+                    is_dirty INTEGER NOT NULL DEFAULT 0,
+                    is_deleted INTEGER NOT NULL DEFAULT 0,
+                    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    last_sync DATETIME,
+                    entity_json TEXT NOT NULL,
+                    PRIMARY KEY (provider_id, entity_type_id, entity_id),
+                    FOREIGN KEY (provider_id) REFERENCES _sync_provider,
+                    FOREIGN KEY (entity_type_id) REFERENCES _sync_entity_type
+                  ) WITHOUT ROWID;
 
-                 CREATE TABLE IF NOT EXISTS
-                   _sync_entity_namespace (
-                     entity_namespace_id INTEGER NOT NULL PRIMARY KEY,
-                     entity_namespace_prefix TEXT NOT NULL UNIQUE,
-                     base_uri TEXT NOT NULL,
-                     php_namespace TEXT NOT NULL,
-                     added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                     last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
-                   );
+                CREATE TABLE IF NOT EXISTS
+                  _sync_entity_namespace (
+                    entity_namespace_id INTEGER NOT NULL PRIMARY KEY,
+                    entity_namespace_prefix TEXT NOT NULL UNIQUE,
+                    base_uri TEXT NOT NULL,
+                    php_namespace TEXT NOT NULL,
+                    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
+                  );
 
-                 SQL
-             );
+                SQL
+            );
 
         Event::dispatch('sync.store.load', $this);
     }

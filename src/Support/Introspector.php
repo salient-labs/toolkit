@@ -448,8 +448,9 @@ class Introspector
                     throw new UnexpectedValueException('$context cannot be null when $provider is not null');
                 }
 
-                return $obj->setProvider($provider)
-                           ->setContext($context);
+                return $obj
+                    ->setProvider($provider)
+                    ->setContext($context);
             }
 
             return $obj;
