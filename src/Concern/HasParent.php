@@ -58,10 +58,13 @@ trait HasParent
      */
     final public function getParent()
     {
-        (self::$_ParentProperties[static::class] ?? null) !== null ||
+        if (!isset(self::$_ParentProperties[static::class])) {
             static::loadHierarchyProperties();
+        }
 
-        return $this->{self::$_ParentProperties[static::class]};
+        $_parent = self::$_ParentProperties[static::class];
+
+        return $this->{$_parent};
     }
 
     /**
@@ -69,10 +72,13 @@ trait HasParent
      */
     final public function getChildren(): array
     {
-        (self::$_ChildrenProperties[static::class] ?? null) !== null ||
+        if (!isset(self::$_ChildrenProperties[static::class])) {
             static::loadHierarchyProperties();
+        }
 
-        return $this->{self::$_ChildrenProperties[static::class]} ?: [];
+        $_children = self::$_ChildrenProperties[static::class];
+
+        return $this->{$_children} ?: [];
     }
 
     /**
@@ -81,39 +87,34 @@ trait HasParent
      */
     final public function setParent($parent)
     {
-        (self::$_ParentProperties[static::class] ?? null) !== null ||
+        if (!isset(self::$_ParentProperties[static::class])) {
             static::loadHierarchyProperties();
+        }
 
-        if ($parent === $this->{self::$_ParentProperties[static::class]} &&
-                ($parent === null || in_array(
-                    $this,
-                    $parent->{self::$_ChildrenProperties[static::class]} ?: [],
-                    true
-                ))) {
+        $_parent = self::$_ParentProperties[static::class];
+        $_children = self::$_ChildrenProperties[static::class];
+
+        if ($parent === $this->{$_parent} &&
+            ($parent === null ||
+                in_array($this, $parent->{$_children} ?: [], true))) {
             return $this;
         }
 
         // Remove the object from its current parent
-        if ($this->{self::$_ParentProperties[static::class]} !== null) {
-            $this
-                ->{self::$_ParentProperties[static::class]}
-                ->{self::$_ChildrenProperties[static::class]} =
+        if ($this->{$_parent} !== null) {
+            $this->{$_parent}->{$_children} =
                 array_values(
                     array_filter(
-                        $this
-                            ->{self::$_ParentProperties[static::class]}
-                            ->{self::$_ChildrenProperties[static::class]},
+                        $this->{$_parent}->{$_children},
                         fn($child) => $child !== $this
                     )
                 );
         }
 
-        $this->{self::$_ParentProperties[static::class]} = $parent;
+        $this->{$_parent} = $parent;
 
         if ($parent !== null) {
-            return $this
-                ->{self::$_ParentProperties[static::class]}
-                ->{self::$_ChildrenProperties[static::class]}[] = $this;
+            return $this->{$_parent}->{$_children}[] = $this;
         }
 
         return $this;
@@ -134,10 +135,13 @@ trait HasParent
      */
     final public function removeChild($child)
     {
-        (self::$_ParentProperties[static::class] ?? null) !== null ||
+        if (!isset(self::$_ParentProperties[static::class])) {
             static::loadHierarchyProperties();
+        }
 
-        if ($child->{self::$_ParentProperties[static::class]} !== $this) {
+        $_parent = self::$_ParentProperties[static::class];
+
+        if ($child->{$_parent} !== $this) {
             throw new LogicException('Argument #1 ($child) is not a child of this object');
         }
 
@@ -146,14 +150,17 @@ trait HasParent
 
     final public function getDepth(): int
     {
-        (self::$_ParentProperties[static::class] ?? null) !== null ||
+        if (!isset(self::$_ParentProperties[static::class])) {
             static::loadHierarchyProperties();
+        }
+
+        $_parent = self::$_ParentProperties[static::class];
 
         $depth = 0;
-        $parent = $this->{self::$_ParentProperties[static::class]};
+        $parent = $this->{$_parent};
         while (!is_null($parent)) {
             $depth++;
-            $parent = $parent->{self::$_ParentProperties[static::class]};
+            $parent = $parent->{$_parent};
         }
 
         return $depth;
