@@ -15,9 +15,10 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
 {
     public function testFlag()
     {
-        $option = $this->getFlag()
-                       ->go()
-                       ->validate();
+        $option = $this
+            ->getFlag()
+            ->go()
+            ->validate();
         $this->assertIsFlag($option);
         $this->assertSame(CliOptionValueType::BOOLEAN, $option->ValueType);
         $this->assertSame(false, $option->MultipleAllowed);
@@ -25,10 +26,11 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(null, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
 
-        $option = $this->getFlag()
-                       ->multipleAllowed()
-                       ->go()
-                       ->validate();
+        $option = $this
+            ->getFlag()
+            ->multipleAllowed()
+            ->go()
+            ->validate();
         $this->assertIsFlag($option);
         $this->assertSame(CliOptionValueType::INTEGER, $option->ValueType);
         $this->assertSame(true, $option->MultipleAllowed);
@@ -38,20 +40,22 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
 
         $_ENV[__METHOD__] = '1';
 
-        $option = $this->getFlag()
-                       ->envVariable(__METHOD__)
-                       ->go()
-                       ->validate();
+        $option = $this
+            ->getFlag()
+            ->envVariable(__METHOD__)
+            ->go()
+            ->validate();
         $this->assertSame(false, $option->MultipleAllowed);
         $this->assertSame(true, $option->DefaultValue);
         $this->assertSame(__METHOD__, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
 
-        $option = $this->getFlag()
-                       ->envVariable(__METHOD__)
-                       ->multipleAllowed()
-                       ->go()
-                       ->validate();
+        $option = $this
+            ->getFlag()
+            ->envVariable(__METHOD__)
+            ->multipleAllowed()
+            ->go()
+            ->validate();
         $this->assertSame(true, $option->MultipleAllowed);
         $this->assertSame(1, $option->DefaultValue);
         $this->assertSame(__METHOD__, $option->EnvVariable);
@@ -59,10 +63,11 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
 
         unset($_ENV[__METHOD__]);
 
-        $option = $this->getFlag()
-                       ->envVariable(__METHOD__)
-                       ->go()
-                       ->validate();
+        $option = $this
+            ->getFlag()
+            ->envVariable(__METHOD__)
+            ->go()
+            ->validate();
         $this->assertSame(false, $option->MultipleAllowed);
         $this->assertSame(false, $option->DefaultValue);
         $this->assertSame(__METHOD__, $option->EnvVariable);

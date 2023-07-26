@@ -15,7 +15,7 @@ use RuntimeException;
  * Work with .env files and environment variables
  *
  * Non-empty lines in `.env` files may contain either a shell-compatible
- * variable assignment or a comment.
+ * variable assignment (see below for limitations) or a comment.
  *
  * Example:
  *
@@ -116,9 +116,8 @@ final class Env
     private static function doLoad(array $queue, array $errors): void
     {
         if ($errors) {
-            $ex = (new InvalidDotenvSyntaxException('Unable to load .env files', ...$errors))
+            throw (new InvalidDotenvSyntaxException('Unable to load .env files', ...$errors))
                 ->reportErrors();
-            throw $ex;
         }
         foreach ($queue as $name => $value) {
             self::set($name, $value);
@@ -321,7 +320,7 @@ final class Env
      * Get a list of strings from the environment
      *
      * Returns `$default` if `$name` is not set or an empty array if it's empty,
-     * otherwise splits it into an array on `$delimiter` before returning.
+     * otherwise splits its value on `$delimiter` before returning.
      *
      * @template T of string[]|null
      * @param T $default
@@ -341,7 +340,47 @@ final class Env
             }
             return $default;
         }
-        return $value ? explode($delimiter, $value) : [];
+        return $value !== '' ? explode($delimiter, $value) : [];
+    }
+
+    /**
+     * Get a list of integers from the environment
+     *
+     * Returns `$default` if `$name` is not set or an empty array if it's empty,
+     * otherwise splits its value on `$delimiter` and casts entries to integers
+     * before returning.
+     *
+     * @template T of int[]|null
+     * @param T $default
+     * @return T|int[]
+     * @throws InvalidEnvironmentException if `$name` is not present in the
+     * environment and `$default` is not given, or if the value of `$name` is
+     * invalid.
+     */
+    public static function getIntList(string $name, ?array $default = null, string $delimiter = ','): ?array
+    {
+        if (!$delimiter) {
+            throw new LogicException('Invalid delimiter');
+        }
+        $value = self::_get($name);
+        if ($value === false) {
+            if (func_num_args() < 2) {
+                self::throwValueNotFoundException($name);
+            }
+            return $default;
+        }
+        if ($value === '') {
+            return [];
+        };
+        $sep = preg_quote($delimiter, '/');
+        if (!preg_match("/^[0-9]++(?:{$sep}[0-9]++)*+$/", $value)) {
+            throw new InvalidEnvironmentException(sprintf('Value is not an integer list: %s', $name));
+        }
+        $list = [];
+        foreach (explode($delimiter, $value) as $value) {
+            $list[] = (int) $value;
+        }
+        return $list;
     }
 
     /**

@@ -16,13 +16,14 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
     {
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
-        foreach ((new Pipeline())->stream($in)
-                                 ->through(
-                                     fn($payload, Closure $next) => $next($payload * 3),
-                                     fn($payload, Closure $next) => $next($payload / 23),
-                                     fn($payload, Closure $next) => $next(round($payload, 3))
-                                 )
-                                 ->start() as $_out) {
+        foreach ((new Pipeline())
+                ->stream($in)
+                ->through(
+                    fn($payload, Closure $next) => $next($payload * 3),
+                    fn($payload, Closure $next) => $next($payload / 23),
+                    fn($payload, Closure $next) => $next(round($payload, 3))
+                )
+                ->start() as $_out) {
             $out[] = $_out;
         }
 
@@ -36,14 +37,15 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
     {
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
-        foreach ((new Pipeline())->stream($in)
-                                 ->after(fn($payload) => $payload * 2)
-                                 ->through(
-                                     fn($payload, Closure $next) => $next($payload * 3),
-                                     fn($payload, Closure $next) => $next($payload / 23),
-                                     fn($payload, Closure $next) => $next(round($payload, 3))
-                                 )
-                                 ->start() as $_out) {
+        foreach ((new Pipeline())
+                ->stream($in)
+                ->after(fn($payload) => $payload * 2)
+                ->through(
+                    fn($payload, Closure $next) => $next($payload * 3),
+                    fn($payload, Closure $next) => $next($payload / 23),
+                    fn($payload, Closure $next) => $next(round($payload, 3))
+                )
+                ->start() as $_out) {
             $out[] = $_out;
         }
 
@@ -57,14 +59,15 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
     {
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
-        foreach ((new Pipeline())->stream($in)
-                                 ->through(
-                                     fn($payload, Closure $next) => $payload % 2 ? null : $next($payload * 3),
-                                     fn($payload, Closure $next) => $next($payload / 23),
-                                     fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null,
-                                 )
-                                 ->unless(fn($result) => is_null($result))
-                                 ->start() as $_out) {
+        foreach ((new Pipeline())
+                ->stream($in)
+                ->through(
+                    fn($payload, Closure $next) => $payload % 2 ? null : $next($payload * 3),
+                    fn($payload, Closure $next) => $next($payload / 23),
+                    fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null,
+                )
+                ->unless(fn($result) => is_null($result))
+                ->start() as $_out) {
             $out[] = $_out;
         }
 
@@ -74,14 +77,15 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         );
 
         $this->expectException(PipelineResultRejectedException::class);
-        (new Pipeline())->send(23)
-                        ->through(
-                            fn($payload, Closure $next) => $payload % 2 ? null : $next($payload * 3),
-                            fn($payload, Closure $next) => $next($payload / 23),
-                            fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null,
-                        )
-                        ->unless(fn($result) => is_null($result))
-                        ->run();
+        (new Pipeline())
+            ->send(23)
+            ->through(
+                fn($payload, Closure $next) => $payload % 2 ? null : $next($payload * 3),
+                fn($payload, Closure $next) => $next($payload / 23),
+                fn($payload, Closure $next) => $payload < 11 ? $next(round($payload, 3)) : null,
+            )
+            ->unless(fn($result) => is_null($result))
+            ->run();
     }
 
     public function testThroughKeyMap()

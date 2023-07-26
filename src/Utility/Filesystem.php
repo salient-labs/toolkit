@@ -270,14 +270,15 @@ final class Filesystem
             throw new RuntimeException(sprintf('Not a directory: %s', $directory));
         }
 
-        $this->find($directory, null, null, null, null, true, true, false)
-             ->forEachWhileTrue(
-                 fn(SplFileInfo $file) =>
-                     $file->isDir()
-                         ? rmdir((string) $file)
-                         : unlink((string) $file),
-                 $result
-             );
+        $this
+            ->find($directory, null, null, null, null, true, true, false)
+            ->forEachWhileTrue(
+                fn(SplFileInfo $file) =>
+                    $file->isDir()
+                        ? rmdir((string) $file)
+                        : unlink((string) $file),
+                $result
+            );
 
         return $result;
     }

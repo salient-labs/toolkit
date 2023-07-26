@@ -101,8 +101,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     private function _run(int $operation, ...$args)
     {
-        $closure = $this->Definition
-                        ->getSyncOperationClosure($operation);
+        $closure = $this
+            ->Definition
+            ->getSyncOperationClosure($operation);
 
         if (!$closure) {
             throw new SyncOperationNotImplementedException(

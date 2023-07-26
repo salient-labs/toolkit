@@ -342,19 +342,21 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             case SyncOperation::DELETE:
                 return
                     fn(ISyncContext $ctx, ISyncEntity $entity, ...$args): ISyncEntity =>
-                        $this->getPipelineToBackend()
-                             ->send($entity, [$operation, $ctx, $entity, ...$args])
-                             ->then(fn($data) => $this->getRoundTripPayload(($httpRunner)($ctx, $data, ...$args), $entity, $operation))
-                             ->runInto($this->getRoundTripPipeline($operation))
-                             ->run();
+                        $this
+                            ->getPipelineToBackend()
+                            ->send($entity, [$operation, $ctx, $entity, ...$args])
+                            ->then(fn($data) => $this->getRoundTripPayload(($httpRunner)($ctx, $data, ...$args), $entity, $operation))
+                            ->runInto($this->getRoundTripPipeline($operation))
+                            ->run();
 
             case SyncOperation::READ:
                 return
                     fn(ISyncContext $ctx, $id, ...$args): ISyncEntity =>
-                        $this->getPipelineFromBackend()
-                             ->send(($httpRunner)($ctx, $id, ...$args), [$operation, $ctx, $id, ...$args])
-                             ->withConformity($this->Conformity)
-                             ->run();
+                        $this
+                            ->getPipelineFromBackend()
+                            ->send(($httpRunner)($ctx, $id, ...$args), [$operation, $ctx, $id, ...$args])
+                            ->withConformity($this->Conformity)
+                            ->run();
 
             case SyncOperation::CREATE_LIST:
             case SyncOperation::UPDATE_LIST:
@@ -373,25 +375,27 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                             return $this->getRoundTripPayload(($httpRunner)($ctx, $data, ...$args), $payload, $operation);
                         };
 
-                        return $this->getPipelineToBackend()
-                                    ->stream($entities, [$operation, $ctx, &$entity, ...$args])
-                                    ->after($after)
-                                    ->if(
-                                        $this->SyncOneEntityPerRequest,
-                                        fn(IPipeline $p) => $p->then($then),
-                                        fn(IPipeline $p) => $p->collectThen($then)
-                                    )
-                                    ->startInto($this->getRoundTripPipeline($operation))
-                                    ->start();
+                        return $this
+                            ->getPipelineToBackend()
+                            ->stream($entities, [$operation, $ctx, &$entity, ...$args])
+                            ->after($after)
+                            ->if(
+                                $this->SyncOneEntityPerRequest,
+                                fn(IPipeline $p) => $p->then($then),
+                                fn(IPipeline $p) => $p->collectThen($then)
+                            )
+                            ->startInto($this->getRoundTripPipeline($operation))
+                            ->start();
                     };
 
             case SyncOperation::READ_LIST:
                 return
                     fn(ISyncContext $ctx, ...$args): iterable =>
-                        $this->getPipelineFromBackend()
-                             ->stream(($httpRunner)($ctx, ...$args), [$operation, $ctx, ...$args])
-                             ->withConformity($this->Conformity)
-                             ->start();
+                        $this
+                            ->getPipelineFromBackend()
+                            ->stream(($httpRunner)($ctx, ...$args), [$operation, $ctx, ...$args])
+                            ->withConformity($this->Conformity)
+                            ->start();
         }
 
         throw new UnexpectedValueException("Invalid SyncOperation: $operation");

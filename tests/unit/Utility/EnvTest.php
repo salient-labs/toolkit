@@ -13,8 +13,8 @@ final class EnvTest extends \Lkrms\Tests\TestCase
      *
      * @backupGlobals enabled
      *
-     * @param string|int|bool|null $expected
-     * @param array{default?:string|int|bool|null,value?:string|int|bool|null} $values
+     * @param string[]|int[]|string|int|bool|null $expected
+     * @param array{default?:string[]|int[]|string|int|bool|null,value?:string} $values
      */
     public function testGet($expected, string $method, array $values = [], ?string $ex = null): void
     {
@@ -36,7 +36,7 @@ final class EnvTest extends \Lkrms\Tests\TestCase
     }
 
     /**
-     * @return array<string,array{0:string|int|bool|null,1:string,2?:array{default?:string|int|bool|null,value?:string|int|bool|null},3?:string}>
+     * @return array<string,array{0:string[]|int[]|string|int|bool|null,1:string,2?:array{default?:string[]|int[]|string|int|bool|null,value?:string},3?:string}>
      */
     public static function getProvider(): array
     {
@@ -98,11 +98,60 @@ final class EnvTest extends \Lkrms\Tests\TestCase
             'unset -> bool, default null' => [null, 'getBool', ['default' => null]],
             'unset -> bool, default false' => [false, 'getBool', ['default' => false]],
             'unset -> bool, default true' => [true, 'getBool', ['default' => true]],
+
+            // getList
+            'empty string -> list' => [[], 'getList', ['value' => '']],
+            'whitespace -> list' => [[' '], 'getList', ['value' => ' ']],
+            'text -> list' => [['a'], 'getList', ['value' => 'a']],
+            'zero -> list' => [['0'], 'getList', ['value' => '0']],
+            'empty string -> list, with default' => [[], 'getList', ['value' => '', 'default' => ['b']]],
+            'whitespace -> list, with default' => [[' '], 'getList', ['value' => ' ', 'default' => ['b']]],
+            'text -> list, with default' => [['a'], 'getList', ['value' => 'a', 'default' => ['b']]],
+            'zero -> list, with default' => [['0'], 'getList', ['value' => '0', 'default' => ['b']]],
+            'unset -> list, no default' => [null, 'getList', [], InvalidEnvironmentException::class],
+            'unset -> list, default null' => [null, 'getList', ['default' => null]],
+            'unset -> list, default empty' => [[], 'getList', ['default' => []]],
+            'unset -> list, default text' => [['a'], 'getList', ['default' => ['a']]],
+            'unset -> list, default zero' => [['0'], 'getList', ['default' => ['0']]],
+            'list + empty string #1 -> list' => [['a', '42', ''], 'getList', ['value' => 'a,42,']],
+            'list + empty string #2 -> list' => [['', 'a', '42'], 'getList', ['value' => ',a,42']],
+            'list + empty string #3 -> list' => [['a', '', '42'], 'getList', ['value' => 'a,,42']],
+            'list + whitespace #1 -> list' => [[' a', '42', 'b'], 'getList', ['value' => ' a,42,b']],
+            'list + whitespace #2 -> list' => [['a', '42 ', 'b'], 'getList', ['value' => 'a,42 ,b']],
+            'list + whitespace #3 -> list' => [['a', '42', 'b '], 'getList', ['value' => 'a,42,b ']],
+            'list + text -> list' => [['a', '42', 'b'], 'getList', ['value' => 'a,42,b']],
+            'list + zero -> list' => [['0', '0', '0'], 'getList', ['value' => '0,0,0']],
+
+            // getIntList
+            'empty string -> intList' => [[], 'getIntList', ['value' => '']],
+            'whitespace -> intList' => [null, 'getIntList', ['value' => ' '], InvalidEnvironmentException::class],
+            'text -> intList' => [null, 'getIntList', ['value' => 'a'], InvalidEnvironmentException::class],
+            'number -> intList' => [[42], 'getIntList', ['value' => '42']],
+            'zero -> intList' => [[0], 'getIntList', ['value' => '0']],
+            'empty string -> intList, with default' => [[], 'getIntList', ['value' => '', 'default' => [1]]],
+            'whitespace -> intList, with default' => [null, 'getIntList', ['value' => ' ', 'default' => [1]], InvalidEnvironmentException::class],
+            'text -> intList, with default' => [null, 'getIntList', ['value' => 'a', 'default' => [1]], InvalidEnvironmentException::class],
+            'number -> intList, with default' => [[42], 'getIntList', ['value' => '42', 'default' => [1]]],
+            'zero -> intList, with default' => [[0], 'getIntList', ['value' => '0', 'default' => [1]]],
+            'unset -> intList, no default' => [null, 'getIntList', [], InvalidEnvironmentException::class],
+            'unset -> intList, default null' => [null, 'getIntList', ['default' => null]],
+            'unset -> intList, default empty' => [[], 'getIntList', ['default' => []]],
+            'unset -> intList, default number' => [[42], 'getIntList', ['default' => [42]]],
+            'unset -> intList, default zero' => [[0], 'getIntList', ['default' => [0]]],
+            'list + empty string #1 -> intList' => [null, 'getIntList', ['value' => '28,42,'], InvalidEnvironmentException::class],
+            'list + empty string #2 -> intList' => [null, 'getIntList', ['value' => ',28,42'], InvalidEnvironmentException::class],
+            'list + empty string #3 -> intList' => [null, 'getIntList', ['value' => '28,,42'], InvalidEnvironmentException::class],
+            'list + whitespace #1 -> intList' => [null, 'getIntList', ['value' => ' 28,42,71'], InvalidEnvironmentException::class],
+            'list + whitespace #2 -> intList' => [null, 'getIntList', ['value' => '28,42 ,71'], InvalidEnvironmentException::class],
+            'list + whitespace #3 -> intList' => [null, 'getIntList', ['value' => '28,42,71 '], InvalidEnvironmentException::class],
+            'list + text -> intList' => [null, 'getIntList', ['value' => '28,42,a'], InvalidEnvironmentException::class],
+            'list + number -> intList' => [[28, 42, 71], 'getIntList', ['value' => '28,42,71']],
+            'list + zero -> intList' => [[0, 0, 0], 'getIntList', ['value' => '0,0,0']],
         ];
     }
 
     /**
-     * @return array<string,array{0:string|int|bool|null,1:string,2?:array{default?:string|int|bool|null,value?:string|int|bool|null},3?:string}>
+     * @return array<string,array{0:string[]|int[]|string|int|bool|null,1:string,2?:array{default?:string[]|int[]|string|int|bool|null,value?:string},3?:string}>
      */
     public static function getNullableProvider(): array
     {

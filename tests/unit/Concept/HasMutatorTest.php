@@ -11,18 +11,22 @@ final class HasMutatorTest extends \Lkrms\Tests\TestCase
     {
         $a = new MyMutatingClass();
         $b = $a->with('A', 1);
-        $c = $b->with('B', 2)
-               ->with('C', $b->C * 10);
-        $d = $c->with('Arr1', 'bbb', 'b')
-               ->with('Arr1', 'ccc', 'c')
-               ->with('Arr2', 'ddd', 'd')
-               ->with('Arr3', 'eee', 'e')
-               ->with('Arr4', 'fff', 'f');
-        $e = $d->with('Obj', 'aa', 'A')
-               ->with('Obj', 'bb', 'B');
-        $f = $e->with('A', 1)  // Changes to $f should be no-ops
-               ->with('Obj', 'aa', 'A')
-               ->with('Obj', 'bb', 'B');
+        $c = $b
+            ->with('B', 2)
+            ->with('C', $b->C * 10);
+        $d = $c
+            ->with('Arr1', 'bbb', 'b')
+            ->with('Arr1', 'ccc', 'c')
+            ->with('Arr2', 'ddd', 'd')
+            ->with('Arr3', 'eee', 'e')
+            ->with('Arr4', 'fff', 'f');
+        $e = $d
+            ->with('Obj', 'aa', 'A')
+            ->with('Obj', 'bb', 'B');
+        $f = $e
+            ->with('A', 1)  // Changes to $f should be no-ops
+            ->with('Obj', 'aa', 'A')
+            ->with('Obj', 'bb', 'B');
         $g = $f->with('Coll', new \stdClass(), 'g');
         $h = $g->asNew();
 

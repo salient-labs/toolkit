@@ -222,8 +222,9 @@ class Application extends Container implements IApplication
 
         static::setGlobalContainer($this);
 
-        $this->Env = $this->singletonIf(Env::class)
-                          ->get(Env::class);
+        $this->Env = $this
+            ->singletonIf(Env::class)
+            ->get(Env::class);
 
         if ($basePath === null) {
             $basePath = $this->Env->get('app_base_path', null);
@@ -255,8 +256,9 @@ class Application extends Container implements IApplication
 
     public function unload(): void
     {
-        $this->unloadSync()
-             ->unloadCache();
+        $this
+            ->unloadSync()
+            ->unloadCache();
 
         // @phpstan-ignore-next-line
         $this->Env = null;

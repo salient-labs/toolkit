@@ -18,8 +18,9 @@ final class CacheStore extends SqliteStore
 
     public function __construct(string $filename = ':memory:')
     {
-        $this->requireUpsert()
-             ->open($filename);
+        $this
+            ->requireUpsert()
+            ->open($filename);
     }
 
     /**

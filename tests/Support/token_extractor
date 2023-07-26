@@ -11,12 +11,12 @@ use My\Full\Classname as AnotherClass, My\Full\Classname;
 use My\Full\NSname;
 use some\namespace\{ClassA, ClassB, ClassC as C, special\ClassD as D};
 
-use const My\Full\CONSTANT;
-use const some\namespace\{ConstA, ConstB, ConstC};
-
 use function My\Full\functionName;
 use function My\Full\functionName as func;
 use function some\namespace\{fn_a, fn_b, fn_c};
+
+use const My\Full\CONSTANT;
+use const some\namespace\{ConstA, ConstB, ConstC};
 
 require __DIR__ . '/../../vendor/autoload.php';
 
