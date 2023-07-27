@@ -22,6 +22,7 @@ use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
+use Lkrms\Utility\Env;
 use UnexpectedValueException;
 
 /**
@@ -330,8 +331,13 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         if (is_null($this->Callback ?: $this->Path)) {
             return null;
         }
-
-        $httpClosure = $this->getHttpOperationClosure($operation);
+        $httpClosure =
+            SyncOperation::isWrite($operation) && Env::dryRun()
+                ? fn(Curler $curler, ?array $query, $payload = null) =>
+                    is_array($payload)
+                        ? $payload
+                        : []
+                : $this->getHttpOperationClosure($operation);
         $httpRunner =
             fn(ISyncContext $ctx, ...$args) =>
                 $this->runHttpOperation($httpClosure, $operation, $ctx, ...$args);
@@ -485,7 +491,9 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     {
         switch ($this->ReturnEntitiesFrom) {
             case SyncEntitySource::HTTP_WRITE:
-                return $response;
+                return Env::dryRun()
+                    ? $requestPayload
+                    : $response;
 
             case SyncEntitySource::SYNC_OPERATION:
                 return $requestPayload;
