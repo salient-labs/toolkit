@@ -7,11 +7,12 @@ use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\ConsoleFormat;
 use Lkrms\Console\ConsoleFormatter;
 use Lkrms\Console\ConsoleMessageFormat;
+use Lkrms\Console\ConsoleTagFormats;
 use Lkrms\Support\Catalog\TtyControlSequence as Colour;
 use UnexpectedValueException;
 
 /**
- * Base class for console message targets
+ * Base class for console output targets
  *
  */
 abstract class ConsoleTarget
@@ -24,7 +25,7 @@ abstract class ConsoleTarget
     protected $MessageFormatting = true;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $Prefix;
 
@@ -35,12 +36,7 @@ abstract class ConsoleTarget
      */
     private $MessageFormats = [];
 
-    /**
-     * Tag => format
-     *
-     * @var array<int,ConsoleFormat>
-     */
-    private $TagFormats = [];
+    private ConsoleTagFormats $TagFormats;
 
     /**
      * @var ConsoleFormatter|null
@@ -53,9 +49,9 @@ abstract class ConsoleTarget
     {
         $this->writeToTarget(
             $level,
-            $this->Prefix
-                ? $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message)
-                : $message,
+            $this->Prefix === null
+                ? $message
+                : $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message),
             $context
         );
     }
@@ -72,9 +68,9 @@ abstract class ConsoleTarget
     final public function setPrefix(?string $prefix): void
     {
         $this->Prefix =
-            $prefix
-                ? $this->getTagFormat(Tag::LOW_PRIORITY)->apply($prefix)
-                : $prefix;
+            $prefix === null || $prefix === ''
+                ? null
+                : $this->getTagFormats()[Tag::LOW_PRIORITY]->apply($prefix);
     }
 
     public function isStdout(): bool
@@ -90,6 +86,18 @@ abstract class ConsoleTarget
     public function isTty(): bool
     {
         return false;
+    }
+
+    final public function getFormatter(): ConsoleFormatter
+    {
+        return $this->Formatter
+            ?: ($this->Formatter = new ConsoleFormatter($this->getTagFormats()));
+    }
+
+    final public function getTagFormats(): ConsoleTagFormats
+    {
+        return $this->TagFormats
+            ?? ($this->TagFormats = $this->createTagFormats());
     }
 
     protected function createMessageFormat(int $level): ConsoleMessageFormat
@@ -139,43 +147,64 @@ abstract class ConsoleTarget
         throw new UnexpectedValueException("Invalid ConsoleLevel: $level");
     }
 
-    protected function createTagFormat(int $tag): ConsoleFormat
+    protected function createTagFormats(): ConsoleTagFormats
     {
+        $formats = new ConsoleTagFormats();
+
         if (!$this->isTty()) {
-            return new ConsoleFormat();
+            return $formats;
         }
 
-        switch ($tag) {
-            case Tag::HEADING:
-                return new ConsoleFormat(Colour::BOLD . Colour::CYAN, Colour::DEFAULT . Colour::UNBOLD_UNDIM);
-            case Tag::BOLD:
-                return new ConsoleFormat(Colour::BOLD, Colour::UNBOLD_UNDIM);
-            case Tag::ITALIC:
-                return new ConsoleFormat(Colour::YELLOW, Colour::DEFAULT);
-            case Tag::UNDERLINE:
-                return new ConsoleFormat(Colour::YELLOW . Colour::UNDERLINE, Colour::NO_UNDERLINE . Colour::DEFAULT);
-            case Tag::LOW_PRIORITY:
-                return new ConsoleFormat(Colour::DIM, Colour::UNBOLD_UNDIM, [Colour::UNBOLD_UNDIM => Colour::UNBOLD_DIM]);
-        }
+        $formats[Tag::HEADING] =
+            new ConsoleFormat(
+                Colour::BOLD . Colour::CYAN,
+                Colour::DEFAULT . Colour::UNBOLD_UNDIM,
+                [
+                    Colour::UNBOLD_UNDIM => Colour::UNDIM_BOLD,
+                    Colour::DEFAULT => Colour::CYAN,
+                ],
+            );
+        $formats[Tag::BOLD] =
+            new ConsoleFormat(
+                Colour::BOLD,
+                Colour::UNBOLD_UNDIM,
+                [
+                    Colour::UNBOLD_UNDIM => Colour::UNDIM_BOLD,
+                ],
+            );
+        $formats[Tag::ITALIC] =
+            new ConsoleFormat(
+                Colour::YELLOW,
+                Colour::DEFAULT,
+                [
+                    Colour::DEFAULT => Colour::YELLOW,
+                ],
+            );
+        $formats[Tag::UNDERLINE] =
+            new ConsoleFormat(
+                Colour::YELLOW . Colour::UNDERLINE,
+                Colour::NO_UNDERLINE . Colour::DEFAULT,
+                [
+                    Colour::DEFAULT => Colour::YELLOW,
+                    Colour::NO_UNDERLINE => '',
+                ],
+            );
+        $formats[Tag::LOW_PRIORITY] =
+            new ConsoleFormat(
+                Colour::DIM,
+                Colour::UNBOLD_UNDIM,
+                [
+                    Colour::UNBOLD_UNDIM => Colour::UNBOLD_DIM,
+                ],
+            );
+        $formats[Tag::CODE_SPAN] = $formats[Tag::BOLD];
 
-        throw new UnexpectedValueException("Invalid ConsoleTextTag: $tag");
+        return $formats;
     }
 
     final public function getMessageFormat(int $level): ConsoleMessageFormat
     {
         return $this->MessageFormats[$level]
             ?? ($this->MessageFormats[$level] = $this->createMessageFormat($level));
-    }
-
-    final public function getTagFormat(int $tag): ConsoleFormat
-    {
-        return $this->TagFormats[$tag]
-            ?? ($this->TagFormats[$tag] = $this->createTagFormat($tag));
-    }
-
-    final public function getFormatter(): ConsoleFormatter
-    {
-        return $this->Formatter
-            ?: ($this->Formatter = new ConsoleFormatter($this));
     }
 }

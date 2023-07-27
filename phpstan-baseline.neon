@@ -136,11 +136,6 @@ parameters:
 			path: src/Console/Target/AnalogTarget.php
 
 		-
-			message: "#^Method Lkrms\\\\Console\\\\Target\\\\LoggerTarget\\:\\:writeToTarget\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Console/Target/LoggerTarget.php
-
-		-
 			message: "#^Method Lkrms\\\\Console\\\\Target\\\\StreamTarget\\:\\:reopen\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Console/Target/StreamTarget.php
@@ -709,16 +704,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:updateListA\\(\\) has parameter \\$args with no type specified\\.$#"
 			count: 1
 			path: src/Sync/Support/SyncEntityProvider.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncError\\:\\:__construct\\(\\) has parameter \\$values with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncError.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncError\\:\\:\\$Values type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncError.php
 
 		-
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncErrorCollection\\:\\:jsonSerialize\\(\\) return type has no value type specified in iterable type array\\.$#"

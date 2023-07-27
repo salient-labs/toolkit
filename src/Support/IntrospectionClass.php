@@ -381,7 +381,7 @@ class IntrospectionClass
                 ...($this->IsReadable ? [self::ACTION_GET, self::ACTION_ISSET] : []),
                 ...($this->IsWritable ? [self::ACTION_SET, self::ACTION_UNSET] : []),
             ]);
-            $regex = "/^_(?P<action>{$regex})(?P<property>.+)\$/i";
+            $regex = "/^_(?<action>{$regex})(?<property>.+)\$/i";
             foreach ($methods as $method) {
                 if (!preg_match($regex, $name = $method->getName(), $match)) {
                     continue;

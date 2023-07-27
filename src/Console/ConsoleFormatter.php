@@ -3,148 +3,315 @@
 namespace Lkrms\Console;
 
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
-use Lkrms\Console\Concept\ConsoleTarget;
+use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Lkrms\Utility\Convert;
+use Lkrms\Utility\Pcre;
 use RuntimeException;
 
 /**
- * Formats console messages
+ * Formats console output for a target
  *
+ * @see ConsoleTarget::getFormatter()
  */
 final class ConsoleFormatter
 {
     /**
-     * Matches a preformatted block or span and the text before it
+     * Splits the subject into formattable paragraphs, fenced code blocks and
+     * code spans
      *
      */
-    private const REGEX_PREFORMATTED = <<<'REGEX'
-        (?xs)
-        # The end of the previous match
+    private const PARSER_REGEX = <<<'REGEX'
+        (?msx)
+        (?(DEFINE)
+          (?<endofblock> ^ \k<fence> \h*+ $ )
+          (?<endofspan> \k<backtickstring> (?! ` ) )
+        )
+        # Do not allow gaps between matches
         \G
-        # Text before a preformatted block or span, including recognised escapes
-        (?P<text> (?: [^\\`]++ | \\ [\\`] | \\ )*+ )
-        # A preformatted block
-        (?: (?<= \n | ^) ``` \n (?P<block> .*? ) \n ``` (?= \n | $) |
-          # ...or span
-          ` (?P<span> (?: [^\\`]++ | \\ [\\`] | \\ )*+ ) ` |
-          # ...or invalid syntax
-          (?P<invalid> `++ ) |
-          # ...or the end of the subject
-          $)
+        # Do not allow empty matches
+        (?= . )
+        (?:
+          # Whitespace before paragraphs
+          (?<breaks> \n+ ) |
+          # Everything except unescaped backticks until the start of the next
+          # paragraph
+          (?<text> (?> (?: [^\\`\n]+ | \\ [-\\!"\#$%&'()*+,./:;<=>?@[\]^_`{|}~\n] | \\ | \n (?! \n ) )+ \n* ) ) |
+          # CommonMark-compliant fenced code blocks
+          (?> ^
+            (?> (?<fence> ```+ ) (?<infostring> [^\n]* ) \n )
+            # Match empty blocks--with no trailing newline--and blocks with an
+            # empty line by making the subsequent newline conditional on inblock
+            (?<block> (?> (?<inblock> (?: (?! (?&endofblock) ) [^\n]* (?: (?= \n (?&endofblock) ) | \n | \z ) )+ )? ) )
+            # Allow code fences to terminate at the end of the subject
+            (?: (?(inblock) \n ) (?&endofblock) | \z )
+          ) |
+          # CommonMark-compliant code spans
+          (?<backtickstring> (?> `+ ) ) (?<span> (?> (?: [^`]+ | (?! (?&endofspan) ) `+ )* ) ) (?&endofspan) |
+          # Unmatched backticks
+          (?<extra> `+ ) |
+          \z
+        )
         REGEX;
 
     /**
-     * Matches an escaped backslash or backtick (other escapes are ignored)
+     * Matches inline formatting tags used outside fenced code blocks and code
+     * spans
      *
      */
-    private const REGEX_ESCAPED = <<<'REGEX'
-        (?xs)
-        \\ ( [\\`] )
+    private const TAG_REGEX = <<<'REGEX'
+        (?xm)
+        (?(DEFINE)
+          (?<esc> \\ [-\\!"\#$%&'()*+,./:;<=>?@[\]^_`{|}~] | \\ )
+        )
+        (?<! \\ ) (?: \\\\ )* \K (?|
+          \b  (?<tag> _ {1,3}+ )  (?! \s ) (?> (?<text> (?: [^_\\]+ |    (?&esc) | (?! (?<! \s ) \k<tag> \b ) _ + )* ) ) (?<! \s ) \k<tag> \b |
+              (?<tag> \* {1,3}+ ) (?! \s ) (?> (?<text> (?: [^*\\]+ |    (?&esc) | (?! (?<! \s ) \k<tag> ) \* + )* ) )   (?<! \s ) \k<tag>    |
+              (?<tag> < )         (?! \s ) (?> (?<text> (?: [^>\\]+ |    (?&esc) | (?! (?<! \s ) > ) > + )* ) )          (?<! \s ) >          |
+              (?<tag> ~~ )        (?! \s ) (?> (?<text> (?: [^~\\]+ |    (?&esc) | (?! (?<! \s ) ~~ ) ~ + )* ) )         (?<! \s ) ~~         |
+          ^   (?<tag> \#\# ) \h+           (?> (?<text> (?: [^\#\v\\]+ | (?&esc) | (?! (?<! \s ) (?: \h+ \#+ | \h* ) $ ) \# + )* ) ) (?<! \s ) (?: \h+ \#+ | \h* ) $
+        )
         REGEX;
 
-    private const REGEX_MAP = [
-        Tag::HEADING => '(?|\b___(?!\s)(.+?)(?<!\s)___\b|\*\*\*(?!\s)(.+?)(?<!\s)\*\*\*|(?<=\n|^)##\h+([^\n]+)(?:\h+#+|\h*)(?=\n|$))',
-        Tag::BOLD => '(?|\b__(?!\s)(.+?)(?<!\s)__\b|\*\*(?!\s)(.+?)(?<!\s)\*\*)',
-        Tag::ITALIC => '(?|\b_(?!\s)(.+?)(?<!\s)_\b|\*(?!\s)(.+?)(?<!\s)\*)',
-        Tag::UNDERLINE => '<(?!\s)(.+?)(?<!\s)>',
-        Tag::LOW_PRIORITY => '~~(.+?)~~',
-    ];
+    /**
+     * Matches a Markdown-compatible backslash escape
+     *
+     */
+    private const UNESCAPE_PUNCTUATION_REGEX = <<<'REGEX'
+        (?x)
+        \\ ( [-\\!"\#$%&'()*+,./:;<=>?@[\]^_`{|}~] )
+        REGEX;
 
     /**
-     * @var array{0:string[],1:string[]}|null
+     * Matches an escaped line break with an optional leading space
+     *
      */
-    private $PregReplace;
+    private const UNESCAPE_LINE_BREAK_REGEX = <<<'REGEX'
+        (?x)
+        (?<! \\ ) (?: \\\\ )* \K \  ? \\ ( \n )
+        REGEX;
 
-    /**
-     * @var ConsoleFormatter|null
-     */
-    private static $DefaultInstance;
+    private static ConsoleFormatter $DefaultFormatter;
 
-    public function __construct(?ConsoleTarget $target)
+    private static ConsoleTagFormats $DefaultTagFormats;
+
+    private ConsoleTagFormats $TagFormats;
+
+    private bool $PreserveEscapes;
+
+    public function __construct(?ConsoleTagFormats $tagFormats = null, bool $preserveEscapes = false)
     {
-        foreach (self::REGEX_MAP as $tag => $regex) {
-            $this->PregReplace[0][] = '/' . $regex . '/u';
-            $this->PregReplace[1][] = ($target ? $target->getTagFormat($tag) : new ConsoleFormat())->apply('$1');
-        }
+        $this->TagFormats = $tagFormats ?: $this->getDefaultTagFormats();
+        $this->PreserveEscapes = $preserveEscapes;
     }
 
     /**
-     * Apply inline formatting to a string
+     * Format a string
      *
+     * This method applies target-defined formats to text that may contain
+     * Markdown-like inline formatting tags. Paragraphs outside preformatted
+     * blocks are optionally wrapped to a given width, and backslash-escaped
+     * punctuation characters and line breaks are preserved.
+     *
+     * Escaped line breaks may have a leading space, so the following are
+     * equivalent:
+     *
+     * ```
+     * Text with a \
+     * hard line break.
+     *
+     * Text with a\
+     * hard line break.
+     * ```
      */
-    public function format(string $string): string
+    public function format(string $string, bool $unwrap = false, ?int $width = null): string
     {
-        $preformatted = [];
-        $next = 0;
-        $string = preg_replace_callback(
-            '/' . self::REGEX_PREFORMATTED . '/u',
-            function (array $matches) use (&$preformatted, &$next) {
-                /** @var array<int|string,string|null> $matches */
-                if (!is_null($matches['invalid'])) {
-                    throw new RuntimeException('Argument #1 ($string) contains invalid syntax');
-                }
-                $text = $matches['text'];
-                if ($code = $matches['span']) {
-                    $code = $this->unescape($code);
-                } else {
-                    $code = $matches['block'] ?: '';
-                }
+        if ($string === '') {
+            return '';
+        }
 
-                if ($code) {
-                    $preformatted[$key = sprintf("\x01%d\x02", $next++)] = $code;
-                    $code = $key;
-                }
+        /**
+         * [ [ Offset, length, replacement ] ]
+         *
+         * @var array<array{int,int,string}>
+         */
+        $replace = [];
+        $append = '';
+        $plainTagFormats = $this->getDefaultTagFormats();
 
-                return $text . $code;
-            },
-            $string,
-            -1,
-            $count,
-            // Without this, unmatched subpatterns aren't reported at all
-            PREG_UNMATCHED_AS_NULL
-        );
-        $string = $this->unescape(preg_replace(
-            $this->PregReplace[0],
-            $this->PregReplace[1],
-            $string
-        ));
-        if ($preformatted) {
-            $string = str_replace(
-                array_keys($preformatted),
-                array_values($preformatted),
-                $string
+        // Preserve trailing carriage returns
+        if ($string[-1] === "\r") {
+            $append .= "\r";
+            $string = substr($string, 0, -1);
+        }
+
+        // Normalise line endings and split the string into formattable text,
+        // fenced code blocks and code spans
+        if (!Pcre::matchAll(
+            Regex::delimit(self::PARSER_REGEX) . 'u',
+            Convert::lineEndingsToUnix($string),
+            $matches,
+            PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL
+        )) {
+            throw new RuntimeException(
+                sprintf('Unable to parse: %s', $string)
             );
         }
 
-        return $string;
-    }
+        $string = '';
+        /** @var array<int|string,string|null> $match */
+        foreach ($matches as $match) {
+            $baseOffset = strlen($string);
 
-    private function unescape(string $string): string
-    {
-        return preg_replace('/' . self::REGEX_ESCAPED . '/u', '$1', $string);
+            if (($text = $match['text']) !== null) {
+                if (strpos($text, "\n") !== false) {
+                    if ($unwrap) {
+                        $text = Convert::unwrap($text, "\n", false, true, true);
+                    }
+                    $text = Pcre::replace(
+                        Regex::delimit(self::UNESCAPE_LINE_BREAK_REGEX) . 'u', '$1', $text
+                    );
+                }
+
+                $adjust = 0;
+                $text = Pcre::replaceCallback(
+                    Regex::delimit(self::TAG_REGEX) . 'u',
+                    function (array $match) use (
+                        &$replace,
+                        $plainTagFormats,
+                        $baseOffset,
+                        &$adjust
+                    ): string {
+                        /** @var array<int|string,array{string|null,int}> $match */
+                        $text = $this->applyTags($match, $plainTagFormats);
+                        $placeholder = Pcre::replace('/[^ ]/', 'x', $text);
+                        $formatted =
+                            $plainTagFormats === $this->TagFormats
+                                ? $text
+                                : $this->applyTags($match, $this->TagFormats);
+                        $replace[] = [
+                            $baseOffset + $match['tag'][1] + $adjust,
+                            strlen($placeholder),
+                            $formatted
+                        ];
+                        $adjust += strlen($text) - strlen($match[0][0]);
+                        return $placeholder;
+                    },
+                    $text,
+                    -1,
+                    $count,
+                    PREG_OFFSET_CAPTURE
+                );
+                $string .= $text;
+                continue;
+            }
+
+            if (($block = $match['block']) !== null) {
+                // Preserve newline before (may have been unwrapped)
+                if ($string !== '') {
+                    $string[-1] = "\n";
+                }
+
+                $infostring = trim($match['infostring']);
+                $formatted = $this->TagFormats[Tag::CODE_BLOCK]->apply(
+                    $block, $match['fence'], ['infoString' => $infostring === '' ? null : $infostring]
+                );
+                $placeholder = '?';
+                $replace[] = [
+                    $baseOffset,
+                    1,
+                    $formatted,
+                ];
+
+                $string .= $placeholder;
+                continue;
+            }
+
+            if (($span = $match['span']) !== null) {
+                // As per CommonMark:
+                // - Convert line endings to spaces
+                // - If the string begins and ends with a space but doesn't
+                //   consist entirely of spaces, remove both
+                $span = Pcre::replace(
+                    '/^ ((?> *[^ ]+).*) $/',
+                    '$1',
+                    strtr($span, "\n", ' '),
+                );
+                $formatted = $this->TagFormats[Tag::CODE_SPAN]->apply(
+                    $span, $match['backtickstring']
+                );
+                $placeholder = Pcre::replace('/[^ ]/', 'x', $span);
+                $replace[] = [
+                    $baseOffset,
+                    strlen($placeholder),
+                    $formatted,
+                ];
+
+                $string .= $placeholder;
+                continue;
+            }
+
+            // Treat unmatched backticks as plain text
+            if (($extra = $match['extra']) !== null) {
+                $string .= $extra;
+            }
+        }
+
+        // Remove backslash escapes and adjust the offsets of any subsequent
+        // replacement strings
+        if (!$this->PreserveEscapes) {
+            $adjustable = [];
+            foreach ($replace as $i => [$offset]) {
+                $adjustable[$i] = $offset;
+            }
+            $string = Pcre::replaceCallback(
+                Regex::delimit(self::UNESCAPE_PUNCTUATION_REGEX) . 'u',
+                function (array $match) use (&$replace, &$adjustable): string {
+                    // Offsets in `$adjustable` aren't changed, and preg_replace
+                    // offsets are relative to `$string` before removing any
+                    // escapes, so it's safe to discard `$adjustable` entries
+                    // for replacements earlier in `$string` than this escape
+                    if ($adjustable) {
+                        foreach ($adjustable as $i => $offset) {
+                            if ($offset < $match[0][1]) {
+                                unset($adjustable[$i]);
+                                continue;
+                            }
+                            $replace[$i][0]--;
+                        }
+                    }
+                    return $match[1][0];
+                },
+                $string,
+                -1,
+                $count,
+                PREG_OFFSET_CAPTURE,
+            );
+        }
+
+        if ($width !== null && $width > 0) {
+            $string = wordwrap($string, $width);
+        }
+
+        // Perform formatted text replacement
+        $replace = array_reverse($replace);
+        foreach ($replace as [$offset, $length, $replacement]) {
+            $string = substr_replace($string, $replacement, $offset, $length);
+        }
+
+        return $string . $append;
     }
 
     /**
-     * Escape backslashes and backticks in a string
-     */
-    public static function escape(string $string): string
-    {
-        return str_replace(['\\', '`'], ['\\\\', '\`'], $string);
-    }
-
-    /**
-     * Escape backslashes and backticks in a string before adding backticks
-     * around it
-     *
-     * Example:
-     *
-     * ```php
-     * Console::info('Message:', ConsoleFormatter::escapeAndEnclose($message));
-     * ```
+     * Escape special characters, optionally including newlines, in a string
      *
      */
-    public static function escapeAndEnclose(string $string): string
-    {
-        return '`' . self::escape($string) . '`';
+    public static function escape(
+        string $string, bool $newlines = false
+    ): string {
+        $escaped = addcslashes($string, '\!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~');
+        return $newlines
+            ? str_replace("\n", "\\\n", $escaped)
+            : $escaped;
     }
 
     /**
@@ -153,12 +320,64 @@ final class ConsoleFormatter
      */
     public static function removeTags(string $string): string
     {
-        return self::getDefaultInstance()->format($string);
+        return self::getDefaultFormatter()->format($string);
     }
 
-    private static function getDefaultInstance(): self
+    private static function getDefaultFormatter(): self
     {
-        return self::$DefaultInstance
-            ?: (self::$DefaultInstance = new self(null));
+        return self::$DefaultFormatter
+            ?? (self::$DefaultFormatter = new self());
+    }
+
+    private static function getDefaultTagFormats(): ConsoleTagFormats
+    {
+        return self::$DefaultTagFormats
+            ?? (self::$DefaultTagFormats = new ConsoleTagFormats());
+    }
+
+    /**
+     * @param array<int|string,array{string|null,int}|string|null> $match
+     */
+    private function applyTags(array $match, ConsoleTagFormats $formats): string
+    {
+        /** @var string */
+        $text = $match['text'][0] ?? $match['text'];
+        $text = Pcre::replaceCallback(
+            Regex::delimit(self::TAG_REGEX) . 'u',
+            fn(array $match): string =>
+                $this->applyTags($match, $formats),
+            $text
+        );
+
+        if (!$this->PreserveEscapes) {
+            $text = preg_replace(
+                Regex::delimit(self::UNESCAPE_PUNCTUATION_REGEX) . 'u', '$1', $text
+            );
+        }
+
+        /** @var string */
+        $tag = $match['tag'][0] ?? $match['tag'];
+        switch ($tag) {
+            case '___':
+            case '***':
+            case '##':
+                return $formats[Tag::HEADING]->apply($text, $tag);
+
+            case '__':
+            case '**':
+                return $formats[Tag::BOLD]->apply($text, $tag);
+
+            case '_':
+            case '*':
+                return $formats[Tag::ITALIC]->apply($text, $tag);
+
+            case '<':
+                return $formats[Tag::UNDERLINE]->apply($text, $tag);
+
+            case '~~':
+                return $formats[Tag::LOW_PRIORITY]->apply($text, $tag);
+        }
+
+        throw new RuntimeException(sprintf('Invalid tag: %s', $tag));
     }
 }

@@ -11,6 +11,16 @@ use Lkrms\Concept\Enumeration;
  */
 final class ConsoleLevels extends Enumeration
 {
+    public const DEBUG_ALL = [
+        ...self::ALL,
+        ConsoleLevel::DEBUG,
+    ];
+
+    public const DEBUG_INFO = [
+        ...self::INFO,
+        ConsoleLevel::DEBUG,
+    ];
+
     public const ALL = [
         ConsoleLevel::EMERGENCY,
         ConsoleLevel::ALERT,
@@ -21,17 +31,6 @@ final class ConsoleLevels extends Enumeration
         ConsoleLevel::INFO,
     ];
 
-    public const ALL_DEBUG = [
-        ConsoleLevel::EMERGENCY,
-        ConsoleLevel::ALERT,
-        ConsoleLevel::CRITICAL,
-        ConsoleLevel::ERROR,
-        ConsoleLevel::WARNING,
-        ConsoleLevel::NOTICE,
-        ConsoleLevel::INFO,
-        ConsoleLevel::DEBUG,
-    ];
-
     public const ERRORS = [
         ConsoleLevel::EMERGENCY,
         ConsoleLevel::ALERT,
@@ -40,18 +39,12 @@ final class ConsoleLevels extends Enumeration
         ConsoleLevel::WARNING,
     ];
 
-    public const INFO_QUIET = [
-        ConsoleLevel::NOTICE,
-    ];
-
     public const INFO = [
         ConsoleLevel::NOTICE,
         ConsoleLevel::INFO,
     ];
 
-    public const INFO_DEBUG = [
+    public const INFO_QUIET = [
         ConsoleLevel::NOTICE,
-        ConsoleLevel::INFO,
-        ConsoleLevel::DEBUG,
     ];
 }

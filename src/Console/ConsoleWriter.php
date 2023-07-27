@@ -97,7 +97,7 @@ final class ConsoleWriter implements ReceivesFacade
     /**
      * @return $this
      */
-    public function registerTarget(ConsoleTarget $target, array $levels = ConsoleLevels::ALL_DEBUG)
+    public function registerTarget(ConsoleTarget $target, array $levels = ConsoleLevels::DEBUG_ALL)
     {
         if ($target->isStdout() || $target->isStderr()) {
             $this->addTarget($target, $levels, $this->StdioTargets);
@@ -124,7 +124,7 @@ final class ConsoleWriter implements ReceivesFacade
         // Log output to:
         //
         //     sys_get_temp_dir() . '/<script_basename>-<realpath_hash>-<user_id>.log'
-        $this->registerTarget(StreamTarget::fromPath(File::getStablePath('.log')), ConsoleLevels::ALL_DEBUG);
+        $this->registerTarget(StreamTarget::fromPath(File::getStablePath('.log')), ConsoleLevels::DEBUG_ALL);
         $this->registerDefaultStdioTargets();
     }
 
@@ -170,7 +170,7 @@ final class ConsoleWriter implements ReceivesFacade
         // Send errors and warnings to STDERR, everything else to STDOUT
         $stderrLevels = ConsoleLevels::ERRORS;
         $stdoutLevels = Env::debug()
-            ? ConsoleLevels::INFO_DEBUG
+            ? ConsoleLevels::DEBUG_INFO
             : ConsoleLevels::INFO;
         $this->clearStdioTargets();
         $this->registerTarget(new StreamTarget(STDERR), $stderrLevels);
@@ -200,7 +200,7 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         $levels = Env::debug()
-            ? ConsoleLevels::ALL_DEBUG
+            ? ConsoleLevels::DEBUG_ALL
             : ConsoleLevels::ALL;
         $this->clearStdioTargets();
         $this->registerTarget(new StreamTarget($stream), $levels);
@@ -737,7 +737,7 @@ final class ConsoleWriter implements ReceivesFacade
         do {
             $msg2 = ($msg2 ?? '') . (($i++ ? "\nCaused by __" . Convert::classToBasename(get_class($ex)) . '__: ' : '')
                 . sprintf(
-                    '`%s` ~~in %s:%d~~',
+                    '%s ~~in %s:%d~~',
                     ConsoleFormatter::escape($ex->getMessage()),
                     $ex->getFile(),
                     $ex->getLine()
@@ -760,7 +760,7 @@ final class ConsoleWriter implements ReceivesFacade
         $this->write(
             $stackTraceLevel,
             '__Stack trace:__',
-            "\n" . ConsoleFormatter::escapeAndEnclose($exception->getTraceAsString()),
+            "\n" . ConsoleFormatter::escape($exception->getTraceAsString()),
             '--- '
         );
         if ($exception instanceof \Lkrms\Exception\Exception) {
@@ -768,7 +768,7 @@ final class ConsoleWriter implements ReceivesFacade
                 $this->write(
                     $stackTraceLevel,
                     "__{$section}:__",
-                    "\n" . ConsoleFormatter::escapeAndEnclose($text ?: ''),
+                    "\n" . ConsoleFormatter::escape($text ?: ''),
                     '--- '
                 );
             }

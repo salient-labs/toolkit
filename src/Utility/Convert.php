@@ -1098,15 +1098,47 @@ final class Convert
     }
 
     /**
-     * Undo wordwrap(), preserving line breaks that appear consecutively,
-     * immediately after 2 spaces, or immediately before 4 spaces
+     * Undo wordwrap(), preserving Markdown-style paragraphs and lists
+     *
+     * Non-consecutive line breaks are converted to spaces unless they precede
+     * one of the following:
+     *
+     * - four or more spaces
+     * - one or more tabs
+     * - a Markdown-style list item (e.g. `- item`, `1. item`)
+     *
+     * If `$ignoreEscapes` is `false`, whitespace escaped with a backslash is
+     * preserved.
+     *
+     * If `$trimTrailingWhitespace` is `true`, whitespace is removed from the
+     * end of each line, and if `$collapseBlankLines` is `true`, three or more
+     * subsequent line breaks are collapsed to two.
      *
      */
-    public static function unwrap(string $string, string $break = "\n"): string
-    {
-        $break = preg_quote($break, '/');
+    public static function unwrap(
+        string $string,
+        string $break = "\n",
+        bool $ignoreEscapes = true,
+        bool $trimTrailingWhitespace = false,
+        bool $collapseBlankLines = false
+    ): string {
+        $newline = preg_quote($break, '/');
+        $escapes = $ignoreEscapes ? '' : Regex::NOT_ESCAPED . '\K';
 
-        return preg_replace("/(?<!{$break}|^)(?<!  )({$break})(?!    )(?!{$break}|\$)/", ' ', $string);
+        if ($trimTrailingWhitespace) {
+            $search[] = "/{$escapes}\\h+{$newline}/";
+            $replace[] = $break;
+        }
+
+        $search[] = "/{$escapes}(?<!{$newline}){$newline}(?!{$newline}|    |\\t|(?:[-+*]|[0-9]+[).])\\h)/";
+        $replace[] = ' ';
+
+        if ($collapseBlankLines) {
+            $search[] = "/(?:{$newline}){3,}/";
+            $replace[] = $break . $break;
+        }
+
+        return Pcre::replace($search, $replace, $string);
     }
 
     /**

@@ -46,7 +46,10 @@ final class ConsoleLevel extends ConvertibleEnumeration
         'DEBUG' => self::DEBUG,
     ];
 
-    private const LOG_LEVEL_MAP = [
+    /**
+     * @var array<ConsoleLevel::*,string>
+     */
+    private static $LogLevelMap = [
         self::EMERGENCY => LogLevel::EMERGENCY,
         self::ALERT => LogLevel::ALERT,
         self::CRITICAL => LogLevel::CRITICAL,
@@ -57,36 +60,30 @@ final class ConsoleLevel extends ConvertibleEnumeration
         self::DEBUG => LogLevel::DEBUG,
     ];
 
+    /**
+     * Get an optionally zero-padded message level code
+     *
+     * @param ConsoleLevel::* $level
+     */
     public static function toCode(int $level, int $width = 1): string
     {
         if ((self::$NameMap[$level] ?? null) === null) {
-            throw new LogicException("Invalid ConsoleLevel: $level");
+            throw new LogicException(sprintf('Invalid ConsoleLevel: %d', $level));
         }
         return sprintf("%0{$width}d", $level);
     }
 
+    /**
+     * Get the PSR log level that corresponds to a console message level
+     *
+     * @param ConsoleLevel::* $level
+     */
     public static function toPsrLogLevel(int $level): string
     {
-        if (($logLevel = self::LOG_LEVEL_MAP[$level] ?? null) === null) {
-            throw new LogicException("Invalid ConsoleLevel: $level");
+        $logLevel = self::$LogLevelMap[$level] ?? null;
+        if ($logLevel === null) {
+            throw new LogicException(sprintf('Invalid ConsoleLevel: %d', $level));
         }
         return $logLevel;
-    }
-
-    /**
-     * @return int[]
-     */
-    public static function getAll(): array
-    {
-        return [
-            self::EMERGENCY,
-            self::ALERT,
-            self::CRITICAL,
-            self::ERROR,
-            self::WARNING,
-            self::NOTICE,
-            self::INFO,
-            self::DEBUG,
-        ];
     }
 }

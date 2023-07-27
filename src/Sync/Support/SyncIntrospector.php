@@ -74,8 +74,8 @@ final class SyncIntrospector extends Introspector
         }
 
         if (preg_match(
-            '/^(?P<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\'
-                . '(?P<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U',
+            '/^(?<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\'
+                . '(?<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U',
             $provider,
             $matches
         )) {

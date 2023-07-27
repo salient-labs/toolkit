@@ -18,10 +18,10 @@ use Lkrms\Utility\Convert;
 /**
  * An error that occurred during a sync operation
  *
- * @property-read int $ErrorType One of the SyncErrorType values
+ * @property-read SyncErrorType::* $ErrorType
  * @property-read string $Message An sprintf() format string that explains the error
- * @property-read array $Values Values passed to sprintf() with the message format string
- * @property-read int $Level One of the ConsoleLevel values
+ * @property-read mixed[] $Values Values passed to sprintf() with the message format string
+ * @property-read ConsoleLevel::* $Level
  * @property-read ISyncEntity|null $Entity The entity associated with the error
  * @property-read string|null $EntityName The display name of the entity associated with the error
  * @property-read ISyncProvider|null $Provider The sync provider associated with the error
@@ -32,10 +32,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
     use TFullyReadable;
 
     /**
-     * One of the SyncErrorType values
-     *
-     * @var int
-     * @see SyncErrorType
+     * @var SyncErrorType::*
      */
     protected $ErrorType;
 
@@ -57,17 +54,14 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
      *
      * Default: `[ "<EntityName>" ]`
      *
-     * @var array
+     * @var mixed[]
      * @see SyncError::$Message
      * @see SyncError::$EntityName
      */
     protected $Values;
 
     /**
-     * One of the ConsoleLevel values
-     *
-     * @var int
-     * @see ConsoleLevel
+     * @var ConsoleLevel::*
      */
     protected $Level;
 
@@ -102,6 +96,11 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
      */
     protected $Count = 1;
 
+    /**
+     * @param SyncErrorType::* $errorType
+     * @param mixed[] $values
+     * @param ConsoleLevel::* $level
+     */
     public function __construct(
         int $errorType,
         string $message,

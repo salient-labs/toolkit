@@ -2,12 +2,14 @@
 
 namespace Lkrms\Console;
 
+use Lkrms\Console\Contract\IConsoleFormat;
+
 /**
- * Character sequences that can be added before and after text to change its
- * appearance
+ * Applies formatting to console output by adding inline character sequences
+ * defined by the target
  *
  */
-final class ConsoleFormat
+final class ConsoleFormat implements IConsoleFormat
 {
     /**
      * @var string
@@ -40,9 +42,9 @@ final class ConsoleFormat
         $this->ReplaceWith = array_values($replace);
     }
 
-    public function apply(?string $text): string
+    public function apply(?string $text, ?string $tag = null, array $attributes = []): string
     {
-        if (!$text) {
+        if (($text ?? '') === '') {
             return '';
         }
 
@@ -51,6 +53,10 @@ final class ConsoleFormat
         }
 
         $text = $this->Before . $text;
+
+        if ($this->After === '') {
+            return $text;
+        }
 
         // Preserve trailing carriage returns
         if ($text[-1] === "\r") {
