@@ -11,14 +11,23 @@ use Lkrms\Concept\Dictionary;
 final class RegularExpression extends Dictionary
 {
     /**
+     * Zero or more backslash pairs with no preceding backslash, e.g. to ensure
+     * the next token is not escaped
+     *
+     */
+    public const NOT_ESCAPED = <<<'REGEX'
+        (?<!\\)(?:\\\\)*
+        REGEX;
+
+    /**
      * A boolean string, e.g. "yes", "Y", "On", "TRUE", "enabled"
      *
      */
     public const BOOLEAN_STRING = <<<'REGEX'
         (?xi)
         (?:
-          (?P<true>  1 | on  | y(?:es)? | t(?:rue)?  | enabled?  ) |
-          (?P<false> 0 | off | no?      | f(?:alse)? | disabled? )
+          (?<true>  1 | on  | y(?:es)? | t(?:rue)?  | enabled?  ) |
+          (?<false> 0 | off | no?      | f(?:alse)? | disabled? )
         )
         REGEX;
 
@@ -82,7 +91,7 @@ final class RegularExpression extends Dictionary
     public const PHP_DOCBLOCK = <<<'REGEX'
         (?x)
         /\*\*
-        (?P<content> (?:
+        (?<content> (?:
           (?: (?! \*/ ) . )*+
           (?: (?<line> (?: \r\n | \n | \r ) \h* ) (?! \*/ ) \* )?
         )*+ (?&line)? )
@@ -97,7 +106,7 @@ final class RegularExpression extends Dictionary
     public const PHPDOC_TAG = <<<'REGEX'
         (?x)
         (?<= ^ | \r\n | \n | \r )
-        @ (?P<tag> [[:alpha:]\\] [[:alnum:]\\_-]*+ ) (?= [\s(:] | $ )
+        @ (?<tag> [[:alpha:]\\] [[:alnum:]\\_-]*+ ) (?= [\s(:] | $ )
         REGEX;
 
     /**

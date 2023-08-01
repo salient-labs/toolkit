@@ -66,7 +66,7 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
             ) . $separator . implode(
                 $separator,
                 array_map(
-                    fn($v) => Formatter::escapeAndEnclose(json_encode($v)),
+                    fn($v) => Formatter::escape(json_encode($v)),
                     $error['meta']['values']
                 )
             );

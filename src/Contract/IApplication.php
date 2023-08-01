@@ -89,7 +89,7 @@ interface IApplication extends IContainer, ReturnsEnvironment
      * Registers a {@see StreamTarget} to log subsequent
      * {@see ConsoleLevels::ALL} messages to `<name>.log`.
      *
-     * {@see ConsoleLevels::ALL_DEBUG} messages are simultaneously logged to
+     * {@see ConsoleLevels::DEBUG_ALL} messages are simultaneously logged to
      * `<name>.debug.log` in the same location if:
      * - `$debug` is `true`, or
      * - `$debug` is `null` and {@see \Lkrms\Utility\Env::debug()} returns

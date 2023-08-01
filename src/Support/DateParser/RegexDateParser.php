@@ -46,7 +46,7 @@ final class RegexDateParser implements IDateParser
     public static function dotNet(): IDateParser
     {
         return new self(
-            '/^\/Date\((?P<seconds>[0-9]+)(?P<milliseconds>[0-9]{3})(?P<offset>[-+][0-9]{4})?\)\/$/',
+            '/^\/Date\((?<seconds>[0-9]+)(?<milliseconds>[0-9]{3})(?<offset>[-+][0-9]{4})?\)\/$/',
             function (array $matches, ?DateTimeZone $timezone): DateTimeImmutable {
                 $date = new DateTimeImmutable(
                     // PHP 7.4 requires 6 digits after the decimal point

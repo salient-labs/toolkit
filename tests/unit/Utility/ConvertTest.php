@@ -635,6 +635,197 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         ], Convert::queryToData(['key1=value1', 'key2=value2', 'key3=value3', 'key3=', 'key4', '=value5']));
     }
 
+    /**
+     * @dataProvider unwrapProvider
+     */
+    public function testUnwrap(
+        string $expected,
+        string $string,
+        string $break = PHP_EOL,
+        bool $ignoreEscapes = true,
+        bool $trimTrailingWhitespace = false,
+        bool $collapseBlankLines = false
+    ): void {
+        $this->assertSame(
+            $expected,
+            Convert::unwrap($string, $break, $ignoreEscapes, $trimTrailingWhitespace, $collapseBlankLines)
+        );
+    }
+
+    /**
+     * @return array<string,array{0:string,1:string,2?:string,3?:bool,4?:bool,5?:bool}>
+     */
+    public static function unwrapProvider(): array
+    {
+        return [
+            'empty' => [
+                <<<'EOF'
+                EOF,
+                <<<'EOF'
+                EOF,
+            ],
+            'unwrapped' => [
+                <<<'EOF'
+                Tempor in mollit ad esse.
+                EOF,
+                <<<'EOF'
+                Tempor in mollit ad esse.
+                EOF,
+            ],
+            'paragraph + list + indent' => [
+                <<<'EOF'
+                Tempor pariatur nulla esse velit esse:
+                - Ad officia ex   reprehenderit sint et.
+                - Ea occaecat et aliqua ea officia cupidatat ad nulla cillum.
+                - Proident ullamco id eu id.
+
+                Amet duis aliqua qui laboris ullamco dolor nostrud irure commodo ad eu anim enim.
+
+                    Cillum adipisicing sit cillum
+                    sunt elit magna fugiat do in
+                    deserunt ut Lorem aliqua.
+
+
+                EOF,
+                <<<'EOF'
+                Tempor pariatur nulla
+                esse velit esse:
+                - Ad officia ex
+                  reprehenderit sint et.
+                - Ea occaecat et aliqua ea officia
+                cupidatat ad nulla cillum.
+                - Proident ullamco id eu id.
+
+                Amet duis aliqua qui laboris
+                ullamco dolor nostrud irure
+                commodo ad eu anim enim.
+
+                    Cillum adipisicing sit cillum
+                    sunt elit magna fugiat do in
+                    deserunt ut Lorem aliqua.
+
+
+                EOF,
+            ],
+            'leading + trailing + inner lines' => [
+                <<<'EOF'
+                 Est   esse sunt velit ea. 
+                EOF,
+                <<<'EOF'
+
+                Est   esse
+                sunt velit
+                ea.
+
+                EOF,
+            ],
+            'escaped #1' => [
+                <<<'EOF'
+                Nisi aliqua id in cupidatat\ consectetur irure ad nisi Lorem non ea reprehenderit id eu.
+                EOF,
+                <<<'EOF'
+                Nisi aliqua id in cupidatat\
+                consectetur irure ad nisi
+                Lorem non ea reprehenderit id eu.
+                EOF,
+            ],
+            'escaped #2' => [
+                <<<'EOF'
+                Nisi aliqua id in cupidatat\
+                consectetur irure ad nisi Lorem non ea reprehenderit id eu.
+                EOF,
+                <<<'EOF'
+                Nisi aliqua id in cupidatat\
+                consectetur irure ad nisi
+                Lorem non ea reprehenderit id eu.
+                EOF,
+                PHP_EOL,
+                false,
+            ],
+            'trimmed #1 (baseline)' => [
+                <<<'EOF'
+                Est magna\  voluptate  minim est.
+
+                 
+
+
+                EOF,
+                <<<'EOF'
+                Est magna\ 
+                voluptate 
+                minim est.
+
+                 
+
+
+                EOF,
+                PHP_EOL,
+            ],
+            'trimmed #2 (+ trimTrailingWhitespace)' => [
+                <<<'EOF'
+                Est magna\ voluptate minim est.
+
+
+
+
+                EOF,
+                <<<'EOF'
+                Est magna\ 
+                voluptate 
+                minim est.
+
+                 
+
+
+                EOF,
+                PHP_EOL,
+                true,
+                true,
+            ],
+            'trimmed #3 (- ignoreEscapes)' => [
+                <<<'EOF'
+                Est magna\  voluptate minim est.
+
+
+
+
+                EOF,
+                <<<'EOF'
+                Est magna\ 
+                voluptate 
+                minim est.
+
+                 
+
+
+                EOF,
+                PHP_EOL,
+                false,
+                true,
+            ],
+            'trimmed #4 (+ collapseBlankLines)' => [
+                <<<'EOF'
+                Est magna\  voluptate minim est.
+
+
+                EOF,
+                <<<'EOF'
+                Est magna\ 
+                voluptate 
+                minim est.
+
+                 
+
+
+                EOF,
+                PHP_EOL,
+                false,
+                true,
+                true,
+            ],
+        ];
+    }
+
     public function testToShellArg()
     {
         $this->assertSame("''", Convert::toShellArg(''));

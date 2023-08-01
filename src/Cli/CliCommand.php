@@ -11,6 +11,7 @@ use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Console\ConsoleFormatter;
+use Lkrms\Console\ConsoleTagFormats;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Convert;
@@ -65,9 +66,9 @@ abstract class CliCommand implements ICliCommand
      * ```php
      * [
      *   CliHelpSectionName::EXIT_STATUS => <<<EOF
-     * _0_   Command succeeded  
-     * _1_   Invalid arguments  
-     * _2_   Empty result set  
+     * _0_   Command succeeded \
+     * _1_   Invalid arguments \
+     * _2_   Empty result set \
      * _15_  Operational error
      * EOF,
      * ];
@@ -443,6 +444,9 @@ abstract class CliCommand implements ICliCommand
 
     final public function getHelp(bool $withMarkup = true, ?int $width = 80): string
     {
+        $formatter = new ConsoleFormatter(
+            ConsoleTagFormats::getLoopbackFormats(), true
+        );
         $options = '';
 
         foreach ($this->getOptions() as $option) {
@@ -489,14 +493,14 @@ abstract class CliCommand implements ICliCommand
             $indent = '    ';
 
             if ($description = trim($option->Description)) {
-                $optionLines[] = $this->prepareUsage($description, $indent);
+                $optionLines[] = $this->prepareUsage($description, $formatter, $indent);
             }
 
             $generatedLines = [];
             $compact = true;
             if ($option->AllowedValues) {
                 $allowedValues = array_map(
-                    [ConsoleFormatter::class, 'escapeAndEnclose'],
+                    [ConsoleFormatter::class, 'escape'],
                     $option->AllowedValues
                 );
                 $start = "{$indent}__Values:__";
@@ -517,7 +521,7 @@ abstract class CliCommand implements ICliCommand
 
             if ($option->DefaultValue) {
                 $defaultValue = array_map(
-                    [ConsoleFormatter::class, 'escapeAndEnclose'],
+                    [ConsoleFormatter::class, 'escape'],
                     (array) $option->DefaultValue
                 );
                 $generatedLines[] = sprintf(
@@ -545,7 +549,7 @@ abstract class CliCommand implements ICliCommand
         $name = $this->getNameWithProgram();
         if ($sections = $this->getHelpSections() ?: []) {
             $sections = array_map(
-                fn(string $section) => $this->prepareUsage($section),
+                fn(string $section) => $this->prepareUsage($section, $formatter),
                 $sections
             );
         }
@@ -554,24 +558,25 @@ abstract class CliCommand implements ICliCommand
             'NAME' => $name . ' - ' . $this->description(),
             'SYNOPSIS' => '__' . $name . '__' . $synopsis,
             'OPTIONS' => trim($options),
-            'DESCRIPTION' => $this->prepareUsage($this->getLongDescription()),
+            'DESCRIPTION' => $this->prepareUsage($this->getLongDescription(), $formatter),
         ] + $sections;
 
         return CliApplication::buildHelp($sections);
     }
 
-    private function prepareUsage(?string $description, ?string $indent = null): string
+    private function prepareUsage(?string $description, ConsoleFormatter $formatter, ?string $indent = null): string
     {
-        if (!$description) {
+        if (($description ?? '') === '') {
             return '';
         }
 
-        $description = wordwrap(
+        $description = $formatter->format(
             str_replace(
                 '{{command}}',
                 $this->getNameWithProgram(),
-                Convert::unwrap($description)
+                $description
             ),
+            true,
             76 - ($indent ? strlen($indent) : 0)
         );
 

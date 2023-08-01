@@ -80,10 +80,10 @@ final class Env
             }
             if (!preg_match(<<<'REGEX'
                     / ^
-                    (?P<name> [a-z_] [a-z0-9_]*+ ) = (?:
-                    " (?P<double> (?: [^"$\\`]++ | \\ ["$\\`] | \\ )*+ ) " |
-                    ' (?P<single> (?: [^']++            | ' \\ ' ' )*+ ) ' |
-                      (?P<none>   (?: [^]"$'*?\\`\s[]++     | \\ . )*+ )
+                    (?<name> [a-z_] [a-z0-9_]*+ ) = (?:
+                    " (?<double> (?: [^"$\\`]++ | \\ ["$\\`] | \\ )*+ ) " |
+                    ' (?<single> (?: [^']++            | ' \\ ' ' )*+ ) ' |
+                      (?<none>   (?: [^]"$'*?\\`\s[]++     | \\ . )*+ )
                     ) $ /xi
                     REGEX, $line, $match, PREG_UNMATCHED_AS_NULL)) {
                 $errors[] = $filename === null

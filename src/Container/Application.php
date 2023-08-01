@@ -365,7 +365,7 @@ class Application extends Container implements IApplication
         if (($debug || (is_null($debug) && $this->Env->debug())) &&
                 !($this->DebugLogTargets[$name] ?? null)) {
             $this->DebugLogTargets[$name] = $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
-            Console::registerTarget($target, ConsoleLevels::ALL_DEBUG);
+            Console::registerTarget($target, ConsoleLevels::DEBUG_ALL);
         }
 
         return $this;
