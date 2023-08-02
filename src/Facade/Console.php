@@ -39,7 +39,7 @@ use Throwable;
  * @method static ConsoleWriter registerDefaultStdioTargets(bool $replace = false) Register STDOUT and/or STDERR as targets in their default configuration (see {@see ConsoleWriter::registerDefaultStdioTargets()})
  * @method static ConsoleWriter registerStderrTarget(bool $replace = false) Register STDERR as a target if running on the command line (see {@see ConsoleWriter::registerStderrTarget()})
  * @method static ConsoleWriter registerStdioTargets(bool $replace = false) Register STDOUT and STDERR as targets if running on the command line (see {@see ConsoleWriter::registerStdioTargets()})
- * @method static ConsoleWriter registerTarget(ConsoleTarget $target, array $levels = ConsoleLevels::ALL_DEBUG) A facade for ConsoleWriter::registerTarget()
+ * @method static ConsoleWriter registerTarget(ConsoleTarget $target, array $levels = ConsoleLevels::DEBUG_ALL) A facade for ConsoleWriter::registerTarget()
  * @method static ConsoleWriter setTargetPrefix(?string $prefix, bool $ttyOnly = false, bool $stdio = true, bool $exceptStdio = true) Call setPrefix on registered targets (see {@see ConsoleWriter::setTargetPrefix()})
  * @method static ConsoleWriter summary(string $finishedText = 'Command finished', string $successText = 'without errors') Print a "command finished" message with a summary of errors and warnings (see {@see ConsoleWriter::summary()})
  * @method static ConsoleWriter tty(string $msg, int $level = Level::INFO, bool $formatByLevel = true) Print "$msg" to TTY targets

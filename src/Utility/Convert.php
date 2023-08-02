@@ -1206,11 +1206,7 @@ final class Convert
      */
     public static function toSnakeCase(string $text, ?string $preserve = null): string
     {
-        $preserve = self::_toCaseEscapePreserve($preserve);
-        $text = preg_replace('/(?:[[:upper:]]?[[:lower:][:digit:]]++|(?:[[:upper:]](?![[:lower:]]))++[[:digit:]]*+)/', '_$0', $text);
-        $text = preg_replace("/[^[:alnum:]$preserve]++/", '_', $text);
-
-        return strtolower(trim($text, '_'));
+        return strtolower(self::splitWords($text, $preserve, '_'));
     }
 
     /**
@@ -1219,11 +1215,7 @@ final class Convert
      */
     public static function toKebabCase(string $text, ?string $preserve = null): string
     {
-        $preserve = self::_toCaseEscapePreserve($preserve);
-        $text = preg_replace('/(?:[[:upper:]]?[[:lower:][:digit:]]++|(?:[[:upper:]](?![[:lower:]]))++[[:digit:]]*+)/', '-$0', $text);
-        $text = preg_replace("/[^[:alnum:]$preserve]++/", '-', $text);
-
-        return strtolower(trim($text, '-'));
+        return strtolower(self::splitWords($text, $preserve, '-'));
     }
 
     /**
@@ -1232,14 +1224,9 @@ final class Convert
      */
     public static function toPascalCase(string $text, ?string $preserve = null): string
     {
-        $preserve = self::_toCaseEscapePreserve($preserve);
-        $text = preg_replace_callback(
-            '/(?:[[:upper:]]?[[:lower:][:digit:]]++|(?:[[:upper:]](?![[:lower:]]))++[[:digit:]]*+)/',
-            function (array $matches) { return ucfirst(strtolower($matches[0])); },
-            $text
+        return self::splitWords(
+            $text, $preserve, '', fn(string $word): string => ucfirst(strtolower($word))
         );
-
-        return preg_replace("/[^[:alnum:]$preserve]++/", '', $text);
     }
 
     /**
@@ -1251,17 +1238,45 @@ final class Convert
         return lcfirst(self::toPascalCase($text, $preserve));
     }
 
-    private static function _toCaseEscapePreserve(?string $preserve): string
+    /**
+     * Optionally delimit and apply a callback to words in a string before
+     * removing any non-alphanumeric characters
+     *
+     * @param (callable(string): string)|null $callback
+     */
+    public static function splitWords(string $text, ?string $preserve, string $delimiter, ?callable $callback = null): string
     {
-        if (!$preserve) {
-            return '';
+        $regex = '(?:[[:upper:]]?[[:lower:][:digit:]]+|(?:[[:upper:]](?![[:lower:]]))+[[:digit:]]*)';
+        if (($preserve ?? '') === '') {
+            $preserve = '';
+            $delimitRegex = '';
+        } else {
+            $preserve = addcslashes($preserve, '-/[\^');
+            $delimitRegex = "(?<![[:alnum:]{$preserve}])";
         }
 
-        return str_replace(
-            ['-', '/', '\\', ']', '^'],
-            ['\-', '\/', '\\\\', '\]', '\^'],
-            $preserve
-        );
+        // Add a delimiter before words not adjacent to a preserved character
+        if ($delimiter !== '') {
+            $text = preg_replace(
+                "/$delimitRegex$regex/u", $delimiter . '$0', $text
+            );
+        }
+
+        // Apply a callback to every word
+        if ($callback) {
+            $text = preg_replace_callback(
+                "/$regex/u", fn(array $match): string => $callback($match[0]), $text
+            );
+        }
+
+        // Replace one or more non-alphanumeric characters with one delimiter
+        $text = preg_replace("/[^[:alnum:]$preserve]+/", $delimiter, $text);
+
+        // Remove leading and trailing delimiters
+        return
+            $delimiter === ''
+                ? $text
+                : trim($text, $delimiter);
     }
 
     /**

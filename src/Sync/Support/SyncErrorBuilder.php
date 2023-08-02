@@ -3,7 +3,9 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Builder;
+use Lkrms\Console\Catalog\ConsoleLevel;
 use Lkrms\Contract\IContainer;
+use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 
@@ -11,10 +13,10 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * A fluent interface for creating SyncError objects
  *
  * @method static $this build(?IContainer $container = null) Create a new SyncErrorBuilder (syntactic sugar for 'new SyncErrorBuilder()')
- * @method $this errorType(int $value) One of the SyncErrorType values (see {@see SyncError::$ErrorType})
+ * @method $this errorType(SyncErrorType::* $value) Set SyncError::$ErrorType
  * @method $this message(string $value) An sprintf() format string that explains the error (see {@see SyncError::$Message})
- * @method $this values(array $value) Values passed to sprintf() with the message format string (see {@see SyncError::$Values})
- * @method $this level(int $value) One of the ConsoleLevel values (see {@see SyncError::$Level})
+ * @method $this values(mixed[] $value) Values passed to sprintf() with the message format string (see {@see SyncError::$Values})
+ * @method $this level(ConsoleLevel::* $value) Set SyncError::$Level
  * @method $this entity(?ISyncEntity $value) The entity associated with the error
  * @method $this entityName(?string $value) The display name of the entity associated with the error (see {@see SyncError::$EntityName})
  * @method $this provider(?ISyncProvider $value) The sync provider associated with the error

@@ -445,7 +445,7 @@ abstract class CliCommand implements ICliCommand
     final public function getHelp(bool $withMarkup = true, ?int $width = 80): string
     {
         $formatter = new ConsoleFormatter(
-            ConsoleTagFormats::getLoopbackFormats(), true
+            ConsoleTagFormats::getLoopbackFormats()
         );
         $options = '';
 
@@ -577,7 +577,8 @@ abstract class CliCommand implements ICliCommand
                 $description
             ),
             true,
-            76 - ($indent ? strlen($indent) : 0)
+            76 - ($indent ? strlen($indent) : 0),
+            false
         );
 
         if ($indent) {
