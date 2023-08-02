@@ -840,9 +840,10 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
      */
     public function testToSnakeCase(
         string $expected,
-        string $text
+        string $text,
+        ?string $preserve = null
     ) {
-        $this->assertSame($expected, Convert::toSnakeCase($text));
+        $this->assertSame($expected, Convert::toSnakeCase($text, $preserve));
     }
 
     public static function toSnakeCaseProvider(): Generator
@@ -855,7 +856,8 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
             'two12_words',
             'two_12words',
             'two_12_words',
-            'two_words12'
+            'two_words12',
+            'field_name=value_name',
         );
     }
 
@@ -864,9 +866,10 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
      */
     public function testToKebabCase(
         string $expected,
-        string $text
+        string $text,
+        ?string $preserve = null
     ) {
-        $this->assertSame($expected, Convert::toKebabCase($text));
+        $this->assertSame($expected, Convert::toKebabCase($text, $preserve));
     }
 
     public static function toKebabCaseProvider(): Generator
@@ -879,7 +882,8 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
             'two12-words',
             'two-12words',
             'two-12-words',
-            'two-words12'
+            'two-words12',
+            'field-name=value-name',
         );
     }
 
@@ -888,9 +892,10 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
      */
     public function testToPascalCase(
         string $expected,
-        string $text
+        string $text,
+        ?string $preserve = null
     ) {
-        $this->assertSame($expected, Convert::toPascalCase($text));
+        $this->assertSame($expected, Convert::toPascalCase($text, $preserve));
     }
 
     public static function toPascalCaseProvider(): Generator
@@ -903,7 +908,8 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
             'Two12Words',
             'Two12words',
             'Two12Words',
-            'TwoWords12'
+            'TwoWords12',
+            'FieldName=ValueName',
         );
     }
 
@@ -912,9 +918,10 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
      */
     public function testToCamelCase(
         string $expected,
-        string $text
+        string $text,
+        ?string $preserve = null
     ) {
-        $this->assertSame($expected, Convert::toCamelCase($text));
+        $this->assertSame($expected, Convert::toCamelCase($text, $preserve));
     }
 
     public static function toCamelCaseProvider(): Generator
@@ -927,7 +934,8 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
             'two12Words',
             'two12words',
             'two12Words',
-            'twoWords12'
+            'twoWords12',
+            'fieldName=ValueName',
         );
     }
 
@@ -936,71 +944,98 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
     ): Generator {
         $groups = [
             [
-                'TWOWords',
-                'TwoWords',
-                'twoWords',
-                'TWO-WORDS',
-                'TWO_WORDS',
-                'Two-Words',
-                'Two_Words',
-                'two-Words',
-                'two-words',
-                'two_Words',
-                'two_words',
-                '_TWO_WORDS_',
-                '_Two_Words_',
-                '_two_Words_',
-                '_two_words_',
-                '~TWO.WORDS~',
-                '~Two.Words~',
-                '~two.Words~',
-                '~two.words~',
+                [
+                    'TWOWords',
+                    'TwoWords',
+                    'twoWords',
+                    'TWO-WORDS',
+                    'TWO_WORDS',
+                    'Two-Words',
+                    'Two_Words',
+                    'two-Words',
+                    'two-words',
+                    'two_Words',
+                    'two_words',
+                    '_TWO_WORDS_',
+                    '_Two_Words_',
+                    '_two_Words_',
+                    '_two_words_',
+                    '~TWO.WORDS~',
+                    '~Two.Words~',
+                    '~two.Words~',
+                    '~two.words~',
+                ],
             ],
             [
-                '12twoWords',
-                '12two_Words',
-                '12two_words',
+                [
+                    '12twoWords',
+                    '12two_Words',
+                    '12two_words',
+                ],
             ],
             [
-                '12TWOWords',
-                '12TwoWords',
-                '12TWO_WORDS',
-                '12Two_Words',
+                [
+                    '12TWOWords',
+                    '12TwoWords',
+                    '12TWO_WORDS',
+                    '12Two_Words',
+                ],
             ],
             [
-                'two12words',
+                [
+                    'two12words',
+                ],
             ],
             [
-                'TWO12WORDS',
-                'Two12Words',
-                'two12Words',
-                'TWO12_WORDS',
-                'Two12_Words',
-                'two12_Words',
-                'two12_words',
+                [
+                    'TWO12WORDS',
+                    'Two12Words',
+                    'two12Words',
+                    'TWO12_WORDS',
+                    'Two12_Words',
+                    'two12_Words',
+                    'two12_words',
+                ],
             ],
             [
-                'two_12words',
+                [
+                    'two_12words',
+                ],
             ],
             [
-                'TWO_12WORDS',
-                'Two_12Words',
-                'two_12Words',
+                [
+                    'TWO_12WORDS',
+                    'Two_12Words',
+                    'two_12Words',
+                ],
             ],
             [
-                'TWOWords12',
-                'TwoWords12',
-                'twoWords12',
-                'TWO_WORDS12',
-                'Two_Words12',
-                'two_Words12',
-                'two_words12',
+                [
+                    'TWOWords12',
+                    'TwoWords12',
+                    'twoWords12',
+                    'TWO_WORDS12',
+                    'Two_Words12',
+                    'two_Words12',
+                    'two_words12',
+                ],
+            ],
+            [
+                [
+                    'FIELD-NAME=VALUE-NAME',
+                    'Field-Name=Value-Name',
+                    'Field-name=Value-name',
+                    'field-name=value-name',
+                ],
+                '=',
             ],
         ];
 
         foreach ($groups as $i => $group) {
+            $preserve = $group[1] ?? null;
+            [$group] = $group;
             foreach ($group as $identifier) {
-                yield [$expected[$i] ?? $i, $identifier];
+                yield [$expected[$i] ?? null, $identifier, $preserve];
             }
         }
     }
