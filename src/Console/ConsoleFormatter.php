@@ -68,26 +68,23 @@ final class ConsoleFormatter
               (?<tag> \* {1,3}+ ) (?! \s ) (?> (?<text> (?: [^*\\]+ |    (?&esc) | (?! (?<! \s ) \k<tag> ) \* + )* ) )   (?<! \s ) \k<tag>    |
               (?<tag> < )         (?! \s ) (?> (?<text> (?: [^>\\]+ |    (?&esc) | (?! (?<! \s ) > ) > + )* ) )          (?<! \s ) >          |
               (?<tag> ~~ )        (?! \s ) (?> (?<text> (?: [^~\\]+ |    (?&esc) | (?! (?<! \s ) ~~ ) ~ + )* ) )         (?<! \s ) ~~         |
-          ^   (?<tag> \#\# ) \h+           (?> (?<text> (?: [^\#\v\\]+ | (?&esc) | (?! (?<! \s ) (?: \h+ \#+ | \h* ) $ ) \# + )* ) ) (?<! \s ) (?: \h+ \#+ | \h* ) $
+          ^   (?<tag> \#\# ) \h+           (?> (?<text> (?: [^\#\s\\]+ | (?&esc) | \#+ (?! \h* $ ) | \h++ (?! (?: \#+ \h* )? $ ) )* ) ) (?: \h+ \#+ | \h* ) $
         )
         REGEX;
 
     /**
-     * Matches a Markdown-compatible backslash escape
+     * A CommonMark-compliant backslash escape, or an escaped line break with an
+     * optional leading space
      *
      */
-    private const UNESCAPE_PUNCTUATION_REGEX = <<<'REGEX'
+    private const UNESCAPE_REGEX = <<<'REGEX'
         (?x)
-        \\ ( [-\\!"\#$%&'()*+,./:;<=>?@[\]^_`{|}~] )
-        REGEX;
-
-    /**
-     * Matches an escaped line break with an optional leading space
-     *
-     */
-    private const UNESCAPE_LINE_BREAK_REGEX = <<<'REGEX'
-        (?x)
-        (?<! \\ ) (?: \\\\ )* \K \  ? \\ ( \n )
+        (?|
+          \\ ( [-\\ !"\#$%&'()*+,./:;<=>?@[\]^_`{|}~] ) |
+          # Lookbehind assertions are unnecessary because the first branch
+          # matches escaped spaces and backslashes
+          \  ? \\ ( \n )
+        )
         REGEX;
 
     private static ConsoleFormatter $DefaultFormatter;
@@ -96,12 +93,9 @@ final class ConsoleFormatter
 
     private ConsoleTagFormats $TagFormats;
 
-    private bool $PreserveEscapes;
-
-    public function __construct(?ConsoleTagFormats $tagFormats = null, bool $preserveEscapes = false)
+    public function __construct(?ConsoleTagFormats $tagFormats = null)
     {
         $this->TagFormats = $tagFormats ?: $this->getDefaultTagFormats();
-        $this->PreserveEscapes = $preserveEscapes;
     }
 
     /**
@@ -123,7 +117,7 @@ final class ConsoleFormatter
      * hard line break.
      * ```
      */
-    public function format(string $string, bool $unwrap = false, ?int $width = null): string
+    public function format(string $string, bool $unwrap = false, ?int $width = null, bool $unescape = true): string
     {
         if ($string === '') {
             return '';
@@ -136,7 +130,7 @@ final class ConsoleFormatter
          */
         $replace = [];
         $append = '';
-        $plainTagFormats = $this->getDefaultTagFormats();
+        $plainFormats = $this->getDefaultTagFormats();
 
         // Preserve trailing carriage returns
         if ($string[-1] === "\r") {
@@ -160,6 +154,17 @@ final class ConsoleFormatter
         $string = '';
         /** @var array<int|string,string|null> $match */
         foreach ($matches as $match) {
+            if (($breaks = $match['breaks']) !== null) {
+                $string .= $breaks;
+                continue;
+            }
+
+            // Treat unmatched backticks as plain text
+            if (($extra = $match['extra']) !== null) {
+                $string .= $extra;
+                continue;
+            }
+
             $baseOffset = strlen($string);
 
             if (($text = $match['text']) !== null) {
@@ -167,33 +172,31 @@ final class ConsoleFormatter
                     if ($unwrap) {
                         $text = Convert::unwrap($text, "\n", false, true, true);
                     }
-                    $text = Pcre::replace(
-                        Regex::delimit(self::UNESCAPE_LINE_BREAK_REGEX) . 'u', '$1', $text
-                    );
                 }
 
                 $adjust = 0;
                 $text = Pcre::replaceCallback(
                     Regex::delimit(self::TAG_REGEX) . 'u',
                     function (array $match) use (
+                        $unescape,
                         &$replace,
-                        $plainTagFormats,
+                        $plainFormats,
                         $baseOffset,
                         &$adjust
                     ): string {
-                        /** @var array<int|string,array{string|null,int}> $match */
-                        $text = $this->applyTags($match, $plainTagFormats);
-                        $placeholder = Pcre::replace('/[^ ]/', 'x', $text);
+                        /** @var array<int|string,array{string,int}> $match */
+                        $text = $this->applyTags($match, true, true, $plainFormats);
+                        $placeholder = Pcre::replace('/[^ ]/u', 'x', $text);
                         $formatted =
-                            $plainTagFormats === $this->TagFormats
+                            $unescape && $plainFormats === $this->TagFormats
                                 ? $text
-                                : $this->applyTags($match, $this->TagFormats);
+                                : $this->applyTags($match, true, $unescape, $this->TagFormats);
                         $replace[] = [
-                            $baseOffset + $match['tag'][1] + $adjust,
+                            $baseOffset + $match[0][1] + $adjust,
                             strlen($placeholder),
-                            $formatted
+                            $formatted,
                         ];
-                        $adjust += strlen($text) - strlen($match[0][0]);
+                        $adjust += strlen($placeholder) - strlen($match[0][0]);
                         return $placeholder;
                     },
                     $text,
@@ -201,13 +204,14 @@ final class ConsoleFormatter
                     $count,
                     PREG_OFFSET_CAPTURE
                 );
+
                 $string .= $text;
                 continue;
             }
 
             if (($block = $match['block']) !== null) {
-                // Preserve newline before (may have been unwrapped)
-                if ($string !== '') {
+                // Reinstate unwrapped newlines before blocks
+                if ($unwrap && $string !== '' && $string[-1] !== "\n") {
                     $string[-1] = "\n";
                 }
 
@@ -232,14 +236,14 @@ final class ConsoleFormatter
                 // - If the string begins and ends with a space but doesn't
                 //   consist entirely of spaces, remove both
                 $span = Pcre::replace(
-                    '/^ ((?> *[^ ]+).*) $/',
+                    '/^ ((?> *[^ ]+).*) $/u',
                     '$1',
                     strtr($span, "\n", ' '),
                 );
                 $formatted = $this->TagFormats[Tag::CODE_SPAN]->apply(
                     $span, $match['backtickstring']
                 );
-                $placeholder = Pcre::replace('/[^ ]/', 'x', $span);
+                $placeholder = Pcre::replace('/[^ ]/u', 'x', $span);
                 $replace[] = [
                     $baseOffset,
                     strlen($placeholder),
@@ -249,53 +253,57 @@ final class ConsoleFormatter
                 $string .= $placeholder;
                 continue;
             }
-
-            // Treat unmatched backticks as plain text
-            if (($extra = $match['extra']) !== null) {
-                $string .= $extra;
-            }
         }
 
         // Remove backslash escapes and adjust the offsets of any subsequent
         // replacement strings
-        if (!$this->PreserveEscapes) {
-            $adjustable = [];
-            foreach ($replace as $i => [$offset]) {
-                $adjustable[$i] = $offset;
-            }
-            $string = Pcre::replaceCallback(
-                Regex::delimit(self::UNESCAPE_PUNCTUATION_REGEX) . 'u',
-                function (array $match) use (&$replace, &$adjustable): string {
-                    // Offsets in `$adjustable` aren't changed, and preg_replace
-                    // offsets are relative to `$string` before removing any
-                    // escapes, so it's safe to discard `$adjustable` entries
-                    // for replacements earlier in `$string` than this escape
-                    if ($adjustable) {
-                        foreach ($adjustable as $i => $offset) {
-                            if ($offset < $match[0][1]) {
-                                unset($adjustable[$i]);
-                                continue;
-                            }
-                            $replace[$i][0]--;
-                        }
+        $adjust = 0;
+        $string = Pcre::replaceCallback(
+            Regex::delimit(self::UNESCAPE_REGEX) . 'u',
+            function (array $match) use ($unescape, &$replace, &$adjust): string {
+                /** @var array<int|string,array{string,int}> $match */
+                $delta = strlen($match[1][0]) - strlen($match[0][0]);
+                foreach ($replace as $i => [$offset]) {
+                    if ($offset < $match[0][1]) {
+                        continue;
                     }
-                    return $match[1][0];
-                },
-                $string,
-                -1,
-                $count,
-                PREG_OFFSET_CAPTURE,
-            );
-        }
+                    $replace[$i][0] += $delta;
+                }
 
-        if ($width !== null && $width > 0) {
+                if (!$unescape) {
+                    // Use `$replace` to reinstate the escape after wrapping
+                    $replace[] = [
+                        $match[0][1] + $adjust,
+                        strlen($match[1][0]),
+                        $match[0][0],
+                    ];
+                    $adjust += $delta;
+                }
+
+                return $match[1][0];
+            },
+            $string,
+            -1,
+            $count,
+            PREG_OFFSET_CAPTURE
+        );
+
+        if (($width ?? 0) > 0) {
             $string = wordwrap($string, $width);
         }
 
-        // Perform formatted text replacement
+        // If `$unescape` is false, entries in `$replace` may be out of order
+        if (!$unescape) {
+            usort($replace, fn(array $a, array $b): int => $a[0] <=> $b[0]);
+        }
+
         $replace = array_reverse($replace);
         foreach ($replace as [$offset, $length, $replacement]) {
             $string = substr_replace($string, $replacement, $offset, $length);
+        }
+
+        if (PHP_EOL !== "\n") {
+            $string = str_replace("\n", PHP_EOL, $string);
         }
 
         return $string . $append;
@@ -336,27 +344,27 @@ final class ConsoleFormatter
     }
 
     /**
-     * @param array<int|string,array{string|null,int}|string|null> $match
+     * @param array<int|string,array{string,int}|string> $match
      */
-    private function applyTags(array $match, ConsoleTagFormats $formats): string
+    private function applyTags(array $match, bool $matchHasOffset, bool $unescape, ConsoleTagFormats $formats): string
     {
         /** @var string */
-        $text = $match['text'][0] ?? $match['text'];
+        $text = $matchHasOffset ? $match['text'][0] : $match['text'];
         $text = Pcre::replaceCallback(
             Regex::delimit(self::TAG_REGEX) . 'u',
             fn(array $match): string =>
-                $this->applyTags($match, $formats),
+                $this->applyTags($match, false, $unescape, $formats),
             $text
         );
 
-        if (!$this->PreserveEscapes) {
-            $text = preg_replace(
-                Regex::delimit(self::UNESCAPE_PUNCTUATION_REGEX) . 'u', '$1', $text
+        if ($unescape) {
+            $text = Pcre::replace(
+                Regex::delimit(self::UNESCAPE_REGEX) . 'u', '$1', $text
             );
         }
 
         /** @var string */
-        $tag = $match['tag'][0] ?? $match['tag'];
+        $tag = $matchHasOffset ? $match['tag'][0] : $match['tag'];
         switch ($tag) {
             case '___':
             case '***':
