@@ -54,6 +54,11 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
             It continues on a \*second* line.
 
             **_Nested \<tags>_ with <\*nested escapes*>.**
+
+            *0*   escapes \
+            *1*   with \
+            *2*   adjacent \
+            *15*  tags
             EOF;
 
         return [
@@ -81,6 +86,11 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
                 It continues on a *second* line.
 
                 Nested <tags> with *nested escapes*.
+
+                0   escapes
+                1   with
+                2   adjacent
+                15  tags
                 EOF,
                 $default,
                 $input,
@@ -111,6 +121,11 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
                 It continues on a \*second* line.
 
                 **_Nested \<tags>_ with <\*nested escapes*>.**
+
+                *0*   escapes \
+                *1*   with \
+                *2*   adjacent \
+                *15*  tags
                 EOF,
                 $loopback,
                 $input,

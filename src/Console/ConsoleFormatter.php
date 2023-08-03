@@ -257,13 +257,17 @@ final class ConsoleFormatter
 
         // Remove backslash escapes and adjust the offsets of any subsequent
         // replacement strings
+        $adjustable = [];
+        foreach ($replace as $i => [$offset]) {
+            $adjustable[$i] = $offset;
+        }
         $adjust = 0;
         $string = Pcre::replaceCallback(
             Regex::delimit(self::UNESCAPE_REGEX) . 'u',
-            function (array $match) use ($unescape, &$replace, &$adjust): string {
+            function (array $match) use ($unescape, &$replace, &$adjust, &$adjustable): string {
                 /** @var array<int|string,array{string,int}> $match */
                 $delta = strlen($match[1][0]) - strlen($match[0][0]);
-                foreach ($replace as $i => [$offset]) {
+                foreach ($adjustable as $i => $offset) {
                     if ($offset < $match[0][1]) {
                         continue;
                     }
