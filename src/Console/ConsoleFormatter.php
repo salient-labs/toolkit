@@ -119,8 +119,8 @@ final class ConsoleFormatter
      */
     public function format(string $string, bool $unwrap = false, ?int $width = null, bool $unescape = true): string
     {
-        if ($string === '') {
-            return '';
+        if ($string === '' || $string === "\r") {
+            return $string;
         }
 
         /**
