@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Utility\System;
-use RuntimeException;
+use LogicException;
 
 final class SystemTest extends \Lkrms\Tests\TestCase
 {
@@ -50,13 +50,13 @@ final class SystemTest extends \Lkrms\Tests\TestCase
         $this->assertArrayHasSignature(['other'], $specialTimers['special']);
         $this->assertArrayHasSignature(['secondary'], $stoppedTimers['general']);
         $this->assertArrayHasSignature(['other'], $stoppedTimers['special']);
-        $this->expectException(RuntimeException::class);
+        $this->expectException(LogicException::class);
         $system->startTimer('primary');
     }
 
     public function testStopTimer()
     {
-        $this->expectException(RuntimeException::class);
+        $this->expectException(LogicException::class);
         $system = new System();
         $system->stopTimer('primary');
     }

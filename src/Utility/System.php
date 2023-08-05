@@ -5,6 +5,7 @@ namespace Lkrms\Utility;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
 use Lkrms\Utility\Convert;
+use LogicException;
 use RuntimeException;
 use SQLite3;
 
@@ -34,6 +35,11 @@ final class System
      * @var array<string,array<string,int|float>>
      */
     private $ElapsedTime = [];
+
+    /**
+     * @var array<array{array<string,array<string,int>>,array<string,array<string,int|float>>,array<string,array<string,int|float>>}>
+     */
+    private $TimerStack = [];
 
     /**
      * Get the configured memory_limit in bytes
@@ -107,7 +113,7 @@ final class System
     {
         $now = hrtime(true);
         if (array_key_exists($name, $this->RunningTimers[$type] ?? [])) {
-            throw new RuntimeException(sprintf('Timer already running: %s', $name));
+            throw new LogicException(sprintf('Timer already running: %s', $name));
         }
         $this->RunningTimers[$type][$name] = $now;
         $this->TimerRuns[$type][$name] = ($this->TimerRuns[$type][$name] ?? 0) + 1;
@@ -124,13 +130,37 @@ final class System
     {
         $now = hrtime(true);
         if (!array_key_exists($name, $this->RunningTimers[$type] ?? [])) {
-            throw new RuntimeException(sprintf('Timer not running: %s', $name));
+            throw new LogicException(sprintf('Timer not running: %s', $name));
         }
         $elapsed = $now - $this->RunningTimers[$type][$name];
         unset($this->RunningTimers[$type][$name]);
         $this->ElapsedTime[$type][$name] = ($this->ElapsedTime[$type][$name] ?? 0) + $elapsed;
 
         return $elapsed / 1000000;
+    }
+
+    /**
+     * Push timers onto a stack
+     *
+     */
+    public function pushTimers(): void
+    {
+        $this->TimerStack[] =
+            [$this->TimerRuns, $this->RunningTimers, $this->ElapsedTime];
+    }
+
+    /**
+     * Pop timers off a stack
+     *
+     */
+    public function popTimers(): void
+    {
+        if (!($timers = array_pop($this->TimerStack))) {
+            throw new LogicException('No timers to pop off the stack');
+        }
+
+        [$this->TimerRuns, $this->RunningTimers, $this->ElapsedTime] =
+            $timers;
     }
 
     /**

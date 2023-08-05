@@ -22,6 +22,8 @@ use Lkrms\Utility\System;
  * @method static string getProgramName(?string $basePath = null) Get the filename used to run the script (see {@see System::getProgramName()})
  * @method static array<string,array<string,array{float,int}>> getTimers(bool $includeRunning = true, ?string $type = null) Get the elapsed milliseconds and start count for timers started in the current run (see {@see System::getTimers()})
  * @method static bool handleExitSignals() Handle SIGINT and SIGTERM to make a clean exit from the running script (see {@see System::handleExitSignals()})
+ * @method static void popTimers() Pop timers off a stack
+ * @method static void pushTimers() Push timers onto a stack
  * @method static bool sqliteHasUpsert() True if the SQLite3 library supports UPSERT syntax (see {@see System::sqliteHasUpsert()})
  * @method static void startTimer(string $name, string $type = 'general') Start a timer using the system's high-resolution time
  * @method static float stopTimer(string $name, string $type = 'general') Stop a timer and return the elapsed milliseconds (see {@see System::stopTimer()})
