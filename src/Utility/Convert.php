@@ -38,7 +38,7 @@ final class Convert
     {
         return is_null($value)
             ? null
-            : (is_string($value) && preg_match('/^' . Regex::BOOLEAN_STRING . '$/', $value, $match)
+            : (is_string($value) && Pcre::match('/^' . Regex::BOOLEAN_STRING . '$/', $value, $match)
                 ? ($match['true'] ? true : false)
                 : (bool) $value);
     }
@@ -378,7 +378,7 @@ final class Convert
               # Match empty substrings
               (?<= $quoted ) (?= $quoted ) )+
             REGEX;
-        preg_match_all(
+        Pcre::matchAll(
             Regex::delimit($regex),
             $string,
             $matches
@@ -439,7 +439,7 @@ final class Convert
         foreach (explode($eol, $text) as $i => $line) {
             !$i || $expanded .= $eol;
             if ($i || (!$preserveLine1 && $column === 1)) {
-                $expanded .= preg_replace('/(?<=\n|\G)\t/', $softTab, $line);
+                $expanded .= Pcre::replace('/(?<=\n|\G)\t/', $softTab, $line);
                 continue;
             }
             if (!$i && $preserveLine1) {
@@ -627,7 +627,7 @@ final class Convert
         $path = basename($path);
         if ($extLimit) {
             $range = $extLimit > 1 ? "{1,$extLimit}" : ($extLimit < 0 ? '+' : '');
-            $path = preg_replace("/(?<=.)(?<!^\\.|^\\.\\.)(\\.[^.\\s]+){$range}\$/", '', $path);
+            $path = Pcre::replace("/(?<=.)(?<!^\\.|^\\.\\.)(\\.[^.\\s]+){$range}\$/", '', $path);
         }
 
         return $path;
@@ -642,11 +642,11 @@ final class Convert
      */
     public static function resolvePath(string $path): string
     {
-        $path = preg_replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
+        $path = Pcre::replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
         do {
-            $path = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\./@', '', $path, 1, $count);
+            $path = Pcre::replace('@(?<=/)(?!\.\./)[^/]+/\.\./@', '', $path, 1, $count);
         } while ($count);
-        $path = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\.$@', '', $path, 1, $count);
+        $path = Pcre::replace('@(?<=/)(?!\.\./)[^/]+/\.\.$@', '', $path, 1, $count);
 
         return rtrim($path, '/');
     }
@@ -699,13 +699,13 @@ final class Convert
         // Step 6
         $path = substr($base['path'], 0, strrpos("/{$base['path']}", '/')) . $path;
         // Steps 6a and 6b
-        $path = preg_replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
+        $path = Pcre::replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
         // Step 6c
         do {
-            $path = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\./@', '', $path, 1, $count);
+            $path = Pcre::replace('@(?<=/)(?!\.\./)[^/]+/\.\./@', '', $path, 1, $count);
         } while ($count);
         // Step 6d
-        $url['path'] = preg_replace('@(?<=/)(?!\.\./)[^/]+/\.\.$@', '', $path, 1, $count);
+        $url['path'] = Pcre::replace('@(?<=/)(?!\.\./)[^/]+/\.\.$@', '', $path, 1, $count);
 
         return self::unparseUrl($url);
     }
@@ -728,9 +728,9 @@ final class Convert
         // Extract "params" early because parse_url doesn't accept URLs where
         // "path" has a leading ";"
         if (strpos($url, ';') !== false) {
-            preg_match('/;([^?]*)/', $url, $matches);
+            Pcre::match('/;([^?]*)/', $url, $matches);
             $params = $matches[1];
-            $url = preg_replace('/;[^?]*/', '', $url, 1);
+            $url = Pcre::replace('/;[^?]*/', '', $url, 1);
         }
         if (($url = parse_url($url)) === false) {
             return false;
@@ -803,7 +803,7 @@ final class Convert
      */
     public static function methodToFunction(string $method): string
     {
-        return preg_replace('/^.*?([a-z0-9_]*)$/i', '$1', $method);
+        return Pcre::replace('/^.*?([a-z0-9_]*)$/i', '$1', $method);
     }
 
     /**
@@ -985,7 +985,7 @@ final class Convert
      */
     public static function nounToPlural(string $noun): string
     {
-        if (preg_match('/(?:(sh?|ch|x|z|(?<!^phot)(?<!^pian)(?<!^hal)o)|([^aeiou]y)|(is)|(on))$/i', $noun, $matches)) {
+        if (Pcre::match('/(?:(sh?|ch|x|z|(?<!^phot)(?<!^pian)(?<!^hal)o)|([^aeiou]y)|(is)|(on))$/i', $noun, $matches)) {
             if ($matches[1]) {
                 return $noun . 'es';
             } elseif ($matches[2]) {
@@ -1049,8 +1049,9 @@ final class Convert
     ): string {
         $marker = $marker ? $marker . ' ' : null;
         $indent = $marker ? str_repeat(' ', mb_strlen($marker)) : '';
-        $markerIsItem = $marker && preg_match($regex, $marker);
+        $markerIsItem = $marker && Pcre::match($regex, $marker);
 
+        /** @var array<string,string[]> */
         $sections = [];
         foreach (preg_split('/\r\n|\n|\r/', $text) as $line) {
             // Remove pre-existing markers early to ensure sections with the
@@ -1062,7 +1063,7 @@ final class Convert
                 unset($section);
                 continue;
             }
-            if (!preg_match($regex, $line)) {
+            if (!Pcre::match($regex, $line)) {
                 $section = $line;
             }
             $key = $section ?? $line;
@@ -1074,6 +1075,7 @@ final class Convert
             }
         }
         // Move lines with no associated list to the top
+        /** @var array<string,string[]> */
         $sections = array_merge(
             array_filter($sections, fn($lines) => !count($lines)),
             array_filter($sections, fn($lines) => count($lines))
@@ -1081,11 +1083,11 @@ final class Convert
         $groups = [];
         foreach ($sections as $section => $sectionLines) {
             if ($clean) {
-                $section = preg_replace($regex, '', $section, 1);
+                $section = Pcre::replace($regex, '', $section, 1);
             }
             if ($marker &&
                     !($markerIsItem && strpos($section, $marker) === 0) &&
-                    !preg_match($regex, $section)) {
+                    !Pcre::match($regex, $section)) {
                 $section = $marker . $section;
             }
             $groups[] = $section;
@@ -1167,7 +1169,7 @@ final class Convert
      */
     public static function sizeToBytes(string $size): int
     {
-        if (!preg_match('/^(.+?)([KMG]?)$/', strtoupper($size), $match) || !is_numeric($match[1])) {
+        if (!Pcre::match('/^(.+?)([KMG]?)$/', strtoupper($size), $match) || !is_numeric($match[1])) {
             throw new LogicException("Invalid shorthand: '$size'");
         }
 
@@ -1188,16 +1190,44 @@ final class Convert
     }
 
     /**
-     * A platform-agnostic escapeshellarg that only adds quotes if necessary
+     * Escape an argument for a POSIX-compatible shell
      *
      */
-    public static function toShellArg(string $value): string
+    public static function toShellArg(string $arg): string
     {
-        if (!$value || preg_match('/[^a-z0-9+.\/@_-]/i', $value)) {
-            return "'" . str_replace("'", "'\\''", $value) . "'";
+        if ($arg === '' || Pcre::match('/[^a-z0-9+.\/@_-]/i', $arg)) {
+            return "'" . str_replace("'", "'\\''", $arg) . "'";
         }
 
-        return $value;
+        return $arg;
+    }
+
+    /**
+     * Escape an argument for cmd.exe on Windows
+     *
+     * Derived from `Composer\Util\ProcessExecutor::escapeArgument()`, which
+     * credits <https://github.com/johnstevenson/winbox-args>.
+     */
+    public static function toCmdArg(string $arg): string
+    {
+        $arg = Pcre::replace('/(\\\\*)"/', '$1$1\"', $arg, -1, $quoteCount);
+
+        $quote = $arg === '' || strpbrk($arg, " \t,") !== false;
+        $meta = $quoteCount > 0 || Pcre::match('/%[^%]+%|![^!]+!/', $arg);
+
+        if (!$meta && !$quote) {
+            $quote = strpbrk($arg, '^&|<>()') !== false;
+        }
+
+        if ($quote) {
+            $arg = '"' . Pcre::replace('/(\\\\*)$/', '$1$1', $arg) . '"';
+        }
+
+        if ($meta) {
+            $arg = Pcre::replace('/["^&|<>()%!]/', '^$0', $arg);
+        }
+
+        return $arg;
     }
 
     /**
@@ -1257,20 +1287,20 @@ final class Convert
 
         // Add a delimiter before words not adjacent to a preserved character
         if ($delimiter !== '') {
-            $text = preg_replace(
+            $text = Pcre::replace(
                 "/$delimitRegex$regex/u", $delimiter . '$0', $text
             );
         }
 
         // Apply a callback to every word
         if ($callback) {
-            $text = preg_replace_callback(
+            $text = Pcre::replaceCallback(
                 "/$regex/u", fn(array $match): string => $callback($match[0]), $text
             );
         }
 
         // Replace one or more non-alphanumeric characters with one delimiter
-        $text = preg_replace("/[^[:alnum:]$preserve]+/", $delimiter, $text);
+        $text = Pcre::replace("/[^[:alnum:]$preserve]+/", $delimiter, $text);
 
         // Remove leading and trailing delimiters
         return
@@ -1300,7 +1330,7 @@ final class Convert
             '/[^[:alnum:]]+/u' => ' ',
         ];
 
-        return strtoupper(trim(preg_replace(
+        return strtoupper(trim(Pcre::replace(
             array_keys($replace),
             array_values($replace),
             $text
@@ -1317,7 +1347,7 @@ final class Convert
             return $string;
         }
 
-        return preg_replace("/(\r\n|\r)/", "\n", $string);
+        return Pcre::replace("/(\r\n|\r)/", "\n", $string);
     }
 
     /**
@@ -1404,7 +1434,7 @@ final class Convert
         }
         if (is_string($value) &&
             (($escapeCharacters && strpbrk($value, $escapeCharacters) !== false) ||
-                preg_match('/\v/', $value))) {
+                Pcre::match('/\v/', $value))) {
             $escaped = addcslashes($value, "\n\r\t\v\x1b\f\\\$\"" . $escapeCharacters);
             if ($escapeCharacters) {
                 foreach (str_split($escapeCharacters) as $character) {

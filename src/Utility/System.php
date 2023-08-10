@@ -42,28 +42,28 @@ final class System
     private $TimerStack = [];
 
     /**
-     * Get the configured memory_limit in bytes
+     * Get the configured memory_limit, in bytes
      *
      */
-    public function getMemoryLimit(): int
+    public static function getMemoryLimit(): int
     {
         return Convert::sizeToBytes(ini_get('memory_limit') ?: '0');
     }
 
     /**
-     * Get the current memory usage of the script in bytes
+     * Get the current memory usage of the script, in bytes
      *
      */
-    public function getMemoryUsage(): int
+    public static function getMemoryUsage(): int
     {
         return memory_get_usage();
     }
 
     /**
-     * Get the peak memory usage of the script in bytes
+     * Get the peak memory usage of the script, in bytes
      *
      */
-    public function getPeakMemoryUsage(): int
+    public static function getPeakMemoryUsage(): int
     {
         return memory_get_peak_usage();
     }
@@ -73,9 +73,9 @@ final class System
      * memory_limit
      *
      */
-    public function getMemoryUsagePercent(): int
+    public static function getMemoryUsagePercent(): int
     {
-        $limit = $this->getMemoryLimit();
+        $limit = self::getMemoryLimit();
 
         return $limit <= 0
             ? 0
@@ -85,24 +85,22 @@ final class System
     /**
      * Get user and system CPU times for the current run, in microseconds
      *
-     * @return int[]
-     * ```php
-     * [$userMicroseconds, $systemMicroseconds]
-     * ```
+     * @return array{int,int} User CPU time is at index 0 and is followed by
+     * system CPU time.
      */
-    public function getCpuUsage(): array
+    public static function getCpuUsage(): array
     {
-        if (($usage = getrusage()) === false) {
-            return [
-                0,
-                0,
-            ];
-        }
+        $usage = getrusage();
 
-        return [
-            ($usage['ru_utime.tv_sec'] ?? 0) * 1000000 + ($usage['ru_utime.tv_usec'] ?? 0),
-            ($usage['ru_stime.tv_sec'] ?? 0) * 1000000 + ($usage['ru_stime.tv_usec'] ?? 0),
-        ];
+        return
+            $usage === false
+                ? [0, 0]
+                : [
+                    ($usage['ru_utime.tv_sec'] ?? 0) * 1000000
+                        + ($usage['ru_utime.tv_usec'] ?? 0),
+                    ($usage['ru_stime.tv_sec'] ?? 0) * 1000000
+                        + ($usage['ru_stime.tv_usec'] ?? 0),
+                ];
     }
 
     /**
@@ -140,7 +138,7 @@ final class System
     }
 
     /**
-     * Push timers onto a stack
+     * Push timer state onto the stack
      *
      */
     public function pushTimers(): void
@@ -150,13 +148,13 @@ final class System
     }
 
     /**
-     * Pop timers off a stack
+     * Pop timer state off the stack
      *
      */
     public function popTimers(): void
     {
         if (!($timers = array_pop($this->TimerStack))) {
-            throw new LogicException('No timers to pop off the stack');
+            throw new LogicException('No timer state to pop off the stack');
         }
 
         [$this->TimerRuns, $this->RunningTimers, $this->ElapsedTime] =
@@ -172,20 +170,21 @@ final class System
      */
     public function getTimers(bool $includeRunning = true, ?string $type = null): array
     {
-        $timerRuns = is_null($type)
+        $timerRuns = $type === null
             ? $this->TimerRuns
-            : array_intersect_key($this->TimerRuns, [$type => 0]);
-        foreach ($timerRuns as $_type => $runs) {
+            : array_intersect_key($this->TimerRuns, [$type => null]);
+
+        foreach ($timerRuns as $type => $runs) {
             foreach ($runs as $name => $count) {
-                $elapsed = $this->ElapsedTime[$_type][$name] ?? 0;
+                $elapsed = $this->ElapsedTime[$type][$name] ?? 0;
                 if ($includeRunning &&
-                        array_key_exists($name, $this->RunningTimers[$_type] ?? [])) {
-                    $elapsed += ($now ?? ($now = hrtime(true))) - $this->RunningTimers[$_type][$name];
+                        array_key_exists($name, $this->RunningTimers[$type] ?? [])) {
+                    $elapsed += ($now ?? ($now = hrtime(true))) - $this->RunningTimers[$type][$name];
                 }
                 if (!$elapsed) {
                     continue;
                 }
-                $timers[$_type][$name] = [$elapsed / 1000000, $count];
+                $timers[$type][$name] = [$elapsed / 1000000, $count];
             }
         }
 
@@ -201,17 +200,18 @@ final class System
      * @throws RuntimeException if the filename used to run the script doesn't
      * belong to `$basePath`.
      */
-    public function getProgramName(?string $basePath = null): string
+    public static function getProgramName(?string $basePath = null): string
     {
         $filename = $_SERVER['SCRIPT_FILENAME'];
-        if (is_null($basePath)) {
+
+        if ($basePath === null) {
             return $filename;
         }
+
         if (($basePath = File::realpath($basePath)) !== false &&
                 ($filename = File::realpath($filename)) !== false &&
-                strpos($filename, $basePath) === 0) {
-            return substr($filename, strlen($basePath) + 1)
-                ?: basename($filename);
+                strpos($filename, $basePath . DIRECTORY_SEPARATOR) === 0) {
+            return substr($filename, strlen($basePath) + 1);
         }
 
         throw new RuntimeException('SCRIPT_FILENAME is not in $basePath');
@@ -222,7 +222,7 @@ final class System
      *
      * @param string ...$suffixes Removed from the end of the filename.
      */
-    public function getProgramBasename(string ...$suffixes): string
+    public static function getProgramBasename(string ...$suffixes): string
     {
         $basename = basename($_SERVER['SCRIPT_FILENAME']);
         if (!$suffixes) {
@@ -234,10 +234,37 @@ final class System
     }
 
     /**
+     * Get a command string with arguments escaped for this platform's shell
+     *
+     * Don't use this method to prepare commands for `proc_open()`. Its quoting
+     * behaviour on Windows is unstable.
+     *
+     * @param string[] $args
+     */
+    public static function escapeCommand(array $args): string
+    {
+        $command = '';
+
+        if (PHP_OS_FAMILY !== 'Windows') {
+            foreach ($args as $arg) {
+                $command .= ($command ? ' ' : '') . Convert::toShellArg($arg);
+            }
+
+            return $command;
+        }
+
+        foreach ($args as $arg) {
+            $command .= ($command ? ' ' : '') . Convert::toCmdArg($arg);
+        }
+
+        return $command;
+    }
+
+    /**
      * Get the current working directory without resolving symbolic links
      *
      */
-    public function getCwd(): string
+    public static function getCwd(): string
     {
         $handle = popen(PHP_OS_FAMILY === 'Windows' ? 'cd' : 'pwd', 'rb');
         $dir = stream_get_contents($handle);
@@ -252,7 +279,7 @@ final class System
 
         $dir = getcwd();
         if ($dir === false) {
-            throw new RuntimeException('Unable to determine current working directory');
+            throw new RuntimeException('Unable to get current working directory');
         }
         return $dir;
     }
@@ -262,14 +289,9 @@ final class System
      *
      * @link https://www.sqlite.org/lang_UPSERT.html
      */
-    public function sqliteHasUpsert(): bool
+    public static function sqliteHasUpsert(): bool
     {
-        return $this->getSQLite3Version() >= 3024000;
-    }
-
-    private function getSQLite3Version(): int
-    {
-        return SQLite3::version()['versionNumber'];
+        return SQLite3::version()['versionNumber'] >= 3024000;
     }
 
     /**
@@ -281,14 +303,15 @@ final class System
      * @return bool `false` if signal handlers can't be installed on this
      * platform, otherwise `true`.
      */
-    public function handleExitSignals(): bool
+    public static function handleExitSignals(): bool
     {
         if (!function_exists('pcntl_async_signals')) {
             return false;
         }
+
         $handler =
             function (int $signal): void {
-                Console::debug('Received signal ' . $signal);
+                Console::debug(sprintf('Received signal %d', $signal));
                 if ($signal === SIGINT &&
                         function_exists('posix_getpgid') &&
                         ($pgid = posix_getpgid(posix_getpid())) !== false) {
@@ -296,7 +319,7 @@ final class System
                     pcntl_signal(SIGINT, SIG_DFL);
                     register_shutdown_function(
                         function () use ($pgid) {
-                            Console::debug('Sending SIGINT to process group ' . $pgid);
+                            Console::debug(sprintf('Sending SIGINT to process group %d', $pgid));
                             posix_kill($pgid, SIGINT);
                         }
                     );
@@ -307,7 +330,6 @@ final class System
         pcntl_async_signals(true);
         pcntl_signal(SIGINT, $handler);
         pcntl_signal(SIGTERM, $handler);
-
         return true;
     }
 }

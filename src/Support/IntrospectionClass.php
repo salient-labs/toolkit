@@ -392,8 +392,10 @@ class IntrospectionClass
             }
         }
 
-        /** @todo Create a proxy for `protected function __construct()` if the
-         * class implements a designated interface, e.g. `IInstantiable` */
+        /**
+         * @todo Create a proxy for `protected function __construct()` if the
+         * class implements a designated interface, e.g. `IInstantiable`
+         */
 
         // Get constructor parameters
         if (($constructor = $class->getConstructor()) && $constructor->isPublic()) {
