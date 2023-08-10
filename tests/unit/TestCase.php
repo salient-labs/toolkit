@@ -2,6 +2,8 @@
 
 namespace Lkrms\Tests;
 
+use Lkrms\Utility\Pcre;
+
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -57,11 +59,41 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * Get the path to the fixtures directory for a class
+     *
+     */
+    public function getFixturesPath(string $class)
+    {
+        return dirname(__DIR__)
+            . '/fixtures/'
+            . Pcre::replace(
+                ['/^Lkrms\\\\(?|Tests\\\\(.+)Test$|(.+))/', '/\\\\/'],
+                ['$1', '/'],
+                $class
+            );
+    }
+
+    /**
      * Replace newlines in a string with PHP_EOL
      *
      */
     public function newlinesToNative(?string $string): ?string
     {
-        return $string === null ? null : str_replace("\n", PHP_EOL, $string);
+        return
+            $string === null
+                ? null
+                : str_replace("\n", PHP_EOL, $string);
+    }
+
+    /**
+     * Replace directory separators in a string with DIRECTORY_SEPARATOR
+     *
+     */
+    public function directorySeparatorsToNative(?string $string): ?string
+    {
+        return
+            $string === null
+                ? null
+                : str_replace('/', DIRECTORY_SEPARATOR, $string);
     }
 }

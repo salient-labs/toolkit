@@ -118,4 +118,23 @@ final class Pcre
         }
         return $result;
     }
+
+    /**
+     * A wrapper for preg_split()
+     *
+     * @param int-mask<0,PREG_SPLIT_NO_EMPTY,PREG_SPLIT_DELIM_CAPTURE,PREG_SPLIT_OFFSET_CAPTURE> $flags
+     * @return mixed[]
+     */
+    public static function split(
+        string $pattern,
+        string $subject,
+        int $limit = -1,
+        int $flags = 0
+    ): array {
+        $result = preg_split($pattern, $subject, $limit, $flags);
+        if ($result === false) {
+            throw new PcreErrorException(preg_last_error(), 'preg_split', $pattern, $subject);
+        }
+        return $result;
+    }
 }
