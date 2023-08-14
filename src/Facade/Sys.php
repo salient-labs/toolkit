@@ -12,7 +12,7 @@ use Lkrms\Utility\System;
  * @method static System getInstance() Get the underlying System instance
  * @method static bool isLoaded() True if an underlying System instance has been loaded
  * @method static void unload() Clear the underlying System instance
- * @method static string escapeCommand(string[] $args) Get a command string with arguments escaped for this platform's shell
+ * @method static string escapeCommand(string[] $args) Get a command string with arguments escaped for this platform's shell (see {@see System::escapeCommand()})
  * @method static array{int,int} getCpuUsage() Get user and system CPU times for the current run, in microseconds (see {@see System::getCpuUsage()})
  * @method static string getCwd() Get the current working directory without resolving symbolic links
  * @method static int getMemoryLimit() Get the configured memory_limit, in bytes

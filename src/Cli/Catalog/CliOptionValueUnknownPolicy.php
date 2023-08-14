@@ -15,7 +15,7 @@ final class CliOptionValueUnknownPolicy extends Enumeration
     /**
      * Throw an exception if an unknown value is given
      *
-     * This is the default.
+     * This is the default policy.
      */
     public const REJECT = 0;
 

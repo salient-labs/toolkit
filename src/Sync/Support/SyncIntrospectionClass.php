@@ -188,7 +188,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
                 }
 
                 /**
-                 * @phpstan-var SyncOperation::* $operation
+                 * @var SyncOperation::* $operation
                  */
                 $this->SyncOperationMagicMethods[$method] = [$operation, $entity->Class];
             };

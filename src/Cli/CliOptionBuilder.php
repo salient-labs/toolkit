@@ -2,6 +2,10 @@
 
 namespace Lkrms\Cli;
 
+use Lkrms\Cli\Catalog\CliOptionType;
+use Lkrms\Cli\Catalog\CliOptionValueType;
+use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
+use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
 
@@ -13,10 +17,10 @@ use Lkrms\Contract\IContainer;
  * @method $this short(?string $value) The short form of the option, e.g. 'v' (see {@see CliOption::$Short})
  * @method $this valueName(?string $value) The name of the option's value as it appears in help messages (see {@see CliOption::$ValueName})
  * @method $this description(?string $value) A description of the option (see {@see CliOption::$Description})
- * @method $this optionType(int $value) The option's type (see {@see CliOption::$OptionType})
- * @method $this valueType(int $value) The data type of the option's value (see {@see CliOption::$ValueType})
+ * @method $this optionType(CliOptionType::* $value) The option's type (see {@see CliOption::$OptionType})
+ * @method $this valueType(CliOptionValueType::* $value) The data type of the option's value (see {@see CliOption::$ValueType})
  * @method $this allowedValues(array<string|int>|null $value) A list of the option's possible values (see {@see CliOption::$AllowedValues})
- * @method $this unknownValuePolicy(int $value) The action taken if an unknown value is given (see {@see CliOption::$UnknownValuePolicy})
+ * @method $this unknownValuePolicy(CliOptionValueUnknownPolicy::* $value) The action taken if an unknown value is given (see {@see CliOption::$UnknownValuePolicy})
  * @method $this required(bool $value = true) True if the option is mandatory (default: false)
  * @method $this multipleAllowed(bool $value = true) True if the option may be given more than once (default: false)
  * @method $this addAll(bool $value = true) True if 'ALL' should be added to the list of possible values when the option can be given more than once (default: false; see {@see CliOption::$AddAll})
@@ -26,7 +30,7 @@ use Lkrms\Contract\IContainer;
  * @method $this keepEnv(bool $value = true) True if user-supplied values extend values from the environment instead of replacing them (default: false; see {@see CliOption::$KeepEnv})
  * @method $this delimiter(?string $value) The separator between values passed to the option as a single argument (see {@see CliOption::$Delimiter})
  * @method $this valueCallback(?callable $value) Applied to the option's value as it is assigned (see {@see CliOption::$ValueCallback})
- * @method $this visibility(int $value) A bitmask of {@see CliOptionVisibility} values (see {@see CliOption::$Visibility})
+ * @method $this visibility(int-mask-of<CliOptionVisibility::*> $value) The option's visibility to users
  * @method $this hide(bool $value = true) True if the option's visibility should be {@see CliOptionVisibility::NONE} (default: false)
  * @method mixed get(string $name) The value of $name if applied to the unresolved CliOption by calling $name(), otherwise null
  * @method bool isset(string $name) True if a value for $name has been applied to the unresolved CliOption by calling $name()
