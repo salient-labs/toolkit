@@ -7,6 +7,7 @@ use Lkrms\Concept\Dictionary;
 /**
  * Terminal control sequences
  *
+ * @extends Dictionary<string>
  */
 final class TtyControlSequence extends Dictionary
 {

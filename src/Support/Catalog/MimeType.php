@@ -8,6 +8,7 @@ use Lkrms\Utility\Convert;
 /**
  * Frequently-used MIME types
  *
+ * @extends Dictionary<string>
  */
 final class MimeType extends Dictionary
 {

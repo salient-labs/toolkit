@@ -7,6 +7,7 @@ use Lkrms\Concept\Dictionary;
 /**
  * Useful PCRE regular expressions
  *
+ * @extends Dictionary<string>
  */
 final class RegularExpression extends Dictionary
 {

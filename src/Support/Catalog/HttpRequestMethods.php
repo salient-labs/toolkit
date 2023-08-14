@@ -7,11 +7,12 @@ use Lkrms\Concept\Dictionary;
 /**
  * Groups of HTTP request methods
  *
+ * @extends Dictionary<array<HttpRequestMethod::*>>
  */
 final class HttpRequestMethods extends Dictionary
 {
     /**
-     * @phpstan-var array<HttpRequestMethod::*>
+     * @var array<HttpRequestMethod::*>
      */
     const ALL = [
         HttpRequestMethod::GET,

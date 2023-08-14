@@ -2,13 +2,22 @@
 
 namespace Lkrms\Concept;
 
+use Lkrms\Concern\IsCatalog;
 use Lkrms\Contract\IDictionary;
 
 /**
  * Base class for dictionaries
  *
+ * @template TValue
+ *
+ * @implements IDictionary<TValue>
  */
 abstract class Dictionary implements IDictionary
 {
-    final private function __construct() {}
+    /**
+     * @use IsCatalog<TValue>
+     */
+    use IsCatalog {
+        constants as definitions;
+    }
 }
