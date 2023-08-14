@@ -7,6 +7,8 @@ use Lkrms\Concept\Dictionary;
 /**
  * HTTP request methods
  *
+ * @extends Dictionary<string>
+ *
  * @see HttpRequestMethods::ALL
  */
 final class HttpRequestMethod extends Dictionary

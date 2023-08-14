@@ -24,11 +24,4 @@ interface IConvertibleEnumeration extends IEnumeration
      * @param TValue $value
      */
     public static function toName($value): string;
-
-    /**
-     * Get an array that maps constant names to values
-     *
-     * @return array<string,TValue>
-     */
-    public static function cases(): array;
 }

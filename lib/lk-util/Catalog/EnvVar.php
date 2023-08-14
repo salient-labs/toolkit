@@ -7,6 +7,7 @@ use Lkrms\Concept\Dictionary;
 /**
  * Environment variables used by lk-util commands
  *
+ * @extends Dictionary<string>
  */
 final class EnvVar extends Dictionary
 {

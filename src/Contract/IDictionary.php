@@ -3,7 +3,16 @@
 namespace Lkrms\Contract;
 
 /**
- * Defines public constants with values of the same type
+ * Has public constants with values of a given type
  *
+ * @template TValue
  */
-interface IDictionary {}
+interface IDictionary
+{
+    /**
+     * Get an array that maps constant names to values
+     *
+     * @return array<string,TValue>
+     */
+    public static function definitions(): array;
+}

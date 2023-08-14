@@ -2,6 +2,7 @@
 
 namespace Lkrms\Concept;
 
+use Lkrms\Concern\IsCatalog;
 use Lkrms\Contract\IEnumeration;
 
 /**
@@ -13,5 +14,10 @@ use Lkrms\Contract\IEnumeration;
  */
 abstract class Enumeration implements IEnumeration
 {
-    final private function __construct() {}
+    /**
+     * @use IsCatalog<TValue>
+     */
+    use IsCatalog {
+        constants as cases;
+    }
 }

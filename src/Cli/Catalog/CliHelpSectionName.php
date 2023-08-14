@@ -7,6 +7,8 @@ use Lkrms\Concept\Dictionary;
 /**
  * Section names commonly used in usage information / help messages
  *
+ * @extends Dictionary<string>
+ *
  * @see \Lkrms\Cli\CliCommand::getHelpSections()
  */
 final class CliHelpSectionName extends Dictionary

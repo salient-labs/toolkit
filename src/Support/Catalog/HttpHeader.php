@@ -7,6 +7,7 @@ use Lkrms\Concept\Dictionary;
 /**
  * Frequently-used HTTP headers
  *
+ * @extends Dictionary<string>
  */
 final class HttpHeader extends Dictionary
 {
