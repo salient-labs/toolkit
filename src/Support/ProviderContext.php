@@ -38,8 +38,7 @@ class ProviderContext implements IProviderContext
     protected $Parent;
 
     /**
-     * @var int
-     * @phpstan-var ArrayKeyConformity::*
+     * @var ArrayKeyConformity::*
      */
     protected $Conformity;
 

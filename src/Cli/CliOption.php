@@ -26,32 +26,32 @@ use Throwable;
 /**
  * A getopt-style command line option
  *
- * @property-read string|null $Long
- * @property-read string|null $Short
- * @property-read string $Key
- * @property-read string|null $ValueName
- * @property-read string $DisplayName
- * @property-read int $OptionType
- * @property-read int $ValueType
- * @property-read bool $IsFlag
- * @property-read bool $IsOneOf
- * @property-read bool $IsPositional
- * @property-read bool $Required
- * @property-read bool $ValueRequired
- * @property-read bool $ValueOptional
- * @property-read bool $MultipleAllowed
- * @property-read string|null $Delimiter
- * @property-read string|null $Description
- * @property-read array<string|int>|null $AllowedValues
- * @property-read int|null $UnknownValuePolicy
- * @property-read bool $AddAll
- * @property-read array<string|int>|string|int|bool|null $DefaultValue
- * @property-read array<string|int>|string|int|bool|null $OriginalDefaultValue
- * @property-read bool $KeepDefault
- * @property-read string|null $EnvVariable
- * @property-read bool $KeepEnv
- * @property-read callable|null $ValueCallback
- * @property-read int $Visibility
+ * @property-read string|null $Long The long form of the option, e.g. 'verbose'
+ * @property-read string|null $Short The short form of the option, e.g. 'v'
+ * @property-read string $Key The option's internal identifier
+ * @property-read string|null $ValueName The name of the option's value as it appears in help messages
+ * @property-read string $DisplayName The option's name as it appears in help messages
+ * @property-read CliOptionType::* $OptionType The option's type
+ * @property-read CliOptionValueType::* $ValueType The data type of the option's value
+ * @property-read bool $IsFlag True if the option is a flag
+ * @property-read bool $IsOneOf True if the option accepts values from a list
+ * @property-read bool $IsPositional True if the option is positional
+ * @property-read bool $Required True if the option is mandatory
+ * @property-read bool $ValueRequired True if the option has a mandatory value
+ * @property-read bool $ValueOptional True if the option has an optional value
+ * @property-read bool $MultipleAllowed True if the option may be given more than once
+ * @property-read string|null $Delimiter The separator between values passed to the option as a single argument
+ * @property-read string|null $Description A description of the option
+ * @property-read array<string|int>|null $AllowedValues A list of the option's possible values
+ * @property-read CliOptionValueUnknownPolicy::*|null $UnknownValuePolicy The action taken if an unknown value is given
+ * @property-read bool $AddAll True if 'ALL' should be added to the list of possible values when the option can be given more than once
+ * @property-read array<string|int>|string|int|bool|null $DefaultValue Assigned to the option if no value is given on the command line
+ * @property-read array<string|int>|string|int|bool|null $OriginalDefaultValue The default value passed to the option's constructor
+ * @property-read bool $KeepDefault True if environment- and/or user-supplied values extend the option's default value instead of replacing it
+ * @property-read string|null $EnvVariable The name of an environment variable that replaces or extends the option's default value
+ * @property-read bool $KeepEnv True if user-supplied values extend values from the environment instead of replacing them
+ * @property-read callable|null $ValueCallback Applied to the option's value as it is assigned
+ * @property-read int-mask-of<CliOptionVisibility::*> $Visibility The option's visibility to users
  */
 final class CliOption implements HasBuilder, IImmutable, IReadable
 {
@@ -103,8 +103,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      *
      * One of the {@see CliOptionType} values.
      *
-     * @var int
-     * @phpstan-var CliOptionType::*
+     * @var CliOptionType::*
      */
     protected $OptionType;
 
@@ -113,8 +112,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      *
      * One of the {@see CliOptionValueType} values.
      *
-     * @var int
-     * @phpstan-var CliOptionValueType::*
+     * @var CliOptionValueType::*
      */
     protected $ValueType;
 
@@ -200,8 +198,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
      *
      * Ignored if {@see CliOption::$IsOneOf} is `false`.
      *
-     * @var int|null
-     * @phpstan-var CliOptionValueUnknownPolicy::*|null
+     * @var CliOptionValueUnknownPolicy::*|null
      */
     protected $UnknownValuePolicy;
 
@@ -270,10 +267,9 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     protected $ValueCallback;
 
     /**
-     * A bitmask of CliOptionVisibility values
+     * The option's visibility to users
      *
-     * @var int
-     * @phpstan-var int-mask-of<CliOptionVisibility::*>
+     * @var int-mask-of<CliOptionVisibility::*>
      */
     protected $Visibility;
 
@@ -283,13 +279,12 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     private $BindTo;
 
     /**
-     * @phpstan-param CliOptionType::* $optionType
-     * @phpstan-param CliOptionValueType::* $valueType
+     * @param CliOptionType::* $optionType
+     * @param CliOptionValueType::* $valueType
      * @param array<string|int>|null $allowedValues
-     * @phpstan-param CliOptionValueUnknownPolicy::* $unknownValuePolicy
+     * @param CliOptionValueUnknownPolicy::* $unknownValuePolicy
      * @param array<string|int>|string|int|bool|null $defaultValue
-     * @param int $visibility A bitmask of {@see CliOptionVisibility} values.
-     * @phpstan-param int-mask-of<CliOptionVisibility::*> $visibility
+     * @param int-mask-of<CliOptionVisibility::*> $visibility
      * @param bool $hide True if the option's visibility should be
      * {@see CliOptionVisibility::NONE}.
      * @param mixed $bindTo Assign user-supplied values to a variable before
