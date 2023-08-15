@@ -3,49 +3,40 @@
 namespace Lkrms\Console\Concept;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
+use Lkrms\Console\Catalog\ConsoleLevels as Levels;
+use Lkrms\Console\Catalog\ConsoleMessageType as Type;
+use Lkrms\Console\Catalog\ConsoleMessageTypes as Types;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
-use Lkrms\Console\ConsoleFormat;
-use Lkrms\Console\ConsoleFormatter;
-use Lkrms\Console\ConsoleMessageFormat;
-use Lkrms\Console\ConsoleTagFormats;
+use Lkrms\Console\ConsoleFormat as Format;
+use Lkrms\Console\ConsoleFormatter as Formatter;
+use Lkrms\Console\ConsoleMessageFormat as MessageFormat;
+use Lkrms\Console\ConsoleMessageFormats as MessageFormats;
+use Lkrms\Console\ConsoleTagFormats as TagFormats;
+use Lkrms\Console\Contract\IConsoleTargetWithOptionalPrefix;
 use Lkrms\Support\Catalog\TtyControlSequence as Colour;
-use UnexpectedValueException;
 
 /**
- * Base class for console output targets
+ * Recommended base class for console output targets
  *
  */
-abstract class ConsoleTarget
+abstract class ConsoleTarget implements IConsoleTargetWithOptionalPrefix
 {
-    /**
-     * True if formatting based on message level is enabled
-     *
-     * @var bool
-     */
-    protected $MessageFormatting = true;
+    private ?string $Prefix = null;
+
+    private int $PrefixLength = 0;
+
+    private Formatter $Formatter;
 
     /**
-     * @var string|null
+     * @param Level::* $level
+     * @param mixed[] $context
      */
-    private $Prefix;
+    abstract protected function writeToTarget($level, string $message, array $context): void;
 
     /**
-     * Message level => format
-     *
-     * @var array<int,ConsoleMessageFormat>
+     * @param Level::* $level
      */
-    private $MessageFormats = [];
-
-    private ConsoleTagFormats $TagFormats;
-
-    /**
-     * @var ConsoleFormatter|null
-     */
-    private $Formatter;
-
-    abstract protected function writeToTarget(int $level, string $message, array $context): void;
-
-    final public function write(int $level, string $message, array $context): void
+    final public function write($level, string $message, array $context = []): void
     {
         $this->writeToTarget(
             $level,
@@ -56,21 +47,15 @@ abstract class ConsoleTarget
         );
     }
 
-    final public function setMessageFormatting(bool $messageFormatting): void
-    {
-        if ($this->MessageFormatting !== $messageFormatting) {
-            $this->MessageFormatting = $messageFormatting;
-            $this->MessageFormats = [];
-            $this->Formatter = null;
-        }
-    }
-
     final public function setPrefix(?string $prefix): void
     {
         $this->Prefix =
-            $prefix === null || $prefix === ''
+            ($prefix ?? '') === ''
                 ? null
-                : $this->getTagFormats()[Tag::LOW_PRIORITY]->apply($prefix);
+                : $this->getFormatter()
+                    ->getTagFormat(Tag::LOW_PRIORITY)
+                    ->apply($prefix);
+        $this->PrefixLength = strlen($this->Prefix ?: '');
     }
 
     public function isStdout(): bool
@@ -88,123 +73,66 @@ abstract class ConsoleTarget
         return false;
     }
 
-    final public function getFormatter(): ConsoleFormatter
+    public function getFormatter(): Formatter
     {
         return $this->Formatter
-            ?: ($this->Formatter = new ConsoleFormatter($this->getTagFormats()));
+            ?? ($this->Formatter = new Formatter(
+                $this->createTagFormats(),
+                $this->createMessageFormats(),
+                fn(): ?int => $this->width(),
+            ));
     }
 
-    final public function getTagFormats(): ConsoleTagFormats
+    public function width(): ?int
     {
-        return $this->TagFormats
-            ?? ($this->TagFormats = $this->createTagFormats());
+        return 80 - $this->PrefixLength;
     }
 
-    protected function createMessageFormat(int $level): ConsoleMessageFormat
+    protected function createTagFormats(): TagFormats
     {
-        if (!$this->MessageFormatting || !$this->isTty()) {
-            $fmt = new ConsoleFormat();
-
-            return new ConsoleMessageFormat($fmt, $fmt, $fmt);
-        }
-
-        switch ($level) {
-            case Level::DEBUG:
-                return new ConsoleMessageFormat(
-                    new ConsoleFormat(Colour::DIM, Colour::UNBOLD_UNDIM, [Colour::UNBOLD_UNDIM => Colour::UNBOLD_DIM]),
-                    new ConsoleFormat(Colour::DIM, Colour::UNBOLD_UNDIM, [Colour::UNBOLD_UNDIM => Colour::UNBOLD_DIM]),
-                    new ConsoleFormat(Colour::BOLD . Colour::DIM, Colour::UNBOLD_UNDIM)
-                );
-            case Level::INFO:
-                return new ConsoleMessageFormat(
-                    new ConsoleFormat(),
-                    new ConsoleFormat(Colour::YELLOW, Colour::DEFAULT),
-                    new ConsoleFormat(Colour::BOLD . Colour::YELLOW, Colour::DEFAULT . Colour::UNBOLD_UNDIM)
-                );
-            case Level::NOTICE:
-                return new ConsoleMessageFormat(
-                    new ConsoleFormat(Colour::BOLD, Colour::UNBOLD_UNDIM),
-                    new ConsoleFormat(Colour::CYAN, Colour::DEFAULT),
-                    new ConsoleFormat(Colour::BOLD . Colour::CYAN, Colour::DEFAULT . Colour::UNBOLD_UNDIM)
-                );
-            case Level::WARNING:
-                return new ConsoleMessageFormat(
-                    new ConsoleFormat(Colour::BOLD . Colour::YELLOW, Colour::DEFAULT . Colour::UNBOLD_UNDIM),
-                    new ConsoleFormat(),
-                    new ConsoleFormat(Colour::BOLD . Colour::YELLOW, Colour::DEFAULT . Colour::UNBOLD_UNDIM)
-                );
-            case Level::ERROR:
-            case Level::CRITICAL:
-            case Level::ALERT:
-            case Level::EMERGENCY:
-                return new ConsoleMessageFormat(
-                    new ConsoleFormat(Colour::BOLD . Colour::RED, Colour::DEFAULT . Colour::UNBOLD_UNDIM),
-                    new ConsoleFormat(),
-                    new ConsoleFormat(Colour::BOLD . Colour::RED, Colour::DEFAULT . Colour::UNBOLD_UNDIM)
-                );
-        }
-
-        throw new UnexpectedValueException("Invalid ConsoleLevel: $level");
-    }
-
-    protected function createTagFormats(): ConsoleTagFormats
-    {
-        $formats = new ConsoleTagFormats();
-
         if (!$this->isTty()) {
-            return $formats;
+            return new TagFormats();
         }
 
-        $formats[Tag::HEADING] =
-            new ConsoleFormat(
-                Colour::BOLD . Colour::CYAN,
-                Colour::DEFAULT . Colour::UNBOLD_UNDIM,
-                [
-                    Colour::UNBOLD_UNDIM => Colour::UNDIM_BOLD,
-                    Colour::DEFAULT => Colour::CYAN,
-                ],
-            );
-        $formats[Tag::BOLD] =
-            new ConsoleFormat(
-                Colour::BOLD,
-                Colour::UNBOLD_UNDIM,
-                [
-                    Colour::UNBOLD_UNDIM => Colour::UNDIM_BOLD,
-                ],
-            );
-        $formats[Tag::ITALIC] =
-            new ConsoleFormat(
-                Colour::YELLOW,
-                Colour::DEFAULT,
-                [
-                    Colour::DEFAULT => Colour::YELLOW,
-                ],
-            );
-        $formats[Tag::UNDERLINE] =
-            new ConsoleFormat(
-                Colour::YELLOW . Colour::UNDERLINE,
-                Colour::NO_UNDERLINE . Colour::DEFAULT,
-                [
-                    Colour::DEFAULT => Colour::YELLOW,
-                    Colour::NO_UNDERLINE => '',
-                ],
-            );
-        $formats[Tag::LOW_PRIORITY] =
-            new ConsoleFormat(
-                Colour::DIM,
-                Colour::UNBOLD_UNDIM,
-                [
-                    Colour::UNBOLD_UNDIM => Colour::UNBOLD_DIM,
-                ],
-            );
-        $formats[Tag::CODE_SPAN] = $formats[Tag::BOLD];
+        $bold = Format::withTtyBold();
+        $dim = Format::withTtyDim();
+        $boldCyan = Format::withTtyBold(Colour::CYAN);
+        $yellow = Format::withTtyColour(Colour::YELLOW);
+        $yellowUnderline = Format::withTtyUnderline(Colour::YELLOW);
 
-        return $formats;
+        return (new TagFormats())
+            ->set(Tag::HEADING, $boldCyan)
+            ->set(Tag::BOLD, $bold)
+            ->set(Tag::ITALIC, $yellow)
+            ->set(Tag::UNDERLINE, $yellowUnderline)
+            ->set(Tag::LOW_PRIORITY, $dim)
+            ->set(Tag::CODE_SPAN, $bold);
     }
 
-    final public function getMessageFormat(int $level): ConsoleMessageFormat
+    protected function createMessageFormats(): MessageFormats
     {
-        return $this->MessageFormats[$level]
-            ?? ($this->MessageFormats[$level] = $this->createMessageFormat($level));
+        if (!$this->isTty()) {
+            return new MessageFormats();
+        }
+
+        $default = Format::getDefaultFormat();
+        $bold = Format::withTtyBold();
+        $dim = Format::withTtyDim();
+        $boldDim = Format::withTtyBoldDim();
+        $boldRed = Format::withTtyBold(Colour::RED);
+        $boldGreen = Format::withTtyBold(Colour::GREEN);
+        $boldYellow = Format::withTtyBold(Colour::YELLOW);
+        $boldCyan = Format::withTtyBold(Colour::CYAN);
+        $green = Format::withTtyColour(Colour::GREEN);
+        $yellow = Format::withTtyColour(Colour::YELLOW);
+        $cyan = Format::withTtyColour(Colour::CYAN);
+
+        return (new MessageFormats())
+            ->set(Levels::ERRORS, Types::ALL, new MessageFormat($boldRed, $default, $boldRed))
+            ->set(Level::WARNING, Types::ALL, new MessageFormat($boldYellow, $default, $boldYellow))
+            ->set(Level::NOTICE, Types::ALL, new MessageFormat($bold, $cyan, $boldCyan))
+            ->set(Level::INFO, Types::ALL, new MessageFormat($default, $yellow, $boldYellow))
+            ->set(Level::DEBUG, Types::ALL, new MessageFormat($dim, $dim, $boldDim))
+            ->set(Levels::INFO, Type::SUCCESS, new MessageFormat($green, $default, $boldGreen));
     }
 }

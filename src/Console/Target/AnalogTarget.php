@@ -10,7 +10,7 @@ use Lkrms\Console\Concept\ConsoleTarget;
  */
 final class AnalogTarget extends ConsoleTarget
 {
-    protected function writeToTarget(int $level, string $message, array $context): void
+    protected function writeToTarget($level, string $message, array $context): void
     {
         // Analog's level constants have the same values as equivalent
         // ConsoleLevel constants

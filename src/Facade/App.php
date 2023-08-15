@@ -49,7 +49,7 @@ use Lkrms\Utility\Env;
  * @method static Application loadSync(?string $command = null, mixed[] $arguments = null) Load the application's SyncStore, creating a backing database if needed (see {@see Application::loadSync()})
  * @method static Application logConsoleMessages(?bool $debug = null, string|null $name = null) Log console messages to a file in the application's log directory (see {@see Application::logConsoleMessages()})
  * @method static IContainer|null maybeGetGlobalContainer() Get the global container if set
- * @method static Application registerShutdownReport(int $level = Level::INFO, string[]|null $timers = ['*'], bool $resourceUsage = true) Print a summary of the script's timers and system resource usage when the application terminates (see {@see Application::registerShutdownReport()})
+ * @method static Application registerShutdownReport(Level::* $level = Level::INFO, string[]|null $timers = ['*'], bool $resourceUsage = true) Print a summary of the script's timers and system resource usage when the application terminates (see {@see Application::registerShutdownReport()})
  * @method static IContainer requireGlobalContainer() Get the global container if set, otherwise throw an exception
  * @method static Application service(class-string<IService> $id, class-string[]|null $services = null, class-string[]|null $exceptServices = null, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register an IService with the container, optionally specifying services to include or exclude (see {@see Container::service()})
  * @method static Application services(array<class-string|int,class-string<IService>> $serviceMap, int-mask-of<ServiceLifetime::*> $lifetime = ServiceLifetime::INHERIT) Register a service map with the container (see {@see Container::services()})
@@ -60,8 +60,8 @@ use Lkrms\Utility\Env;
  * @method static Application unbind(class-string $id) Remove a binding from the container
  * @method static Application unloadCache() Close the application's CacheStore
  * @method static Application unloadSync(bool $silent = false) Close the application's SyncStore (see {@see Application::unloadSync()})
- * @method static Application writeResourceUsage(int $level = Level::INFO) Print a summary of the script's system resource usage (see {@see Application::writeResourceUsage()})
- * @method static Application writeTimers(int $level = Level::INFO, bool $includeRunning = true, ?string $type = null, ?int $limit = 10) Print a summary of the script's timers (see {@see Application::writeTimers()})
+ * @method static Application writeResourceUsage(Level::* $level = Level::INFO) Print a summary of the script's system resource usage (see {@see Application::writeResourceUsage()})
+ * @method static Application writeTimers(Level::* $level = Level::INFO, bool $includeRunning = true, ?string $type = null, ?int $limit = 10) Print a summary of the script's timers (see {@see Application::writeTimers()})
  *
  * @uses Application
  *

@@ -2,30 +2,70 @@
 
 namespace Lkrms\Console;
 
+use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
+use Lkrms\Console\Contract\IConsoleFormat as Format;
+
 /**
- * A collection of character sequences that can be used to apply formatting to
- * the components of a console message
+ * Applies a target-defined format to each component of a console message
  *
  */
 final class ConsoleMessageFormat
 {
-    private $Msg1Format;
+    private Format $Msg1Format;
 
-    private $Msg2Format;
+    private Format $Msg2Format;
 
-    private $PrefixFormat;
+    private Format $PrefixFormat;
 
-    public function __construct(ConsoleFormat $msg1Format, ConsoleFormat $msg2Format, ConsoleFormat $prefixFormat)
-    {
+    private static ConsoleMessageFormat $DefaultMessageFormat;
+
+    public function __construct(
+        Format $msg1Format,
+        Format $msg2Format,
+        Format $prefixFormat
+    ) {
         $this->Msg1Format = $msg1Format;
         $this->Msg2Format = $msg2Format;
         $this->PrefixFormat = $prefixFormat;
     }
 
-    public function apply(string $msg1, ?string $msg2, string $prefix): string
+    /**
+     * Format a message before it is written to the target
+     *
+     * @param array<Attribute::*,mixed> $attributes
+     */
+    public function apply(string $msg1, ?string $msg2, string $prefix, array $attributes = []): string
     {
-        return $this->PrefixFormat->apply($prefix)
-            . $this->Msg1Format->apply($msg1)
-            . ($msg2 ? $this->Msg2Format->apply($msg2) : '');
+        return
+            ($prefix !== '' ? $this->PrefixFormat->apply(
+                $prefix, [Attribute::IS_PREFIX => true] + $attributes
+            ) : '')
+            . ($msg1 !== '' ? $this->Msg1Format->apply(
+                $msg1, [Attribute::IS_MSG1 => true] + $attributes
+            ) : '')
+            . (($msg2 ?? '') !== '' ? $this->Msg2Format->apply(
+                $msg2, [Attribute::IS_MSG2 => true] + $attributes
+            ) : '');
+    }
+
+    /**
+     * Get an instance that doesn't apply any formatting to messages
+     *
+     */
+    public static function getDefaultMessageFormat(): self
+    {
+        return self::$DefaultMessageFormat
+            ?? (self::$DefaultMessageFormat = self::createDefaultMessageFormat());
+    }
+
+    private static function createDefaultMessageFormat(): self
+    {
+        $format = ConsoleFormat::getDefaultFormat();
+
+        return new self(
+            $format,
+            $format,
+            $format,
+        );
     }
 }

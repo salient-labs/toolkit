@@ -328,8 +328,7 @@ class CliApplication extends Application implements ICliApplication
             $ex->reportErrors();
             if (($node && ($usage = $this->getUsage($name, $node, true))) ||
                     ($lastNode && ($usage = $this->getUsage($lastName, $lastNode, true)))) {
-                Console::print('', ConsoleLevel::ERROR, false);
-                Console::out($usage);
+                Console::out("\n{$usage}");
             }
 
             return 1;

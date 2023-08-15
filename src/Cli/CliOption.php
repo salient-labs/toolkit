@@ -10,7 +10,8 @@ use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Concern\TFullyReadable;
-use Lkrms\Console\Catalog\ConsoleLevel;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
+use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
@@ -529,9 +530,9 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                 $value = $this->maybeSplitValue($value);
                 if ($invalid = array_diff($value, $this->AllowedValues)) {
                     Console::message(
-                        ConsoleLevel::WARNING, '__Warning:__', $this->getUnknownValueMessage(
+                        Level::WARNING, '__Warning:__', $this->getUnknownValueMessage(
                             $invalid, $source
-                        ), null, false, false
+                        ), MessageType::UNFORMATTED
                     );
                 }
                 $value = array_intersect($value, $this->AllowedValues);

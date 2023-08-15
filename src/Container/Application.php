@@ -360,12 +360,12 @@ class Application extends Container implements IApplication
         $name = $name ? basename($name, '.log') : $this->getAppName();
         if (!($this->LogTargets[$name] ?? null)) {
             $this->LogTargets[$name] = $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
-            Console::registerTarget($target, ConsoleLevels::ALL);
+            Console::registerTarget($target, ConsoleLevels::ALL_EXCEPT_DEBUG);
         }
         if (($debug || (is_null($debug) && $this->Env->debug())) &&
                 !($this->DebugLogTargets[$name] ?? null)) {
             $this->DebugLogTargets[$name] = $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
-            Console::registerTarget($target, ConsoleLevels::DEBUG_ALL);
+            Console::registerTarget($target, ConsoleLevels::ALL);
         }
 
         return $this;
