@@ -23,10 +23,10 @@ final class LoggerTarget extends ConsoleTarget
     }
 
     /**
-     * @param int&ConsoleLevel::* $level
+     * @param ConsoleLevel::* $level
      * @param mixed[] $context
      */
-    protected function writeToTarget(int $level, string $message, array $context): void
+    protected function writeToTarget($level, string $message, array $context): void
     {
         $this->Logger->log(ConsoleLevel::toPsrLogLevel($level), $message, $context);
     }

@@ -500,7 +500,7 @@ abstract class CliCommand implements ICliCommand
             $compact = true;
             if ($option->AllowedValues) {
                 $allowedValues = array_map(
-                    [ConsoleFormatter::class, 'escape'],
+                    [ConsoleFormatter::class, 'escapeTags'],
                     $option->AllowedValues
                 );
                 $start = "{$indent}__Values:__";
@@ -521,7 +521,7 @@ abstract class CliCommand implements ICliCommand
 
             if ($option->DefaultValue) {
                 $defaultValue = array_map(
-                    [ConsoleFormatter::class, 'escape'],
+                    [ConsoleFormatter::class, 'escapeTags'],
                     (array) $option->DefaultValue
                 );
                 $generatedLines[] = sprintf(
@@ -570,7 +570,7 @@ abstract class CliCommand implements ICliCommand
             return '';
         }
 
-        $description = $formatter->format(
+        $description = $formatter->formatTags(
             str_replace(
                 '{{command}}',
                 $this->getNameWithProgram(),
@@ -1131,7 +1131,7 @@ abstract class CliCommand implements ICliCommand
         $this->loadOptionValues();
 
         if ($this->HasHelpArgument) {
-            Console::out($this->getHelp());
+            Console::stdout($this->getHelp());
 
             return 0;
         }
@@ -1139,7 +1139,7 @@ abstract class CliCommand implements ICliCommand
         if ($this->HasVersionArgument) {
             $appName = $this->App->getAppName();
             $version = Composer::getRootPackageVersion(true, true);
-            Console::out("__{$appName}__ $version");
+            Console::stdout("__{$appName}__ $version");
 
             return 0;
         }

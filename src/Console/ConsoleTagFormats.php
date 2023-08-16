@@ -2,91 +2,60 @@
 
 namespace Lkrms\Console;
 
-use ArrayAccess;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
-use Lkrms\Console\Contract\IConsoleFormat;
-use Lkrms\Console\Support\ConsoleLoopbackFormat;
-use LogicException;
-use ReturnTypeWillChange;
+use Lkrms\Console\Contract\IConsoleFormat as Format;
+use Lkrms\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
 
 /**
  * Maps inline formatting tags to target-defined formats
  *
- * @implements ArrayAccess<Tag::*,IConsoleFormat>
  */
-final class ConsoleTagFormats implements ArrayAccess
+final class ConsoleTagFormats
 {
     /**
-     * @var IConsoleFormat[]
+     * @var array<Tag::*,Format>
      */
-    private array $TagFormats = [];
+    private array $Formats = [];
 
-    private IConsoleFormat $FallbackFormat;
+    private Format $FallbackFormat;
 
-    public function __construct(?IConsoleFormat $fallbackFormat = null)
+    public function __construct(?Format $fallbackFormat = null)
     {
-        $this->FallbackFormat = $fallbackFormat ?: new ConsoleFormat();
-    }
-
-    public function getFallbackFormat(): IConsoleFormat
-    {
-        return $this->FallbackFormat;
+        $this->FallbackFormat = $fallbackFormat
+            ?: ConsoleFormat::getDefaultFormat();
     }
 
     /**
-     * @param Tag::* $offset
+     * Assign a format to a tag
+     *
+     * @param Tag::* $tag
+     * @return $this
      */
-    public function offsetExists($offset): bool
+    public function set($tag, Format $format)
     {
-        return array_key_exists($offset, $this->TagFormats);
+        $this->Formats[$tag] = $format;
+        return $this;
     }
 
     /**
-     * @param Tag::* $offset
-     * @return IConsoleFormat
+     * Get the format assigned to a tag
+     *
+     * @param Tag::* $tag
      */
-    #[ReturnTypeWillChange]
-    public function offsetGet($offset)
+    public function get($tag): Format
     {
-        return $this->TagFormats[$offset] ?? $this->FallbackFormat;
-    }
-
-    /**
-     * @param Tag::*|null $offset
-     * @param IConsoleFormat $value
-     */
-    public function offsetSet($offset, $value): void
-    {
-        if ($offset === null) {
-            throw new LogicException('Offset required');
-        }
-        if (!($value instanceof IConsoleFormat)) {
-            throw new LogicException(
-                sprintf('Value must implement %s', IConsoleFormat::class)
-            );
-        }
-        $this->TagFormats[$offset] = $value;
-    }
-
-    /**
-     * @param Tag::* $offset
-     */
-    public function offsetUnset($offset): void
-    {
-        unset($this->TagFormats[$offset]);
+        return $this->Formats[$tag] ?? $this->FallbackFormat;
     }
 
     public static function getLoopbackFormats(): self
     {
-        $instance = new self();
-        $instance[Tag::HEADING] = new ConsoleLoopbackFormat('***', '***');
-        $instance[Tag::BOLD] = new ConsoleLoopbackFormat('**', '**');
-        $instance[Tag::ITALIC] = new ConsoleLoopbackFormat('*', '*');
-        $instance[Tag::UNDERLINE] = new ConsoleLoopbackFormat('<', '>');
-        $instance[Tag::LOW_PRIORITY] = new ConsoleLoopbackFormat('~~', '~~');
-        $instance[Tag::CODE_SPAN] = new ConsoleLoopbackFormat('`', '`');
-        $instance[Tag::CODE_BLOCK] = new ConsoleLoopbackFormat('```', '```');
-
-        return $instance;
+        return (new self())
+            ->set(Tag::HEADING, new LoopbackFormat('***', '***'))
+            ->set(Tag::BOLD, new LoopbackFormat('**', '**'))
+            ->set(Tag::ITALIC, new LoopbackFormat('*', '*'))
+            ->set(Tag::UNDERLINE, new LoopbackFormat('<', '>'))
+            ->set(Tag::LOW_PRIORITY, new LoopbackFormat('~~', '~~'))
+            ->set(Tag::CODE_SPAN, new LoopbackFormat('`', '`'))
+            ->set(Tag::CODE_BLOCK, new LoopbackFormat('```', '```'));
     }
 }

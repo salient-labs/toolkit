@@ -2,6 +2,8 @@
 
 namespace Lkrms\Console\Contract;
 
+use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
+
 /**
  * Applies a target-defined format to console output
  *
@@ -11,7 +13,7 @@ interface IConsoleFormat
     /**
      * Format a string before it is written to the target
      *
-     * @param array<string,mixed> $attributes
+     * @param array<Attribute::*,mixed> $attributes
      */
-    public function apply(?string $text, ?string $tag = null, array $attributes = []): string;
+    public function apply(?string $text, array $attributes = []): string;
 }

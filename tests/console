@@ -21,6 +21,8 @@ $items = [
     [300, 301, 302],
 ];
 
+Console::summary('Test started');
+
 Console::group('Processing items');
 
 for ($i = 0; $i < count($items); $i++) {
@@ -38,6 +40,10 @@ for ($i = 0; $i < count($items); $i++) {
 }
 
 Console::groupEnd();
+
+Console::summary('First test finished');
+
+Console::error('This is an error', 'with a 2-part message');
 
 $i = 0;
 
@@ -92,5 +98,7 @@ TestClass::callDebugLogger();
 TestClass::callDebugLogger(1);
 TestClass::callDebugLogger(2);
 
-var_dump($escaped = ConsoleFormatter::escape('Backticks (`) and backslashes (\) should be escaped (`, \)'));
+var_dump($escaped = ConsoleFormatter::escapeTags('Backticks (`) and backslashes (\) should be escaped (`, \)'));
 Console::info($escaped);
+
+Console::summary();

@@ -183,10 +183,12 @@ interface IApplication extends IContainer, ReturnsEnvironment
      * Use {@see \Lkrms\Utility\System::startTimer()} and
      * {@see \Lkrms\Utility\System::stopTimer()} to collect timing information.
      *
+     * @param Level::* $level
      * @param string[]|null $timers If `null` or empty, timers aren't reported. If
      * `['*']` (the default), all timers are reported. Otherwise, only timers of
      * the specified types are reported.
      * @return $this
+     *
      * @see IApplication::writeResourceUsage()
      * @see IApplication::writeTimers()
      */
@@ -206,6 +208,7 @@ interface IApplication extends IContainer, ReturnsEnvironment
      *
      * ```
      *
+     * @param Level::* $level
      * @return $this
      */
     public function writeResourceUsage(int $level = Level::INFO);
@@ -229,7 +232,9 @@ interface IApplication extends IContainer, ReturnsEnvironment
      *
      * ```
      *
+     * @param Level::* $level
      * @return $this
+     *
      * @see \Lkrms\Utility\System::startTimer()
      * @see \Lkrms\Utility\System::stopTimer()
      * @see \Lkrms\Utility\System::getTimers()

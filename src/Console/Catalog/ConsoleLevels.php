@@ -3,6 +3,7 @@
 namespace Lkrms\Console\Catalog;
 
 use Lkrms\Concept\Enumeration;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
 
 /**
  * Groups of console message levels
@@ -11,40 +12,54 @@ use Lkrms\Concept\Enumeration;
  */
 final class ConsoleLevels extends Enumeration
 {
-    public const DEBUG_ALL = [
-        ...self::ALL,
-        ConsoleLevel::DEBUG,
-    ];
-
-    public const DEBUG_INFO = [
-        ...self::INFO,
-        ConsoleLevel::DEBUG,
-    ];
-
     public const ALL = [
-        ConsoleLevel::EMERGENCY,
-        ConsoleLevel::ALERT,
-        ConsoleLevel::CRITICAL,
-        ConsoleLevel::ERROR,
-        ConsoleLevel::WARNING,
-        ConsoleLevel::NOTICE,
-        ConsoleLevel::INFO,
+        Level::EMERGENCY,
+        Level::ALERT,
+        Level::CRITICAL,
+        Level::ERROR,
+        Level::WARNING,
+        Level::NOTICE,
+        Level::INFO,
+        Level::DEBUG,
+    ];
+
+    public const ALL_EXCEPT_DEBUG = [
+        Level::EMERGENCY,
+        Level::ALERT,
+        Level::CRITICAL,
+        Level::ERROR,
+        Level::WARNING,
+        Level::NOTICE,
+        Level::INFO,
+    ];
+
+    public const ERRORS_AND_WARNINGS = [
+        Level::EMERGENCY,
+        Level::ALERT,
+        Level::CRITICAL,
+        Level::ERROR,
+        Level::WARNING,
     ];
 
     public const ERRORS = [
-        ConsoleLevel::EMERGENCY,
-        ConsoleLevel::ALERT,
-        ConsoleLevel::CRITICAL,
-        ConsoleLevel::ERROR,
-        ConsoleLevel::WARNING,
+        Level::EMERGENCY,
+        Level::ALERT,
+        Level::CRITICAL,
+        Level::ERROR,
     ];
 
     public const INFO = [
-        ConsoleLevel::NOTICE,
-        ConsoleLevel::INFO,
+        Level::NOTICE,
+        Level::INFO,
+        Level::DEBUG,
+    ];
+
+    public const INFO_EXCEPT_DEBUG = [
+        Level::NOTICE,
+        Level::INFO,
     ];
 
     public const INFO_QUIET = [
-        ConsoleLevel::NOTICE,
+        Level::NOTICE,
     ];
 }

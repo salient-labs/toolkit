@@ -2,7 +2,12 @@
 
 namespace Lkrms\Console;
 
+use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
+use Lkrms\Console\Catalog\ConsoleMessageType as Type;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
+use Lkrms\Console\ConsoleMessageFormat as MessageFormat;
+use Lkrms\Console\Contract\IConsoleFormat as Format;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
@@ -15,6 +20,23 @@ use RuntimeException;
  */
 final class ConsoleFormatter
 {
+    public const DEFAULT_LEVEL_PREFIX_MAP = [
+        Level::EMERGENCY => ' !! ',
+        Level::ALERT => ' !! ',
+        Level::CRITICAL => ' !! ',
+        Level::ERROR => ' !! ',
+        Level::WARNING => '  ! ',
+        Level::NOTICE => '==> ',
+        Level::INFO => ' -> ',
+        Level::DEBUG => '--- ',
+    ];
+
+    public const DEFAULT_TYPE_PREFIX_MAP = [
+        Type::GROUP_START => '>>> ',
+        Type::GROUP_END => '<<< ',
+        Type::SUCCESS => ' // ',
+    ];
+
     /**
      * Splits the subject into formattable paragraphs, fenced code blocks and
      * code spans
@@ -91,20 +113,90 @@ final class ConsoleFormatter
 
     private static ConsoleTagFormats $DefaultTagFormats;
 
+    private static ConsoleMessageFormats $DefaultMessageFormats;
+
     private ConsoleTagFormats $TagFormats;
 
-    public function __construct(?ConsoleTagFormats $tagFormats = null)
-    {
+    private ConsoleMessageFormats $MessageFormats;
+
+    /**
+     * @var (callable(): int|null)|null
+     */
+    private $WidthCallback;
+
+    /**
+     * @var array<Level::*,string>
+     */
+    private array $LevelPrefixMap;
+
+    /**
+     * @var array<Type::*,string>
+     */
+    private array $TypePrefixMap;
+
+    /**
+     * @param (callable(): int|null)|null $widthCallback
+     * @param array<Level::*,string> $levelPrefixMap
+     * @param array<Type::*,string> $typePrefixMap
+     */
+    public function __construct(
+        ?ConsoleTagFormats $tagFormats = null,
+        ?ConsoleMessageFormats $messageFormats = null,
+        ?callable $widthCallback = null,
+        array $levelPrefixMap = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP,
+        array $typePrefixMap = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP
+    ) {
         $this->TagFormats = $tagFormats ?: $this->getDefaultTagFormats();
+        $this->MessageFormats = $messageFormats ?: $this->getDefaultMessageFormats();
+        $this->WidthCallback = $widthCallback;
+        $this->LevelPrefixMap = $levelPrefixMap;
+        $this->TypePrefixMap = $typePrefixMap;
+    }
+
+    /**
+     * Get the format assigned to a tag
+     *
+     * @param Tag::* $tag
+     */
+    public function getTagFormat($tag): Format
+    {
+        return $this->TagFormats->get($tag);
+    }
+
+    /**
+     * Get the format assigned to a message level and type
+     *
+     * @param Level::* $level
+     * @param Type::* $type
+     */
+    public function getMessageFormat($level, $type = Type::DEFAULT): MessageFormat
+    {
+        return $this->MessageFormats->get($level, $type);
+    }
+
+    /**
+     * Get the prefix assigned to a message level and type
+     *
+     * @param Level::* $level
+     * @param Type::* $type
+     */
+    public function getMessagePrefix($level, $type = Type::DEFAULT): string
+    {
+        return
+            $type === Type::UNFORMATTED || $type === Type::UNDECORATED
+                ? ''
+                : ($this->TypePrefixMap[$type]
+                    ?? $this->LevelPrefixMap[$level]
+                    ?? '');
     }
 
     /**
      * Format a string
      *
-     * This method applies target-defined formats to text that may contain
-     * Markdown-like inline formatting tags. Paragraphs outside preformatted
-     * blocks are optionally wrapped to a given width, and backslash-escaped
-     * punctuation characters and line breaks are preserved.
+     * Applies target-defined formats to text that may contain Markdown-like
+     * inline formatting tags. Paragraphs outside preformatted blocks are
+     * optionally wrapped to a given width, and backslash-escaped punctuation
+     * characters and line breaks are preserved.
      *
      * Escaped line breaks may have a leading space, so the following are
      * equivalent:
@@ -116,9 +208,16 @@ final class ConsoleFormatter
      * Text with a\
      * hard line break.
      * ```
+     *
+     * @param int|null $wrapToWidth If less than `0`, wrap text to the width
+     * reported by the target. If `null` (the default), do not wrap text.
      */
-    public function format(string $string, bool $unwrap = false, ?int $width = null, bool $unescape = true): string
-    {
+    public function formatTags(
+        string $string,
+        bool $unwrap = false,
+        ?int $wrapToWidth = null,
+        bool $unescape = true
+    ): string {
         if ($string === '' || $string === "\r") {
             return $string;
         }
@@ -216,9 +315,10 @@ final class ConsoleFormatter
                 }
 
                 $infostring = trim($match['infostring']);
-                $formatted = $this->TagFormats[Tag::CODE_BLOCK]->apply(
-                    $block, $match['fence'], ['infoString' => $infostring === '' ? null : $infostring]
-                );
+                $formatted = $this->TagFormats->get(Tag::CODE_BLOCK)->apply($block, [
+                    Attribute::TAG => $match['fence'],
+                    Attribute::INFO_STRING => $infostring === '' ? null : $infostring,
+                ]);
                 $placeholder = '?';
                 $replace[] = [
                     $baseOffset,
@@ -240,9 +340,9 @@ final class ConsoleFormatter
                     '$1',
                     strtr($span, "\n", ' '),
                 );
-                $formatted = $this->TagFormats[Tag::CODE_SPAN]->apply(
-                    $span, $match['backtickstring']
-                );
+                $formatted = $this->TagFormats->get(Tag::CODE_SPAN)->apply($span, [
+                    Attribute::TAG => $match['backtickstring'],
+                ]);
                 $placeholder = Pcre::replace('/[^ ]/u', 'x', $span);
                 $replace[] = [
                     $baseOffset,
@@ -292,8 +392,11 @@ final class ConsoleFormatter
             PREG_OFFSET_CAPTURE
         );
 
-        if (($width ?? 0) > 0) {
-            $string = wordwrap($string, $width);
+        if (($wrapToWidth ?? 0) < 0 && $this->WidthCallback) {
+            $wrapToWidth = ($this->WidthCallback)();
+        }
+        if (($wrapToWidth ?? 0) > 0) {
+            $string = wordwrap($string, $wrapToWidth);
         }
 
         // If `$unescape` is false, entries in `$replace` may be out of order
@@ -314,12 +417,41 @@ final class ConsoleFormatter
     }
 
     /**
+     * Format a message
+     *
+     * @param Level::* $level
+     * @param Type::* $type
+     */
+    public function formatMessage(
+        string $msg1,
+        ?string $msg2 = null,
+        $level = Level::INFO,
+        $type = Type::DEFAULT
+    ): string {
+        $attributes = [
+            Attribute::LEVEL => $level,
+            Attribute::TYPE => $type,
+        ];
+
+        if ($type === Type::UNFORMATTED) {
+            return $this->getDefaultMessageFormats()
+                ->get($level, $type)
+                ->apply($msg1, $msg2, '', $attributes);
+        }
+
+        $prefix = $this->getMessagePrefix($level, $type);
+
+        return $this->MessageFormats
+            ->get($level, $type)
+            ->apply($msg1, $msg2, $prefix, $attributes);
+    }
+
+    /**
      * Escape special characters, optionally including newlines, in a string
      *
      */
-    public static function escape(
-        string $string, bool $newlines = false
-    ): string {
+    public static function escapeTags(string $string, bool $newlines = false): string
+    {
         $escaped = addcslashes($string, '\!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~');
         return $newlines
             ? str_replace("\n", "\\\n", $escaped)
@@ -327,12 +459,12 @@ final class ConsoleFormatter
     }
 
     /**
-     * Remove inline formatting from a string
+     * Remove inline formatting tags from a string
      *
      */
     public static function removeTags(string $string): string
     {
-        return self::getDefaultFormatter()->format($string);
+        return self::getDefaultFormatter()->formatTags($string);
     }
 
     private static function getDefaultFormatter(): self
@@ -345,6 +477,12 @@ final class ConsoleFormatter
     {
         return self::$DefaultTagFormats
             ?? (self::$DefaultTagFormats = new ConsoleTagFormats());
+    }
+
+    private static function getDefaultMessageFormats(): ConsoleMessageFormats
+    {
+        return self::$DefaultMessageFormats
+            ?? (self::$DefaultMessageFormats = new ConsoleMessageFormats());
     }
 
     /**
@@ -373,21 +511,31 @@ final class ConsoleFormatter
             case '___':
             case '***':
             case '##':
-                return $formats[Tag::HEADING]->apply($text, $tag);
+                return $formats->get(Tag::HEADING)->apply($text, [
+                    Attribute::TAG => $tag,
+                ]);
 
             case '__':
             case '**':
-                return $formats[Tag::BOLD]->apply($text, $tag);
+                return $formats->get(Tag::BOLD)->apply($text, [
+                    Attribute::TAG => $tag,
+                ]);
 
             case '_':
             case '*':
-                return $formats[Tag::ITALIC]->apply($text, $tag);
+                return $formats->get(Tag::ITALIC)->apply($text, [
+                    Attribute::TAG => $tag,
+                ]);
 
             case '<':
-                return $formats[Tag::UNDERLINE]->apply($text, $tag);
+                return $formats->get(Tag::UNDERLINE)->apply($text, [
+                    Attribute::TAG => $tag,
+                ]);
 
             case '~~':
-                return $formats[Tag::LOW_PRIORITY]->apply($text, $tag);
+                return $formats->get(Tag::LOW_PRIORITY)->apply($text, [
+                    Attribute::TAG => $tag,
+                ]);
         }
 
         throw new RuntimeException(sprintf('Invalid tag: %s', $tag));

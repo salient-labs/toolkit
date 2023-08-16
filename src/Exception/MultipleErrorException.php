@@ -3,6 +3,7 @@
 namespace Lkrms\Exception;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
+use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Facade\Console;
 
 /**
@@ -43,7 +44,7 @@ abstract class MultipleErrorException extends Exception
     public function reportErrors()
     {
         foreach ($this->Errors as $error) {
-            Console::message(Level::ERROR, '__Error:__', $error, null, false, false);
+            Console::message(Level::ERROR, '__Error:__', $error, MessageType::UNFORMATTED);
         }
         return $this;
     }

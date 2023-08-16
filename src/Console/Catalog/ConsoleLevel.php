@@ -65,7 +65,7 @@ final class ConsoleLevel extends ConvertibleEnumeration
      *
      * @param ConsoleLevel::* $level
      */
-    public static function toCode(int $level, int $width = 1): string
+    public static function toCode($level, int $width = 1): string
     {
         if ((self::$NameMap[$level] ?? null) === null) {
             throw new LogicException(sprintf('Invalid ConsoleLevel: %d', $level));
@@ -78,7 +78,7 @@ final class ConsoleLevel extends ConvertibleEnumeration
      *
      * @param ConsoleLevel::* $level
      */
-    public static function toPsrLogLevel(int $level): string
+    public static function toPsrLogLevel($level): string
     {
         $logLevel = self::$LogLevelMap[$level] ?? null;
         if ($logLevel === null) {

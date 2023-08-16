@@ -13,36 +13,36 @@ With a similar API to the `console` object provided by web browsers, the
 
 ### Default targets
 
-By default, all [Console][Console] messages are written to a file created with
-mode 0600 at:
+By default, [Console][Console] output is appended to a file in the default
+temporary directory, created with mode 0600 if it doesn't already exist:
 
 ```php
 sys_get_temp_dir() . '/<script_basename>-<realpath_hash>-<user_id>.log'
 ```
 
-And when running on the command line:
+If the value of environment variable `CONSOLE_OUTPUT` is `stderr` or `stdout`,
+[Console][Console] output is also written to `STDERR` or `STDOUT` respectively.
 
-- If `STDERR` is a TTY and `STDOUT` is not, [Console][Console] messages are
-  written to `STDERR` to ensure `STDOUT` isn't tainted
+If `CONSOLE_OUTPUT` is not set and the script is running on the command line:
+
+- If `STDERR` is a TTY and `STDOUT` is not, console messages are written to
+  `STDERR` so output to `STDOUT` isn't tainted
 - Otherwise, errors and warnings are written to `STDERR`, and informational
   messages are written to `STDOUT`
-- Environment variable `CONSOLE_OUTPUT` may be set to `stderr` or `stdout` to
-  override [Console][Console]'s default behaviour
-- Debug messages are suppressed if environment variable `DEBUG` is unset or
-  empty
+
+Debug messages are written to the output log but are not written to `STDOUT` or
+`STDERR` if environment variable `DEBUG` is empty or not set.
 
 To override these defaults, register at least one [Console][Console] output
-target by calling [registerStdioTargets()][registerStdioTargets],
-[registerStderrTarget()][registerStderrTarget], or
-[registerTarget()][registerTarget] before any other `Console` methods are
-called, preferably while bootstrapping your application.
+target, e.g. by calling [registerTarget()][registerTarget], before any other
+`Console` methods are called, preferably while bootstrapping your application.
 
 > [Application][Application] and [CliApplication][CliApplication] always call
-> [registerStdioTargets()][registerStdioTargets]. This registers the default
-> `STDOUT` and `STDERR` targets explicitly and prevents creation of the
-> temporary default output log. To create a log file that persists between
-> reboots (in your project's `var/log` directory by default), call the app
-> container's [logConsoleMessages()][logConsoleMessages] method.
+> [registerStdioTargets()][registerStdioTargets], which registers the default
+> `STDOUT` and `STDERR` targets and prevents creation of the default output log.
+> To create a log file that persists between reboots (in your project's
+> `var/log` directory by default), call the app container's
+> [logConsoleMessages()][logConsoleMessages] method.
 
 ### Output methods
 
@@ -81,7 +81,6 @@ The following Markdown-like syntax is supported in [Console][Console] messages:
 [Console]: https://lkrms.github.io/php-util/Lkrms.Facade.Console.html
 [ConsoleWriter]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html
 [logConsoleMessages]: https://lkrms.github.io/php-util/Lkrms.Container.Application.html#_logConsoleMessages
-[registerStderrTarget]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerStderrTarget
 [registerStdioTargets]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerStdioTargets
 [registerTarget]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerTarget
 

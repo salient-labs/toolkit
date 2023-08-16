@@ -18,7 +18,7 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
         ?int $width = null,
         bool $unescape = true
     ): void {
-        $this->assertSame($expected, $formatter->format($string, $unwrap, $width, $unescape));
+        $this->assertSame($expected, $formatter->formatTags($string, $unwrap, $width, $unescape));
     }
 
     /**
@@ -141,7 +141,7 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
      */
     public function testEscape(string $expected, string $string, bool $newlines = false): void
     {
-        $escaped = ConsoleFormatter::escape($string, $newlines);
+        $escaped = ConsoleFormatter::escapeTags($string, $newlines);
         $this->assertSame($expected, $escaped);
     }
 

@@ -23,7 +23,7 @@ final class StreamTarget extends ConsoleTarget
     /**
      * @var bool
      */
-    private $AddTimestamp;
+    private $AddTimestamp = false;
 
     /**
      * @var string
@@ -51,7 +51,7 @@ final class StreamTarget extends ConsoleTarget
     private $IsTty;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $Path;
 
@@ -64,28 +64,35 @@ final class StreamTarget extends ConsoleTarget
      * Use an open stream as a console output target
      *
      * @param resource $stream
-     * @param bool|null $addTimestamp If `null`, timestamps will be added unless
-     * `$stream` is STDOUT, STDERR, or a TTY
+     * @param bool|null $addTimestamp If `null`, timestamps are added if
+     * `$stream` is not STDOUT or STDERR.
      * @param string|null $timestamp Default: `[d M y H:i:s.vO] `
      * @param \DateTimeZone|string|null $timezone Default: as per
      * `date_default_timezone_set` or INI setting `date.timezone`
      */
-    public function __construct($stream, bool $addTimestamp = null, string $timestamp = null, $timezone = null)
-    {
+    public function __construct(
+        $stream,
+        ?bool $addTimestamp = null,
+        ?string $timestamp = null,
+        $timezone = null
+    ) {
         stream_set_write_buffer($stream, 0);
 
         $this->Stream = $stream;
-        $this->IsStdout = File::getStreamUri($stream) == 'php://stdout';
-        $this->IsStderr = File::getStreamUri($stream) == 'php://stderr';
+        $this->IsStdout = File::getStreamUri($stream) === 'php://stdout';
+        $this->IsStderr = File::getStreamUri($stream) === 'php://stderr';
         $this->IsTty = stream_isatty($stream);
-        $this->AddTimestamp = !is_null($addTimestamp) ? $addTimestamp : !($this->IsStdout || $this->IsStderr);
 
-        if (!is_null($timestamp)) {
-            $this->Timestamp = $timestamp;
-        }
-
-        if (!is_null($timezone)) {
-            $this->Timezone = Convert::toTimezone($timezone);
+        if ($addTimestamp ||
+            ($addTimestamp === null &&
+                !($this->IsStdout || $this->IsStderr))) {
+            $this->AddTimestamp = true;
+            if ($timestamp !== null) {
+                $this->Timestamp = $timestamp;
+            }
+            if ($timezone !== null) {
+                $this->Timezone = Convert::toTimezone($timezone);
+            }
         }
     }
 
@@ -104,13 +111,16 @@ final class StreamTarget extends ConsoleTarget
         return $this->IsTty;
     }
 
+    /**
+     * @return $this
+     */
     public function reopen(string $path = null)
     {
-        if (!$this->Path) {
+        if ($this->Path === null) {
             throw new RuntimeException('StreamTarget not created by StreamTarget::fromPath()');
         }
 
-        $path = $path ?: $this->Path;
+        $path = ($path ?? '') === '' ? $this->Path : $path;
 
         if (!fclose($this->Stream) || !File::maybeCreate($path, 0600) || ($stream = fopen($path, 'a')) === false) {
             throw new RuntimeException("Could not close {$this->Path} and open $path");
@@ -118,6 +128,8 @@ final class StreamTarget extends ConsoleTarget
 
         $this->Stream = $stream;
         $this->Path = $path;
+
+        return $this;
     }
 
     /**
@@ -145,7 +157,7 @@ final class StreamTarget extends ConsoleTarget
         return $stream;
     }
 
-    protected function writeToTarget(int $level, string $message, array $context): void
+    protected function writeToTarget($level, string $message, array $context): void
     {
         if ($this->AddTimestamp) {
             $now = (new DateTime('now', $this->Timezone))->format($this->Timestamp);
