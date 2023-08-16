@@ -1117,8 +1117,6 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @see CliCommand::run()
      */
     final public function __invoke(string ...$args): int

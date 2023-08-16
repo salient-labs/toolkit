@@ -16,7 +16,7 @@ use Lkrms\Utility\Pcre;
 use RuntimeException;
 
 /**
- * Formats console output for a target
+ * Formats messages for a console output target
  *
  * @see ConsoleTarget::getFormatter()
  */
