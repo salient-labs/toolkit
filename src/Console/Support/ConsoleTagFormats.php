@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Console;
+namespace Lkrms\Console\Support;
 
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Contract\IConsoleFormat as Format;

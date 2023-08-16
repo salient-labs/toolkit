@@ -11,7 +11,7 @@ use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
 use Lkrms\Console\ConsoleFormatter;
-use Lkrms\Console\ConsoleTagFormats;
+use Lkrms\Console\Support\ConsoleTagFormats;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Convert;

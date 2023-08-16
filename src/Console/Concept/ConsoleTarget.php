@@ -7,19 +7,19 @@ use Lkrms\Console\Catalog\ConsoleLevels as Levels;
 use Lkrms\Console\Catalog\ConsoleMessageType as Type;
 use Lkrms\Console\Catalog\ConsoleMessageTypes as Types;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
-use Lkrms\Console\ConsoleFormat as Format;
 use Lkrms\Console\ConsoleFormatter as Formatter;
-use Lkrms\Console\ConsoleMessageFormat as MessageFormat;
-use Lkrms\Console\ConsoleMessageFormats as MessageFormats;
-use Lkrms\Console\ConsoleTagFormats as TagFormats;
-use Lkrms\Console\Contract\IConsoleTargetWithOptionalPrefix;
+use Lkrms\Console\Contract\IConsoleTargetWithPrefix;
+use Lkrms\Console\Support\ConsoleFormat as Format;
+use Lkrms\Console\Support\ConsoleMessageFormat as MessageFormat;
+use Lkrms\Console\Support\ConsoleMessageFormats as MessageFormats;
+use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Support\Catalog\TtyControlSequence as Colour;
 
 /**
  * Recommended base class for console output targets
  *
  */
-abstract class ConsoleTarget implements IConsoleTargetWithOptionalPrefix
+abstract class ConsoleTarget implements IConsoleTargetWithPrefix
 {
     private ?string $Prefix = null;
 
@@ -94,11 +94,11 @@ abstract class ConsoleTarget implements IConsoleTargetWithOptionalPrefix
             return new TagFormats();
         }
 
-        $bold = Format::withTtyBold();
-        $dim = Format::withTtyDim();
-        $boldCyan = Format::withTtyBold(Colour::CYAN);
-        $yellow = Format::withTtyColour(Colour::YELLOW);
-        $yellowUnderline = Format::withTtyUnderline(Colour::YELLOW);
+        $bold = Format::ttyBold();
+        $dim = Format::ttyDim();
+        $boldCyan = Format::ttyBold(Colour::CYAN);
+        $yellow = Format::ttyColour(Colour::YELLOW);
+        $yellowUnderline = Format::ttyUnderline(Colour::YELLOW);
 
         return (new TagFormats())
             ->set(Tag::HEADING, $boldCyan)
@@ -116,16 +116,16 @@ abstract class ConsoleTarget implements IConsoleTargetWithOptionalPrefix
         }
 
         $default = Format::getDefaultFormat();
-        $bold = Format::withTtyBold();
-        $dim = Format::withTtyDim();
-        $boldDim = Format::withTtyBoldDim();
-        $boldRed = Format::withTtyBold(Colour::RED);
-        $boldGreen = Format::withTtyBold(Colour::GREEN);
-        $boldYellow = Format::withTtyBold(Colour::YELLOW);
-        $boldCyan = Format::withTtyBold(Colour::CYAN);
-        $green = Format::withTtyColour(Colour::GREEN);
-        $yellow = Format::withTtyColour(Colour::YELLOW);
-        $cyan = Format::withTtyColour(Colour::CYAN);
+        $bold = Format::ttyBold();
+        $dim = Format::ttyDim();
+        $boldDim = Format::ttyBoldDim();
+        $boldRed = Format::ttyBold(Colour::RED);
+        $boldGreen = Format::ttyBold(Colour::GREEN);
+        $boldYellow = Format::ttyBold(Colour::YELLOW);
+        $boldCyan = Format::ttyBold(Colour::CYAN);
+        $green = Format::ttyColour(Colour::GREEN);
+        $yellow = Format::ttyColour(Colour::YELLOW);
+        $cyan = Format::ttyColour(Colour::CYAN);
 
         return (new MessageFormats())
             ->set(Levels::ERRORS, Types::ALL, new MessageFormat($boldRed, $default, $boldRed))

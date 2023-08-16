@@ -6,7 +6,7 @@ namespace Lkrms\Console\Contract;
  * A console target that adds an optional prefix before each line of output
  *
  */
-interface IConsoleTargetWithOptionalPrefix extends IConsoleTarget
+interface IConsoleTargetWithPrefix extends IConsoleTarget
 {
     /**
      * Add a prefix before each line of output written to the target
