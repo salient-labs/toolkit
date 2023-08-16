@@ -19,9 +19,11 @@ use Throwable;
 use UnexpectedValueException;
 
 /**
- * Log messages of various types to various targets
+ * Logs messages to registered targets
  *
- * Access via the {@see \Lkrms\Facade\Console} facade is recommended.
+ * {@see ConsoleWriter} methods should generally be called via the
+ * {@see \Lkrms\Facade\Console} facade. If a {@see ConsoleWriter} instance is
+ * required, call {@see \Lkrms\Facade\Console::getInstance()}.
  *
  */
 final class ConsoleWriter implements ReceivesFacade
@@ -62,14 +64,15 @@ final class ConsoleWriter implements ReceivesFacade
     private int $Warnings = 0;
 
     /**
-     * Message hash => counter
-     *
-     * @var array<string,int>
+     * @var array<string,true>
      */
     private array $Written = [];
 
     private ?string $Facade = null;
 
+    /**
+     * @inheritDoc
+     */
     public function setFacade(string $name)
     {
         $this->Facade = $name;
@@ -80,9 +83,10 @@ final class ConsoleWriter implements ReceivesFacade
      * Register the default output log as a target for all console messages
      *
      * Console output is appended to a file in the default temporary directory,
-     * created with mode 0600 if it doesn't already exist:
+     * created with mode `0600` if it doesn't already exist:
      *
      * ```php
+     * <?php
      * sys_get_temp_dir() . '/<script_basename>-<realpath_hash>-<user_id>.log'
      * ```
      *
@@ -264,39 +268,57 @@ final class ConsoleWriter implements ReceivesFacade
     /**
      * Call setPrefix on registered targets
      *
-     * `$prefix` is applied to all registered targets by default. Set `$stdio`
-     * to `false` to exclude targets backed by STDOUT or STDERR, or set
-     * `$notStdio` to `false` to exclude targets other than STDOUT and STDERR.
+     * If `$stdio` is `null` (the default), `$prefix` is applied to every
+     * registered target that implements {@see TargetWithPrefix}.
      *
-     * Default targets are registered if this method is called before an
-     * explicit target has been registered.
+     * If `$stdio` is `false`, targets backed by `STDOUT` or `STDERR` are
+     * excluded. Conversely, if `$stdio` is `true`, targets other than `STDOUT`
+     * and `STDERR` are excluded.
      *
-     * @param bool $ttyOnly If `true`, only call
-     * {@see TargetWithPrefix::setPrefix()} on TTY targets. `$stdio` and/or
-     * `$notStdio` must also be `true`.
+     * @param bool $ttyOnly If `true`, {@see TargetWithPrefix::setPrefix()} is
+     * only called on TTY targets.
      * @return $this
      */
     public function setTargetPrefix(
         ?string $prefix,
         bool $ttyOnly = false,
-        bool $stdio = true,
-        bool $notStdio = true
+        ?bool $stdio = null
     ) {
-        if (!$this->Targets) {
-            $this->registerDefaultTargets();
-        }
-
         foreach ($this->Targets as $target) {
             if (!($target instanceof TargetWithPrefix) ||
                     ($ttyOnly && !$target->isTty()) ||
-                    (!$stdio && ($target->isStdout() || $target->isStderr())) ||
-                    (!$notStdio && !($target->isStdout() || $target->isStderr()))) {
+                    ($stdio === false && ($target->isStdout() || $target->isStderr())) ||
+                    ($stdio === true && !($target->isStdout() || $target->isStderr()))) {
                 continue;
             }
             $target->setPrefix($prefix);
         }
 
         return $this;
+    }
+
+    /**
+     * Get the number of columns available for console output
+     *
+     * @param Level::* $level
+     */
+    public function getWidth($level = Level::INFO): ?int
+    {
+        /** @var Target[] */
+        $targets = $this->TtyTargetsByLevel[$level]
+            ?? $this->StdioTargetsByLevel[$level]
+            ?? $this->TargetsByLevel[$level]
+            ?? [];
+
+        $target = array_shift($targets);
+        if (!$target) {
+            $target = $this->getStderrTarget();
+            if (!$target->isTty()) {
+                $target = $this->getStdoutTarget();
+            }
+        }
+
+        return $target->width();
     }
 
     /**
@@ -320,13 +342,13 @@ final class ConsoleWriter implements ReceivesFacade
     /**
      * Print a "command finished" message with a summary of errors and warnings
      *
-     * Prints " // $finishedText $successText" with level INFO if no errors or
-     * warnings have been reported (default: " // Command finished without
-     * errors").
+     * Prints `" // $finishedText $successText"` with level INFO if no errors or
+     * warnings have been reported (default: `" // Command finished without
+     * errors"`).
      *
      * Otherwise, prints one of the following with level ERROR or WARNING:
-     * - " !! $finishedText with $errors errors[ and $warnings warnings]"
-     * - "  ! $finishedText with 0 errors and $warnings warnings"
+     * - `" !! $finishedText with $errors errors[ and $warnings warnings]"`
+     * - `"  ! $finishedText with 0 errors and $warnings warnings"`
      *
      * @return $this
      */
@@ -335,13 +357,13 @@ final class ConsoleWriter implements ReceivesFacade
         string $successText = 'without errors'
     ) {
         $msg1 = trim($finishedText);
-        if (0 === $this->Warnings + $this->Errors) {
+        if (0 === $this->Errors + $this->Warnings) {
             return $this->write(Level::INFO, "$msg1 $successText", null, Type::SUCCESS);
         }
 
-        $msg2 = 'with ' . Convert::plural($this->Errors, 'error', 'errors', true);
+        $msg2 = 'with ' . Convert::plural($this->Errors, 'error', null, true);
         if ($this->Warnings) {
-            $msg2 .= ' and ' . Convert::plural($this->Warnings, 'warning', 'warnings', true);
+            $msg2 .= ' and ' . Convert::plural($this->Warnings, 'warning', null, true);
         }
 
         return $this->write(
@@ -408,10 +430,7 @@ final class ConsoleWriter implements ReceivesFacade
         $level = Level::INFO,
         $type = Type::UNFORMATTED
     ) {
-        if (!$this->StdoutTarget) {
-            $this->StdoutTarget = new StreamTarget(STDOUT);
-        }
-        $targets = [$level => [$this->StdoutTarget]];
+        $targets = [$level => [$this->getStdoutTarget()]];
         $this->_write($level, $msg, null, $type, null, $targets);
 
         return $this;
@@ -429,10 +448,7 @@ final class ConsoleWriter implements ReceivesFacade
         $level = Level::INFO,
         $type = Type::UNFORMATTED
     ) {
-        if (!$this->StderrTarget) {
-            $this->StderrTarget = new StreamTarget(STDERR);
-        }
-        $targets = [$level => [$this->StderrTarget]];
+        $targets = [$level => [$this->getStderrTarget()]];
         $this->_write($level, $msg, null, $type, null, $targets);
 
         return $this;
@@ -621,16 +637,13 @@ final class ConsoleWriter implements ReceivesFacade
      * Print " -> $msg1 $msg2" with level INFO to TTY targets without moving to
      * the next line
      *
-     * The next message sent to the same targets is written with a leading
-     * "clear to end of line" sequence unless
-     * {@see ConsoleWriter::maybeClearLine()} has been called in the meantime.
+     * The next message sent to TTY targets is written with a leading "clear to
+     * end of line" sequence unless {@see ConsoleWriter::maybeClearLine()} has
+     * been called in the meantime.
      *
      * {@see ConsoleWriter::logProgress()} can be called repeatedly to display
-     * transient progress updates only when running interactively, without
-     * disrupting other Console messages or bloating output logs.
-     *
-     * To prevent moving to the next line when message length exceeds terminal
-     * width, truncate output by setting `$withLineWrapOff`.
+     * transient progress updates when running interactively, without disrupting
+     * other console messages or bloating output logs.
      *
      * @return $this
      */
@@ -642,7 +655,7 @@ final class ConsoleWriter implements ReceivesFacade
             return $this;
         }
 
-        if (is_null($msg2)) {
+        if (($msg2 ?? '') === '') {
             $msg1 = rtrim($msg1, "\r") . "\r";
         } else {
             $msg2 = rtrim($msg2, "\r") . "\r";
@@ -729,7 +742,7 @@ final class ConsoleWriter implements ReceivesFacade
         $this->GroupLevel++;
         $this->GroupMessageStack[] = Convert::sparseToString(' ', [$msg1, $msg2]);
 
-        return $this->write(Level::NOTICE, $msg1, $msg2);
+        return $this->write(Level::NOTICE, $msg1, $msg2, Type::GROUP_START);
     }
 
     /**
@@ -740,9 +753,11 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function groupEnd(bool $printMessage = false)
     {
-        if (($msg = array_pop($this->GroupMessageStack)) && $printMessage) {
-            $msg = Formatter::removeTags($msg);
-            $this->write(Level::NOTICE, '', $msg ? "{ $msg } complete" : null);
+        $msg = array_pop($this->GroupMessageStack);
+        if ($printMessage &&
+                $msg !== '' &&
+                ($msg = Formatter::removeTags($msg)) !== '') {
+            $this->write(Level::NOTICE, '', $msg ? "{ $msg } complete" : null, Type::GROUP_END);
         }
         $this->out('', Level::NOTICE);
 
@@ -756,7 +771,7 @@ final class ConsoleWriter implements ReceivesFacade
     /**
      * Report an uncaught exception
      *
-     * Prints " !! <exception>: <message> in <file>:<line>" with level
+     * Prints `" !! <exception>: <message> in <file>:<line>"` with level
      * `$messageLevel` (default: ERROR), followed by the exception's stack trace
      * with level `$stackTraceLevel` (default: DEBUG).
      *
@@ -796,7 +811,7 @@ final class ConsoleWriter implements ReceivesFacade
             $exception,
             true
         );
-        if (is_null($stackTraceLevel)) {
+        if ($stackTraceLevel === null) {
             return $this;
         }
         $this->write(
@@ -815,12 +830,6 @@ final class ConsoleWriter implements ReceivesFacade
         }
 
         return $this;
-    }
-
-    private function registerDefaultTargets(): void
-    {
-        $this->registerDefaultOutputLog();
-        $this->registerDefaultStdioTargets();
     }
 
     /**
@@ -875,26 +884,20 @@ final class ConsoleWriter implements ReceivesFacade
         return $reduced ?? [];
     }
 
-    /**
-     * Send a message to registered targets once per run
-     *
-     * @param Level::* $level
-     * @param Type::* $type
-     * @return $this
-     */
-    private function writeOnce(
-        $level,
-        string $msg1,
-        ?string $msg2,
-        $type = Type::DEFAULT,
-        ?Throwable $ex = null,
-        bool $msg2HasTags = false
-    ) {
-        $hash = Compute::hash($level, $msg1, $msg2, $type, $msg2HasTags);
-        if (($this->Written[$hash] = ($this->Written[$hash] ?? 0) + 1) < 2) {
-            return $this->write($level, $msg1, $msg2, $type, $ex, $msg2HasTags);
+    private function getStdoutTarget(): Target
+    {
+        if (!$this->StdoutTarget) {
+            return $this->StdoutTarget = new StreamTarget(STDOUT);
         }
-        return $this;
+        return $this->StdoutTarget;
+    }
+
+    private function getStderrTarget(): Target
+    {
+        if (!$this->StderrTarget) {
+            return $this->StderrTarget = new StreamTarget(STDERR);
+        }
+        return $this->StderrTarget;
     }
 
     /**
@@ -912,6 +915,29 @@ final class ConsoleWriter implements ReceivesFacade
         ?Throwable $ex = null,
         bool $msg2HasTags = false
     ) {
+        return $this->_write($level, $msg1, $msg2, $type, $ex, $this->TargetsByLevel, $msg2HasTags);
+    }
+
+    /**
+     * Send a message to registered targets once per run
+     *
+     * @param Level::* $level
+     * @param Type::* $type
+     * @return $this
+     */
+    private function writeOnce(
+        $level,
+        string $msg1,
+        ?string $msg2,
+        $type = Type::DEFAULT,
+        ?Throwable $ex = null,
+        bool $msg2HasTags = false
+    ) {
+        $hash = Compute::hash($level, $msg1, $msg2, $type, $msg2HasTags);
+        if ($this->Written[$hash] ?? false) {
+            return $this;
+        }
+        $this->Written[$hash] = true;
         return $this->_write($level, $msg1, $msg2, $type, $ex, $this->TargetsByLevel, $msg2HasTags);
     }
 
@@ -949,7 +975,8 @@ final class ConsoleWriter implements ReceivesFacade
         bool $msg2HasTags = false
     ) {
         if (!$this->Targets) {
-            $this->registerDefaultTargets();
+            $this->registerDefaultOutputLog();
+            $this->registerDefaultStdioTargets();
         }
 
         // As per PSR-3 Section 1.3

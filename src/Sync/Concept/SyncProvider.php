@@ -74,7 +74,7 @@ abstract class SyncProvider implements ISyncProvider, IService
     /**
      * Get an array that maps concrete classes to more specific subclasses
      *
-     * {@inheritdoc}
+     * {@inheritDoc}
      *
      * Bind any {@see ISyncEntity} classes customised for this provider to their
      * generic parent classes by overriding this method, e.g.:

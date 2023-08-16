@@ -14,9 +14,10 @@ With a similar API to the `console` object provided by web browsers, the
 ### Default targets
 
 By default, [Console][Console] output is appended to a file in the default
-temporary directory, created with mode 0600 if it doesn't already exist:
+temporary directory, created with mode `0600` if it doesn't already exist:
 
 ```php
+<?php
 sys_get_temp_dir() . '/<script_basename>-<realpath_hash>-<user_id>.log'
 ```
 

@@ -26,6 +26,7 @@ use Throwable;
  * @method static ConsoleWriter exception(Throwable $exception, Level::* $messageLevel = Level::ERROR, Level::*|null $stackTraceLevel = Level::DEBUG) Report an uncaught exception (see {@see ConsoleWriter::exception()})
  * @method static int getErrors() Get the number of errors reported so far
  * @method static int getWarnings() Get the number of warnings reported so far
+ * @method static int|null getWidth(Level::* $level = Level::INFO) Get the number of columns available for console output
  * @method static ConsoleWriter group(string $msg1, ?string $msg2 = null) Create a new message group and print "<<< $msg1 $msg2" with level NOTICE (see {@see ConsoleWriter::group()})
  * @method static ConsoleWriter groupEnd(bool $printMessage = false) Close the most recently created message group (see {@see ConsoleWriter::groupEnd()})
  * @method static ConsoleWriter info(string $msg1, ?string $msg2 = null) Print "==> $msg1 $msg2" with level NOTICE
@@ -43,7 +44,7 @@ use Throwable;
  * @method static ConsoleWriter registerStderrTarget(bool $replace = false) Register STDERR as a target for all console messages if running on the command line (see {@see ConsoleWriter::registerStderrTarget()})
  * @method static ConsoleWriter registerStdioTargets(bool $replace = false) Register STDOUT and STDERR as targets if running on the command line (see {@see ConsoleWriter::registerStdioTargets()})
  * @method static ConsoleWriter registerTarget(Target $target, array<Level::*> $levels = Levels::ALL) Register a target to receive one or more levels of console messages
- * @method static ConsoleWriter setTargetPrefix(?string $prefix, bool $ttyOnly = false, bool $stdio = true, bool $notStdio = true) Call setPrefix on registered targets (see {@see ConsoleWriter::setTargetPrefix()})
+ * @method static ConsoleWriter setTargetPrefix(?string $prefix, bool $ttyOnly = false, ?bool $stdio = null) Call setPrefix on registered targets (see {@see ConsoleWriter::setTargetPrefix()})
  * @method static ConsoleWriter stderr(string $msg, Level::* $level = Level::INFO, Type::* $type = Type::UNFORMATTED) Print "$msg" to STDERR, creating a target for it if necessary
  * @method static ConsoleWriter stdout(string $msg, Level::* $level = Level::INFO, Type::* $type = Type::UNFORMATTED) Print "$msg" to STDOUT, creating a target for it if necessary
  * @method static ConsoleWriter summary(string $finishedText = 'Command finished', string $successText = 'without errors') Print a "command finished" message with a summary of errors and warnings (see {@see ConsoleWriter::summary()})
