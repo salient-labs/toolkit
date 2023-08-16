@@ -6,8 +6,10 @@ use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as Type;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
-use Lkrms\Console\ConsoleMessageFormat as MessageFormat;
 use Lkrms\Console\Contract\IConsoleFormat as Format;
+use Lkrms\Console\Support\ConsoleMessageFormat as MessageFormat;
+use Lkrms\Console\Support\ConsoleMessageFormats as MessageFormats;
+use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
@@ -111,13 +113,13 @@ final class ConsoleFormatter
 
     private static ConsoleFormatter $DefaultFormatter;
 
-    private static ConsoleTagFormats $DefaultTagFormats;
+    private static TagFormats $DefaultTagFormats;
 
-    private static ConsoleMessageFormats $DefaultMessageFormats;
+    private static MessageFormats $DefaultMessageFormats;
 
-    private ConsoleTagFormats $TagFormats;
+    private TagFormats $TagFormats;
 
-    private ConsoleMessageFormats $MessageFormats;
+    private MessageFormats $MessageFormats;
 
     /**
      * @var (callable(): int|null)|null
@@ -140,8 +142,8 @@ final class ConsoleFormatter
      * @param array<Type::*,string> $typePrefixMap
      */
     public function __construct(
-        ?ConsoleTagFormats $tagFormats = null,
-        ?ConsoleMessageFormats $messageFormats = null,
+        ?TagFormats $tagFormats = null,
+        ?MessageFormats $messageFormats = null,
         ?callable $widthCallback = null,
         array $levelPrefixMap = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP,
         array $typePrefixMap = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP
@@ -473,22 +475,22 @@ final class ConsoleFormatter
             ?? (self::$DefaultFormatter = new self());
     }
 
-    private static function getDefaultTagFormats(): ConsoleTagFormats
+    private static function getDefaultTagFormats(): TagFormats
     {
         return self::$DefaultTagFormats
-            ?? (self::$DefaultTagFormats = new ConsoleTagFormats());
+            ?? (self::$DefaultTagFormats = new TagFormats());
     }
 
-    private static function getDefaultMessageFormats(): ConsoleMessageFormats
+    private static function getDefaultMessageFormats(): MessageFormats
     {
         return self::$DefaultMessageFormats
-            ?? (self::$DefaultMessageFormats = new ConsoleMessageFormats());
+            ?? (self::$DefaultMessageFormats = new MessageFormats());
     }
 
     /**
      * @param array<int|string,array{string,int}|string> $match
      */
-    private function applyTags(array $match, bool $matchHasOffset, bool $unescape, ConsoleTagFormats $formats): string
+    private function applyTags(array $match, bool $matchHasOffset, bool $unescape, TagFormats $formats): string
     {
         /** @var string */
         $text = $matchHasOffset ? $match['text'][0] : $match['text'];

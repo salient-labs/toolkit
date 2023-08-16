@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Console;
+namespace Lkrms\Console\Support;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as Type;
-use Lkrms\Console\ConsoleMessageFormat as MessageFormat;
+use Lkrms\Console\Support\ConsoleMessageFormat as MessageFormat;
 
 /**
  * Maps message levels and types to target-defined formats

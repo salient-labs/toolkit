@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Console;
+namespace Lkrms\Console\Support;
 
 use Lkrms\Console\Contract\IConsoleFormat;
 use Lkrms\Support\Catalog\TtyControlSequence as Colour;
@@ -86,7 +86,7 @@ final class ConsoleFormat implements IConsoleFormat
      * @param Colour::* $colour The terminal control sequence of the desired
      * colour.
      */
-    public static function withTtyColour(string $colour): self
+    public static function ttyColour(string $colour): self
     {
         /** @var string&Colour::* $colour */
         return new self(
@@ -105,7 +105,7 @@ final class ConsoleFormat implements IConsoleFormat
      * @param Colour::*|null $colour The terminal control sequence of the
      * desired colour. If `null`, no colour changes are applied.
      */
-    public static function withTtyBold(?string $colour = null): self
+    public static function ttyBold(?string $colour = null): self
     {
         if ($colour !== null) {
             return new self(
@@ -134,7 +134,7 @@ final class ConsoleFormat implements IConsoleFormat
      * @param Colour::*|null $colour The terminal control sequence of the
      * desired colour. If `null`, no colour changes are applied.
      */
-    public static function withTtyDim(?string $colour = null): self
+    public static function ttyDim(?string $colour = null): self
     {
         if ($colour !== null) {
             return new self(
@@ -166,7 +166,7 @@ final class ConsoleFormat implements IConsoleFormat
      * @param Colour::*|null $colour The terminal control sequence of the
      * desired colour. If `null`, no colour changes are applied.
      */
-    public static function withTtyBoldDim(?string $colour = null): self
+    public static function ttyBoldDim(?string $colour = null): self
     {
         if ($colour !== null) {
             return new self(
@@ -195,7 +195,7 @@ final class ConsoleFormat implements IConsoleFormat
      * @param Colour::*|null $colour The terminal control sequence of the
      * desired colour. If `null`, no colour changes are applied.
      */
-    public static function withTtyUnderline(?string $colour = null): self
+    public static function ttyUnderline(?string $colour = null): self
     {
         if ($colour !== null) {
             return new self(

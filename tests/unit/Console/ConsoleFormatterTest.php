@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Console;
 
 use Lkrms\Console\ConsoleFormatter;
-use Lkrms\Console\ConsoleTagFormats;
+use Lkrms\Console\Support\ConsoleTagFormats;
 
 final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
 {

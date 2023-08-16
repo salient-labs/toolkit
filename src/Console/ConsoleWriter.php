@@ -7,7 +7,7 @@ use Lkrms\Console\Catalog\ConsoleLevels as Levels;
 use Lkrms\Console\Catalog\ConsoleMessageType as Type;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Console\Contract\IConsoleTarget as Target;
-use Lkrms\Console\Contract\IConsoleTargetWithOptionalPrefix as TargetWithPrefix;
+use Lkrms\Console\Contract\IConsoleTargetWithPrefix as TargetWithPrefix;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\Compute;
