@@ -13,6 +13,7 @@ use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use RuntimeException;
 
 /**
@@ -122,7 +123,7 @@ final class ConsoleFormatter
     private MessageFormats $MessageFormats;
 
     /**
-     * @var (callable(): int|null)|null
+     * @var callable(): (int|null)
      */
     private $WidthCallback;
 
@@ -137,7 +138,7 @@ final class ConsoleFormatter
     private array $TypePrefixMap;
 
     /**
-     * @param (callable(): int|null)|null $widthCallback
+     * @param (callable(): (int|null))|null $widthCallback
      * @param array<Level::*,string> $levelPrefixMap
      * @param array<Type::*,string> $typePrefixMap
      */
@@ -150,7 +151,7 @@ final class ConsoleFormatter
     ) {
         $this->TagFormats = $tagFormats ?: $this->getDefaultTagFormats();
         $this->MessageFormats = $messageFormats ?: $this->getDefaultMessageFormats();
-        $this->WidthCallback = $widthCallback;
+        $this->WidthCallback = $widthCallback ?: fn(): ?int => null;
         $this->LevelPrefixMap = $levelPrefixMap;
         $this->TypePrefixMap = $typePrefixMap;
     }
@@ -211,13 +212,19 @@ final class ConsoleFormatter
      * hard line break.
      * ```
      *
-     * @param int|null $wrapToWidth If less than `0`, wrap text to the width
-     * reported by the target. If `null` (the default), do not wrap text.
+     * @param array{int,int}|int|null $wrapToWidth If `null` (the default), text
+     * is not wrapped.
+     *
+     * If `$wrapToWidth` is an `array`, the first line of text is wrapped to the
+     * first value, and text in subsequent lines is wrapped to the second value.
+     *
+     * Widths less than or equal to `0` are added to the width reported by the
+     * target, and text is wrapped to the result.
      */
     public function formatTags(
         string $string,
         bool $unwrap = false,
-        ?int $wrapToWidth = null,
+        $wrapToWidth = null,
         bool $unescape = true
     ): string {
         if ($string === '' || $string === "\r") {
@@ -364,9 +371,10 @@ final class ConsoleFormatter
             $adjustable[$i] = $offset;
         }
         $adjust = 0;
+        $placeholders = 0;
         $string = Pcre::replaceCallback(
             Regex::delimit(self::UNESCAPE_REGEX) . 'u',
-            function (array $match) use ($unescape, &$replace, &$adjust, &$adjustable): string {
+            function (array $match) use ($unescape, &$replace, &$adjustable, &$adjust, &$placeholders): string {
                 /** @var array<int|string,array{string,int}> $match */
                 $delta = strlen($match[1][0]) - strlen($match[0][0]);
                 foreach ($adjustable as $i => $offset) {
@@ -376,17 +384,24 @@ final class ConsoleFormatter
                     $replace[$i][0] += $delta;
                 }
 
-                if (!$unescape) {
+                $placeholder = null;
+                if ($match[1][0] === ' ') {
+                    $placeholder = 'x';
+                    $placeholders++;
+                }
+
+                if (!$unescape || $placeholder) {
                     // Use `$replace` to reinstate the escape after wrapping
                     $replace[] = [
                         $match[0][1] + $adjust,
                         strlen($match[1][0]),
-                        $match[0][0],
+                        !$unescape ? $match[0][0] : $match[1][0],
                     ];
-                    $adjust += $delta;
                 }
 
-                return $match[1][0];
+                $adjust += $delta;
+
+                return $placeholder ?? $match[1][0];
             },
             $string,
             -1,
@@ -394,15 +409,31 @@ final class ConsoleFormatter
             PREG_OFFSET_CAPTURE
         );
 
-        if (($wrapToWidth ?? 0) < 0 && $this->WidthCallback) {
-            $wrapToWidth = ($this->WidthCallback)();
+        if (is_array($wrapToWidth)) {
+            for ($i = 0; $i < 2; $i++) {
+                if ($wrapToWidth[$i] <= 0) {
+                    $width = $width ?? ($this->WidthCallback)();
+                    if ($width === null) {
+                        $wrapToWidth = null;
+                        break;
+                    }
+                    $wrapToWidth[$i] = max(0, $wrapToWidth[$i] + $width);
+                }
+            }
+        } elseif (is_int($wrapToWidth) &&
+                $wrapToWidth <= 0) {
+            $width = ($this->WidthCallback)();
+            $wrapToWidth =
+                $width === null
+                    ? null
+                    : max(0, $wrapToWidth + $width);
         }
-        if (($wrapToWidth ?? 0) > 0) {
-            $string = wordwrap($string, $wrapToWidth);
+        if ($wrapToWidth !== null) {
+            $string = Str::wordwrap($string, $wrapToWidth);
         }
 
         // If `$unescape` is false, entries in `$replace` may be out of order
-        if (!$unescape) {
+        if (!$unescape || $placeholders) {
             usort($replace, fn(array $a, array $b): int => $a[0] <=> $b[0]);
         }
 

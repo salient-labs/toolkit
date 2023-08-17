@@ -30,8 +30,8 @@ use Throwable;
  * @property-read string|null $Long The long form of the option, e.g. 'verbose'
  * @property-read string|null $Short The short form of the option, e.g. 'v'
  * @property-read string $Key The option's internal identifier
- * @property-read string|null $ValueName The name of the option's value as it appears in help messages
- * @property-read string $DisplayName The option's name as it appears in help messages
+ * @property-read string|null $ValueName The name of the option's value as it appears in usage information
+ * @property-read string $DisplayName The option's name as it appears in usage information
  * @property-read CliOptionType::* $OptionType The option's type
  * @property-read CliOptionValueType::* $ValueType The data type of the option's value
  * @property-read bool $IsFlag True if the option is a flag
@@ -85,7 +85,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     protected $Key;
 
     /**
-     * The name of the option's value as it appears in help messages
+     * The name of the option's value as it appears in usage information
      *
      * @var string|null
      * @see CliOption::getFriendlyValueName()
@@ -93,7 +93,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     protected $ValueName;
 
     /**
-     * The option's name as it appears in help messages
+     * The option's name as it appears in usage information
      *
      * @var string
      */
@@ -495,7 +495,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
                     );
                 } catch (CliUnknownValueException $ex) {
                     // Discard rejected values to ensure they're not displayed
-                    // in help messages
+                    // in usage info / help messages
                     $clone = clone $this;
                     $clone->UnknownValuePolicy = CliOptionValueUnknownPolicy::DISCARD;
                     $this->DefaultValue = $clone->applyUnknownValuePolicy($this->DefaultValue);

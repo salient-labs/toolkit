@@ -40,10 +40,10 @@ interface ICliCommandNode extends ReturnsContainer, ReturnsEnvironment, ReturnsD
     /**
      * Get a one-line summary of the command's syntax
      *
-     * Returns a usage message that includes the command's name, and the name
+     * Returns usage information that includes the command's name, and the name
      * used to run the script.
      */
-    public function getSynopsis(bool $withMarkup = true): string;
+    public function getSynopsis(bool $withMarkup = true, ?int $width = 80): string;
 
     /**
      * Get a detailed explanation of the command

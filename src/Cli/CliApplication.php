@@ -6,7 +6,7 @@ use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
-use Lkrms\Console\Catalog\ConsoleLevel;
+use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Container\Application;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Composer;
@@ -67,16 +67,16 @@ class CliApplication extends Application implements ICliApplication
      */
     protected function getNodeCommand(string $name, $node): ?CliCommand
     {
-        if (is_string($node)) {
-            if (!(($command = $this->get($node)) instanceof CliCommand)) {
-                throw new LogicException("Not a subclass of CliCommand: $node");
-            }
-            $command->setName($name ? explode(' ', $name) : []);
-
-            return $command;
+        if (!is_string($node)) {
+            return null;
         }
 
-        return null;
+        if (!(($command = $this->get($node)) instanceof CliCommand)) {
+            throw new LogicException("Not a subclass of CliCommand: $node");
+        }
+        $command->setName($name ? explode(' ', $name) : []);
+
+        return $command;
     }
 
     /**
@@ -188,39 +188,52 @@ class CliApplication extends Application implements ICliApplication
     }
 
     /**
-     * Generate a usage message for a command tree node
+     * Generate usage information or a help message for a command tree node
      *
      * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
      */
     private function getUsage(string $name, $node, bool $terse = false): ?string
     {
+        $width = $this->getHelpWidth($terse);
         $progName = $this->getProgramName();
         $fullName = trim("$progName $name");
+
         if ($command = $this->getNodeCommand($name, $node)) {
-            return $terse
-                ? $command->getSynopsis(false)
-                    . "\n\nSee '"
-                    . ($name ? "$progName help $name" : "$progName --help")
-                    . "' for more information."
-                : $command->getHelp();
-        } elseif (!is_array($node)) {
+            if (!$terse) {
+                return $command->getHelp(true, $width);
+            }
+            return Formatter::escapeTags($command->getSynopsis(false, $width)
+                . "\n\nSee '"
+                . ($name ? "$progName help $name" : "$progName --help")
+                . "' for more information.");
+        }
+
+        if (!is_array($node)) {
             return null;
         }
 
         $synopses = [];
         foreach ($node as $childName => $childNode) {
-            if ($command = $this->getNodeCommand($name . ($name ? ' ' : '') . $childName, $childNode)) {
-                $synopses[] = $terse ? $command->getSynopsis(false) : $command->getSubcommandSynopsis();
+            if ($command = $this->getNodeCommand(trim("$name $childName"), $childNode)) {
+                if ($terse) {
+                    $synopses[] = $command->getSynopsis(false, $width);
+                } else {
+                    $synopses[] = "__{$childName}__ - " . $command->description();
+                }
             } elseif (is_array($childNode)) {
-                $synopses[] = ($terse ? "$fullName $childName" : "__{$childName}__") . ' <command>';
+                if ($terse) {
+                    $synopses[] = "$fullName $childName <command>";
+                } else {
+                    $synopses[] = "__{$childName}__";
+                }
             }
         }
         $synopses = implode("\n", $synopses);
 
         if ($terse) {
-            return "$synopses\n\nSee '"
+            return Formatter::escapeTags("$synopses\n\nSee '"
                 . (Convert::sparseToString(' ', ["$progName help", $name, '<command>']))
-                . "' for more information.";
+                . "' for more information.");
         }
 
         $sections = [
@@ -229,14 +242,31 @@ class CliApplication extends Application implements ICliApplication
             'SUBCOMMANDS' => $synopses,
         ];
 
-        return self::buildHelp($sections);
+        return $this->buildHelp($sections);
     }
 
     /**
-     * @internal
-     * @param array<string,string> $sections
+     * @inheritDoc
      */
-    public static function buildHelp(array $sections): string
+    public function getHelpWidth(bool $terse = false): ?int
+    {
+        $width = Console::getWidth();
+
+        if ($width === null) {
+            return $width;
+        }
+
+        $width = max(76, $width);
+
+        return $terse
+            ? $width
+            : $width - 4;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function buildHelp(array $sections): string
     {
         $usage = '';
         foreach ($sections as $heading => $content) {
@@ -255,83 +285,99 @@ class CliApplication extends Application implements ICliApplication
         return rtrim($usage);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function run(): int
     {
         $args = array_slice($_SERVER['argv'], 1);
-        $node = $this->CommandTree;
-        $name = '';
 
         $lastNode = null;
         $lastName = null;
-        try {
-            while (is_array($node)) {
-                $arg = array_shift($args);
+        $node = $this->CommandTree;
+        $name = '';
 
-                // 1. Descend into the command tree if $arg is a legal
-                //    subcommand or unambiguous partial subcommand
-                // 2. Push "--help" onto $args and continue if $arg is "help"
-                // 3. If there are no further arguments, print usage info if
-                //    $arg is "--help" or version number if $arg is "--version"
-                // 4. Otherwise, fail
-                if ($arg && preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)) {
-                    $nodes = array_filter(
-                        $node,
-                        fn(string $childName): bool => strpos($childName, $arg) === 0,
-                        ARRAY_FILTER_USE_KEY
-                    );
-                    switch (count($nodes)) {
-                        case 0:
-                            if ($arg === 'help') {
-                                $args[] = '--help';
-                                continue 2;
-                            }
-                            break;
-                        case 1:
-                            $arg = array_keys($nodes)[0];
-                            break;
-                    }
-                    $lastNode = $node;
-                    $lastName = $name;
-                    $node = $node[$arg] ?? null;
-                    $name .= ($name ? ' ' : '') . $arg;
-                } elseif ($arg === '--help' && empty($args)) {
-                    Console::out($this->getUsage($name, $node));
+        while (is_array($node)) {
+            $arg = array_shift($args);
 
-                    return 0;
-                } elseif ($arg === '--version' && empty($args)) {
-                    $appName = $this->getAppName();
-                    $version = Composer::getRootPackageVersion(true, true);
-                    Console::out("__{$appName}__ $version");
+            // Print usage info if the last remaining $arg is "--help"
+            if ($arg === '--help' && !$args) {
+                $usage = $this->getUsage($name, $node);
+                Console::stdout($usage);
+                return 0;
+            }
 
-                    return 0;
-                } else {
-                    Console::out($this->getUsage($name, $node, true));
+            // or version number if it's "--version"
+            if ($arg === '--version' && !$args) {
+                $appName = $this->getAppName();
+                $version = Composer::getRootPackageVersion(true, true);
+                Console::stdout("__{$appName}__ $version");
+                return 0;
+            }
 
-                    // Exit without error unless there are unconsumed arguments
-                    return $arg === null ? 0 : 1;
+            // - If $args was empty before this iteration, print terse usage
+            //   info and exit without error
+            // - If $arg cannot be a valid subcommand, print terse usage info
+            //   and return a non-zero exit status
+            if ($arg === null ||
+                    !preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)) {
+                $usage = $this->getUsage($name, $node, true);
+                Console::out($usage);
+                return $arg === null
+                    ? 0
+                    : 1;
+            }
+
+            // Descend into the command tree if $arg is a registered subcommand
+            // or an unambiguous abbreviation thereof
+            $nodes = [];
+            foreach ($node as $childName => $childNode) {
+                if (strpos($childName, $arg) === 0) {
+                    $nodes[$childName] = $childNode;
                 }
             }
-
-            if ($command = $this->getNodeCommand($name, $node)) {
-                $this->RunningCommand = $command;
-
-                $result = $command(...$args);
-
-                $this->RunningCommand = null;
-
-                return $result;
-            } else {
-                throw new CliInvalidArgumentsException("no command registered at '$name'");
+            switch (count($nodes)) {
+                case 0:
+                    // Push "--help" onto $args and continue if $arg is "help"
+                    // or an abbreviation of "help"
+                    if (strpos('help', $arg) === 0) {
+                        $args[] = '--help';
+                        continue 2;
+                    }
+                    break;
+                case 1:
+                    // Expand unambiguous subcommands to their full names
+                    $arg = array_key_first($nodes);
+                    break;
             }
+            $lastNode = $node;
+            $lastName = $name;
+            $node = $node[$arg] ?? null;
+            $name .= ($name === '' ? '' : ' ') . $arg;
+        }
+
+        $command = $this->getNodeCommand($name, $node);
+        try {
+            if (!$command) {
+                throw new CliInvalidArgumentsException(
+                    sprintf('no command registered: %s', $name)
+                );
+            }
+            $this->RunningCommand = $command;
+            return $command(...$args);
         } catch (CliInvalidArgumentsException $ex) {
-            $this->RunningCommand = null;
             $ex->reportErrors();
-            if (($node && ($usage = $this->getUsage($name, $node, true))) ||
-                    ($lastNode && ($usage = $this->getUsage($lastName, $lastNode, true)))) {
+            if (!$node) {
+                $node = $lastNode;
+                $name = $lastName;
+            }
+            if ($node &&
+                    ($usage = $this->getUsage($name, $node, true)) !== null) {
                 Console::out("\n{$usage}");
             }
-
             return 1;
+        } finally {
+            $this->RunningCommand = null;
         }
     }
 
