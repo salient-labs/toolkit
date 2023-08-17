@@ -2,6 +2,7 @@
 
 namespace Lkrms\Cli\Contract;
 
+use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Contract\IApplication;
 use LogicException;
 
@@ -19,21 +20,6 @@ interface ICliApplication extends IApplication
 
     /**
      * Register a command with the container
-     *
-     * For example, an executable script called `sync-util` could register
-     * `Acme\Canvas\Sync`, an {@see ICliCommand} inheritor, as follows:
-     *
-     * ```php
-     * (new CliApplication(dirname(__DIR__)))
-     *     ->command(['sync', 'canvas'], \Acme\Canvas\Sync::class)
-     *     ->runAndExit();
-     * ```
-     *
-     * Then, `Acme\Canvas\Sync` could be invoked with:
-     *
-     * ```shell
-     * ./sync-util sync canvas
-     * ```
      *
      * @param string[] $name The name of the command as an array of subcommands.
      *
@@ -61,14 +47,38 @@ interface ICliApplication extends IApplication
     public function oneCommand(string $id);
 
     /**
+     * Get the number of columns available for usage information / help messages
+     * after adjusting for margins
+     *
+     * If the command is running in a terminal and `$margins` is the total width
+     * of left and right margins applied by {@see ICliApplication::buildHelp()},
+     * the return value might be:
+     *
+     * ```php
+     * <?php
+     * max(76, \Lkrms\Facade\Console::getWidth()) - $margins
+     * ```
+     *
+     * @return int<72,max>|null
+     */
+    public function getHelpWidth(bool $terse = false): ?int;
+
+    /**
+     * Create a help message from an array that maps section names to content
+     *
+     * @param array<CliHelpSectionName::*|string,string> $sections
+     */
+    public function buildHelp(array $sections): string;
+
+    /**
      * Process command-line arguments passed to the script
      *
      * The first applicable action is taken:
      *
      * - If `--help` is the only remaining argument after processing subcommand
-     *   arguments, a help message is printed and `0` is returned.
+     *   arguments, a help message is printed to `STDOUT` and `0` is returned.
      * - If `--version` is the only remaining argument, the application's name
-     *   and version number is printed and `0` is returned.
+     *   and version number is printed to `STDOUT` and `0` is returned.
      * - If subcommand arguments resolve to a registered command, it is invoked
      *   and its exit status is returned.
      * - If, after processing subcommand arguments, there are no further
