@@ -8,7 +8,10 @@ use Lkrms\Contract\IImmutable;
 use LogicException;
 
 /**
- * Base class for collections of objects of a given type
+ * Base class for collections of objects of a strictly enforced type
+ *
+ * Extend {@see LooselyTypedCollection} instead if performance concerns outweigh
+ * type safety.
  *
  * @template TKey of array-key
  * @template TValue of object
