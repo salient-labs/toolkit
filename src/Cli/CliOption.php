@@ -18,6 +18,7 @@ use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Console;
+use Lkrms\Support\Catalog\CharacterSequence as Char;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Test;
@@ -327,7 +328,7 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
         $this->Short = $this->IsPositional ? null : ($short ?: null);
         $this->Key = $this->IsPositional ? $long : ($short . '|' . $long);
         $this->ValueName = $this->IsFlag ? null : ($valueName ?: ($this->IsPositional ? Convert::toSnakeCase($long, '=') : null) ?: 'value');
-        $this->DisplayName = $this->IsPositional ? $this->getFriendlyValueName() : ($long ? '--' . $long : '-' . $short);
+        $this->DisplayName = $this->IsPositional ? $this->getFriendlyValueName(false) : ($long ? '--' . $long : '-' . $short);
         $this->ValueType = $this->IsFlag ? ($multipleAllowed ? CliOptionValueType::INTEGER : CliOptionValueType::BOOLEAN) : $valueType;
         $this->Delimiter = $multipleAllowed && !$this->IsFlag ? $delimiter : null;
         $this->Description = $description;
@@ -411,16 +412,28 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     /**
      * Format the option's value name
      *
+     * If {@see CliOption::$ValueName} contains angle brackets (`<`, `>`), it is
+     * returned as-is, otherwise:
+     *
+     * - if it contains uppercase characters and no lowercase characters, it is
+     *   converted to kebab-case and capitalised
+     * - if not, it is converted to kebab-case and enclosed between angle
+     *   brackets
+     *
+     * In conversions to kebab-case, `=` is preserved.
      */
-    public function getFriendlyValueName(): ?string
+    public function getFriendlyValueName(bool $withMarkup = true): ?string
     {
-        $name = $this->ValueName;
-        $upper = $name === strtoupper($name);
-        $name = Convert::toKebabCase($name, '=');
-        if ($upper) {
-            return '<' . strtoupper($name) . '>';
+        if ($this->ValueName === null || strpbrk($this->ValueName, '<>') !== false) {
+            return $this->ValueName;
         }
-        return "<$name>";
+
+        if (strpbrk($this->ValueName, Char::ALPHABETIC_UPPER) !== false &&
+                strpbrk($this->ValueName, Char::ALPHABETIC_LOWER) === false) {
+            [$before, $after] = $withMarkup ? ['<', '>'] : ['', ''];
+            return $before . strtoupper(Convert::toKebabCase($this->ValueName, '=')) . $after;
+        }
+        return '<' . Convert::toKebabCase($this->ValueName, '=') . '>';
     }
 
     /**

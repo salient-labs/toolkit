@@ -15,7 +15,7 @@ use Lkrms\Contract\IContainer;
  * @method static $this build(?IContainer $container = null) Create a new CliOptionBuilder (syntactic sugar for 'new CliOptionBuilder()')
  * @method $this long(?string $value) The long form of the option, e.g. 'verbose' (see {@see CliOption::$Long})
  * @method $this short(?string $value) The short form of the option, e.g. 'v' (see {@see CliOption::$Short})
- * @method $this valueName(?string $value) The name of the option's value as it appears in help messages (see {@see CliOption::$ValueName})
+ * @method $this valueName(?string $value) The name of the option's value as it appears in usage information (see {@see CliOption::$ValueName})
  * @method $this description(?string $value) A description of the option (see {@see CliOption::$Description})
  * @method $this optionType(CliOptionType::* $value) The option's type (see {@see CliOption::$OptionType})
  * @method $this valueType(CliOptionValueType::* $value) The data type of the option's value (see {@see CliOption::$ValueType})
