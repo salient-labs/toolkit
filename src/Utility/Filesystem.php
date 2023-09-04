@@ -2,8 +2,6 @@
 
 namespace Lkrms\Utility;
 
-use CallbackFilterIterator;
-use FilesystemIterator;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
@@ -11,6 +9,8 @@ use Lkrms\Facade\Sys;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
+use CallbackFilterIterator;
+use FilesystemIterator;
 use LogicException;
 use Phar;
 use RecursiveCallbackFilterIterator;

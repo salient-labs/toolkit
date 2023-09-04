@@ -7,12 +7,12 @@ use Lkrms\Console\Catalog\ConsoleLevels as Levels;
 use Lkrms\Console\Catalog\ConsoleMessageType as Type;
 use Lkrms\Console\Catalog\ConsoleMessageTypes as Types;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
-use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Console\Contract\IConsoleTargetWithPrefix;
 use Lkrms\Console\Support\ConsoleFormat as Format;
 use Lkrms\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Lkrms\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
+use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Support\Catalog\TtyControlSequence as Colour;
 
 /**

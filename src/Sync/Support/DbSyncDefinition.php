@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Closure;
 use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
@@ -15,6 +14,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Closure;
 use UnexpectedValueException;
 
 /**

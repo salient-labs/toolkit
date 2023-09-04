@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Closure;
 use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
@@ -17,6 +16,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
+use Closure;
 use RuntimeException;
 
 /**

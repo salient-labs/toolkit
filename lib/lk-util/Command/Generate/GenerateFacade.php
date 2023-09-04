@@ -30,7 +30,6 @@ final class GenerateFacade extends GenerateCommand
         'getReadable',
         'getWritable',
         'setFacade',
-
         // These are displaced by Facade
         'isLoaded',
         'load',

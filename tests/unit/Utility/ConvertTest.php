@@ -2,11 +2,11 @@
 
 namespace Lkrms\Tests\Utility;
 
+use Lkrms\Support\DateFormatter;
+use Lkrms\Utility\Convert;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Generator;
-use Lkrms\Support\DateFormatter;
-use Lkrms\Utility\Convert;
 use LogicException;
 
 final class ConvertTest extends \Lkrms\Tests\TestCase
@@ -363,7 +363,6 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
             '../..' => 'http://a/',
             '../../' => 'http://a/',
             '../../g' => 'http://a/g',
-
             // "Abnormal Examples"
             '' => 'http://a/b/c/d;p?q#f',
             '../../../g' => 'http://a/../g',
@@ -568,7 +567,6 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
             'https://host#fragment',
             'https://host:8443',
             'https://host',
-
             // From https://en.wikipedia.org/wiki/Uniform_Resource_Identifier:
             'https://john.doe@www.example.com:123/forum/questions/?tag=networking&order=newest#top',
             'ldap://[2001:db8::7]/c=GB?objectClass?one',

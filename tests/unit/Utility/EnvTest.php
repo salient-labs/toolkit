@@ -55,7 +55,6 @@ final class EnvTest extends \Lkrms\Tests\TestCase
             'unset -> string, default empty' => ['', 'get', ['default' => '']],
             'unset -> string, default text' => ['a', 'get', ['default' => 'a']],
             'unset -> string, default zero' => ['0', 'get', ['default' => '0']],
-
             // getInt
             'empty string -> int' => [null, 'getInt', ['value' => ''], InvalidEnvironmentException::class],
             'whitespace -> int' => [null, 'getInt', ['value' => ' '], InvalidEnvironmentException::class],
@@ -71,7 +70,6 @@ final class EnvTest extends \Lkrms\Tests\TestCase
             'unset -> int, default null' => [null, 'getInt', ['default' => null]],
             'unset -> int, default number' => [42, 'getInt', ['default' => 42]],
             'unset -> int, default zero' => [0, 'getInt', ['default' => 0]],
-
             // getBool
             'empty string -> bool' => [false, 'getBool', ['value' => '']],
             'whitespace -> bool' => [null, 'getBool', ['value' => ' '], InvalidEnvironmentException::class],
@@ -98,7 +96,6 @@ final class EnvTest extends \Lkrms\Tests\TestCase
             'unset -> bool, default null' => [null, 'getBool', ['default' => null]],
             'unset -> bool, default false' => [false, 'getBool', ['default' => false]],
             'unset -> bool, default true' => [true, 'getBool', ['default' => true]],
-
             // getList
             'empty string -> list' => [[], 'getList', ['value' => '']],
             'whitespace -> list' => [[' '], 'getList', ['value' => ' ']],
@@ -121,7 +118,6 @@ final class EnvTest extends \Lkrms\Tests\TestCase
             'list + whitespace #3 -> list' => [['a', '42', 'b '], 'getList', ['value' => 'a,42,b ']],
             'list + text -> list' => [['a', '42', 'b'], 'getList', ['value' => 'a,42,b']],
             'list + zero -> list' => [['0', '0', '0'], 'getList', ['value' => '0,0,0']],
-
             // getIntList
             'empty string -> intList' => [[], 'getIntList', ['value' => '']],
             'whitespace -> intList' => [null, 'getIntList', ['value' => ' '], InvalidEnvironmentException::class],
@@ -170,7 +166,6 @@ final class EnvTest extends \Lkrms\Tests\TestCase
             '[nullable] unset -> string, default empty' => ['', 'getNullable', ['default' => '']],
             '[nullable] unset -> string, default text' => ['a', 'getNullable', ['default' => 'a']],
             '[nullable] unset -> string, default zero' => ['0', 'getNullable', ['default' => '0']],
-
             // getNullableInt
             '[nullable] empty string -> int' => [null, 'getNullableInt', ['value' => '']],
             '[nullable] whitespace -> int' => [null, 'getNullableInt', ['value' => ' '], InvalidEnvironmentException::class],
@@ -186,7 +181,6 @@ final class EnvTest extends \Lkrms\Tests\TestCase
             '[nullable] unset -> int, default null' => [null, 'getNullableInt', ['default' => null]],
             '[nullable] unset -> int, default number' => [42, 'getNullableInt', ['default' => 42]],
             '[nullable] unset -> int, default zero' => [0, 'getNullableInt', ['default' => 0]],
-
             // getNullableBool
             '[nullable] empty string -> bool' => [null, 'getNullableBool', ['value' => '']],
             '[nullable] whitespace -> bool' => [null, 'getNullableBool', ['value' => ' '], InvalidEnvironmentException::class],

@@ -4,8 +4,8 @@ namespace Lkrms\Curler;
 
 use Lkrms\Auth\AccessToken;
 use Lkrms\Curler\Contract\ICurlerHeaders;
-use Lkrms\Curler\CurlerHeadersFlag as Flag;
 use Lkrms\Curler\Support\CurlerHeader;
+use Lkrms\Curler\CurlerHeadersFlag as Flag;
 use Lkrms\Support\Catalog\HttpHeader;
 
 /**

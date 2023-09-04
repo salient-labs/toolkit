@@ -2,8 +2,8 @@
 
 namespace Lkrms\Sync\Command;
 
-use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\Contract\ICliApplication;
+use Lkrms\Cli\CliCommand;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospectionClass;

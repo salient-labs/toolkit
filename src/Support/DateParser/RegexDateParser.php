@@ -2,9 +2,9 @@
 
 namespace Lkrms\Support\DateParser;
 
+use Lkrms\Contract\IDateParser;
 use DateTimeImmutable;
 use DateTimeZone;
-use Lkrms\Contract\IDateParser;
 
 /**
  * Returns a DateTimeImmutable from a callback if a regular expression matches

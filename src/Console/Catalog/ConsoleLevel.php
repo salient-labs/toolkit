@@ -3,8 +3,8 @@
 namespace Lkrms\Console\Catalog;
 
 use Lkrms\Concept\ConvertibleEnumeration;
-use LogicException;
 use Psr\Log\LogLevel;
+use LogicException;
 
 /**
  * Console message levels

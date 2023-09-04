@@ -3,9 +3,9 @@
 
 namespace Lkrms\Tests;
 
-use DateTime;
 use Lkrms\Err\Err;
 use Lkrms\Support\SqlQuery;
+use DateTime;
 
 require __DIR__ . '/../vendor/autoload.php';
 

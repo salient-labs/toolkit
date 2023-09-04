@@ -2,10 +2,10 @@
 
 namespace Lkrms\Support\Iterator;
 
-use ArrayIterator;
-use IteratorIterator;
 use Lkrms\Support\Iterator\Concern\FluentIteratorTrait;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use ArrayIterator;
+use IteratorIterator;
 use Traversable;
 
 /**

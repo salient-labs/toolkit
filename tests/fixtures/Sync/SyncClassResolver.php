@@ -20,7 +20,7 @@ class SyncClassResolver implements ISyncClassResolver
                 '',
             ],
             "\\$entity"
-        );;
+        );
     }
 
     public static function providerToEntity(string $provider): ?string

@@ -2,11 +2,11 @@
 
 namespace Lkrms\Auth;
 
-use DateTimeImmutable;
-use DateTimeInterface;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Utility\Convert;
+use DateTimeImmutable;
+use DateTimeInterface;
 
 /**
  * An immutable access token

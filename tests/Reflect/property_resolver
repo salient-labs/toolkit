@@ -3,7 +3,6 @@
 
 namespace Lkrms\Tests\Reflect;
 
-use DateTimeImmutable;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TFullyReadable;
@@ -16,6 +15,7 @@ use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Err\Err;
 use Lkrms\Support\Introspector;
+use DateTimeImmutable;
 
 require __DIR__ . '/../../vendor/autoload.php';
 

@@ -2,8 +2,6 @@
 
 namespace Lkrms\Support;
 
-use Closure;
-use Generator;
 use Lkrms\Concept\FluentInterface;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
@@ -13,6 +11,8 @@ use Lkrms\Exception\PipelineResultRejectedException;
 use Lkrms\Facade\Mapper;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
+use Closure;
+use Generator;
 use LogicException;
 use Throwable;
 

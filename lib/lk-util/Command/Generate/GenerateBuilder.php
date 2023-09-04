@@ -2,7 +2,6 @@
 
 namespace Lkrms\LkUtil\Command\Generate;
 
-use Closure;
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
 use Lkrms\Concept\Builder;
@@ -10,11 +9,12 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Reflect;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\Support\Introspector;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
+use Lkrms\Support\Introspector;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
+use Closure;
 use ReflectionParameter;
 use ReflectionProperty;
 

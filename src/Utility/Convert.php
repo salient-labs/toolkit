@@ -2,6 +2,11 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Lkrms\Support\Iterator\Contract\MutableIterator;
+use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
+use Lkrms\Support\DateFormatter;
+use Lkrms\Utility\Test;
 use ArrayIterator;
 use Closure;
 use DateInterval;
@@ -10,11 +15,6 @@ use DateTimeInterface;
 use DateTimeZone;
 use Iterator;
 use IteratorIterator;
-use Lkrms\Support\Catalog\RegularExpression as Regex;
-use Lkrms\Support\DateFormatter;
-use Lkrms\Support\Iterator\Contract\MutableIterator;
-use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
-use Lkrms\Utility\Test;
 use LogicException;
 use RecursiveIteratorIterator;
 

@@ -2,12 +2,12 @@
 
 namespace Lkrms\Curler\Pager;
 
-use Closure;
 use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Contract\ICurlerPager;
-use Lkrms\Curler\Curler;
 use Lkrms\Curler\Support\CurlerPageBuilder;
+use Lkrms\Curler\Curler;
 use Lkrms\Utility\Convert;
+use Closure;
 
 /**
  * Increments a value in the query string and repeats the request until no

@@ -2,7 +2,6 @@
 
 namespace Lkrms\Cli;
 
-use DateTimeImmutable;
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
@@ -22,6 +21,7 @@ use Lkrms\Support\Catalog\CharacterSequence as Char;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Test;
+use DateTimeImmutable;
 use LogicException;
 use Throwable;
 

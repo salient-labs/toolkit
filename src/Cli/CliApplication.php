@@ -3,9 +3,9 @@
 namespace Lkrms\Cli;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
-use Lkrms\Cli\CliCommand;
 use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
+use Lkrms\Cli\CliCommand;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Container\Application;
 use Lkrms\Facade\Assert;

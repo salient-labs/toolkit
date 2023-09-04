@@ -545,7 +545,7 @@ final class PhpDoc implements IReadable
                 $parser->mergeInherited($phpDoc);
             } else {
                 $parser = $phpDoc;
-            };
+            }
         }
 
         return $parser;

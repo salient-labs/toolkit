@@ -2,12 +2,12 @@
 
 namespace Lkrms\Sync\Contract;
 
-use JsonSerializable;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\ReturnsDescription;
 use Lkrms\Sync\Catalog\SyncSerializeLinkType;
 use Lkrms\Sync\Support\SyncSerializeRules;
+use JsonSerializable;
 
 /**
  * Represents the state of an entity in an external system

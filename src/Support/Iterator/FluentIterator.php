@@ -2,10 +2,10 @@
 
 namespace Lkrms\Support\Iterator;
 
-use Iterator;
-use IteratorIterator;
 use Lkrms\Support\Iterator\Concern\FluentIteratorTrait;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Iterator;
+use IteratorIterator;
 
 /**
  * Uses a fluent interface to iterate over another iterator

@@ -2,11 +2,11 @@
 
 namespace Lkrms\Tests\Support;
 
-use Closure;
 use Lkrms\Exception\PipelineResultRejectedException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Pipeline;
+use Closure;
 use Throwable;
 use UnexpectedValueException;
 
@@ -165,27 +165,22 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-
             // 2.
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => null, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-
             // 3.
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Name' => 'Amir', 'Email' => 'amir@domain.test', 'URI' => 'https://domain.test/~amir'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-
             // 4.
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry'],
-
             // 5.
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Name' => 'Amir', 'Email' => 'amir@domain.test', 'URI' => 'https://domain.test/~amir'],
             ['Id' => 71, 'Name' => 'Terry'],
-
             // 6.
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test', 'UPN' => 'greta@domain.test'],
             ['Id' => null, 'Name' => 'Amir', 'Email' => 'amir@domain.test', 'UPN' => 'amir@domain.test'],
@@ -285,25 +280,20 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-
             // ArrayKeyConformity::COMPLETE + bad
             ['Id' => 'Greta', 'Name' => 32, 'Email' => 'greta@domain.test'],
             ['Id' => 'Amir', 'Name' => 'amir@domain.test', 'Email' => 53],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-
             // ArrayKeyConformity::COMPLETE + ugly
             $err[0] ?? null,
-
             // ArrayKeyConformity::NONE + good
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-
             // ArrayKeyConformity::NONE + bad
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Id' => 53, 'Name' => 'Amir', 'Email' => 'amir@domain.test'],
             ['Id' => 71, 'Name' => 'Terry', 'Email' => null],
-
             // ArrayKeyConformity::NONE + ugly
             ['Id' => 32, 'Name' => 'Greta', 'Email' => 'greta@domain.test'],
             ['Email' => 'amir@domain.test'],

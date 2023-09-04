@@ -2,7 +2,6 @@
 
 namespace Lkrms\Support;
 
-use DateTimeInterface;
 use Lkrms\Contract\HasDateProperties;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IHierarchy;
@@ -12,6 +11,7 @@ use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Facade\Reflect;
 use Lkrms\Support\Catalog\NormaliserFlag;
+use DateTimeInterface;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;

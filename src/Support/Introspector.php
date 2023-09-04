@@ -2,7 +2,6 @@
 
 namespace Lkrms\Support;
 
-use Closure;
 use Lkrms\Concern\TIntrospector;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
@@ -14,6 +13,7 @@ use Lkrms\Contract\ISerializeRules;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Convert;
+use Closure;
 use RuntimeException;
 use UnexpectedValueException;
 

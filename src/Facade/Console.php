@@ -6,8 +6,8 @@ use Lkrms\Concept\Facade;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevels as Levels;
 use Lkrms\Console\Catalog\ConsoleMessageType as Type;
-use Lkrms\Console\ConsoleWriter;
 use Lkrms\Console\Contract\IConsoleTarget as Target;
+use Lkrms\Console\ConsoleWriter;
 use Throwable;
 
 /**

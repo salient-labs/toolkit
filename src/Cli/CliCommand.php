@@ -4,14 +4,14 @@ namespace Lkrms\Cli;
 
 use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
-use Lkrms\Cli\CliOption;
-use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
-use Lkrms\Console\ConsoleFormatter as Formatter;
+use Lkrms\Cli\CliOption;
+use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
+use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Convert;

@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Closure;
 use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
@@ -23,6 +22,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Utility\Env;
+use Closure;
 use UnexpectedValueException;
 
 /**

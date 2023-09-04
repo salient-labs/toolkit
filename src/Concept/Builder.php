@@ -2,12 +2,12 @@
 
 namespace Lkrms\Concept;
 
-use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Facade\Console;
 use Lkrms\Support\Introspector;
+use Closure;
 use UnexpectedValueException;
 
 /**

@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Concept;
 
-use Closure;
 use Lkrms\Concept\FluentInterface;
 use Lkrms\Concern\TReadable;
 use Lkrms\Contract\IPipeline;
@@ -19,6 +18,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospectionClass;
 use Lkrms\Sync\Support\SyncIntrospector;
+use Closure;
 use RuntimeException;
 use UnexpectedValueException;
 

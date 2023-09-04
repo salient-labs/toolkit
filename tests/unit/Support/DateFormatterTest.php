@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Support;
 
-use DateTimeInterface;
-use Lkrms\Support\DateFormatter;
 use Lkrms\Support\DateParser\RegexDateParser;
+use Lkrms\Support\DateFormatter;
+use DateTimeInterface;
 
 final class DateFormatterTest extends \Lkrms\Tests\TestCase
 {

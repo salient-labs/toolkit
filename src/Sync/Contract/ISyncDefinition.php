@@ -2,9 +2,9 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Closure;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Sync\Catalog\SyncOperation;
+use Closure;
 
 /**
  * Provides direct access to an ISyncProvider's implementation of sync

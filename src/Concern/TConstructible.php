@@ -2,11 +2,11 @@
 
 namespace Lkrms\Concern;
 
-use Generator;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Introspector;
+use Generator;
 
 /**
  * Implements IConstructible to create instances from associative arrays

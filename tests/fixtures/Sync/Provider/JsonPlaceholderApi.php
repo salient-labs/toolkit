@@ -11,9 +11,9 @@ use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
 use Lkrms\Sync\Support\SyncContext;
-use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
 use Lkrms\Tests\Sync\Entity\Provider\UserProvider;
+use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 
 /**
