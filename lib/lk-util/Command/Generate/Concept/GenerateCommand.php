@@ -445,16 +445,26 @@ abstract class GenerateCommand extends Command
      */
     protected function generateImports(): array
     {
-        $imports = [];
+        $map = [];
         foreach ($this->ImportMap as $alias) {
             $import = $this->AliasMap[strtolower($alias)];
             if (!strcasecmp($alias, Convert::classToBasename($import))) {
-                $imports[] = sprintf('use %s;', $import);
+                $map[$import] = null;
                 continue;
             }
-            $imports[] = sprintf('use %s as %s;', $import, $alias);
+            $map[$import] = $alias;
         }
-        sort($imports);
+
+        // Sort by FQCN, depth-first
+        uksort($map, fn($a, $b) => $this->getSortableFqcn($a) <=> $this->getSortableFqcn($b));
+
+        $imports = [];
+        foreach ($map as $import => $alias) {
+            $imports[] =
+                $alias === null
+                    ? sprintf('use %s;', $import)
+                    : sprintf('use %s as %s;', $import, $alias);
+        }
 
         return $imports;
     }
@@ -595,5 +605,40 @@ abstract class GenerateCommand extends Command
             ),
             ' */'
         ];
+    }
+
+    /**
+     * Normalise a FQCN for depth-first sorting
+     *
+     * Before:
+     *
+     * ```
+     * A
+     * A\B\C
+     * A\B
+     * ```
+     *
+     * After:
+     *
+     * ```
+     * 1A
+     * 0A \ 0B \ 1C
+     * 0A \ 1B
+     * ```
+     */
+    private function getSortableFqcn(string $import): string
+    {
+        $names = explode('\\', $import);
+        $import = '';
+        $prefix = 0;
+        do {
+            $name = array_shift($names);
+            if (!$names) {
+                $prefix = 1;
+            }
+            $import .= ($import === '' ? '' : ' \ ') . "$prefix$name";
+        } while (!$prefix);
+
+        return $import;
     }
 }
