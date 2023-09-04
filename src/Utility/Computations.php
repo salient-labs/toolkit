@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Support\Catalog\CharacterSequence as Char;
 use Lkrms\Utility\Convert;
 
 /**
@@ -41,7 +42,7 @@ final class Computations
      * Generate a cryptographically secure string
      *
      */
-    public function randomText(int $length, string $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'): string
+    public function randomText(int $length, string $chars = Char::ALPHANUMERIC): string
     {
         $max = strlen($chars) - 1;
         $text = '';

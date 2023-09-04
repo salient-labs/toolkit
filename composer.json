@@ -4,7 +4,7 @@
     "license": "MIT",
     "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
     "require": {
-        "php": ">=7.4 <8.3",
+        "php": ">=7.4",
         "composer-runtime-api": "^2.2",
         "filp/whoops": "^2",
         "lkrms/dice": "^4.1.6",
