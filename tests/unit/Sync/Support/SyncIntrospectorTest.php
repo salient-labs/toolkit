@@ -2,7 +2,6 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Support\SyncIntrospector;
@@ -13,6 +12,7 @@ use Lkrms\Tests\Sync\Entity\Provider\UserProvider;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Tests\Sync\SyncClassResolver;
+use Closure;
 use ReflectionFunction;
 
 final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase

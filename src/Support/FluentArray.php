@@ -2,9 +2,9 @@
 
 namespace Lkrms\Support;
 
-use Iterator;
 use Lkrms\Concern\HasMutator;
 use Lkrms\Contract\IImmutable;
+use Iterator;
 use UnexpectedValueException;
 
 /**

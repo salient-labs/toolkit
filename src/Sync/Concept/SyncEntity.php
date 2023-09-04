@@ -2,9 +2,6 @@
 
 namespace Lkrms\Sync\Concept;
 
-use Closure;
-use DateTimeInterface;
-use Generator;
 use Lkrms\Concern\RequiresContainer;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
@@ -19,9 +16,9 @@ use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\NormaliserFlag;
-use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Iterator\IterableIterator;
+use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Catalog\SyncSerializeLinkType as SerializeLinkType;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -35,6 +32,9 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
+use Closure;
+use DateTimeInterface;
+use Generator;
 use RuntimeException;
 use UnexpectedValueException;
 

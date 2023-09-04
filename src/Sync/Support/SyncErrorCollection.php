@@ -2,12 +2,12 @@
 
 namespace Lkrms\Sync\Support;
 
-use JsonSerializable;
 use Lkrms\Concept\TypedCollection;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Sync\Catalog\SyncErrorType as ErrorType;
 use Lkrms\Utility\Convert;
+use JsonSerializable;
 
 /**
  * A collection of SyncError objects

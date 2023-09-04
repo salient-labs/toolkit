@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Concept;
 
-use Closure;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IService;
@@ -18,6 +17,7 @@ use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Env;
+use Closure;
 use RuntimeException;
 
 /**

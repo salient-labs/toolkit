@@ -3,8 +3,8 @@
 namespace Lkrms\Facade;
 
 use Lkrms\Concept\Facade;
-use Lkrms\Store\CacheStore;
 use Lkrms\Store\Concept\SqliteStore;
+use Lkrms\Store\CacheStore;
 
 /**
  * A facade for \Lkrms\Store\CacheStore

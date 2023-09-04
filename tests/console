@@ -3,8 +3,8 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Console\ConsoleFormatter;
 use Lkrms\Console\Target\StreamTarget;
+use Lkrms\Console\ConsoleFormatter;
 use Lkrms\Err\Err;
 use Lkrms\Facade\Console;
 

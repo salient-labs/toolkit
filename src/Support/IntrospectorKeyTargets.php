@@ -2,11 +2,11 @@
 
 namespace Lkrms\Support;
 
-use Closure;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\IReadable;
+use Closure;
 
 /**
  * How to create or update an instance from an array

@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Closure;
 use Lkrms\Concern\HasMutator;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\HasBuilder;
@@ -15,6 +14,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncSerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Utility\Convert;
+use Closure;
 use LogicException;
 
 /**
@@ -492,7 +492,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
             $rule[0] = $target;
 
             return $rule;
-        };
+        }
 
         return $target;
     }

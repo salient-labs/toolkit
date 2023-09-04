@@ -2,9 +2,9 @@
 
 namespace Lkrms\Facade;
 
-use DateTimeInterface;
 use Lkrms\Concept\Facade;
 use Lkrms\Utility\Formatters;
+use DateTimeInterface;
 
 /**
  * A facade for \Lkrms\Utility\Formatters

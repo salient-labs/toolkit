@@ -2,8 +2,8 @@
 
 namespace Lkrms\Tests\Console;
 
-use Lkrms\Console\ConsoleFormatter;
 use Lkrms\Console\Support\ConsoleTagFormats;
+use Lkrms\Console\ConsoleFormatter;
 
 final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
 {

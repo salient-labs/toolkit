@@ -3,8 +3,8 @@
 namespace Lkrms\Sync\Command;
 
 use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\CliOption;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
+use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
 use Lkrms\Sync\Contract\ISyncContext;

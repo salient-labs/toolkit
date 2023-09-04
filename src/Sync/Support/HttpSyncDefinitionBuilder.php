@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Closure;
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
@@ -17,6 +16,7 @@ use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Closure;
 
 /**
  * A fluent interface for creating HttpSyncDefinition objects

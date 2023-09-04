@@ -4,9 +4,9 @@ namespace Lkrms\Err;
 
 use Lkrms\Contract\IFacade;
 use Lkrms\Facade\File;
-use RuntimeException;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
+use RuntimeException;
 
 /**
  * A static interface to an instance of Whoops\Run

@@ -2,8 +2,8 @@
 
 namespace Lkrms\Concern;
 
-use Closure;
 use Lkrms\Utility\Convert;
+use Closure;
 
 /**
  * Implements IResolvable

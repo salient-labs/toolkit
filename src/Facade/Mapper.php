@@ -2,11 +2,11 @@
 
 namespace Lkrms\Facade;
 
-use Closure;
 use Lkrms\Concept\Facade;
-use Lkrms\Support\ArrayMapper;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
+use Lkrms\Support\ArrayMapper;
+use Closure;
 
 /**
  * A facade for \Lkrms\Support\ArrayMapper

@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Concept;
 
-use ADOConnection;
 use Lkrms\Db\DbConnector;
 use Lkrms\Facade\Assert;
 use Lkrms\Support\SqlQuery;
@@ -11,6 +10,7 @@ use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
+use ADOConnection;
 use RuntimeException;
 use Throwable;
 

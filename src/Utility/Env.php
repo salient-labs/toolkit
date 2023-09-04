@@ -371,7 +371,7 @@ final class Env
         }
         if ($value === '') {
             return [];
-        };
+        }
         $sep = preg_quote($delimiter, '/');
         if (!preg_match("/^[0-9]++(?:{$sep}[0-9]++)*+$/", $value)) {
             throw new InvalidEnvironmentException(sprintf('Value is not an integer list: %s', $name));

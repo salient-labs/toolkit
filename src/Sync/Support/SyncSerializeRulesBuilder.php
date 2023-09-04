@@ -2,11 +2,11 @@
 
 namespace Lkrms\Sync\Support;
 
-use Closure;
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IContainer;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Closure;
 
 /**
  * A fluent interface for creating SyncSerializeRules objects

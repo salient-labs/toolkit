@@ -2,8 +2,8 @@
 
 namespace Lkrms\Support\Iterator;
 
-use Iterator;
 use Lkrms\Support\Iterator\Contract\MutableIterator;
+use Iterator;
 use ReturnTypeWillChange;
 use RuntimeException;
 

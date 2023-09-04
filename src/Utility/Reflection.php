@@ -227,7 +227,7 @@ final class Reflection
                 if (!is_null($classDocComments)) {
                     $comment = $method->getDeclaringClass()->getDocComment() ?: null;
                     $classDocComments[$class] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
-                };
+                }
             }
             // Interfaces don't have traits, so there's nothing else to do here
             if ($method->getDeclaringClass()->isInterface()) {

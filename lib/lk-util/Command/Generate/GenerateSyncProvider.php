@@ -3,8 +3,8 @@
 namespace Lkrms\LkUtil\Command\Generate;
 
 use Lkrms\Cli\Catalog\CliOptionType;
-use Lkrms\Cli\CliOption;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
+use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Sync;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
