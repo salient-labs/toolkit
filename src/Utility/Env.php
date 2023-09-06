@@ -60,7 +60,7 @@ final class Env
         $queue = [];
         $errors = [];
         foreach ($path as $filename) {
-            $lines = explode("\n", Convert::lineEndingsToUnix(file_get_contents($filename)));
+            $lines = explode("\n", Str::setEol(file_get_contents($filename)));
             self::parse($lines, $queue, $errors, $filename);
         }
         self::doLoad($queue, $errors);

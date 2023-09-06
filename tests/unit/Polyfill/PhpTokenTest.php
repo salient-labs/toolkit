@@ -4,6 +4,7 @@ namespace Lkrms\Tests\Polyfill;
 
 use Lkrms\Polyfill\PhpToken;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Str;
 
 final class PhpTokenTest extends \Lkrms\Tests\TestCase
 {
@@ -14,7 +15,7 @@ final class PhpTokenTest extends \Lkrms\Tests\TestCase
      */
     public function testTokenize(string $input, array $expected)
     {
-        $actual = PhpToken::tokenize(Convert::lineEndingsToUnix($input), TOKEN_PARSE);
+        $actual = PhpToken::tokenize(Str::setEol($input), TOKEN_PARSE);
         $actualCode = array_reduce(
             $actual,
             fn(string $code, PhpToken $token) => sprintf(

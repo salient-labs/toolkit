@@ -250,7 +250,7 @@ final class ConsoleFormatter
         // fenced code blocks and code spans
         if (!Pcre::matchAll(
             Regex::delimit(self::PARSER_REGEX) . 'u',
-            Convert::lineEndingsToUnix($string),
+            Str::setEol($string),
             $matches,
             PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL
         )) {

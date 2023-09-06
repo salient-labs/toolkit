@@ -152,12 +152,6 @@ final class Filesystem
      */
     public function getEol(string $filename): ?string
     {
-        // Enable PHP's detection of CR line endings
-        $restore = ini_set('auto_detect_line_endings', '1');
-        if ($restore === false || $restore) {
-            $restore = null;
-        }
-
         if (($f = fopen($filename, 'r')) === false ||
                 ($line = fgets($f)) === false ||
                 fclose($f) === false) {
@@ -170,8 +164,8 @@ final class Filesystem
             }
         }
 
-        if ($restore !== null) {
-            ini_set('auto_detect_line_endings', $restore);
+        if (strpos($line, "\r") !== false) {
+            return "\r";
         }
 
         return null;

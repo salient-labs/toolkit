@@ -162,13 +162,13 @@ final class Reflection
         $comments = [];
         do {
             if (($comment = $class->getDocComment()) !== false) {
-                $comments[$class->getName()] = Convert::lineEndingsToUnix($comment);
+                $comments[$class->getName()] = Str::setEol($comment);
             }
         } while ($class = $class->getParentClass());
 
         foreach ($interfaces as $interface) {
             if (($comment = $interface->getDocComment()) !== false) {
-                $comments[$interface->getName()] = Convert::lineEndingsToUnix($comment);
+                $comments[$interface->getName()] = Str::setEol($comment);
             }
         }
 
@@ -201,10 +201,10 @@ final class Reflection
             if ($interface->hasMethod($name) &&
                     ($comment = $interface->getMethod($name)->getDocComment()) !== false) {
                 $class = $interface->getName();
-                $comments[$class] = Convert::lineEndingsToUnix($comment);
+                $comments[$class] = Str::setEol($comment);
                 if (!is_null($classDocComments)) {
                     $comment = $interface->getDocComment() ?: null;
-                    $classDocComments[$class] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
+                    $classDocComments[$class] = $comment === null ? null : Str::setEol($comment);
                 }
             }
         }
@@ -223,10 +223,10 @@ final class Reflection
         do {
             if (($comment = $method->getDocComment()) !== false) {
                 $class = $method->getDeclaringClass()->getName();
-                $comments[$class] = Convert::lineEndingsToUnix($comment);
+                $comments[$class] = Str::setEol($comment);
                 if (!is_null($classDocComments)) {
                     $comment = $method->getDeclaringClass()->getDocComment() ?: null;
-                    $classDocComments[$class] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
+                    $classDocComments[$class] = $comment === null ? null : Str::setEol($comment);
                 }
             }
             // Interfaces don't have traits, so there's nothing else to do here
@@ -293,10 +293,10 @@ final class Reflection
         do {
             if (($comment = $property->getDocComment()) !== false) {
                 $class = $property->getDeclaringClass()->getName();
-                $comments[$class] = Convert::lineEndingsToUnix($comment);
+                $comments[$class] = Str::setEol($comment);
                 if (!is_null($classDocComments)) {
                     $comment = $property->getDeclaringClass()->getDocComment() ?: null;
-                    $classDocComments[$class] = $comment === null ? null : Convert::lineEndingsToUnix($comment);
+                    $classDocComments[$class] = $comment === null ? null : Str::setEol($comment);
                 }
             }
             foreach ($property->getDeclaringClass()->getTraits() as $trait) {

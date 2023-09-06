@@ -52,7 +52,7 @@ final class Str
      */
     public static function setEol(
         string $string,
-        string $eol = PHP_EOL
+        string $eol = "\n"
     ): string {
         switch ($eol) {
             case "\n":

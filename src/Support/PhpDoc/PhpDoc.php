@@ -6,6 +6,7 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Str;
 use UnexpectedValueException;
 
 /**
@@ -141,7 +142,7 @@ final class PhpDoc implements IReadable
                     '/(^\h*\* ?|\h+$)/um',
                     '',
                     // 2. Normalise line endings
-                    Convert::lineEndingsToUnix(
+                    Str::setEol(
                         // 1. Extract text between "/**" and "*/"
                         $matches['content']
                     )

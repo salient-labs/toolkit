@@ -1340,6 +1340,7 @@ final class Convert
     /**
      * Replace a string's CRLF or CR end-of-line sequences with LF
      *
+     * @deprecated Use {@see Str::setEol()} instead
      */
     public static function lineEndingsToUnix(string $string): string
     {
