@@ -140,27 +140,41 @@ final class Filesystem
     }
 
     /**
-     * Get a file's end-of-line sequence
+     * Get the end-of-line sequence used in a file
      *
-     * @param string $filename
-     * @return string|false `"\r\n"` or `"\n"` on success, or `false` if the
-     * file's line endings couldn't be determined.
+     * Recognised line endings are LF (`"\n"`), CRLF (`"\r\n"`) and CR (`"\r"`).
+     *
+     * @return string|null `null` if there are no recognised line breaks in the
+     * file.
+     *
+     * @see Inspect::getEol()
+     * @see Str::setEol()
      */
-    public function getEol(string $filename)
+    public function getEol(string $filename): ?string
     {
+        // Enable PHP's detection of CR line endings
+        $restore = ini_set('auto_detect_line_endings', '1');
+        if ($restore === false || $restore) {
+            $restore = null;
+        }
+
         if (($f = fopen($filename, 'r')) === false ||
                 ($line = fgets($f)) === false ||
                 fclose($f) === false) {
-            return false;
+            throw new RuntimeException(sprintf('Error reading file: %s', $filename));
         }
 
-        foreach (["\r\n", "\n"] as $eol) {
-            if (substr($line, -strlen($eol)) == $eol) {
+        foreach (["\r\n", "\n", "\r"] as $eol) {
+            if (substr($line, -strlen($eol)) === $eol) {
                 return $eol;
             }
         }
 
-        return false;
+        if ($restore !== null) {
+            ini_set('auto_detect_line_endings', $restore);
+        }
+
+        return null;
     }
 
     /**

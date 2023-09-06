@@ -2,6 +2,8 @@
 
 namespace Lkrms\Utility;
 
+use LogicException;
+
 /**
  * Manipulate strings
  *
@@ -42,5 +44,28 @@ final class Str
             wordwrap(str_repeat('x', $delta) . $string, $width, $break, $cutLongWords),
             $delta
         );
+    }
+
+    /**
+     * Apply an end-of-line sequence to a string
+     *
+     */
+    public static function setEol(
+        string $string,
+        string $eol = PHP_EOL
+    ): string {
+        switch ($eol) {
+            case "\n":
+                return str_replace(["\r\n", "\r"], $eol, $string);
+
+            case "\r":
+                return str_replace(["\r\n", "\n"], $eol, $string);
+
+            case "\r\n":
+                return str_replace(["\r\n", "\r", "\n"], ["\n", "\n", $eol], $string);
+
+            default:
+                throw new LogicException(sprintf('Invalid end-of-line sequence: %s', $eol));
+        }
     }
 }
