@@ -11,10 +11,13 @@ final class Inspect
     /**
      * Get the end-of-line sequence used in a string
      *
-     * Line endings recognised are LF (`"\n"`), CRLF (`"\r\n"`) and CR (`"\r"`).
+     * Recognised line endings are LF (`"\n"`), CRLF (`"\r\n"`) and CR (`"\r"`).
      *
      * @return string|null `null` if there are no recognised line breaks in
      * `$string`.
+     *
+     * @see Filesystem::getEol()
+     * @see Str::setEol()
      */
     public static function getEol(string $string): ?string
     {

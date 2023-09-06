@@ -16,7 +16,7 @@ use SplFileInfo;
  * @method static void unload() Clear the underlying Filesystem instance
  * @method static string createTemporaryDirectory() Create a temporary directory
  * @method static FluentIteratorInterface<string,SplFileInfo> find(string $directory, string|null $exclude = null, string|null $include = null, array<string,callable(SplFileInfo): bool> $excludeCallbacks = null, array<string,callable(SplFileInfo): bool> $includeCallbacks = null, bool $recursive = true, bool $withDirectories = false, bool $withDirectoriesFirst = true) Iterate over files in a directory (see {@see Filesystem::find()})
- * @method static string|false getEol(string $filename) Get a file's end-of-line sequence (see {@see Filesystem::getEol()})
+ * @method static string|null getEol(string $filename) Get the end-of-line sequence used in a file (see {@see Filesystem::getEol()})
  * @method static string getStablePath(string $suffix = '', ?string $dir = null) Generate a filename unique to the current user and the path of the running script (see {@see Filesystem::getStablePath()})
  * @method static string|null getStreamUri(resource $stream) Get the URI or filename associated with a stream (see {@see Filesystem::getStreamUri()})
  * @method static bool isPhp(string $filename) True if a file appears to contain PHP code
