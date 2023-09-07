@@ -4,10 +4,12 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\IntrospectorKeyTargets;
 use Lkrms\Sync\Catalog\SyncOperation;
@@ -15,13 +17,14 @@ use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use Closure;
 use RuntimeException;
 
 /**
  * @property-read string|null $EntityNoun
- * @property-read string|null $EntityPlural Not set if the plural class name is the same the singular one
+ * @property-read string|null $EntityPlural Not set if the plural class name is the same as the singular one
  *
  * @template TClass of object
  * @template TIntrospectionClass of SyncIntrospectionClass
@@ -73,7 +76,7 @@ final class SyncIntrospector extends Introspector
             return $resolver::providerToEntity($provider);
         }
 
-        if (preg_match(
+        if (Pcre::match(
             '/^(?<namespace>' . Regex::PHP_TYPE . '\\\\)?Provider\\\\'
                 . '(?<class>' . Regex::PHP_IDENTIFIER . ')?Provider$/U',
             $provider,
@@ -137,24 +140,22 @@ final class SyncIntrospector extends Introspector
      * Get a closure to create instances of the class on behalf of an
      * ISyncProvider from arrays with a given signature
      *
+     * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(mixed[], ISyncProvider, IContainer|ISyncContext|null=)
-     * ```php
-     * function (array $array, ISyncProvider $provider, IContainer|ISyncContext|null $context = null)
-     * ```
+     * @return Closure(mixed[], ISyncProvider, IContainer|ISyncContext|null=): TClass
      */
     final public function getCreateSyncEntityFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\0", $keys);
         $closure = $this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) $strict] ?? null;
         if (!$closure) {
-            $this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) $strict] =
-                $closure = $this->_getCreateFromSignatureSyncClosure($keys, $strict);
+            $closure = $this->_getCreateFromSignatureSyncClosure($keys, $strict);
+            $this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) $strict] = $closure;
 
             // If the closure was created successfully in strict mode, cache it
             // for `$strict = false` purposes too
-            if ($strict && !($this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) false] ?? null)) {
+            if ($strict) {
                 $this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) false] = $closure;
             }
         }
@@ -169,13 +170,13 @@ final class SyncIntrospector extends Introspector
                         : [$context ?: $provider->container(), null];
 
                 return $closure(
-                    $container,
                     $array,
+                    $service,
+                    $container,
                     $provider,
                     $context ?: $container->get(SyncContext::class)->withParent($parent),
-                    $parent,
                     $provider->dateFormatter(),
-                    $service
+                    $parent,
                 );
             };
     }
@@ -191,9 +192,6 @@ final class SyncIntrospector extends Introspector
      * @param bool $strict If `true`, return a closure that throws an exception
      * if any data would be discarded.
      * @return Closure(mixed[], ISyncProvider, IContainer|ISyncContext|null=)
-     * ```php
-     * function (array $array, ISyncProvider $provider, IContainer|ISyncContext|null $context = null)
-     * ```
      */
     final public function getCreateSyncEntityFromClosure(bool $strict = false): Closure
     {
@@ -263,9 +261,6 @@ final class SyncIntrospector extends Introspector
      *   {@see ISyncEntity} class serviced by the {@see ISyncProvider} class
      *
      * @return Closure(ISyncContext, mixed...)|null
-     * ```php
-     * fn(ISyncContext $ctx, ...$args)
-     * ```
      */
     final public function getMagicSyncOperationClosure(string $method, ISyncProvider $provider): ?Closure
     {
@@ -314,7 +309,7 @@ final class SyncIntrospector extends Introspector
         // Check for any that end with `_id`, `_ids` or similar that would match
         // a property or magic method otherwise
         foreach ($unclaimed as $normalisedKey => $key) {
-            if (!preg_match('/^(.*)(?:_|\b|(?<=[[:lower:]])(?=[[:upper:]]))id(s?)$/i', $key, $matches)) {
+            if (!Pcre::match('/^(.*)(?:_|\b|(?<=[[:lower:]])(?=[[:upper:]]))id(s?)$/i', $key, $matches)) {
                 continue;
             }
             $match = $this->_Class->Normaliser
@@ -354,11 +349,8 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * @return Closure(IContainer, array, ISyncProvider|null, ISyncContext|null,
-     * IHierarchy|null, DateFormatter|null, string|null)
-     * ```php
-     * function (IContainer $container, array $array, ?ISyncProvider $provider, ?ISyncContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
-     * ```
+     * @param string[] $keys
+     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, IHierarchy|null): TClass
      */
     private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
     {
@@ -368,44 +360,24 @@ final class SyncIntrospector extends Introspector
         }
 
         $targets = $this->getKeyTargets($keys, true, $strict);
-        [$parameterKeys, $passByRefKeys, $callbackKeys, $propertyKeys, $methodKeys, $metaKeys, $dateKeys] = [
-            $targets->Parameters,
-            $targets->PassByRefParameters,
-            $targets->Callbacks,
-            $targets->Properties,
-            $targets->Methods,
-            $targets->MetaProperties,
-            $targets->DateProperties,
-        ];
+        $constructor =
+            $targets->Parameters
+                ? $this->_getConstructor($targets->Parameters, $targets->PassByRefParameters)
+                : $this->_getDefaultConstructor();
+        $updater = $this->_getUpdater($targets);
 
-        // Build the smallest possible chain of closures
-        $closure = $parameterKeys
-            ? $this->_getConstructor($parameterKeys, $passByRefKeys)
-            : $this->_getDefaultConstructor();
-        if ($propertyKeys) {
-            $closure = $this->_getPropertyClosure($propertyKeys, $closure);
-        }
-        // Call `setProvider()` and `setContext()` early in case property
-        // methods need them
-        if ($this->_Class->IsProvidable) {
-            $closure = $this->_getProvidableClosure($closure);
-        }
-        // Ditto for `setParent()`
-        if ($this->_Class->IsHierarchy) {
-            $closure = $this->_getHierarchyClosure($closure);
-        }
-        if ($methodKeys) {
-            $closure = $this->_getMethodClosure($methodKeys, $closure);
-        }
-        if ($callbackKeys) {
-            $closure = $this->_getCallbackClosure($callbackKeys, $closure);
-        }
-        if ($metaKeys) {
-            $closure = $this->_getMetaClosure($metaKeys, $closure);
-        }
-        if ($dateKeys) {
-            $closure = $this->_getDateClosure($dateKeys, $closure);
-        }
+        $closure = static function (
+            array $array,
+            ?string $service,
+            IContainer $container,
+            ?ISyncProvider $provider,
+            ?ISyncContext $context,
+            ?DateFormatter $dateFormatter,
+            ?IHierarchy $parent
+        ) use ($constructor, $updater) {
+            $obj = $constructor($array, $service, $container);
+            return $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+        };
 
         return $this->_Class->CreateFromSignatureSyncClosures[$sig] = $closure;
     }

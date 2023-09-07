@@ -37,7 +37,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
     public $EntityNoun;
 
     /**
-     * Not set if the plural class name is the same the singular one
+     * Not set if the plural class name is the same as the singular one
      *
      * @var string|null
      */

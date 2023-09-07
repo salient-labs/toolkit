@@ -3,10 +3,10 @@
 namespace Lkrms\Support;
 
 use Lkrms\Concern\TIntrospector;
-use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IHierarchy;
+use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ISerializeRules;
@@ -116,36 +116,39 @@ class Introspector
      * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(mixed[], IContainer, IHierarchy|null=, DateFormatter|null=)
-     * ```php
-     * function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null)
-     * ```
+     * @return Closure(mixed[], IContainer, DateFormatter|null=, IHierarchy|null=): TClass
      */
     final public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\0", $keys);
-        if (!($closure = $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] ?? null)) {
-            $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] =
-                $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
+        $closure = $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] ?? null;
+        if (!$closure) {
+            $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
+            $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] = $closure;
 
             // If the closure was created successfully in strict mode, cache it
             // for `$strict = false` too
-            if ($strict && !($this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) false] ?? null)) {
+            if ($strict) {
                 $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) false] = $closure;
             }
         }
         $service = $this->_Service;
 
         return
-            static function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($closure, $service) {
+            static function (
+                array $array,
+                IContainer $container,
+                ?DateFormatter $dateFormatter = null,
+                ?IHierarchy $parent = null
+            ) use ($closure, $service) {
                 return $closure(
-                    $container,
                     $array,
+                    $service,
+                    $container,
                     null,
                     null,
-                    $parent,
                     $dateFormatter,
-                    $service
+                    $parent,
                 );
             };
     }
@@ -157,22 +160,19 @@ class Introspector
      * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(mixed[], IProvider, IContainer|IProviderContext|null=)
-     * ```php
-     * function (array $array, IProvider $provider, IContainer|IProviderContext|null $context = null)
-     * ```
+     * @return Closure(mixed[], IProvider, IContainer|IProviderContext|null=): TClass
      */
     final public function getCreateProvidableFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\0", $keys);
         $closure = $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] ?? null;
         if (!$closure) {
-            $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] =
-                $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
+            $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
+            $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] = $closure;
 
             // If the closure was created successfully in strict mode, cache it
             // for `$strict = false` purposes too
-            if ($strict && !($this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) false] ?? null)) {
+            if ($strict) {
                 $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) false] = $closure;
             }
         }
@@ -186,13 +186,13 @@ class Introspector
                         : [$context ?: $provider->container(), null];
 
                 return $closure(
-                    $container,
                     $array,
+                    $service,
+                    $container,
                     $provider,
                     $context ?: new ProviderContext($container, $parent),
-                    $parent,
                     $provider->dateFormatter(),
-                    $service
+                    $parent,
                 );
             };
     }
@@ -305,10 +305,7 @@ class Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
-     * ```php
-     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
-     * ```
+     * @return Closure(mixed[], class-string|null, IContainer, IProvider|null, IProviderContext|null, DateFormatter|null, IHierarchy|null): TClass
      */
     private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
@@ -318,44 +315,24 @@ class Introspector
         }
 
         $targets = $this->getKeyTargets($keys, true, $strict);
-        [$parameterKeys, $passByRefKeys, $callbackKeys, $propertyKeys, $methodKeys, $metaKeys, $dateKeys] = [
-            $targets->Parameters,
-            $targets->PassByRefParameters,
-            $targets->Callbacks,
-            $targets->Properties,
-            $targets->Methods,
-            $targets->MetaProperties,
-            $targets->DateProperties,
-        ];
+        $constructor =
+            $targets->Parameters
+                ? $this->_getConstructor($targets->Parameters, $targets->PassByRefParameters)
+                : $this->_getDefaultConstructor();
+        $updater = $this->_getUpdater($targets);
 
-        // Build the smallest possible chain of closures
-        $closure = $parameterKeys
-            ? $this->_getConstructor($parameterKeys, $passByRefKeys)
-            : $this->_getDefaultConstructor();
-        if ($propertyKeys) {
-            $closure = $this->_getPropertyClosure($propertyKeys, $closure);
-        }
-        // Call `setProvider()` and `setContext()` early in case property
-        // methods need them
-        if ($this->_Class->IsProvidable) {
-            $closure = $this->_getProvidableClosure($closure);
-        }
-        // Ditto for `setParent()`
-        if ($this->_Class->IsHierarchy) {
-            $closure = $this->_getHierarchyClosure($closure);
-        }
-        if ($methodKeys) {
-            $closure = $this->_getMethodClosure($methodKeys, $closure);
-        }
-        if ($callbackKeys) {
-            $closure = $this->_getCallbackClosure($callbackKeys, $closure);
-        }
-        if ($metaKeys) {
-            $closure = $this->_getMetaClosure($metaKeys, $closure);
-        }
-        if ($dateKeys) {
-            $closure = $this->_getDateClosure($dateKeys, $closure);
-        }
+        $closure = static function (
+            array $array,
+            ?string $service,
+            IContainer $container,
+            ?IProvider $provider,
+            ?IProviderContext $context,
+            ?DateFormatter $dateFormatter,
+            ?IHierarchy $parent
+        ) use ($constructor, $updater) {
+            $obj = $constructor($array, $service, $container);
+            return $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+        };
 
         return $this->_Class->CreateFromSignatureClosures[$sig] = $closure;
     }
@@ -363,18 +340,20 @@ class Introspector
     /**
      * @param array<string,int> $parameterKeys
      * @param array<string,true> $passByRefKeys
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
-     * ```php
-     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
-     * ```
+     * @return Closure(mixed[], class-string|null, IContainer): TClass
      */
     protected function _getConstructor(array $parameterKeys, array $passByRefKeys): Closure
     {
         $defaultArgs = $this->_Class->DefaultArguments;
         $class = $this->_Class->Class;
 
-        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service) use ($parameterKeys, $passByRefKeys, $defaultArgs, $class) {
+        return static function (
+            array $array,
+            ?string $service,
+            IContainer $container
+        ) use ($parameterKeys, $passByRefKeys, $defaultArgs, $class) {
             $args = $defaultArgs;
+
             foreach ($parameterKeys as $key => $index) {
                 if ($passByRefKeys[$key] ?? false) {
                     $args[$index] = &$array[$key];
@@ -382,7 +361,9 @@ class Introspector
                 }
                 $args[$index] = $array[$key];
             }
-            if ($service && strcasecmp($service, $class) && $container instanceof Container) {
+
+            /** @var class-string $service */
+            if ($service && strcasecmp($service, $class)) {
                 return $container->getAs($class, $service, $args);
             }
 
@@ -391,175 +372,23 @@ class Introspector
     }
 
     /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
-     * ```php
-     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
-     * ```
+     * @return Closure(mixed[], class-string|null, IContainer): TClass
      */
     protected function _getDefaultConstructor(): Closure
     {
-        [$defaultArgs, $class] = [
-            $this->_Class->DefaultArguments,
-            $this->_Class->Class,
-        ];
+        $defaultArgs = $this->_Class->DefaultArguments;
+        $class = $this->_Class->Class;
 
-        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service) use ($defaultArgs, $class) {
-            if ($service && strcasecmp($service, $class) && $container instanceof Container) {
+        return static function (
+            array $array,
+            ?string $service,
+            IContainer $container
+        ) use ($defaultArgs, $class) {
+            /** @var class-string $service */
+            if ($service && strcasecmp($service, $class)) {
                 return $container->getAs($class, $service, $defaultArgs);
             }
-
             return $container->get($class, $defaultArgs);
-        };
-    }
-
-    /**
-     * @param array<string,string> $propertyKeys
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
-     * ```php
-     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
-     * ```
-     */
-    protected function _getPropertyClosure(array $propertyKeys, Closure $closure): Closure
-    {
-        // Use bindTo for access to protected properties
-        return (static function (IContainer $container, array $array, ...$args) use ($propertyKeys, $closure) {
-            $obj = $closure($container, $array, ...$args);
-            foreach ($propertyKeys as $key => $property) {
-                $obj->$property = $array[$key];
-            }
-
-            return $obj;
-        })->bindTo(null, $this->_Class->Class);
-    }
-
-    /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
-     * ```php
-     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
-     * ```
-     */
-    protected function _getProvidableClosure(Closure $closure): Closure
-    {
-        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ...$args) use ($closure) {
-            /** @var \Lkrms\Contract\IProvidable<IProvider,IProviderContext> $obj */
-            $obj = $closure($container, $array, $provider, $context, ...$args);
-            if ($provider) {
-                if (!$context) {
-                    throw new UnexpectedValueException('$context cannot be null when $provider is not null');
-                }
-
-                return $obj
-                    ->setProvider($provider)
-                    ->setContext($context);
-            }
-
-            return $obj;
-        };
-    }
-
-    /**
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
-     * ```php
-     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
-     * ```
-     */
-    protected function _getHierarchyClosure(Closure $closure): Closure
-    {
-        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ...$args) use ($closure) {
-            /** @var IHierarchy $obj */
-            $obj = $closure($container, $array, $provider, $context, $parent, ...$args);
-            if ($parent) {
-                return $obj->setParent($parent);
-            }
-
-            return $obj;
-        };
-    }
-
-    /**
-     * @param array<string,string> $methodKeys
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
-     * ```php
-     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
-     * ```
-     */
-    protected function _getMethodClosure(array $methodKeys, Closure $closure): Closure
-    {
-        // Use bindTo for access to protected methods
-        return (static function (IContainer $container, array $array, ...$args) use ($methodKeys, $closure) {
-            $obj = $closure($container, $array, ...$args);
-            foreach ($methodKeys as $key => $method) {
-                $obj->$method($array[$key]);
-            }
-
-            return $obj;
-        })->bindTo(null, $this->_Class->Class);
-    }
-
-    /**
-     * @param array<Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void> $callbacks
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
-     * ```php
-     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
-     * ```
-     */
-    protected function _getCallbackClosure(array $callbacks, Closure $closure): Closure
-    {
-        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ...$args) use ($callbacks, $closure) {
-            $obj = $closure($container, $array, $provider, $context, ...$args);
-            foreach ($callbacks as $callback) {
-                $callback($array, $obj, $provider, $context);
-            }
-
-            return $obj;
-        };
-    }
-
-    /**
-     * @param string[] $metaKeys
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
-     * ```php
-     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
-     * ```
-     */
-    protected function _getMetaClosure(array $metaKeys, Closure $closure): Closure
-    {
-        return static function (IContainer $container, array $array, ...$args) use ($metaKeys, $closure) {
-            $obj = $closure($container, $array, ...$args);
-            foreach ($metaKeys as $key) {
-                $obj->setMetaProperty((string) $key, $array[$key]);
-            }
-
-            return $obj;
-        };
-    }
-
-    /**
-     * @param string[] $dateKeys
-     * @return Closure(IContainer, array, IProvider|null, IProviderContext|null, IHierarchy|null, DateFormatter|null, string|null)
-     * ```php
-     * function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ?string $service)
-     * ```
-     */
-    protected function _getDateClosure(array $dateKeys, Closure $closure): Closure
-    {
-        return static function (IContainer $container, array $array, ?IProvider $provider, ?IProviderContext $context, ?IHierarchy $parent, ?DateFormatter $dateFormatter, ...$args) use ($dateKeys, $closure) {
-            if (is_null($dateFormatter)) {
-                $dateFormatter = $provider
-                    ? $provider->dateFormatter()
-                    : $container->get(DateFormatter::class);
-            }
-
-            foreach ($dateKeys as $key) {
-                if (!is_string($array[$key])) {
-                    continue;
-                }
-                if ($date = $dateFormatter->parse($array[$key])) {
-                    $array[$key] = $date;
-                }
-            }
-
-            return $closure($container, $array, $provider, $context, $parent, $dateFormatter, ...$args);
         };
     }
 
@@ -572,10 +401,7 @@ class Introspector
      *
      * @param bool $strict If `true`, return a closure that throws an exception
      * if any data would be discarded.
-     * @return Closure(mixed[], IContainer, IHierarchy|null=, DateFormatter|null=)
-     * ```php
-     * function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null)
-     * ```
+     * @return Closure(mixed[], IContainer, DateFormatter|null=, IHierarchy|null=): TClass
      */
     final public function getCreateFromClosure(bool $strict = false): Closure
     {
@@ -584,10 +410,15 @@ class Introspector
         }
 
         $closure =
-            function (array $array, IContainer $container, ?IHierarchy $parent = null, ?DateFormatter $dateFormatter = null) use ($strict) {
+            function (
+                array $array,
+                IContainer $container,
+                ?DateFormatter $dateFormatter = null,
+                ?IHierarchy $parent = null
+            ) use ($strict) {
                 $keys = array_keys($array);
 
-                return ($this->getCreateFromSignatureClosure($keys, $strict))($array, $container, $parent, $dateFormatter);
+                return ($this->getCreateFromSignatureClosure($keys, $strict))($array, $container, $dateFormatter, $parent);
             };
 
         return $this->_Class->CreateProviderlessFromClosures[(int) $strict] = $closure;
@@ -810,5 +641,103 @@ class Introspector
         }
 
         return $this->_Class->SerializeClosures[$key] = $closure;
+    }
+
+    /**
+     * @param IntrospectorKeyTargets<TClass> $targets
+     * @return Closure(mixed[], TClass, IContainer, IProvider|null, IProviderContext|null, DateFormatter|null, IHierarchy|null): TClass
+     */
+    protected function _getUpdater(IntrospectorKeyTargets $targets): Closure
+    {
+        $isProvidable = $this->_Class->IsProvidable;
+        $isHierarchy = $this->_Class->IsHierarchy;
+        $callbackKeys = $targets->Callbacks;
+        $methodKeys = $targets->Methods;
+        $propertyKeys = $targets->Properties;
+        $metaKeys = $targets->MetaProperties;
+        $dateKeys = $targets->DateProperties;
+
+        $closure = static function (
+            array $array,
+            $obj,
+            IContainer $container,
+            ?IProvider $provider,
+            ?IProviderContext $context,
+            ?DateFormatter $dateFormatter,
+            ?IHierarchy $parent
+        ) use (
+            $isProvidable,
+            $isHierarchy,
+            $callbackKeys,
+            $methodKeys,
+            $propertyKeys,
+            $metaKeys,
+            $dateKeys
+        ) {
+            if ($dateKeys) {
+                if ($dateFormatter === null) {
+                    $dateFormatter =
+                        $provider
+                            ? $provider->dateFormatter()
+                            : $container->get(DateFormatter::class);
+                }
+
+                foreach ($dateKeys as $key) {
+                    if (!is_string($array[$key])) {
+                        continue;
+                    }
+                    if ($date = $dateFormatter->parse($array[$key])) {
+                        $array[$key] = $date;
+                    }
+                }
+            }
+
+            // The closure is bound to the class for access to protected
+            // properties
+            if ($propertyKeys) {
+                foreach ($propertyKeys as $key => $property) {
+                    $obj->$property = $array[$key];
+                }
+            }
+
+            // Call `setProvider()` and `setContext()` early in case property
+            // methods need them
+            if ($isProvidable && $provider) {
+                if (!$context) {
+                    throw new UnexpectedValueException('$context cannot be null when $provider is not null');
+                }
+                /** @var IProvidable<IProvider,IProviderContext> $obj */
+                $obj = $obj->setProvider($provider)->setContext($context);
+            }
+
+            // Ditto for `setParent()`
+            if ($isHierarchy && $parent) {
+                /** @var IHierarchy $obj */
+                $obj = $obj->setParent($parent);
+            }
+
+            // The closure is bound to the class for access to protected methods
+            if ($methodKeys) {
+                foreach ($methodKeys as $key => $method) {
+                    $obj->$method($array[$key]);
+                }
+            }
+
+            if ($callbackKeys) {
+                foreach ($callbackKeys as $callback) {
+                    $callback($array, $obj, $provider, $context);
+                }
+            }
+
+            if ($metaKeys) {
+                foreach ($metaKeys as $key) {
+                    $obj->setMetaProperty((string) $key, $array[$key]);
+                }
+            }
+
+            return $obj;
+        };
+
+        return $closure->bindTo(null, $this->_Class->Class);
     }
 }

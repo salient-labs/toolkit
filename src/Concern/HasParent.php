@@ -82,7 +82,7 @@ trait HasParent
     }
 
     /**
-     * @param static|null $parent
+     * @param (IHierarchy&static)|null $parent
      * @return $this
      */
     final public function setParent($parent)

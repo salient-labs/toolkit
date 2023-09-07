@@ -26,6 +26,7 @@ use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncContext;
+use Lkrms\Sync\Support\SyncIntrospectionClass;
 use Lkrms\Sync\Support\SyncIntrospector as IS;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
@@ -632,6 +633,7 @@ abstract class SyncEntity implements ISyncEntity
         $context = $context
             ? $context->withContainer($container)
             : $container->get(SyncContext::class);
+        /** @var IS<static,SyncIntrospectionClass<static>> */
         $introspector = IS::getService($container, static::class);
         $closure = $introspector->getCreateSyncEntityFromClosure();
 

@@ -626,16 +626,6 @@ parameters:
 			path: src/Sync/Support/SyncErrorCollection.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector\\:\\:_getCreateFromSignatureSyncClosure\\(\\) has parameter \\$keys with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncIntrospector.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector\\:\\:getCreateSyncEntityFromSignatureClosure\\(\\) has parameter \\$keys with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncIntrospector.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncIntrospector\\:\\:getIntrospectionClass\\(\\) return type with generic class Lkrms\\\\Sync\\\\Support\\\\SyncIntrospectionClass does not specify its types\\: TClass$#"
 			count: 1
 			path: src/Sync/Support/SyncIntrospector.php

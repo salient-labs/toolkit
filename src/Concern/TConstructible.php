@@ -4,7 +4,9 @@ namespace Lkrms\Concern;
 
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IHierarchy;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\IntrospectionClass;
 use Lkrms\Support\Introspector;
 use Generator;
 
@@ -29,9 +31,9 @@ trait TConstructible
      *
      * @param mixed[] $data
      * @param IContainer|null $container Used to create the instance if set.
-     * @param static|null $parent If the class implements
-     * {@see \Lkrms\Contract\IHierarchy}, pass `$parent` to the instance via
-     * {@see \Lkrms\Contract\IHierarchy::setParent()}.
+     * @param (IHierarchy&static)|null $parent If the class implements
+     * {@see IHierarchy}, pass `$parent` to the instance via
+     * {@see IHierarchy::setParent()}.
      * @return static
      */
     final public static function construct(array $data, ?IContainer $container = null, $parent = null)
@@ -41,7 +43,7 @@ trait TConstructible
         }
 
         return Introspector::getService($container, static::class)
-            ->getCreateFromClosure()($data, $container, $parent);
+            ->getCreateFromClosure()($data, $container, null, $parent);
     }
 
     /**
@@ -54,9 +56,9 @@ trait TConstructible
      * `COMPLETE` or `PARTIAL` wherever possible to improve performance.
      * @phpstan-param ArrayKeyConformity::* $conformity
      * @param IContainer|null $container Used to create each instance if set.
-     * @param static|null $parent If the class implements
-     * {@see \Lkrms\Contract\IHierarchy}, pass `$parent` to each instance via
-     * {@see \Lkrms\Contract\IHierarchy::setParent()}.
+     * @param (IHierarchy&static)|null $parent If the class implements
+     * {@see IHierarchy}, pass `$parent` to each instance via
+     * {@see IHierarchy::setParent()}.
      * @return Generator<static>
      */
     final public static function constructList(
@@ -72,6 +74,7 @@ trait TConstructible
         $closure = null;
         foreach ($dataList as $key => $data) {
             if (!$closure) {
+                /** @var Introspector<static,IntrospectionClass<static>> */
                 $builder = Introspector::getService($container, static::class);
                 $closure =
                     in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
@@ -79,7 +82,7 @@ trait TConstructible
                         : $builder->getCreateFromClosure(true);
             }
 
-            yield $key => $closure($data, $container, $parent);
+            yield $key => $closure($data, $container, null, $parent);
         }
     }
 }
