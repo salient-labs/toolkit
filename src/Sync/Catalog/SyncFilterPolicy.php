@@ -3,6 +3,7 @@
 namespace Lkrms\Sync\Catalog;
 
 use Lkrms\Concept\Enumeration;
+use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
 
 /**
  * Policies for unclaimed sync operation filter values
@@ -22,8 +23,8 @@ final class SyncFilterPolicy extends Enumeration
     /**
      * Throw an exception if there are unclaimed filter values
      *
-     * A `RuntimeException` is raised and the request is not passed to the
-     * provider.
+     * A {@see SyncFilterPolicyViolationException} is raised and the request is
+     * not passed to the provider.
      *
      * This is the default policy.
      */

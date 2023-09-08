@@ -84,6 +84,8 @@ interface ISyncContext extends IProviderContext
      * Get the filter most recently passed via optional sync operation arguments
      *
      * @see ISyncContext::withArgs()
+     *
+     * @return array<string,mixed>
      */
     public function getFilter(): array;
 

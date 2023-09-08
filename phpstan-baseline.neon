@@ -411,11 +411,6 @@ parameters:
 			path: src/Sync/Concept/SyncProvider.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncContext\\:\\:getFilter\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Contract/ISyncContext.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncContext\\:\\:maybeApplyFilterPolicy\\(\\) has parameter \\$empty with no type specified\\.$#"
 			count: 1
 			path: src/Sync/Contract/ISyncContext.php
@@ -496,17 +491,7 @@ parameters:
 			path: src/Sync/Contract/ISyncProvider.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncContext\\:\\:getFilter\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncContext.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncContext\\:\\:maybeApplyFilterPolicy\\(\\) has parameter \\$empty with no type specified\\.$#"
-			count: 1
-			path: src/Sync/Support/SyncContext.php
-
-		-
-			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncContext\\:\\:\\$Filter type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Sync/Support/SyncContext.php
 
