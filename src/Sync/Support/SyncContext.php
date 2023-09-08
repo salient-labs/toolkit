@@ -16,6 +16,9 @@ use UnexpectedValueException;
  */
 final class SyncContext extends ProviderContext implements ISyncContext
 {
+    /**
+     * @var array<string,mixed>
+     */
     protected array $Filter = [];
 
     /**
