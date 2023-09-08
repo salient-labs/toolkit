@@ -36,6 +36,7 @@ use Lkrms\Utility\Test;
 use Closure;
 use DateTimeInterface;
 use Generator;
+use LogicException;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -299,7 +300,7 @@ abstract class SyncEntity implements ISyncEntity
                 ]);
         }
 
-        throw new UnexpectedValueException("Invalid link type: $type");
+        throw new LogicException("Invalid link type: $type");
     }
 
     final public function uri(bool $compact = true): string
@@ -473,7 +474,7 @@ abstract class SyncEntity implements ISyncEntity
                         $callback = $arg;
                         continue;
                     }
-                    throw new UnexpectedValueException('Invalid rule: ' . var_export($_rule, true));
+                    throw new LogicException('Invalid rule: ' . var_export($_rule, true));
                 }
 
                 if ($key !== '[]') {

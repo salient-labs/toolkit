@@ -16,11 +16,11 @@ use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
 use Lkrms\Sync\Support\SyncIntrospectionClass;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Closure;
-use RuntimeException;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * Provides direct access to an ISyncProvider's implementation of sync
@@ -389,12 +389,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
 
         switch ($this->FilterPolicy) {
             case SyncFilterPolicy::THROW_EXCEPTION:
-                throw new RuntimeException(sprintf(
-                    "%s did not claim '%s' from %s filter",
-                    get_class($this->Provider),
-                    implode("', '", array_keys($filter)),
-                    $this->Entity
-                ));
+                throw new SyncFilterPolicyViolationException($this->Provider, $this->Entity, $filter);
 
             case SyncFilterPolicy::RETURN_EMPTY:
                 $returnEmpty = true;
@@ -407,7 +402,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
                 break;
         }
 
-        throw new UnexpectedValueException("SyncFilterPolicy invalid or not implemented: {$this->FilterPolicy}");
+        throw new LogicException("SyncFilterPolicy invalid or not implemented: {$this->FilterPolicy}");
     }
 
     /**

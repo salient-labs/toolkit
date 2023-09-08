@@ -20,7 +20,7 @@ use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use Closure;
-use RuntimeException;
+use LogicException;
 
 /**
  * @property-read string|null $EntityNoun
@@ -451,7 +451,7 @@ final class SyncIntrospector extends Introspector
             array_flip($methods ?? [])
         );
         if (count($methods) > 1) {
-            throw new RuntimeException('Too many implementations: ' . implode(', ', $methods));
+            throw new LogicException('Too many implementations: ' . implode(', ', $methods));
         }
 
         return reset($methods) ?: null;

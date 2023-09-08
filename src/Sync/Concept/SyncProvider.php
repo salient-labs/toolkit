@@ -18,7 +18,7 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Env;
 use Closure;
-use RuntimeException;
+use LogicException;
 
 /**
  * Base class for providers that sync entities to and from third-party backends
@@ -238,7 +238,7 @@ abstract class SyncProvider implements ISyncProvider, IService
             return $closure(...$arguments);
         }
 
-        throw new RuntimeException('Call to undefined method: ' . static::class . "::$name()");
+        throw new LogicException('Call to undefined method: ' . static::class . "::$name()");
     }
 
     final public function getProviderId(): ?int

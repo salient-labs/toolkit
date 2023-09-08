@@ -8,7 +8,7 @@ use Lkrms\Sync\Catalog\SyncSerializeLinkType as SerializeLinkType;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * @property-read ISyncProvider $Provider
@@ -82,7 +82,7 @@ final class DeferredSyncEntity implements IReadable
                 ];
         }
 
-        throw new UnexpectedValueException("Invalid link type: $type");
+        throw new LogicException("Invalid link type: $type");
     }
 
     public function uri(bool $compact = true): string

@@ -8,7 +8,7 @@ use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * The context within which a sync entity is instantiated
@@ -85,7 +85,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
             );
         }
 
-        throw new UnexpectedValueException('Filter signature not recognised');
+        throw new LogicException('Filter signature not recognised');
     }
 
     public function getFilter(): array

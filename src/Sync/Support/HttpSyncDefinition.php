@@ -23,7 +23,7 @@ use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Utility\Env;
 use Closure;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * Provides direct access to an HttpSyncProvider's implementation of sync
@@ -404,7 +404,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                             ->start();
         }
 
-        throw new UnexpectedValueException("Invalid SyncOperation: $operation");
+        throw new LogicException("Invalid SyncOperation: $operation");
     }
 
     /**
@@ -441,7 +441,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
                 return fn(Curler $curler, ?array $query, ?array $payload = null) => $curler->delete($payload, $query);
         }
 
-        throw new UnexpectedValueException("Invalid SyncOperation or method map: $operation");
+        throw new LogicException("Invalid SyncOperation or method map: $operation");
     }
 
     /**

@@ -13,7 +13,7 @@ use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Support\SyncContext;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * An interface to an ISyncProvider's implementation of sync operations for an
@@ -76,12 +76,12 @@ final class SyncEntityProvider implements ISyncEntityProvider
         ?ISyncContext $context = null
     ) {
         if (!is_a($entity, ISyncEntity::class, true)) {
-            throw new UnexpectedValueException("Does not implement ISyncEntity: $entity");
+            throw new LogicException("Does not implement ISyncEntity: $entity");
         }
 
         $entityProvider = SyncIntrospector::entityToProvider($entity);
         if (!($provider instanceof $entityProvider)) {
-            throw new UnexpectedValueException(get_class($provider) . ' does not implement ' . $entityProvider);
+            throw new LogicException(get_class($provider) . ' does not implement ' . $entityProvider);
         }
 
         $this->Entity = $entity;
@@ -383,7 +383,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     public function runA(int $operation, ...$args): array
     {
         if (!SyncOperation::isList($operation)) {
-            throw new UnexpectedValueException('Not a *_LIST operation: ' . $operation);
+            throw new LogicException('Not a *_LIST operation: ' . $operation);
         }
 
         $result = $this->_run($operation, ...$args);
