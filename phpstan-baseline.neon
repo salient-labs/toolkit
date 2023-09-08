@@ -486,11 +486,6 @@ parameters:
 			path: src/Sync/Contract/ISyncEntityProvider.php
 
 		-
-			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncProvider\\:\\:getDefinition\\(\\) return type with generic interface Lkrms\\\\Sync\\\\Contract\\\\ISyncDefinition does not specify its types\\: TEntity, TProvider$#"
-			count: 1
-			path: src/Sync/Contract/ISyncProvider.php
-
-		-
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncContext\\:\\:maybeApplyFilterPolicy\\(\\) has parameter \\$empty with no type specified\\.$#"
 			count: 1
 			path: src/Sync/Support/SyncContext.php

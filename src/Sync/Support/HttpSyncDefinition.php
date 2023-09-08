@@ -146,6 +146,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      * It contains:
      *
      * ```php
+     * <?php
      * [
      *   SyncOperation::CREATE      => HttpRequestMethod::POST,
      *   SyncOperation::READ        => HttpRequestMethod::GET,

@@ -126,9 +126,6 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * {@see SyncDefinition::$Operations}.
      *
      * @var array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed>
-     * ```php
-     * fn(ISyncDefinition $def, int $op, ISyncContext $ctx, ...$args)
-     * ```
      */
     protected $Overrides;
 

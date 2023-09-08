@@ -19,6 +19,7 @@ use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Iterator\IterableIterator;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Sync\Catalog\SyncEntityState;
 use Lkrms\Sync\Catalog\SyncSerializeLinkType as SerializeLinkType;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -32,6 +33,7 @@ use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use Closure;
 use DateTimeInterface;
@@ -74,6 +76,8 @@ abstract class SyncEntity implements ISyncEntity
     /**
      * The unique identifier assigned to the entity by its provider
      *
+     * @see ISyncEntity::id()
+     *
      * @var int|string|null
      */
     public $Id;
@@ -81,13 +85,7 @@ abstract class SyncEntity implements ISyncEntity
     /**
      * The unique identifier assigned to the entity by its canonical backend
      *
-     * A {@see SyncEntity}'s canonical backend is the provider regarded as the
-     * "single source of truth" for its underlying {@see TProvidable::service()}
-     * and any properties that aren't "owned" by another provider.
-     *
-     * To improve the accuracy and performance of sync operations, providers
-     * should propagate this value to and from backends capable of storing it,
-     * but this is not strictly required.
+     * @see ISyncEntity::canonicalId()
      *
      * @var int|string|null
      */
@@ -96,70 +94,71 @@ abstract class SyncEntity implements ISyncEntity
     /**
      * @var ISyncProvider|null
      */
-    private $_Provider;
+    private $Provider;
 
     /**
      * @var ISyncContext|null
      */
-    private $_Context;
+    private $Context;
 
     /**
-     * @var bool
+     * @var int-mask-of<SyncEntityState::*>
      */
-    private $DoNotHydrate = false;
+    private $State = 0;
 
     /**
-     * Class name => entity type ID
+     * Entity => entity type ID
      *
-     * @var array<string,int>
+     * @var array<class-string<SyncEntity>,int>
      */
-    private static $TypeId = [];
+    private static $EntityTypeId = [];
 
     /**
-     * Class name => [ property name => normalised property name ]
+     * Entity => [ property name => normalised property name ]
      *
-     * @var array<string,array<string,string>>
+     * @var array<class-string<SyncEntity>,array<string,string>>
      */
-    private static $Normalised = [];
+    private static $NormalisedPropertyMap = [];
 
+    /**
+     * @inheritDoc
+     */
     public static function plural(): string
     {
         return Convert::nounToPlural(Convert::classToBasename(static::class));
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getDateProperties(): array
     {
         return [];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function name(): ?string
     {
         return IS::get(static::class)->getGetNameClosure()($this);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function description(): ?string
     {
         return null;
     }
 
-    final public function id()
-    {
-        return $this->Id;
-    }
-
-    final public function canonicalId()
-    {
-        return $this->CanonicalId;
-    }
-
     /**
-     * Override to specify how the object graph below this entity type should be
-     * serialized
+     * Override to specify how object graphs below entities of this type should
+     * be serialized
      *
-     * To prevent infinite recursion when `json_encode()` or similar is used to
-     * serialize an instance of this class, return a
-     * {@see SerializeRulesBuilder} object configured to remove or replace
-     * circular references.
+     * To prevent infinite recursion when entities of this type are serialized,
+     * return a {@see SerializeRulesBuilder} object configured to remove or
+     * replace circular references.
      *
      * @param SerializeRulesBuilder<static> $rulesB
      * @return SerializeRulesBuilder<static>
@@ -170,12 +169,13 @@ abstract class SyncEntity implements ISyncEntity
     }
 
     /**
-     * Return prefixes to remove when normalising field/property names
+     * Override to specify prefixes to remove when normalising field/property
+     * names
      *
-     * Entity names are removed by default, e.g. for an `AdminUser` class that
-     * extends a {@see SyncEntity} subclass called `User`, prefixes "AdminUser"
-     * and "User" are removed to ensure fields like "USER_ID" and
-     * "ADMIN_USER_NAME" match with properties like "Id" and "Name".
+     * Entity names are removed by default, e.g. for a {@see SyncEntity}
+     * subclass called `User`, "User" is removed to ensure fields like "USER_ID"
+     * and "USER_NAME" match properties like "Id" and "Name". For a subclass of
+     * `User` called `AdminUser`, both "User" and "AdminUser" are removed.
      *
      * Return `null` to suppress prefix removal.
      *
@@ -189,35 +189,66 @@ abstract class SyncEntity implements ISyncEntity
         );
     }
 
-    final public static function defaultProvider(?IContainer $container = null): ISyncProvider
+    // ---
+
+    /**
+     * @inheritDoc
+     */
+    final public function id()
     {
-        return self::requireContainer($container)
-            ->get(IS::entityToProvider(static::class));
+        return $this->Id;
     }
 
+    /**
+     * @inheritDoc
+     */
+    final public function canonicalId()
+    {
+        return $this->CanonicalId;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public static function defaultProvider(?IContainer $container = null): ISyncProvider
+    {
+        return self::requireContainer($container)->get(IS::entityToProvider(static::class));
+    }
+
+    /**
+     * @inheritDoc
+     */
     final public static function withDefaultProvider(?IContainer $container = null): ISyncEntityProvider
     {
         return static::defaultProvider()->with(static::class);
     }
 
+    /**
+     * @inheritDoc
+     */
     final public static function getSerializeRules(?IContainer $container = null): SerializeRules
     {
-        $rulesB = static::buildSerializeRules(
-            SerializeRulesBuilder::build(self::requireContainer($container))
-                ->entity(static::class)
-        );
+        $container = self::requireContainer($container);
+        $rulesB = SerializeRulesBuilder::build($container)->entity(static::class);
+        $rulesB = static::buildSerializeRules($rulesB);
 
         return $rulesB->go();
     }
 
     /**
-     * Get a closure to normalise property names
+     * Get a closure that normalises a property name
      *
-     * Prefixes returned by {@see SyncEntity::getRemovablePrefixes()} are
-     * removed from `$name` unless `$greedy` is `false`. Otherwise, if `$hints`
-     * are provided and `$name` matches one of them after snake_case conversion,
-     * prefix removal is skipped.
+     * If {@see SyncEntity::getRemovablePrefixes()} doesn't return any prefixes,
+     * a closure that converts the property name to snake_case is returned.
      *
+     * Otherwise, the closure converts the property name to snake_case, and if
+     * `$greedy` is `true` (the default) and the property name doesn't match one
+     * of the provided `$hints`, prefixes are removed before it is returned.
+     *
+     * If a prefix returned by {@see SyncEntity::getRemovablePrefixes()}
+     * contains multiple words (e.g. "admin_user_group"), additional prefixes to
+     * remove are derived by shifting each word off the beginning of the prefix
+     * (e.g. "user_group" and "group").
      */
     final public static function normaliser(): Closure
     {
@@ -226,8 +257,8 @@ abstract class SyncEntity implements ISyncEntity
         if (!($prefixes = static::getRemovablePrefixes())) {
             return
                 static function (string $name): string {
-                    return self::$Normalised[static::class][$name]
-                        ?? (self::$Normalised[static::class][$name] =
+                    return self::$NormalisedPropertyMap[static::class][$name]
+                        ?? (self::$NormalisedPropertyMap[static::class][$name] =
                             Convert::toSnakeCase($name));
                 };
         }
@@ -243,35 +274,44 @@ abstract class SyncEntity implements ISyncEntity
         }
         $prefixes = array_keys($expanded);
         $regex = implode('|', $prefixes);
-        $regex = count($prefixes) > 1 ? "($regex)" : $regex;
+        $regex = count($prefixes) > 1 ? "(?:$regex)" : $regex;
         $regex = "/^{$regex}_/";
 
         return
             static function (string $name, bool $greedy = true, string ...$hints) use ($regex): string {
                 if ($greedy && !$hints) {
-                    return self::$Normalised[static::class][$name]
-                        ?? (self::$Normalised[static::class][$name] =
-                            preg_replace($regex, '', Convert::toSnakeCase($name)));
+                    return self::$NormalisedPropertyMap[static::class][$name]
+                        ?? (self::$NormalisedPropertyMap[static::class][$name] =
+                            Pcre::replace($regex, '', Convert::toSnakeCase($name)));
                 }
                 $_name = Convert::toSnakeCase($name);
                 if (!$greedy || in_array($_name, $hints)) {
                     return $_name;
                 }
 
-                return preg_replace($regex, '', $_name);
+                return Pcre::replace($regex, '', $_name);
             };
     }
 
+    /**
+     * @inheritDoc
+     */
     final public function toArray(): array
     {
         return $this->_toArray(static::getSerializeRules());
     }
 
+    /**
+     * @inheritDoc
+     */
     final public function toArrayWith($rules): array
     {
         return $this->_toArray(SerializeRules::resolve($rules));
     }
 
+    /**
+     * @inheritDoc
+     */
     final public function toLink(int $type = SerializeLinkType::DEFAULT, bool $compact = true): array
     {
         switch ($type) {
@@ -298,11 +338,15 @@ abstract class SyncEntity implements ISyncEntity
                     '@name' => $this->name(),
                     '@description' => $this->description(),
                 ]);
-        }
 
-        throw new LogicException("Invalid link type: $type");
+            default:
+                throw new LogicException("Invalid link type: $type");
+        }
     }
 
+    /**
+     * @inheritDoc
+     */
     final public function uri(bool $compact = true): string
     {
         return sprintf(
@@ -315,82 +359,58 @@ abstract class SyncEntity implements ISyncEntity
     }
 
     /**
-     * Return true if the value of a property is the same between this and
-     * another instance of the same class
+     * Get the current state of the entity
      *
-     * @param string $property
-     * @param SyncEntity $entity
-     * @return bool
+     * @return int-mask-of<SyncEntityState::*>
      */
-    final public function propertyHasSameValueAs(string $property, SyncEntity $entity): bool
+    final public function state(): int
     {
-        // $entity must be an instance of the same class
-        if (!is_a($entity, static::class)) {
-            return false;
-        }
-
-        $a = $this->$property;
-        $b = $entity->$property;
-
-        return $a === $b ||
-            ($a instanceof SyncEntity && $b instanceof SyncEntity &&
-                get_class($a) == get_class($b) &&
-                $a->provider() === $b->provider() &&
-                $a->Id === $b->Id);
+        return $this->State;
     }
 
+    /**
+     * Get the entity store servicing the entity's provider or the Sync facade
+     *
+     */
     final protected function store(): SyncStore
     {
-        return $this->_Provider
-            ? $this->_Provider->store()
+        return $this->Provider
+            ? $this->Provider->store()
             : Sync::getInstance();
     }
 
     /**
      * Defer instantiation of an entity or list of entities
      *
-     * @param int|string|int[]|string[] $deferred An entity ID or list thereof.
-     * @param mixed $replace A reference to the variable to replace when the
-     * entity or list is resolved. Do not assign anything else to it after
-     * calling this method.
+     * @param int|string|int[]|string[] $deferred Either an entity ID or a list
+     * of entity IDs.
+     * @param mixed $replace The variable to replace when the entity or list of
+     * entities is resolved.
+     * @param class-string<ISyncEntity>|null $entity The entity to instantiate.
+     * If `null`, `static::class` is used.
      */
     final protected function defer($deferred, &$replace, ?string $entity = null): void
     {
+        if (!$this->Provider || !$this->Context) {
+            throw new LogicException('Cannot defer without a provider and context');
+        }
+
         DeferredSyncEntity::defer(
-            $this->provider(),
-            $this->requireContext()->push($this),
-            $entity ?: static::class,
+            $this->Provider,
+            $this->Context->push($this),
+            $entity ?? static::class,
             $deferred,
             $replace
         );
     }
 
-    /**
-     * If true, data should not be retrieved to hydrate the entity or resolve
-     * any deferred values
-     *
-     * Used in scenarios where retrieving additional data is unnecessary and
-     * would be wasteful or slow, e.g. during serialization.
-     *
-     */
-    final protected function doNotHydrate(): bool
-    {
-        return $this->DoNotHydrate;
-    }
-
     private function typeUri(bool $compact): string
     {
-        return $this->store()->getEntityTypeUri($this->service(), $compact)
-            ?: '/' . str_replace('\\', '/', ltrim($this->service(), '\\'));
-    }
+        $service = $this->service();
+        $typeUri = $this->store()->getEntityTypeUri($service, $compact);
 
-    private function objectId(): string
-    {
-        return implode("\0", [
-            $this->service(),
-            $this->Id ?: spl_object_id($this),
-            $this->_Provider ? $this->_Provider->getProviderHash() : null,
-        ]);
+        return $typeUri
+            ?? '/' . str_replace('\\', '/', ltrim($service, '\\'));
     }
 
     /**
@@ -409,7 +429,7 @@ abstract class SyncEntity implements ISyncEntity
      * @param SyncEntity|DeferredSyncEntity|mixed[] $node
      * @param string[] $path
      * @param SerializeRules<static> $rules
-     * @param array<string,true> $parents
+     * @param array<int,true> $parents
      */
     private function _serialize(&$node, array $path, SerializeRules $rules, array $parents = []): void
     {
@@ -435,13 +455,13 @@ abstract class SyncEntity implements ISyncEntity
             if ($rules->getDetectRecursion()) {
                 // Prevent infinite recursion by replacing each SyncEntity
                 // descended from itself with a link
-                if ($parents[$node->objectId()] ?? false) {
+                if ($parents[spl_object_id($node)] ?? false) {
                     $node = $node->toLink(SerializeLinkType::DEFAULT);
                     $node['@why'] = 'Circular reference detected';
 
                     return;
                 }
-                $parents[$node->objectId()] = true;
+                $parents[spl_object_id($node)] = true;
             }
 
             $class = get_class($node);
@@ -589,8 +609,9 @@ abstract class SyncEntity implements ISyncEntity
     private function serialize(SerializeRules $rules): array
     {
         $clone = clone $this;
-        $clone->DoNotHydrate = true;
+        $clone->State |= SyncEntityState::SERIALIZING;
         $array = IS::get(static::class)->getSerializeClosure($rules)($clone);
+
         if ($rules->getRemoveCanonicalId()) {
             unset($array[IS::get(static::class)->maybeNormalise('CanonicalId', NormaliserFlag::CAREFUL)]);
         }
@@ -600,12 +621,12 @@ abstract class SyncEntity implements ISyncEntity
 
     final public static function setEntityTypeId(int $entityTypeId): void
     {
-        self::$TypeId[static::class] = $entityTypeId;
+        self::$EntityTypeId[static::class] = $entityTypeId;
     }
 
     final public static function entityTypeId(): ?int
     {
-        return self::$TypeId[static::class] ?? null;
+        return self::$EntityTypeId[static::class] ?? null;
     }
 
     /**

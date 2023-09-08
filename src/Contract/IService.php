@@ -5,38 +5,35 @@ namespace Lkrms\Contract;
 /**
  * Provides services that can be bound to a container
  *
- * In this context, a service is an `interface` implemented by the class,
- * allowing it to be registered with (or "bound to") an {@see IContainer} as the
- * concrete class to instantiate when the abstract service is requested.
+ * Implement {@see IServiceSingleton} if a shared instance should be created
+ * once per container, {@see IServiceShared} if shared instances should be
+ * created once per service, or {@see IService} if instances of the class should
+ * not be shared.
  *
- * Containers resolve service/`interface` names to instances:
- * - when they are requested explicitly via {@see IContainer::get()}, and
- * - when they are used as type hints in the constructors of dependencies
- *   encountered while resolving a call to {@see IContainer::get()}.
- *
- * Implement {@see IServiceSingleton} if the class should only be instantiated
- * once and/or {@see IServiceShared} to request creation of one instance per
- * service, or {@see IService} to always create a new instance.
+ * If {@see IServiceSingleton} and {@see IServiceShared} are both implemented,
+ * shared instances are created once per service, and an additional shared
+ * instance is created to satisfy requests for the class itself.
  */
 interface IService
 {
     /**
      * Get a list of services provided by the class
      *
-     * @return string[]
+     * @return class-string[]
      */
     public static function getServices(): array;
 
     /**
      * Get a dependency subtitution map for the class
      *
-     * Return an array that maps class names to compatible replacements. The
-     * container resolves mapped classes to their respective substitutes:
+     * Return an array that maps class or interface names to compatible
+     * replacements. Substitutions are applied:
+     *
      * - when resolving the class's dependencies, and
      * - when using {@see IContainer::inContextOf()} to work with a container in
-     *   the context of the class.
+     *   the context of the class
      *
-     * @return array<string,string>
+     * @return array<class-string,class-string>
      */
     public static function getContextualBindings(): array;
 }

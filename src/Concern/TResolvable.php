@@ -2,18 +2,19 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\IResolvable;
 use Lkrms\Utility\Convert;
 use Closure;
 
 /**
  * Implements IResolvable
  *
- * @see \Lkrms\Contract\IResolvable
+ * @see IResolvable
  */
 trait TResolvable
 {
     /**
-     * @var array<string,Closure>
+     * @var array<string,Closure(string, bool=, string...): string>
      */
     private static $_Normaliser = [];
 
@@ -24,7 +25,9 @@ trait TResolvable
 
     final public static function normalise(string $name, bool $greedy = true, string ...$hints): string
     {
-        return ((self::$_Normaliser[static::class] ?? null)
-            ?: (self::$_Normaliser[static::class] = static::normaliser()))($name, $greedy, ...$hints);
+        $normaliser = self::$_Normaliser[static::class]
+            ?? (self::$_Normaliser[static::class] = static::normaliser());
+
+        return $normaliser($name, $greedy, ...$hints);
     }
 }

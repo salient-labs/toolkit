@@ -6,7 +6,7 @@ use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Support\DateFormatter;
 
 /**
- * Creates objects from backend data
+ * Creates objects that represent entities in a backend
  *
  */
 interface IProvider extends ReturnsContainer, ReturnsEnvironment, ReturnsDescription
@@ -14,6 +14,25 @@ interface IProvider extends ReturnsContainer, ReturnsEnvironment, ReturnsDescrip
     /**
      * Get a stable list of values that, together with the name of the class,
      * uniquely identifies the backend instance
+     *
+     * This method must be idempotent for each backend instance the provider
+     * connects to. The return value should correspond to the smallest possible
+     * set of stable metadata that uniquely identifies the specific data source
+     * backing the connected instance.
+     *
+     * This could include:
+     *
+     * - an endpoint URI (if backend instances are URI-specific or can be
+     *   expressed as an immutable URI)
+     * - a tenant ID
+     * - an installation GUID
+     *
+     * It should not include:
+     *
+     * - usernames, API keys, tokens, or other identifiers with a shorter
+     *   lifespan than the data source itself
+     * - values that aren't unique to the connected data source
+     * - case-insensitive values (unless normalised first)
      *
      * @return array<string|\Stringable>
      */

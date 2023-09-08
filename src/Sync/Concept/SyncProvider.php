@@ -22,57 +22,20 @@ use LogicException;
 
 /**
  * Base class for providers that sync entities to and from third-party backends
- * via their APIs
  *
  */
 abstract class SyncProvider implements ISyncProvider, IService
 {
     /**
-     * Surface the provider's implementation of sync operations for an entity
-     * via an ISyncDefinition object
+     * Get a DateFormatter to work with the backend's date format and timezone
      *
-     * @template T of ISyncEntity
-     * @param class-string<T> $entity
-     * @return ISyncDefinition<T,static>
-     */
-    abstract public function getDefinition(string $entity): ISyncDefinition;
-
-    /**
-     * Get a stable list of values that, together with the name of the class,
-     * uniquely identifies the backend instance
-     *
-     * This method must be idempotent for each backend instance the provider
-     * connects to. The return value should correspond to the smallest possible
-     * set of stable metadata that uniquely identifies the specific data source
-     * backing the connected instance.
-     *
-     * This could include:
-     * - an endpoint URI (if backend instances are URI-specific or can be
-     *   expressed as an immutable URI)
-     * - a tenant ID
-     * - an installation GUID
-     *
-     * It should not include:
-     * - usernames, API keys, tokens, or other identifiers with a shorter
-     *   lifespan than the data source itself
-     * - values that aren't unique to the connected data source
-     * - case-insensitive values (unless normalised first)
-     *
-     * @return array<string|\Stringable>
-     */
-    abstract public function getBackendIdentifier(): array;
-
-    /**
-     * Specify how to encode dates for the backend and/or the timezone to apply
-     *
-     * The {@see DateFormatter} returned will be cached for the lifetime of the
-     * {@see SyncProvider} instance.
-     *
+     * The {@see DateFormatter} returned by this method is cached for the
+     * lifetime of the {@see SyncProvider} instance.
      */
     abstract protected function getDateFormatter(): DateFormatter;
 
     /**
-     * Get an array that maps concrete classes to more specific subclasses
+     * Get a dependency subtitution map for the class
      *
      * {@inheritDoc}
      *
@@ -80,6 +43,7 @@ abstract class SyncProvider implements ISyncProvider, IService
      * generic parent classes by overriding this method, e.g.:
      *
      * ```php
+     * <?php
      * public static function getContextualBindings(): array
      * {
      *     return [
@@ -95,6 +59,9 @@ abstract class SyncProvider implements ISyncProvider, IService
         return [];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function description(): ?string
     {
         return null;
@@ -121,11 +88,6 @@ abstract class SyncProvider implements ISyncProvider, IService
     private $Id;
 
     /**
-     * @var string|null
-     */
-    private $Hash;
-
-    /**
      * @var DateFormatter|null
      */
     private $DateFormatter;
@@ -144,10 +106,9 @@ abstract class SyncProvider implements ISyncProvider, IService
         $this->Store->provider($this);
     }
 
-    final public function setProviderId(int $providerId, string $providerHash)
+    final public function setProviderId(int $providerId)
     {
         $this->Id = $providerId;
-        $this->Hash = $providerHash;
 
         return $this;
     }
@@ -195,10 +156,13 @@ abstract class SyncProvider implements ISyncProvider, IService
             ->entity($entity);
     }
 
+    /**
+     * @inheritDoc
+     */
     final public function dateFormatter(): DateFormatter
     {
         return $this->DateFormatter
-            ?: ($this->DateFormatter = $this->getDateFormatter());
+            ?? ($this->DateFormatter = $this->getDateFormatter());
     }
 
     final public static function getServices(): array
@@ -208,12 +172,12 @@ abstract class SyncProvider implements ISyncProvider, IService
 
     /**
      * @template TEntity of ISyncEntity
-     * @param class-string<TEntity> $syncEntity
+     * @param class-string<TEntity> $entity
      * @return SyncEntityProvider<TEntity,static>
      */
-    final public function with(string $syncEntity, $context = null): SyncEntityProvider
+    final public function with(string $entity, $context = null): SyncEntityProvider
     {
-        $this->Store->entityType($syncEntity);
+        $this->Store->entityType($entity);
 
         $container = ($context instanceof ISyncContext
             ? $context->container()
@@ -224,7 +188,7 @@ abstract class SyncProvider implements ISyncProvider, IService
 
         return $container->get(
             SyncEntityProvider::class,
-            [$syncEntity, $this, $this->getDefinition($syncEntity), $context]
+            [$entity, $this, $this->getDefinition($entity), $context]
         );
     }
 
@@ -244,14 +208,5 @@ abstract class SyncProvider implements ISyncProvider, IService
     final public function getProviderId(): ?int
     {
         return $this->Id;
-    }
-
-    final public function getProviderHash(bool $binary = false): ?string
-    {
-        if (is_null($this->Hash)) {
-            return null;
-        }
-
-        return $binary ? $this->Hash : bin2hex($this->Hash);
     }
 }

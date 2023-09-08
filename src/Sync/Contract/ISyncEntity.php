@@ -3,6 +3,7 @@
 namespace Lkrms\Sync\Contract;
 
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\ReturnsDescription;
 use Lkrms\Sync\Catalog\SyncSerializeLinkType;
@@ -18,14 +19,14 @@ use JsonSerializable;
 interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializable
 {
     /**
-     * Get an instance of the entity's current provider
+     * Get an instance of the entity's default provider
      *
      */
     public static function defaultProvider(?IContainer $container = null): ISyncProvider;
 
     /**
      * Get an interface to perform sync operations on the entity with its
-     * current provider
+     * default provider
      *
      * @return ISyncEntityProvider<static>
      */
@@ -61,10 +62,10 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
     /**
      * The unique identifier assigned to the entity by its canonical backend
      *
-     * An {@see ISyncEntity}'s canonical backend is the provider regarded as the
-     * "single source of truth" for its underlying
-     * {@see \Lkrms\Contract\IProvidable::service()} and any properties that
-     * aren't "owned" by another provider.
+     * If a provider is bound to the service container as the default
+     * implementation of the provider interface associated with an entity's
+     * underlying {@see IProvidable::service()}, it is regarded as the entity's
+     * canonical backend.
      *
      * To improve the accuracy and performance of sync operations, providers
      * should propagate this value to and from backends capable of storing it,

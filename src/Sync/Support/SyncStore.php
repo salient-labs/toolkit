@@ -49,11 +49,11 @@ final class SyncStore extends SqliteStore
     private $Providers = [];
 
     /**
-     * Provider hash => provider
+     * Provider hash => provider ID
      *
-     * @var array<string,ISyncProvider>
+     * @var array<string,int>
      */
-    private $ProvidersByHash = [];
+    private $ProviderMap = [];
 
     /**
      * Entity class => entity type ID
@@ -309,14 +309,13 @@ final class SyncStore extends SqliteStore
         // Don't start a run just to register a provider
         if ($this->RunId === null) {
             $this->DeferredProviders[] = $provider;
-
             return $this;
         }
 
         $class = get_class($provider);
         $hash = Compute::binaryHash($class, ...$provider->getBackendIdentifier());
 
-        if (($this->ProvidersByHash[$hash] ?? null) !== null) {
+        if (($this->ProviderMap[$hash] ?? null) !== null) {
             throw new LogicException("Provider already registered: $class");
         }
 
@@ -355,8 +354,10 @@ final class SyncStore extends SqliteStore
             throw new RuntimeException('Error retrieving provider ID');
         }
 
-        $provider->setProviderId($row[0], $hash);
-        $this->Providers[$row[0]] = $this->ProvidersByHash[$hash] = $provider;
+        $providerId = $row[0];
+        $this->Providers[$providerId] = $provider;
+        $this->ProviderMap[$hash] = $providerId;
+        $provider->setProviderId($providerId);
 
         return $this;
     }
@@ -445,8 +446,8 @@ final class SyncStore extends SqliteStore
         }
 
         $prefix = strtolower($prefix);
-        if (($this->RegisteredNamespaces[$prefix] ?? false) ||
-                ($this->RunId === null && ($this->DeferredNamespaces[$prefix] ?? false))) {
+        if (($this->RegisteredNamespaces[$prefix] ?? null) ||
+                ($this->RunId === null && ($this->DeferredNamespaces[$prefix] ?? null))) {
             throw new LogicException("Prefix already registered: $prefix");
         }
 
@@ -456,7 +457,6 @@ final class SyncStore extends SqliteStore
         // Don't start a run just to register a namespace
         if ($this->RunId === null) {
             $this->DeferredNamespaces[$prefix] = [$uri, $namespace, $resolver];
-
             return $this;
         }
 
@@ -733,7 +733,7 @@ final class SyncStore extends SqliteStore
 
     protected function check()
     {
-        if (($this->RunId) !== null) {
+        if ($this->RunId !== null) {
             return $this;
         }
 
