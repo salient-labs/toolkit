@@ -20,7 +20,7 @@ class SendHttpRequest extends Command
             return $this->Method;
         }
 
-        $name = $this->getNameParts();
+        $name = $this->nameParts();
 
         return $this->Method = strtoupper(array_pop($name));
     }

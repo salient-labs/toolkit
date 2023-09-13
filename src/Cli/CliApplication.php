@@ -3,9 +3,11 @@
 namespace Lkrms\Cli;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
+use Lkrms\Cli\Catalog\CliHelpType;
 use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliCommand;
+use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Container\Application;
 use Lkrms\Facade\Assert;
@@ -30,6 +32,11 @@ class CliApplication extends Application implements ICliApplication
      * @var CliCommand|null
      */
     private $RunningCommand;
+
+    /**
+     * @var CliHelpType::*
+     */
+    private $HelpType = CliHelpType::TTY;
 
     public function __construct(string $basePath = null)
     {
@@ -248,6 +255,14 @@ class CliApplication extends Application implements ICliApplication
     /**
      * @inheritDoc
      */
+    public function getHelpType(): int
+    {
+        return $this->HelpType;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getHelpWidth(bool $terse = false): ?int
     {
         $width = Console::getWidth();
@@ -270,13 +285,24 @@ class CliApplication extends Application implements ICliApplication
     {
         $usage = '';
         foreach ($sections as $heading => $content) {
-            if (!trim($content)) {
+            if (trim($content) === '') {
                 continue;
             }
-            $content = str_replace("\n", "\n    ", rtrim($content));
+            $content = rtrim($content);
+            if ($this->HelpType === CliHelpType::TTY) {
+                $content = str_replace("\n", "\n    ", $content);
+                $usage .= <<<EOF
+                    ## {$heading}
+                        {$content}
+
+
+                    EOF;
+                continue;
+            }
             $usage .= <<<EOF
                 ## {$heading}
-                    {$content}
+
+                {$content}
 
 
                 EOF;
@@ -356,6 +382,14 @@ class CliApplication extends Application implements ICliApplication
             $name .= ($name === '' ? '' : ' ') . $arg;
         }
 
+        if ($args === ['_md']) {
+            return $this->generateHelp($name, $node, CliHelpType::MARKDOWN);
+        }
+
+        if ($args === ['_man']) {
+            return $this->generateHelp($name, $node, CliHelpType::MAN_PAGE);
+        }
+
         $command = $this->getNodeCommand($name, $node);
         try {
             if (!$command) {
@@ -384,5 +418,34 @@ class CliApplication extends Application implements ICliApplication
     public function runAndExit()
     {
         exit ($this->run());
+    }
+
+    /**
+     * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
+     * @param CliHelpType::* $type
+     */
+    private function generateHelp(string $name, $node, int $type): int
+    {
+        $this->HelpType = $type;
+
+        switch ($type) {
+            case CliHelpType::MARKDOWN:
+                $formats = TagFormats::getMarkdownFormats();
+                break;
+
+            case CliHelpType::MAN_PAGE:
+                $formats = TagFormats::getManPageFormats();
+                break;
+
+            default:
+                throw new LogicException(sprintf('Invalid help type: %d', $type));
+        }
+
+        $formatter = new Formatter($formats);
+        $usage = $this->getUsage($name, $node);
+        $usage = $formatter->formatTags($usage, false, null, false);
+        printf("%s\n", str_replace('\ ', ' ', $usage));
+
+        return 0;
     }
 }

@@ -24,6 +24,13 @@ interface ICliCommandNode extends ReturnsContainer, ReturnsEnvironment, ReturnsD
     public function name(): string;
 
     /**
+     * Get the command name as an array of subcommands
+     *
+     * @return string[]
+     */
+    public function nameParts(): array;
+
+    /**
      * Get a one-line description of the command
      *
      */
