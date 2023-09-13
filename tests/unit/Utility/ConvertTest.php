@@ -830,7 +830,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         $this->assertSame('abc', Convert::toShellArg('abc'));
         $this->assertSame('/some/path', Convert::toShellArg('/some/path'));
         $this->assertSame("'/some/path with spaces'", Convert::toShellArg('/some/path with spaces'));
-        $this->assertSame("''\\''quotable'\\'' \"quotes\"'", Convert::toShellArg('\'quotable\' "quotes"'));
+        $this->assertSame("''\''quotable'\'' \"quotes\"'", Convert::toShellArg('\'quotable\' "quotes"'));
     }
 
     /**

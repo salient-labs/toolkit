@@ -230,7 +230,7 @@ final class System
         }
         $regex = implode('|', array_map(fn(string $s) => preg_quote($s, '/'), $suffixes));
 
-        return preg_replace("/(?<=.)({$regex})+$/", '', $basename);
+        return preg_replace("/(?<=.)({$regex})+\$/", '', $basename);
     }
 
     /**

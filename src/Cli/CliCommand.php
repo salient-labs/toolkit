@@ -370,7 +370,7 @@ abstract class CliCommand implements ICliCommand
                 $n = "\n{$pre}    ";
             } else {
                 $b = '__';
-                $n = " \\\n\\ \\ \\ \\ ";
+                $n = " \\\n\ \ \ \ ";
             }
         }
 

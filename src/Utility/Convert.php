@@ -627,7 +627,7 @@ final class Convert
         $path = basename($path);
         if ($extLimit) {
             $range = $extLimit > 1 ? "{1,$extLimit}" : ($extLimit < 0 ? '+' : '');
-            $path = Pcre::replace("/(?<=.)(?<!^\\.|^\\.\\.)(\\.[^.\\s]+){$range}\$/", '', $path);
+            $path = Pcre::replace("/(?<=.)(?<!^\.|^\.\.)(\.[^.\s]+){$range}\$/", '', $path);
         }
 
         return $path;
@@ -1128,11 +1128,11 @@ final class Convert
         $escapes = $ignoreEscapes ? '' : Regex::NOT_ESCAPED . '\K';
 
         if ($trimTrailingWhitespace) {
-            $search[] = "/{$escapes}\\h+{$newline}/";
+            $search[] = "/{$escapes}\h+{$newline}/";
             $replace[] = $break;
         }
 
-        $search[] = "/{$escapes}(?<!{$newline}){$newline}(?!{$newline}|    |\\t|(?:[-+*]|[0-9]+[).])\\h)/";
+        $search[] = "/{$escapes}(?<!{$newline}){$newline}(?!{$newline}|    |\\t|(?:[-+*]|[0-9]+[).])\h)/";
         $replace[] = ' ';
 
         if ($collapseBlankLines) {
@@ -1196,7 +1196,7 @@ final class Convert
     public static function toShellArg(string $arg): string
     {
         if ($arg === '' || Pcre::match('/[^a-z0-9+.\/@_-]/i', $arg)) {
-            return "'" . str_replace("'", "'\\''", $arg) . "'";
+            return "'" . str_replace("'", "'\''", $arg) . "'";
         }
 
         return $arg;
@@ -1436,7 +1436,7 @@ final class Convert
         if (is_string($value) &&
             (($escapeCharacters && strpbrk($value, $escapeCharacters) !== false) ||
                 Pcre::match('/\v/', $value))) {
-            $escaped = addcslashes($value, "\n\r\t\v\x1b\f\\\$\"" . $escapeCharacters);
+            $escaped = addcslashes($value, "\n\r\t\v\e\f\\\$\"" . $escapeCharacters);
             if ($escapeCharacters) {
                 foreach (str_split($escapeCharacters) as $character) {
                     $oct = sprintf('\%03o', ord($character));

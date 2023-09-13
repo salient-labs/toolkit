@@ -11,28 +11,28 @@ use Lkrms\Concept\Dictionary;
  */
 final class TtyControlSequence extends Dictionary
 {
-    public const BLACK = "\x1b[30m";
-    public const RED = "\x1b[31m";
-    public const GREEN = "\x1b[32m";
-    public const YELLOW = "\x1b[33m";
-    public const BLUE = "\x1b[34m";
-    public const MAGENTA = "\x1b[35m";
-    public const CYAN = "\x1b[36m";
-    public const WHITE = "\x1b[37m";
-    public const DEFAULT = "\x1b[39m";
-    public const BLACK_BG = "\x1b[40m";
-    public const RED_BG = "\x1b[41m";
-    public const GREEN_BG = "\x1b[42m";
-    public const YELLOW_BG = "\x1b[43m";
-    public const BLUE_BG = "\x1b[44m";
-    public const MAGENTA_BG = "\x1b[45m";
-    public const CYAN_BG = "\x1b[46m";
-    public const WHITE_BG = "\x1b[47m";
-    public const DEFAULT_BG = "\x1b[49m";
-    public const BOLD = "\x1b[1m";
-    public const DIM = "\x1b[2m";
-    public const UNDERLINE = "\x1b[4m";
-    public const NO_UNDERLINE = "\x1b[24m";
+    public const BLACK = "\e[30m";
+    public const RED = "\e[31m";
+    public const GREEN = "\e[32m";
+    public const YELLOW = "\e[33m";
+    public const BLUE = "\e[34m";
+    public const MAGENTA = "\e[35m";
+    public const CYAN = "\e[36m";
+    public const WHITE = "\e[37m";
+    public const DEFAULT = "\e[39m";
+    public const BLACK_BG = "\e[40m";
+    public const RED_BG = "\e[41m";
+    public const GREEN_BG = "\e[42m";
+    public const YELLOW_BG = "\e[43m";
+    public const BLUE_BG = "\e[44m";
+    public const MAGENTA_BG = "\e[45m";
+    public const CYAN_BG = "\e[46m";
+    public const WHITE_BG = "\e[47m";
+    public const DEFAULT_BG = "\e[49m";
+    public const BOLD = "\e[1m";
+    public const DIM = "\e[2m";
+    public const UNDERLINE = "\e[4m";
+    public const NO_UNDERLINE = "\e[24m";
 
     /**
      * Reset BOLD and DIM
@@ -40,41 +40,41 @@ final class TtyControlSequence extends Dictionary
      * @see TtyControlSequence::UNBOLD_DIM
      * @see TtyControlSequence::UNDIM_BOLD
      */
-    public const UNBOLD_UNDIM = "\x1b[22m";
+    public const UNBOLD_UNDIM = "\e[22m";
 
     /**
      * Reset BOLD, set DIM
      *
      */
-    public const UNBOLD_DIM = "\x1b[22;2m";
+    public const UNBOLD_DIM = "\e[22;2m";
 
     /**
      * Reset DIM, set BOLD
      *
      */
-    public const UNDIM_BOLD = "\x1b[22;1m";
+    public const UNDIM_BOLD = "\e[22;1m";
 
     /**
      * Reset all colours and styles
      *
      */
-    public const RESET = "\x1b[m";
+    public const RESET = "\e[m";
 
     /**
      * Clear to end of line
      *
      */
-    public const CLEAR_LINE = "\x1b[K";
+    public const CLEAR_LINE = "\e[K";
 
     /**
      * Turn off automatic margins
      *
      */
-    public const WRAP_OFF = "\x1b[?7l";
+    public const WRAP_OFF = "\e[?7l";
 
     /**
      * Turn on automatic margins
      *
      */
-    public const WRAP_ON = "\x1b[?7h";
+    public const WRAP_ON = "\e[?7h";
 }

@@ -102,7 +102,7 @@ final class Env
                 continue;
             }
             if (($single = $match['single']) !== null) {
-                $queue[$name] = str_replace("'\\''", "'", $single);
+                $queue[$name] = str_replace("'\''", "'", $single);
                 continue;
             }
             $queue[$name] = preg_replace('/\\\\(.)/', '\1', $match['none']);
@@ -373,7 +373,7 @@ final class Env
             return [];
         }
         $sep = preg_quote($delimiter, '/');
-        if (!preg_match("/^[0-9]++(?:{$sep}[0-9]++)*+$/", $value)) {
+        if (!preg_match("/^[0-9]++(?:{$sep}[0-9]++)*+\$/", $value)) {
             throw new InvalidEnvironmentException(sprintf('Value is not an integer list: %s', $name));
         }
         $list = [];
