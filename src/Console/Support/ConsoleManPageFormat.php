@@ -35,6 +35,12 @@ final class ConsoleManPageFormat implements IConsoleFormat
         if ($tag === '##') {
             $before = '# ';
             $after = '';
+        } elseif ($tag === '_') {
+            $before = '';
+            $after = '';
+        } elseif ($this->Before === '`') {
+            $before = '**`';
+            $after = '`**';
         } elseif ($this->Before === '```') {
             $before = $tag . ($attributes[Attribute::INFO_STRING] ?? '') . "\n";
             $after = "\n" . $tag;

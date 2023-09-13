@@ -358,33 +358,49 @@ abstract class CliCommand implements ICliCommand
     /**
      * @inheritDoc
      */
-    final public function getSynopsis(bool $withMarkup = true, ?int $width = 80): string
+    final public function getSynopsis(bool $withMarkup = true, ?int $width = 80, bool $collapse = false): string
     {
         $pre = '';
         $b = '';
         $n = "\n    ";
+
         if ($withMarkup) {
-            if ($this->App->getHelpType() === CliHelpType::MAN_PAGE) {
-                $pre = '| ';
-                $b = '`';
-                $n = "\n{$pre}    ";
-            } else {
-                $b = '__';
-                $n = " \\\n\ \ \ \ ";
+            $b = '__';
+            $n = " \\\n\ \ \ \ ";
+
+            switch ($this->App->getHelpType()) {
+                case CliHelpType::MARKDOWN:
+                    $b = '`';
+                    break;
+
+                case CliHelpType::MAN_PAGE:
+                    $pre = '| ';
+                    $b = '`';
+                    $n = "\n{$pre}    ";
+                    break;
             }
         }
 
         $synopsis = Convert::sparseToString(' ', [
             $b . $this->getNameWithProgram() . $b,
-            $this->getOptionsSynopsis($withMarkup, true),
+            $this->getOptionsSynopsis($withMarkup, true, $collapsed),
         ]);
 
         if ($width !== null) {
-            return $pre . str_replace(
+            $wrapped = $pre . str_replace(
                 "\n", $n, $this
                     ->getLoopbackFormatter()
                     ->formatTags($synopsis, false, [$width, $width - 4], !$withMarkup)
             );
+
+            if (!$collapse || strpos($wrapped, "\n") === false) {
+                return $wrapped;
+            }
+
+            $synopsis = Convert::sparseToString(' ', [
+                $b . $this->getNameWithProgram() . $b,
+                $collapsed,
+            ]);
         }
 
         return $pre . $this
@@ -392,11 +408,22 @@ abstract class CliCommand implements ICliCommand
             ->formatTags($synopsis, false, null, !$withMarkup);
     }
 
-    private function getOptionsSynopsis(bool $withMarkup = true, bool $withEscapes = false): string
+    private function getOptionsSynopsis(bool $withMarkup = true, bool $withEscapes = false, ?string &$collapsed = null): string
     {
         $withEscapes = $withEscapes && !$withMarkup;
-        $b = $withMarkup ? '__' : '';
+
+        $b = '';
         $esc = ($withMarkup || $withEscapes) ? '\\' : '';
+
+        if ($withMarkup) {
+            $b = '__';
+            switch ($this->App->getHelpType()) {
+                case CliHelpType::MARKDOWN:
+                case CliHelpType::MAN_PAGE:
+                    $b = '`';
+                    break;
+            }
+        }
 
         // Produce this:
         //
@@ -414,12 +441,17 @@ abstract class CliCommand implements ICliCommand
         $required = [];
         $positional = [];
 
+        $count = 0;
         foreach ($this->getOptions() as $option) {
             if (!($option->Visibility & CliOptionVisibility::SYNOPSIS)) {
                 continue;
             }
 
             if ($option->IsFlag) {
+                $count++;
+                if ($option->MultipleAllowed) {
+                    $count++;
+                }
                 if ($option->Short !== null) {
                     $shortFlag[] = $option->Short;
                     continue;
@@ -441,10 +473,13 @@ abstract class CliCommand implements ICliCommand
                 continue;
             }
 
+            $count++;
+
             $prefix = '';
             $suffix = '';
             $ellipsis = '';
             if ($option->MultipleAllowed) {
+                $count++;
                 if ($option->Delimiter) {
                     $valueName .= "{$option->Delimiter}...";
                 } elseif ($option->ValueRequired) {
@@ -476,42 +511,61 @@ abstract class CliCommand implements ICliCommand
             }
         }
 
+        $collapsed = implode(' ', array_filter([
+            $count > 1 ? "{$esc}[<option>]..." : '',
+            $count === 1 ? "{$esc}[<option>]" : '',
+            $positional ? "{$esc}[{$b}--{$b}] " . implode(' ', $positional) : '',
+        ]));
+
         return implode(' ', array_filter([
             $shortFlag ? "{$esc}[{$b}-" . implode('', $shortFlag) . "{$b}]" : '',
             $optional ? implode(' ', $optional) : '',
             $required ? implode(' ', $required) : '',
-            $positional ? implode(' ', $positional) : '',
+            $positional ? "{$esc}[{$b}--{$b}] " . implode(' ', $positional) : '',
         ]));
     }
 
     final public function getHelp(bool $withMarkup = true, ?int $width = 80): string
     {
-        $b = $withMarkup ? '__' : '';
-        $em = $withMarkup ? '_' : '';
-        $esc = $withMarkup ? '\\' : '';
+        $b = '';
+        $em = '';
+        $esc = '';
+        $indent = '    ';
+        $beforeSynopsis = '';
+        $beforeDescription = "\n" . $indent;
+        $visibility = CliOptionVisibility::HELP;
+        $collapse = false;
 
-        $indent = '';
-        $beforeDescription = "\n\n";
-        $beforeList = "\n\n";
+        if ($withMarkup) {
+            $b = '__';
+            $em = '_';
+            $esc = '\\';
 
-        switch ($this->App->getHelpType()) {
-            case CliHelpType::TTY:
-                $indent = '    ';
-                $beforeDescription = "\n" . $indent;
-                $beforeList = "\n";
-                break;
+            switch ($this->App->getHelpType()) {
+                case CliHelpType::MARKDOWN:
+                    $b = '`';
+                    $indent = '  ';
+                    $beforeSynopsis = '- ';
+                    $beforeDescription = "\n\n" . $indent;
+                    $visibility = CliOptionVisibility::MARKDOWN;
+                    $collapse = true;
+                    break;
 
-            case CliHelpType::MAN_PAGE:
-                $indent = '    ';
-                $beforeDescription .= ':   ';
-                break;
+                case CliHelpType::MAN_PAGE:
+                    $b = '`';
+                    $indent = '    ';
+                    $beforeDescription = "\n\n:   ";
+                    $visibility = CliOptionVisibility::MAN_PAGE;
+                    $collapse = true;
+                    break;
+            }
         }
 
         $formatter = $this->getLoopbackFormatter();
 
         $options = [];
         foreach ($this->getOptions() as $option) {
-            if (!($option->Visibility & CliOptionVisibility::HELP)) {
+            if (!($option->Visibility & $visibility)) {
                 continue;
             }
 
@@ -595,6 +649,11 @@ abstract class CliCommand implements ICliCommand
                 $synopsis = $line;
             }
 
+            if ($valueName !== null) {
+                $valueName = $formatter->removeTags($valueName);
+                $valueName = strtolower(Convert::splitWords($valueName, null, ' '));
+            }
+
             $lines = [];
             if ($option->Description !== null &&
                     ($description = trim($option->Description)) !== '') {
@@ -603,18 +662,21 @@ abstract class CliCommand implements ICliCommand
 
             if ($allowed) {
                 foreach ($allowed as &$value) {
-                    $value = sprintf("%s-{$esc} %s", $indent, $value);
+                    $value = sprintf('%s- %s', $indent, $value);
                 }
-                $lines[] = "{$indent}{$valueName} can be:"
-                    . $beforeList
-                    . implode("\n", $allowed);
+                $lines[] = sprintf(
+                    "%sThe %s can be:\n\n%s",
+                    $indent,
+                    $valueName,
+                    implode("\n", $allowed)
+                );
             }
 
             if (!$option->IsFlag &&
                     $option->DefaultValue !== null &&
                     $option->DefaultValue !== []) {
                 foreach ((array) $option->DefaultValue as $value) {
-                    $default[] = sprintf("{$em}%s{$em}", $formatter->escapeTags((string) $value));
+                    $default[] = $em . $formatter->escapeTags((string) $value) . $em;
                 }
                 $lines[] = sprintf(
                     "%sThe default %s is:{$esc} %s",
@@ -624,7 +686,7 @@ abstract class CliCommand implements ICliCommand
                 );
             }
 
-            $options[] = $synopsis
+            $options[] = $beforeSynopsis . $synopsis
                 . ($lines ? $beforeDescription . ltrim(implode("\n\n", $lines)) : '');
         }
 
@@ -638,7 +700,7 @@ abstract class CliCommand implements ICliCommand
 
         $sections = [
             'NAME' => $name . ' - ' . $this->description(),
-            'SYNOPSIS' => $this->getSynopsis($withMarkup, $width),
+            'SYNOPSIS' => $this->getSynopsis($withMarkup, $width, $collapse),
             'DESCRIPTION' => $this->prepareUsage($this->getLongDescription(), $formatter, $width),
             'OPTIONS' => implode("\n\n", $options),
         ] + $sections;

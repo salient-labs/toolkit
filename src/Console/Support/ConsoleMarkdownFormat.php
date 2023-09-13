@@ -4,6 +4,7 @@ namespace Lkrms\Console\Support;
 
 use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
 use Lkrms\Console\Contract\IConsoleFormat;
+use Lkrms\Console\ConsoleFormatter;
 
 /**
  * Applies Markdown formatting to console output
@@ -35,6 +36,13 @@ final class ConsoleMarkdownFormat implements IConsoleFormat
         if ($tag === '##') {
             $before = '## ';
             $after = '';
+        } elseif ($tag === '_' || $tag === '*') {
+            $before = '`';
+            $after = '`';
+            $text = ConsoleFormatter::removeTags($text);
+        } elseif ($this->Before === '`') {
+            $before = '**`';
+            $after = '`**';
         } elseif ($this->Before === '```') {
             $before = $tag . ($attributes[Attribute::INFO_STRING] ?? '') . "\n";
             $after = "\n" . $tag;
