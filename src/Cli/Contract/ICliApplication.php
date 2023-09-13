@@ -3,6 +3,7 @@
 namespace Lkrms\Cli\Contract;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
+use Lkrms\Cli\Catalog\CliHelpType;
 use Lkrms\Contract\IApplication;
 use LogicException;
 
@@ -47,7 +48,14 @@ interface ICliApplication extends IApplication
     public function oneCommand(string $id);
 
     /**
-     * Get the number of columns available for usage information / help messages
+     * Get the help message type requested from the command line
+     *
+     * @return CliHelpType::*
+     */
+    public function getHelpType(): int;
+
+    /**
+     * Get the number of columns available for help messages / usage information
      * after adjusting for margins
      *
      * If the command is running in a terminal and `$margins` is the total width

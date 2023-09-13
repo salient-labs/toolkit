@@ -86,13 +86,14 @@ class TestOptions extends CliCommand
                     $vary['required'] = [true];
                     $vary['bindTo'] = [&$this->valPos1];
                 case CliOptionType::VALUE:
-                    $names ??= ['val1', 'val2', 'val3'];
-                    $vary['required'] ??= [false, true];
+                    $names ??= ['val1', 'val2', 'val3', 'val4'];
+                    $vary['required'] ??= [false, true, true, false];
                     $vary['bindTo'] ??= [&$this->val1];
                 case CliOptionType::VALUE_OPTIONAL:
-                    $names ??= ['valOpt1', 'valOpt2', 'valOpt3'];
-                    $vary['valueName'] = ['VAL', 'val', null];
-                    $vary['multipleAllowed'] = [false, false, true];
+                    $names ??= ['valOpt1', 'valOpt2', 'valOpt3', 'valOpt4'];
+                    $vary['valueName'] = ['VAL', 'val', null, null];
+                    $vary['multipleAllowed'] = [false, false, true, true];
+                    $vary['delimiter'] = [',', ',', null, null];
                     $vary['bindTo'] ??= [&$this->valOpt1];
                     break;
 
@@ -158,10 +159,10 @@ class TestOptions extends CliCommand
         return <<<EOF
             Variations tested:
 
-            - Short option names that vary only by case  
-            - UPPER_CASE, lower_case and null `valueName`  
-            - Legal combinations of `multipleAllowed` and `required`  
-            - Bound to class properties, and unbound  
+            - Short option names that vary only by case
+            - UPPER_CASE, lower_case and null `valueName`
+            - Legal combinations of `multipleAllowed` and `required`
+            - Bound to class properties, and unbound
             EOF;
     }
 

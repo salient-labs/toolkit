@@ -2,6 +2,7 @@
 
 namespace Lkrms\Cli;
 
+use Lkrms\Cli\Catalog\CliHelpType;
 use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\Contract\ICliApplication;
@@ -216,7 +217,7 @@ abstract class CliCommand implements ICliCommand
      */
     final public function name(): string
     {
-        return implode(' ', $this->getNameParts());
+        return implode(' ', $this->Name ?? []);
     }
 
     /**
@@ -226,18 +227,16 @@ abstract class CliCommand implements ICliCommand
      */
     final protected function getNameWithProgram(): string
     {
-        $name = $this->getNameParts();
+        $name = $this->Name ?? [];
         array_unshift($name, $this->App->getProgramName());
 
         return implode(' ', $name);
     }
 
     /**
-     * Get the command name as an array of subcommands
-     *
-     * @return string[]
+     * @inheritDoc
      */
-    final protected function getNameParts(): array
+    final public function nameParts(): array
     {
         return $this->Name ?: [];
     }
@@ -315,8 +314,8 @@ abstract class CliCommand implements ICliCommand
             }
 
             return $this
-                ->maybeAddHiddenOption('help', 'h')
-                ->maybeAddHiddenOption('version', 'v');
+                ->maybeAddHiddenOption('help')
+                ->maybeAddHiddenOption('version');
         } catch (Throwable $ex) {
             $this->Options = null;
             $this->OptionsByName = [];
@@ -330,19 +329,12 @@ abstract class CliCommand implements ICliCommand
     /**
      * @return $this
      */
-    private function maybeAddHiddenOption(string $long, string $short)
+    private function maybeAddHiddenOption(string $long)
     {
         if (array_key_exists($long, $this->OptionsByName)) {
             return $this;
         }
-
-        return $this->addOption(
-            CliOption::build()
-                ->long($long)
-                ->short(array_key_exists($short, $this->OptionsByName) ? null : $short)
-                ->hide()
-                ->go()
-        );
+        return $this->addOption(CliOption::build()->long($long)->hide()->go());
     }
 
     /**
@@ -363,9 +355,24 @@ abstract class CliCommand implements ICliCommand
         return $this->loadOptions()->OptionsByName[$name] ?? null;
     }
 
+    /**
+     * @inheritDoc
+     */
     final public function getSynopsis(bool $withMarkup = true, ?int $width = 80): string
     {
-        $b = $withMarkup ? '__' : '';
+        $pre = '';
+        $b = '';
+        $n = "\n    ";
+        if ($withMarkup) {
+            if ($this->App->getHelpType() === CliHelpType::MAN_PAGE) {
+                $pre = '| ';
+                $b = '`';
+                $n = "\n{$pre}    ";
+            } else {
+                $b = '__';
+                $n = " \\\n\\ \\ \\ \\ ";
+            }
+        }
 
         $synopsis = Convert::sparseToString(' ', [
             $b . $this->getNameWithProgram() . $b,
@@ -373,16 +380,14 @@ abstract class CliCommand implements ICliCommand
         ]);
 
         if ($width !== null) {
-            return str_replace(
-                "\n",
-                "\n    ",
-                $this
+            return $pre . str_replace(
+                "\n", $n, $this
                     ->getLoopbackFormatter()
                     ->formatTags($synopsis, false, [$width, $width - 4], !$withMarkup)
             );
         }
 
-        return $this
+        return $pre . $this
             ->getLoopbackFormatter()
             ->formatTags($synopsis, false, null, !$withMarkup);
     }
@@ -400,7 +405,7 @@ abstract class CliCommand implements ICliCommand
         // By generating this:
         //
         //     $shortFlag = ['n', 'y'];
-        //     $optional = ['--exclude PATTERN', '--verbose'];
+        //     $optional = ['[--exclude PATTERN]', '[--verbose]'];
         //     $required = ['--from SOURCE'];
         //     $positional = ['DEST'];
         //
@@ -415,11 +420,11 @@ abstract class CliCommand implements ICliCommand
             }
 
             if ($option->IsFlag) {
-                if ($option->Short) {
+                if ($option->Short !== null) {
                     $shortFlag[] = $option->Short;
                     continue;
                 }
-                $optional[] = "{$b}--{$option->Long}{$b}";
+                $optional[] = "{$esc}[{$b}--{$option->Long}{$b}]";
                 continue;
             }
 
@@ -429,27 +434,51 @@ abstract class CliCommand implements ICliCommand
             }
 
             if ($option->IsPositional) {
-                $valueName .= $option->MultipleAllowed ? '...' : '';
+                if ($option->MultipleAllowed) {
+                    $valueName .= '...';
+                }
                 $positional[] = $option->Required ? $valueName : "{$esc}[{$valueName}]";
                 continue;
             }
 
-            $valueName .= $option->MultipleAllowed && $option->Delimiter ? "{$option->Delimiter}..." : '';
+            $prefix = '';
+            $suffix = '';
+            $ellipsis = '';
+            if ($option->MultipleAllowed) {
+                if ($option->Delimiter) {
+                    $valueName .= "{$option->Delimiter}...";
+                } elseif ($option->ValueRequired) {
+                    if ($option->Required) {
+                        $prefix = "{$esc}(";
+                        $suffix = ')...';
+                    } else {
+                        $ellipsis = '...';
+                    }
+                } else {
+                    $ellipsis = '...';
+                }
+            }
 
-            $valueName = $option->Short
-                ? "{$b}-{$option->Short}{$b}" . ($option->ValueRequired ? "{$esc} {$valueName}" : "{$esc}[{$valueName}]")
-                : "{$b}--{$option->Long}{$b}" . ($option->ValueRequired ? "{$esc} {$valueName}" : "{$esc}[={$valueName}]");
+            $valueName = $option->Short !== null
+                ? "{$prefix}{$b}-{$option->Short}{$b}"
+                    . ($option->ValueRequired
+                        ? "{$esc} {$valueName}{$suffix}"
+                        : "{$esc}[{$valueName}]{$suffix}")
+                : "{$prefix}{$b}--{$option->Long}{$b}"
+                    . ($option->ValueRequired
+                        ? "{$esc} {$valueName}{$suffix}"
+                        : "{$esc}[={$valueName}]{$suffix}");
 
             if ($option->Required) {
-                $required[] = $valueName;
+                $required[] = $valueName . $ellipsis;
             } else {
-                $optional[] = $valueName;
+                $optional[] = "{$esc}[$valueName]" . $ellipsis;
             }
         }
 
         return implode(' ', array_filter([
             $shortFlag ? "{$esc}[{$b}-" . implode('', $shortFlag) . "{$b}]" : '',
-            $optional ? "{$esc}[" . implode("] {$esc}[", $optional) . ']' : '',
+            $optional ? implode(' ', $optional) : '',
             $required ? implode(' ', $required) : '',
             $positional ? implode(' ', $positional) : '',
         ]));
@@ -461,9 +490,26 @@ abstract class CliCommand implements ICliCommand
         $em = $withMarkup ? '_' : '';
         $esc = $withMarkup ? '\\' : '';
 
+        $indent = '';
+        $beforeDescription = "\n\n";
+        $beforeList = "\n\n";
+
+        switch ($this->App->getHelpType()) {
+            case CliHelpType::TTY:
+                $indent = '    ';
+                $beforeDescription = "\n" . $indent;
+                $beforeList = "\n";
+                break;
+
+            case CliHelpType::MAN_PAGE:
+                $indent = '    ';
+                $beforeDescription .= ':   ';
+                break;
+        }
+
         $formatter = $this->getLoopbackFormatter();
 
-        $options = '';
+        $options = [];
         foreach ($this->getOptions() as $option) {
             if (!($option->Visibility & CliOptionVisibility::HELP)) {
                 continue;
@@ -473,7 +519,11 @@ abstract class CliCommand implements ICliCommand
             $long = $option->Long;
             $line = [];
             $value = [];
-            $valueName = '';
+            $valueName = $option->IsFlag ? '' : $option->getFriendlyValueName();
+            $allowed = null;
+            $default = null;
+            $prefix = '';
+            $suffix = '';
 
             if ($option->IsFlag) {
                 if ($short !== null) {
@@ -483,85 +533,99 @@ abstract class CliCommand implements ICliCommand
                     $line[] = "{$b}--{$long}{$b}";
                 }
             } else {
-                $valueName = $option->getFriendlyValueName();
+                if ($option->AllowedValues) {
+                    foreach ($option->AllowedValues as $optionValue) {
+                        $allowed[] = $em . $formatter->escapeTags((string) $optionValue) . $em;
+                    }
+                }
 
                 if ($option->IsPositional) {
-                    $list = $option->MultipleAllowed ? '...' : '';
-                    $line[] = $valueName . $list;
+                    if ($option->MultipleAllowed) {
+                        $line[] = '{}...';
+                    } else {
+                        $line[] = '{}';
+                    }
                 } else {
-                    $list = $option->MultipleAllowed && $option->Delimiter ? "{$option->Delimiter}..." : '';
+                    $ellipsis = '';
+                    if ($option->MultipleAllowed) {
+                        if ($option->Delimiter) {
+                            $ellipsis = "{$option->Delimiter}...";
+                        } elseif ($option->ValueRequired) {
+                            $prefix = "{$esc}(";
+                            $suffix = ')...';
+                        } else {
+                            $suffix = '...';
+                        }
+                    }
+
                     if ($short !== null) {
                         $line[] = "{$b}-{$short}{$b}";
-                        $value[] = $option->ValueRequired ? "{$esc} {$valueName}{$list}" : "{$esc}[{$valueName}{$list}]";
+                        $value[] = $option->ValueRequired
+                            ? "{$esc} {}{$ellipsis}"
+                            : "{$esc}[{}{$ellipsis}]";
                     }
+
                     if ($long !== null) {
                         $line[] = "{$b}--{$long}{$b}";
-                        $value[] = $option->ValueRequired ? "{$esc} {$valueName}{$list}" : "{$esc}[={$valueName}{$list}]";
+                        $value[] = $option->ValueRequired
+                            ? "{$esc} {}{$ellipsis}"
+                            : "{$esc}[={}{$ellipsis}]";
                     }
                 }
             }
 
-            $line = implode(",{$esc} ", $line);
-            $value = array_pop($value) ?: '';
-            $options .= "\n{$line}{$value}";
+            $line = $prefix . implode(",{$esc} ", $line) . array_pop($value) . $suffix;
 
-            $optionLines = [];
-            $indent = '    ';
+            // Replace value name with allowed values if $synopsis won't break
+            // over multiple lines, otherwise add them after the description
+            if (($pos = strrpos($line, '{}')) !== false) {
+                $synopsis = null;
+                if ($allowed) {
+                    [$before, $after] = $option->ValueRequired ? ['(', ')'] : ['', ''];
+                    $allowedSynopsis = substr_replace($line, $before . implode('|', $allowed) . $after, $pos, 2);
+                    if (mb_strlen($formatter->removeTags($indent . $allowedSynopsis)) <= ($width ?? 76)) {
+                        $synopsis = $allowedSynopsis;
+                        $allowed = null;
+                    }
+                }
+                if ($synopsis === null) {
+                    $synopsis = substr_replace($line, $valueName, $pos, 2);
+                }
+            } else {
+                $synopsis = $line;
+            }
 
+            $lines = [];
             if ($option->Description !== null &&
                     ($description = trim($option->Description)) !== '') {
-                $optionLines[] = $this->prepareUsage($description, $formatter, $width, $indent);
+                $lines[] = $this->prepareUsage($description, $formatter, $width, $indent);
             }
 
-            $generatedLines = [];
-            $compact = true;
-            if ($option->AllowedValues) {
-                $allowedValues = array_map(
-                    fn($value): string =>
-                        $formatter->escapeTags((string) $value),
-                    $option->AllowedValues
-                );
-                $start = "{$indent}{$b}Values:{$b}";
-                if (mb_strlen(implode(' ', $option->AllowedValues)) < $width - mb_strlen($start) - 2) {
-                    $generatedLines[] = "{$start}{$esc} {$em}" . implode("{$em}{$esc} {$em}", $allowedValues) . $em;
-                } else {
-                    $generatedLines[] =
-                        "{$start}\n{$indent}" . implode(
-                            "\n{$indent}",
-                            array_map(
-                                fn(string $value): string =>
-                                    sprintf("-{$esc} {$em}%s{$em}", $value),
-                                $allowedValues
-                            )
-                        );
-                    $compact = false;
+            if ($allowed) {
+                foreach ($allowed as &$value) {
+                    $value = sprintf("%s-{$esc} %s", $indent, $value);
                 }
+                $lines[] = "{$indent}{$valueName} can be:"
+                    . $beforeList
+                    . implode("\n", $allowed);
             }
 
-            if ($option->DefaultValue) {
-                $defaultValue = array_map(
-                    fn($value): string =>
-                        $formatter->escapeTags((string) $value),
-                    (array) $option->DefaultValue
-                );
-                $generatedLines[] = sprintf(
-                    "%s{$b}Default:{$b}{$esc} {$em}%s{$em}",
+            if (!$option->IsFlag &&
+                    $option->DefaultValue !== null &&
+                    $option->DefaultValue !== []) {
+                foreach ((array) $option->DefaultValue as $value) {
+                    $default[] = sprintf("{$em}%s{$em}", $formatter->escapeTags((string) $value));
+                }
+                $lines[] = sprintf(
+                    "%sThe default %s is:{$esc} %s",
                     $indent,
-                    implode(
-                        sprintf("{$em}%s{$em}", $option->Delimiter ?: ' '),
-                        $defaultValue
-                    )
+                    $valueName,
+                    implode($option->Delimiter ?? ' ', $default)
                 );
             }
 
-            if ($generatedLines) {
-                $optionLines[] = implode($compact ? "\n" : "\n\n", $generatedLines);
-            }
-
-            $options .=
-                ($optionLines
-                    ? "\n" . implode("\n\n", $optionLines)
-                    : '') . "\n";
+            $options[] = $synopsis
+                . ($lines ? $beforeDescription . ltrim(implode("\n\n", $lines)) : '');
         }
 
         $name = $this->getNameWithProgram();
@@ -575,8 +639,8 @@ abstract class CliCommand implements ICliCommand
         $sections = [
             'NAME' => $name . ' - ' . $this->description(),
             'SYNOPSIS' => $this->getSynopsis($withMarkup, $width),
-            'OPTIONS' => trim($options),
             'DESCRIPTION' => $this->prepareUsage($this->getLongDescription(), $formatter, $width),
+            'OPTIONS' => implode("\n\n", $options),
         ] + $sections;
 
         return $this->App->buildHelp($sections);
@@ -950,8 +1014,8 @@ abstract class CliCommand implements ICliCommand
      * Optionally normalise an array of option values, assign them to the
      * command, and return them to the caller
      *
-     * @param array<string,array<string|int>|string|int|bool|null> $values An array that
-     * maps options to values.
+     * @param array<string,array<string|int>|string|int|bool|null> $values An
+     * array that maps options to values.
      * @param bool $normalise `false` if `$value` has already been normalised.
      * @param bool $expand If `true`, replace `null` (or `true`, if the option
      * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
@@ -1096,7 +1160,7 @@ abstract class CliCommand implements ICliCommand
     ): array {
         $this->assertHasRun();
 
-        $args = $this->getNameParts();
+        $args = $this->nameParts();
         array_unshift($args, $this->App->getProgramName());
         foreach ($this->Options as $option) {
             $name = null;

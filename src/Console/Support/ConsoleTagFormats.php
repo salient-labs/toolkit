@@ -5,6 +5,8 @@ namespace Lkrms\Console\Support;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Contract\IConsoleFormat as Format;
 use Lkrms\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
+use Lkrms\Console\Support\ConsoleManPageFormat as ManPageFormat;
+use Lkrms\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;
 
 /**
  * Maps inline formatting tags to target-defined formats
@@ -57,5 +59,29 @@ final class ConsoleTagFormats
             ->set(Tag::LOW_PRIORITY, new LoopbackFormat('~~', '~~'))
             ->set(Tag::CODE_SPAN, new LoopbackFormat('`', '`'))
             ->set(Tag::CODE_BLOCK, new LoopbackFormat('```', '```'));
+    }
+
+    public static function getMarkdownFormats(): self
+    {
+        return (new self())
+            ->set(Tag::HEADING, new MarkdownFormat('***', '***'))
+            ->set(Tag::BOLD, new MarkdownFormat('**', '**'))
+            ->set(Tag::ITALIC, new MarkdownFormat('*', '*'))
+            ->set(Tag::UNDERLINE, new MarkdownFormat('*<u>', '</u>*'))
+            ->set(Tag::LOW_PRIORITY, new MarkdownFormat('<small>', '</small>'))
+            ->set(Tag::CODE_SPAN, new MarkdownFormat('`', '`'))
+            ->set(Tag::CODE_BLOCK, new MarkdownFormat('```', '```'));
+    }
+
+    public static function getManPageFormats(): self
+    {
+        return (new self())
+            ->set(Tag::HEADING, new ManPageFormat('***', '***'))
+            ->set(Tag::BOLD, new ManPageFormat('**', '**'))
+            ->set(Tag::ITALIC, new ManPageFormat('*', '*'))
+            ->set(Tag::UNDERLINE, new ManPageFormat('*', '*'))
+            ->set(Tag::LOW_PRIORITY, new ManPageFormat('', ''))
+            ->set(Tag::CODE_SPAN, new ManPageFormat('`', '`'))
+            ->set(Tag::CODE_BLOCK, new ManPageFormat('```', '```'));
     }
 }
