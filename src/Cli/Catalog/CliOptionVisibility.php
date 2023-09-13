@@ -17,7 +17,11 @@ final class CliOptionVisibility extends Enumeration
 
     public const HELP = 2;
 
-    public const COMPLETION = 4;
+    public const MARKDOWN = 4;
 
-    public const ALL = CliOptionVisibility::SYNOPSIS | CliOptionVisibility::HELP | CliOptionVisibility::COMPLETION;
+    public const MAN_PAGE = 8;
+
+    public const COMPLETION = 16;
+
+    public const ALL = CliOptionVisibility::SYNOPSIS | CliOptionVisibility::HELP | CliOptionVisibility::MARKDOWN | CliOptionVisibility::MAN_PAGE | CliOptionVisibility::COMPLETION;
 }

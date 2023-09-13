@@ -15,6 +15,7 @@ use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Pcre;
 use LogicException;
 
 /**
@@ -223,7 +224,7 @@ class CliApplication extends Application implements ICliApplication
         foreach ($node as $childName => $childNode) {
             if ($command = $this->getNodeCommand(trim("$name $childName"), $childNode)) {
                 if ($terse) {
-                    $synopses[] = $command->getSynopsis(false, $width);
+                    $synopses[] = $command->getSynopsis(false, $width, true);
                 } else {
                     $synopses[] = "__{$childName}__ - " . $command->description();
                 }
@@ -308,7 +309,7 @@ class CliApplication extends Application implements ICliApplication
                 EOF;
         }
 
-        return rtrim($usage);
+        return Pcre::replace('/^\s+$/m', '', rtrim($usage));
     }
 
     /**
@@ -382,12 +383,14 @@ class CliApplication extends Application implements ICliApplication
             $name .= ($name === '' ? '' : ' ') . $arg;
         }
 
-        if ($args === ['_md']) {
-            return $this->generateHelp($name, $node, CliHelpType::MARKDOWN);
+        if (($args[0] ?? null) === '_md') {
+            array_shift($args);
+            return $this->generateHelp($name, $node, CliHelpType::MARKDOWN, ...$args);
         }
 
-        if ($args === ['_man']) {
-            return $this->generateHelp($name, $node, CliHelpType::MAN_PAGE);
+        if (($args[0] ?? null) === '_man') {
+            array_shift($args);
+            return $this->generateHelp($name, $node, CliHelpType::MAN_PAGE, ...$args);
         }
 
         $command = $this->getNodeCommand($name, $node);
@@ -424,7 +427,7 @@ class CliApplication extends Application implements ICliApplication
      * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
      * @param CliHelpType::* $type
      */
-    private function generateHelp(string $name, $node, int $type): int
+    private function generateHelp(string $name, $node, int $type, string ...$args): int
     {
         $this->HelpType = $type;
 
@@ -435,6 +438,13 @@ class CliApplication extends Application implements ICliApplication
 
             case CliHelpType::MAN_PAGE:
                 $formats = TagFormats::getManPageFormats();
+                printf(
+                    "%% %s(%d) %s | %s\n\n",
+                    strtoupper(str_replace(' ', '-', trim($this->getProgramName() . " $name"))),
+                    (int) ($args[0] ?? '1'),
+                    $args[1] ?? Composer::getRootPackageVersion(true, true),
+                    $args[2] ?? (Composer::getRootPackageName() . ' Documentation'),
+                );
                 break;
 
             default:
