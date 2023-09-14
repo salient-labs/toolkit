@@ -2,13 +2,12 @@
 
 namespace Lkrms\Sync\Concept;
 
-use Lkrms\Container\Container;
+use Lkrms\Concept\Provider;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IService;
-use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
@@ -24,16 +23,8 @@ use LogicException;
  * Base class for providers that sync entities to and from third-party backends
  *
  */
-abstract class SyncProvider implements ISyncProvider, IService
+abstract class SyncProvider extends Provider implements ISyncProvider, IService
 {
-    /**
-     * Get a DateFormatter to work with the backend's date format and timezone
-     *
-     * The {@see DateFormatter} returned by this method is cached for the
-     * lifetime of the {@see SyncProvider} instance.
-     */
-    abstract protected function getDateFormatter(): DateFormatter;
-
     /**
      * Get a dependency subtitution map for the class
      *
@@ -60,24 +51,6 @@ abstract class SyncProvider implements ISyncProvider, IService
     }
 
     /**
-     * @inheritDoc
-     */
-    public function description(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * @var Container
-     */
-    protected $App;
-
-    /**
-     * @var Env
-     */
-    protected $Env;
-
-    /**
      * @var SyncStore
      */
     protected $Store;
@@ -88,19 +61,13 @@ abstract class SyncProvider implements ISyncProvider, IService
     private $Id;
 
     /**
-     * @var DateFormatter|null
-     */
-    private $DateFormatter;
-
-    /**
      * @var array<string,Closure>
      */
     private $MagicMethodClosures = [];
 
-    public function __construct(Container $app, Env $environment, SyncStore $store)
+    public function __construct(IContainer $app, Env $env, SyncStore $store)
     {
-        $this->App = $app;
-        $this->Env = $environment;
+        parent::__construct($app, $env);
         $this->Store = $store;
 
         $this->Store->provider($this);
@@ -111,21 +78,6 @@ abstract class SyncProvider implements ISyncProvider, IService
         $this->Id = $providerId;
 
         return $this;
-    }
-
-    final public function app(): Container
-    {
-        return $this->App;
-    }
-
-    final public function container(): Container
-    {
-        return $this->App;
-    }
-
-    final public function env(): Env
-    {
-        return $this->Env;
     }
 
     final public function store(): SyncStore
@@ -154,15 +106,6 @@ abstract class SyncProvider implements ISyncProvider, IService
     {
         return SerializeRulesBuilder::build($this->App)
             ->entity($entity);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function dateFormatter(): DateFormatter
-    {
-        return $this->DateFormatter
-            ?? ($this->DateFormatter = $this->getDateFormatter());
     }
 
     final public static function getServices(): array
