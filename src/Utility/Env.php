@@ -139,8 +139,8 @@ final class Env
         }
 
         if ($flags & EnvFlag::TIMEZONE &&
-                ($tz = preg_replace('/^:?(.*\/zoneinfo\/)?/', '', self::get('TZ', '')))) {
-            if (($timezone = timezone_open($tz)) === false) {
+                ($tz = preg_replace(['/^:?(.*\/zoneinfo\/)?/', '/^UTC0$/'], ['', 'UTC'], self::get('TZ', ''))) !== '') {
+            if (($timezone = @timezone_open($tz)) === false) {
                 Console::debug('Invalid timezone:', $tz);
             } else {
                 date_default_timezone_set($tz = $timezone->getName());
