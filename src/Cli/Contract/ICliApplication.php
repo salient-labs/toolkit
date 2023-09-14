@@ -4,6 +4,7 @@ namespace Lkrms\Cli\Contract;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\Catalog\CliHelpType;
+use Lkrms\Cli\Support\CliHelpStyle;
 use Lkrms\Contract\IApplication;
 use LogicException;
 
@@ -53,6 +54,13 @@ interface ICliApplication extends IApplication
      * @return CliHelpType::*
      */
     public function getHelpType(): int;
+
+    /**
+     * Get formatting instructions for the help message type requested from the
+     * command line
+     *
+     */
+    public function getHelpStyle(): CliHelpStyle;
 
     /**
      * Get the number of columns available for help messages / usage information

@@ -6,6 +6,7 @@ use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\Catalog\CliHelpType;
 use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
+use Lkrms\Cli\Support\CliHelpStyle;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Console\ConsoleFormatter as Formatter;
@@ -38,6 +39,11 @@ class CliApplication extends Application implements ICliApplication
      * @var CliHelpType::*
      */
     private $HelpType = CliHelpType::TTY;
+
+    /**
+     * @var CliHelpStyle|null
+     */
+    private $HelpStyle;
 
     public function __construct(string $basePath = null)
     {
@@ -203,13 +209,16 @@ class CliApplication extends Application implements ICliApplication
     private function getUsage(string $name, $node, bool $terse = false): ?string
     {
         $width = $this->getHelpWidth($terse);
+
+        $command = $this->getNodeCommand($name, $node);
+        if ($command && !$terse) {
+            return $this->buildHelp($command->getHelp(true, $width));
+        }
+
         $progName = $this->getProgramName();
         $fullName = trim("$progName $name");
 
-        if ($command = $this->getNodeCommand($name, $node)) {
-            if (!$terse) {
-                return $command->getHelp(true, $width);
-            }
+        if ($command) {
             return Formatter::escapeTags($command->getSynopsis(false, $width)
                 . "\n\nSee '"
                 . ($name ? "$progName help $name" : "$progName --help")
@@ -259,6 +268,15 @@ class CliApplication extends Application implements ICliApplication
     public function getHelpType(): int
     {
         return $this->HelpType;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHelpStyle(): CliHelpStyle
+    {
+        return $this->HelpStyle
+            ?? ($this->HelpStyle = new CliHelpStyle($this->HelpType));
     }
 
     /**
@@ -425,13 +443,14 @@ class CliApplication extends Application implements ICliApplication
 
     /**
      * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
-     * @param CliHelpType::* $type
+     * @param CliHelpType::* $helpType
      */
-    private function generateHelp(string $name, $node, int $type, string ...$args): int
+    private function generateHelp(string $name, $node, int $helpType, string ...$args): int
     {
-        $this->HelpType = $type;
+        $this->HelpType = $helpType;
+        $this->HelpStyle = null;
 
-        switch ($type) {
+        switch ($helpType) {
             case CliHelpType::MARKDOWN:
                 $formats = TagFormats::getMarkdownFormats();
                 break;
@@ -442,13 +461,13 @@ class CliApplication extends Application implements ICliApplication
                     "%% %s(%d) %s | %s\n\n",
                     strtoupper(str_replace(' ', '-', trim($this->getProgramName() . " $name"))),
                     (int) ($args[0] ?? '1'),
-                    $args[1] ?? Composer::getRootPackageVersion(true, true),
+                    $args[1] ?? Composer::getRootPackageVersion(true),
                     $args[2] ?? (Composer::getRootPackageName() . ' Documentation'),
                 );
                 break;
 
             default:
-                throw new LogicException(sprintf('Invalid help type: %d', $type));
+                throw new LogicException(sprintf('Invalid help type: %d', $helpType));
         }
 
         $formatter = new Formatter($formats);
