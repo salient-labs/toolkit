@@ -11,12 +11,13 @@ use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 use Lkrms\Sync\Contract\ISyncClassResolver;
+use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Env;
 
 /**
  * A facade for \Lkrms\Container\Application
  *
- * @method static Application load(?string $basePath = null) Load and return an instance of the underlying Application class
+ * @method static Application load(?string $basePath = null, int-mask-of<EnvFlag::*> $envFlags = EnvFlag::ALL) Load and return an instance of the underlying Application class
  * @method static Application getInstance() Get the underlying Application instance
  * @method static bool isLoaded() True if an underlying Application instance has been loaded
  * @method static void unload() Clear the underlying Application instance

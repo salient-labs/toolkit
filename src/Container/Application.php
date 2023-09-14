@@ -15,6 +15,7 @@ use Lkrms\Facade\File;
 use Lkrms\Facade\Format;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
+use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Test;
@@ -214,7 +215,7 @@ class Application extends Container implements IApplication
             ?: ($this->_TempPath = $this->getPath('temp', self::DIR_STATE, 'tmp', 'var/tmp', 'tmp', $create));
     }
 
-    public function __construct(?string $basePath = null)
+    public function __construct(?string $basePath = null, int $envFlags = EnvFlag::ALL)
     {
         $this->StartTime = hrtime(true);
 
@@ -242,7 +243,7 @@ class Application extends Container implements IApplication
                 is_file($env = $this->BasePath . '/.env')) {
             $this->Env->load($env);
         }
-        $this->Env->apply();
+        $this->Env->apply($envFlags);
 
         Console::registerStdioTargets();
 

@@ -11,6 +11,10 @@ use Lkrms\Exception\ContainerServiceNotFoundException;
  */
 interface IContainer extends \Psr\Container\ContainerInterface
 {
+    /**
+     * Creates a new service container object
+     *
+     */
     public function __construct();
 
     /**

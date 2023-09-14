@@ -15,6 +15,7 @@ use Lkrms\Facade\Assert;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
+use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use LogicException;
@@ -45,9 +46,9 @@ class CliApplication extends Application implements ICliApplication
      */
     private $HelpStyle;
 
-    public function __construct(string $basePath = null)
+    public function __construct(string $basePath = null, int $envFlags = EnvFlag::ALL)
     {
-        parent::__construct($basePath);
+        parent::__construct($basePath, $envFlags);
 
         Assert::sapiIsCli();
         Assert::argvIsRegistered();

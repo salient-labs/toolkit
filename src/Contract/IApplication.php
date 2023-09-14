@@ -5,6 +5,7 @@ namespace Lkrms\Contract;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevels;
 use Lkrms\Sync\Contract\ISyncClassResolver;
+use Lkrms\Utility\Catalog\EnvFlag;
 
 /**
  * A service container for applications
@@ -12,7 +13,10 @@ use Lkrms\Sync\Contract\ISyncClassResolver;
  */
 interface IApplication extends IContainer, ReturnsEnvironment
 {
-    public function __construct(?string $basePath = null);
+    /**
+     * @param int-mask-of<EnvFlag::*> $envFlags
+     */
+    public function __construct(?string $basePath = null, int $envFlags = EnvFlag::ALL);
 
     /**
      * Get the basename of the file used to run the script
