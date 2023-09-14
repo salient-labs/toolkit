@@ -61,10 +61,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      *
      * This method can only be called once per pipeline.
      *
-     * @param callable(TInput, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput) $callback
-     * ```php
-     * fn($payload, IPipeline $pipeline, $arg)
-     * ```
+     * @param callable(TInput $payload, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): (TInput|TOutput) $callback
      * @return $this
      */
     public function after(callable $callback);
@@ -73,10 +70,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * Apply a callback to each payload before it is sent if an after() callback
      * hasn't already been applied
      *
-     * @param callable(TInput, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput) $callback
-     * ```php
-     * fn($payload, IPipeline $pipeline, $arg)
-     * ```
+     * @param callable(TInput $payload, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): (TInput|TOutput) $callback
      * @return $this
      */
     public function afterIf(callable $callback);
@@ -101,12 +95,9 @@ interface IPipeline extends IFluentInterface, IImmutable
      *   (this bypasses any remaining pipes and the callback passed to
      *   {@see IPipeline::then()}, if applicable)
      *
-     * @param IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>> ...$pipes
+     * @param IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput $payload, \Closure $next, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>> ...$pipes
      * Each pipe must be an `IPipe` object, the name of an `IPipe` class to
-     * instantiate, or a closure with the following signature:
-     * ```php
-     * function ($payload, Closure $next, IPipeline $pipeline, $arg)
-     * ```
+     * instantiate, or a closure.
      * @return $this
      */
     public function through(...$pipes);
@@ -114,10 +105,7 @@ interface IPipeline extends IFluentInterface, IImmutable
     /**
      * Add a simple callback to the pipeline
      *
-     * @param (callable(TInput, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput)) $callback
-     * ```php
-     * fn($payload, IPipeline $pipeline, $arg)
-     * ```
+     * @param (callable(TInput $payload, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): (TInput|TOutput)) $callback
      * @return $this
      */
     public function throughCallback(callable $callback);
@@ -139,10 +127,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * {@see IPipeline::collectThen()} is not also called.
      *
      * @template TThenOutput
-     * @param callable(TInput|TOutput, IPipeline<TInput,TOutput,TArgument>, TArgument): TThenOutput $callback
-     * ```php
-     * fn($result, IPipeline $pipeline, $arg)
-     * ```
+     * @param callable(TInput|TOutput $result, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): TThenOutput $callback
      * @return IPipeline<TInput,TThenOutput,TArgument>
      */
     public function then(callable $callback);
@@ -152,10 +137,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * applied
      *
      * @template TThenOutput
-     * @param callable(TInput|TOutput, IPipeline<TInput,TOutput,TArgument>, TArgument): TThenOutput $callback
-     * ```php
-     * fn($result, IPipeline $pipeline, $arg)
-     * ```
+     * @param callable(TInput|TOutput $result, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): TThenOutput $callback
      * @return IPipeline<TInput,TThenOutput,TArgument>
      */
     public function thenIf(callable $callback);
@@ -174,10 +156,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * forward-only iterator.
      *
      * @template TThenOutput
-     * @param callable(array<TInput|TOutput>, IPipeline<TInput,TOutput,TArgument>, TArgument): iterable<TThenOutput> $callback
-     * ```php
-     * fn(array $results, IPipeline $pipeline, $arg): array
-     * ```
+     * @param callable(array<TInput|TOutput> $results, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): iterable<TThenOutput> $callback
      * @return IPipeline<TInput,TThenOutput,TArgument>
      */
     public function collectThen(callable $callback);
@@ -195,11 +174,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * - if {@see IPipeline::stream()} was called, the result is discarded
      * - if {@see IPipeline::send()} was called, an exception is thrown
      *
-     * @param callable $filter
-     * ```php
-     * fn($result, IPipeline $pipeline, $arg): bool
-     * ```
-     * @param callable(TOutput|null, IPipeline<TInput,TOutput,TArgument>, TArgument): bool $filter
+     * @param callable(TOutput|null $result, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): bool $filter
      * @return $this
      */
     public function unless(callable $filter);
@@ -210,11 +185,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      *
      * See {@see IPipeline::unless()} for more information.
      *
-     * @param callable $filter
-     * ```php
-     * fn($result, IPipeline $pipeline, $arg): bool
-     * ```
-     * @param callable(TOutput|null, IPipeline<TInput,TOutput,TArgument>, TArgument): bool $filter
+     * @param callable(TOutput|null $result, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): bool $filter
      * @return $this
      */
     public function unlessIf(callable $filter);

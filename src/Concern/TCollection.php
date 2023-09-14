@@ -93,7 +93,7 @@ trait TCollection
     }
 
     /**
-     * @param callable(TValue, ?TValue, ?TValue): mixed $callback Parameters: `$item`, `$nextItem`, `$prevItem`
+     * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): mixed $callback
      * @return $this
      */
     public function forEach(callable $callback)
@@ -124,7 +124,7 @@ trait TCollection
      *
      * Returns a new instance of the collection.
      *
-     * @param callable(TValue, ?TValue, ?TValue): bool $callback Parameters: `$item`, `$nextItem`, `$prevItem`
+     * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
      * @return $this
      */
     public function filter(callable $callback)
@@ -156,7 +156,7 @@ trait TCollection
     }
 
     /**
-     * @param callable(TValue, ?TValue, ?TValue): bool $callback Parameters: `$item`, `$nextItem`, `$prevItem`
+     * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
      * @return TValue|false
      */
     public function find(callable $callback)

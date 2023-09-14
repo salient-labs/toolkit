@@ -50,7 +50,7 @@ interface ICollection extends Iterator, ArrayAccess, Countable
     /**
      * Apply a callback to every item in the collection
      *
-     * @param callable(TValue, ?TValue, ?TValue): mixed $callback Parameters: `$item`, `$nextItem`, `$prevItem`
+     * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): mixed $callback
      * @return $this
      */
     public function forEach(callable $callback);
@@ -60,7 +60,7 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      *
      * Analogous to `array_filter()`.
      *
-     * @param callable(TValue, ?TValue, ?TValue): bool $callback Parameters: `$item`, `$nextItem`, `$prevItem`
+     * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
      * @return $this
      */
     public function filter(callable $callback);
@@ -69,7 +69,7 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      * Get the first item that satisfies a callback, or false if there is no
      * such item in the collection
      *
-     * @param callable(TValue, ?TValue, ?TValue): bool $callback Parameters: `$item`, `$nextItem`, `$prevItem`
+     * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
      * @return TValue|false
      */
     public function find(callable $callback);
