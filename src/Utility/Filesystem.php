@@ -4,11 +4,11 @@ namespace Lkrms\Utility;
 
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
+use AppendIterator;
 use CallbackFilterIterator;
 use FilesystemIterator;
 use LogicException;
@@ -30,6 +30,8 @@ final class Filesystem
      *
      * Exclusions are applied before inclusions.
      *
+     * @param string|string[] $directory One or multiple directories to iterate
+     * over.
      * @param string|null $exclude A regular expression that specifies paths to
      * exclude. No files are excluded if `null`.
      *
@@ -54,7 +56,7 @@ final class Filesystem
      * @return FluentIteratorInterface<string,SplFileInfo>
      */
     public function find(
-        string $directory,
+        $directory,
         ?string $exclude = null,
         ?string $include = null,
         ?array $excludeCallbacks = null,
@@ -113,30 +115,37 @@ final class Filesystem
                     return !$include && !$includeCallbacks;
                 };
         }
-
-        if ($recursive) {
-            $iterator = new RecursiveDirectoryIterator($directory, $flags);
-            if ($callback ?? null) {
-                $iterator = new RecursiveCallbackFilterIterator($iterator, $callback);
+        /** @var AppendIterator|null */
+        $appendIterator = null;
+        /** @var non-empty-array<string> */
+        $directories = (array) $directory;
+        foreach ($directories as $directory) {
+            if ($recursive) {
+                $iterator = new RecursiveDirectoryIterator($directory, $flags);
+                if ($callback ?? null) {
+                    $iterator = new RecursiveCallbackFilterIterator($iterator, $callback);
+                }
+                $iterator = new RecursiveIteratorIterator($iterator, $mode);
+            } else {
+                $iterator = new FilesystemIterator($directory, $flags);
+                if ($callback ?? null) {
+                    $iterator = new CallbackFilterIterator($iterator, $callback);
+                }
+                if (!$withDirectories) {
+                    $iterator = new CallbackFilterIterator($iterator, fn(SplFileInfo $current) => !$current->isDir());
+                }
             }
-            $iterator = new RecursiveIteratorIterator($iterator, $mode);
-            /** @var FluentIteratorInterface<string,SplFileInfo> */
-            $iterator = new \Lkrms\Support\Iterator\FluentIterator($iterator);
 
-            return $iterator;
+            if (!$appendIterator) {
+                if (count($directories) === 1) {
+                    break;
+                }
+                $appendIterator = new AppendIterator();
+            }
+            $appendIterator->append($iterator);
         }
 
-        $iterator = new FilesystemIterator($directory, $flags);
-        if ($callback ?? null) {
-            $iterator = new CallbackFilterIterator($iterator, $callback);
-        }
-        if (!$withDirectories) {
-            $iterator = new CallbackFilterIterator($iterator, fn(SplFileInfo $current) => !$current->isDir());
-        }
-        /** @var FluentIteratorInterface<string,SplFileInfo> */
-        $iterator = new \Lkrms\Support\Iterator\FluentIterator($iterator);
-
-        return $iterator;
+        return new \Lkrms\Support\Iterator\FluentIterator($appendIterator ?? $iterator);
     }
 
     /**
