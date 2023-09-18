@@ -26,12 +26,12 @@ use LogicException;
 abstract class SyncProvider extends Provider implements ISyncProvider, IService
 {
     /**
-     * Get a dependency subtitution map for the class
+     * Get a dependency subtitution map for the provider
      *
      * {@inheritDoc}
      *
-     * Bind any {@see ISyncEntity} classes customised for this provider to their
-     * generic parent classes by overriding this method, e.g.:
+     * Override this method to bind any {@see ISyncEntity} classes customised
+     * for the provider to their generic parent classes, e.g.:
      *
      * ```php
      * <?php
@@ -65,24 +65,43 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
      */
     private $MagicMethodClosures = [];
 
+    /**
+     * Creates a new provider object
+     *
+     * Creating an instance of the provider registers it with the entity store
+     * injected by the container.
+     */
     public function __construct(IContainer $app, Env $env, SyncStore $store)
     {
         parent::__construct($app, $env);
         $this->Store = $store;
-
         $this->Store->provider($this);
     }
 
-    final public function setProviderId(int $providerId)
-    {
-        $this->Id = $providerId;
-
-        return $this;
-    }
-
+    /**
+     * @inheritDoc
+     */
     final public function store(): SyncStore
     {
         return $this->Store;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function setProviderId(int $providerId)
+    {
+        $this->Id = $providerId;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getProviderId(): ?int
+    {
+        return $this->Id
+            ?? $this->Store->getProviderId($this);
     }
 
     /**
@@ -108,12 +127,17 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
             ->entity($entity);
     }
 
+    /**
+     * @inheritDoc
+     */
     final public static function getServices(): array
     {
         return SyncIntrospector::get(static::class)->getSyncProviderInterfaces();
     }
 
     /**
+     * @inheritDoc
+     *
      * @template TEntity of ISyncEntity
      * @param class-string<TEntity> $entity
      * @return SyncEntityProvider<TEntity,static>
@@ -146,10 +170,5 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
         }
 
         throw new LogicException('Call to undefined method: ' . static::class . "::$name()");
-    }
-
-    final public function getProviderId(): ?int
-    {
-        return $this->Id;
     }
 }

@@ -60,7 +60,9 @@ final class DeferredSyncEntity implements IReadable
         $this->Replace = $this;
 
         if (is_string($entity)) {
-            $this->store()->deferredEntity($this->Provider->getProviderId(), $entity, $deferred, $this);
+            $this->store()
+                ->entityType($entity)
+                ->deferredEntity($this->Provider->getProviderId(), $entity, $deferred, $this);
         }
     }
 
