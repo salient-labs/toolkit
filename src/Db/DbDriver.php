@@ -33,9 +33,9 @@ final class DbDriver extends ReflectiveEnumeration
     public const SQLITE = 3;
 
     /**
-     * @var array<int,string>
+     * @var array<DbDriver::*,string>
      */
-    private const ADODB_DRIVER_MAP = [
+    private static $AdodbDriverMap = [
         self::DB2 => 'db2',
         self::MSSQL => 'mssqlnative',
         self::MYSQL => 'mysqli',
@@ -44,10 +44,12 @@ final class DbDriver extends ReflectiveEnumeration
 
     /**
      * @internal
+     *
+     * @param DbDriver::* $driver
      */
     public static function toAdodbDriver(int $driver): string
     {
-        if (($adodbDriver = self::ADODB_DRIVER_MAP[$driver] ?? null) === null) {
+        if (($adodbDriver = self::$AdodbDriverMap[$driver] ?? null) === null) {
             throw new LogicException(
                 sprintf('Argument #1 ($driver) is invalid: %d', $driver)
             );

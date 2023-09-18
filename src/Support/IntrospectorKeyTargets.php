@@ -18,6 +18,7 @@ use Closure;
  * @property-read array<string,string> $Properties Key => declared property name
  * @property-read string[] $MetaProperties Arbitrary keys
  * @property-read string[] $DateProperties Date keys
+ * @property-read array<string,string> $CustomKeys Name => key
  *
  * @see Introspector
  *
@@ -77,6 +78,13 @@ final class IntrospectorKeyTargets implements IReadable
     protected $DateProperties;
 
     /**
+     * Name => key
+     *
+     * @var array<string,string>
+     */
+    protected $CustomKeys;
+
+    /**
      * @param array<string,int> $parameters
      * @param array<string,true> $passByRefProperties
      * @param array<Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void> $callbacks
@@ -84,6 +92,7 @@ final class IntrospectorKeyTargets implements IReadable
      * @param array<string,string> $properties
      * @param string[] $metaProperties
      * @param string[] $dateProperties
+     * @param array<string,string> $customKeys
      */
     public function __construct(
         array $parameters,
@@ -92,7 +101,8 @@ final class IntrospectorKeyTargets implements IReadable
         array $methods,
         array $properties,
         array $metaProperties,
-        array $dateProperties
+        array $dateProperties,
+        array $customKeys
     ) {
         $this->Parameters = $parameters;
         $this->PassByRefParameters = $passByRefProperties;
@@ -101,5 +111,6 @@ final class IntrospectorKeyTargets implements IReadable
         $this->Properties = $properties;
         $this->MetaProperties = $metaProperties;
         $this->DateProperties = $dateProperties;
+        $this->CustomKeys = $customKeys;
     }
 }

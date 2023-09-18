@@ -25,6 +25,7 @@ use LogicException;
  * paths and class properties:
  *
  * ```php
+ * <?php
  * $rules = [
  *     // The following paths refer to the same node
  *     '.manager.org_unit',
@@ -58,6 +59,7 @@ use LogicException;
  * over class-based ones, and later rules take precedence over earlier ones.
  *
  * ```php
+ * <?php
  * $rules = [
  *     '.manager.org_unit',
  *     [
@@ -160,6 +162,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
      * encountered while traversing an object graph:
      *
      * ```php
+     * <?php
      * $rules = [
      *     OrgUnit::class => [
      *         'users',
@@ -179,6 +182,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
      * traversing an object graph:
      *
      * ```php
+     * <?php
      * $rules = [
      *     User::class => [
      *         ['org_unit', 'org_unit_id', fn($ou) => $ou->Id],

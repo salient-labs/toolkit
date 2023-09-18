@@ -2,13 +2,12 @@
 
 namespace Lkrms\Sync\Concept;
 
-use Lkrms\Container\Container;
+use Lkrms\Concept\Provider;
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IService;
-use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncContext;
@@ -18,68 +17,24 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Env;
 use Closure;
-use RuntimeException;
+use LogicException;
 
 /**
  * Base class for providers that sync entities to and from third-party backends
- * via their APIs
  *
  */
-abstract class SyncProvider implements ISyncProvider, IService
+abstract class SyncProvider extends Provider implements ISyncProvider, IService
 {
     /**
-     * Surface the provider's implementation of sync operations for an entity
-     * via an ISyncDefinition object
-     *
-     * @template T of ISyncEntity
-     * @param class-string<T> $entity
-     * @return ISyncDefinition<T,static>
-     */
-    abstract public function getDefinition(string $entity): ISyncDefinition;
-
-    /**
-     * Get a stable list of values that, together with the name of the class,
-     * uniquely identifies the backend instance
-     *
-     * This method must be idempotent for each backend instance the provider
-     * connects to. The return value should correspond to the smallest possible
-     * set of stable metadata that uniquely identifies the specific data source
-     * backing the connected instance.
-     *
-     * This could include:
-     * - an endpoint URI (if backend instances are URI-specific or can be
-     *   expressed as an immutable URI)
-     * - a tenant ID
-     * - an installation GUID
-     *
-     * It should not include:
-     * - usernames, API keys, tokens, or other identifiers with a shorter
-     *   lifespan than the data source itself
-     * - values that aren't unique to the connected data source
-     * - case-insensitive values (unless normalised first)
-     *
-     * @return array<string|\Stringable>
-     */
-    abstract public function getBackendIdentifier(): array;
-
-    /**
-     * Specify how to encode dates for the backend and/or the timezone to apply
-     *
-     * The {@see DateFormatter} returned will be cached for the lifetime of the
-     * {@see SyncProvider} instance.
-     *
-     */
-    abstract protected function getDateFormatter(): DateFormatter;
-
-    /**
-     * Get an array that maps concrete classes to more specific subclasses
+     * Get a dependency subtitution map for the provider
      *
      * {@inheritDoc}
      *
-     * Bind any {@see ISyncEntity} classes customised for this provider to their
-     * generic parent classes by overriding this method, e.g.:
+     * Override this method to bind any {@see ISyncEntity} classes customised
+     * for the provider to their generic parent classes, e.g.:
      *
      * ```php
+     * <?php
      * public static function getContextualBindings(): array
      * {
      *     return [
@@ -95,21 +50,6 @@ abstract class SyncProvider implements ISyncProvider, IService
         return [];
     }
 
-    public function description(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * @var Container
-     */
-    protected $App;
-
-    /**
-     * @var Env
-     */
-    protected $Env;
-
     /**
      * @var SyncStore
      */
@@ -121,55 +61,47 @@ abstract class SyncProvider implements ISyncProvider, IService
     private $Id;
 
     /**
-     * @var string|null
-     */
-    private $Hash;
-
-    /**
-     * @var DateFormatter|null
-     */
-    private $DateFormatter;
-
-    /**
      * @var array<string,Closure>
      */
     private $MagicMethodClosures = [];
 
-    public function __construct(Container $app, Env $environment, SyncStore $store)
+    /**
+     * Creates a new provider object
+     *
+     * Creating an instance of the provider registers it with the entity store
+     * injected by the container.
+     */
+    public function __construct(IContainer $app, Env $env, SyncStore $store)
     {
-        $this->App = $app;
-        $this->Env = $environment;
+        parent::__construct($app, $env);
         $this->Store = $store;
-
         $this->Store->provider($this);
     }
 
-    final public function setProviderId(int $providerId, string $providerHash)
-    {
-        $this->Id = $providerId;
-        $this->Hash = $providerHash;
-
-        return $this;
-    }
-
-    final public function app(): Container
-    {
-        return $this->App;
-    }
-
-    final public function container(): Container
-    {
-        return $this->App;
-    }
-
-    final public function env(): Env
-    {
-        return $this->Env;
-    }
-
+    /**
+     * @inheritDoc
+     */
     final public function store(): SyncStore
     {
         return $this->Store;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function setProviderId(int $providerId)
+    {
+        $this->Id = $providerId;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getProviderId(): ?int
+    {
+        return $this->Id
+            ?? $this->Store->getProviderId($this);
     }
 
     /**
@@ -195,25 +127,24 @@ abstract class SyncProvider implements ISyncProvider, IService
             ->entity($entity);
     }
 
-    final public function dateFormatter(): DateFormatter
-    {
-        return $this->DateFormatter
-            ?: ($this->DateFormatter = $this->getDateFormatter());
-    }
-
+    /**
+     * @inheritDoc
+     */
     final public static function getServices(): array
     {
         return SyncIntrospector::get(static::class)->getSyncProviderInterfaces();
     }
 
     /**
+     * @inheritDoc
+     *
      * @template TEntity of ISyncEntity
-     * @param class-string<TEntity> $syncEntity
+     * @param class-string<TEntity> $entity
      * @return SyncEntityProvider<TEntity,static>
      */
-    final public function with(string $syncEntity, $context = null): SyncEntityProvider
+    final public function with(string $entity, $context = null): SyncEntityProvider
     {
-        $this->Store->entityType($syncEntity);
+        $this->Store->entityType($entity);
 
         $container = ($context instanceof ISyncContext
             ? $context->container()
@@ -224,7 +155,7 @@ abstract class SyncProvider implements ISyncProvider, IService
 
         return $container->get(
             SyncEntityProvider::class,
-            [$syncEntity, $this, $this->getDefinition($syncEntity), $context]
+            [$entity, $this, $this->getDefinition($entity), $context]
         );
     }
 
@@ -238,20 +169,6 @@ abstract class SyncProvider implements ISyncProvider, IService
             return $closure(...$arguments);
         }
 
-        throw new RuntimeException('Call to undefined method: ' . static::class . "::$name()");
-    }
-
-    final public function getProviderId(): ?int
-    {
-        return $this->Id;
-    }
-
-    final public function getProviderHash(bool $binary = false): ?string
-    {
-        if (is_null($this->Hash)) {
-            return null;
-        }
-
-        return $binary ? $this->Hash : bin2hex($this->Hash);
+        throw new LogicException('Call to undefined method: ' . static::class . "::$name()");
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
@@ -10,7 +11,7 @@ use Lkrms\Support\Iterator\IterableIterator;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\ProviderContext;
 use Generator;
-use RuntimeException;
+use LogicException;
 
 /**
  * Implements IProvidable to represent an external entity
@@ -25,17 +26,17 @@ trait TProvidable
     /**
      * @var TProvider|null
      */
-    private $_Provider;
+    private $Provider;
 
     /**
      * @var TProviderContext|null
      */
-    private $_Context;
+    private $Context;
 
     /**
      * @var class-string|null
      */
-    private $_Service;
+    private $Service;
 
     /**
      * @param TProvider $provider
@@ -43,10 +44,10 @@ trait TProvidable
      */
     final public function setProvider(IProvider $provider)
     {
-        if ($this->_Provider) {
-            throw new RuntimeException('Provider already set');
+        if ($this->Provider) {
+            throw new LogicException('Provider already set');
         }
-        $this->_Provider = $provider;
+        $this->Provider = $provider;
 
         return $this;
     }
@@ -56,7 +57,7 @@ trait TProvidable
      */
     final public function provider(): ?IProvider
     {
-        return $this->_Provider;
+        return $this->Provider;
     }
 
     /**
@@ -65,7 +66,7 @@ trait TProvidable
      */
     final public function setContext(IProviderContext $context)
     {
-        $this->_Context = $context;
+        $this->Context = $context;
 
         return $this;
     }
@@ -75,7 +76,7 @@ trait TProvidable
      */
     final public function context(): ?IProviderContext
     {
-        return $this->_Context;
+        return $this->Context;
     }
 
     /**
@@ -84,7 +85,7 @@ trait TProvidable
      */
     final public function setService(string $id)
     {
-        $this->_Service = $id;
+        $this->Service = $id;
 
         return $this;
     }
@@ -94,7 +95,7 @@ trait TProvidable
      */
     final public function service(): string
     {
-        return $this->_Service ?: static::class;
+        return $this->Service ?? static::class;
     }
 
     /**
@@ -102,11 +103,11 @@ trait TProvidable
      */
     final public function requireContext(): IProviderContext
     {
-        if (!$this->_Context) {
-            throw new RuntimeException('Context required');
+        if (!$this->Context) {
+            throw new LogicException('Context required');
         }
 
-        return $this->_Context;
+        return $this->Context;
     }
 
     /**
@@ -131,14 +132,21 @@ trait TProvidable
         IProvider $provider,
         ?IProviderContext $context = null
     ) {
-        $container = ($context
+        /** @var IContainer */
+        $container = $context
             ? $context->container()
-            : $provider->container())->inContextOf(get_class($provider));
+            : $provider->container();
+        $container = $container->inContextOf(get_class($provider));
+
         $context = $context
             ? $context->withContainer($container)
-            : $container->get(ProviderContext::class);
-        $introspector = Introspector::getService($container, static::class);
-        $closure = $introspector->getCreateProvidableFromClosure();
+            : $container
+                ->bindIf(IProviderContext::class, ProviderContext::class)
+                ->get(IProviderContext::class);
+
+        $closure = Introspector::getService(
+            $container, static::class
+        )->getCreateProvidableFromClosure();
 
         return $closure($data, $provider, $context);
     }
@@ -148,48 +156,56 @@ trait TProvidable
      *
      * See {@see TProvidable::provide()} for more information.
      *
-     * @param iterable<array-key,mixed[]> $dataList
+     * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
-     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */
     final public static function provideList(
-        iterable $dataList,
+        iterable $list,
         IProvider $provider,
         int $conformity = ArrayKeyConformity::NONE,
         ?IProviderContext $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
-            self::_provideList($dataList, $provider, $conformity, $context)
+            self::_provideList($list, $provider, $conformity, $context)
         );
     }
 
     /**
-     * @param iterable<array-key,mixed[]> $dataList
+     * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
-     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
      * @return Generator<array-key,static>
      */
     private static function _provideList(
-        iterable $dataList,
+        iterable $list,
         IProvider $provider,
         int $conformity,
         ?IProviderContext $context
     ): Generator {
-        $container = ($context
+        /** @var IContainer */
+        $container = $context
             ? $context->container()
-            : $provider->container())->inContextOf(get_class($provider));
-        $context = ($context
+            : $provider->container();
+        $container = $container->inContextOf(get_class($provider));
+
+        /** @var IProviderContext */
+        $context = $context
             ? $context->withContainer($container)
-            : $container->get(ProviderContext::class))->withConformity($conformity);
+            : $container
+                ->bindIf(IProviderContext::class, ProviderContext::class)
+                ->get(IProviderContext::class);
+        $context = $context->withConformity($conformity);
+
         $introspector = Introspector::getService($container, static::class);
 
-        foreach ($dataList as $key => $data) {
+        foreach ($list as $key => $data) {
             if (!isset($closure)) {
                 $closure =
-                    in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])
+                    in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE], true)
                         ? $introspector->getCreateProvidableFromSignatureClosure(array_keys($data))
                         : $introspector->getCreateProvidableFromClosure();
             }

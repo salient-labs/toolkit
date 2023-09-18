@@ -13,7 +13,7 @@ use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Support\SyncContext;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * An interface to an ISyncProvider's implementation of sync operations for an
@@ -22,12 +22,14 @@ use UnexpectedValueException;
  * So you can do this:
  *
  * ```php
+ * <?php
  * $faculties = $provider->with(Faculty::class)->getList();
  * ```
  *
  * or, if a `Faculty` provider is bound to the current global container:
  *
  * ```php
+ * <?php
  * $faculties = Faculty::withDefaultProvider()->getList();
  * ```
  *
@@ -76,12 +78,12 @@ final class SyncEntityProvider implements ISyncEntityProvider
         ?ISyncContext $context = null
     ) {
         if (!is_a($entity, ISyncEntity::class, true)) {
-            throw new UnexpectedValueException("Does not implement ISyncEntity: $entity");
+            throw new LogicException("Does not implement ISyncEntity: $entity");
         }
 
         $entityProvider = SyncIntrospector::entityToProvider($entity);
         if (!($provider instanceof $entityProvider)) {
-            throw new UnexpectedValueException(get_class($provider) . ' does not implement ' . $entityProvider);
+            throw new LogicException(get_class($provider) . ' does not implement ' . $entityProvider);
         }
 
         $this->Entity = $entity;
@@ -170,6 +172,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * `Faculty` entity:
      *
      * ```php
+     * <?php
      * // 1.
      * public function createFaculty(ISyncContext $ctx, Faculty $entity): Faculty;
      *
@@ -196,6 +199,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * `Faculty` entity:
      *
      * ```php
+     * <?php
      * // 1.
      * public function getFaculty(ISyncContext $ctx, $id): Faculty;
      *
@@ -224,6 +228,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * `Faculty` entity:
      *
      * ```php
+     * <?php
      * // 1.
      * public function updateFaculty(ISyncContext $ctx, Faculty $entity): Faculty;
      *
@@ -250,6 +255,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * `Faculty` entity:
      *
      * ```php
+     * <?php
      * // 1.
      * public function deleteFaculty(ISyncContext $ctx, Faculty $entity): Faculty;
      *
@@ -279,6 +285,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * for a `Faculty` entity:
      *
      * ```php
+     * <?php
      * // 1. With a plural entity name
      * public function createFaculties(ISyncContext $ctx, iterable $entities): iterable;
      *
@@ -307,6 +314,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * a `Faculty` entity:
      *
      * ```php
+     * <?php
      * // 1. With a plural entity name
      * public function getFaculties(ISyncContext $ctx): iterable;
      *
@@ -329,6 +337,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * for a `Faculty` entity:
      *
      * ```php
+     * <?php
      * // 1. With a plural entity name
      * public function updateFaculties(ISyncContext $ctx, iterable $entities): iterable;
      *
@@ -357,6 +366,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * for a `Faculty` entity:
      *
      * ```php
+     * <?php
      * // 1. With a plural entity name
      * public function deleteFaculties(ISyncContext $ctx, iterable $entities): iterable;
      *
@@ -383,7 +393,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     public function runA(int $operation, ...$args): array
     {
         if (!SyncOperation::isList($operation)) {
-            throw new UnexpectedValueException('Not a *_LIST operation: ' . $operation);
+            throw new LogicException('Not a *_LIST operation: ' . $operation);
         }
 
         $result = $this->_run($operation, ...$args);

@@ -170,14 +170,11 @@ final class HttpServer implements IReadable, IImmutable
      * Wait for a request and return a response
      *
      * @template T
-     * @param callable $callback Receives an {@see HttpRequest} and returns an
-     * {@see HttpResponse}. May also set `$continue = true` to make
-     * {@see HttpServer::listen()} wait for another request, or use `$return =
-     * <value>` to pass `<value>` back to the caller.
-     * ```php
-     * fn(HttpRequest $request, bool &$continue, &$return): HttpResponse
-     * ```
-     * @phpstan-param callable(HttpRequest, bool &$continue, T &$return): HttpResponse $callback
+     * @param callable(HttpRequest $request, bool &$continue, T &$return): HttpResponse $callback
+     * Receives an {@see HttpRequest} and returns an {@see HttpResponse}. May
+     * also set `$continue = true` to make {@see HttpServer::listen()} wait for
+     * another request, or use `$return = <value>` to pass `<value>` back to the
+     * caller.
      * @return T|null
      */
     public function listen(callable $callback, ?int $timeout = null)

@@ -15,9 +15,10 @@ final class SyncSerializeLinkType extends Enumeration
      * "@type" and "@id"
      *
      * ```php
+     * <?php
      * [
-     *   "@type" => "prefix:Entity",
-     *   "@id"   => 1,
+     *   '@type' => 'prefix:Foo',
+     *   '@id' => 42,
      * ]
      * ```
      */
@@ -27,8 +28,9 @@ final class SyncSerializeLinkType extends Enumeration
      * "@id" only (identifier type not preserved)
      *
      * ```php
+     * <?php
      * [
-     *   "@id" => "prefix:Entity/1",
+     *   '@id' => 'prefix:Foo/42',
      * ]
      * ```
      */
@@ -38,11 +40,11 @@ final class SyncSerializeLinkType extends Enumeration
      * "@type", "@id", "@name" and "@description" (empty values removed)
      *
      * ```php
+     * <?php
      * [
-     *   "@type"        => "prefix:Entity",
-     *   "@id"          => 1,
-     *   "@name"        => "My Entity",
-     *   "@description" => "A description of my entity.",
+     *   '@type' => 'prefix:Foo',
+     *   '@id' => 42,
+     *   '@name' => 'Foo',
      * ]
      * ```
      */

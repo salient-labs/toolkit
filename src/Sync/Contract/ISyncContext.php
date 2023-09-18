@@ -71,6 +71,7 @@ interface ISyncContext extends IProviderContext
      * Example:
      *
      * ```php
+     * <?php
      * $ctx->maybeApplyFilterPolicy($returnEmpty, $empty);
      * if ($returnEmpty) {
      *     return $empty;

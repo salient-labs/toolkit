@@ -9,6 +9,7 @@ use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\IWritable;
+use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Facade\Reflect;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use DateTimeInterface;
@@ -198,26 +199,23 @@ class IntrospectionClass
     public $DateKeys = [];
 
     /**
-     * Converts properties to normalised property names
+     * Normalises property names
      *
-     * @var (callable(string, bool=, string...): string)|null
-     * ```php
-     * function (string $name, bool $greedy = true, string ...$hints): string
-     * ```
+     * @var (\Closure(string $name, bool $greedy=, string...$hints): string)|null
      */
     public $Normaliser;
 
     /**
      * Normalises property names with $greedy = false
      *
-     * @var (callable(string): string)|null
+     * @var (\Closure(string): string)|null
      */
     public $GentleNormaliser;
 
     /**
      * Normalises property names with $hints = $this->NormalisedProperties
      *
-     * @var (callable(string): string)|null
+     * @var (\Closure(string): string)|null
      */
     public $CarefulNormaliser;
 
@@ -285,8 +283,10 @@ class IntrospectionClass
      */
     public function __construct(string $class)
     {
-        $this->Reflector = $class = new ReflectionClass($class);
-        $this->Class = $class->getName();
+        $class = new ReflectionClass($class);
+        $className = $class->getName();
+        $this->Reflector = $class;
+        $this->Class = $className;
         $this->IsReadable = $class->implementsInterface(IReadable::class);
         $this->IsWritable = $class->implementsInterface(IWritable::class);
         $this->IsExtensible = $class->implementsInterface(IExtensible::class);
@@ -296,7 +296,11 @@ class IntrospectionClass
 
         // IResolvable provides access to properties via non-canonical names
         if ($class->implementsInterface(IResolvable::class)) {
-            $this->Normaliser = $class->getMethod('normaliser')->invoke(null);
+            if ($class->implementsInterface(ReturnsNormaliser::class)) {
+                $this->Normaliser = $class->getMethod('normaliser')->invoke(null);
+            } else {
+                $this->Normaliser = \Closure::fromCallable([$className, 'normalise']);
+            }
             $this->GentleNormaliser = fn(string $name): string => ($this->Normaliser)($name, false);
             $this->CarefulNormaliser = fn(string $name): string => ($this->Normaliser)($name, true, ...$this->NormalisedKeys);
         }
@@ -454,8 +458,7 @@ class IntrospectionClass
      *
      * @template T of string[]|string
      * @param T $value
-     * @param $flags A bitmask of {@see NormaliserFlag} values.
-     * @phpstan-param int-mask-of<NormaliserFlag::*> $flags
+     * @param int-mask-of<NormaliserFlag::*> $flags
      * @return T
      * @see \Lkrms\Contract\IResolvable::normaliser()
      * @see \Lkrms\Contract\IResolvable::normalise()

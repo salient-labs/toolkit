@@ -3,16 +3,16 @@
 
 namespace Lkrms\Tests\Reflect;
 
+use Lkrms\Concern\HasNormaliser;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TFullyReadable;
-use Lkrms\Concern\TResolvable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IConstructible;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IReadable;
-use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\IWritable;
+use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Err\Err;
 use Lkrms\Support\Introspector;
 use DateTimeImmutable;
@@ -21,9 +21,9 @@ require __DIR__ . '/../../vendor/autoload.php';
 
 Err::load();
 
-class A implements IExtensible, IResolvable, IReadable, IWritable
+class A implements IExtensible, IReadable, IWritable, ReturnsNormaliser
 {
-    use TExtensible, TResolvable, TFullyReadable, TWritable;
+    use TExtensible, TFullyReadable, TWritable, HasNormaliser;
 
     public static function getWritable(): array
     {

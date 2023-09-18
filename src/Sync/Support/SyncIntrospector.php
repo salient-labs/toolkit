@@ -20,7 +20,7 @@ use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use Closure;
-use RuntimeException;
+use LogicException;
 
 /**
  * @property-read string|null $EntityNoun
@@ -37,6 +37,8 @@ final class SyncIntrospector extends Introspector
      */
     use TIntrospector;
 
+    private const ID_KEY = 'Id';
+
     /**
      * @var TIntrospectionClass<TClass>
      * @todo Remove this property when Intelephense resolves trait generics
@@ -49,7 +51,7 @@ final class SyncIntrospector extends Introspector
      * @param class-string<ISyncEntity> $entity
      * @return class-string<ISyncProvider>
      */
-    final public static function entityToProvider(string $entity, ?SyncStore $store = null): string
+    public static function entityToProvider(string $entity, ?SyncStore $store = null): string
     {
         if (($store || Sync::isLoaded()) &&
                 $resolver = ($store ?: Sync::getInstance())->getNamespaceResolver($entity)) {
@@ -69,7 +71,7 @@ final class SyncIntrospector extends Introspector
      * @param class-string<ISyncProvider> $provider
      * @return class-string<ISyncEntity>|null
      */
-    final public static function providerToEntity(string $provider, ?SyncStore $store = null): ?string
+    public static function providerToEntity(string $provider, ?SyncStore $store = null): ?string
     {
         if (($store || Sync::isLoaded()) &&
                 $resolver = ($store ?: Sync::getInstance())->getNamespaceResolver($provider)) {
@@ -98,7 +100,7 @@ final class SyncIntrospector extends Introspector
      *
      * @return string[]|null
      */
-    final public function getSyncProviderInterfaces(): ?array
+    public function getSyncProviderInterfaces(): ?array
     {
         if (!$this->_Class->IsProvider) {
             return null;
@@ -112,7 +114,7 @@ final class SyncIntrospector extends Introspector
      *
      * @return string[]|null
      */
-    final public function getSyncProviderEntities(): ?array
+    public function getSyncProviderEntities(): ?array
     {
         if (!$this->_Class->IsProvider) {
             return null;
@@ -127,7 +129,7 @@ final class SyncIntrospector extends Introspector
      *
      * @return array<string,class-string<ISyncEntity>>|null
      */
-    final public function getSyncProviderEntityBasenames(): ?array
+    public function getSyncProviderEntityBasenames(): ?array
     {
         if (!$this->_Class->IsProvider) {
             return null;
@@ -145,7 +147,7 @@ final class SyncIntrospector extends Introspector
      * discarded.
      * @return Closure(mixed[], ISyncProvider, IContainer|ISyncContext|null=): TClass
      */
-    final public function getCreateSyncEntityFromSignatureClosure(array $keys, bool $strict = false): Closure
+    public function getCreateSyncEntityFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\0", $keys);
         $closure = $this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) $strict] ?? null;
@@ -193,7 +195,7 @@ final class SyncIntrospector extends Introspector
      * if any data would be discarded.
      * @return Closure(mixed[], ISyncProvider, IContainer|ISyncContext|null=)
      */
-    final public function getCreateSyncEntityFromClosure(bool $strict = false): Closure
+    public function getCreateSyncEntityFromClosure(bool $strict = false): Closure
     {
         if ($closure = $this->_Class->CreateSyncEntityFromClosures[(int) $strict] ?? null) {
             return $closure;
@@ -224,7 +226,7 @@ final class SyncIntrospector extends Introspector
      * @param class-string<T>|self<T,TIntrospectionClass<T>> $entity
      * @return Closure(ISyncContext, mixed...)|null
      */
-    final public function getDeclaredSyncOperationClosure(int $operation, $entity, ISyncProvider $provider): ?Closure
+    public function getDeclaredSyncOperationClosure(int $operation, $entity, ISyncProvider $provider): ?Closure
     {
         if (!($entity instanceof SyncIntrospector)) {
             /** @var self<T,TIntrospectionClass<T>> */
@@ -262,7 +264,7 @@ final class SyncIntrospector extends Introspector
      *
      * @return Closure(ISyncContext, mixed...)|null
      */
-    final public function getMagicSyncOperationClosure(string $method, ISyncProvider $provider): ?Closure
+    public function getMagicSyncOperationClosure(string $method, ISyncProvider $provider): ?Closure
     {
         if (!$this->_Class->IsProvider) {
             return null;
@@ -288,11 +290,26 @@ final class SyncIntrospector extends Introspector
         return $closure ? $closure->bindTo($provider) : null;
     }
 
-    protected function getKeyTargets(array $keys, bool $withParameters, bool $strict, array $keyClosures = []): IntrospectorKeyTargets
-    {
+    protected function getKeyTargets(
+        array $keys,
+        bool $withParameters,
+        bool $strict,
+        bool $normalised = false,
+        array $customKeys = [],
+        array $keyClosures = []
+    ): IntrospectorKeyTargets {
         $keys = $this->_Class->Normaliser
             ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
             : array_combine($keys, $keys);
+
+        $normalisedIdKey = $this->_Class->Normaliser
+            ? ($this->_Class->CarefulNormaliser)(self::ID_KEY)
+            : self::ID_KEY;
+
+        $idKey = $keys[$normalisedIdKey] ?? null;
+        if ($idKey !== null) {
+            $customKeys = [self::ID_KEY => $idKey];
+        }
 
         // Get keys left behind by constructor parameters, declared properties
         // and magic methods
@@ -303,13 +320,13 @@ final class SyncIntrospector extends Introspector
         );
 
         if (!$unclaimed) {
-            return parent::getKeyTargets($keys, $withParameters, $strict);
+            return parent::getKeyTargets($keys, $withParameters, $strict, true, $customKeys);
         }
 
         // Check for any that end with `_id`, `_ids` or similar that would match
         // a property or magic method otherwise
         foreach ($unclaimed as $normalisedKey => $key) {
-            if (!Pcre::match('/^(.*)(?:_|\b|(?<=[[:lower:]])(?=[[:upper:]]))id(s?)$/i', $key, $matches)) {
+            if (!Pcre::match('/^(.+)(?:_|\b|(?<=[[:lower:]])(?=[[:upper:]]))id(s?)$/i', $key, $matches)) {
                 continue;
             }
             $match = $this->_Class->Normaliser
@@ -322,7 +339,12 @@ final class SyncIntrospector extends Introspector
             // to `_id`)
             $list = (bool) $matches[2];
             $closures[$match] =
-                function (array $data, $entity, ?IProvider $provider, ?IProviderContext $context) use ($key, $match, $list): void {
+                function (
+                    array $data,
+                    $entity,
+                    ?IProvider $provider,
+                    ?IProviderContext $context
+                ) use ($key, $match, $list): void {
                     if (!($isList = Test::isListArray($data[$key])) && $list) {
                         $entity->{$key} = $data[$key];
                         return;
@@ -345,7 +367,7 @@ final class SyncIntrospector extends Introspector
             unset($keys[$normalisedKey]);
         }
 
-        return parent::getKeyTargets($keys, $withParameters, $strict, $closures ?? []);
+        return parent::getKeyTargets($keys, $withParameters, $strict, true, $customKeys, $closures ?? []);
     }
 
     /**
@@ -360,26 +382,61 @@ final class SyncIntrospector extends Introspector
         }
 
         $targets = $this->getKeyTargets($keys, true, $strict);
-        $constructor =
-            $targets->Parameters
-                ? $this->_getConstructor($targets->Parameters, $targets->PassByRefParameters)
-                : $this->_getDefaultConstructor();
+        $constructor = $this->_getConstructor($targets);
         $updater = $this->_getUpdater($targets);
+        $idKey = $targets->CustomKeys[self::ID_KEY] ?? null;
 
-        $closure = static function (
-            array $array,
-            ?string $service,
-            IContainer $container,
-            ?ISyncProvider $provider,
-            ?ISyncContext $context,
-            ?DateFormatter $dateFormatter,
-            ?IHierarchy $parent
-        ) use ($constructor, $updater) {
-            $obj = $constructor($array, $service, $container);
-            return $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
-        };
+        $updateTargets = $this->getKeyTargets($keys, false, $strict);
+        $existingUpdater = $this->_getUpdater($updateTargets);
 
-        return $this->_Class->CreateFromSignatureSyncClosures[$sig] = $closure;
+        if ($idKey === null) {
+            $closure = static function (
+                array $array,
+                ?string $service,
+                IContainer $container,
+                ?ISyncProvider $provider,
+                ?ISyncContext $context,
+                ?DateFormatter $dateFormatter,
+                ?IHierarchy $parent
+            ) use ($constructor, $updater) {
+                $obj = $constructor($array, $service, $container);
+                $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                return $obj;
+            };
+        } else {
+            /** @var class-string<TClass> */
+            $entityType = $this->_Class->Class;
+            $closure = static function (
+                array $array,
+                ?string $service,
+                IContainer $container,
+                ?ISyncProvider $provider,
+                ?ISyncContext $context,
+                ?DateFormatter $dateFormatter,
+                ?IHierarchy $parent
+            ) use ($constructor, $updater, $existingUpdater, $idKey, $entityType) {
+                $id = $array[$idKey];
+                if ($id === null || !$provider) {
+                    $obj = $constructor($array, $service, $container);
+                    $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                    return $obj;
+                }
+                $store = $provider->store();
+                $providerId = $provider->getProviderId();
+                $obj = $store->getEntity($providerId, $entityType, $id);
+                if ($obj) {
+                    $obj = $existingUpdater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                    return $obj;
+                }
+                $obj = $constructor($array, $service, $container);
+                $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                $store->entity($providerId, $entityType, $id, $obj);
+                return $obj;
+            };
+        }
+
+        $this->_Class->CreateFromSignatureSyncClosures[$sig] = $closure;
+        return $closure;
     }
 
     private function getSyncOperationMethod(int $operation, SyncIntrospector $entity): ?string
@@ -451,7 +508,7 @@ final class SyncIntrospector extends Introspector
             array_flip($methods ?? [])
         );
         if (count($methods) > 1) {
-            throw new RuntimeException('Too many implementations: ' . implode(', ', $methods));
+            throw new LogicException('Too many implementations: ' . implode(', ', $methods));
         }
 
         return reset($methods) ?: null;

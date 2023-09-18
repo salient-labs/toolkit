@@ -56,16 +56,6 @@ parameters:
 			path: src/Concept/Facade.php
 
 		-
-			message: "#^Method Lkrms\\\\Contract\\\\IExtensible\\:\\:getMetaProperty\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Contract/IExtensible.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IExtensible\\:\\:setMetaProperty\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Contract/IExtensible.php
-
-		-
 			message: "#^Method Lkrms\\\\Contract\\\\IPipe\\:\\:handle\\(\\) has parameter \\$pipeline with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
 			count: 1
 			path: src/Contract/IPipe.php
@@ -484,11 +474,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncEntityProvider\\:\\:updateListA\\(\\) has parameter \\$args with no type specified\\.$#"
 			count: 1
 			path: src/Sync/Contract/ISyncEntityProvider.php
-
-		-
-			message: "#^Method Lkrms\\\\Sync\\\\Contract\\\\ISyncProvider\\:\\:getDefinition\\(\\) return type with generic interface Lkrms\\\\Sync\\\\Contract\\\\ISyncDefinition does not specify its types\\: TEntity, TProvider$#"
-			count: 1
-			path: src/Sync/Contract/ISyncProvider.php
 
 		-
 			message: "#^Method Lkrms\\\\Sync\\\\Support\\\\SyncContext\\:\\:maybeApplyFilterPolicy\\(\\) has parameter \\$empty with no type specified\\.$#"

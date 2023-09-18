@@ -59,8 +59,7 @@ class Introspector
      *
      * @template T of string[]|string
      * @param T $value
-     * @param $flags A bitmask of {@see NormaliserFlag} values.
-     * @phpstan-param int-mask-of<NormaliserFlag::*> $flags
+     * @param int-mask-of<NormaliserFlag::*> $flags
      * @return T
      * @see \Lkrms\Contract\IResolvable::normaliser()
      * @see \Lkrms\Contract\IResolvable::normalise()
@@ -202,15 +201,24 @@ class Introspector
      * signature to the properties of a new or existing instance
      *
      * @param string[] $keys
+     * @param array<string,string> $customKeys
      * @param array<string,Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void> $keyClosures Normalised key => closure
      * @return IntrospectorKeyTargets<TClass>
      */
-    protected function getKeyTargets(array $keys, bool $withParameters, bool $strict, array $keyClosures = []): IntrospectorKeyTargets
-    {
-        // Normalise array keys (i.e. field/property names)
-        $keys = $this->_Class->Normaliser
-            ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
-            : array_combine($keys, $keys);
+    protected function getKeyTargets(
+        array $keys,
+        bool $withParameters,
+        bool $strict,
+        bool $normalised = false,
+        array $customKeys = [],
+        array $keyClosures = []
+    ): IntrospectorKeyTargets {
+        if (!$normalised) {
+            // Normalise array keys (i.e. field/property names)
+            $keys = $this->_Class->Normaliser
+                ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
+                : array_combine($keys, $keys);
+        }
 
         // Remove keys for which a closure is provided, because they can't be
         // resolved before instantiation
@@ -297,7 +305,8 @@ class Introspector
             $methodKeys,
             $propertyKeys,
             $metaKeys,
-            $dateKeys
+            $dateKeys,
+            $customKeys,
         );
 
         return $targets;
@@ -315,10 +324,7 @@ class Introspector
         }
 
         $targets = $this->getKeyTargets($keys, true, $strict);
-        $constructor =
-            $targets->Parameters
-                ? $this->_getConstructor($targets->Parameters, $targets->PassByRefParameters)
-                : $this->_getDefaultConstructor();
+        $constructor = $this->_getConstructor($targets);
         $updater = $this->_getUpdater($targets);
 
         $closure = static function (
@@ -338,22 +344,36 @@ class Introspector
     }
 
     /**
-     * @param array<string,int> $parameterKeys
-     * @param array<string,true> $passByRefKeys
+     * @param IntrospectorKeyTargets<TClass> $targets
      * @return Closure(mixed[], class-string|null, IContainer): TClass
      */
-    protected function _getConstructor(array $parameterKeys, array $passByRefKeys): Closure
+    protected function _getConstructor(IntrospectorKeyTargets $targets): Closure
     {
-        $defaultArgs = $this->_Class->DefaultArguments;
+        $args = $this->_Class->DefaultArguments;
         $class = $this->_Class->Class;
+
+        if (!$targets->Parameters) {
+            return static function (
+                array $array,
+                ?string $service,
+                IContainer $container
+            ) use ($args, $class) {
+                if ($service && strcasecmp($service, $class)) {
+                    /** @var class-string $service */
+                    return $container->getAs($class, $service, $args);
+                }
+                return $container->get($class, $args);
+            };
+        }
+
+        $parameterKeys = $targets->Parameters;
+        $passByRefKeys = $targets->PassByRefParameters;
 
         return static function (
             array $array,
             ?string $service,
             IContainer $container
-        ) use ($parameterKeys, $passByRefKeys, $defaultArgs, $class) {
-            $args = $defaultArgs;
-
+        ) use ($args, $class, $parameterKeys, $passByRefKeys) {
             foreach ($parameterKeys as $key => $index) {
                 if ($passByRefKeys[$key] ?? false) {
                     $args[$index] = &$array[$key];
@@ -362,33 +382,12 @@ class Introspector
                 $args[$index] = $array[$key];
             }
 
-            /** @var class-string $service */
             if ($service && strcasecmp($service, $class)) {
+                /** @var class-string $service */
                 return $container->getAs($class, $service, $args);
             }
 
             return $container->get($class, $args);
-        };
-    }
-
-    /**
-     * @return Closure(mixed[], class-string|null, IContainer): TClass
-     */
-    protected function _getDefaultConstructor(): Closure
-    {
-        $defaultArgs = $this->_Class->DefaultArguments;
-        $class = $this->_Class->Class;
-
-        return static function (
-            array $array,
-            ?string $service,
-            IContainer $container
-        ) use ($defaultArgs, $class) {
-            /** @var class-string $service */
-            if ($service && strcasecmp($service, $class)) {
-                return $container->getAs($class, $service, $defaultArgs);
-            }
-            return $container->get($class, $defaultArgs);
         };
     }
 

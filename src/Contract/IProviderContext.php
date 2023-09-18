@@ -86,7 +86,7 @@ interface IProviderContext extends IImmutable, ReturnsContainer
     /**
      * Get the current payload's array key conformity
      *
-     * @phpstan-return ArrayKeyConformity::*
+     * @return ArrayKeyConformity::*
      */
     public function getConformity(): int;
 }
