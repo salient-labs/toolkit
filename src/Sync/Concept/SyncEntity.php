@@ -2,16 +2,17 @@
 
 namespace Lkrms\Sync\Concept;
 
+use Lkrms\Concern\HasNormaliser;
 use Lkrms\Concern\RequiresContainer;
 use Lkrms\Concern\TConstructible;
 use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TProvidable;
 use Lkrms\Concern\TReadable;
-use Lkrms\Concern\TResolvable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
+use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Facade\Reflect;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
@@ -66,12 +67,12 @@ use UnexpectedValueException;
  * nested entities.
  *
  */
-abstract class SyncEntity implements ISyncEntity
+abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
 {
     /**
      * @use TProvidable<ISyncProvider,ISyncContext>
      */
-    use TResolvable, TConstructible, TReadable, TWritable, TExtensible, TProvidable, RequiresContainer;
+    use TConstructible, TReadable, TWritable, TExtensible, TProvidable, HasNormaliser, RequiresContainer;
 
     /**
      * The unique identifier assigned to the entity by its provider
@@ -663,32 +664,32 @@ abstract class SyncEntity implements ISyncEntity
     }
 
     /**
-     * @param iterable<array-key,mixed[]> $dataList
+     * @param iterable<array-key,mixed[]> $list
      * @param ISyncProvider $provider
      * @param ArrayKeyConformity::* $conformity
      * @param ISyncContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */
     final public static function provideList(
-        iterable $dataList,
+        iterable $list,
         IProvider $provider,
         int $conformity = ArrayKeyConformity::NONE,
         ?IProviderContext $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
-            self::_provideList($dataList, $provider, $conformity, $context)
+            self::_provideList($list, $provider, $conformity, $context)
         );
     }
 
     /**
-     * @param iterable<array-key,mixed[]> $dataList
+     * @param iterable<array-key,mixed[]> $list
      * @param ISyncProvider $provider
      * @param ArrayKeyConformity::* $conformity
      * @param ISyncContext|null $context
      * @return Generator<array-key,static>
      */
     private static function _provideList(
-        iterable $dataList,
+        iterable $list,
         IProvider $provider,
         int $conformity,
         ?IProviderContext $context
@@ -701,7 +702,7 @@ abstract class SyncEntity implements ISyncEntity
             : $container->get(SyncContext::class))->withConformity($conformity);
         $introspector = IS::getService($container, static::class);
 
-        foreach ($dataList as $key => $data) {
+        foreach ($list as $key => $data) {
             if (!isset($closure)) {
                 $closure =
                     in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])

@@ -6,8 +6,8 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\ReturnsDescription;
-use Lkrms\Sync\Catalog\SyncSerializeLinkType;
-use Lkrms\Sync\Support\SyncSerializeRules;
+use Lkrms\Sync\Catalog\SyncSerializeLinkType as SerializeLinkType;
+use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use JsonSerializable;
 
 /**
@@ -35,9 +35,9 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
     /**
      * Get the entity's default serialization rules
      *
-     * @return SyncSerializeRules<static>
+     * @return SerializeRules<static>
      */
-    public static function getSerializeRules(?IContainer $container = null): SyncSerializeRules;
+    public static function getSerializeRules(?IContainer $container = null): SerializeRules;
 
     /**
      * Called when the class is registered with an entity store
@@ -78,7 +78,7 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
     /**
      * Serialize the entity and any nested entities
      *
-     * The entity's {@see SyncSerializeRules} are applied to each
+     * The entity's {@see SerializeRules} are applied to each
      * {@see ISyncEntity} encountered during this recursive operation.
      *
      * @return array<string,mixed>
@@ -89,21 +89,21 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
     /**
      * Use custom rules to serialize the entity and any nested entities
      *
-     * @param SyncSerializeRules<static> $rules
+     * @param SerializeRules<static> $rules
      * @return array<string,mixed>
      */
-    public function toArrayWith(SyncSerializeRules $rules): array;
+    public function toArrayWith(SerializeRules $rules): array;
 
     /**
      * Get the entity's canonical location in the form of an array
      *
      * Inspired by JSON-LD.
      *
-     * @param SyncSerializeLinkType::* $type
+     * @param SerializeLinkType::* $type
      * @return array<string,int|string>
-     * @see SyncSerializeLinkType
+     * @see SerializeLinkType
      */
-    public function toLink(int $type = SyncSerializeLinkType::DEFAULT, bool $compact = true): array;
+    public function toLink(int $type = SerializeLinkType::DEFAULT, bool $compact = true): array;
 
     /**
      * Get the entity's canonical location in the form of a URI

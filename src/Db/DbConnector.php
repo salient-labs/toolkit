@@ -14,7 +14,7 @@ use UnexpectedValueException;
  * Creates connections to databases
  *
  * @property-read string $Name
- * @property-read int $Driver
+ * @property-read DbDriver::* $Driver
  * @property-read string|null $Dsn
  * @property-read string|null $Hostname
  * @property-read int|null $Port
@@ -33,7 +33,7 @@ final class DbConnector implements IReadable
     protected $Name;
 
     /**
-     * @var int
+     * @var DbDriver::*
      */
     protected $Driver;
 
@@ -78,6 +78,8 @@ final class DbConnector implements IReadable
     private $AdodbDriver;
 
     /**
+     * Creates a new DbConnector object
+     *
      * @param string $name The connection name used in the following environment
      * variables:
      * - `<name>_driver`: ignored if `$driver` is set, otherwise required
@@ -88,9 +90,8 @@ final class DbConnector implements IReadable
      * - `<name>_password`
      * - `<name>_database`
      * - `<name>_schema`
-     * @param int|null $driver A {@see DbDriver} value, or `null` to use
-     * environment variable `<name>_driver`.
-     * @phpstan-param (int&DbDriver::*)|null $driver
+     * @param DbDriver::*|null $driver If `null`, the environment variable
+     * `<name>_driver` is used.
      */
     public function __construct(string $name, int $driver = null)
     {

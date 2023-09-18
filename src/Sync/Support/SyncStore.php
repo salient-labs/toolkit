@@ -91,6 +91,13 @@ final class SyncStore extends SqliteStore
     private $Entities;
 
     /**
+     * Provider ID => entity type ID => entity ID => [ deferred entity ]
+     *
+     * @var array<int,array<int,array<int|string,DeferredSyncEntity[]>>>
+     */
+    private $DeferredEntities;
+
+    /**
      * @var SyncErrorCollection
      */
     private $Errors;
@@ -605,6 +612,17 @@ final class SyncStore extends SqliteStore
             throw new LogicException('Entity already registered');
         }
         $this->Entities[$providerId][$entityTypeId][$entityId] = $entity;
+
+        // Resolve the entity's entries in the deferred entity queue (if any)
+        $deferred = $this->DeferredEntities[$providerId][$entityTypeId][$entityId] ?? null;
+        if ($deferred) {
+            foreach ($deferred as $i => $deferredEntity) {
+                $deferredEntity->replace($entity);
+                unset($this->DeferredEntities[$providerId][$entityTypeId][$entityId][$i]);
+            }
+            unset($this->DeferredEntities[$providerId][$entityTypeId][$entityId]);
+        }
+
         return $this;
     }
 
@@ -618,6 +636,29 @@ final class SyncStore extends SqliteStore
     {
         $entityTypeId = $this->EntityTypes[$entityType];
         return $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
+    }
+
+    /**
+     * Register a deferred sync entity
+     *
+     * If an entity with the same provider ID, entity type, and entity ID has
+     * already been registered, `$deferred` is resolved immediately, otherwise
+     * it is added to the provider's deferred entity queue.
+     *
+     * @param class-string<ISyncEntity> $entityType
+     * @param int|string $entityId
+     * @return $this
+     */
+    public function deferredEntity(int $providerId, string $entityType, $entityId, DeferredSyncEntity $deferred)
+    {
+        $entityTypeId = $this->EntityTypes[$entityType];
+        $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
+        if ($entity !== null) {
+            $deferred->replace($entity);
+            return $this;
+        }
+        $this->DeferredEntities[$providerId][$entityTypeId][$entityId][] = $deferred;
+        return $this;
     }
 
     /**

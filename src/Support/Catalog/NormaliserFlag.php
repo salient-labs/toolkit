@@ -3,12 +3,14 @@
 namespace Lkrms\Support\Catalog;
 
 use Lkrms\Concept\Enumeration;
+use Lkrms\Contract\IResolvable;
+use Lkrms\Contract\ReturnsNormaliser;
 
 /**
  * Normaliser flags
  *
- * @see \Lkrms\Contract\IResolvable::normaliser()
- * @see \Lkrms\Contract\IResolvable::normalise()
+ * @see IResolvable::normalise()
+ * @see ReturnsNormaliser::normaliser()
  *
  * @extends Enumeration<int>
  */

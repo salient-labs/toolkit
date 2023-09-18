@@ -24,7 +24,7 @@ trait TIntrospector
     /**
      * @var array<string,TIntrospectionClass>
      */
-    private static $IntrospectionClasses = [];
+    private static $_IntrospectionClasses = [];
 
     /**
      * @param class-string<TClass> $class
@@ -73,8 +73,8 @@ trait TIntrospector
     {
         $_class = strtolower($class);
         $this->_Class =
-            (self::$IntrospectionClasses[$_class] ?? null)
-                ?: (self::$IntrospectionClasses[$_class] =
+            (self::$_IntrospectionClasses[$_class] ?? null)
+                ?: (self::$_IntrospectionClasses[$_class] =
                     $this->getIntrospectionClass($class));
     }
 }

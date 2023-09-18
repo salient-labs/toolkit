@@ -51,10 +51,9 @@ trait TConstructible
      *
      * See {@see TConstructible::construct()} for more information.
      *
-     * @param iterable<mixed[]> $dataList
-     * @param int $conformity One of the {@see ArrayKeyConformity} values. Use
-     * `COMPLETE` or `PARTIAL` wherever possible to improve performance.
-     * @phpstan-param ArrayKeyConformity::* $conformity
+     * @param iterable<mixed[]> $list
+     * @param ArrayKeyConformity::* $conformity Use `COMPLETE` or `PARTIAL`
+     *  wherever possible to improve performance.
      * @param IContainer|null $container Used to create each instance if set.
      * @param (IHierarchy&static)|null $parent If the class implements
      * {@see IHierarchy}, pass `$parent` to each instance via
@@ -62,7 +61,7 @@ trait TConstructible
      * @return Generator<static>
      */
     final public static function constructList(
-        iterable $dataList,
+        iterable $list,
         int $conformity = ArrayKeyConformity::NONE,
         ?IContainer $container = null,
         $parent = null
@@ -72,7 +71,7 @@ trait TConstructible
         }
 
         $closure = null;
-        foreach ($dataList as $key => $data) {
+        foreach ($list as $key => $data) {
             if (!$closure) {
                 /** @var Introspector<static,IntrospectionClass<static>> */
                 $builder = Introspector::getService($container, static::class);

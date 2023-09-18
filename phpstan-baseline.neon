@@ -56,16 +56,6 @@ parameters:
 			path: src/Concept/Facade.php
 
 		-
-			message: "#^Method Lkrms\\\\Contract\\\\IExtensible\\:\\:getMetaProperty\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Contract/IExtensible.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IExtensible\\:\\:setMetaProperty\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Contract/IExtensible.php
-
-		-
 			message: "#^Method Lkrms\\\\Contract\\\\IPipe\\:\\:handle\\(\\) has parameter \\$pipeline with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
 			count: 1
 			path: src/Contract/IPipe.php

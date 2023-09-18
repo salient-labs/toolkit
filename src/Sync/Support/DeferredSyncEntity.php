@@ -13,7 +13,7 @@ use LogicException;
 /**
  * @property-read ISyncProvider $Provider
  * @property-read ISyncContext $Context
- * @property-read class-string<ISyncEntity>|array{0:ISyncEntity,1:string} $Entity
+ * @property-read class-string<ISyncEntity>|array{ISyncEntity,string} $Entity
  * @property-read int|string $Deferred
  */
 final class DeferredSyncEntity implements IReadable
@@ -31,7 +31,7 @@ final class DeferredSyncEntity implements IReadable
     protected $Context;
 
     /**
-     * @var class-string<ISyncEntity>|array{0:ISyncEntity,1:string}
+     * @var class-string<ISyncEntity>|array{ISyncEntity,string}
      */
     protected $Entity;
 
@@ -46,7 +46,7 @@ final class DeferredSyncEntity implements IReadable
     private $Replace;
 
     /**
-     * @param class-string<ISyncEntity>|array{0:ISyncEntity,1:string} $entity
+     * @param class-string<ISyncEntity>|array{ISyncEntity,string} $entity
      * @param int|string $deferred
      * @param mixed $replace
      */
@@ -58,6 +58,10 @@ final class DeferredSyncEntity implements IReadable
         $this->Deferred = $deferred;
         $this->Replace = &$replace;
         $this->Replace = $this;
+
+        if (is_string($entity)) {
+            $this->store()->deferredEntity($this->Provider->getProviderId(), $entity, $deferred, $this);
+        }
     }
 
     /**
@@ -94,10 +98,10 @@ final class DeferredSyncEntity implements IReadable
     {
         if (is_array($this->Entity)) {
             $class = get_class($this->Entity[0]);
-            return ($this->Provider->store()->getEntityTypeUri($class, $compact)
+            return ($this->store()->getEntityTypeUri($class, $compact)
                 ?: '/' . str_replace('\\', '/', ltrim($class, '\\'))) . '.' . $this->Entity[1];
         }
-        return $this->Provider->store()->getEntityTypeUri($this->Entity, $compact)
+        return $this->store()->getEntityTypeUri($this->Entity, $compact)
             ?: '/' . str_replace('\\', '/', ltrim($this->Entity, '\\'));
     }
 
@@ -108,7 +112,9 @@ final class DeferredSyncEntity implements IReadable
     }
 
     /**
-     * @param class-string<ISyncEntity>|array{0:ISyncEntity,1:string} $entity Either the entity to instantiate, or if unknown, an array containing the instance and property name being deferred.
+     * @param class-string<ISyncEntity>|array{ISyncEntity,string} $entity Either
+     * the entity to instantiate, or if unknown, an array containing the
+     * instance and property name being deferred.
      * @param int|string|int[]|string[] $deferred An entity ID or list thereof.
      * @param mixed $replace Ignored if `$entity` provides an instance to
      * modify, otherwise refers to the variable, property or array element to
@@ -124,15 +130,15 @@ final class DeferredSyncEntity implements IReadable
     ): void {
         if (is_array($deferred)) {
             self::deferList($provider, $context, $entity, $deferred, $replace);
-
             return;
         }
-
         new self($provider, $context, $entity, $deferred, $replace);
     }
 
     /**
-     * @param class-string<ISyncEntity>|array{0:ISyncEntity,1:string} $entity Either the entity to instantiate, or if unknown, an array containing the instance and property name being deferred.
+     * @param class-string<ISyncEntity>|array{ISyncEntity,string} $entity Either
+     * the entity to instantiate, or if unknown, an array containing the
+     * instance and property name being deferred.
      * @param int[]|string[] $deferredList A list of entity IDs.
      * @param mixed $replace Ignored if `$entity` provides an instance to
      * modify, otherwise refers to the variable, property or array element to
@@ -146,14 +152,24 @@ final class DeferredSyncEntity implements IReadable
         array $deferredList,
         &$replace = null
     ): void {
-        $i = 0;
+        $i = -1;
         $list = [];
         foreach ($deferredList as $deferred) {
-            $list[$i] = null;
+            $list[++$i] = null;
             new self($provider, $context, $entity, $deferred, $list[$i]);
-            $i++;
+        }
+
+        if (is_array($entity)) {
+            [$entity, $property] = $entity;
+            $entity->$property = $list;
+            return;
         }
 
         $replace = $list;
+    }
+
+    protected function store(): SyncStore
+    {
+        return $this->Provider->store();
     }
 }

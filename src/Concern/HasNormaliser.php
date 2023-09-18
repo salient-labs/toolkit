@@ -2,25 +2,27 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\IResolvable;
+use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Utility\Convert;
 use Closure;
 
 /**
- * Implements IResolvable
+ * Implements ReturnsNormaliser
  *
- * @see IResolvable
+ * @see ReturnsNormaliser
  */
-trait TResolvable
+trait HasNormaliser
 {
     /**
-     * @var array<string,Closure(string, bool=, string...): string>
+     * @var array<string,Closure(string $name, bool $greedy=, string...$hints): string>
      */
     private static $_Normaliser = [];
 
     public static function normaliser(): Closure
     {
-        return fn(string $name): string => Convert::toSnakeCase($name);
+        return
+            fn(string $name): string =>
+                Convert::toSnakeCase($name);
     }
 
     final public static function normalise(string $name, bool $greedy = true, string ...$hints): string

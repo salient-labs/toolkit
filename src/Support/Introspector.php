@@ -59,8 +59,7 @@ class Introspector
      *
      * @template T of string[]|string
      * @param T $value
-     * @param $flags A bitmask of {@see NormaliserFlag} values.
-     * @phpstan-param int-mask-of<NormaliserFlag::*> $flags
+     * @param int-mask-of<NormaliserFlag::*> $flags
      * @return T
      * @see \Lkrms\Contract\IResolvable::normaliser()
      * @see \Lkrms\Contract\IResolvable::normalise()

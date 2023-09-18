@@ -72,8 +72,7 @@ interface ICurlerHeaders extends IImmutable
     /**
      * Get the value of a header
      *
-     * @param int $flags A bitmask of {@see Flag} values.
-     * @phpstan-param int-mask-of<Flag::*> $flags
+     * @param int-mask-of<Flag::*> $flags
      * @param string|null $pattern If set, exclude headers where value doesn't
      * match `$pattern`.
      * @return string[]|string|null If {@see Flag::COMBINE},
@@ -90,8 +89,7 @@ interface ICurlerHeaders extends IImmutable
     /**
      * Get the values of all headers
      *
-     * @param int $flags A bitmask of {@see Flag} values.
-     * @phpstan-param int-mask-of<Flag::*> $flags
+     * @param int-mask-of<Flag::*> $flags
      * @return array<string,string[]|string> An array that maps lowercase header
      * names to values returned by {@see ICurlerHeaders::getHeaderValue()}.
      */

@@ -156,32 +156,32 @@ trait TProvidable
      *
      * See {@see TProvidable::provide()} for more information.
      *
-     * @param iterable<array-key,mixed[]> $dataList
+     * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
      * @param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */
     final public static function provideList(
-        iterable $dataList,
+        iterable $list,
         IProvider $provider,
         int $conformity = ArrayKeyConformity::NONE,
         ?IProviderContext $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
-            self::_provideList($dataList, $provider, $conformity, $context)
+            self::_provideList($list, $provider, $conformity, $context)
         );
     }
 
     /**
-     * @param iterable<array-key,mixed[]> $dataList
+     * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
      * @param ArrayKeyConformity::* $conformity
      * @param TProviderContext|null $context
      * @return Generator<array-key,static>
      */
     private static function _provideList(
-        iterable $dataList,
+        iterable $list,
         IProvider $provider,
         int $conformity,
         ?IProviderContext $context
@@ -202,7 +202,7 @@ trait TProvidable
 
         $introspector = Introspector::getService($container, static::class);
 
-        foreach ($dataList as $key => $data) {
+        foreach ($list as $key => $data) {
             if (!isset($closure)) {
                 $closure =
                     in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE], true)
