@@ -84,6 +84,13 @@ final class SyncStore extends SqliteStore
     private $NamespaceResolversByPrefix;
 
     /**
+     * Provider ID => entity type ID => entity ID => entity
+     *
+     * @var array<int,array<int,array<int|string,ISyncEntity>>>
+     */
+    private $Entities;
+
+    /**
      * @var SyncErrorCollection
      */
     private $Errors;
@@ -579,6 +586,38 @@ final class SyncStore extends SqliteStore
         }
 
         return null;
+    }
+
+    /**
+     * Register a sync entity
+     *
+     * Sync entities are uniquely identified by provider ID, entity type, and
+     * entity ID. They cannot be registered multiple times.
+     *
+     * @param class-string<ISyncEntity> $entityType
+     * @param int|string $entityId
+     * @return $this
+     */
+    public function entity(int $providerId, string $entityType, $entityId, ISyncEntity $entity)
+    {
+        $entityTypeId = $this->EntityTypes[$entityType];
+        if (isset($this->Entities[$providerId][$entityTypeId][$entityId])) {
+            throw new LogicException('Entity already registered');
+        }
+        $this->Entities[$providerId][$entityTypeId][$entityId] = $entity;
+        return $this;
+    }
+
+    /**
+     * Get a previously registered sync entity
+     *
+     * @param class-string<ISyncEntity> $entityType
+     * @param int|string $entityId
+     */
+    public function getEntity(int $providerId, string $entityType, $entityId): ?ISyncEntity
+    {
+        $entityTypeId = $this->EntityTypes[$entityType];
+        return $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
     }
 
     /**
