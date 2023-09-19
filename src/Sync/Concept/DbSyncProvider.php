@@ -12,7 +12,6 @@ use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
 use ADOConnection;
 use RuntimeException;
-use Throwable;
 
 /**
  * Base class for providers with traditional database backends
@@ -39,6 +38,9 @@ abstract class DbSyncProvider extends SyncProvider
      */
     abstract protected function getNewDbConnector(): DbConnector;
 
+    /**
+     * @inheritDoc
+     */
     public function getBackendIdentifier(): array
     {
         $connector = $this->getDbConnector();
@@ -59,38 +61,21 @@ abstract class DbSyncProvider extends SyncProvider
     }
 
     /**
-     * Surface the provider's implementation of sync operations for an entity
-     * via a DbSyncDefinition object
-     *
-     * Return `null` if no sync operations are implemented for the entity.
-     *
-     * @template T of ISyncEntity
-     * @param class-string<T> $entity
-     * @param DbSyncDefinitionBuilder<T,static> $define A definition builder
-     * with `entity()` and `provider()` already applied.
-     * @return DbSyncDefinition|DbSyncDefinitionBuilder<T,static>|null
-     */
-    protected function getDbDefinition(string $entity, DbSyncDefinitionBuilder $define)
-    {
-        return null;
-    }
-
-    /**
      * @template T of ISyncEntity
      * @param class-string<T> $entity
      * @return ISyncDefinition<T,static>
      */
     final public function getDefinition(string $entity): ISyncDefinition
     {
-        $builder = DbSyncDefinition::build()
-            ->entity($entity)
-            ->provider($this);
-        $def = $this->getDbDefinition($entity, $builder);
-
         /** @var ISyncDefinition<T,static> */
-        $def = $def
-            ? DbSyncDefinitionBuilder::resolve($def)
-            : $builder->go();
+        $def = $this
+            ->buildDbDefinition(
+                $entity,
+                DbSyncDefinition::build()
+                    ->entity($entity)
+                    ->provider($this)
+            )
+            ->go();
 
         return $def;
     }
@@ -124,5 +109,24 @@ abstract class DbSyncProvider extends SyncProvider
             ->getConnection(5);
 
         return $this;
+    }
+
+    /**
+     * Surface the provider's implementation of sync operations for an entity
+     * via a DbSyncDefinition object
+     *
+     * Return `$defB` if no sync operations are implemented for the entity.
+     *
+     * @template T of ISyncEntity
+     * @param class-string<T> $entity
+     * @param DbSyncDefinitionBuilder<T,static> $defB A definition builder
+     * with `entity()` and `provider()` already applied.
+     * @return DbSyncDefinitionBuilder<T,static>
+     */
+    protected function buildDbDefinition(
+        string $entity,
+        DbSyncDefinitionBuilder $defB
+    ): DbSyncDefinitionBuilder {
+        return $defB;
     }
 }

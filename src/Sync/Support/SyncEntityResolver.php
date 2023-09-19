@@ -2,7 +2,6 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
@@ -12,6 +11,7 @@ use Lkrms\Utility\Convert;
  * Resolves names to entities
  *
  * @template TEntity of ISyncEntity
+ * @implements ISyncEntityResolver<TEntity>
  */
 final class SyncEntityResolver implements ISyncEntityResolver
 {

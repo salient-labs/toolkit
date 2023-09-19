@@ -14,7 +14,7 @@ class SyncOperationNotImplementedException extends SyncException
 {
     /**
      * @param class-string<ISyncEntity> $entity
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      */
     public function __construct(ISyncProvider $provider, string $entity, int $operation)
     {

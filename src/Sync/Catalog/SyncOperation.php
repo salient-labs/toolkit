@@ -25,7 +25,6 @@ final class SyncOperation extends ConvertibleEnumeration
      *
      * Typically corresponds to:
      * - `GET /<entity_name>/<id>`
-     * - `GET /<entity_name>`
      * - `SELECT ... FROM <entity_name> WHERE <id_field> = <id>`
      */
     public const READ = 2;
@@ -112,7 +111,7 @@ final class SyncOperation extends ConvertibleEnumeration
      * True if an operation is CREATE_LIST, READ_LIST, UPDATE_LIST or
      * DELETE_LIST
      *
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @return ($operation is SyncOperation::*_LIST ? true : false)
      */
     public static function isList(int $operation): bool
@@ -123,7 +122,7 @@ final class SyncOperation extends ConvertibleEnumeration
     /**
      * True if an operation is READ or READ_LIST
      *
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @return ($operation is SyncOperation::READ* ? true : false)
      */
     public static function isRead(int $operation): bool
@@ -135,7 +134,7 @@ final class SyncOperation extends ConvertibleEnumeration
      * True if an operation is CREATE, UPDATE, DELETE, CREATE_LIST, UPDATE_LIST
      * or DELETE_LIST
      *
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @return ($operation is SyncOperation::READ* ? false : true)
      */
     public static function isWrite(int $operation): bool

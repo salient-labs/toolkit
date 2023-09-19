@@ -90,6 +90,10 @@ final class SyncIntrospector extends Introspector
         return null;
     }
 
+    /**
+     * @param class-string<TClass> $class
+     * @return SyncIntrospectionClass<TClass>
+     */
     private function getIntrospectionClass(string $class): SyncIntrospectionClass
     {
         return new SyncIntrospectionClass($class);
@@ -222,7 +226,7 @@ final class SyncIntrospector extends Introspector
      *   {@see SyncOperation} via a method
      *
      * @template T of ISyncEntity
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @param class-string<T>|self<T,TIntrospectionClass<T>> $entity
      * @return Closure(ISyncContext, mixed...)|null
      */
@@ -439,11 +443,17 @@ final class SyncIntrospector extends Introspector
         return $closure;
     }
 
+    /**
+     * @template T of ISyncEntity
+     * @param SyncOperation::* $operation
+     * @param SyncIntrospector<T,SyncIntrospectionClass<T>> $entity
+     */
     private function getSyncOperationMethod(int $operation, SyncIntrospector $entity): ?string
     {
         $_entity = $entity->_Class;
         $noun = strtolower($_entity->EntityNoun);
         $plural = strtolower($_entity->EntityPlural);
+        $methods = [];
 
         if ($plural) {
             switch ($operation) {
@@ -505,7 +515,7 @@ final class SyncIntrospector extends Introspector
 
         $methods = array_intersect_key(
             $this->_Class->SyncOperationMethods,
-            array_flip($methods ?? [])
+            array_flip($methods)
         );
         if (count($methods) > 1) {
             throw new LogicException('Too many implementations: ' . implode(', ', $methods));

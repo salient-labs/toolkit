@@ -6,9 +6,9 @@ use Lkrms\Support\ProviderContext;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Sync\Exception\SyncInvalidFilterException;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
-use LogicException;
 
 /**
  * The context within which a sync entity is instantiated
@@ -85,7 +85,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
             );
         }
 
-        throw new LogicException('Filter signature not recognised');
+        throw new SyncInvalidFilterException(...$args);
     }
 
     public function getFilter(): array

@@ -4,6 +4,8 @@ namespace Lkrms\Sync\Contract;
 
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
+use Lkrms\Sync\Catalog\SyncOperation;
+use Lkrms\Sync\Exception\SyncInvalidFilterException;
 
 /**
  * The context within which a sync entity is instantiated
@@ -20,26 +22,26 @@ interface ISyncContext extends IProviderContext
      * to an associative array and returned by {@see ISyncContext::getFilter()}
      * until updated by another call to {@see ISyncContext::withArgs()}.
      *
-     * 1. One array argument (`fn(...<mandatory>, array $filter)`)
+     * 1. One array argument (`fn(...$mandatoryArgs, array $filter)`)
      *    - Alphanumeric keys are converted to snake_case
      *    - Keys containing characters other than letters, numbers, hyphens and
      *      underscores, e.g. `'$orderby'`, are left as-is
      *
-     * 2. A list of entity IDs (`fn(...<mandatory>, int|string ...$ids)`)
+     * 2. A list of entity IDs (`fn(...$mandatoryArgs, int|string ...$ids)`)
      *    - Converted to `[ 'id' => $ids ]`
      *
-     * 3. A list of entities (`fn(...<mandatory>, ISyncEntity ...$entities)`)
+     * 3. A list of entities (`fn(...$mandatoryArgs, ISyncEntity ...$entities)`)
      *    - Converted to an array that maps the normalised name of each entity's
      *      unqualified {@see \Lkrms\Contract\IProvidable::service()} to an
      *      array of entity IDs
      *
-     * 4. No arguments (`fn(...<mandatory>`)
+     * 4. No arguments (`fn(...$mandatoryArgs)`)
      *    - Converted to an empty array (`[]`)
      *
-     * If `$args` doesn't match any of these, an `UnexpectedValueException` is
-     * thrown.
+     * If `$args` doesn't match any of these, a
+     * {@see SyncInvalidFilterException} is thrown.
      *
-     * Using {@see ISyncContext::claimFilterValue()} to "claim" values from the
+     * Using {@see ISyncContext::claimFilterValue()} to claim values from the
      * filter is recommended. Depending on the provider's
      * {@see SyncFilterPolicy}, unclaimed values may cause requests to fail.
      *
@@ -47,6 +49,7 @@ interface ISyncContext extends IProviderContext
      * {@see ISyncEntity::id()} when `$args` contains an array or a list of
      * entities. This operation is not recursive.
      *
+     * @param SyncOperation::* $operation
      * @param mixed ...$args Sync operation arguments, NOT including the
      * {@see ISyncContext} argument.
      * @return $this
@@ -60,7 +63,7 @@ interface ISyncContext extends IProviderContext
      * {@see ISyncContext::maybeApplyFilterPolicy()} in scenarios where
      * enforcement before a sync operation starts isn't possible.
      *
-     * @param (callable(ISyncContext, ?bool &$returnEmpty, mixed &$empty): void)|null $callback
+     * @param (callable(ISyncContext, ?bool &$returnEmpty, array{}|null &$empty): void)|null $callback
      * @return $this
      */
     public function withFilterPolicyCallback(?callable $callback);
@@ -78,6 +81,7 @@ interface ISyncContext extends IProviderContext
      * }
      * ```
      *
+     * @param array{}|null $empty
      */
     public function maybeApplyFilterPolicy(?bool &$returnEmpty, &$empty): void;
 
