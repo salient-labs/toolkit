@@ -251,7 +251,7 @@ final class SyncStore extends SqliteStore
      * Terminate the current run and close the database
      *
      */
-    public function close(?int $exitStatus = 0)
+    public function close(int $exitStatus = 0)
     {
         if (!$this->isOpen()) {
             return $this;
@@ -489,10 +489,9 @@ final class SyncStore extends SqliteStore
      * Register a sync entity namespace
      *
      * A prefix can only be associated with one namespace per {@see SyncStore}
-     * and cannot be changed unless the {@see SyncStore}'s backing database has
-     * been reset.
+     * and cannot be changed without resetting its backing database.
      *
-     * If `$prefix` has already been registered, its previous URI and PHP
+     * If a prefix has already been registered, its previous URI and PHP
      * namespace are updated if they differ. This is by design and is intended
      * to facilitate refactoring.
      *

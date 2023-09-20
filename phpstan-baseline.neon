@@ -56,6 +56,31 @@ parameters:
 			path: src/Concept/Facade.php
 
 		-
+			message: "#^Property Lkrms\\\\Container\\\\Application\\:\\:\\$CachePath is never written, only read\\.$#"
+			count: 1
+			path: src/Container/Application.php
+
+		-
+			message: "#^Property Lkrms\\\\Container\\\\Application\\:\\:\\$ConfigPath is never written, only read\\.$#"
+			count: 1
+			path: src/Container/Application.php
+
+		-
+			message: "#^Property Lkrms\\\\Container\\\\Application\\:\\:\\$DataPath is never written, only read\\.$#"
+			count: 1
+			path: src/Container/Application.php
+
+		-
+			message: "#^Property Lkrms\\\\Container\\\\Application\\:\\:\\$LogPath is never written, only read\\.$#"
+			count: 1
+			path: src/Container/Application.php
+
+		-
+			message: "#^Property Lkrms\\\\Container\\\\Application\\:\\:\\$TempPath is never written, only read\\.$#"
+			count: 1
+			path: src/Container/Application.php
+
+		-
 			message: "#^Method Lkrms\\\\Contract\\\\IPipe\\:\\:handle\\(\\) has parameter \\$pipeline with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
 			count: 1
 			path: src/Contract/IPipe.php

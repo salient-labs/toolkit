@@ -3,9 +3,13 @@
 namespace Lkrms\Contract;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Console\Catalog\ConsoleLevels;
+use Lkrms\Store\CacheStore;
 use Lkrms\Sync\Contract\ISyncClassResolver;
+use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Catalog\EnvFlag;
+use Lkrms\Utility\Composer;
+use Lkrms\Utility\Env;
+use Lkrms\Utility\System;
 
 /**
  * A service container for applications
@@ -14,9 +18,21 @@ use Lkrms\Utility\Catalog\EnvFlag;
 interface IApplication extends IContainer, ReturnsEnvironment
 {
     /**
+     * @inheritDoc
+     *
+     * @param string|null $basePath If `null`, the value of environment variable
+     * `app_base_path` is used if present, otherwise the path of the root
+     * package is used.
+     * @param string|null $appName If `null`, the value returned by
+     * {@see IApplication::getProgramName()} is used after removing common PHP
+     * file extensions and recognised version numbers.
      * @param int-mask-of<EnvFlag::*> $envFlags
      */
-    public function __construct(?string $basePath = null, int $envFlags = EnvFlag::ALL);
+    public function __construct(
+        ?string $basePath = null,
+        ?string $appName = null,
+        int $envFlags = EnvFlag::ALL
+    );
 
     /**
      * Get the basename of the file used to run the script
@@ -25,24 +41,23 @@ interface IApplication extends IContainer, ReturnsEnvironment
     public function getProgramName(): string;
 
     /**
-     * Get the basename of the file used to run the script, removing known PHP
-     * file extensions and recognised version numbers
+     * Get the name of the application
      *
      */
     public function getAppName(): string;
 
     /**
-     * True if the application is in production
+     * Check if the application is running in a production environment
      *
-     * "In production" means one of the following is true:
+     * Returns `true` if:
      *
-     * - the value of environment variable `PHP_ENV` is `"production"`
+     * - the value of environment variable `env` or `PHP_ENV` is `"production"`
      * - a Phar archive is currently executing, or
      * - the application was installed with `composer --no-dev`
      *
-     * @see \Lkrms\Utility\Composer::hasDevDependencies()
+     * @see Composer::hasDevDependencies()
      */
-    public function inProduction(): bool;
+    public function isProduction(): bool;
 
     /**
      * Get the application's root directory
@@ -88,165 +103,144 @@ interface IApplication extends IContainer, ReturnsEnvironment
     public function getTempPath(): string;
 
     /**
-     * Log console messages to a file in the application's log directory
+     * Log console output to the application's log directory
      *
-     * Registers a {@see StreamTarget} to log subsequent
-     * {@see ConsoleLevels::ALL} messages to `<name>.log`.
+     * Messages with levels between {@see Level::EMERGENCY} and
+     * {@see Level::INFO} are written to `<name>.log`.
      *
-     * {@see ConsoleLevels::DEBUG_ALL} messages are simultaneously logged to
-     * `<name>.debug.log` in the same location if:
-     * - `$debug` is `true`, or
-     * - `$debug` is `null` and {@see \Lkrms\Utility\Env::debug()} returns
-     *   `true`
+     * If `$debug` is `true`, or `$debug` is `null` and {@see Env::debug()}
+     * returns `true`, messages with levels between {@see Level::EMERGENCY} and
+     * {@see Level::DEBUG} are simultaneously written to `<name>.debug.log`.
      *
-     * @param string|null $name Defaults to the name returned by
-     * {@see IApplication::getAppName()}.
+     * @param string|null $name If `null`, the name returned by
+     * {@see IApplication::getAppName()} is used.
      * @return $this
      */
-    public function logConsoleMessages(?bool $debug = null, ?string $name = null);
+    public function logOutput(?string $name = null, ?bool $debug = null);
 
     /**
-     * Load the application's CacheStore, creating a backing database if needed
+     * Start a cache store in the application's cache directory
      *
-     * The backing database is created in {@see IApplication::getCachePath()}.
-     *
-     * @return $this
-     * @see \Lkrms\Store\CacheStore
-     */
-    public function loadCache();
-
-    /**
-     * Load the application's CacheStore if a backing database already exists
-     *
-     * Caching is only enabled if a backing database created by
-     * {@see IApplication::loadCache()} is found in
-     * {@see IApplication::getCachePath()}.
-     *
-     * @return $this
-     * @see \Lkrms\Store\CacheStore
-     */
-    public function loadCacheIfExists();
-
-    /**
-     * Close the application's CacheStore
+     * @see CacheStore
      *
      * @return $this
      */
-    public function unloadCache();
+    public function startCache();
 
     /**
-     * Load the application's SyncStore, creating a backing database if needed
+     * Start a cache store in the application's cache directory if a backing
+     * database was created on a previous run
      *
-     * The backing database is created in {@see IApplication::getDataPath()}.
+     * @see CacheStore
      *
-     * Call {@see IApplication::unloadSync()} before the application terminates,
-     * otherwise a failed run may be recorded.
+     * @return $this
+     */
+    public function resumeCache();
+
+    /**
+     * Stop a previously started cache store
+     *
+     * @return $this
+     */
+    public function stopCache();
+
+    /**
+     * Start an entity store in the application's data directory
+     *
+     * If an entity store is started but not stopped by calling
+     * {@see IApplication::stopSync()} or {@see SyncStore::close()}, a failed
+     * run may be recorded.
+     *
+     * @see SyncStore
      *
      * @param mixed[] $arguments
      * @return $this
-     * @see \Lkrms\Sync\Support\SyncStore
      */
-    public function loadSync(?string $command = null, ?array $arguments = null);
+    public function startSync(?string $command = null, ?array $arguments = null);
 
     /**
-     * Close the application's SyncStore
+     * Stop a previously started entity store
      *
-     * If this method is not called after calling
-     * {@see IApplication::loadSync()}, a failed run may be recorded.
+     * If an entity store is started but not stopped, a failed run may be
+     * recorded.
      *
      * @return $this
      */
-    public function unloadSync(bool $silent = false);
+    public function stopSync(int $exitStatus = 0, bool $reportErrors = false);
 
     /**
-     * Register a sync entity namespace with the application's SyncStore
+     * Register a sync entity namespace with a previously started entity store
      *
      * A prefix can only be associated with one namespace per application and
-     * cannot be changed unless the {@see \Lkrms\Sync\Support\SyncStore}'s
-     * backing database has been reset.
+     * cannot be changed without resetting the entity store's backing database.
      *
-     * If `$prefix` has already been registered, its previous URI and PHP
-     * namespace are updated if they differ.
+     * If a prefix has already been registered, its previous URI and PHP
+     * namespace are updated if they differ. This is by design and is intended
+     * to facilitate refactoring.
+     *
+     * @see SyncStore::namespace()
      *
      * @param string $prefix A short alternative to `$uri`. Case-insensitive.
-     * Must be unique within the scope of the application. Must be a scheme name
-     * that complies with Section 3.1 of [RFC3986], i.e. a match for the regular
-     * expression `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
+     * Must be unique to the application. Must be a scheme name that complies
+     * with Section 3.1 of [RFC3986], i.e. a match for the regular expression
+     * `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
      * @param string $uri A globally unique namespace URI.
      * @param string $namespace A fully-qualified PHP namespace.
      * @param class-string<ISyncClassResolver>|null $resolver
      * @return $this
-     * @see \Lkrms\Sync\Support\SyncStore::namespace()
      */
-    public function syncNamespace(string $prefix, string $uri, string $namespace, ?string $resolver = null);
+    public function syncNamespace(
+        string $prefix,
+        string $uri,
+        string $namespace,
+        ?string $resolver = null
+    );
 
     /**
-     * Print a summary of the script's timers and system resource usage when the
-     * application terminates
+     * Print a summary of the application's timers and system resource usage
+     * when it terminates
      *
-     * Use {@see \Lkrms\Utility\System::startTimer()} and
-     * {@see \Lkrms\Utility\System::stopTimer()} to collect timing information.
+     * Use {@see System::startTimer()} and {@see System::stopTimer()} to collect
+     * timing information.
      *
      * @param Level::* $level
-     * @param string[]|null $timers If `null` or empty, timers aren't reported. If
-     * `['*']` (the default), all timers are reported. Otherwise, only timers of
-     * the specified types are reported.
+     * @param string[]|string|null $timerTypes If `null` or `["*"]`, all timers
+     * are reported, otherwise only timers of the given types are reported.
      * @return $this
      *
-     * @see IApplication::writeResourceUsage()
-     * @see IApplication::writeTimers()
+     * @see IApplication::reportResourceUsage()
+     * @see IApplication::reportTimers()
      */
     public function registerShutdownReport(
         int $level = Level::INFO,
-        ?array $timers = ['*'],
+        $timerTypes = null,
         bool $resourceUsage = true
     );
 
     /**
-     * Print a summary of the script's system resource usage
-     *
-     * Example output:
-     *
-     * ```
-     * CPU time: 0.011s elapsed, 0.035s user, 0.016s system; memory: 3.817MiB peak
-     *
-     * ```
+     * Print a summary of the application's system resource usage
      *
      * @param Level::* $level
      * @return $this
      */
-    public function writeResourceUsage(int $level = Level::INFO);
+    public function reportResourceUsage(int $level = Level::INFO);
 
     /**
-     * Print a summary of the script's timers
-     *
-     * Example output:
-     *
-     * ```
-     * Timing: 6.281ms recorded by 1 timer with type 'file':
-     *   6.281ms {1} lk-util
-     *
-     * Timing: 1.863ms recorded by 26 timers with type 'rule':
-     *   0.879ms {2} PreserveOneLineStatements
-     *   0.153ms {2} AddStandardWhitespace
-     *   0.145ms {2} AddHangingIndentation
-     *   ...
-     *   0.042ms {2} AlignArguments
-     *               (and 16 more)
-     *
-     * ```
+     * Print a summary of the application's timers
      *
      * @param Level::* $level
+     * @param string[]|string|null $types If `null` or `["*"]`, all timers are
+     * reported, otherwise only timers of the given types are reported.
      * @return $this
      *
-     * @see \Lkrms\Utility\System::startTimer()
-     * @see \Lkrms\Utility\System::stopTimer()
-     * @see \Lkrms\Utility\System::getTimers()
+     * @see System::startTimer()
+     * @see System::stopTimer()
+     * @see System::getTimers()
      */
-    public function writeTimers(
+    public function reportTimers(
         int $level = Level::INFO,
         bool $includeRunning = true,
-        ?string $type = null,
+        $types = null,
         ?int $limit = 10
     );
 }

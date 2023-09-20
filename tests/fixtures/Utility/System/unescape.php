@@ -1,3 +1,3 @@
 #!/usr/bin/env php
 <?php
-echo $argv[1] . PHP_EOL;
+echo $_SERVER['argv'][1] . PHP_EOL;

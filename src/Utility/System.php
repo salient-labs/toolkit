@@ -106,6 +106,7 @@ final class System
     /**
      * Start a timer using the system's high-resolution time
      *
+     * @api
      */
     public function startTimer(string $name, string $type = 'general'): void
     {
@@ -120,9 +121,10 @@ final class System
     /**
      * Stop a timer and return the elapsed milliseconds
      *
-     * The elapsed time is also added to the totals returned by
+     * Elapsed time is also added to the totals returned by
      * {@see System::getTimers()}.
      *
+     * @api
      */
     public function stopTimer(string $name, string $type = 'general'): float
     {
@@ -140,6 +142,7 @@ final class System
     /**
      * Push timer state onto the stack
      *
+     * @api
      */
     public function pushTimers(): void
     {
@@ -150,10 +153,12 @@ final class System
     /**
      * Pop timer state off the stack
      *
+     * @api
      */
     public function popTimers(): void
     {
-        if (!($timers = array_pop($this->TimerStack))) {
+        $timers = array_pop($this->TimerStack);
+        if (!$timers) {
             throw new LogicException('No timer state to pop off the stack');
         }
 
@@ -162,17 +167,23 @@ final class System
     }
 
     /**
-     * Get the elapsed milliseconds and start count for timers started in the
+     * Get elapsed milliseconds and start counts for timers started in the
      * current run
      *
+     * @api
+     *
+     * @param string[]|string|null $types If `null` or `["*"]`, all timers are
+     * returned, otherwise only timers of the given types are returned.
      * @return array<string,array<string,array{float,int}>> An array that maps
-     * timer types to `<timer_name> => <milliseconds_elapsed>` arrays.
+     * timer types to `<timer_name> => [ <elapsed_ms>, <start_count> ]` arrays.
      */
-    public function getTimers(bool $includeRunning = true, ?string $type = null): array
+    public function getTimers(bool $includeRunning = true, $types = null): array
     {
-        $timerRuns = $type === null
-            ? $this->TimerRuns
-            : array_intersect_key($this->TimerRuns, [$type => null]);
+        if ($types === null || $types === ['*']) {
+            $timerRuns = $this->TimerRuns;
+        } else {
+            $timerRuns = array_intersect_key($this->TimerRuns, array_flip((array) $types));
+        }
 
         foreach ($timerRuns as $type => $runs) {
             foreach ($runs as $name => $count) {

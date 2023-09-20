@@ -14,8 +14,8 @@ $loader = require $GLOBALS['_composer_autoload_path'] ?? dirname(dirname(__DIR__
 $loader->addPsr4('Lkrms\\LkUtil\\', __DIR__);
 
 (new CliApplication())
-    ->loadCacheIfExists()
-    ->logConsoleMessages()
+    ->resumeCache()
+    ->logOutput()
     ->command(['generate', 'builder'], GenerateBuilder::class)
     ->command(['generate', 'facade'], GenerateFacade::class)
     ->command(['generate', 'sync', 'entity'], GenerateSyncEntity::class)
