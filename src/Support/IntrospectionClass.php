@@ -31,7 +31,6 @@ class IntrospectionClass
     public const ACTION_ISSET = 'isset';
     public const ACTION_SET = 'set';
     public const ACTION_UNSET = 'unset';
-    public const CONST_RELATABLE = 'RELATIONSHIPS';
 
     /**
      * The name of the class under introspection
@@ -468,7 +467,7 @@ class IntrospectionClass
 
         if ($this->IsRelatable) {
             /** @var array<string,array<RelationshipType::*,class-string<IRelatable>>> */
-            $relationships = $class->getConstant(self::CONST_RELATABLE);
+            $relationships = $class->getMethod('getRelationships')->invoke(null);
             foreach ($relationships as $property => $reference) {
                 $type = array_key_first($reference);
                 $target = $reference[$type];

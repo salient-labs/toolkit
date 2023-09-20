@@ -132,6 +132,14 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
     /**
      * @inheritDoc
      */
+    public static function getRelationships(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
     public static function getDateProperties(): array
     {
         return [];

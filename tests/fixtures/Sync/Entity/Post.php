@@ -11,10 +11,6 @@ use Lkrms\Sync\Concept\SyncEntity;
  */
 class Post extends SyncEntity
 {
-    public const RELATIONSHIPS = [
-        'User' => [RelationshipType::ONE_TO_ONE => User::class],
-    ];
-
     /**
      * @var int|string|null
      */
@@ -34,4 +30,11 @@ class Post extends SyncEntity
      * @var string|null
      */
     public $Body;
+
+    public static function getRelationships(): array
+    {
+        return [
+            'User' => [RelationshipType::ONE_TO_ONE => User::class],
+        ];
+    }
 }

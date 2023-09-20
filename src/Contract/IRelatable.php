@@ -8,22 +8,27 @@ use Lkrms\Support\Catalog\RelationshipType;
  * Has one-to-one and one-to-many relationships with other classes implementing
  * the same interface
  *
- * Example:
- *
- * ```php
- * <?php
- * public const RELATIONSHIPS = [
- *     'CreatedBy' => [RelationshipType::ONE_TO_ONE => User::class],
- *     'Tags' => [RelationshipType::ONE_TO_MANY => Tag::class],
- * ];
- * ```
  */
 interface IRelatable
 {
     /**
-     * Property name => relationship type => target class
+     * Get an array that maps property names to relationships
      *
-     * @var array<string,array<RelationshipType::*,class-string<IRelatable>>>
+     * Example:
+     *
+     * ```php
+     * <?php
+     * public static function getRelationships(): array
+     * {
+     *     return [
+     *         'CreatedBy' => [RelationshipType::ONE_TO_ONE => User::class],
+     *         'Tags' => [RelationshipType::ONE_TO_MANY => Tag::class],
+     *     ];
+     * }
+     * ```
+     *
+     * @return array<string,array<RelationshipType::*,class-string<IRelatable>>>
+     * Property name => relationship type => target class
      */
-    public const RELATIONSHIPS = [];
+    public static function getRelationships(): array;
 }
