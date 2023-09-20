@@ -711,26 +711,6 @@ parameters:
 			path: tests/fixtures/Concept/TypedCollection/MyClass.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\CustomEntity\\\\Post\\:\\:_setUserId\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/fixtures/Sync/CustomEntity/Post.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\CustomEntity\\\\Post\\:\\:_setUserId\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: tests/fixtures/Sync/CustomEntity/Post.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\CustomEntity\\\\User\\:\\:_setId\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: tests/fixtures/Sync/CustomEntity/User.php
-
-		-
-			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\CustomEntity\\\\User\\:\\:_setId\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: tests/fixtures/Sync/CustomEntity/User.php
-
-		-
 			message: "#^Method Lkrms\\\\Tests\\\\Sync\\\\Provider\\\\JsonPlaceholderApi\\:\\:getPosts\\(\\) return type has no value type specified in iterable type iterable\\.$#"
 			count: 1
 			path: tests/fixtures/Sync/Provider/JsonPlaceholderApi.php

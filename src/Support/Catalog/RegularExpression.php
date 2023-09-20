@@ -33,6 +33,12 @@ final class RegularExpression extends Dictionary
         REGEX;
 
     /**
+     * An [RFC4122]-compliant version 4 UUID
+     *
+     */
+    public const UUID = '(?i)[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
+
+    /**
      * A valid PHP identifier, e.g. for variable names and classes
      *
      * @link https://www.php.net/manual/en/language.variables.basics.php

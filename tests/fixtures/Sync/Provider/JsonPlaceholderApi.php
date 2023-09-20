@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Sync\Provider;
 
 use Lkrms\Contract\IServiceSingleton;
-use Lkrms\Curler\CurlerHeaders;
+use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
@@ -29,18 +29,21 @@ use Lkrms\Tests\Sync\Entity\User;
  * @method User deleteUser(SyncContext $ctx, User $user)
  * @method iterable<User> getUsers(SyncContext $ctx)
  */
-class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserProvider, IServiceSingleton
+class JsonPlaceholderApi extends HttpSyncProvider implements IServiceSingleton, PostProvider, UserProvider
 {
     private const JSON_PLACEHOLDER_BASE_URL = 'https://jsonplaceholder.typicode.com';
 
-    protected function getBaseUrl(?string $path): string
+    public function name(): ?string
     {
-        return self::JSON_PLACEHOLDER_BASE_URL;
+        return sprintf('JSONPlaceholder { %s }', self::JSON_PLACEHOLDER_BASE_URL);
     }
 
-    protected function getHeaders(?string $path): ?CurlerHeaders
+    public static function getContextualBindings(): array
     {
-        return null;
+        return [
+            Post::class => \Lkrms\Tests\Sync\CustomEntity\Post::class,
+            User::class => \Lkrms\Tests\Sync\CustomEntity\User::class,
+        ];
     }
 
     public function getBackendIdentifier(): array
@@ -53,22 +56,19 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
         return new DateFormatter();
     }
 
-    public function name(): ?string
+    protected function getBaseUrl(?string $path): string
     {
-        return 'JSONPlaceholder {jsonplaceholder.typicode.com}';
+        return self::JSON_PLACEHOLDER_BASE_URL;
+    }
+
+    protected function getHeaders(?string $path): ?ICurlerHeaders
+    {
+        return null;
     }
 
     protected function getExpiry(?string $path): ?int
     {
-        return 24 * 60 * 60;
-    }
-
-    public static function getContextualBindings(): array
-    {
-        return [
-            Post::class => \Lkrms\Tests\Sync\CustomEntity\Post::class,
-            User::class => \Lkrms\Tests\Sync\CustomEntity\User::class,
-        ];
+        return 24 * 3600;
     }
 
     protected function buildHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder
@@ -77,8 +77,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements PostProvider, UserP
             case Post::class:
                 return $defB
                     ->operations([OP::READ, OP::READ_LIST])
-                    ->path('/posts')
-                    ->filterPolicy(SyncFilterPolicy::IGNORE);
+                    ->path('/posts');
 
             case User::class:
                 return $defB

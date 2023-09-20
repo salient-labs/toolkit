@@ -7,11 +7,13 @@ use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\IResolvable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Facade\Reflect;
 use Lkrms\Support\Catalog\NormaliserFlag;
+use Lkrms\Support\Catalog\RelationshipType;
 use DateTimeInterface;
 use ReflectionClass;
 use ReflectionMethod;
@@ -29,6 +31,7 @@ class IntrospectionClass
     public const ACTION_ISSET = 'isset';
     public const ACTION_SET = 'set';
     public const ACTION_UNSET = 'unset';
+    public const CONST_RELATABLE = 'RELATIONSHIPS';
 
     /**
      * The name of the class under introspection
@@ -64,6 +67,13 @@ class IntrospectionClass
      * @var bool
      */
     public $IsProvidable;
+
+    /**
+     * True if the class implements IRelatable
+     *
+     * @var bool
+     */
+    public $IsRelatable;
 
     /**
      * True if the class implements IHierarchy
@@ -192,6 +202,22 @@ class IntrospectionClass
     public $NormalisedKeys = [];
 
     /**
+     * One-to-one relationships between the class and others (normalised
+     * property name => target class)
+     *
+     * @var array<string,class-string<IRelatable>>
+     */
+    public $OneToOneRelationships = [];
+
+    /**
+     * One-to-many relationships between the class and others (normalised
+     * property name => target class)
+     *
+     * @var array<string,class-string<IRelatable>>
+     */
+    public $OneToManyRelationships = [];
+
+    /**
      * Normalised date properties (declared and "magic" property names)
      *
      * @var string[]
@@ -291,6 +317,7 @@ class IntrospectionClass
         $this->IsWritable = $class->implementsInterface(IWritable::class);
         $this->IsExtensible = $class->implementsInterface(IExtensible::class);
         $this->IsProvidable = $class->implementsInterface(IProvidable::class);
+        $this->IsRelatable = $class->implementsInterface(IRelatable::class);
         $this->IsHierarchy = $class->implementsInterface(IHierarchy::class);
         $this->HasDates = $class->implementsInterface(HasDateProperties::class);
 
@@ -438,6 +465,31 @@ class IntrospectionClass
                 + ($this->Actions[self::ACTION_SET] ?? [])
                 + ($this->Actions[self::ACTION_UNSET] ?? [])
         );
+
+        if ($this->IsRelatable) {
+            /** @var array<string,array<RelationshipType::*,class-string<IRelatable>>> */
+            $relationships = $class->getConstant(self::CONST_RELATABLE);
+            foreach ($relationships as $property => $reference) {
+                $type = array_key_first($reference);
+                $target = $reference[$type];
+                $property = $this->maybeNormalise($property, NormaliserFlag::LAZY);
+                if (!in_array($property, $this->NormalisedKeys, true)) {
+                    continue;
+                }
+                if (!is_a($target, IRelatable::class, true)) {
+                    continue;
+                }
+                switch ($type) {
+                    case RelationshipType::ONE_TO_ONE:
+                        $this->OneToOneRelationships[$property] = $target;
+                        break;
+
+                    case RelationshipType::ONE_TO_MANY:
+                        $this->OneToManyRelationships[$property] = $target;
+                        break;
+                }
+            }
+        }
 
         if ($this->HasDates) {
             /** @var string[] */

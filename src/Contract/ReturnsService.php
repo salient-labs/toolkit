@@ -12,7 +12,7 @@ interface ReturnsService
      * Get the name of the class or interface the container resolved by creating
      * the instance
      *
-     * @return class-string[]|class-string|null
+     * @return class-string
      */
-    public function service();
+    public function service(): string;
 }

@@ -2,6 +2,7 @@
 
 namespace Lkrms\Tests\Sync\Entity;
 
+use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\SyncEntity;
 
 /**
@@ -10,6 +11,10 @@ use Lkrms\Sync\Concept\SyncEntity;
  */
 class User extends SyncEntity
 {
+    public const RELATIONSHIPS = [
+        'Posts' => [RelationshipType::ONE_TO_MANY => Post::class],
+    ];
+
     /**
      * @var int|string|null
      */

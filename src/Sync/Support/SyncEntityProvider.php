@@ -143,9 +143,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * Defer retrieval of an entity from the backend
      *
      * @param int|string $id
-     * @param mixed $replace A reference to the variable, property or array
-     * element to replace when the entity is resolved. Do not assign anything
-     * else to it after calling this method.
+     * @param ISyncEntity|DeferredSyncEntity|null $replace A reference to the
+     * variable, property or array element to replace when the entity is
+     * resolved. Do not assign anything else to it after calling this method.
      */
     public function defer($id, &$replace): void
     {
@@ -156,9 +156,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * Defer retrieval of a list of entities from the backend
      *
      * @param int[]|string[] $idList
-     * @param mixed $replace A reference to the variable, property or array
-     * element to replace when the list is resolved. Do not assign anything else
-     * to it after calling this method.
+     * @param array<ISyncEntity|DeferredSyncEntity>|null $replace A reference to
+     * the variable, property or array element to replace when the list is
+     * resolved. Do not assign anything else to it after calling this method.
      */
     public function deferList(array $idList, &$replace): void
     {

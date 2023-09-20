@@ -474,7 +474,7 @@ final class Reflection
         }
 
         if ($class) {
-            throw new UnexpectedValueException("Error retrieving traits for class {$class->name}");
+            throw new UnexpectedValueException(sprintf('Error retrieving traits for class %s', $class->getName()));
         }
 
         return $allTraits;

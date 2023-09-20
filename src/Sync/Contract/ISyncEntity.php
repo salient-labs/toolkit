@@ -5,9 +5,11 @@ namespace Lkrms\Sync\Contract;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderEntity;
+use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ReturnsDescription;
 use Lkrms\Sync\Catalog\SyncSerializeLinkType as SerializeLinkType;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
+use Lkrms\Sync\Support\SyncStore;
 use JsonSerializable;
 
 /**
@@ -16,7 +18,7 @@ use JsonSerializable;
  * @extends IProviderEntity<ISyncProvider,ISyncContext>
  * @see \Lkrms\Sync\Concept\SyncEntity
  */
-interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializable
+interface ISyncEntity extends IProviderEntity, IRelatable, ReturnsDescription, JsonSerializable
 {
     /**
      * Get an instance of the entity's default provider
@@ -30,7 +32,7 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
      *
      * @return ISyncEntityProvider<static>
      */
-    public static function withDefaultProvider(?IContainer $container = null): ISyncEntityProvider;
+    public static function withDefaultProvider(?IContainer $container = null, ?ISyncContext $context = null): ISyncEntityProvider;
 
     /**
      * Get the entity's default serialization rules
@@ -40,17 +42,17 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
     public static function getSerializeRules(?IContainer $container = null): SerializeRules;
 
     /**
-     * Called when the class is registered with an entity store
+     * Called when the entity is registered with an entity store
      *
-     * @internal
-     * @see \Lkrms\Sync\Support\SyncStore::entityType()
+     * @see SyncStore::entityType()
      */
     public static function setEntityTypeId(int $entityTypeId): void;
 
     /**
-     * @internal
+     * Get the entity type ID assigned to the entity by the entity store
+     *
      */
-    public static function entityTypeId(): ?int;
+    public static function getEntityTypeId(): ?int;
 
     /**
      * The unique identifier assigned to the entity by its provider
@@ -101,7 +103,6 @@ interface ISyncEntity extends IProviderEntity, ReturnsDescription, JsonSerializa
      *
      * @param SerializeLinkType::* $type
      * @return array<string,int|string>
-     * @see SerializeLinkType
      */
     public function toLink(int $type = SerializeLinkType::DEFAULT, bool $compact = true): array;
 

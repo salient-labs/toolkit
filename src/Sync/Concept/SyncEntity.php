@@ -219,7 +219,7 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
     /**
      * @inheritDoc
      */
-    final public static function withDefaultProvider(?IContainer $container = null): ISyncEntityProvider
+    final public static function withDefaultProvider(?IContainer $container = null, ?ISyncContext $context = null): ISyncEntityProvider
     {
         return static::defaultProvider()->with(static::class);
     }
@@ -385,15 +385,26 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
      *
      * @param int|string|int[]|string[] $deferred Either an entity ID or a list
      * of entity IDs.
-     * @param mixed $replace The variable to replace when the entity or list of
-     * entities is resolved.
+     * @param array<ISyncEntity|DeferredSyncEntity>|ISyncEntity|DeferredSyncEntity|null $replace
+     * The variable to replace when the entity or list of entities is resolved.
      * @param class-string<ISyncEntity>|null $entity The entity to instantiate.
      * If `null`, `static::class` is used.
      */
     final protected function defer($deferred, &$replace, ?string $entity = null): void
     {
         if (!$this->Provider || !$this->Context) {
-            throw new LogicException('Cannot defer without a provider and context');
+            throw new LogicException('Cannot defer without provider and context');
+        }
+
+        if (is_array($deferred)) {
+            DeferredSyncEntity::deferList(
+                $this->Provider,
+                $this->Context->push($this),
+                $entity ?? static::class,
+                $deferred,
+                $replace,
+            );
+            return;
         }
 
         DeferredSyncEntity::defer(
@@ -401,7 +412,7 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
             $this->Context->push($this),
             $entity ?? static::class,
             $deferred,
-            $replace
+            $replace,
         );
     }
 
@@ -620,12 +631,18 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
         return $array;
     }
 
+    /**
+     * @inheritDoc
+     */
     final public static function setEntityTypeId(int $entityTypeId): void
     {
         self::$EntityTypeId[static::class] = $entityTypeId;
     }
 
-    final public static function entityTypeId(): ?int
+    /**
+     * @inheritDoc
+     */
+    final public static function getEntityTypeId(): ?int
     {
         return self::$EntityTypeId[static::class] ?? null;
     }
@@ -680,6 +697,11 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
             self::_provideList($list, $provider, $conformity, $context)
         );
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function postLoad(): void {}
 
     /**
      * @param iterable<array-key,mixed[]> $list

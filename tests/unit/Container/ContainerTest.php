@@ -250,9 +250,9 @@ trait TestTrait
 
     protected ?string $Service = null;
 
-    public function service()
+    public function service(): string
     {
-        return $this->Service;
+        return $this->Service ?? static::class;
     }
 
     public function app(): IContainer
@@ -275,12 +275,12 @@ trait TestTrait
         return $this;
     }
 
-    public function setService(string $id)
+    public function setService(string $service)
     {
         if ($this->Service) {
             throw new RuntimeException('setService already called');
         }
-        $this->Service = $id;
+        $this->Service = $service;
 
         return $this;
     }
