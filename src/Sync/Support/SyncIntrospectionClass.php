@@ -182,7 +182,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
 
                         return;
                     }
-                    $this->SyncOperationMethods[$method] = $_method->name;
+                    $this->SyncOperationMethods[$method] = $_method->getName();
 
                     return;
                 }

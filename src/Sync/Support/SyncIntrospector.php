@@ -90,6 +90,10 @@ final class SyncIntrospector extends Introspector
         return null;
     }
 
+    /**
+     * @param class-string<TClass> $class
+     * @return SyncIntrospectionClass<TClass>
+     */
     private function getIntrospectionClass(string $class): SyncIntrospectionClass
     {
         return new SyncIntrospectionClass($class);
@@ -222,7 +226,7 @@ final class SyncIntrospector extends Introspector
      *   {@see SyncOperation} via a method
      *
      * @template T of ISyncEntity
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @param class-string<T>|self<T,TIntrospectionClass<T>> $entity
      * @return Closure(ISyncContext, mixed...)|null
      */
@@ -338,13 +342,25 @@ final class SyncIntrospector extends Introspector
             // Require a list of values if the key is plural (`_ids` as opposed
             // to `_id`)
             $list = (bool) $matches[2];
+            // Ignore if the property or magic method has no relationship with
+            // other classes
+            $relationship = $list
+                ? ($this->_Class->OneToManyRelationships[$match] ?? null)
+                : ($this->_Class->OneToOneRelationships[$match] ?? null);
+            if ($relationship === null ||
+                    !is_a($relationship, ISyncEntity::class, true)) {
+                continue;
+            }
+            // If $match doesn't resolve to a declared property, it will resolve
+            // to a magic method
+            $property = $this->_Class->Properties[$match] ?? $match;
             $closures[$match] =
                 function (
                     array $data,
                     $entity,
                     ?IProvider $provider,
                     ?IProviderContext $context
-                ) use ($key, $match, $list): void {
+                ) use ($key, $match, $list, $relationship, $property): void {
                     if (!($isList = Test::isListArray($data[$key])) && $list) {
                         $entity->{$key} = $data[$key];
                         return;
@@ -358,10 +374,10 @@ final class SyncIntrospector extends Introspector
                         return;
                     }
                     if ($isList) {
-                        DeferredSyncEntity::deferList($provider, $context, [$entity, $match], $data[$key]);
+                        DeferredSyncEntity::deferList($provider, $context, $relationship, $data[$key], $entity->{$property});
                         return;
                     }
-                    DeferredSyncEntity::defer($provider, $context, [$entity, $match], $data[$key]);
+                    DeferredSyncEntity::defer($provider, $context, $relationship, $data[$key], $entity->{$property});
                 };
             // Prevent duplication of the key as a meta value
             unset($keys[$normalisedKey]);
@@ -423,14 +439,14 @@ final class SyncIntrospector extends Introspector
                 }
                 $store = $provider->store();
                 $providerId = $provider->getProviderId();
-                $obj = $store->getEntity($providerId, $entityType, $id);
+                $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $context);
                 if ($obj) {
                     $obj = $existingUpdater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
                     return $obj;
                 }
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
-                $store->entity($providerId, $entityType, $id, $obj);
+                $store->entity($providerId, $service ?? $entityType, $id, $obj);
                 return $obj;
             };
         }
@@ -439,11 +455,17 @@ final class SyncIntrospector extends Introspector
         return $closure;
     }
 
+    /**
+     * @template T of ISyncEntity
+     * @param SyncOperation::* $operation
+     * @param SyncIntrospector<T,SyncIntrospectionClass<T>> $entity
+     */
     private function getSyncOperationMethod(int $operation, SyncIntrospector $entity): ?string
     {
         $_entity = $entity->_Class;
         $noun = strtolower($_entity->EntityNoun);
         $plural = strtolower($_entity->EntityPlural);
+        $methods = [];
 
         if ($plural) {
             switch ($operation) {
@@ -505,7 +527,7 @@ final class SyncIntrospector extends Introspector
 
         $methods = array_intersect_key(
             $this->_Class->SyncOperationMethods,
-            array_flip($methods ?? [])
+            array_flip($methods)
         );
         if (count($methods) > 1) {
             throw new LogicException('Too many implementations: ' . implode(', ', $methods));

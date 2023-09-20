@@ -14,6 +14,7 @@ use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Convert;
 use Closure;
+use LogicException;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -706,7 +707,18 @@ class Introspector
                     throw new UnexpectedValueException('$context cannot be null when $provider is not null');
                 }
                 /** @var IProvidable<IProvider,IProviderContext> $obj */
-                $obj = $obj->setProvider($provider)->setContext($context);
+                $currentProvider = $obj->provider();
+                if ($currentProvider === null) {
+                    $obj = $obj->setProvider($provider);
+                } elseif ($currentProvider !== $provider) {
+                    throw new LogicException(sprintf(
+                        '%s has wrong provider (%s expected): %s',
+                        get_class($obj),
+                        $provider->name(),
+                        $currentProvider->name(),
+                    ));
+                }
+                $obj = $obj->setContext($context);
             }
 
             // Ditto for `setParent()`

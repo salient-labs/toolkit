@@ -17,7 +17,8 @@ interface ISyncEntityProvider
      * Perform an arbitrary sync operation on one or more backend entities
      *
      * @internal
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
+     * @param mixed ...$args
      * @return FluentIteratorInterface<array-key,TEntity>|TEntity
      * @phpstan-return (
      *     $operation is SyncOperation::*_LIST
@@ -31,6 +32,7 @@ interface ISyncEntityProvider
      * Add an entity to the backend
      *
      * @param TEntity $entity
+     * @param mixed ...$args
      * @return TEntity
      */
     public function create($entity, ...$args): ISyncEntity;
@@ -39,6 +41,7 @@ interface ISyncEntityProvider
      * Get an entity from the backend
      *
      * @param int|string|null $id
+     * @param mixed ...$args
      * @return TEntity
      */
     public function get($id, ...$args): ISyncEntity;
@@ -47,6 +50,7 @@ interface ISyncEntityProvider
      * Update an entity in the backend
      *
      * @param TEntity $entity
+     * @param mixed ...$args
      * @return TEntity
      */
     public function update($entity, ...$args): ISyncEntity;
@@ -55,6 +59,7 @@ interface ISyncEntityProvider
      * Delete an entity from the backend
      *
      * @param TEntity $entity
+     * @param mixed ...$args
      * @return TEntity
      */
     public function delete($entity, ...$args): ISyncEntity;
@@ -63,6 +68,7 @@ interface ISyncEntityProvider
      * Add a list of entities to the backend
      *
      * @param iterable<TEntity> $entities
+     * @param mixed ...$args
      * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function createList(iterable $entities, ...$args): FluentIteratorInterface;
@@ -70,6 +76,7 @@ interface ISyncEntityProvider
     /**
      * Get a list of entities from the backend
      *
+     * @param mixed ...$args
      * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function getList(...$args): FluentIteratorInterface;
@@ -78,6 +85,7 @@ interface ISyncEntityProvider
      * Update a list of entities in the backend
      *
      * @param iterable<TEntity> $entities
+     * @param mixed ...$args
      * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function updateList(iterable $entities, ...$args): FluentIteratorInterface;
@@ -86,6 +94,7 @@ interface ISyncEntityProvider
      * Delete a list of entities from the backend
      *
      * @param iterable<TEntity> $entities
+     * @param mixed ...$args
      * @return FluentIteratorInterface<array-key,TEntity>
      */
     public function deleteList(iterable $entities, ...$args): FluentIteratorInterface;
@@ -95,7 +104,8 @@ interface ISyncEntityProvider
      * return an array
      *
      * @internal
-     * @param int&SyncOperation::*_LIST $operation
+     * @param SyncOperation::*_LIST $operation
+     * @param mixed ...$args
      * @return array<TEntity>
      */
     public function runA(int $operation, ...$args): array;
@@ -104,6 +114,7 @@ interface ISyncEntityProvider
      * Add a list of entities to the backend and return an array
      *
      * @param iterable<TEntity> $entities
+     * @param mixed ...$args
      * @return array<TEntity>
      */
     public function createListA(iterable $entities, ...$args): array;
@@ -111,6 +122,7 @@ interface ISyncEntityProvider
     /**
      * Get a list of entities from the backend as an array
      *
+     * @param mixed ...$args
      * @return array<TEntity>
      */
     public function getListA(...$args): array;
@@ -119,6 +131,7 @@ interface ISyncEntityProvider
      * Update a list of entities in the backend and return an array
      *
      * @param iterable<TEntity> $entities
+     * @param mixed ...$args
      * @return array<TEntity>
      */
     public function updateListA(iterable $entities, ...$args): array;
@@ -127,6 +140,7 @@ interface ISyncEntityProvider
      * Delete a list of entities from the backend and return an array
      *
      * @param iterable<TEntity> $entities
+     * @param mixed ...$args
      * @return array<TEntity>
      */
     public function deleteListA(iterable $entities, ...$args): array;
@@ -134,6 +148,7 @@ interface ISyncEntityProvider
     /**
      * Use a property of the entity class to resolve names to entities
      *
+     * @return ISyncEntityResolver<TEntity>
      */
     public function getResolver(string $nameProperty): ISyncEntityResolver;
 

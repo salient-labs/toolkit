@@ -11,9 +11,11 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use LogicException;
 
 /**
+ * The promise of a sync entity that hasn't been created yet
+ *
  * @property-read ISyncProvider $Provider
- * @property-read ISyncContext $Context
- * @property-read class-string<ISyncEntity>|array{ISyncEntity,string} $Entity
+ * @property-read ISyncContext|null $Context
+ * @property-read class-string<ISyncEntity>|null $Entity
  * @property-read int|string $Deferred
  */
 final class DeferredSyncEntity implements IReadable
@@ -21,37 +23,53 @@ final class DeferredSyncEntity implements IReadable
     use TFullyReadable;
 
     /**
+     * The provider servicing the entity
+     *
      * @var ISyncProvider
      */
     protected $Provider;
 
     /**
-     * @var ISyncContext
+     * The context in which the entity is being serviced
+     *
+     * @var ISyncContext|null
      */
     protected $Context;
 
     /**
-     * @var class-string<ISyncEntity>|array{ISyncEntity,string}
+     * The entity to instantiate, or `null` if the receiving entity is
+     * responsible for resolving the deferred entity
+     *
+     * @var class-string<ISyncEntity>|null
      */
     protected $Entity;
 
     /**
+     * The identifier of the deferred entity
+     *
      * @var int|string
      */
     protected $Deferred;
 
     /**
-     * @var mixed
+     * @var ISyncEntity|DeferredSyncEntity|null
      */
     private $Replace;
 
     /**
-     * @param class-string<ISyncEntity>|array{ISyncEntity,string} $entity
+     * Creates a new DeferredSyncEntity object
+     *
+     * @param class-string<ISyncEntity> $entity
      * @param int|string $deferred
-     * @param mixed $replace
+     * @param ISyncEntity|DeferredSyncEntity|null $replace
      */
-    private function __construct(ISyncProvider $provider, ISyncContext $context, $entity, $deferred, &$replace)
-    {
+    private function __construct(
+        ISyncProvider $provider,
+        ?ISyncContext $context,
+        string $entity,
+        $deferred,
+        &$replace
+    ) {
         $this->Provider = $provider;
         $this->Context = $context;
         $this->Entity = $entity;
@@ -59,15 +77,13 @@ final class DeferredSyncEntity implements IReadable
         $this->Replace = &$replace;
         $this->Replace = $this;
 
-        if (is_string($entity)) {
-            $this->store()
-                ->entityType($entity)
-                ->deferredEntity($this->Provider->getProviderId(), $entity, $deferred, $this);
-        }
+        $this->store()
+            ->entityType($entity)
+            ->deferredEntity($this->Provider->getProviderId(), $entity, $deferred, $this);
     }
 
     /**
-     * Get the deferred entity's canonical location as an array
+     * Get the deferred entity's canonical location in the form of an array
      *
      * @param SerializeLinkType::* $type
      * @return array<string,int|string>
@@ -91,6 +107,10 @@ final class DeferredSyncEntity implements IReadable
         throw new LogicException("Invalid link type: $type");
     }
 
+    /**
+     * Get the deferred entity's canonical location in the form of a URI
+     *
+     */
     public function uri(bool $compact = true): string
     {
         return sprintf('%s/%s', $this->typeUri($compact), $this->Deferred);
@@ -98,15 +118,17 @@ final class DeferredSyncEntity implements IReadable
 
     private function typeUri(bool $compact): string
     {
-        if (is_array($this->Entity)) {
-            $class = get_class($this->Entity[0]);
-            return ($this->store()->getEntityTypeUri($class, $compact)
-                ?: '/' . str_replace('\\', '/', ltrim($class, '\\'))) . '.' . $this->Entity[1];
+        if ($this->Entity === null) {
+            return '';
         }
         return $this->store()->getEntityTypeUri($this->Entity, $compact)
             ?: '/' . str_replace('\\', '/', ltrim($this->Entity, '\\'));
     }
 
+    /**
+     * Resolve the deferred entity
+     *
+     */
     public function replace(ISyncEntity $entity): void
     {
         $this->Replace = $entity;
@@ -114,59 +136,46 @@ final class DeferredSyncEntity implements IReadable
     }
 
     /**
-     * @param class-string<ISyncEntity>|array{ISyncEntity,string} $entity Either
-     * the entity to instantiate, or if unknown, an array containing the
-     * instance and property name being deferred.
-     * @param int|string|int[]|string[] $deferred An entity ID or list thereof.
-     * @param mixed $replace Ignored if `$entity` provides an instance to
-     * modify, otherwise refers to the variable, property or array element to
-     * replace when the entity is resolved. Do not assign anything else to it
-     * after calling this method.
+     * Defer creation of an entity
+     *
+     * @param class-string<ISyncEntity> $entity The entity to instantiate.
+     * @param int|string $deferredId The deferred entity's identifier.
+     * @param ISyncEntity|DeferredSyncEntity|null $replace Refers to the
+     * variable, property or array element to replace when the entity is
+     * resolved. Do not assign anything else to it after calling this method.
      */
     public static function defer(
         ISyncProvider $provider,
-        ISyncContext $context,
-        $entity,
-        $deferred,
+        ?ISyncContext $context,
+        string $entity,
+        $deferredId,
         &$replace = null
     ): void {
-        if (is_array($deferred)) {
-            self::deferList($provider, $context, $entity, $deferred, $replace);
-            return;
-        }
-        new self($provider, $context, $entity, $deferred, $replace);
+        new self($provider, $context, $entity, $deferredId, $replace);
     }
 
     /**
-     * @param class-string<ISyncEntity>|array{ISyncEntity,string} $entity Either
-     * the entity to instantiate, or if unknown, an array containing the
-     * instance and property name being deferred.
-     * @param int[]|string[] $deferredList A list of entity IDs.
-     * @param mixed $replace Ignored if `$entity` provides an instance to
-     * modify, otherwise refers to the variable, property or array element to
-     * replace when the list is resolved. Do not assign anything else to it
-     * after calling this method.
+     * Defer creation of a list of entities
+     *
+     * @param class-string<ISyncEntity> $entity The entity to instantiate.
+     * @param int[]|string[] $deferredIds A list of deferred entity identifiers.
+     * @param array<ISyncEntity|DeferredSyncEntity>|null $replace Refers to the
+     * variable, property or array element to replace when the entities are
+     * resolved. Do not assign anything else to it after calling this method.
      */
     public static function deferList(
         ISyncProvider $provider,
-        ISyncContext $context,
-        $entity,
-        array $deferredList,
+        ?ISyncContext $context,
+        string $entity,
+        array $deferredIds,
         &$replace = null
     ): void {
         $i = -1;
         $list = [];
-        foreach ($deferredList as $deferred) {
+        foreach ($deferredIds as $deferredId) {
             $list[++$i] = null;
-            new self($provider, $context, $entity, $deferred, $list[$i]);
+            new self($provider, $context, $entity, $deferredId, $list[$i]);
         }
-
-        if (is_array($entity)) {
-            [$entity, $property] = $entity;
-            $entity->$property = $list;
-            return;
-        }
-
         $replace = $list;
     }
 

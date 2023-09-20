@@ -93,7 +93,8 @@ final class SyncEntityProvider implements ISyncEntityProvider
     }
 
     /**
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
+     * @param mixed ...$args
      * @return iterable<TEntity>|TEntity
      * @phpstan-return (
      *     $operation is SyncOperation::*_LIST
@@ -142,9 +143,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * Defer retrieval of an entity from the backend
      *
      * @param int|string $id
-     * @param mixed $replace A reference to the variable, property or array
-     * element to replace when the entity is resolved. Do not assign anything
-     * else to it after calling this method.
+     * @param ISyncEntity|DeferredSyncEntity|null $replace A reference to the
+     * variable, property or array element to replace when the entity is
+     * resolved. Do not assign anything else to it after calling this method.
      */
     public function defer($id, &$replace): void
     {
@@ -155,9 +156,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * Defer retrieval of a list of entities from the backend
      *
      * @param int[]|string[] $idList
-     * @param mixed $replace A reference to the variable, property or array
-     * element to replace when the list is resolved. Do not assign anything else
-     * to it after calling this method.
+     * @param array<ISyncEntity|DeferredSyncEntity>|null $replace A reference to
+     * the variable, property or array element to replace when the list is
+     * resolved. Do not assign anything else to it after calling this method.
      */
     public function deferList(array $idList, &$replace): void
     {
@@ -441,6 +442,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * Use a property of the entity class to resolve names to entities
      *
+     * @return SyncEntityResolver<TEntity>
      */
     public function getResolver(string $nameProperty): SyncEntityResolver
     {
@@ -453,14 +455,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
-     * @param int|null $algorithm Overrides the default string comparison
-     * algorithm. Either {@see SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN}
-     * or {@see SyncEntityFuzzyResolver::ALGORITHM_SIMILAR_TEXT}.
+     * @param SyncEntityFuzzyResolver::* $algorithm
+     * @return SyncEntityFuzzyResolver<TEntity>
      */
     public function getFuzzyResolver(
         string $nameProperty,
         ?string $weightProperty,
-        ?int $algorithm = null,
+        int $algorithm = SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN,
         ?float $uncertaintyThreshold = null
     ): SyncEntityFuzzyResolver {
         return new SyncEntityFuzzyResolver($this, $nameProperty, $weightProperty, $algorithm, $uncertaintyThreshold);

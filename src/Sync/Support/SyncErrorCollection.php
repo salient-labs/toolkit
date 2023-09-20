@@ -21,6 +21,7 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
     /**
      * Get a JSON:API-compatible representation of the errors
      *
+     * @return array<array{code:string,title:string,detail:string,meta:array{level:string,count:int,seen:int,values:mixed[]}}>
      */
     public function toSummary(): array
     {
@@ -75,6 +76,9 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
         return implode("\n", $lines);
     }
 
+    /**
+     * @return array<array{code:string,title:string,detail:string,meta:array{level:string,count:int,seen:int,values:mixed[]}}>
+     */
     public function jsonSerialize(): array
     {
         return $this->toSummary();

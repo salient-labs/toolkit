@@ -61,6 +61,17 @@ trait TProvidable
     }
 
     /**
+     * @return TProvider
+     */
+    final public function requireProvider(): IProvider
+    {
+        if (!$this->Provider) {
+            throw new LogicException('Provider required');
+        }
+        return $this->Provider;
+    }
+
+    /**
      * @param TProviderContext $context
      * @return $this
      */
@@ -80,12 +91,12 @@ trait TProvidable
     }
 
     /**
-     * @param class-string $id
+     * @param class-string $service
      * @return $this
      */
-    final public function setService(string $id)
+    final public function setService(string $service)
     {
-        $this->Service = $id;
+        $this->Service = $service;
 
         return $this;
     }

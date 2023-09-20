@@ -23,7 +23,7 @@ final class SyncFilterPolicy extends Enumeration
     /**
      * Throw an exception if there are unclaimed filter values
      *
-     * A {@see SyncFilterPolicyViolationException} is raised and the request is
+     * A {@see SyncFilterPolicyViolationException} is thrown and the request is
      * not passed to the provider.
      *
      * This is the default policy.
@@ -36,7 +36,7 @@ final class SyncFilterPolicy extends Enumeration
      * The request is not passed to the provider. An empty array (`[]`) is
      * returned to the caller for {@see SyncOperation::CREATE_LIST},
      * {@see SyncOperation::READ_LIST}, {@see SyncOperation::UPDATE_LIST} and
-     * {@see SyncOperation::DELETE_LIST}, or `null` for other operations.
+     * {@see SyncOperation::DELETE_LIST}, otherwise `null` is returned.
      */
     public const RETURN_EMPTY = 2;
 

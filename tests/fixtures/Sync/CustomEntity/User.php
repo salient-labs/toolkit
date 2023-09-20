@@ -6,12 +6,12 @@ use Lkrms\Tests\Sync\Entity\Post;
 
 class User extends \Lkrms\Tests\Sync\Entity\User
 {
-    public function _setId($value)
+    public function postLoad(): void
     {
-        /** @var iterable<Post> */
-        $posts = Post::withDefaultProvider()->getList(['user' => $value]);
-
-        $this->Id = $value;
-        $this->Posts = iterator_to_array($posts);
+        if ($this->Posts === null &&
+                $this->Id !== null &&
+                ($provider = $this->provider())) {
+            $this->Posts = $provider->with(Post::class)->getListA(['user' => $this->Id]);
+        }
     }
 }

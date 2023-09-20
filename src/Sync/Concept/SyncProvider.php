@@ -107,6 +107,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
     /**
      * Get a new pipeline bound to the provider's container
      *
+     * @return IPipeline<mixed,mixed,mixed>
      */
     final protected function pipeline(): IPipeline
     {
@@ -159,6 +160,10 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
         );
     }
 
+    /**
+     * @param mixed[] $arguments
+     * @return mixed
+     */
     final public function __call(string $name, array $arguments)
     {
         if (($closure = $this->MagicMethodClosures[$name = strtolower($name)] ?? false) === false) {

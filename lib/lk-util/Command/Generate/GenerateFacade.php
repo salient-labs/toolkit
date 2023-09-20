@@ -339,10 +339,10 @@ final class GenerateFacade extends GenerateCommand
             $code = [sprintf(
                 '%sstatic::getInstance()->%s(%s);',
                 $return,
-                $_method->name,
+                $_method->getName(),
                 implode(', ', array_map(
                     fn(ReflectionParameter $p) =>
-                        ($p->isVariadic() ? '...' : '') . "\${$p->name}",
+                        ($p->isVariadic() ? '...' : '') . '$' . $p->getName(),
                     $_params
                 ))
             )];
@@ -350,7 +350,7 @@ final class GenerateFacade extends GenerateCommand
             array_push(
                 $lines,
                 '',
-                ...$this->generateMethod($_method->name, $code, $_params, $_method->getReturnType(), $docBlock)
+                ...$this->generateMethod($_method->getName(), $code, $_params, $_method->getReturnType(), $docBlock)
             );
         }
 

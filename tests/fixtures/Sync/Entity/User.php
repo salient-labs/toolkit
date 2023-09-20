@@ -2,6 +2,7 @@
 
 namespace Lkrms\Tests\Sync\Entity;
 
+use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\SyncEntity;
 
 /**
@@ -56,4 +57,11 @@ class User extends SyncEntity
      * @var Post[]|null
      */
     public $Posts;
+
+    public static function getRelationships(): array
+    {
+        return [
+            'Posts' => [RelationshipType::ONE_TO_MANY => Post::class],
+        ];
+    }
 }

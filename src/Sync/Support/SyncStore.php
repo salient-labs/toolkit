@@ -10,11 +10,13 @@ use Lkrms\Facade\Event;
 use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncClassResolver;
+use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Lkrms\Sync\Support\SyncErrorBuilder as ErrorBuilder;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Pcre;
 use LogicException;
 use ReflectionClass;
 use RuntimeException;
@@ -63,7 +65,7 @@ final class SyncStore extends SqliteStore
     private $EntityTypes = [];
 
     /**
-     * Prefix => PHP namespace
+     * Prefix => lowercase PHP namespace
      *
      * @var array<string,string>|null
      */
@@ -86,7 +88,7 @@ final class SyncStore extends SqliteStore
     /**
      * Provider ID => entity type ID => entity ID => entity
      *
-     * @var array<int,array<int,array<int|string,ISyncEntity>>>
+     * @var array<int,array<int,array<int|string,ISyncEntity|false>>>
      */
     private $Entities;
 
@@ -139,7 +141,7 @@ final class SyncStore extends SqliteStore
     /**
      * Deferred entity type registrations
      *
-     * @var array<class-string<ISyncEntity>,true>
+     * @var class-string<ISyncEntity>[]
      */
     private $DeferredEntityTypes = [];
 
@@ -333,7 +335,7 @@ final class SyncStore extends SqliteStore
         $class = get_class($provider);
         $hash = Compute::binaryHash($class, ...$provider->getBackendIdentifier());
 
-        if (($this->ProviderMap[$hash] ?? null) !== null) {
+        if (isset($this->ProviderMap[$hash])) {
             throw new LogicException(sprintf('Provider already registered: %s', $class));
         }
 
@@ -403,6 +405,9 @@ final class SyncStore extends SqliteStore
     /**
      * Register a sync entity type and set its ID (unless already registered)
      *
+     * For performance reasons, `$entity` is case-sensitive and must exactly
+     * match the declared name of the sync entity class.
+     *
      * If a sync run has started, the entity type is registered immediately and
      * its ID is passed to {@see ISyncEntity::setEntityTypeId()} before
      * {@see SyncStore::entityType()} returns. Otherwise, registration is
@@ -413,28 +418,31 @@ final class SyncStore extends SqliteStore
      */
     public function entityType(string $entity)
     {
-        if (isset($this->EntityTypes[$entity]) ||
-                ($this->RunId === null && isset($this->DeferredEntityTypes[$entity]))) {
+        // Don't start a run just to register an entity type
+        if ($this->RunId === null) {
+            $this->DeferredEntityTypes[] = $entity;
+            return $this;
+        }
+
+        if (isset($this->EntityTypes[$entity])) {
             return $this;
         }
 
         $class = new ReflectionClass($entity);
-        $name = $class->getName();
 
-        if ($name !== $entity &&
-            (isset($this->EntityTypes[$name]) ||
-                ($this->RunId === null && isset($this->DeferredEntityTypes[$name])))) {
-            return $this;
+        if ($entity !== $class->getName()) {
+            throw new LogicException(sprintf(
+                'Not an exact match for declared class (%s expected): %s',
+                $class->getName(),
+                $entity,
+            ));
         }
 
         if (!$class->implementsInterface(ISyncEntity::class)) {
-            throw new LogicException(sprintf('Does not implement ISyncEntity: %s', $entity));
-        }
-
-        // Don't start a run just to register an entity type
-        if ($this->RunId === null) {
-            $this->DeferredEntityTypes[$name] = true;
-            return $this;
+            throw new LogicException(sprintf(
+                'Does not implement ISyncEntity: %s',
+                $entity,
+            ));
         }
 
         // Update `last_seen` if the entity type is already in the database
@@ -449,7 +457,7 @@ final class SyncStore extends SqliteStore
               last_seen = CURRENT_TIMESTAMP;
             SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':entity_type_class', $name, SQLITE3_TEXT);
+        $stmt->bindValue(':entity_type_class', $entity, SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
@@ -462,7 +470,7 @@ final class SyncStore extends SqliteStore
               entity_type_class = :entity_type_class;
             SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':entity_type_class', $name, SQLITE3_TEXT);
+        $stmt->bindValue(':entity_type_class', $entity, SQLITE3_TEXT);
         $result = $stmt->execute();
         $row = $result->fetchArray(SQLITE3_NUM);
         $stmt->close();
@@ -472,7 +480,7 @@ final class SyncStore extends SqliteStore
         }
 
         $class->getMethod('setEntityTypeId')->invoke(null, $row[0]);
-        $this->EntityTypes[$name] = $row[0];
+        $this->EntityTypes[$entity] = $row[0];
 
         return $this;
     }
@@ -499,18 +507,22 @@ final class SyncStore extends SqliteStore
      */
     public function namespace(string $prefix, string $uri, string $namespace, ?string $resolver = null)
     {
-        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9+.-]*$/', $prefix)) {
-            throw new LogicException(sprintf('Invalid prefix: %s', $prefix));
-        }
-
         $prefix = strtolower($prefix);
-        if (($this->RegisteredNamespaces[$prefix] ?? null) ||
-                ($this->RunId === null && ($this->DeferredNamespaces[$prefix] ?? null))) {
+        if (isset($this->RegisteredNamespaces[$prefix]) ||
+                ($this->RunId === null && isset($this->DeferredNamespaces[$prefix]))) {
             throw new LogicException(sprintf('Prefix already registered: %s', $prefix));
         }
 
-        $uri = rtrim($uri, '/') . '/';
-        $namespace = trim($namespace, '\\') . '\\';
+        // Namespaces are validated and normalised before deferral because
+        // `classToNamespace()` resolves entity classes without starting a run.
+        // `$DeferredNamespaces` is used to ensure it's only done once.
+        if (!isset($this->DeferredNamespaces[$prefix])) {
+            if (!Pcre::match('/^[a-zA-Z][a-zA-Z0-9+.-]*$/', $prefix)) {
+                throw new LogicException(sprintf('Invalid prefix: %s', $prefix));
+            }
+            $uri = rtrim($uri, '/') . '/';
+            $namespace = trim($namespace, '\\') . '\\';
+        }
 
         // Don't start a run just to register a namespace
         if ($this->RunId === null) {
@@ -566,7 +578,8 @@ final class SyncStore extends SqliteStore
      */
     public function getEntityTypeUri(string $entity, bool $compact = true): ?string
     {
-        if (!($prefix = $this->classToNamespace($entity, $uri, $namespace))) {
+        $prefix = $this->classToNamespace($entity, $uri, $namespace);
+        if ($prefix === null) {
             return null;
         }
         $entity = str_replace('\\', '/', substr(ltrim($entity, '\\'), strlen($namespace)));
@@ -597,7 +610,7 @@ final class SyncStore extends SqliteStore
      */
     public function getNamespaceResolver(string $class): ?string
     {
-        if (!$this->classToNamespace($class, $uri, $namespace, $resolver)) {
+        if ($this->classToNamespace($class, $uri, $namespace, $resolver) === null) {
             return null;
         }
 
@@ -625,11 +638,9 @@ final class SyncStore extends SqliteStore
                     $uri = $_uri;
                     $namespace = $_namespace;
                     $resolver = $_resolver;
-
                     return $prefix;
                 }
             }
-
             return null;
         }
 
@@ -638,7 +649,6 @@ final class SyncStore extends SqliteStore
                 $uri = $this->NamespaceUrisByPrefix[$prefix];
                 $namespace = $this->NamespacesByPrefix[$prefix];
                 $resolver = $this->NamespaceResolversByPrefix[$prefix] ?? null;
-
                 return $prefix;
             }
         }
@@ -658,10 +668,6 @@ final class SyncStore extends SqliteStore
      */
     public function entity(int $providerId, string $entityType, $entityId, ISyncEntity $entity)
     {
-        if ($this->RunId === null) {
-            $this->check();
-        }
-
         $entityTypeId = $this->EntityTypes[$entityType];
         if (isset($this->Entities[$providerId][$entityTypeId][$entityId])) {
             throw new LogicException('Entity already registered');
@@ -682,15 +688,53 @@ final class SyncStore extends SqliteStore
     }
 
     /**
+     * Pre-register a sync entity
+     *
+     * To mitigate race conditions between creation and registration of entities
+     * (e.g. when an entity tries to hydrate itself with entities that have been
+     * instantiated elsewhere in the object graph but aren't registered yet), an
+     * entity can be registered before instantiation to ensure nested references
+     * to itself resolve to one instance of the entity.
+     *
+     * Between {@see SyncStore::reserveEntity()} and {@see SyncStore::entity()},
+     * {@see SyncStore::getEntity()} returns a {@see DeferredSyncEntity} for any
+     * requests with the same provider ID, entity type, and entity ID.
+     *
+     * @param class-string<ISyncEntity> $entityType
+     * @param int|string $entityId
+     * @return $this
+     */
+    public function reserveEntity(int $providerId, string $entityType, $entityId)
+    {
+        $entityTypeId = $this->EntityTypes[$entityType];
+        if (isset($this->Entities[$providerId][$entityTypeId][$entityId])) {
+            throw new LogicException('Entity already registered');
+        }
+        $this->Entities[$providerId][$entityTypeId][$entityId] = false;
+
+        return $this;
+    }
+
+    /**
      * Get a previously registered sync entity
      *
      * @param class-string<ISyncEntity> $entityType
      * @param int|string $entityId
+     * @return ISyncEntity|DeferredSyncEntity|null
      */
-    public function getEntity(int $providerId, string $entityType, $entityId): ?ISyncEntity
+    public function getEntity(int $providerId, string $entityType, $entityId, ?ISyncContext $context = null)
     {
         $entityTypeId = $this->EntityTypes[$entityType];
-        return $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
+        $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
+        if ($entity === false) {
+            $deferred = null;
+            $provider = $this->Providers[$providerId];
+            DeferredSyncEntity::defer(
+                $provider, $context, $entityType, $entityId, $deferred
+            );
+            return $deferred;
+        }
+        return $entity;
     }
 
     /**
@@ -698,7 +742,7 @@ final class SyncStore extends SqliteStore
      *
      * If an entity with the same provider ID, entity type, and entity ID has
      * already been registered, `$deferred` is resolved immediately, otherwise
-     * it is added to the provider's deferred entity queue.
+     * it is added to the deferred entity queue.
      *
      * @param class-string<ISyncEntity> $entityType
      * @param int|string $entityId
@@ -706,13 +750,9 @@ final class SyncStore extends SqliteStore
      */
     public function deferredEntity(int $providerId, string $entityType, $entityId, DeferredSyncEntity $deferred)
     {
-        if ($this->RunId === null) {
-            $this->check();
-        }
-
         $entityTypeId = $this->EntityTypes[$entityType];
         $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
-        if ($entity !== null) {
+        if ($entity) {
             $deferred->replace($entity);
             return $this;
         }
@@ -868,7 +908,7 @@ final class SyncStore extends SqliteStore
         }
         unset($this->DeferredProviders);
 
-        foreach (array_keys($this->DeferredEntityTypes) as $entity) {
+        foreach ($this->DeferredEntityTypes as $entity) {
             $this->entityType($entity);
         }
         unset($this->DeferredEntityTypes);

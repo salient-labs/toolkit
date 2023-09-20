@@ -411,7 +411,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     /**
      * Get a closure to perform a sync operation via HTTP
      *
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @return Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]
      */
     private function getHttpOperationClosure(int $operation): Closure
@@ -449,7 +449,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      * Run a sync operation closure prepared earlier
      *
      * @param (Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]) $httpClosure
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @param mixed ...$args
      * @return mixed[]
      */
@@ -485,7 +485,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
      *
      * @param mixed[] $response
      * @param TEntity[]|TEntity $requestPayload
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @return mixed[]
      */
     private function getRoundTripPayload($response, $requestPayload, int $operation)
@@ -507,7 +507,7 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
     }
 
     /**
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @return IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
      */
     private function getRoundTripPipeline(int $operation): IPipeline

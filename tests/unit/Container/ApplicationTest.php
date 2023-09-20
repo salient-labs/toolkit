@@ -13,6 +13,7 @@ final class ApplicationTest extends \Lkrms\Tests\TestCase
      */
     public function testPaths(): void
     {
+        // realpath provides cross-platform normalisation here
         $basePath = realpath(File::createTemporaryDirectory()) ?: '';
         $homeDir = realpath(Env::home()) ?: '';
         $this->assertDirectoryExists($basePath);
@@ -41,6 +42,7 @@ final class ApplicationTest extends \Lkrms\Tests\TestCase
         $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getDataPath(false));
         $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getLogPath(false));
         $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getTempPath(false));
+        $app->unload();
 
         File::pruneDirectory($basePath);
         rmdir($basePath);

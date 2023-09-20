@@ -51,7 +51,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * This method is called if `$operation` is found in
      * {@see SyncDefinition::$Operations}.
      *
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @phpstan-return (
      *     $operation is SyncOperation::READ
      *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
@@ -230,7 +230,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * Get a closure that uses the provider to perform a sync operation on the
      * entity
      *
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      */
     final public function getSyncOperationClosure(int $operation): ?Closure
     {
@@ -283,7 +283,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      *
      * Useful within overrides when a fallback implementation is required.
      *
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      * @see SyncDefinition::$Overrides
      */
     final public function getFallbackSyncOperationClosure(int $operation): ?Closure
@@ -371,8 +371,9 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     /**
      * Enforce the ignored filter policy
      *
-     * @param int&SyncOperation::* $operation
-     * @param mixed $empty
+     * @param SyncOperation::* $operation
+     * @param array{}|null $empty
+     *
      * @see SyncDefinition::$FilterPolicy
      */
     final protected function applyFilterPolicy(int $operation, ISyncContext $ctx, ?bool &$returnEmpty, &$empty): void
@@ -403,7 +404,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     }
 
     /**
-     * @param int&SyncOperation::* $operation
+     * @param SyncOperation::* $operation
      */
     private function getContextWithFilterCallback(int $operation, ISyncContext $ctx): ISyncContext
     {
