@@ -6,6 +6,7 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
@@ -20,6 +21,8 @@ use Lkrms\Support\Introspector;
 use Lkrms\Support\TokenExtractor;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
+use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
+use SebastianBergmann\Diff\Differ;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
@@ -40,6 +43,7 @@ abstract class GenerateCommand extends Command
     protected ?string $OutputDescription;
     protected ?bool $ToStdout;
     protected ?bool $ReplaceIfExists;
+    protected ?bool $Check;
     protected ?bool $NoMetaTags;
 
     /**
@@ -141,6 +145,10 @@ abstract class GenerateCommand extends Command
                 ->short('s')
                 ->description('Write to standard output')
                 ->bindTo($this->ToStdout),
+            CliOption::build()
+                ->long('check')
+                ->description('Fail if the output file should be replaced')
+                ->bindTo($this->Check),
             CliOption::build()
                 ->long('force')
                 ->short('f')
@@ -556,25 +564,46 @@ abstract class GenerateCommand extends Command
             $verb = null;
         } else {
             $file = sprintf('%s.php', $this->OutputClass);
+            $dir = Composer::getNamespacePath($this->OutputNamespace);
 
-            if ($dir = Composer::getNamespacePath($this->OutputNamespace)) {
-                File::maybeCreateDirectory($dir);
+            if ($dir !== null) {
+                if (!$this->Check) {
+                    File::maybeCreateDirectory($dir);
+                }
                 $file = $dir . '/' . $file;
             }
 
             if (file_exists($file)) {
-                if (rtrim(file_get_contents($file)) == rtrim($output)) {
-                    Console::log('Unchanged:', $file);
-
+                $input = file_get_contents($file);
+                if ($input === $output) {
+                    Console::log('Nothing to do:', $file);
+                    return;
+                }
+                if ($this->Check) {
+                    Console::info('Would replace', $file);
+                    Console::count(Level::ERROR);
+                    $this->setExitStatus(1);
                     return;
                 }
                 if (!$this->ReplaceIfExists) {
-                    Console::warn('File already exists:', $file);
-                    $file = substr($file, 0, -4) . '.generated.php';
+                    $basePath = Composer::getRootPackagePath();
+                    $relative = File::realpath($file);
+                    if (strpos($relative, $basePath) === 0) {
+                        $relative = substr($relative, strlen($basePath) + 1);
+                    }
+                    print (new Differ(new StrictUnifiedDiffOutputBuilder([
+                        'fromFile' => "a/$relative",
+                        'toFile' => "b/$relative",
+                    ])))->diff($input, $output);
+                    Console::info('Out of date:', $file);
+                    return;
                 }
-                if (file_exists($file)) {
-                    $verb = 'Replacing';
-                }
+                $verb = 'Replacing';
+            } elseif ($this->Check) {
+                Console::info('Would create', $file);
+                $this->setExitStatus(1);
+                Console::count(Level::ERROR);
+                return;
             }
         }
 

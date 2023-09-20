@@ -2,6 +2,7 @@
     "src": [
         "bin",
         "lib",
+        "scripts",
         "src",
         "tests",
         "bootstrap.php"

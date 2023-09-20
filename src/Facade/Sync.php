@@ -5,6 +5,7 @@ namespace Lkrms\Facade;
 use Lkrms\Concept\Facade;
 use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Contract\ISyncClassResolver;
+use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
@@ -26,7 +27,7 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static SyncStore entity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, ISyncEntity $entity) Register a sync entity (see {@see SyncStore::entity()})
  * @method static SyncStore entityType(class-string<ISyncEntity> $entity) Register a sync entity type and set its ID (unless already registered) (see {@see SyncStore::entityType()})
  * @method static SyncStore error(SyncError|ErrorBuilder $error, bool $deduplicate = false, bool $toConsole = false) Report an error that occurred during a sync operation
- * @method static ISyncEntity|null getEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId) Get a previously registered sync entity
+ * @method static ISyncEntity|DeferredSyncEntity|null getEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, ?ISyncContext $context = null) Get a previously registered sync entity
  * @method static string|null getEntityTypeNamespace(class-string<ISyncEntity> $entity) Get the namespace of a sync entity type (see {@see SyncStore::getEntityTypeNamespace()})
  * @method static string|null getEntityTypeUri(class-string<ISyncEntity> $entity, bool $compact = true) Get the canonical URI of a sync entity type (see {@see SyncStore::getEntityTypeUri()})
  * @method static SyncErrorCollection getErrors() Get sync operation errors recorded so far
@@ -38,6 +39,7 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static bool isOpen() Check if a database is open
  * @method static SyncStore namespace(string $prefix, string $uri, string $namespace, class-string<ISyncClassResolver>|null $resolver = null) Register a sync entity namespace (see {@see SyncStore::namespace()})
  * @method static SyncStore provider(ISyncProvider $provider) Register a sync provider and set its provider ID (see {@see SyncStore::provider()})
+ * @method static SyncStore reserveEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId) Pre-register a sync entity (see {@see SyncStore::reserveEntity()})
  *
  * @uses SyncStore
  *
