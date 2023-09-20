@@ -2,12 +2,13 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\IHierarchy;
 use LogicException;
 
 /**
  * Implements IHierarchy
  *
- * @see \Lkrms\Contract\IHierarchy
+ * @see IHierarchy
  */
 trait HasParent
 {

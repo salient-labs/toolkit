@@ -14,7 +14,7 @@ final class Pcre
      * A wrapper for preg_match()
      *
      * @param mixed[] $matches
-     * @param int-mask<0,PREG_OFFSET_CAPTURE,PREG_UNMATCHED_AS_NULL> $flags
+     * @param int-mask<0,\PREG_OFFSET_CAPTURE,\PREG_UNMATCHED_AS_NULL> $flags
      */
     public static function match(
         string $pattern,
@@ -35,7 +35,7 @@ final class Pcre
      * A wrapper for preg_match_all()
      *
      * @param mixed[] $matches
-     * @param int-mask<0,PREG_PATTERN_ORDER,PREG_SET_ORDER,PREG_OFFSET_CAPTURE,PREG_UNMATCHED_AS_NULL> $flags
+     * @param int-mask<0,\PREG_PATTERN_ORDER,\PREG_SET_ORDER,\PREG_OFFSET_CAPTURE,\PREG_UNMATCHED_AS_NULL> $flags
      */
     public static function matchAll(
         string $pattern,
@@ -127,7 +127,7 @@ final class Pcre
     /**
      * A wrapper for preg_split()
      *
-     * @param int-mask<0,PREG_SPLIT_NO_EMPTY,PREG_SPLIT_DELIM_CAPTURE,PREG_SPLIT_OFFSET_CAPTURE> $flags
+     * @param int-mask<0,\PREG_SPLIT_NO_EMPTY,\PREG_SPLIT_DELIM_CAPTURE,\PREG_SPLIT_OFFSET_CAPTURE> $flags
      * @return mixed[]
      */
     public static function split(

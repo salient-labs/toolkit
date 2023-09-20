@@ -26,7 +26,7 @@ use LogicException;
 abstract class SyncProvider extends Provider implements ISyncProvider, IService
 {
     /**
-     * Get a dependency subtitution map for the provider
+     * Get a dependency substitution map for the provider
      *
      * {@inheritDoc}
      *

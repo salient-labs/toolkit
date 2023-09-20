@@ -24,7 +24,7 @@ interface IService
     public static function getServices(): array;
 
     /**
-     * Get a dependency subtitution map for the class
+     * Get a dependency substitution map for the class
      *
      * Return an array that maps class or interface names to compatible
      * replacements. Substitutions are applied:
