@@ -6,8 +6,9 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Console\ConsoleWriter;
 use Lkrms\Container\Application;
 use Lkrms\Container\Container;
-use Lkrms\Curler\Curler;
 use Lkrms\Curler\Support\CurlerPage;
+use Lkrms\Curler\Curler;
+use Lkrms\Facade\Console;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\GenerateBuilder;
 use Lkrms\LkUtil\Command\Generate\GenerateFacade;
@@ -73,10 +74,22 @@ foreach ($class->getReflectionConstants() as $constant) {
     $app->env()->unset($constant->getValue());
 }
 
+$args = [
+    '--force',
+    '--no-meta',
+    ...array_slice($argv, 1),
+];
+
+$status = 0;
+
 foreach ($facades as $class => $facade) {
-    $generateFacade('-f', '-m', $class, $facade);
+    $status |= $generateFacade(...[...$args, $class, $facade]);
 }
 
 foreach ($builders as $class => $builder) {
-    $generateBuilder('-f', '-m', $class, $builder);
+    $status |= $generateBuilder(...[...$args, $class, $builder]);
 }
+
+Console::summary('Code generation completed');
+
+exit ($status);
