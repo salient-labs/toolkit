@@ -315,6 +315,50 @@ final class SyncIntrospector extends Introspector
             $customKeys = [self::ID_KEY => $idKey];
         }
 
+        // Check for relationships to honour by applying deferred entities
+        // instead of raw data
+        if ($this->_Class->IsRelatable &&
+                ($this->_Class->OneToOneRelationships || $this->_Class->OneToManyRelationships)) {
+            foreach ([
+                $this->_Class->OneToOneRelationships,
+                $this->_Class->OneToManyRelationships,
+            ] as $list => $relationships) {
+                $relationships = array_intersect_key($relationships, $keys);
+                if (!$relationships) {
+                    continue;
+                }
+                foreach ($relationships as $match => $relationship) {
+                    if (!is_a($relationship, ISyncEntity::class, true)) {
+                        continue;
+                    }
+                    $key = $keys[$match];
+                    $list = (bool) $list;
+                    // If $match doesn't resolve to a declared property, it will
+                    // resolve to a magic method
+                    $property = $this->_Class->Properties[$match] ?? $match;
+                    $closures[$match] = static function (
+                        array $data,
+                        $entity,
+                        ?IProvider $provider,
+                        ?IProviderContext $context
+                    ) use ($key, $list, $relationship, $property): void {
+                        if ((Test::isListArray($data[$key]) xor $list) ||
+                                !($entity instanceof ISyncEntity) ||
+                                !($provider instanceof ISyncProvider) ||
+                                !($context instanceof ISyncContext)) {
+                            $entity->{$property} = $data[$key];
+                            return;
+                        }
+                        if ($list) {
+                            DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+                            return;
+                        }
+                        DeferredSyncEntity::defer($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+                    };
+                }
+            }
+        }
+
         // Get keys left behind by constructor parameters, declared properties
         // and magic methods
         $unclaimed = array_diff_key(
@@ -324,7 +368,7 @@ final class SyncIntrospector extends Introspector
         );
 
         if (!$unclaimed) {
-            return parent::getKeyTargets($keys, $withParameters, $strict, true, $customKeys);
+            return parent::getKeyTargets($keys, $withParameters, $strict, true, $customKeys, $closures ?? []);
         }
 
         // Check for any that end with `_id`, `_ids` or similar that would match
@@ -342,8 +386,8 @@ final class SyncIntrospector extends Introspector
             // Require a list of values if the key is plural (`_ids` as opposed
             // to `_id`)
             $list = (bool) $matches[2];
-            // Check the property or magic method for a relationship that would
-            // allow deferred entities to be applied instead of raw identifiers
+            // Check the property or magic method for a relationship to honour
+            // by applying deferred entities instead of raw data
             $relationship = $list
                 ? ($this->_Class->OneToManyRelationships[$match] ?? null)
                 : ($this->_Class->OneToOneRelationships[$match] ?? null);
@@ -351,30 +395,30 @@ final class SyncIntrospector extends Introspector
                     !is_a($relationship, ISyncEntity::class, true)) {
                 $relationship = null;
             }
-            // If $match doesn't resolve to a declared property, it will resolve
-            // to a magic method
+            // As above, if $match doesn't resolve to a declared property, it
+            // will resolve to a magic method
             $property = $this->_Class->Properties[$match] ?? $match;
-            $closures[$match] =
-                function (
-                    array $data,
-                    $entity,
-                    ?IProvider $provider,
-                    ?IProviderContext $context
-                ) use ($key, $list, $relationship, $property): void {
-                    if ($relationship === null ||
-                            (Test::isListArray($data[$key]) xor $list) ||
-                            !($entity instanceof ISyncEntity) ||
-                            !($provider instanceof ISyncProvider) ||
-                            !($context instanceof ISyncContext)) {
-                        $entity->{$property} = $data[$key];
-                        return;
-                    }
-                    if ($list) {
-                        DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
-                        return;
-                    }
-                    DeferredSyncEntity::defer($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
-                };
+            $closures[$match] = static function (
+                array $data,
+                $entity,
+                ?IProvider $provider,
+                ?IProviderContext $context
+            ) use ($key, $list, $relationship, $property): void {
+                if ($relationship === null ||
+                        (Test::isListArray($data[$key]) xor $list) ||
+                        !($entity instanceof ISyncEntity) ||
+                        !($provider instanceof ISyncProvider) ||
+                        !($context instanceof ISyncContext)) {
+                    $entity->{$property} = $data[$key];
+                    return;
+                }
+                if ($list) {
+                    DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+                    return;
+                }
+                DeferredSyncEntity::defer($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+            };
+
             // Prevent duplication of the key as a meta value
             unset($keys[$normalisedKey]);
         }
