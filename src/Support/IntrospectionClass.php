@@ -4,11 +4,11 @@ namespace Lkrms\Support;
 
 use Lkrms\Contract\HasDateProperties;
 use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\IResolvable;
+use Lkrms\Contract\ITreeable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Facade\Reflect;
@@ -75,11 +75,11 @@ class IntrospectionClass
     public $IsRelatable;
 
     /**
-     * True if the class implements IHierarchy
+     * True if the class implements ITreeable
      *
      * @var bool
      */
-    public $IsHierarchy;
+    public $IsTreeable;
 
     /**
      * True if the class implements HasDateProperties
@@ -201,6 +201,26 @@ class IntrospectionClass
     public $NormalisedKeys = [];
 
     /**
+     * The normalised parent property
+     *
+     * `null` if the class does not implement {@see ITreeable} or returns an
+     * invalid pair of parent and children properties.
+     *
+     * @var string|null
+     */
+    public $ParentProperty;
+
+    /**
+     * The normalised children property
+     *
+     * `null` if the class does not implement {@see ITreeable} or returns an
+     * invalid pair of parent and children properties.
+     *
+     * @var string|null
+     */
+    public $ChildrenProperty;
+
+    /**
      * One-to-one relationships between the class and others (normalised
      * property name => target class)
      *
@@ -316,8 +336,8 @@ class IntrospectionClass
         $this->IsWritable = $class->implementsInterface(IWritable::class);
         $this->IsExtensible = $class->implementsInterface(IExtensible::class);
         $this->IsProvidable = $class->implementsInterface(IProvidable::class);
-        $this->IsRelatable = $class->implementsInterface(IRelatable::class);
-        $this->IsHierarchy = $class->implementsInterface(IHierarchy::class);
+        $this->IsTreeable = $class->implementsInterface(ITreeable::class);
+        $this->IsRelatable = $this->IsTreeable || $class->implementsInterface(IRelatable::class);
         $this->HasDates = $class->implementsInterface(HasDateProperties::class);
 
         // IResolvable provides access to properties via non-canonical names
@@ -468,10 +488,31 @@ class IntrospectionClass
         if ($this->IsRelatable) {
             /** @var array<string,array<RelationshipType::*,class-string<IRelatable>>> */
             $relationships = $class->getMethod('getRelationships')->invoke(null);
+            $relationships = array_combine(
+                $this->maybeNormalise(array_keys($relationships), NormaliserFlag::LAZY),
+                $relationships
+            );
+            // Treeable nodes have implicit parent/child relationships
+            if ($this->IsTreeable) {
+                /** @var string[] */
+                $treeable = [
+                    $class->getMethod('getParentProperty')->invoke(null),
+                    $class->getMethod('getChildrenProperty')->invoke(null),
+                ];
+                $treeable = array_unique($this->maybeNormalise($treeable, NormaliserFlag::LAZY));
+                if (count(array_intersect($this->NormalisedKeys, $treeable)) === 2) {
+                    $this->ParentProperty = $treeable[0];
+                    $this->ChildrenProperty = $treeable[1];
+                    $this->OneToOneRelationships[$this->ParentProperty] = $className;
+                    $this->OneToManyRelationships[$this->ChildrenProperty] = $className;
+                    unset($relationships[$this->ParentProperty], $relationships[$this->ChildrenProperty]);
+                } else {
+                    $this->IsTreeable = false;
+                }
+            }
             foreach ($relationships as $property => $reference) {
                 $type = array_key_first($reference);
                 $target = $reference[$type];
-                $property = $this->maybeNormalise($property, NormaliserFlag::LAZY);
                 if (!in_array($property, $this->NormalisedKeys, true)) {
                     continue;
                 }

@@ -2,27 +2,20 @@
 
 namespace Lkrms\Concern;
 
-use Lkrms\Contract\IHierarchy;
+use Lkrms\Contract\ITreeable;
+use Lkrms\Support\Introspector;
 use LogicException;
 
 /**
- * Implements IHierarchy
+ * Implements ITreeable
  *
- * @see IHierarchy
+ * @see ITreeable
  */
 trait HasParent
 {
-    /**
-     * Get the name of the object's declared or magic parent property
-     *
-     */
-    abstract protected static function getParentProperty(): string;
+    abstract public static function getParentProperty(): string;
 
-    /**
-     * Get the name of the object's declared or magic child array property
-     *
-     */
-    abstract protected static function getChildrenProperty(): string;
+    abstract public static function getChildrenProperty(): string;
 
     /**
      * @var array<class-string<self>,string>
@@ -36,22 +29,20 @@ trait HasParent
 
     private static function loadHierarchyProperties(): void
     {
-        if (!property_exists(
-            static::class, $parentProperty = static::getParentProperty()
-        ) || !property_exists(
-            static::class, $childrenProperty = static::getChildrenProperty()
-        )) {
+        $introspector = Introspector::get(static::class);
+
+        if (!$introspector->IsTreeable) {
             throw new LogicException(
                 sprintf(
-                    'Undefined property: %s::$%s',
+                    '%s does not implement %s or does not return valid parent/child properties',
                     static::class,
-                    $childrenProperty ?? $parentProperty
+                    ITreeable::class,
                 )
             );
         }
 
-        self::$_ParentProperties[static::class] = $parentProperty;
-        self::$_ChildrenProperties[static::class] = $childrenProperty;
+        self::$_ParentProperties[static::class] = $introspector->ParentProperty;
+        self::$_ChildrenProperties[static::class] = $introspector->ChildrenProperty;
     }
 
     /**
@@ -79,11 +70,11 @@ trait HasParent
 
         $_children = self::$_ChildrenProperties[static::class];
 
-        return $this->{$_children} ?: [];
+        return $this->{$_children} ?? [];
     }
 
     /**
-     * @param (IHierarchy&static)|null $parent
+     * @param (ITreeable&static)|null $parent
      * @return $this
      */
     final public function setParent($parent)

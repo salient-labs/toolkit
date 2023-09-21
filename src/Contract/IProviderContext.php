@@ -47,12 +47,12 @@ interface IProviderContext extends IImmutable, ReturnsContainer
     public function withContainer(IContainer $container);
 
     /**
-     * Set the parent of IHierarchy entities instantiated within the context
+     * Set the parent of ITreeable entities instantiated within the context
      *
      * @see IProviderContext::push()
      * @return $this
      */
-    public function withParent(?IHierarchy $parent);
+    public function withParent(?ITreeable $parent);
 
     /**
      * Propagate the current payload's array key conformity
@@ -81,7 +81,7 @@ interface IProviderContext extends IImmutable, ReturnsContainer
      * Get the value most recently passed to withParent()
      *
      */
-    public function getParent(): ?IHierarchy;
+    public function getParent(): ?ITreeable;
 
     /**
      * Get the current payload's array key conformity

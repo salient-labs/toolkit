@@ -396,7 +396,7 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
      * @param array<ISyncEntity|DeferredSyncEntity>|ISyncEntity|DeferredSyncEntity|null $replace
      * The variable to replace when the entity or list of entities is resolved.
      * @param class-string<ISyncEntity>|null $entity The entity to instantiate.
-     * If `null`, `static::class` is used.
+     * If `null`, the return value of {@see SyncEntity::service()} is used.
      */
     final protected function defer($deferred, &$replace, ?string $entity = null): void
     {
@@ -408,7 +408,7 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
             DeferredSyncEntity::deferList(
                 $this->Provider,
                 $this->Context->push($this),
-                $entity ?? static::class,
+                $entity ?? $this->service(),
                 $deferred,
                 $replace,
             );
@@ -418,7 +418,7 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
         DeferredSyncEntity::defer(
             $this->Provider,
             $this->Context->push($this),
-            $entity ?? static::class,
+            $entity ?? $this->service(),
             $deferred,
             $replace,
         );

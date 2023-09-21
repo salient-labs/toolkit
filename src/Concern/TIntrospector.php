@@ -56,7 +56,7 @@ trait TIntrospector
      *
      * @template T of object
      * @param class-string<T> $class
-     * @return self<T,TIntrospectionClass<T>>
+     * @return static<T,TIntrospectionClass<T>>
      */
     public static function get(string $class)
     {

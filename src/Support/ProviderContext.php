@@ -4,9 +4,9 @@ namespace Lkrms\Support;
 
 use Lkrms\Concern\HasMutator;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderContext;
+use Lkrms\Contract\ITreeable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 
 /**
@@ -33,7 +33,7 @@ class ProviderContext implements IProviderContext
     protected $Stack = [];
 
     /**
-     * @var IHierarchy|null
+     * @var ITreeable|null
      */
     protected $Parent;
 
@@ -47,7 +47,7 @@ class ProviderContext implements IProviderContext
      */
     public function __construct(
         IContainer $container,
-        ?IHierarchy $parent = null,
+        ?ITreeable $parent = null,
         int $conformity = ArrayKeyConformity::NONE
     ) {
         $this->Container = $container;
@@ -83,7 +83,7 @@ class ProviderContext implements IProviderContext
         return $this->withPropertyValue('Container', $container);
     }
 
-    final public function withParent(?IHierarchy $parent)
+    final public function withParent(?ITreeable $parent)
     {
         return $this->withPropertyValue('Parent', $parent);
     }
@@ -103,7 +103,7 @@ class ProviderContext implements IProviderContext
         return $this->Stack;
     }
 
-    final public function getParent(): ?IHierarchy
+    final public function getParent(): ?ITreeable
     {
         return $this->Parent;
     }

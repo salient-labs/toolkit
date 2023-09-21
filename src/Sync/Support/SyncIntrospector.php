@@ -4,9 +4,9 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
+use Lkrms\Contract\ITreeable;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\DateFormatter;
@@ -342,14 +342,14 @@ final class SyncIntrospector extends Introspector
             // Require a list of values if the key is plural (`_ids` as opposed
             // to `_id`)
             $list = (bool) $matches[2];
-            // Ignore if the property or magic method has no relationship with
-            // other classes
+            // Check the property or magic method for a relationship that would
+            // allow deferred entities to be applied instead of raw identifiers
             $relationship = $list
                 ? ($this->_Class->OneToManyRelationships[$match] ?? null)
                 : ($this->_Class->OneToOneRelationships[$match] ?? null);
-            if ($relationship === null ||
+            if ($relationship !== null &&
                     !is_a($relationship, ISyncEntity::class, true)) {
-                continue;
+                $relationship = null;
             }
             // If $match doesn't resolve to a declared property, it will resolve
             // to a magic method
@@ -360,24 +360,20 @@ final class SyncIntrospector extends Introspector
                     $entity,
                     ?IProvider $provider,
                     ?IProviderContext $context
-                ) use ($key, $match, $list, $relationship, $property): void {
-                    if (!($isList = Test::isListArray($data[$key])) && $list) {
-                        $entity->{$key} = $data[$key];
-                        return;
-                    }
-                    if (!($entity instanceof ISyncEntity) ||
+                ) use ($key, $list, $relationship, $property): void {
+                    if ($relationship === null ||
+                            (Test::isListArray($data[$key]) xor $list) ||
+                            !($entity instanceof ISyncEntity) ||
                             !($provider instanceof ISyncProvider) ||
                             !($context instanceof ISyncContext)) {
-                        $entity->{$match} = $isList
-                            ? array_map(fn($id) => ['@id' => $id], $data[$key])
-                            : ['@id' => $data[$key]];
+                        $entity->{$property} = $data[$key];
                         return;
                     }
-                    if ($isList) {
-                        DeferredSyncEntity::deferList($provider, $context, $relationship, $data[$key], $entity->{$property});
+                    if ($list) {
+                        DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
                         return;
                     }
-                    DeferredSyncEntity::defer($provider, $context, $relationship, $data[$key], $entity->{$property});
+                    DeferredSyncEntity::defer($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
                 };
             // Prevent duplication of the key as a meta value
             unset($keys[$normalisedKey]);
@@ -388,7 +384,7 @@ final class SyncIntrospector extends Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, IHierarchy|null): TClass
+     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, ITreeable|null): TClass
      */
     private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
     {
@@ -413,7 +409,7 @@ final class SyncIntrospector extends Introspector
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,
-                ?IHierarchy $parent
+                ?ITreeable $parent
             ) use ($constructor, $updater) {
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
@@ -429,7 +425,7 @@ final class SyncIntrospector extends Introspector
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,
-                ?IHierarchy $parent
+                ?ITreeable $parent
             ) use ($constructor, $updater, $existingUpdater, $idKey, $entityType) {
                 $id = $array[$idKey];
                 if ($id === null || !$provider) {
