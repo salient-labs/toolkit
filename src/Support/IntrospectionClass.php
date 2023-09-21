@@ -492,24 +492,47 @@ class IntrospectionClass
                 $this->maybeNormalise(array_keys($relationships), NormaliserFlag::LAZY),
                 $relationships
             );
-            // Treeable nodes have implicit parent/child relationships
+
+            // Create self-referencing parent/child relationships between
+            // ITreeable classes after identifying the class that declared
+            // getParentProperty() and getChildrenProperty(), which is most
+            // likely to be the base/service class. If not, explicit
+            // relationship declarations take precedence over these.
             if ($this->IsTreeable) {
+                $parentMethod = $class->getMethod('getParentProperty');
+                $parentClass = $parentMethod->getDeclaringClass();
+                $childrenMethod = $class->getMethod('getChildrenProperty');
+                $childrenClass = $childrenMethod->getDeclaringClass();
+
+                // If the methods were declared in different classes, choose the
+                // least-generic one
+                $service = $childrenClass->isSubclassOf($parentClass)
+                    ? $childrenClass->getName()
+                    : $parentClass->getName();
+
                 /** @var string[] */
                 $treeable = [
-                    $class->getMethod('getParentProperty')->invoke(null),
-                    $class->getMethod('getChildrenProperty')->invoke(null),
+                    $parentMethod->invoke(null),
+                    $childrenMethod->invoke(null),
                 ];
-                $treeable = array_unique($this->maybeNormalise($treeable, NormaliserFlag::LAZY));
+
+                $treeable = array_unique($this->maybeNormalise(
+                    $treeable, NormaliserFlag::LAZY
+                ));
+
+                // Do nothing if, after normalisation, both methods return the
+                // same value, or if the values they return don't resolve to
+                // serviceable properties
                 if (count(array_intersect($this->NormalisedKeys, $treeable)) === 2) {
                     $this->ParentProperty = $treeable[0];
                     $this->ChildrenProperty = $treeable[1];
-                    $this->OneToOneRelationships[$this->ParentProperty] = $className;
-                    $this->OneToManyRelationships[$this->ChildrenProperty] = $className;
-                    unset($relationships[$this->ParentProperty], $relationships[$this->ChildrenProperty]);
+                    $this->OneToOneRelationships[$this->ParentProperty] = $service;
+                    $this->OneToManyRelationships[$this->ChildrenProperty] = $service;
                 } else {
                     $this->IsTreeable = false;
                 }
             }
+
             foreach ($relationships as $property => $reference) {
                 $type = array_key_first($reference);
                 $target = $reference[$type];

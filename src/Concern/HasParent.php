@@ -41,8 +41,12 @@ trait HasParent
             );
         }
 
-        self::$_ParentProperties[static::class] = $introspector->ParentProperty;
-        self::$_ChildrenProperties[static::class] = $introspector->ChildrenProperty;
+        self::$_ParentProperties[static::class] =
+            $introspector->Properties[$introspector->ParentProperty]
+                ?? $introspector->ParentProperty;
+        self::$_ChildrenProperties[static::class] =
+            $introspector->Properties[$introspector->ChildrenProperty]
+                ?? $introspector->ChildrenProperty;
     }
 
     /**
