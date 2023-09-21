@@ -77,7 +77,7 @@ foreach ($class->getReflectionConstants() as $constant) {
 $args = [
     '--force',
     '--no-meta',
-    ...array_slice($argv, 1),
+    ...array_slice($_SERVER['argv'], 1),
 ];
 
 $status = 0;

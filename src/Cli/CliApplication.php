@@ -46,9 +46,12 @@ class CliApplication extends Application implements ICliApplication
      */
     private $HelpStyle;
 
-    public function __construct(string $basePath = null, int $envFlags = EnvFlag::ALL)
-    {
-        parent::__construct($basePath, $envFlags);
+    public function __construct(
+        ?string $basePath = null,
+        ?string $appName = null,
+        int $envFlags = EnvFlag::ALL
+    ) {
+        parent::__construct($basePath, $appName, $envFlags);
 
         Assert::sapiIsCli();
         Assert::argvIsRegistered();

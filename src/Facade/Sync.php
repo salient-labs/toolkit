@@ -22,7 +22,7 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static bool isLoaded() True if an underlying SyncStore instance has been loaded
  * @method static void unload() Clear the underlying SyncStore instance
  * @method static SyncStore checkHeartbeats(int $ttl = 300, bool $failEarly = true, ISyncProvider ...$providers) Throw an exception if a provider has an unreachable backend (see {@see SyncStore::checkHeartbeats()})
- * @method static SyncStore close(?int $exitStatus = 0) Terminate the current run and close the database
+ * @method static SyncStore close(int $exitStatus = 0) Terminate the current run and close the database
  * @method static SyncStore deferredEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, DeferredSyncEntity $deferred) Register a deferred sync entity (see {@see SyncStore::deferredEntity()})
  * @method static SyncStore entity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, ISyncEntity $entity) Register a sync entity (see {@see SyncStore::entity()})
  * @method static SyncStore entityType(class-string<ISyncEntity> $entity) Register a sync entity type and set its ID (unless already registered) (see {@see SyncStore::entityType()})

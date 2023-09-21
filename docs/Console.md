@@ -43,7 +43,7 @@ target, e.g. by calling [registerTarget()][registerTarget], before any other
 > `STDOUT` and `STDERR` targets and prevents creation of the default output log.
 > To create a log file that persists between reboots (in your project's
 > `var/log` directory by default), call the app container's
-> [logConsoleMessages()][logConsoleMessages] method.
+> [logOutput()][logOutput] method.
 
 ### Output methods
 
@@ -81,7 +81,7 @@ The following Markdown-like syntax is supported in [Console][Console] messages:
 [CliApplication]: https://lkrms.github.io/php-util/Lkrms.Cli.CliApplication.html
 [Console]: https://lkrms.github.io/php-util/Lkrms.Facade.Console.html
 [ConsoleWriter]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html
-[logConsoleMessages]: https://lkrms.github.io/php-util/Lkrms.Container.Application.html#_logConsoleMessages
+[logOutput]: https://lkrms.github.io/php-util/Lkrms.Container.Application.html#_logOutput
 [registerStdioTargets]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerStdioTargets
 [registerTarget]: https://lkrms.github.io/php-util/Lkrms.Console.ConsoleWriter.html#_registerTarget
 

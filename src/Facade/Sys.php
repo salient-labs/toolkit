@@ -21,12 +21,12 @@ use Lkrms\Utility\System;
  * @method static int getPeakMemoryUsage() Get the peak memory usage of the script, in bytes
  * @method static string getProgramBasename(string ...$suffixes) Get the basename of the file used to run the script
  * @method static string getProgramName(?string $basePath = null) Get the filename used to run the script (see {@see System::getProgramName()})
- * @method static array<string,array<string,array{float,int}>> getTimers(bool $includeRunning = true, ?string $type = null) Get the elapsed milliseconds and start count for timers started in the current run (see {@see System::getTimers()})
+ * @method static array<string,array<string,array{float,int}>> getTimers(bool $includeRunning = true, string[]|string|null $types = null) Get elapsed milliseconds and start counts for timers started in the current run (see {@see System::getTimers()})
  * @method static bool handleExitSignals() Handle SIGINT and SIGTERM to make a clean exit from the running script (see {@see System::handleExitSignals()})
- * @method static void popTimers() Pop timer state off the stack
- * @method static void pushTimers() Push timer state onto the stack
+ * @method static void popTimers() Pop timer state off the stack (see {@see System::popTimers()})
+ * @method static void pushTimers() Push timer state onto the stack (see {@see System::pushTimers()})
  * @method static bool sqliteHasUpsert() True if the SQLite3 library supports UPSERT syntax (see {@see System::sqliteHasUpsert()})
- * @method static void startTimer(string $name, string $type = 'general') Start a timer using the system's high-resolution time
+ * @method static void startTimer(string $name, string $type = 'general') Start a timer using the system's high-resolution time (see {@see System::startTimer()})
  * @method static float stopTimer(string $name, string $type = 'general') Stop a timer and return the elapsed milliseconds (see {@see System::stopTimer()})
  *
  * @uses System

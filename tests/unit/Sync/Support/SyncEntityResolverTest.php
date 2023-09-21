@@ -19,8 +19,8 @@ final class SyncEntityResolverTest extends \Lkrms\Tests\TestCase
         $basePath = File::createTemporaryDirectory();
 
         $app = (new Application($basePath))
-            ->loadCache()
-            ->loadSync(__METHOD__, [])
+            ->startCache()
+            ->startSync(__METHOD__, [])
             ->syncNamespace(
                 'lkrms-tests',
                 'https://lkrms.github.io/php-util/tests/entity',
@@ -164,7 +164,7 @@ final class SyncEntityResolverTest extends \Lkrms\Tests\TestCase
             ]
         ], $output);
 
-        $app->unloadSync(true)
+        $app->stopSync()
             ->unload();
 
         File::pruneDirectory($basePath);
