@@ -61,19 +61,6 @@ final class ConsoleLevel extends ConvertibleEnumeration
     ];
 
     /**
-     * Get an optionally zero-padded message level code
-     *
-     * @param ConsoleLevel::* $level
-     */
-    public static function toCode($level, int $width = 1): string
-    {
-        if ((self::$NameMap[$level] ?? null) === null) {
-            throw new LogicException(sprintf('Invalid ConsoleLevel: %d', $level));
-        }
-        return sprintf("%0{$width}d", $level);
-    }
-
-    /**
      * Get the PSR log level that corresponds to a console message level
      *
      * @param ConsoleLevel::* $level

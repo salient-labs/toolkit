@@ -2,6 +2,8 @@
 
 namespace Lkrms\Support;
 
+use Lkrms\Contract\IFacade;
+use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
 use Lkrms\Utility\Pcre;
@@ -12,7 +14,7 @@ use Throwable;
  * Handle errors and uncaught exceptions
  *
  */
-final class ErrorHandler
+final class ErrorHandler implements ReceivesFacade
 {
     private const FATAL_ERRORS = E_ERROR
         | E_PARSE
@@ -35,6 +37,20 @@ final class ErrorHandler
     private bool $ShutdownIsRegistered = false;
 
     private bool $IsShuttingDown = false;
+
+    /**
+     * @var class-string<IFacade<static>>|null
+     */
+    private ?string $Facade = null;
+
+    /**
+     * @inheritDoc
+     */
+    public function setFacade(string $name)
+    {
+        $this->Facade = $name;
+        return $this;
+    }
 
     /**
      * Register error, exception and shutdown handlers
@@ -64,15 +80,30 @@ final class ErrorHandler
     }
 
     /**
+     * True if error, exception and shutdown handlers are registered
+     *
+     * @return bool
+     */
+    public function isRegistered(): bool
+    {
+        return $this->IsRegistered;
+    }
+
+    /**
      * Deregister previously registered error and exception handlers
      *
      * @return $this
      */
-    public function deregister()
+    public function deregister(bool $unloadFacade = true)
     {
         if ($this->IsRegistered) {
             restore_error_handler();
             restore_exception_handler();
+        }
+
+        if ($unloadFacade && $this->Facade) {
+            [$this->Facade, 'unload']();
+            $this->Facade = null;
         }
 
         return $this;

@@ -294,10 +294,10 @@ class Introspector
             }
             if ($withParameters && ($param = $this->_Class->Parameters[$normalisedKey] ?? null)) {
                 $parameterKeys[$key] = $this->_Class->ParameterIndex[$param];
-                if ($this->_Class->PassByRefParameters[$normalisedKey] ?? null) {
+                if (isset($this->_Class->PassByRefParameters[$normalisedKey])) {
                     $passByRefKeys[$key] = true;
                 }
-                if ($this->_Class->DateParameters[$normalisedKey] ?? null) {
+                if (isset($this->_Class->DateParameters[$normalisedKey])) {
                     $dateKeys[] = $key;
                     // If found in DateParameters, skip DateKeys check below
                     continue;

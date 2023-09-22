@@ -18,6 +18,7 @@ use Lkrms\Facade\Sys;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use LogicException;
 use Phar;
@@ -254,7 +255,7 @@ class Application extends Container implements IApplication
         $this->Env = $this->singletonIf(Env::class)->get(Env::class);
 
         $this->AppName = $appName
-            ?? preg_replace(
+            ?? Pcre::replace(
                 // Match `git describe --long` and similar formats
                 '/-v?[0-9]+(\.[0-9]+){0,3}(-[0-9]+)?(-g?[0-9a-f]+)?$/i',
                 '',
@@ -492,34 +493,13 @@ class Application extends Container implements IApplication
     /**
      * @inheritDoc
      */
-    final public function stopSync(int $exitStatus = 0, bool $reportErrors = false)
+    final public function stopSync()
     {
         if (!Sync::isLoaded() ||
                 !Test::areSameFile($this->getSyncDb(false), Sync::getFilename())) {
             return $this;
         }
-
-        Sync::close($exitStatus);
-
-        if (!$reportErrors) {
-            return $this;
-        }
-
-        $errors = Sync::getErrors();
-        $count = $errors->count();
-        if (!$count) {
-            Console::info('No sync errors recorded');
-            return $this;
-        }
-
-        // Print an error message without incrementing `Console`'s error counter
-        Console::error(
-            Convert::plural($count, 'sync error', null, true) . ' recorded:',
-            "\n" . $errors,
-            null,
-            false
-        );
-
+        Sync::close();
         return $this;
     }
 

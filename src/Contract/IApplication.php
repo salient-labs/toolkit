@@ -166,7 +166,7 @@ interface IApplication extends IContainer, ReturnsEnvironment
      *
      * @return $this
      */
-    public function stopSync(int $exitStatus = 0, bool $reportErrors = false);
+    public function stopSync();
 
     /**
      * Register a sync entity namespace with a previously started entity store

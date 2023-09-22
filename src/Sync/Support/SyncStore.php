@@ -14,7 +14,6 @@ use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
-use Lkrms\Sync\Support\SyncErrorBuilder as ErrorBuilder;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use LogicException;
@@ -801,7 +800,7 @@ final class SyncStore extends SqliteStore
                 Console::log('No heartbeat:', $name);
                 $failed[] = $provider;
                 $this->error(
-                    ErrorBuilder::build()
+                    SyncErrorBuilder::build()
                         ->errorType(SyncErrorType::BACKEND_UNREACHABLE)
                         ->message('Heartbeat check failed: %s')
                         ->values([[
@@ -832,8 +831,15 @@ final class SyncStore extends SqliteStore
      */
     public function error($error, bool $deduplicate = false, bool $toConsole = false)
     {
-        $error = ErrorBuilder::resolve($error);
-        if (!$deduplicate || !($seen = $this->Errors->get($error))) {
+        if ($error instanceof SyncErrorBuilder) {
+            $error = $error->go();
+        }
+
+        $seen = $deduplicate
+            ? $this->Errors->get($error)
+            : false;
+
+        if (!$seen) {
             $this->Errors[] = $error;
 
             switch ($error->Level) {
@@ -848,12 +854,21 @@ final class SyncStore extends SqliteStore
                     break;
             }
         } else {
-            /** @var SyncError $seen */
             $seen->count();
         }
 
         if ($toConsole) {
-            $error->toConsole($deduplicate);
+            $args = [
+                $error->Level,
+                '[' . SyncErrorType::toName($error->ErrorType) . ']',
+                sprintf($error->Message, ...Convert::toScalarArray($error->Values)),
+            ];
+
+            if ($deduplicate) {
+                Console::messageOnce(...$args);
+            } else {
+                Console::message(...$args);
+            }
         } else {
             Console::count($error->Level);
         }
@@ -868,6 +883,38 @@ final class SyncStore extends SqliteStore
     public function getErrors(): SyncErrorCollection
     {
         return clone $this->Errors;
+    }
+
+    /**
+     * Report sync operation errors to the console
+     *
+     * If no sync-related errors or warnings have been recorded, `$successText`
+     * is printed with level NOTICE.
+     *
+     * @return $this
+     */
+    public function reportErrors(string $successText = 'No sync errors recorded')
+    {
+        if (!$this->ErrorCount && !$this->WarningCount) {
+            Console::info($successText);
+            return $this;
+        }
+
+        $msg1 = Convert::plural($this->ErrorCount, 'sync error', null, true)
+            . ($this->WarningCount
+                ? ' and ' . Convert::plural($this->WarningCount, 'warning', null, true)
+                : '') . ' recorded:';
+        $msg2 = "\n" . $this->Errors->toString(true);
+
+        // Print a message with level ERROR or WARNING as appropriate without
+        // Console recording an additional error or warning
+        if ($this->ErrorCount) {
+            Console::error($msg1, $msg2, null, false);
+        } else {
+            Console::warn($msg1, $msg2, null, false);
+        }
+
+        return $this;
     }
 
     protected function check()
