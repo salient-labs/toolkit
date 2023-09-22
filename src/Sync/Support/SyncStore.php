@@ -10,9 +10,10 @@ use Lkrms\Facade\Event;
 use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncClassResolver;
-use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
+use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
@@ -57,11 +58,18 @@ final class SyncStore extends SqliteStore
     private $ProviderMap = [];
 
     /**
+     * Entity type ID => entity class
+     *
+     * @var array<int,string>
+     */
+    private $EntityTypes = [];
+
+    /**
      * Entity class => entity type ID
      *
      * @var array<string,int>
      */
-    private $EntityTypes = [];
+    private $EntityTypeMap = [];
 
     /**
      * Prefix => lowercase PHP namespace
@@ -87,7 +95,7 @@ final class SyncStore extends SqliteStore
     /**
      * Provider ID => entity type ID => entity ID => entity
      *
-     * @var array<int,array<int,array<int|string,ISyncEntity|false>>>
+     * @var array<int,array<int,array<int|string,ISyncEntity>>>
      */
     private $Entities;
 
@@ -423,7 +431,7 @@ final class SyncStore extends SqliteStore
             return $this;
         }
 
-        if (isset($this->EntityTypes[$entity])) {
+        if (isset($this->EntityTypeMap[$entity])) {
             return $this;
         }
 
@@ -479,7 +487,8 @@ final class SyncStore extends SqliteStore
         }
 
         $class->getMethod('setEntityTypeId')->invoke(null, $row[0]);
-        $this->EntityTypes[$entity] = $row[0];
+        $this->EntityTypes[$row[0]] = $entity;
+        $this->EntityTypeMap[$entity] = $row[0];
 
         return $this;
     }
@@ -666,7 +675,7 @@ final class SyncStore extends SqliteStore
      */
     public function entity(int $providerId, string $entityType, $entityId, ISyncEntity $entity)
     {
-        $entityTypeId = $this->EntityTypes[$entityType];
+        $entityTypeId = $this->EntityTypeMap[$entityType];
         if (isset($this->Entities[$providerId][$entityTypeId][$entityId])) {
             throw new LogicException('Entity already registered');
         }
@@ -686,53 +695,27 @@ final class SyncStore extends SqliteStore
     }
 
     /**
-     * Pre-register a sync entity
-     *
-     * To mitigate race conditions between creation and registration of entities
-     * (e.g. when an entity tries to hydrate itself with entities that have been
-     * instantiated elsewhere in the object graph but aren't registered yet), an
-     * entity can be registered before instantiation to ensure nested references
-     * to itself resolve to one instance of the entity.
-     *
-     * Between {@see SyncStore::reserveEntity()} and {@see SyncStore::entity()},
-     * {@see SyncStore::getEntity()} returns a {@see DeferredSyncEntity} for any
-     * requests with the same provider ID, entity type, and entity ID.
+     * Get a previously registered and/or stored sync entity
      *
      * @param class-string<ISyncEntity> $entityType
      * @param int|string $entityId
-     * @return $this
+     * @param bool|null $offline If `null` (the default), the local entity store
+     * is used if its copy of the entity is sufficiently fresh. If `true`, the
+     * local entity store is used unconditionally. If `false`, the local entity
+     * store is unconditionally ignored.
      */
-    public function reserveEntity(int $providerId, string $entityType, $entityId)
-    {
-        $entityTypeId = $this->EntityTypes[$entityType];
-        if (isset($this->Entities[$providerId][$entityTypeId][$entityId])) {
-            throw new LogicException('Entity already registered');
-        }
-        $this->Entities[$providerId][$entityTypeId][$entityId] = false;
-
-        return $this;
-    }
-
-    /**
-     * Get a previously registered sync entity
-     *
-     * @param class-string<ISyncEntity> $entityType
-     * @param int|string $entityId
-     * @return ISyncEntity|DeferredSyncEntity|null
-     */
-    public function getEntity(int $providerId, string $entityType, $entityId, ?ISyncContext $context = null)
-    {
-        $entityTypeId = $this->EntityTypes[$entityType];
+    public function getEntity(
+        int $providerId,
+        string $entityType,
+        $entityId,
+        ?bool $offline = null
+    ): ?ISyncEntity {
+        $entityTypeId = $this->EntityTypeMap[$entityType];
         $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
-        if ($entity === false) {
-            $deferred = null;
-            $provider = $this->Providers[$providerId];
-            DeferredSyncEntity::defer(
-                $provider, $context, $entityType, $entityId, $deferred
-            );
-            return $deferred;
+        if ($entity || $offline === false) {
+            return $entity;
         }
-        return $entity;
+        return null;
     }
 
     /**
@@ -748,7 +731,7 @@ final class SyncStore extends SqliteStore
      */
     public function deferredEntity(int $providerId, string $entityType, $entityId, DeferredSyncEntity $deferred)
     {
-        $entityTypeId = $this->EntityTypes[$entityType];
+        $entityTypeId = $this->EntityTypeMap[$entityType];
         $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
         if ($entity) {
             $deferred->replace($entity);
@@ -756,6 +739,61 @@ final class SyncStore extends SqliteStore
         }
         $this->DeferredEntities[$providerId][$entityTypeId][$entityId][] = $deferred;
         return $this;
+    }
+
+    /**
+     * Resolve deferred sync entities from their respective providers and/or the
+     * local entity store
+     *
+     * @param class-string<ISyncEntity> $entityType
+     * @param bool|null $offline If `null` (the default), the local entity store
+     * is used if its copy of the entity is sufficiently fresh, or if the
+     * provider cannot be reached. If `true`, the local entity store is used
+     * unconditionally. If `false`, the local entity store is unconditionally
+     * ignored.
+     * @return ISyncEntity[]
+     */
+    public function resolveDeferredEntities(
+        ?int $providerId = null,
+        ?string $entityType = null,
+        ?bool $offline = null
+    ): array {
+        $entityTypeId = $entityType === null
+            ? null
+            : $this->EntityTypeMap[$entityType];
+
+        $resolved = [];
+        foreach ($this->DeferredEntities as $provId => $entitiesByTypeId) {
+            if ($providerId !== null && $provId !== $providerId) {
+                continue;
+            }
+            $provider = $this->Providers[$provId];
+            foreach ($entitiesByTypeId as $entTypeId => $entities) {
+                if ($entityTypeId !== null && $entTypeId !== $entityTypeId) {
+                    continue;
+                }
+                /** @var class-string<ISyncEntity> */
+                $entityType = $this->EntityTypes[$entTypeId];
+                $entityProvider = $provider->with($entityType);
+                if ($offline === true) {
+                    $entityProvider = $entityProvider->offline();
+                } elseif ($offline === false) {
+                    $entityProvider = $entityProvider->online();
+                }
+                $entityIds = array_keys($entities);
+                try {
+                    $list = $entityProvider->getListA(['id' => $entityIds]);
+                    array_push($resolved, ...$list);
+                } catch (SyncOperationNotImplementedException|SyncFilterPolicyViolationException $ex) {
+                    foreach ($entityIds as $entityId) {
+                        $entity = $entityProvider->get($entityId);
+                        $resolved[] = $entity;
+                    }
+                }
+            }
+        }
+
+        return $resolved;
     }
 
     /**

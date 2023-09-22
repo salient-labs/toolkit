@@ -364,7 +364,11 @@ class Introspector
             ?ITreeable $parent
         ) use ($constructor, $updater) {
             $obj = $constructor($array, $service, $container);
-            return $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+            $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+            if ($obj instanceof IProvidable) {
+                $obj->postLoad();
+            }
+            return $obj;
         };
 
         return $this->_Class->CreateFromSignatureClosures[$sig] = $closure;

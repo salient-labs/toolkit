@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ITreeable;
@@ -428,7 +429,7 @@ final class SyncIntrospector extends Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, ITreeable|null): TClass
+     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, ITreeable|null, bool|null $offline=): TClass
      */
     private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
     {
@@ -453,10 +454,14 @@ final class SyncIntrospector extends Introspector
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,
-                ?ITreeable $parent
+                ?ITreeable $parent,
+                ?bool $offline = null
             ) use ($constructor, $updater) {
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                if ($obj instanceof IProvidable) {
+                    $obj->postLoad();
+                }
                 return $obj;
             };
         } else {
@@ -469,24 +474,38 @@ final class SyncIntrospector extends Introspector
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,
-                ?ITreeable $parent
+                ?ITreeable $parent,
+                ?bool $offline = null
             ) use ($constructor, $updater, $existingUpdater, $idKey, $entityType) {
                 $id = $array[$idKey];
+
                 if ($id === null || !$provider) {
                     $obj = $constructor($array, $service, $container);
                     $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                    if ($obj instanceof IProvidable) {
+                        $obj->postLoad();
+                    }
                     return $obj;
                 }
+
                 $store = $provider->store();
                 $providerId = $provider->getProviderId();
-                $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $context);
+                $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $offline);
+
                 if ($obj) {
                     $obj = $existingUpdater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                    if ($obj instanceof IProvidable) {
+                        $obj->postLoad();
+                    }
                     return $obj;
                 }
+
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
                 $store->entity($providerId, $service ?? $entityType, $id, $obj);
+                if ($obj instanceof IProvidable) {
+                    $obj->postLoad();
+                }
                 return $obj;
             };
         }

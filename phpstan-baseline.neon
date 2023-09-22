@@ -11,6 +11,11 @@ parameters:
 			path: lib/lk-util/Command/Http/SendHttpRequest.php
 
 		-
+			message: "#^Property Lkrms\\\\Cli\\\\CliOption\\:\\:\\$BindTo is never read, only written\\.$#"
+			count: 1
+			path: src/Cli/CliOption.php
+
+		-
 			message: "#^Method Lkrms\\\\Concept\\\\Builder\\:\\:__call\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Concept/Builder.php
@@ -79,6 +84,11 @@ parameters:
 			message: "#^Property Lkrms\\\\Container\\\\Application\\:\\:\\$TempPath is never written, only read\\.$#"
 			count: 1
 			path: src/Container/Application.php
+
+		-
+			message: "#^Property Lkrms\\\\Container\\\\Container\\:\\:\\$ContextStack is never read, only written\\.$#"
+			count: 1
+			path: src/Container/Container.php
 
 		-
 			message: "#^Method Lkrms\\\\Contract\\\\IPipe\\:\\:handle\\(\\) has parameter \\$pipeline with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
@@ -266,6 +276,11 @@ parameters:
 			path: src/Curler/CurlerFile.php
 
 		-
+			message: "#^Property Lkrms\\\\Curler\\\\CurlerHeaders\\:\\:\\$Trailers is never read, only written\\.$#"
+			count: 1
+			path: src/Curler/CurlerHeaders.php
+
+		-
 			message: "#^Property Lkrms\\\\Curler\\\\Pager\\\\QueryPager\\:\\:\\$Query type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Curler/Pager/QueryPager.php
@@ -304,6 +319,16 @@ parameters:
 			message: "#^Property Lkrms\\\\Curler\\\\Support\\\\CurlerPage\\:\\:\\$NextData type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Curler/Support/CurlerPage.php
+
+		-
+			message: "#^Parameter \\#2 \\$value of method ADOConnection\\:\\:setConnectionParameter\\(\\) expects string, bool given\\.$#"
+			count: 1
+			path: src/Db/DbConnector.php
+
+		-
+			message: "#^Parameter \\#2 \\$value of method ADOConnection\\:\\:setConnectionParameter\\(\\) expects string, int given\\.$#"
+			count: 1
+			path: src/Db/DbConnector.php
 
 		-
 			message: "#^Method Lkrms\\\\Store\\\\CacheStore\\:\\:get\\(\\) has no return type specified\\.$#"
@@ -389,6 +414,11 @@ parameters:
 			message: "#^Property Lkrms\\\\Support\\\\SqlQuery\\:\\:\\$Where type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Support/SqlQuery.php
+
+		-
+			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$Offline is never read, only written\\.$#"
+			count: 1
+			path: src/Sync/Support/SyncEntityProvider.php
 
 		-
 			message: "#^Method Lkrms\\\\Utility\\\\Assertions\\:\\:notEmpty\\(\\) has parameter \\$value with no type specified\\.$#"

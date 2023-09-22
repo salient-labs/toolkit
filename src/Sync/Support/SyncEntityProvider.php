@@ -62,7 +62,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * @var bool|null
      */
-    private $GetFromSyncStore;
+    private $Offline;
 
     /**
      * @param class-string<TEntity> $entity
@@ -427,14 +427,14 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
     public function online()
     {
-        $this->GetFromSyncStore = false;
+        $this->Offline = false;
 
         return $this;
     }
 
     public function offline()
     {
-        $this->GetFromSyncStore = true;
+        $this->Offline = true;
 
         return $this;
     }
