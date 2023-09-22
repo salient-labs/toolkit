@@ -3,12 +3,12 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Err\Err;
+use Lkrms\Facade\Err;
 use UnexpectedValueException;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-Err::load();
-Err::silencePaths(__DIR__ . '/../vendor/adodb/adodb-php');
+Err::register();
+Err::silencePath(__DIR__ . '/../vendor/adodb/adodb-php');
 
 throw new UnexpectedValueException('Well, this was unexpected');

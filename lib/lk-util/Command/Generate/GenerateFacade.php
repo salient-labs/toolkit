@@ -18,15 +18,10 @@ use ReflectionParameter;
  */
 final class GenerateFacade extends GenerateCommand
 {
-    private ?string $ClassFqcn;
-    private ?string $FacadeFqcn;
-
     /**
      * Methods that shouldn't be surfaced by the Facade
-     *
-     * @var string[]
      */
-    private array $SkipMethods = [
+    private const SKIP_METHODS = [
         'getReadable',
         'getWritable',
         'setFacade',
@@ -37,6 +32,14 @@ final class GenerateFacade extends GenerateCommand
         'unloadAll',
         'getInstance',
     ];
+
+    private ?string $ClassFqcn;
+    private ?string $FacadeFqcn;
+
+    /**
+     * @var string[]|null
+     */
+    private ?array $SkipMethods;
 
     public function description(): string
     {
@@ -61,12 +64,20 @@ final class GenerateFacade extends GenerateCommand
                 ->required()
                 ->bindTo($this->FacadeFqcn),
             ...$this->getOutputOptionList('facade'),
+            CliOption::build()
+                ->long('skip')
+                ->short('k')
+                ->description('Exclude a method from the facade')
+                ->optionType(CliOptionType::VALUE)
+                ->multipleAllowed()
+                ->bindTo($this->SkipMethods),
         ];
     }
 
     protected function run(string ...$args)
     {
         $this->reset();
+        $this->SkipMethods = array_merge($this->SkipMethods, self::SKIP_METHODS);
 
         $classFqcn = $this->getRequiredFqcnOptionValue(
             'class',

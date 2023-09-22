@@ -8,7 +8,7 @@ use Lkrms\Facade\Cache;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$app = App::load(__DIR__)->loadCache();
+$app = App::load(__DIR__)->startCache();
 
 print_r([
     'App::getInstance()->getCachePath()' => App::getInstance()->getCachePath(),

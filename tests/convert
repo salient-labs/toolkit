@@ -3,12 +3,12 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Err\Err;
+use Lkrms\Facade\Err;
 use Lkrms\Utility\Convert;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-Err::load();
+Err::register();
 
 $list = [
     ['id' => 38, 'name' => 'Amir'],

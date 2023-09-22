@@ -5,12 +5,12 @@ namespace Lkrms\Tests;
 
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Console\ConsoleFormatter;
-use Lkrms\Err\Err;
 use Lkrms\Facade\Console;
+use Lkrms\Facade\Err;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-Err::load();
+Err::register();
 
 // Send all output, including debug messages and errors, to STDOUT
 Console::registerTarget(new StreamTarget(STDOUT));

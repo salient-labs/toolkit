@@ -3,15 +3,15 @@
 
 namespace Lkrms\Tests\Support;
 
-use Lkrms\Err\Err;
 use Lkrms\Facade\Console;
+use Lkrms\Facade\Err;
 use Lkrms\Support\Http\HttpRequest;
 use Lkrms\Support\Http\HttpResponse;
 use Lkrms\Support\Http\HttpServer;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-Err::load();
+Err::register();
 
 $server = new HttpServer('localhost', 8306);
 $server->start();

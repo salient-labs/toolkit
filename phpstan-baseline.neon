@@ -306,21 +306,6 @@ parameters:
 			path: src/Curler/Support/CurlerPage.php
 
 		-
-			message: "#^Class Lkrms\\\\Err\\\\Err implements generic interface Lkrms\\\\Contract\\\\IFacade but does not specify its types\\: TClass$#"
-			count: 1
-			path: src/Err/Err.php
-
-		-
-			message: "#^Method Lkrms\\\\Err\\\\Err\\:\\:__callStatic\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Err/Err.php
-
-		-
-			message: "#^Method Lkrms\\\\Err\\\\Err\\:\\:__callStatic\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Err/Err.php
-
-		-
 			message: "#^Method Lkrms\\\\Store\\\\CacheStore\\:\\:get\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Store/CacheStore.php

@@ -3,13 +3,13 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Err\Err;
+use Lkrms\Facade\Err;
 use Lkrms\Facade\File;
 use Lkrms\Utility\Test;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-Err::load();
+Err::register();
 
 $file = fopen(__FILE__, 'r');
 $url = fopen('https://1.1.1.1/', 'r');

@@ -3,13 +3,13 @@
 
 namespace Lkrms\Tests;
 
-use Lkrms\Err\Err;
+use Lkrms\Facade\Err;
 use Lkrms\Support\SqlQuery;
 use DateTime;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-Err::load();
+Err::register();
 
 $query = new SqlQuery(fn() => '?');
 
