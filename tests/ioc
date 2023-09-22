@@ -6,13 +6,13 @@ namespace Lkrms\Tests;
 use Dice\Dice;
 use Lkrms\Concern\TService;
 use Lkrms\Contract\IService;
-use Lkrms\Err\Err;
 use Lkrms\Facade\DI;
+use Lkrms\Facade\Err;
 use UnexpectedValueException;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-Err::load();
+Err::register();
 
 class IdGenerator
 {

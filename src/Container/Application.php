@@ -7,10 +7,10 @@ use Lkrms\Console\Catalog\ConsoleLevels;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IApplication;
-use Lkrms\Err\Err;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
+use Lkrms\Facade\Err;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Format;
 use Lkrms\Facade\Sync;
@@ -286,13 +286,11 @@ class Application extends Container implements IApplication
 
         Console::registerStdioTargets();
 
-        if (!Err::isLoaded()) {
-            Err::load();
-        }
+        Err::register();
 
         $adodb = Composer::getPackagePath('adodb/adodb-php');
         if ($adodb !== null) {
-            Err::silencePaths($adodb);
+            Err::silencePath($adodb);
         }
     }
 

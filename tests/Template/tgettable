@@ -8,13 +8,13 @@ use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
-use Lkrms\Err\Err;
+use Lkrms\Facade\Err;
 use RuntimeException;
 use Throwable;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-Err::load();
+Err::register();
 
 class A implements IWritable, IReadable
 {

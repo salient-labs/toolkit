@@ -13,13 +13,13 @@ use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
-use Lkrms\Err\Err;
+use Lkrms\Facade\Err;
 use Throwable;
 use UnexpectedValueException;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-Err::load();
+Err::register();
 
 class A implements IReadable, IWritable, ReturnsNormaliser
 {

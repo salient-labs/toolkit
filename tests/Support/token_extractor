@@ -3,7 +3,7 @@
 
 namespace Lkrms\Tests\Support;
 
-use Lkrms\Err\Err;
+use Lkrms\Facade\Err;
 use Lkrms\Support\TokenExtractor;
 use My\Full\Classname as Another;
 use My\Full\Classname as AnotherClass, My\Full\Classname;
@@ -20,7 +20,7 @@ use const some\namespace\{ConstA, ConstB, ConstC};
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-Err::load();
+Err::register();
 
 $extractor = new TokenExtractor(__FILE__);
 print_r($extractor->getUseMap());

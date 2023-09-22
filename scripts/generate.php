@@ -15,6 +15,7 @@ use Lkrms\LkUtil\Command\Generate\GenerateFacade;
 use Lkrms\Store\CacheStore;
 use Lkrms\Store\TrashStore;
 use Lkrms\Support\ArrayMapper;
+use Lkrms\Support\ErrorHandler;
 use Lkrms\Support\EventDispatcher;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinition;
@@ -43,6 +44,7 @@ $facades = [
     ConsoleWriter::class => \Lkrms\Facade\Console::class,
     Container::class => \Lkrms\Facade\DI::class,
     Debugging::class => \Lkrms\Facade\Debug::class,
+    ErrorHandler::class => [\Lkrms\Facade\Err::class, '--skip', 'handleShutdown,handleError,handleException'],
     EventDispatcher::class => \Lkrms\Facade\Event::class,
     Filesystem::class => \Lkrms\Facade\File::class,
     Formatters::class => \Lkrms\Facade\Format::class,
@@ -83,7 +85,12 @@ $args = [
 $status = 0;
 
 foreach ($facades as $class => $facade) {
-    $status |= $generateFacade(...[...$args, $class, $facade]);
+    $facadeArgs = [];
+    if (is_array($facade)) {
+        $facadeArgs = $facade;
+        $facade = array_shift($facadeArgs);
+    }
+    $status |= $generateFacade(...[...$args, ...$facadeArgs, $class, $facade]);
 }
 
 foreach ($builders as $class => $builder) {
