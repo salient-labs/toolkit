@@ -15,6 +15,7 @@ use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
 use Lkrms\Tests\Sync\Entity\Provider\UserProvider;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
+use Lkrms\Utility\Env;
 
 /**
  *
@@ -31,11 +32,9 @@ use Lkrms\Tests\Sync\Entity\User;
  */
 class JsonPlaceholderApi extends HttpSyncProvider implements IServiceSingleton, PostProvider, UserProvider
 {
-    private const JSON_PLACEHOLDER_BASE_URL = 'https://jsonplaceholder.typicode.com';
-
     public function name(): ?string
     {
-        return sprintf('JSONPlaceholder { %s }', self::JSON_PLACEHOLDER_BASE_URL);
+        return sprintf('JSONPlaceholder { %s }', $this->getBaseUrl());
     }
 
     public static function getContextualBindings(): array
@@ -48,7 +47,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements IServiceSingleton, 
 
     public function getBackendIdentifier(): array
     {
-        return [self::JSON_PLACEHOLDER_BASE_URL];
+        return [$this->getBaseUrl()];
     }
 
     protected function getDateFormatter(): DateFormatter
@@ -56,9 +55,9 @@ class JsonPlaceholderApi extends HttpSyncProvider implements IServiceSingleton, 
         return new DateFormatter();
     }
 
-    protected function getBaseUrl(?string $path): string
+    protected function getBaseUrl(?string $path = null): string
     {
-        return self::JSON_PLACEHOLDER_BASE_URL;
+        return Env::get('JSON_PLACEHOLDER_BASE_URL', 'https://jsonplaceholder.typicode.com');
     }
 
     protected function getHeaders(?string $path): ?ICurlerHeaders
