@@ -129,6 +129,11 @@ final class SyncStore extends SqliteStore
     private $RegisteredNamespaces = [];
 
     /**
+     * @var int
+     */
+    private $DeferredEntityCheckpoint = 0;
+
+    /**
      * @var string|null
      */
     private $Command;
@@ -733,8 +738,21 @@ final class SyncStore extends SqliteStore
             $deferred->replace($entity);
             return $this;
         }
-        $this->DeferredEntities[$providerId][$entityTypeId][$entityId][] = $deferred;
+        $this->DeferredEntities[$providerId][$entityTypeId][$entityId][$this->DeferredEntityCheckpoint++] = $deferred;
         return $this;
+    }
+
+    /**
+     * Get a checkpoint to delineate between entities already in the deferred
+     * entity queue and any subsequently deferred sync entities
+     *
+     * Use the return value of this method with
+     * {@see SyncStore::resolveDeferredEntities()} to limit the range of
+     * entities to resolve, e.g. to those produced by a particular operation.
+     */
+    public function getDeferredEntityCheckpoint(): int
+    {
+        return $this->DeferredEntityCheckpoint;
     }
 
     /**
@@ -750,6 +768,7 @@ final class SyncStore extends SqliteStore
      * @return ISyncEntity[]
      */
     public function resolveDeferredEntities(
+        ?int $fromCheckpoint = null,
         ?int $providerId = null,
         ?string $entityType = null,
         ?bool $offline = null
@@ -768,6 +787,25 @@ final class SyncStore extends SqliteStore
                 if ($entityTypeId !== null && $entTypeId !== $entityTypeId) {
                     continue;
                 }
+
+                if ($fromCheckpoint !== null) {
+                    $_entities = $entities;
+                    foreach ($_entities as $id => $deferredList) {
+                        foreach ($deferredList as $index => $deferred) {
+                            if ($index < $fromCheckpoint) {
+                                unset($_entities[$id][$index]);
+                                if (!$_entities[$id]) {
+                                    unset($_entities[$id]);
+                                }
+                            }
+                        }
+                    }
+                    if (!$_entities) {
+                        continue;
+                    }
+                    $entities = $_entities;
+                }
+
                 /** @var class-string<ISyncEntity> */
                 $entityType = $this->EntityTypes[$entTypeId];
                 $entityProvider = $provider->with($entityType);

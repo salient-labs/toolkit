@@ -90,7 +90,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements IServiceSingleton, 
 
     public function getPosts(SyncContext $ctx): iterable
     {
-        $filter = $ctx->getFilter();
+        $filter = $ctx->getFilters();
         if ($user = $filter['user'] ?? null) {
             return Post::provideList($this->getCurler("/users/$user/posts")->get(), $this, ArrayKeyConformity::NONE, $ctx);
         }

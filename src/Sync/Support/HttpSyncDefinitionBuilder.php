@@ -32,7 +32,7 @@ use Closure;
  * @method $this pager(?ICurlerPager $value) The pagination handler for the endpoint servicing the entity (see {@see HttpSyncDefinition::$Pager})
  * @method $this callback((callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $value) A callback applied to the definition before every sync operation (see {@see HttpSyncDefinition::$Callback})
  * @method $this conformity(ArrayKeyConformity::* $value) The conformity level of data returned by the provider for this entity (see {@see SyncDefinition::$Conformity})
- * @method $this filterPolicy(SyncFilterPolicy::* $value) The action to take when filters are ignored by the provider (see {@see SyncDefinition::$FilterPolicy})
+ * @method $this filterPolicy(SyncFilterPolicy::* $value) The action to take when filters are unclaimed by the provider (see {@see SyncDefinition::$FilterPolicy})
  * @method $this expiry(?int $value) The time, in seconds, before responses from the provider expire (see {@see HttpSyncDefinition::$Expiry})
  * @method $this methodMap(array<SyncOperation::*,string> $value) An array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})
  * @method $this syncOneEntityPerRequest(bool $value = true) If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request (default: false)

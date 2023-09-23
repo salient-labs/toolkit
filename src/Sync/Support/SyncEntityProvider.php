@@ -5,6 +5,7 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Contract\IContainer;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Iterator\IterableIterator;
+use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy as DeferredEntityPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
@@ -12,7 +13,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
-use Lkrms\Sync\Support\SyncContext;
+use Generator;
 use LogicException;
 
 /**
@@ -60,6 +61,11 @@ final class SyncEntityProvider implements ISyncEntityProvider
     private $Context;
 
     /**
+     * @var SyncStore
+     */
+    private $Store;
+
+    /**
      * @var bool|null
      */
     private $Offline;
@@ -90,6 +96,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
         $this->Provider = $provider;
         $this->Definition = $definition;
         $this->Context = $context ?? $provider->getContext($container);
+        $this->Store = $provider->store();
     }
 
     /**
@@ -123,20 +130,72 @@ final class SyncEntityProvider implements ISyncEntityProvider
     }
 
     /**
-     * @internal
+     * @inheritDoc
      */
     public function run(int $operation, ...$args)
     {
+        $fromCheckpoint = $this->Store->getDeferredEntityCheckpoint();
+
         if (!SyncOperation::isList($operation)) {
-            return $this->_run($operation, ...$args);
+            $result = $this->_run($operation, ...$args);
+            if ($this->Context->getDeferredSyncEntityPolicy() !==
+                    DeferredEntityPolicy::DO_NOT_RESOLVE) {
+                $this->resolveDeferredEntities($fromCheckpoint);
+            }
+            return $result;
         }
 
-        $result = $this->_run($operation, ...$args);
+        switch ($this->Context->getDeferredSyncEntityPolicy()) {
+            case DeferredEntityPolicy::DO_NOT_RESOLVE:
+                $result = $this->_run($operation, ...$args);
+                break;
+
+            case DeferredEntityPolicy::RESOLVE_EARLY:
+                $result = $this->resolveDeferredEntitiesBeforeYield($fromCheckpoint, $operation, ...$args);
+                break;
+
+            case DeferredEntityPolicy::RESOLVE_LATE:
+                $result = $this->resolveDeferredEntitiesAfterRun($fromCheckpoint, $operation, ...$args);
+                break;
+        }
+
         if (!($result instanceof FluentIteratorInterface)) {
             return new IterableIterator($result);
         }
 
         return $result;
+    }
+
+    /**
+     * @param SyncOperation::* $operation
+     * @param mixed ...$args
+     * @return Generator<TEntity>
+     */
+    private function resolveDeferredEntitiesBeforeYield(int $fromCheckpoint, int $operation, ...$args): Generator
+    {
+        foreach ($this->_run($operation, ...$args) as $key => $entity) {
+            $this->resolveDeferredEntities($fromCheckpoint);
+            $fromCheckpoint = $this->Store->getDeferredEntityCheckpoint();
+            yield $key => $entity;
+        }
+    }
+
+    /**
+     * @param SyncOperation::* $operation
+     * @param mixed ...$args
+     * @return Generator<TEntity>
+     */
+    private function resolveDeferredEntitiesAfterRun(int $fromCheckpoint, int $operation, ...$args): Generator
+    {
+        yield from $this->_run($operation, ...$args);
+        $this->resolveDeferredEntities($fromCheckpoint);
+    }
+
+    private function resolveDeferredEntities(int $fromCheckpoint): void
+    {
+        while ($this->Store->resolveDeferredEntities($fromCheckpoint)) {
+            $fromCheckpoint = $this->Store->getDeferredEntityCheckpoint();
+        }
     }
 
     /**
@@ -397,9 +456,16 @@ final class SyncEntityProvider implements ISyncEntityProvider
             throw new LogicException('Not a *_LIST operation: ' . $operation);
         }
 
+        $fromCheckpoint = $this->Store->getDeferredEntityCheckpoint();
+
         $result = $this->_run($operation, ...$args);
         if (!is_array($result)) {
-            return iterator_to_array($result);
+            $result = iterator_to_array($result);
+        }
+
+        if ($this->Context->getDeferredSyncEntityPolicy() !==
+                DeferredEntityPolicy::DO_NOT_RESOLVE) {
+            $this->resolveDeferredEntities($fromCheckpoint);
         }
 
         return $result;
