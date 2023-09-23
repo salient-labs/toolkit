@@ -71,6 +71,8 @@ abstract class HttpSyncProvider extends SyncProvider
     }
 
     /**
+     * @inheritDoc
+     *
      * @template T of ISyncEntity
      * @param class-string<T> $entity
      * @return ISyncDefinition<T,static>

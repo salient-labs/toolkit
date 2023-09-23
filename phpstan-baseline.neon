@@ -376,46 +376,6 @@ parameters:
 			path: src/Support/ProviderContext.php
 
 		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:addNextParam\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:addParam\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:buildWhere\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:buildWhere\\(\\) has parameter \\$where with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:getWhere\\(\\) has parameter \\$values with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:where\\(\\) has parameter \\$clause with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:whereValueInList\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Property Lkrms\\\\Support\\\\SqlQuery\\:\\:\\$Where type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
 			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$Offline is never read, only written\\.$#"
 			count: 1
 			path: src/Sync/Support/SyncEntityProvider.php

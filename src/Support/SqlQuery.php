@@ -5,7 +5,7 @@ namespace Lkrms\Support;
 use Lkrms\Concept\FluentInterface;
 use Lkrms\Concern\TReadable;
 use Lkrms\Contract\IReadable;
-use UnexpectedValueException;
+use LogicException;
 
 /**
  * A simple representation of a SQL query
@@ -20,11 +20,12 @@ final class SqlQuery extends FluentInterface implements IReadable
     public const OR = 'OR';
 
     /**
-     * A list of optionally nested WHERE clauses
+     * A list of optionally nested WHERE conditions
      *
-     * To join a list of clauses with an explicit operator:
+     * To join a list of conditions with an explicit operator:
      *
      * ```php
+     * <?php
      * [
      *     '__' => SqlQuery::AND,
      *     'Id = ?',
@@ -32,9 +33,10 @@ final class SqlQuery extends FluentInterface implements IReadable
      * ]
      * ```
      *
-     * To use nested clauses:
+     * To use nested conditions:
      *
      * ```php
+     * <?php
      * [
      *     '__' => SqlQuery::AND,
      *     'ItemKey = ?',
@@ -46,7 +48,7 @@ final class SqlQuery extends FluentInterface implements IReadable
      * ]
      * ```
      *
-     * @var array<int|string,string|array>
+     * @var array<int|string,string|mixed[]>
      */
     public $Where = [];
 
@@ -58,21 +60,23 @@ final class SqlQuery extends FluentInterface implements IReadable
     protected $Values = [];
 
     /**
-     * @var callable
+     * @var callable(string): string
      */
     protected $ParamCallback;
 
+    /**
+     * @inheritDoc
+     */
     public static function getReadable(): array
     {
         return ['Values'];
     }
 
     /**
-     * @param callable $paramCallback Applied to the name of each parameter
-     * added to the query.
-     * ```php
-     * function (string $name): string
-     * ```
+     * Creates a new SqlQuery object
+     *
+     * @param callable(string): string $paramCallback Applied to the name of
+     * each parameter added to the query.
      */
     public function __construct(callable $paramCallback)
     {
@@ -82,12 +86,13 @@ final class SqlQuery extends FluentInterface implements IReadable
     /**
      * Add a parameter and assign its query placeholder to a variable
      *
+     * @param mixed $value
      * @return $this
      */
     public function addParam(string $name, $value, ?string &$placeholder)
     {
         if (array_key_exists($name, $this->Values)) {
-            throw new UnexpectedValueException("Parameter already added: $name");
+            throw new LogicException(sprintf('Parameter already added: %s', $name));
         }
 
         $placeholder = ($this->ParamCallback)($name);
@@ -97,52 +102,59 @@ final class SqlQuery extends FluentInterface implements IReadable
     }
 
     /**
-     * Add a WHERE clause
+     * Add a WHERE condition
      *
-     * See {@see SqlQuery::$Where}.
+     * @see SqlQuery::$Where
      *
-     * @param callable|string|array $clause A string, an array, or a callback
-     * that returns a string or array.
-     * ```php
-     * fn(): string|array
-     * ```
+     * @param (callable(): (string|mixed[]))|string|mixed[] $condition
      * @return $this
      */
-    public function where($clause)
+    public function where($condition)
     {
-        $this->Where[] = is_callable($clause) ? $clause() : $clause;
+        $this->Where[] = is_callable($condition) ? $condition() : $condition;
 
         return $this;
     }
 
     /**
-     * Add "<name> IN (<value>[,<value>])" to the query unless a list of values
-     * is empty
+     * Add a list of values as a WHERE condition ("<name> IN (<value>...)")
+     * unless the list is empty
      *
+     * @param mixed ...$value
      * @return $this
      */
     public function whereValueInList(string $name, ...$value)
     {
-        if (!count($value)) {
+        if (!$value) {
             return $this;
         }
 
-        $expr = [];
-        foreach ($value as $_value) {
-            $expr[] = $this->addNextParam($_value);
+        foreach ($value as $val) {
+            $expr[] = $this->addNextParam($val);
         }
         $this->Where[] = "$name IN (" . implode(',', $expr) . ')';
 
         return $this;
     }
 
+    /**
+     * Prepare a WHERE condition for use in a SQL statement
+     *
+     * @param array<string,mixed>|null $values
+     */
     public function getWhere(?array &$values = null): ?string
     {
         $values = $this->Values;
+        $where = $this->buildWhere($this->Where);
 
-        return $this->buildWhere($this->Where) ?: null;
+        return $where === ''
+            ? null
+            : $where;
     }
 
+    /**
+     * @param mixed $value
+     */
     private function addNextParam($value): string
     {
         $this->addParam('param_' . count($this->Values), $value, $param);
@@ -150,20 +162,25 @@ final class SqlQuery extends FluentInterface implements IReadable
         return $param;
     }
 
-    private function buildWhere(array $where)
+    /**
+     * @param array<int|string,string|mixed[]> $where
+     */
+    private function buildWhere(array $where): string
     {
         $glue = $where['__'] ?? self::AND;
         unset($where['__']);
-        foreach ($where as $i => $clause) {
-            if (is_array($clause)) {
-                if (!($clause = $this->buildWhere($clause))) {
+        foreach ($where as $i => $condition) {
+            if (is_array($condition)) {
+                $condition = $this->buildWhere($condition);
+                if ($condition === '') {
                     unset($where[$i]);
                     continue;
                 }
-                $where[$i] = "($clause)";
+                $where[$i] = "($condition)";
             }
         }
 
+        /** @var string[] $where */
         return implode(" $glue ", $where);
     }
 }
