@@ -102,11 +102,30 @@ jobs:
           extensions: sqlite3
           coverage: pcov
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
       - name: Install dependencies
-        run: composer install --no-interaction --no-progress
+        run: |
+          composer install --no-interaction --no-progress
+          npm install -g @mockoon/cli
+
+      - name: Start Mockoon CLI
+        shell: bash
+        run: mockoon-cli start --port 3001 --log-transaction --data tests/fixtures/.mockoon/JsonPlaceholderApi.json &
 
       - name: Run PHPUnit tests and generate code coverage report
         run: vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml
+        env:
+          JSON_PLACEHOLDER_BASE_URL: "http://localhost:3001"
+
+      - name: Upload Mockoon CLI log files artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: mockoon-cli-logs
+          path: ~/.mockoon-cli/logs/*.log
 
       - name: Upload code coverage report to Codecov
         uses: codecov/codecov-action@v3
