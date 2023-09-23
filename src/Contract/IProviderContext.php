@@ -5,57 +5,50 @@ namespace Lkrms\Contract;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 
 /**
- * The context within which an IProvidable is instantiated
+ * The context within which an entity is instantiated by a provider
  *
+ * @extends ReturnsContainer<IContainer>
+ * @extends ReturnsProvider<IProvider>
  */
-interface IProviderContext extends IImmutable, ReturnsContainer
+interface IProviderContext extends IImmutable, ReturnsContainer, ReturnsProvider
 {
     /**
-     * Apply an arbitrary value to the context
-     *
-     * @return $this
-     */
-    public function set(string $key, $value);
-
-    /**
-     * Push the entity propagating this context onto the stack
-     *
-     * Note that although the same entity may be passed to both
-     * {@see IProviderContext::push()} and {@see IProviderContext::withParent()}
-     * (e.g. when a hierarchy is being populated from a root entity), they have
-     * completely different purposes.
-     *
-     * A `Post` object, for example, would `push()` itself onto the entity stack
-     * to retrieve a `User` instance for its `Author` property. The `Post` has a
-     * reference to a `User`, but is not its parent because the reference is not
-     * hierarchical. (Also, only a `User` entity can be the parent or child of
-     * another `User` entity.)
-     *
-     * A `Staff` object, however, would `push()` itself onto the entity stack to
-     * retrieve `Staff` instances for its `DirectReports` property, **and** pass
-     * itself to `withParent()` as the parent (a.k.a. manager) of those `Staff`.
-     *
-     * @return $this
-     */
-    public function push(IProvidable $entity);
-
-    /**
-     * Set the context's container
+     * Apply a container to the context
      *
      * @return $this
      */
     public function withContainer(IContainer $container);
 
     /**
-     * Set the parent of ITreeable entities instantiated within the context
+     * Push the entity propagating the context onto the stack
+     *
+     * Note that although the same entity may be passed to both
+     * {@see IProviderContext::push()} and {@see IProviderContext::withParent()}
+     * (e.g. when a hierarchy is being populated from a root entity), they serve
+     * different purposes.
+     *
+     * Example: a `Post` object would `push()` itself onto the entity stack to
+     * retrieve a `User` instance for its `Author` property, but a `Staff`
+     * object would `push()` itself onto the entity stack to retrieve `Staff`
+     * instances for its `DirectReports` property, **and** pass itself to
+     * `withParent()` as the parent (a.k.a. manager) of those `Staff`.
+     *
+     * @param IProvidable<IProvider,IProviderContext> $entity
+     * @return $this
+     */
+    public function push(IProvidable $entity);
+
+    /**
+     * Apply a parent entity to the context
      *
      * @see IProviderContext::push()
+     *
      * @return $this
      */
     public function withParent(?ITreeable $parent);
 
     /**
-     * Propagate the current payload's array key conformity
+     * Apply the current payload's array key conformity to the context
      *
      * @param ArrayKeyConformity::* $conformity Use
      * {@see ArrayKeyConformity::COMPLETE} wherever possible to improve
@@ -65,20 +58,19 @@ interface IProviderContext extends IImmutable, ReturnsContainer
     public function withConformity($conformity);
 
     /**
-     * Get the value most recently passed to set($key)
-     *
+     * @inheritDoc
      */
-    public function get(string $key);
+    public function provider(): IProvider;
 
     /**
      * Get the entities responsible for propagating this context
      *
-     * @return IProvidable[]
+     * @return IProvidable<IProvider,IProviderContext>[]
      */
-    public function getStack(): array;
+    public function stack(): array;
 
     /**
-     * Get the value most recently passed to withParent()
+     * Get the parent entity applied to the context
      *
      */
     public function getParent(): ?ITreeable;

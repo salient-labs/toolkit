@@ -170,20 +170,23 @@ final class SyncIntrospector extends Introspector
 
         return
             static function (array $array, ISyncProvider $provider, $context = null) use ($closure, $service) {
-                /** @var IContainer $container */
-                [$container, $parent] =
-                    $context instanceof ISyncContext
-                        ? [$context->container(), $context->getParent()]
-                        : [$context ?: $provider->container(), null];
+                if ($context instanceof ISyncContext) {
+                    $container = $context->container();
+                    $parent = $context->getParent();
+                } else {
+                    /** @var IContainer */
+                    $container = $context ?? $provider->container();
+                    $context = $provider->getContext($container);
+                }
 
                 return $closure(
                     $array,
                     $service,
                     $container,
                     $provider,
-                    $context ?: $container->get(SyncContext::class)->withParent($parent),
+                    $context,
                     $provider->dateFormatter(),
-                    $parent,
+                    $parent ?? null,
                 );
             };
     }
@@ -350,6 +353,7 @@ final class SyncIntrospector extends Introspector
                             $entity->{$property} = $data[$key];
                             return;
                         }
+                        /** @var IProvidable<IProvider,IProviderContext> $entity */
                         if ($list) {
                             DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
                             return;
@@ -413,6 +417,7 @@ final class SyncIntrospector extends Introspector
                     $entity->{$property} = $data[$key];
                     return;
                 }
+                /** @var IProvidable<IProvider,IProviderContext> $entity */
                 if ($list) {
                     DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
                     return;

@@ -206,19 +206,23 @@ class Introspector
 
         return
             static function (array $array, IProvider $provider, $context = null) use ($closure, $service) {
-                [$container, $parent] =
-                    $context instanceof IProviderContext
-                        ? [$context->container(), $context->getParent()]
-                        : [$context ?: $provider->container(), null];
+                if ($context instanceof IProviderContext) {
+                    $container = $context->container();
+                    $parent = $context->getParent();
+                } else {
+                    /** @var IContainer */
+                    $container = $context ?? $provider->container();
+                    $context = $provider->getContext($container);
+                }
 
                 return $closure(
                     $array,
                     $service,
                     $container,
                     $provider,
-                    $context ?: new ProviderContext($container, $parent),
+                    $context,
                     $provider->dateFormatter(),
-                    $parent,
+                    $parent ?? null,
                 );
             };
     }

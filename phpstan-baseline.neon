@@ -101,31 +101,6 @@ parameters:
 			path: src/Contract/IProvider.php
 
 		-
-			message: "#^Interface Lkrms\\\\Contract\\\\IProviderContext extends generic interface Lkrms\\\\Contract\\\\ReturnsContainer but does not specify its types\\: T$#"
-			count: 1
-			path: src/Contract/IProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IProviderContext\\:\\:get\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Contract/IProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IProviderContext\\:\\:getStack\\(\\) return type with generic interface Lkrms\\\\Contract\\\\IProvidable does not specify its types\\: TProvider, TProviderContext$#"
-			count: 1
-			path: src/Contract/IProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IProviderContext\\:\\:push\\(\\) has parameter \\$entity with generic interface Lkrms\\\\Contract\\\\IProvidable but does not specify its types\\: TProvider, TProviderContext$#"
-			count: 1
-			path: src/Contract/IProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IProviderContext\\:\\:set\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Contract/IProviderContext.php
-
-		-
 			message: "#^Method Lkrms\\\\Contract\\\\IReadable\\:\\:__get\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Contract/IReadable.php
@@ -349,31 +324,6 @@ parameters:
 			message: "#^Method Lkrms\\\\Store\\\\TrashStore\\:\\:put\\(\\) has parameter \\$object with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Store/TrashStore.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\ProviderContext\\:\\:get\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Support/ProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\ProviderContext\\:\\:getStack\\(\\) return type with generic interface Lkrms\\\\Contract\\\\IProvidable does not specify its types\\: TProvider, TProviderContext$#"
-			count: 1
-			path: src/Support/ProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\ProviderContext\\:\\:push\\(\\) has parameter \\$entity with generic interface Lkrms\\\\Contract\\\\IProvidable but does not specify its types\\: TProvider, TProviderContext$#"
-			count: 1
-			path: src/Support/ProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\ProviderContext\\:\\:set\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Support/ProviderContext.php
-
-		-
-			message: "#^Property Lkrms\\\\Support\\\\ProviderContext\\:\\:\\$Stack with generic interface Lkrms\\\\Contract\\\\IProvidable does not specify its types\\: TProvider, TProviderContext$#"
-			count: 1
-			path: src/Support/ProviderContext.php
 
 		-
 			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$Offline is never read, only written\\.$#"

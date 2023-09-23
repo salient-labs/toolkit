@@ -15,6 +15,11 @@ use Lkrms\Sync\Support\SyncStore;
 interface ISyncProvider extends IProvider
 {
     /**
+     * @inheritDoc
+     */
+    public function getContext(?IContainer $container = null): ISyncContext;
+
+    /**
      * Called when the provider is registered with an entity store
      *
      * @see SyncStore::provider()

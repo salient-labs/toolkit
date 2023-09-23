@@ -12,6 +12,12 @@ use Lkrms\Support\DateFormatter;
 interface IProvider extends ReturnsContainer, ReturnsEnvironment, ReturnsDescription
 {
     /**
+     * Get a context for instantiation of objects on the provider's behalf
+     *
+     */
+    public function getContext(?IContainer $container = null): IProviderContext;
+
+    /**
      * Get a stable list of values that, together with the name of the class,
      * uniquely identifies the backend instance
      *

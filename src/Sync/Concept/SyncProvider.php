@@ -81,6 +81,20 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
     /**
      * @inheritDoc
      */
+    public function getContext(?IContainer $container = null): ISyncContext
+    {
+        if (!$container) {
+            $container = $this->App;
+        }
+
+        return $container
+            ->bindIf(ISyncContext::class, SyncContext::class)
+            ->get(ISyncContext::class, [$this]);
+    }
+
+    /**
+     * @inheritDoc
+     */
     final public function store(): SyncStore
     {
         return $this->Store;
@@ -147,12 +161,15 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
     {
         $this->Store->entityType($entity);
 
-        $container = ($context instanceof ISyncContext
+        /** @var IContainer */
+        $container = $context instanceof ISyncContext
             ? $context->container()
-            : ($context ?: $this->container()))->inContextOf(static::class);
+            : ($context ?? $this->App);
+        $container = $container->inContextOf(static::class);
+
         $context = $context instanceof ISyncContext
             ? $context->withContainer($container)
-            : $container->get(SyncContext::class);
+            : $this->getContext($container);
 
         return $container->get(
             SyncEntityProvider::class,

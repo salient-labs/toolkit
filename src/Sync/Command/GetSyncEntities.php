@@ -121,8 +121,7 @@ final class GetSyncEntities extends AbstractSyncCommand
                 . ($this->EntityId === null ? '' : '/' . $this->EntityId)
         );
 
-        $this->App->bindIf(ISyncContext::class, SyncContext::class);
-        $context = $this->App->get(ISyncContext::class);
+        $context = $provider->getContext();
 
         $result = $this->EntityId !== null
             ? $provider->with($entity, $context)->get($this->EntityId, $filter)

@@ -260,13 +260,9 @@ final class SyncStore extends SqliteStore
      */
     public function close(int $exitStatus = 0)
     {
-        if (!$this->isOpen()) {
-            return $this;
-        }
-
         // Don't start a run now
-        if ($this->RunId === null) {
-            return parent::close();
+        if (!$this->isOpen() || $this->RunId === null) {
+            return $this->closeDb();
         }
 
         $db = $this->db();
@@ -292,7 +288,7 @@ final class SyncStore extends SqliteStore
         $stmt->execute();
         $stmt->close();
 
-        return parent::close();
+        return $this->closeDb();
     }
 
     /**

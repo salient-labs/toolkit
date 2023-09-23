@@ -89,7 +89,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
         $this->Entity = $entity;
         $this->Provider = $provider;
         $this->Definition = $definition;
-        $this->Context = $context ?: $container->get(SyncContext::class);
+        $this->Context = $context ?? $provider->getContext($container);
     }
 
     /**
