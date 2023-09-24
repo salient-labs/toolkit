@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Concept\TypedCollection;
+use Lkrms\Concept\LooselyTypedCollection;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Sync\Catalog\SyncErrorType as ErrorType;
@@ -12,9 +12,9 @@ use JsonSerializable;
 /**
  * A collection of SyncError objects
  *
- * @extends TypedCollection<int,SyncError>
+ * @extends LooselyTypedCollection<int,SyncError>
  */
-final class SyncErrorCollection extends TypedCollection implements JsonSerializable
+final class SyncErrorCollection extends LooselyTypedCollection implements JsonSerializable
 {
     protected const ITEM_CLASS = SyncError::class;
 
@@ -31,7 +31,7 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
             $code = $error->getCode();
             $message = $error->Message;
             $key = "$code.$message";
-            if (is_null($summary[$key] ?? null)) {
+            if (!isset($summary[$key])) {
                 $summary[$key] = [
                     'code' => $code,
                     'title' => ErrorType::toName($error->ErrorType),
@@ -52,28 +52,45 @@ final class SyncErrorCollection extends TypedCollection implements JsonSerializa
         return array_values($summary);
     }
 
-    public function __toString(): string
+    /**
+     * Get a human-readable representation of the errors
+     *
+     */
+    public function toString(bool $withMarkup = false): string
     {
+        $b = $withMarkup ? '__' : '';
+        $em = $withMarkup ? '_' : '';
+        $d = $withMarkup ? '~~' : '';
+
         $summary = $this->toSummary();
         $lines = [];
-        $separator = "\n" . '  ';
+        $separator = "\n  ";
         foreach ($summary as $error) {
+            $values = $error['meta']['values'];
+
+            if ($withMarkup) {
+                foreach ($values as &$value) {
+                    $value = Formatter::escapeTags(json_encode($value));
+                }
+            }
+
             $lines[] = sprintf(
-                "~~{~~_%d_~~}~~ ___%s___ ~~[~~__%s__~~]~~ ~~(~~_'%s'_~~)~~:",
+                "{$d}{{$d}{$em}%d{$em}{$d}}{$d} {$b}{$em}%s{$em}{$b} {$d}[{$d}{$b}%s{$b}{$d}]{$d} {$d}({$d}{$em}'%s'{$em}{$d}){$d}:%s%s",
                 $error['meta']['seen'],
                 $error['title'],
                 $error['meta']['level'],
-                $error['detail']
-            ) . $separator . implode(
+                $error['detail'],
                 $separator,
-                array_map(
-                    fn($v) => Formatter::escapeTags(json_encode($v)),
-                    $error['meta']['values']
-                )
+                implode($separator, $values),
             );
         }
 
         return implode("\n", $lines);
+    }
+
+    public function __toString(): string
+    {
+        return $this->toString();
     }
 
     /**

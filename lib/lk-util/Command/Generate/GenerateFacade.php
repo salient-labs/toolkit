@@ -157,7 +157,7 @@ final class GenerateFacade extends GenerateCommand
                 $summary = "Load and return an instance of the underlying $classClass class";
                 unset($facadeMethods[0]);
             } else {
-                if ($phpDoc->TagsByName['deprecated'] ?? null) {
+                if (isset($phpDoc->TagsByName['deprecated'])) {
                     continue;
                 }
                 $method = $methodName;

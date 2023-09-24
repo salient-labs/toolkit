@@ -5,11 +5,12 @@ namespace Lkrms\Support;
 use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
+use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ISerializeRules;
+use Lkrms\Contract\ITreeable;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Convert;
@@ -25,7 +26,32 @@ use UnexpectedValueException;
  * {@see IntrospectionClass} instance for any properties declared by
  * `IntrospectionClass` and not declared by `Introspector`.
  *
- * @property-read string $Class The name of the class under introspection
+ * @property-read class-string<TClass> $Class The name of the class under introspection
+ * @property-read bool $IsReadable True if the class implements IReadable
+ * @property-read bool $IsWritable True if the class implements IWritable
+ * @property-read bool $IsExtensible True if the class implements IExtensible
+ * @property-read bool $IsProvidable True if the class implements IProvidable
+ * @property-read bool $IsRelatable True if the class implements IRelatable
+ * @property-read bool $IsTreeable True if the class implements ITreeable
+ * @property-read bool $HasDates True if the class implements HasDateProperties
+ * @property-read array<string,string> $Properties Properties (normalised name => declared name)
+ * @property-read array<string,string> $PublicProperties Public properties (normalised name => declared name)
+ * @property-read array<string,string> $ReadableProperties Readable properties (normalised name => declared name)
+ * @property-read array<string,string> $WritableProperties Writable properties (normalised name => declared name)
+ * @property-read array<string,array<string,string>> $Actions Action => normalised property name => "magic" property method
+ * @property-read array<string,string> $Parameters Constructor parameters (normalised name => declared name)
+ * @property-read array<string,string> $RequiredParameters Parameters that aren't nullable and don't have a default value (normalised name => declared name)
+ * @property-read array<string,string> $ServiceParameters Required parameters with a declared type that can be resolved by a service container (normalised name => class/interface name)
+ * @property-read array<string,string> $PassByRefParameters Parameters to pass by reference (normalised name => declared name)
+ * @property-read array<string,string> $DateParameters Parameters with a declared type that implements DateTimeInterface (normalised name => declared name)
+ * @property-read mixed[] $DefaultArguments Default values for (all) constructor parameters
+ * @property-read array<string,int> $ParameterIndex Constructor parameter name => index
+ * @property-read string[] $NormalisedKeys Normalised properties (declared and "magic" property names)
+ * @property-read string|null $ParentProperty The normalised parent property
+ * @property-read string|null $ChildrenProperty The normalised children property
+ * @property-read array<string,class-string<IRelatable>> $OneToOneRelationships One-to-one relationships between the class and others (normalised property name => target class)
+ * @property-read array<string,class-string<IRelatable>> $OneToManyRelationships One-to-many relationships between the class and others (normalised property name => target class)
+ * @property-read string[] $DateKeys Normalised date properties (declared and "magic" property names)
  *
  * @template TClass of object
  * @template TIntrospectionClass of IntrospectionClass
@@ -116,7 +142,7 @@ class Introspector
      * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(mixed[], IContainer, DateFormatter|null=, IHierarchy|null=): TClass
+     * @return Closure(mixed[], IContainer, DateFormatter|null=, ITreeable|null=): TClass
      */
     final public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
@@ -139,7 +165,7 @@ class Introspector
                 array $array,
                 IContainer $container,
                 ?DateFormatter $dateFormatter = null,
-                ?IHierarchy $parent = null
+                ?ITreeable $parent = null
             ) use ($closure, $service) {
                 return $closure(
                     $array,
@@ -180,19 +206,23 @@ class Introspector
 
         return
             static function (array $array, IProvider $provider, $context = null) use ($closure, $service) {
-                [$container, $parent] =
-                    $context instanceof IProviderContext
-                        ? [$context->container(), $context->getParent()]
-                        : [$context ?: $provider->container(), null];
+                if ($context instanceof IProviderContext) {
+                    $container = $context->container();
+                    $parent = $context->getParent();
+                } else {
+                    /** @var IContainer */
+                    $container = $context ?? $provider->container();
+                    $context = $provider->getContext($container);
+                }
 
                 return $closure(
                     $array,
                     $service,
                     $container,
                     $provider,
-                    $context ?: new ProviderContext($container, $parent),
+                    $context,
                     $provider->dateFormatter(),
-                    $parent,
+                    $parent ?? null,
                 );
             };
     }
@@ -268,10 +298,10 @@ class Introspector
             }
             if ($withParameters && ($param = $this->_Class->Parameters[$normalisedKey] ?? null)) {
                 $parameterKeys[$key] = $this->_Class->ParameterIndex[$param];
-                if ($this->_Class->PassByRefParameters[$normalisedKey] ?? null) {
+                if (isset($this->_Class->PassByRefParameters[$normalisedKey])) {
                     $passByRefKeys[$key] = true;
                 }
-                if ($this->_Class->DateParameters[$normalisedKey] ?? null) {
+                if (isset($this->_Class->DateParameters[$normalisedKey])) {
                     $dateKeys[] = $key;
                     // If found in DateParameters, skip DateKeys check below
                     continue;
@@ -315,7 +345,7 @@ class Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(mixed[], class-string|null, IContainer, IProvider|null, IProviderContext|null, DateFormatter|null, IHierarchy|null): TClass
+     * @return Closure(mixed[], class-string|null, IContainer, IProvider|null, IProviderContext|null, DateFormatter|null, ITreeable|null): TClass
      */
     private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
@@ -335,10 +365,14 @@ class Introspector
             ?IProvider $provider,
             ?IProviderContext $context,
             ?DateFormatter $dateFormatter,
-            ?IHierarchy $parent
+            ?ITreeable $parent
         ) use ($constructor, $updater) {
             $obj = $constructor($array, $service, $container);
-            return $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+            $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+            if ($obj instanceof IProvidable) {
+                $obj->postLoad();
+            }
+            return $obj;
         };
 
         return $this->_Class->CreateFromSignatureClosures[$sig] = $closure;
@@ -401,7 +435,7 @@ class Introspector
      *
      * @param bool $strict If `true`, return a closure that throws an exception
      * if any data would be discarded.
-     * @return Closure(mixed[], IContainer, DateFormatter|null=, IHierarchy|null=): TClass
+     * @return Closure(mixed[], IContainer, DateFormatter|null=, ITreeable|null=): TClass
      */
     final public function getCreateFromClosure(bool $strict = false): Closure
     {
@@ -414,7 +448,7 @@ class Introspector
                 array $array,
                 IContainer $container,
                 ?DateFormatter $dateFormatter = null,
-                ?IHierarchy $parent = null
+                ?ITreeable $parent = null
             ) use ($strict) {
                 $keys = array_keys($array);
 
@@ -645,12 +679,12 @@ class Introspector
 
     /**
      * @param IntrospectorKeyTargets<TClass> $targets
-     * @return Closure(mixed[], TClass, IContainer, IProvider|null, IProviderContext|null, DateFormatter|null, IHierarchy|null): TClass
+     * @return Closure(mixed[], TClass, IContainer, IProvider|null, IProviderContext|null, DateFormatter|null, ITreeable|null): TClass
      */
     protected function _getUpdater(IntrospectorKeyTargets $targets): Closure
     {
         $isProvidable = $this->_Class->IsProvidable;
-        $isHierarchy = $this->_Class->IsHierarchy;
+        $isTreeable = $this->_Class->IsTreeable;
         $callbackKeys = $targets->Callbacks;
         $methodKeys = $targets->Methods;
         $propertyKeys = $targets->Properties;
@@ -664,10 +698,10 @@ class Introspector
             ?IProvider $provider,
             ?IProviderContext $context,
             ?DateFormatter $dateFormatter,
-            ?IHierarchy $parent
+            ?ITreeable $parent
         ) use (
             $isProvidable,
-            $isHierarchy,
+            $isTreeable,
             $callbackKeys,
             $methodKeys,
             $propertyKeys,
@@ -722,8 +756,8 @@ class Introspector
             }
 
             // Ditto for `setParent()`
-            if ($isHierarchy && $parent) {
-                /** @var IHierarchy $obj */
+            if ($isTreeable && $parent) {
+                /** @var ITreeable $obj */
                 $obj = $obj->setParent($parent);
             }
 

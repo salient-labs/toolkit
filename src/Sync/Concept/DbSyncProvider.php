@@ -19,31 +19,24 @@ use RuntimeException;
  */
 abstract class DbSyncProvider extends SyncProvider
 {
-    /**
-     * @var DbConnector|null
-     */
-    private $DbConnector;
+    private DbConnector $DbConnector;
+    private ADOConnection $Db;
 
     /**
-     * @var ADOConnection|null
-     */
-    private $Db;
-
-    /**
-     * Specify how to connect to the upstream database
+     * Specify how to connect to the backend
      *
      * The {@see DbConnector} returned will be cached for the lifetime of the
      * {@see DbSyncProvider} instance.
      *
      */
-    abstract protected function getNewDbConnector(): DbConnector;
+    abstract protected function getDbConnector(): DbConnector;
 
     /**
      * @inheritDoc
      */
     public function getBackendIdentifier(): array
     {
-        $connector = $this->getDbConnector();
+        $connector = $this->dbConnector();
         if ($connector->Dsn) {
             /** @todo Implement DSN parsing */
             throw new RuntimeException('DSN parsing not implemented');
@@ -61,6 +54,8 @@ abstract class DbSyncProvider extends SyncProvider
     }
 
     /**
+     * @inheritDoc
+     *
      * @template T of ISyncEntity
      * @param class-string<T> $entity
      * @return ISyncDefinition<T,static>
@@ -80,34 +75,43 @@ abstract class DbSyncProvider extends SyncProvider
         return $def;
     }
 
-    final public function getDbConnector(): DbConnector
+    /**
+     * Get a DbConnector instance to open connections to the backend
+     */
+    final public function dbConnector(): DbConnector
     {
         return $this->DbConnector
-            ?: ($this->DbConnector = $this->getNewDbConnector());
+            ?? ($this->DbConnector = $this->getDbConnector());
     }
 
+    /**
+     * Get a connection to the backend
+     */
     final public function getDb(): ADOConnection
     {
-        if (!$this->Db) {
+        if (!isset($this->Db)) {
             Assert::localeIsUtf8();
 
-            return $this->Db = $this->getDbConnector()->getConnection();
+            return $this->Db = $this->dbConnector()->getConnection();
         }
 
         return $this->Db;
     }
 
+    /**
+     * Get a SqlQuery instance to prepare queries for the backend
+     */
     final public function getSqlQuery(ADOConnection $db): SqlQuery
     {
-        return new SqlQuery(fn($name) => $db->Param($name));
+        return new SqlQuery(fn(string $name): string => $db->Param($name));
     }
 
+    /**
+     * @inheritDoc
+     */
     public function checkHeartbeat(int $ttl = 300)
     {
-        $this
-            ->getDbConnector()
-            ->getConnection(5);
-
+        $this->dbConnector()->getConnection(5);
         return $this;
     }
 
@@ -124,8 +128,7 @@ abstract class DbSyncProvider extends SyncProvider
      * @return DbSyncDefinitionBuilder<T,static>
      */
     protected function buildDbDefinition(
-        string $entity,
-        DbSyncDefinitionBuilder $defB
+        string $entity, DbSyncDefinitionBuilder $defB
     ): DbSyncDefinitionBuilder {
         return $defB;
     }

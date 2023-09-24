@@ -7,7 +7,7 @@ use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ReturnsDescription;
-use Lkrms\Sync\Catalog\SyncSerializeLinkType as SerializeLinkType;
+use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncStore;
 use JsonSerializable;
@@ -101,10 +101,10 @@ interface ISyncEntity extends IProviderEntity, IRelatable, ReturnsDescription, J
      *
      * Inspired by JSON-LD.
      *
-     * @param SerializeLinkType::* $type
+     * @param LinkType::* $type
      * @return array<string,int|string>
      */
-    public function toLink(int $type = SerializeLinkType::DEFAULT, bool $compact = true): array;
+    public function toLink(int $type = LinkType::DEFAULT, bool $compact = true): array;
 
     /**
      * Get the entity's canonical location in the form of a URI

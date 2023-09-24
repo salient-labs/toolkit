@@ -9,6 +9,7 @@ use Lkrms\Console\Contract\IConsoleTarget as Target;
 use Lkrms\Console\Contract\IConsoleTargetWithPrefix as TargetWithPrefix;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Console\ConsoleFormatter as Formatter;
+use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Debug;
@@ -68,6 +69,9 @@ final class ConsoleWriter implements ReceivesFacade
      */
     private array $Written = [];
 
+    /**
+     * @var class-string<IFacade<static>>|null
+     */
     private ?string $Facade = null;
 
     /**

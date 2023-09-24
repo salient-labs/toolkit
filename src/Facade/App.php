@@ -60,7 +60,7 @@ use Lkrms\Utility\Env;
  * @method static Application startCache() Start a cache store in the application's cache directory (see {@see Application::startCache()})
  * @method static Application startSync(?string $command = null, mixed[] $arguments = null) Start an entity store in the application's data directory (see {@see Application::startSync()})
  * @method static Application stopCache() Stop a previously started cache store (see {@see Application::stopCache()})
- * @method static Application stopSync(int $exitStatus = 0, bool $reportErrors = false) Stop a previously started entity store (see {@see Application::stopSync()})
+ * @method static Application stopSync() Stop a previously started entity store (see {@see Application::stopSync()})
  * @method static Application syncNamespace(string $prefix, string $uri, string $namespace, class-string<ISyncClassResolver>|null $resolver = null) Register a sync entity namespace with a previously started entity store (see {@see Application::syncNamespace()})
  * @method static Application unbind(class-string $id) Remove a binding from the container
  *

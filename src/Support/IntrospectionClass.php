@@ -4,11 +4,11 @@ namespace Lkrms\Support;
 
 use Lkrms\Contract\HasDateProperties;
 use Lkrms\Contract\IExtensible;
-use Lkrms\Contract\IHierarchy;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\IResolvable;
+use Lkrms\Contract\ITreeable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Facade\Reflect;
@@ -75,11 +75,11 @@ class IntrospectionClass
     public $IsRelatable;
 
     /**
-     * True if the class implements IHierarchy
+     * True if the class implements ITreeable
      *
      * @var bool
      */
-    public $IsHierarchy;
+    public $IsTreeable;
 
     /**
      * True if the class implements HasDateProperties
@@ -201,6 +201,26 @@ class IntrospectionClass
     public $NormalisedKeys = [];
 
     /**
+     * The normalised parent property
+     *
+     * `null` if the class does not implement {@see ITreeable} or returns an
+     * invalid pair of parent and children properties.
+     *
+     * @var string|null
+     */
+    public $ParentProperty;
+
+    /**
+     * The normalised children property
+     *
+     * `null` if the class does not implement {@see ITreeable} or returns an
+     * invalid pair of parent and children properties.
+     *
+     * @var string|null
+     */
+    public $ChildrenProperty;
+
+    /**
      * One-to-one relationships between the class and others (normalised
      * property name => target class)
      *
@@ -316,8 +336,8 @@ class IntrospectionClass
         $this->IsWritable = $class->implementsInterface(IWritable::class);
         $this->IsExtensible = $class->implementsInterface(IExtensible::class);
         $this->IsProvidable = $class->implementsInterface(IProvidable::class);
-        $this->IsRelatable = $class->implementsInterface(IRelatable::class);
-        $this->IsHierarchy = $class->implementsInterface(IHierarchy::class);
+        $this->IsTreeable = $class->implementsInterface(ITreeable::class);
+        $this->IsRelatable = $this->IsTreeable || $class->implementsInterface(IRelatable::class);
         $this->HasDates = $class->implementsInterface(HasDateProperties::class);
 
         // IResolvable provides access to properties via non-canonical names
@@ -468,10 +488,54 @@ class IntrospectionClass
         if ($this->IsRelatable) {
             /** @var array<string,array<RelationshipType::*,class-string<IRelatable>>> */
             $relationships = $class->getMethod('getRelationships')->invoke(null);
+            $relationships = array_combine(
+                $this->maybeNormalise(array_keys($relationships), NormaliserFlag::LAZY),
+                $relationships
+            );
+
+            // Create self-referencing parent/child relationships between
+            // ITreeable classes after identifying the class that declared
+            // getParentProperty() and getChildrenProperty(), which is most
+            // likely to be the base/service class. If not, explicit
+            // relationship declarations take precedence over these.
+            if ($this->IsTreeable) {
+                $parentMethod = $class->getMethod('getParentProperty');
+                $parentClass = $parentMethod->getDeclaringClass();
+                $childrenMethod = $class->getMethod('getChildrenProperty');
+                $childrenClass = $childrenMethod->getDeclaringClass();
+
+                // If the methods were declared in different classes, choose the
+                // least-generic one
+                $service = $childrenClass->isSubclassOf($parentClass)
+                    ? $childrenClass->getName()
+                    : $parentClass->getName();
+
+                /** @var string[] */
+                $treeable = [
+                    $parentMethod->invoke(null),
+                    $childrenMethod->invoke(null),
+                ];
+
+                $treeable = array_unique($this->maybeNormalise(
+                    $treeable, NormaliserFlag::LAZY
+                ));
+
+                // Do nothing if, after normalisation, both methods return the
+                // same value, or if the values they return don't resolve to
+                // serviceable properties
+                if (count(array_intersect($this->NormalisedKeys, $treeable)) === 2) {
+                    $this->ParentProperty = $treeable[0];
+                    $this->ChildrenProperty = $treeable[1];
+                    $this->OneToOneRelationships[$this->ParentProperty] = $service;
+                    $this->OneToManyRelationships[$this->ChildrenProperty] = $service;
+                } else {
+                    $this->IsTreeable = false;
+                }
+            }
+
             foreach ($relationships as $property => $reference) {
                 $type = array_key_first($reference);
                 $target = $reference[$type];
-                $property = $this->maybeNormalise($property, NormaliserFlag::LAZY);
                 if (!in_array($property, $this->NormalisedKeys, true)) {
                     continue;
                 }

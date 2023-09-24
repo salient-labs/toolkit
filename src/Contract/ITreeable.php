@@ -3,10 +3,12 @@
 namespace Lkrms\Contract;
 
 /**
- * Has an optional parent and zero or more children of the same type
+ * Has a parent and children of the same type and can be traversed towards them
+ * via public properties
  *
+ * The properties need not be declared if the class uses property overloading.
  */
-interface IHierarchy
+interface ITreeable extends IRelatable, HasParentProperty, HasChildrenProperty
 {
     /**
      * Get the parent of the object

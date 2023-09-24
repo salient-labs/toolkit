@@ -3,6 +3,7 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Support\ProviderContext;
+use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -11,7 +12,7 @@ use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
 
 /**
- * The context within which a sync entity is instantiated
+ * The context within which a sync entity is instantiated by a provider
  *
  */
 final class SyncContext extends ProviderContext implements ISyncContext
@@ -19,18 +20,29 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @var array<string,mixed>
      */
-    protected array $Filter = [];
+    protected array $Filters = [];
 
     /**
      * @var (callable(ISyncContext, ?bool &$returnEmpty, mixed &$empty): void)|null
      */
     protected $FilterPolicyCallback;
 
+    /**
+     * @var DeferredSyncEntityPolicy::*
+     */
+    protected $DeferredSyncEntityPolicy = DeferredSyncEntityPolicy::RESOLVE_EARLY;
+
+    /**
+     * @inheritDoc
+     */
     public function withFilterPolicyCallback(?callable $callback)
     {
         return $this->withPropertyValue('FilterPolicyCallback', $callback);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function maybeApplyFilterPolicy(?bool &$returnEmpty, &$empty): void
     {
         $returnEmpty = false;
@@ -40,6 +52,9 @@ final class SyncContext extends ProviderContext implements ISyncContext
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public function withArgs(int $operation, ...$args)
     {
         // READ_LIST is the only operation with no mandatory argument after
@@ -49,11 +64,11 @@ final class SyncContext extends ProviderContext implements ISyncContext
         }
 
         if (empty($args)) {
-            return $this->withPropertyValue('Filter', []);
+            return $this->withPropertyValue('Filters', []);
         }
 
         if (is_array($args[0]) && count($args) === 1) {
-            return $this->withPropertyValue('Filter', array_combine(
+            return $this->withPropertyValue('Filters', array_combine(
                 array_map(
                     fn($key) =>
                         preg_match('/[^[:alnum:]_-]/', $key) ? $key : Convert::toSnakeCase($key),
@@ -68,7 +83,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
         }
 
         if (Test::isArrayOfArrayKey($args)) {
-            return $this->withPropertyValue('Filter', ['id' => $args]);
+            return $this->withPropertyValue('Filters', ['id' => $args]);
         }
 
         if (Test::isArrayOf($args, ISyncEntity::class)) {
@@ -88,20 +103,42 @@ final class SyncContext extends ProviderContext implements ISyncContext
         throw new SyncInvalidFilterException(...$args);
     }
 
-    public function getFilter(): array
+    /**
+     * @inheritDoc
+     */
+    public function withDeferredSyncEntityPolicy(int $policy)
     {
-        return $this->Filter;
+        return $this->withPropertyValue('DeferredSyncEntityPolicy', $policy);
     }
 
-    public function claimFilterValue(string $key)
+    /**
+     * @inheritDoc
+     */
+    public function getFilters(): array
     {
-        if (array_key_exists($key, $this->Filter)) {
-            $value = $this->Filter[$key];
-            unset($this->Filter[$key]);
+        return $this->Filters;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function claimFilter(string $key)
+    {
+        if (array_key_exists($key, $this->Filters)) {
+            $value = $this->Filters[$key];
+            unset($this->Filters[$key]);
 
             return $value;
         }
 
         return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDeferredSyncEntityPolicy(): int
+    {
+        return $this->DeferredSyncEntityPolicy;
     }
 }

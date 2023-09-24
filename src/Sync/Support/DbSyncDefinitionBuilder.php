@@ -26,7 +26,7 @@ use Closure;
  * @method $this operations(array<SyncOperation::*> $value) A list of supported sync operations
  * @method $this table(?string $value) Set DbSyncDefinition::$Table
  * @method $this conformity(ArrayKeyConformity::* $value) The conformity level of data returned by the provider for this entity (see {@see SyncDefinition::$Conformity})
- * @method $this filterPolicy(SyncFilterPolicy::* $value) The action to take when filters are ignored by the provider (see {@see SyncDefinition::$FilterPolicy})
+ * @method $this filterPolicy(SyncFilterPolicy::* $value) The action to take when filters are unclaimed by the provider (see {@see SyncDefinition::$FilterPolicy})
  * @method $this overrides(array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $value) An array that maps sync operations to closures that override any other implementations (see {@see SyncDefinition::$Overrides})
  * @method $this pipelineFromBackend(IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $value) A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
  * @method $this pipelineToBackend(IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $value) A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required

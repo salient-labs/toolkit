@@ -9,11 +9,9 @@ use Lkrms\Contract\IComparable;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Facade\Console;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Utility\Convert;
 
 /**
  * An error that occurred during a sync operation
@@ -110,13 +108,13 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
         ?string $entityName = null,
         ?ISyncProvider $provider = null
     ) {
-        $this->EntityName = $entityName ?: ($entity ? $entity->uri() : null);
+        $this->EntityName = $entityName ?? ($entity ? $entity->uri() : null);
         $this->ErrorType = $errorType;
         $this->Message = $message;
         $this->Values = $values ?: [$this->EntityName];
         $this->Level = $level;
         $this->Entity = $entity;
-        $this->Provider = $provider ?: ($entity ? $entity->provider() : null);
+        $this->Provider = $provider ?? ($entity ? $entity->provider() : null);
     }
 
     /**
@@ -142,26 +140,7 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
 
     public function getCode(): string
     {
-        return ConsoleLevel::toCode($this->Level, 2) . sprintf('-%04d', $this->ErrorType);
-    }
-
-    /**
-     * @return $this
-     */
-    public function toConsole(bool $once = true)
-    {
-        $args = [
-            $this->Level,
-            '[' . SyncErrorType::toName($this->ErrorType) . ']',
-            sprintf($this->Message, ...Convert::toScalarArray($this->Values)),
-        ];
-        if ($once) {
-            Console::messageOnce(...$args);
-        } else {
-            Console::message(...$args);
-        }
-
-        return $this;
+        return sprintf('%02d-%04d', $this->Level, $this->ErrorType);
     }
 
     /**

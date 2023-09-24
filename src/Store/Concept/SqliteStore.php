@@ -41,6 +41,9 @@ abstract class SqliteStore implements ReceivesFacade
      */
     private $CheckIsRunning = false;
 
+    /**
+     * @inheritDoc
+     */
     final public function setFacade(string $name)
     {
         $this->Facade = $name;

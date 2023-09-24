@@ -7,10 +7,8 @@ use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
-use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRules;
 use Lkrms\Utility\Convert;
@@ -121,8 +119,7 @@ final class GetSyncEntities extends AbstractSyncCommand
                 . ($this->EntityId === null ? '' : '/' . $this->EntityId)
         );
 
-        $this->App->bindIf(ISyncContext::class, SyncContext::class);
-        $context = $this->App->get(ISyncContext::class);
+        $context = $provider->getContext();
 
         $result = $this->EntityId !== null
             ? $provider->with($entity, $context)->get($this->EntityId, $filter)

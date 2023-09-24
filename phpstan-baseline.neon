@@ -11,6 +11,11 @@ parameters:
 			path: lib/lk-util/Command/Http/SendHttpRequest.php
 
 		-
+			message: "#^Property Lkrms\\\\Cli\\\\CliOption\\:\\:\\$BindTo is never read, only written\\.$#"
+			count: 1
+			path: src/Cli/CliOption.php
+
+		-
 			message: "#^Method Lkrms\\\\Concept\\\\Builder\\:\\:__call\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Concept/Builder.php
@@ -81,6 +86,11 @@ parameters:
 			path: src/Container/Application.php
 
 		-
+			message: "#^Property Lkrms\\\\Container\\\\Container\\:\\:\\$ContextStack is never read, only written\\.$#"
+			count: 1
+			path: src/Container/Container.php
+
+		-
 			message: "#^Method Lkrms\\\\Contract\\\\IPipe\\:\\:handle\\(\\) has parameter \\$pipeline with generic interface Lkrms\\\\Contract\\\\IPipeline but does not specify its types\\: TInput, TOutput, TArgument$#"
 			count: 1
 			path: src/Contract/IPipe.php
@@ -89,31 +99,6 @@ parameters:
 			message: "#^Interface Lkrms\\\\Contract\\\\IProvider extends generic interface Lkrms\\\\Contract\\\\ReturnsContainer but does not specify its types\\: T$#"
 			count: 1
 			path: src/Contract/IProvider.php
-
-		-
-			message: "#^Interface Lkrms\\\\Contract\\\\IProviderContext extends generic interface Lkrms\\\\Contract\\\\ReturnsContainer but does not specify its types\\: T$#"
-			count: 1
-			path: src/Contract/IProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IProviderContext\\:\\:get\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Contract/IProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IProviderContext\\:\\:getStack\\(\\) return type with generic interface Lkrms\\\\Contract\\\\IProvidable does not specify its types\\: TProvider, TProviderContext$#"
-			count: 1
-			path: src/Contract/IProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IProviderContext\\:\\:push\\(\\) has parameter \\$entity with generic interface Lkrms\\\\Contract\\\\IProvidable but does not specify its types\\: TProvider, TProviderContext$#"
-			count: 1
-			path: src/Contract/IProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Contract\\\\IProviderContext\\:\\:set\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Contract/IProviderContext.php
 
 		-
 			message: "#^Method Lkrms\\\\Contract\\\\IReadable\\:\\:__get\\(\\) has no return type specified\\.$#"
@@ -266,6 +251,11 @@ parameters:
 			path: src/Curler/CurlerFile.php
 
 		-
+			message: "#^Property Lkrms\\\\Curler\\\\CurlerHeaders\\:\\:\\$Trailers is never read, only written\\.$#"
+			count: 1
+			path: src/Curler/CurlerHeaders.php
+
+		-
 			message: "#^Property Lkrms\\\\Curler\\\\Pager\\\\QueryPager\\:\\:\\$Query type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Curler/Pager/QueryPager.php
@@ -306,6 +296,16 @@ parameters:
 			path: src/Curler/Support/CurlerPage.php
 
 		-
+			message: "#^Parameter \\#2 \\$value of method ADOConnection\\:\\:setConnectionParameter\\(\\) expects string, bool given\\.$#"
+			count: 1
+			path: src/Db/DbConnector.php
+
+		-
+			message: "#^Parameter \\#2 \\$value of method ADOConnection\\:\\:setConnectionParameter\\(\\) expects string, int given\\.$#"
+			count: 1
+			path: src/Db/DbConnector.php
+
+		-
 			message: "#^Method Lkrms\\\\Store\\\\CacheStore\\:\\:get\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Store/CacheStore.php
@@ -326,69 +326,9 @@ parameters:
 			path: src/Store/TrashStore.php
 
 		-
-			message: "#^Method Lkrms\\\\Support\\\\ProviderContext\\:\\:get\\(\\) has no return type specified\\.$#"
+			message: "#^Property Lkrms\\\\Sync\\\\Support\\\\SyncEntityProvider\\:\\:\\$Offline is never read, only written\\.$#"
 			count: 1
-			path: src/Support/ProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\ProviderContext\\:\\:getStack\\(\\) return type with generic interface Lkrms\\\\Contract\\\\IProvidable does not specify its types\\: TProvider, TProviderContext$#"
-			count: 1
-			path: src/Support/ProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\ProviderContext\\:\\:push\\(\\) has parameter \\$entity with generic interface Lkrms\\\\Contract\\\\IProvidable but does not specify its types\\: TProvider, TProviderContext$#"
-			count: 1
-			path: src/Support/ProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\ProviderContext\\:\\:set\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Support/ProviderContext.php
-
-		-
-			message: "#^Property Lkrms\\\\Support\\\\ProviderContext\\:\\:\\$Stack with generic interface Lkrms\\\\Contract\\\\IProvidable does not specify its types\\: TProvider, TProviderContext$#"
-			count: 1
-			path: src/Support/ProviderContext.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:addNextParam\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:addParam\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:buildWhere\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:buildWhere\\(\\) has parameter \\$where with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:getWhere\\(\\) has parameter \\$values with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:where\\(\\) has parameter \\$clause with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Method Lkrms\\\\Support\\\\SqlQuery\\:\\:whereValueInList\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
-
-		-
-			message: "#^Property Lkrms\\\\Support\\\\SqlQuery\\:\\:\\$Where type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/SqlQuery.php
+			path: src/Sync/Support/SyncEntityProvider.php
 
 		-
 			message: "#^Method Lkrms\\\\Utility\\\\Assertions\\:\\:notEmpty\\(\\) has parameter \\$value with no type specified\\.$#"

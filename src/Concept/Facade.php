@@ -81,7 +81,7 @@ abstract class Facade implements IFacade
      */
     final public static function load()
     {
-        if (self::$Instances[static::class] ?? null) {
+        if (isset(self::$Instances[static::class])) {
             throw new RuntimeException(static::class . ' already loaded');
         }
 

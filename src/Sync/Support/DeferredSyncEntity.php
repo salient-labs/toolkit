@@ -4,7 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Sync\Catalog\SyncSerializeLinkType as SerializeLinkType;
+use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -85,20 +85,20 @@ final class DeferredSyncEntity implements IReadable
     /**
      * Get the deferred entity's canonical location in the form of an array
      *
-     * @param SerializeLinkType::* $type
+     * @param LinkType::* $type
      * @return array<string,int|string>
      */
-    public function toLink(int $type = SerializeLinkType::DEFAULT, bool $compact = true): array
+    public function toLink(int $type = LinkType::DEFAULT, bool $compact = true): array
     {
         switch ($type) {
-            case SerializeLinkType::INTERNAL:
-            case SerializeLinkType::DEFAULT:
+            case LinkType::INTERNAL:
+            case LinkType::DEFAULT:
                 return [
                     '@type' => $this->typeUri($compact),
                     '@id' => $this->Deferred,
                 ];
 
-            case SerializeLinkType::COMPACT:
+            case LinkType::COMPACT:
                 return [
                     '@id' => $this->uri($compact),
                 ];

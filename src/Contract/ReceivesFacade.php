@@ -5,13 +5,14 @@ namespace Lkrms\Contract;
 /**
  * Receives the name of the facade it's servicing
  *
- * @see \Lkrms\Contract\IFacade
+ * @see IFacade
  */
 interface ReceivesFacade
 {
     /**
-     * Called immediately after instantiation by a facade
+     * Called after instantiation by a facade
      *
+     * @param class-string<IFacade<static>> $name
      * @return $this
      */
     public function setFacade(string $name);

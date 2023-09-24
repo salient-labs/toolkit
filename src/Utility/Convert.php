@@ -263,7 +263,7 @@ final class Convert
         $list = [];
         $seen = [];
         foreach ($array as $key => $value) {
-            if ($seen[$value] ?? null) {
+            if (isset($seen[$value])) {
                 continue;
             }
             $list[$key] = $value;
@@ -284,7 +284,7 @@ final class Convert
         $list = [];
         $seen = [];
         foreach ($array as $value) {
-            if ($seen[$value] ?? null) {
+            if (isset($seen[$value])) {
                 continue;
             }
             $list[] = $value;
@@ -666,7 +666,7 @@ final class Convert
         }
         $url = self::parseUrl($embeddedUrl);
         // Step 2b
-        if ($url['scheme'] ?? null) {
+        if (isset($url['scheme'])) {
             return $embeddedUrl;
         }
         $base = self::parseUrl($baseUrl);
@@ -753,7 +753,7 @@ final class Convert
     {
         [$u, $url] = [$url, ''];
         !($u['scheme'] ?? null) || $url .= "{$u['scheme']}:";
-        if ($u['host'] ?? null) {
+        if (isset($u['host'])) {
             $url .= '//';
             !array_key_exists('user', $u) || $auth = $u['user'];
             !array_key_exists('pass', $u) || $auth = ($auth ?? '') . ":{$u['pass']}";

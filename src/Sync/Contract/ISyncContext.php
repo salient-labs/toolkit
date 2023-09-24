@@ -3,24 +3,25 @@
 namespace Lkrms\Sync\Contract;
 
 use Lkrms\Contract\IProviderContext;
+use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
 
 /**
- * The context within which a sync entity is instantiated
+ * The context within which a sync entity is instantiated by a provider
  *
  */
 interface ISyncContext extends IProviderContext
 {
     /**
-     * Convert non-mandatory sync operation arguments to a normalised filter and
-     * add it to the context
+     * Normalise non-mandatory sync operation arguments and add them to the
+     * context
      *
      * If, after removing the operation's mandatory arguments from `$args`, the
      * remaining values match one of the following signatures, they are mapped
-     * to an associative array and returned by {@see ISyncContext::getFilter()}
-     * until updated by another call to {@see ISyncContext::withArgs()}.
+     * to an associative array surfaced by {@see ISyncContext::getFilters()} and
+     * {@see ISyncContext::claimFilter()}:
      *
      * 1. One array argument (`fn(...$mandatoryArgs, array $filter)`)
      *    - Alphanumeric keys are converted to snake_case
@@ -41,9 +42,12 @@ interface ISyncContext extends IProviderContext
      * If `$args` doesn't match any of these, a
      * {@see SyncInvalidFilterException} is thrown.
      *
-     * Using {@see ISyncContext::claimFilterValue()} to claim values from the
-     * filter is recommended. Depending on the provider's
-     * {@see SyncFilterPolicy}, unclaimed values may cause requests to fail.
+     * Using {@see ISyncContext::claimFilter()} to claim filters is recommended.
+     * Depending on the provider's {@see SyncFilterPolicy}, unclaimed filters
+     * may cause requests to fail.
+     *
+     * When a filter is claimed, it is removed from the context.
+     * {@see ISyncContext::getFilters()} only returns unclaimed filters.
      *
      * {@see ISyncEntity} objects are replaced with the return value of
      * {@see ISyncEntity::id()} when `$args` contains an array or a list of
@@ -57,11 +61,13 @@ interface ISyncContext extends IProviderContext
     public function withArgs(int $operation, ...$args);
 
     /**
-     * Use a callback to enforce the provider's ignored filter policy
+     * Use a callback to enforce the provider's unclaimed filter policy
      *
      * Allows providers to enforce their {@see SyncFilterPolicy} by calling
      * {@see ISyncContext::maybeApplyFilterPolicy()} in scenarios where
      * enforcement before a sync operation starts isn't possible.
+     *
+     * @see ISyncContext::maybeApplyFilterPolicy()
      *
      * @param (callable(ISyncContext, ?bool &$returnEmpty, array{}|null &$empty): void)|null $callback
      * @return $this
@@ -69,15 +75,36 @@ interface ISyncContext extends IProviderContext
     public function withFilterPolicyCallback(?callable $callback);
 
     /**
-     * Run the ignored filter policy callback (if provided)
+     * Apply a deferred sync entity policy to the context
+     *
+     * @param DeferredSyncEntityPolicy::* $policy
+     * @return $this
+     */
+    public function withDeferredSyncEntityPolicy(int $policy);
+
+    /**
+     * Run the unclaimed filter policy callback
      *
      * Example:
      *
      * ```php
      * <?php
-     * $ctx->maybeApplyFilterPolicy($returnEmpty, $empty);
-     * if ($returnEmpty) {
-     *     return $empty;
+     * class Provider extends \Lkrms\Sync\Concept\HttpSyncProvider
+     * {
+     *     public function getList_Entity(\Lkrms\Sync\Contract\ISyncContext $ctx): iterable
+     *     {
+     *         if ($ctx->claimFilter('pending')) {
+     *             $entryTypes[] = 0;
+     *         }
+     *         if ($ctx->claimFilter('completed')) {
+     *             $entryTypes[] = 1;
+     *         }
+     *         $ctx->maybeApplyFilterPolicy($returnEmpty, $empty);
+     *         if ($returnEmpty) {
+     *             return $empty;
+     *         }
+     *         // ...
+     *     }
      * }
      * ```
      *
@@ -92,19 +119,26 @@ interface ISyncContext extends IProviderContext
      *
      * @return array<string,mixed>
      */
-    public function getFilter(): array;
+    public function getFilters(): array;
 
     /**
      * Get a value from the filter most recently passed via optional sync
      * operation arguments
      *
      * Unlike other {@see ISyncContext} methods,
-     * {@see ISyncContext::claimFilterValue()} modifies the object it is called
+     * {@see ISyncContext::claimFilter()} modifies the object it is called
      * on instead of returning a modified clone.
      *
      * @return mixed `null` if the value has already been claimed or wasn't
      * passed to the operation.
      * @see ISyncContext::withArgs()
      */
-    public function claimFilterValue(string $key);
+    public function claimFilter(string $key);
+
+    /**
+     * Get the deferred sync entity policy applied to the context
+     *
+     * @return DeferredSyncEntityPolicy::*
+     */
+    public function getDeferredSyncEntityPolicy(): int;
 }

@@ -40,7 +40,7 @@ trait TIntrospector
      *
      * @template T of object
      * @param class-string<T> $service
-     * @return self<T,TIntrospectionClass<T>>
+     * @return static<T,TIntrospectionClass<T>>
      */
     public static function getService(IContainer $container, string $service)
     {
@@ -56,7 +56,7 @@ trait TIntrospector
      *
      * @template T of object
      * @param class-string<T> $class
-     * @return self<T,TIntrospectionClass<T>>
+     * @return static<T,TIntrospectionClass<T>>
      */
     public static function get(string $class)
     {
@@ -72,9 +72,7 @@ trait TIntrospector
     private function __construct(string $class)
     {
         $_class = strtolower($class);
-        $this->_Class =
-            (self::$_IntrospectionClasses[$_class] ?? null)
-                ?: (self::$_IntrospectionClasses[$_class] =
-                    $this->getIntrospectionClass($class));
+        $this->_Class = self::$_IntrospectionClasses[$_class]
+            ?? (self::$_IntrospectionClasses[$_class] = $this->getIntrospectionClass($class));
     }
 }

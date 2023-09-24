@@ -9,7 +9,6 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Iterator\IterableIterator;
 use Lkrms\Support\Introspector;
-use Lkrms\Support\ProviderContext;
 use Generator;
 use LogicException;
 
@@ -151,9 +150,7 @@ trait TProvidable
 
         $context = $context
             ? $context->withContainer($container)
-            : $container
-                ->bindIf(IProviderContext::class, ProviderContext::class)
-                ->get(IProviderContext::class);
+            : $provider->getContext($container);
 
         $closure = Introspector::getService(
             $container, static::class
@@ -206,9 +203,7 @@ trait TProvidable
         /** @var IProviderContext */
         $context = $context
             ? $context->withContainer($container)
-            : $container
-                ->bindIf(IProviderContext::class, ProviderContext::class)
-                ->get(IProviderContext::class);
+            : $provider->getContext($container);
         $context = $context->withConformity($conformity);
 
         $introspector = Introspector::getService($container, static::class);

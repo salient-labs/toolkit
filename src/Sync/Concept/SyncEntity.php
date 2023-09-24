@@ -20,16 +20,14 @@ use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Iterator\IterableIterator;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Lkrms\Sync\Catalog\SyncEntityState;
-use Lkrms\Sync\Catalog\SyncSerializeLinkType as SerializeLinkType;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
-use Lkrms\Sync\Support\SyncContext;
-use Lkrms\Sync\Support\SyncIntrospectionClass;
-use Lkrms\Sync\Support\SyncIntrospector as IS;
+use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
@@ -150,7 +148,8 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
      */
     public function name(): ?string
     {
-        return IS::get(static::class)->getGetNameClosure()($this);
+        return SyncIntrospector::get(static::class)
+            ->getGetNameClosure()($this);
     }
 
     /**
@@ -221,7 +220,9 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
      */
     final public static function defaultProvider(?IContainer $container = null): ISyncProvider
     {
-        return self::requireContainer($container)->get(IS::entityToProvider(static::class));
+        return self::requireContainer($container)->get(
+            SyncIntrospector::entityToProvider(static::class)
+        );
     }
 
     /**
@@ -229,7 +230,9 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
      */
     final public static function withDefaultProvider(?IContainer $container = null, ?ISyncContext $context = null): ISyncEntityProvider
     {
-        return static::defaultProvider()->with(static::class);
+        return static::defaultProvider($container)->with(
+            static::class, $context
+        );
     }
 
     /**
@@ -321,11 +324,11 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
     /**
      * @inheritDoc
      */
-    final public function toLink(int $type = SerializeLinkType::DEFAULT, bool $compact = true): array
+    final public function toLink(int $type = LinkType::DEFAULT, bool $compact = true): array
     {
         switch ($type) {
-            case SerializeLinkType::INTERNAL:
-            case SerializeLinkType::DEFAULT:
+            case LinkType::INTERNAL:
+            case LinkType::DEFAULT:
                 return [
                     '@type' => $this->typeUri($compact),
                     '@id' => is_null($this->Id)
@@ -333,12 +336,12 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
                         : $this->Id,
                 ];
 
-            case SerializeLinkType::COMPACT:
+            case LinkType::COMPACT:
                 return [
                     '@id' => $this->uri($compact),
                 ];
 
-            case SerializeLinkType::FRIENDLY:
+            case LinkType::FRIENDLY:
                 return array_filter([
                     '@type' => $this->typeUri($compact),
                     '@id' => is_null($this->Id)
@@ -396,7 +399,7 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
      * @param array<ISyncEntity|DeferredSyncEntity>|ISyncEntity|DeferredSyncEntity|null $replace
      * The variable to replace when the entity or list of entities is resolved.
      * @param class-string<ISyncEntity>|null $entity The entity to instantiate.
-     * If `null`, `static::class` is used.
+     * If `null`, the return value of {@see SyncEntity::service()} is used.
      */
     final protected function defer($deferred, &$replace, ?string $entity = null): void
     {
@@ -408,7 +411,7 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
             DeferredSyncEntity::deferList(
                 $this->Provider,
                 $this->Context->push($this),
-                $entity ?? static::class,
+                $entity ?? $this->service(),
                 $deferred,
                 $replace,
             );
@@ -418,7 +421,7 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
         DeferredSyncEntity::defer(
             $this->Provider,
             $this->Context->push($this),
-            $entity ?? static::class,
+            $entity ?? $this->service(),
             $deferred,
             $replace,
         );
@@ -459,15 +462,15 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
 
         if ($node instanceof DeferredSyncEntity) {
             $node = $node->toLink($rules->getFlags() & SerializeRules::SYNC_STORE
-                ? SerializeLinkType::INTERNAL
-                : SerializeLinkType::DEFAULT);
+                ? LinkType::INTERNAL
+                : LinkType::DEFAULT);
 
             return;
         }
 
         if ($node instanceof SyncEntity) {
             if ($path && $rules->getFlags() & SerializeRules::SYNC_STORE) {
-                $node = $node->toLink(SerializeLinkType::INTERNAL);
+                $node = $node->toLink(LinkType::INTERNAL);
 
                 return;
             }
@@ -476,7 +479,7 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
                 // Prevent infinite recursion by replacing each SyncEntity
                 // descended from itself with a link
                 if ($parents[spl_object_id($node)] ?? false) {
-                    $node = $node->toLink(SerializeLinkType::DEFAULT);
+                    $node = $node->toLink(LinkType::DEFAULT);
                     $node['@why'] = 'Circular reference detected';
 
                     return;
@@ -507,7 +510,8 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
                 while ($rule) {
                     $arg = array_shift($rule);
                     if (is_string($arg)) {
-                        $newKey = IS::get(static::class)->maybeNormalise($arg, NormaliserFlag::CAREFUL);
+                        $newKey = SyncIntrospector::get(static::class)
+                            ->maybeNormalise($arg, NormaliserFlag::CAREFUL);
                         continue;
                     }
                     if ($arg instanceof Closure) {
@@ -630,10 +634,14 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
     {
         $clone = clone $this;
         $clone->State |= SyncEntityState::SERIALIZING;
-        $array = IS::get(static::class)->getSerializeClosure($rules)($clone);
+        $array = SyncIntrospector::get(static::class)
+            ->getSerializeClosure($rules)($clone);
 
         if ($rules->getRemoveCanonicalId()) {
-            unset($array[IS::get(static::class)->maybeNormalise('CanonicalId', NormaliserFlag::CAREFUL)]);
+            unset($array[
+                SyncIntrospector::get(static::class)
+                    ->maybeNormalise('CanonicalId', NormaliserFlag::CAREFUL)
+            ]);
         }
 
         return $array;
@@ -666,7 +674,8 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
     }
 
     /**
-     * @param mixed[] $data
+     * @inheritDoc
+     *
      * @param ISyncProvider $provider
      * @param ISyncContext|null $context
      */
@@ -675,25 +684,27 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
         IProvider $provider,
         ?IProviderContext $context = null
     ) {
-        $container = ($context
+        $container = $context
             ? $context->container()
-            : $provider->container())->inContextOf(get_class($provider));
+            : $provider->container();
+        $container = $container->inContextOf(get_class($provider));
+
         $context = $context
             ? $context->withContainer($container)
-            : $container->get(SyncContext::class);
-        /** @var IS<static,SyncIntrospectionClass<static>> */
-        $introspector = IS::getService($container, static::class);
-        $closure = $introspector->getCreateSyncEntityFromClosure();
+            : $provider->getContext($container);
+
+        $closure = SyncIntrospector::getService(
+            $container, static::class
+        )->getCreateSyncEntityFromClosure();
 
         return $closure($data, $provider, $context);
     }
 
     /**
-     * @param iterable<array-key,mixed[]> $list
+     * @inheritDoc
+     *
      * @param ISyncProvider $provider
-     * @param ArrayKeyConformity::* $conformity
      * @param ISyncContext|null $context
-     * @return FluentIteratorInterface<array-key,static>
      */
     final public static function provideList(
         iterable $list,
@@ -724,13 +735,17 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
         int $conformity,
         ?IProviderContext $context
     ): Generator {
-        $container = ($context
+        $container = $context
             ? $context->container()
-            : $provider->container())->inContextOf(get_class($provider));
-        $context = ($context
+            : $provider->container();
+        $container = $container->inContextOf(get_class($provider));
+
+        $context = $context
             ? $context->withContainer($container)
-            : $container->get(SyncContext::class))->withConformity($conformity);
-        $introspector = IS::getService($container, static::class);
+            : $provider->getContext($container);
+        $context = $context->withConformity($conformity);
+
+        $introspector = SyncIntrospector::getService($container, static::class);
 
         foreach ($list as $key => $data) {
             if (!isset($closure)) {

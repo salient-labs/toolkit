@@ -33,7 +33,7 @@ use LogicException;
  * @property-read TProvider $Provider The ISyncProvider servicing the entity
  * @property-read array<SyncOperation::*> $Operations A list of supported sync operations
  * @property-read ArrayKeyConformity::* $Conformity The conformity level of data returned by the provider for this entity
- * @property-read SyncFilterPolicy::* $FilterPolicy The action to take when filters are ignored by the provider
+ * @property-read SyncFilterPolicy::* $FilterPolicy The action to take when filters are unclaimed by the provider
  * @property-read array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $Overrides An array that maps sync operations to closures that override any other implementations
  * @property-read IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $PipelineFromBackend A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
  * @property-read IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $PipelineToBackend A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
@@ -101,13 +101,13 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     protected $Conformity;
 
     /**
-     * The action to take when filters are ignored by the provider
+     * The action to take when filters are unclaimed by the provider
      *
      * To prevent a request for entities that meet one or more criteria
      * inadvertently reaching the backend as a request for a larger set of
      * entities--if not all of them--the default policy if there are unclaimed
      * filters is {@see SyncFilterPolicy::THROW_EXCEPTION}. See
-     * {@see SyncFilterPolicy} for alternative policies or
+     * {@see SyncFilterPolicy} for alternative policies and
      * {@see ISyncContext::withArgs()} for more information about filters.
      *
      * @var SyncFilterPolicy::*
@@ -369,7 +369,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     }
 
     /**
-     * Enforce the ignored filter policy
+     * Enforce the unclaimed filter policy
      *
      * @param SyncOperation::* $operation
      * @param array{}|null $empty
@@ -381,7 +381,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         $returnEmpty = false;
 
         if (SyncFilterPolicy::IGNORE === $this->FilterPolicy ||
-                !($filter = $ctx->getFilter())) {
+                !($filter = $ctx->getFilters())) {
             return;
         }
 

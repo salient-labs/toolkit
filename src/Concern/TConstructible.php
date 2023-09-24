@@ -4,7 +4,7 @@ namespace Lkrms\Concern;
 
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IHierarchy;
+use Lkrms\Contract\ITreeable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\IntrospectionClass;
 use Lkrms\Support\Introspector;
@@ -31,9 +31,9 @@ trait TConstructible
      *
      * @param mixed[] $data
      * @param IContainer|null $container Used to create the instance if set.
-     * @param (IHierarchy&static)|null $parent If the class implements
-     * {@see IHierarchy}, pass `$parent` to the instance via
-     * {@see IHierarchy::setParent()}.
+     * @param (ITreeable&static)|null $parent If the class implements
+     * {@see ITreeable}, pass `$parent` to the instance via
+     * {@see ITreeable::setParent()}.
      * @return static
      */
     final public static function construct(array $data, ?IContainer $container = null, $parent = null)
@@ -53,11 +53,11 @@ trait TConstructible
      *
      * @param iterable<mixed[]> $list
      * @param ArrayKeyConformity::* $conformity Use `COMPLETE` or `PARTIAL`
-     *  wherever possible to improve performance.
+     * wherever possible to improve performance.
      * @param IContainer|null $container Used to create each instance if set.
-     * @param (IHierarchy&static)|null $parent If the class implements
-     * {@see IHierarchy}, pass `$parent` to each instance via
-     * {@see IHierarchy::setParent()}.
+     * @param (ITreeable&static)|null $parent If the class implements
+     * {@see ITreeable}, pass `$parent` to each instance via
+     * {@see ITreeable::setParent()}.
      * @return Generator<static>
      */
     final public static function constructList(

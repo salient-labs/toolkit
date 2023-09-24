@@ -4,9 +4,10 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IHierarchy;
+use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
+use Lkrms\Contract\ITreeable;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\DateFormatter;
@@ -169,20 +170,23 @@ final class SyncIntrospector extends Introspector
 
         return
             static function (array $array, ISyncProvider $provider, $context = null) use ($closure, $service) {
-                /** @var IContainer $container */
-                [$container, $parent] =
-                    $context instanceof ISyncContext
-                        ? [$context->container(), $context->getParent()]
-                        : [$context ?: $provider->container(), null];
+                if ($context instanceof ISyncContext) {
+                    $container = $context->container();
+                    $parent = $context->getParent();
+                } else {
+                    /** @var IContainer */
+                    $container = $context ?? $provider->container();
+                    $context = $provider->getContext($container);
+                }
 
                 return $closure(
                     $array,
                     $service,
                     $container,
                     $provider,
-                    $context ?: $container->get(SyncContext::class)->withParent($parent),
+                    $context,
                     $provider->dateFormatter(),
-                    $parent,
+                    $parent ?? null,
                 );
             };
     }
@@ -315,6 +319,51 @@ final class SyncIntrospector extends Introspector
             $customKeys = [self::ID_KEY => $idKey];
         }
 
+        // Check for relationships to honour by applying deferred entities
+        // instead of raw data
+        if ($this->_Class->IsRelatable &&
+                ($this->_Class->OneToOneRelationships || $this->_Class->OneToManyRelationships)) {
+            foreach ([
+                $this->_Class->OneToOneRelationships,
+                $this->_Class->OneToManyRelationships,
+            ] as $list => $relationships) {
+                $relationships = array_intersect_key($relationships, $keys);
+                if (!$relationships) {
+                    continue;
+                }
+                foreach ($relationships as $match => $relationship) {
+                    if (!is_a($relationship, ISyncEntity::class, true)) {
+                        continue;
+                    }
+                    $key = $keys[$match];
+                    $list = (bool) $list;
+                    // If $match doesn't resolve to a declared property, it will
+                    // resolve to a magic method
+                    $property = $this->_Class->Properties[$match] ?? $match;
+                    $closures[$match] = static function (
+                        array $data,
+                        $entity,
+                        ?IProvider $provider,
+                        ?IProviderContext $context
+                    ) use ($key, $list, $relationship, $property): void {
+                        if ((Test::isListArray($data[$key]) xor $list) ||
+                                !($entity instanceof ISyncEntity) ||
+                                !($provider instanceof ISyncProvider) ||
+                                !($context instanceof ISyncContext)) {
+                            $entity->{$property} = $data[$key];
+                            return;
+                        }
+                        /** @var IProvidable<IProvider,IProviderContext> $entity */
+                        if ($list) {
+                            DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+                            return;
+                        }
+                        DeferredSyncEntity::defer($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+                    };
+                }
+            }
+        }
+
         // Get keys left behind by constructor parameters, declared properties
         // and magic methods
         $unclaimed = array_diff_key(
@@ -324,7 +373,7 @@ final class SyncIntrospector extends Introspector
         );
 
         if (!$unclaimed) {
-            return parent::getKeyTargets($keys, $withParameters, $strict, true, $customKeys);
+            return parent::getKeyTargets($keys, $withParameters, $strict, true, $customKeys, $closures ?? []);
         }
 
         // Check for any that end with `_id`, `_ids` or similar that would match
@@ -342,43 +391,40 @@ final class SyncIntrospector extends Introspector
             // Require a list of values if the key is plural (`_ids` as opposed
             // to `_id`)
             $list = (bool) $matches[2];
-            // Ignore if the property or magic method has no relationship with
-            // other classes
+            // Check the property or magic method for a relationship to honour
+            // by applying deferred entities instead of raw data
             $relationship = $list
                 ? ($this->_Class->OneToManyRelationships[$match] ?? null)
                 : ($this->_Class->OneToOneRelationships[$match] ?? null);
-            if ($relationship === null ||
+            if ($relationship !== null &&
                     !is_a($relationship, ISyncEntity::class, true)) {
-                continue;
+                $relationship = null;
             }
-            // If $match doesn't resolve to a declared property, it will resolve
-            // to a magic method
+            // As above, if $match doesn't resolve to a declared property, it
+            // will resolve to a magic method
             $property = $this->_Class->Properties[$match] ?? $match;
-            $closures[$match] =
-                function (
-                    array $data,
-                    $entity,
-                    ?IProvider $provider,
-                    ?IProviderContext $context
-                ) use ($key, $match, $list, $relationship, $property): void {
-                    if (!($isList = Test::isListArray($data[$key])) && $list) {
-                        $entity->{$key} = $data[$key];
-                        return;
-                    }
-                    if (!($entity instanceof ISyncEntity) ||
-                            !($provider instanceof ISyncProvider) ||
-                            !($context instanceof ISyncContext)) {
-                        $entity->{$match} = $isList
-                            ? array_map(fn($id) => ['@id' => $id], $data[$key])
-                            : ['@id' => $data[$key]];
-                        return;
-                    }
-                    if ($isList) {
-                        DeferredSyncEntity::deferList($provider, $context, $relationship, $data[$key], $entity->{$property});
-                        return;
-                    }
-                    DeferredSyncEntity::defer($provider, $context, $relationship, $data[$key], $entity->{$property});
-                };
+            $closures[$match] = static function (
+                array $data,
+                $entity,
+                ?IProvider $provider,
+                ?IProviderContext $context
+            ) use ($key, $list, $relationship, $property): void {
+                if ($relationship === null ||
+                        (Test::isListArray($data[$key]) xor $list) ||
+                        !($entity instanceof ISyncEntity) ||
+                        !($provider instanceof ISyncProvider) ||
+                        !($context instanceof ISyncContext)) {
+                    $entity->{$property} = $data[$key];
+                    return;
+                }
+                /** @var IProvidable<IProvider,IProviderContext> $entity */
+                if ($list) {
+                    DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+                    return;
+                }
+                DeferredSyncEntity::defer($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+            };
+
             // Prevent duplication of the key as a meta value
             unset($keys[$normalisedKey]);
         }
@@ -388,7 +434,7 @@ final class SyncIntrospector extends Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, IHierarchy|null): TClass
+     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, ITreeable|null, bool|null $offline=): TClass
      */
     private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
     {
@@ -413,10 +459,14 @@ final class SyncIntrospector extends Introspector
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,
-                ?IHierarchy $parent
+                ?ITreeable $parent,
+                ?bool $offline = null
             ) use ($constructor, $updater) {
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                if ($obj instanceof IProvidable) {
+                    $obj->postLoad();
+                }
                 return $obj;
             };
         } else {
@@ -429,24 +479,38 @@ final class SyncIntrospector extends Introspector
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,
-                ?IHierarchy $parent
+                ?ITreeable $parent,
+                ?bool $offline = null
             ) use ($constructor, $updater, $existingUpdater, $idKey, $entityType) {
                 $id = $array[$idKey];
+
                 if ($id === null || !$provider) {
                     $obj = $constructor($array, $service, $container);
                     $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                    if ($obj instanceof IProvidable) {
+                        $obj->postLoad();
+                    }
                     return $obj;
                 }
+
                 $store = $provider->store();
                 $providerId = $provider->getProviderId();
-                $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $context);
+                $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $offline);
+
                 if ($obj) {
                     $obj = $existingUpdater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                    if ($obj instanceof IProvidable) {
+                        $obj->postLoad();
+                    }
                     return $obj;
                 }
+
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
                 $store->entity($providerId, $service ?? $entityType, $id, $obj);
+                if ($obj instanceof IProvidable) {
+                    $obj->postLoad();
+                }
                 return $obj;
             };
         }

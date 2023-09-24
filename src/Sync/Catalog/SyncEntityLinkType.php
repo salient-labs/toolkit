@@ -9,7 +9,7 @@ use Lkrms\Concept\Enumeration;
  *
  * @extends Enumeration<int>
  */
-final class SyncSerializeLinkType extends Enumeration
+final class SyncEntityLinkType extends Enumeration
 {
     /**
      * "@type" and "@id"

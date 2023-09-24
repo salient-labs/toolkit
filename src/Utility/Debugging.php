@@ -12,14 +12,16 @@ use Lkrms\Contract\ReceivesFacade;
 final class Debugging implements ReceivesFacade
 {
     /**
-     * @var class-string<IFacade>
+     * @var class-string<IFacade>|null
      */
     private $Facade;
 
+    /**
+     * @inheritDoc
+     */
     public function setFacade(string $name)
     {
         $this->Facade = $name;
-
         return $this;
     }
 
@@ -100,7 +102,7 @@ final class Debugging implements ReceivesFacade
                 1 => is_null($line) ? null : ':',
                 'line' => $line,
             ]);
-        } elseif ($frames[$depth + 1] ?? null) {
+        } elseif (isset($frames[$depth + 1])) {
             return array_filter([
                 'file' => $file,
                 0 => is_null($line) ? null : ':',

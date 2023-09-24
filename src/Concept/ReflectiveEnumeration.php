@@ -63,7 +63,7 @@ abstract class ReflectiveEnumeration extends Enumeration implements IConvertible
 
     final public static function fromName(string $name)
     {
-        if ((self::$ValueMaps[static::class] ?? null) === null) {
+        if (!isset(self::$ValueMaps[static::class])) {
             self::loadMaps();
         }
         if (($value = self::$ValueMaps[static::class][$name]
@@ -78,7 +78,7 @@ abstract class ReflectiveEnumeration extends Enumeration implements IConvertible
 
     final public static function toName($value): string
     {
-        if ((self::$NameMaps[static::class] ?? null) === null) {
+        if (!isset(self::$NameMaps[static::class])) {
             self::loadMaps();
         }
         if (($name = self::$NameMaps[static::class][$value] ?? null) === null) {
@@ -91,7 +91,7 @@ abstract class ReflectiveEnumeration extends Enumeration implements IConvertible
 
     final public static function cases(): array
     {
-        if ((self::$ValueMaps[static::class] ?? null) === null) {
+        if (!isset(self::$ValueMaps[static::class])) {
             self::loadMaps();
         }
         return self::$ValueMaps[static::class];

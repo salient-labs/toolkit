@@ -5,12 +5,11 @@ namespace Lkrms\Facade;
 use Lkrms\Concept\Facade;
 use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Contract\ISyncClassResolver;
-use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncError;
-use Lkrms\Sync\Support\SyncErrorBuilder as ErrorBuilder;
+use Lkrms\Sync\Support\SyncErrorBuilder;
 use Lkrms\Sync\Support\SyncErrorCollection;
 use Lkrms\Sync\Support\SyncStore;
 
@@ -26,8 +25,9 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static SyncStore deferredEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, DeferredSyncEntity $deferred) Register a deferred sync entity (see {@see SyncStore::deferredEntity()})
  * @method static SyncStore entity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, ISyncEntity $entity) Register a sync entity (see {@see SyncStore::entity()})
  * @method static SyncStore entityType(class-string<ISyncEntity> $entity) Register a sync entity type and set its ID (unless already registered) (see {@see SyncStore::entityType()})
- * @method static SyncStore error(SyncError|ErrorBuilder $error, bool $deduplicate = false, bool $toConsole = false) Report an error that occurred during a sync operation
- * @method static ISyncEntity|DeferredSyncEntity|null getEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, ?ISyncContext $context = null) Get a previously registered sync entity
+ * @method static SyncStore error(SyncError|SyncErrorBuilder $error, bool $deduplicate = false, bool $toConsole = false) Report an error that occurred during a sync operation
+ * @method static int getDeferredEntityCheckpoint() Get a checkpoint to delineate between entities already in the deferred entity queue and any subsequently deferred sync entities (see {@see SyncStore::getDeferredEntityCheckpoint()})
+ * @method static ISyncEntity|null getEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, bool|null $offline = null) Get a previously registered and/or stored sync entity (see {@see SyncStore::getEntity()})
  * @method static string|null getEntityTypeNamespace(class-string<ISyncEntity> $entity) Get the namespace of a sync entity type (see {@see SyncStore::getEntityTypeNamespace()})
  * @method static string|null getEntityTypeUri(class-string<ISyncEntity> $entity, bool $compact = true) Get the canonical URI of a sync entity type (see {@see SyncStore::getEntityTypeUri()})
  * @method static SyncErrorCollection getErrors() Get sync operation errors recorded so far
@@ -39,7 +39,8 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static bool isOpen() Check if a database is open
  * @method static SyncStore namespace(string $prefix, string $uri, string $namespace, class-string<ISyncClassResolver>|null $resolver = null) Register a sync entity namespace (see {@see SyncStore::namespace()})
  * @method static SyncStore provider(ISyncProvider $provider) Register a sync provider and set its provider ID (see {@see SyncStore::provider()})
- * @method static SyncStore reserveEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId) Pre-register a sync entity (see {@see SyncStore::reserveEntity()})
+ * @method static SyncStore reportErrors(string $successText = 'No sync errors recorded') Report sync operation errors to the console (see {@see SyncStore::reportErrors()})
+ * @method static ISyncEntity[] resolveDeferredEntities(?int $fromCheckpoint = null, ?int $providerId = null, class-string<ISyncEntity> $entityType = null, bool|null $offline = null) Resolve deferred sync entities from their respective providers and/or the local entity store (see {@see SyncStore::resolveDeferredEntities()})
  *
  * @uses SyncStore
  *
