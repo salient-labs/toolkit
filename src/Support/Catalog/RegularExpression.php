@@ -14,7 +14,6 @@ final class RegularExpression extends Dictionary
     /**
      * Zero or more backslash pairs with no preceding backslash, e.g. to ensure
      * the next token is not escaped
-     *
      */
     public const NOT_ESCAPED = <<<'REGEX'
         (?<!\\)(?:\\\\)*
@@ -22,7 +21,6 @@ final class RegularExpression extends Dictionary
 
     /**
      * A boolean string, e.g. "yes", "Y", "On", "TRUE", "enabled"
-     *
      */
     public const BOOLEAN_STRING = <<<'REGEX'
         (?xi)
@@ -34,7 +32,6 @@ final class RegularExpression extends Dictionary
 
     /**
      * An [RFC4122]-compliant version 4 UUID
-     *
      */
     public const UUID = '(?i)[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
 
@@ -55,13 +52,11 @@ final class RegularExpression extends Dictionary
 
     /**
      * A PHP union type, e.g. "A|B|C"
-     *
      */
     public const PHP_UNION_TYPE = self::PHP_TYPE . '(?:\|' . self::PHP_TYPE . ')+';
 
     /**
      * A PHP intersection type, e.g. "A&B&C"
-     *
      */
     public const PHP_INTERSECTION_TYPE = self::PHP_TYPE . '(?:&' . self::PHP_TYPE . ')+';
 
@@ -85,7 +80,6 @@ final class RegularExpression extends Dictionary
 
     /**
      * A valid PHP type, including union, intersection, and DNF types
-     *
      */
     public const PHP_FULL_TYPE = self::PHP_DNF_SEGMENT . '(?:\|' . self::PHP_DNF_SEGMENT . ')*';
 

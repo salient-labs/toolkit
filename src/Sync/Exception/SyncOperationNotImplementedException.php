@@ -8,7 +8,6 @@ use Lkrms\Sync\Contract\ISyncProvider;
 
 /**
  * Thrown when an unimplemented sync operation is attempted
- *
  */
 class SyncOperationNotImplementedException extends SyncException
 {

@@ -328,7 +328,6 @@ final class PhpDoc implements IReadable
 
     /**
      * Extract a PHPDoc type from $text if present
-     *
      */
     private function getTagType(string $text, ?string &$type): string
     {
@@ -346,7 +345,6 @@ final class PhpDoc implements IReadable
 
     /**
      * Extract a description from $text after removing $metaCount values
-     *
      */
     private function getTagDescription(string $text, int $metaCount): ?string
     {
@@ -431,7 +429,6 @@ final class PhpDoc implements IReadable
     /**
      * True if the PHPDoc contains more than a summary and/or variable type
      * information
-     *
      */
     public function hasDetail(): bool
     {
@@ -495,7 +492,6 @@ final class PhpDoc implements IReadable
     /**
      * Add missing values from a PhpDocParser that represents the same
      * structural element in a parent class or interface
-     *
      */
     public function mergeInherited(PhpDoc $parent): void
     {

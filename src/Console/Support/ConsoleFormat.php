@@ -8,7 +8,6 @@ use Lkrms\Support\Catalog\TtyControlSequence as Colour;
 /**
  * Applies formatting to console output by adding inline character sequences
  * defined by the target
- *
  */
 final class ConsoleFormat implements IConsoleFormat
 {
@@ -71,7 +70,6 @@ final class ConsoleFormat implements IConsoleFormat
 
     /**
      * Get an instance that doesn't apply any formatting to console output
-     *
      */
     public static function getDefaultFormat(): self
     {

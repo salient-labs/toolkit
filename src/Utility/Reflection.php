@@ -16,7 +16,6 @@ use UnexpectedValueException;
 
 /**
  * Work with PHP's Reflector classes
- *
  */
 final class Reflection
 {
@@ -71,7 +70,6 @@ final class Reflection
     /**
      * Follow ReflectionClass->getParentClass() until an ancestor with no parent
      * is found
-     *
      */
     public function getBaseClass(ReflectionClass $class): ReflectionClass
     {
@@ -85,7 +83,6 @@ final class Reflection
     /**
      * If a method has a prototype, return its declaring class, otherwise return
      * the method's declaring class
-     *
      */
     public function getMethodPrototypeClass(ReflectionMethod $method): ReflectionClass
     {
@@ -138,7 +135,6 @@ final class Reflection
 
     /**
      * Get the name of a ReflectionNamedType or ReflectionType
-     *
      */
     private function getTypeName(ReflectionType $type): string
     {

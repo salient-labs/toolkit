@@ -16,7 +16,6 @@ use RuntimeException;
 
 /**
  * Generates SyncEntity subclasses from reference entities
- *
  */
 class GenerateSyncEntity extends GenerateCommand
 {

@@ -7,7 +7,6 @@ use LogicException;
 
 /**
  * Creates clones of itself with a "mutant" flag applied
- *
  */
 trait HasMutator
 {
@@ -57,7 +56,6 @@ trait HasMutator
 
     /**
      * True if the object is marked as a mutant
-     *
      */
     final protected function isMutant(): bool
     {

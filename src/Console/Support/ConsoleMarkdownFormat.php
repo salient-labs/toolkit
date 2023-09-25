@@ -8,7 +8,6 @@ use Lkrms\Console\ConsoleFormatter;
 
 /**
  * Applies Markdown formatting to console output
- *
  */
 final class ConsoleMarkdownFormat implements IConsoleFormat
 {

@@ -23,7 +23,6 @@ use UnexpectedValueException;
  *
  * A static interface to the global service container is provided by
  * {@see \Lkrms\Facade\DI}.
- *
  */
 class Container extends FluentInterface implements IContainer
 {
@@ -118,7 +117,6 @@ class Container extends FluentInterface implements IContainer
 
     /**
      * Get the global container if set
-     *
      */
     final public static function maybeGetGlobalContainer(): ?IContainer
     {
@@ -127,7 +125,6 @@ class Container extends FluentInterface implements IContainer
 
     /**
      * Get the global container if set, otherwise throw an exception
-     *
      */
     final public static function requireGlobalContainer(): IContainer
     {

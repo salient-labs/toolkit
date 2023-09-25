@@ -10,7 +10,6 @@ use Lkrms\Support\Catalog\HttpHeader;
 
 /**
  * A collection of HTTP headers
- *
  */
 final class CurlerHeaders implements ICurlerHeaders
 {

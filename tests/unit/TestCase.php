@@ -60,7 +60,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     /**
      * Get the path to the fixtures directory for a class
-     *
      */
     public function getFixturesPath(string $class)
     {
@@ -75,7 +74,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     /**
      * Replace newlines in a string with PHP_EOL
-     *
      */
     public function newlinesToNative(?string $string): ?string
     {
@@ -87,7 +85,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     /**
      * Replace directory separators in a string with DIRECTORY_SEPARATOR
-     *
      */
     public function directorySeparatorsToNative(?string $string): ?string
     {

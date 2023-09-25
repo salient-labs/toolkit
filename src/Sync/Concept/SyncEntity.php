@@ -63,7 +63,6 @@ use UnexpectedValueException;
  * when {@see SyncEntity} objects are serialized. Override
  * {@see SyncEntity::buildSerializeRules()} to provide serialization rules for
  * nested entities.
- *
  */
 abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
 {
@@ -382,7 +381,6 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
 
     /**
      * Get the entity store servicing the entity's provider or the Sync facade
-     *
      */
     final protected function store(): SyncStore
     {

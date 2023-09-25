@@ -10,7 +10,6 @@ use Lkrms\Sync\Contract\ISyncProvider;
 /**
  * Thrown when an invalid data source is provided for the return value of a sync
  * operation
- *
  */
 class SyncInvalidEntitySourceException extends SyncException
 {

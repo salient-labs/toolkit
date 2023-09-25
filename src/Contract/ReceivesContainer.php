@@ -4,7 +4,6 @@ namespace Lkrms\Contract;
 
 /**
  * Receives the container that created it
- *
  */
 interface ReceivesContainer
 {

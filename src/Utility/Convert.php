@@ -45,7 +45,6 @@ final class Convert
 
     /**
      * Cast a value to an integer, preserving null
-     *
      */
     public static function toIntOrNull($value): ?int
     {
@@ -388,7 +387,6 @@ final class Convert
 
     /**
      * Expand tabs to spaces
-     *
      */
     public static function expandTabs(
         string $text,
@@ -422,7 +420,6 @@ final class Convert
 
     /**
      * Expand leading tabs to spaces
-     *
      */
     public static function expandLeadingTabs(
         string $text,
@@ -540,7 +537,6 @@ final class Convert
 
     /**
      * A shim for DateTimeImmutable::createFromInterface() (PHP 8+)
-     *
      */
     public static function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
     {
@@ -576,7 +572,6 @@ final class Convert
 
     /**
      * Get the first value that is not null
-     *
      */
     public static function coalesce(...$values)
     {
@@ -591,7 +586,6 @@ final class Convert
 
     /**
      * If an iterable isn't already an array, make it one
-     *
      */
     public static function iterableToArray(iterable $iterable, bool $preserveKeys = false): array
     {
@@ -600,7 +594,6 @@ final class Convert
 
     /**
      * If an iterable isn't already an Iterator, enclose it in one
-     *
      */
     public static function iterableToIterator(iterable $iterable): Iterator
     {
@@ -771,7 +764,6 @@ final class Convert
 
     /**
      * Remove the namespace and the first matched suffix from a class name
-     *
      */
     public static function classToBasename(string $class, string ...$suffixes): string
     {
@@ -790,7 +782,6 @@ final class Convert
      *
      * Returns an empty string if `$class` is not namespaced, otherwise returns
      * the namespace without adding or removing the global prefix operator.
-     *
      */
     public static function classToNamespace(string $class): string
     {
@@ -799,7 +790,6 @@ final class Convert
 
     /**
      * Remove the class from a method name
-     *
      */
     public static function methodToFunction(string $method): string
     {
@@ -904,7 +894,6 @@ final class Convert
 
     /**
      * Remove zero-width values from an array before imploding it
-     *
      */
     public static function sparseToString(string $separator, array $array): string
     {
@@ -931,7 +920,6 @@ final class Convert
     /**
      * Replace the end of a multi-byte string with an ellipsis ("...") if its
      * length exceeds a limit
-     *
      */
     public static function ellipsize(string $value, int $length): string
     {
@@ -981,7 +969,6 @@ final class Convert
 
     /**
      * Get the plural of a singular noun
-     *
      */
     public static function nounToPlural(string $noun): string
     {
@@ -1115,7 +1102,6 @@ final class Convert
      * If `$trimTrailingWhitespace` is `true`, whitespace is removed from the
      * end of each line, and if `$collapseBlankLines` is `true`, three or more
      * subsequent line breaks are collapsed to two.
-     *
      */
     public static function unwrap(
         string $string,
@@ -1145,7 +1131,6 @@ final class Convert
 
     /**
      * Convert a 16-byte UUID to its 36-byte hexadecimal representation
-     *
      */
     public static function uuidToHex(string $bytes): string
     {
@@ -1191,7 +1176,6 @@ final class Convert
 
     /**
      * Escape an argument for a POSIX-compatible shell
-     *
      */
     public static function toShellArg(string $arg): string
     {
@@ -1232,7 +1216,6 @@ final class Convert
 
     /**
      * Convert an identifier to snake_case
-     *
      */
     public static function toSnakeCase(string $text, ?string $preserve = null): string
     {
@@ -1241,7 +1224,6 @@ final class Convert
 
     /**
      * Convert an identifier to kebab-case
-     *
      */
     public static function toKebabCase(string $text, ?string $preserve = null): string
     {
@@ -1250,7 +1232,6 @@ final class Convert
 
     /**
      * Convert an identifier to PascalCase
-     *
      */
     public static function toPascalCase(string $text, ?string $preserve = null): string
     {
@@ -1261,7 +1242,6 @@ final class Convert
 
     /**
      * Convert an identifier to camelCase
-     *
      */
     public static function toCamelCase(string $text, ?string $preserve = null): string
     {
@@ -1320,7 +1300,6 @@ final class Convert
      * 3. Replaces non-alphanumeric sequences with a space (` `)
      * 4. Trims leading and trailing spaces
      * 5. Makes letters uppercase
-     *
      */
     public static function toNormal(string $text): string
     {
@@ -1356,7 +1335,6 @@ final class Convert
      *
      * Because you can't exclude `private` and `protected` properties from
      * inside the class. (Not easily, anyway.)
-     *
      */
     public static function objectToArray(object $object): array
     {
@@ -1409,7 +1387,6 @@ final class Convert
      * Arrays with consecutive integer keys numbered from 0 are considered to be
      * lists. By default, keys are not included when adding lists to query
      * strings. Set `$preserveKeys` to override this behaviour.
-     *
      */
     public static function dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null): string
     {
@@ -1422,7 +1399,6 @@ final class Convert
 
     /**
      * Like var_export but with more compact output
-     *
      */
     public static function valueToCode(
         $value,

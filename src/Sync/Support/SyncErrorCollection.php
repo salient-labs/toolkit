@@ -54,7 +54,6 @@ final class SyncErrorCollection extends LooselyTypedCollection implements JsonSe
 
     /**
      * Get a human-readable representation of the errors
-     *
      */
     public function toString(bool $withMarkup = false): string
     {

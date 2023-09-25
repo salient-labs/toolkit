@@ -5,7 +5,6 @@ namespace Lkrms\Contract;
 /**
  * Reads properties that have not been declared or are not visible in the
  * current scope
- *
  */
 interface IReadable
 {

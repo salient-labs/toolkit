@@ -31,7 +31,6 @@ final class MimeType extends Dictionary
      * Returns `true` if `$value` isn't recognised but `$mimeType` maps to one
      * of its suffixes, e.g. if `$mimeType` is `application/json` and `$value`
      * is `application/jwk-set+json`.
-     *
      */
     public static function is(string $mimeType, string $value): bool
     {

@@ -7,13 +7,11 @@ use Lkrms\Support\DateFormatter;
 
 /**
  * Creates objects that represent entities in a backend
- *
  */
 interface IProvider extends ReturnsContainer, ReturnsEnvironment, ReturnsDescription
 {
     /**
      * Get a context for instantiation of objects on the provider's behalf
-     *
      */
     public function getContext(?IContainer $container = null): IProviderContext;
 
@@ -46,7 +44,6 @@ interface IProvider extends ReturnsContainer, ReturnsEnvironment, ReturnsDescrip
 
     /**
      * Get a DateFormatter to work with the backend's date format and timezone
-     *
      */
     public function dateFormatter(): DateFormatter;
 

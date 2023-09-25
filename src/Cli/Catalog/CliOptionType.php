@@ -43,7 +43,6 @@ final class CliOptionType extends Enumeration
 
     /**
      * Set the value of a positional parameter
-     *
      */
     public const VALUE_POSITIONAL = 3;
 
@@ -69,7 +68,6 @@ final class CliOptionType extends Enumeration
 
     /**
      * Choose the value of a positional parameter from a list
-     *
      */
     public const ONE_OF_POSITIONAL = 6;
 }

@@ -17,7 +17,6 @@ use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
 
 /**
  * Base class for HTTP-based RESTful API providers
- *
  */
 abstract class HttpSyncProvider extends SyncProvider
 {
@@ -31,7 +30,6 @@ abstract class HttpSyncProvider extends SyncProvider
      * {@see HttpSyncProvider::buildCurler()}, which, in turn, take precedence
      * over {@see HttpSyncProvider::getHeaders()} and
      * {@see HttpSyncProvider::getPager()}.
-     *
      */
     final public function getCurler(
         string $path,
@@ -94,7 +92,6 @@ abstract class HttpSyncProvider extends SyncProvider
 
     /**
      * Get the URL of an API endpoint
-     *
      */
     final public function getEndpointUrl(string $path): string
     {
@@ -112,7 +109,6 @@ abstract class HttpSyncProvider extends SyncProvider
 
     /**
      * Get a new CurlerHeaders instance
-     *
      */
     final protected function headers(): CurlerHeaders
     {
@@ -133,7 +129,6 @@ abstract class HttpSyncProvider extends SyncProvider
      * via the relevant {@see CurlerBuilder} methods. Values passed to
      * {@see HttpSyncProvider::getCurler()}'s `$headers` and `$pager` arguments
      * take precedence over all of these.
-     *
      */
     protected function buildCurler(CurlerBuilder $curlerB): CurlerBuilder
     {
@@ -162,13 +157,11 @@ abstract class HttpSyncProvider extends SyncProvider
      *
      * `$path` should be ignored unless the provider uses endpoint-specific base
      * URLs to connect to the API. It should never be added to the return value.
-     *
      */
     abstract protected function getBaseUrl(?string $path): string;
 
     /**
      * Get HTTP headers required by the upstream API
-     *
      */
     protected function getHeaders(?string $path): ?ICurlerHeaders
     {
@@ -177,7 +170,6 @@ abstract class HttpSyncProvider extends SyncProvider
 
     /**
      * Get a handler for paginated data from the upstream API
-     *
      */
     protected function getPager(?string $path): ?ICurlerPager
     {

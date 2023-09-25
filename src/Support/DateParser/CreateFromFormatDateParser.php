@@ -8,7 +8,6 @@ use DateTimeZone;
 
 /**
  * A wrapper around DateTimeImmutable::createFromFormat()
- *
  */
 final class CreateFromFormatDateParser implements IDateParser
 {

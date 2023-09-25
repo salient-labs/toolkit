@@ -20,7 +20,6 @@ use ReflectionProperty;
 
 /**
  * Generates fluent interfaces that create instances of a class
- *
  */
 class GenerateBuilder extends GenerateCommand
 {
@@ -216,7 +215,7 @@ class GenerateBuilder extends GenerateCommand
         $_phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $_constructor->getName() . '()');
 
         $names = array_keys($_params + $_properties);
-        //sort($names);
+        // sort($names);
         $methods = [
             " * @method static \$this {$this->StaticBuilder}(?$container \$container = null) Create a new $builderClass (syntactic sugar for 'new $builderClass()')",
         ];

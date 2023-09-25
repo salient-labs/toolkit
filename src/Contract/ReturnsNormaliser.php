@@ -6,7 +6,6 @@ use Closure;
 
 /**
  * Returns a closure that normalises the names of its properties
- *
  */
 interface ReturnsNormaliser extends IResolvable
 {

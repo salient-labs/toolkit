@@ -12,7 +12,6 @@ use Throwable;
 
 /**
  * Base class for SQLite-backed stores
- *
  */
 abstract class SqliteStore implements ReceivesFacade
 {
@@ -131,7 +130,6 @@ abstract class SqliteStore implements ReceivesFacade
 
     /**
      * Check if a database is open
-     *
      */
     final public function isOpen(): bool
     {
@@ -140,7 +138,6 @@ abstract class SqliteStore implements ReceivesFacade
 
     /**
      * Get the filename of the database
-     *
      */
     final public function getFilename(): ?string
     {

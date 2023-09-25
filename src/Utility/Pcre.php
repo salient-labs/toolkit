@@ -6,7 +6,6 @@ use Lkrms\Exception\PcreErrorException;
 
 /**
  * preg_* function wrappers that throw an exception on failure
- *
  */
 final class Pcre
 {

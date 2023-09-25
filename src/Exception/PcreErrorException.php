@@ -31,7 +31,6 @@ class PcreErrorException extends \Lkrms\Exception\Exception
     private static array $ErrorNameMap;
 
     /**
-     *
      * @param array<string,callable(array<array-key,string|null>):string>|string[]|string $pattern
      * @param string[]|string $subject
      */

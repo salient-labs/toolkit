@@ -26,7 +26,6 @@ use RuntimeException;
 
 /**
  * A service container for applications
- *
  */
 class Application extends Container implements IApplication
 {

@@ -9,7 +9,6 @@ use RuntimeException;
 
 /**
  * Get information about the root package and installed dependencies
- *
  */
 final class Composer
 {
@@ -22,7 +21,6 @@ final class Composer
      * ```shell
      * composer install --no-dev --no-plugins --optimize-autoloader --classmap-authoritative
      * ```
-     *
      */
     public function hasDevDependencies(): bool
     {
@@ -31,7 +29,6 @@ final class Composer
 
     /**
      * Get the name of the root package
-     *
      */
     public function getRootPackageName(): string
     {
@@ -40,7 +37,6 @@ final class Composer
 
     /**
      * Get the commit reference of the root package, if known
-     *
      */
     public function getRootPackageReference(?int $abbrev = 8): ?string
     {
@@ -72,7 +68,6 @@ final class Composer
 
     /**
      * Get the canonical path of the root package
-     *
      */
     public function getRootPackagePath(): string
     {
@@ -86,7 +81,6 @@ final class Composer
 
     /**
      * Get the commit reference of an installed package, if known
-     *
      */
     public function getPackageReference(string $package = 'lkrms/util', ?int $abbrev = 8): ?string
     {
@@ -135,7 +129,6 @@ final class Composer
      * Get the canonical path of an installed package
      *
      * Returns `null` if `$package` is not installed.
-     *
      */
     public function getPackagePath(string $package = 'lkrms/util'): ?string
     {

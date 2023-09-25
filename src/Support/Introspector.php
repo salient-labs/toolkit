@@ -98,7 +98,6 @@ class Introspector
 
     /**
      * Return true if the class has a normaliser
-     *
      */
     final public function hasNormaliser(): bool
     {

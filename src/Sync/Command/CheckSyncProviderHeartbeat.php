@@ -12,7 +12,6 @@ use RuntimeException;
 
 /**
  * A generic sync provider heartbeat check command
- *
  */
 final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
 {

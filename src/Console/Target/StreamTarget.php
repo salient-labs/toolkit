@@ -11,7 +11,6 @@ use RuntimeException;
 
 /**
  * Write console messages to a stream (e.g. a file or TTY)
- *
  */
 final class StreamTarget extends ConsoleTarget
 {

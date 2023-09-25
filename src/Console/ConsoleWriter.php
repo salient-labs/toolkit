@@ -25,7 +25,6 @@ use UnexpectedValueException;
  * {@see ConsoleWriter} methods should generally be called via the
  * {@see \Lkrms\Facade\Console} facade. If a {@see ConsoleWriter} instance is
  * required, call {@see \Lkrms\Facade\Console::getInstance()}.
- *
  */
 final class ConsoleWriter implements ReceivesFacade
 {
@@ -327,7 +326,6 @@ final class ConsoleWriter implements ReceivesFacade
 
     /**
      * Get the number of errors reported so far
-     *
      */
     public function getErrors(): int
     {
@@ -336,7 +334,6 @@ final class ConsoleWriter implements ReceivesFacade
 
     /**
      * Get the number of warnings reported so far
-     *
      */
     public function getWarnings(): int
     {

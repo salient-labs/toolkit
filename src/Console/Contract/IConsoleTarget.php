@@ -7,31 +7,26 @@ use Lkrms\Console\ConsoleFormatter;
 
 /**
  * A console output target
- *
  */
 interface IConsoleTarget
 {
     /**
      * True if the target writes to STDOUT
-     *
      */
     public function isStdout(): bool;
 
     /**
      * True if the target writes to STDERR
-     *
      */
     public function isStderr(): bool;
 
     /**
      * True if the target writes to a TTY
-     *
      */
     public function isTty(): bool;
 
     /**
      * Get an output formatter for the target
-     *
      */
     public function getFormatter(): ConsoleFormatter;
 

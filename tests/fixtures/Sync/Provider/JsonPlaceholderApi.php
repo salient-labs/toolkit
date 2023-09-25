@@ -18,7 +18,6 @@ use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Utility\Env;
 
 /**
- *
  * @method Post createPost(SyncContext $ctx, Post $post)
  * @method Post getPost(SyncContext $ctx, int|string|null $id)
  * @method Post updatePost(SyncContext $ctx, Post $post)

@@ -29,7 +29,6 @@ use Throwable;
  * Creating a {@see SyncStore} instance starts a sync operation run that must be
  * terminated by calling {@see SyncStore::close()}, otherwise a failed run is
  * recorded.
- *
  */
 final class SyncStore extends SqliteStore
 {
@@ -261,7 +260,6 @@ final class SyncStore extends SqliteStore
 
     /**
      * Terminate the current run and close the database
-     *
      */
     public function close(int $exitStatus = 0)
     {
@@ -298,7 +296,6 @@ final class SyncStore extends SqliteStore
 
     /**
      * Get the run ID of the current run
-     *
      */
     public function getRunId(): int
     {
@@ -950,7 +947,6 @@ final class SyncStore extends SqliteStore
 
     /**
      * Get sync operation errors recorded so far
-     *
      */
     public function getErrors(): SyncErrorCollection
     {

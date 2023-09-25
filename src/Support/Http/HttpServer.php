@@ -92,7 +92,6 @@ final class HttpServer implements IReadable, IImmutable
 
     /**
      * Get the server's client-facing base URL with no trailing slash
-     *
      */
     public function getBaseUrl(): string
     {

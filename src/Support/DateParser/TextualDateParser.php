@@ -8,7 +8,6 @@ use DateTimeZone;
 
 /**
  * A wrapper around date_create_immutable()
- *
  */
 final class TextualDateParser implements IDateParser
 {

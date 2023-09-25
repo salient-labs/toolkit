@@ -6,43 +6,36 @@ use Lkrms\Support\DateFormatter;
 
 /**
  * Instructions for serializing nested entities
- *
  */
 interface ISerializeRules
 {
     /**
      * Override the default date formatter
-     *
      */
     public function getDateFormatter(): ?DateFormatter;
 
     /**
      * Include undeclared property values?
-     *
      */
     public function getIncludeMeta(): bool;
 
     /**
      * Sort arrays by key?
-     *
      */
     public function getSortByKey(): bool;
 
     /**
      * Throw an exception when values are nested beyond this depth
-     *
      */
     public function getMaxDepth(): ?int;
 
     /**
      * Check for recursion?
-     *
      */
     public function getDetectRecursion(): bool;
 
     /**
      * A bitmask of enabled flags
-     *
      */
     public function getFlags(): int;
 

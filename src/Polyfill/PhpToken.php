@@ -8,33 +8,28 @@ use TypeError;
 
 /**
  * The PhpToken class
- *
  */
 class PhpToken implements Stringable
 {
     /**
      * One of the T_* constants, or an ASCII codepoint representing a
      * single-char token.
-     *
      */
     public int $id;
 
     /**
      * The textual content of the token.
-     *
      */
     public string $text;
 
     /**
      * The starting line number (1-based) of the token.
-     *
      */
     public int $line;
 
     /**
      * The starting position (0-based) in the tokenized string (the number of
      * bytes).
-     *
      */
     public int $pos;
 

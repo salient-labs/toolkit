@@ -10,7 +10,6 @@ use Lkrms\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;
 
 /**
  * Maps inline formatting tags to target-defined formats
- *
  */
 final class ConsoleTagFormats
 {

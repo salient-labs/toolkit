@@ -4,7 +4,6 @@ namespace Lkrms\Contract;
 
 /**
  * Normalises the names of its properties
- *
  */
 interface IResolvable
 {

@@ -6,19 +6,16 @@ interface ICurlerPage
 {
     /**
      * Return data extracted from the upstream response
-     *
      */
     public function entities(): array;
 
     /**
      * Return the number of entities retrieved so far
-     *
      */
     public function entityCount(): int;
 
     /**
      * Return true if no more data is available
-     *
      */
     public function isLastPage(): bool;
 
@@ -31,7 +28,6 @@ interface ICurlerPage
 
     /**
      * Return data to send in the body of the request for the next page
-     *
      */
     public function nextData(): ?array;
 

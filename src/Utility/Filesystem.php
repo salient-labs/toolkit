@@ -21,7 +21,6 @@ use SplFileInfo;
 
 /**
  * Work with files, directories and paths
- *
  */
 final class Filesystem
 {
@@ -302,7 +301,6 @@ final class Filesystem
 
     /**
      * Create a temporary directory
-     *
      */
     public function createTemporaryDirectory(): string
     {
@@ -493,7 +491,6 @@ final class Filesystem
      * If `$dir` is not given, a filename in `sys_get_temp_dir()` is returned.
      *
      * No changes are made to the filesystem.
-     *
      */
     public function getStablePath(string $suffix = '', ?string $dir = null): string
     {

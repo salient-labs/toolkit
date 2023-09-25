@@ -6,7 +6,6 @@ use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
 
 /**
  * Applies a target-defined format to console output
- *
  */
 interface IConsoleFormat
 {

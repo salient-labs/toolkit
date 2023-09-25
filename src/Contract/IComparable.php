@@ -4,7 +4,6 @@ namespace Lkrms\Contract;
 
 /**
  * Able to compare instances of itself, e.g. for sorting purposes
- *
  */
 interface IComparable
 {

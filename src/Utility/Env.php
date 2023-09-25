@@ -153,7 +153,6 @@ final class Env
      * Set an environment variable
      *
      * The value is applied to `$_ENV`, `$_SERVER` and `putenv()`.
-     *
      */
     public static function set(string $name, string $value): void
     {
@@ -168,7 +167,6 @@ final class Env
      * Unset an environment variable
      *
      * The change is applied to `$_ENV`, `$_SERVER` and `putenv()`.
-     *
      */
     public static function unset(string $name): void
     {
@@ -201,7 +199,6 @@ final class Env
 
     /**
      * True if a variable is present in the environment
-     *
      */
     public static function has(string $name): bool
     {
@@ -503,7 +500,6 @@ final class Env
      *
      * Dry-run mode can also be enabled by setting the `DRY_RUN` environment
      * variable.
-     *
      */
     public static function dryRun(?bool $newState = null): bool
     {
@@ -515,7 +511,6 @@ final class Env
      *
      * Debug mode can also be enabled by setting the `DEBUG` environment
      * variable.
-     *
      */
     public static function debug(?bool $newState = null): bool
     {
@@ -525,7 +520,6 @@ final class Env
     /**
      * True if the current locale for character classification and conversion
      * (LC_CTYPE) supports UTF-8
-     *
      */
     public static function isLocaleUtf8(): bool
     {
@@ -540,7 +534,6 @@ final class Env
 
     /**
      * Get the current user's home directory from the environment
-     *
      */
     public static function home(): ?string
     {

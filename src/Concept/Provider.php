@@ -12,7 +12,6 @@ use Lkrms\Utility\Env;
 
 /**
  * Base class for providers
- *
  */
 abstract class Provider implements IProvider
 {

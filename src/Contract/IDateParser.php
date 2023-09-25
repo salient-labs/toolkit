@@ -7,7 +7,6 @@ use DateTimeZone;
 
 /**
  * Converts date strings to DateTimeImmutable objects
- *
  */
 interface IDateParser
 {

@@ -7,7 +7,6 @@ use Lkrms\Utility\Convert;
 
 /**
  * Generate values like hashes and secure UUIDs
- *
  */
 final class Computations
 {
@@ -40,7 +39,6 @@ final class Computations
 
     /**
      * Generate a cryptographically secure string
-     *
      */
     public function randomText(int $length, string $chars = Char::ALPHANUMERIC): string
     {

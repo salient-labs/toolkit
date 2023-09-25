@@ -8,7 +8,6 @@ use Throwable;
 
 /**
  * Thrown when an HTTP request fails
- *
  */
 class CurlerException extends \Lkrms\Exception\Exception
 {

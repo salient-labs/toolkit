@@ -9,7 +9,6 @@ use Lkrms\Support\Catalog\HttpHeader;
 
 /**
  * A collection of HTTP headers
- *
  */
 interface ICurlerHeaders extends IImmutable
 {

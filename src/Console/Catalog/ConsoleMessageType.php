@@ -20,19 +20,16 @@ final class ConsoleMessageType extends Enumeration
 {
     /**
      * A message with no explicit type
-     *
      */
     public const DEFAULT = 0;
 
     /**
      * A message with no prefix
-     *
      */
     public const UNDECORATED = 1;
 
     /**
      * A message with no prefix and no formatting based on message level
-     *
      */
     public const UNFORMATTED = 2;
 
@@ -52,7 +49,6 @@ final class ConsoleMessageType extends Enumeration
 
     /**
      * "Command finished without errors" or similar
-     *
      */
     public const SUCCESS = 5;
 }

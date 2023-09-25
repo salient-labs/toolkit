@@ -6,7 +6,6 @@ use Lkrms\Contract\IFluentInterface;
 
 /**
  * Base class for fluent interfaces
- *
  */
 abstract class FluentInterface implements IFluentInterface
 {

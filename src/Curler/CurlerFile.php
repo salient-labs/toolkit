@@ -7,7 +7,6 @@ use RuntimeException;
 
 /**
  * File upload helper
- *
  */
 final class CurlerFile
 {

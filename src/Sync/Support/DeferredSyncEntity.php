@@ -109,7 +109,6 @@ final class DeferredSyncEntity implements IReadable
 
     /**
      * Get the deferred entity's canonical location in the form of a URI
-     *
      */
     public function uri(bool $compact = true): string
     {
@@ -127,7 +126,6 @@ final class DeferredSyncEntity implements IReadable
 
     /**
      * Resolve the deferred entity
-     *
      */
     public function replace(ISyncEntity $entity): void
     {

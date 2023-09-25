@@ -6,7 +6,6 @@ use LogicException;
 
 /**
  * Dispatches events to listeners
- *
  */
 final class EventDispatcher
 {

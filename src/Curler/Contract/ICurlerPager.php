@@ -29,7 +29,6 @@ interface ICurlerPager
 
     /**
      * Prepare a Curler instance to request the first page from an endpoint
-     *
      */
     public function prepareCurler(Curler $curler): Curler;
 

@@ -7,7 +7,6 @@ use Lkrms\Support\Catalog\RelationshipType;
 /**
  * Has one-to-one and one-to-many relationships with other classes implementing
  * the same interface
- *
  */
 interface IRelatable
 {

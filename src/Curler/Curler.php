@@ -980,7 +980,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     *
      * @param mixed[]|null $query
      */
     public function head(?array $query = null): ICurlerHeaders
@@ -989,7 +988,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     *
      * @param mixed[]|null $query
      * @return mixed
      */
@@ -999,7 +997,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     *
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return mixed
@@ -1010,7 +1007,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     *
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return mixed
@@ -1021,7 +1017,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     *
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return mixed
@@ -1032,7 +1027,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     *
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return mixed
@@ -1043,7 +1037,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     *
      * @param mixed[]|null $query
      * @return iterable<mixed>
      */
@@ -1053,7 +1046,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     *
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return iterable<mixed>
@@ -1064,7 +1056,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     *
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return iterable<mixed>
@@ -1075,7 +1066,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     *
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return iterable<mixed>
@@ -1086,7 +1076,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     *
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return iterable<mixed>
@@ -1481,7 +1470,6 @@ final class Curler implements IReadable, IWritable, HasBuilder
 
     /**
      * Use a fluent interface to create a new Curler object
-     *
      */
     public static function build(?IContainer $container = null): CurlerBuilder
     {

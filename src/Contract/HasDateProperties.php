@@ -4,7 +4,6 @@ namespace Lkrms\Contract;
 
 /**
  * Uses a DateFormatter to serialize and deserialize accessible properties
- *
  */
 interface HasDateProperties
 {

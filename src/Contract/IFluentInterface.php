@@ -4,7 +4,6 @@ namespace Lkrms\Contract;
 
 /**
  * Provides a fluent interface via chainable methods that return $this
- *
  */
 interface IFluentInterface
 {

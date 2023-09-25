@@ -33,7 +33,6 @@ final class EnvFlag extends Enumeration
 
     /**
      * Apply all recognised values from the environment to the running script
-     *
      */
     public const ALL = self::LOCALE | self::TIMEZONE;
 }

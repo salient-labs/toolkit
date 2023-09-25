@@ -10,13 +10,11 @@ use LogicException;
 
 /**
  * A service container for CLI applications
- *
  */
 interface ICliApplication extends IApplication
 {
     /**
      * Get the command started from the command line
-     *
      */
     public function getRunningCommand(): ?ICliCommand;
 
@@ -58,7 +56,6 @@ interface ICliApplication extends IApplication
     /**
      * Get formatting instructions for the help message type requested from the
      * command line
-     *
      */
     public function getHelpStyle(): CliHelpStyle;
 
@@ -103,7 +100,6 @@ interface ICliApplication extends IApplication
      *
      * Otherwise, an error is reported, a one-line synopsis of each registered
      * subcommand is printed, and `1` is returned.
-     *
      */
     public function run(): int;
 

@@ -10,7 +10,6 @@ use Lkrms\Sync\Exception\SyncInvalidFilterException;
 
 /**
  * The context within which a sync entity is instantiated by a provider
- *
  */
 interface ISyncContext extends IProviderContext
 {

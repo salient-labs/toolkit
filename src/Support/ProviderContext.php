@@ -12,7 +12,6 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 
 /**
  * The context within which an entity is instantiated by a provider
- *
  */
 class ProviderContext implements IProviderContext
 {

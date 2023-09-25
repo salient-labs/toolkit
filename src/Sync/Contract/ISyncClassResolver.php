@@ -5,7 +5,6 @@ namespace Lkrms\Sync\Contract;
 /**
  * Resolves sync entity classes to their respective provider interfaces, and
  * vice-versa
- *
  */
 interface ISyncClassResolver
 {

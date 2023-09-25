@@ -12,7 +12,6 @@ use Throwable;
 
 /**
  * Handle errors and uncaught exceptions
- *
  */
 final class ErrorHandler implements ReceivesFacade
 {

@@ -7,7 +7,6 @@ use Lkrms\Store\Concept\SqliteStore;
 
 /**
  * A SQLite object cache inspired by memcached
- *
  */
 final class CacheStore extends SqliteStore
 {
@@ -279,7 +278,6 @@ final class CacheStore extends SqliteStore
 
     /**
      * Retrieve an item, or get it from a callback and store it for next time
-     *
      */
     public function maybeGet(string $key, callable $callback, int $expiry = 0)
     {

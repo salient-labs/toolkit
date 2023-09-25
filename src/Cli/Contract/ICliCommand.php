@@ -13,7 +13,6 @@ interface ICliCommand extends ICliCommandNode
 {
     /**
      * Parse the arguments and run the command
-     *
      */
     public function __invoke(string ...$args): int;
 }

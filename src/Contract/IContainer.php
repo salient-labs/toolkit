@@ -7,25 +7,21 @@ use Lkrms\Exception\ContainerServiceNotFoundException;
 
 /**
  * A service container with support for contextual bindings
- *
  */
 interface IContainer extends \Psr\Container\ContainerInterface
 {
     /**
      * Creates a new service container object
-     *
      */
     public function __construct();
 
     /**
      * True if the global container is set
-     *
      */
     public static function hasGlobalContainer(): bool;
 
     /**
      * Get the global container
-     *
      */
     public static function getGlobalContainer(): IContainer;
 
@@ -254,7 +250,6 @@ interface IContainer extends \Psr\Container\ContainerInterface
 
     /**
      * Prepare the container for garbage collection
-     *
      */
     public function unload(): void;
 }

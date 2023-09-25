@@ -11,8 +11,8 @@ final class CurlerTest extends \Lkrms\Tests\TestCase
         $this->expectNotToPerformAssertions();
         return;
 
-        //$curler = new Curler('https://api.github.com/meta');
-        //$data = $curler->get();
-        //$this->assertArrayHasKey('web', $data);
+        // $curler = new Curler('https://api.github.com/meta');
+        // $data = $curler->get();
+        // $this->assertArrayHasKey('web', $data);
     }
 }

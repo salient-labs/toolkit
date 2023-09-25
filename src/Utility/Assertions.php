@@ -7,7 +7,6 @@ use UnexpectedValueException;
 
 /**
  * Throw an exception if a condition isn't met
- *
  */
 final class Assertions
 {

@@ -22,7 +22,6 @@ interface ISyncEntity extends IProviderEntity, IRelatable, ReturnsDescription, J
 {
     /**
      * Get an instance of the entity's default provider
-     *
      */
     public static function defaultProvider(?IContainer $container = null): ISyncProvider;
 
@@ -50,7 +49,6 @@ interface ISyncEntity extends IProviderEntity, IRelatable, ReturnsDescription, J
 
     /**
      * Get the entity type ID assigned to the entity by the entity store
-     *
      */
     public static function getEntityTypeId(): ?int;
 
@@ -110,7 +108,6 @@ interface ISyncEntity extends IProviderEntity, IRelatable, ReturnsDescription, J
      * Get the entity's canonical location in the form of a URI
      *
      * Inspired by OData.
-     *
      */
     public function uri(bool $compact = true): string;
 }

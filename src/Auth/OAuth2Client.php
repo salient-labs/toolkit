@@ -69,7 +69,6 @@ trait OAuth2Client
      *     return $listener;
      * }
      * ```
-     *
      */
     abstract protected function getOAuth2Listener(): ?HttpServer;
 
@@ -101,7 +100,6 @@ trait OAuth2Client
      *     ]);
      * }
      * ```
-     *
      */
     abstract protected function getOAuth2Provider(): OAuth2Provider;
 
@@ -118,13 +116,11 @@ trait OAuth2Client
      *
      * Required for token signature validation. Check the provider's
      * `https://server.com/.well-known/openid-configuration` if unsure.
-     *
      */
     abstract protected function getOAuth2JsonWebKeySetUrl(): ?string;
 
     /**
      * Called when an access token is received from the OAuth 2.0 provider
-     *
      */
     abstract protected function receiveOAuth2Token(AccessTokenInterface $token): void;
 
@@ -220,7 +216,6 @@ trait OAuth2Client
      * possible, flush all tokens and authorize with the provider from scratch
      *
      * This may be the only {@see OAuth2Client} method inheritors need to call.
-     *
      */
     final protected function getAccessToken(?array $scopes = null): AccessToken
     {
@@ -252,7 +247,6 @@ trait OAuth2Client
 
     /**
      * False if one or more scopes are not granted
-     *
      */
     private function checkAccessTokenScopes(AccessToken $token, ?array $scopes): bool
     {
@@ -263,7 +257,6 @@ trait OAuth2Client
     /**
      * If an unexpired OAuth 2.0 refresh token is available, use it to get a new
      * access token from the provider if possible
-     *
      */
     final protected function refreshAccessToken(?AccessToken &$token = null): bool
     {
@@ -278,7 +271,6 @@ trait OAuth2Client
 
     /**
      * Get an access token from the OAuth 2.0 provider
-     *
      */
     final protected function authorize(): AccessToken
     {

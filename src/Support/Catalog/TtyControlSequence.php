@@ -44,37 +44,31 @@ final class TtyControlSequence extends Dictionary
 
     /**
      * Reset BOLD, set DIM
-     *
      */
     public const UNBOLD_DIM = "\e[22;2m";
 
     /**
      * Reset DIM, set BOLD
-     *
      */
     public const UNDIM_BOLD = "\e[22;1m";
 
     /**
      * Reset all colours and styles
-     *
      */
     public const RESET = "\e[m";
 
     /**
      * Clear to end of line
-     *
      */
     public const CLEAR_LINE = "\e[K";
 
     /**
      * Turn off automatic margins
-     *
      */
     public const WRAP_OFF = "\e[?7l";
 
     /**
      * Turn on automatic margins
-     *
      */
     public const WRAP_ON = "\e[?7h";
 }

@@ -14,7 +14,6 @@ interface IFacade
 {
     /**
      * True if an underlying instance has been loaded
-     *
      */
     public static function isLoaded(): bool;
 
@@ -37,7 +36,6 @@ interface IFacade
      * Clear the underlying instance
      *
      * If an underlying instance has not been loaded, no action is taken.
-     *
      */
     public static function unload(): void;
 

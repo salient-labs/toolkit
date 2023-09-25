@@ -4,7 +4,6 @@ namespace Lkrms\Contract;
 
 /**
  * Reads and writes arbitrary undeclared properties
- *
  */
 interface IExtensible
 {
@@ -24,13 +23,11 @@ interface IExtensible
 
     /**
      * True if an undeclared property is set
-     *
      */
     public function isMetaPropertySet(string $name): bool;
 
     /**
      * Unset an undeclared property
-     *
      */
     public function unsetMetaProperty(string $name): void;
 

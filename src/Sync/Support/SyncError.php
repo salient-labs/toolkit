@@ -145,7 +145,6 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
 
     /**
      * Use a fluent interface to create a new SyncError object
-     *
      */
     public static function build(?IContainer $container = null): SyncErrorBuilder
     {

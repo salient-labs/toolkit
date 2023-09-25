@@ -19,7 +19,6 @@ use Lkrms\Utility\Env;
 
 /**
  * Generates provider interfaces for SyncEntity subclasses
- *
  */
 class GenerateSyncProvider extends GenerateCommand
 {

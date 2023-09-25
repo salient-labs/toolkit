@@ -13,7 +13,6 @@ use ReflectionClass;
  *
  * @extends Enumeration<TValue>
  * @implements IConvertibleEnumeration<TValue>
- *
  */
 abstract class ReflectiveEnumeration extends Enumeration implements IConvertibleEnumeration
 {

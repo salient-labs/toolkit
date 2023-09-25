@@ -7,7 +7,6 @@ use Throwable;
 
 /**
  * Base class for exceptions
- *
  */
 abstract class Exception extends RuntimeException
 {

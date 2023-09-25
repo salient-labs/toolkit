@@ -6,7 +6,6 @@ use Lkrms\Support\Catalog\RegularExpression as Regex;
 
 /**
  * Perform true/false tests on values
- *
  */
 final class Test
 {
@@ -241,7 +240,6 @@ final class Test
 
     /**
      * True if $path starts with 'phar://'
-     *
      */
     public static function isPharUrl(string $path): bool
     {
@@ -263,7 +261,6 @@ final class Test
 
     /**
      * True if two paths exist and refer to the same file
-     *
      */
     public static function areSameFile(string $path1, string $path2): bool
     {
@@ -275,7 +272,6 @@ final class Test
     /**
      * True if a directory exists and is writable, or doesn't exist but
      * can be created
-     *
      */
     public static function firstExistingDirectoryIsWritable(string $dir): bool
     {

@@ -11,7 +11,6 @@ use Lkrms\Console\Support\ConsoleMessageFormat as MessageFormat;
  *
  * If multiple formats are assigned to the same {@see Level} and {@see Type},
  * the format assigned last takes precedence.
- *
  */
 final class ConsoleMessageFormats
 {

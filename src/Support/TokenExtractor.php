@@ -12,7 +12,6 @@ defined('T_NAME_RELATIVE') || define('T_NAME_RELATIVE', 10009);
 
 /**
  * Reflection for files
- *
  */
 final class TokenExtractor
 {

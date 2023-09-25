@@ -4,7 +4,6 @@ namespace Lkrms\Utility;
 
 /**
  * Get information from (or about) data
- *
  */
 final class Inspect
 {

@@ -18,7 +18,6 @@ use League\OAuth2\Client\Provider\GenericProvider;
  *
  * This class is a placeholder that will be replaced with a more flexible
  * implementation.
- *
  */
 class OAuth2Provider extends GenericProvider
 {

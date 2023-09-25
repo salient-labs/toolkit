@@ -6,7 +6,6 @@ use Lkrms\Contract\ISerializeRules;
 
 /**
  * Instructions for serializing nested sync entities
- *
  */
 interface ISyncSerializeRules extends ISerializeRules
 {

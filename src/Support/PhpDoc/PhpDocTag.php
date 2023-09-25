@@ -7,7 +7,6 @@ use Lkrms\Utility\Convert;
 
 /**
  * A tag extracted from a PHP DocBlock
- *
  */
 class PhpDocTag
 {
@@ -144,7 +143,6 @@ class PhpDocTag
     /**
      * Return null if a string is null, empty, or only contains whitespace,
      * otherwise remove whitespace from the end of the string
-     *
      */
     final public static function sanitiseString(?string $string): ?string
     {

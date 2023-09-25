@@ -22,7 +22,6 @@ use LogicException;
 
 /**
  * A service container for CLI applications
- *
  */
 class CliApplication extends Application implements ICliApplication
 {

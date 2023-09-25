@@ -8,7 +8,6 @@ use DateTimeZone;
 
 /**
  * Returns a DateTimeImmutable from a callback if a regular expression matches
- *
  */
 final class RegexDateParser implements IDateParser
 {

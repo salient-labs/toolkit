@@ -7,7 +7,6 @@ use Lkrms\Console\Contract\IConsoleFormat;
 
 /**
  * Reapplies the output's original Markdown-like inline formatting tags
- *
  */
 final class ConsoleLoopbackFormat implements IConsoleFormat
 {

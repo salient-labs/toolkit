@@ -503,7 +503,6 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
 
     /**
      * Remove the last component of $path
-     *
      */
     private function getPath(string $path): string
     {
@@ -514,7 +513,6 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
 
     /**
      * Get the last component of $path
-     *
      */
     private function getKey(string $path): string
     {

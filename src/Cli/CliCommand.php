@@ -25,7 +25,6 @@ use Throwable;
 
 /**
  * Base class for runnable CLI commands
- *
  */
 abstract class CliCommand implements ICliCommand
 {
@@ -53,7 +52,6 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * Get a detailed description of the command
-     *
      */
     abstract protected function getLongDescription(): ?string;
 
@@ -210,7 +208,6 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * Get the command name as a string of space-delimited subcommands
-     *
      */
     final public function name(): string
     {
@@ -220,7 +217,6 @@ abstract class CliCommand implements ICliCommand
     /**
      * Get the command name, including the name used to run the script, as a
      * string of space-delimited subcommands
-     *
      */
     final protected function getNameWithProgram(): string
     {
@@ -1259,7 +1255,6 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * True if the command is currently running
-     *
      */
     final protected function isRunning(): bool
     {
@@ -1293,7 +1288,6 @@ abstract class CliCommand implements ICliCommand
     /**
      * Get the number of times the command has run, including the current run
      * (if applicable)
-     *
      */
     final protected function getRuns(): int
     {

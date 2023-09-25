@@ -17,7 +17,6 @@ use Lkrms\Support\Catalog\TtyControlSequence as Colour;
 
 /**
  * Recommended base class for console output targets
- *
  */
 abstract class ConsoleTarget implements IConsoleTargetWithPrefix
 {

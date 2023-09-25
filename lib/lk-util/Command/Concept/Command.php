@@ -12,7 +12,6 @@ use Lkrms\Utility\Env;
 
 /**
  * Base class for lk-util commands
- *
  */
 abstract class Command extends CliCommand
 {

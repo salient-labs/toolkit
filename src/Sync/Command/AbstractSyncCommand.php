@@ -13,7 +13,6 @@ use Lkrms\Utility\Convert;
 
 /**
  * Base class for generic sync commands
- *
  */
 abstract class AbstractSyncCommand extends CliCommand
 {

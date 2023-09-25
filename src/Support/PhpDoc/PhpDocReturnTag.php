@@ -6,7 +6,6 @@ use UnexpectedValueException;
 
 /**
  * A "return" tag extracted from a PHP DocBlock
- *
  */
 class PhpDocReturnTag extends PhpDocTag
 {

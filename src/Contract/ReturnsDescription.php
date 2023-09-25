@@ -4,7 +4,6 @@ namespace Lkrms\Contract;
 
 /**
  * Returns a "friendly name" for the object
- *
  */
 interface ReturnsDescription
 {
@@ -16,13 +15,11 @@ interface ReturnsDescription
      * - ready to use (no formatting required)
      * - unique enough that duplicates are rare
      * - easy to read
-     *
      */
     public function name(): ?string;
 
     /**
      * Get a brief description of the object
-     *
      */
     public function description(): ?string;
 }

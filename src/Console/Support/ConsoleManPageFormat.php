@@ -7,7 +7,6 @@ use Lkrms\Console\Contract\IConsoleFormat;
 
 /**
  * Applies Markdown formatting with man page extensions to console output
- *
  */
 final class ConsoleManPageFormat implements IConsoleFormat
 {

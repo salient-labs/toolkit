@@ -9,7 +9,6 @@ use UnexpectedValueException;
 
 /**
  * Creates closures that rearrange arrays
- *
  */
 final class ArrayMapper
 {

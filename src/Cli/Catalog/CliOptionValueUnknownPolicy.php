@@ -21,13 +21,11 @@ final class CliOptionValueUnknownPolicy extends Enumeration
 
     /**
      * If an unknown value is given, print a warning and discard it
-     *
      */
     public const DISCARD = 1;
 
     /**
      * Silently accept unknown values
-     *
      */
     public const ACCEPT = 2;
 }

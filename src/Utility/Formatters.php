@@ -9,7 +9,6 @@ use UnexpectedValueException;
 
 /**
  * Make data human-readable
- *
  */
 final class Formatters
 {
@@ -72,7 +71,6 @@ final class Formatters
 
     /**
      * "true" if a boolean is true, "false" if it's not
-     *
      */
     public function bool(bool $value): string
     {
@@ -81,7 +79,6 @@ final class Formatters
 
     /**
      * "yes" if a boolean is true, "no" if it's not
-     *
      */
     public function yn(bool $value): string
     {
@@ -113,7 +110,6 @@ final class Formatters
 
     /**
      * Format a DateTime without redundant information
-     *
      */
     public function date(DateTimeInterface $date, string $between = '[]'): string
     {
@@ -132,7 +128,6 @@ final class Formatters
 
     /**
      * Format a DateTime range without redundant information
-     *
      */
     public function dateRange(
         DateTimeInterface $from,
@@ -159,7 +154,6 @@ final class Formatters
 
     /**
      * Round an integer to an appropriate binary unit (B, KiB, MiB, TiB, ...)
-     *
      */
     public function bytes(int $bytes, int $precision = 0): string
     {

@@ -6,7 +6,6 @@ use LogicException;
 
 /**
  * Manipulate strings
- *
  */
 final class Str
 {
@@ -48,7 +47,6 @@ final class Str
 
     /**
      * Apply an end-of-line sequence to a string
-     *
      */
     public static function setEol(
         string $string,

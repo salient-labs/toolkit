@@ -6,7 +6,6 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 
 /**
  * Creates instances of itself from data in associative arrays
- *
  */
 interface IConstructible
 {

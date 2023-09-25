@@ -8,7 +8,6 @@ use Throwable;
 /**
  * Thrown by a sync provider when it can't establish a connection with its
  * backend
- *
  */
 class SyncProviderBackendUnreachableException extends SyncException
 {

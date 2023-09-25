@@ -13,7 +13,6 @@ use Lkrms\Utility\Test;
 
 /**
  * The context within which a sync entity is instantiated by a provider
- *
  */
 final class SyncContext extends ProviderContext implements ISyncContext
 {

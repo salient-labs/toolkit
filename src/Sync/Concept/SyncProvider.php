@@ -21,7 +21,6 @@ use LogicException;
 
 /**
  * Base class for providers that sync entities to and from third-party backends
- *
  */
 abstract class SyncProvider extends Provider implements ISyncProvider, IService
 {
@@ -43,7 +42,6 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
      *     ];
      * }
      * ```
-     *
      */
     public static function getContextualBindings(): array
     {

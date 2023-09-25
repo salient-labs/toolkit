@@ -4,7 +4,6 @@ namespace Lkrms\Contract;
 
 /**
  * An arbitrary entity
- *
  */
 interface IEntity extends IResolvable, IConstructible, IReadable, IWritable, IExtensible, HasDateProperties
 {
@@ -13,7 +12,6 @@ interface IEntity extends IResolvable, IConstructible, IReadable, IWritable, IEx
      *
      * The return value of `Faculty::plural()`, for example, should be
      * `Faculties`.
-     *
      */
     public static function plural(): string;
 }

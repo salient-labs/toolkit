@@ -12,7 +12,6 @@ use Closure;
 /**
  * Increments a value in the query string and repeats the request until no
  * results are returned
- *
  */
 final class QueryPager implements ICurlerPager
 {

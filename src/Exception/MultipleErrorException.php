@@ -8,7 +8,6 @@ use Lkrms\Facade\Console;
 
 /**
  * Base class for exceptions that represent multiple errors
- *
  */
 abstract class MultipleErrorException extends Exception
 {

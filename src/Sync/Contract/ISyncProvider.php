@@ -30,7 +30,6 @@ interface ISyncProvider extends IProvider
 
     /**
      * Get the provider ID assigned to the backend instance by the entity store
-     *
      */
     public function getProviderId(): ?int;
 
@@ -45,7 +44,6 @@ interface ISyncProvider extends IProvider
 
     /**
      * Get the provider's entity store
-     *
      */
     public function store(): SyncStore;
 

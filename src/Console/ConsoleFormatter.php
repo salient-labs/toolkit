@@ -43,7 +43,6 @@ final class ConsoleFormatter
     /**
      * Splits the subject into formattable paragraphs, fenced code blocks and
      * code spans
-     *
      */
     private const PARSER_REGEX = <<<'REGEX'
         (?msx)
@@ -81,7 +80,6 @@ final class ConsoleFormatter
     /**
      * Matches inline formatting tags used outside fenced code blocks and code
      * spans
-     *
      */
     private const TAG_REGEX = <<<'REGEX'
         (?xm)
@@ -100,7 +98,6 @@ final class ConsoleFormatter
     /**
      * A CommonMark-compliant backslash escape, or an escaped line break with an
      * optional leading space
-     *
      */
     private const UNESCAPE_REGEX = <<<'REGEX'
         (?x)
@@ -481,7 +478,6 @@ final class ConsoleFormatter
 
     /**
      * Escape special characters, optionally including newlines, in a string
-     *
      */
     public static function escapeTags(string $string, bool $newlines = false): string
     {
@@ -493,7 +489,6 @@ final class ConsoleFormatter
 
     /**
      * Remove inline formatting tags from a string
-     *
      */
     public static function removeTags(string $string): string
     {

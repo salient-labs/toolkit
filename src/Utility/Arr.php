@@ -4,7 +4,6 @@ namespace Lkrms\Utility;
 
 /**
  * Manipulate arrays
- *
  */
 final class Arr
 {

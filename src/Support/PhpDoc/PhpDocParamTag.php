@@ -6,7 +6,6 @@ use UnexpectedValueException;
 
 /**
  * A "param" tag extracted from a PHP DocBlock
- *
  */
 class PhpDocParamTag extends PhpDocTag
 {

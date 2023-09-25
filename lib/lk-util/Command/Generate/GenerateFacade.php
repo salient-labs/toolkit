@@ -14,7 +14,6 @@ use ReflectionParameter;
 
 /**
  * Generates static interfaces to underlying classes
- *
  */
 final class GenerateFacade extends GenerateCommand
 {

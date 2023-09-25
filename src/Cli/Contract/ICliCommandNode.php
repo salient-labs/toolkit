@@ -36,7 +36,6 @@ interface ICliCommandNode extends ReturnsContainer, ReturnsEnvironment, ReturnsD
 
     /**
      * Get a one-line description of the command
-     *
      */
     public function description(): string;
 

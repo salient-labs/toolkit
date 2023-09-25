@@ -4,7 +4,6 @@ namespace Lkrms\Contract;
 
 /**
  * Returns the name of the class or interface it was resolved from
- *
  */
 interface ReturnsService
 {

@@ -13,7 +13,6 @@ use Lkrms\Utility\System;
 
 /**
  * A service container for applications
- *
  */
 interface IApplication extends IContainer, ReturnsEnvironment
 {
@@ -36,13 +35,11 @@ interface IApplication extends IContainer, ReturnsEnvironment
 
     /**
      * Get the basename of the file used to run the script
-     *
      */
     public function getProgramName(): string;
 
     /**
      * Get the name of the application
-     *
      */
     public function getAppName(): string;
 
@@ -61,7 +58,6 @@ interface IApplication extends IContainer, ReturnsEnvironment
 
     /**
      * Get the application's root directory
-     *
      */
     public function getBasePath(): string;
 
@@ -71,13 +67,11 @@ interface IApplication extends IContainer, ReturnsEnvironment
      * The application's cache directory is appropriate for data that should
      * persist between runs, but isn't important or portable enough for the data
      * directory.
-     *
      */
     public function getCachePath(): string;
 
     /**
      * Get a writable directory for the application's configuration files
-     *
      */
     public function getConfigPath(): string;
 
@@ -86,19 +80,16 @@ interface IApplication extends IContainer, ReturnsEnvironment
      *
      * The application's data directory is appropriate for data that should
      * persist indefinitely.
-     *
      */
     public function getDataPath(): string;
 
     /**
      * Get a writable directory for the application's log files
-     *
      */
     public function getLogPath(): string;
 
     /**
      * Get a writable directory for the application's ephemeral data
-     *
      */
     public function getTempPath(): string;
 

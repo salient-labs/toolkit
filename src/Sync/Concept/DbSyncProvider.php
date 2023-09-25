@@ -15,7 +15,6 @@ use RuntimeException;
 
 /**
  * Base class for providers with traditional database backends
- *
  */
 abstract class DbSyncProvider extends SyncProvider
 {
@@ -27,7 +26,6 @@ abstract class DbSyncProvider extends SyncProvider
      *
      * The {@see DbConnector} returned will be cached for the lifetime of the
      * {@see DbSyncProvider} instance.
-     *
      */
     abstract protected function getDbConnector(): DbConnector;
 

@@ -7,7 +7,6 @@ use Lkrms\Contract\ReceivesFacade;
 
 /**
  * Get information about code that's currently running
- *
  */
 final class Debugging implements ReceivesFacade
 {

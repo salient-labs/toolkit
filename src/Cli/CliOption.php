@@ -785,7 +785,6 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
 
     /**
      * Use a fluent interface to create a new CliOption object
-     *
      */
     public static function build(?IContainer $container = null): CliOptionBuilder
     {

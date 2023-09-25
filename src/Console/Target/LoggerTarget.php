@@ -8,7 +8,6 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Write console messages to a PSR-3 implementor
- *
  */
 final class LoggerTarget extends ConsoleTarget
 {

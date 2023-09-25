@@ -7,7 +7,6 @@ use Lkrms\Console\Contract\IConsoleFormat as Format;
 
 /**
  * Applies target-defined formats to the components of a console message
- *
  */
 final class ConsoleMessageFormat
 {
@@ -50,7 +49,6 @@ final class ConsoleMessageFormat
 
     /**
      * Get an instance that doesn't apply any formatting to messages
-     *
      */
     public static function getDefaultMessageFormat(): self
     {

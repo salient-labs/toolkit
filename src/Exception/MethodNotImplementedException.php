@@ -7,7 +7,6 @@ use ReflectionClass;
 
 /**
  * Thrown when an unimplemented method is called
- *
  */
 class MethodNotImplementedException extends \Lkrms\Exception\Exception
 {

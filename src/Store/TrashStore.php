@@ -7,7 +7,6 @@ use UnexpectedValueException;
 
 /**
  * A SQLite store for deleted objects
- *
  */
 final class TrashStore extends SqliteStore
 {

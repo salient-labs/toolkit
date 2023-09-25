@@ -6,7 +6,6 @@ use Lkrms\Console\Concept\ConsoleTarget;
 
 /**
  * Write console messages to Analog
- *
  */
 final class AnalogTarget extends ConsoleTarget
 {

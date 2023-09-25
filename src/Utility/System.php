@@ -11,7 +11,6 @@ use SQLite3;
 
 /**
  * Get information about the runtime environment
- *
  */
 final class System
 {
@@ -43,7 +42,6 @@ final class System
 
     /**
      * Get the configured memory_limit, in bytes
-     *
      */
     public static function getMemoryLimit(): int
     {
@@ -52,7 +50,6 @@ final class System
 
     /**
      * Get the current memory usage of the script, in bytes
-     *
      */
     public static function getMemoryUsage(): int
     {
@@ -61,7 +58,6 @@ final class System
 
     /**
      * Get the peak memory usage of the script, in bytes
-     *
      */
     public static function getPeakMemoryUsage(): int
     {
@@ -71,7 +67,6 @@ final class System
     /**
      * Get the current memory usage of the script as a percentage of the
      * memory_limit
-     *
      */
     public static function getMemoryUsagePercent(): int
     {
@@ -273,7 +268,6 @@ final class System
 
     /**
      * Get the current working directory without resolving symbolic links
-     *
      */
     public static function getCwd(): string
     {

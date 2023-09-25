@@ -8,7 +8,6 @@ use LogicException;
 
 /**
  * Formatting instructions for help messages
- *
  */
 final class CliHelpStyle
 {

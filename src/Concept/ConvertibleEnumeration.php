@@ -12,7 +12,6 @@ use LogicException;
  *
  * @extends Enumeration<TValue>
  * @implements IConvertibleEnumeration<TValue>
- *
  */
 abstract class ConvertibleEnumeration extends Enumeration implements IConvertibleEnumeration
 {

@@ -30,7 +30,6 @@ use ReflectionType;
 
 /**
  * Base class for code generation commands
- *
  */
 abstract class GenerateCommand extends Command
 {
@@ -48,19 +47,16 @@ abstract class GenerateCommand extends Command
 
     /**
      * The unqualified name of the entity to generate
-     *
      */
     protected string $OutputClass;
 
     /**
      * The namespace of the entity being generated (may be empty)
-     *
      */
     protected string $OutputNamespace;
 
     /**
      * A PHPDoc for the generated entity (may be empty)
-     *
      */
     protected string $ClassPhpDoc;
 
@@ -97,7 +93,6 @@ abstract class GenerateCommand extends Command
 
     /**
      * "<TTemplate[,...]>"
-     *
      */
     protected string $InputClassType;
 
@@ -548,7 +543,6 @@ abstract class GenerateCommand extends Command
     }
 
     /**
-     *
      * @param string[]|string $lines
      */
     protected function handleOutput($lines): void

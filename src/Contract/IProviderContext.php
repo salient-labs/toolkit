@@ -71,7 +71,6 @@ interface IProviderContext extends IImmutable, ReturnsContainer, ReturnsProvider
 
     /**
      * Get the parent entity applied to the context
-     *
      */
     public function getParent(): ?ITreeable;
 

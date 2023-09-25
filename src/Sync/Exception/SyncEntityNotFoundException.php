@@ -7,7 +7,6 @@ use Lkrms\Sync\Contract\ISyncProvider;
 
 /**
  * Thrown when an entity doesn't exist in a backend
- *
  */
 class SyncEntityNotFoundException extends SyncException
 {

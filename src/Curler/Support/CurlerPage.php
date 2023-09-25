@@ -9,7 +9,6 @@ use RuntimeException;
 
 /**
  * Implements ICurlerPage
- *
  */
 final class CurlerPage implements ICurlerPage
 {
