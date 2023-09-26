@@ -3,7 +3,6 @@
 namespace Lkrms\Cli;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
-use Lkrms\Cli\Catalog\CliHelpType;
 use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\Contract\ICliApplication;
@@ -801,6 +800,7 @@ abstract class CliCommand implements ICliCommand
                 }
             };
         $merged = [];
+        $positional = [];
 
         for ($i = 0; $i < count($args); $i++) {
             $arg = $args[$i];
@@ -808,19 +808,20 @@ abstract class CliCommand implements ICliCommand
             $saved = false;
             if (preg_match('/^-([a-z0-9_])(.*)/i', $arg, $matches)) {
                 $name = $matches[1];
-                $value = $matches[2] ?: null;
+                $value = $matches[2] === '' ? null : $matches[2];
                 $short = true;
             } elseif (preg_match('/^--([a-z0-9_][-a-z0-9_]+)(?:=(.*))?$/i', $arg, $matches, PREG_UNMATCHED_AS_NULL)) {
                 $name = $matches[1];
                 $value = $matches[2];
-            } else {
-                if ($arg === '--') {
-                    $i++;
-                } elseif (($arg[0] ?? null) === '-') {
-                    $this->optionError(sprintf("invalid argument '%s'", $arg));
-                    continue;
-                }
+            } elseif ($arg === '--') {
+                $i++;
                 break;
+            } elseif ($arg === '-' || ($arg[0] ?? null) !== '-') {
+                $positional[] = $arg;
+                continue;
+            } else {
+                $this->optionError(sprintf("invalid argument '%s'", $arg));
+                continue;
             }
 
             $option = $this->OptionsByName[$name] ?? null;
@@ -839,7 +840,7 @@ abstract class CliCommand implements ICliCommand
             $valueIsDefault = false;
             if ($option->IsFlag) {
                 // Handle multiple short flags per argument, e.g. `cp -rv`
-                if ($short && $value) {
+                if ($short && $value !== null) {
                     $args[$i] = "-$value";
                     $i--;
                 }
@@ -867,17 +868,23 @@ abstract class CliCommand implements ICliCommand
             }
 
             if ($option->MultipleAllowed && !$option->IsFlag) {
-                // Interpret "--option=" as "clear previous --option values"
+                // Interpret the first use of "--opt=" as "clear default or
+                // previous values" without changing the meaning of "--opt ''"
                 if ($option->ValueRequired && $value === '') {
-                    $merged[$key] = [];
-                    $argValues[$key] = [];
-                    continue;
+                    if ($args[$i] === '' || ($merged[$key] ?? null) === []) {
+                        $value = [''];
+                    } else {
+                        $merged[$key] = [];
+                        $argValues[$key] = [];
+                        continue;
+                    }
+                } else {
+                    $value = $option->maybeSplitValue($value);
                 }
                 // Use $value to extend $option->DefaultValue if:
                 // - $option->DefaultValue wasn't just assigned to $value
                 // - extension of default values is enabled, and
                 // - this is $option's first appearance in $args
-                $value = $option->maybeSplitValue($value);
                 $saveArgValue($key, $value);
                 if (!$valueIsDefault &&
                         ($option->KeepDefault || $option->KeepEnv) &&
@@ -894,6 +901,11 @@ abstract class CliCommand implements ICliCommand
             }
         }
 
+        // Splice $positional into $args to ensure $nextArgumentIndex is correct
+        if ($positional) {
+            $i -= count($positional);
+            array_splice($args, $i, count($positional), $positional);
+        }
         $pending = count($this->PositionalOptions);
         foreach ($this->PositionalOptions as $option) {
             if (!($i < count($args))) {
@@ -1129,7 +1141,8 @@ abstract class CliCommand implements ICliCommand
             $value = $this->OptionValues[$option->Key] ?? null;
         }
 
-        if ($value === null || $value === [] || $value === false || $value === 0) {
+        if ($value === null || $value === false || $value === 0 ||
+                ($value === [] && $option->ValueRequired)) {
             return null;
         }
 
@@ -1144,14 +1157,15 @@ abstract class CliCommand implements ICliCommand
         if (is_array($value)) {
             $value = implode(',', $value);
         }
-        if ($shellEscape && is_string($value)) {
+        if ($shellEscape && is_string($value) &&
+                ($value !== '' || $option->IsPositional)) {
             $value = Convert::toShellArg($value);
         }
 
         return $option->IsPositional
             ? $value
             : ($option->Long
-                ? "--{$option->Long}" . (is_string($value) ? "=$value" : '')
+                ? "--{$option->Long}" . (is_string($value) && ($value !== '' || $option->ValueRequired) ? "=$value" : '')
                 : "-{$option->Short}" . $value);
     }
 
