@@ -26,7 +26,7 @@ use Lkrms\Contract\IService;
  * @method static array<class-string<IService>> getServices() Get a list of classes bound to the container by calling service()
  * @method static bool has(class-string $id) True if the container can resolve an identifier to an instance (see {@see Container::has()})
  * @method static bool hasGlobalContainer() True if the global container is set
- * @method static Container if((callable($this): bool)|bool $condition, (callable($this): $this) $then, (callable($this): $this)|null $else = null) Move to the next method in the chain after applying a conditional callback to the object (see {@see FluentInterface::if()})
+ * @method static Container if((callable($this): bool)|bool $condition, (callable($this): $this)|null $then = null, (callable($this): $this)|null $else = null) Move to the next method in the chain after applying a conditional callback to the object (see {@see FluentInterface::if()})
  * @method static Container inContextOf(class-string $id) Apply the contextual bindings of a service to a copy of the container
  * @method static Container instance(class-string $id, mixed $instance) Register an existing instance with the container as a shared binding
  * @method static Container instanceIf(class-string $id, mixed $instance) Register an existing instance with the container as a shared binding if it isn't already registered

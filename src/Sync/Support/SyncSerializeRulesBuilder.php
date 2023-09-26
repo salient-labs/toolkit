@@ -3,17 +3,15 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Builder;
-use Lkrms\Contract\IContainer;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Closure;
 
 /**
- * A fluent interface for creating SyncSerializeRules objects
+ * Creates SyncSerializeRules objects via a fluent interface
  *
  * @template-covariant TEntity of ISyncEntity
  *
- * @method static $this build(?IContainer $container = null) Create a new SyncSerializeRulesBuilder (syntactic sugar for 'new SyncSerializeRulesBuilder()')
  * @method $this dateFormatter(?DateFormatter $value) Override the default date formatter (default: null)
  * @method $this includeMeta(?bool $value = true) Include undeclared property values? (default: true)
  * @method $this sortByKey(?bool $value = true) Sort arrays by key? (default: false)
@@ -25,10 +23,6 @@ use Closure;
  * @method $this recurseRules(?bool $value = true) Apply path-based rules to every instance of $Entity? (default: true)
  * @method $this flags(?int $value) Set SyncSerializeRules::$Flags
  * @method $this inherit(SyncSerializeRules<TEntity>|null $value) Pass $value to `$inherit` in SyncSerializeRules::__construct()
- * @method mixed get(string $name) The value of $name if applied to the unresolved SyncSerializeRules by calling $name(), otherwise null
- * @method bool isset(string $name) True if a value for $name has been applied to the unresolved SyncSerializeRules by calling $name()
- * @method SyncSerializeRules go() Get a new SyncSerializeRules object
- * @method static SyncSerializeRules resolve(SyncSerializeRules|SyncSerializeRulesBuilder $object) Resolve a SyncSerializeRulesBuilder or SyncSerializeRules object to a SyncSerializeRules object
  *
  * @uses SyncSerializeRules
  *
@@ -38,11 +32,18 @@ final class SyncSerializeRulesBuilder extends Builder
 {
     /**
      * @internal
-     * @return class-string<SyncSerializeRules<TEntity>>
      */
-    protected static function getClassName(): string
+    protected static function getService(): string
     {
         return SyncSerializeRules::class;
+    }
+
+    /**
+     * @internal
+     */
+    protected static function getTerminators(): array
+    {
+        return [];
     }
 
     /**

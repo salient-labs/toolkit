@@ -2,17 +2,16 @@
 
 namespace Lkrms\Sync\Support;
 
+use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\HasMutator;
 use Lkrms\Concern\TFullyReadable;
-use Lkrms\Contract\HasBuilder;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncSerializeRules;
-use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Utility\Convert;
 use Closure;
 use LogicException;
@@ -87,11 +86,14 @@ use LogicException;
  * @property-read array<array<array<string|Closure>|string>|array<string|Closure>|string> $Replace Values to replace with IDs
  * @property-read bool|null $RecurseRules Apply path-based rules to every instance of $Entity? (default: true)
  * @property-read int $Flags
+ *
+ * @implements ProvidesBuilder<SyncSerializeRulesBuilder<TEntity>>
  */
-final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmutable, HasBuilder
+final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmutable, ProvidesBuilder
 {
-    use HasMutator;
     use TFullyReadable;
+    use HasBuilder;
+    use HasMutator;
 
     /**
      * Values are being serialized for an entity store
@@ -587,22 +589,10 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
     }
 
     /**
-     * Use a fluent interface to create a new SyncSerializeRules object
-     *
-     * @return SerializeRulesBuilder<ISyncEntity>
+     * @inheritDoc
      */
-    public static function build(?IContainer $container = null): SerializeRulesBuilder
+    public static function getBuilder(): string
     {
-        return new SerializeRulesBuilder($container);
-    }
-
-    /**
-     * @template T of ISyncEntity
-     * @param SerializeRulesBuilder<T>|SyncSerializeRules<T> $object
-     * @return SyncSerializeRules<T>
-     */
-    public static function resolve($object): SyncSerializeRules
-    {
-        return SerializeRulesBuilder::resolve($object);
+        return SyncSerializeRulesBuilder::class;
     }
 }

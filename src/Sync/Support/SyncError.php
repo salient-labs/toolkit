@@ -2,13 +2,13 @@
 
 namespace Lkrms\Sync\Support;
 
+use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Console\Catalog\ConsoleLevel;
-use Lkrms\Contract\HasBuilder;
 use Lkrms\Contract\IComparable;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -24,10 +24,13 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @property-read string|null $EntityName The display name of the entity associated with the error
  * @property-read ISyncProvider|null $Provider The sync provider associated with the error
  * @property-read int $Count How many times the error has been reported
+ *
+ * @implements ProvidesBuilder<SyncErrorBuilder>
  */
-final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
+final class SyncError implements IReadable, IComparable, IImmutable, ProvidesBuilder
 {
     use TFullyReadable;
+    use HasBuilder;
 
     /**
      * @var SyncErrorType::*
@@ -144,18 +147,10 @@ final class SyncError implements IReadable, IComparable, IImmutable, HasBuilder
     }
 
     /**
-     * Use a fluent interface to create a new SyncError object
+     * @inheritDoc
      */
-    public static function build(?IContainer $container = null): SyncErrorBuilder
+    public static function getBuilder(): string
     {
-        return new SyncErrorBuilder($container);
-    }
-
-    /**
-     * @param SyncErrorBuilder|SyncError $object
-     */
-    public static function resolve($object): SyncError
-    {
-        return SyncErrorBuilder::resolve($object);
+        return SyncErrorBuilder::class;
     }
 }

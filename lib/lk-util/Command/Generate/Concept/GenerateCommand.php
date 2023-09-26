@@ -36,8 +36,7 @@ abstract class GenerateCommand extends Command
     protected const VISIBILITY_PUBLIC = 'public';
     protected const VISIBILITY_PROTECTED = 'protected';
     protected const VISIBILITY_PRIVATE = 'private';
-
-    private const TAB = '    ';
+    protected const TAB = '    ';
 
     protected ?string $OutputDescription;
     protected ?bool $ToStdout;
@@ -482,11 +481,12 @@ abstract class GenerateCommand extends Command
         string $name,
         string $valueCode,
         $phpDoc = '@internal',
-        string $returnType = 'string'
+        string $returnType = 'string',
+        string $visibility = GenerateCommand::VISIBILITY_PROTECTED
     ): array {
         $lines = [
             ...$this->generatePhpDocBlock($phpDoc),
-            sprintf('protected static function %s(): %s', $name, $returnType),
+            sprintf('%s static function %s(): %s', $visibility, $name, $returnType),
             '{',
             sprintf('%sreturn %s;', self::TAB, $valueCode),
             '}'

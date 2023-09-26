@@ -56,7 +56,7 @@ $facades = [
 
 $builders = [
     CliOption::class => \Lkrms\Cli\CliOptionBuilder::class,
-    Curler::class => \Lkrms\Curler\CurlerBuilder::class,
+    Curler::class => [\Lkrms\Curler\CurlerBuilder::class, '--forward', '--skip', 'responseContentTypeIs,getQueryUrl'],
     CurlerPage::class => \Lkrms\Curler\Support\CurlerPageBuilder::class,
     DbSyncDefinition::class => \Lkrms\Sync\Support\DbSyncDefinitionBuilder::class,
     HttpSyncDefinition::class => \Lkrms\Sync\Support\HttpSyncDefinitionBuilder::class,
@@ -94,7 +94,12 @@ foreach ($facades as $class => $facade) {
 }
 
 foreach ($builders as $class => $builder) {
-    $status |= $generateBuilder(...[...$args, $class, $builder]);
+    $builderArgs = [];
+    if (is_array($builder)) {
+        $builderArgs = $builder;
+        $builder = array_shift($builderArgs);
+    }
+    $status |= $generateBuilder(...[...$args, ...$builderArgs, $class, $builder]);
 }
 
 Console::summary('Code generation completed');

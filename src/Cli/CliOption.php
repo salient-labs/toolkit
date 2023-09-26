@@ -8,13 +8,13 @@ use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\Exception\CliUnknownValueException;
+use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
-use Lkrms\Contract\HasBuilder;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Facade\Assert;
 use Lkrms\Facade\Console;
 use Lkrms\Support\Catalog\CharacterSequence as Char;
@@ -54,10 +54,13 @@ use Throwable;
  * @property-read bool $KeepEnv True if user-supplied values extend values from the environment instead of replacing them
  * @property-read callable|null $ValueCallback Applied to the option's value as it is assigned
  * @property-read int-mask-of<CliOptionVisibility::*> $Visibility The option's visibility to users
+ *
+ * @implements ProvidesBuilder<CliOptionBuilder>
  */
-final class CliOption implements HasBuilder, IImmutable, IReadable
+final class CliOption implements IReadable, IImmutable, ProvidesBuilder
 {
     use TFullyReadable;
+    use HasBuilder;
 
     /**
      * The long form of the option, e.g. 'verbose'
@@ -784,18 +787,10 @@ final class CliOption implements HasBuilder, IImmutable, IReadable
     }
 
     /**
-     * Use a fluent interface to create a new CliOption object
+     * @inheritDoc
      */
-    public static function build(?IContainer $container = null): CliOptionBuilder
+    public static function getBuilder(): string
     {
-        return new CliOptionBuilder($container);
-    }
-
-    /**
-     * @param CliOptionBuilder|CliOption $object
-     */
-    public static function resolve($object): CliOption
-    {
-        return CliOptionBuilder::resolve($object);
+        return CliOptionBuilder::class;
     }
 }
