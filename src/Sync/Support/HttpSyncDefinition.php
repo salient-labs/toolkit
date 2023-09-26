@@ -2,9 +2,9 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Contract\HasBuilder;
-use Lkrms\Contract\IContainer;
+use Lkrms\Concern\HasBuilder;
 use Lkrms\Contract\IPipeline;
+use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
@@ -61,9 +61,12 @@ use LogicException;
  * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before every sync operation
  *
  * @extends SyncDefinition<TEntity,TProvider>
+ * @implements ProvidesBuilder<HttpSyncDefinitionBuilder<TEntity,TProvider>>
  */
-final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
+final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
 {
+    use HasBuilder;
+
     public const DEFAULT_METHOD_MAP = [
         SyncOperation::CREATE => HttpRequestMethod::POST,
         SyncOperation::READ => HttpRequestMethod::GET,
@@ -527,27 +530,6 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
         }
     }
 
-    /**
-     * Use a fluent interface to create a new HttpSyncDefinition object
-     *
-     * @return HttpSyncDefinitionBuilder<ISyncEntity,HttpSyncProvider>
-     */
-    public static function build(?IContainer $container = null): HttpSyncDefinitionBuilder
-    {
-        return new HttpSyncDefinitionBuilder($container);
-    }
-
-    /**
-     * @template T0 of ISyncEntity
-     * @template T1 of HttpSyncProvider
-     * @param HttpSyncDefinitionBuilder<T0,T1>|HttpSyncDefinition<T0,T1> $object
-     * @return HttpSyncDefinition<T0,T1>
-     */
-    public static function resolve($object): HttpSyncDefinition
-    {
-        return HttpSyncDefinitionBuilder::resolve($object);
-    }
-
     public static function getReadable(): array
     {
         return [
@@ -561,5 +543,13 @@ final class HttpSyncDefinition extends SyncDefinition implements HasBuilder
             'SyncOneEntityPerRequest',
             'Callback',
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getBuilder(): string
+    {
+        return HttpSyncDefinitionBuilder::class;
     }
 }

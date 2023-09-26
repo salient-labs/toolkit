@@ -16,41 +16,6 @@ parameters:
 			path: src/Cli/CliOption.php
 
 		-
-			message: "#^Method Lkrms\\\\Concept\\\\Builder\\:\\:__call\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Concept/Builder.php
-
-		-
-			message: "#^Method Lkrms\\\\Concept\\\\Builder\\:\\:__call\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Concept/Builder.php
-
-		-
-			message: "#^Method Lkrms\\\\Concept\\\\Builder\\:\\:__callStatic\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Concept/Builder.php
-
-		-
-			message: "#^Method Lkrms\\\\Concept\\\\Builder\\:\\:__callStatic\\(\\) has parameter \\$arguments with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Concept/Builder.php
-
-		-
-			message: "#^Method Lkrms\\\\Concept\\\\Builder\\:\\:getWithReference\\(\\) has parameter \\$variable with no type specified\\.$#"
-			count: 1
-			path: src/Concept/Builder.php
-
-		-
-			message: "#^Method Lkrms\\\\Concept\\\\Builder\\:\\:getWithValue\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Concept/Builder.php
-
-		-
-			message: "#^Property Lkrms\\\\Concept\\\\Builder\\:\\:\\$Introspector with generic class Lkrms\\\\Support\\\\Introspector does not specify its types\\: TClass, TIntrospectionClass$#"
-			count: 1
-			path: src/Concept/Builder.php
-
-		-
 			message: "#^Method Lkrms\\\\Concept\\\\Facade\\:\\:__callStatic\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Concept/Facade.php

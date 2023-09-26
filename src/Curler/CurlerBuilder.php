@@ -3,15 +3,13 @@
 namespace Lkrms\Curler;
 
 use Lkrms\Concept\Builder;
-use Lkrms\Contract\IContainer;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Support\DateFormatter;
 
 /**
- * A fluent interface for creating Curler objects
+ * Creates Curler objects via a fluent interface
  *
- * @method static $this build(?IContainer $container = null) Create a new CurlerBuilder (syntactic sugar for 'new CurlerBuilder()')
  * @method $this baseUrl(string $value) Request endpoint
  * @method $this headers(?ICurlerHeaders $value) Request headers
  * @method $this pager(?ICurlerPager $value) Pagination handler
@@ -37,10 +35,31 @@ use Lkrms\Support\DateFormatter;
  * @method $this userAgent(?string $value) Override the default User-Agent header (see {@see Curler::$UserAgent})
  * @method $this alwaysPaginate(bool $value = true) Pass every response to the pager? (default: false)
  * @method $this objectAsArray(bool $value = true) Return deserialized objects as associative arrays? (default: true)
- * @method mixed get(string $name) The value of $name if applied to the unresolved Curler by calling $name(), otherwise null
- * @method bool isset(string $name) True if a value for $name has been applied to the unresolved Curler by calling $name()
- * @method Curler go() Get a new Curler object
- * @method static Curler resolve(Curler|CurlerBuilder $object) Resolve a CurlerBuilder or Curler object to a Curler object
+ * @method Curler addHeader(string $name, string $value, bool $private = false) Call Curler::addHeader() on a new instance
+ * @method Curler unsetHeader(string $name, ?string $pattern = null) Call Curler::unsetHeader() on a new instance
+ * @method Curler setHeader(string $name, string $value, bool $private = false) Call Curler::setHeader() on a new instance
+ * @method Curler addPrivateHeaderName(string $name) Call Curler::addPrivateHeaderName() on a new instance
+ * @method Curler setContentType(?string $mimeType) Call Curler::setContentType() on a new instance
+ * @method Curler with(string $property, mixed $value) Apply a value to a clone of the instance
+ * @method Curler flushCookies() Call Curler::flushCookies() on a new instance
+ * @method ICurlerHeaders head(mixed[]|null $query = null) Call Curler::head() on a new instance
+ * @method mixed get(mixed[]|null $query = null) Call Curler::get() on a new instance
+ * @method mixed post(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::post() on a new instance
+ * @method mixed put(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::put() on a new instance
+ * @method mixed patch(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::patch() on a new instance
+ * @method mixed delete(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::delete() on a new instance
+ * @method iterable<mixed> getP(mixed[]|null $query = null) Call Curler::getP() on a new instance
+ * @method iterable<mixed> postP(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::postP() on a new instance
+ * @method iterable<mixed> putP(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::putP() on a new instance
+ * @method iterable<mixed> patchP(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::patchP() on a new instance
+ * @method iterable<mixed> deleteP(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::deleteP() on a new instance
+ * @method mixed rawPost(string $data, string $mimeType, ?array $query = null) Call Curler::rawPost() on a new instance
+ * @method mixed rawPut(string $data, string $mimeType, ?array $query = null) Call Curler::rawPut() on a new instance
+ * @method mixed rawPatch(string $data, string $mimeType, ?array $query = null) Call Curler::rawPatch() on a new instance
+ * @method mixed rawDelete(string $data, string $mimeType, ?array $query = null) Call Curler::rawDelete() on a new instance
+ * @method array getAllLinked(array $query = null) Follow HTTP `Link` headers to retrieve and merge paged JSON data (see {@see Curler::getAllLinked()})
+ * @method array getAllLinkedByEntity(string $entityName, array $query = null) Follow `$result['links']['next']` to retrieve and merge paged JSON data (see {@see Curler::getAllLinkedByEntity()})
+ * @method array getByGraphQL(string $query, ?array $variables = null, ?string $entityPath = null, ?string $pagePath = null, ?callable $filter = null, ?int $requestLimit = null) Call Curler::getByGraphQL() on a new instance
  *
  * @uses Curler
  *
@@ -50,10 +69,43 @@ final class CurlerBuilder extends Builder
 {
     /**
      * @internal
-     * @return class-string<Curler>
      */
-    protected static function getClassName(): string
+    protected static function getService(): string
     {
         return Curler::class;
+    }
+
+    /**
+     * @internal
+     */
+    protected static function getTerminators(): array
+    {
+        return [
+            'addHeader',
+            'unsetHeader',
+            'setHeader',
+            'addPrivateHeaderName',
+            'setContentType',
+            'with',
+            'flushCookies',
+            'head',
+            'get',
+            'post',
+            'put',
+            'patch',
+            'delete',
+            'getP',
+            'postP',
+            'putP',
+            'patchP',
+            'deleteP',
+            'rawPost',
+            'rawPut',
+            'rawPatch',
+            'rawDelete',
+            'getAllLinked',
+            'getAllLinkedByEntity',
+            'getByGraphQL',
+        ];
     }
 }

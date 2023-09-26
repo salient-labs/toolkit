@@ -5,7 +5,6 @@ namespace Lkrms\LkUtil\Command\Generate;
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
 use Lkrms\Concept\Builder;
-use Lkrms\Contract\IContainer;
 use Lkrms\Facade\Reflect;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
@@ -13,37 +12,52 @@ use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
 use Lkrms\Support\Introspector;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use Closure;
+use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
 
 /**
- * Generates fluent interfaces that create instances of a class
+ * Generates builders that create instances of a class via a fluent interface
  */
 class GenerateBuilder extends GenerateCommand
 {
+    /**
+     * Properties and methods that shouldn't be surfaced by the Builder
+     */
+    private const SKIP = [
+        // These are displaced by Builder
+        'build',
+        'resolve',
+        'getB',
+        'issetB',
+        'go',
+        'apply',
+        'if',
+        'getService',
+        'getTerminators',
+        'getWithValue',
+        'getWithReference',
+    ];
+
     private ?string $ClassFqcn;
     private ?string $BuilderFqcn;
-    private ?string $StaticBuilder;
-    private ?string $ValueGetter;
-    private ?string $ValueChecker;
-    private ?string $Terminator;
-    private ?string $StaticResolver;
-    private CliOption $StaticBuilderOption;
-    private CliOption $ValueGetterOption;
-    private CliOption $ValueCheckerOption;
-    private CliOption $TerminatorOption;
-    private CliOption $StaticResolverOption;
 
     /**
-     * @var string[]
+     * @var string[]|null
      */
-    private array $SkipProperties = [];
+    private ?array $Forward;
+
+    /**
+     * @var string[]|null
+     */
+    private ?array $Skip;
 
     public function description(): string
     {
-        return 'Generate an object factory with a fluent interface';
+        return 'Generate a builder that creates instances of a class via a fluent interface';
     }
 
     protected function getOptionList(): array
@@ -62,56 +76,25 @@ class GenerateBuilder extends GenerateCommand
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->bindTo($this->BuilderFqcn),
-            $this->StaticBuilderOption =
-                CliOption::build()
-                    ->long('static-builder')
-                    ->valueName('method')
-                    ->description('The static method that returns a new builder')
-                    ->optionType(CliOptionType::VALUE)
-                    ->defaultValue('build')
-                    ->valueCallback([Convert::class, 'toCamelCase'])
-                    ->bindTo($this->StaticBuilder)
-                    ->go(),
-            $this->ValueGetterOption =
-                CliOption::build()
-                    ->long('value-getter')
-                    ->valueName('method')
-                    ->description('The method that returns a value if it has been set')
-                    ->optionType(CliOptionType::VALUE)
-                    ->defaultValue('get')
-                    ->valueCallback([Convert::class, 'toCamelCase'])
-                    ->bindTo($this->ValueGetter)
-                    ->go(),
-            $this->ValueCheckerOption =
-                CliOption::build()
-                    ->long('value-checker')
-                    ->valueName('method')
-                    ->description('The method that returns true if a value has been set')
-                    ->optionType(CliOptionType::VALUE)
-                    ->defaultValue('isset')
-                    ->valueCallback([Convert::class, 'toCamelCase'])
-                    ->bindTo($this->ValueChecker)
-                    ->go(),
-            $this->TerminatorOption =
-                CliOption::build()
-                    ->long('terminator')
-                    ->valueName('method')
-                    ->description('The method that terminates the interface')
-                    ->optionType(CliOptionType::VALUE)
-                    ->defaultValue('go')
-                    ->valueCallback([Convert::class, 'toCamelCase'])
-                    ->bindTo($this->Terminator)
-                    ->go(),
-            $this->StaticResolverOption =
-                CliOption::build()
-                    ->long('static-resolver')
-                    ->valueName('method')
-                    ->description('The static method that resolves unterminated builders')
-                    ->optionType(CliOptionType::VALUE)
-                    ->defaultValue('resolve')
-                    ->valueCallback([Convert::class, 'toCamelCase'])
-                    ->bindTo($this->StaticResolver)
-                    ->go(),
+            CliOption::build()
+                ->long('forward')
+                ->short('w')
+                ->valueName('method')
+                ->description(<<<EOF
+                    Forward calls to <method> from the builder to a new instance of <class>
+
+                    If no <method> is given, calls to every supported method are forwarded.
+                    EOF)
+                ->optionType(CliOptionType::VALUE_OPTIONAL)
+                ->multipleAllowed()
+                ->bindTo($this->Forward),
+            CliOption::build()
+                ->long('skip')
+                ->short('k')
+                ->description('Exclude a property or method from the builder')
+                ->optionType(CliOptionType::VALUE)
+                ->multipleAllowed()
+                ->bindTo($this->Skip),
             ...$this->getOutputOptionList('builder'),
         ];
     }
@@ -119,14 +102,7 @@ class GenerateBuilder extends GenerateCommand
     protected function run(string ...$args)
     {
         $this->reset();
-
-        $this->SkipProperties = [
-            $this->StaticBuilder,
-            $this->ValueGetter,
-            $this->ValueChecker,
-            $this->Terminator,
-            $this->StaticResolver,
-        ];
+        $this->Skip = array_merge($this->Skip, self::SKIP);
 
         $classFqcn = $this->getRequiredFqcnOptionValue(
             'class',
@@ -154,13 +130,13 @@ class GenerateBuilder extends GenerateCommand
 
         $service = $this->getFqcnAlias($classFqcn, $classClass);
         $extends = $this->getFqcnAlias(Builder::class);
-        $container = $this->getFqcnAlias(IContainer::class);
 
         $desc = $this->OutputDescription === null
-            ? "A fluent interface for creating $classClass objects"
+            ? "Creates $classClass objects via a fluent interface"
             : $this->OutputDescription;
 
-        $writable = Introspector::get($this->InputClass->getName())->getWritableProperties();
+        $introspector = Introspector::get($this->InputClass->getName());
+        $writable = $introspector->getWritableProperties();
         $writable = array_combine(
             array_map(
                 fn(string $name) => Convert::toCamelCase($name),
@@ -169,12 +145,38 @@ class GenerateBuilder extends GenerateCommand
             $writable
         );
 
-        /** @var ReflectionParameter[] */
+        /**
+         * camelCase name => parameter
+         *
+         * @var ReflectionParameter[]
+         */
         $_params = [];
+
+        /**
+         * camelCase name => parameter received by reference or with a generic
+         * template type
+         *
+         * @var array<string,ReflectionParameter|ReflectionProperty|ReflectionMethod>
+         */
         $toDeclare = [];
+
         /** @var array<string,array<string,PhpDocTemplateTag>> */
         $declareTemplates = [];
+
+        /**
+         * camelCase name => undelimited docblock
+         *
+         * @var array<string,string>
+         */
         $docBlocks = [];
+
+        /**
+         * forwarded method name => has return value?
+         *
+         * @var array<string,bool>
+         */
+        $returnsValue = [];
+
         if ($_constructor = $this->InputClass->getConstructor()) {
             foreach ($_constructor->getParameters() as $_param) {
                 $name = Convert::toCamelCase($_param->getName());
@@ -188,12 +190,24 @@ class GenerateBuilder extends GenerateCommand
             }
         }
 
-        /** @var ReflectionProperty[] */
+        /**
+         * camelCase name => non-static public or protected property
+         *
+         * @var array<string,ReflectionProperty>
+         */
         $_allProperties = [];
-        /** @var array<string,mixed> */
+
+        /**
+         * camelCase name => default property value (`null` if not set)
+         *
+         * @var array<string,mixed>
+         */
         $_defaultProperties = [];
+
         $defaults = $this->InputClass->getDefaultProperties();
-        foreach ($this->InputClass->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED) as $_property) {
+        foreach ($this->InputClass->getProperties(
+            ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED
+        ) as $_property) {
             if ($_property->isStatic()) {
                 continue;
             }
@@ -205,27 +219,41 @@ class GenerateBuilder extends GenerateCommand
             }
         }
 
-        /** @var ReflectionProperty[] */
+        /**
+         * camelCase name => writable property that isn't also a constructor
+         * parameter
+         *
+         * @var ReflectionProperty[]
+         */
         $_properties = [];
+
         foreach (array_keys($writable) as $name) {
-            $_properties[$name] = $_property = $_allProperties[$name];
+            $_properties[$name] = $_allProperties[$name];
         }
 
         $_docBlocks = Reflect::getAllMethodDocComments($_constructor, $classDocBlocks);
+
+        /**
+         * Constructor PHPDoc
+         *
+         * @var PhpDoc|null
+         */
         $_phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $_constructor->getName() . '()');
 
         $names = array_keys($_params + $_properties);
-        // sort($names);
-        $methods = [
-            " * @method static \$this {$this->StaticBuilder}(?$container \$container = null) Create a new $builderClass (syntactic sugar for 'new $builderClass()')",
-        ];
         foreach ($names as $name) {
-            if (in_array($name, $this->SkipProperties)) {
+            if (in_array($name, $this->Skip)) {
                 continue;
             }
 
             if ($_property = $_properties[$name] ?? null) {
                 $_docBlocks = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
+
+                /**
+                 * Property PHPDoc
+                 *
+                 * @var PhpDoc|null
+                 */
                 $phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks, '$' . $_property->getName());
                 $propertyFile = $_property->getDeclaringClass()->getFileName();
                 $propertyNamespace = $_property->getDeclaringClass()->getNamespaceName();
@@ -233,15 +261,11 @@ class GenerateBuilder extends GenerateCommand
                 $internal = (bool) ($phpDoc->TagsByName['internal'] ?? null);
                 $link = !$internal && $phpDoc && $phpDoc->hasDetail();
 
-                foreach ([
-                    $phpDoc->Vars[0] ?? null,
-                    $phpDoc->Vars[$_property->getName()] ?? null,
-                ] as $tag) {
-                    if ($_type = $tag->Type ?? null) {
-                        break;
-                    }
-                }
-                if ($_type) {
+                $_type = ($tag = $phpDoc->Vars[0] ?? null)->Type
+                    ?? ($tag = $phpDoc->Vars[$_property->getName()] ?? null)->Type
+                    ?? null;
+
+                if ($_type !== null) {
                     $templates = [];
                     $type = $this->getPhpDocTypeAlias(
                         $tag,
@@ -294,14 +318,14 @@ class GenerateBuilder extends GenerateCommand
                         break;
                 }
                 $summary = $phpDoc->Summary ?? null;
-                if (!$summary && ($_param = $_params[$name] ?? null)) {
+                if ($summary === null && ($_param = $_params[$name] ?? null) !== null) {
                     $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_param->getName()]->Description ?? null) : null;
                 }
 
-                $type = $type ? "$type " : '';
+                $type = ($type ?? '') !== '' ? "$type " : '';
                 $methods[] = " * @method \$this $name($type\$value$default)"
                     . $this->getSummary(
-                        $summary,
+                        $summary,  // Taken from property PHPDoc if set, otherwise constructor PHPDoc if set, otherwise `null`
                         $_property,
                         fn(string $type): ?string =>
                             $this->getTypeAlias($type, $propertyFile, false),
@@ -309,12 +333,13 @@ class GenerateBuilder extends GenerateCommand
                         null,
                         $defaultText,
                         false,
-                        $link
+                        $link,
                     );
 
                 continue;
             }
 
+            // If we end up here, we're dealing with a constructor parameter
             $propertyFile = $_constructor->getFileName();
             $propertyNamespace = $_constructor->getDeclaringClass()->getNamespaceName();
             $declaringClass = $this->getTypeAlias($_constructor->getDeclaringClass()->getName());
@@ -323,6 +348,12 @@ class GenerateBuilder extends GenerateCommand
             // If the parameter has a matching property, retrieve its DocBlock
             if ($_property = $_allProperties[$name] ?? null) {
                 $_docBlocks = Reflect::getAllPropertyDocComments($_property, $classDocBlocks);
+
+                /**
+                 * Unwritable property PHPDoc
+                 *
+                 * @var PhpDoc|null
+                 */
                 $phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks, '$' . $_property->getName());
             } else {
                 $phpDoc = null;
@@ -334,7 +365,7 @@ class GenerateBuilder extends GenerateCommand
             $_name = $_param->getName();
 
             $tag = $_phpDoc->Params[$_name] ?? null;
-            if ($_type = $tag->Type ?? null) {
+            if (($_type = $tag->Type ?? null) !== null) {
                 $templates = [];
                 $type = $this->getPhpDocTypeAlias(
                     $tag,
@@ -389,7 +420,7 @@ class GenerateBuilder extends GenerateCommand
             }
 
             $summary = $_phpDoc ? $_phpDoc->unwrap($_phpDoc->Params[$_name]->Description ?? null) : null;
-            if (!$summary && $phpDoc) {
+            if ($summary === null && $phpDoc) {
                 $summary = $phpDoc->Summary;
             }
 
@@ -408,7 +439,7 @@ class GenerateBuilder extends GenerateCommand
 
                 $lines = [];
                 $lines[] = $this->getSummary(
-                    $summary,
+                    $summary,  // Taken from constructor PHPDoc if set, otherwise property PHPDoc if set, otherwise `null`
                     $_property,
                     fn(string $type): ?string =>
                         $this->getTypeAlias($type, $propertyFile, false),
@@ -451,10 +482,10 @@ class GenerateBuilder extends GenerateCommand
                 }
                 $docBlocks[$name] = implode(PHP_EOL, $lines);
             } else {
-                $type = $type ? "$type " : '';
+                $type = ($type ?? '') !== '' ? "$type " : '';
                 $methods[] = " * @method \$this $name($type\$value$default)"
                     . $this->getSummary(
-                        $summary,
+                        $summary,  // Taken from constructor PHPDoc if set, otherwise property PHPDoc if set, otherwise `null`
                         $_property,
                         fn(string $type): ?string =>
                             $this->getTypeAlias($type, $propertyFile, false),
@@ -462,15 +493,188 @@ class GenerateBuilder extends GenerateCommand
                         $name,
                         $defaultText,
                         false,
-                        $link
+                        $link,
                     );
             }
         }
-        $methods[] = " * @method mixed {$this->ValueGetter}(string \$name) The value of \$name if applied to the unresolved $classClass by calling \$name(), otherwise null";
-        $methods[] = " * @method bool {$this->ValueChecker}(string \$name) True if a value for \$name has been applied to the unresolved $classClass by calling \$name()";
-        $methods[] = " * @method $service {$this->Terminator}() Get a new $classClass object";
-        $methods[] = " * @method static $service {$this->StaticResolver}($service|$builderClass \$object) Resolve a $builderClass or $classClass object to a $classClass object";
-        $methods = implode(PHP_EOL, $methods);
+
+        if ($this->Forward !== null) {
+            $_methods = $this->InputClass->getMethods(ReflectionMethod::IS_PUBLIC);
+
+            foreach ($_methods as $_method) {
+                $name = $_method->getName();
+                $_docBlocks = Reflect::getAllMethodDocComments($_method, $classDocBlocks);
+                $phpDoc = PhpDoc::fromDocBlocks($_docBlocks, $classDocBlocks, $name . '()');
+
+                if ($_method->isConstructor() ||
+                        $_method->isStatic() ||
+                        strpos($name, '__') === 0 ||
+                        isset($phpDoc->TagsByName['deprecated']) ||
+                        in_array(Convert::toCamelCase($name), $names) ||
+                        in_array(Convert::toCamelCase(Pcre::replace('/^(with|get)/i', '', $name)), $names) ||
+                        in_array($name, $this->Skip) ||
+                        ($this->Forward !== [] && !in_array($name, $this->Forward))) {
+                    continue;
+                }
+
+                $terminators[] = $name;
+
+                $declaringClass = $this->getTypeAlias($_method->getDeclaringClass()->getName());
+                $_params = $_method->getParameters();
+                $propertyFile = $_method->getFileName() ?: null;
+                $propertyNamespace = $_method->getDeclaringClass()->getNamespaceName();
+
+                $declare = (bool) array_filter(
+                    $_params,
+                    fn(ReflectionParameter $p) =>
+                        $p->isPassedByReference()
+                );
+                $internal = (bool) ($phpDoc->TagsByName['internal'] ?? null);
+                $link = !$internal && $phpDoc && $phpDoc->hasDetail();
+                $returnsVoid = false;
+
+                if ($declare) {
+                    $toDeclare[$name] = $_method;
+                }
+
+                $_type = $phpDoc->Return->Type ?? null;
+                if ($_type !== null) {
+                    $templates = [];
+                    $type = $this->getPhpDocTypeAlias(
+                        $phpDoc->Return,
+                        $phpDoc->Templates,
+                        $propertyNamespace,
+                        $propertyFile,
+                        $templates
+                    );
+                    if ($templates &&
+                        count($templates) === 1 &&
+                        ($type === 'class-string<' . ($key = array_keys($templates)[0]) . '>' ||
+                            $type === $key)) {
+                        $declareTemplates[$name] = $templates;
+                        if (!$declare) {
+                            $toDeclare[$name] = $_method;
+                            $declare = true;
+                        }
+                    }
+                } else {
+                    $type = $_method->hasReturnType()
+                        ? Reflect::getTypeDeclaration(
+                            $_method->getReturnType(),
+                            $classPrefix,
+                            fn(string $type): ?string =>
+                                $this->getTypeAlias($type, $propertyFile, false)
+                        )
+                        : 'mixed';
+                }
+
+                switch ($type) {
+                    case 'static':
+                    case '$this':
+                        $type = $service;
+                        break;
+                    case 'self':
+                        $type = $declaringClass;
+                        break;
+                    case 'void':
+                        $returnsVoid = true;
+                        break;
+                }
+
+                $summary = $phpDoc->Summary ?? null;
+
+                $params = [];
+                foreach ($_params as $_param) {
+                    /** @todo: check for templates here? */
+                    $tag = $phpDoc->Params[$_param->getName()] ?? null;
+                    // Override the declared type if defined in the PHPDoc
+                    $_type = ($tag->Type ?? null) !== null
+                        ? $this->getPhpDocTypeAlias(
+                            $tag,
+                            $phpDoc->Templates,
+                            $propertyNamespace,
+                            $propertyFile
+                        )
+                        : null;
+                    $params[] =
+                        $declare
+                            ? Reflect::getParameterPhpDoc(
+                                $_param,
+                                $classPrefix,
+                                fn(string $type): ?string =>
+                                    $this->getTypeAlias($type, $propertyFile, false),
+                                $_type
+                            )
+                            : Reflect::getParameterDeclaration(
+                                $_param,
+                                $classPrefix,
+                                fn(string $type): ?string =>
+                                    $this->getTypeAlias($type, $propertyFile, false),
+                                $_type,
+                                null,
+                                true
+                            );
+                }
+
+                if ($declare) {
+                    $params = array_filter($params);
+                    $return = ($type && (!$_method->hasReturnType() ||
+                            Reflect::getTypeDeclaration(
+                                $_method->getReturnType(),
+                                $classPrefix,
+                                fn(string $type): ?string =>
+                                    $this->getTypeAlias($type, $propertyFile, false)
+                            ) !== $type))
+                        ? "@return $type"
+                        : '';
+
+                    $lines = [];
+                    $lines[] = $this->getSummary(
+                        $summary,
+                        $_method,
+                        fn(string $type): ?string =>
+                            $this->getTypeAlias($type, $propertyFile, false),
+                        $declaringClass,
+                        $name,
+                        null,
+                        true,
+                        $link,
+                        $see
+                    );
+                    $lines[] = '';
+                    if ($internal) {
+                        $lines[] = '@internal';
+                    }
+                    if ($params) {
+                        array_push($lines, ...$params);
+                    }
+                    if ($return) {
+                        $lines[] = $return;
+                    }
+                    if ($link) {
+                        $lines[] = "@see $see";
+                    }
+                    $docBlocks[$name] = implode(PHP_EOL, $lines);
+                    $returnsValue[$name] = !$returnsVoid;
+                } else {
+                    $methods[] = " * @method $type $name("
+                        . str_replace(PHP_EOL, PHP_EOL . ' * ', implode(', ', $params)) . ')'
+                        . $this->getSummary(
+                            $summary,
+                            $_method,
+                            fn(string $type): ?string =>
+                                $this->getTypeAlias($type, $propertyFile, false),
+                            $declaringClass,
+                            $name,
+                            null,
+                            false,
+                            $link
+                        );
+                }
+            }
+        }
+
+        $methods = implode(PHP_EOL, $methods ?? []);
 
         $docBlock[] = '/**';
         if ($desc) {
@@ -525,7 +729,7 @@ class GenerateBuilder extends GenerateCommand
             unset($blocks[3]);
         }
 
-        if (!$builderNamespace) {
+        if (($builderNamespace ?? '') === '') {
             unset($blocks[2]);
         }
 
@@ -533,28 +737,48 @@ class GenerateBuilder extends GenerateCommand
 
         array_push(
             $lines,
-            ...$this->generateGetter('getClassName', "$service::class", [
-                '@internal',
-                sprintf('@return class-string<%s>', "$service{$this->InputClassType}"),
-            ])
+            ...$this->generateGetter('getService', "$service::class", '@internal'),
         );
 
-        $getters = [
-            'getStaticBuilder' => [$this->StaticBuilderOption, $this->StaticBuilder],
-            'getValueGetter' => [$this->ValueGetterOption, $this->ValueGetter],
-            'getValueChecker' => [$this->ValueCheckerOption, $this->ValueChecker],
-            'getTerminator' => [$this->TerminatorOption, $this->Terminator],
-            'getStaticResolver' => [$this->StaticResolverOption, $this->StaticResolver],
-        ];
+        array_push(
+            $lines,
+            '',
+            ...$this->generateGetter(
+                'getTerminators',
+                isset($terminators)
+                    ? sprintf("[\n%s\n%s]", implode("\n", array_map(
+                        fn(string $method): string =>
+                            self::TAB . self::TAB . self::TAB . "'{$method}',",
+                        $terminators
+                    )), self::TAB . self::TAB)
+                    : '[]',
+                '@internal',
+                'array'
+            ),
+        );
 
-        foreach ($getters as $getter => [$option, $methodName]) {
-            if ($option->DefaultValue !== $methodName) {
-                array_push($lines, '', ...$this->generateGetter($getter, var_export($methodName, true)));
-            }
-        }
-
-        /** @var ReflectionParameter $_param */
         foreach ($toDeclare as $name => $_param) {
+            if ($_param instanceof ReflectionMethod) {
+                $_params = $_param->getParameters();
+                $return = $returnsValue[$name] ? 'return ' : '';
+                $code = [sprintf(
+                    '%s$this->go()->%s(%s);',
+                    $return,
+                    $name,
+                    implode(', ', array_map(
+                        fn(ReflectionParameter $p) =>
+                            ($p->isVariadic() ? '...' : '') . '$' . $p->getName(),
+                        $_params
+                    ))
+                )];
+                array_push(
+                    $lines,
+                    '',
+                    ...$this->generateMethod($name, $code, $_params, $_param->getReturnType(), $docBlocks[$name], false)
+                );
+                continue;
+            }
+
             if ($_param instanceof ReflectionParameter && $_param->isPassedByReference()) {
                 $code = 'return $this->getWithReference(__FUNCTION__, $variable);';
                 $param = '&$variable';
@@ -575,7 +799,7 @@ class GenerateBuilder extends GenerateCommand
                         )
                 )
                 : '';
-            $type = $type ? "$type " : '';
+            $type = $type !== '' ? "$type " : '';
             array_push(
                 $lines,
                 '',
@@ -588,9 +812,12 @@ class GenerateBuilder extends GenerateCommand
         $this->handleOutput($lines);
     }
 
+    /**
+     * @param ReflectionProperty|ReflectionMethod|null $member
+     */
     private function getSummary(
         ?string $summary,
-        ?ReflectionProperty $property,
+        $member,
         Closure $typeNameCallback,
         ?string $class = null,
         ?string $name = null,
@@ -599,34 +826,34 @@ class GenerateBuilder extends GenerateCommand
         bool $link = true,
         ?string &$see = null
     ): string {
-        if ($summary) {
+        if ($summary !== null) {
             $summary = rtrim($summary, '.');
         }
-        if ($property) {
-            $class = $typeNameCallback($property->getDeclaringClass()->getName(), true);
-            $name = $property->getName();
+        if ($member) {
+            $class = $typeNameCallback($member->getDeclaringClass()->getName());
+            $name = $member->getName();
             $param = '';
-            $see = $class . '::$' . $name;
+            $see = $member instanceof ReflectionMethod ? $class . '::' . $name . '()' : $class . '::$' . $name;
         } else {
             $param = "`\$$name` in ";
             $see = $class . '::__construct()';
         }
-        if ($default) {
+        if ($default !== null) {
             $defaultPrefix = "$default; ";
             $defaultSuffix = " ($default)";
         } else {
             $defaultSuffix = $defaultPrefix = '';
         }
 
-        return $summary
+        return $summary !== null
             ? ($declare
                 ? $summary . $defaultSuffix
                 : " $summary" . ($link ? " ({$defaultPrefix}see {@see $see})" : $defaultSuffix))
             : (($declare
-                ? "Pass a variable to $param$see by reference"
+                ? ($member instanceof ReflectionMethod ? "Call $see on a new instance" : "Pass a variable to $param$see by reference")
                 : ($link
                     ? " See {@see $see}"
-                    : ($param ? " Pass \$value to $param$see" : " Set $see")))
+                    : ($member instanceof ReflectionMethod ? " Call $see on a new instance" : ($param !== '' ? " Pass \$value to $param$see" : " Set $see"))))
                 . $defaultSuffix);
     }
 }

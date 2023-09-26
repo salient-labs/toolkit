@@ -21,9 +21,9 @@ interface IFluentInterface
      * callback to the object
      *
      * @param (callable($this): bool)|bool $condition
-     * @param (callable($this): $this) $then Called if `$condition` resolves to `true`.
+     * @param (callable($this): $this)|null $then Called if `$condition` resolves to `true`.
      * @param (callable($this): $this)|null $else Called if `$condition` resolves to `false`.
      * @return $this
      */
-    public function if($condition, callable $then, ?callable $else = null);
+    public function if($condition, ?callable $then = null, ?callable $else = null);
 }

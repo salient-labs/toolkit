@@ -55,13 +55,13 @@ abstract class HttpSyncProvider extends SyncProvider
 
         if ($headers) {
             $curlerB = $curlerB->headers($headers);
-        } elseif (!$curlerB->isset('headers')) {
+        } elseif (!$curlerB->issetB('headers')) {
             $curlerB = $curlerB->headers($this->getHeaders($path));
         }
 
         if ($pager) {
             $curlerB = $curlerB->pager($pager);
-        } elseif (!$curlerB->isset('pager')) {
+        } elseif (!$curlerB->issetB('pager')) {
             $curlerB = $curlerB->pager($this->getPager($path));
         }
 

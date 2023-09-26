@@ -62,7 +62,6 @@ final class GenerateFacade extends GenerateCommand
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->required()
                 ->bindTo($this->FacadeFqcn),
-            ...$this->getOutputOptionList('facade'),
             CliOption::build()
                 ->long('skip')
                 ->short('k')
@@ -70,6 +69,7 @@ final class GenerateFacade extends GenerateCommand
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
                 ->bindTo($this->SkipMethods),
+            ...$this->getOutputOptionList('facade'),
         ];
     }
 

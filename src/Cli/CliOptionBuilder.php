@@ -7,12 +7,10 @@ use Lkrms\Cli\Catalog\CliOptionValueType;
 use Lkrms\Cli\Catalog\CliOptionValueUnknownPolicy;
 use Lkrms\Cli\Catalog\CliOptionVisibility;
 use Lkrms\Concept\Builder;
-use Lkrms\Contract\IContainer;
 
 /**
- * A fluent interface for creating CliOption objects
+ * Creates CliOption objects via a fluent interface
  *
- * @method static $this build(?IContainer $container = null) Create a new CliOptionBuilder (syntactic sugar for 'new CliOptionBuilder()')
  * @method $this long(?string $value) The long form of the option, e.g. 'verbose' (see {@see CliOption::$Long})
  * @method $this short(?string $value) The short form of the option, e.g. 'v' (see {@see CliOption::$Short})
  * @method $this valueName(?string $value) The name of the option's value as it appears in usage information (see {@see CliOption::$ValueName})
@@ -32,10 +30,6 @@ use Lkrms\Contract\IContainer;
  * @method $this valueCallback(?callable $value) Applied to the option's value as it is assigned (see {@see CliOption::$ValueCallback})
  * @method $this visibility(int-mask-of<CliOptionVisibility::*> $value) The option's visibility to users
  * @method $this hide(bool $value = true) True if the option's visibility should be {@see CliOptionVisibility::NONE} (default: false)
- * @method mixed get(string $name) The value of $name if applied to the unresolved CliOption by calling $name(), otherwise null
- * @method bool isset(string $name) True if a value for $name has been applied to the unresolved CliOption by calling $name()
- * @method CliOption go() Get a new CliOption object
- * @method static CliOption resolve(CliOption|CliOptionBuilder $object) Resolve a CliOptionBuilder or CliOption object to a CliOption object
  *
  * @uses CliOption
  *
@@ -45,11 +39,18 @@ final class CliOptionBuilder extends Builder
 {
     /**
      * @internal
-     * @return class-string<CliOption>
      */
-    protected static function getClassName(): string
+    protected static function getService(): string
     {
         return CliOption::class;
+    }
+
+    /**
+     * @internal
+     */
+    protected static function getTerminators(): array
+    {
+        return [];
     }
 
     /**

@@ -3,7 +3,6 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Builder;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
@@ -19,12 +18,11 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Closure;
 
 /**
- * A fluent interface for creating HttpSyncDefinition objects
+ * Creates HttpSyncDefinition objects via a fluent interface
  *
  * @template TEntity of ISyncEntity
  * @template TProvider of HttpSyncProvider
  *
- * @method static $this build(?IContainer $container = null) Create a new HttpSyncDefinitionBuilder (syntactic sugar for 'new HttpSyncDefinitionBuilder()')
  * @method $this operations(array<SyncOperation::*> $value) A list of supported sync operations
  * @method $this path(?string $value) The path to the provider endpoint servicing the entity, e.g. "/v1/user" (see {@see HttpSyncDefinition::$Path})
  * @method $this query(mixed[]|null $value) Query parameters applied to the sync operation URL (see {@see HttpSyncDefinition::$Query})
@@ -40,10 +38,6 @@ use Closure;
  * @method $this pipelineFromBackend(IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $value) A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
  * @method $this pipelineToBackend(IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $value) A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
  * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
- * @method mixed get(string $name) The value of $name if applied to the unresolved HttpSyncDefinition by calling $name(), otherwise null
- * @method bool isset(string $name) True if a value for $name has been applied to the unresolved HttpSyncDefinition by calling $name()
- * @method HttpSyncDefinition go() Get a new HttpSyncDefinition object
- * @method static HttpSyncDefinition resolve(HttpSyncDefinition|HttpSyncDefinitionBuilder $object) Resolve a HttpSyncDefinitionBuilder or HttpSyncDefinition object to a HttpSyncDefinition object
  *
  * @uses HttpSyncDefinition
  *
@@ -53,11 +47,18 @@ final class HttpSyncDefinitionBuilder extends Builder
 {
     /**
      * @internal
-     * @return class-string<HttpSyncDefinition<TEntity,TProvider>>
      */
-    protected static function getClassName(): string
+    protected static function getService(): string
     {
         return HttpSyncDefinition::class;
+    }
+
+    /**
+     * @internal
+     */
+    protected static function getTerminators(): array
+    {
+        return [];
     }
 
     /**

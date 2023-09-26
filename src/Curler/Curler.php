@@ -2,13 +2,13 @@
 
 namespace Lkrms\Curler;
 
+use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\HasMutator;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
-use Lkrms\Contract\HasBuilder;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
+use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerException;
@@ -70,10 +70,15 @@ use RecursiveIteratorIterator;
  * @property string|null $UserAgent Override the default User-Agent header
  * @property bool $AlwaysPaginate Pass every response to the pager?
  * @property bool $ObjectAsArray Return deserialized objects as associative arrays?
+ *
+ * @implements ProvidesBuilder<CurlerBuilder>
  */
-final class Curler implements IReadable, IWritable, HasBuilder
+final class Curler implements IReadable, IWritable, ProvidesBuilder
 {
-    use TReadable, TWritable, HasMutator;
+    use TReadable;
+    use TWritable;
+    use HasBuilder;
+    use HasMutator;
 
     /**
      * Request endpoint
@@ -1469,18 +1474,10 @@ final class Curler implements IReadable, IWritable, HasBuilder
     }
 
     /**
-     * Use a fluent interface to create a new Curler object
+     * @inheritDoc
      */
-    public static function build(?IContainer $container = null): CurlerBuilder
+    public static function getBuilder(): string
     {
-        return new CurlerBuilder($container);
-    }
-
-    /**
-     * @param CurlerBuilder|Curler $object
-     */
-    public static function resolve($object): Curler
-    {
-        return CurlerBuilder::resolve($object);
+        return CurlerBuilder::class;
     }
 }

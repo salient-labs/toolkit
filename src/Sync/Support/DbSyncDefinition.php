@@ -2,9 +2,9 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Contract\HasBuilder;
-use Lkrms\Contract\IContainer;
+use Lkrms\Concern\HasBuilder;
 use Lkrms\Contract\IPipeline;
+use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
@@ -27,9 +27,12 @@ use LogicException;
  * @property-read string|null $Table
  *
  * @extends SyncDefinition<TEntity,TProvider>
+ * @implements ProvidesBuilder<DbSyncDefinitionBuilder<TEntity,TProvider>>
  */
-final class DbSyncDefinition extends SyncDefinition implements HasBuilder
+final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
 {
+    use HasBuilder;
+
     /**
      * @var string|null
      */
@@ -99,32 +102,19 @@ final class DbSyncDefinition extends SyncDefinition implements HasBuilder
         return $closure;
     }
 
-    /**
-     * Use a fluent interface to create a new DbSyncDefinition object
-     *
-     * @return DbSyncDefinitionBuilder<ISyncEntity,DbSyncProvider>
-     */
-    public static function build(?IContainer $container = null): DbSyncDefinitionBuilder
-    {
-        return new DbSyncDefinitionBuilder($container);
-    }
-
-    /**
-     * @template T0 of ISyncEntity
-     * @template T1 of DbSyncProvider
-     * @param DbSyncDefinitionBuilder<T0,T1>|DbSyncDefinition<T0,T1> $object
-     * @return DbSyncDefinition<T0,T1>
-     */
-    public static function resolve($object): DbSyncDefinition
-    {
-        return DbSyncDefinitionBuilder::resolve($object);
-    }
-
     public static function getReadable(): array
     {
         return [
             ...parent::getReadable(),
             'Table',
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getBuilder(): string
+    {
+        return DbSyncDefinitionBuilder::class;
     }
 }

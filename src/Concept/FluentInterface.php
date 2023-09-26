@@ -14,7 +14,7 @@ abstract class FluentInterface implements IFluentInterface
         return $callback($this);
     }
 
-    final public function if($condition, callable $then, ?callable $else = null)
+    final public function if($condition, ?callable $then = null, ?callable $else = null)
     {
         if (is_callable($condition)) {
             $condition = $condition($this);
@@ -22,6 +22,6 @@ abstract class FluentInterface implements IFluentInterface
         if (!$condition) {
             return $else ? $else($this) : $this;
         }
-        return $then($this);
+        return $then ? $then($this) : $this;
     }
 }

@@ -5,178 +5,190 @@ namespace Lkrms\Concept;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
-use Lkrms\Facade\Console;
+use Lkrms\Support\IntrospectionClass;
 use Lkrms\Support\Introspector;
-use Closure;
-use UnexpectedValueException;
+use LogicException;
 
 /**
- * A fluent interface for creating instances of an underlying class
+ * Base class for object builders
  *
- * The global container will be used to instantiate the underlying class unless
- * another container is passed to the builder, e.g.:
+ * For example:
  *
  * ```php
- * $instance        = MyClassBuilder::build()->go();
- * $anotherInstance = MyClassBuilder::build($this->container())->go();
- * ```
+ * <?php
+ * class Foo implements ProvidesBuilder
+ * {
+ *     use HasBuilder;
  *
- * A `RuntimeException` will be thrown if no service container is available.
+ *     protected $Bar;
+ *
+ *     public function __construct($bar)
+ *     {
+ *         $this->Bar = $bar;
+ *     }
+ *
+ *     public static function getBuilder(): string
+ *     {
+ *         return FooBuilder::class;
+ *     }
+ * }
+ *
+ * class FooBuilder extends Builder
+ * {
+ *     protected static function getService(): string
+ *     {
+ *         return Foo::class;
+ *     }
+ *
+ *     protected static function getTerminators(): array
+ *     {
+ *         return [];
+ *     }
+ * }
+ *
+ * $foo = Foo::build()
+ *     ->bar('baz')
+ *     ->go();
+ * ```
  *
  * @template TClass of object
  */
 abstract class Builder extends FluentInterface implements IImmutable
 {
     /**
-     * Get the name of the underlying class
+     * Get the class to build
      *
      * @return class-string<TClass>
      */
-    abstract protected static function getClassName(): string;
+    abstract protected static function getService(): string;
 
     /**
-     * Get the name of the static method that returns a new builder
+     * Get methods to forward to a new instance of the service class
      *
-     * The default method name is "build". Override
-     * {@see Builder::getStaticBuilder()} to change it.
+     * @return string[]
      */
-    protected static function getStaticBuilder(): string
-    {
-        return 'build';
-    }
+    abstract protected static function getTerminators(): array;
+
+    protected IContainer $Container;
 
     /**
-     * Get the name of the method that returns a value applied to the builder
-     *
-     * The default method name is "get". Override
-     * {@see Builder::getValueGetter()} to change it.
+     * @var Introspector<TClass,IntrospectionClass<TClass>>
      */
-    protected static function getValueGetter(): string
-    {
-        return 'get';
-    }
+    private Introspector $Introspector;
 
     /**
-     * Get the name of the method that returns true if a value has been applied
-     * to the builder
-     *
-     * The default method name is "isset". Override
-     * {@see Builder::getValueChecker()} to change it.
+     * @var array<string,true>
      */
-    protected static function getValueChecker(): string
-    {
-        return 'isset';
-    }
-
-    /**
-     * Get the name of the method that returns a new instance of the underlying
-     * class and terminates the fluent interface
-     *
-     * The default method name is "go". Override {@see Builder::getTerminator()}
-     * to change it.
-     */
-    protected static function getTerminator(): string
-    {
-        return 'go';
-    }
-
-    /**
-     * Get the name of the static method that resolves a builder or an instance
-     * of the underlying class to an instance of the underlying class
-     *
-     * The default method name is "resolve". Override
-     * {@see Builder::getStaticResolver()} to change it.
-     */
-    protected static function getStaticResolver(): string
-    {
-        return 'resolve';
-    }
-
-    /**
-     * @var IContainer
-     */
-    private $Container;
-
-    /**
-     * @var Introspector
-     */
-    private $Introspector;
-
-    /**
-     * @var Closure
-     */
-    private $Closure;
+    private array $Terminators = [];
 
     /**
      * @var array<string,mixed>
      */
-    private $Data = [];
+    private array $Data = [];
 
+    /**
+     * Creates a new builder
+     */
     final public function __construct(?IContainer $container = null)
     {
-        $this->Container = $container ?: Container::requireGlobalContainer();
-        $this->Introspector = Introspector::getService($this->Container, static::getClassName());
-        $this->Closure = $this->Introspector->getCreateFromClosure(true);
+        $this->Container = $container ?? Container::getGlobalContainer();
+        $this->Introspector = Introspector::getService($this->Container, static::getService());
+        foreach (static::getTerminators() as $terminator) {
+            $this->Terminators[$terminator] = true;
+            $this->Terminators[$this->Introspector->maybeNormalise($terminator)] = true;
+        }
     }
 
     /**
-     * @internal
+     * Get a new builder
+     *
+     * Syntactic sugar for:
+     *
+     * ```php
+     * <?php
+     * new static()
+     * ```
+     *
+     * @return static
      */
-    final public static function __callStatic(string $name, array $arguments)
+    final public static function build(?IContainer $container = null)
     {
-        if (static::getStaticBuilder() === $name) {
-            if (count($arguments) > 1) {
-                throw new UnexpectedValueException('Invalid arguments');
-            }
-            if ($arguments && !($arguments[0] instanceof IContainer)) {
-                throw new UnexpectedValueException('Argument #1 ($container) does not implement ' . IContainer::class);
-            }
+        return new static($container);
+    }
 
-            return new static($arguments[0] ?? null);
+    /**
+     * Get an instance from an optionally terminated builder
+     *
+     * Syntactic sugar for:
+     *
+     * ```php
+     * <?php
+     * $object instanceof static ? $object->go() : $object
+     * ```
+     *
+     * @param static|TClass $object
+     * @return TClass
+     */
+    final public static function resolve($object)
+    {
+        if ($object instanceof static) {
+            return $object->go();
         }
-        if (static::getStaticResolver() === $name) {
-            if (count($arguments) !== 1 || !is_object($arguments[0])) {
-                throw new UnexpectedValueException('Invalid arguments');
-            }
-            $obj = $arguments[0];
-            if ($obj instanceof self) {
-                $obj = $obj->{$obj->getTerminator()}();
-            }
-            if (!is_a($obj, static::getClassName())) {
-                throw new UnexpectedValueException('Argument #1 ($object) does not resolve to a ' . static::getClassName());
-            }
 
-            return $obj;
+        if (!is_a($object, static::getService())) {
+            throw new LogicException(sprintf(
+                'Invalid argument (%s|%s expected)',
+                static::class,
+                static::getService(),
+            ));
         }
-        Console::debugOnce(sprintf('%s instantiated by deprecated static call:', static::class), $name);
 
-        return (new static())->{$name}(...$arguments);
+        return $object;
+    }
+
+    /**
+     * Get a value applied to the builder
+     *
+     * @return mixed|null
+     */
+    final public function getB(string $name)
+    {
+        return $this->Data[$this->Introspector->maybeNormalise($name)] ?? null;
+    }
+
+    /**
+     * True if a value has been applied to the builder
+     */
+    final public function issetB(string $name): bool
+    {
+        return array_key_exists($this->Introspector->maybeNormalise($name), $this->Data);
+    }
+
+    /**
+     * Get a new instance of the service class
+     *
+     * @return TClass
+     */
+    final public function go()
+    {
+        return ($this->Introspector->getCreateFromClosure(true))($this->Data, $this->Container);
     }
 
     /**
      * @internal
+     *
+     * @param mixed[] $arguments
+     * @return $this
      */
     final public function __call(string $name, array $arguments)
     {
-        if (static::getValueGetter() === $name) {
-            if (count($arguments) !== 1 || !is_string($arguments[0]) || !$arguments[0]) {
-                throw new UnexpectedValueException(sprintf('Invalid arguments to %s::%s(string $name)', static::class, $name));
-            }
+        if (($this->Terminators[$name] ?? null) ||
+                ($this->Terminators[$this->Introspector->maybeNormalise($name)] ?? null)) {
+            return $this->go()->{$name}(...$arguments);
+        }
 
-            return $this->Data[$this->Introspector->maybeNormalise($arguments[0])] ?? null;
-        }
-        if (static::getValueChecker() === $name) {
-            if (count($arguments) !== 1 || !is_string($arguments[0]) || !$arguments[0]) {
-                throw new UnexpectedValueException(sprintf('Invalid arguments to %s::%s(string $name)', static::class, $name));
-            }
-
-            return array_key_exists($this->Introspector->maybeNormalise($arguments[0]), $this->Data);
-        }
-        if (static::getTerminator() === $name) {
-            return ($this->Closure)($this->Data, $this->Container);
-        }
         if (count($arguments) > 1) {
-            throw new UnexpectedValueException('Invalid arguments');
+            throw new LogicException('Invalid arguments');
         }
 
         return $this->getWithValue(
@@ -188,6 +200,7 @@ abstract class Builder extends FluentInterface implements IImmutable
     }
 
     /**
+     * @param mixed $value
      * @return $this
      */
     final protected function getWithValue(string $name, $value)
@@ -200,6 +213,7 @@ abstract class Builder extends FluentInterface implements IImmutable
     }
 
     /**
+     * @param mixed $variable
      * @return $this
      */
     final protected function getWithReference(string $name, &$variable)
