@@ -26,7 +26,19 @@ jobs:
           php-version: "8.2"
           coverage: none
 
-      - name: Install dependencies
+      - name: Get Composer cache directory
+        id: get-composer-cache
+        shell: bash
+        run: printf 'cache_dir=%s\n' "$(composer config cache-files-dir)" >>"$GITHUB_OUTPUT"
+
+      - name: Cache PHP dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.get-composer-cache.outputs.cache_dir }}
+          key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
+          restore-keys: composer-cache-${{ runner.os }}-
+
+      - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
 
       - name: Check generated files
@@ -60,7 +72,19 @@ jobs:
           php-version: ${{ matrix.php-version }}
           coverage: none
 
-      - name: Install dependencies
+      - name: Get Composer cache directory
+        id: get-composer-cache
+        shell: bash
+        run: printf 'cache_dir=%s\n' "$(composer config cache-files-dir)" >>"$GITHUB_OUTPUT"
+
+      - name: Cache PHP dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.get-composer-cache.outputs.cache_dir }}
+          key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
+          restore-keys: composer-cache-${{ runner.os }}-
+
+      - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
 
       - name: Run PHPStan
@@ -102,19 +126,48 @@ jobs:
           extensions: sqlite3
           coverage: pcov
 
+      - name: Get Composer cache directory
+        id: get-composer-cache
+        shell: bash
+        run: printf 'cache_dir=%s\n' "$(composer config cache-files-dir)" >>"$GITHUB_OUTPUT"
+
+      - name: Cache PHP dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.get-composer-cache.outputs.cache_dir }}
+          key: composer-cache-${{ runner.os }}-${{ hashFiles('**/composer.json', '**/composer.lock') }}
+          restore-keys: composer-cache-${{ runner.os }}-
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
+          cache: npm
+          cache-dependency-path: tools/*/package-lock.json
 
-      - name: Install dependencies
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Install Node.js dependencies
+        shell: bash
         run: |
-          composer install --no-interaction --no-progress
-          npm install -g @mockoon/cli
+          for file in tools/*/package-lock.json; do
+              (cd "${file%/*}" && npm install)
+          done
 
       - name: Start Mockoon CLI
         shell: bash
-        run: mockoon-cli start --port 3001 --log-transaction --data tests/fixtures/.mockoon/JsonPlaceholderApi.json &
+        run: |
+          tools/mockoon-cli/node_modules/.bin/mockoon-cli start --port 3001 --log-transaction --data tests/fixtures/.mockoon/JsonPlaceholderApi.json &
+          i=-1
+          while :; do
+              jobs %% &>/dev/null
+              if ((++i == 60)); then
+                  echo "mockoon-cli server unresponsive after $i seconds" >&2
+                  false
+              fi
+              curl -sI http://localhost:3001 >/dev/null && echo "mockoon-cli server up after $i seconds" && break || sleep 1
+          done
 
       - name: Run PHPUnit tests and generate code coverage report
         run: vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml
