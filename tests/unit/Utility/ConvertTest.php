@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Generator;
 use LogicException;
+use ReflectionParameter;
 
 final class ConvertTest extends \Lkrms\Tests\TestCase
 {
@@ -648,6 +649,10 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
      */
     public static function linesToListsProvider(): array
     {
+        $defaultRegex = (
+            new ReflectionParameter([Convert::class, 'linesToLists'], 'regex')
+        )->getDefaultValue();
+
         $input1 = <<<EOF
             - Before lists
 
@@ -688,6 +693,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
             ### Changes
 
             - Description
+
             - Description
               over
               multiple
@@ -700,6 +706,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
 
             - Description
               with different details
+
             - Description
               over
               multiple
@@ -826,7 +833,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
                 "\n\n",
                 '📍',
             ],
-            'Markdown (multiline #1)' => [
+            'Markdown (multiline #1, loose)' => [
                 <<<EOF
                 ### Changes
 
@@ -838,6 +845,29 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
                   ```
                   lines
                   ```
+                - Description
+                  with different details
+                EOF,
+                $input3,
+                "\n\n",
+                null,
+                $defaultRegex,
+                false,
+                true,
+            ],
+            'Markdown (multiline #1, not loose)' => [
+                <<<EOF
+                - Description
+                  over
+                  multiple
+
+                  ```
+                  lines
+                  ```
+
+                ### Changes
+
+                - Description
                 - Description
                   with different details
                 EOF,
