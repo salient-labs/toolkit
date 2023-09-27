@@ -1012,32 +1012,43 @@ final class Convert
     }
 
     /**
-     * Remove duplicates in a string where 'top-level' lines ("section names")
-     * are grouped with any subsequent 'child' lines ("list items")
+     * Remove duplicates in a string where top-level lines ("sections") are
+     * grouped with "list items" below
      *
-     * Lines that match `$regex` are regarded as list items. Other lines are
-     * used as the section name for subsequent list items. Blank lines between
-     * list items clear the current section name.
+     * Lines that match `$regex` are regarded as list items, and other lines are
+     * used as the section name for subsequent list items. If `$loose` is
+     * `false` (the default), blank lines between list items clear the current
+     * section name.
+     *
+     * Top-level lines with no children, including any list items orphaned by
+     * blank lines above them, are returned before sections with children.
      *
      * If a named subpattern in `$regex` called `indent` matches a non-empty
      * string, subsequent lines with the same number of spaces for indentation
      * as there are characters in the match are treated as part of the item,
      * including any blank lines.
      *
-     * @param string $separator Used between top-level lines and sections.
-     * @param string|null $marker Added before each section name. The equivalent
-     * number of spaces are added before each list item. To add a leading `"- "`
-     * to top-level lines and indent others with two spaces, set `$marker` to
-     * `"-"`.
+     * Line endings used in `$text` may be any combination of LF, CRLF and CR,
+     * but LF (`"\n"`) line endings are used in the return value.
+     *
+     * @param string $separator Used between top-level lines and sections. Has
+     * no effect on the end-of-line sequence used between items, which is always
+     * LF (`"\n"`).
+     * @param string|null $marker Added before each section name. Nested list
+     * items are indented by the equivalent number of spaces. To add a leading
+     * `"- "` to top-level lines and indent others with two spaces, set
+     * `$marker` to `"-"`.
      * @param bool $clean If `true`, the first match of `$regex` in each section
      * name is removed.
+     * @param bool $loose If `true`, blank lines between list items are ignored.
      */
     public static function linesToLists(
         string $text,
         string $separator = "\n",
         ?string $marker = null,
         string $regex = '/^(?P<indent>\h*[-*] )/',
-        bool $clean = false
+        bool $clean = false,
+        bool $loose = false
     ): string {
         $marker = ($marker ?? '') !== '' ? $marker . ' ' : null;
         $indent = $marker !== null ? str_repeat(' ', mb_strlen($marker)) : '';
@@ -1058,7 +1069,7 @@ final class Convert
 
             // Treat blank lines between items as section breaks
             if (trim($line) === '') {
-                if ($lastWasItem) {
+                if (!$loose && $lastWasItem) {
                     unset($section);
                 }
                 continue;
