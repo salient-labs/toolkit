@@ -1016,8 +1016,13 @@ final class Convert
      * are grouped with any subsequent 'child' lines ("list items")
      *
      * Lines that match `$regex` are regarded as list items. Other lines are
-     * used as the section name for subsequent list items. Blank lines clear the
-     * current section name and are not included in the return value.
+     * used as the section name for subsequent list items. Blank lines between
+     * list items clear the current section name.
+     *
+     * If a named subpattern in `$regex` called `indent` matches a non-empty
+     * string, subsequent lines with the same number of spaces for indentation
+     * as there are characters in the match are treated as part of the item,
+     * including any blank lines.
      *
      * @param string $separator Used between top-level lines and sections.
      * @param string|null $marker Added before each section name. The equivalent
@@ -1031,56 +1036,136 @@ final class Convert
         string $text,
         string $separator = "\n",
         ?string $marker = null,
-        string $regex = '/^\h*[-*] /',
+        string $regex = '/^(?P<indent>\h*[-*] )/',
         bool $clean = false
     ): string {
-        $marker = $marker ? $marker . ' ' : null;
-        $indent = $marker ? str_repeat(' ', mb_strlen($marker)) : '';
-        $markerIsItem = $marker && Pcre::match($regex, $marker);
+        $marker = ($marker ?? '') !== '' ? $marker . ' ' : null;
+        $indent = $marker !== null ? str_repeat(' ', mb_strlen($marker)) : '';
+        $markerIsItem = $marker !== null && Pcre::match($regex, $marker);
 
         /** @var array<string,string[]> */
         $sections = [];
-        foreach (preg_split('/\r\n|\n|\r/', $text) as $line) {
+        $lastWasItem = false;
+        $lines = preg_split('/\r\n|\n|\r/', $text);
+        for ($i = 0; $i < count($lines); $i++) {
+            $line = $lines[$i];
+
             // Remove pre-existing markers early to ensure sections with the
             // same name are combined
-            if ($marker && !$markerIsItem && strpos($line, $marker) === 0) {
+            if ($marker !== null && !$markerIsItem && strpos($line, $marker) === 0) {
                 $line = substr($line, strlen($marker));
             }
-            if (!trim($line)) {
-                unset($section);
+
+            // Treat blank lines between items as section breaks
+            if (trim($line) === '') {
+                if ($lastWasItem) {
+                    unset($section);
+                }
                 continue;
             }
-            if (!Pcre::match($regex, $line)) {
+
+            // Collect any subsequent indented lines
+            if (Pcre::match($regex, $line, $matches)) {
+                $matchIndent = $matches['indent'] ?? '';
+                if ($matchIndent !== '') {
+                    $matchIndent = str_repeat(' ', mb_strlen($matchIndent));
+                    $pendingWhitespace = '';
+                    $backtrack = 0;
+                    while ($i < count($lines) - 1) {
+                        $nextLine = $lines[$i + 1];
+                        if (trim($nextLine) === '') {
+                            $pendingWhitespace .= $nextLine . "\n";
+                            $backtrack++;
+                        } elseif (substr($nextLine, 0, strlen($matchIndent)) === $matchIndent) {
+                            $line .= "\n" . $pendingWhitespace . $nextLine;
+                            $pendingWhitespace = '';
+                            $backtrack = 0;
+                        } else {
+                            $i -= $backtrack;
+                            break;
+                        }
+                        $i++;
+                    };
+                }
+            } else {
                 $section = $line;
             }
+
             $key = $section ?? $line;
+
             if (!array_key_exists($key, $sections)) {
                 $sections[$key] = [];
             }
-            if ($key != $line && !in_array($line, $sections[$key])) {
-                $sections[$key][] = $line;
+
+            if ($key !== $line) {
+                if (!in_array($line, $sections[$key])) {
+                    $sections[$key][] = $line;
+                }
+                $lastWasItem = true;
+            } else {
+                $lastWasItem = false;
             }
         }
+
         // Move lines with no associated list to the top
         /** @var array<string,string[]> */
-        $sections = array_merge(
-            array_filter($sections, fn($lines) => !count($lines)),
-            array_filter($sections, fn($lines) => count($lines))
-        );
+        $top = [];
+        $last = null;
+        foreach ($sections as $section => $lines) {
+            if (count($lines)) {
+                continue;
+            }
+
+            unset($sections[$section]);
+
+            if ($clean) {
+                $top[$section] = [];
+                continue;
+            }
+
+            // Collect second and subsequent consecutive top-level list items
+            // under the first so they don't form a loose list
+            if (Pcre::match($regex, $section)) {
+                if ($last !== null) {
+                    $top[$last][] = $section;
+                    continue;
+                }
+                $last = $section;
+            } else {
+                $last = null;
+            }
+            $top[$section] = [];
+        }
+        /** @var array<string,string[]> */
+        $sections = array_merge($top, $sections);
+
         $groups = [];
-        foreach ($sections as $section => $sectionLines) {
+        foreach ($sections as $section => $lines) {
             if ($clean) {
                 $section = Pcre::replace($regex, '', $section, 1);
             }
-            if ($marker &&
+
+            $marked = false;
+            if ($marker !== null &&
                     !($markerIsItem && strpos($section, $marker) === 0) &&
                     !Pcre::match($regex, $section)) {
                 $section = $marker . $section;
+                $marked = true;
             }
+
+            if (!$lines) {
+                $groups[] = $section;
+                continue;
+            }
+
+            // Don't separate or indent top-level list items collected above
+            if (!$marked && Pcre::match($regex, $section)) {
+                $groups[] = implode("\n", [$section, ...$lines]);
+                continue;
+            }
+
             $groups[] = $section;
-            if ($sectionLines) {
-                $groups[] = $indent . implode("\n" . $indent, $sectionLines);
-            }
+            $groups[] = $indent . implode("\n" . $indent, $lines);
         }
 
         return implode($separator, $groups);

@@ -634,6 +634,236 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
     }
 
     /**
+     * @dataProvider linesToListsProvider
+     *
+     * @param mixed ...$args
+     */
+    public function testLinesToLists(string $expected, ...$args)
+    {
+        $this->assertSame($expected, $this->newlinesToNative(Convert::linesToLists(...$args)));
+    }
+
+    /**
+     * @return array<string,string[]>
+     */
+    public static function linesToListsProvider(): array
+    {
+        $input1 = <<<EOF
+            - Before lists
+
+            Section:
+            - d
+            Other section:
+            - <not a letter>
+            Without a subsequent list
+            Section:
+            - a
+            - b
+            Section:
+            - c
+            - b
+            - d
+            EOF;
+
+        $input2 = <<<EOF
+            - Before lists
+            📍 Section:
+            - list item
+            - another
+
+            Other section:
+            - item i
+            - item ii
+
+            - Standalone
+
+            Also standalone
+
+            Section:
+            - another
+            - and another
+            EOF;
+
+        $input3 = <<<EOF
+            ### Changes
+
+            - Description
+            - Description
+              over
+              multiple
+
+              ```
+              lines
+              ```
+
+            ### Changes
+
+            - Description
+              with different details
+            - Description
+              over
+              multiple
+
+              ```
+              lines
+              ```
+
+
+            EOF;
+
+        $input4 = <<<EOF
+            - Description
+            - Description
+              over
+              multiple
+
+              ```
+              lines
+              ```
+            - Description
+              with different details
+            - Description
+              over
+              multiple
+
+              ```
+              lines
+              ```
+            EOF;
+
+        return [
+            'Default' => [
+                <<<EOF
+                - Before lists
+                Without a subsequent list
+                Section:
+                - d
+                - a
+                - b
+                - c
+                Other section:
+                - <not a letter>
+                EOF,
+                $input1,
+            ],
+            'Markdown' => [
+                <<<EOF
+                - Before lists
+
+                Without a subsequent list
+
+                Section:
+
+                - d
+                - a
+                - b
+                - c
+
+                Other section:
+
+                - <not a letter>
+                EOF,
+                $input1,
+                "\n\n",
+            ],
+            'Nested' => [
+                <<<EOF
+                - Before lists
+
+                - Without a subsequent list
+
+                - Section:
+
+                  - d
+                  - a
+                  - b
+                  - c
+
+                - Other section:
+
+                  - <not a letter>
+                EOF,
+                $input1,
+                "\n\n",
+                '-',
+            ],
+            'Default (multibyte)' => [
+                <<<EOF
+                - Before lists
+                - Standalone
+                📍 Also standalone
+                📍 Section:
+                  - list item
+                  - another
+                  - and another
+                📍 Other section:
+                  - item i
+                  - item ii
+                EOF,
+                $input2,
+                "\n",
+                '📍',
+            ],
+            'Markdown (multibyte)' => [
+                <<<EOF
+                - Before lists
+                - Standalone
+
+                📍 Also standalone
+
+                📍 Section:
+
+                  - list item
+                  - another
+                  - and another
+
+                📍 Other section:
+
+                  - item i
+                  - item ii
+                EOF,
+                $input2,
+                "\n\n",
+                '📍',
+            ],
+            'Markdown (multiline #1)' => [
+                <<<EOF
+                ### Changes
+
+                - Description
+                - Description
+                  over
+                  multiple
+
+                  ```
+                  lines
+                  ```
+                - Description
+                  with different details
+                EOF,
+                $input3,
+                "\n\n",
+            ],
+            'Markdown (multiline #2)' => [
+                <<<EOF
+                - Description
+                - Description
+                  over
+                  multiple
+
+                  ```
+                  lines
+                  ```
+                - Description
+                  with different details
+                EOF,
+                $input4,
+                "\n\n",
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider unwrapProvider
      */
     public function testUnwrap(
