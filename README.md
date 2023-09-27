@@ -30,11 +30,11 @@ You can build the API documentation locally by running the following commands in
 the top-level directory. It should appear in `docs/api` after a few seconds.
 
 ```shell
-composer -d apigen install
+composer -d tools/apigen install
 ```
 
 ```shell
-apigen/vendor/bin/apigen -c apigen/apigen.neon
+tools/apigen/vendor/bin/apigen -c tools/apigen/apigen.neon
 ```
 
 Other documentation is available [here][docs] and in the source code.

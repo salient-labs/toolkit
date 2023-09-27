@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "apigen/**"
+      - "**/apigen/**"
       - "src/**"
 
 concurrency:
@@ -43,11 +43,11 @@ jobs:
         run: composer install --no-interaction --no-progress
 
       - name: Install ApiGen and its dependencies
-        working-directory: apigen
+        working-directory: tools/apigen
         run: composer install --no-interaction --no-progress
 
       - name: Run ApiGen
-        run: apigen/vendor/bin/apigen -c apigen/apigen.neon --output .ci/docs/api --verbose
+        run: tools/apigen/vendor/bin/apigen -c tools/apigen/apigen.neon --output .ci/docs/api --verbose
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v1
