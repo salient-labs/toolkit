@@ -2,7 +2,6 @@
 
 namespace Lkrms\Tests\Utility;
 
-use Lkrms\Facade\Reflect;
 use Lkrms\Tests\Utility\Reflection\MyBaseClass;
 use Lkrms\Tests\Utility\Reflection\MyBaseInterface;
 use Lkrms\Tests\Utility\Reflection\MyBaseTrait;
@@ -14,12 +13,13 @@ use Lkrms\Tests\Utility\Reflection\MyOtherInterface;
 use Lkrms\Tests\Utility\Reflection\MyReusedTrait;
 use Lkrms\Tests\Utility\Reflection\MySubclass;
 use Lkrms\Tests\Utility\Reflection\MyTrait;
+use Lkrms\Utility\Reflect;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionProperty;
 
-final class ReflectionTest extends \Lkrms\Tests\TestCase
+final class ReflectTest extends \Lkrms\Tests\TestCase
 {
     /**
      * @dataProvider getClassesBetweenProvider

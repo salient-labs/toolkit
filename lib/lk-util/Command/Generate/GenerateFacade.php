@@ -5,10 +5,10 @@ namespace Lkrms\LkUtil\Command\Generate;
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
 use Lkrms\Concept\Facade;
-use Lkrms\Facade\Reflect;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\PhpDoc\PhpDoc;
+use Lkrms\Utility\Reflect;
 use ReflectionMethod;
 use ReflectionParameter;
 
