@@ -156,6 +156,7 @@ jobs:
           done
 
       - name: Start Mockoon CLI
+        shell: bash
         run: scripts/start-mockoon.sh tests/fixtures/.mockoon/JsonPlaceholderApi.json 3001
 
       - name: Run PHPUnit tests and generate code coverage report
