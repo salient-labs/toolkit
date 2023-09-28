@@ -24,7 +24,12 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
     /**
      * @dataProvider getClassesBetweenProvider
      *
+     * @template TParent of object
+     * @template TChild of TParent
+     *
      * @param string[] $expected
+     * @param class-string<TChild> $child
+     * @param class-string<TParent> $parent
      */
     public function testGetClassesBetween(array $expected, string $child, string $parent, bool $withParent = true)
     {

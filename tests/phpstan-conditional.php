@@ -30,7 +30,7 @@ return [
             [
                 'message' => '#^Call to an undefined method ReflectionType\:\:isBuiltin\(\)\.$#',
                 'count' => 1,
-                'path' => '../src/Utility/Reflection.php',
+                'path' => '../src/Utility/Reflect.php',
             ],
         ],
     ]

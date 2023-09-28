@@ -511,59 +511,59 @@ parameters:
 			path: src/Utility/Formatters.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:_getAllMethodDocComments\\(\\) has parameter \\$classDocComments with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Reflect\\:\\:_getAllMethodDocComments\\(\\) has parameter \\$classDocComments with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Reflection.php
+			path: src/Utility/Reflect.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:_getAllPropertyDocComments\\(\\) has parameter \\$classDocComments with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Reflect\\:\\:_getAllPropertyDocComments\\(\\) has parameter \\$classDocComments with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Utility/Reflection.php
+			path: src/Utility/Reflect.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getAllClassDocComments\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Reflect\\:\\:getAllClassDocComments\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
-			path: src/Utility/Reflection.php
+			path: src/Utility/Reflect.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getAllTraits\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Reflect\\:\\:getAllTraits\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
-			path: src/Utility/Reflection.php
+			path: src/Utility/Reflect.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getAllTraits\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Reflect\\:\\:getAllTraits\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
 			count: 1
-			path: src/Utility/Reflection.php
+			path: src/Utility/Reflect.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getBaseClass\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Reflect\\:\\:getBaseClass\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
-			path: src/Utility/Reflection.php
+			path: src/Utility/Reflect.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getBaseClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Reflect\\:\\:getBaseClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
 			count: 1
-			path: src/Utility/Reflection.php
+			path: src/Utility/Reflect.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getInterfaces\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Reflect\\:\\:getInterfaces\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
-			path: src/Utility/Reflection.php
+			path: src/Utility/Reflect.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getInterfaces\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Reflect\\:\\:getInterfaces\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
 			count: 1
-			path: src/Utility/Reflection.php
+			path: src/Utility/Reflect.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getMethodPrototypeClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Reflect\\:\\:getMethodPrototypeClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
 			count: 1
-			path: src/Utility/Reflection.php
+			path: src/Utility/Reflect.php
 
 		-
-			message: "#^Method Lkrms\\\\Utility\\\\Reflection\\:\\:getNames\\(\\) has parameter \\$reflectors with generic class ReflectionClass but does not specify its types\\: T$#"
+			message: "#^Method Lkrms\\\\Utility\\\\Reflect\\:\\:getNames\\(\\) has parameter \\$reflectors with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
-			path: src/Utility/Reflection.php
+			path: src/Utility/Reflect.php
 
 		-
 			message: "#^Class Lkrms\\\\Tests\\\\Concept\\\\Facade\\\\MyFacade extends generic class Lkrms\\\\Concept\\\\Facade but does not specify its types\\: TClass$#"
@@ -866,31 +866,31 @@ parameters:
 			path: tests/unit/Utility/ConvertTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllClassDocComments\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectTest\\:\\:testGetAllClassDocComments\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
-			path: tests/unit/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllClassDocComments\\(\\) has parameter \\$expected with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectTest\\:\\:testGetAllClassDocComments\\(\\) has parameter \\$expected with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/unit/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllMethodDocComments\\(\\) has parameter \\$expected with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectTest\\:\\:testGetAllMethodDocComments\\(\\) has parameter \\$expected with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/unit/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllMethodDocComments\\(\\) has parameter \\$expectedClassDocComments with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectTest\\:\\:testGetAllMethodDocComments\\(\\) has parameter \\$expectedClassDocComments with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/unit/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllPropertyDocComments\\(\\) has parameter \\$expected with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectTest\\:\\:testGetAllPropertyDocComments\\(\\) has parameter \\$expected with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/unit/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectTest.php
 
 		-
-			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectionTest\\:\\:testGetAllPropertyDocComments\\(\\) has parameter \\$expectedClassDocComments with no value type specified in iterable type array\\.$#"
+			message: "#^Method Lkrms\\\\Tests\\\\Utility\\\\ReflectTest\\:\\:testGetAllPropertyDocComments\\(\\) has parameter \\$expectedClassDocComments with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: tests/unit/Utility/ReflectionTest.php
+			path: tests/unit/Utility/ReflectTest.php
