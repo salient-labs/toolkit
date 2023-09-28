@@ -17,7 +17,6 @@ use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
-use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
@@ -195,7 +194,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param array<SyncOperation::*> $operations
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
-     * @param array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $overrides
+     * @param array<SyncOperation::*,Closure(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $overrides
      * @param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
      * @param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
