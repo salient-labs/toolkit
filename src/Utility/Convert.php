@@ -1096,7 +1096,7 @@ final class Convert
                             break;
                         }
                         $i++;
-                    };
+                    }
                 }
             } else {
                 $section = $line;
