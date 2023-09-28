@@ -156,18 +156,7 @@ jobs:
           done
 
       - name: Start Mockoon CLI
-        shell: bash
-        run: |
-          tools/mockoon-cli/node_modules/.bin/mockoon-cli start --port 3001 --log-transaction --data tests/fixtures/.mockoon/JsonPlaceholderApi.json &
-          i=-1
-          while :; do
-              jobs %% &>/dev/null
-              if ((++i == 60)); then
-                  echo "mockoon-cli server unresponsive after $i seconds" >&2
-                  false
-              fi
-              curl -sI http://localhost:3001 >/dev/null && echo "mockoon-cli server up after $i seconds" && break || sleep 1
-          done
+        run: scripts/start-mockoon.sh tests/fixtures/.mockoon/JsonPlaceholderApi.json 3001
 
       - name: Run PHPUnit tests and generate code coverage report
         run: vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml
