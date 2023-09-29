@@ -17,10 +17,10 @@ interface ISyncClassResolver
     public static function entityToProvider(string $entity): string;
 
     /**
-     * Get the name of the sync entity serviced by a provider interface
+     * Get the names of sync entities serviced by a provider interface
      *
      * @param class-string<ISyncProvider> $provider
-     * @return class-string<ISyncEntity>|null
+     * @return array<class-string<ISyncEntity>>
      */
-    public static function providerToEntity(string $provider): ?string;
+    public static function providerToEntity(string $provider): array;
 }
