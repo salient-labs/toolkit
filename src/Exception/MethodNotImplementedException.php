@@ -2,7 +2,7 @@
 
 namespace Lkrms\Exception;
 
-use Lkrms\Facade\Reflect;
+use Lkrms\Utility\Reflect;
 use ReflectionClass;
 
 /**

@@ -28,7 +28,6 @@ use Lkrms\Utility\Computations;
 use Lkrms\Utility\Debugging;
 use Lkrms\Utility\Filesystem;
 use Lkrms\Utility\Formatters;
-use Lkrms\Utility\Reflection;
 use Lkrms\Utility\System;
 
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
@@ -48,7 +47,6 @@ $facades = [
     EventDispatcher::class => \Lkrms\Facade\Event::class,
     Filesystem::class => \Lkrms\Facade\File::class,
     Formatters::class => \Lkrms\Facade\Format::class,
-    Reflection::class => \Lkrms\Facade\Reflect::class,
     SyncStore::class => \Lkrms\Facade\Sync::class,
     System::class => \Lkrms\Facade\Sys::class,
     TrashStore::class => \Lkrms\Facade\Trash::class,

@@ -103,7 +103,7 @@ final class SyncStore extends SqliteStore
      *
      * @var array<int,array<int,array<int|string,DeferredSyncEntity[]>>>
      */
-    private $DeferredEntities;
+    private $DeferredEntities = [];
 
     /**
      * @var SyncErrorCollection
