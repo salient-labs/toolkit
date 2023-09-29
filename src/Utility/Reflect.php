@@ -15,81 +15,51 @@ use ReflectionUnionType;
 use UnexpectedValueException;
 
 /**
- * Work with PHP's Reflector classes
+ * Work with PHP's reflection API
  */
 final class Reflect
 {
     /**
-     * Get the names of Reflector objects
+     * Get a list of names from a list of reflectors
      *
-     * @param array<\ReflectionClass|\ReflectionClassConstant|\ReflectionFunctionAbstract|\ReflectionParameter|\ReflectionProperty> $reflectors
+     * @param array<ReflectionClass<object>|\ReflectionClassConstant|\ReflectionFunctionAbstract|ReflectionParameter|ReflectionProperty> $reflectors
      * @return string[]
      */
     public static function getNames(array $reflectors): array
     {
-        return array_map(
-            /** @param \ReflectionClass|\ReflectionClassConstant|\ReflectionFunctionAbstract|\ReflectionParameter|\ReflectionProperty $reflector */
-            fn($reflector) => $reflector->getName(),
-            $reflectors
-        );
-    }
-
-    /**
-     * Get a list of classes between a child and one of its parents
-     *
-     * Returns the canonical name of `$child`, followed by the names of its
-     * parent classes up to and optionally including `$parent`.
-     *
-     * @template TParent of object
-     * @template TChild of TParent
-     * @param class-string<TChild> $child
-     * @param class-string<TParent> $parent
-     * @return class-string<TParent>[]
-     */
-    public static function getClassesBetween(
-        string $child,
-        string $parent,
-        bool $withParent = true
-    ): array {
-        if (!is_a($child, $parent, true) || interface_exists($parent)) {
-            return [];
-        }
-
-        $child = new ReflectionClass($child);
-        $parent = new ReflectionClass($parent);
-
         $names = [];
-        while ($child->isSubclassOf($parent)) {
-            $names[] = $child->getName();
-            $child = $child->getParentClass();
+        foreach ($reflectors as $reflector) {
+            $names[] = $reflector->getName();
         }
-        if ($withParent) {
-            $names[] = $parent->getName();
-        }
-
         return $names;
     }
 
     /**
      * Follow ReflectionClass->getParentClass() until an ancestor with no parent
      * is found
+     *
+     * @param ReflectionClass<object>|class-string $class
+     * @return ReflectionClass<object>
      */
-    public static function getBaseClass(ReflectionClass $class): ReflectionClass
+    public static function getBaseClass($class): ReflectionClass
     {
+        if (!($class instanceof ReflectionClass)) {
+            $class = new ReflectionClass($class);
+        }
         while ($parent = $class->getParentClass()) {
             $class = $parent;
         }
-
         return $class;
     }
 
     /**
      * If a method has a prototype, return its declaring class, otherwise return
      * the method's declaring class
+     *
+     * @return ReflectionClass<object>
      */
-    public static function getMethodPrototypeClass(
-        ReflectionMethod $method
-    ): ReflectionClass {
+    public static function getMethodPrototypeClass(ReflectionMethod $method): ReflectionClass
+    {
         try {
             return $method->getPrototype()->getDeclaringClass();
         } catch (ReflectionException $ex) {
@@ -98,54 +68,65 @@ final class Reflect
     }
 
     /**
-     * Get all types in a ReflectionType
+     * Get the simple types in a ReflectionType
      *
-     * Different versions of PHP return different `ReflectionType` objects:
+     * {@see ReflectionParameter::getType()} and
+     * {@see ReflectionProperty::getType()} can return any of the following:
      *
-     * - `ReflectionType` (became `abstract` in PHP 8)
-     * - `ReflectionNamedType` (PHP 7.1+)
-     * - `ReflectionUnionType` (PHP 8+)
-     * - `ReflectionIntersectionType` (PHP 8.1+)
+     * - {@see ReflectionType} (until PHP 8)
+     * - {@see ReflectionNamedType}
+     * - {@see ReflectionUnionType} comprised of {@see ReflectionNamedType} (PHP
+     *   8+) and {@see ReflectionIntersectionType} (PHP 8.2+)
+     * - {@see ReflectionIntersectionType} comprised of
+     *   {@see ReflectionNamedType} (PHP 8.1+)
      *
-     * {@see Reflection::getAllTypes()} normalises them to an array of
-     * `ReflectionNamedType` and/or `ReflectionType` instances.
+     * This method normalises them to an array of {@see ReflectionNamedType}.
      *
-     * @return array<ReflectionNamedType|ReflectionType>
-     * @see Reflection::getAllTypeNames()
+     * @return ReflectionNamedType[]
      */
     public static function getAllTypes(?ReflectionType $type): array
     {
-        if ($type instanceof ReflectionUnionType ||
-                $type instanceof ReflectionIntersectionType) {
-            return $type->getTypes();
+        if ($type === null) {
+            return [];
         }
 
-        return is_null($type) ? [] : [$type];
+        $types = [];
+        foreach (self::doGetAllTypes($type) as $type) {
+            $name = $type->getName();
+            if (isset($seen[$name])) {
+                continue;
+            }
+            $types[] = $type;
+            $seen[$name] = true;
+        }
+
+        return $types;
     }
 
     /**
-     * Get the names of all types in a ReflectionType
+     * Get the names of the simple types in a ReflectionType
      *
      * @return string[]
-     * @see Reflection::getAllTypes()
+     *
+     * @see Reflect::getAllTypes()
      */
     public static function getAllTypeNames(?ReflectionType $type): array
     {
-        return array_map(
-            fn(ReflectionType $t) => self::getTypeName($t),
-            self::getAllTypes($type)
-        );
-    }
+        if ($type === null) {
+            return [];
+        }
 
-    /**
-     * Get the name of a ReflectionNamedType or ReflectionType
-     */
-    private static function getTypeName(ReflectionType $type): string
-    {
-        return $type instanceof ReflectionNamedType
-            ? $type->getName()
-            // @phpstan-ignore-next-line
-            : (string) $type;
+        $names = [];
+        foreach (self::doGetAllTypes($type) as $type) {
+            $name = $type->getName();
+            if (isset($seen[$name])) {
+                continue;
+            }
+            $names[] = $name;
+            $seen[$name] = true;
+        }
+
+        return $names;
     }
 
     /**
@@ -154,20 +135,24 @@ final class Reflect
      * Returns an empty array if no doc comments are found for the class or any
      * inherited classes or interfaces.
      *
+     * @param ReflectionClass<object> $class
      * @return array<class-string,string>
      */
     public static function getAllClassDocComments(ReflectionClass $class): array
     {
         $interfaces = self::getInterfaces($class);
+
         $comments = [];
         do {
-            if (($comment = $class->getDocComment()) !== false) {
+            $comment = $class->getDocComment();
+            if ($comment !== false) {
                 $comments[$class->getName()] = Str::setEol($comment);
             }
         } while ($class = $class->getParentClass());
 
         foreach ($interfaces as $interface) {
-            if (($comment = $interface->getDocComment()) !== false) {
+            $comment = $interface->getDocComment();
+            if ($comment !== false) {
                 $comments[$interface->getName()] = Str::setEol($comment);
             }
         }
@@ -180,12 +165,12 @@ final class Reflect
      * class and any ancestors that declare the same method
      *
      * Returns an empty array if no doc comments are found in the declaring
-     * class or in any inherited classes, traits or interfaces.
+     * class or in any inherited classes, interfaces or traits.
      *
-     * @param array<class-string,string|null>|null $classDocComments If provided,
-     * `$classDocComments` is populated with one of the following for each doc
-     * comment returned:
-     * - the doc comment of the method's declaring class, or
+     * @param array<class-string,string|null>|null $classDocComments If
+     * provided, `$classDocComments` is populated with one of the following for
+     * each doc comment in the return value:
+     * - the doc comment of the declaring class, or
      * - `null` if the declaring class has no doc comment
      * @return array<class-string,string>
      */
@@ -196,67 +181,33 @@ final class Reflect
         if (func_num_args() > 1) {
             $classDocComments = [];
         }
+
         $name = $method->getName();
-        $comments = self::_getAllMethodDocComments($method, $name, $classDocComments);
+        $comments = self::doGetAllMethodDocComments($method, $name, $classDocComments);
 
         foreach (self::getInterfaces($method->getDeclaringClass()) as $interface) {
-            if ($interface->hasMethod($name) &&
-                    ($comment = $interface->getMethod($name)->getDocComment()) !== false) {
-                $class = $interface->getName();
-                $comments[$class] = Str::setEol($comment);
-                if (!is_null($classDocComments)) {
-                    $comment = $interface->getDocComment() ?: null;
-                    $classDocComments[$class] = $comment === null ? null : Str::setEol($comment);
-                }
+            if (!$interface->hasMethod($name)) {
+                continue;
             }
+            $comment = $interface->getMethod($name)->getDocComment();
+            if ($comment === false) {
+                continue;
+            }
+            $class = $interface->getName();
+            $comments[$class] = Str::setEol($comment);
+            if ($classDocComments === null) {
+                continue;
+            }
+            $comment = $interface->getDocComment();
+            $classDocComments[$class] =
+                $comment === false
+                    ? null
+                    : Str::setEol($comment);
         }
 
-        return is_null($classDocComments)
+        return $classDocComments === null
             ? Convert::stringsToUnique($comments)
             : Convert::columnsToUnique($comments, $classDocComments);
-    }
-
-    /**
-     * @return array<class-string,string>
-     */
-    private static function _getAllMethodDocComments(
-        ReflectionMethod $method,
-        string $name,
-        ?array &$classDocComments
-    ): array {
-        $comments = [];
-        do {
-            if (($comment = $method->getDocComment()) !== false) {
-                $class = $method->getDeclaringClass()->getName();
-                $comments[$class] = Str::setEol($comment);
-                if (!is_null($classDocComments)) {
-                    $comment = $method->getDeclaringClass()->getDocComment() ?: null;
-                    $classDocComments[$class] = $comment === null ? null : Str::setEol($comment);
-                }
-            }
-            // Interfaces don't have traits, so there's nothing else to do here
-            if ($method->getDeclaringClass()->isInterface()) {
-                return $comments;
-            }
-            // getTraits() doesn't return inherited traits, so recurse into them
-            foreach ($method->getDeclaringClass()->getTraits() as $trait) {
-                if ($trait->hasMethod($name)) {
-                    $comments = array_merge(
-                        $comments,
-                        self::_getAllMethodDocComments(
-                            $trait->getMethod($name),
-                            $name,
-                            $classDocComments
-                        )
-                    );
-                }
-            }
-            if (!($parent = $method->getDeclaringClass()->getParentClass()) ||
-                    !$parent->hasMethod($name)) {
-                return $comments;
-            }
-            $method = $parent->getMethod($name);
-        } while (true);
     }
 
     /**
@@ -266,10 +217,10 @@ final class Reflect
      * Returns an empty array if no doc comments are found in the declaring
      * class or in any inherited classes or traits.
      *
-     * @param array<class-string,string|null>|null $classDocComments If provided,
-     * `$classDocComments` is populated with one of the following for each doc
-     * comment returned:
-     * - the doc comment of the property's declaring class, or
+     * @param array<class-string,string|null>|null $classDocComments If
+     * provided, `$classDocComments` is populated with one of the following for
+     * each doc comment in the return value:
+     * - the doc comment of the declaring class, or
      * - `null` if the declaring class has no doc comment
      * @return array<class-string,string>
      */
@@ -280,62 +231,23 @@ final class Reflect
         if (func_num_args() > 1) {
             $classDocComments = [];
         }
-        $name = $property->getName();
-        $comments = self::_getAllPropertyDocComments($property, $name, $classDocComments);
 
-        return is_null($classDocComments)
+        $name = $property->getName();
+        $comments = self::doGetAllPropertyDocComments($property, $name, $classDocComments);
+
+        return $classDocComments === null
             ? Convert::stringsToUnique($comments)
             : Convert::columnsToUnique($comments, $classDocComments);
-    }
-
-    /**
-     * @return array<class-string,string>
-     */
-    private static function _getAllPropertyDocComments(
-        ReflectionProperty $property,
-        string $name,
-        ?array &$classDocComments
-    ): array {
-        $comments = [];
-        do {
-            if (($comment = $property->getDocComment()) !== false) {
-                $class = $property->getDeclaringClass()->getName();
-                $comments[$class] = Str::setEol($comment);
-                if (!is_null($classDocComments)) {
-                    $comment = $property->getDeclaringClass()->getDocComment() ?: null;
-                    $classDocComments[$class] = $comment === null ? null : Str::setEol($comment);
-                }
-            }
-            foreach ($property->getDeclaringClass()->getTraits() as $trait) {
-                if ($trait->hasProperty($name)) {
-                    $comments = array_merge(
-                        $comments,
-                        self::_getAllPropertyDocComments(
-                            $trait->getProperty($name),
-                            $name,
-                            $classDocComments
-                        )
-                    );
-                }
-            }
-            if (!($parent = $property->getDeclaringClass()->getParentClass()) ||
-                    !$parent->hasProperty($name)) {
-                return $comments;
-            }
-            $property = $parent->getProperty($name);
-        } while (true);
     }
 
     /**
      * Convert the given ReflectionType to a PHP type declaration
      *
      * @param ReflectionType|null $type e.g. the return value of
-     * `ReflectionParameter::getType()`.
-     * @param callable|null $typeNameCallback Applied to qualified class names
-     * if set. Must return `null` or an unqualified alias:
-     * ```php
-     * callback(string $name): ?string
-     * ```
+     * {@see ReflectionParameter::getType()}.
+     * @param (callable(string): (string|null))|null $typeNameCallback Applied
+     * to qualified class names if given. Must return `null` or an unqualified
+     * alias.
      */
     public static function getTypeDeclaration(
         ?ReflectionType $type,
@@ -343,24 +255,38 @@ final class Reflect
         ?callable $typeNameCallback = null
     ): string {
         $glue = '|';
-        if ($type instanceof ReflectionUnionType) {
-            $types = $type->getTypes();
+        if ($type === null) {
+            $types = [];
+        } elseif ($type instanceof ReflectionUnionType) {
+            $types = [];
+            foreach ($type->getTypes() as $type) {
+                if ($type instanceof ReflectionIntersectionType) {
+                    $types[] = '(' . self::getTypeDeclaration($type, $classPrefix, $typeNameCallback) . ')';
+                    continue;
+                }
+                $types[] = $type;
+            }
         } elseif ($type instanceof ReflectionIntersectionType) {
             $glue = '&';
             $types = $type->getTypes();
-        } elseif (is_null($type)) {
-            $types = [];
         } else {
             $types = [$type];
         }
         $parts = [];
-        /** @var ReflectionNamedType|ReflectionType $type */
+        /** @var array<ReflectionNamedType|string> $types */
         foreach ($types as $type) {
-            $name = self::getTypeName($type);
-            $alias = $typeNameCallback ? $typeNameCallback($name) : null;
+            if (!($type instanceof ReflectionType)) {
+                $parts[] = $type;
+                continue;
+            }
+            $name = $type->getName();
+            $alias =
+                $typeNameCallback === null
+                    ? null
+                    : $typeNameCallback($name);
             $parts[] = ($type->allowsNull() && strcasecmp($name, 'null') ? '?' : '')
-                . ($alias || $type->isBuiltin() ? '' : $classPrefix)
-                . ($alias ?: $name);
+                . ($alias === null && !$type->isBuiltin() ? $classPrefix : '')
+                . ($alias ?? $name);
         }
 
         return implode($glue, $parts);
@@ -468,8 +394,9 @@ final class Reflect
      * In other words, merge arrays returned by `ReflectionClass::getTraits()`
      * for `$class`, `$class->getParentClass()`, etc.
      *
-     * @return array<string,ReflectionClass> An array that maps trait names to
-     * `ReflectionClass` instances.
+     * @param ReflectionClass<object> $class
+     * @return array<string,ReflectionClass<object>> An array that maps trait
+     * names to `ReflectionClass` instances.
      */
     public static function getAllTraits(ReflectionClass $class): array
     {
@@ -488,11 +415,43 @@ final class Reflect
     }
 
     /**
-     * @return ReflectionClass[]
+     * @return ReflectionNamedType[]
+     */
+    private static function doGetAllTypes(ReflectionType $type): array
+    {
+        if ($type instanceof ReflectionUnionType) {
+            $types = [];
+            foreach ($type->getTypes() as $type) {
+                if ($type instanceof ReflectionIntersectionType) {
+                    array_push($types, ...$type->getTypes());
+                    continue;
+                }
+                $types[] = $type;
+            }
+            /** @var ReflectionNamedType[] $types */
+            return $types;
+        }
+
+        if ($type instanceof ReflectionIntersectionType) {
+            $types = $type->getTypes();
+
+            /** @var ReflectionNamedType[] $types */
+            return $types;
+        }
+
+        /** @var ReflectionNamedType $type */
+        return [$type];
+    }
+
+    /**
+     * @param ReflectionClass<object> $class
+     * @return array<ReflectionClass<object>>
      */
     private static function getInterfaces(ReflectionClass $class): array
     {
-        if (!($interfaces = $class->getInterfaces())) {
+        $interfaces = $class->getInterfaces();
+
+        if (!$interfaces) {
             return [];
         }
 
@@ -508,5 +467,100 @@ final class Reflect
         );
 
         return $interfaces;
+    }
+
+    /**
+     * @param array<class-string,string|null>|null $classDocComments
+     * @return array<class-string,string>
+     */
+    private static function doGetAllMethodDocComments(
+        ReflectionMethod $method,
+        string $name,
+        ?array &$classDocComments
+    ): array {
+        $comments = [];
+        do {
+            $comment = $method->getDocComment();
+            $declaring = $method->getDeclaringClass();
+            if ($comment !== false) {
+                $class = $declaring->getName();
+                $comments[$class] = Str::setEol($comment);
+                if ($classDocComments !== null) {
+                    $comment = $declaring->getDocComment();
+                    $classDocComments[$class] =
+                        $comment === false
+                            ? null
+                            : Str::setEol($comment);
+                }
+            }
+            // Interfaces don't have traits, so there's nothing else to do here
+            if ($declaring->isInterface()) {
+                return $comments;
+            }
+            // getTraits() doesn't return inherited traits, so recurse into them
+            foreach ($declaring->getTraits() as $trait) {
+                if (!$trait->hasMethod($name)) {
+                    continue;
+                }
+                $comments = array_merge(
+                    $comments,
+                    self::doGetAllMethodDocComments(
+                        $trait->getMethod($name),
+                        $name,
+                        $classDocComments
+                    )
+                );
+            }
+            $parent = $declaring->getParentClass();
+            if (!$parent || !$parent->hasMethod($name)) {
+                return $comments;
+            }
+            $method = $parent->getMethod($name);
+        } while (true);
+    }
+
+    /**
+     * @param array<class-string,string|null>|null $classDocComments
+     * @return array<class-string,string>
+     */
+    private static function doGetAllPropertyDocComments(
+        ReflectionProperty $property,
+        string $name,
+        ?array &$classDocComments
+    ): array {
+        $comments = [];
+        do {
+            $comment = $property->getDocComment();
+            $declaring = $property->getDeclaringClass();
+            if ($comment !== false) {
+                $class = $declaring->getName();
+                $comments[$class] = Str::setEol($comment);
+                if ($classDocComments !== null) {
+                    $comment = $declaring->getDocComment();
+                    $classDocComments[$class] =
+                        $comment === false
+                            ? null
+                            : Str::setEol($comment);
+                }
+            }
+            foreach ($declaring->getTraits() as $trait) {
+                if (!$trait->hasProperty($name)) {
+                    continue;
+                }
+                $comments = array_merge(
+                    $comments,
+                    self::doGetAllPropertyDocComments(
+                        $trait->getProperty($name),
+                        $name,
+                        $classDocComments
+                    )
+                );
+            }
+            $parent = $declaring->getParentClass();
+            if (!$parent || !$parent->hasProperty($name)) {
+                return $comments;
+            }
+            $property = $parent->getProperty($name);
+        } while (true);
     }
 }
