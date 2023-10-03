@@ -164,7 +164,8 @@ final class SyncEntityResolverTest extends \Lkrms\Tests\TestCase
             ]
         ], $output);
 
-        $app->stopSync()
+        $app
+            ->stopSync()
             ->unload();
 
         File::pruneDirectory($basePath);

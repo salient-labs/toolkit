@@ -37,7 +37,8 @@ final class SyncEntityResolver implements ISyncEntityResolver
     public function getByName(string $name): ?ISyncEntity
     {
         $match =
-            $this->EntityProvider
+            $this
+                ->EntityProvider
                 ->getList([$this->NameProperty => $name])
                 ->nextWithValue($this->NameProperty, $name);
         if ($match === false) {

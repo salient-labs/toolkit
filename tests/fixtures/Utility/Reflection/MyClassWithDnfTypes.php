@@ -24,12 +24,12 @@ class MyClassWithDnfTypes extends MyClass
         string|MyClass|null $nullableUnion = 'literal',
         array|MyClass $optionalArrayUnion = ['key' => 'value'],
         string|MyClass|null &$nullableUnionByRef = null,
-        string|MyClass|(Countable & ArrayAccess) $dnf = SELF::MY_CONSTANT,
-        string|MyClass|(Countable & ArrayAccess)|null $nullableDnf = 'literal',
-        array|MyClass|(Countable & ArrayAccess) $optionalArrayDnf = ['key' => 'value'],
-        string|MyClass|(Countable & ArrayAccess)|null &$nullableDnfByRef = null,
-        (MyClass & Countable)|(MyClass & ArrayAccess) &$dnfByRef = null,
-        string&...$variadicByRef
+        string|MyClass|(Countable&ArrayAccess) $dnf = SELF::MY_CONSTANT,
+        string|MyClass|(Countable&ArrayAccess)|null $nullableDnf = 'literal',
+        array|MyClass|(Countable&ArrayAccess) $optionalArrayDnf = ['key' => 'value'],
+        string|MyClass|(Countable&ArrayAccess)|null &$nullableDnfByRef = null,
+        (MyClass&Countable)|(MyClass&ArrayAccess) &$dnfByRef = null,
+        string &...$variadicByRef
     ): MyClass|string|null {
         return null;
     }

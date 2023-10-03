@@ -51,7 +51,8 @@ abstract class ConsoleTarget implements IConsoleTargetWithPrefix
         $this->Prefix =
             ($prefix ?? '') === ''
                 ? null
-                : $this->getFormatter()
+                : $this
+                    ->getFormatter()
                     ->getTagFormat(Tag::LOW_PRIORITY)
                     ->apply($prefix);
         $this->PrefixLength = strlen($this->Prefix ?: '');

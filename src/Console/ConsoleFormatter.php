@@ -464,14 +464,16 @@ final class ConsoleFormatter
         ];
 
         if ($type === Type::UNFORMATTED) {
-            return $this->getDefaultMessageFormats()
+            return $this
+                ->getDefaultMessageFormats()
                 ->get($level, $type)
                 ->apply($msg1, $msg2, '', $attributes);
         }
 
         $prefix = $this->getMessagePrefix($level, $type);
 
-        return $this->MessageFormats
+        return $this
+            ->MessageFormats
             ->get($level, $type)
             ->apply($msg1, $msg2, $prefix, $attributes);
     }
