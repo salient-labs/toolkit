@@ -150,70 +150,71 @@ final class SyncIntrospectionClass extends IntrospectionClass
             $this->SyncProviderInterfaces[] = $name;
 
             // Add the entities they service to SyncProviderEntities
-            if (!($entity = SyncIntrospector::providerToEntity($name)) ||
-                    !is_a($entity, ISyncEntity::class, true)) {
-                continue;
-            }
-            $entity = SyncIntrospector::get($entity);
-            $this->SyncProviderEntities[] = $entity->Class;
-
-            // Map unambiguous kebab-case entity basenames to qualified names in
-            // SyncProviderEntityBasenames
-            $basename = Convert::toKebabCase(Convert::classToBasename($entity->Class));
-            $this->SyncProviderEntityBasenames[$basename] =
-                array_key_exists($basename, $this->SyncProviderEntityBasenames)
-                    ? null
-                    : $entity->Class;
-
-            $fn = function (int $operation, string $method) use ($entity, $class, $namespace) {
-                // If $method has already been processed, the entity it services
-                // is ambiguous and it can't be used
-                if (array_key_exists($method, $this->SyncOperationMethods) ||
-                        array_key_exists($method, $this->SyncOperationMagicMethods)) {
-                    $this->SyncOperationMagicMethods[$method] = $this->SyncOperationMethods[$method] = null;
-
-                    return;
+            foreach (SyncIntrospector::providerToEntity($name) as $entity) {
+                if (!is_a($entity, ISyncEntity::class, true)) {
+                    continue;
                 }
-                if ($class->hasMethod($method) &&
-                        ($_method = $class->getMethod($method))->isPublic()) {
-                    if ($_method->isStatic() ||
-                            !strcasecmp(Reflect::getMethodPrototypeClass($_method)->getNamespaceName(), $namespace)) {
-                        $this->SyncOperationMethods[$method] = null;
+                $entity = SyncIntrospector::get($entity);
+                $this->SyncProviderEntities[] = $entity->Class;
+
+                // Map unambiguous kebab-case entity basenames to qualified names in
+                // SyncProviderEntityBasenames
+                $basename = Convert::toKebabCase(Convert::classToBasename($entity->Class));
+                $this->SyncProviderEntityBasenames[$basename] =
+                    array_key_exists($basename, $this->SyncProviderEntityBasenames)
+                        ? null
+                        : $entity->Class;
+
+                $fn = function (int $operation, string $method) use ($entity, $class, $namespace) {
+                    // If $method has already been processed, the entity it services
+                    // is ambiguous and it can't be used
+                    if (array_key_exists($method, $this->SyncOperationMethods) ||
+                            array_key_exists($method, $this->SyncOperationMagicMethods)) {
+                        $this->SyncOperationMagicMethods[$method] = $this->SyncOperationMethods[$method] = null;
 
                         return;
                     }
-                    $this->SyncOperationMethods[$method] = $_method->getName();
+                    if ($class->hasMethod($method) &&
+                            ($_method = $class->getMethod($method))->isPublic()) {
+                        if ($_method->isStatic() ||
+                                !strcasecmp(Reflect::getMethodPrototypeClass($_method)->getNamespaceName(), $namespace)) {
+                            $this->SyncOperationMethods[$method] = null;
 
-                    return;
+                            return;
+                        }
+                        $this->SyncOperationMethods[$method] = $_method->getName();
+
+                        return;
+                    }
+
+                    /**
+                     * @var SyncOperation::* $operation
+                     */
+                    $this->SyncOperationMagicMethods[$method] = [$operation, $entity->Class];
+                };
+
+                $noun = strtolower($entity->EntityNoun);
+                $plural = strtolower($entity->EntityPlural);
+
+                if ($plural) {
+                    $fn(SyncOperation::CREATE_LIST, 'create' . $plural);
+                    $fn(SyncOperation::READ_LIST, 'get' . $plural);
+                    $fn(SyncOperation::UPDATE_LIST, 'update' . $plural);
+                    $fn(SyncOperation::DELETE_LIST, 'delete' . $plural);
                 }
-
-                /**
-                 * @var SyncOperation::* $operation
-                 */
-                $this->SyncOperationMagicMethods[$method] = [$operation, $entity->Class];
-            };
-
-            $noun = strtolower($entity->EntityNoun);
-            $plural = strtolower($entity->EntityPlural);
-
-            if ($plural) {
-                $fn(SyncOperation::CREATE_LIST, 'create' . $plural);
-                $fn(SyncOperation::READ_LIST, 'get' . $plural);
-                $fn(SyncOperation::UPDATE_LIST, 'update' . $plural);
-                $fn(SyncOperation::DELETE_LIST, 'delete' . $plural);
+                $fn(SyncOperation::CREATE, 'create' . $noun);
+                $fn(SyncOperation::CREATE, 'create_' . $noun);
+                $fn(SyncOperation::READ, 'get' . $noun);
+                $fn(SyncOperation::READ, 'get_' . $noun);
+                $fn(SyncOperation::UPDATE, 'update' . $noun);
+                $fn(SyncOperation::UPDATE, 'update_' . $noun);
+                $fn(SyncOperation::DELETE, 'delete' . $noun);
+                $fn(SyncOperation::DELETE, 'delete_' . $noun);
+                $fn(SyncOperation::CREATE_LIST, 'createlist_' . $noun);
+                $fn(SyncOperation::READ_LIST, 'getlist_' . $noun);
+                $fn(SyncOperation::UPDATE_LIST, 'updatelist_' . $noun);
+                $fn(SyncOperation::DELETE_LIST, 'deletelist_' . $noun);
             }
-            $fn(SyncOperation::CREATE, 'create' . $noun);
-            $fn(SyncOperation::CREATE, 'create_' . $noun);
-            $fn(SyncOperation::READ, 'get' . $noun);
-            $fn(SyncOperation::READ, 'get_' . $noun);
-            $fn(SyncOperation::UPDATE, 'update' . $noun);
-            $fn(SyncOperation::UPDATE, 'update_' . $noun);
-            $fn(SyncOperation::DELETE, 'delete' . $noun);
-            $fn(SyncOperation::DELETE, 'delete_' . $noun);
-            $fn(SyncOperation::CREATE_LIST, 'createlist_' . $noun);
-            $fn(SyncOperation::READ_LIST, 'getlist_' . $noun);
-            $fn(SyncOperation::UPDATE_LIST, 'updatelist_' . $noun);
-            $fn(SyncOperation::DELETE_LIST, 'deletelist_' . $noun);
         }
         $this->SyncProviderEntityBasenames = array_filter($this->SyncProviderEntityBasenames);
         $this->SyncOperationMethods = array_filter($this->SyncOperationMethods);

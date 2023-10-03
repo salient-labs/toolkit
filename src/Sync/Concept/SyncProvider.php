@@ -157,8 +157,6 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
      */
     final public function with(string $entity, $context = null): SyncEntityProvider
     {
-        $this->Store->entityType($entity);
-
         /** @var IContainer */
         $container = $context instanceof ISyncContext
             ? $context->container()

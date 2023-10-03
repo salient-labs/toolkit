@@ -6,152 +6,167 @@ use Lkrms\Tests\Utility\Reflection\MyBaseClass;
 use Lkrms\Tests\Utility\Reflection\MyBaseInterface;
 use Lkrms\Tests\Utility\Reflection\MyBaseTrait;
 use Lkrms\Tests\Utility\Reflection\MyClass;
+use Lkrms\Tests\Utility\Reflection\MyClassWithDnfTypes;
 use Lkrms\Tests\Utility\Reflection\MyClassWithUnionsAndIntersections;
 use Lkrms\Tests\Utility\Reflection\MyInterface;
-use Lkrms\Tests\Utility\Reflection\MyOtherClass;
 use Lkrms\Tests\Utility\Reflection\MyOtherInterface;
 use Lkrms\Tests\Utility\Reflection\MyReusedTrait;
 use Lkrms\Tests\Utility\Reflection\MySubclass;
 use Lkrms\Tests\Utility\Reflection\MyTrait;
 use Lkrms\Utility\Reflect;
+use Generator;
 use ReflectionClass;
+use ReflectionClassConstant;
 use ReflectionMethod;
-use ReflectionNamedType;
+use ReflectionParameter;
 use ReflectionProperty;
 
 final class ReflectTest extends \Lkrms\Tests\TestCase
 {
-    /**
-     * @dataProvider getClassesBetweenProvider
-     *
-     * @template TParent of object
-     * @template TChild of TParent
-     *
-     * @param string[] $expected
-     * @param class-string<TChild> $child
-     * @param class-string<TParent> $parent
-     */
-    public function testGetClassesBetween(array $expected, string $child, string $parent, bool $withParent = true)
+    public function testGetNames(): void
     {
-        $this->assertSame($expected, Reflect::getClassesBetween($child, $parent, $withParent));
-    }
-
-    public static function getClassesBetweenProvider()
-    {
-        return [
-            'interface to interface' => [
-                [],
-                MyInterface::class,
-                MyBaseInterface::class,
-            ],
-            'trait to trait' => [
-                [],
-                MyTrait::class,
-                MyBaseTrait::class,
-            ],
-            'class to interface' => [
-                [],
-                MyClass::class,
-                MyInterface::class,
-            ],
-            'subclass to interface' => [
-                [],
-                MySubclass::class,
-                MyInterface::class,
-            ],
-            'unrelated classes' => [
-                [],
-                MyOtherClass::class,
-                MyClass::class,
-            ],
-            'parent to child' => [
-                [],
-                MyClass::class,
-                MySubclass::class,
-            ],
-            'same class #1' => [
-                [],
-                MyClass::class,
-                MyClass::class,
-                false,
-            ],
-            'same class #2' => [
-                [MyClass::class],
-                MyClass::class,
-                MyClass::class,
-            ],
-            'child to parent #1' => [
-                [MySubclass::class],
-                MySubclass::class,
-                MyClass::class,
-                false,
-            ],
-            'child to parent #2' => [
-                [MySubclass::class, MyClass::class],
-                MySubclass::class,
-                MyClass::class,
-            ],
-            'child to grandparent #1' => [
-                [MySubclass::class, MyClass::class],
-                MySubclass::class,
-                MyBaseClass::class,
-                false,
-            ],
-            'child to grandparent #2' => [
-                [MySubclass::class, MyClass::class, MyBaseClass::class],
-                MySubclass::class,
-                MyBaseClass::class,
-            ],
+        $expected = [
+            'Lkrms\Tests\Utility\Reflection\MyClass',
+            'Lkrms\Tests\Utility\Reflection\MyInterface',
+            'Lkrms\Tests\Utility\Reflection\MyTrait',
+            'MY_CONSTANT',
+            'MyDocumentedMethod',
+            'parent',
+            'MyDocumentedProperty',
         ];
+
+        $names = Reflect::getNames([
+            new ReflectionClass(MyClass::class),
+            new ReflectionClass(MyInterface::class),
+            new ReflectionClass(MyTrait::class),
+            new ReflectionClassConstant(MyClass::class, 'MY_CONSTANT'),
+            new ReflectionMethod(MyClass::class, 'MyDocumentedMethod'),
+            new ReflectionParameter([MyClass::class, '__construct'], 'parent'),
+            new ReflectionProperty(MyClass::class, 'MyDocumentedProperty'),
+        ]);
+
+        $this->assertSame($expected, $names);
     }
 
-    public function testGetAllTypes()
+    /**
+     * @dataProvider getAllTypesProvider
+     *
+     * @param array<string[]> $expected
+     */
+    public function testGetAllTypes(array $expected, string $class, string $method): void
     {
-        $method = (new ReflectionClass(MyClass::class))->getConstructor();
-        $types = [];
+        $method = new ReflectionMethod($class, $method);
+        $allTypes = [];
         foreach ($method->getParameters() as $param) {
-            $types[] = array_map(
-                function ($type): string {
-                    /** @var ReflectionNamedType $type */
-                    return $type->getName();
-                },
-                Reflect::getAllTypes($param->getType())
-            );
+            $types = [];
+            foreach (Reflect::getAllTypes($param->getType()) as $type) {
+                $types[] = $type->getName();
+            }
+            $allTypes[] = $types;
         }
-        $this->assertSame([
-            [],
-            ['int'],
-            ['string'],
-            ['Lkrms\Tests\Utility\Reflection\MyClass'],
-            ['Lkrms\Tests\Utility\Reflection\MyClass'],
-        ], $types);
+        $this->assertSame($expected, $allTypes);
     }
 
-    public function testGetAllTypeNames()
+    /**
+     * @dataProvider getAllTypesProvider
+     *
+     * @param array<string[]> $expected
+     */
+    public function testGetAllTypeNames(array $expected, string $class, string $method): void
     {
-        $method = (new ReflectionClass(MyClass::class))->getConstructor();
-        $names = [];
+        $method = new ReflectionMethod($class, $method);
+        $allTypes = [];
         foreach ($method->getParameters() as $param) {
-            $names[] = Reflect::getAllTypeNames($param->getType());
+            $allTypes[] = Reflect::getAllTypeNames($param->getType());
         }
-        $this->assertSame([
-            [],
-            ['int'],
-            ['string'],
-            ['Lkrms\Tests\Utility\Reflection\MyClass'],
-            ['Lkrms\Tests\Utility\Reflection\MyClass'],
-        ], $names);
+        $this->assertSame($expected, $allTypes);
+    }
+
+    /**
+     * @return Generator<string,array{array<string[]>,string,string}>
+     */
+    public static function getAllTypesProvider(): Generator
+    {
+        yield 'MyClass::__construct()' => [
+            [
+                [],
+                ['int'],
+                ['string'],
+                ['Lkrms\Tests\Utility\Reflection\MyClass'],
+                ['Lkrms\Tests\Utility\Reflection\MyClass'],
+            ],
+            MyClass::class,
+            '__construct',
+        ];
+
+        if (PHP_VERSION_ID >= 80100) {
+            yield 'MyClassWithUnionsAndIntersections::MyMethod()' => [
+                [
+                    [],
+                    ['int'],
+                    ['string'],
+                    ['Countable', 'ArrayAccess'],
+                    ['Lkrms\Tests\Utility\Reflection\MyBaseClass'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
+                    ['string'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string', 'null'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'array'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string', 'null'],
+                    ['string'],
+                ],
+                MyClassWithUnionsAndIntersections::class,
+                'MyMethod',
+            ];
+        }
+
+        if (PHP_VERSION_ID >= 80200) {
+            yield 'MyClassWithDnfTypes::MyMethod()' => [
+                [
+                    [],
+                    ['int'],
+                    ['string'],
+                    ['Countable', 'ArrayAccess'],
+                    ['Lkrms\Tests\Utility\Reflection\MyBaseClass'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
+                    ['string'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string', 'null'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'array'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string', 'null'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'Countable', 'ArrayAccess', 'string'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'Countable', 'ArrayAccess', 'array'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
+                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'Countable', 'ArrayAccess', 'null'],
+                    ['string'],
+                ],
+                MyClassWithDnfTypes::class,
+                'MyMethod',
+            ];
+        }
     }
 
     /**
      * @dataProvider getAllClassDocCommentsProvider
+     *
+     * @param ReflectionClass<object> $class
+     * @param array<string,string> $expected
      */
-    public function testGetAllClassDocComments(ReflectionClass $class, array $expected)
+    public function testGetAllClassDocComments(ReflectionClass $class, array $expected): void
     {
-        $this->assertSame($expected, Reflect::getAllClassDocComments($class));
+        $comments = Reflect::getAllClassDocComments($class);
+        $this->assertSame($expected, $comments);
     }
 
-    public static function getAllClassDocCommentsProvider()
+    /**
+     * @return array<string,array{ReflectionClass<object>,array<string,string>}>
+     */
+    public static function getAllClassDocCommentsProvider(): array
     {
         return [
             MySubclass::class => [
@@ -170,23 +185,30 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
 
     /**
      * @dataProvider getAllMethodDocCommentsProvider
+     *
+     * @param array<string,string> $expected
+     * @param array<string,string>|null $expectedClassDocComments
      */
     public function testGetAllMethodDocComments(
         ReflectionMethod $method,
         array $expected,
         ?array $expectedClassDocComments = null
-    ) {
-        if (is_null($expectedClassDocComments)) {
-            $this->assertSame($expected, Reflect::getAllMethodDocComments($method));
-
+    ): void {
+        if ($expectedClassDocComments === null) {
+            $comments = Reflect::getAllMethodDocComments($method);
+            $this->assertSame($expected, $comments);
             return;
         }
 
-        $this->assertSame($expected, Reflect::getAllMethodDocComments($method, $classDocComments));
+        $comments = Reflect::getAllMethodDocComments($method, $classDocComments);
+        $this->assertSame($expected, $comments);
         $this->assertSame($expectedClassDocComments, $classDocComments);
     }
 
-    public static function getAllMethodDocCommentsProvider()
+    /**
+     * @return array<string,array{0:ReflectionMethod,1:array<string,string>,2?:array<string,string>}>
+     */
+    public static function getAllMethodDocCommentsProvider(): array
     {
         $expected = [
             MySubclass::class => "/**\n     * MySubclass::MyDocumentedMethod() PHPDoc\n     */",
@@ -202,11 +224,11 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
 
         return [
             MySubclass::class . '::MyDocumentedMethod()' => [
-                (new ReflectionClass(MySubclass::class))->getMethod('MyDocumentedMethod'),
+                new ReflectionMethod(MySubclass::class, 'MyDocumentedMethod'),
                 $expected,
             ],
             MySubclass::class . '::MyDocumentedMethod() + classDocComments' => [
-                (new ReflectionClass(MySubclass::class))->getMethod('MyDocumentedMethod'),
+                new ReflectionMethod(MySubclass::class, 'MyDocumentedMethod'),
                 $expected,
                 [
                     MySubclass::class => "/**\n * MySubclass\n */",
@@ -225,23 +247,30 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
 
     /**
      * @dataProvider getAllPropertyDocCommentsProvider
+     *
+     * @param array<string,string> $expected
+     * @param array<string,string>|null $expectedClassDocComments
      */
     public function testGetAllPropertyDocComments(
         ReflectionProperty $property,
         array $expected,
         ?array $expectedClassDocComments = null
-    ) {
-        if (is_null($expectedClassDocComments)) {
-            $this->assertSame($expected, Reflect::getAllPropertyDocComments($property));
-
+    ): void {
+        if ($expectedClassDocComments === null) {
+            $comments = Reflect::getAllPropertyDocComments($property);
+            $this->assertSame($expected, $comments);
             return;
         }
 
-        $this->assertSame($expected, Reflect::getAllPropertyDocComments($property, $classDocComments));
+        $comments = Reflect::getAllPropertyDocComments($property, $classDocComments);
+        $this->assertSame($expected, $comments);
         $this->assertSame($expectedClassDocComments, $classDocComments);
     }
 
-    public static function getAllPropertyDocCommentsProvider()
+    /**
+     * @return array<string,array{0:ReflectionProperty,1:array<string,string>,2?:array<string,string>}>
+     */
+    public static function getAllPropertyDocCommentsProvider(): array
     {
         $expected = [
             MySubclass::class => "/**\n     * MySubclass::\$MyDocumentedProperty PHPDoc\n     */",
@@ -254,11 +283,11 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
 
         return [
             MySubclass::class . '::$MyDocumentedProperty' => [
-                (new ReflectionClass(MySubclass::class))->getProperty('MyDocumentedProperty'),
+                new ReflectionProperty(MySubclass::class, 'MyDocumentedProperty'),
                 $expected,
             ],
             MySubclass::class . '::$MyDocumentedProperty + classDocComments' => [
-                (new ReflectionClass(MySubclass::class))->getProperty('MyDocumentedProperty'),
+                new ReflectionProperty(MySubclass::class, 'MyDocumentedProperty'),
                 $expected,
                 [
                     MySubclass::class => "/**\n * MySubclass\n */",
@@ -273,66 +302,178 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
     }
 
     /**
-     * @requires PHP >= 8.1
+     * @dataProvider getTypeDeclarationProvider
+     *
+     * @param string[] $expected
      */
-    public function testGetTypeDeclaration()
+    public function testGetTypeDeclaration(array $expected, string $class, string $method): void
     {
-        $method = (new ReflectionClass(MyClassWithUnionsAndIntersections::class))->getMethod('MyMethod');
+        $method = new ReflectionMethod($class, $method);
         $types = [];
         foreach ($method->getParameters() as $param) {
             $types[] = Reflect::getTypeDeclaration(
                 $param->getType(),
                 '\\',
-                fn($name) => $name == MyClass::class ? 'MyClass' : null,
+                fn($name) => $name === MyClass::class ? 'MyClass' : null,
             );
         }
-        $this->assertSame([
-            '',
-            '?int',
-            'string',
-            '\Countable&\ArrayAccess',
-            '\Lkrms\Tests\Utility\Reflection\MyBaseClass',
-            '?MyClass',
-            '?MyClass',
-            '?MyClass',
-            'string',
-            'MyClass|string',
-            'MyClass|string|null',
-            'MyClass|array',
-            'MyClass|string|null',
-            'string',
-        ], $types);
+        $this->assertSame($expected, $types);
     }
 
     /**
-     * @requires PHP >= 8.1
+     * @return Generator<string,array{string[],string,string}>
      */
-    public function testGetParameterDeclaration()
+    public static function getTypeDeclarationProvider(): Generator
     {
-        $method = (new ReflectionClass(MyClassWithUnionsAndIntersections::class))->getMethod('MyMethod');
+        yield 'MyClass::__construct()' => [
+            [
+                '',
+                '?int',
+                'string',
+                '?MyClass',
+                '?MyClass',
+            ],
+            MyClass::class,
+            '__construct',
+        ];
+
+        if (PHP_VERSION_ID >= 80100) {
+            yield 'MyClassWithUnionsAndIntersections::MyMethod()' => [
+                [
+                    '',
+                    '?int',
+                    'string',
+                    '\Countable&\ArrayAccess',
+                    '\Lkrms\Tests\Utility\Reflection\MyBaseClass',
+                    '?MyClass',
+                    '?MyClass',
+                    '?MyClass',
+                    'string',
+                    'MyClass|string',
+                    'MyClass|string|null',
+                    'MyClass|array',
+                    'MyClass|string|null',
+                    'string',
+                ],
+                MyClassWithUnionsAndIntersections::class,
+                'MyMethod',
+            ];
+        }
+
+        if (PHP_VERSION_ID >= 80200) {
+            yield 'MyClassWithDnfTypes::MyMethod()' => [
+                [
+                    '',
+                    '?int',
+                    'string',
+                    '\Countable&\ArrayAccess',
+                    '\Lkrms\Tests\Utility\Reflection\MyBaseClass',
+                    '?MyClass',
+                    '?MyClass',
+                    '?MyClass',
+                    'string',
+                    'MyClass|string',
+                    'MyClass|string|null',
+                    'MyClass|array',
+                    'MyClass|string|null',
+                    'MyClass|(\Countable&\ArrayAccess)|string',
+                    'MyClass|(\Countable&\ArrayAccess)|string|null',
+                    'MyClass|(\Countable&\ArrayAccess)|array',
+                    'MyClass|(\Countable&\ArrayAccess)|string|null',
+                    '(MyClass&\Countable)|(MyClass&\ArrayAccess)|null',
+                    'string',
+                ],
+                MyClassWithDnfTypes::class,
+                'MyMethod',
+            ];
+        }
+    }
+
+    /**
+     * @dataProvider getParameterDeclarationProvider
+     *
+     * @param string[] $expected
+     */
+    public function testGetParameterDeclaration(array $expected, string $class, string $method): void
+    {
+        $method = new ReflectionMethod($class, $method);
         $params = [];
         foreach ($method->getParameters() as $param) {
             $params[] = Reflect::getParameterDeclaration(
                 $param,
                 '',
-                fn($name) => $name == MyClass::class ? 'MyClass' : null,
+                fn($name) => $name === MyClass::class ? 'MyClass' : null,
             );
         }
-        $this->assertSame([
-            '$mixed',
-            '?int $nullableInt',
-            'string $string',
-            'Countable&ArrayAccess $intersection',
-            'Lkrms\Tests\Utility\Reflection\MyBaseClass $class',
-            '?MyClass $nullableClass',
-            '?MyClass &$nullableClassByRef',
-            '?MyClass $nullableAndOptionalClass = null',
-            'string $optionalString = MyClass::MY_CONSTANT',
-            'MyClass|string $union = SELF::MY_CONSTANT',
-            "MyClass|string|null \$nullableUnion = 'literal'",
-            "MyClass|array \$optionalArrayUnion = ['key'=>'value']",
-            'MyClass|string|null &$nullableUnionByRef = null',
-            'string &...$variadicByRef',
-        ], $params);
+        $this->assertSame($expected, $params);
+    }
+
+    /**
+     * @return Generator<string,array{string[],string,string}>
+     */
+    public static function getParameterDeclarationProvider(): Generator
+    {
+        yield 'MyClass::__construct()' => [
+            [
+                '$id',
+                '?int $altId',
+                'string $name',
+                '?MyClass $parent',
+                '?MyClass $altParent = null',
+            ],
+            MyClass::class,
+            '__construct',
+        ];
+
+        if (PHP_VERSION_ID >= 80100) {
+            yield 'MyClassWithUnionsAndIntersections::MyMethod()' => [
+                [
+                    '$mixed',
+                    '?int $nullableInt',
+                    'string $string',
+                    'Countable&ArrayAccess $intersection',
+                    'Lkrms\Tests\Utility\Reflection\MyBaseClass $class',
+                    '?MyClass $nullableClass',
+                    '?MyClass &$nullableClassByRef',
+                    '?MyClass $nullableAndOptionalClass = null',
+                    'string $optionalString = MyClass::MY_CONSTANT',
+                    'MyClass|string $union = SELF::MY_CONSTANT',
+                    "MyClass|string|null \$nullableUnion = 'literal'",
+                    "MyClass|array \$optionalArrayUnion = ['key'=>'value']",
+                    'MyClass|string|null &$nullableUnionByRef = null',
+                    'string &...$variadicByRef',
+                ],
+                MyClassWithUnionsAndIntersections::class,
+                'MyMethod',
+            ];
+        }
+
+        if (PHP_VERSION_ID >= 80200) {
+            yield 'MyClassWithDnfTypes::MyMethod()' => [
+                [
+                    '$mixed',
+                    '?int $nullableInt',
+                    'string $string',
+                    'Countable&ArrayAccess $intersection',
+                    'Lkrms\Tests\Utility\Reflection\MyBaseClass $class',
+                    '?MyClass $nullableClass',
+                    '?MyClass &$nullableClassByRef',
+                    '?MyClass $nullableAndOptionalClass = null',
+                    'string $optionalString = MyClass::MY_CONSTANT',
+                    'MyClass|string $union = SELF::MY_CONSTANT',
+                    "MyClass|string|null \$nullableUnion = 'literal'",
+                    "MyClass|array \$optionalArrayUnion = ['key'=>'value']",
+                    'MyClass|string|null &$nullableUnionByRef = null',
+                    'MyClass|(Countable&ArrayAccess)|string $dnf = SELF::MY_CONSTANT',
+                    "MyClass|(Countable&ArrayAccess)|string|null \$nullableDnf = 'literal'",
+                    "MyClass|(Countable&ArrayAccess)|array \$optionalArrayDnf = ['key'=>'value']",
+                    'MyClass|(Countable&ArrayAccess)|string|null &$nullableDnfByRef = null',
+                    '(MyClass&Countable)|(MyClass&ArrayAccess)|null &$dnfByRef = null',
+                    'string &...$variadicByRef',
+                ],
+                MyClassWithDnfTypes::class,
+                'MyMethod',
+            ];
+        }
     }
 }

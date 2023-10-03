@@ -23,20 +23,22 @@ class SyncClassResolver implements ISyncClassResolver
         );
     }
 
-    public static function providerToEntity(string $provider): ?string
+    public static function providerToEntity(string $provider): array
     {
-        return preg_replace(
-            [
-                '/(?<=\\\\)Contract(?=\\\\)/i',
-                '/(?<=\\\\)Provides([^\\\\]+)$/',
-                '/^\\\\+/',
-            ],
-            [
-                'Entity',
-                '$1',
-                '',
-            ],
-            "\\$provider"
-        );
+        return [
+            preg_replace(
+                [
+                    '/(?<=\\\\)Contract(?=\\\\)/i',
+                    '/(?<=\\\\)Provides([^\\\\]+)$/',
+                    '/^\\\\+/',
+                ],
+                [
+                    'Entity',
+                    '$1',
+                    '',
+                ],
+                "\\$provider"
+            ),
+        ];
     }
 }

@@ -32,12 +32,12 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Reflect;
 use Lkrms\Utility\Test;
 use Closure;
 use DateTimeInterface;
 use Generator;
 use LogicException;
+use ReflectionClass;
 use RuntimeException;
 use UnexpectedValueException;
 
@@ -190,10 +190,12 @@ abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
      */
     protected static function getRemovablePrefixes(): ?array
     {
-        return array_map(
-            fn(string $name): string => Convert::classToBasename($name),
-            Reflect::getClassesBetween(static::class, self::class, false)
-        );
+        $current = new ReflectionClass(static::class);
+        while ($current->isSubclassOf(self::class)) {
+            $prefixes[] = Convert::classToBasename($current->getName());
+            $current = $current->getParentClass();
+        }
+        return $prefixes ?? [];
     }
 
     // ---

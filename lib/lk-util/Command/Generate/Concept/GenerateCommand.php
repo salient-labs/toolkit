@@ -551,6 +551,11 @@ abstract class GenerateCommand extends Command
             ? implode(PHP_EOL, $lines) . PHP_EOL
             : rtrim($lines) . PHP_EOL;
 
+        $empty = PHP_EOL . '{' . PHP_EOL . '}' . PHP_EOL;
+        if (substr($output, -strlen($empty)) === $empty) {
+            $output = substr($output, 0, -strlen($empty)) . ' {}' . PHP_EOL;
+        }
+
         $verb = 'Creating';
 
         if ($this->ToStdout) {
@@ -573,13 +578,7 @@ abstract class GenerateCommand extends Command
                     Console::log('Nothing to do:', $file);
                     return;
                 }
-                if ($this->Check) {
-                    Console::info('Would replace', $file);
-                    Console::count(Level::ERROR);
-                    $this->setExitStatus(1);
-                    return;
-                }
-                if (!$this->ReplaceIfExists) {
+                if ($this->Check || !$this->ReplaceIfExists) {
                     $basePath = Composer::getRootPackagePath();
                     $relative = File::realpath($file);
                     if (strpos($relative, $basePath) === 0) {
@@ -589,7 +588,13 @@ abstract class GenerateCommand extends Command
                         'fromFile' => "a/$relative",
                         'toFile' => "b/$relative",
                     ])))->diff($input, $output);
-                    Console::info('Out of date:', $file);
+                    if (!$this->Check) {
+                        Console::info('Out of date:', $file);
+                        return;
+                    }
+                    Console::info('Would replace', $file);
+                    Console::count(Level::ERROR);
+                    $this->setExitStatus(1);
                     return;
                 }
                 $verb = 'Replacing';

@@ -37,12 +37,12 @@ final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase
     public function testProviderToEntity()
     {
         $this->assertEquals(
-            User::class,
+            [User::class],
             SyncIntrospector::providerToEntity(UserProvider::class)
         );
 
         $this->assertEquals(
-            'Component\Sync\Entity\People\Contact',
+            ['Component\Sync\Entity\People\Contact'],
             SyncIntrospector::providerToEntity(
                 // @phpstan-ignore-next-line
                 'Component\Sync\Contract\People\ProvidesContact',
