@@ -5,12 +5,12 @@ namespace Lkrms\Contract;
 use Lkrms\Utility\Env;
 
 /**
- * Returns the Env facade's underlying Environment instance
+ * Returns a shared instance of Lkrms\Utility\Env
  */
 interface ReturnsEnvironment
 {
     /**
-     * Get the Env facade's underlying Environment instance
+     * Get a shared instance of Lkrms\Utility\Env
      */
     public function env(): Env;
 }

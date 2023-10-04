@@ -6,15 +6,15 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 
 /**
- * Can be serviced by a provider
+ * Serviced by a provider
  *
  * @template TProvider of IProvider
- * @template TProviderContext of IProviderContext
+ * @template TContext of IProviderContext
  *
  * @extends ReceivesProvider<TProvider>
- * @extends ReceivesProviderContext<TProviderContext>
+ * @extends ReceivesProviderContext<TContext>
  * @extends ReturnsProvider<TProvider>
- * @extends ReturnsProviderContext<TProviderContext>
+ * @extends ReturnsProviderContext<TContext>
  */
 interface IProvidable extends
     ReceivesProvider,
@@ -29,7 +29,7 @@ interface IProvidable extends
      *
      * @param mixed[] $data
      * @param TProvider $provider
-     * @param TProviderContext|null $context
+     * @param TContext|null $context
      * @return static
      */
     public static function provide(
@@ -44,7 +44,7 @@ interface IProvidable extends
      * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
      * @param ArrayKeyConformity::* $conformity
-     * @param TProviderContext|null $context
+     * @param TContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */
     public static function provideList(

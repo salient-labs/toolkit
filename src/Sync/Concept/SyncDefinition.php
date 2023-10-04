@@ -155,15 +155,13 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
 
     /**
      * @internal
-     * @var SyncIntrospector<TEntity,SyncIntrospectionClass<TEntity>>
-     * @todo Remove ",SyncIntrospectionClass" when template defaults are working
+     * @var SyncIntrospector<TEntity>
      */
     protected $EntityIntrospector;
 
     /**
      * @internal
-     * @var SyncIntrospector<TProvider,SyncIntrospectionClass<TProvider>>
-     * @todo Remove ",SyncIntrospectionClass" when template defaults are working
+     * @var SyncIntrospector<TProvider>
      */
     protected $ProviderIntrospector;
 

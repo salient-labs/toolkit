@@ -20,7 +20,7 @@ final class DeferredSyncEntityTest extends \Lkrms\Tests\TestCase
          * @var DeferredSyncEntity[]
          */
         $list = null;
-        DeferredSyncEntity::deferList($provider, new SyncContext($container, $provider), Post::class, [1, 2, 3], $list);
+        DeferredSyncEntity::deferList($provider, $provider->getContext(), Post::class, [1, 2, 3], $list);
 
         $this->assertIsArray($list);
         $this->assertCount(3, $list);

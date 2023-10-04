@@ -2,6 +2,7 @@
 
 namespace Lkrms\Sync\Concept;
 
+use Lkrms\Concept\Entity;
 use Lkrms\Concern\HasNormaliser;
 use Lkrms\Concern\RequiresContainer;
 use Lkrms\Concern\TConstructible;
@@ -64,7 +65,7 @@ use UnexpectedValueException;
  * {@see SyncEntity::buildSerializeRules()} to provide serialization rules for
  * nested entities.
  */
-abstract class SyncEntity implements ISyncEntity, ReturnsNormaliser
+abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormaliser
 {
     /**
      * @use TProvidable<ISyncProvider,ISyncContext>

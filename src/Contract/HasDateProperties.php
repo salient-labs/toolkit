@@ -3,13 +3,17 @@
 namespace Lkrms\Contract;
 
 /**
- * Uses a DateFormatter to serialize and deserialize accessible properties
+ * Has properties that store date and time values
+ *
+ * The properties need not be declared if the class uses property overloading.
  */
 interface HasDateProperties
 {
     /**
-     * Get a list of date properties, or ["*"] to convert all accessible
-     * properties to and from DateTimeImmutable objects
+     * Get properties that store date and time values, or ["*"] to detect date
+     * and time values automatically
+     *
+     * Properties should accept values of type {@see \DateTimeInterface}`|null`.
      *
      * @return string[]
      */

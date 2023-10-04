@@ -4,7 +4,6 @@ namespace Lkrms\Concept;
 
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
-use Lkrms\Contract\IProviderContext;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\ProviderContext;
@@ -12,6 +11,8 @@ use Lkrms\Utility\Env;
 
 /**
  * Base class for providers
+ *
+ * @implements IProvider<ProviderContext>
  */
 abstract class Provider implements IProvider
 {
@@ -50,15 +51,13 @@ abstract class Provider implements IProvider
     /**
      * @inheritDoc
      */
-    public function getContext(?IContainer $container = null): IProviderContext
+    public function getContext(?IContainer $container = null): ProviderContext
     {
         if (!$container) {
             $container = $this->App;
         }
 
-        return $container
-            ->bindIf(IProviderContext::class, ProviderContext::class)
-            ->get(IProviderContext::class, [$this]);
+        return $container->get(ProviderContext::class, [$this]);
     }
 
     /**

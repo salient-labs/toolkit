@@ -12,7 +12,7 @@ use Lkrms\Utility\Reflect;
 use ReflectionClass;
 
 /**
- * Internal use only
+ * Cacheable class data shared between SyncIntrospectors
  *
  * @template TClass of object
  * @extends IntrospectionClass<TClass>
