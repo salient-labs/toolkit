@@ -12,8 +12,23 @@ function die() {
 # run <command> [<argument>...]
 function run() {
     printf '==> running:%s\n' "$(printf ' %q' "$@")" >&2
-    "$@"
+    local s=0
+    "$@" || s=$?
     printf '\n' >&2
+    return "$s"
+}
+
+function run_with_php_versions() {
+    local php versions=()
+    while [[ $1 == [78][0-9] ]]; do
+        if type -P "php$1" >/dev/null; then
+            versions[${#versions[@]}]=php$1
+        fi
+        shift
+    done
+    for php in "${versions[@]-php}"; do
+        run "$php" "$@" || return
+    done
 }
 
 [[ ${BASH_SOURCE[0]} -ef scripts/test.sh ]] ||
@@ -21,7 +36,8 @@ function run() {
 
 run scripts/generate.php --check
 run vendor/bin/pretty-php --diff
+run_with_php_versions 82 74 vendor/bin/phpstan
 run scripts/stop-mockoon.sh || (($? == 1)) || die 'error stopping mockoon'
 run scripts/start-mockoon.sh tests/fixtures/.mockoon/JsonPlaceholderApi.json 3001 >/dev/null
 trap 'run scripts/stop-mockoon.sh' EXIT
-run vendor/bin/phpunit
+run_with_php_versions 82 81 80 74 vendor/bin/phpunit
