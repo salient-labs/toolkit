@@ -62,7 +62,6 @@ abstract class AbstractSyncCommand extends CliCommand
                 continue;
             }
             $providerKey = Convert::toKebabCase(Convert::classToBasename($provider, 'SyncProvider', 'Provider'));
-            /** @var SyncIntrospector<ISyncProvider,SyncIntrospectionClass<ISyncProvider>> */
             $introspector = SyncIntrospector::get($provider);
             foreach ($introspector->getSyncProviderEntityBasenames() as $entityKey => $entity) {
                 $entityProviders[$providerKey] = $provider;

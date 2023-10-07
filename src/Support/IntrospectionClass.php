@@ -21,7 +21,7 @@ use ReflectionNamedType;
 use ReflectionProperty;
 
 /**
- * Internal use only
+ * Cacheable class data shared between Introspectors
  *
  * @template TClass of object
  */
@@ -557,26 +557,45 @@ class IntrospectionClass
         if ($this->HasDates) {
             /** @var string[] */
             $dates = $class->getMethod('getDateProperties')->invoke(null);
+
+            $nativeDates = [];
+            foreach ($properties as $property) {
+                if (!$property->hasType()) {
+                    continue;
+                }
+                foreach (Reflect::getAllTypeNames($property->getType()) as $type) {
+                    if (is_a($type, DateTimeInterface::class, true)) {
+                        $nativeDates[] = $property->getName();
+                        continue 2;
+                    }
+                }
+            }
+
             $this->DateKeys =
                 ['*'] === $dates
-                    ? $this->NormalisedKeys
+                    ? ($nativeDates
+                        ? $this->maybeNormalise($nativeDates, NormaliserFlag::LAZY)
+                        : $this->NormalisedKeys)
                     : array_intersect(
                         $this->NormalisedKeys,
-                        $this->maybeNormalise($dates, NormaliserFlag::LAZY)
+                        $this->maybeNormalise(array_merge($dates, $nativeDates), NormaliserFlag::LAZY),
                     );
         }
     }
 
     /**
-     * Normalise a property name if the class has a normaliser, otherwise return
-     * it as-is
+     * Normalise strings if the class has a normaliser, otherwise return them
+     * as-is
      *
      * @template T of string[]|string
+     *
      * @param T $value
      * @param int-mask-of<NormaliserFlag::*> $flags
+     *
      * @return T
-     * @see \Lkrms\Contract\IResolvable::normaliser()
+     *
      * @see \Lkrms\Contract\IResolvable::normalise()
+     * @see \Lkrms\Contract\ReturnsNormaliser::normaliser()
      */
     final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
     {
@@ -627,9 +646,10 @@ class IntrospectionClass
     }
 
     /**
-     * Return true if an action can be performed on a property
+     * True if an action can be performed on a property
      *
-     * @param $property The normalised property name to check
+     * @param string $property The normalised property name to check
+     * @param IntrospectionClass::ACTION_* $action
      */
     final public function propertyActionIsAllowed(string $property, string $action): bool
     {

@@ -2,8 +2,10 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Concern\TIntrospector;
+use Lkrms\Concept\Entity;
+use Lkrms\Concept\Provider;
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IExtensible;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
@@ -20,11 +22,7 @@ use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * Use reflection to generate closures that perform operations on a class
- *
- * {@see Introspector} returns values from its underlying
- * {@see IntrospectionClass} instance for any properties declared by
- * `IntrospectionClass` and not declared by `Introspector`.
+ * Generates closures that perform operations on a class
  *
  * @property-read class-string<TClass> $Class The name of the class under introspection
  * @property-read bool $IsReadable True if the class implements IReadable
@@ -53,15 +51,132 @@ use UnexpectedValueException;
  * @property-read array<string,class-string<IRelatable>> $OneToManyRelationships One-to-many relationships between the class and others (normalised property name => target class)
  * @property-read string[] $DateKeys Normalised date properties (declared and "magic" property names)
  *
+ * @method string[] getReadableProperties() Get readable properties, including "magic" properties
+ * @method string[] getWritableProperties() Get writable properties, including "magic" properties
+ * @method bool propertyActionIsAllowed(string $property, IntrospectionClass::ACTION_* $action) True if an action can be performed on a property
+ *
  * @template TClass of object
- * @template TIntrospectionClass of IntrospectionClass
+ * @template TProvider of IProvider
+ * @template TEntity of IProvidable
+ * @template TContext of IProviderContext
  */
 class Introspector
 {
     /**
-     * @use TIntrospector<TClass,TIntrospectionClass>
+     * @var IntrospectionClass<TClass>
      */
-    use TIntrospector;
+    protected $_Class;
+
+    /**
+     * @var class-string|null
+     */
+    protected $_Service;
+
+    /**
+     * @var class-string<TProvider>
+     */
+    protected $_Provider;
+
+    /**
+     * @var class-string<TEntity>
+     */
+    protected $_Entity;
+
+    /**
+     * @var class-string<TContext>
+     */
+    protected $_Context;
+
+    /**
+     * @var array<class-string,IntrospectionClass<object>>
+     */
+    private static $_IntrospectionClasses = [];
+
+    /**
+     * Get an introspector for a service
+     *
+     * Uses `$container` to resolve `$service` to the name of a concrete class
+     * and returns an {@see Introspector} for it.
+     *
+     * @template T of object
+     *
+     * @param class-string<T> $service
+     *
+     * @return static<T,Provider,Entity,ProviderContext>
+     */
+    public static function getService(IContainer $container, string $service)
+    {
+        return new static(
+            $service,
+            $container->getName($service),
+            Provider::class,
+            Entity::class,
+            ProviderContext::class,
+        );
+    }
+
+    /**
+     * Get an introspector for a class
+     *
+     * @template T of object
+     *
+     * @param class-string<T> $class
+     *
+     * @return static<T,Provider,Entity,ProviderContext>
+     */
+    public static function get(string $class)
+    {
+        return new static(
+            $class,
+            $class,
+            Provider::class,
+            Entity::class,
+            ProviderContext::class,
+        );
+    }
+
+    /**
+     * Creates a new introspector object
+     *
+     * @param class-string $service
+     * @param class-string<TClass> $class
+     * @param class-string<TProvider> $provider
+     * @param class-string<TEntity> $entity
+     * @param class-string<TContext> $context
+     */
+    final protected function __construct(
+        string $service,
+        string $class,
+        string $provider,
+        string $entity,
+        string $context
+    ) {
+        $this->_Class =
+            self::$_IntrospectionClasses[static::class][$class]
+                ?? (self::$_IntrospectionClasses[static::class][$class] = $this->getIntrospectionClass($class));
+        $this->_Service = $service === $class ? null : $service;
+        $this->_Provider = $provider;
+        $this->_Entity = $entity;
+        $this->_Context = $context;
+    }
+
+    /**
+     * @param class-string<TClass> $class
+     * @return IntrospectionClass<TClass>
+     */
+    protected function getIntrospectionClass(string $class): IntrospectionClass
+    {
+        return new IntrospectionClass($class);
+    }
+
+    /**
+     * @param mixed[] $arguments
+     * @return mixed
+     */
+    final public function __call(string $name, array $arguments)
+    {
+        return $this->_Class->{$name}(...$arguments);
+    }
 
     /**
      * @return mixed
@@ -72,24 +187,18 @@ class Introspector
     }
 
     /**
-     * @param class-string<TClass> $class
-     * @return IntrospectionClass<TClass>
-     */
-    private function getIntrospectionClass(string $class): IntrospectionClass
-    {
-        return new IntrospectionClass($class);
-    }
-
-    /**
-     * Normalise a property name if the class has a normaliser, otherwise return
-     * it as-is
+     * Normalise strings if the class has a normaliser, otherwise return them
+     * as-is
      *
      * @template T of string[]|string
+     *
      * @param T $value
      * @param int-mask-of<NormaliserFlag::*> $flags
+     *
      * @return T
-     * @see \Lkrms\Contract\IResolvable::normaliser()
+     *
      * @see \Lkrms\Contract\IResolvable::normalise()
+     * @see \Lkrms\Contract\ReturnsNormaliser::normaliser()
      */
     final public function maybeNormalise($value, int $flags = NormaliserFlag::GREEDY)
     {
@@ -97,73 +206,86 @@ class Introspector
     }
 
     /**
-     * Return true if the class has a normaliser
+     * True if the class has a normaliser
      */
     final public function hasNormaliser(): bool
     {
-        return !is_null($this->_Class->Normaliser);
+        return $this->_Class->Normaliser !== null;
     }
 
     /**
-     * Get readable properties, including "magic" properties
+     * Get a closure that creates instances of the class from arrays
      *
-     * @return string[] Normalised property names
-     */
-    final public function getReadableProperties(): array
-    {
-        return $this->_Class->getReadableProperties();
-    }
-
-    /**
-     * Get writable properties, including "magic" properties
+     * Wraps {@see Introspector::getCreateFromSignatureClosure()} in a closure
+     * that resolves array signatures to closures on-demand.
      *
-     * @return string[] Normalised property names
+     * @param bool $strict If `true`, the closure will throw an exception if it
+     * receives any data that would be discarded.
+     * @return Closure(mixed[], IContainer, IDateFormatter|null=, ITreeable|null=): TClass
      */
-    final public function getWritableProperties(): array
+    final public function getCreateFromClosure(bool $strict = false): Closure
     {
-        return $this->_Class->getWritableProperties();
+        $closure =
+            $this->_Class->CreateProviderlessFromClosures[(int) $strict]
+                ?? null;
+
+        if ($closure) {
+            return $closure;
+        }
+
+        $closure =
+            function (
+                array $array,
+                IContainer $container,
+                ?IDateFormatter $dateFormatter = null,
+                ?ITreeable $parent = null
+            ) use ($strict) {
+                $keys = array_keys($array);
+                $closure = $this->getCreateFromSignatureClosure($keys, $strict);
+                return $closure($array, $container, $dateFormatter, $parent);
+            };
+
+        $this->_Class->CreateProviderlessFromClosures[(int) $strict] = $closure;
+
+        return $closure;
     }
 
     /**
-     * Return true if an action can be performed on a property
-     *
-     * @param $property The normalised property name to check
-     */
-    final public function propertyActionIsAllowed(string $property, string $action): bool
-    {
-        return $this->_Class->propertyActionIsAllowed($property, $action);
-    }
-
-    /**
-     * Get a closure to create instances of the class from arrays with a given
-     * signature
+     * Get a closure that creates instances of the class from arrays with a
+     * given signature
      *
      * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(mixed[], IContainer, DateFormatter|null=, ITreeable|null=): TClass
+     * @return Closure(mixed[], IContainer, IDateFormatter|null=, ITreeable|null=): TClass
      */
     final public function getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\0", $keys);
-        $closure = $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] ?? null;
+
+        $closure =
+            $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict]
+                ?? null;
+
         if (!$closure) {
             $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
             $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) $strict] = $closure;
 
-            // If the closure was created successfully in strict mode, cache it
-            // for `$strict = false` too
+            // If the closure was created successfully in strict mode, use it
+            // for non-strict purposes too
             if ($strict) {
                 $this->_Class->CreateProviderlessFromSignatureClosures[$sig][(int) false] = $closure;
             }
         }
+
+        // Return a closure that injects this introspector's service
         $service = $this->_Service;
 
         return
             static function (
                 array $array,
                 IContainer $container,
-                ?DateFormatter $dateFormatter = null,
+                ?IDateFormatter $dateFormatter = null,
                 ?ITreeable $parent = null
             ) use ($closure, $service) {
                 return $closure(
@@ -179,61 +301,139 @@ class Introspector
     }
 
     /**
-     * Get a closure to create instances of the class on behalf of a provider
-     * from arrays with a given signature
+     * Get a closure that creates provider-serviced instances of the class from
+     * arrays
+     *
+     * Wraps {@see Introspector::getCreateProvidableFromSignatureClosure()} in a
+     * closure that resolves array signatures to closures on-demand.
+     *
+     * @param bool $strict If `true`, the closure will throw an exception if it
+     * receives any data that would be discarded.
+     * @return Closure(mixed[], TProvider, TContext): TClass
+     */
+    final public function getCreateProvidableFromClosure(bool $strict = false): Closure
+    {
+        $closure =
+            $this->_Class->CreateProvidableFromClosures[(int) $strict]
+                ?? null;
+
+        if ($closure) {
+            return $closure;
+        }
+
+        $closure =
+            function (
+                array $array,
+                IProvider $provider,
+                IProviderContext $context
+            ) use ($strict) {
+                $keys = array_keys($array);
+                $closure = $this->getCreateProvidableFromSignatureClosure($keys, $strict);
+                return $closure($array, $provider, $context);
+            };
+
+        return $this->_Class->CreateProvidableFromClosures[(int) $strict] = $closure;
+    }
+
+    /**
+     * Get a closure that creates provider-serviced instances of the class from
+     * arrays with a given signature
      *
      * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(mixed[], IProvider, IContainer|IProviderContext|null=): TClass
+     * @return Closure(mixed[], TProvider, TContext): TClass
      */
     final public function getCreateProvidableFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\0", $keys);
-        $closure = $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] ?? null;
+
+        $closure =
+            $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict]
+                ?? null;
+
         if (!$closure) {
             $closure = $this->_getCreateFromSignatureClosure($keys, $strict);
             $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) $strict] = $closure;
 
-            // If the closure was created successfully in strict mode, cache it
-            // for `$strict = false` purposes too
+            // If the closure was created successfully in strict mode, use it
+            // for non-strict purposes too
             if ($strict) {
                 $this->_Class->CreateProvidableFromSignatureClosures[$sig][(int) false] = $closure;
             }
         }
+
+        // Return a closure that injects this introspector's service
         $service = $this->_Service;
 
         return
-            static function (array $array, IProvider $provider, $context = null) use ($closure, $service) {
-                if ($context instanceof IProviderContext) {
-                    $container = $context->container();
-                    $parent = $context->getParent();
-                } else {
-                    /** @var IContainer */
-                    $container = $context ?? $provider->container();
-                    $context = $provider->getContext($container);
-                }
-
+            static function (
+                array $array,
+                IProvider $provider,
+                IProviderContext $context
+            ) use ($closure, $service) {
                 return $closure(
                     $array,
                     $service,
-                    $container,
+                    $context->container(),
                     $provider,
                     $context,
                     $provider->dateFormatter(),
-                    $parent ?? null,
+                    $context->getParent(),
                 );
             };
     }
 
     /**
-     * Get a list of actions required to apply values from an array with a given
-     * signature to the properties of a new or existing instance
+     * @param string[] $keys
+     * @return Closure(mixed[], class-string|null, IContainer, TProvider|null, TContext|null, IDateFormatter|null, ITreeable|null): TClass
+     */
+    private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
+    {
+        $sig = implode("\0", $keys);
+        if ($closure = $this->_Class->CreateFromSignatureClosures[$sig] ?? null) {
+            return $closure;
+        }
+
+        $targets = $this->getKeyTargets($keys, true, $strict);
+        $constructor = $this->_getConstructor($targets);
+        $updater = $this->_getUpdater($targets);
+
+        $closure = static function (
+            array $array,
+            ?string $service,
+            IContainer $container,
+            ?IProvider $provider,
+            ?IProviderContext $context,
+            ?IDateFormatter $dateFormatter,
+            ?ITreeable $parent
+        ) use ($constructor, $updater) {
+            $obj = $constructor($array, $service, $container);
+            $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+            if ($obj instanceof IProvidable) {
+                $obj->postLoad();
+            }
+            return $obj;
+        };
+
+        return $this->_Class->CreateFromSignatureClosures[$sig] = $closure;
+    }
+
+    /**
+     * Get a list of actions required to apply values from an array to a new or
+     * existing instance of the class
      *
      * @param string[] $keys
-     * @param array<string,string> $customKeys
-     * @param array<string,Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void> $keyClosures Normalised key => closure
-     * @return IntrospectorKeyTargets<TClass>
+     * @param bool $withParameters If `true`, keys are matched with constructor
+     * parameters if possible.
+     * @param bool $strict If `true`, an exception is thrown if any keys cannot
+     * be applied to the class.
+     * @param bool $normalised If `true`, the `$keys` array has already been
+     * normalised.
+     * @param array<static::*_KEY,string> $customKeys An array that maps key
+     * types to keys as they appear in `$keys`.
+     * @param array<string,Closure(mixed[], TClass, ?TProvider, ?TContext): void> $keyClosures Normalised key => closure
+     * @return IntrospectorKeyTargets<TClass,TProvider,TContext>
      */
     protected function getKeyTargets(
         array $keys,
@@ -327,7 +527,7 @@ class Introspector
             }
         }
 
-        /** @var IntrospectorKeyTargets<TClass> */
+        /** @var IntrospectorKeyTargets<TClass,TProvider,TContext> */
         $targets = new IntrospectorKeyTargets(
             $parameterKeys,
             $passByRefKeys,
@@ -343,45 +543,10 @@ class Introspector
     }
 
     /**
-     * @param string[] $keys
-     * @return Closure(mixed[], class-string|null, IContainer, IProvider|null, IProviderContext|null, DateFormatter|null, ITreeable|null): TClass
-     */
-    private function _getCreateFromSignatureClosure(array $keys, bool $strict = false): Closure
-    {
-        $sig = implode("\0", $keys);
-        if ($closure = $this->_Class->CreateFromSignatureClosures[$sig] ?? null) {
-            return $closure;
-        }
-
-        $targets = $this->getKeyTargets($keys, true, $strict);
-        $constructor = $this->_getConstructor($targets);
-        $updater = $this->_getUpdater($targets);
-
-        $closure = static function (
-            array $array,
-            ?string $service,
-            IContainer $container,
-            ?IProvider $provider,
-            ?IProviderContext $context,
-            ?DateFormatter $dateFormatter,
-            ?ITreeable $parent
-        ) use ($constructor, $updater) {
-            $obj = $constructor($array, $service, $container);
-            $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
-            if ($obj instanceof IProvidable) {
-                $obj->postLoad();
-            }
-            return $obj;
-        };
-
-        return $this->_Class->CreateFromSignatureClosures[$sig] = $closure;
-    }
-
-    /**
-     * @param IntrospectorKeyTargets<TClass> $targets
+     * @param IntrospectorKeyTargets<TClass,TProvider,TContext> $targets
      * @return Closure(mixed[], class-string|null, IContainer): TClass
      */
-    protected function _getConstructor(IntrospectorKeyTargets $targets): Closure
+    final protected function _getConstructor(IntrospectorKeyTargets $targets): Closure
     {
         $args = $this->_Class->DefaultArguments;
         $class = $this->_Class->Class;
@@ -423,69 +588,6 @@ class Introspector
 
             return $container->get($class, $args);
         };
-    }
-
-    /**
-     * Get a closure to create instances of the class from arrays
-     *
-     * This method is similar to
-     * {@see Introspector::getCreateFromSignatureClosure()}, but it returns a
-     * closure that resolves array signatures when called.
-     *
-     * @param bool $strict If `true`, return a closure that throws an exception
-     * if any data would be discarded.
-     * @return Closure(mixed[], IContainer, DateFormatter|null=, ITreeable|null=): TClass
-     */
-    final public function getCreateFromClosure(bool $strict = false): Closure
-    {
-        if ($closure = $this->_Class->CreateProviderlessFromClosures[(int) $strict] ?? null) {
-            return $closure;
-        }
-
-        $closure =
-            function (
-                array $array,
-                IContainer $container,
-                ?DateFormatter $dateFormatter = null,
-                ?ITreeable $parent = null
-            ) use ($strict) {
-                $keys = array_keys($array);
-
-                return ($this->getCreateFromSignatureClosure($keys, $strict))($array, $container, $dateFormatter, $parent);
-            };
-
-        return $this->_Class->CreateProviderlessFromClosures[(int) $strict] = $closure;
-    }
-
-    /**
-     * Get a closure to create instances of the class from arrays on behalf of a
-     * provider
-     *
-     * This method is similar to
-     * {@see Introspector::getCreateProvidableFromSignatureClosure()}, but it
-     * returns a closure that resolves array signatures when called.
-     *
-     * @param bool $strict If `true`, return a closure that throws an exception
-     * if any data would be discarded.
-     * @return Closure(mixed[], IProvider, IContainer|IProviderContext|null=)
-     * ```php
-     * function (array $array, IProvider $provider, IContainer|IProviderContext|null $context = null)
-     * ```
-     */
-    final public function getCreateProvidableFromClosure(bool $strict = false): Closure
-    {
-        if ($closure = $this->_Class->CreateProvidableFromClosures[(int) $strict] ?? null) {
-            return $closure;
-        }
-
-        $closure =
-            function (array $array, IProvider $provider, $context = null) use ($strict) {
-                $keys = array_keys($array);
-
-                return ($this->getCreateProvidableFromSignatureClosure($keys, $strict))($array, $provider, $context);
-            };
-
-        return $this->_Class->CreateProvidableFromClosures[(int) $strict] = $closure;
     }
 
     /**
@@ -677,10 +779,10 @@ class Introspector
     }
 
     /**
-     * @param IntrospectorKeyTargets<TClass> $targets
-     * @return Closure(mixed[], TClass, IContainer, IProvider|null, IProviderContext|null, DateFormatter|null, ITreeable|null): TClass
+     * @param IntrospectorKeyTargets<TClass,TProvider,TContext> $targets
+     * @return Closure(mixed[], TClass, IContainer, TProvider|null, TContext|null, IDateFormatter|null, ITreeable|null): TClass
      */
-    protected function _getUpdater(IntrospectorKeyTargets $targets): Closure
+    final protected function _getUpdater(IntrospectorKeyTargets $targets): Closure
     {
         $isProvidable = $this->_Class->IsProvidable;
         $isTreeable = $this->_Class->IsTreeable;
@@ -696,7 +798,7 @@ class Introspector
             IContainer $container,
             ?IProvider $provider,
             ?IProviderContext $context,
-            ?DateFormatter $dateFormatter,
+            ?IDateFormatter $dateFormatter,
             ?ITreeable $parent
         ) use (
             $isProvidable,
@@ -739,7 +841,7 @@ class Introspector
                 if (!$context) {
                     throw new UnexpectedValueException('$context cannot be null when $provider is not null');
                 }
-                /** @var IProvidable<IProvider,IProviderContext> $obj */
+                /** @var TClass&TEntity $obj */
                 $currentProvider = $obj->provider();
                 if ($currentProvider === null) {
                     $obj = $obj->setProvider($provider);
@@ -756,7 +858,7 @@ class Introspector
 
             // Ditto for `setParent()`
             if ($isTreeable && $parent) {
-                /** @var ITreeable $obj */
+                /** @var TClass&TEntity&ITreeable $obj */
                 $obj = $obj->setParent($parent);
             }
 

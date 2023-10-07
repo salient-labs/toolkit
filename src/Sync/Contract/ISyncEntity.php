@@ -16,9 +16,16 @@ use JsonSerializable;
  * Represents the state of an entity in an external system
  *
  * @extends IProviderEntity<ISyncProvider,ISyncContext>
+ *
  * @see \Lkrms\Sync\Concept\SyncEntity
+ *
+ * @extends IProviderEntity<ISyncProvider,ISyncContext>
  */
-interface ISyncEntity extends IProviderEntity, IRelatable, ReturnsDescription, JsonSerializable
+interface ISyncEntity extends
+    IProviderEntity,
+    IRelatable,
+    ReturnsDescription,
+    JsonSerializable
 {
     /**
      * Get an instance of the entity's default provider

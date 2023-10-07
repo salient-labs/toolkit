@@ -73,7 +73,6 @@ trait TConstructible
         $closure = null;
         foreach ($list as $key => $data) {
             if (!$closure) {
-                /** @var Introspector<static,IntrospectionClass<static>> */
                 $builder = Introspector::getService($container, static::class);
                 $closure =
                     in_array($conformity, [ArrayKeyConformity::PARTIAL, ArrayKeyConformity::COMPLETE])

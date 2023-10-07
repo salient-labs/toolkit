@@ -13,7 +13,7 @@ use Closure;
  *
  * @property-read array<string,int> $Parameters Key => constructor parameter index
  * @property-read array<string,true> $PassByRefParameters Key => `true`
- * @property-read array<Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void> $Callbacks Arbitrary callbacks
+ * @property-read array<Closure(mixed[], TClass, ?TProvider, ?TContext): void> $Callbacks Arbitrary callbacks
  * @property-read array<string,string> $Methods Key => "magic" property method
  * @property-read array<string,string> $Properties Key => declared property name
  * @property-read string[] $MetaProperties Arbitrary keys
@@ -23,6 +23,8 @@ use Closure;
  * @see Introspector
  *
  * @template TClass of object
+ * @template TProvider of IProvider
+ * @template TContext of IProviderContext
  */
 final class IntrospectorKeyTargets implements IReadable
 {
@@ -45,7 +47,7 @@ final class IntrospectorKeyTargets implements IReadable
     /**
      * Arbitrary callbacks
      *
-     * @var array<Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void>
+     * @var array<Closure(mixed[], TClass, ?TProvider, ?TContext): void>
      */
     protected $Callbacks;
 
@@ -87,7 +89,7 @@ final class IntrospectorKeyTargets implements IReadable
     /**
      * @param array<string,int> $parameters
      * @param array<string,true> $passByRefProperties
-     * @param array<Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void> $callbacks
+     * @param array<Closure(mixed[], TClass, ?TProvider, ?TContext): void> $callbacks
      * @param array<string,string> $methods
      * @param array<string,string> $properties
      * @param string[] $metaProperties

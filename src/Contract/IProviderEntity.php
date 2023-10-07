@@ -3,10 +3,11 @@
 namespace Lkrms\Contract;
 
 /**
- * An arbitrary entity that can be instantiated by an IProvider
+ * An entity that can be instantiated by a provider
  *
  * @template TProvider of IProvider
- * @template TProviderContext of IProviderContext
- * @extends IProvidable<TProvider,TProviderContext>
+ * @template TContext of IProviderContext
+ *
+ * @extends IProvidable<TProvider,TContext>
  */
 interface IProviderEntity extends IEntity, IProvidable {}

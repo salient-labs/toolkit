@@ -3,9 +3,15 @@
 namespace Lkrms\Contract;
 
 /**
- * An arbitrary entity
+ * Base interface for entities
  */
-interface IEntity extends IResolvable, IConstructible, IReadable, IWritable, IExtensible, HasDateProperties
+interface IEntity extends
+    IResolvable,
+    IConstructible,
+    IReadable,
+    IWritable,
+    IExtensible,
+    HasDateProperties
 {
     /**
      * Get the plural form of the entity's class name

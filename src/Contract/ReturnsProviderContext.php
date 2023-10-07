@@ -5,14 +5,14 @@ namespace Lkrms\Contract;
 /**
  * Returns a provider context
  *
- * @template TProviderContext of IProviderContext
+ * @template TContext of IProviderContext
  */
 interface ReturnsProviderContext
 {
     /**
      * Get the object's current provider context
      *
-     * @return TProviderContext|null
+     * @return TContext|null
      */
     public function context(): ?IProviderContext;
 
@@ -20,7 +20,7 @@ interface ReturnsProviderContext
      * Get the object's current provider context, or throw an exception if no
      * provider context has been set
      *
-     * @return TProviderContext
+     * @return TContext
      */
     public function requireContext(): IProviderContext;
 }

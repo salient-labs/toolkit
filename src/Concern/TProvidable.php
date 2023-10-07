@@ -16,7 +16,7 @@ use LogicException;
  * Implements IProvidable to represent an external entity
  *
  * @template TProvider of IProvider
- * @template TProviderContext of IProviderContext
+ * @template TContext of IProviderContext
  *
  * @see \Lkrms\Contract\IProvidable
  */
@@ -28,7 +28,7 @@ trait TProvidable
     private $Provider;
 
     /**
-     * @var TProviderContext|null
+     * @var TContext|null
      */
     private $Context;
 
@@ -71,7 +71,7 @@ trait TProvidable
     }
 
     /**
-     * @param TProviderContext $context
+     * @param TContext $context
      * @return $this
      */
     final public function setContext(IProviderContext $context)
@@ -82,7 +82,7 @@ trait TProvidable
     }
 
     /**
-     * @return TProviderContext|null
+     * @return TContext|null
      */
     final public function context(): ?IProviderContext
     {
@@ -109,7 +109,7 @@ trait TProvidable
     }
 
     /**
-     * @return TProviderContext
+     * @return TContext
      */
     final public function requireContext(): IProviderContext
     {
@@ -134,7 +134,7 @@ trait TProvidable
      *
      * @param mixed[] $data
      * @param TProvider $provider
-     * @param TProviderContext|null $context
+     * @param TContext|null $context
      * @return static
      */
     final public static function provide(
@@ -167,7 +167,7 @@ trait TProvidable
      * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
      * @param ArrayKeyConformity::* $conformity
-     * @param TProviderContext|null $context
+     * @param TContext|null $context
      * @return FluentIteratorInterface<array-key,static>
      */
     final public static function provideList(
@@ -185,7 +185,7 @@ trait TProvidable
      * @param iterable<array-key,mixed[]> $list
      * @param TProvider $provider
      * @param ArrayKeyConformity::* $conformity
-     * @param TProviderContext|null $context
+     * @param TContext|null $context
      * @return Generator<array-key,static>
      */
     private static function _provideList(

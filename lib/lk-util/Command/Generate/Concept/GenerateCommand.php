@@ -6,6 +6,8 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
+use Lkrms\Concept\Entity;
+use Lkrms\Concept\Provider;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
@@ -15,8 +17,8 @@ use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Support\PhpDoc\PhpDocTag;
 use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
-use Lkrms\Support\IntrospectionClass;
 use Lkrms\Support\Introspector;
+use Lkrms\Support\ProviderContext;
 use Lkrms\Support\TokenExtractor;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Reflect;
@@ -96,7 +98,7 @@ abstract class GenerateCommand extends Command
     protected string $InputClassType;
 
     /**
-     * @var Introspector<object,IntrospectionClass<object>>
+     * @var Introspector<object,Provider,Entity,ProviderContext>
      */
     protected Introspector $InputIntrospector;
 

@@ -3,6 +3,7 @@
 namespace Lkrms\Support;
 
 use Lkrms\Concern\TFullyReadable;
+use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IDateParser;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
@@ -20,7 +21,7 @@ use DateTimeZone;
  * @property-read DateTimeZone|null $Timezone
  * @property-read IDateParser[] $Parsers
  */
-final class DateFormatter implements IReadable, IImmutable
+final class DateFormatter implements IDateFormatter, IImmutable, IReadable
 {
     use TFullyReadable;
 

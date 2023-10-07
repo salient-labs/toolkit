@@ -2,11 +2,8 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Concern\TIntrospector;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidable;
-use Lkrms\Contract\IProvider;
-use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ITreeable;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
@@ -24,25 +21,21 @@ use Closure;
 use LogicException;
 
 /**
+ * Generates closures that perform sync-related operations on a class
+ *
  * @property-read string|null $EntityNoun
  * @property-read string|null $EntityPlural Not set if the plural class name is the same as the singular one
  *
  * @template TClass of object
- * @template TIntrospectionClass of SyncIntrospectionClass
- * @extends Introspector<TClass,TIntrospectionClass<TClass>>
+ *
+ * @extends Introspector<TClass,ISyncProvider,ISyncEntity,ISyncContext>
  */
 final class SyncIntrospector extends Introspector
 {
-    /**
-     * @use TIntrospector<TClass,TIntrospectionClass<TClass>>
-     */
-    use TIntrospector;
-
     private const ID_KEY = 'Id';
 
     /**
-     * @var TIntrospectionClass<TClass>
-     * @todo Remove this property when Intelephense resolves trait generics
+     * @var SyncIntrospectionClass<TClass>
      */
     protected $_Class;
 
@@ -92,10 +85,50 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
+     * @inheritDoc
+     *
+     * @template T of object
+     *
+     * @param class-string<T> $service
+     *
+     * @return static<T>
+     */
+    public static function getService(IContainer $container, string $service)
+    {
+        return new static(
+            $service,
+            $container->getName($service),
+            ISyncProvider::class,
+            ISyncEntity::class,
+            ISyncContext::class,
+        );
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @template T of object
+     *
+     * @param class-string<T> $class
+     *
+     * @return static<T>
+     */
+    public static function get(string $class)
+    {
+        return new static(
+            $class,
+            $class,
+            ISyncProvider::class,
+            ISyncEntity::class,
+            ISyncContext::class,
+        );
+    }
+
+    /**
      * @param class-string<TClass> $class
      * @return SyncIntrospectionClass<TClass>
      */
-    private function getIntrospectionClass(string $class): SyncIntrospectionClass
+    protected function getIntrospectionClass(string $class): SyncIntrospectionClass
     {
         return new SyncIntrospectionClass($class);
     }
@@ -107,9 +140,7 @@ final class SyncIntrospector extends Introspector
      */
     public function getSyncProviderInterfaces(): ?array
     {
-        if (!$this->_Class->IsProvider) {
-            return null;
-        }
+        $this->assertIsProvider();
 
         return $this->_Class->SyncProviderInterfaces;
     }
@@ -121,9 +152,7 @@ final class SyncIntrospector extends Introspector
      */
     public function getSyncProviderEntities(): ?array
     {
-        if (!$this->_Class->IsProvider) {
-            return null;
-        }
+        $this->assertIsProvider();
 
         return $this->_Class->SyncProviderEntities;
     }
@@ -136,119 +165,132 @@ final class SyncIntrospector extends Introspector
      */
     public function getSyncProviderEntityBasenames(): ?array
     {
-        if (!$this->_Class->IsProvider) {
-            return null;
-        }
+        $this->assertIsProvider();
 
         return $this->_Class->SyncProviderEntityBasenames;
     }
 
     /**
-     * Get a closure to create instances of the class on behalf of an
-     * ISyncProvider from arrays with a given signature
+     * Get a closure that creates ISyncProvider-serviced instances of the class
+     * from arrays
+     *
+     * Wraps {@see SyncIntrospector::getCreateSyncEntityFromSignatureClosure()}
+     * in a closure that resolves array signatures to closures on-demand.
+     *
+     * @param bool $strict If `true`, the closure will throw an exception if it
+     * receives any data that would be discarded.
+     * @return Closure(mixed[], ISyncProvider, ISyncContext): TClass
+     */
+    public function getCreateSyncEntityFromClosure(bool $strict = false): Closure
+    {
+        $closure =
+            $this->_Class->CreateSyncEntityFromClosures[(int) $strict]
+                ?? null;
+
+        if ($closure) {
+            return $closure;
+        }
+
+        $closure =
+            function (
+                array $array,
+                ISyncProvider $provider,
+                ISyncContext $context
+            ) use ($strict) {
+                $keys = array_keys($array);
+                $closure = $this->getCreateSyncEntityFromSignatureClosure($keys, $strict);
+                return $closure($array, $provider, $context);
+            };
+
+        $this->_Class->CreateSyncEntityFromClosures[(int) $strict] = $closure;
+
+        return $closure;
+    }
+
+    /**
+     * Get a closure that creates ISyncProvider-serviced instances of the class
+     * from arrays with a given signature
      *
      * @param string[] $keys
      * @param bool $strict If `true`, throw an exception if any data would be
      * discarded.
-     * @return Closure(mixed[], ISyncProvider, IContainer|ISyncContext|null=): TClass
+     * @return Closure(mixed[], ISyncProvider, ISyncContext): TClass
      */
     public function getCreateSyncEntityFromSignatureClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\0", $keys);
-        $closure = $this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) $strict] ?? null;
+
+        $closure =
+            $this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) $strict]
+                ?? null;
+
         if (!$closure) {
             $closure = $this->_getCreateFromSignatureSyncClosure($keys, $strict);
             $this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) $strict] = $closure;
 
-            // If the closure was created successfully in strict mode, cache it
-            // for `$strict = false` purposes too
+            // If the closure was created successfully in strict mode, use it
+            // for non-strict purposes too
             if ($strict) {
                 $this->_Class->CreateSyncEntityFromSignatureClosures[$sig][(int) false] = $closure;
             }
         }
+
+        // Return a closure that injects this introspector's service
         $service = $this->_Service;
 
         return
-            static function (array $array, ISyncProvider $provider, $context = null) use ($closure, $service) {
-                if ($context instanceof ISyncContext) {
-                    $container = $context->container();
-                    $parent = $context->getParent();
-                } else {
-                    /** @var IContainer */
-                    $container = $context ?? $provider->container();
-                    $context = $provider->getContext($container);
-                }
-
+            static function (
+                array $array,
+                ISyncProvider $provider,
+                ISyncContext $context
+            ) use ($closure, $service) {
                 return $closure(
                     $array,
                     $service,
-                    $container,
+                    $context->container(),
                     $provider,
                     $context,
                     $provider->dateFormatter(),
-                    $parent ?? null,
+                    $context->getParent(),
                 );
             };
     }
 
     /**
-     * Get a closure to create instances of the class from arrays on behalf of
-     * an ISyncProvider
+     * Get the provider method that implements a sync operation for an entity
      *
-     * This method is similar to
-     * {@see SyncIntrospector::getCreateSyncEntityFromSignatureClosure()}, but
-     * it returns a closure that resolves array signatures when called.
-     *
-     * @param bool $strict If `true`, return a closure that throws an exception
-     * if any data would be discarded.
-     * @return Closure(mixed[], ISyncProvider, IContainer|ISyncContext|null=)
-     */
-    public function getCreateSyncEntityFromClosure(bool $strict = false): Closure
-    {
-        if ($closure = $this->_Class->CreateSyncEntityFromClosures[(int) $strict] ?? null) {
-            return $closure;
-        }
-
-        $closure =
-            function (array $array, ISyncProvider $provider, $context = null) use ($strict) {
-                $keys = array_keys($array);
-
-                return ($this->getCreateSyncEntityFromSignatureClosure($keys, $strict))($array, $provider, $context);
-            };
-
-        return $this->_Class->CreateSyncEntityFromClosures[(int) $strict] = $closure;
-    }
-
-    /**
-     * Get the SyncProvider method that implements a SyncOperation for an entity
-     *
-     * Returns `null` if:
-     * - the {@see SyncIntrospector} was not created for an
-     *   {@see ISyncProvider},
-     * - `$entity` was not created for an {@see ISyncEntity}, or
-     * - the {@see ISyncProvider} class doesn't implement the given
-     *   {@see SyncOperation} via a method
+     * Returns `null` if the provider doesn't implement the given operation via
+     * a declared method, otherwise creates a closure for the operation and
+     * binds it to `$provider`.
      *
      * @template T of ISyncEntity
+     *
      * @param SyncOperation::* $operation
-     * @param class-string<T>|self<T,TIntrospectionClass<T>> $entity
-     * @return Closure(ISyncContext, mixed...)|null
+     * @param class-string<T>|static<T> $entity
+     *
+     * @return (Closure(ISyncContext, mixed...): mixed)|null
+     * @throws LogicException if the {@see SyncIntrospector} and `$entity` don't
+     * respectively represent an {@see ISyncProvider} and {@see ISyncEntity}.
      */
     public function getDeclaredSyncOperationClosure(int $operation, $entity, ISyncProvider $provider): ?Closure
     {
         if (!($entity instanceof SyncIntrospector)) {
-            /** @var self<T,TIntrospectionClass<T>> */
             $entity = static::get($entity);
         }
+
         $_entity = $entity->_Class;
-
-        if (!$this->_Class->IsProvider || !$_entity->IsEntity) {
-            return null;
-        }
-
         $closure = $this->_Class->DeclaredSyncOperationClosures[$_entity->Class][$operation] ?? false;
+
         // Use strict comparison with `false` because null closures are cached
         if ($closure === false) {
+            $this->assertIsProvider();
+
+            if (!$_entity->IsEntity) {
+                throw new LogicException(
+                    sprintf('%s does not implement %s', $_entity->Class, ISyncEntity::class)
+                );
+            }
+
             $method = $this->getSyncOperationMethod($operation, $entity);
             if ($method) {
                 $closure = fn(...$args) => $this->$method(...$args);
@@ -296,6 +338,93 @@ final class SyncIntrospector extends Introspector
         }
 
         return $closure ? $closure->bindTo($provider) : null;
+    }
+
+    /**
+     * @param string[] $keys
+     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, ITreeable|null, bool|null $offline=): TClass
+     */
+    private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
+    {
+        $sig = implode("\0", $keys);
+        if ($closure = $this->_Class->CreateFromSignatureSyncClosures[$sig] ?? null) {
+            return $closure;
+        }
+
+        $targets = $this->getKeyTargets($keys, true, $strict);
+        $constructor = $this->_getConstructor($targets);
+        $updater = $this->_getUpdater($targets);
+        $idKey = $targets->CustomKeys[self::ID_KEY] ?? null;
+
+        $updateTargets = $this->getKeyTargets($keys, false, $strict);
+        $existingUpdater = $this->_getUpdater($updateTargets);
+
+        if ($idKey === null) {
+            $closure = static function (
+                array $array,
+                ?string $service,
+                IContainer $container,
+                ?ISyncProvider $provider,
+                ?ISyncContext $context,
+                ?DateFormatter $dateFormatter,
+                ?ITreeable $parent,
+                ?bool $offline = null
+            ) use ($constructor, $updater) {
+                $obj = $constructor($array, $service, $container);
+                $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                if ($obj instanceof IProvidable) {
+                    $obj->postLoad();
+                }
+                return $obj;
+            };
+        } else {
+            /** @var class-string<TClass> */
+            $entityType = $this->_Class->Class;
+            $closure = static function (
+                array $array,
+                ?string $service,
+                IContainer $container,
+                ?ISyncProvider $provider,
+                ?ISyncContext $context,
+                ?DateFormatter $dateFormatter,
+                ?ITreeable $parent,
+                ?bool $offline = null
+            ) use ($constructor, $updater, $existingUpdater, $idKey, $entityType) {
+                $id = $array[$idKey];
+
+                if ($id === null || !$provider) {
+                    $obj = $constructor($array, $service, $container);
+                    $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                    if ($obj instanceof IProvidable) {
+                        $obj->postLoad();
+                    }
+                    return $obj;
+                }
+
+                $store = $provider->store()->entityType($service ?? $entityType);
+                $providerId = $provider->getProviderId();
+                $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $offline);
+
+                if ($obj) {
+                    $obj = $existingUpdater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                    if ($obj instanceof IProvidable) {
+                        $obj->postLoad();
+                    }
+                    return $obj;
+                }
+
+                $obj = $constructor($array, $service, $container);
+                $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                $store->entity($providerId, $service ?? $entityType, $id, $obj);
+                if ($obj instanceof IProvidable) {
+                    $obj->postLoad();
+                }
+                return $obj;
+            };
+        }
+
+        $this->_Class->CreateFromSignatureSyncClosures[$sig] = $closure;
+        return $closure;
     }
 
     protected function getKeyTargets(
@@ -394,94 +523,7 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * @param string[] $keys
-     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, ITreeable|null, bool|null $offline=): TClass
-     */
-    private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
-    {
-        $sig = implode("\0", $keys);
-        if ($closure = $this->_Class->CreateFromSignatureSyncClosures[$sig] ?? null) {
-            return $closure;
-        }
-
-        $targets = $this->getKeyTargets($keys, true, $strict);
-        $constructor = $this->_getConstructor($targets);
-        $updater = $this->_getUpdater($targets);
-        $idKey = $targets->CustomKeys[self::ID_KEY] ?? null;
-
-        $updateTargets = $this->getKeyTargets($keys, false, $strict);
-        $existingUpdater = $this->_getUpdater($updateTargets);
-
-        if ($idKey === null) {
-            $closure = static function (
-                array $array,
-                ?string $service,
-                IContainer $container,
-                ?ISyncProvider $provider,
-                ?ISyncContext $context,
-                ?DateFormatter $dateFormatter,
-                ?ITreeable $parent,
-                ?bool $offline = null
-            ) use ($constructor, $updater) {
-                $obj = $constructor($array, $service, $container);
-                $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
-                if ($obj instanceof IProvidable) {
-                    $obj->postLoad();
-                }
-                return $obj;
-            };
-        } else {
-            /** @var class-string<TClass> */
-            $entityType = $this->_Class->Class;
-            $closure = static function (
-                array $array,
-                ?string $service,
-                IContainer $container,
-                ?ISyncProvider $provider,
-                ?ISyncContext $context,
-                ?DateFormatter $dateFormatter,
-                ?ITreeable $parent,
-                ?bool $offline = null
-            ) use ($constructor, $updater, $existingUpdater, $idKey, $entityType) {
-                $id = $array[$idKey];
-
-                if ($id === null || !$provider) {
-                    $obj = $constructor($array, $service, $container);
-                    $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
-                    if ($obj instanceof IProvidable) {
-                        $obj->postLoad();
-                    }
-                    return $obj;
-                }
-
-                $store = $provider->store()->entityType($service ?? $entityType);
-                $providerId = $provider->getProviderId();
-                $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $offline);
-
-                if ($obj) {
-                    $obj = $existingUpdater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
-                    if ($obj instanceof IProvidable) {
-                        $obj->postLoad();
-                    }
-                    return $obj;
-                }
-
-                $obj = $constructor($array, $service, $container);
-                $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
-                $store->entity($providerId, $service ?? $entityType, $id, $obj);
-                if ($obj instanceof IProvidable) {
-                    $obj->postLoad();
-                }
-                return $obj;
-            };
-        }
-
-        $this->_Class->CreateFromSignatureSyncClosures[$sig] = $closure;
-        return $closure;
-    }
-
-    /**
-     * @return Closure(mixed[], TClass, ?IProvider, ?IProviderContext): void
+     * @return Closure(mixed[], TClass, ?ISyncProvider, ?ISyncContext): void
      */
     private function getRelationshipClosure(string $key, bool $isList, ?string $relationship, string $property): Closure
     {
@@ -494,8 +536,8 @@ final class SyncIntrospector extends Introspector
         return static function (
             array $data,
             $entity,
-            ?IProvider $provider,
-            ?IProviderContext $context
+            ?ISyncProvider $provider,
+            ?ISyncContext $context
         ) use ($key, $isList, $relationship, $property): void {
             if ($data[$key] === null ||
                     (Test::isListArray($data[$key]) xor $isList) ||
@@ -505,7 +547,6 @@ final class SyncIntrospector extends Introspector
                 $entity->{$property} = $data[$key];
                 return;
             }
-            /** @var IProvidable<IProvider,IProviderContext> $entity */
             if ($isList) {
                 if (is_scalar($data[$key][0])) {
                     DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
@@ -523,9 +564,8 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * @template T of ISyncEntity
      * @param SyncOperation::* $operation
-     * @param SyncIntrospector<T,SyncIntrospectionClass<T>> $entity
+     * @param static<ISyncEntity> $entity
      */
     private function getSyncOperationMethod(int $operation, SyncIntrospector $entity): ?string
     {
@@ -601,5 +641,14 @@ final class SyncIntrospector extends Introspector
         }
 
         return reset($methods) ?: null;
+    }
+
+    private function assertIsProvider(): void
+    {
+        if (!$this->_Class->IsProvider) {
+            throw new LogicException(
+                sprintf('%s does not implement %s', $this->_Class->Class, ISyncProvider::class)
+            );
+        }
     }
 }

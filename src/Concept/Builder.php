@@ -5,8 +5,8 @@ namespace Lkrms\Concept;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IImmutable;
-use Lkrms\Support\IntrospectionClass;
 use Lkrms\Support\Introspector;
+use Lkrms\Support\ProviderContext;
 use LogicException;
 
 /**
@@ -72,7 +72,7 @@ abstract class Builder extends FluentInterface implements IImmutable
     protected IContainer $Container;
 
     /**
-     * @var Introspector<TClass,IntrospectionClass<TClass>>
+     * @var Introspector<object,Provider,Entity,ProviderContext>
      */
     private Introspector $Introspector;
 

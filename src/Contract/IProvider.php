@@ -6,14 +6,21 @@ use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Support\DateFormatter;
 
 /**
- * Creates objects that represent entities in a backend
+ * Services objects on behalf of a backend
+ *
+ * @template TContext of IProviderContext
  *
  * @extends ReturnsContainer<IContainer>
  */
-interface IProvider extends ReturnsContainer, ReturnsEnvironment, ReturnsDescription
+interface IProvider extends
+    ReturnsContainer,
+    ReturnsEnvironment,
+    ReturnsDescription
 {
     /**
      * Get a context for instantiation of objects on the provider's behalf
+     *
+     * @return TContext
      */
     public function getContext(?IContainer $container = null): IProviderContext;
 

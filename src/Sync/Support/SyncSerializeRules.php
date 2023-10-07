@@ -221,7 +221,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
     private $RootPaths = [];
 
     /**
-     * @var SyncIntrospector<TEntity,SyncIntrospectionClass<TEntity>>
+     * @var SyncIntrospector<TEntity>
      */
     private $Introspector;
 

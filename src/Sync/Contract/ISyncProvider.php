@@ -11,6 +11,8 @@ use Lkrms\Sync\Support\SyncStore;
  * backends
  *
  * @see \Lkrms\Sync\Concept\SyncProvider
+ *
+ * @extends IProvider<ISyncContext>
  */
 interface ISyncProvider extends IProvider
 {

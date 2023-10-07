@@ -12,49 +12,51 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 
 /**
  * The context within which an entity is instantiated by a provider
+ *
+ * @implements IProviderContext<IProvider<static>,IProvidable<IProvider<static>,static>>
  */
 class ProviderContext implements IProviderContext
 {
     use HasMutator;
 
-    /**
-     * @var IContainer
-     */
-    protected $Container;
+    protected IContainer $Container;
 
     /**
-     * @var IProvider
+     * @var IProvider<static>
      */
-    protected $Provider;
+    protected IProvider $Provider;
 
     /**
-     * @var IProvidable<IProvider,IProviderContext>[]
+     * @var array<IProvidable<IProvider<static>,static>>
      */
-    protected $Stack = [];
+    protected array $Stack = [];
 
     /**
-     * @var ITreeable|null
+     * @var array<string,mixed>
      */
-    protected $Parent;
+    protected array $Values = [];
+
+    /**
+     * @var (IProvidable<IProvider<static>,static>&ITreeable)|null
+     */
+    protected ?ITreeable $Parent = null;
 
     /**
      * @var ArrayKeyConformity::*
      */
-    protected $Conformity;
+    protected $Conformity = ArrayKeyConformity::NONE;
 
     /**
-     * @param ArrayKeyConformity::* $conformity
+     * Creates a new ProviderContext object
+     *
+     * @param IProvider<static> $provider
      */
     public function __construct(
         IContainer $container,
-        IProvider $provider,
-        ?ITreeable $parent = null,
-        int $conformity = ArrayKeyConformity::NONE
+        IProvider $provider
     ) {
         $this->Container = $container;
         $this->Provider = $provider;
-        $this->Parent = $parent;
-        $this->Conformity = $conformity;
     }
 
     /**
@@ -92,20 +94,27 @@ class ProviderContext implements IProviderContext
     /**
      * @inheritDoc
      */
-    final public function push(IProvidable $entity)
+    final public function withContainer(IContainer $container)
+    {
+        return $this->withPropertyValue('Container', $container);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function push($entity)
     {
         $clone = $this->mutate();
         $clone->Stack[] = $entity;
-
         return $clone;
     }
 
     /**
      * @inheritDoc
      */
-    final public function withContainer(IContainer $container)
+    final public function withValue(string $name, $value)
     {
-        return $this->withPropertyValue('Container', $container);
+        return $this->withPropertyValue('Values', $value, $name);
     }
 
     /**
@@ -135,9 +144,33 @@ class ProviderContext implements IProviderContext
     /**
      * @inheritDoc
      */
+    final public function last(): ?IProvidable
+    {
+        return end($this->Stack) ?: null;
+    }
+
+    /**
+     * @inheritDoc
+     */
     final public function getParent(): ?ITreeable
     {
         return $this->Parent;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function getValue(string $name)
+    {
+        return $this->Values[$name] ?? null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function hasValue(string $name): bool
+    {
+        return array_key_exists($name, $this->Values);
     }
 
     /**
