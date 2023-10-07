@@ -37,7 +37,7 @@ while :; do
         die "mockoon-cli server unresponsive after $i seconds"
     fi
     if curl -sI "http://localhost:$2" >/dev/null; then
-        printf 'mockoon-cli server up after %d seconds\n' "$i"
+        printf 'mockoon-cli server up after %d seconds\n' "$i" >&2
         break
     fi
     sleep 1

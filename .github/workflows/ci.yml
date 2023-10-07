@@ -44,11 +44,8 @@ jobs:
       - name: Check generated files
         run: scripts/generate.php --check
 
-      - name: Install PrettyPHP
-        run: composer create-project --no-interaction --no-progress --no-dev lkrms/pretty-php=0.4.33 build/pretty-php
-
       - name: Run PrettyPHP
-        run: build/pretty-php/bin/pretty-php --diff
+        run: vendor/bin/pretty-php --diff
 
   phpstan:
     name: PHPStan

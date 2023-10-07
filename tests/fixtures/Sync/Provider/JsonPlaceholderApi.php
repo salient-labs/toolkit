@@ -56,7 +56,9 @@ class JsonPlaceholderApi extends HttpSyncProvider implements IServiceSingleton, 
 
     protected function getBaseUrl(?string $path = null): string
     {
-        return Env::get('JSON_PLACEHOLDER_BASE_URL', 'https://jsonplaceholder.typicode.com');
+        // Set JSON_PLACEHOLDER_BASE_URL=https://jsonplaceholder.typicode.com to
+        // test against the live version if necessary
+        return Env::get('JSON_PLACEHOLDER_BASE_URL', 'http://localhost:3001');
     }
 
     protected function getHeaders(?string $path): ?ICurlerHeaders
