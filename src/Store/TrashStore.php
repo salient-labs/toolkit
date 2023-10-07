@@ -47,7 +47,7 @@ final class TrashStore extends SqliteStore
      * Add a deleted object to the store
      *
      * @param string|null $key The object's identifier, if known.
-     * @param array|object $object
+     * @param mixed[]|object $object
      * @param string|null $type The object's canonical type, or `null` to use
      * its FQCN.
      * @param string|null $deletedFrom The canonical location of the object

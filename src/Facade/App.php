@@ -31,6 +31,7 @@ use Lkrms\Utility\Env;
  * @method static string getBasePath() Get the application's root directory (see {@see Application::getBasePath()})
  * @method static string getCachePath(bool $create = true) Get a writable cache directory for the application (see {@see Application::getCachePath()})
  * @method static string getConfigPath(bool $create = true) Get a writable directory for the application's configuration files (see {@see Application::getConfigPath()})
+ * @method static class-string[] getContextStack() Get services for which contextual bindings have been applied to the container (see {@see Container::getContextStack()})
  * @method static string getDataPath(bool $create = true) Get a writable data directory for the application (see {@see Application::getDataPath()})
  * @method static IContainer getGlobalContainer() Get the global container
  * @method static string getLogPath(bool $create = true) Get a writable directory for the application's log files (see {@see Application::getLogPath()})

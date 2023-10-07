@@ -42,6 +42,14 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function inContextOf(string $id): IContainer;
 
     /**
+     * Get services for which contextual bindings have been applied to the
+     * container
+     *
+     * @return class-string[]
+     */
+    public function getContextStack(): array;
+
+    /**
      * Get an instance from the container
      *
      * @template T

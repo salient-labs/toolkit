@@ -3,38 +3,63 @@
 namespace Lkrms\Curler;
 
 use CURLFile;
-use RuntimeException;
+use LogicException;
 
 /**
  * File upload helper
  */
 final class CurlerFile
 {
+    /**
+     * @var string
+     */
     private $Filename;
 
+    /**
+     * @var string
+     */
     private $PostFilename;
 
+    /**
+     * @var string|null
+     */
     private $MimeType;
 
     /**
-     * @param string $filename File to upload.
-     * @param string $postFilename Filename to use in upload data (default: `basename($filename)`).
-     * @param string $mimeType Default: `mime_content_type($filename)`
+     * Creates a new CurlerFile object
+     *
+     * @param string $postFilename Filename used in upload data. If `null`, the
+     * basename of `$filename` is used.
+     * @param string $mimeType If `null`, {@see mime_content_type()} is used to
+     * detect the MIME type of `$filename`.
      */
-    public function __construct(string $filename, string $postFilename = null, string $mimeType = null)
-    {
-        if (!is_file($filename) || ($filename = realpath($filename)) === false) {
-            throw new RuntimeException("File not found: $filename");
+    public function __construct(
+        string $filename,
+        string $postFilename = null,
+        string $mimeType = null
+    ) {
+        if (!is_file($filename)) {
+            throw new LogicException(sprintf('File not found: %s', $filename));
+        }
+
+        if ($postFilename === null) {
+            $postFilename = basename($filename);
+        }
+
+        if ($mimeType === null) {
+            $mimeType = mime_content_type($filename);
+            if ($mimeType === false) {
+                $mimeType = null;
+            }
         }
 
         $this->Filename = $filename;
-        $this->PostFilename = $postFilename ?: basename($filename);
-        $this->MimeType = $mimeType ?: mime_content_type($filename);
+        $this->PostFilename = $postFilename;
+        $this->MimeType = $mimeType;
     }
 
     /**
      * @internal
-     * @return CURLFile
      */
     public function getCurlFile(): CURLFile
     {

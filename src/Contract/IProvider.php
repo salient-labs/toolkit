@@ -7,6 +7,8 @@ use Lkrms\Support\DateFormatter;
 
 /**
  * Creates objects that represent entities in a backend
+ *
+ * @extends ReturnsContainer<IContainer>
  */
 interface IProvider extends ReturnsContainer, ReturnsEnvironment, ReturnsDescription
 {

@@ -6,6 +6,8 @@ interface ICurlerPage
 {
     /**
      * Return data extracted from the upstream response
+     *
+     * @return mixed[]
      */
     public function entities(): array;
 
@@ -28,6 +30,8 @@ interface ICurlerPage
 
     /**
      * Return data to send in the body of the request for the next page
+     *
+     * @return mixed[]|null
      */
     public function nextData(): ?array;
 

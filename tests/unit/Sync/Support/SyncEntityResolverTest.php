@@ -14,7 +14,7 @@ use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 
 final class SyncEntityResolverTest extends \Lkrms\Tests\TestCase
 {
-    public function testGetByName()
+    public function testGetByName(): void
     {
         $basePath = File::createTemporaryDirectory();
 

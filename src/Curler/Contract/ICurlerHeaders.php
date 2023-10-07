@@ -98,4 +98,9 @@ interface ICurlerHeaders extends IImmutable
      * @return string[]
      */
     public function getPublicHeaders(): array;
+
+    /**
+     * @return string[]
+     */
+    public function getTrailers(): array;
 }

@@ -11,7 +11,7 @@ use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 
 final class DeferredSyncEntityTest extends \Lkrms\Tests\TestCase
 {
-    public function testList()
+    public function testList(): void
     {
         $container = (new Container())->service(JsonPlaceholderApi::class);
         $provider = $container->get(PostProvider::class);

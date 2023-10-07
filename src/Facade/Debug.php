@@ -12,7 +12,7 @@ use Lkrms\Utility\Debugging;
  * @method static Debugging getInstance() Get the underlying Debugging instance
  * @method static bool isLoaded() True if an underlying Debugging instance has been loaded
  * @method static void unload() Clear the underlying Debugging instance
- * @method static array getCaller(int $depth = 0) Use debug_backtrace to get information about the (caller's) caller (see {@see Debugging::getCaller()})
+ * @method static array<int|string,int|string> getCaller(int $depth = 0) Use debug_backtrace to get information about the (caller's) caller (see {@see Debugging::getCaller()})
  *
  * @uses Debugging
  *

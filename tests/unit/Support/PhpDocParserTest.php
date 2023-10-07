@@ -11,12 +11,15 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
     /**
      * @dataProvider invalidDocBlockProvider
      */
-    public function testInvalidDocBlock(string $docBlock)
+    public function testInvalidDocBlock(string $docBlock): void
     {
         $this->expectException(UnexpectedValueException::class);
         new PhpDoc($docBlock);
     }
 
+    /**
+     * @return array<string,array{string}>
+     */
     public static function invalidDocBlockProvider(): array
     {
         return [
@@ -30,7 +33,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         ];
     }
 
-    public function testFromDocBlocks()
+    public function testFromDocBlocks(): void
     {
         $docBlocks = [
             <<<'EOF'
@@ -134,7 +137,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         array $varNames,
         array $varTypes,
         array $varDescriptions
-    ) {
+    ): void {
         $phpDoc = new PhpDoc($docBlock);
         $this->assertSame($summary, $phpDoc->Summary);
         $this->assertSame($description, $this->newlinesToNative($phpDoc->Description));
@@ -147,7 +150,10 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         }
     }
 
-    public static function varTagsProvider()
+    /**
+     * @return array<array{string,string|null,string|null,array<int|string>,array<string|null>,array<string|null>,array<string|null>}>
+     */
+    public static function varTagsProvider(): array
     {
         return [
             [
@@ -262,7 +268,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         ];
     }
 
-    public function testTemplateTags()
+    public function testTemplateTags(): void
     {
         $docBlock = <<<'EOF'
             /**
@@ -279,7 +285,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         $this->assertSame('mixed', $phpDoc->Templates['T']->Type);
     }
 
-    public function testTemplateInheritance()
+    public function testTemplateInheritance(): void
     {
         $docBlock = <<<'EOF'
             /**
@@ -321,7 +327,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         $this->assertSame(null, $phpDoc->Templates['TValue']->Description);
     }
 
-    public function testFences()
+    public function testFences(): void
     {
         $docBlock =
             <<<'EOF'
@@ -374,7 +380,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         $this->assertSame(null, $phpDoc->Vars[0]->Description ?? null);
     }
 
-    public function testBlankLines()
+    public function testBlankLines(): void
     {
         $docBlock = <<<'EOF'
             /**
@@ -401,7 +407,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         $this->assertSame('object', $phpDoc->Templates['T']->Type ?? null);
     }
 
-    public function testNoBlankLineAfterSummary()
+    public function testNoBlankLineAfterSummary(): void
     {
         $docBlock = <<<'EOF'
             /**
@@ -416,7 +422,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         $this->assertCount(0, $phpDoc->Templates);
     }
 
-    public function testMultiLineTagDescription()
+    public function testMultiLineTagDescription(): void
     {
         $docBlock = <<<'EOF'
             /**
@@ -434,14 +440,17 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
     /**
      * @dataProvider eolProvider
      */
-    public function testEol(string $docBlock, string $summary, string $description)
+    public function testEol(string $docBlock, string $summary, string $description): void
     {
         $phpDoc = new PhpDoc($docBlock);
         $this->assertSame($summary, $phpDoc->Summary);
         $this->assertSame($description, $phpDoc->Description);
     }
 
-    public static function eolProvider()
+    /**
+     * @return array<string,string[]>
+     */
+    public static function eolProvider(): array
     {
         return [
             'CRLF' => [
@@ -465,7 +474,7 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
     /**
      * @dataProvider typeRegexProvider
      */
-    public function testTypeRegex(string $phpDocType, bool $expectMatch = true)
+    public function testTypeRegex(string $phpDocType, bool $expectMatch = true): void
     {
         $regex = Regex::anchorAndDelimit(Regex::PHPDOC_TYPE);
         if ($expectMatch) {
@@ -475,7 +484,10 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         }
     }
 
-    public static function typeRegexProvider()
+    /**
+     * @return array<array{string,1?:bool}>
+     */
+    public static function typeRegexProvider(): array
     {
         // Extracted from tests/PHPStan/Parser/TypeParserTest.php in
         // phpstan/phpdoc-parser

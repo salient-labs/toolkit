@@ -269,4 +269,9 @@ final class CurlerHeaders implements ICurlerHeaders
             )
         ));
     }
+
+    public function getTrailers(): array
+    {
+        return $this->Trailers;
+    }
 }

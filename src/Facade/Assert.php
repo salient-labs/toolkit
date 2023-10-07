@@ -14,7 +14,7 @@ use Lkrms\Utility\Assertions;
  * @method static void unload() Clear the underlying Assertions instance
  * @method static void argvIsRegistered() A facade for Assertions::argvIsRegistered()
  * @method static void localeIsUtf8() A facade for Assertions::localeIsUtf8()
- * @method static void notEmpty($value, ?string $name = null) A facade for Assertions::notEmpty()
+ * @method static void notEmpty(mixed $value, ?string $name = null) A facade for Assertions::notEmpty()
  * @method static void patternMatches(?string $value, string $pattern, ?string $name = null) A facade for Assertions::patternMatches()
  * @method static void sapiIsCli() A facade for Assertions::sapiIsCli()
  *

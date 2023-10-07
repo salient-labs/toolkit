@@ -6,12 +6,11 @@ parameters:
 	level: 6
 	paths:
 		- bin/lk-util
-		- bootstrap.php
 		- lib
 		- scripts
 		- src
 		- stubs
 		- tests/unit
+		- bootstrap.php
 	ignoreErrors:
 		- "#^Property Lkrms\\\\.+\\\\Command\\\\.+\\:\\:\\$[a-zA-Z0-9_]+ is never written, only read\\.$#"
-		- "#^Method Lkrms\\\\Tests\\\\(.+Test|TestCase)\\:\\:.+\\(\\) has no return type specified\\.$#"

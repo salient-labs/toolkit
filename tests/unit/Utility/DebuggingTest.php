@@ -9,7 +9,7 @@ use function Lkrms\Tests\Utility\Debugging\getFunctionCallback;
 
 final class DebuggingTest extends \Lkrms\Tests\TestCase
 {
-    public function testGetCaller()
+    public function testGetCaller(): void
     {
         $class = new GetCallerClass();
 

@@ -598,6 +598,9 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         self::$HandleIsReset = true;
     }
 
+    /**
+     * @param mixed[]|null $query
+     */
     private function initialise(string $method, ?array $query, ?ICurlerPager $pager = null): void
     {
         $this->ExecuteCount = 0;
@@ -714,11 +717,17 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         }
     }
 
+    /**
+     * @param mixed[]|null $query
+     */
     public function getQueryUrl(?array $query): string
     {
         return $this->BaseUrl . $this->getQueryString($query);
     }
 
+    /**
+     * @param mixed[]|null $query
+     */
     private function getQueryString(?array $query): string
     {
         if (!$query) {
@@ -1090,21 +1099,37 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         return $this->paginate(HttpRequestMethod::DELETE, $query, $data);
     }
 
+    /**
+     * @param mixed[]|null $query
+     * @return mixed
+     */
     public function rawPost(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::POST, $query, $data, $mimeType);
     }
 
+    /**
+     * @param mixed[]|null $query
+     * @return mixed
+     */
     public function rawPut(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PUT, $query, $data, $mimeType);
     }
 
+    /**
+     * @param mixed[]|null $query
+     * @return mixed
+     */
     public function rawPatch(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::PATCH, $query, $data, $mimeType);
     }
 
+    /**
+     * @param mixed[]|null $query
+     * @return mixed
+     */
     public function rawDelete(string $data, string $mimeType, ?array $query = null)
     {
         return $this->process(HttpRequestMethod::DELETE, $query, $data, $mimeType);
@@ -1297,8 +1322,8 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     /**
      * Follow HTTP `Link` headers to retrieve and merge paged JSON data
      *
-     * @param array $query
-     * @return array All returned entities.
+     * @param mixed[] $query
+     * @return mixed[] All returned entities.
      */
     public function getAllLinked(?array $query = null): array
     {
@@ -1331,8 +1356,8 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
      * Follow `$result['links']['next']` to retrieve and merge paged JSON data
      *
      * @param string $entityName Data is retrieved from `$result[$entityName]`.
-     * @param array $query
-     * @return array All returned entities.
+     * @param mixed[] $query
+     * @return mixed[] All returned entities.
      */
     public function getAllLinkedByEntity($entityName, ?array $query = null): array
     {
@@ -1357,7 +1382,12 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         return $entities;
     }
 
-    private static function collateNested($data, array $path, array &$entities)
+    /**
+     * @param mixed $data
+     * @param string[] $path
+     * @param mixed[] $entities
+     */
+    private static function collateNested($data, array $path, array &$entities): void
     {
         if (empty($path)) {
             $entities = array_merge($entities, Convert::toList($data));
@@ -1375,7 +1405,10 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         }
     }
 
-    final public static function walkGraphQL(array &$data, callable $filter = null)
+    /**
+     * @param mixed[] $data
+     */
+    final public static function walkGraphQL(array &$data, callable $filter = null): void
     {
         if (Test::isListArray($data, true)) {
             array_walk(
@@ -1409,6 +1442,10 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         }
     }
 
+    /**
+     * @param array<string,mixed>|null $variables
+     * @return mixed[]
+     */
     public function getByGraphQL(
         string $query,
         array $variables = null,

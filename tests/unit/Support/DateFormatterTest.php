@@ -8,7 +8,7 @@ use DateTimeInterface;
 
 final class DateFormatterTest extends \Lkrms\Tests\TestCase
 {
-    public function testDotNet()
+    public function testDotNet(): void
     {
         $formatter = new DateFormatter(DateTimeInterface::RFC3339_EXTENDED, null, RegexDateParser::dotNet());
         $formatter2 = new DateFormatter(DateTimeInterface::RFC3339_EXTENDED, 'Australia/Sydney', RegexDateParser::dotNet());

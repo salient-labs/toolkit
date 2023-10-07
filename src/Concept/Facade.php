@@ -122,6 +122,8 @@ abstract class Facade implements IFacade
 
     /**
      * @internal
+     * @param mixed[] $arguments
+     * @return mixed
      */
     final public static function __callStatic(string $name, array $arguments)
     {

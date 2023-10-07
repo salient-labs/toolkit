@@ -10,7 +10,7 @@ use ValueError;
 
 final class ArrayMapperTest extends \Lkrms\Tests\TestCase
 {
-    public function testGetKeyMapClosureCache()
+    public function testGetKeyMapClosureCache(): void
     {
         $map = [
             'USER_ID' => 'Id',
@@ -29,8 +29,9 @@ final class ArrayMapperTest extends \Lkrms\Tests\TestCase
      * @param array<array-key,array-key|array-key[]> $map
      * @param array<string,mixed> $in
      * @param ArrayKeyConformity::* $conformity
+     * @param int-mask-of<ArrayMapperFlag::*> $flags
      */
-    public function testGetKeyMapClosure($expected, array $map, array $in, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED)
+    public function testGetKeyMapClosure($expected, array $map, array $in, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED): void
     {
         $closure = Mapper::getKeyMapClosure($map, $conformity, $flags);
         if (!is_array($expected)) {
@@ -46,7 +47,10 @@ final class ArrayMapperTest extends \Lkrms\Tests\TestCase
         $this->assertSame($expected, $closure($in));
     }
 
-    public static function getKeyMapClosureProvider()
+    /**
+     * @return array<string,array{array<string,mixed>|class-string<\Throwable>|null,array<array-key,array-key|array-key[]>,array<string,mixed>,3?:ArrayKeyConformity::*,4?:int-mask-of<ArrayMapperFlag::*>}>
+     */
+    public static function getKeyMapClosureProvider(): array
     {
         $in = [
             'A_mapped' => 'value 1',

@@ -12,17 +12,18 @@ use UnexpectedValueException;
 
 class SendHttpRequest extends Command
 {
-    private $Method;
+    private string $Method;
 
-    private function getMethod()
+    private function getMethod(): string
     {
-        if ($this->Method) {
+        if (isset($this->Method)) {
             return $this->Method;
         }
 
         $name = $this->nameParts();
+        $this->Method = strtoupper(array_pop($name));
 
-        return $this->Method = strtoupper(array_pop($name));
+        return $this->Method;
     }
 
     public function description(): string
@@ -118,7 +119,9 @@ class SendHttpRequest extends Command
         }
 
         if ($paginate) {
-            $result = Convert::iterableToArray($result);
+            /** @var iterable<array-key,mixed> $result */
+            $array = Convert::iterableToArray($result);
+            $result = $array;
         }
 
         echo json_encode($result);

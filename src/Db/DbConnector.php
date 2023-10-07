@@ -170,8 +170,10 @@ final class DbConnector implements IReadable
             case DbDriver::MSSQL:
                 $db->setConnectionParameter(
                     'TrustServerCertificate',
+                    // @phpstan-ignore-next-line
                     (bool) Env::get('mssql_trust_server_certificate', null)
                 );
+                // @phpstan-ignore-next-line
                 $db->setConnectionParameter('LoginTimeout', $timeout);
             default:
                 $db->Connect(

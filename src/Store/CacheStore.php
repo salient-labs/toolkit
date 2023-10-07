@@ -73,6 +73,7 @@ final class CacheStore extends SqliteStore
      * Stores `$value` under `$key` until the cache is flushed or `$expiry`
      * seconds have passed.
      *
+     * @param mixed $value
      * @param int $expiry The time in seconds before `$value` expires (maximum
      * 30 days), or the expiry time's Unix timestamp. `0` = no expiry.
      * @return $this
@@ -171,6 +172,7 @@ final class CacheStore extends SqliteStore
      * @param int|null $maxAge The time in seconds before stored values should
      * be considered expired (maximum 30 days). Overrides stored expiry times
      * for this request only. `0` = no expiry.
+     * @return mixed|false
      */
     public function get(string $key, ?int $maxAge = null)
     {
@@ -278,6 +280,8 @@ final class CacheStore extends SqliteStore
 
     /**
      * Retrieve an item, or get it from a callback and store it for next time
+     *
+     * @return mixed
      */
     public function maybeGet(string $key, callable $callback, int $expiry = 0)
     {

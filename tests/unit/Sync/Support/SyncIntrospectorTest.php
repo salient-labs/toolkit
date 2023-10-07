@@ -17,7 +17,7 @@ use ReflectionFunction;
 
 final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase
 {
-    public function testEntityToProvider()
+    public function testEntityToProvider(): void
     {
         $this->assertEquals(
             UserProvider::class,
@@ -34,7 +34,7 @@ final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase
         );
     }
 
-    public function testProviderToEntity()
+    public function testProviderToEntity(): void
     {
         $this->assertEquals(
             [User::class],
@@ -61,7 +61,7 @@ final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase
         );
     }
 
-    public function testGetSyncOperationMethod()
+    public function testGetSyncOperationMethod(): void
     {
         $container = (new Container())->service(JsonPlaceholderApi::class);
         $provider = $container->get(PostProvider::class);

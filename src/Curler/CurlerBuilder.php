@@ -53,13 +53,13 @@ use Lkrms\Support\DateFormatter;
  * @method iterable<mixed> putP(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::putP() on a new instance
  * @method iterable<mixed> patchP(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::patchP() on a new instance
  * @method iterable<mixed> deleteP(mixed[]|object|null $data = null, mixed[]|null $query = null) Call Curler::deleteP() on a new instance
- * @method mixed rawPost(string $data, string $mimeType, ?array $query = null) Call Curler::rawPost() on a new instance
- * @method mixed rawPut(string $data, string $mimeType, ?array $query = null) Call Curler::rawPut() on a new instance
- * @method mixed rawPatch(string $data, string $mimeType, ?array $query = null) Call Curler::rawPatch() on a new instance
- * @method mixed rawDelete(string $data, string $mimeType, ?array $query = null) Call Curler::rawDelete() on a new instance
- * @method array getAllLinked(array $query = null) Follow HTTP `Link` headers to retrieve and merge paged JSON data (see {@see Curler::getAllLinked()})
- * @method array getAllLinkedByEntity(string $entityName, array $query = null) Follow `$result['links']['next']` to retrieve and merge paged JSON data (see {@see Curler::getAllLinkedByEntity()})
- * @method array getByGraphQL(string $query, ?array $variables = null, ?string $entityPath = null, ?string $pagePath = null, ?callable $filter = null, ?int $requestLimit = null) Call Curler::getByGraphQL() on a new instance
+ * @method mixed rawPost(string $data, string $mimeType, mixed[]|null $query = null) Call Curler::rawPost() on a new instance
+ * @method mixed rawPut(string $data, string $mimeType, mixed[]|null $query = null) Call Curler::rawPut() on a new instance
+ * @method mixed rawPatch(string $data, string $mimeType, mixed[]|null $query = null) Call Curler::rawPatch() on a new instance
+ * @method mixed rawDelete(string $data, string $mimeType, mixed[]|null $query = null) Call Curler::rawDelete() on a new instance
+ * @method mixed[] getAllLinked(mixed[] $query = null) Follow HTTP `Link` headers to retrieve and merge paged JSON data (see {@see Curler::getAllLinked()})
+ * @method mixed[] getAllLinkedByEntity(string $entityName, mixed[] $query = null) Follow `$result['links']['next']` to retrieve and merge paged JSON data (see {@see Curler::getAllLinkedByEntity()})
+ * @method mixed[] getByGraphQL(string $query, array<string,mixed>|null $variables = null, ?string $entityPath = null, ?string $pagePath = null, ?callable $filter = null, ?int $requestLimit = null) Call Curler::getByGraphQL() on a new instance
  *
  * @uses Curler
  *

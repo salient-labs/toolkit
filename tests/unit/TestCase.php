@@ -61,7 +61,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * Get the path to the fixtures directory for a class
      */
-    public function getFixturesPath(string $class)
+    public function getFixturesPath(string $class): string
     {
         return dirname(__DIR__)
             . '/fixtures/'

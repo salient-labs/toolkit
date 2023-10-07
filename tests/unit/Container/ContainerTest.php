@@ -6,16 +6,8 @@ use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\IApplication;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\IService;
-use Lkrms\Contract\IServiceShared;
-use Lkrms\Contract\IServiceSingleton;
-use Lkrms\Contract\ReceivesContainer;
-use Lkrms\Contract\ReceivesService;
-use Lkrms\Contract\ReturnsContainer;
-use Lkrms\Contract\ReturnsService;
 use Lkrms\Exception\ContainerServiceNotFoundException;
 use Psr\Container\ContainerInterface;
-use RuntimeException;
 
 final class ContainerTest extends \Lkrms\Tests\TestCase
 {
@@ -28,31 +20,31 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
         $container->get(IApplication::class);
     }
 
-    public function testServiceTransient()
+    public function testServiceTransient(): void
     {
         $container = (new Container())->service(TestServiceImplA::class, null, null, ServiceLifetime::TRANSIENT);
         $this->_testServiceTransient($container);
     }
 
-    public function testServiceShared()
+    public function testServiceShared(): void
     {
         $container = (new Container())->service(TestServiceImplA::class, null, null, ServiceLifetime::SERVICE_SINGLETON);
         $this->_testServiceShared($container);
     }
 
-    public function testServiceSingleton()
+    public function testServiceSingleton(): void
     {
         $container = (new Container())->service(TestServiceImplA::class, null, null, ServiceLifetime::SINGLETON);
         $this->_testServiceSingleton($container);
     }
 
-    public function testServiceSharedSingleton()
+    public function testServiceSharedSingleton(): void
     {
         $container = (new Container())->service(TestServiceImplA::class, null, null, ServiceLifetime::SINGLETON | ServiceLifetime::SERVICE_SINGLETON);
         $this->_testServiceSharedSingleton($container);
     }
 
-    public function testServiceInherit()
+    public function testServiceInherit(): void
     {
         $container = (new Container())->service(TestServiceImplA::class);
         $this->_testServiceTransient($container);
@@ -67,7 +59,7 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
         $this->_testServiceSharedSingleton($container, TestServiceImplD::class);
     }
 
-    public function testServiceBindings()
+    public function testServiceBindings(): void
     {
         $container = (new Container())->service(TestServiceImplB::class);
         $ts1 = $container->get(ITestService1::class);
@@ -104,7 +96,7 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
         $container->get(A::class);
     }
 
-    public function testGetAs()
+    public function testGetAs(): void
     {
         $container = (new Container())->service(TestServiceImplB::class);
 
@@ -154,7 +146,7 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
         $this->assertSame(B::class, $o8->service());
     }
 
-    private function _testServiceTransient($container, $concrete = TestServiceImplA::class)
+    private function _testServiceTransient(Container $container, string $concrete = TestServiceImplA::class): void
     {
         $c1 = $container->get($concrete);
         $c2 = $container->get($concrete);
@@ -171,7 +163,7 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
         $this->assertNotSame($c2, $ts2a);
     }
 
-    private function _testServiceShared($container, $concrete = TestServiceImplA::class)
+    private function _testServiceShared(Container $container, string $concrete = TestServiceImplA::class): void
     {
         $c1 = $container->get($concrete);
         $c2 = $container->get($concrete);
@@ -189,7 +181,7 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
         $this->assertNotSame($c2, $ts2a);
     }
 
-    private function _testServiceSingleton($container, $concrete = TestServiceImplA::class)
+    private function _testServiceSingleton(Container $container, string $concrete = TestServiceImplA::class): void
     {
         $c1 = $container->get($concrete);
         $c2 = $container->get($concrete);
@@ -204,7 +196,7 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
         $this->assertSame($c1, $ts2a);
     }
 
-    private function _testServiceSharedSingleton($container, $concrete = TestServiceImplA::class)
+    private function _testServiceSharedSingleton(Container $container, string $concrete = TestServiceImplA::class): void
     {
         $c1 = $container->get($concrete);
         $c2 = $container->get($concrete);
@@ -220,118 +212,3 @@ final class ContainerTest extends \Lkrms\Tests\TestCase
         $this->assertNotSame($c1, $ts2a);
     }
 }
-
-interface ITestService1 {}
-
-interface ITestService2 {}
-
-class TestServiceImplA implements IService, ITestService1, ITestService2
-{
-    public static function getServices(): array
-    {
-        return [ITestService1::class, ITestService2::class];
-    }
-
-    public static function getContextualBindings(): array
-    {
-        return [A::class => B::class];
-    }
-}
-
-class TestServiceImplB extends TestServiceImplA implements IServiceSingleton {}
-
-class TestServiceImplC extends TestServiceImplA implements IServiceShared {}
-
-class TestServiceImplD extends TestServiceImplB implements IServiceShared {}
-
-trait TestTrait
-{
-    protected ?IContainer $Container = null;
-
-    protected ?string $Service = null;
-
-    public function service(): string
-    {
-        return $this->Service ?? static::class;
-    }
-
-    public function app(): IContainer
-    {
-        return $this->container();
-    }
-
-    public function container(): IContainer
-    {
-        return $this->Container ?: ($this->Container = new Container());
-    }
-
-    public function setContainer(IContainer $container)
-    {
-        if ($this->Container) {
-            throw new RuntimeException('setContainer already called');
-        }
-        $this->Container = $container;
-
-        return $this;
-    }
-
-    public function setService(string $service)
-    {
-        if ($this->Service) {
-            throw new RuntimeException('setService already called');
-        }
-        $this->Service = $service;
-
-        return $this;
-    }
-}
-
-/**
- * @template T of IContainer
- * @implements ReturnsContainer<T>
- */
-class A implements ReceivesContainer, ReceivesService, ReturnsContainer, ReturnsService
-{
-    use TestTrait;
-
-    public ITestService1 $TestService;
-
-    public function __construct(ITestService1 $testService)
-    {
-        $this->TestService = $testService;
-    }
-}
-
-/**
- * @template T of IContainer
- * @extends A<T>
- */
-class B extends A {}
-
-/**
- * @template T of IContainer
- * @implements ReturnsContainer<T>
- */
-class C implements ReceivesContainer, ReceivesService, ReturnsContainer, ReturnsService
-{
-    use TestTrait;
-
-    /**
-     * @var A<T>
-     */
-    public A $a;
-
-    /**
-     * @param A<T> $a
-     */
-    public function __construct(A $a)
-    {
-        $this->a = $a;
-    }
-}
-
-/**
- * @template T of IContainer
- * @extends C<T>
- */
-class D extends C {}

@@ -13,7 +13,7 @@ final class PhpTokenTest extends \Lkrms\Tests\TestCase
      *
      * @param PhpToken[] $expected
      */
-    public function testTokenize(string $input, array $expected)
+    public function testTokenize(string $input, array $expected): void
     {
         $actual = PhpToken::tokenize(Str::setEol($input), TOKEN_PARSE);
         $actualCode = array_reduce(

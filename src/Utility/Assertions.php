@@ -17,6 +17,9 @@ final class Assertions
         );
     }
 
+    /**
+     * @param mixed $value
+     */
     public function notEmpty($value, ?string $name = null): void
     {
         if (empty($value)) {

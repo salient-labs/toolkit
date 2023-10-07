@@ -8,7 +8,7 @@ use stdClass;
 
 final class RecursiveObjectOrArrayIteratorTest extends \Lkrms\Tests\TestCase
 {
-    public function testArrayRecursion()
+    public function testArrayRecursion(): void
     {
         $mixed = $this->getArrayWithNestedObjectsAndArrays($a, $d1, $d2, $e);
         $iterator = new RecursiveObjectOrArrayIterator($mixed);
@@ -69,7 +69,10 @@ final class RecursiveObjectOrArrayIteratorTest extends \Lkrms\Tests\TestCase
         $this->assertSame(21, $mixed[0]->k);
     }
 
-    private function getArrayWithNestedObjectsAndArrays(?stdClass &$a = null, ?stdClass &$d1 = null, ?stdClass &$d2 = null, ?stdClass &$e = null)
+    /**
+     * @return mixed[]
+     */
+    private function getArrayWithNestedObjectsAndArrays(?stdClass &$a = null, ?stdClass &$d1 = null, ?stdClass &$d2 = null, ?stdClass &$e = null): array
     {
         $a = new stdClass();
         $a->b = [
