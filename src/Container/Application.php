@@ -37,10 +37,20 @@ class Application extends Container implements IApplication
 
     private string $AppName;
     private string $BasePath;
+
+    // @phpstan-ignore-next-line
     private ?string $CachePath;
+
+    // @phpstan-ignore-next-line
     private ?string $ConfigPath;
+
+    // @phpstan-ignore-next-line
     private ?string $DataPath;
+
+    // @phpstan-ignore-next-line
     private ?string $LogPath;
+
+    // @phpstan-ignore-next-line
     private ?string $TempPath;
 
     /**

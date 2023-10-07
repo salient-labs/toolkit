@@ -280,6 +280,7 @@ final class CliOption implements IReadable, IImmutable, ProvidesBuilder
 
     /**
      * @var mixed
+     * @phpstan-ignore-next-line
      */
     private $BindTo;
 

@@ -7,37 +7,37 @@ use Lkrms\Facade\Composer;
 
 final class ComposerTest extends \Lkrms\Tests\TestCase
 {
-    public function testHasDevDependencies()
+    public function testHasDevDependencies(): void
     {
         $this->assertTrue(Composer::hasDevDependencies());
     }
 
-    public function testGetRootPackageName()
+    public function testGetRootPackageName(): void
     {
         $this->assertSame('lkrms/util', Composer::getRootPackageName());
     }
 
-    public function testGetRootPackageReference()
+    public function testGetRootPackageReference(): void
     {
         $this->expectNotToPerformAssertions();
     }
 
-    public function testGetRootPackageVersion()
+    public function testGetRootPackageVersion(): void
     {
         $this->expectNotToPerformAssertions();
     }
 
-    public function testGetRootPackagePath()
+    public function testGetRootPackagePath(): void
     {
         $this->assertSame(realpath(dirname(__DIR__, 3)), Composer::getRootPackagePath());
     }
 
-    public function testGetPackageReference()
+    public function testGetPackageReference(): void
     {
         $this->expectNotToPerformAssertions();
     }
 
-    public function testGetPackageVersion()
+    public function testGetPackageVersion(): void
     {
         $this->assertSame(
             InstalledVersions::getPrettyVersion('phpstan/phpstan'),
@@ -51,17 +51,17 @@ final class ComposerTest extends \Lkrms\Tests\TestCase
         $this->assertNull(Composer::getPackageVersion('composer/composer'));
     }
 
-    public function testGetPackagePath()
+    public function testGetPackagePath(): void
     {
         $this->expectNotToPerformAssertions();
     }
 
-    public function testGetClassPath()
+    public function testGetClassPath(): void
     {
         $this->expectNotToPerformAssertions();
     }
 
-    public function testGetNamespacePath()
+    public function testGetNamespacePath(): void
     {
         $this->expectNotToPerformAssertions();
     }

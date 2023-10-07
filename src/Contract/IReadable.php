@@ -15,6 +15,9 @@ interface IReadable
      */
     public static function getReadable(): array;
 
+    /**
+     * @return mixed
+     */
     public function __get(string $name);
 
     public function __isset(string $name): bool;

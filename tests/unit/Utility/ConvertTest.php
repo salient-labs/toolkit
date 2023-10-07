@@ -233,7 +233,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         ];
     }
 
-    public function testArrayKeyToOffset()
+    public function testArrayKeyToOffset(): void
     {
         $data = [
             'a' => 'value0',
@@ -249,7 +249,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         $this->assertNull(Convert::arrayKeyToOffset('c', $data));
     }
 
-    public function testArraySpliceAtKey()
+    public function testArraySpliceAtKey(): void
     {
         $data1 = $data2 = $data3 = $data4 = $data5 = [
             'a' => 'value0',
@@ -302,7 +302,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         $slice = Convert::arraySpliceAtKey($data5, 'c', 2);
     }
 
-    public function testRenameArrayKey()
+    public function testRenameArrayKey(): void
     {
         $data = [
             'a' => 'value0',
@@ -329,12 +329,12 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         $slice = Convert::renameArrayKey('c', 2, $data);
     }
 
-    public function testResolvePath()
+    public function testResolvePath(): void
     {
         $this->assertEquals('/dir/subdir2/doc', Convert::resolvePath('/dir/subdir/files/../../subdir2/./doc'));
     }
 
-    public function testResolveRelativeUrl()
+    public function testResolveRelativeUrl(): void
     {
         // From [RFC1808] Section 5
         $baseUrl = 'http://a/b/c/d;p?q#f';
@@ -386,7 +386,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         }
     }
 
-    public function testParseUrl()
+    public function testParseUrl(): void
     {
         $expected = [
             [
@@ -537,7 +537,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         }
     }
 
-    public function testUnparseUrl()
+    public function testUnparseUrl(): void
     {
         foreach ($this->getUrls() as $url) {
             $this->assertSame($url, Convert::unparseUrl(parse_url($url)));
@@ -547,6 +547,9 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         }
     }
 
+    /**
+     * @return string[]
+     */
     private function getUrls(bool $withParams = false): array
     {
         $params = $withParams ? ';params' : '';
@@ -579,7 +582,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         ];
     }
 
-    public function testIterableToItem()
+    public function testIterableToItem(): void
     {
         $data = [
             [
@@ -625,7 +628,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         $this->assertSame(['id' => 10, 'name' => 'A'], Convert::iterableToItem($iterator, 'id', 10));
     }
 
-    public function testQueryToData()
+    public function testQueryToData(): void
     {
         $this->assertSame([
             'key1' => 'value1',
@@ -639,7 +642,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
      *
      * @param mixed ...$args
      */
-    public function testLinesToLists(string $expected, ...$args)
+    public function testLinesToLists(string $expected, ...$args): void
     {
         $this->assertSame($expected, $this->newlinesToNative(Convert::linesToLists(...$args)));
     }
@@ -1084,7 +1087,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         ];
     }
 
-    public function testToShellArg()
+    public function testToShellArg(): void
     {
         $this->assertSame("''", Convert::toShellArg(''));
         $this->assertSame('abc', Convert::toShellArg('abc'));
@@ -1100,7 +1103,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         string $expected,
         string $text,
         ?string $preserve = null
-    ) {
+    ): void {
         $this->assertSame($expected, Convert::toSnakeCase($text, $preserve));
     }
 
@@ -1126,7 +1129,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         string $expected,
         string $text,
         ?string $preserve = null
-    ) {
+    ): void {
         $this->assertSame($expected, Convert::toKebabCase($text, $preserve));
     }
 
@@ -1152,7 +1155,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         string $expected,
         string $text,
         ?string $preserve = null
-    ) {
+    ): void {
         $this->assertSame($expected, Convert::toPascalCase($text, $preserve));
     }
 
@@ -1178,7 +1181,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         string $expected,
         string $text,
         ?string $preserve = null
-    ) {
+    ): void {
         $this->assertSame($expected, Convert::toCamelCase($text, $preserve));
     }
 
@@ -1304,10 +1307,13 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
     public function testToNormal(
         string $expected,
         string $text
-    ) {
+    ): void {
         $this->assertSame($expected, Convert::toNormal($text));
     }
 
+    /**
+     * @return array<string[]>
+     */
     public static function toNormalProvider(): array
     {
         return [
@@ -1322,16 +1328,21 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
 
     /**
      * @dataProvider dataToQueryProvider
+     *
+     * @param mixed[] $data
      */
     public function testDataToQuery(
         string $expected,
         array $data,
         bool $preserveKeys = false,
         ?DateFormatter $dateFormatter = null
-    ) {
+    ): void {
         $this->assertSame($expected, Convert::dataToQuery($data, $preserveKeys, $dateFormatter));
     }
 
+    /**
+     * @return array<array{string,mixed[],2?:bool,3?:DateFormatter}>
+     */
     public static function dataToQueryProvider(): array
     {
         $data = [

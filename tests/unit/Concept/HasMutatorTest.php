@@ -7,7 +7,7 @@ use LogicException;
 
 final class HasMutatorTest extends \Lkrms\Tests\TestCase
 {
-    public function testWithPropertyValue()
+    public function testWithPropertyValue(): void
     {
         $a = new MyMutatingClass();
         $b = $a->with('A', 1);

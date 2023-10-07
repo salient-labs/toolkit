@@ -17,6 +17,7 @@ final class Formatters
      *
      * Non-scalar values are converted to JSON first.
      *
+     * @param mixed[] $list
      * @param string $format The format to pass to `sprintf`. Must include a
      * string conversion specification (`%s`).
      * @param int $indentSpaces Spaces to add after newlines in `$list`.
@@ -44,6 +45,7 @@ final class Formatters
      *
      * Non-scalar values are converted to JSON first.
      *
+     * @param mixed[] $array
      * @param string $format The format to pass to `sprintf`. Must include two
      * string conversion specifications (`%s`).
      * @param int $indentSpaces Spaces to add after newlines in `$array`.
@@ -85,6 +87,9 @@ final class Formatters
         return $value ? 'yes' : 'no';
     }
 
+    /**
+     * @return array{string,string}
+     */
     private function getBetween(string $between): array
     {
         if (strlen($between) % 2) {

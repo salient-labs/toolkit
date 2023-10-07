@@ -9,7 +9,7 @@ use Lkrms\Tests\Sync\Entity\User;
 
 final class SyncEntityTest extends \Lkrms\Tests\TestCase
 {
-    public function testToArrayRecursionDetection()
+    public function testToArrayRecursionDetection(): void
     {
         $user = new User();
         $user->Id = 1;

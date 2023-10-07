@@ -11,7 +11,7 @@ use Lkrms\Contract\ReceivesFacade;
 final class Debugging implements ReceivesFacade
 {
     /**
-     * @var class-string<IFacade>|null
+     * @var class-string<IFacade<static>>|null
      */
     private $Facade;
 
@@ -64,7 +64,7 @@ final class Debugging implements ReceivesFacade
      * `1` or higher.
      *
      * @param int $depth
-     * @return array
+     * @return array<int|string,int|string>
      */
     public function getCaller(int $depth = 0): array
     {

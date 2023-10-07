@@ -13,7 +13,7 @@ use Lkrms\Contract\IContainer;
 
 final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
 {
-    public function testFlag()
+    public function testFlag(): void
     {
         $option = $this
             ->getFlag()
@@ -74,7 +74,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(null, $option->ValueCallback);
     }
 
-    public function testValue()
+    public function testValue(): void
     {
         $option = CliOption::build(new Container())
             ->long('dest')
@@ -112,7 +112,7 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(CliOptionVisibility::ALL, $option->Visibility);
     }
 
-    private function assertIsFlag(CliOption $option)
+    private function assertIsFlag(CliOption $option): void
     {
         $this->assertSame('flag', $option->Long);
         $this->assertSame('f', $option->Short);

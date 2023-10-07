@@ -21,6 +21,9 @@ final class QueryPager implements ICurlerPager
 
     private ?int $PageSize;
 
+    /**
+     * @var mixed[]
+     */
     private array $Query;
 
     private ?string $QueryPageKey;

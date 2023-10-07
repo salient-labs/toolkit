@@ -12,7 +12,7 @@ use UnexpectedValueException;
 
 final class PipelineTest extends \Lkrms\Tests\TestCase
 {
-    public function testStream()
+    public function testStream(): void
     {
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
@@ -33,7 +33,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         );
     }
 
-    public function testAfter()
+    public function testAfter(): void
     {
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
@@ -55,7 +55,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         );
     }
 
-    public function testUnless()
+    public function testUnless(): void
     {
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
         $out = [];
@@ -88,7 +88,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
             ->run();
     }
 
-    public function testThroughKeyMap()
+    public function testThroughKeyMap(): void
     {
         $in = [
             [
@@ -195,7 +195,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         }
     }
 
-    public function testWithConformity()
+    public function testWithConformity(): void
     {
         $good = [
             [

@@ -10,7 +10,7 @@ use Lkrms\Tests\Sync\Entity\User;
 
 final class SerializeRulesTest extends \Lkrms\Tests\TestCase
 {
-    public function testApply()
+    public function testApply(): void
     {
         $container = new Container();
 

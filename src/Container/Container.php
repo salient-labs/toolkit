@@ -249,6 +249,14 @@ class Container extends FluentInterface implements IContainer
     }
 
     /**
+     * @inheritDoc
+     */
+    final public function getContextStack(): array
+    {
+        return $this->ContextStack;
+    }
+
+    /**
      * @param array<string,string|object|array<string,mixed>> $subs
      */
     private function applyBindings(array $subs): void

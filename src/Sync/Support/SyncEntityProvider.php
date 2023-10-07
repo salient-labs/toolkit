@@ -67,6 +67,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
     /**
      * @var bool|null
+     * @phpstan-ignore-next-line
      */
     private $Offline;
 

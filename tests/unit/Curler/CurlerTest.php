@@ -6,7 +6,7 @@ use Lkrms\Curler\Curler;
 
 final class CurlerTest extends \Lkrms\Tests\TestCase
 {
-    public function testCurler()
+    public function testCurler(): void
     {
         $this->expectNotToPerformAssertions();
         return;

@@ -8,7 +8,7 @@ use LogicException;
 
 final class TypedCollectionTest extends \Lkrms\Tests\TestCase
 {
-    public function testTypedCollection()
+    public function testTypedCollection(): void
     {
         $collection = new MyCollection();
 

@@ -11,13 +11,16 @@ final class TestTest extends \Lkrms\Tests\TestCase
      *
      * @param mixed $value
      */
-    public function testIsArrayOfArrayKey($value, bool $expected, bool $expectedIfAllowEmpty)
+    public function testIsArrayOfArrayKey($value, bool $expected, bool $expectedIfAllowEmpty): void
     {
         $this->assertSame($expected, Test::isArrayOfArrayKey($value));
         $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfArrayKey($value, true));
     }
 
-    public static function isArrayOfArrayKeyProvider()
+    /**
+     * @return array<string,array{mixed,bool,bool}>
+     */
+    public static function isArrayOfArrayKeyProvider(): array
     {
         return [
             'null' => [null, false, false],
@@ -39,13 +42,16 @@ final class TestTest extends \Lkrms\Tests\TestCase
      *
      * @param mixed $value
      */
-    public function testIsArrayOfInt($value, bool $expected, bool $expectedIfAllowEmpty)
+    public function testIsArrayOfInt($value, bool $expected, bool $expectedIfAllowEmpty): void
     {
         $this->assertSame($expected, Test::isArrayOfInt($value));
         $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfInt($value, true));
     }
 
-    public static function isArrayOfIntProvider()
+    /**
+     * @return array<string,array{mixed,bool,bool}>
+     */
+    public static function isArrayOfIntProvider(): array
     {
         return [
             'null' => [null, false, false],
@@ -67,13 +73,16 @@ final class TestTest extends \Lkrms\Tests\TestCase
      *
      * @param mixed $value
      */
-    public function testIsArrayOfString($value, bool $expected, bool $expectedIfAllowEmpty)
+    public function testIsArrayOfString($value, bool $expected, bool $expectedIfAllowEmpty): void
     {
         $this->assertSame($expected, Test::isArrayOfString($value));
         $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfString($value, true));
     }
 
-    public static function isArrayOfStringProvider()
+    /**
+     * @return array<string,array{mixed,bool,bool}>
+     */
+    public static function isArrayOfStringProvider(): array
     {
         return [
             'null' => [null, false, false],
@@ -96,13 +105,16 @@ final class TestTest extends \Lkrms\Tests\TestCase
      * @param mixed $value
      * @param mixed $itemValue
      */
-    public function testIsArrayOfValue($value, $itemValue, bool $strict, bool $expected, bool $expectedIfAllowEmpty)
+    public function testIsArrayOfValue($value, $itemValue, bool $strict, bool $expected, bool $expectedIfAllowEmpty): void
     {
         $this->assertSame($expected, Test::isArrayOfValue($value, $itemValue, $strict));
         $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfValue($value, $itemValue, $strict, true));
     }
 
-    public static function isArrayOfValueProvider()
+    /**
+     * @return array<string,array{mixed,mixed,bool,bool}>
+     */
+    public static function isArrayOfValueProvider(): array
     {
         return [
             'null' => [null, null, false, false, false],

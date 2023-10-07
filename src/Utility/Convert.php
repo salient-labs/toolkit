@@ -32,6 +32,7 @@ final class Convert
     /**
      * Cast a value to a boolean, preserving null and converting boolean strings
      *
+     * @param mixed $value
      * @see Test::isBoolValue()
      */
     public static function toBoolOrNull($value): ?bool
@@ -45,6 +46,8 @@ final class Convert
 
     /**
      * Cast a value to an integer, preserving null
+     *
+     * @param mixed $value
      */
     public static function toIntOrNull($value): ?int
     {
@@ -57,7 +60,8 @@ final class Convert
      * Cast `$value` to `array` instead of calling this method unless you need a
      * non-empty array (`[null]` instead of `[]`) when `$value` is `null`.
      *
-     * @return array Either `$value`, `[$value]`, or `[]` (only if
+     * @param mixed $value
+     * @return mixed[] Either `$value`, `[$value]`, or `[]` (only if
      * `$emptyIfNull` is set and `$value` is `null`).
      */
     public static function toArray($value, bool $emptyIfNull = false): array
@@ -70,7 +74,8 @@ final class Convert
     /**
      * If a value isn't a list, make it the first element of one
      *
-     * @return array Either `$value`, `[$value]`, or `[]` (only if
+     * @param mixed $value
+     * @return mixed[] Either `$value`, `[$value]`, or `[]` (only if
      * `$emptyIfNull` is set and `$value` is `null`).
      */
     public static function toList($value, bool $emptyIfNull = false): array
@@ -110,6 +115,8 @@ final class Convert
      *   3 => 'plain scalar',
      * )
      * ```
+     * @param mixed $value
+     * @return mixed
      */
     public static function flatten($value)
     {
@@ -296,6 +303,7 @@ final class Convert
     /**
      * JSON-encode non-scalar values in an array
      *
+     * @param mixed[] $array
      * @return array<int,int|float|string|bool|null>
      */
     public static function toScalarArray(array $array): array
@@ -439,7 +447,7 @@ final class Convert
                 $expanded .= Pcre::replace('/(?<=\n|\G)\t/', $softTab, $line);
                 continue;
             }
-            if (!$i && $preserveLine1) {
+            if ($preserveLine1) {
                 $expanded .= $line;
                 continue;
             }
@@ -466,6 +474,7 @@ final class Convert
      * Get the offset of a key in an array
      *
      * @param string|int $key
+     * @param mixed[] $array
      * @return int|null `null` if `$key` is not found in `$array`.
      */
     public static function arrayKeyToOffset($key, array $array): ?int
@@ -481,8 +490,13 @@ final class Convert
      *
      * See `array_splice()` for more information.
      *
-     * @param string|int $key
-     * @return array The removed portion of the array.
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $array
+     * @param TKey $key
+     * @param array<TKey,TValue> $replacement
+     * @return array<TKey,TValue> The removed portion of the array.
      */
     public static function arraySpliceAtKey(array &$array, $key, ?int $length = null, array $replacement = []): array
     {
@@ -508,6 +522,8 @@ final class Convert
      *
      * @param string|int $key
      * @param string|int $newKey
+     * @param mixed[] $array
+     * @return mixed[]
      */
     public static function renameArrayKey($key, $newKey, array $array): array
     {
@@ -563,6 +579,7 @@ final class Convert
     /**
      * If a value is 'falsey', make it null
      *
+     * @param mixed $value
      * @return mixed Either `$value` or `null`.
      */
     public static function emptyToNull($value)
@@ -572,20 +589,29 @@ final class Convert
 
     /**
      * Get the first value that is not null
+     *
+     * @param mixed ...$values
+     * @return mixed
      */
     public static function coalesce(...$values)
     {
         while ($values) {
-            if (!is_null($value = array_shift($values))) {
+            $value = array_shift($values);
+            if ($value !== null) {
                 return $value;
             }
         }
-
         return null;
     }
 
     /**
      * If an iterable isn't already an array, make it one
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param iterable<TKey,TValue> $iterable
+     * @return array<TKey,TValue>
      */
     public static function iterableToArray(iterable $iterable, bool $preserveKeys = false): array
     {
@@ -594,6 +620,12 @@ final class Convert
 
     /**
      * If an iterable isn't already an Iterator, enclose it in one
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param iterable<TKey,TValue> $iterable
+     * @return Iterator<TKey,TValue>
      */
     public static function iterableToIterator(iterable $iterable): Iterator
     {
@@ -703,6 +735,10 @@ final class Convert
         return self::unparseUrl($url);
     }
 
+    /**
+     * @param array<string,string|int|null> $url
+     * @return array<string,string|int|null>
+     */
     private static function netLoc(array $url): array
     {
         return array_intersect_key($url, array_flip(['host', 'port', 'user', 'pass']));
@@ -714,7 +750,8 @@ final class Convert
      *
      * Other components are as per `parse_url`.
      *
-     * @return array|false `false` if `$url` cannot be parsed.
+     * @return array<string,string|int>|false `false` if `$url` cannot be
+     * parsed.
      */
     public static function parseUrl(string $url)
     {
@@ -830,9 +867,13 @@ final class Convert
      * )
      * ```
      *
-     * @param int|string|Closure $key Either the index or property name to use
-     * when retrieving keys from arrays or objects in `$list`, or a closure that
-     * returns a key for each item in `$list`.
+     * @template T of mixed[]|object
+     *
+     * @param array<T> $list
+     * @param int|string|(Closure(T): (int|string)) $key Either the index or
+     * property name to use when retrieving keys from arrays or objects in
+     * `$list`, or a closure that returns a key for each item in `$list`.
+     * @return array<T>
      */
     public static function listToMap(array $list, $key): array
     {
@@ -845,11 +886,16 @@ final class Convert
     /**
      * Get the first item in $list where the value at $key is $value
      *
-     * @param int|string|Closure $key Either the index or property name to use
-     * when retrieving values from arrays or objects in `$list`, or a closure
-     * that returns a value for each item in `$list`.
-     * @return array|object|false `false` if no item was found in `$list` with
-     * `$value` at `$key`.
+     * @template T0 of mixed[]|object
+     * @template T1
+     *
+     * @param iterable<array-key,T0> $list
+     * @param int|string|(Closure(T0): T1) $key Either the index or property
+     * name to use when retrieving values from arrays or objects in `$list`, or
+     * a closure that returns a value for each item in `$list`.
+     * @param T1 $value
+     * @return T0|false `false` if no item was found in `$list` with `$value` at
+     * `$key`.
      */
     public static function iterableToItem(iterable $list, $key, $value, bool $strict = false)
     {
@@ -881,7 +927,7 @@ final class Convert
     /**
      * Get the value at $key in $item, where $item is an array or object
      *
-     * @param array|\ArrayAccess|object $item
+     * @param mixed[]|\ArrayAccess|object $item
      * @param int|string $key
      * @return mixed
      */
@@ -894,6 +940,8 @@ final class Convert
 
     /**
      * Remove zero-width values from an array before imploding it
+     *
+     * @param mixed[] $array
      */
     public static function sparseToString(string $separator, array $array): string
     {
@@ -906,6 +954,7 @@ final class Convert
     /**
      * Convert a scalar to a string
      *
+     * @param mixed $value
      * @return string|false Returns `false` if `$value` is not a scalar
      */
     public static function scalarToString($value)
@@ -1431,12 +1480,17 @@ final class Convert
      *
      * Because you can't exclude `private` and `protected` properties from
      * inside the class. (Not easily, anyway.)
+     *
+     * @return mixed[]
      */
     public static function objectToArray(object $object): array
     {
         return get_object_vars($object);
     }
 
+    /**
+     * @param mixed[] $data
+     */
     private static function _dataToQuery(
         array $data,
         bool $preserveKeys,
@@ -1483,9 +1537,14 @@ final class Convert
      * Arrays with consecutive integer keys numbered from 0 are considered to be
      * lists. By default, keys are not included when adding lists to query
      * strings. Set `$preserveKeys` to override this behaviour.
+     *
+     * @param mixed[] $data
      */
-    public static function dataToQuery(array $data, bool $preserveKeys = false, ?DateFormatter $dateFormatter = null): string
-    {
+    public static function dataToQuery(
+        array $data,
+        bool $preserveKeys = false,
+        ?DateFormatter $dateFormatter = null
+    ): string {
         return self::_dataToQuery(
             $data,
             $preserveKeys,
@@ -1495,6 +1554,8 @@ final class Convert
 
     /**
      * Like var_export but with more compact output
+     *
+     * @param mixed $value
      */
     public static function valueToCode(
         $value,

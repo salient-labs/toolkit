@@ -8,7 +8,7 @@ use Lkrms\Support\Catalog\HttpHeader;
 
 final class CurlerHeadersTest extends \Lkrms\Tests\TestCase
 {
-    public function testImmutability()
+    public function testImmutability(): void
     {
         $headers = new CurlerHeaders();
         $change1 = $headers->setHeader('A', '1');
@@ -21,7 +21,7 @@ final class CurlerHeadersTest extends \Lkrms\Tests\TestCase
         $this->assertNotEquals($change1->getHeaderValues(), $change2->getHeaderValues());
     }
 
-    public function testPattern()
+    public function testPattern(): void
     {
         $headers = (new CurlerHeaders())
             ->addHeader(HttpHeader::PREFER, 'respond-async')

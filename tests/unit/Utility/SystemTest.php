@@ -7,7 +7,7 @@ use LogicException;
 
 final class SystemTest extends \Lkrms\Tests\TestCase
 {
-    public function testStartTimer()
+    public function testStartTimer(): void
     {
         $system = new System();
 
@@ -54,7 +54,7 @@ final class SystemTest extends \Lkrms\Tests\TestCase
         $system->startTimer('primary');
     }
 
-    public function testStopTimer()
+    public function testStopTimer(): void
     {
         $this->expectException(LogicException::class);
         $system = new System();
@@ -64,7 +64,7 @@ final class SystemTest extends \Lkrms\Tests\TestCase
     /**
      * @dataProvider escapeCommandProvider
      */
-    public function testEscapeCommand(string $arg)
+    public function testEscapeCommand(string $arg): void
     {
         $command = [
             PHP_BINARY,
@@ -130,7 +130,7 @@ final class SystemTest extends \Lkrms\Tests\TestCase
         ];
     }
 
-    public function testGetCwd()
+    public function testGetCwd(): void
     {
         $system = new System();
         $cwd = $system->getCwd();
