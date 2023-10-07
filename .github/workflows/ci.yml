@@ -40,6 +40,8 @@ jobs:
 
       - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
+        env:
+          COMPOSER_ROOT_VERSION: dev-main
 
       - name: Check generated files
         run: scripts/generate.php --check
@@ -83,6 +85,8 @@ jobs:
 
       - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
+        env:
+          COMPOSER_ROOT_VERSION: dev-main
 
       - name: Run PHPStan
         run: vendor/bin/phpstan
@@ -144,6 +148,8 @@ jobs:
 
       - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
+        env:
+          COMPOSER_ROOT_VERSION: dev-main
 
       - name: Install Node.js dependencies
         shell: bash
@@ -158,8 +164,6 @@ jobs:
 
       - name: Run PHPUnit tests and generate code coverage report
         run: vendor/bin/phpunit --no-coverage --coverage-clover=coverage.xml
-        env:
-          JSON_PLACEHOLDER_BASE_URL: "http://localhost:3001"
 
       - name: Upload Mockoon CLI log files artifact
         uses: actions/upload-artifact@v3
