@@ -21,6 +21,7 @@ use Lkrms\Contract\IService;
  * @method static Container bindIf(class-string $id, class-string|null $instanceOf = null, mixed[]|null $constructParams = null, class-string[]|null $shareInstances = null) Register a binding with the container if it isn't already registered
  * @method static mixed get(class-string $id, mixed[] $params = []) Get an instance from the container (see {@see Container::get()})
  * @method static mixed getAs(class-string $id, class-string $serviceId, mixed[] $params = []) Use one identifier to get an instance from the container and another as its service name (see {@see Container::getAs()})
+ * @method static class-string[] getContextStack() Get services for which contextual bindings have been applied to the container (see {@see Container::getContextStack()})
  * @method static IContainer getGlobalContainer() Get the global container
  * @method static class-string getName(class-string $id) Get a concrete class name from the container (see {@see Container::getName()})
  * @method static array<class-string<IService>> getServices() Get a list of classes bound to the container by calling service()

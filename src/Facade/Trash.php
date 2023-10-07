@@ -18,7 +18,7 @@ use Lkrms\Store\TrashStore;
  * @method static string|null getFilename() Get the filename of the database
  * @method static bool isOpen() Check if a database is open
  * @method static TrashStore open(string $filename = ':memory:') Create or open a storage database
- * @method static TrashStore put(string|null $key, array|object $object, string|null $type = null, string|null $deletedFrom = null, int|null $createdAt = null, int|null $modifiedAt = null) Add a deleted object to the store (see {@see TrashStore::put()})
+ * @method static TrashStore put(string|null $key, mixed[]|object $object, string|null $type = null, string|null $deletedFrom = null, int|null $createdAt = null, int|null $modifiedAt = null) Add a deleted object to the store (see {@see TrashStore::put()})
  *
  * @uses TrashStore
  *
