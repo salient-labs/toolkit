@@ -155,16 +155,14 @@ class PhpToken implements Stringable
         $_tokens = token_get_all($code, $flags);
         $eol = Inspect::getEol($code) ?: "\n";
         $pos = 0;
-        /** @var static|null */
         $last = null;
         /** @var static[] */
         $tokens = [];
         foreach ($_tokens as $_token) {
             if (is_array($_token)) {
                 $token = new static($_token[0], $_token[1], $_token[2], $pos);
-            } elseif ($last === null) {
-                $token = new static(ord($_token), $_token, 0, 0);
             } else {
+                /** @var static $last */
                 $token = new static(
                     ord($_token),
                     $_token,
