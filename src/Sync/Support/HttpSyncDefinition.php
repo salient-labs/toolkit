@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\HasBuilder;
 use Lkrms\Contract\IPipeline;
+use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
@@ -18,9 +19,11 @@ use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Sync\Exception\SyncInvalidContextException;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\Pcre;
 use Closure;
 use LogicException;
 
@@ -50,7 +53,7 @@ use LogicException;
  * @template TEntity of ISyncEntity
  * @template TProvider of HttpSyncProvider
  *
- * @property-read string|null $Path The path to the provider endpoint servicing the entity, e.g. "/v1/user"
+ * @property-read string[]|string|null $Path The path to the provider endpoint servicing the entity, e.g. "/v1/user"
  * @property-read mixed[]|null $Query Query parameters applied to the sync operation URL
  * @property-read ICurlerHeaders|null $Headers HTTP headers applied to the sync operation request
  * @property-read ICurlerPager|null $Pager The pagination handler for the endpoint servicing the entity
@@ -89,7 +92,26 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      *
      * Must not include the provider's base URL.
      *
-     * @var string|null
+     * Values for named parameters (e.g. `groupId` in `"/group/:groupId/users"`)
+     * are taken from the {@see ISyncContext} object received by the sync
+     * operation. The first matching value is used:
+     *
+     * - Values applied explicitly via {@see IProviderContext::withValue()} or
+     *   implicitly via {@see IProviderContext::push()}
+     * - Unclaimed filters passed to the operation via
+     *   {@see ISyncContext::withArgs()}
+     *
+     * Names are normalised for comparison by converting them to snake_case and
+     * removing any `_id` suffixes.
+     *
+     * If multiple paths are given, each is tried in turn until a path is found
+     * where every parameter can be resolved from the context.
+     *
+     * Filters are not claimed until a path is fully resolved.
+     *
+     * @link https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API
+     *
+     * @var string[]|string|null
      */
     protected $Path;
 
@@ -192,6 +214,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
      * @param array<SyncOperation::*> $operations
+     * @param string[]|string|null $path
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
      * @param array<SyncOperation::*,Closure(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $overrides
@@ -206,7 +229,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         string $entity,
         HttpSyncProvider $provider,
         array $operations = [],
-        ?string $path = null,
+        $path = null,
         ?array $query = null,
         ?ICurlerHeaders $headers = null,
         ?ICurlerPager $pager = null,
@@ -246,10 +269,11 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
     /**
      * Set the path to the provider endpoint servicing the entity
      *
+     * @param string[]|string|null $path
      * @return $this
      * @see HttpSyncDefinition::$Path
      */
-    public function withPath(?string $path)
+    public function withPath($path)
     {
         $clone = clone $this;
         $clone->Path = $path;
@@ -331,7 +355,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
     protected function getClosure($operation): ?Closure
     {
         // Return null if no endpoint path has been provided
-        if (is_null($this->Callback ?: $this->Path)) {
+        if (($this->Callback ?: $this->Path ?: null) === null) {
             return null;
         }
         $httpClosure =
@@ -457,24 +481,73 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      */
     private function runHttpOperation(Closure $httpClosure, $operation, ISyncContext $ctx, ...$args)
     {
-        $def = $this;
-        if ($operation === SyncOperation::READ &&
-                $this->Path &&
-                !$this->Callback &&
-                !is_null($id = $args[0] ?? null)) {
-            $def = $def->withPath($this->Path . '/' . $id);
+        if ($this->Callback !== null) {
+            $def = ($this->Callback)($this, $operation, $ctx, ...$args);
+        } elseif ($operation === SyncOperation::READ &&
+                $this->Path !== null &&
+                $this->Path !== [] &&
+                ($id = $args[0] ?? null) !== null) {
+            // If an entity has been requested by ID, add '/:id' to the endpoint
+            foreach ((array) $this->Path as $path) {
+                $paths[] = $path . '/' . $id;
+            }
+            $def = $this->withPath($paths);
+        } else {
+            $def = $this;
         }
-        $def = $def->Callback
-            ? ($def->Callback)($def, $operation, $ctx, ...$args)
-            : $def;
+
+        if ($def->Path === null || $def->Path === []) {
+            throw new LogicException('Path required');
+        }
+
+        $paths = (array) $def->Path;
+        while ($paths) {
+            $claim = [];
+            $path = array_shift($paths);
+            try {
+                $path = Pcre::replaceCallback(
+                    '/:(?<name>[[:alpha:]_][[:alnum:]_]*)/',
+                    function (array $matches) use ($operation, $ctx, $def, &$claim): string {
+                        $name = $matches['name'];
+                        $value = $ctx->getValue($name);
+                        if ($value === null) {
+                            $value = $ctx->getFilter($name);
+                            $claim[$name] = true;
+                        }
+                        if ($value === null) {
+                            throw new SyncInvalidContextException(
+                                sprintf("Unable to resolve '%s' in path '%s'", $name, $def->Path),
+                                $ctx,
+                                $def->Provider,
+                                $def->Entity,
+                                $operation,
+                            );
+                        }
+                        return (string) $value;
+                    },
+                    $path
+                );
+                break;
+            } catch (SyncInvalidContextException $ex) {
+                if (!$paths) {
+                    throw $ex;
+                }
+            }
+        }
+
+        if ($claim) {
+            foreach (array_keys($claim) as $name) {
+                $ctx->claimFilter($name);
+            }
+        }
 
         if ($def->Args !== null) {
             $args = $def->Args;
         }
 
-        $curler = $this->Provider->getCurler($def->Path, $def->Expiry, $def->Headers, $def->Pager);
+        $curler = $def->Provider->getCurler($path, $def->Expiry, $def->Headers, $def->Pager);
 
-        $this->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
+        $def->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
         if ($returnEmpty) {
             return $empty;
         }

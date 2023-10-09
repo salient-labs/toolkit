@@ -8,7 +8,9 @@ use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ITreeable;
+use Lkrms\Contract\ReturnsIdentifier;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Utility\Convert;
 
 /**
  * The context within which an entity is instantiated by a provider
@@ -106,6 +108,15 @@ class ProviderContext implements IProviderContext
     {
         $clone = $this->mutate();
         $clone->Stack[] = $entity;
+
+        if ($entity instanceof ReturnsIdentifier) {
+            $id = $entity->id();
+            if ($id !== null) {
+                $name = Convert::classToBasename(get_class($entity));
+                return $clone->withValue("{$name}_id", $id);
+            }
+        }
+
         return $clone;
     }
 
@@ -114,6 +125,20 @@ class ProviderContext implements IProviderContext
      */
     final public function withValue(string $name, $value)
     {
+        $name = Convert::toSnakeCase($name);
+
+        $instance = $this->withPropertyValue('Values', $value, $name);
+
+        if (substr($name, -3) !== '_id') {
+            return $instance;
+        }
+
+        $name = Convert::toSnakeCase(substr($name, 0, -3));
+
+        if ($name === '') {
+            return $instance;
+        }
+
         return $this->withPropertyValue('Values', $value, $name);
     }
 
@@ -162,6 +187,18 @@ class ProviderContext implements IProviderContext
      */
     final public function getValue(string $name)
     {
+        $name = Convert::toSnakeCase($name);
+
+        if (array_key_exists($name, $this->Values)) {
+            return $this->Values[$name];
+        }
+
+        if (substr($name, -3) !== '_id') {
+            return null;
+        }
+
+        $name = Convert::toSnakeCase(substr($name, 0, -3));
+
         return $this->Values[$name] ?? null;
     }
 
@@ -170,6 +207,18 @@ class ProviderContext implements IProviderContext
      */
     final public function hasValue(string $name): bool
     {
+        $name = Convert::toSnakeCase($name);
+
+        if (array_key_exists($name, $this->Values)) {
+            return true;
+        }
+
+        if (substr($name, -3) !== '_id') {
+            return false;
+        }
+
+        $name = Convert::toSnakeCase(substr($name, 0, -3));
+
         return array_key_exists($name, $this->Values);
     }
 

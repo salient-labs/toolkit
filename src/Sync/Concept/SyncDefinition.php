@@ -211,6 +211,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
             SyncOperations::ALL,
             array_merge(array_values($operations), array_keys($overrides))
         );
+
         // Discard any overrides for invalid operations
         $this->Overrides = array_intersect_key($overrides, array_flip($this->Operations));
 
@@ -225,10 +226,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     }
 
     /**
-     * Get a closure that uses the provider to perform a sync operation on the
-     * entity
-     *
-     * @param SyncOperation::* $operation
+     * @inheritDoc
      */
     final public function getSyncOperationClosure($operation): ?Closure
     {

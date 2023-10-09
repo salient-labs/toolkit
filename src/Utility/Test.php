@@ -36,7 +36,7 @@ final class Test
     public static function isBoolValue($value): bool
     {
         return is_bool($value) ||
-            (is_string($value) && preg_match('/^' . Regex::BOOLEAN_STRING . '$/', $value));
+            (is_string($value) && Pcre::match('/^' . Regex::BOOLEAN_STRING . '$/', $value));
     }
 
     /**
@@ -47,7 +47,7 @@ final class Test
     public static function isIntValue($value): bool
     {
         return is_int($value) ||
-            (is_string($value) && preg_match('/^[0-9]+$/', $value));
+            (is_string($value) && Pcre::match('/^[+-]?[0-9]+$/', $value));
     }
 
     /**
@@ -202,16 +202,29 @@ final class Test
     }
 
     /**
-     * True if $value is an array of instances of $class
+     * True if $value is an array of $class instances
+     *
+     * @template T of object
      *
      * @param mixed $value
+     * @param class-string<T> $class
+     * @phpstan-assert-if-true T[] $value
      */
     public static function isArrayOf($value, string $class, bool $allowEmpty = false): bool
     {
-        return is_array($value) &&
-            ($value
-                ? !array_filter($value, fn($item) => !is_a($item, $class))
-                : $allowEmpty);
+        if (!is_array($value)) {
+            return false;
+        }
+        if (!$value) {
+            return $allowEmpty;
+        }
+        foreach ($value as $item) {
+            if (!is_a($item, $class)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -256,7 +269,7 @@ final class Test
      */
     public static function isAbsolutePath(string $path): bool
     {
-        return (bool) preg_match('/^(\/|\\\\\\\\|[a-z]:\\\\)/i', $path);
+        return (bool) Pcre::match('/^(\/|\\\\\\\\|[a-z]:\\\\)/i', $path);
     }
 
     /**
