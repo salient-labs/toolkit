@@ -54,7 +54,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function withArgs(int $operation, ...$args)
+    public function withArgs($operation, ...$args)
     {
         // READ_LIST is the only operation with no mandatory argument after
         // `SyncContext $ctx`
@@ -105,7 +105,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function withDeferredSyncEntityPolicy(int $policy)
+    public function withDeferredSyncEntityPolicy($policy)
     {
         return $this->withPropertyValue('DeferredSyncEntityPolicy', $policy);
     }
@@ -136,7 +136,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function getDeferredSyncEntityPolicy(): int
+    public function getDeferredSyncEntityPolicy()
     {
         return $this->DeferredSyncEntityPolicy;
     }

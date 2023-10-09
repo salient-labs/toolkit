@@ -272,7 +272,7 @@ final class SyncIntrospector extends Introspector
      * @throws LogicException if the {@see SyncIntrospector} and `$entity` don't
      * respectively represent an {@see ISyncProvider} and {@see ISyncEntity}.
      */
-    public function getDeclaredSyncOperationClosure(int $operation, $entity, ISyncProvider $provider): ?Closure
+    public function getDeclaredSyncOperationClosure($operation, $entity, ISyncProvider $provider): ?Closure
     {
         if (!($entity instanceof SyncIntrospector)) {
             $entity = static::get($entity);
@@ -567,7 +567,7 @@ final class SyncIntrospector extends Introspector
      * @param SyncOperation::* $operation
      * @param static<ISyncEntity> $entity
      */
-    private function getSyncOperationMethod(int $operation, SyncIntrospector $entity): ?string
+    private function getSyncOperationMethod($operation, SyncIntrospector $entity): ?string
     {
         $_entity = $entity->_Class;
         $noun = strtolower($_entity->EntityNoun);

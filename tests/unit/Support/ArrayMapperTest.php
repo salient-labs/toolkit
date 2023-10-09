@@ -31,7 +31,7 @@ final class ArrayMapperTest extends \Lkrms\Tests\TestCase
      * @param ArrayKeyConformity::* $conformity
      * @param int-mask-of<ArrayMapperFlag::*> $flags
      */
-    public function testGetKeyMapClosure($expected, array $map, array $in, int $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED): void
+    public function testGetKeyMapClosure($expected, array $map, array $in, $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED): void
     {
         $closure = Mapper::getKeyMapClosure($map, $conformity, $flags);
         if (!is_array($expected)) {

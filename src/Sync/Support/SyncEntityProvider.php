@@ -110,7 +110,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      *     : TEntity
      * )
      */
-    private function _run(int $operation, ...$args)
+    private function _run($operation, ...$args)
     {
         $closure = $this
             ->Definition
@@ -133,7 +133,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * @inheritDoc
      */
-    public function run(int $operation, ...$args)
+    public function run($operation, ...$args)
     {
         $fromCheckpoint = $this->Store->getDeferredEntityCheckpoint();
 
@@ -172,7 +172,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * @param mixed ...$args
      * @return Generator<TEntity>
      */
-    private function resolveDeferredEntitiesBeforeYield(int $fromCheckpoint, int $operation, ...$args): Generator
+    private function resolveDeferredEntitiesBeforeYield(int $fromCheckpoint, $operation, ...$args): Generator
     {
         foreach ($this->_run($operation, ...$args) as $key => $entity) {
             $this->resolveDeferredEntities($fromCheckpoint);
@@ -186,7 +186,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * @param mixed ...$args
      * @return Generator<TEntity>
      */
-    private function resolveDeferredEntitiesAfterRun(int $fromCheckpoint, int $operation, ...$args): Generator
+    private function resolveDeferredEntitiesAfterRun(int $fromCheckpoint, $operation, ...$args): Generator
     {
         yield from $this->_run($operation, ...$args);
         $this->resolveDeferredEntities($fromCheckpoint);
@@ -451,7 +451,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
         return $this->run(SyncOperation::DELETE_LIST, $entities, ...$args);
     }
 
-    public function runA(int $operation, ...$args): array
+    public function runA($operation, ...$args): array
     {
         if (!SyncOperation::isList($operation)) {
             throw new LogicException('Not a *_LIST operation: ' . $operation);

@@ -211,7 +211,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         ?ICurlerHeaders $headers = null,
         ?ICurlerPager $pager = null,
         ?callable $callback = null,
-        int $conformity = ArrayKeyConformity::NONE,
+        $conformity = ArrayKeyConformity::NONE,
         int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
         ?int $expiry = -1,
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,
@@ -328,7 +328,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         return $clone;
     }
 
-    protected function getClosure(int $operation): ?Closure
+    protected function getClosure($operation): ?Closure
     {
         // Return null if no endpoint path has been provided
         if (is_null($this->Callback ?: $this->Path)) {
@@ -416,7 +416,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param SyncOperation::* $operation
      * @return Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]
      */
-    private function getHttpOperationClosure(int $operation): Closure
+    private function getHttpOperationClosure($operation): Closure
     {
         // Pagination with operations other than READ_LIST via GET or POST is
         // too risky to implement here, but providers can add their own support
@@ -455,7 +455,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param mixed ...$args
      * @return mixed[]
      */
-    private function runHttpOperation(Closure $httpClosure, int $operation, ISyncContext $ctx, ...$args)
+    private function runHttpOperation(Closure $httpClosure, $operation, ISyncContext $ctx, ...$args)
     {
         $def = $this;
         if ($operation === SyncOperation::READ &&
@@ -490,7 +490,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param SyncOperation::* $operation
      * @return mixed[]
      */
-    private function getRoundTripPayload($response, $requestPayload, int $operation)
+    private function getRoundTripPayload($response, $requestPayload, $operation)
     {
         switch ($this->ReturnEntitiesFrom) {
             case SyncEntitySource::HTTP_WRITE:
@@ -512,7 +512,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param SyncOperation::* $operation
      * @return IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
      */
-    private function getRoundTripPipeline(int $operation): IPipeline
+    private function getRoundTripPipeline($operation): IPipeline
     {
         switch ($this->ReturnEntitiesFrom) {
             case SyncEntitySource::SYNC_OPERATION:

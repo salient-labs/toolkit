@@ -53,7 +53,7 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
         DbSyncProvider $provider,
         array $operations = [],
         ?string $table = null,
-        int $conformity = ArrayKeyConformity::PARTIAL,
+        $conformity = ArrayKeyConformity::PARTIAL,
         int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
         array $overrides = [],
         ?IPipeline $pipelineFromBackend = null,
@@ -75,7 +75,7 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
         $this->Table = $table;
     }
 
-    protected function getClosure(int $operation): ?Closure
+    protected function getClosure($operation): ?Closure
     {
         // Return null if no table name has been provided
         if (is_null($this->Table)) {

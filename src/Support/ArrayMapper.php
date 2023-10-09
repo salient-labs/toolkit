@@ -38,7 +38,7 @@ final class ArrayMapper
      */
     public function getKeyMapClosure(
         array $keyMap,
-        int $conformity = ArrayKeyConformity::NONE,
+        $conformity = ArrayKeyConformity::NONE,
         int $flags = ArrayMapperFlag::ADD_UNMAPPED
     ): Closure {
         $sig = implode("\x01", array_map(

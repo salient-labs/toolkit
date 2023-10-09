@@ -176,7 +176,7 @@ class ProviderContext implements IProviderContext
     /**
      * @inheritDoc
      */
-    final public function getConformity(): int
+    final public function getConformity()
     {
         return $this->Conformity;
     }

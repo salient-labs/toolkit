@@ -121,5 +121,5 @@ interface IProviderContext extends
      *
      * @return ArrayKeyConformity::*
      */
-    public function getConformity(): int;
+    public function getConformity();
 }

@@ -36,5 +36,5 @@ interface ISyncDefinition extends IImmutable
      *     )
      * )|null
      */
-    public function getSyncOperationClosure(int $operation): ?Closure;
+    public function getSyncOperationClosure($operation): ?Closure;
 }

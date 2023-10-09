@@ -173,7 +173,7 @@ trait TProvidable
     final public static function provideList(
         iterable $list,
         IProvider $provider,
-        int $conformity = ArrayKeyConformity::NONE,
+        $conformity = ArrayKeyConformity::NONE,
         ?IProviderContext $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
@@ -191,7 +191,7 @@ trait TProvidable
     private static function _provideList(
         iterable $list,
         IProvider $provider,
-        int $conformity,
+        $conformity,
         ?IProviderContext $context
     ): Generator {
         /** @var IContainer */

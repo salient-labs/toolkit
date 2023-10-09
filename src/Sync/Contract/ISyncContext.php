@@ -59,7 +59,7 @@ interface ISyncContext extends IProviderContext
      * {@see ISyncContext} argument.
      * @return $this
      */
-    public function withArgs(int $operation, ...$args);
+    public function withArgs($operation, ...$args);
 
     /**
      * Use a callback to enforce the provider's unclaimed filter policy
@@ -81,7 +81,7 @@ interface ISyncContext extends IProviderContext
      * @param DeferredSyncEntityPolicy::* $policy
      * @return $this
      */
-    public function withDeferredSyncEntityPolicy(int $policy);
+    public function withDeferredSyncEntityPolicy($policy);
 
     /**
      * Run the unclaimed filter policy callback
@@ -141,5 +141,5 @@ interface ISyncContext extends IProviderContext
      *
      * @return DeferredSyncEntityPolicy::*
      */
-    public function getDeferredSyncEntityPolicy(): int;
+    public function getDeferredSyncEntityPolicy();
 }

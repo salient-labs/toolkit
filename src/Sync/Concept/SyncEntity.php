@@ -710,7 +710,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     final public static function provideList(
         iterable $list,
         IProvider $provider,
-        int $conformity = ArrayKeyConformity::NONE,
+        $conformity = ArrayKeyConformity::NONE,
         ?IProviderContext $context = null
     ): FluentIteratorInterface {
         return IterableIterator::from(
@@ -733,7 +733,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     private static function _provideList(
         iterable $list,
         IProvider $provider,
-        int $conformity,
+        $conformity,
         ?IProviderContext $context
     ): Generator {
         $container = $context

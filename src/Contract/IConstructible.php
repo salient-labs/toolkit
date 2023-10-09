@@ -25,7 +25,7 @@ interface IConstructible
      */
     public static function constructList(
         iterable $list,
-        int $conformity = ArrayKeyConformity::NONE,
+        $conformity = ArrayKeyConformity::NONE,
         ?IContainer $container = null
     ): iterable;
 }
