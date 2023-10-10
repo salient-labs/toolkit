@@ -23,10 +23,12 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncInvalidContextException;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
+use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Pcre;
 use Closure;
 use LogicException;
+use UnexpectedValueException;
 
 /**
  * Provides direct access to an HttpSyncProvider's implementation of sync
@@ -364,9 +366,11 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
     protected function getClosure($operation): ?Closure
     {
         // Return null if no endpoint path has been provided
-        if (($this->Callback ?: $this->Path ?: null) === null) {
+        if ($this->Callback === null &&
+                ($this->Path === null || $this->Path === [])) {
             return null;
         }
+
         $httpClosure =
             OP::isWrite($operation) && Env::dryRun()
                 ? fn(Curler $curler, ?array $query, $payload = null) =>
@@ -490,39 +494,45 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      */
     private function runHttpOperation(Closure $httpClosure, $operation, ISyncContext $ctx, ...$args)
     {
-        if ($this->Callback !== null) {
-            $def = ($this->Callback)($this, $operation, $ctx, ...$args);
-        } elseif ($operation === OP::READ &&
-                $this->Path !== null &&
-                $this->Path !== [] &&
-                ($id = $args[0] ?? null) !== null) {
-            // If an entity has been requested by ID, add '/:id' to the endpoint
-            foreach ((array) $this->Path as $path) {
-                $paths[] = $path . '/' . $id;
-            }
-            $def = $this->withPath($paths);
-        } else {
-            $def = $this;
-        }
+        $def =
+            $this->Callback === null
+                ? $this
+                : ($this->Callback)($this, $operation, $ctx, ...$args);
 
         if ($def->Path === null || $def->Path === []) {
             throw new LogicException('Path required');
         }
 
+        if ($def->Args !== null) {
+            $args = $def->Args;
+        }
+
+        $id = $this->getIdFromArgs($operation, $args);
+
         $paths = (array) $def->Path;
         while ($paths) {
             $claim = [];
+            $idApplied = false;
             $path = array_shift($paths);
             try {
                 $path = Pcre::replaceCallback(
                     '/:(?<name>[[:alpha:]_][[:alnum:]_]*)/',
-                    function (array $matches) use ($operation, $ctx, $def, &$claim, $path): string {
+                    function (array $matches) use ($operation, $ctx, $def, $id, &$claim, &$idApplied, $path): string {
                         $name = $matches['name'];
+                        if ($id !== null &&
+                                Convert::toSnakeCase($name) === 'id') {
+                            $idApplied = true;
+                            return $this->checkParameterValue(
+                                (string) $id, $name, $path
+                            );
+                        }
+
                         $value = $ctx->getValue($name);
                         if ($value === null) {
                             $value = $ctx->getFilter($name);
                             $claim[$name] = true;
                         }
+
                         if ($value === null) {
                             throw new SyncInvalidContextException(
                                 sprintf("Unable to resolve '%s' in path '%s'", $name, $path),
@@ -532,7 +542,10 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
                                 $operation,
                             );
                         }
-                        return (string) $value;
+
+                        return $this->checkParameterValue(
+                            (string) $value, $name, $path
+                        );
                     },
                     $path
                 );
@@ -550,8 +563,16 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
             }
         }
 
-        if ($def->Args !== null) {
-            $args = $def->Args;
+        // If an operation is being performed on a sync entity with a known ID
+        // that hasn't been applied to the path, and no callback has been
+        // provided, add the conventional '/:id' to the endpoint
+        if ($id !== null &&
+                !$idApplied &&
+                $def->Callback === null &&
+                strpos($path, '?') === false) {
+            $path .= '/' . $this->checkParameterValue(
+                (string) $id, 'id', "$path/:id"
+            );
         }
 
         $curler = $def->Provider->getCurler($path, $def->Expiry, $def->Headers, $def->Pager);
@@ -562,6 +583,40 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         }
 
         return ($httpClosure)($curler, $def->Query, $args[0] ?? null);
+    }
+
+    /**
+     * @param OP::* $operation
+     * @param mixed[] $args
+     * @return int|string|null
+     */
+    private function getIdFromArgs($operation, array $args)
+    {
+        if (OP::isList($operation)) {
+            return null;
+        }
+
+        if ($operation === OP::READ) {
+            return $args[0] ?? null;
+        }
+
+        $entity = $args[0] ?? null;
+
+        if (!($entity instanceof ISyncEntity)) {
+            return null;
+        }
+
+        return $entity->id();
+    }
+
+    private function checkParameterValue(string $value, string $name, string $path): string
+    {
+        if (strpos($value, '/') !== false) {
+            throw new UnexpectedValueException(
+                sprintf("Cannot apply value of '%s' to path '%s': %s", $name, $path, $value),
+            );
+        }
+        return $value;
     }
 
     /**
@@ -611,6 +666,9 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function getReadable(): array
     {
         return [
