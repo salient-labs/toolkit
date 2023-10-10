@@ -22,12 +22,12 @@ final class SyncIntrospectionClass extends IntrospectionClass
     /**
      * @var bool|null
      */
-    public $IsEntity;
+    public $IsSyncEntity;
 
     /**
      * @var bool|null
      */
-    public $IsProvider;
+    public $IsSyncProvider;
 
     // Related to `SyncEntity`:
 
@@ -125,10 +125,10 @@ final class SyncIntrospectionClass extends IntrospectionClass
     {
         parent::__construct($class);
         $class = $this->Reflector;
-        $this->IsEntity = $class->implementsInterface(ISyncEntity::class);
-        $this->IsProvider = $class->implementsInterface(ISyncProvider::class);
+        $this->IsSyncEntity = $class->implementsInterface(ISyncEntity::class);
+        $this->IsSyncProvider = $class->implementsInterface(ISyncProvider::class);
 
-        if ($this->IsEntity) {
+        if ($this->IsSyncEntity) {
             $this->EntityNoun = Convert::classToBasename($this->Class);
             $plural = $class->getMethod('plural')->invoke(null);
             if (strcasecmp($this->EntityNoun, $plural)) {
@@ -136,7 +136,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
             }
         }
 
-        if (!$this->IsProvider) {
+        if (!$this->IsSyncProvider) {
             return;
         }
 

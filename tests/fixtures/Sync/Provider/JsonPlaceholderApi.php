@@ -5,31 +5,43 @@ namespace Lkrms\Tests\Sync\Provider;
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
+use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
-use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
+use Lkrms\Tests\Sync\Entity\Provider\TaskProvider;
 use Lkrms\Tests\Sync\Entity\Provider\UserProvider;
 use Lkrms\Tests\Sync\Entity\Post;
+use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Utility\Env;
 
 /**
- * @method Post createPost(SyncContext $ctx, Post $post)
- * @method Post getPost(SyncContext $ctx, int|string|null $id)
- * @method Post updatePost(SyncContext $ctx, Post $post)
- * @method Post deletePost(SyncContext $ctx, Post $post)
- * @method iterable<Post> getPosts(SyncContext $ctx)
- * @method User createUser(SyncContext $ctx, User $user)
- * @method User getUser(SyncContext $ctx, int|string|null $id)
- * @method User updateUser(SyncContext $ctx, User $user)
- * @method User deleteUser(SyncContext $ctx, User $user)
- * @method iterable<User> getUsers(SyncContext $ctx)
+ * @method Post createPost(ISyncContext $ctx, Post $post)
+ * @method Post getPost(ISyncContext $ctx, int|string|null $id)
+ * @method Post updatePost(ISyncContext $ctx, Post $post)
+ * @method Post deletePost(ISyncContext $ctx, Post $post)
+ * @method FluentIteratorInterface<array-key,Post> getPosts(ISyncContext $ctx)
+ * @method User createUser(ISyncContext $ctx, User $user)
+ * @method User getUser(ISyncContext $ctx, int|string|null $id)
+ * @method User updateUser(ISyncContext $ctx, User $user)
+ * @method User deleteUser(ISyncContext $ctx, User $user)
+ * @method FluentIteratorInterface<array-key,User> getUsers(ISyncContext $ctx)
+ * @method Task createTask(ISyncContext $ctx, Task $task)
+ * @method Task getTask(ISyncContext $ctx, int|string|null $id)
+ * @method Task updateTask(ISyncContext $ctx, Task $task)
+ * @method Task deleteTask(ISyncContext $ctx, Task $task)
+ * @method FluentIteratorInterface<array-key,Task> getTasks(ISyncContext $ctx)
  */
-class JsonPlaceholderApi extends HttpSyncProvider implements IServiceSingleton, PostProvider, UserProvider
+class JsonPlaceholderApi extends HttpSyncProvider implements
+    IServiceSingleton,
+    PostProvider,
+    TaskProvider,
+    UserProvider
 {
     public function name(): ?string
     {
@@ -77,7 +89,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements IServiceSingleton, 
             case Post::class:
                 return $defB
                     ->operations([OP::READ, OP::READ_LIST])
-                    ->path('/posts');
+                    ->path(['/users/:userId/posts', '/posts']);
 
             case User::class:
                 return $defB
@@ -89,13 +101,8 @@ class JsonPlaceholderApi extends HttpSyncProvider implements IServiceSingleton, 
         return $defB;
     }
 
-    public function getPosts(SyncContext $ctx): iterable
+    public function getTasks(ISyncContext $ctx): FluentIteratorInterface
     {
-        $filter = $ctx->getFilters();
-        if ($user = $filter['user'] ?? null) {
-            return Post::provideList($this->getCurler("/users/$user/posts")->get(), $this, ArrayKeyConformity::NONE, $ctx);
-        }
-
-        return Post::provideList($this->getCurler('/posts')->get(), $this, ArrayKeyConformity::NONE, $ctx);
+        return Task::provideList($this->getCurler('/todos')->get(), $this, ArrayKeyConformity::NONE, $ctx);
     }
 }

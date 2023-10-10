@@ -8,10 +8,19 @@ class User extends \Lkrms\Tests\Sync\Entity\User
 {
     public function postLoad(): void
     {
-        if ($this->Posts === null &&
-                $this->Id !== null &&
-                ($provider = $this->provider())) {
-            $this->Posts = $provider->with(Post::class)->getListA(['user' => $this->Id]);
+        if ($this->Id === null || $this->Posts !== null) {
+            return;
         }
+
+        $provider = $this->provider();
+        if (!$provider) {
+            return;
+        }
+
+        $this->Posts =
+            $provider->with(
+                Post::class,
+                $this->context()->push($this)
+            )->getListA();
     }
 }

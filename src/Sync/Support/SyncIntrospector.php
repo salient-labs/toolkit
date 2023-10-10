@@ -285,7 +285,7 @@ final class SyncIntrospector extends Introspector
         if ($closure === false) {
             $this->assertIsProvider();
 
-            if (!$_entity->IsEntity) {
+            if (!$_entity->IsSyncEntity) {
                 throw new LogicException(
                     sprintf('%s does not implement %s', $_entity->Class, ISyncEntity::class)
                 );
@@ -316,7 +316,7 @@ final class SyncIntrospector extends Introspector
      */
     public function getMagicSyncOperationClosure(string $method, ISyncProvider $provider): ?Closure
     {
-        if (!$this->_Class->IsProvider) {
+        if (!$this->_Class->IsSyncProvider) {
             return null;
         }
 
@@ -347,7 +347,12 @@ final class SyncIntrospector extends Introspector
     private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
     {
         $sig = implode("\0", $keys);
-        if ($closure = $this->_Class->CreateFromSignatureSyncClosures[$sig] ?? null) {
+
+        $closure =
+            $this->_Class->CreateFromSignatureSyncClosures[$sig]
+                ?? null;
+
+        if ($closure) {
             return $closure;
         }
 
@@ -435,14 +440,19 @@ final class SyncIntrospector extends Introspector
         array $customKeys = [],
         array $keyClosures = []
     ): IntrospectorKeyTargets {
-        $keys = $this->_Class->Normaliser
-            ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
-            : array_combine($keys, $keys);
+        /** @var array<string,string> Normalised key => original key */
+        $keys =
+            $this->_Class->Normaliser
+                ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
+                : array_combine($keys, $keys);
 
-        $normalisedIdKey = $this->_Class->Normaliser
-            ? ($this->_Class->CarefulNormaliser)(self::ID_KEY)
-            : self::ID_KEY;
+        // Use the entity's normaliser to normalise "Id"
+        $normalisedIdKey =
+            $this->_Class->Normaliser
+                ? ($this->_Class->CarefulNormaliser)(self::ID_KEY)
+                : self::ID_KEY;
 
+        // If receiving values for "Id", add the relevant key to CustomKeys
         $idKey = $keys[$normalisedIdKey] ?? null;
         if ($idKey !== null) {
             $customKeys = [self::ID_KEY => $idKey];
@@ -450,26 +460,34 @@ final class SyncIntrospector extends Introspector
 
         // Check for relationships to honour by applying deferred entities
         // instead of raw data
-        if ($this->_Class->IsRelatable &&
-                ($this->_Class->OneToOneRelationships || $this->_Class->OneToManyRelationships)) {
+        if ($this->_Class->IsSyncEntity && $this->_Class->IsRelatable &&
+            ($this->_Class->OneToOneRelationships ||
+                $this->_Class->OneToManyRelationships)) {
             foreach ([
                 $this->_Class->OneToOneRelationships,
                 $this->_Class->OneToManyRelationships,
             ] as $list => $relationships) {
                 $relationships = array_intersect_key($relationships, $keys);
+
                 if (!$relationships) {
                     continue;
                 }
+
                 foreach ($relationships as $match => $relationship) {
                     if (!is_a($relationship, ISyncEntity::class, true)) {
-                        continue;
+                        throw new LogicException(sprintf(
+                            '%s does not implement %s',
+                            $relationship,
+                            ISyncEntity::class,
+                        ));
                     }
+
                     $key = $keys[$match];
                     $list = (bool) $list;
                     // If $match doesn't resolve to a declared property, it will
                     // resolve to a magic method
                     $property = $this->_Class->Properties[$match] ?? $match;
-                    $closures[$match] = $this->getRelationshipClosure($key, $list, $relationship, $property);
+                    $keyClosures[$match] = $this->getRelationshipClosure($key, $list, $relationship, $property);
                 }
             }
         }
@@ -483,7 +501,14 @@ final class SyncIntrospector extends Introspector
         );
 
         if (!$unclaimed) {
-            return parent::getKeyTargets($keys, $withParameters, $strict, true, $customKeys, $closures ?? []);
+            return parent::getKeyTargets(
+                $keys,
+                $withParameters,
+                $strict,
+                true,
+                $customKeys,
+                $keyClosures,
+            );
         }
 
         // Check for any that end with `_id`, `_ids` or similar that would match
@@ -492,34 +517,55 @@ final class SyncIntrospector extends Introspector
             if (!Pcre::match('/^(.+)(?:_|\b|(?<=[[:lower:]])(?=[[:upper:]]))id(s?)$/i', $key, $matches)) {
                 continue;
             }
-            $match = $this->_Class->Normaliser
-                ? ($this->_Class->CarefulNormaliser)($matches[1])
-                : $matches[1];
+
+            $match =
+                $this->_Class->Normaliser
+                    ? ($this->_Class->CarefulNormaliser)($matches[1])
+                    : $matches[1];
+
             if (!in_array($match, $this->_Class->NormalisedKeys, true)) {
                 continue;
             }
+
             // Require a list of values if the key is plural (`_ids` as opposed
             // to `_id`)
-            $list = (bool) $matches[2];
+            $list = $matches[2] !== '';
+
             // Check the property or magic method for a relationship to honour
             // by applying deferred entities instead of raw data
-            $relationship = $list
-                ? ($this->_Class->OneToManyRelationships[$match] ?? null)
-                : ($this->_Class->OneToOneRelationships[$match] ?? null);
+            $relationship =
+                $this->_Class->IsSyncEntity && $this->_Class->IsRelatable
+                    ? ($list
+                        ? ($this->_Class->OneToManyRelationships[$match] ?? null)
+                        : ($this->_Class->OneToOneRelationships[$match] ?? null))
+                    : null;
+
             if ($relationship !== null &&
                     !is_a($relationship, ISyncEntity::class, true)) {
-                $relationship = null;
+                throw new LogicException(sprintf(
+                    '%s does not implement %s',
+                    $relationship,
+                    ISyncEntity::class,
+                ));
             }
+
             // As above, if $match doesn't resolve to a declared property, it
             // will resolve to a magic method
             $property = $this->_Class->Properties[$match] ?? $match;
-            $closures[$match] = $this->getRelationshipClosure($key, $list, $relationship, $property);
+            $keyClosures[$match] = $this->getRelationshipClosure($key, $list, $relationship, $property);
 
             // Prevent duplication of the key as a meta value
             unset($keys[$normalisedKey]);
         }
 
-        return parent::getKeyTargets($keys, $withParameters, $strict, true, $customKeys, $closures ?? []);
+        return parent::getKeyTargets(
+            $keys,
+            $withParameters,
+            $strict,
+            true,
+            $customKeys,
+            $keyClosures,
+        );
     }
 
     /**
@@ -528,39 +574,41 @@ final class SyncIntrospector extends Introspector
     private function getRelationshipClosure(string $key, bool $isList, ?string $relationship, string $property): Closure
     {
         if ($relationship === null) {
-            return static function (array $data, $entity) use ($key, $property): void {
-                $entity->{$property} = $data[$key];
-            };
+            return
+                static function (array $data, $entity) use ($key, $property): void {
+                    $entity->{$property} = $data[$key];
+                };
         }
 
-        return static function (
-            array $data,
-            $entity,
-            ?ISyncProvider $provider,
-            ?ISyncContext $context
-        ) use ($key, $isList, $relationship, $property): void {
-            if ($data[$key] === null ||
-                    (Test::isListArray($data[$key]) xor $isList) ||
-                    !($entity instanceof ISyncEntity) ||
-                    !($provider instanceof ISyncProvider) ||
-                    !($context instanceof ISyncContext)) {
-                $entity->{$property} = $data[$key];
-                return;
-            }
-            if ($isList) {
-                if (is_scalar($data[$key][0])) {
-                    DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+        return
+            static function (
+                array $data,
+                $entity,
+                ?ISyncProvider $provider,
+                ?ISyncContext $context
+            ) use ($key, $isList, $relationship, $property): void {
+                if ($data[$key] === null ||
+                        (Test::isListArray($data[$key]) xor $isList) ||
+                        !($entity instanceof ISyncEntity) ||
+                        !($provider instanceof ISyncProvider) ||
+                        !($context instanceof ISyncContext)) {
+                    $entity->{$property} = $data[$key];
                     return;
                 }
-                $entity->{$property} = $relationship::provideList($data[$key], $provider, $context->getConformity(), $context->push($entity));
-                return;
-            }
-            if (is_scalar($data[$key])) {
-                DeferredSyncEntity::defer($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
-                return;
-            }
-            $entity->{$property} = $relationship::provide($data[$key], $provider, $context->push($entity));
-        };
+                if ($isList) {
+                    if (is_scalar($data[$key][0])) {
+                        DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+                        return;
+                    }
+                    $entity->{$property} = $relationship::provideList($data[$key], $provider, $context->getConformity(), $context->push($entity));
+                    return;
+                }
+                if (is_scalar($data[$key])) {
+                    DeferredSyncEntity::defer($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+                    return;
+                }
+                $entity->{$property} = $relationship::provide($data[$key], $provider, $context->push($entity));
+            };
     }
 
     /**
@@ -636,8 +684,12 @@ final class SyncIntrospector extends Introspector
             $this->_Class->SyncOperationMethods,
             array_flip($methods)
         );
+
         if (count($methods) > 1) {
-            throw new LogicException('Too many implementations: ' . implode(', ', $methods));
+            throw new LogicException(sprintf(
+                'Too many implementations: %s',
+                implode(', ', $methods),
+            ));
         }
 
         return reset($methods) ?: null;
@@ -645,7 +697,7 @@ final class SyncIntrospector extends Introspector
 
     private function assertIsProvider(): void
     {
-        if (!$this->_Class->IsProvider) {
+        if (!$this->_Class->IsSyncProvider) {
             throw new LogicException(
                 sprintf('%s does not implement %s', $this->_Class->Class, ISyncProvider::class)
             );

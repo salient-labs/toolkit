@@ -26,45 +26,27 @@ class GenerateSyncEntity extends GenerateCommand
 
     private const DEFAULT_METHOD = 'get';
 
-    /**
-     * @var string
-     */
-    private $OutputClassFqcn;
+    private ?string $ClassFqcn;
 
-    /**
-     * @var string
-     */
-    private $MemberVisibility;
+    private ?string $MemberVisibility;
 
-    /**
-     * @var string|null
-     */
-    private $ReferenceEntityFile;
+    private ?string $ReferenceEntityFile;
 
     /**
      * @var class-string<HttpSyncProvider>|null
      */
-    private $Provider;
+    private ?string $Provider;
 
-    /**
-     * @var string|null
-     */
-    private $HttpEndpoint;
+    private ?string $HttpEndpoint;
 
-    /**
-     * @var string
-     */
-    private $HttpMethod;
+    private ?string $HttpMethod;
 
     /**
      * @var string[]|null
      */
-    private $HttpQuery;
+    private ?array $HttpQuery;
 
-    /**
-     * @var string|null
-     */
-    private $HttpDataFile;
+    private ?string $HttpDataFile;
 
     public function description(): string
     {
@@ -79,9 +61,8 @@ class GenerateSyncEntity extends GenerateCommand
                 ->valueName('class')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, null, $this->OutputClass, $this->OutputNamespace))
                 ->required()
-                ->bindTo($this->OutputClassFqcn),
+                ->bindTo($this->ClassFqcn),
             ...$this->getOutputOptionList('entity'),
             CliOption::build()
                 ->long('visibility')
@@ -143,9 +124,16 @@ class GenerateSyncEntity extends GenerateCommand
 
     protected function run(string ...$args)
     {
-        $class = $this->OutputClass;
-        $namespace = $this->OutputNamespace;
-        $fqcn = $this->OutputClassFqcn;
+        $fqcn = $this->getRequiredFqcnOptionValue(
+            'class',
+            $this->ClassFqcn,
+            null,
+            $class,
+            $namespace
+        );
+
+        $this->OutputClass = $class;
+        $this->OutputNamespace = $namespace;
 
         $extends = $this->getFqcnAlias(SyncEntity::class);
 
