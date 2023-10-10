@@ -6,9 +6,9 @@ use Lkrms\Container\Container;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
-use Lkrms\Tests\Sync\CustomEntity\Post;
-use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
+use Lkrms\Tests\Sync\Entity\Provider\TaskProvider;
 use Lkrms\Tests\Sync\Entity\Provider\UserProvider;
+use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Tests\Sync\SyncClassResolver;
@@ -64,13 +64,13 @@ final class SyncIntrospectorTest extends \Lkrms\Tests\TestCase
     public function testGetSyncOperationMethod(): void
     {
         $container = (new Container())->service(JsonPlaceholderApi::class);
-        $provider = $container->get(PostProvider::class);
+        $provider = $container->get(TaskProvider::class);
 
-        $entityIntrospector = SyncIntrospector::get(Post::class);
-        $providerIntrospector = SyncIntrospector::getService($container, PostProvider::class);
+        $entityIntrospector = SyncIntrospector::get(Task::class);
+        $providerIntrospector = SyncIntrospector::getService($container, TaskProvider::class);
 
         $this->assertEquals(null, $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::READ, $entityIntrospector, $provider)));
-        $this->assertEquals('getPosts', $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::READ_LIST, $entityIntrospector, $provider)));
+        $this->assertEquals('getTasks', $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::READ_LIST, $entityIntrospector, $provider)));
         $this->assertEquals(null, $this->getMethodVar($providerIntrospector->getDeclaredSyncOperationClosure(SyncOperation::CREATE, $entityIntrospector, $provider)));
     }
 

@@ -507,7 +507,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
             try {
                 $path = Pcre::replaceCallback(
                     '/:(?<name>[[:alpha:]_][[:alnum:]_]*)/',
-                    function (array $matches) use ($operation, $ctx, $def, &$claim): string {
+                    function (array $matches) use ($operation, $ctx, $def, &$claim, $path): string {
                         $name = $matches['name'];
                         $value = $ctx->getValue($name);
                         if ($value === null) {
@@ -516,7 +516,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
                         }
                         if ($value === null) {
                             throw new SyncInvalidContextException(
-                                sprintf("Unable to resolve '%s' in path '%s'", $name, $def->Path),
+                                sprintf("Unable to resolve '%s' in path '%s'", $name, $path),
                                 $ctx,
                                 $def->Provider,
                                 $def->Entity,
