@@ -6,9 +6,10 @@ use Lkrms\Concern\HasBuilder;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
-use Lkrms\Sync\Catalog\SyncOperation;
+use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -40,12 +41,14 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
     /**
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
-     * @param array<SyncOperation::*> $operations
+     * @param array<OP::*> $operations
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
-     * @param array<SyncOperation::*,Closure(DbSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $overrides
-     * @param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
-     * @param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
+     * @param array<OP::*,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $overrides
+     * @param array<array-key,array-key|array-key[]>|null $keyMap
+     * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
+     * @param IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
+     * @param IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
      */
     public function __construct(
@@ -56,8 +59,11 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
         $conformity = ArrayKeyConformity::PARTIAL,
         int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
         array $overrides = [],
+        ?array $keyMap = null,
+        int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
         ?IPipeline $pipelineFromBackend = null,
         ?IPipeline $pipelineToBackend = null,
+        bool $readFromReadList = false,
         ?int $returnEntitiesFrom = null
     ) {
         parent::__construct(
@@ -67,8 +73,11 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
             $conformity,
             $filterPolicy,
             $overrides,
+            $keyMap,
+            $keyMapFlags,
             $pipelineFromBackend,
             $pipelineToBackend,
+            $readFromReadList,
             $returnEntitiesFrom
         );
 
@@ -83,14 +92,14 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
         }
 
         switch ($operation) {
-            case SyncOperation::CREATE:
-            case SyncOperation::READ:
-            case SyncOperation::UPDATE:
-            case SyncOperation::DELETE:
-            case SyncOperation::CREATE_LIST:
-            case SyncOperation::READ_LIST:
-            case SyncOperation::UPDATE_LIST:
-            case SyncOperation::DELETE_LIST:
+            case OP::CREATE:
+            case OP::READ:
+            case OP::UPDATE:
+            case OP::DELETE:
+            case OP::CREATE_LIST:
+            case OP::READ_LIST:
+            case OP::UPDATE_LIST:
+            case OP::DELETE_LIST:
                 $closure = null;
                 break;
 

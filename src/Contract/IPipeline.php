@@ -113,8 +113,8 @@ interface IPipeline extends IFluentInterface, IImmutable
     /**
      * Add an array key mapper to the pipeline
      *
-     * @param array<int|string,int|string|array<int,int|string>> $keyMap An
-     * array that maps input keys to one or more output keys.
+     * @param array<array-key,array-key|array-key[]> $keyMap An array that maps
+     * input keys to one or more output keys.
      * @param int-mask-of<ArrayMapperFlag::*> $flags
      * @return $this
      */

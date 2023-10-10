@@ -10,11 +10,12 @@ use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
-use Lkrms\Sync\Catalog\SyncOperation;
+use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -58,9 +59,9 @@ use LogicException;
  * @property-read ICurlerHeaders|null $Headers HTTP headers applied to the sync operation request
  * @property-read ICurlerPager|null $Pager The pagination handler for the endpoint servicing the entity
  * @property-read int|null $Expiry The time, in seconds, before responses from the provider expire
- * @property-read array<SyncOperation::*,string> $MethodMap An array that maps sync operations to HTTP request methods
+ * @property-read array<OP::*,string> $MethodMap An array that maps sync operations to HTTP request methods
  * @property-read bool $SyncOneEntityPerRequest If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request
- * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before every sync operation
+ * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before every sync operation
  *
  * @extends SyncDefinition<TEntity,TProvider>
  * @implements ProvidesBuilder<HttpSyncDefinitionBuilder<TEntity,TProvider>>
@@ -70,14 +71,14 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
     use HasBuilder;
 
     public const DEFAULT_METHOD_MAP = [
-        SyncOperation::CREATE => HttpRequestMethod::POST,
-        SyncOperation::READ => HttpRequestMethod::GET,
-        SyncOperation::UPDATE => HttpRequestMethod::PUT,
-        SyncOperation::DELETE => HttpRequestMethod::DELETE,
-        SyncOperation::CREATE_LIST => HttpRequestMethod::POST,
-        SyncOperation::READ_LIST => HttpRequestMethod::GET,
-        SyncOperation::UPDATE_LIST => HttpRequestMethod::PUT,
-        SyncOperation::DELETE_LIST => HttpRequestMethod::DELETE,
+        OP::CREATE => HttpRequestMethod::POST,
+        OP::READ => HttpRequestMethod::GET,
+        OP::UPDATE => HttpRequestMethod::PUT,
+        OP::DELETE => HttpRequestMethod::DELETE,
+        OP::CREATE_LIST => HttpRequestMethod::POST,
+        OP::READ_LIST => HttpRequestMethod::GET,
+        OP::UPDATE_LIST => HttpRequestMethod::PUT,
+        OP::DELETE_LIST => HttpRequestMethod::DELETE,
     ];
 
     /**
@@ -172,18 +173,18 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * ```php
      * <?php
      * [
-     *   SyncOperation::CREATE      => HttpRequestMethod::POST,
-     *   SyncOperation::READ        => HttpRequestMethod::GET,
-     *   SyncOperation::UPDATE      => HttpRequestMethod::PUT,
-     *   SyncOperation::DELETE      => HttpRequestMethod::DELETE,
-     *   SyncOperation::CREATE_LIST => HttpRequestMethod::POST,
-     *   SyncOperation::READ_LIST   => HttpRequestMethod::GET,
-     *   SyncOperation::UPDATE_LIST => HttpRequestMethod::PUT,
-     *   SyncOperation::DELETE_LIST => HttpRequestMethod::DELETE,
+     *   OP::CREATE      => HttpRequestMethod::POST,
+     *   OP::READ        => HttpRequestMethod::GET,
+     *   OP::UPDATE      => HttpRequestMethod::PUT,
+     *   OP::DELETE      => HttpRequestMethod::DELETE,
+     *   OP::CREATE_LIST => HttpRequestMethod::POST,
+     *   OP::READ_LIST   => HttpRequestMethod::GET,
+     *   OP::UPDATE_LIST => HttpRequestMethod::PUT,
+     *   OP::DELETE_LIST => HttpRequestMethod::DELETE,
      * ]
      * ```
      *
-     * @var array<SyncOperation::*,string>
+     * @var array<OP::*,string>
      */
     protected $MethodMap;
 
@@ -201,7 +202,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * The callback must return the {@see HttpSyncDefinition} it receives even
      * if no request- or context-specific changes are needed.
      *
-     * @var (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null
+     * @var (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null
      */
     protected $Callback;
 
@@ -213,17 +214,19 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
     /**
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
-     * @param array<SyncOperation::*> $operations
+     * @param array<OP::*> $operations
      * @param string[]|string|null $path
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
-     * @param array<SyncOperation::*,Closure(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $overrides
-     * @param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
-     * @param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
+     * @param array<OP::*,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $overrides
+     * @param array<array-key,array-key|array-key[]>|null $keyMap
+     * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
+     * @param IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
+     * @param IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
      * @param mixed[]|null $query
-     * @param (callable(HttpSyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
-     * @param array<SyncOperation::*,string> $methodMap
+     * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
+     * @param array<OP::*,string> $methodMap
      */
     public function __construct(
         string $entity,
@@ -240,8 +243,11 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,
         bool $syncOneEntityPerRequest = false,
         array $overrides = [],
+        ?array $keyMap = null,
+        int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
         ?IPipeline $pipelineFromBackend = null,
         ?IPipeline $pipelineToBackend = null,
+        bool $readFromReadList = false,
         ?int $returnEntitiesFrom = SyncEntitySource::HTTP_WRITE
     ) {
         parent::__construct(
@@ -251,8 +257,11 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
             $conformity,
             $filterPolicy,
             $overrides,
+            $keyMap,
+            $keyMapFlags,
             $pipelineFromBackend,
             $pipelineToBackend,
+            $readFromReadList,
             $returnEntitiesFrom
         );
 
@@ -359,7 +368,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
             return null;
         }
         $httpClosure =
-            SyncOperation::isWrite($operation) && Env::dryRun()
+            OP::isWrite($operation) && Env::dryRun()
                 ? fn(Curler $curler, ?array $query, $payload = null) =>
                     is_array($payload)
                         ? $payload
@@ -370,9 +379,9 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
                 $this->runHttpOperation($httpClosure, $operation, $ctx, ...$args);
 
         switch ($operation) {
-            case SyncOperation::CREATE:
-            case SyncOperation::UPDATE:
-            case SyncOperation::DELETE:
+            case OP::CREATE:
+            case OP::UPDATE:
+            case OP::DELETE:
                 return
                     fn(ISyncContext $ctx, ISyncEntity $entity, ...$args): ISyncEntity =>
                         $this
@@ -382,7 +391,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
                             ->runInto($this->getRoundTripPipeline($operation))
                             ->run();
 
-            case SyncOperation::READ:
+            case OP::READ:
                 return
                     fn(ISyncContext $ctx, $id, ...$args): ISyncEntity =>
                         $this
@@ -391,9 +400,9 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
                             ->withConformity($this->Conformity)
                             ->run();
 
-            case SyncOperation::CREATE_LIST:
-            case SyncOperation::UPDATE_LIST:
-            case SyncOperation::DELETE_LIST:
+            case OP::CREATE_LIST:
+            case OP::UPDATE_LIST:
+            case OP::DELETE_LIST:
                 return
                     function (ISyncContext $ctx, iterable $entities, ...$args) use ($operation, $httpRunner): iterable {
                         $entity = null;
@@ -421,7 +430,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
                             ->start();
                     };
 
-            case SyncOperation::READ_LIST:
+            case OP::READ_LIST:
                 return
                     fn(ISyncContext $ctx, ...$args): iterable =>
                         $this
@@ -437,7 +446,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
     /**
      * Get a closure to perform a sync operation via HTTP
      *
-     * @param SyncOperation::* $operation
+     * @param OP::* $operation
      * @return Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]
      */
     private function getHttpOperationClosure($operation): Closure
@@ -446,10 +455,10 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         // too risky to implement here, but providers can add their own support
         // for pagination with other operations and/or HTTP methods
         switch ([$operation, $this->MethodMap[$operation] ?? null]) {
-            case [SyncOperation::READ_LIST, HttpRequestMethod::GET]:
+            case [OP::READ_LIST, HttpRequestMethod::GET]:
                 return fn(Curler $curler, ?array $query) => $curler->Pager ? $curler->getP($query) : $curler->get($query);
 
-            case [SyncOperation::READ_LIST, HttpRequestMethod::POST]:
+            case [OP::READ_LIST, HttpRequestMethod::POST]:
                 return fn(Curler $curler, ?array $query, ?array $payload = null) => $curler->Pager ? $curler->postP($payload, $query) : $curler->post($payload, $query);
 
             case [$operation, HttpRequestMethod::GET]:
@@ -475,7 +484,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * Run a sync operation closure prepared earlier
      *
      * @param (Closure(Curler, mixed[]|null, mixed[]|null=): mixed[]) $httpClosure
-     * @param SyncOperation::* $operation
+     * @param OP::* $operation
      * @param mixed ...$args
      * @return mixed[]
      */
@@ -483,7 +492,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
     {
         if ($this->Callback !== null) {
             $def = ($this->Callback)($this, $operation, $ctx, ...$args);
-        } elseif ($operation === SyncOperation::READ &&
+        } elseif ($operation === OP::READ &&
                 $this->Path !== null &&
                 $this->Path !== [] &&
                 ($id = $args[0] ?? null) !== null) {
@@ -560,7 +569,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      *
      * @param mixed[] $response
      * @param TEntity[]|TEntity $requestPayload
-     * @param SyncOperation::* $operation
+     * @param OP::* $operation
      * @return mixed[]
      */
     private function getRoundTripPayload($response, $requestPayload, $operation)
@@ -582,8 +591,8 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
     }
 
     /**
-     * @param SyncOperation::* $operation
-     * @return IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
+     * @param OP::* $operation
+     * @return IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
      */
     private function getRoundTripPipeline($operation): IPipeline
     {
