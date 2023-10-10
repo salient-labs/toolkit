@@ -26,7 +26,7 @@ interface ISyncEntityProvider
      *     : TEntity
      * )
      */
-    public function run(int $operation, ...$args);
+    public function run($operation, ...$args);
 
     /**
      * Add an entity to the backend
@@ -108,7 +108,7 @@ interface ISyncEntityProvider
      * @param mixed ...$args
      * @return array<TEntity>
      */
-    public function runA(int $operation, ...$args): array;
+    public function runA($operation, ...$args): array;
 
     /**
      * Add a list of entities to the backend and return an array

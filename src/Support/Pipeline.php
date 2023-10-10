@@ -284,7 +284,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         }
     }
 
-    public function getConformity(): int
+    public function getConformity()
     {
         return $this->PayloadConformity;
     }

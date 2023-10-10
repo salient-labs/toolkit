@@ -66,7 +66,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      *     )
      * )|null
      */
-    abstract protected function getClosure(int $operation): ?Closure;
+    abstract protected function getClosure($operation): ?Closure;
 
     /**
      * The ISyncEntity being serviced
@@ -190,7 +190,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         string $entity,
         ISyncProvider $provider,
         array $operations = [],
-        int $conformity = ArrayKeyConformity::NONE,
+        $conformity = ArrayKeyConformity::NONE,
         int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
         array $overrides = [],
         ?IPipeline $pipelineFromBackend = null,
@@ -211,6 +211,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
             SyncOperations::ALL,
             array_merge(array_values($operations), array_keys($overrides))
         );
+
         // Discard any overrides for invalid operations
         $this->Overrides = array_intersect_key($overrides, array_flip($this->Operations));
 
@@ -225,12 +226,9 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     }
 
     /**
-     * Get a closure that uses the provider to perform a sync operation on the
-     * entity
-     *
-     * @param SyncOperation::* $operation
+     * @inheritDoc
      */
-    final public function getSyncOperationClosure(int $operation): ?Closure
+    final public function getSyncOperationClosure($operation): ?Closure
     {
         // Return a previous result if possible
         if (array_key_exists($operation, $this->Closures)) {
@@ -284,7 +282,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * @param SyncOperation::* $operation
      * @see SyncDefinition::$Overrides
      */
-    final public function getFallbackSyncOperationClosure(int $operation): ?Closure
+    final public function getFallbackSyncOperationClosure($operation): ?Closure
     {
         if (!($clone = $this->WithoutOverrides)) {
             $clone = clone $this;
@@ -374,7 +372,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      *
      * @see SyncDefinition::$FilterPolicy
      */
-    final protected function applyFilterPolicy(int $operation, ISyncContext $ctx, ?bool &$returnEmpty, &$empty): void
+    final protected function applyFilterPolicy($operation, ISyncContext $ctx, ?bool &$returnEmpty, &$empty): void
     {
         $returnEmpty = false;
 
@@ -404,7 +402,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     /**
      * @param SyncOperation::* $operation
      */
-    private function getContextWithFilterCallback(int $operation, ISyncContext $ctx): ISyncContext
+    private function getContextWithFilterCallback($operation, ISyncContext $ctx): ISyncContext
     {
         return $ctx->withFilterPolicyCallback(
             function (ISyncContext $ctx, ?bool &$returnEmpty, &$empty) use ($operation): void {

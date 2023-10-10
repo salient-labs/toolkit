@@ -3,7 +3,7 @@
 namespace Lkrms\Contract;
 
 /**
- * Base interface for entities
+ * A generic entity
  */
 interface IEntity extends
     IResolvable,

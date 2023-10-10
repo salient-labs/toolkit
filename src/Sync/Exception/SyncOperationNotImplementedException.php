@@ -15,7 +15,7 @@ class SyncOperationNotImplementedException extends SyncException
      * @param class-string<ISyncEntity> $entity
      * @param SyncOperation::* $operation
      */
-    public function __construct(ISyncProvider $provider, string $entity, int $operation)
+    public function __construct(ISyncProvider $provider, string $entity, $operation)
     {
         parent::__construct(sprintf(
             '%s has not implemented SyncOperation::%s for %s',

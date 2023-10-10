@@ -114,7 +114,7 @@ final class SyncOperation extends ConvertibleEnumeration
      * @param SyncOperation::* $operation
      * @return ($operation is SyncOperation::*_LIST ? true : false)
      */
-    public static function isList(int $operation): bool
+    public static function isList($operation): bool
     {
         return in_array($operation, SyncOperations::ALL_LIST, true);
     }
@@ -125,7 +125,7 @@ final class SyncOperation extends ConvertibleEnumeration
      * @param SyncOperation::* $operation
      * @return ($operation is SyncOperation::READ* ? true : false)
      */
-    public static function isRead(int $operation): bool
+    public static function isRead($operation): bool
     {
         return in_array($operation, SyncOperations::ALL_READ, true);
     }
@@ -137,7 +137,7 @@ final class SyncOperation extends ConvertibleEnumeration
      * @param SyncOperation::* $operation
      * @return ($operation is SyncOperation::READ* ? false : true)
      */
-    public static function isWrite(int $operation): bool
+    public static function isWrite($operation): bool
     {
         return in_array($operation, SyncOperations::ALL_WRITE, true);
     }

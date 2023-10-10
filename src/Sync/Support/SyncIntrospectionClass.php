@@ -165,7 +165,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
                         ? null
                         : $entity->Class;
 
-                $fn = function (int $operation, string $method) use ($entity, $class, $namespace) {
+                $fn = function ($operation, string $method) use ($entity, $class, $namespace) {
                     // If $method has already been processed, the entity it services
                     // is ambiguous and it can't be used
                     if (array_key_exists($method, $this->SyncOperationMethods) ||

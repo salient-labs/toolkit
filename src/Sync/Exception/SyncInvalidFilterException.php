@@ -22,7 +22,7 @@ class SyncInvalidFilterException extends SyncException
      * @param SyncOperation::* $operation
      * @param mixed ...$args
      */
-    public function __construct(int $operation, ...$args)
+    public function __construct($operation, ...$args)
     {
         $this->Args = $args;
 

@@ -50,7 +50,7 @@ interface IProvidable extends
     public static function provideList(
         iterable $list,
         IProvider $provider,
-        int $conformity = ArrayKeyConformity::NONE,
+        $conformity = ArrayKeyConformity::NONE,
         ?IProviderContext $context = null
     ): FluentIteratorInterface;
 

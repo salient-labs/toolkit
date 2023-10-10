@@ -16,12 +16,13 @@ use Closure;
 interface ISyncDefinition extends IImmutable
 {
     /**
-     * Return a closure that uses the provider to perform a sync operation on
-     * the entity
+     * Get a closure that uses the provider to perform a sync operation on the
+     * entity
      *
      * @param SyncOperation::* $operation
-     * @return Closure|null `null` if `$operation` is not supported, otherwise a
-     * closure with the correct signature for the sync operation.
+     * @return (Closure(ISyncContext, mixed...): mixed)|null `null` if
+     * `$operation` is not supported, otherwise a closure with the correct
+     * signature for the sync operation.
      * @phpstan-return (
      *     $operation is SyncOperation::READ
      *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
@@ -36,5 +37,5 @@ interface ISyncDefinition extends IImmutable
      *     )
      * )|null
      */
-    public function getSyncOperationClosure(int $operation): ?Closure;
+    public function getSyncOperationClosure($operation): ?Closure;
 }

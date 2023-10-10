@@ -62,7 +62,7 @@ trait TConstructible
      */
     final public static function constructList(
         iterable $list,
-        int $conformity = ArrayKeyConformity::NONE,
+        $conformity = ArrayKeyConformity::NONE,
         ?IContainer $container = null,
         $parent = null
     ): Generator {

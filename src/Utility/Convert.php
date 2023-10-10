@@ -1095,7 +1095,7 @@ final class Convert
         string $text,
         string $separator = "\n",
         ?string $marker = null,
-        string $regex = '/^(?P<indent>\h*[-*] )/',
+        string $regex = '/^(?<indent>\h*[-*] )/',
         bool $clean = false,
         bool $loose = false
     ): string {

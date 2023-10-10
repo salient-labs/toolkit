@@ -18,7 +18,7 @@ class SyncInvalidEntitySourceException extends SyncException
      * @param SyncOperation::* $operation
      * @param SyncEntitySource::*|null $source
      */
-    public function __construct(ISyncProvider $provider, string $entity, int $operation, ?int $source)
+    public function __construct(ISyncProvider $provider, string $entity, $operation, ?int $source)
     {
         parent::__construct(sprintf(
             "%s gave unsupported SyncEntitySource '%s' for SyncOperation::%s on %s",

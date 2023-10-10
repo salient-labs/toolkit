@@ -9,6 +9,7 @@ use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 
 /**
@@ -20,6 +21,11 @@ final class SyncContext extends ProviderContext implements ISyncContext
      * @var array<string,mixed>
      */
     protected array $Filters = [];
+
+    /**
+     * @var array<string,string>
+     */
+    protected array $FilterKeys = [];
 
     /**
      * @var (callable(ISyncContext, ?bool &$returnEmpty, mixed &$empty): void)|null
@@ -54,7 +60,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function withArgs(int $operation, ...$args)
+    public function withArgs($operation, ...$args)
     {
         // READ_LIST is the only operation with no mandatory argument after
         // `SyncContext $ctx`
@@ -62,37 +68,53 @@ final class SyncContext extends ProviderContext implements ISyncContext
             array_shift($args);
         }
 
-        if (empty($args)) {
-            return $this->withPropertyValue('Filters', []);
+        if (!$args) {
+            return $this->applyFilters();
         }
 
         if (is_array($args[0]) && count($args) === 1) {
-            return $this->withPropertyValue('Filters', array_combine(
-                array_map(
-                    fn($key) =>
-                        preg_match('/[^[:alnum:]_-]/', $key) ? $key : Convert::toSnakeCase($key),
-                    array_keys($args[0])
-                ),
-                array_map(
-                    fn($value) =>
-                        $value instanceof ISyncEntity ? $value->id() : $value,
-                    $args[0]
-                )
-            ));
+            foreach ($args[0] as $key => $value) {
+                if (Pcre::match('/[^[:alnum:]_-]/', $key)) {
+                    $filters[$key] = $this->reduceFilterValue($value);
+                    continue;
+                }
+
+                $key = Convert::toSnakeCase($key);
+                if ($key === '') {
+                    throw new SyncInvalidFilterException(...$args);
+                }
+
+                $filters[$key] = $this->reduceFilterValue($value);
+
+                if (substr($key, -3) !== '_id') {
+                    continue;
+                }
+
+                $name = Convert::toSnakeCase(substr($key, 0, -3));
+                if ($name !== '') {
+                    $filterKeys[$name] = $key;
+                }
+            }
+            return $this->applyFilters($filters ?? [], $filterKeys ?? []);
         }
 
         if (Test::isArrayOfArrayKey($args)) {
-            return $this->withPropertyValue('Filters', ['id' => $args]);
+            return $this->applyFilters(['id' => $args]);
         }
 
         if (Test::isArrayOf($args, ISyncEntity::class)) {
-            return $this->withPropertyValue(
-                'Filter',
+            return $this->applyFilters(
                 array_merge_recursive(
                     ...array_map(
-                        fn(ISyncEntity $entity): array =>
-                            [Convert::toSnakeCase(Convert::classToBasename($entity->service())) =>
-                                [$entity->id()]],
+                        fn(ISyncEntity $entity): array => [
+                            Convert::toSnakeCase(
+                                Convert::classToBasename(
+                                    $entity->service()
+                                )
+                            ) => [
+                                $entity->id(),
+                            ],
+                        ],
                         $args
                     )
                 )
@@ -105,7 +127,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function withDeferredSyncEntityPolicy(int $policy)
+    public function withDeferredSyncEntityPolicy($policy)
     {
         return $this->withPropertyValue('DeferredSyncEntityPolicy', $policy);
     }
@@ -121,23 +143,88 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function claimFilter(string $key)
+    public function getFilter(string $key)
     {
-        if (array_key_exists($key, $this->Filters)) {
-            $value = $this->Filters[$key];
-            unset($this->Filters[$key]);
-
-            return $value;
-        }
-
-        return null;
+        return $this->doGetFilter($key);
     }
 
     /**
      * @inheritDoc
      */
-    public function getDeferredSyncEntityPolicy(): int
+    public function claimFilter(string $key)
+    {
+        return $this->doGetFilter($key, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDeferredSyncEntityPolicy()
     {
         return $this->DeferredSyncEntityPolicy;
+    }
+
+    /**
+     * @param array<string,mixed> $filters
+     * @param array<string,string> $filterKeys
+     * @return $this
+     */
+    private function applyFilters(array $filters = [], array $filterKeys = [])
+    {
+        return $this
+            ->withPropertyValue('Filters', $filters)
+            ->withPropertyValue('FilterKeys', $filterKeys);
+    }
+
+    /**
+     * @template T
+     * @param ISyncEntity|ISyncEntity[]|T $value
+     * @return int|string|array<int|string>|T
+     */
+    private function reduceFilterValue($value)
+    {
+        if ($value instanceof ISyncEntity) {
+            return $value->id();
+        }
+        if (Test::isArrayOf($value, ISyncEntity::class)) {
+            $ids = [];
+            /** @var ISyncEntity $entity */
+            foreach ($value as $entity) {
+                $ids[] = $entity->id();
+            }
+            return $ids;
+        }
+        return $value;
+    }
+
+    /**
+     * @return mixed
+     */
+    private function doGetFilter(string $key, bool $claim = false)
+    {
+        if (!array_key_exists($key, $this->Filters)) {
+            $key = Convert::toSnakeCase($key);
+            if (!array_key_exists($key, $this->Filters)) {
+                if (substr($key, -3) !== '_id') {
+                    return null;
+                }
+                $name = Convert::toSnakeCase(substr($key, 0, -3));
+                $key = $this->FilterKeys[$name] ?? null;
+                if ($key === null) {
+                    return null;
+                }
+                if ($claim) {
+                    unset($this->FilterKeys[$name]);
+                }
+            }
+        }
+
+        $value = $this->Filters[$key];
+
+        if ($claim) {
+            unset($this->Filters[$key]);
+        }
+
+        return $value;
     }
 }

@@ -214,7 +214,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      * @return ArrayKeyConformity::*
      * @see IPipeline::withConformity()
      */
-    public function getConformity(): int;
+    public function getConformity();
 
     /**
      * Run the pipeline and pass the result to another pipeline
