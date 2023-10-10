@@ -10,7 +10,7 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
-use Lkrms\Sync\Catalog\SyncOperation;
+use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Catalog\SyncOperations;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
@@ -31,12 +31,12 @@ use LogicException;
  *
  * @property-read class-string<TEntity> $Entity The ISyncEntity being serviced
  * @property-read TProvider $Provider The ISyncProvider servicing the entity
- * @property-read array<SyncOperation::*> $Operations A list of supported sync operations
+ * @property-read array<OP::*> $Operations A list of supported sync operations
  * @property-read ArrayKeyConformity::* $Conformity The conformity level of data returned by the provider for this entity
  * @property-read SyncFilterPolicy::* $FilterPolicy The action to take when filters are unclaimed by the provider
- * @property-read array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $Overrides An array that maps sync operations to closures that override any other implementations
- * @property-read IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $PipelineFromBackend A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
- * @property-read IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $PipelineToBackend A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
+ * @property-read array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $Overrides An array that maps sync operations to closures that override any other implementations
+ * @property-read IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $PipelineFromBackend A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
+ * @property-read IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $PipelineToBackend A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
  * @property-read SyncEntitySource::*|null $ReturnEntitiesFrom Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
  *
  * @implements ISyncDefinition<TEntity,TProvider>
@@ -51,15 +51,15 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * This method is called if `$operation` is found in
      * {@see SyncDefinition::$Operations}.
      *
-     * @param SyncOperation::* $operation
+     * @param OP::* $operation
      * @phpstan-return (
-     *     $operation is SyncOperation::READ
+     *     $operation is OP::READ
      *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
      *     : (
-     *         $operation is SyncOperation::READ_LIST
+     *         $operation is OP::READ_LIST
      *         ? (Closure(ISyncContext, mixed...): iterable<TEntity>)
      *         : (
-     *             $operation is SyncOperation::CREATE|SyncOperation::UPDATE|SyncOperation::DELETE
+     *             $operation is OP::CREATE|OP::UPDATE|OP::DELETE
      *             ? (Closure(ISyncContext, TEntity, mixed...): TEntity)
      *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
      *         )
@@ -85,7 +85,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     /**
      * A list of supported sync operations
      *
-     * @var array<SyncOperation::*>
+     * @var array<OP::*>
      */
     protected $Operations;
 
@@ -118,14 +118,14 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * An array that maps sync operations to closures that override any other
      * implementations
      *
-     * An {@see ISyncDefinition} instance and {@see SyncOperation} value are
-     * passed to closures in {@see SyncDefinition::$Overrides} via two arguments
-     * inserted before the operation's arguments.
+     * An {@see ISyncDefinition} instance and {@see OP} value are passed to
+     * closures in {@see SyncDefinition::$Overrides} via two arguments inserted
+     * before the operation's arguments.
      *
      * Operations implemented here don't need to be added to
      * {@see SyncDefinition::$Operations}.
      *
-     * @var array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed>
+     * @var array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed>
      */
     protected $Overrides;
 
@@ -133,7 +133,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * A pipeline that maps data from the provider to entity-compatible
      * associative arrays, or `null` if mapping is not required
      *
-     * @var IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null
+     * @var IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null
      */
     protected $PipelineFromBackend;
 
@@ -141,7 +141,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * A pipeline that maps serialized entities to data compatible with the
      * provider, or `null` if mapping is not required
      *
-     * @var IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null
+     * @var IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null
      */
     protected $PipelineToBackend;
 
@@ -166,7 +166,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     protected $ProviderIntrospector;
 
     /**
-     * @var array<SyncOperation::*,Closure>
+     * @var array<OP::*,Closure>
      */
     private $Closures = [];
 
@@ -178,12 +178,12 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     /**
      * @param class-string<TEntity> $entity
      * @param TProvider $provider
-     * @param array<SyncOperation::*> $operations
+     * @param array<OP::*> $operations
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
-     * @param array<SyncOperation::*,Closure(ISyncDefinition<TEntity,TProvider>, SyncOperation::*, ISyncContext, mixed...): mixed> $overrides
-     * @param IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
-     * @param IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
+     * @param array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $overrides
+     * @param IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
+     * @param IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
      */
     public function __construct(
@@ -279,7 +279,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      *
      * Useful within overrides when a fallback implementation is required.
      *
-     * @param SyncOperation::* $operation
+     * @param OP::* $operation
      * @see SyncDefinition::$Overrides
      */
     final public function getFallbackSyncOperationClosure($operation): ?Closure
@@ -300,14 +300,14 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * - a pipe that serializes any unserialized {@see ISyncEntity} instances is
      *   added via {@see IPipeline::through()}
      *
-     * @return IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
+     * @return IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
      */
     final protected function getPipelineToBackend(): IPipeline
     {
-        /** @var IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}> */
+        /** @var IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}> */
         $pipeline = $this->PipelineToBackend ?: Pipeline::create();
 
-        /** @var IPipeline<TEntity,mixed[],array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}> */
+        /** @var IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}> */
         $pipeline = $pipeline->through(
             fn($payload, Closure $next) =>
                 $payload instanceof ISyncEntity
@@ -329,11 +329,11 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * - the definition's {@see SyncDefinition::$Conformity} is applied via
      *   {@see IPipeline::withConformity()}
      *
-     * @return IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
+     * @return IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>
      */
     final protected function getPipelineFromBackend(): IPipeline
     {
-        /** @var IPipeline<mixed[],TEntity,array{0:int,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}> */
+        /** @var IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}> */
         $pipeline = $this->PipelineFromBackend ?: Pipeline::create();
 
         return $pipeline
@@ -367,7 +367,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     /**
      * Enforce the unclaimed filter policy
      *
-     * @param SyncOperation::* $operation
+     * @param OP::* $operation
      * @param array{}|null $empty
      *
      * @see SyncDefinition::$FilterPolicy
@@ -387,7 +387,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
 
             case SyncFilterPolicy::RETURN_EMPTY:
                 $returnEmpty = true;
-                $empty = SyncOperation::isList($operation) ? [] : null;
+                $empty = OP::isList($operation) ? [] : null;
 
                 return;
 
@@ -400,7 +400,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     }
 
     /**
-     * @param SyncOperation::* $operation
+     * @param OP::* $operation
      */
     private function getContextWithFilterCallback($operation, ISyncContext $ctx): ISyncContext
     {
