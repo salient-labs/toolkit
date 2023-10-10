@@ -7,6 +7,7 @@ use Lkrms\Concern\TReadable;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IReadable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
@@ -35,6 +36,8 @@ use LogicException;
  * @property-read ArrayKeyConformity::* $Conformity The conformity level of data returned by the provider for this entity
  * @property-read SyncFilterPolicy::* $FilterPolicy The action to take when filters are unclaimed by the provider
  * @property-read array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $Overrides An array that maps sync operations to closures that override any other implementations
+ * @property-read array<array-key,array-key|array-key[]>|null $KeyMap An array that maps provider (backend) keys to one or more entity keys
+ * @property-read int-mask-of<ArrayMapperFlag::*> $KeyMapFlags Passed to the array mapper if `$keyMap` is provided
  * @property-read IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $PipelineFromBackend A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
  * @property-read IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $PipelineToBackend A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
  * @property-read SyncEntitySource::*|null $ReturnEntitiesFrom Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
@@ -130,6 +133,28 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     protected $Overrides;
 
     /**
+     * An array that maps provider (backend) keys to one or more entity keys
+     *
+     * Providing `$keyMap` has the same effect as passing the following pipeline
+     * to `$pipelineFromBackend`:
+     *
+     * ```php
+     * <?php
+     * Pipeline::create()->throughKeyMap($keyMap);
+     * ```
+     *
+     * @var array<array-key,array-key|array-key[]>|null
+     */
+    protected $KeyMap;
+
+    /**
+     * Passed to the array mapper if `$keyMap` is provided
+     *
+     * @var int-mask-of<ArrayMapperFlag::*>
+     */
+    protected $KeyMapFlags;
+
+    /**
      * A pipeline that maps data from the provider to entity-compatible
      * associative arrays, or `null` if mapping is not required
      *
@@ -182,6 +207,8 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
      * @param array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $overrides
+     * @param array<array-key,array-key|array-key[]>|null $keyMap
+     * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
      * @param IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
      * @param IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
@@ -193,6 +220,8 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         $conformity = ArrayKeyConformity::NONE,
         int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
         array $overrides = [],
+        ?array $keyMap = null,
+        int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
         ?IPipeline $pipelineFromBackend = null,
         ?IPipeline $pipelineToBackend = null,
         ?int $returnEntitiesFrom = null
@@ -201,6 +230,8 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         $this->Provider = $provider;
         $this->Conformity = $conformity;
         $this->FilterPolicy = $filterPolicy;
+        $this->KeyMap = $keyMap;
+        $this->KeyMapFlags = $keyMapFlags;
         $this->PipelineFromBackend = $pipelineFromBackend;
         $this->PipelineToBackend = $pipelineToBackend;
         $this->ReturnEntitiesFrom = $returnEntitiesFrom;
@@ -336,6 +367,10 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         /** @var IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}> */
         $pipeline = $this->PipelineFromBackend ?: Pipeline::create();
 
+        if ($this->KeyMap !== null) {
+            $pipeline = $pipeline->throughKeyMap($this->KeyMap, $this->KeyMapFlags);
+        }
+
         return $pipeline
             ->withConformity($this->Conformity)
             ->then(
@@ -420,6 +455,8 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
             'Conformity',
             'FilterPolicy',
             'Overrides',
+            'KeyMap',
+            'KeyMapFlags',
             'PipelineFromBackend',
             'PipelineToBackend',
             'ReturnEntitiesFrom',

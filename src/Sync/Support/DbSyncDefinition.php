@@ -6,6 +6,7 @@ use Lkrms\Concern\HasBuilder;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
@@ -44,6 +45,8 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
      * @param array<OP::*,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $overrides
+     * @param array<array-key,array-key|array-key[]>|null $keyMap
+     * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
      * @param IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
      * @param IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
@@ -56,6 +59,8 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
         $conformity = ArrayKeyConformity::PARTIAL,
         int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
         array $overrides = [],
+        ?array $keyMap = null,
+        int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
         ?IPipeline $pipelineFromBackend = null,
         ?IPipeline $pipelineToBackend = null,
         ?int $returnEntitiesFrom = null
@@ -67,6 +72,8 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
             $conformity,
             $filterPolicy,
             $overrides,
+            $keyMap,
+            $keyMapFlags,
             $pipelineFromBackend,
             $pipelineToBackend,
             $returnEntitiesFrom

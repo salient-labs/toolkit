@@ -10,6 +10,7 @@ use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
+use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Catalog\SyncEntitySource;
@@ -218,6 +219,8 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
      * @param array<OP::*,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $overrides
+     * @param array<array-key,array-key|array-key[]>|null $keyMap
+     * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
      * @param IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
      * @param IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineToBackend
      * @param SyncEntitySource::*|null $returnEntitiesFrom
@@ -240,6 +243,8 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,
         bool $syncOneEntityPerRequest = false,
         array $overrides = [],
+        ?array $keyMap = null,
+        int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
         ?IPipeline $pipelineFromBackend = null,
         ?IPipeline $pipelineToBackend = null,
         ?int $returnEntitiesFrom = SyncEntitySource::HTTP_WRITE
@@ -251,6 +256,8 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
             $conformity,
             $filterPolicy,
             $overrides,
+            $keyMap,
+            $keyMapFlags,
             $pipelineFromBackend,
             $pipelineToBackend,
             $returnEntitiesFrom
