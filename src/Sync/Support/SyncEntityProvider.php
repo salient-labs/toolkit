@@ -103,18 +103,19 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * @param SyncOperation::* $operation
      * @param mixed ...$args
-     * @return iterable<TEntity>|TEntity
+     * @return FluentIteratorInterface<array-key,TEntity>|TEntity
      * @phpstan-return (
      *     $operation is SyncOperation::*_LIST
-     *     ? iterable<TEntity>
+     *     ? FluentIteratorInterface<array-key,TEntity>
      *     : TEntity
      * )
      */
     private function _run($operation, ...$args)
     {
-        $closure = $this
-            ->Definition
-            ->getSyncOperationClosure($operation);
+        $closure =
+            $this
+                ->Definition
+                ->getSyncOperationClosure($operation);
 
         if (!$closure) {
             throw new SyncOperationNotImplementedException(
@@ -459,10 +460,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
         $fromCheckpoint = $this->Store->getDeferredEntityCheckpoint();
 
-        $result = $this->_run($operation, ...$args);
-        if (!is_array($result)) {
-            $result = iterator_to_array($result);
-        }
+        $result = iterator_to_array(
+            $this->_run($operation, ...$args)
+        );
 
         if ($this->Context->getDeferredSyncEntityPolicy() !==
                 DeferredEntityPolicy::DO_NOT_RESOLVE) {

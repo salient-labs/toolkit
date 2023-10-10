@@ -8,6 +8,7 @@ use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IReadable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
+use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
@@ -17,6 +18,7 @@ use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
 use Lkrms\Sync\Support\SyncIntrospectionClass;
 use Lkrms\Sync\Support\SyncIntrospector;
@@ -35,11 +37,12 @@ use LogicException;
  * @property-read array<OP::*> $Operations A list of supported sync operations
  * @property-read ArrayKeyConformity::* $Conformity The conformity level of data returned by the provider for this entity
  * @property-read SyncFilterPolicy::* $FilterPolicy The action to take when filters are unclaimed by the provider
- * @property-read array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $Overrides An array that maps sync operations to closures that override any other implementations
+ * @property-read array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $Overrides An array that maps sync operations to closures that override other implementations
  * @property-read array<array-key,array-key|array-key[]>|null $KeyMap An array that maps provider (backend) keys to one or more entity keys
  * @property-read int-mask-of<ArrayMapperFlag::*> $KeyMapFlags Passed to the array mapper if `$keyMap` is provided
  * @property-read IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $PipelineFromBackend A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
  * @property-read IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $PipelineToBackend A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
+ * @property-read bool $ReadFromReadList If true, perform READ operations by iterating over entities returned by READ_LIST
  * @property-read SyncEntitySource::*|null $ReturnEntitiesFrom Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
  *
  * @implements ISyncDefinition<TEntity,TProvider>
@@ -60,11 +63,11 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
      *     : (
      *         $operation is OP::READ_LIST
-     *         ? (Closure(ISyncContext, mixed...): iterable<TEntity>)
+     *         ? (Closure(ISyncContext, mixed...): FluentIteratorInterface<array-key,TEntity>)
      *         : (
      *             $operation is OP::CREATE|OP::UPDATE|OP::DELETE
      *             ? (Closure(ISyncContext, TEntity, mixed...): TEntity)
-     *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
+     *             : (Closure(ISyncContext, FluentIteratorInterface<array-key,TEntity>, mixed...): FluentIteratorInterface<array-key,TEntity>)
      *         )
      *     )
      * )|null
@@ -118,12 +121,13 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     protected $FilterPolicy;
 
     /**
-     * An array that maps sync operations to closures that override any other
+     * An array that maps sync operations to closures that override other
      * implementations
      *
-     * An {@see ISyncDefinition} instance and {@see OP} value are passed to
-     * closures in {@see SyncDefinition::$Overrides} via two arguments inserted
-     * before the operation's arguments.
+     * Two arguments are inserted before the operation's arguments:
+     *
+     * - The sync definition object
+     * - The sync operation
      *
      * Operations implemented here don't need to be added to
      * {@see SyncDefinition::$Operations}.
@@ -169,6 +173,17 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * @var IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null
      */
     protected $PipelineToBackend;
+
+    /**
+     * If true, perform READ operations by iterating over entities returned by
+     * READ_LIST
+     *
+     * Useful with backends that don't provide an endpoint for retrieval of
+     * individual entities.
+     *
+     * @var bool
+     */
+    protected $ReadFromReadList;
 
     /**
      * Where to acquire entity data for the return value of a successful CREATE,
@@ -224,6 +239,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
         ?IPipeline $pipelineFromBackend = null,
         ?IPipeline $pipelineToBackend = null,
+        bool $readFromReadList = false,
         ?int $returnEntitiesFrom = null
     ) {
         $this->Entity = $entity;
@@ -234,6 +250,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         $this->KeyMapFlags = $keyMapFlags;
         $this->PipelineFromBackend = $pipelineFromBackend;
         $this->PipelineToBackend = $pipelineToBackend;
+        $this->ReadFromReadList = $readFromReadList;
         $this->ReturnEntitiesFrom = $returnEntitiesFrom;
 
         // Combine overridden operations with $operations and discard any
@@ -293,6 +310,19 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
                         $this->getContextWithFilterCallback($operation, $ctx),
                         ...$args
                     );
+        }
+
+        if ($operation === OP::READ &&
+                $this->ReadFromReadList &&
+                ($closure = $this->getSyncOperationClosure(OP::READ_LIST))) {
+            return $this->Closures[$operation] =
+                function (ISyncContext $ctx, $id, ...$args) use ($closure) {
+                    $entity = $closure($ctx, ...$args)->nextWithValue('Id', $id);
+                    if ($entity === false) {
+                        throw new SyncEntityNotFoundException($this->Provider, $this->Entity, $id);
+                    }
+                    return $entity;
+                };
         }
 
         // Return null if the operation doesn't appear in $this->Operations
@@ -459,6 +489,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
             'KeyMapFlags',
             'PipelineFromBackend',
             'PipelineToBackend',
+            'ReadFromReadList',
             'ReturnEntitiesFrom',
         ];
     }

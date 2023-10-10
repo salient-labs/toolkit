@@ -247,6 +247,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
         ?IPipeline $pipelineFromBackend = null,
         ?IPipeline $pipelineToBackend = null,
+        bool $readFromReadList = false,
         ?int $returnEntitiesFrom = SyncEntitySource::HTTP_WRITE
     ) {
         parent::__construct(
@@ -260,6 +261,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
             $keyMapFlags,
             $pipelineFromBackend,
             $pipelineToBackend,
+            $readFromReadList,
             $returnEntitiesFrom
         );
 
