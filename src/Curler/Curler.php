@@ -9,6 +9,7 @@ use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ProvidesBuilder;
+use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerException;
@@ -541,12 +542,16 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     /**
      * Apply a value to a clone of the instance
      *
-     * @param string $property
+     * @param string&CurlerProperty::* $property
      * @param mixed $value
      * @return $this
      */
-    public function with($property, $value)
+    public function with(string $property, $value)
     {
+        if (!in_array($property, $this->getWritable(), true)) {
+            throw new LogicException(sprintf('Invalid property: %s', $property));
+        }
+
         return $this->withPropertyValue($property, $value);
     }
 
@@ -1301,6 +1306,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             'Flush',
             'ResponseCacheKeyCallback',
             'ThrowHttpErrors',
+            'ResponseCallback',
             'ConnectTimeout',
             'Timeout',
             'FollowRedirects',

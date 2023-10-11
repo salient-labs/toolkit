@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IPipeline;
+use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
@@ -33,6 +34,7 @@ use Closure;
  * @method $this filterPolicy(SyncFilterPolicy::* $value) The action to take when filters are unclaimed by the provider (see {@see SyncDefinition::$FilterPolicy})
  * @method $this expiry(?int $value) The time, in seconds, before responses from the provider expire (see {@see HttpSyncDefinition::$Expiry})
  * @method $this methodMap(array<OP::*,string> $value) An array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})
+ * @method $this curlerProperties(array<CurlerProperty::*,mixed> $value) An array that maps Curler property names to values (see {@see HttpSyncDefinition::$CurlerProperties})
  * @method $this syncOneEntityPerRequest(bool $value = true) If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request (default: false)
  * @method $this overrides(array<OP::*,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $value) An array that maps sync operations to closures that override other implementations (see {@see SyncDefinition::$Overrides})
  * @method $this keyMap(array<array-key,array-key|array-key[]>|null $value) An array that maps provider (backend) keys to one or more entity keys (see {@see SyncDefinition::$KeyMap})
