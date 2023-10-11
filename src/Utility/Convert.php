@@ -139,9 +139,9 @@ final class Convert
         int $mode = RecursiveIteratorIterator::LEAVES_ONLY
     ): void {
         $iterator = new RecursiveObjectOrArrayIterator($objectOrArray);
-        $iterator = new RecursiveIteratorIterator($iterator, $mode);
+        $iterator = new RecursiveIteratorIterator($inner = $iterator, $mode);
         foreach ($iterator as $key => $value) {
-            if (!$callback($value, $key, $iterator->getSubIterator())) {
+            if (!$callback($value, $key, $inner)) {
                 return;
             }
         }

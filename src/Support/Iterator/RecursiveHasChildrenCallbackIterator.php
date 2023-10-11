@@ -48,17 +48,24 @@ class RecursiveHasChildrenCallbackIterator extends IteratorIterator implements R
             return false;
         }
 
-        $key = $this->Iterator->key();
-        $current = $this->Iterator->current();
-
-        return ($this->Callback)($current, $key, $this->Iterator);
+        return ($this->Callback)(
+            $this->Iterator->current(),
+            $this->Iterator->key(),
+            $this->Iterator,
+        );
     }
 
     /**
-     * @return RecursiveIterator<TKey,TValue>|null
+     * @return self<TKey,TValue>|null
      */
-    public function getChildren(): ?RecursiveIterator
+    public function getChildren(): ?self
     {
-        return $this->Iterator->getChildren();
+        /** @var RecursiveIterator<TKey,TValue>|null */
+        $children = $this->Iterator->getChildren();
+
+        return
+            $children === null
+                ? null
+                : new self($children, $this->Callback);
     }
 }
