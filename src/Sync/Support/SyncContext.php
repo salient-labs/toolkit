@@ -209,12 +209,15 @@ final class SyncContext extends ProviderContext implements ISyncContext
                     return null;
                 }
                 $name = Convert::toSnakeCase(substr($key, 0, -3));
-                $key = $this->FilterKeys[$name] ?? null;
-                if ($key === null) {
+                if (array_key_exists($name, $this->FilterKeys)) {
+                    $key = $this->FilterKeys[$name];
+                    if ($claim) {
+                        unset($this->FilterKeys[$name]);
+                    }
+                } elseif (array_key_exists($name, $this->Filters)) {
+                    $key = $name;
+                } else {
                     return null;
-                }
-                if ($claim) {
-                    unset($this->FilterKeys[$name]);
                 }
             }
         }

@@ -103,10 +103,10 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * @param SyncOperation::* $operation
      * @param mixed ...$args
-     * @return FluentIteratorInterface<array-key,TEntity>|TEntity
+     * @return iterable<TEntity>|TEntity
      * @phpstan-return (
      *     $operation is SyncOperation::*_LIST
-     *     ? FluentIteratorInterface<array-key,TEntity>
+     *     ? iterable<TEntity>
      *     : TEntity
      * )
      */
@@ -460,9 +460,10 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
         $fromCheckpoint = $this->Store->getDeferredEntityCheckpoint();
 
-        $result = iterator_to_array(
-            $this->_run($operation, ...$args)
-        );
+        $result = $this->_run($operation, ...$args);
+        if (!is_array($result)) {
+            $result = iterator_to_array($result);
+        }
 
         if ($this->Context->getDeferredSyncEntityPolicy() !==
                 DeferredEntityPolicy::DO_NOT_RESOLVE) {

@@ -267,8 +267,8 @@ final class SyncIntrospector extends Introspector
      *
      * @param SyncOperation::* $operation
      * @param class-string<T>|static<T> $entity
+     * @return (Closure(ISyncContext, mixed...): (iterable<T>|T))|null
      *
-     * @return (Closure(ISyncContext, mixed...): mixed)|null
      * @throws LogicException if the {@see SyncIntrospector} and `$entity` don't
      * respectively represent an {@see ISyncProvider} and {@see ISyncEntity}.
      */
