@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Iterator;
+namespace Lkrms\Iterator;
 
 use IteratorIterator;
 use RecursiveIterator;
@@ -18,7 +18,7 @@ use RecursiveIterator;
  * @extends IteratorIterator<TKey,TValue,RecursiveIterator<TKey,TValue>>
  * @implements RecursiveIterator<TKey,TValue>
  */
-class RecursiveHasChildrenCallbackIterator extends IteratorIterator implements RecursiveIterator
+class RecursiveCallbackIterator extends IteratorIterator implements RecursiveIterator
 {
     /**
      * @var RecursiveIterator<TKey,TValue>

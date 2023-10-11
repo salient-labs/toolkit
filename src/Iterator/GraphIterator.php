@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Iterator;
+namespace Lkrms\Iterator;
 
-use Lkrms\Support\Iterator\Contract\MutableIterator;
+use Lkrms\Iterator\Contract\MutableIterator;
 use LogicException;
 use ReturnTypeWillChange;
 
@@ -11,7 +11,7 @@ use ReturnTypeWillChange;
  *
  * @implements MutableIterator<array-key,mixed>
  */
-class ObjectOrArrayIterator implements MutableIterator
+class GraphIterator implements MutableIterator
 {
     /**
      * @var object|mixed[]

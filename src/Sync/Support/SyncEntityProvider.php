@@ -3,8 +3,8 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Contract\IContainer;
-use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
-use Lkrms\Support\Iterator\IterableIterator;
+use Lkrms\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Iterator\IterableIterator;
 use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy as DeferredEntityPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;

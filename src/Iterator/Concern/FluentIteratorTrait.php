@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Iterator\Concern;
+namespace Lkrms\Iterator\Concern;
 
-use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Iterator\Contract\FluentIteratorInterface;
 
 /**
  * Implements FluentIteratorInterface

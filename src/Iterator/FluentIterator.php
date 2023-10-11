@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Iterator;
+namespace Lkrms\Iterator;
 
-use Lkrms\Support\Iterator\Concern\FluentIteratorTrait;
-use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Iterator\Concern\FluentIteratorTrait;
+use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Iterator;
 use IteratorIterator;
 

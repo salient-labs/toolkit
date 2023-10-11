@@ -2,21 +2,21 @@
 
 namespace Lkrms\Tests\Support\Iterator;
 
-use Lkrms\Support\Iterator\RecursiveHasChildrenCallbackIterator;
-use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
+use Lkrms\Iterator\RecursiveCallbackIterator;
+use Lkrms\Iterator\RecursiveGraphIterator;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Iterator;
 use RecursiveIteratorIterator;
 use stdClass;
 
-final class RecursiveHasChildrenCallbackIteratorTest extends \Lkrms\Tests\TestCase
+final class RecursiveCallbackIteratorTest extends \Lkrms\Tests\TestCase
 {
     public function testRecursion(): void
     {
         $mixed = $this->getArrayWithNestedObjectsAndArrays($a, $d1, $d2, $e);
-        $iterator = new RecursiveObjectOrArrayIterator($mixed);
-        $iterator = new RecursiveHasChildrenCallbackIterator(
+        $iterator = new RecursiveGraphIterator($mixed);
+        $iterator = new RecursiveCallbackIterator(
             $iterator,
             fn($value): bool =>
                 !($value instanceof DateTimeInterface)

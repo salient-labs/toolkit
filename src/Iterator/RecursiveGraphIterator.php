@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Iterator;
+namespace Lkrms\Iterator;
 
 /**
  * Iterates over object properties and array elements, descending into them
@@ -8,7 +8,7 @@ namespace Lkrms\Support\Iterator;
  *
  * @implements \RecursiveIterator<array-key,mixed>
  */
-class RecursiveObjectOrArrayIterator extends ObjectOrArrayIterator implements \RecursiveIterator
+class RecursiveGraphIterator extends GraphIterator implements \RecursiveIterator
 {
     public function hasChildren(): bool
     {

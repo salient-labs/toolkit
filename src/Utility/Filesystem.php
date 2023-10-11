@@ -5,7 +5,7 @@ namespace Lkrms\Utility;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
-use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Iterator\FluentIterator;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
 use AppendIterator;
@@ -52,7 +52,7 @@ final class Filesystem
      * ```php
      * [$regex => fn(SplFileInfo $file) => $file->isExecutable()]
      * ```
-     * @return FluentIteratorInterface<string,SplFileInfo>
+     * @return FluentIterator<string,SplFileInfo>
      */
     public function find(
         $directory,
@@ -63,30 +63,36 @@ final class Filesystem
         bool $recursive = true,
         bool $withDirectories = false,
         bool $withDirectoriesFirst = true
-    ): FluentIteratorInterface {
+    ): FluentIterator {
         $flags = FilesystemIterator::KEY_AS_PATHNAME
             | FilesystemIterator::CURRENT_AS_FILEINFO
             | FilesystemIterator::SKIP_DOTS
             | FilesystemIterator::UNIX_PATHS;
+
         $mode = $withDirectories
             ? ($withDirectoriesFirst
                 ? RecursiveIteratorIterator::SELF_FIRST
                 : RecursiveIteratorIterator::CHILD_FIRST)
             : RecursiveIteratorIterator::LEAVES_ONLY;
 
-        if ($exclude || $include || $excludeCallbacks || $includeCallbacks) {
+        if ($exclude !== null ||
+                $include !== null ||
+                $excludeCallbacks ||
+                $includeCallbacks) {
             $callback =
-                function (SplFileInfo $current, string $key) use (
+                function (
+                    SplFileInfo $current, string $key
+                ) use (
                     $exclude, $include, $excludeCallbacks, $includeCallbacks
                 ): bool {
-                    if ($exclude && preg_match($exclude, $key)) {
+                    if ($exclude !== null && Pcre::match($exclude, $key)) {
                         return false;
                     }
                     if ($excludeCallbacks) {
                         foreach ($excludeCallbacks as $regex => $callback) {
-                            if (!preg_match($regex, $key) &&
+                            if (!Pcre::match($regex, $key) &&
                                 !($current->isDir() &&
-                                    preg_match($regex, $key . '/'))) {
+                                    Pcre::match($regex, $key . '/'))) {
                                 continue;
                             }
                             if ($callback($current)) {
@@ -94,15 +100,18 @@ final class Filesystem
                             }
                         }
                     }
+                    // Always recurse into directories unless they are
+                    // explicitly excluded
                     if ($current->isDir()) {
-                        return !($exclude && preg_match($exclude, $key . '/'));
+                        return !($exclude !== null &&
+                            Pcre::match($exclude, $key . '/'));
                     }
-                    if ($include && preg_match($include, $key)) {
+                    if ($include !== null && Pcre::match($include, $key)) {
                         return true;
                     }
                     if ($includeCallbacks) {
                         foreach ($includeCallbacks as $regex => $callback) {
-                            if (!preg_match($regex, $key)) {
+                            if (!Pcre::match($regex, $key)) {
                                 continue;
                             }
                             if ($callback($current)) {
@@ -110,8 +119,7 @@ final class Filesystem
                             }
                         }
                     }
-
-                    return !$include && !$includeCallbacks;
+                    return $include === null && !$includeCallbacks;
                 };
         }
         /** @var AppendIterator|null */
@@ -131,7 +139,9 @@ final class Filesystem
                     $iterator = new CallbackFilterIterator($iterator, $callback);
                 }
                 if (!$withDirectories) {
-                    $iterator = new CallbackFilterIterator($iterator, fn(SplFileInfo $current) => !$current->isDir());
+                    $iterator = new CallbackFilterIterator(
+                        $iterator, fn(SplFileInfo $current) => !$current->isDir()
+                    );
                 }
             }
 
@@ -144,7 +154,7 @@ final class Filesystem
             $appendIterator->append($iterator);
         }
 
-        return new \Lkrms\Support\Iterator\FluentIterator($appendIterator ?? $iterator);
+        return new \Lkrms\Iterator\FluentIterator($appendIterator ?? $iterator);
     }
 
     /**
@@ -194,7 +204,7 @@ final class Filesystem
                 $line = fgets($f);
             }
 
-            return $line && preg_match('/^<\?(php\s|(?!php))/', $line);
+            return $line && Pcre::match('/^<\?(php\s|(?!php))/', $line);
         } finally {
             fclose($f);
         }
@@ -333,7 +343,7 @@ final class Filesystem
      */
     public function realpath(string $filename)
     {
-        if (preg_match(
+        if (Pcre::match(
             '#^/(?:dev|proc/(?:self|[0-9]+))/fd/([0-9]+)$#',
             $filename,
             $matches

@@ -2,16 +2,16 @@
 
 namespace Lkrms\Tests\Support\Iterator;
 
-use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
+use Lkrms\Iterator\RecursiveGraphIterator;
 use RecursiveIteratorIterator;
 use stdClass;
 
-final class RecursiveObjectOrArrayIteratorTest extends \Lkrms\Tests\TestCase
+final class RecursiveGraphIteratorTest extends \Lkrms\Tests\TestCase
 {
     public function testRecursion(): void
     {
         $mixed = $this->getArrayWithNestedObjectsAndArrays($a, $d1, $d2, $e, $l);
-        $iterator = new RecursiveObjectOrArrayIterator($mixed);
+        $iterator = new RecursiveGraphIterator($mixed);
         $recursiveIterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
         $replaceValue = ['g', 1, $d2];
         $replaceWith = [100, 101, [8, 13, 21]];
@@ -20,14 +20,14 @@ final class RecursiveObjectOrArrayIteratorTest extends \Lkrms\Tests\TestCase
             $out[] = [$key => $value];
 
             if ($key === 'l') {
-                /** @var RecursiveObjectOrArrayIterator $iterator */
+                /** @var RecursiveGraphIterator $iterator */
                 $iterator = $recursiveIterator->getInnerIterator();
                 $iterator->maybeConvertToArray();
                 continue;
             }
 
             if (($replaceKey = array_search($value, $replaceValue, true)) !== false) {
-                /** @var RecursiveObjectOrArrayIterator $iterator */
+                /** @var RecursiveGraphIterator $iterator */
                 $iterator = $recursiveIterator->getInnerIterator();
                 $iterator->replace($replaceWith[$replaceKey]);
             }

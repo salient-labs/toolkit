@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Sync\Entity\Provider;
 
-use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Tests\Sync\Entity\Task;

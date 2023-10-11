@@ -3,9 +3,9 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Contract\IDateFormatter;
+use Lkrms\Iterator\Contract\MutableIterator;
+use Lkrms\Iterator\RecursiveGraphIterator;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
-use Lkrms\Support\Iterator\Contract\MutableIterator;
-use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Test;
 use ArrayIterator;
@@ -129,20 +129,20 @@ final class Convert
     }
 
     /**
-     * array_walk_recursive for arbitrarily nested objects and arrays
+     * array_walk_recursive for a graph of arbitrarily nested objects and arrays
      *
-     * @param object|mixed[] $objectOrArray
+     * @param object|mixed[] $graph
      * @param callable(mixed, array-key, MutableIterator<array-key,mixed>&\RecursiveIterator<array-key,mixed>): bool $callback Return `false` to stop iterating over `$objectOrArray`.
      */
     public static function walkRecursive(
-        &$objectOrArray,
+        &$graph,
         callable $callback,
         int $mode = RecursiveIteratorIterator::LEAVES_ONLY
     ): void {
-        $iterator = new RecursiveObjectOrArrayIterator($objectOrArray);
-        $iterator = new RecursiveIteratorIterator($inner = $iterator, $mode);
+        $iterator = new RecursiveGraphIterator($graph);
+        $iterator = new RecursiveIteratorIterator($iterator, $mode);
         foreach ($iterator as $key => $value) {
-            if (!$callback($value, $key, $inner)) {
+            if (!$callback($value, $key, $iterator->getInnerIterator())) {
                 return;
             }
         }
