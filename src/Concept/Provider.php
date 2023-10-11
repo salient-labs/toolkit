@@ -3,9 +3,9 @@
 namespace Lkrms\Concept;
 
 use Lkrms\Contract\IContainer;
+use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IProvider;
 use Lkrms\Exception\MethodNotImplementedException;
-use Lkrms\Support\DateFormatter;
 use Lkrms\Support\ProviderContext;
 use Lkrms\Utility\Env;
 
@@ -20,7 +20,7 @@ abstract class Provider implements IProvider
 
     protected Env $Env;
 
-    private DateFormatter $DateFormatter;
+    private IDateFormatter $DateFormatter;
 
     /**
      * Creates a new provider object
@@ -32,13 +32,13 @@ abstract class Provider implements IProvider
     }
 
     /**
-     * Get a DateFormatter to work with the backend's date format and/or
-     * timezone
+     * Get a date formatter to work with the backend's date and time format
+     * and/or timezone
      *
-     * The {@see DateFormatter} returned will be cached for the lifetime of the
+     * The {@see IDateFormatter} returned will be cached for the lifetime of the
      * {@see Provider} instance.
      */
-    abstract protected function getDateFormatter(): DateFormatter;
+    abstract protected function getDateFormatter(): IDateFormatter;
 
     /**
      * @inheritDoc
@@ -99,7 +99,7 @@ abstract class Provider implements IProvider
     /**
      * @inheritDoc
      */
-    final public function dateFormatter(): DateFormatter
+    final public function dateFormatter(): IDateFormatter
     {
         return $this->DateFormatter
             ?? ($this->DateFormatter = $this->getDateFormatter());

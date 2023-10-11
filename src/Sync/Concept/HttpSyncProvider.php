@@ -2,6 +2,7 @@
 
 namespace Lkrms\Sync\Concept;
 
+use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IProvider;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
@@ -35,20 +36,19 @@ abstract class HttpSyncProvider extends SyncProvider
         string $path,
         ?int $expiry = -1,
         ?ICurlerHeaders $headers = null,
-        ?ICurlerPager $pager = null
+        ?ICurlerPager $pager = null,
+        ?IDateFormatter $dateFormatter = null
     ): Curler {
         $curlerB = $this->buildCurler(
             CurlerBuilder::build()
                 ->baseUrl($this->getEndpointUrl($path))
         );
 
-        if (!is_null($expiry) && $expiry < 0) {
+        if ($expiry !== null && $expiry < 0) {
             $expiry = $this->getExpiry($path);
         }
-        if (!is_null($expiry)) {
-            $curlerB = $curlerB
-                ->cacheResponse()
-                ->expiry($expiry);
+        if ($expiry !== null) {
+            $curlerB = $curlerB->cacheResponse()->expiry($expiry);
         } else {
             $curlerB = $curlerB->cacheResponse(false);
         }
@@ -63,6 +63,12 @@ abstract class HttpSyncProvider extends SyncProvider
             $curlerB = $curlerB->pager($pager);
         } elseif (!$curlerB->issetB('pager')) {
             $curlerB = $curlerB->pager($this->getPager($path));
+        }
+
+        if ($dateFormatter) {
+            $curlerB = $curlerB->dateFormatter($dateFormatter);
+        } elseif (!$curlerB->issetB('dateFormatter')) {
+            $curlerB = $curlerB->dateFormatter($this->getDateFormatter($path));
         }
 
         return $curlerB->go();
@@ -192,4 +198,9 @@ abstract class HttpSyncProvider extends SyncProvider
     {
         return null;
     }
+
+    /**
+     * @inheritDoc
+     */
+    abstract protected function getDateFormatter(?string $path = null): IDateFormatter;
 }

@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Contract\IDateFormatter;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Iterator\Contract\MutableIterator;
 use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
@@ -1494,7 +1495,7 @@ final class Convert
     private static function _dataToQuery(
         array $data,
         bool $preserveKeys,
-        DateFormatter $dateFormatter,
+        IDateFormatter $dateFormatter,
         ?string &$query = null,
         string $name = '',
         string $format = '%s'
@@ -1543,7 +1544,7 @@ final class Convert
     public static function dataToQuery(
         array $data,
         bool $preserveKeys = false,
-        ?DateFormatter $dateFormatter = null
+        ?IDateFormatter $dateFormatter = null
     ): string {
         return self::_dataToQuery(
             $data,

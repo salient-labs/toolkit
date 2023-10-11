@@ -3,7 +3,6 @@
 namespace Lkrms\Contract;
 
 use Lkrms\Exception\MethodNotImplementedException;
-use Lkrms\Support\DateFormatter;
 
 /**
  * Services objects on behalf of a backend
@@ -52,9 +51,10 @@ interface IProvider extends
     public function getBackendIdentifier(): array;
 
     /**
-     * Get a DateFormatter to work with the backend's date format and timezone
+     * Get a date formatter to work with the backend's date and time format
+     * and/or timezone
      */
-    public function dateFormatter(): DateFormatter;
+    public function dateFormatter(): IDateFormatter;
 
     /**
      * Throw an exception if the backend isn't reachable
