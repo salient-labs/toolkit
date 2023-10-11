@@ -125,6 +125,17 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
     }
 
     /**
+     * Wrap a new pipeline around a callback
+     *
+     * @param (callable(mixed $payload, IPipeline<mixed,mixed,mixed> $pipeline, mixed $arg): mixed) $callback
+     * @return IPipeline<mixed,mixed,mixed>
+     */
+    final protected function callbackPipeline(callable $callback): IPipeline
+    {
+        return Pipeline::create($this->App)->throughCallback($callback);
+    }
+
+    /**
      * Use the provider's container to get a serialization rules builder
      * for an entity
      *
