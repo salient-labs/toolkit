@@ -3,6 +3,7 @@
 namespace Lkrms\Curler;
 
 use Lkrms\Concept\Builder;
+use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Support\DateFormatter;
@@ -40,7 +41,7 @@ use Lkrms\Support\DateFormatter;
  * @method Curler setHeader(string $name, string $value, bool $private = false) Call Curler::setHeader() on a new instance
  * @method Curler addPrivateHeaderName(string $name) Call Curler::addPrivateHeaderName() on a new instance
  * @method Curler setContentType(?string $mimeType) Call Curler::setContentType() on a new instance
- * @method Curler with(string $property, mixed $value) Apply a value to a clone of the instance
+ * @method Curler with(string&CurlerProperty::* $property, mixed $value) Apply a value to a clone of the instance
  * @method Curler flushCookies() Call Curler::flushCookies() on a new instance
  * @method ICurlerHeaders head(mixed[]|null $query = null) Call Curler::head() on a new instance
  * @method mixed get(mixed[]|null $query = null) Call Curler::get() on a new instance

@@ -6,6 +6,7 @@ use Lkrms\Concern\HasBuilder;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ProvidesBuilder;
+use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Curler;
@@ -62,6 +63,7 @@ use UnexpectedValueException;
  * @property-read ICurlerPager|null $Pager The pagination handler for the endpoint servicing the entity
  * @property-read int|null $Expiry The time, in seconds, before responses from the provider expire
  * @property-read array<OP::*,string> $MethodMap An array that maps sync operations to HTTP request methods
+ * @property-read array<CurlerProperty::*,mixed> $CurlerProperties An array that maps Curler property names to values
  * @property-read bool $SyncOneEntityPerRequest If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request
  * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before every sync operation
  *
@@ -169,18 +171,22 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
     /**
      * An array that maps sync operations to HTTP request methods
      *
+     * May be set via {@see HttpSyncDefinition::__construct()},
+     * {@see HttpSyncDefinition::withMethodMap()} or
+     * {@see HttpSyncDefinition::$Callback}.
+     *
      * The default method map is {@see HttpSyncDefinition::DEFAULT_METHOD_MAP}.
      * It contains:
      *
      * ```php
      * <?php
      * [
-     *   OP::CREATE      => HttpRequestMethod::POST,
-     *   OP::READ        => HttpRequestMethod::GET,
-     *   OP::UPDATE      => HttpRequestMethod::PUT,
-     *   OP::DELETE      => HttpRequestMethod::DELETE,
+     *   OP::CREATE => HttpRequestMethod::POST,
+     *   OP::READ => HttpRequestMethod::GET,
+     *   OP::UPDATE => HttpRequestMethod::PUT,
+     *   OP::DELETE => HttpRequestMethod::DELETE,
      *   OP::CREATE_LIST => HttpRequestMethod::POST,
-     *   OP::READ_LIST   => HttpRequestMethod::GET,
+     *   OP::READ_LIST => HttpRequestMethod::GET,
      *   OP::UPDATE_LIST => HttpRequestMethod::PUT,
      *   OP::DELETE_LIST => HttpRequestMethod::DELETE,
      * ]
@@ -189,6 +195,19 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @var array<OP::*,string>
      */
     protected $MethodMap;
+
+    /**
+     * An array that maps Curler property names to values
+     *
+     * May be set via {@see HttpSyncDefinition::__construct()} or extended via
+     * {@see HttpSyncDefinition::withCurlerProperties()} or
+     * {@see HttpSyncDefinition::$Callback}.
+     *
+     * @see Curler
+     *
+     * @var array<CurlerProperty::*,mixed>
+     */
+    protected $CurlerProperties;
 
     /**
      * If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on
@@ -229,6 +248,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param mixed[]|null $query
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
      * @param array<OP::*,string> $methodMap
+     * @param array<CurlerProperty::*,mixed> $curlerProperties
      */
     public function __construct(
         string $entity,
@@ -243,6 +263,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
         ?int $expiry = -1,
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,
+        array $curlerProperties = [],
         bool $syncOneEntityPerRequest = false,
         array $overrides = [],
         ?array $keyMap = null,
@@ -274,6 +295,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         $this->Callback = $callback;
         $this->Expiry = $expiry;
         $this->MethodMap = $methodMap;
+        $this->CurlerProperties = $curlerProperties;
         $this->SyncOneEntityPerRequest = $syncOneEntityPerRequest;
     }
 
@@ -350,6 +372,36 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
     }
 
     /**
+     * Replace the array that maps sync operations to HTTP request methods
+     *
+     * @param array<OP::*,string> $methodMap
+     * @return $this
+     */
+    public function withMethodMap(array $methodMap)
+    {
+        $clone = clone $this;
+        $clone->MethodMap = $methodMap;
+
+        return $clone;
+    }
+
+    /**
+     * Extend the array that maps Curler property names to values
+     *
+     * @param array<CurlerProperty::*,mixed> $properties
+     * @return $this
+     */
+    public function withCurlerProperties(array $properties)
+    {
+        $clone = clone $this;
+        $clone->CurlerProperties = array_merge(
+            $clone->CurlerProperties, $properties
+        );
+
+        return $clone;
+    }
+
+    /**
      * Replace the arguments passed to the operation
      *
      * @param mixed ...$args
@@ -377,7 +429,8 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
                     is_array($payload)
                         ? $payload
                         : []
-                : $this->getHttpOperationClosure($operation);
+                : fn(Curler $curler, ?array $query, $payload = null) =>
+                    $this->getHttpOperationClosure($operation)($curler, $query, $payload);
         $httpRunner =
             fn(ISyncContext $ctx, ...$args) =>
                 $this->runHttpOperation($httpClosure, $operation, $ctx, ...$args);
@@ -517,7 +570,14 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
             try {
                 $path = Pcre::replaceCallback(
                     '/:(?<name>[[:alpha:]_][[:alnum:]_]*)/',
-                    function (array $matches) use ($operation, $ctx, $def, $id, &$claim, &$idApplied, $path): string {
+                    function (array $matches) use (
+                        $operation,
+                        $ctx,
+                        $id,
+                        &$claim,
+                        &$idApplied,
+                        $path
+                    ): string {
                         $name = $matches['name'];
                         if ($id !== null &&
                                 Convert::toSnakeCase($name) === 'id') {
@@ -537,8 +597,8 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
                             throw new SyncInvalidContextException(
                                 sprintf("Unable to resolve '%s' in path '%s'", $name, $path),
                                 $ctx,
-                                $def->Provider,
-                                $def->Entity,
+                                $this->Provider,
+                                $this->Entity,
                                 $operation,
                             );
                         }
@@ -568,21 +628,25 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         // provided, add the conventional '/:id' to the endpoint
         if ($id !== null &&
                 !$idApplied &&
-                $def->Callback === null &&
+                $this->Callback === null &&
                 strpos($path, '?') === false) {
             $path .= '/' . $this->checkParameterValue(
                 (string) $id, 'id', "$path/:id"
             );
         }
 
-        $curler = $def->Provider->getCurler($path, $def->Expiry, $def->Headers, $def->Pager);
+        $curler = $this->Provider->getCurler($path, $def->Expiry, $def->Headers, $def->Pager);
+
+        foreach ($def->CurlerProperties as $property => $value) {
+            $curler = $curler->with($property, $value);
+        }
 
         $def->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
         if ($returnEmpty) {
             return $empty;
         }
 
-        return ($httpClosure)($curler, $def->Query, $args[0] ?? null);
+        return $httpClosure->call($def, $curler, $def->Query, $args[0] ?? null);
     }
 
     /**
@@ -679,6 +743,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
             'Pager',
             'Expiry',
             'MethodMap',
+            'CurlerProperties',
             'SyncOneEntityPerRequest',
             'Callback',
         ];
