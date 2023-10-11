@@ -799,11 +799,14 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
                 !($value instanceof CurlerFile ||
                     $value instanceof DateTimeInterface)
         );
-        $leafIterator = new RecursiveIteratorIterator($iterator);
+        $leaves = new RecursiveIteratorIterator($iterator);
+        $iterator = new RecursiveIteratorIterator(
+            $iterator, RecursiveIteratorIterator::SELF_FIRST
+        );
 
         // Does `$data` contain a `CurlerFile`?
         $file = false;
-        foreach ($leafIterator as $value) {
+        foreach ($leaves as $value) {
             if ($value instanceof CurlerFile) {
                 $file = true;
                 break;
@@ -812,21 +815,32 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
 
         // With that answered, start over, replacing `CurlerFile` and
         // `DateTimeInterface` instances
-        /** @var RecursiveObjectOrArrayIterator $iterator */
         foreach ($iterator as $value) {
+            $replace = null;
+
             if ($value instanceof CurlerFile) {
-                $value = $value->getCurlFile();
+                $replace = $value->getCurlFile();
             } elseif ($value instanceof DateTimeInterface) {
-                $value = $this->getDateFormatter()->format($value);
-            } elseif ($file) {
-                // And if uploading a file, replace every object that isn't a
-                // CURLFile with an array cURL can encode
-                $iterator->maybeReplaceCurrentWithArray();
-                continue;
-            } else {
+                $replace = $this->getDateFormatter()->format($value);
+            } elseif (!$file) {
                 continue;
             }
-            $iterator->replace($value);
+
+            /** @var RecursiveHasChildrenCallbackIterator */
+            $inner = $iterator->getInnerIterator();
+            /** @var RecursiveObjectOrArrayIterator */
+            $inner = $inner->getInnerIterator();
+
+            if ($replace !== null) {
+                $inner->replace($replace);
+                continue;
+            }
+
+            // If uploading a file, replace every object that isn't a CURLFile
+            // with an array cURL can encode
+            if ($file) {
+                $inner->maybeConvertToArray();
+            }
         }
 
         if ($file) {

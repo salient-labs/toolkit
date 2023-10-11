@@ -45,7 +45,7 @@ class RecursiveObjectOrArrayIterator extends ObjectOrArrayIterator implements \R
      *
      * @return $this
      */
-    public function maybeReplaceCurrentWithArray()
+    public function maybeConvertToArray()
     {
         if (($current = $this->current()) === false) {
             return $this;

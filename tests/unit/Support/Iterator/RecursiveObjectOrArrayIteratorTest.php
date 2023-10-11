@@ -22,7 +22,7 @@ final class RecursiveObjectOrArrayIteratorTest extends \Lkrms\Tests\TestCase
             if ($key === 'l') {
                 /** @var RecursiveObjectOrArrayIterator $iterator */
                 $iterator = $recursiveIterator->getInnerIterator();
-                $iterator->maybeReplaceCurrentWithArray();
+                $iterator->maybeConvertToArray();
                 continue;
             }
 
