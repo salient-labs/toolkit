@@ -43,13 +43,12 @@ class RecursiveObjectOrArrayIterator extends ObjectOrArrayIterator implements \R
      * If the current element is an object with children, replace it with an
      * array of its properties
      *
-     * @return mixed|false `false` if the current position is invalid, otherwise
-     * the current value.
+     * @return $this
      */
-    public function maybeReplaceCurrentWithArray()
+    public function maybeConvertToArray()
     {
         if (($current = $this->current()) === false) {
-            return false;
+            return $this;
         }
 
         if (is_object($current) && $this->hasChildren()) {
@@ -61,6 +60,6 @@ class RecursiveObjectOrArrayIterator extends ObjectOrArrayIterator implements \R
             return $this->replace($array);
         }
 
-        return $current;
+        return $this;
     }
 }

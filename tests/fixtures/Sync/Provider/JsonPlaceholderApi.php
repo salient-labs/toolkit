@@ -2,6 +2,7 @@
 
 namespace Lkrms\Tests\Sync\Provider;
 
+use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
@@ -61,7 +62,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return [$this->getBaseUrl()];
     }
 
-    protected function getDateFormatter(): DateFormatter
+    protected function getDateFormatter(?string $path = null): IDateFormatter
     {
         return new DateFormatter();
     }

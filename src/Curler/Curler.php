@@ -6,6 +6,7 @@ use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\HasMutator;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
+use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ProvidesBuilder;
@@ -67,7 +68,7 @@ use RecursiveIteratorIterator;
  * @property bool $ExpectJson Request JSON from upstream?
  * @property bool $PostJson Use JSON to serialize POST/PUT/PATCH/DELETE data?
  * @property bool $PreserveKeys Suppress removal of numeric indices from serialized lists?
- * @property DateFormatter|null $DateFormatter Specify the date format and timezone used upstream
+ * @property IDateFormatter|null $DateFormatter Specify the date format and timezone used upstream
  * @property string|null $UserAgent Override the default User-Agent header
  * @property bool $AlwaysPaginate Pass every response to the pager?
  * @property bool $ObjectAsArray Return deserialized objects as associative arrays?
@@ -349,7 +350,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     /**
      * Specify the date format and timezone used upstream
      *
-     * @var DateFormatter|null
+     * @var IDateFormatter|null
      */
     protected $DateFormatter;
 
@@ -428,7 +429,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         bool $expectJson = true,
         bool $postJson = true,
         bool $preserveKeys = false,
-        ?DateFormatter $dateFormatter = null,
+        ?IDateFormatter $dateFormatter = null,
         ?string $userAgent = null,
         bool $alwaysPaginate = false,
         bool $objectAsArray = true
@@ -799,11 +800,14 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
                 !($value instanceof CurlerFile ||
                     $value instanceof DateTimeInterface)
         );
-        $leafIterator = new RecursiveIteratorIterator($iterator);
+        $leaves = new RecursiveIteratorIterator($iterator);
+        $iterator = new RecursiveIteratorIterator(
+            $iterator, RecursiveIteratorIterator::SELF_FIRST
+        );
 
         // Does `$data` contain a `CurlerFile`?
         $file = false;
-        foreach ($leafIterator as $value) {
+        foreach ($leaves as $value) {
             if ($value instanceof CurlerFile) {
                 $file = true;
                 break;
@@ -812,21 +816,32 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
 
         // With that answered, start over, replacing `CurlerFile` and
         // `DateTimeInterface` instances
-        /** @var RecursiveObjectOrArrayIterator $iterator */
         foreach ($iterator as $value) {
+            $replace = null;
+
             if ($value instanceof CurlerFile) {
-                $value = $value->getCurlFile();
+                $replace = $value->getCurlFile();
             } elseif ($value instanceof DateTimeInterface) {
-                $value = $this->getDateFormatter()->format($value);
-            } elseif ($file) {
-                // And if uploading a file, replace every object that isn't a
-                // CURLFile with an array cURL can encode
-                $iterator->maybeReplaceCurrentWithArray();
-                continue;
-            } else {
+                $replace = $this->getDateFormatter()->format($value);
+            } elseif (!$file) {
                 continue;
             }
-            $iterator->replace($value);
+
+            /** @var RecursiveHasChildrenCallbackIterator<array-key,mixed> */
+            $inner = $iterator->getInnerIterator();
+            /** @var RecursiveObjectOrArrayIterator */
+            $inner = $inner->getInnerIterator();
+
+            if ($replace !== null) {
+                $inner->replace($replace);
+                continue;
+            }
+
+            // If uploading a file, replace every object that isn't a CURLFile
+            // with an array cURL can encode
+            if ($file) {
+                $inner->maybeConvertToArray();
+            }
         }
 
         if ($file) {
@@ -855,7 +870,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             : null;
     }
 
-    private function getDateFormatter(): DateFormatter
+    private function getDateFormatter(): IDateFormatter
     {
         return $this->DateFormatter
             ?: ($this->DateFormatter = new DateFormatter());

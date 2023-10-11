@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Support;
+namespace Lkrms\Tests\Support\Iterator;
 
 use Lkrms\Support\Iterator\RecursiveObjectOrArrayIterator;
 use RecursiveIteratorIterator;
@@ -8,9 +8,9 @@ use stdClass;
 
 final class RecursiveObjectOrArrayIteratorTest extends \Lkrms\Tests\TestCase
 {
-    public function testArrayRecursion(): void
+    public function testRecursion(): void
     {
-        $mixed = $this->getArrayWithNestedObjectsAndArrays($a, $d1, $d2, $e);
+        $mixed = $this->getArrayWithNestedObjectsAndArrays($a, $d1, $d2, $e, $l);
         $iterator = new RecursiveObjectOrArrayIterator($mixed);
         $recursiveIterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
         $replaceValue = ['g', 1, $d2];
@@ -18,9 +18,17 @@ final class RecursiveObjectOrArrayIteratorTest extends \Lkrms\Tests\TestCase
         $out = [];
         foreach ($recursiveIterator as $key => $value) {
             $out[] = [$key => $value];
+
+            if ($key === 'l') {
+                /** @var RecursiveObjectOrArrayIterator $iterator */
+                $iterator = $recursiveIterator->getInnerIterator();
+                $iterator->maybeConvertToArray();
+                continue;
+            }
+
             if (($replaceKey = array_search($value, $replaceValue, true)) !== false) {
                 /** @var RecursiveObjectOrArrayIterator $iterator */
-                $iterator = $recursiveIterator->getSubIterator();
+                $iterator = $recursiveIterator->getInnerIterator();
                 $iterator->replace($replaceWith[$replaceKey]);
             }
         }
@@ -41,6 +49,8 @@ final class RecursiveObjectOrArrayIteratorTest extends \Lkrms\Tests\TestCase
             [0 => 'g'],
             [1 => 'h'],
             [2 => 'i'],
+            ['l' => $l],
+            ['m' => 'tree'],
             ['k' => 21],
             [1 => [0, 1, 1, 2, 3, 5]],
             [0 => 0],
@@ -67,13 +77,19 @@ final class RecursiveObjectOrArrayIteratorTest extends \Lkrms\Tests\TestCase
         $this->assertSame($e, $mixed[0]->e);
         $this->assertSame([100, 'h', 'i'], $mixed[0]->e->f);
         $this->assertSame(21, $mixed[0]->k);
+        $this->assertSame(['m' => 'tree'], $mixed[0]->e->l);
     }
 
     /**
      * @return mixed[]
      */
-    private function getArrayWithNestedObjectsAndArrays(?stdClass &$a = null, ?stdClass &$d1 = null, ?stdClass &$d2 = null, ?stdClass &$e = null): array
-    {
+    private function getArrayWithNestedObjectsAndArrays(
+        ?stdClass &$a = null,
+        ?stdClass &$d1 = null,
+        ?stdClass &$d2 = null,
+        ?stdClass &$e = null,
+        ?stdClass &$l = null
+    ): array {
         $a = new stdClass();
         $a->b = [
             'c',
@@ -89,6 +105,8 @@ final class RecursiveObjectOrArrayIteratorTest extends \Lkrms\Tests\TestCase
             [0, 1, 1, 2, 3, 5],
         ];
         $a->k = 21;
+        $e->l = $l = new stdClass();
+        $e->l->m = 'tree';
 
         return $j;
     }

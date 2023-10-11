@@ -3,17 +3,15 @@
 namespace Lkrms\Support\Iterator;
 
 use Lkrms\Support\Iterator\Contract\MutableIterator;
-use Iterator;
+use LogicException;
 use ReturnTypeWillChange;
-use RuntimeException;
 
 /**
  * Iterates over an object's properties or an array's elements
  *
- * @implements Iterator<array-key,mixed>
  * @implements MutableIterator<array-key,mixed>
  */
-class ObjectOrArrayIterator implements Iterator, MutableIterator
+class ObjectOrArrayIterator implements MutableIterator
 {
     /**
      * @var object|mixed[]
@@ -64,17 +62,15 @@ class ObjectOrArrayIterator implements Iterator, MutableIterator
     public function replace($value)
     {
         if (($key = current($this->Keys)) === false) {
-            throw new RuntimeException('Current position is not valid');
+            throw new LogicException('Current position is not valid');
         }
 
         if ($this->IsObject) {
             $this->ObjectOrArray->{$key} = $value;
-
             return $this;
         }
 
         $this->ObjectOrArray[$key] = $value;
-
         return $this;
     }
 
@@ -87,7 +83,6 @@ class ObjectOrArrayIterator implements Iterator, MutableIterator
         if (($key = current($this->Keys)) === false) {
             return null;
         }
-
         return $key;
     }
 

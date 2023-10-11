@@ -37,7 +37,7 @@ use LogicException;
  * @property-read array<OP::*> $Operations A list of supported sync operations
  * @property-read ArrayKeyConformity::* $Conformity The conformity level of data returned by the provider for this entity
  * @property-read SyncFilterPolicy::* $FilterPolicy The action to take when filters are unclaimed by the provider
- * @property-read array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $Overrides An array that maps sync operations to closures that override other implementations
+ * @property-read array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $Overrides An array that maps sync operations to closures that override other implementations
  * @property-read array<array-key,array-key|array-key[]>|null $KeyMap An array that maps provider (backend) keys to one or more entity keys
  * @property-read int-mask-of<ArrayMapperFlag::*> $KeyMapFlags Passed to the array mapper if `$keyMap` is provided
  * @property-read IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $PipelineFromBackend A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
@@ -133,9 +133,9 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * Operations implemented here don't need to be added to
      * {@see SyncDefinition::$Operations}.
      *
-     * @var array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed>
+     * @var array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)>
      */
-    protected $Overrides;
+    protected $Overrides = [];
 
     /**
      * An array that maps provider (backend) keys to one or more entity keys
@@ -222,7 +222,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * @param array<OP::*> $operations
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
-     * @param array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $overrides
+     * @param array<int-mask-of<OP::*>,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
      * @param IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
@@ -254,15 +254,30 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         $this->ReadFromReadList = $readFromReadList;
         $this->ReturnEntitiesFrom = $returnEntitiesFrom;
 
+        // Expand $overrides into an entry per operation
+        foreach ($overrides as $ops => $override) {
+            foreach (SyncOperations::ALL as $op) {
+                if (!($ops & $op)) {
+                    continue;
+                }
+                if (array_key_exists($op, $this->Overrides)) {
+                    throw new LogicException(sprintf(
+                        'Too many overrides for SyncOperation::%s on %s: %s',
+                        OP::toName($op),
+                        $entity,
+                        get_class($provider),
+                    ));
+                }
+                $this->Overrides[$op] = $override;
+            }
+        }
+
         // Combine overridden operations with $operations and discard any
         // invalid values
         $this->Operations = array_intersect(
             SyncOperations::ALL,
-            array_merge(array_values($operations), array_keys($overrides))
+            array_merge(array_values($operations), array_keys($this->Overrides))
         );
-
-        // Discard any overrides for invalid operations
-        $this->Overrides = array_intersect_key($overrides, array_flip($this->Operations));
 
         $this->EntityIntrospector = SyncIntrospector::get($entity);
         $this->ProviderIntrospector = SyncIntrospector::get(get_class($provider));

@@ -3,10 +3,10 @@
 namespace Lkrms\Curler;
 
 use Lkrms\Concept\Builder;
+use Lkrms\Contract\IDateFormatter;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
-use Lkrms\Support\DateFormatter;
 
 /**
  * Creates Curler objects via a fluent interface
@@ -32,7 +32,7 @@ use Lkrms\Support\DateFormatter;
  * @method $this expectJson(bool $value = true) Request JSON from upstream? (default: true)
  * @method $this postJson(bool $value = true) Use JSON to serialize POST/PUT/PATCH/DELETE data? (default: true)
  * @method $this preserveKeys(bool $value = true) Suppress removal of numeric indices from serialized lists? (default: false)
- * @method $this dateFormatter(?DateFormatter $value) Specify the date format and timezone used upstream
+ * @method $this dateFormatter(?IDateFormatter $value) Specify the date format and timezone used upstream
  * @method $this userAgent(?string $value) Override the default User-Agent header (see {@see Curler::$UserAgent})
  * @method $this alwaysPaginate(bool $value = true) Pass every response to the pager? (default: false)
  * @method $this objectAsArray(bool $value = true) Return deserialized objects as associative arrays? (default: true)
