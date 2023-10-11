@@ -62,7 +62,7 @@ use UnexpectedValueException;
  * @property-read ICurlerHeaders|null $Headers HTTP headers applied to the sync operation request
  * @property-read ICurlerPager|null $Pager The pagination handler for the endpoint servicing the entity
  * @property-read int|null $Expiry The time, in seconds, before responses from the provider expire
- * @property-read array<OP::*,string> $MethodMap An array that maps sync operations to HTTP request methods
+ * @property-read array<OP::*,HttpRequestMethod::*> $MethodMap An array that maps sync operations to HTTP request methods
  * @property-read array<CurlerProperty::*,mixed> $CurlerProperties An array that maps Curler property names to values
  * @property-read bool $SyncOneEntityPerRequest If true, perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request
  * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before every sync operation
@@ -192,7 +192,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * ]
      * ```
      *
-     * @var array<OP::*,string>
+     * @var array<OP::*,HttpRequestMethod::*>
      */
     protected $MethodMap;
 
@@ -239,7 +239,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param string[]|string|null $path
      * @param ArrayKeyConformity::* $conformity
      * @param SyncFilterPolicy::* $filterPolicy
-     * @param array<OP::*,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): mixed> $overrides
+     * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
      * @param IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $pipelineFromBackend
@@ -247,7 +247,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param SyncEntitySource::*|null $returnEntitiesFrom
      * @param mixed[]|null $query
      * @param (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $callback
-     * @param array<OP::*,string> $methodMap
+     * @param array<OP::*,HttpRequestMethod::*> $methodMap
      * @param array<CurlerProperty::*,mixed> $curlerProperties
      */
     public function __construct(
@@ -374,7 +374,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
     /**
      * Replace the array that maps sync operations to HTTP request methods
      *
-     * @param array<OP::*,string> $methodMap
+     * @param array<OP::*,HttpRequestMethod::*> $methodMap
      * @return $this
      */
     public function withMethodMap(array $methodMap)
