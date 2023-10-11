@@ -9,6 +9,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Support\Iterator\IterableIterator;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
@@ -20,7 +21,6 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
-use Lkrms\Sync\Support\SyncIntrospectionClass;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Closure;
 use LogicException;
@@ -58,16 +58,17 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * {@see SyncDefinition::$Operations}.
      *
      * @param OP::* $operation
+     * @return (Closure(ISyncContext, mixed...): (iterable<TEntity>|TEntity))|null
      * @phpstan-return (
      *     $operation is OP::READ
      *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
      *     : (
      *         $operation is OP::READ_LIST
-     *         ? (Closure(ISyncContext, mixed...): FluentIteratorInterface<array-key,TEntity>)
+     *         ? (Closure(ISyncContext, mixed...): iterable<TEntity>)
      *         : (
      *             $operation is OP::CREATE|OP::UPDATE|OP::DELETE
      *             ? (Closure(ISyncContext, TEntity, mixed...): TEntity)
-     *             : (Closure(ISyncContext, FluentIteratorInterface<array-key,TEntity>, mixed...): FluentIteratorInterface<array-key,TEntity>)
+     *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
      *         )
      *     )
      * )|null
@@ -317,7 +318,10 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
                 ($closure = $this->getSyncOperationClosure(OP::READ_LIST))) {
             return $this->Closures[$operation] =
                 function (ISyncContext $ctx, $id, ...$args) use ($closure) {
-                    $entity = $closure($ctx, ...$args)->nextWithValue('Id', $id);
+                    $entity =
+                        $this
+                            ->getFluentIterator($closure($ctx, ...$args))
+                            ->nextWithValue('Id', $id);
                     if ($entity === false) {
                         throw new SyncEntityNotFoundException($this->Provider, $this->Entity, $id);
                     }
@@ -341,17 +345,71 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * Useful within overrides when a fallback implementation is required.
      *
      * @param OP::* $operation
+     * @return (Closure(ISyncContext, mixed...): (iterable<TEntity>|TEntity))|null
+     * @phpstan-return (
+     *     $operation is OP::READ
+     *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
+     *     : (
+     *         $operation is OP::READ_LIST
+     *         ? (Closure(ISyncContext, mixed...): iterable<TEntity>)
+     *         : (
+     *             $operation is OP::CREATE|OP::UPDATE|OP::DELETE
+     *             ? (Closure(ISyncContext, TEntity, mixed...): TEntity)
+     *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
+     *         )
+     *     )
+     * )|null
+     *
      * @see SyncDefinition::$Overrides
      */
-    final public function getFallbackSyncOperationClosure($operation): ?Closure
+    final public function getFallbackClosure($operation): ?Closure
     {
-        if (!($clone = $this->WithoutOverrides)) {
+        $clone = $this->WithoutOverrides;
+        if (!$clone) {
             $clone = clone $this;
             $clone->Overrides = [];
             $this->WithoutOverrides = $clone;
         }
 
         return $clone->getSyncOperationClosure($operation);
+    }
+
+    /**
+     * @deprecated Use {@see SyncDefinition::getFallbackClosure()} instead
+     *
+     * @param OP::* $operation
+     * @return (Closure(ISyncContext, mixed...): (iterable<TEntity>|TEntity))|null
+     * @phpstan-return (
+     *     $operation is OP::READ
+     *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
+     *     : (
+     *         $operation is OP::READ_LIST
+     *         ? (Closure(ISyncContext, mixed...): iterable<TEntity>)
+     *         : (
+     *             $operation is OP::CREATE|OP::UPDATE|OP::DELETE
+     *             ? (Closure(ISyncContext, TEntity, mixed...): TEntity)
+     *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
+     *         )
+     *     )
+     * )|null
+     */
+    final public function getFallbackSyncOperationClosure($operation): ?Closure
+    {
+        return $this->getFallbackClosure($operation);
+    }
+
+    /**
+     * Specify whether to perform READ operations by iterating over entities
+     * returned by READ_LIST
+     *
+     * @return $this
+     */
+    final public function withReadFromReadList(bool $readFromReadList = true)
+    {
+        $clone = clone $this;
+        $clone->ReadFromReadList = $readFromReadList;
+
+        return $clone;
     }
 
     /**
@@ -474,6 +532,19 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
                 $this->applyFilterPolicy($operation, $ctx, $returnEmpty, $empty);
             }
         );
+    }
+
+    /**
+     * @param iterable<TEntity> $result
+     * @return FluentIteratorInterface<array-key,TEntity>
+     */
+    private function getFluentIterator(iterable $result): FluentIteratorInterface
+    {
+        if (!($result instanceof FluentIteratorInterface)) {
+            return new IterableIterator($result);
+        }
+
+        return $result;
     }
 
     public static function getReadable(): array

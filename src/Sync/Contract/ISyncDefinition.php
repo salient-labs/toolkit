@@ -3,7 +3,6 @@
 namespace Lkrms\Sync\Contract;
 
 use Lkrms\Contract\IImmutable;
-use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Closure;
 
@@ -21,17 +20,17 @@ interface ISyncDefinition extends IImmutable
      * entity
      *
      * @param SyncOperation::* $operation
-     * @return (Closure(ISyncContext, mixed...): FluentIteratorInterface<array-key,TEntity>|TEntity)|null `null` if `$operation` is not supported, otherwise a closure with the correct signature for the sync operation.
+     * @return (Closure(ISyncContext, mixed...): (iterable<TEntity>|TEntity))|null `null` if `$operation` is not supported, otherwise a closure with the correct signature for the sync operation.
      * @phpstan-return (
      *     $operation is SyncOperation::READ
      *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
      *     : (
      *         $operation is SyncOperation::READ_LIST
-     *         ? (Closure(ISyncContext, mixed...): FluentIteratorInterface<array-key,TEntity>)
+     *         ? (Closure(ISyncContext, mixed...): iterable<TEntity>)
      *         : (
      *             $operation is SyncOperation::CREATE|SyncOperation::UPDATE|SyncOperation::DELETE
      *             ? (Closure(ISyncContext, TEntity, mixed...): TEntity)
-     *             : (Closure(ISyncContext, FluentIteratorInterface<array-key,TEntity>, mixed...): FluentIteratorInterface<array-key,TEntity>)
+     *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
      *         )
      *     )
      * )|null
