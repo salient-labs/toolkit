@@ -104,4 +104,29 @@ abstract class Provider implements IProvider
         return $this->DateFormatter
             ?? ($this->DateFormatter = $this->getDateFormatter());
     }
+
+    /**
+     * Get the date formatter cached by dateFormatter(), or null if it hasn't
+     * been cached
+     */
+    final protected function getCachedDateFormatter(): ?IDateFormatter
+    {
+        return $this->DateFormatter ?? null;
+    }
+
+    /**
+     * Set or unset the date formatter returned by dateFormatter()
+     *
+     * @return $this
+     */
+    final protected function setDateFormatter(?IDateFormatter $formatter)
+    {
+        if ($formatter === null) {
+            unset($this->DateFormatter);
+        } else {
+            $this->DateFormatter = $formatter;
+        }
+
+        return $this;
+    }
 }
