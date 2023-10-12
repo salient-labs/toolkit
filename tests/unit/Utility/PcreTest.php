@@ -42,4 +42,11 @@ final class PcreTest extends \Lkrms\Tests\TestCase
         $this->expectExceptionMessage('Call to preg_replace_callback_array() failed with PREG_BACKTRACK_LIMIT_ERROR');
         Pcre::replaceCallbackArray(['/(?:\D+|<\d+>)*[!?]/' => fn() => ''], 'foobar foobar foobar');
     }
+
+    public function testSplit(): void
+    {
+        $this->expectException(PcreErrorException::class);
+        $this->expectExceptionMessage('Call to preg_split() failed with PREG_BACKTRACK_LIMIT_ERROR');
+        Pcre::split('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
+    }
 }

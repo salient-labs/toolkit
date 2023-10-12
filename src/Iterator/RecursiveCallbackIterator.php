@@ -67,7 +67,9 @@ class RecursiveCallbackIterator extends IteratorIterator implements RecursiveIte
 
         return
             $children === null
+                // @codeCoverageIgnoreStart
                 ? null
+                // @codeCoverageIgnoreEnd
                 : new self($children, $this->Callback);
     }
 }

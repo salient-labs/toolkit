@@ -23,7 +23,9 @@ class RecursiveMutableGraphIterator extends MutableGraphIterator implements \Rec
     public function maybeConvertToArray()
     {
         if (($current = $this->current()) === false) {
+            // @codeCoverageIgnoreStart
             return $this;
+            // @codeCoverageIgnoreEnd
         }
 
         if (is_object($current) && $this->hasChildren()) {

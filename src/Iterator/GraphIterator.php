@@ -47,7 +47,9 @@ class GraphIterator implements Iterator
         }
 
         if ($graph instanceof Traversable) {
+            // @codeCoverageIgnoreStart
             throw new LogicException('Traversable objects are not supported');
+            // @codeCoverageIgnoreEnd
         }
 
         $this->Graph = $graph;
@@ -81,7 +83,9 @@ class GraphIterator implements Iterator
     public function key()
     {
         if (($key = current($this->Keys)) === false) {
+            // @codeCoverageIgnoreStart
             return null;
+            // @codeCoverageIgnoreEnd
         }
         return $key;
     }

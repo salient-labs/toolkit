@@ -15,7 +15,9 @@ trait RecursiveGraphIteratorTrait
     {
         /** @var RecursiveGraphIterator|RecursiveMutableGraphIterator $this */
         if (($current = $this->current()) === false) {
+            // @codeCoverageIgnoreStart
             return false;
+            // @codeCoverageIgnoreEnd
         }
 
         return is_object($current) || is_array($current);
@@ -25,7 +27,9 @@ trait RecursiveGraphIteratorTrait
     {
         /** @var RecursiveGraphIterator|RecursiveMutableGraphIterator $this */
         if (($current = $this->current()) === false) {
+            // @codeCoverageIgnoreStart
             return null;
+            // @codeCoverageIgnoreEnd
         }
 
         $key = current($this->Keys);
@@ -39,6 +43,8 @@ trait RecursiveGraphIteratorTrait
             return new self($current);
         }
 
+        // @codeCoverageIgnoreStart
         return null;
+        // @codeCoverageIgnoreEnd
     }
 }
