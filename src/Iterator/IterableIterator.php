@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Iterator;
+namespace Lkrms\Iterator;
 
-use Lkrms\Support\Iterator\Concern\FluentIteratorTrait;
-use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Iterator\Concern\FluentIteratorTrait;
+use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use ArrayIterator;
 use IteratorIterator;
 use Traversable;
@@ -13,10 +13,12 @@ use Traversable;
  *
  * @template TKey of array-key
  * @template TValue
+ *
  * @extends IteratorIterator<TKey,TValue,Traversable<TKey,TValue>>
+ *
  * @implements FluentIteratorInterface<TKey,TValue>
  */
-final class IterableIterator extends IteratorIterator implements FluentIteratorInterface
+class IterableIterator extends IteratorIterator implements FluentIteratorInterface
 {
     /**
      * @use FluentIteratorTrait<TKey,TValue>
@@ -38,7 +40,9 @@ final class IterableIterator extends IteratorIterator implements FluentIteratorI
     /**
      * @template T0 of array-key
      * @template T1
+     *
      * @param iterable<T0,T1> $iterable
+     *
      * @return self<T0,T1>
      */
     public static function from(iterable $iterable): self

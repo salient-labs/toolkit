@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Iterator\Contract;
+namespace Lkrms\Iterator\Contract;
 
 use Iterator;
 
@@ -9,12 +9,13 @@ use Iterator;
  *
  * @template TKey
  * @template TValue
+ *
  * @extends Iterator<TKey,TValue>
  */
 interface MutableIterator extends Iterator
 {
     /**
-     * Replace the value at the current position
+     * Replace the current element
      *
      * @param TValue $value
      * @return $this

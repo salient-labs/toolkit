@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Iterator;
+namespace Lkrms\Iterator;
 
 use IteratorIterator;
 use ReturnTypeWillChange;
@@ -9,9 +9,10 @@ use Traversable;
 /**
  * Applies a callback to each value as it is returned
  *
- * @template TKey of array-key
+ * @template TKey
  * @template TInput
  * @template TOutput
+ *
  * @extends IteratorIterator<TKey,TOutput,Traversable<TKey,TInput>>
  */
 class MapIterator extends IteratorIterator

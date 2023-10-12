@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Iterator\Contract;
+namespace Lkrms\Iterator\Contract;
 
+use Lkrms\Contract\Arrayable;
 use Iterator;
 
 /**
@@ -9,19 +10,19 @@ use Iterator;
  *
  * @template TKey of array-key
  * @template TValue
+ *
  * @extends Iterator<TKey,TValue>
+ * @extends Arrayable<TKey,TValue>
  */
-interface FluentIteratorInterface extends Iterator
+interface FluentIteratorInterface extends Iterator, Arrayable
 {
     /**
-     * Convert the iterator's (remaining) elements to an array
-     *
-     * @return array<TKey,TValue>
+     * Copy the elements of the iterator to an array
      */
-    public function toArray(): array;
+    public function toArray(bool $preserveKeys = true): array;
 
     /**
-     * Apply a callback to the iterator's (remaining) elements
+     * Apply a callback to the elements of the iterator
      *
      * @param callable(TValue): mixed $callback
      * @return $this
@@ -29,16 +30,16 @@ interface FluentIteratorInterface extends Iterator
     public function forEach(callable $callback);
 
     /**
-     * Apply a callback to the iterator's (remaining) elements until the
-     * iterator is empty or the callback returns a value other than true
+     * Apply a callback to the elements of the iterator until cancelled by the
+     * callback
      *
-     * @param callable(TValue): bool $callback Return `false` to cancel the
-     * operation.
-     * @param bool|null $result Receives `false` if the operation is cancelled
-     * by the callback, `true` otherwise.
+     * @param callable(TValue): (true|mixed) $callback Return `true` to continue
+     * iterating over the iterator.
+     * @param bool|null $result If `$result` is provided, `false` is assigned if
+     * iteration is cancelled by the callback, otherwise `true` is assigned.
      * @return $this
      */
-    public function forEachWhileTrue(callable $callback, ?bool &$result = null);
+    public function forEachWhile(callable $callback, ?bool &$result = null);
 
     /**
      * Get the next element with a key or property that matches a value

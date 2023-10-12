@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Support\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Sync\Catalog\SyncOperation;
 
 /**
