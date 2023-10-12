@@ -600,7 +600,7 @@ final class SyncIntrospector extends Introspector
                         DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
                         return;
                     }
-                    $entity->{$property} = $relationship::provideList($data[$key], $provider, $context->getConformity(), $context->push($entity));
+                    $entity->{$property} = $relationship::provideList($data[$key], $provider, $context->getConformity(), $context->push($entity))->toArray();
                     return;
                 }
                 if (is_scalar($data[$key])) {
