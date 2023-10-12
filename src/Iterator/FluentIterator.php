@@ -12,10 +12,12 @@ use IteratorIterator;
  *
  * @template TKey of array-key
  * @template TValue
+ *
  * @extends IteratorIterator<TKey,TValue,Iterator<TKey,TValue>>
+ *
  * @implements FluentIteratorInterface<TKey,TValue>
  */
-final class FluentIterator extends IteratorIterator implements FluentIteratorInterface
+class FluentIterator extends IteratorIterator implements FluentIteratorInterface
 {
     /**
      * @use FluentIteratorTrait<TKey,TValue>
@@ -25,14 +27,17 @@ final class FluentIterator extends IteratorIterator implements FluentIteratorInt
     /**
      * @template T0 of array-key
      * @template T1
+     *
      * @param Iterator<T0,T1> $iterator
+     *
      * @return self<T0,T1>
      */
     public static function from(Iterator $iterator): self
     {
-        /** @var self<T0,T1> */
-        $instance = new self($iterator);
+        if ($iterator instanceof self) {
+            return $iterator;
+        }
 
-        return $instance;
+        return new self($iterator);
     }
 }

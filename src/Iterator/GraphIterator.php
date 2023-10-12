@@ -2,21 +2,22 @@
 
 namespace Lkrms\Iterator;
 
-use Lkrms\Iterator\Contract\MutableIterator;
+use Iterator;
 use LogicException;
 use ReturnTypeWillChange;
+use Traversable;
 
 /**
- * Iterates over an object's properties or an array's elements
+ * Iterates over the properties or elements of an object or array
  *
- * @implements MutableIterator<array-key,mixed>
+ * @implements Iterator<array-key,mixed>
  */
-class GraphIterator implements MutableIterator
+class GraphIterator implements Iterator
 {
     /**
      * @var object|mixed[]
      */
-    protected $ObjectOrArray;
+    protected $Graph;
 
     /**
      * @var array<array-key>
@@ -26,20 +27,31 @@ class GraphIterator implements MutableIterator
     protected bool $IsObject = true;
 
     /**
-     * @param object|mixed[] $objectOrArray
+     * @param object|mixed[] $graph
      */
-    public function __construct(&$objectOrArray)
+    public function __construct($graph)
     {
-        if (is_array($objectOrArray)) {
-            $this->ObjectOrArray = &$objectOrArray;
-            $this->Keys = array_keys($objectOrArray);
-            $this->IsObject = false;
+        $this->doConstruct($graph);
+    }
 
+    /**
+     * @param object|mixed[] $graph
+     */
+    protected function doConstruct(&$graph): void
+    {
+        if (is_array($graph)) {
+            $this->Graph = &$graph;
+            $this->Keys = array_keys($graph);
+            $this->IsObject = false;
             return;
         }
 
-        $this->ObjectOrArray = $objectOrArray;
-        foreach ($objectOrArray as $key => $value) {
+        if ($graph instanceof Traversable) {
+            throw new LogicException('Traversable objects are not supported');
+        }
+
+        $this->Graph = $graph;
+        foreach ($graph as $key => $value) {
             $this->Keys[] = $key;
         }
     }
@@ -51,27 +63,15 @@ class GraphIterator implements MutableIterator
     public function current()
     {
         if (($key = current($this->Keys)) === false) {
+            // @codeCoverageIgnoreStart
             return false;
+            // @codeCoverageIgnoreEnd
         }
 
-        return $this->IsObject
-            ? $this->ObjectOrArray->{$key}
-            : $this->ObjectOrArray[$key];
-    }
-
-    public function replace($value)
-    {
-        if (($key = current($this->Keys)) === false) {
-            throw new LogicException('Current position is not valid');
-        }
-
-        if ($this->IsObject) {
-            $this->ObjectOrArray->{$key} = $value;
-            return $this;
-        }
-
-        $this->ObjectOrArray[$key] = $value;
-        return $this;
+        return
+            $this->IsObject
+                ? $this->Graph->{$key}
+                : $this->Graph[$key];
     }
 
     /**

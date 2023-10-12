@@ -9,13 +9,15 @@ use RecursiveIterator;
  * Uses a callback to accept or reject a recursive iterator's entries for
  * recursion
  *
- * Similar to `RecursiveCallbackFilterIterator`, but the callback is used to
- * filter the return value of `RecursiveIterator::hasChildren()`, allowing
+ * Similar to `RecursiveCallbackFilterIterator`, but the callback is only used
+ * to filter the return value of `RecursiveIterator::hasChildren()`, allowing
  * values to be treated as leaf nodes even if they have children.
  *
  * @template TKey
  * @template TValue
+ *
  * @extends IteratorIterator<TKey,TValue,RecursiveIterator<TKey,TValue>>
+ *
  * @implements RecursiveIterator<TKey,TValue>
  */
 class RecursiveCallbackIterator extends IteratorIterator implements RecursiveIterator

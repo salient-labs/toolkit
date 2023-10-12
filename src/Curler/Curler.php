@@ -19,7 +19,7 @@ use Lkrms\Facade\Composer;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Iterator\RecursiveCallbackIterator;
-use Lkrms\Iterator\RecursiveGraphIterator;
+use Lkrms\Iterator\RecursiveMutableGraphIterator;
 use Lkrms\Support\Catalog\HttpHeader;
 use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Support\Catalog\MimeType;
@@ -792,7 +792,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     private function prepareData($data)
     {
         // Iterate over `$data` recursively
-        $iterator = new RecursiveGraphIterator($data);
+        $iterator = new RecursiveMutableGraphIterator($data);
         // Treat `CurlerFile` and `DateTimeInterface` instances as leaf nodes
         $iterator = new RecursiveCallbackIterator(
             $iterator,
@@ -829,7 +829,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
 
             /** @var RecursiveCallbackIterator<array-key,mixed> */
             $inner = $iterator->getInnerIterator();
-            /** @var RecursiveGraphIterator */
+            /** @var RecursiveMutableGraphIterator */
             $inner = $inner->getInnerIterator();
 
             if ($replace !== null) {

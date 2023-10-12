@@ -9,12 +9,13 @@ use Iterator;
  *
  * @template TKey
  * @template TValue
+ *
  * @extends Iterator<TKey,TValue>
  */
 interface MutableIterator extends Iterator
 {
     /**
-     * Replace the value at the current position
+     * Replace the current element
      *
      * @param TValue $value
      * @return $this

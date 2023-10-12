@@ -17,10 +17,16 @@ trait FluentIteratorTrait
     /**
      * @return array<TKey,TValue>
      */
-    public function toArray(): array
+    public function toArray(bool $preserveKeys = true): array
     {
-        foreach ($this as $current) {
-            $array[] = $current;
+        if ($preserveKeys) {
+            foreach ($this as $key => $value) {
+                $array[$key] = $value;
+            }
+        } else {
+            foreach ($this as $current) {
+                $array[] = $current;
+            }
         }
         return $array ?? [];
     }
@@ -38,10 +44,10 @@ trait FluentIteratorTrait
     }
 
     /**
-     * @param callable(TValue): bool $callback
+     * @param callable(TValue): (true|mixed) $callback
      * @return $this
      */
-    public function forEachWhileTrue(callable $callback, ?bool &$result = null)
+    public function forEachWhile(callable $callback, ?bool &$result = null)
     {
         foreach ($this as $current) {
             if ($callback($current) !== true) {
@@ -56,7 +62,7 @@ trait FluentIteratorTrait
     /**
      * @param array-key $key
      * @param mixed $value
-     * @return TValue|false `false` if no matching element is found.
+     * @return TValue|false
      */
     public function nextWithValue($key, $value, bool $strict = false)
     {
@@ -66,8 +72,11 @@ trait FluentIteratorTrait
             } else {
                 $_value = $current->$key;
             }
-            if (($strict && $_value === $value) ||
-                    (!$strict && $_value == $value)) {
+            if ($strict) {
+                if ($_value === $value) {
+                    return $current;
+                }
+            } elseif ($_value == $value) {
                 return $current;
             }
         }

@@ -298,7 +298,7 @@ final class Filesystem
 
         $this
             ->find($directory, null, null, null, null, true, true, false)
-            ->forEachWhileTrue(
+            ->forEachWhile(
                 fn(SplFileInfo $file) =>
                     $file->isDir()
                         ? rmdir((string) $file)
