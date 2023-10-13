@@ -184,11 +184,12 @@ final class PhpDoc implements IReadable
                 case 'param':
                     $text = $this->getTagType($text, $type);
                     $token = strtok($text, " \t\n\r");
-                    if ($token === false || ($token[0] ?? null) !== '$') {
+                    if ($token === false || $token[0] !== '$') {
                         /** @todo Report an invalid tag here */
                         continue 2;
                     }
-                    if ($name = substr($token, 1)) {
+                    $name = rtrim(substr($token, 1));
+                    if ($name !== '') {
                         $metaCount++;
                         $this->Params[$name] = new PhpDocParamTag(
                             $name,
@@ -220,8 +221,8 @@ final class PhpDoc implements IReadable
                     $token = strtok($text, " \t");
                     // Also assume that if a name is given, it's for a variable
                     // and not a constant
-                    if ($token !== false && ($token[0] ?? null) === '$') {
-                        $name = $token;
+                    if ($token !== false && $token[0] === '$') {
+                        $name = rtrim($token);
                         $metaCount++;
                     }
 
@@ -238,7 +239,7 @@ final class PhpDoc implements IReadable
                         $member,
                         $this->LegacyNullable
                     );
-                    if ($name ?? null) {
+                    if (($name ?? '') !== '') {
                         $this->Vars[$name] = $var;
                     } else {
                         $this->Vars[] = $var;
@@ -252,7 +253,7 @@ final class PhpDoc implements IReadable
                 case 'template':
                     $covariant = $covariant ?? false;
                     $token = strtok($text, " \t");
-                    $name = $token;
+                    $name = rtrim($token);
                     $metaCount++;
                     $token = strtok(" \t");
                     $type = 'mixed';
@@ -538,6 +539,13 @@ final class PhpDoc implements IReadable
                 $legacyNullable
             );
 
+            if ($phpDoc->Summary === null &&
+                $phpDoc->Description === null &&
+                (!$phpDoc->Tags ||
+                    array_keys($phpDoc->TagsByName) === ['inheritDoc'])) {
+                continue;
+            }
+
             if (isset($parser)) {
                 $parser->mergeInherited($phpDoc);
             } else {
@@ -545,6 +553,6 @@ final class PhpDoc implements IReadable
             }
         }
 
-        return $parser;
+        return $parser ?? null;
     }
 }

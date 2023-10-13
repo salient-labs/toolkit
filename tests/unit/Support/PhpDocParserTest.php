@@ -394,7 +394,19 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
              * @internal
              *
              *
-             * @template T of object
+             * @template T0 of object
+             *
+             *
+             * @template T1
+             *
+             *
+             * @var class-string<T0>|null $Class
+             *
+             *
+             * @param class-string<T0>|null $class
+             *
+             *
+             * @inheritDoc
              *
              *
              */
@@ -402,9 +414,15 @@ final class PhpDocParserTest extends \Lkrms\Tests\TestCase
         $phpDoc = new PhpDoc($docBlock);
         $this->assertSame('Summary', $phpDoc->Summary);
         $this->assertSame('Parts are surrounded by superfluous blank lines.', $phpDoc->Description);
-        $this->assertCount(1, $phpDoc->Templates);
-        $this->assertSame('T', $phpDoc->Templates['T']->Name ?? null);
-        $this->assertSame('object', $phpDoc->Templates['T']->Type ?? null);
+        $this->assertCount(2, $phpDoc->Templates);
+        $this->assertSame('T0', $phpDoc->Templates['T0']->Name ?? null);
+        $this->assertSame('object', $phpDoc->Templates['T0']->Type ?? null);
+        $this->assertSame('T1', $phpDoc->Templates['T1']->Name ?? null);
+        $this->assertSame('mixed', $phpDoc->Templates['T1']->Type ?? null);
+        $this->assertCount(1, $phpDoc->Vars);
+        $this->assertSame('class-string<T0>|null', $phpDoc->Vars['$Class']->Type ?? null);
+        $this->assertCount(1, $phpDoc->Params);
+        $this->assertSame('class-string<T0>|null', $phpDoc->Params['class']->Type ?? null);
     }
 
     public function testNoBlankLineAfterSummary(): void
