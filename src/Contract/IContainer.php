@@ -2,11 +2,11 @@
 
 namespace Lkrms\Contract;
 
+use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Container\ServiceLifetime;
-use Lkrms\Exception\ContainerServiceNotFoundException;
 
 /**
- * A service container with support for contextual bindings
+ * A simple service container with context-based dependency injection
  */
 interface IContainer extends \Psr\Container\ContainerInterface
 {
@@ -16,12 +16,12 @@ interface IContainer extends \Psr\Container\ContainerInterface
     public function __construct();
 
     /**
-     * True if the global container is set
+     * True if the global container exists
      */
     public static function hasGlobalContainer(): bool;
 
     /**
-     * Get the global container
+     * Get the global container, creating it if necessary
      */
     public static function getGlobalContainer(): IContainer;
 
@@ -29,6 +29,7 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * Set the global container
      *
      * @template T of IContainer|null
+     *
      * @param T $container
      * @return T
      */
@@ -38,48 +39,57 @@ interface IContainer extends \Psr\Container\ContainerInterface
      * Apply the contextual bindings of a service to a copy of the container
      *
      * @param class-string $id
+     * @return $this
      */
-    public function inContextOf(string $id): IContainer;
+    public function inContextOf(string $id);
 
     /**
      * Get services for which contextual bindings have been applied to the
      * container
+     *
+     * @see IContainer::inContextOf()
      *
      * @return class-string[]
      */
     public function getContextStack(): array;
 
     /**
-     * Get an instance from the container
+     * Get an object from the container
      *
      * @template T
-     * @param class-string<T> $id The identifier to resolve.
-     * @param mixed[] $params Values to pass to the constructor of the class
-     * being instantiated. Ignored if `$id` resolves to a shared instance.
+     *
+     * @param class-string<T> $id The service to resolve.
+     * @param mixed[] $args If the service is resolved by creating a new
+     * instance of a class, values in `$args` are passed to its constructor on a
+     * best-effort basis.
      * @return T
      */
-    public function get(string $id, array $params = []);
+    public function get(string $id, array $args = []);
 
     /**
-     * Use one identifier to get an instance from the container and another as
-     * its service name
+     * Get an object from the container with a given service name
      *
-     * @template T0
-     * @template T1
-     * @param class-string<T0> $id The identifier to resolve.
-     * @param class-string<T1> $serviceId The identifier to pass to the instance
-     * via its {@see ReceivesService::setService()} method.
-     * @param mixed[] $params Values to pass to the constructor of the class
-     * being instantiated. Ignored if `$id` resolves to a shared instance.
-     * @return T0&T1
+     * @template TService
+     * @template T of TService
+     *
+     * @param class-string<T> $id The service to resolve.
+     * @param class-string<TService> $service Passed to
+     * {@see ReceivesService::setService()} if the resolved object implements
+     * {@see ReceivesService}. Plays no role in resolving `$id`.
+     * @param mixed[] $args If the service is resolved by creating a new
+     * instance of a class, values in `$args` are passed to its constructor on a
+     * best-effort basis.
+     *
+     * @return T
      */
-    public function getAs(string $id, string $serviceId, array $params = []);
+    public function getAs(string $id, string $service, array $args = []);
 
     /**
-     * Get a concrete class name from the container
+     * Resolve a service to a concrete class name
      *
      * @template T
-     * @param class-string<T> $id The identifier to resolve.
+     *
+     * @param class-string<T> $id The service to resolve.
      * @return class-string<T>
      */
     public function getName(string $id): string;

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Exception;
+namespace Lkrms\Container\Exception;
 
 use Psr\Container\ContainerExceptionInterface;
 
