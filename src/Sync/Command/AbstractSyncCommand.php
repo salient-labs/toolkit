@@ -6,9 +6,9 @@ use Lkrms\Cli\Contract\ICliApplication;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Support\SyncIntrospectionClass;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 
 /**
@@ -61,9 +61,14 @@ abstract class AbstractSyncCommand extends CliCommand
             if (!is_a($provider, ISyncProvider::class, true)) {
                 continue;
             }
-            $providerKey = Convert::toKebabCase(Convert::classToBasename($provider, 'SyncProvider', 'Provider'));
+
+            $providerKey = Convert::toKebabCase(
+                Convert::classToBasename($provider, 'SyncProvider', 'Provider')
+            );
+
             $introspector = SyncIntrospector::get($provider);
-            foreach ($introspector->getSyncProviderEntityBasenames() as $entityKey => $entity) {
+            $entityBasenames = $introspector->getSyncProviderEntityBasenames();
+            foreach ($entityBasenames as $entityKey => $entity) {
                 $entityProviders[$providerKey] = $provider;
                 if (array_key_exists($entityKey, $entities) &&
                     ($entities[$entityKey] === null ||
@@ -82,9 +87,9 @@ abstract class AbstractSyncCommand extends CliCommand
             $providers[$providerKey] = $provider;
         }
 
-        $this->Entities = Arr::sort(Arr::notNull($entities));
-        $this->Providers = Arr::sort(Arr::notNull($providers));
-        $this->EntityProviders = Arr::sort(Arr::notNull($entityProviders));
+        $this->Entities = Arr::sort(Arr::notNull($entities), true);
+        $this->Providers = Arr::sort(Arr::notNull($providers), true);
+        $this->EntityProviders = Arr::sort(Arr::notNull($entityProviders), true);
     }
 
     public function getLongDescription(): ?string

@@ -4,11 +4,11 @@ namespace Lkrms\Sync\Command;
 
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Catalog\CliOptionValueType;
+use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Console;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Utility\Convert;
-use RuntimeException;
 
 /**
  * A generic sync provider heartbeat check command
@@ -31,10 +31,12 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
 
     public function description(): string
     {
-        return 'Send a heartbeat request to '
-            . (count($this->Providers) > 1
-                ? 'one or more providers'
-                : 'a provider');
+        return
+            'Send a heartbeat request to ' . (
+                count($this->Providers) > 1
+                    ? 'one or more providers'
+                    : 'a provider'
+            );
     }
 
     protected function getOptionList(): array
@@ -80,13 +82,16 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
 
     public function getLongDescription(): ?string
     {
-        !$this->Providers || $description = <<<EOF
-            If no providers are given, all providers are checked.
+        !$this->Providers ||
+            $description =
+                <<<EOF
+                If no providers are given, all providers are checked.
 
 
-            EOF;
+                EOF;
 
-        return ($description ?? '') . <<<EOF
+        return
+            ($description ?? '') . <<<EOF
             If a heartbeat request fails, __{{command}}__ continues to the next
             provider unless --fail-early is given, in which case it exits
             immediately.
@@ -101,25 +106,35 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
         Console::registerStderrTarget(true);
 
         if ($this->Providers) {
-            $providers = array_map(
-                fn(string $providerClass) =>
-                    $this->App->get($providerClass),
-                array_intersect_key(
-                    $this->Providers,
-                    array_flip($this->ProviderBasename)
-                )
-            );
+            $providers =
+                array_map(
+                    fn(string $providerClass) =>
+                        $this->App->get($providerClass),
+                    array_intersect_key(
+                        $this->Providers,
+                        array_flip($this->ProviderBasename)
+                    )
+                );
         } else {
-            $providers = array_map(
-                function (string $providerClass) {
-                    if (is_a($this->App->getName($providerClass), ISyncProvider::class, true)) {
-                        return $this->App->get($providerClass);
-                    }
-                    throw new RuntimeException(sprintf(
-                        '%s does not implement %s', $providerClass, ISyncProvider::class
-                    ));
-                }, $this->Provider
-            );
+            $providers =
+                array_map(
+                    function (string $providerClass) {
+                        if (is_a(
+                            $this->App->getName($providerClass),
+                            ISyncProvider::class,
+                            true
+                        )) {
+                            return $this->App->get($providerClass);
+                        }
+
+                        throw new CliInvalidArgumentsException(sprintf(
+                            '%s does not implement %s',
+                            $providerClass,
+                            ISyncProvider::class
+                        ));
+                    },
+                    $this->Provider
+                );
         }
 
         $count = count($providers);
@@ -132,8 +147,14 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
             ),
         );
 
-        $this->Store->checkHeartbeats(max(1, $this->Ttl), $this->FailEarly, ...$providers);
+        $this->Store->checkHeartbeats(
+            max(1, $this->Ttl),
+            $this->FailEarly,
+            ...$providers
+        );
 
-        Console::summary(Convert::plural($count, 'provider', null, true) . ' checked');
+        Console::summary(
+            Convert::plural($count, 'provider', null, true) . ' checked',
+        );
     }
 }
