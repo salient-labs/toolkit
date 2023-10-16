@@ -45,11 +45,11 @@ final class Env
      * Load one or more .env files
      *
      * Values are applied to `$_ENV`, `$_SERVER` and `putenv()` unless already
-     * present in the environment.
+     * present.
      *
      * Changes are applied after parsing all files in the given order. If a file
-     * contains invalid syntax, an exception is thrown and no changes are
-     * applied.
+     * contains invalid syntax, an exception is thrown and the environment is
+     * not modified.
      *
      * Later values override earlier ones.
      *
@@ -64,64 +64,6 @@ final class Env
             self::parse($lines, $queue, $errors, $filename);
         }
         self::doLoad($queue, $errors);
-    }
-
-    /**
-     * @param string[] $lines
-     * @param array<string,string> $queue
-     * @param string[] $errors
-     * @param string|null $filename
-     */
-    private static function parse(array $lines, array &$queue, array &$errors, ?string $filename = null): void
-    {
-        foreach ($lines as $i => $line) {
-            if (!trim($line) || $line[0] === '#') {
-                continue;
-            }
-            if (!preg_match(<<<'REGEX'
-                    / ^
-                    (?<name> [a-z_] [a-z0-9_]*+ ) = (?:
-                    " (?<double> (?: [^"$\\`]++ | \\ ["$\\`] | \\ )*+ ) " |
-                    ' (?<single> (?: [^']++            | ' \\ ' ' )*+ ) ' |
-                      (?<none>   (?: [^]"$'*?\\`\s[]++     | \\ . )*+ )
-                    ) $ /xi
-                    REGEX, $line, $match, PREG_UNMATCHED_AS_NULL)) {
-                $errors[] = $filename === null
-                    ? sprintf('invalid syntax at index %d', $i)
-                    : sprintf('invalid syntax at %s:%d', $filename, $i + 1);
-                continue;
-            }
-            $name = $match['name'];
-            if (array_key_exists($name, $_ENV) ||
-                    array_key_exists($name, $_SERVER) ||
-                    getenv($name) !== false) {
-                continue;
-            }
-            if (($double = $match['double']) !== null) {
-                $queue[$name] = preg_replace('/\\\\(["$\\\\`])/', '\1', $double);
-                continue;
-            }
-            if (($single = $match['single']) !== null) {
-                $queue[$name] = str_replace("'\''", "'", $single);
-                continue;
-            }
-            $queue[$name] = preg_replace('/\\\\(.)/', '\1', $match['none']);
-        }
-    }
-
-    /**
-     * @param array<string,string> $queue
-     * @param string[] $errors
-     */
-    private static function doLoad(array $queue, array $errors): void
-    {
-        if ($errors) {
-            throw (new InvalidDotenvSyntaxException('Unable to load .env files', ...$errors))
-                ->reportErrors();
-        }
-        foreach ($queue as $name => $value) {
-            self::set($name, $value);
-        }
     }
 
     /**
@@ -482,17 +424,22 @@ final class Env
         return $match['true'] ? true : false;
     }
 
-    private static function getOrSetBool(string $name, ?bool $newState = null): bool
+    /**
+     * Get the name of the current environment, e.g. "production" or
+     * "development"
+     *
+     * Returns the value of environment variable `app_env` if set, otherwise
+     * `PHP_ENV` if set, otherwise `null`.
+     */
+    public static function environment(): ?string
     {
-        if (func_num_args() > 1 && !is_null($newState)) {
-            if ($newState) {
-                self::set($name, '1');
-            } else {
-                self::unset($name);
-            }
+        $env = self::getNullable('app_env', null);
+
+        if ($env === null) {
+            return self::getNullable('PHP_ENV', null);
         }
 
-        return (bool) self::get($name, '');
+        return $env;
     }
 
     /**
@@ -537,15 +484,76 @@ final class Env
      */
     public static function home(): ?string
     {
-        if ($home = self::get('HOME', null)) {
+        $home = self::get('HOME', null);
+        if ($home !== null) {
             return $home;
         }
-        if (($homeDrive = self::get('HOMEDRIVE', null)) &&
-                ($homePath = self::get('HOMEPATH', null))) {
+
+        $homeDrive = self::get('HOMEDRIVE', null);
+        $homePath = self::get('HOMEPATH', null);
+        if ($homeDrive !== null && $homePath !== null) {
             return $homeDrive . $homePath;
         }
 
         return null;
+    }
+
+    /**
+     * @param string[] $lines
+     * @param array<string,string> $queue
+     * @param string[] $errors
+     * @param string|null $filename
+     */
+    private static function parse(array $lines, array &$queue, array &$errors, ?string $filename = null): void
+    {
+        foreach ($lines as $i => $line) {
+            if (!trim($line) || $line[0] === '#') {
+                continue;
+            }
+            if (!preg_match(<<<'REGEX'
+                    / ^
+                    (?<name> [a-z_] [a-z0-9_]*+ ) = (?:
+                    " (?<double> (?: [^"$\\`]++ | \\ ["$\\`] | \\ )*+ ) " |
+                    ' (?<single> (?: [^']++            | ' \\ ' ' )*+ ) ' |
+                      (?<none>   (?: [^]"$'*?\\`\s[]++     | \\ . )*+ )
+                    ) $ /xi
+                    REGEX, $line, $match, PREG_UNMATCHED_AS_NULL)) {
+                $errors[] = $filename === null
+                    ? sprintf('invalid syntax at index %d', $i)
+                    : sprintf('invalid syntax at %s:%d', $filename, $i + 1);
+                continue;
+            }
+            $name = $match['name'];
+            if (array_key_exists($name, $_ENV) ||
+                    array_key_exists($name, $_SERVER) ||
+                    getenv($name) !== false) {
+                continue;
+            }
+            if (($double = $match['double']) !== null) {
+                $queue[$name] = preg_replace('/\\\\(["$\\\\`])/', '\1', $double);
+                continue;
+            }
+            if (($single = $match['single']) !== null) {
+                $queue[$name] = str_replace("'\''", "'", $single);
+                continue;
+            }
+            $queue[$name] = preg_replace('/\\\\(.)/', '\1', $match['none']);
+        }
+    }
+
+    /**
+     * @param array<string,string> $queue
+     * @param string[] $errors
+     */
+    private static function doLoad(array $queue, array $errors): void
+    {
+        if ($errors) {
+            throw (new InvalidDotenvSyntaxException('Unable to load .env files', ...$errors))
+                ->reportErrors();
+        }
+        foreach ($queue as $name => $value) {
+            self::set($name, $value);
+        }
     }
 
     /**
@@ -554,5 +562,18 @@ final class Env
     private static function throwValueNotFoundException(string $name)
     {
         throw new InvalidEnvironmentException(sprintf('Value not found in environment: %s', $name));
+    }
+
+    private static function getOrSetBool(string $name, ?bool $newState = null): bool
+    {
+        if (func_num_args() > 1 && !is_null($newState)) {
+            if ($newState) {
+                self::set($name, '1');
+            } else {
+                self::unset($name);
+            }
+        }
+
+        return (bool) self::get($name, '');
     }
 }

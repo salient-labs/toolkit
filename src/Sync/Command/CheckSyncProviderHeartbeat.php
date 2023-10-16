@@ -150,7 +150,7 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
         $this->Store->checkHeartbeats(
             max(1, $this->Ttl),
             $this->FailEarly,
-            ...$providers
+            ...array_values($providers)
         );
 
         Console::summary(

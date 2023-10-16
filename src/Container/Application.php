@@ -36,7 +36,10 @@ class Application extends Container implements IApplication
     protected Env $Env;
 
     private string $AppName;
+
     private string $BasePath;
+
+    private bool $RunningFromSource;
 
     // @phpstan-ignore-next-line
     private ?string $CachePath;
@@ -278,20 +281,35 @@ class Application extends Container implements IApplication
             }
         }
 
+        $_basePath = $basePath;
         if (!is_dir($basePath) ||
                 ($basePath = File::realpath($basePath)) === false) {
             throw new RuntimeException(
-                sprintf('Invalid basePath: %s', $basePath)
+                sprintf('Invalid basePath: %s', $_basePath)
             );
         }
 
         $this->BasePath = $basePath;
 
-        $env = "{$this->BasePath}/.env";
-        if ((!extension_loaded('Phar') || !Phar::running()) &&
-                is_file($env)) {
-            $this->Env->load($env);
+        $this->RunningFromSource =
+            !extension_loaded('Phar') ||
+                !Phar::running();
+
+        if ($this->RunningFromSource) {
+            $files = [];
+            $env = $this->Env->environment();
+            if ($env !== null) {
+                $files[] = "{$this->BasePath}/.env.{$env}";
+            }
+            $files[] = "{$this->BasePath}/.env";
+            foreach ($files as $file) {
+                if (is_file($file)) {
+                    $this->Env->load($file);
+                    break;
+                }
+            }
         }
+
         $this->Env->apply($envFlags);
 
         Console::registerStdioTargets();
@@ -358,10 +376,13 @@ class Application extends Container implements IApplication
      */
     public function isProduction(): bool
     {
-        return $this->Env->get('env', null) === 'production' ||
-            $this->Env->get('PHP_ENV', null) === 'production' ||
-            (extension_loaded('Phar') && Phar::running()) ||
-            !Composer::hasDevDependencies();
+        $env = $this->Env->environment();
+
+        return
+            $env === 'production' ||
+            ($env === null &&
+                (!$this->RunningFromSource ||
+                    !Composer::hasDevDependencies()));
     }
 
     /**
