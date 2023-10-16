@@ -146,6 +146,15 @@ class PhpDocTag
      */
     final public static function sanitiseString(?string $string): ?string
     {
-        return $string ? (rtrim($string) ?: null) : null;
+        if ($string === null) {
+            return null;
+        }
+
+        $string = rtrim($string);
+        if ($string === '') {
+            return null;
+        }
+
+        return $string;
     }
 }

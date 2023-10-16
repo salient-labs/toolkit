@@ -5,87 +5,86 @@ namespace Lkrms\Container;
 use Dice\Dice;
 use Dice\DiceException;
 use Lkrms\Concept\FluentInterface;
+use Lkrms\Container\Exception\ContainerNotLocatedException;
+use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 use Lkrms\Contract\IServiceShared;
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Contract\ReceivesContainer;
 use Lkrms\Contract\ReceivesService;
-use Lkrms\Exception\ContainerServiceNotFoundException;
 use Lkrms\Facade\Event;
 use Psr\Container\ContainerInterface;
+use Closure;
 use ReflectionClass;
-use RuntimeException;
 use UnexpectedValueException;
 
 /**
- * A service container with support for contextual bindings
+ * A simple service container with context-based dependency injection
  *
  * A static interface to the global service container is provided by
  * {@see \Lkrms\Facade\DI}.
  */
 class Container extends FluentInterface implements IContainer
 {
-    /**
-     * @var IContainer|null
-     */
-    private static $GlobalContainer;
+    private static ?IContainer $GlobalContainer = null;
+
+    private Dice $Dice;
 
     /**
-     * @var Dice
-     */
-    private $Dice;
-
-    /**
-     * Whenever `inContextOf($id)` clones the container, `$id` is pushed onto
-     * the end
-     *
-     * @var class-string[]
-     */
-    private $ContextStack = [];
-
-    /**
-     * When an `IService` class is bound to the container,
-     * `$this->Services[$name] = true` is applied
-     *
+     * @see Container::service()
      * @var array<class-string<IService>,true>
      */
-    private $Services = [];
+    private array $Services = [];
 
+    /**
+     * @see Container::inContextOf()
+     * @var class-string[]
+     */
+    private array $ContextStack = [];
+
+    /**
+     * @inheritDoc
+     */
     public function __construct()
     {
         $this->Dice = new Dice();
         $this->bindContainer();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function unload(): void
     {
         if ($this === self::$GlobalContainer) {
             self::setGlobalContainer(null);
         }
 
-        // @phpstan-ignore-next-line
-        $this->Dice = null;
+        unset($this->Dice);
     }
 
     private function bindContainer(): void
     {
         $class = new ReflectionClass(static::class);
+
+        // Bind any interfaces that extend PSR-11's ContainerInterface
         foreach ($class->getInterfaces() as $name => $interface) {
             if ($interface->implementsInterface(ContainerInterface::class)) {
                 $this->instance($name, $this);
             }
         }
+
+        // Also bind classes between self and static
         do {
             $this->instance($class->getName(), $this);
             $class = $class->getParentClass();
-        } while ($class && $class->implementsInterface(ContainerInterface::class));
+        } while ($class);
 
         $this->Dice = $this->Dice->addCallback(
             '*',
-            fn(object $instance, string $name): object =>
-                $this->callback($instance, $name),
-            __METHOD__
+            Closure::fromCallable([$this, 'callback']),
+            __METHOD__,
         );
     }
 
@@ -94,6 +93,7 @@ class Container extends FluentInterface implements IContainer
         if ($instance instanceof ReceivesContainer) {
             $instance = $instance->setContainer($this);
         }
+
         if ($instance instanceof ReceivesService) {
             $instance = $instance->setService($name);
         }
@@ -101,14 +101,20 @@ class Container extends FluentInterface implements IContainer
         return $instance;
     }
 
+    /**
+     * @inheritDoc
+     */
     final public static function hasGlobalContainer(): bool
     {
-        return !is_null(self::$GlobalContainer);
+        return self::$GlobalContainer !== null;
     }
 
+    /**
+     * @inheritDoc
+     */
     final public static function getGlobalContainer(): IContainer
     {
-        if (!is_null(self::$GlobalContainer)) {
+        if (self::$GlobalContainer !== null) {
             return self::$GlobalContainer;
         }
 
@@ -116,7 +122,7 @@ class Container extends FluentInterface implements IContainer
     }
 
     /**
-     * Get the global container if set
+     * Get the global container if it exists
      */
     final public static function maybeGetGlobalContainer(): ?IContainer
     {
@@ -124,39 +130,50 @@ class Container extends FluentInterface implements IContainer
     }
 
     /**
-     * Get the global container if set, otherwise throw an exception
+     * Get the global container if it exists, otherwise throw an exception
+     *
+     * @throws ContainerNotLocatedException if the global container does not
+     * exist.
      */
     final public static function requireGlobalContainer(): IContainer
     {
-        if (is_null(self::$GlobalContainer)) {
-            throw new RuntimeException('No service container located');
+        if (self::$GlobalContainer === null) {
+            throw new ContainerNotLocatedException();
         }
 
         return self::$GlobalContainer;
     }
 
+    /**
+     * @inheritDoc
+     */
     final public static function setGlobalContainer(?IContainer $container): ?IContainer
     {
         Event::dispatch('container.global.set', $container);
 
-        return self::$GlobalContainer = $container;
+        self::$GlobalContainer = $container;
+
+        return $container;
     }
 
-    final public function get(string $id, array $params = [])
+    /**
+     * @inheritDoc
+     */
+    final public function get(string $id, array $args = [])
     {
         try {
-            return $this->Dice->create($id, $params);
+            return $this->Dice->create($id, $args);
         } catch (DiceException $ex) {
             throw new ContainerServiceNotFoundException($ex->getMessage(), $ex);
         }
     }
 
-    final public function getAs(string $id, string $serviceId, array $params = [])
+    final public function getAs(string $id, string $service, array $args = [])
     {
         if ($this->Dice->hasShared($id)) {
             $instance = $this->get($id);
             if ($instance instanceof ReceivesService) {
-                return $instance->setService($serviceId);
+                return $instance->setService($service);
             }
 
             return $instance;
@@ -165,14 +182,14 @@ class Container extends FluentInterface implements IContainer
         try {
             return $this->Dice->addCallback(
                 $id,
-                function (object $instance, string $name, bool &$continue) use ($serviceId): object {
+                function (object $instance, string $name, bool &$continue) use ($service): object {
                     $continue = false;
 
-                    return $this->callback($instance, $serviceId);
+                    return $this->callback($instance, $service);
                 },
                 null,
                 true
-            )->create($id, $params);
+            )->create($id, $args);
         } catch (DiceException $ex) {
             throw new ContainerServiceNotFoundException($ex->getMessage(), $ex);
         }
@@ -213,38 +230,44 @@ class Container extends FluentInterface implements IContainer
         $this->Dice = $_dice;
     }
 
-    final public function inContextOf(string $id): Container
+    /**
+     * @inheritDoc
+     */
+    final public function inContextOf(string $id)
     {
         $clone = clone $this;
 
         // If $id implements IService and hasn't been bound to the container
         // yet, add bindings for everything except its services, which may
         // resolve to another provider
-        if (is_subclass_of($id, IService::class) && !($clone->Services[$id] ?? null)) {
+        if (is_subclass_of($id, IService::class) && !isset($this->Services[$id])) {
             $clone->applyService($id, []);
             $clone->Services[$id] = true;
 
             // If nothing changed, skip `applyService()` in future by setting
             // `$this->Services[$id]`
-            if ($clone->Dice === $this->Dice) {
+            if (!$this->compareBindingsWith($clone)) {
                 $this->Services[$id] = true;
             }
         }
 
-        if (!$clone->Dice->hasRule($id) ||
-                empty($subs = $clone->Dice->getRule($id)['substitutions'] ?? null)) {
+        if (!$clone->Dice->hasRule($id)) {
+            return $this;
+        }
+
+        $subs = $clone->Dice->getRule($id)['substitutions'] ?? null;
+        if (!$subs) {
             return $this;
         }
 
         $clone->applyBindings($subs);
 
-        if ($clone->Dice === $this->Dice) {
+        if (!$this->compareBindingsWith($clone)) {
             return $this;
         }
 
         $clone->ContextStack[] = $id;
         $clone->bindContainer();
-
         return $clone;
     }
 
@@ -486,5 +509,15 @@ class Container extends FluentInterface implements IContainer
         $this->Dice = $this->Dice->removeRule($id);
 
         return $this;
+    }
+
+    /**
+     * 0 if another container has the same bindings, otherwise 1
+     *
+     * @param static $container
+     */
+    private function compareBindingsWith($container): int
+    {
+        return $this->Dice === $container->Dice ? 0 : 1;
     }
 }

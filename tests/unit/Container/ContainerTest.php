@@ -2,11 +2,11 @@
 
 namespace Lkrms\Tests\Container;
 
+use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Container\Container;
 use Lkrms\Container\ServiceLifetime;
 use Lkrms\Contract\IApplication;
 use Lkrms\Contract\IContainer;
-use Lkrms\Exception\ContainerServiceNotFoundException;
 use Psr\Container\ContainerInterface;
 
 final class ContainerTest extends \Lkrms\Tests\TestCase
