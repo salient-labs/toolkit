@@ -10,12 +10,12 @@ final class Arr
     /**
      * Shift an element off the beginning of an array
      *
-     * Wrapper for `array_shift()`.
-     *
      * @template TKey of array-key
      * @template TValue
+     *
      * @param array<TKey,TValue> $array
      * @param TValue|null $shifted
+     *
      * @return array<TKey,TValue>
      */
     public static function shift(array $array, &$shifted = null): array
@@ -27,12 +27,12 @@ final class Arr
     /**
      * Add one or more elements to the beginning of an array
      *
-     * Wrapper for `array_unshift()`.
-     *
      * @template TKey of array-key
      * @template TValue
+     *
      * @param array<TKey,TValue> $array
      * @param TValue ...$values
+     *
      * @return array<TKey,TValue>
      */
     public static function unshift(array $array, ...$values): array
@@ -44,12 +44,12 @@ final class Arr
     /**
      * Pop a value off the end of an array
      *
-     * Wrapper for `array_pop()`.
-     *
      * @template TKey of array-key
      * @template TValue
+     *
      * @param array<TKey,TValue> $array
      * @param TValue|null $popped
+     *
      * @return array<TKey,TValue>
      */
     public static function pop(array $array, &$popped = null): array
@@ -61,12 +61,12 @@ final class Arr
     /**
      * Push one or more values onto the end of an array
      *
-     * Wrapper for `array_push()`.
-     *
      * @template TKey of array-key
      * @template TValue
+     *
      * @param array<TKey,TValue> $array
      * @param TValue ...$values
+     *
      * @return array<TKey,TValue>
      */
     public static function push(array $array, ...$values): array
@@ -76,17 +76,41 @@ final class Arr
     }
 
     /**
-     * Sort an array by value in ascending order
-     *
-     * Wrapper for `sort()`.
+     * Sort an array by value
      *
      * @template TKey of array-key
      * @template TValue
+     *
      * @param array<TKey,TValue> $array
-     * @return array<int,TValue>
+     * @param (callable(TValue, TValue): int)|int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE> $callbackOrFlags
+     *
+     * @return list<TValue>|array<TKey,TValue>
+     * @phpstan-return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
-    public static function sort(array $array, int $flags = SORT_REGULAR): array
-    {
+    public static function sort(
+        array $array,
+        bool $preserveKeys = false,
+        $callbackOrFlags = SORT_REGULAR
+    ): array {
+        if (is_callable($callbackOrFlags)) {
+            $callback = $callbackOrFlags;
+
+            if ($preserveKeys) {
+                uasort($array, $callback);
+                return $array;
+            }
+
+            usort($array, $callback);
+            return $array;
+        }
+
+        $flags = $callbackOrFlags;
+
+        if ($preserveKeys) {
+            asort($array, $flags);
+            return $array;
+        }
+
         sort($array, $flags);
         return $array;
     }
@@ -94,98 +118,53 @@ final class Arr
     /**
      * Sort an array by value in descending order
      *
-     * Wrapper for `rsort()`.
-     *
      * @template TKey of array-key
      * @template TValue
+     *
      * @param array<TKey,TValue> $array
-     * @return array<int,TValue>
+     * @param int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE> $flags
+     *
+     * @return list<TValue>|array<TKey,TValue>
+     * @phpstan-return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
-    public static function rsort(array $array, int $flags = SORT_REGULAR): array
-    {
+    public static function sortDesc(
+        array $array,
+        bool $preserveKeys = false,
+        int $flags = SORT_REGULAR
+    ): array {
+        if (!$preserveKeys) {
+            arsort($array, $flags);
+            return $array;
+        }
+
         rsort($array, $flags);
         return $array;
     }
 
     /**
-     * Sort an array by value in ascending order and maintain index association
-     *
-     * Wrapper for `asort()`.
+     * Sort an array by key
      *
      * @template TKey of array-key
      * @template TValue
+     *
      * @param array<TKey,TValue> $array
+     * @param (callable(TValue, TValue): int)|int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE> $callbackOrFlags
+     *
      * @return array<TKey,TValue>
      */
-    public static function asort(array $array, int $flags = SORT_REGULAR): array
-    {
-        asort($array, $flags);
-        return $array;
-    }
+    public static function sortByKey(
+        array $array,
+        $callbackOrFlags = SORT_REGULAR
+    ): array {
+        if (is_callable($callbackOrFlags)) {
+            $callback = $callbackOrFlags;
 
-    /**
-     * Sort an array by value in descending order and maintain index association
-     *
-     * Wrapper for `arsort()`.
-     *
-     * @template TKey of array-key
-     * @template TValue
-     * @param array<TKey,TValue> $array
-     * @return array<TKey,TValue>
-     */
-    public static function arsort(array $array, int $flags = SORT_REGULAR): array
-    {
-        arsort($array, $flags);
-        return $array;
-    }
+            uksort($array, $callback);
+            return $array;
+        }
 
-    /**
-     * Sort an array by value with a user-defined comparison function
-     *
-     * Wrapper for `usort()`.
-     *
-     * @template TKey of array-key
-     * @template TValue
-     * @param array<TKey,TValue> $array
-     * @param callable(TValue $a, TValue $b): int $callback
-     * @return array<int,TValue>
-     */
-    public static function usort(array $array, callable $callback): array
-    {
-        usort($array, $callback);
-        return $array;
-    }
+        $flags = $callbackOrFlags;
 
-    /**
-     * Sort an array by value with a user-defined comparison function and
-     * maintain index association
-     *
-     * Wrapper for `uasort()`.
-     *
-     * @template TKey of array-key
-     * @template TValue
-     * @param array<TKey,TValue> $array
-     * @param callable(TValue $a, TValue $b): int $callback
-     * @return array<TKey,TValue>
-     */
-    public static function uasort(array $array, callable $callback): array
-    {
-        uasort($array, $callback);
-        return $array;
-    }
-
-    /**
-     * Sort an array by key in ascending order
-     *
-     * Wrapper for `ksort()`.
-     *
-     * @template TKey of array-key
-     * @template TValue
-     * @param array<TKey,TValue> $array
-     * @return array<TKey,TValue>
-     */
-    public static function ksort(array $array, int $flags = SORT_REGULAR): array
-    {
         ksort($array, $flags);
         return $array;
     }
@@ -193,88 +172,90 @@ final class Arr
     /**
      * Sort an array by key in descending order
      *
-     * Wrapper for `krsort()`.
-     *
      * @template TKey of array-key
      * @template TValue
+     *
      * @param array<TKey,TValue> $array
+     * @param int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE> $flags
+     *
      * @return array<TKey,TValue>
      */
-    public static function krsort(array $array, int $flags = SORT_REGULAR): array
-    {
+    public static function sortByKeyDesc(
+        array $array,
+        int $flags = SORT_REGULAR
+    ): array {
         krsort($array, $flags);
         return $array;
     }
 
     /**
-     * Sort an array by key with a user-defined comparison function
-     *
-     * Wrapper for `uksort()`.
+     * Remove null values from an array
      *
      * @template TKey of array-key
      * @template TValue
-     * @param array<TKey,TValue> $array
-     * @param callable(TKey $a, TKey $b): int $callback
+     *
+     * @param array<TKey,TValue|null> $array
+     *
      * @return array<TKey,TValue>
      */
-    public static function uksort(array $array, callable $callback): array
+    public static function notNull(array $array): array
     {
-        uksort($array, $callback);
-        return $array;
+        foreach ($array as $key => $value) {
+            if ($value === null) {
+                continue;
+            }
+            $filtered[$key] = $value;
+        }
+
+        return $filtered ?? [];
     }
 
     /**
-     * Sort an array by value with a "natural order" algorithm and maintain
-     * index association
-     *
-     * Wrapper for `natsort()`.
-     *
-     * @template TKey of array-key
-     * @template TValue
-     * @param array<TKey,TValue> $array
-     * @return array<TKey,TValue>
-     */
-    public static function natsort(array $array): array
-    {
-        natsort($array);
-        return $array;
-    }
-
-    /**
-     * Sort an array by value with a case-insensitive "natural order" algorithm
-     * and maintain index association
-     *
-     * Wrapper for `natcasesort()`.
-     *
-     * @template TKey of array-key
-     * @template TValue
-     * @param array<TKey,TValue> $array
-     * @return array<TKey,TValue>
-     */
-    public static function natcasesort(array $array): array
-    {
-        natcasesort($array);
-        return $array;
-    }
-
-    /**
-     * Remove whitespace from the beginning and end of an array's elements
+     * Remove empty strings from an array of strings and Stringables
      *
      * @template TKey of array-key
      * @template TValue of string|\Stringable
+     *
+     * @param array<TKey,TValue> $array
+     *
+     * @return array<TKey,TValue>
+     */
+    public static function notEmpty(array $array): array
+    {
+        foreach ($array as $key => $value) {
+            if ((string) $value === '') {
+                continue;
+            }
+            $filtered[$key] = $value;
+        }
+
+        return $filtered ?? [];
+    }
+
+    /**
+     * Remove whitespace from the beginning and end of each value in an array
+     * of strings and Stringables
+     *
+     * @template TKey of array-key
+     * @template TValue of string|\Stringable
+     *
      * @param array<TKey,TValue> $array
      * @param string|null $characters Optionally specify characters to remove
      * instead of whitespace.
+     *
      * @return array<TKey,string>
      */
-    public static function trim(array $array, ?string $characters = null): array
-    {
+    public static function trim(
+        array $array,
+        ?string $characters = null
+    ): array {
         if ($characters === null) {
             foreach ($array as $key => $value) {
                 $trimmed[$key] = trim((string) $value);
             }
             return $trimmed ?? [];
         }
+
         foreach ($array as $key => $value) {
             $trimmed[$key] = trim((string) $value, $characters);
         }
@@ -282,30 +263,14 @@ final class Arr
     }
 
     /**
-     * Remove whitespace from the beginning and end of an array's elements, then
-     * remove empty elements from the array
-     *
-     * @template TKey of array-key
-     * @template TValue of string|\Stringable
-     * @param array<TKey,TValue> $array
-     * @param string|null $characters Optionally specify characters to remove
-     * instead of whitespace.
-     * @return array<TKey,non-empty-string>
-     */
-    public static function trimAndCompact(array $array, ?string $characters = null): array
-    {
-        return array_filter(
-            self::trim($array, $characters)
-        );
-    }
-
-    /**
      * Apply a callback to the elements of an array
      *
      * @template TKey of array-key
      * @template TValue
+     *
      * @param callable(TValue, TKey): mixed $callback
      * @param array<TKey,TValue> $array
+     *
      * @return array<TKey,TValue>
      */
     public static function forEach(callable $callback, array $array): array
@@ -327,15 +292,17 @@ final class Arr
      * @template TKey of array-key
      * @template TValue
      * @template T
+     *
      * @param callable(T, TValue, TKey): T $callback
      * @param array<TKey,TValue> $array
      * @param T $value
+     *
      * @return T
      */
     public static function with(callable $callback, array $array, $value)
     {
-        foreach ($array as $key => $_value) {
-            $value = $callback($value, $_value, $key);
+        foreach ($array as $key => $arrayValue) {
+            $value = $callback($value, $arrayValue, $key);
         }
         return $value;
     }

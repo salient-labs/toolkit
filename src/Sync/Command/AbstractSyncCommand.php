@@ -82,13 +82,9 @@ abstract class AbstractSyncCommand extends CliCommand
             $providers[$providerKey] = $provider;
         }
 
-        $this->Entities = array_filter($entities);
-        $this->Providers = array_filter($providers);
-        $this->EntityProviders = array_filter($entityProviders);
-
-        natsort($this->Entities);
-        natsort($this->Providers);
-        natsort($this->EntityProviders);
+        $this->Entities = Arr::sort(Arr::notNull($entities));
+        $this->Providers = Arr::sort(Arr::notNull($providers));
+        $this->EntityProviders = Arr::sort(Arr::notNull($entityProviders));
     }
 
     public function getLongDescription(): ?string

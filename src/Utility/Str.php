@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Support\Catalog\RegularExpression as Regex;
 use LogicException;
 
 /**
@@ -9,6 +10,116 @@ use LogicException;
  */
 final class Str
 {
+    /**
+     * Apply an end-of-line sequence to a string
+     */
+    public static function setEol(
+        string $string,
+        string $eol = "\n"
+    ): string {
+        switch ($eol) {
+            case "\n":
+                return str_replace(["\r\n", "\r"], $eol, $string);
+
+            case "\r":
+                return str_replace(["\r\n", "\n"], $eol, $string);
+
+            case "\r\n":
+                return str_replace(["\r\n", "\r", "\n"], ["\n", "\n", $eol], $string);
+
+            default:
+                throw new LogicException(sprintf('Invalid end-of-line sequence: %s', $eol));
+        }
+    }
+
+    /**
+     * Split a string by a string, remove whitespace from the beginning and end
+     * of each substring, remove empty strings
+     *
+     * @param string|null $characters Optionally specify characters to remove
+     * instead of whitespace.
+     * @return string[]
+     */
+    public static function splitAndTrim(string $separator, string $string, ?string $characters = null): array
+    {
+        // 4. Reindex
+        return array_values(
+            // 3. Remove empty strings
+            Arr::notEmpty(
+                // 2. Trim each substring
+                Arr::trim(
+                    // 1. Split the string
+                    explode($separator, $string),
+                    $characters
+                )
+            )
+        );
+    }
+
+    /**
+     * Split a string by a string without separating substrings enclosed by
+     * brackets, remove whitespace from the beginning and end of each substring,
+     * remove empty strings
+     *
+     * @param string|null $characters Optionally specify characters to remove
+     * instead of whitespace.
+     * @return string[]
+     */
+    public static function splitAndTrimOutsideBrackets(string $separator, string $string, ?string $characters = null): array
+    {
+        return array_values(
+            Arr::notEmpty(
+                Arr::trim(
+                    self::splitOutsideBrackets($separator, $string),
+                    $characters
+                )
+            )
+        );
+    }
+
+    /**
+     * Split a string by a string without separating substrings enclosed by
+     * brackets
+     *
+     * @return string[]
+     */
+    public static function splitOutsideBrackets(string $separator, string $string): array
+    {
+        if (strlen($separator) !== 1) {
+            throw new LogicException('Separator must be a single character');
+        }
+
+        if (strpos('()<>[]{}', $separator) !== false) {
+            throw new LogicException('Separator cannot be a bracket character');
+        }
+
+        $quoted = preg_quote($separator, '/');
+
+        $escaped = $separator;
+        if (strpos('\-', $separator) !== false) {
+            $escaped = '\\' . $separator;
+        }
+
+        $regex = <<<REGEX
+            (?x)
+            (?: [^()<>[\]{}{$escaped}]++ |
+              ( \( (?: [^()<>[\]{}]*+ (?-1)? )*+ \) |
+                <  (?: [^()<>[\]{}]*+ (?-1)? )*+ >  |
+                \[ (?: [^()<>[\]{}]*+ (?-1)? )*+ \] |
+                \{ (?: [^()<>[\]{}]*+ (?-1)? )*+ \} ) |
+              # Match empty substrings
+              (?<= $quoted ) (?= $quoted ) )+
+            REGEX;
+
+        Pcre::matchAll(
+            Regex::delimit($regex),
+            $string,
+            $matches,
+        );
+
+        return $matches[0];
+    }
+
     /**
      * Wrap a string to a given number of characters, optionally varying the
      * widths of the second and subsequent lines from the first
@@ -43,27 +154,5 @@ final class Str
             wordwrap(str_repeat('x', $delta) . $string, $width, $break, $cutLongWords),
             $delta
         );
-    }
-
-    /**
-     * Apply an end-of-line sequence to a string
-     */
-    public static function setEol(
-        string $string,
-        string $eol = "\n"
-    ): string {
-        switch ($eol) {
-            case "\n":
-                return str_replace(["\r\n", "\r"], $eol, $string);
-
-            case "\r":
-                return str_replace(["\r\n", "\n"], $eol, $string);
-
-            case "\r\n":
-                return str_replace(["\r\n", "\r", "\n"], ["\n", "\n", $eol], $string);
-
-            default:
-                throw new LogicException(sprintf('Invalid end-of-line sequence: %s', $eol));
-        }
     }
 }
