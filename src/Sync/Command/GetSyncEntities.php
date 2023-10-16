@@ -21,17 +21,23 @@ use Lkrms\Utility\Convert;
 final class GetSyncEntities extends AbstractSyncCommand
 {
     private ?string $Entity;
+
     private ?string $EntityId;
+
     private ?string $Provider;
-    private ?bool $IncludeCanonical;
-    private ?bool $IncludeMeta;
-    private ?bool $Stream;
-    private ?bool $Csv;
 
     /**
      * @var string[]|null
      */
     private ?array $Filter;
+
+    private ?bool $IncludeCanonical;
+
+    private ?bool $IncludeMeta;
+
+    private ?bool $Stream;
+
+    private ?bool $Csv;
 
     public function description(): string
     {
@@ -99,24 +105,36 @@ final class GetSyncEntities extends AbstractSyncCommand
         Console::registerStderrTarget(true);
 
         $entity = $this->Entities[$this->Entity];
-        $provider = $this->Provider
-            ?: array_search(
-                $this->App->getName(SyncIntrospector::entityToProvider($entity)),
-                $this->Providers
-            );
-        $filter = Convert::queryToData($this->Filter);
+        $provider =
+            $this->Provider === null
+                ? array_search(
+                    $this->App->getName(SyncIntrospector::entityToProvider($entity)),
+                    $this->Providers,
+                )
+                : $this->Provider;
 
-        if (!$provider) {
+        if ($provider === false) {
             throw new CliInvalidArgumentsException('no default provider: ' . $entity);
         }
+
+        $filter = Convert::queryToData($this->Filter);
+
         /** @var ISyncProvider */
         $provider = $this->App->get($this->Providers[$provider]);
 
+        $entityUri = $this->Store->getEntityTypeUri($entity);
+        if ($entityUri === null) {
+            $entityUri = '/' . str_replace('\\', '/', ltrim($entity, '\\'));
+        }
+
+        $entityId =
+            $this->EntityId === null
+                ? ''
+                : '/' . $this->EntityId;
+
         Console::info(
             'Retrieving from ' . $provider->name() . ':',
-            ($this->Store->getEntityTypeUri($entity)
-                    ?: '/' . str_replace('\\', '/', ltrim($entity, '\\')))
-                . ($this->EntityId === null ? '' : '/' . $this->EntityId)
+            $entityUri . $entityId
         );
 
         $context = $provider->getContext();
@@ -138,7 +156,7 @@ final class GetSyncEntities extends AbstractSyncCommand
 
         if ($this->Csv) {
             if ($this->EntityId !== null) {
-                $result = Convert::toList($result, true);
+                $result = [$result];
             }
 
             $tty = stream_isatty(STDOUT);
@@ -150,11 +168,11 @@ final class GetSyncEntities extends AbstractSyncCommand
                 fn(ISyncEntity $entity) => $entity->toArrayWith($rules),
                 $count,
                 $tty ? PHP_EOL : "\r\n",
-                $tty ? false : true,
-                $tty ? false : true
+                !$tty,
+                !$tty,
             );
         } elseif (!is_iterable($result) || !$this->Stream) {
-            $result = Convert::toList($result, true);
+            $result = (array) $result;
             /** @var ISyncEntity $entity */
             foreach ($result as &$entity) {
                 $entity = $entity->toArrayWith($rules);
@@ -173,6 +191,10 @@ final class GetSyncEntities extends AbstractSyncCommand
             }
         }
 
-        Console::summary(Convert::plural($count, 'entity', 'entities', true) . ' retrieved');
+        Console::summary(
+            Convert::plural(
+                $count, 'entity', 'entities', true
+            ) . ' retrieved'
+        );
     }
 }

@@ -19,7 +19,7 @@ final class ApplicationTest extends \Lkrms\Tests\TestCase
         $this->assertDirectoryExists($basePath);
         $this->assertDirectoryExists($homeDir);
 
-        $_ENV['PHP_ENV'] = 'test';
+        $_ENV['app_env'] = 'test';
         $app = new Application($basePath);
         $this->assertSame($basePath, $app->getBasePath());
         $this->assertSame($basePath . '/var/cache', $cachePath = $app->getCachePath());
@@ -34,7 +34,7 @@ final class ApplicationTest extends \Lkrms\Tests\TestCase
         $this->assertDirectoryExists($tempPath);
         $app->unload();
 
-        $_ENV['PHP_ENV'] = 'production';
+        $_ENV['app_env'] = 'production';
         $app = new Application($basePath);
         $this->assertSame($basePath, $app->getBasePath());
         $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getCachePath(false));

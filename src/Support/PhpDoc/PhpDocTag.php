@@ -3,7 +3,7 @@
 namespace Lkrms\Support\PhpDoc;
 
 use Lkrms\Support\Catalog\RegularExpression as Regex;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Str;
 
 /**
  * A tag extracted from a PHP DocBlock
@@ -99,7 +99,7 @@ class PhpDocTag
             return $replace([$type])[0];
         }
 
-        $types = Convert::splitAndTrimOutsideBrackets('|', $type);
+        $types = Str::splitAndTrimOutsideBrackets('|', $type);
 
         // Move `null` to the end of union types
         $notNull = array_filter(

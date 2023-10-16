@@ -48,7 +48,7 @@ interface IApplication extends IContainer, ReturnsEnvironment
      *
      * Returns `true` if:
      *
-     * - the value of environment variable `env` or `PHP_ENV` is `"production"`
+     * - {@see Env::environment()} returns `"production"`
      * - a Phar archive is currently executing, or
      * - the application was installed with `composer --no-dev`
      *

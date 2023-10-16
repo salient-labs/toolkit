@@ -16,7 +16,7 @@ class CurlerException extends \Lkrms\Exception\Exception
      */
     protected $Curler;
 
-    public function __construct(Curler $curler, string $message, ?Throwable $previous = null)
+    public function __construct(string $message, Curler $curler, ?Throwable $previous = null)
     {
         $this->Curler = clone $curler;
 

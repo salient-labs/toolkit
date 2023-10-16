@@ -8,7 +8,7 @@ use Throwable;
 /**
  * Base class for exceptions
  */
-abstract class Exception extends RuntimeException
+class Exception extends RuntimeException
 {
     public function __construct(string $message = '', ?Throwable $previous = null)
     {
@@ -16,9 +16,7 @@ abstract class Exception extends RuntimeException
     }
 
     /**
-     * Get an array that maps section names to content
-     *
-     * See {@see \Lkrms\Curler\Exception\CurlerException} for an example.
+     * Get an array that maps names to formatted content
      *
      * @return array<string,string>
      */

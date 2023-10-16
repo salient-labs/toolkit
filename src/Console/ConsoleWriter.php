@@ -130,10 +130,18 @@ final class ConsoleWriter implements ReceivesFacade
         if ($output !== null) {
             switch (strtolower($output)) {
                 case 'stderr':
-                    return $this->registerStdioTarget($replace, STDERR, true);
+                    return $this->registerStdioTarget(
+                        $replace,
+                        $this->getStderrTarget(),
+                        true,
+                    );
 
                 case 'stdout':
-                    return $this->registerStdioTarget($replace, STDOUT, true);
+                    return $this->registerStdioTarget(
+                        $replace,
+                        $this->getStdoutTarget(),
+                        true,
+                    );
 
                 default:
                     throw new UnexpectedValueException(
@@ -166,15 +174,18 @@ final class ConsoleWriter implements ReceivesFacade
             return $this;
         }
 
+        $stderr = $this->getStderrTarget();
         $stderrLevels = Levels::ERRORS_AND_WARNINGS;
+
+        $stdout = $this->getStdoutTarget();
         $stdoutLevels = Env::debug()
             ? Levels::INFO
             : Levels::INFO_EXCEPT_DEBUG;
 
         return $this
             ->clearStdioTargets()
-            ->registerTarget(new StreamTarget(STDERR), $stderrLevels)
-            ->registerTarget(new StreamTarget(STDOUT), $stdoutLevels);
+            ->registerTarget($stderr, $stderrLevels)
+            ->registerTarget($stdout, $stdoutLevels);
     }
 
     /**
@@ -187,7 +198,10 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function registerStderrTarget(bool $replace = false)
     {
-        return $this->registerStdioTarget($replace, STDERR);
+        return $this->registerStdioTarget(
+            $replace,
+            $this->getStderrTarget(),
+        );
     }
 
     /**
@@ -834,13 +848,15 @@ final class ConsoleWriter implements ReceivesFacade
     }
 
     /**
-     * @param resource $stream
      * @param bool $force If `true`, the target is registered even if not
      * running on the command line.
      * @return $this
      */
-    private function registerStdioTarget(bool $replace, $stream, bool $force = false)
-    {
+    private function registerStdioTarget(
+        bool $replace,
+        Target $target,
+        bool $force = false
+    ) {
         if (!($force || PHP_SAPI === 'cli') ||
                 ($this->StdioTargetsByLevel && !$replace)) {
             return $this;
@@ -852,7 +868,7 @@ final class ConsoleWriter implements ReceivesFacade
 
         return $this
             ->clearStdioTargets()
-            ->registerTarget(new StreamTarget($stream), $levels);
+            ->registerTarget($target, $levels);
     }
 
     /**
