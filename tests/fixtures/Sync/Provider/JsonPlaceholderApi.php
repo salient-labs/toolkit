@@ -5,6 +5,9 @@ namespace Lkrms\Tests\Sync\Provider;
 use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Curler\Contract\ICurlerHeaders;
+use Lkrms\Curler\CurlerBuilder;
+use Lkrms\Facade\Cache;
+use Lkrms\Facade\Console;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\DateFormatter;
@@ -44,6 +47,11 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     TaskProvider,
     UserProvider
 {
+    /**
+     * @var array<string,int>
+     */
+    public array $HttpRequestCount = [];
+
     public function name(): ?string
     {
         return sprintf('JSONPlaceholder { %s }', $this->getBaseUrl());
@@ -62,9 +70,42 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return [$this->getBaseUrl()];
     }
 
+    public function checkHeartbeat(int $ttl = 300)
+    {
+        $key = implode(':', [
+            static::class,
+            __FUNCTION__,
+            User::class,
+        ]);
+
+        $user = Cache::get($key, $ttl);
+        if ($user === false) {
+            $user = $this->with(User::class)->get(1);
+            Cache::set($key, $user, $ttl);
+        }
+
+        Console::info(sprintf(
+            'Connected to %s as %s',
+            $this->name(),
+            $user->name(),
+        ));
+    }
+
     protected function getDateFormatter(?string $path = null): IDateFormatter
     {
         return new DateFormatter();
+    }
+
+    protected function buildCurler(CurlerBuilder $curlerB): CurlerBuilder
+    {
+        $baseUrl = $curlerB->getB('baseUrl');
+        if (!isset($this->HttpRequestCount[$baseUrl])) {
+            $this->HttpRequestCount[$baseUrl] = 0;
+        }
+
+        $this->HttpRequestCount[$baseUrl]++;
+
+        return $curlerB;
     }
 
     protected function getBaseUrl(?string $path = null): string
@@ -77,11 +118,6 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     protected function getHeaders(?string $path): ?ICurlerHeaders
     {
         return null;
-    }
-
-    protected function getExpiry(?string $path): ?int
-    {
-        return 24 * 3600;
     }
 
     protected function buildHttpDefinition(string $entity, HttpSyncDefinitionBuilder $defB): HttpSyncDefinitionBuilder

@@ -279,6 +279,25 @@ final class ConsoleWriter implements ReceivesFacade
             $this->StdoutTarget = null;
         }
 
+        // Reinstate previous STDOUT and STDERR targets if possible
+        if ($this->Targets &&
+                (!$this->StdoutTarget || !$this->StderrTarget)) {
+            foreach (array_reverse($this->Targets) as $target) {
+                if (!$this->StdoutTarget && $target->isStdout()) {
+                    $this->StdoutTarget = $target;
+                    if ($this->StderrTarget) {
+                        break;
+                    }
+                }
+                if (!$this->StderrTarget && $target->isStderr()) {
+                    $this->StderrTarget = $target;
+                    if ($this->StdoutTarget) {
+                        break;
+                    }
+                }
+            }
+        }
+
         return $this;
     }
 

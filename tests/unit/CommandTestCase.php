@@ -6,10 +6,10 @@ use Lkrms\Cli\Contract\ICliCommand;
 use Lkrms\Cli\CliApplication;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleLevels as Levels;
+use Lkrms\Console\Target\MockTarget;
 use Lkrms\Contract\IService;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\File;
-use Lkrms\Tests\Console\MockTarget;
 
 abstract class CommandTestCase extends \Lkrms\Tests\TestCase
 {
@@ -27,6 +27,15 @@ abstract class CommandTestCase extends \Lkrms\Tests\TestCase
     }
 
     /**
+     * @param mixed ...$args
+     */
+    protected function makeCommandAssertions(
+        CliApplication $app,
+        ICliCommand $command,
+        ...$args
+    ): void {}
+
+    /**
      * @param class-string<ICliCommand> $command
      * @param string[] $args
      * @param array<array{Level::*,string}>|null $consoleOutput
@@ -36,23 +45,12 @@ abstract class CommandTestCase extends \Lkrms\Tests\TestCase
         int $exitStatus,
         string $command,
         array $args,
-        ?array $consoleOutput = null
+        ?array $consoleOutput = null,
+        int $runs = 1
     ): void {
-        $target = new MockTarget(
-            true,
-            true,
-            true,
-            $consoleOutput === null
-                ? fopen('php://output', 'a')
-                : null,
-        );
-
-        Console::registerTarget(
-            $target,
-            $consoleOutput === null
-                ? Levels::ALL_EXCEPT_DEBUG
-                : array_unique(array_map(fn($message) => $message[0], $consoleOutput))
-        );
+        $f = fopen('php://output', '');
+        $target = new MockTarget(true, true, true, 80, $f);
+        Console::registerTarget($target, Levels::ALL_EXCEPT_DEBUG);
 
         $this->expectOutputString(str_replace(PHP_EOL, "\n", $output));
 
@@ -63,11 +61,14 @@ abstract class CommandTestCase extends \Lkrms\Tests\TestCase
             $app = $this->startApp($app);
             $app = $app->services($this->getServices());
             $command = $app->get($command);
-            $status = $command(...$args);
-            $this->assertSame($exitStatus, $status, 'exit status');
+            for ($i = 0; $i < $runs; $i++) {
+                $status = $command(...$args);
+                $this->assertSame($exitStatus, $status, 'exit status');
+            }
             if ($consoleOutput !== null) {
                 $this->assertSame($consoleOutput, $target->getMessages());
             }
+            $this->makeCommandAssertions($app, $command, ...func_get_args());
         } finally {
             $app->unload();
 
@@ -75,6 +76,7 @@ abstract class CommandTestCase extends \Lkrms\Tests\TestCase
             rmdir($basePath);
 
             Console::deregisterTarget($target);
+            fclose($f);
         }
     }
 }

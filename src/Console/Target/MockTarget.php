@@ -1,30 +1,35 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Console;
+namespace Lkrms\Console\Target;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Contract\IConsoleTarget;
 use Lkrms\Console\ConsoleFormatter;
 
-class MockTarget implements IConsoleTarget
+/**
+ * Test console output
+ */
+final class MockTarget implements IConsoleTarget
 {
-    protected bool $IsStdout;
+    private bool $IsStdout;
 
-    protected bool $IsStderr;
+    private bool $IsStderr;
 
-    protected bool $IsTty;
+    private bool $IsTty;
+
+    private int $Width;
 
     /**
      * @var resource|null
      */
-    protected $Stream;
+    private $Stream;
 
-    protected ConsoleFormatter $Formatter;
+    private ConsoleFormatter $Formatter;
 
     /**
      * @var array<array{Level::*,string}>
      */
-    protected array $Messages = [];
+    private array $Messages = [];
 
     /**
      * @param resource|null $stream If provided, console messages are also
@@ -34,12 +39,14 @@ class MockTarget implements IConsoleTarget
         bool $isStdout = true,
         bool $isStderr = true,
         bool $isTty = true,
+        int $width = 80,
         $stream = null,
         ?ConsoleFormatter $formatter = null
     ) {
         $this->IsStdout = $isStdout;
         $this->IsStderr = $isStderr;
         $this->IsTty = $isTty;
+        $this->Width = $width;
         $this->Stream = $stream;
         $this->Formatter = $formatter
             ?: new ConsoleFormatter(null, null, fn() => $this->width());
@@ -71,7 +78,7 @@ class MockTarget implements IConsoleTarget
 
     public function width(): ?int
     {
-        return 80;
+        return $this->Width;
     }
 
     public function write($level, string $message, array $context = []): void

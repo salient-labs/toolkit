@@ -194,6 +194,13 @@ class IntrospectionClass
     public $ParameterIndex = [];
 
     /**
+     * Declared and "magic" properties that are both readable and writable
+     *
+     * @var string[]
+     */
+    public $SerializableProperties = [];
+
+    /**
      * Normalised properties (declared and "magic" property names)
      *
      * @var string[]
@@ -484,6 +491,24 @@ class IntrospectionClass
                 + ($this->Actions[self::ACTION_SET] ?? [])
                 + ($this->Actions[self::ACTION_UNSET] ?? [])
         );
+
+        // Create a combined list of declared property and normalised method
+        // names that are both readable and writable
+        $this->SerializableProperties =
+            array_merge(
+                array_values(
+                    array_intersect(
+                        ($this->ReadableProperties ?: $this->PublicProperties),
+                        ($this->WritableProperties ?: $this->PublicProperties),
+                    )
+                ),
+                array_keys(
+                    array_intersect_key(
+                        ($this->Actions[self::ACTION_GET] ?? []),
+                        ($this->Actions[self::ACTION_SET] ?? []),
+                    )
+                )
+            );
 
         if ($this->IsRelatable) {
             /** @var array<string,array<RelationshipType::*,class-string<IRelatable>>> */
