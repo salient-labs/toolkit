@@ -33,6 +33,8 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static SyncErrorCollection getErrors() Get sync operation errors recorded so far
  * @method static string|null getFilename() Get the filename of the database
  * @method static class-string<ISyncClassResolver>|null getNamespaceResolver(class-string<ISyncEntity|ISyncProvider> $class) Get the class resolver for an entity or provider's namespace
+ * @method static ISyncProvider|null getProvider(string $hash) Get a registered sync provider
+ * @method static string getProviderHash(ISyncProvider $provider) Get the stable identifier of a sync provider
  * @method static int getProviderId(ISyncProvider $provider) Get the provider ID of a registered sync provider, starting a run if necessary
  * @method static int getRunId() Get the run ID of the current run
  * @method static string getRunUuid(bool $binary = false) Get the UUID of the current run (see {@see SyncStore::getRunUuid()})

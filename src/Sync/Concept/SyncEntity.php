@@ -724,6 +724,42 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     public function postLoad(): void {}
 
     /**
+     * @return array<string,mixed>
+     */
+    public function __serialize(): array
+    {
+        foreach ([
+            ...SyncIntrospector::get(static::class)->SerializableProperties,
+            'MetaProperties',
+            'MetaPropertyNames',
+        ] as $property) {
+            $data[$property] = $this->{$property};
+        }
+
+        $data['Provider'] = $this->Provider === null
+            ? null
+            : $this->store()->getProviderHash($this->Provider);
+
+        return $data;
+    }
+
+    /**
+     * @param array<string,mixed> $data
+     */
+    public function __unserialize(array $data): void
+    {
+        foreach ($data as $property => $value) {
+            if ($property === 'Provider' && $value !== null) {
+                $value = $this->store()->getProvider($value);
+                if (!$value) {
+                    throw new RuntimeException('Cannot unserialize missing provider');
+                }
+            }
+            $this->{$property} = $value;
+        }
+    }
+
+    /**
      * @param iterable<array-key,mixed[]> $list
      * @param ISyncProvider $provider
      * @param ArrayKeyConformity::* $conformity

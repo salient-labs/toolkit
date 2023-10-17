@@ -338,7 +338,7 @@ final class SyncStore extends SqliteStore
         }
 
         $class = get_class($provider);
-        $hash = Compute::binaryHash($class, ...$provider->getBackendIdentifier());
+        $hash = $this->getProviderHash($provider);
 
         if (isset($this->ProviderMap[$hash])) {
             throw new LogicException(sprintf('Provider already registered: %s', $class));
@@ -397,14 +397,46 @@ final class SyncStore extends SqliteStore
             $this->check();
         }
 
-        $class = get_class($provider);
-        $hash = Compute::binaryHash($class, ...$provider->getBackendIdentifier());
+        $hash = $this->getProviderHash($provider);
+        $id = $this->ProviderMap[$hash] ?? null;
+        if ($id === null) {
+            throw new LogicException(sprintf('Provider not registered: %s', get_class($provider)));
+        }
+        return $id;
+    }
+
+    /**
+     * Get a registered sync provider
+     */
+    public function getProvider(string $hash): ?ISyncProvider
+    {
+        // Don't start a run just to get a provider
+        if ($this->RunId === null) {
+            foreach ($this->DeferredProviders as $provider) {
+                if ($this->getProviderHash($provider) === $hash) {
+                    return $provider;
+                }
+            }
+            return null;
+        }
 
         $id = $this->ProviderMap[$hash] ?? null;
         if ($id === null) {
-            throw new LogicException(sprintf('Provider not registered: %s', $class));
+            return null;
         }
-        return $id;
+        return $this->Providers[$id];
+    }
+
+    /**
+     * Get the stable identifier of a sync provider
+     */
+    public function getProviderHash(ISyncProvider $provider): string
+    {
+        $class = get_class($provider);
+        return Compute::binaryHash(
+            $class,
+            ...$provider->getBackendIdentifier()
+        );
     }
 
     /**
@@ -851,7 +883,7 @@ final class SyncStore extends SqliteStore
         $failed = [];
         /** @var ISyncProvider $provider */
         foreach ($providers as $provider) {
-            $name = $provider->name() ?: get_class($provider);
+            $name = $provider->name() ?? get_class($provider);
             $id = $provider->getProviderId();
             if ($id === null) {
                 $name .= ' [unregistered]';

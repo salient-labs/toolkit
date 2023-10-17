@@ -44,6 +44,7 @@ use UnexpectedValueException;
  * @property-read array<string,string> $DateParameters Parameters with a declared type that implements DateTimeInterface (normalised name => declared name)
  * @property-read mixed[] $DefaultArguments Default values for (all) constructor parameters
  * @property-read array<string,int> $ParameterIndex Constructor parameter name => index
+ * @property-read string[] $SerializableProperties Declared and "magic" properties that are both readable and writable
  * @property-read string[] $NormalisedKeys Normalised properties (declared and "magic" property names)
  * @property-read string|null $ParentProperty The normalised parent property
  * @property-read string|null $ChildrenProperty The normalised children property
