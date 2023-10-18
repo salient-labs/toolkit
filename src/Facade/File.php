@@ -14,6 +14,7 @@ use SplFileInfo;
  * @method static Filesystem getInstance() Get the underlying Filesystem instance
  * @method static bool isLoaded() True if an underlying Filesystem instance has been loaded
  * @method static void unload() Clear the underlying Filesystem instance
+ * @method static void close(resource $handle, string $filename) Close an open file or URL (see {@see Filesystem::close()})
  * @method static string createTemporaryDirectory() Create a temporary directory
  * @method static FluentIterator<string,SplFileInfo> find(string|string[] $directory, string|null $exclude = null, string|null $include = null, array<string,callable(SplFileInfo): bool> $excludeCallbacks = null, array<string,callable(SplFileInfo): bool> $includeCallbacks = null, bool $recursive = true, bool $withDirectories = false, bool $withDirectoriesFirst = true) Iterate over files in a directory (see {@see Filesystem::find()})
  * @method static string|null getEol(string $filename) Get the end-of-line sequence used in a file (see {@see Filesystem::getEol()})
@@ -24,6 +25,7 @@ use SplFileInfo;
  * @method static bool maybeCreateDirectory(string $directory, int $permissions = 511) Create a directory if it doesn't exist (see {@see Filesystem::maybeCreateDirectory()})
  * @method static bool maybeDelete(string $filename) Delete a file if it exists (see {@see Filesystem::maybeDelete()})
  * @method static bool maybeDeleteDirectory(string $directory, bool $recursive = false) Delete a directory if it exists (see {@see Filesystem::maybeDeleteDirectory()})
+ * @method static resource open(string $filename, string $mode) Open a file or URL (see {@see Filesystem::open()})
  * @method static bool pruneDirectory(string $directory) Recursively delete the contents of a directory without deleting the directory itself (see {@see Filesystem::pruneDirectory()})
  * @method static string|false realpath(string $filename) A Phar-friendly, file descriptor-aware realpath() (see {@see Filesystem::realpath()})
  *

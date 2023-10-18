@@ -6,7 +6,7 @@ use Lkrms\Iterator\RecursiveGraphIterator;
 use Lkrms\Iterator\RecursiveMutableGraphIterator;
 
 /**
- * Provides methods shared between RecursiveGraphIterator and
+ * Implements RecursiveIterator for RecursiveGraphIterator and
  * RecursiveMutableGraphIterator
  */
 trait RecursiveGraphIteratorTrait

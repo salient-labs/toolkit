@@ -4,6 +4,7 @@ namespace Lkrms\Contract;
 
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
+use Closure;
 
 /**
  * Sends a payload through a series of pipes to a destination
@@ -95,7 +96,7 @@ interface IPipeline extends IFluentInterface, IImmutable
      *   (this bypasses any remaining pipes and the callback passed to
      *   {@see IPipeline::then()}, if applicable)
      *
-     * @param IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput $payload, \Closure $next, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>> ...$pipes
+     * @param IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput $payload, Closure $next, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>> ...$pipes
      * Each pipe must be an `IPipe` object, the name of an `IPipe` class to
      * instantiate, or a closure.
      * @return $this

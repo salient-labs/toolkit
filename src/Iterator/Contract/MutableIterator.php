@@ -5,7 +5,7 @@ namespace Lkrms\Iterator\Contract;
 use Iterator;
 
 /**
- * An iterator that allows the current element to be replaced
+ * Iterates over a mutable entity and allows the current element to be replaced
  *
  * @template TKey
  * @template TValue

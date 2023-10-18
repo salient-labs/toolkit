@@ -6,12 +6,12 @@ use IteratorIterator;
 use RecursiveIterator;
 
 /**
- * Uses a callback to accept or reject a recursive iterator's entries for
- * recursion
+ * Iterates over a recursive iterator, using a callback to determine which items
+ * with children to descend into
  *
- * Similar to `RecursiveCallbackFilterIterator`, but the callback is only used
- * to filter the return value of `RecursiveIterator::hasChildren()`, allowing
- * values to be treated as leaf nodes even if they have children.
+ * Similar to {@see \RecursiveCallbackFilterIterator}, but the callback is only
+ * used to filter the return value of {@see RecursiveIterator::hasChildren()},
+ * allowing values to be treated as leaf nodes even if they have children.
  *
  * @template TKey
  * @template TValue

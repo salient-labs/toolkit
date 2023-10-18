@@ -52,7 +52,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     private $Stream;
 
     /**
-     * @var array<IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, \Closure, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>>>
+     * @var array<IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, Closure, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>>>
      */
     private $Pipes = [];
 

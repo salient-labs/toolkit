@@ -7,7 +7,7 @@ use LogicException;
 use ReturnTypeWillChange;
 
 /**
- * Implements ICollection to provide a flexible array-like collection of values
+ * Implements ICollection
  *
  * @template TKey of array-key
  * @template TValue
@@ -34,8 +34,6 @@ trait TCollection
     /**
      * Push one or more items onto the end of the collection
      *
-     * {@inheritDoc}
-     *
      * Returns a new instance of the collection.
      *
      * @param TValue ...$item
@@ -43,6 +41,10 @@ trait TCollection
      */
     public function push(...$item)
     {
+        if (!$item) {
+            return $this;
+        }
+
         $clone = $this->mutate();
         array_push($clone->Items, ...$item);
         return $clone;
@@ -63,23 +65,26 @@ trait TCollection
     /**
      * Sort items in the collection
      *
-     * {@inheritDoc}
-     *
      * Returns a new instance of the collection.
      *
      * @return $this
      */
     public function sort()
     {
+        $items = $this->Items;
+        uasort($items, fn($a, $b) => $this->compareItems($a, $b));
+
+        if ($items === $this->Items) {
+            return $this;
+        }
+
         $clone = $this->mutate();
-        uasort($clone->Items, fn($a, $b) => $this->compareItems($a, $b));
+        $clone->Items = $items;
         return $clone;
     }
 
     /**
      * Reverse the order of items in the collection
-     *
-     * {@inheritDoc}
      *
      * Returns a new instance of the collection.
      *
@@ -87,8 +92,14 @@ trait TCollection
      */
     public function reverse()
     {
+        $items = array_reverse($this->Items, true);
+
+        if ($items === $this->Items) {
+            return $this;
+        }
+
         $clone = $this->mutate();
-        $clone->Items = array_reverse($clone->Items, true);
+        $clone->Items = $items;
         return $clone;
     }
 
@@ -120,8 +131,6 @@ trait TCollection
     /**
      * Reduce the collection to items that satisfy a callback
      *
-     * {@inheritDoc}
-     *
      * Returns a new instance of the collection.
      *
      * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
@@ -129,9 +138,7 @@ trait TCollection
      */
     public function filter(callable $callback)
     {
-        $clone = $this->mutate();
-        $clone->Items = [];
-
+        $items = [];
         $prev = null;
         $item = null;
         $key = null;
@@ -141,7 +148,7 @@ trait TCollection
         foreach ($this->Items as $nextKey => $next) {
             if ($i++) {
                 if ($callback($item, $next, $prev)) {
-                    $clone->Items[$key] = $item;
+                    $items[$key] = $item;
                 }
                 $prev = $item;
             }
@@ -149,9 +156,15 @@ trait TCollection
             $key = $nextKey;
         }
         if ($i && $callback($item, null, $prev)) {
-            $clone->Items[$key] = $item;
+            $items[$key] = $item;
         }
 
+        if ($items === $this->Items) {
+            return $this;
+        }
+
+        $clone = $this->mutate();
+        $clone->Items = $items;
         return $clone;
     }
 
@@ -187,8 +200,14 @@ trait TCollection
      */
     public function slice(int $offset, ?int $length = null)
     {
+        $items = array_slice($this->Items, $offset, $length, true);
+
+        if ($items === $this->Items) {
+            return $this;
+        }
+
         $clone = $this->mutate();
-        $clone->Items = array_slice($clone->Items, $offset, $length, true);
+        $clone->Items = $items;
         return $clone;
     }
 
@@ -303,8 +322,6 @@ trait TCollection
     /**
      * Add one or more items to the beginning of the collection
      *
-     * {@inheritDoc}
-     *
      * Returns a new instance of the collection.
      *
      * @param TValue ...$item
@@ -312,6 +329,10 @@ trait TCollection
      */
     public function unshift(...$item)
     {
+        if (!$item) {
+            return $this;
+        }
+
         $clone = $this->mutate();
         array_unshift($clone->Items, ...$item);
         return $clone;
@@ -399,6 +420,8 @@ trait TCollection
     {
         return count($this->Items);
     }
+
+    // --
 
     /**
      * Compare items using IComparable::compare() if implemented

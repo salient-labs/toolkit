@@ -58,8 +58,6 @@ interface ICollection extends Iterator, ArrayAccess, Countable
     /**
      * Reduce the collection to items that satisfy a callback
      *
-     * Analogous to `array_filter()`.
-     *
      * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
      * @return $this
      */
@@ -76,8 +74,6 @@ interface ICollection extends Iterator, ArrayAccess, Countable
 
     /**
      * Extract a slice of the collection
-     *
-     * Analogous to `array_slice()`.
      *
      * @return $this
      */

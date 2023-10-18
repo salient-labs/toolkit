@@ -3,14 +3,15 @@
 namespace Lkrms\Iterator;
 
 use Lkrms\Iterator\Concern\RecursiveGraphIteratorTrait;
+use RecursiveIterator;
 
 /**
  * Iterates over the properties and elements of mutable objects and arrays,
  * descending into them recursively
  *
- * @implements \RecursiveIterator<array-key,mixed>
+ * @implements RecursiveIterator<array-key,mixed>
  */
-class RecursiveMutableGraphIterator extends MutableGraphIterator implements \RecursiveIterator
+class RecursiveMutableGraphIterator extends MutableGraphIterator implements RecursiveIterator
 {
     use RecursiveGraphIteratorTrait;
 
@@ -22,7 +23,8 @@ class RecursiveMutableGraphIterator extends MutableGraphIterator implements \Rec
      */
     public function maybeConvertToArray()
     {
-        if (($current = $this->current()) === false) {
+        $current = $this->current();
+        if ($current === false) {
             // @codeCoverageIgnoreStart
             return $this;
             // @codeCoverageIgnoreEnd
