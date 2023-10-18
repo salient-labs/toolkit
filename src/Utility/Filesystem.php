@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Exception\Exception;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
@@ -11,12 +12,10 @@ use Lkrms\Utility\Test;
 use AppendIterator;
 use CallbackFilterIterator;
 use FilesystemIterator;
-use LogicException;
 use Phar;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use RuntimeException;
 use SplFileInfo;
 
 /**
@@ -24,6 +23,38 @@ use SplFileInfo;
  */
 final class Filesystem
 {
+    /**
+     * Open a file or URL
+     *
+     * A wrapper around {@see fopen()} that throws an exception on failure.
+     *
+     * @return resource
+     */
+    public static function open(string $filename, string $mode)
+    {
+        $handle = fopen($filename, $mode);
+        if ($handle === false) {
+            throw new Exception(sprintf('Error opening file: %s', $filename));
+        }
+
+        return $handle;
+    }
+
+    /**
+     * Close an open file or URL
+     *
+     * A wrapper around {@see fclose()} that throws an exception on failure.
+     *
+     * @param resource $handle
+     */
+    public static function close($handle, string $filename): void
+    {
+        $result = fclose($handle);
+        if ($result === false) {
+            throw new Exception(sprintf('Error closing file: %s', $filename));
+        }
+    }
+
     /**
      * Iterate over files in a directory
      *
@@ -54,7 +85,7 @@ final class Filesystem
      * ```
      * @return FluentIterator<string,SplFileInfo>
      */
-    public function find(
+    public static function find(
         $directory,
         ?string $exclude = null,
         ?string $include = null,
@@ -168,12 +199,14 @@ final class Filesystem
      * @see Inspect::getEol()
      * @see Str::setEol()
      */
-    public function getEol(string $filename): ?string
+    public static function getEol(string $filename): ?string
     {
-        if (($f = fopen($filename, 'r')) === false ||
-                ($line = fgets($f)) === false ||
-                fclose($f) === false) {
-            throw new RuntimeException(sprintf('Error reading file: %s', $filename));
+        $f = self::open($filename, 'r');
+        $line = fgets($f);
+        self::close($f, $filename);
+
+        if ($line === false) {
+            return null;
         }
 
         foreach (["\r\n", "\n", "\r"] as $eol) {
@@ -194,20 +227,20 @@ final class Filesystem
      *
      * @param string $filename
      */
-    public function isPhp(string $filename): bool
+    public static function isPhp(string $filename): bool
     {
-        if (!($f = fopen($filename, 'r'))) {
+        $f = self::open($filename, 'r');
+        $line = fgets($f);
+        if ($line !== false && substr($line, 0, 2) === '#!') {
+            $line = fgets($f);
+        }
+        self::close($f, $filename);
+
+        if ($line === false) {
             return false;
         }
-        try {
-            if (($line = fgets($f)) && substr($line, 0, 2) === '#!') {
-                $line = fgets($f);
-            }
 
-            return $line && Pcre::match('/^<\?(php\s|(?!php))/', $line);
-        } finally {
-            fclose($f);
-        }
+        return (bool) Pcre::match('/^<\?(php\s|(?!php|xml\s))/', $line);
     }
 
     /**
@@ -219,7 +252,7 @@ final class Filesystem
      * needs to be created.
      * @return bool `true` on success or `false` on failure.
      */
-    public function maybeCreate(string $filename, int $permissions = 0777, int $dirPermissions = 0777): bool
+    public static function maybeCreate(string $filename, int $permissions = 0777, int $dirPermissions = 0777): bool
     {
         $dir = dirname($filename);
 
@@ -238,7 +271,7 @@ final class Filesystem
      * @param int $permissions Only used if `$filename` needs to be created.
      * @return bool `true` on success or `false` on failure.
      */
-    public function maybeCreateDirectory(string $directory, int $permissions = 0777): bool
+    public static function maybeCreateDirectory(string $directory, int $permissions = 0777): bool
     {
         if (is_dir($directory) || mkdir($directory, $permissions, true)) {
             return true;
@@ -252,7 +285,7 @@ final class Filesystem
      *
      * @return bool `true` on success or `false` on failure.
      */
-    public function maybeDelete(string $filename): bool
+    public static function maybeDelete(string $filename): bool
     {
         if (!file_exists($filename)) {
             return true;
@@ -270,7 +303,7 @@ final class Filesystem
      *
      * @return bool `true` on success or `false` on failure.
      */
-    public function maybeDeleteDirectory(string $directory, bool $recursive = false): bool
+    public static function maybeDeleteDirectory(string $directory, bool $recursive = false): bool
     {
         if (!file_exists($directory)) {
             return true;
@@ -280,7 +313,7 @@ final class Filesystem
             return false;
         }
 
-        return (!$recursive || $this->pruneDirectory($directory)) &&
+        return (!$recursive || self::pruneDirectory($directory)) &&
             rmdir($directory);
     }
 
@@ -290,14 +323,13 @@ final class Filesystem
      *
      * @return bool `true` on success or `false` on failure.
      */
-    public function pruneDirectory(string $directory): bool
+    public static function pruneDirectory(string $directory): bool
     {
         if (!is_dir($directory)) {
-            throw new RuntimeException(sprintf('Not a directory: %s', $directory));
+            throw new Exception(sprintf('Not a directory: %s', $directory));
         }
 
-        $this
-            ->find($directory, null, null, null, null, true, true, false)
+        self::find($directory, null, null, null, null, true, true, false)
             ->forEachWhile(
                 fn(SplFileInfo $file) =>
                     $file->isDir()
@@ -312,11 +344,11 @@ final class Filesystem
     /**
      * Create a temporary directory
      */
-    public function createTemporaryDirectory(): string
+    public static function createTemporaryDirectory(): string
     {
         $tmp = realpath($_tmp = sys_get_temp_dir());
         if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
-            throw new RuntimeException(sprintf('Not a writable directory: %s', $_tmp));
+            throw new Exception(sprintf('Not a writable directory: %s', $_tmp));
         }
         $program = Sys::getProgramBasename();
         do {
@@ -341,7 +373,7 @@ final class Filesystem
      *
      * @return string|false
      */
-    public function realpath(string $filename)
+    public static function realpath(string $filename)
     {
         if (Pcre::match(
             '#^/(?:dev|proc/(?:self|[0-9]+))/fd/([0-9]+)$#',
@@ -367,7 +399,7 @@ final class Filesystem
      * `pfsockopen()` or `stream_socket_client()`.
      * @return string|null `null` if `$stream` is not an open stream resource.
      */
-    public function getStreamUri($stream): ?string
+    public static function getStreamUri($stream): ?string
     {
         if (is_resource($stream) && get_resource_type($stream) == 'stream') {
             return stream_get_meta_data($stream)['uri'];
@@ -398,7 +430,7 @@ final class Filesystem
      * the output.
      * @return string|true
      */
-    public function writeCsv(
+    public static function writeCsv(
         iterable $data,
         $target = null,
         bool $headerRow = true,
@@ -411,14 +443,18 @@ final class Filesystem
     ) {
         if (is_resource($target)) {
             if (($type = get_resource_type($target)) !== 'stream') {
-                throw new LogicException(sprintf('Invalid resource type: %s', $type));
+                throw new Exception(sprintf('Invalid resource type: %s', $type));
             }
             $f = $target;
+            $targetName = 'stream';
         } elseif (is_string($target)) {
-            $f = fopen($target, 'wb');
+            $f = self::open($target, 'wb');
+            $targetName = $target;
         } else {
+            $target = 'php://memory';
+            $f = self::open($target, 'w+b');
+            $targetName = $target;
             $target = null;
-            $f = fopen('php://memory', 'w+b');
         }
 
         if ($utf16le) {
@@ -448,22 +484,22 @@ final class Filesystem
             }
 
             if (!$count && $headerRow) {
-                $this->fputcsv($f, array_keys($row), ',', '"', $eol);
+                self::fputcsv($f, array_keys($row), ',', '"', $eol);
             }
 
-            $this->fputcsv($f, $row, ',', '"', $eol);
+            self::fputcsv($f, $row, ',', '"', $eol);
             $count++;
         }
 
         if ($target === null) {
             rewind($f);
             $csv = stream_get_contents($f);
-            fclose($f);
+            self::close($f, $targetName);
 
             return $csv;
         }
         if (is_string($target)) {
-            fclose($f);
+            self::close($f, $targetName);
         }
 
         return true;
@@ -476,7 +512,7 @@ final class Filesystem
      * @param mixed[] $fields
      * @return int|false
      */
-    private function fputcsv(
+    private static function fputcsv(
         $stream,
         array $fields,
         string $separator = ',',
@@ -502,11 +538,11 @@ final class Filesystem
      *
      * No changes are made to the filesystem.
      */
-    public function getStablePath(string $suffix = '', ?string $dir = null): string
+    public static function getStablePath(string $suffix = '', ?string $dir = null): string
     {
-        $path = $this->realpath($program = Sys::getProgramName());
+        $path = self::realpath($program = Sys::getProgramName());
         if ($path === false) {
-            throw new RuntimeException('Unable to resolve filename used to run the script');
+            throw new Exception('Unable to resolve filename used to run the script');
         }
         $program = basename($program);
         $hash = Compute::hash($path);
@@ -515,13 +551,13 @@ final class Filesystem
         } else {
             $user = Env::get('USERNAME', null) ?: Env::get('USER', null);
             if (!$user) {
-                throw new RuntimeException('Unable to identify user');
+                throw new Exception('Unable to identify user');
             }
         }
         if ($dir === null) {
             $dir = realpath($tmp = sys_get_temp_dir());
             if ($dir === false || !is_dir($dir) || !is_writable($dir)) {
-                throw new RuntimeException(sprintf('Not a writable directory: %s', $tmp));
+                throw new Exception(sprintf('Not a writable directory: %s', $tmp));
             }
         } else {
             $dir = rtrim($dir, '/\\') ?: $dir;

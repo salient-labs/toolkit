@@ -64,7 +64,8 @@ class GraphIterator implements Iterator
     #[ReturnTypeWillChange]
     public function current()
     {
-        if (($key = current($this->Keys)) === false) {
+        $key = current($this->Keys);
+        if ($key === false) {
             // @codeCoverageIgnoreStart
             return false;
             // @codeCoverageIgnoreEnd
@@ -82,7 +83,8 @@ class GraphIterator implements Iterator
     #[ReturnTypeWillChange]
     public function key()
     {
-        if (($key = current($this->Keys)) === false) {
+        $key = current($this->Keys);
+        if ($key === false) {
             // @codeCoverageIgnoreStart
             return null;
             // @codeCoverageIgnoreEnd

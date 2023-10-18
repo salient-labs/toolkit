@@ -28,7 +28,7 @@ final class TypedCollectionTest extends \Lkrms\Tests\TestCase
         $sorted = $collection->sort();
         $sorted2 = $sorted->sort();
         $this->assertNotSame($sorted, $collection);
-        $this->assertNotSame($sorted2, $sorted);
+        $this->assertSame($sorted2, $sorted);
         $this->assertSame(['n' => $e1, 2 => $e2, 0 => $e0], $sorted->all());
         $reversed = $sorted->reverse();
         $this->assertNotSame($reversed, $sorted);

@@ -23,7 +23,8 @@ class MutableGraphIterator extends GraphIterator implements MutableIterator
 
     public function replace($value)
     {
-        if (($key = current($this->Keys)) === false) {
+        $key = current($this->Keys);
+        if ($key === false) {
             // @codeCoverageIgnoreStart
             throw new LogicException('Current position is not valid');
             // @codeCoverageIgnoreEnd

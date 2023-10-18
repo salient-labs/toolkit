@@ -7,7 +7,8 @@ use ReturnTypeWillChange;
 use Traversable;
 
 /**
- * Applies a callback to each value as it is returned
+ * Iterates over an iterator, applying a callback to each value every time it is
+ * returned
  *
  * @template TKey
  * @template TInput
@@ -18,13 +19,13 @@ use Traversable;
 class MapIterator extends IteratorIterator
 {
     /**
-     * @var callable(TInput): TOutput
+     * @var callable(TInput, TKey, Traversable<TKey,TInput>): TOutput
      */
     protected $Callback;
 
     /**
      * @param Traversable<TKey,TInput> $iterator
-     * @param callable(TInput): TOutput $callback
+     * @param callable(TInput, TKey, Traversable<TKey,TInput>): TOutput $callback
      */
     public function __construct(Traversable $iterator, callable $callback)
     {
@@ -39,6 +40,6 @@ class MapIterator extends IteratorIterator
     #[ReturnTypeWillChange]
     public function current()
     {
-        return ($this->Callback)(parent::current());
+        return ($this->Callback)(parent::current(), $this->key(), $this);
     }
 }

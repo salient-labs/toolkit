@@ -199,7 +199,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
         return $prefixes ?? [];
     }
 
-    // ---
+    // --
 
     /**
      * @inheritDoc

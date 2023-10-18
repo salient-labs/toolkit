@@ -8,7 +8,7 @@ use Iterator;
 use IteratorIterator;
 
 /**
- * Uses a fluent interface to iterate over another iterator
+ * Iterates over an iterator, providing a fluent interface to its elements
  *
  * @template TKey of array-key
  * @template TValue

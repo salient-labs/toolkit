@@ -9,7 +9,8 @@ use IteratorIterator;
 use Traversable;
 
 /**
- * Iterates over an iterable
+ * Iterates over an array or Traversable, providing a fluent interface to its
+ * elements
  *
  * @template TKey of array-key
  * @template TValue
