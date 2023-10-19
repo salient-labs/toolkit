@@ -6,16 +6,10 @@ use Lkrms\Exception\Exception;
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
-use Lkrms\Iterator\FluentIterator;
+use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
-use AppendIterator;
-use CallbackFilterIterator;
-use FilesystemIterator;
 use Phar;
-use RecursiveCallbackFilterIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use SplFileInfo;
 
 /**
@@ -56,37 +50,14 @@ final class Filesystem
     }
 
     /**
-     * Iterate over files in a directory
+     * Iterate over files in one or more directories
      *
-     * Exclusions are applied before inclusions.
-     *
-     * @param string|string[] $directory One or multiple directories to iterate
-     * over.
-     * @param string|null $exclude A regular expression that specifies paths to
-     * exclude. No files are excluded if `null`.
-     *
-     * To exclude a directory, provide an expression that matches its name and a
-     * subsequent forward slash (`/`).
-     *
-     * @param string|null $include A regular expression that specifies paths to
-     * include. All files are included if `null`.
-     * @param array<string,callable(SplFileInfo): bool> $excludeCallbacks An
-     * array that maps regular expressions to callbacks that return `true` for
-     * matching files or directories to exclude.
-     *
-     * To exclude a directory, provide an expression that matches its name and a
-     * subsequent forward slash (`/`).
-     *
-     * @param array<string,callable(SplFileInfo): bool> $includeCallbacks An
-     * array that maps regular expressions to callbacks that return `true` for
-     * matching files to include.
-     * ```php
-     * [$regex => fn(SplFileInfo $file) => $file->isExecutable()]
-     * ```
-     * @return FluentIterator<string,SplFileInfo>
+     * @param string[]|string|null $directory
+     * @param array<string,callable(SplFileInfo): bool> $excludeCallbacks
+     * @param array<string,callable(SplFileInfo): bool> $includeCallbacks
      */
     public static function find(
-        $directory,
+        $directory = null,
         ?string $exclude = null,
         ?string $include = null,
         ?array $excludeCallbacks = null,
@@ -94,98 +65,49 @@ final class Filesystem
         bool $recursive = true,
         bool $withDirectories = false,
         bool $withDirectoriesFirst = true
-    ): FluentIterator {
-        $flags = FilesystemIterator::KEY_AS_PATHNAME
-            | FilesystemIterator::CURRENT_AS_FILEINFO
-            | FilesystemIterator::SKIP_DOTS
-            | FilesystemIterator::UNIX_PATHS;
+    ): RecursiveFilesystemIterator {
+        $directory = (array) $directory;
 
-        $mode = $withDirectories
-            ? ($withDirectoriesFirst
-                ? RecursiveIteratorIterator::SELF_FIRST
-                : RecursiveIteratorIterator::CHILD_FIRST)
-            : RecursiveIteratorIterator::LEAVES_ONLY;
+        $iterator =
+            (new RecursiveFilesystemIterator())
+                ->in(...$directory)
+                ->recurse($recursive)
+                ->dirs($withDirectories)
+                ->dirsFirst($withDirectoriesFirst);
 
-        if ($exclude !== null ||
-                $include !== null ||
-                $excludeCallbacks ||
-                $includeCallbacks) {
-            $callback =
-                function (
-                    SplFileInfo $current, string $key
-                ) use (
-                    $exclude, $include, $excludeCallbacks, $includeCallbacks
-                ): bool {
-                    if ($exclude !== null && Pcre::match($exclude, $key)) {
-                        return false;
-                    }
-                    if ($excludeCallbacks) {
-                        foreach ($excludeCallbacks as $regex => $callback) {
-                            if (!Pcre::match($regex, $key) &&
-                                !($current->isDir() &&
-                                    Pcre::match($regex, $key . '/'))) {
-                                continue;
-                            }
-                            if ($callback($current)) {
-                                return false;
-                            }
-                        }
-                    }
-                    // Always recurse into directories unless they are
-                    // explicitly excluded
-                    if ($current->isDir()) {
-                        return !($exclude !== null &&
-                            Pcre::match($exclude, $key . '/'));
-                    }
-                    if ($include !== null && Pcre::match($include, $key)) {
-                        return true;
-                    }
-                    if ($includeCallbacks) {
-                        foreach ($includeCallbacks as $regex => $callback) {
-                            if (!Pcre::match($regex, $key)) {
-                                continue;
-                            }
-                            if ($callback($current)) {
-                                return true;
-                            }
-                        }
-                    }
-                    return $include === null && !$includeCallbacks;
-                };
-        }
-        /** @var AppendIterator|null */
-        $appendIterator = null;
-        /** @var non-empty-array<string> */
-        $directories = (array) $directory;
-        foreach ($directories as $directory) {
-            if ($recursive) {
-                $iterator = new RecursiveDirectoryIterator($directory, $flags);
-                if ($callback ?? null) {
-                    $iterator = new RecursiveCallbackFilterIterator($iterator, $callback);
-                }
-                $iterator = new RecursiveIteratorIterator($iterator, $mode);
-            } else {
-                $iterator = new FilesystemIterator($directory, $flags);
-                if ($callback ?? null) {
-                    $iterator = new CallbackFilterIterator($iterator, $callback);
-                }
-                if (!$withDirectories) {
-                    $iterator = new CallbackFilterIterator(
-                        $iterator, fn(SplFileInfo $current) => !$current->isDir()
-                    );
-                }
-            }
-
-            if (!$appendIterator) {
-                if (count($directories) === 1) {
-                    break;
-                }
-                $appendIterator = new AppendIterator();
-            }
-            $appendIterator->append($iterator);
+        if ($exclude !== null) {
+            $iterator = $iterator->exclude($exclude);
         }
 
-        return new \Lkrms\Iterator\FluentIterator($appendIterator ?? $iterator);
+        if ($include !== null) {
+            $iterator = $iterator->include($include);
+        }
+
+        if ($excludeCallbacks) {
+            foreach ($excludeCallbacks as $regex => $callback) {
+                $iterator = $iterator->exclude(
+                    fn(SplFileInfo $current, string $key) =>
+                        Pcre::match($regex, $key) ||
+                        ($current->isDir() && Pcre::match($regex, "{$key}/"))
+                            ? $callback($current)
+                            : false
+                );
+            }
+        }
+
+        if ($includeCallbacks) {
+            foreach ($includeCallbacks as $regex => $callback) {
+                $iterator = $iterator->include(
+                    fn(SplFileInfo $current, string $key) =>
+                        Pcre::match($regex, $key) ||
+                        ($current->isDir() && Pcre::match($regex, "{$key}/"))
+                            ? $callback($current)
+                            : false
+                );
+            }
+        }
+
+        return $iterator;
     }
 
     /**
@@ -325,11 +247,10 @@ final class Filesystem
      */
     public static function pruneDirectory(string $directory): bool
     {
-        if (!is_dir($directory)) {
-            throw new Exception(sprintf('Not a directory: %s', $directory));
-        }
-
-        self::find($directory, null, null, null, null, true, true, false)
+        (new RecursiveFilesystemIterator())
+            ->in($directory)
+            ->dirs()
+            ->dirsLast()
             ->forEachWhile(
                 fn(SplFileInfo $file) =>
                     $file->isDir()

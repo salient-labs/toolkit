@@ -3,7 +3,7 @@
 namespace Lkrms\Iterator\Contract;
 
 use Lkrms\Contract\Arrayable;
-use Iterator;
+use Traversable;
 
 /**
  * An iterator with a fluent interface
@@ -11,10 +11,10 @@ use Iterator;
  * @template TKey of array-key
  * @template TValue
  *
- * @extends Iterator<TKey,TValue>
+ * @extends Traversable<TKey,TValue>
  * @extends Arrayable<TKey,TValue>
  */
-interface FluentIteratorInterface extends Iterator, Arrayable
+interface FluentIteratorInterface extends Traversable, Arrayable
 {
     /**
      * Copy the elements of the iterator to an array

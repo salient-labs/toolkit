@@ -4,12 +4,15 @@ namespace Lkrms\Iterator;
 
 use Lkrms\Contract\IImmutable;
 use Lkrms\Exception\Exception;
+use Lkrms\Iterator\Concern\FluentIteratorTrait;
+use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Utility\Pcre;
 use AppendIterator;
 use CallbackFilterIterator;
 use EmptyIterator;
 use FilesystemIterator;
 use IteratorAggregate;
+use LogicException;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -20,9 +23,15 @@ use Traversable;
  * Iterates over files and directories
  *
  * @implements IteratorAggregate<string,SplFileInfo>
+ * @implements FluentIteratorInterface<string,SplFileInfo>
  */
-class RecursiveFilesystemIterator implements IteratorAggregate, IImmutable
+class RecursiveFilesystemIterator implements IteratorAggregate, FluentIteratorInterface, IImmutable
 {
+    /**
+     * @use FluentIteratorTrait<string,SplFileInfo>
+     */
+    use FluentIteratorTrait;
+
     private bool $GetFiles = true;
     private bool $GetDirs = false;
     private bool $DirsFirst = true;
@@ -415,6 +424,51 @@ class RecursiveFilesystemIterator implements IteratorAggregate, IImmutable
         }
 
         return $iterator;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function nextWithValue($key, $value, bool $strict = false)
+    {
+        $name = Pcre::replace('/^(?:get|is)/i', '', (string) $key, -1, $count);
+
+        if (method_exists(SplFileInfo::class, $key)) {
+            // If `$key` is the name of a method, check that it starts with
+            // "get" or "is"
+            if (!$count) {
+                throw new LogicException(sprintf('Illegal key: %s', $key));
+            }
+            $method = $key;
+        } else {
+            foreach (["get{$name}", "is{$name}"] as $method) {
+                if (method_exists(SplFileInfo::class, $method)) {
+                    break;
+                }
+                $method = null;
+            }
+        }
+
+        if (
+            $method === null ||
+            !strcasecmp($method, 'getFileInfo') ||
+            !strcasecmp($method, 'getPathInfo')
+        ) {
+            throw new LogicException(sprintf('Invalid key: %s', $key));
+        }
+
+        foreach ($this as $current) {
+            $_value = $current->$method();
+            if ($strict) {
+                if ($_value === $value) {
+                    return $current;
+                }
+            } elseif ($_value == $value) {
+                return $current;
+            }
+        }
+
+        return false;
     }
 
     private function getPath(string $path, FilesystemIterator $iterator): string

@@ -4,6 +4,7 @@ namespace Lkrms\Tests\Iterator;
 
 use Lkrms\Iterator\RecursiveFilesystemIterator;
 use FilesystemIterator;
+use LogicException;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
@@ -285,6 +286,84 @@ final class RecursiveFilesystemIteratorTest extends \Lkrms\Tests\TestCase
                     )
                     ->matchRelative(),
                 $dir,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider nextWithValueProvider
+     *
+     * @param string|bool|null $expected
+     * @param mixed $value
+     */
+    public function testNextWithValue(
+        $expected,
+        string $dir,
+        string $key,
+        $value,
+        bool $strict = false
+    ): void {
+        if ($expected === null) {
+            $this->expectException(LogicException::class);
+        }
+
+        $file =
+            (new RecursiveFilesystemIterator())
+                ->in($dir)
+                ->dirs()
+                ->nextWithValue($key, $value, $strict);
+
+        if ($file instanceof SplFileInfo) {
+            $file = (string) $file;
+        }
+
+        $this->assertSame($expected, $file);
+    }
+
+    /**
+     * @return array<array{string|bool|null,string,string,mixed,4?:bool}>
+     */
+    public static function nextWithValueProvider(): array
+    {
+        $dir = self::getFixturesPath(__CLASS__);
+        return [
+            [
+                "{$dir}/dir2/file5",
+                $dir,
+                'inode',
+                fileinode("{$dir}/dir2/file5"),
+                true,
+            ],
+            [
+                false,
+                $dir,
+                'isLink',
+                true,
+                true,
+            ],
+            [
+                null,
+                $dir,
+                'isDirectory',
+                true,
+            ],
+            [
+                null,
+                $dir,
+                'fileInfo',
+                true,
+            ],
+            [
+                null,
+                $dir,
+                'pathInfo',
+                true,
+            ],
+            [
+                null,
+                $dir,
+                'openFile',
+                true,
             ],
         ];
     }
