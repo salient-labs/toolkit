@@ -293,7 +293,7 @@ class Application extends Container implements IApplication
 
         $this->RunningFromSource =
             !extension_loaded('Phar') ||
-                !Phar::running();
+            !Phar::running();
 
         if ($this->RunningFromSource) {
             $files = [];

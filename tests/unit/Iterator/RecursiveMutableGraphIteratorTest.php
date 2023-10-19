@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Support\Iterator;
+namespace Lkrms\Tests\Iterator;
 
 use Lkrms\Iterator\RecursiveMutableGraphIterator;
 use RecursiveIteratorIterator;

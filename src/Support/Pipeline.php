@@ -224,8 +224,8 @@ final class Pipeline extends FluentInterface implements IPipeline
         if ($this->Stream || $this->CollectThen) {
             throw new LogicException(
                 static::class . '::run() cannot be called after '
-                    . static::class . '::stream() or '
-                    . static::class . '::collectThen()'
+                . static::class . '::stream() or '
+                . static::class . '::collectThen()'
             );
         }
 
@@ -248,7 +248,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         if (!$this->Stream) {
             throw new LogicException(
                 static::class . '::stream() must be called before '
-                    . static::class . '::start()'
+                . static::class . '::start()'
             );
         }
 

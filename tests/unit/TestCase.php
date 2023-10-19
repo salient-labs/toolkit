@@ -61,7 +61,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * Get the path to the fixtures directory for a class
      */
-    public function getFixturesPath(string $class): string
+    public static function getFixturesPath(string $class): string
     {
         return dirname(__DIR__)
             . '/fixtures/'
@@ -75,7 +75,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * Replace newlines in a string with PHP_EOL
      */
-    public function newlinesToNative(?string $string): ?string
+    public static function newlinesToNative(?string $string): ?string
     {
         return
             $string === null
@@ -86,7 +86,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * Replace directory separators in a string with DIRECTORY_SEPARATOR
      */
-    public function directorySeparatorsToNative(?string $string): ?string
+    public static function directorySeparatorsToNative(?string $string): ?string
     {
         return
             $string === null

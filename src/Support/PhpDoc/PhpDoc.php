@@ -306,7 +306,7 @@ final class PhpDoc implements IReadable
                 } elseif ($this->Summary !== $var->Description) {
                     $this->Description .=
                         ($this->Description ? "\n\n" : '')
-                            . $var->Description;
+                        . $var->Description;
                 }
                 $var->Description = null;
             }

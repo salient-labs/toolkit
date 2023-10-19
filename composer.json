@@ -23,7 +23,7 @@
         "clue/phar-composer": "^1",
         "firebase/php-jwt": "^6",
         "league/oauth2-client": "^2",
-        "lkrms/pretty-php": "0.4.36",
+        "lkrms/pretty-php": "^0.4.40",
         "phpstan/extension-installer": "^1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",
