@@ -486,10 +486,10 @@ class IntrospectionClass
         // Create a combined list of normalised property and method names
         $this->NormalisedKeys = array_keys(
             $this->Properties
-                + ($this->Actions[self::ACTION_GET] ?? [])
-                + ($this->Actions[self::ACTION_ISSET] ?? [])
-                + ($this->Actions[self::ACTION_SET] ?? [])
-                + ($this->Actions[self::ACTION_UNSET] ?? [])
+            + ($this->Actions[self::ACTION_GET] ?? [])
+            + ($this->Actions[self::ACTION_ISSET] ?? [])
+            + ($this->Actions[self::ACTION_SET] ?? [])
+            + ($this->Actions[self::ACTION_UNSET] ?? [])
         );
 
         // Create a combined list of declared property and normalised method
