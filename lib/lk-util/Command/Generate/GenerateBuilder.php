@@ -50,6 +50,10 @@ class GenerateBuilder extends GenerateCommand
      */
     private ?array $Forward;
 
+    private ?bool $Properties;
+
+    private ?bool $NoProperties;
+
     /**
      * @var string[]|null
      */
@@ -76,6 +80,23 @@ class GenerateBuilder extends GenerateCommand
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->bindTo($this->BuilderFqcn),
+            CliOption::build()
+                ->long('properties')
+                ->short('r')
+                ->description('Include writable properties of <class> in the builder')
+                ->bindTo($this->Properties),
+            CliOption::build()
+                ->long('no-properties')
+                ->short('i')
+                ->description(<<<EOF
+                    Ignore properties of <class> when checking for PHP DocBlocks
+
+                    By default, if a property with the same name as a constructor parameter has a
+                    DocBlock, its description is used in the absence of a parameter description,
+                    even if `--properties/-r` is not given. Use this option to disable this
+                    behaviour.
+                    EOF)
+                ->bindTo($this->NoProperties),
             CliOption::build()
                 ->long('forward')
                 ->short('w')
@@ -135,15 +156,19 @@ class GenerateBuilder extends GenerateCommand
             ? "Creates $classClass objects via a fluent interface"
             : $this->OutputDescription;
 
-        $introspector = Introspector::get($this->InputClass->getName());
-        $writable = $introspector->getWritableProperties();
-        $writable = array_combine(
-            array_map(
-                fn(string $name) => Convert::toCamelCase($name),
+        if ($this->Properties) {
+            $introspector = Introspector::get($this->InputClass->getName());
+            $writable = $introspector->getWritableProperties();
+            $writable = array_combine(
+                array_map(
+                    fn(string $name) => Convert::toCamelCase($name),
+                    $writable
+                ),
                 $writable
-            ),
-            $writable
-        );
+            );
+        } else {
+            $writable = [];
+        }
 
         /**
          * camelCase name => parameter
@@ -204,18 +229,20 @@ class GenerateBuilder extends GenerateCommand
          */
         $_defaultProperties = [];
 
-        $defaults = $this->InputClass->getDefaultProperties();
-        foreach ($this->InputClass->getProperties(
-            ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED
-        ) as $_property) {
-            if ($_property->isStatic()) {
-                continue;
-            }
-            $_name = $_property->getName();
-            $name = Convert::toCamelCase($_name);
-            $_allProperties[$name] = $_property;
-            if (array_key_exists($_name, $defaults)) {
-                $_defaultProperties[$name] = $defaults[$_name];
+        if (!$this->NoProperties) {
+            $defaults = $this->InputClass->getDefaultProperties();
+            foreach ($this->InputClass->getProperties(
+                ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED
+            ) as $_property) {
+                if ($_property->isStatic()) {
+                    continue;
+                }
+                $_name = $_property->getName();
+                $name = Convert::toCamelCase($_name);
+                $_allProperties[$name] = $_property;
+                if (array_key_exists($_name, $defaults)) {
+                    $_defaultProperties[$name] = $defaults[$_name];
+                }
             }
         }
 
