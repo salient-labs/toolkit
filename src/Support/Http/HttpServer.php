@@ -58,6 +58,11 @@ final class HttpServer implements IReadable, IImmutable
     protected $ProxyTls;
 
     /**
+     * @var string|null
+     */
+    protected $ProxyBasePath;
+
+    /**
      * @var resource|null
      */
     private $Server;
@@ -70,21 +75,35 @@ final class HttpServer implements IReadable, IImmutable
     }
 
     /**
-     * Run the server behind a reverse proxy
+     * Get a copy of the server configured to run behind a reverse proxy
      *
-     * The server continues to listen at the same {@see HttpServer::$Host} and
-     * {@see HttpServer::$Port} while referring to itself as
-     * `http[s]://<proxy_host>[:<proxy_port>]` in client-facing URLs.
+     * Returns a server that listens at the same host and port, but refers to
+     * itself in client-facing URLs as:
+     *
+     * ```
+     * http[s]://<proxy_host>[:<proxy_port>][<proxy_base_path>]
+     * ```
      *
      * @return $this
      * @see HttpServer::getBaseUrl()
      */
-    public function withProxy(string $proxyHost, int $proxyPort, ?bool $proxyTls = null)
-    {
+    public function withProxy(
+        string $proxyHost,
+        int $proxyPort,
+        ?bool $proxyTls = null,
+        ?string $proxyBasePath = null
+    ) {
+        $proxyBasePath = trim($proxyBasePath ?? '', '/');
+
         $clone = clone $this;
         $clone->ProxyHost = $proxyHost;
         $clone->ProxyPort = $proxyPort;
-        $clone->ProxyTls = is_null($proxyTls) ? ($proxyPort === 443) : $proxyTls;
+        $clone->ProxyTls = $proxyTls === null ? ($proxyPort === 443) : $proxyTls;
+        $clone->ProxyBasePath =
+            $proxyBasePath === ''
+                ? null
+                : '/' . $proxyBasePath;
+
         $clone->Server = null;
 
         return $clone;
@@ -96,22 +115,21 @@ final class HttpServer implements IReadable, IImmutable
     public function getBaseUrl(): string
     {
         if ($this->ProxyHost && $this->ProxyPort) {
-            return ($this->ProxyTls && $this->ProxyPort === 443) ||
+            return
+                ($this->ProxyTls && $this->ProxyPort === 443) ||
                 (!$this->ProxyTls && $this->ProxyPort === 80)
                     ? sprintf(
-                        '%s://%s',
-                        $this->ProxyTls
-                            ? 'https'
-                            : 'http',
-                        $this->ProxyHost
+                        '%s://%s%s',
+                        $this->ProxyTls ? 'https' : 'http',
+                        $this->ProxyHost,
+                        (string) $this->ProxyBasePath,
                     )
                     : sprintf(
-                        '%s://%s:%d',
-                        $this->ProxyTls
-                            ? 'https'
-                            : 'http',
+                        '%s://%s:%d%s',
+                        $this->ProxyTls ? 'https' : 'http',
                         $this->ProxyHost,
-                        $this->ProxyPort
+                        $this->ProxyPort,
+                        $this->ProxyBasePath,
                     );
         }
 
