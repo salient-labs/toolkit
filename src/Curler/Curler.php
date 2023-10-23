@@ -13,7 +13,10 @@ use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
-use Lkrms\Curler\Exception\CurlerException;
+use Lkrms\Curler\Exception\CurlerCurlErrorException;
+use Lkrms\Curler\Exception\CurlerHttpErrorException;
+use Lkrms\Curler\Exception\CurlerInvalidResponseException;
+use Lkrms\Curler\Exception\CurlerUnexpectedResponseException;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Compute;
@@ -751,14 +754,14 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     {
         if (substr($header, 0, 5) === 'HTTP/') {
             if (count($split = explode(' ', $header, 3)) < 2) {
-                throw new CurlerException('Invalid status line in response', $this);
+                throw new CurlerInvalidResponseException('Invalid status line in response', $this);
             }
             $this->ResponseHeaders = new CurlerHeaders();
             $this->ReasonPhrase = trim($split[2] ?? '');
             return $header;
         }
         if ($this->ReasonPhrase === null) {
-            throw new CurlerException('No status line in response', $this);
+            throw new CurlerInvalidResponseException('No status line in response', $this);
         }
         $this->ResponseHeaders = $this->ResponseHeaders->addRawHeader($header);
         return $header;
@@ -931,7 +934,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
 
             if ($result === false) {
                 $error = curl_errno(self::$Handle);
-                throw new CurlerException(sprintf('cURL error %d: %s', $error, curl_strerror($error)), $this);
+                throw new CurlerCurlErrorException($error, $this);
             }
 
             // ReasonPhrase is set by processHeader()
@@ -967,7 +970,11 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         }
 
         if ($this->StatusCode >= 400 && $this->ThrowHttpErrors) {
-            throw new CurlerException(sprintf('HTTP error %d %s', $this->StatusCode, $this->ReasonPhrase), $this);
+            throw new CurlerHttpErrorException(
+                $this->StatusCode,
+                $this->ReasonPhrase,
+                $this,
+            );
         }
 
         if ($close) {
@@ -1230,7 +1237,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             if ($this->responseContentTypeIs(MimeType::JSON)) {
                 $response = json_decode($this->ResponseBody, $this->ObjectAsArray);
             } else {
-                throw new CurlerException('Unable to deserialize response', $this);
+                throw new CurlerUnexpectedResponseException('Unable to deserialize response', $this);
             }
 
             $page = $this->Pager->getPage($response, $this, $page ?? null);
@@ -1497,7 +1504,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             $result = $this->post($nextQuery);
 
             if (!isset($result['data'])) {
-                throw new CurlerException('No data returned', $this);
+                throw new CurlerUnexpectedResponseException('No data returned', $this);
             }
 
             $nextQuery = null;
@@ -1515,7 +1522,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
                 if (count($page) != 1 ||
                         !isset($page[0]['pageInfo']['endCursor']) ||
                         !isset($page[0]['pageInfo']['hasNextPage'])) {
-                    throw new CurlerException('paginationPath did not resolve to a single object with pageInfo.endCursor and pageInfo.hasNextPage fields', $this);
+                    throw new CurlerUnexpectedResponseException('paginationPath did not resolve to a single object with pageInfo.endCursor and pageInfo.hasNextPage fields', $this);
                 }
 
                 if ($page[0]['pageInfo']['hasNextPage']) {
