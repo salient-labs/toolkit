@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
+use Lkrms\Support\Catalog\TextSimilarityAlgorithm;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
@@ -18,19 +19,6 @@ use LogicException;
  */
 final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 {
-    /**
-     * Inexpensive, but string length cannot exceed 255 characters
-     *
-     * {@see SyncEntityFuzzyResolver::ALGORITHM_SIMILAR_TEXT} may match
-     * substrings better.
-     */
-    public const ALGORITHM_LEVENSHTEIN = 0;
-
-    /**
-     * Expensive, but strings of any length can be compared
-     */
-    public const ALGORITHM_SIMILAR_TEXT = 1;
-
     /**
      * @var ISyncEntityProvider<TEntity>
      */
@@ -76,13 +64,13 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
      * @param ISyncEntityProvider<TEntity> $entityProvider
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
-     * @param SyncEntityFuzzyResolver::* $algorithm
+     * @param TextSimilarityAlgorithm::* $algorithm
      */
     public function __construct(
         ISyncEntityProvider $entityProvider,
         string $nameProperty,
         ?string $weightProperty,
-        int $algorithm = SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN,
+        int $algorithm = TextSimilarityAlgorithm::LEVENSHTEIN,
         ?float $uncertaintyThreshold = null
     ) {
         $this->EntityProvider = $entityProvider;
@@ -106,10 +94,10 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     private function getUncertainty(string $string1, string $string2): float
     {
         switch ($this->Algorithm) {
-            case self::ALGORITHM_SIMILAR_TEXT:
+            case TextSimilarityAlgorithm::SIMILAR_TEXT:
                 return 1 - Compute::textSimilarity($string1, $string2, false);
 
-            case self::ALGORITHM_LEVENSHTEIN:
+            case TextSimilarityAlgorithm::LEVENSHTEIN:
                 return Compute::textDistance($string1, $string2, false);
 
             default:
