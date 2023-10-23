@@ -2,9 +2,6 @@
 
 namespace Lkrms\Tests\Utility\Reflection;
 
-use ArrayAccess;
-use Countable;
-
 /**
  * MyClass
  */
@@ -14,16 +11,34 @@ class MyClass extends MyBaseClass implements MyInterface
 
     public const MY_CONSTANT = 'my constant';
 
+    /**
+     * @var int|string
+     */
     public $Id;
 
+    /**
+     * @var int|null
+     */
     public $AltId;
 
+    /**
+     * @var string
+     */
     public $Name;
 
+    /**
+     * @var MyClass|null
+     */
     public $Parent;
 
+    /**
+     * @var MyClass|null
+     */
     public $AltParent;
 
+    /**
+     * @param int|string $id
+     */
     public function __construct($id, ?int $altId, string $name, ?MyClass $parent, MyClass $altParent = null)
     {
         $this->Id = $id;
@@ -35,11 +50,15 @@ class MyClass extends MyBaseClass implements MyInterface
 
     /**
      * MyClass::$MyDocumentedProperty PHPDoc
+     *
+     * @var mixed
      */
     public $MyDocumentedProperty;
 
     /**
      * MyClass::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
      */
     public function MyDocumentedMethod() {}
 }

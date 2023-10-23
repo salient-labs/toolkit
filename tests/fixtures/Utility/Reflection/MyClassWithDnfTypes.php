@@ -10,6 +10,16 @@ use Countable;
  */
 class MyClassWithDnfTypes extends MyClass
 {
+    /**
+     * @param mixed $mixed
+     * @param Countable&ArrayAccess<array-key,mixed> $intersection
+     * @param mixed[]|MyClass $optionalArrayUnion
+     * @param string|MyClass|(Countable&ArrayAccess<array-key,mixed>) $dnf
+     * @param string|MyClass|(Countable&ArrayAccess<array-key,mixed>)|null $nullableDnf
+     * @param mixed[]|MyClass|(Countable&ArrayAccess<array-key,mixed>) $optionalArrayDnf
+     * @param null|string|MyClass|(Countable&ArrayAccess<array-key,mixed>) $nullableDnfByRef
+     * @param null|(MyClass&Countable)|(MyClass&ArrayAccess<array-key,mixed>) $dnfByRef
+     */
     public function MyMethod(
         $mixed,
         ?int $nullableInt,

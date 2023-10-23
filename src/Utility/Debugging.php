@@ -64,7 +64,7 @@ final class Debugging implements ReceivesFacade
      * `1` or higher.
      *
      * @param int $depth
-     * @return array<int|string,int|string>
+     * @return array<int|string>
      */
     public function getCaller(int $depth = 0): array
     {

@@ -3,31 +3,47 @@
 namespace Lkrms\Tests\Utility\Debugging;
 
 use Lkrms\Facade\Debug;
+use Closure;
 
 class GetCallerClass
 {
-    private static function getCaller($depth)
+    /**
+     * @return array<int|string>
+     */
+    private static function getCaller(int $depth)
     {
         return Debug::getCaller($depth);
     }
 
-    public function getCallerViaMethod($depth = 0)
+    /**
+     * @return array<int|string>
+     */
+    public function getCallerViaMethod(int $depth = 0)
     {
         return $this->getCaller($depth);
     }
 
-    public function getCallback()
+    /**
+     * @return Closure(int=): array<int|string>
+     */
+    public function getCallback(): Closure
     {
-        return function ($depth = 0) { return $this->getCallerViaMethod($depth); };
+        return function (int $depth = 0) { return $this->getCallerViaMethod($depth); };
     }
 
-    public static function getCallerViaStaticMethod($depth = 0)
+    /**
+     * @return array<int|string>
+     */
+    public static function getCallerViaStaticMethod(int $depth = 0)
     {
         return self::getCaller($depth);
     }
 
-    public static function getStaticCallback()
+    /**
+     * @return Closure(int=): array<int|string>
+     */
+    public static function getStaticCallback(): Closure
     {
-        return static function ($depth = 0) { return self::getCallerViaStaticMethod($depth); };
+        return static function (int $depth = 0) { return self::getCallerViaStaticMethod($depth); };
     }
 }

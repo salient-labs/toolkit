@@ -11,11 +11,15 @@ trait MyTrait
 
     /**
      * MyTrait::$MyDocumentedProperty PHPDoc
+     *
+     * @var mixed
      */
     public $MyDocumentedProperty;
 
     /**
      * MyTrait::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
      */
     public function MyDocumentedMethod() {}
 }

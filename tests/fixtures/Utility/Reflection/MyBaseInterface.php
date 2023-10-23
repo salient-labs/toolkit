@@ -9,6 +9,8 @@ interface MyBaseInterface
 {
     /**
      * MyBaseInterface::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
      */
     public function MyDocumentedMethod();
 }
