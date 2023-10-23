@@ -5,6 +5,7 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Contract\IContainer;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
+use Lkrms\Support\Catalog\TextSimilarityAlgorithm;
 use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy as DeferredEntityPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -206,7 +207,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * @param int|string $id
      * @param ISyncEntity|DeferredSyncEntity|null $replace A reference to the
      * variable, property or array element to replace when the entity is
-     * resolved. Do not assign anything else to it after calling this method.
+     * resolved.
      */
     public function defer($id, &$replace): void
     {
@@ -219,7 +220,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * @param int[]|string[] $idList
      * @param array<ISyncEntity|DeferredSyncEntity>|null $replace A reference to
      * the variable, property or array element to replace when the list is
-     * resolved. Do not assign anything else to it after calling this method.
+     * resolved.
      */
     public function deferList(array $idList, &$replace): void
     {
@@ -508,7 +509,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     }
 
     /**
-     * Use a property of the entity class to resolve names to entities
+     * @inheritDoc
      *
      * @return SyncEntityResolver<TEntity>
      */
@@ -518,20 +519,22 @@ final class SyncEntityProvider implements ISyncEntityProvider
     }
 
     /**
-     * Use a property of the entity class to resolve names to entities using a
-     * text similarity algorithm
+     * @inheritDoc
      *
-     * @param string|null $weightProperty If multiple entities are equally
-     * similar to a given name, the one with the highest weight is preferred.
-     * @param SyncEntityFuzzyResolver::* $algorithm
      * @return SyncEntityFuzzyResolver<TEntity>
      */
     public function getFuzzyResolver(
         string $nameProperty,
         ?string $weightProperty,
-        int $algorithm = SyncEntityFuzzyResolver::ALGORITHM_LEVENSHTEIN,
+        int $algorithm = TextSimilarityAlgorithm::LEVENSHTEIN,
         ?float $uncertaintyThreshold = null
     ): SyncEntityFuzzyResolver {
-        return new SyncEntityFuzzyResolver($this, $nameProperty, $weightProperty, $algorithm, $uncertaintyThreshold);
+        return new SyncEntityFuzzyResolver(
+            $this,
+            $nameProperty,
+            $weightProperty,
+            $algorithm,
+            $uncertaintyThreshold,
+        );
     }
 }
