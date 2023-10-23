@@ -3,16 +3,19 @@
 namespace Lkrms\Sync\Concept;
 
 use Lkrms\Contract\IDateFormatter;
-use Lkrms\Contract\IProvider;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
+use Lkrms\Curler\Exception\CurlerCurlErrorException;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Exception\MethodNotImplementedException;
+use Lkrms\Facade\Cache;
+use Lkrms\Facade\Compute;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
 
@@ -104,12 +107,44 @@ abstract class HttpSyncProvider extends SyncProvider
         return $this->getBaseUrl($path) . $path;
     }
 
-    public function checkHeartbeat(int $ttl = 300)
+    /**
+     * @inheritDoc
+     */
+    final public function checkHeartbeat(int $ttl = 300)
+    {
+        $key = implode(':', [
+            static::class,
+            __FUNCTION__,
+            Compute::hash(...$this->getBackendIdentifier()),
+        ]);
+
+        if (Cache::get($key, $ttl) === false) {
+            try {
+                $resource = $this->getHeartbeat();
+            } catch (CurlerCurlErrorException $ex) {
+                throw new SyncProviderBackendUnreachableException(
+                    $ex->getMessage(),
+                    $this,
+                    $ex,
+                );
+            }
+            Cache::set($key, $resource, $ttl);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get a low-cost resource from the backend to confirm reachability
+     *
+     * @return mixed
+     */
+    protected function getHeartbeat()
     {
         throw new MethodNotImplementedException(
             static::class,
             __FUNCTION__,
-            IProvider::class
+            HttpSyncProvider::class,
         );
     }
 

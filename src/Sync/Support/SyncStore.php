@@ -14,13 +14,13 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
+use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use LogicException;
 use ReflectionClass;
 use RuntimeException;
-use Throwable;
 
 /**
  * Tracks the state of entities synced to and from third-party backends in a
@@ -896,7 +896,7 @@ final class SyncStore extends SqliteStore
                 Console::log('Heartbeat OK:', $name);
             } catch (MethodNotImplementedException $ex) {
                 Console::log('Heartbeat check not supported:', $name);
-            } catch (Throwable $ex) {
+            } catch (SyncProviderBackendUnreachableException $ex) {
                 Console::exception($ex, Level::DEBUG, null);
                 Console::log('No heartbeat:', $name);
                 $failed[] = $provider;
