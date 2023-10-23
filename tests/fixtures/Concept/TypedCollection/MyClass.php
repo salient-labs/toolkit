@@ -4,6 +4,9 @@ namespace Lkrms\Tests\Concept\TypedCollection;
 
 class MyClass
 {
+    /**
+     * @var string
+     */
     public $Name;
 
     public function __construct(string $name)

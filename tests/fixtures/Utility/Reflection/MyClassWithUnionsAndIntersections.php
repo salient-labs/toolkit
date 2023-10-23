@@ -10,6 +10,11 @@ use Countable;
  */
 class MyClassWithUnionsAndIntersections extends MyClass
 {
+    /**
+     * @param mixed $mixed
+     * @param Countable&ArrayAccess<array-key,mixed> $intersection
+     * @param mixed[]|MyClass $optionalArrayUnion
+     */
     public function MyMethod(
         $mixed,
         ?int $nullableInt,

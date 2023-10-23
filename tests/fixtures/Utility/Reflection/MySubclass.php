@@ -9,11 +9,15 @@ class MySubclass extends MyClass implements MyOtherInterface
 {
     /**
      * MySubclass::$MyDocumentedProperty PHPDoc
+     *
+     * @var mixed
      */
     public $MyDocumentedProperty;
 
     /**
      * MySubclass::MyDocumentedMethod() PHPDoc
+     *
+     * @return mixed
      */
     public function MyDocumentedMethod() {}
 }

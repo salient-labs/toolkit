@@ -70,25 +70,17 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return [$this->getBaseUrl()];
     }
 
-    public function checkHeartbeat(int $ttl = 300)
+    protected function getHeartbeat()
     {
-        $key = implode(':', [
-            static::class,
-            __FUNCTION__,
-            User::class,
-        ]);
-
-        $user = Cache::get($key, $ttl);
-        if ($user === false) {
-            $user = $this->with(User::class)->get(1);
-            Cache::set($key, $user, $ttl);
-        }
+        $user = $this->with(User::class)->get(1);
 
         Console::info(sprintf(
             'Connected to %s as %s',
             $this->name(),
             $user->name(),
         ));
+
+        return $user;
     }
 
     protected function getDateFormatter(?string $path = null): IDateFormatter
@@ -138,6 +130,9 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return $defB;
     }
 
+    /**
+     * @return FluentIteratorInterface<array-key,Task>
+     */
     public function getTasks(ISyncContext $ctx): FluentIteratorInterface
     {
         return Task::provideList($this->getCurler('/todos')->get(), $this, ArrayKeyConformity::NONE, $ctx);

@@ -10,6 +10,7 @@ parameters:
 		- scripts
 		- src
 		- stubs
+		- tests/fixtures
 		- tests/unit
 		- bootstrap.php
 	ignoreErrors:

@@ -9,6 +9,7 @@ use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
+use Lkrms\Curler\Exception\CurlerHttpErrorException;
 use Lkrms\Curler\Curler;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
@@ -21,6 +22,7 @@ use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncInvalidContextException;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
@@ -646,7 +648,21 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
             return $empty;
         }
 
-        return $httpClosure->call($def, $curler, $def->Query, $args[0] ?? null);
+        try {
+            return $httpClosure->call($def, $curler, $def->Query, $args[0] ?? null);
+        } catch (CurlerHttpErrorException $ex) {
+            if ($operation === OP::READ &&
+                    $id !== null &&
+                    $ex->isNotFound(true)) {
+                throw new SyncEntityNotFoundException(
+                    $this->Provider,
+                    $this->Entity,
+                    $id,
+                    $ex,
+                );
+            }
+            throw $ex;
+        }
     }
 
     /**

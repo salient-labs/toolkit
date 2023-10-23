@@ -16,8 +16,11 @@ class SyncProviderBackendUnreachableException extends SyncException
      */
     protected $Provider;
 
-    public function __construct(string $message = '', ?ISyncProvider $provider = null, ?Throwable $previous = null)
-    {
+    public function __construct(
+        string $message = '',
+        ?ISyncProvider $provider = null,
+        ?Throwable $previous = null
+    ) {
         $this->Provider = $provider;
 
         parent::__construct($message, $previous);

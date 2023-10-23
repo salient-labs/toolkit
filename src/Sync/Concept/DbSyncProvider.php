@@ -4,13 +4,17 @@ namespace Lkrms\Sync\Concept;
 
 use Lkrms\Db\DbConnector;
 use Lkrms\Facade\Assert;
+use Lkrms\Facade\Cache;
+use Lkrms\Facade\Compute;
 use Lkrms\Support\SqlQuery;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
 use ADOConnection;
+use ADODB_Exception;
 use RuntimeException;
 
 /**
@@ -109,7 +113,25 @@ abstract class DbSyncProvider extends SyncProvider
      */
     public function checkHeartbeat(int $ttl = 300)
     {
-        $this->dbConnector()->getConnection(5);
+        $key = implode(':', [
+            static::class,
+            __FUNCTION__,
+            Compute::hash(...$this->getBackendIdentifier()),
+        ]);
+
+        if (Cache::get($key, $ttl) === false) {
+            try {
+                $this->dbConnector()->getConnection(5);
+            } catch (ADODB_Exception $ex) {
+                throw new SyncProviderBackendUnreachableException(
+                    $ex->getMessage(),
+                    $this,
+                    $ex,
+                );
+            }
+            Cache::set($key, true, $ttl);
+        }
+
         return $this;
     }
 
