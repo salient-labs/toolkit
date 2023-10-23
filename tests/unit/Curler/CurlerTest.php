@@ -2,17 +2,23 @@
 
 namespace Lkrms\Tests\Curler;
 
+use Lkrms\Curler\Exception\CurlerCurlErrorException;
+use Lkrms\Curler\Exception\CurlerHttpErrorException;
 use Lkrms\Curler\Curler;
 
 final class CurlerTest extends \Lkrms\Tests\TestCase
 {
-    public function testCurler(): void
+    public function testCurlError(): void
     {
-        $this->expectNotToPerformAssertions();
-        return;
+        $this->expectException(CurlerCurlErrorException::class);
 
-        // $curler = new Curler('https://api.github.com/meta');
-        // $data = $curler->get();
-        // $this->assertArrayHasKey('web', $data);
+        (new Curler('http://<localhost>/path'))->get();
+    }
+
+    public function testHttpError(): void
+    {
+        $this->expectException(CurlerHttpErrorException::class);
+
+        (new Curler('http://localhost:3001'))->get();
     }
 }
