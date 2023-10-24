@@ -109,7 +109,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         }
 
         /**
-         * @var array<array{TEntity,string,mixed|null,...<int,float>}>
+         * @var array<array{TEntity,string,mixed|null,...}>
          */
         $entries = $this->Entities;
         $applied = 0;
@@ -239,7 +239,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     }
 
     /**
-     * @param array{TEntity,string,mixed|null,...<int,float>} $entry
+     * @param array{TEntity,string,mixed|null,...} $entry
      * @return TEntity
      */
     private function cacheResult(string $name, ?array $entry, ?float &$uncertainty): ?ISyncEntity

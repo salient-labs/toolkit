@@ -209,6 +209,10 @@ final class Compute
      */
     public static function ngrams(string $string, int $size = 2): array
     {
+        if (strlen($string) < $size) {
+            return [];
+        }
+
         $ngrams = [];
         for ($i = 0; $i < $size; $i++) {
             $split = $i

@@ -519,7 +519,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
         ?string $weightProperty = null,
         bool $requireOneMatch = false
     ): ISyncEntityResolver {
-        if ($algorithm === TextComparisonAlgorithm::SAME && !$requireOneMatch) {
+        if ($algorithm === TextComparisonAlgorithm::SAME &&
+                $weightProperty === null &&
+                !$requireOneMatch) {
             return new SyncEntityResolver($this, $nameProperty);
         }
         return new SyncEntityFuzzyResolver(
@@ -540,7 +542,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
     public function getFuzzyResolver(
         string $nameProperty,
         ?string $weightProperty,
-        int $algorithm = TextComparisonAlgorithm::LEVENSHTEIN,
+        int $algorithm =
+            TextComparisonAlgorithm::LEVENSHTEIN
+            | TextComparisonAlgorithm::NORMALISE,
         ?float $uncertaintyThreshold = null
     ): SyncEntityFuzzyResolver {
         return new SyncEntityFuzzyResolver(
