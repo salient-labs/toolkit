@@ -1237,7 +1237,7 @@ final class Convert
     /**
      * Convert the given strings and Stringables to an array of strings
      *
-     * @param string|\Stringable ...$value
+     * @param int|float|string|bool|\Stringable|null ...$value
      * @return string[]
      */
     public static function toStrings(...$value): array

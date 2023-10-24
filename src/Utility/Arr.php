@@ -214,7 +214,7 @@ final class Arr
      * Remove empty strings from an array of strings and Stringables
      *
      * @template TKey of array-key
-     * @template TValue of string|\Stringable
+     * @template TValue of int|float|string|bool|\Stringable|null
      *
      * @param array<TKey,TValue> $array
      *
@@ -237,7 +237,7 @@ final class Arr
      * of strings and Stringables
      *
      * @template TKey of array-key
-     * @template TValue of string|\Stringable
+     * @template TValue of int|float|string|bool|\Stringable|null
      *
      * @param array<TKey,TValue> $array
      * @param string|null $characters Optionally specify characters to remove

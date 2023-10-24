@@ -5,7 +5,6 @@ namespace Lkrms\Support\PhpDoc;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Str;
 use UnexpectedValueException;
 
@@ -184,7 +183,16 @@ final class PhpDoc implements IReadable
                 case 'param':
                     $text = $this->getTagType($text, $type);
                     $token = strtok($text, " \t\n\r");
-                    if ($token === false || $token[0] !== '$') {
+                    if ($token === false) {
+                        /** @todo Report an invalid tag here */
+                        continue 2;
+                    }
+                    $variadic = false;
+                    if (substr($token, 0, 4) === '...$') {
+                        $variadic = true;
+                        $token = ltrim($token, '.');
+                    }
+                    if ($token[0] !== '$') {
                         /** @todo Report an invalid tag here */
                         continue 2;
                     }
@@ -194,6 +202,7 @@ final class PhpDoc implements IReadable
                         $this->Params[$name] = new PhpDocParamTag(
                             $name,
                             $type,
+                            $variadic,
                             $this->getTagDescription($text, $metaCount),
                             $class,
                             $member,
