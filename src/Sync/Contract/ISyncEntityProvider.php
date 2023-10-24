@@ -3,7 +3,7 @@
 namespace Lkrms\Sync\Contract;
 
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
-use Lkrms\Support\Catalog\TextSimilarityAlgorithm;
+use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
 use Lkrms\Sync\Catalog\SyncOperation;
 
 /**
@@ -149,24 +149,18 @@ interface ISyncEntityProvider
     /**
      * Use a property of the entity class to resolve names to entities
      *
-     * @return ISyncEntityResolver<TEntity>
-     */
-    public function getResolver(string $nameProperty): ISyncEntityResolver;
-
-    /**
-     * Use a property of the entity class to resolve names to entities using a
-     * text similarity algorithm
-     *
+     * @param int-mask-of<Algorithm::*> $algorithm
+     * @param array<Algorithm::*,float>|float|null $uncertaintyThreshold
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
-     * @param TextSimilarityAlgorithm::* $algorithm
      * @return ISyncEntityResolver<TEntity>
      */
-    public function getFuzzyResolver(
+    public function getResolver(
         string $nameProperty,
-        ?string $weightProperty,
-        int $algorithm = TextSimilarityAlgorithm::LEVENSHTEIN,
-        ?float $uncertaintyThreshold = null
+        int $algorithm = Algorithm::SAME,
+        $uncertaintyThreshold = null,
+        ?string $weightProperty = null,
+        bool $requireOneMatch = false
     ): ISyncEntityResolver;
 
     /**

@@ -3,7 +3,7 @@
 namespace Lkrms\Sync\Contract;
 
 /**
- * Resolves names to entities
+ * Resolves a name to an entity
  *
  * @template TEntity of ISyncEntity
  */
@@ -14,5 +14,8 @@ interface ISyncEntityResolver
      *
      * @return TEntity|null
      */
-    public function getByName(string $name): ?ISyncEntity;
+    public function getByName(
+        string $name,
+        ?float &$uncertainty = null
+    ): ?ISyncEntity;
 }

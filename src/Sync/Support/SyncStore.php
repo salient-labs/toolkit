@@ -4,7 +4,6 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Exception\MethodNotImplementedException;
-use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Event;
 use Lkrms\Store\Concept\SqliteStore;
@@ -16,6 +15,7 @@ use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
+use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use LogicException;

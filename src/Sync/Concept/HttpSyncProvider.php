@@ -11,13 +11,13 @@ use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Cache;
-use Lkrms\Facade\Compute;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
+use Lkrms\Utility\Compute;
 
 /**
  * Base class for HTTP-based RESTful API providers
