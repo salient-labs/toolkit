@@ -450,7 +450,14 @@ final class PhpDoc implements IReadable
                 return true;
             }
         }
-        if (array_diff_key($this->TagsByName, array_flip(['param', 'return', 'var', 'template', 'internal']))) {
+        if (array_diff_key($this->TagsByName, array_flip([
+            'param',
+            'readonly',
+            'return',
+            'var',
+            'template',
+            'internal',
+        ]))) {
             return true;
         }
 
