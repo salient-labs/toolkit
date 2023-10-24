@@ -46,7 +46,7 @@ interface IProvider extends
      * - values that aren't unique to the connected data source
      * - case-insensitive values (unless normalised first)
      *
-     * @return array<string|\Stringable>
+     * @return array<int|float|string|bool|\Stringable|null>
      */
     public function getBackendIdentifier(): array;
 

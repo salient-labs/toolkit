@@ -53,7 +53,7 @@ final class Computations
     /**
      * Generate a unique non-crypto hash and return raw binary data
      *
-     * @param string|\Stringable ...$value
+     * @param int|float|string|bool|\Stringable|null ...$value
      */
     public function binaryHash(...$value): string
     {
@@ -64,7 +64,7 @@ final class Computations
     /**
      * Generate a unique non-crypto hash and return a hexadecimal string
      *
-     * @param string|\Stringable ...$value
+     * @param int|float|string|bool|\Stringable|null ...$value
      */
     public function hash(...$value): string
     {
