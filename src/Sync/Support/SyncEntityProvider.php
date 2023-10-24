@@ -5,13 +5,14 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Contract\IContainer;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
-use Lkrms\Support\Catalog\TextSimilarityAlgorithm;
+use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy as DeferredEntityPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
+use Lkrms\Sync\Contract\ISyncEntityResolver;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Generator;
@@ -510,31 +511,44 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
     /**
      * @inheritDoc
-     *
-     * @return SyncEntityResolver<TEntity>
      */
-    public function getResolver(string $nameProperty): SyncEntityResolver
-    {
-        return new SyncEntityResolver($this, $nameProperty);
+    public function getResolver(
+        string $nameProperty,
+        int $algorithm = TextComparisonAlgorithm::SAME,
+        $uncertaintyThreshold = null,
+        ?string $weightProperty = null,
+        bool $requireOneMatch = false
+    ): ISyncEntityResolver {
+        if ($algorithm === TextComparisonAlgorithm::SAME && !$requireOneMatch) {
+            return new SyncEntityResolver($this, $nameProperty);
+        }
+        return new SyncEntityFuzzyResolver(
+            $this,
+            $nameProperty,
+            $algorithm,
+            $uncertaintyThreshold,
+            $weightProperty,
+            $requireOneMatch,
+        );
     }
 
     /**
-     * @inheritDoc
+     * @deprecated Use {@see SyncEntityProvider::getResolver()} instead
      *
      * @return SyncEntityFuzzyResolver<TEntity>
      */
     public function getFuzzyResolver(
         string $nameProperty,
         ?string $weightProperty,
-        int $algorithm = TextSimilarityAlgorithm::LEVENSHTEIN,
+        int $algorithm = TextComparisonAlgorithm::LEVENSHTEIN,
         ?float $uncertaintyThreshold = null
     ): SyncEntityFuzzyResolver {
         return new SyncEntityFuzzyResolver(
             $this,
             $nameProperty,
-            $weightProperty,
             $algorithm,
             $uncertaintyThreshold,
+            $weightProperty,
         );
     }
 }

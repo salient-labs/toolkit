@@ -5,10 +5,9 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
-use Lkrms\Utility\Convert;
 
 /**
- * Resolves names to entities
+ * Resolves a name to an entity
  *
  * @template TEntity of ISyncEntity
  * @implements ISyncEntityResolver<TEntity>
@@ -34,17 +33,19 @@ final class SyncEntityResolver implements ISyncEntityResolver
         $this->NameProperty = $nameProperty;
     }
 
-    public function getByName(string $name): ?ISyncEntity
+    public function getByName(string $name, ?float &$uncertainty = null): ?ISyncEntity
     {
-        $match =
-            $this
-                ->EntityProvider
-                ->getList([$this->NameProperty => $name])
-                ->nextWithValue($this->NameProperty, $name);
+        $match = $this
+            ->EntityProvider
+            ->getList([$this->NameProperty => $name])
+            ->nextWithValue($this->NameProperty, $name);
+
         if ($match === false) {
+            $uncertainty = null;
             return null;
         }
 
+        $uncertainty = 0;
         return $match;
     }
 }

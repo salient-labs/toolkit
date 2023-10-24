@@ -6,7 +6,7 @@ use Lkrms\Container\Application;
 use Lkrms\Facade\File;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
-use Lkrms\Support\Catalog\TextSimilarityAlgorithm;
+use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Sync\Support\SyncEntityFuzzyResolver;
 use Lkrms\Sync\Support\SyncEntityResolver;
 use Lkrms\Tests\Sync\Entity\Post;
@@ -49,8 +49,8 @@ final class SyncEntityResolverTest extends \Lkrms\Tests\TestCase
 
         $resolvers = [
             'not fuzzy' => new SyncEntityResolver($userEntityProvider, 'Name'),
-            'Levenshtein' => new SyncEntityFuzzyResolver($userEntityProvider, 'Name', null, TextSimilarityAlgorithm::LEVENSHTEIN, 0.6),
-            'similar text' => new SyncEntityFuzzyResolver($userEntityProvider, 'Name', null, TextSimilarityAlgorithm::SIMILAR_TEXT, 0.6),
+            'Levenshtein' => new SyncEntityFuzzyResolver($userEntityProvider, 'Name', null, TextComparisonAlgorithm::LEVENSHTEIN, 0.6),
+            'similar text' => new SyncEntityFuzzyResolver($userEntityProvider, 'Name', null, TextComparisonAlgorithm::SIMILAR_TEXT, 0.6),
         ];
 
         $names = [

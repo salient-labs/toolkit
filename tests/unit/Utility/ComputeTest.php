@@ -97,6 +97,41 @@ final class ComputeTest extends \Lkrms\Tests\TestCase
     }
 
     /**
+     * @dataProvider ngramIntersectionProvider
+     */
+    public function testNgramIntersection(
+        float $expected,
+        string $string1,
+        string $string2,
+        bool $normalise = true,
+        int $size = 2
+    ): void {
+        $this->assertSame($expected, Compute::ngramIntersection($string1, $string2, $normalise, $size));
+    }
+
+    /**
+     * @return array<array{float,string,string,3?:bool,4?:int}>
+     */
+    public static function ngramIntersectionProvider(): array
+    {
+        return [
+            [0.0, 'DELIVERY', 'milk delivery', false],
+            [0.8571428571428571, 'DELIVERY', 'milk deliverer'],
+            [1.0, 'DELIVERY', 'milk delivery'],
+            [0.8333333333333334, 'DELIVERY - MILK', 'milk delivery'],
+            [1.0, 'DELIVERY - MILK', 'delivery milk'],
+            [1.0, 'DELIVERY', 'delivery'],
+            [1.0, 'DELIVERY', 'milk delivery service'],
+            [0.8333333333333334, 'DELIVERY', 'milk deliverer', true, 3],
+            [1.0, 'DELIVERY', 'milk delivery', true, 3],
+            [0.7272727272727273, 'DELIVERY - MILK', 'milk delivery', true, 3],
+            [1.0, 'DELIVERY - MILK', 'delivery milk', true, 3],
+            [1.0, 'DELIVERY', 'delivery', true, 3],
+            [1.0, 'DELIVERY', 'milk delivery service', true, 3],
+        ];
+    }
+
+    /**
      * @dataProvider ngramProvider
      *
      * @param string[] $expected

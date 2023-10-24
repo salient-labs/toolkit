@@ -146,6 +146,34 @@ final class Compute
         bool $normalise = true,
         int $size = 2
     ): float {
+        return self::ngramScore(true, $string1, $string2, $normalise, $size);
+    }
+
+    /**
+     * Get the ngrams shared between two strings relative to the number of
+     * ngrams in the shortest string
+     *
+     * @param bool $normalise If true, normalise `$string1` and `$string2` with
+     * {@see Conversions::toNormal()} before comparing them.
+     * @return float A value between `0` and `1`, where `0` means the strings
+     * have no shared ngrams, and `1` means their ngrams are identical.
+     */
+    public static function ngramIntersection(
+        string $string1,
+        string $string2,
+        bool $normalise = true,
+        int $size = 2
+    ): float {
+        return self::ngramScore(false, $string1, $string2, $normalise, $size);
+    }
+
+    private static function ngramScore(
+        bool $relativeToLongest,
+        string $string1,
+        string $string2,
+        bool $normalise,
+        int $size
+    ): float {
         if (strlen($string1) < $size && strlen($string2) < $size) {
             return (float) 1;
         }
@@ -157,7 +185,10 @@ final class Compute
 
         $ngrams1 = self::ngrams($string1, $size);
         $ngrams2 = self::ngrams($string2, $size);
-        $count = max(count($ngrams1), count($ngrams2));
+        $count =
+            $relativeToLongest
+                ? max(count($ngrams1), count($ngrams2))
+                : min(count($ngrams1), count($ngrams2));
 
         $same = 0;
         foreach ($ngrams1 as $ngram) {
