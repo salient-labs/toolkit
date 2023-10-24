@@ -3,12 +3,11 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Support\Catalog\CharacterSequence as Char;
-use Lkrms\Utility\Convert;
 
 /**
  * Generate values like hashes and secure UUIDs
  */
-final class Computations
+final class Compute
 {
     /**
      * Get a cryptographically secure UUID

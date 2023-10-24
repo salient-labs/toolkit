@@ -24,7 +24,6 @@ use Lkrms\Sync\Support\SyncSerializeRules;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Assertions;
 use Lkrms\Utility\Composer;
-use Lkrms\Utility\Computations;
 use Lkrms\Utility\Debugging;
 use Lkrms\Utility\Filesystem;
 use Lkrms\Utility\Formatters;
@@ -39,7 +38,6 @@ $facades = [
     Assertions::class => \Lkrms\Facade\Assert::class,
     CacheStore::class => \Lkrms\Facade\Cache::class,
     Composer::class => \Lkrms\Facade\Composer::class,
-    Computations::class => \Lkrms\Facade\Compute::class,
     ConsoleWriter::class => \Lkrms\Facade\Console::class,
     Container::class => \Lkrms\Facade\DI::class,
     Debugging::class => \Lkrms\Facade\Debug::class,

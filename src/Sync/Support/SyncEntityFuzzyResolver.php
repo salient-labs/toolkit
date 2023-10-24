@@ -2,12 +2,12 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Support\Catalog\TextSimilarityAlgorithm;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
+use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use LogicException;
 

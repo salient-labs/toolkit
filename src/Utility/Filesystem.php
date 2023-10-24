@@ -3,10 +3,10 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Exception\Exception;
-use Lkrms\Facade\Compute;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
 use Lkrms\Iterator\RecursiveFilesystemIterator;
+use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Test;
 use Phar;

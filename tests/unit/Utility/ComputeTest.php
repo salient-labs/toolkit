@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Utility;
 
-use Lkrms\Facade\Compute;
+use Lkrms\Utility\Compute;
 
 final class ComputeTest extends \Lkrms\Tests\TestCase
 {
