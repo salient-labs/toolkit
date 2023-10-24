@@ -36,6 +36,11 @@ final class RegularExpression extends Dictionary
     public const UUID = '(?i)[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
 
     /**
+     * A 12-byte MongoDB ObjectId
+     */
+    public const MONGODB_OBJECTID = '(?i)[0-9a-f]{24}';
+
+    /**
      * A valid PHP identifier, e.g. for variable names and classes
      *
      * @link https://www.php.net/manual/en/language.variables.basics.php

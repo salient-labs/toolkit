@@ -45,6 +45,14 @@ interface ISyncProvider extends IProvider
     public function getDefinition(string $entity): ISyncDefinition;
 
     /**
+     * True if a value is of the correct type and format to be an entity ID
+     *
+     * @param int|string $id
+     * @param class-string<ISyncEntity> $entity
+     */
+    public function isValidIdentifier($id, string $entity): bool;
+
+    /**
      * Get the provider's entity store
      */
     public function store(): SyncStore;
