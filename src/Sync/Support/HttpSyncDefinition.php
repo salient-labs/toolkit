@@ -696,7 +696,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
                 sprintf("Cannot apply value of '%s' to path '%s': %s", $name, $path, $value),
             );
         }
-        return $value;
+        return rawurlencode($value);
     }
 
     /**

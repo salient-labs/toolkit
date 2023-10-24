@@ -6,6 +6,7 @@ use Lkrms\Concept\Provider;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IService;
+use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Pipeline;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -16,6 +17,7 @@ use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\Pcre;
 use Closure;
 use LogicException;
 
@@ -86,6 +88,22 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
         }
 
         return $container->get(SyncContext::class, [$this]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isValidIdentifier($id, string $entity): bool
+    {
+        if (
+            is_int($id) ||
+            Pcre::match(Regex::anchorAndDelimit(Regex::MONGODB_OBJECTID), $id) ||
+            Pcre::match(Regex::anchorAndDelimit(Regex::UUID), $id)
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
