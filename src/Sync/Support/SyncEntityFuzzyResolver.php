@@ -34,7 +34,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     private $EntityProvider;
 
     /**
-     * @var string
+     * @var string|\Closure(TEntity): (string|null)
      */
     private $NameProperty;
 
@@ -83,7 +83,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
      */
     public function __construct(
         ISyncEntityProvider $entityProvider,
-        string $nameProperty,
+        ?string $nameProperty = null,
         int $algorithm = TextComparisonAlgorithm::ALL,
         $uncertaintyThreshold = null,
         ?string $weightProperty = null,
@@ -118,7 +118,10 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         }
 
         $this->EntityProvider = $entityProvider;
-        $this->NameProperty = $nameProperty;
+        $this->NameProperty =
+            $nameProperty === null
+                ? SyncIntrospector::get($entityProvider->entity())->getGetNameClosure()
+                : $nameProperty;
         $this->Algorithm = $algorithm;
         $this->UncertaintyThreshold = $uncertaintyThreshold;
         $this->WeightProperty = $weightProperty;
@@ -235,8 +238,16 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
             $this->Entities[] = [
                 $entity,
                 $this->Algorithm & Algorithm::NORMALISE
-                    ? Convert::toNormal($entity->{$this->NameProperty})
-                    : $entity->{$this->NameProperty},
+                    ? Convert::toNormal(
+                        is_string($this->NameProperty)
+                            ? $entity->{$this->NameProperty}
+                            : ($this->NameProperty)($entity)
+                    )
+                    : (
+                        is_string($this->NameProperty)
+                            ? $entity->{$this->NameProperty}
+                            : ($this->NameProperty)($entity)
+                    ),
                 $this->WeightProperty === null
                     ? 0
                     : $entity->{$this->WeightProperty},

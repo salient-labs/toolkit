@@ -19,6 +19,7 @@ use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\NormaliserFlag;
+use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Lkrms\Sync\Catalog\SyncEntityState;
@@ -26,6 +27,7 @@ use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
@@ -715,6 +717,49 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     ): FluentIteratorInterface {
         return IterableIterator::from(
             self::_provideList($list, $provider, $conformity, $context)
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public static function idFromNameOrId(
+        $nameOrId,
+        ISyncProvider $provider,
+        ?float $uncertaintyThreshold = 0.5,
+        ?string $nameProperty = null,
+        ?float &$uncertainty = null
+    ) {
+        if ($nameOrId === null) {
+            return null;
+        }
+
+        if ($provider->isValidIdentifier($nameOrId, static::class)) {
+            return $nameOrId;
+        }
+
+        $entity =
+            $provider
+                ->with(static::class)
+                ->getResolver(
+                    $nameProperty,
+                    TextComparisonAlgorithm::ALL,
+                    $uncertaintyThreshold,
+                    null,
+                    true,
+                )
+                ->getByName($nameOrId, $uncertainty);
+
+        if ($entity) {
+            return $entity->Id;
+        }
+
+        throw new SyncEntityNotFoundException(
+            $provider,
+            static::class,
+            $nameProperty === null
+                ? ['@name' => $nameOrId]
+                : [$nameProperty => $nameOrId],
         );
     }
 

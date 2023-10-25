@@ -9,6 +9,7 @@ use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ReturnsDescription;
 use Lkrms\Contract\ReturnsIdentifier;
 use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
+use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncStore;
 use JsonSerializable;
@@ -60,6 +61,32 @@ interface ISyncEntity extends
      * Get the entity type ID assigned to the entity by the entity store
      */
     public static function getEntityTypeId(): ?int;
+
+    /**
+     * Resolve a name or entity ID to the entity ID of one matching entity
+     *
+     * Returns:
+     *
+     * - `null` if `$nameOrId` is `null`
+     * - `$nameOrId` if it is a valid identifier for the entity in the given
+     *   provider (see {@see ISyncProvider::isValidIdentifier()}), or
+     * - the entity ID of the entity to which `$nameOrId` resolves
+     *
+     * A {@see SyncEntityNotFoundException} is thrown if:
+     *
+     * - there are no matching entities, or
+     * - there are multiple matching entities
+     *
+     * @param int|string|null $nameOrId
+     * @return int|string|null
+     */
+    public static function idFromNameOrId(
+        $nameOrId,
+        ISyncProvider $provider,
+        ?float $uncertaintyThreshold = 0.5,
+        ?string $nameProperty = null,
+        ?float &$uncertainty = null
+    );
 
     /**
      * The unique identifier assigned to the entity by its provider

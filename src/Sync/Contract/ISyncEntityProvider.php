@@ -2,6 +2,7 @@
 
 namespace Lkrms\Sync\Contract;
 
+use Lkrms\Contract\ReturnsProvider;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Sync\Catalog\SyncOperation;
@@ -11,9 +12,18 @@ use Lkrms\Sync\Catalog\SyncOperation;
  * sync operations for an entity
  *
  * @template TEntity of ISyncEntity
+ *
+ * @extends ReturnsProvider<ISyncProvider>
  */
-interface ISyncEntityProvider
+interface ISyncEntityProvider extends ReturnsProvider
 {
+    /**
+     * Get the sync entity being serviced
+     *
+     * @return class-string<TEntity>
+     */
+    public function entity(): string;
+
     /**
      * Perform an arbitrary sync operation on one or more backend entities
      *
@@ -156,7 +166,7 @@ interface ISyncEntityProvider
      * @return ISyncEntityResolver<TEntity>
      */
     public function getResolver(
-        string $nameProperty,
+        ?string $nameProperty = null,
         int $algorithm = TextComparisonAlgorithm::SAME,
         $uncertaintyThreshold = null,
         ?string $weightProperty = null,
