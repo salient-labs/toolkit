@@ -6,6 +6,7 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
+use Lkrms\Support\Catalog\TextComparisonFlag;
 use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy as DeferredEntityPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -581,7 +582,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
         ?string $weightProperty,
         int $algorithm =
             TextComparisonAlgorithm::LEVENSHTEIN
-            | TextComparisonAlgorithm::NORMALISE,
+            | TextComparisonFlag::NORMALISE,
         ?float $uncertaintyThreshold = null
     ): SyncEntityFuzzyResolver {
         return new SyncEntityFuzzyResolver(

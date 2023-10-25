@@ -3,6 +3,7 @@
 namespace Lkrms\Tests\Sync\Support;
 
 use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
+use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
@@ -92,7 +93,7 @@ final class SyncEntityResolverTest extends \Lkrms\Tests\Sync\SyncTestCase
                 SyncEntityFuzzyResolver::class,
                 User::class,
                 'Name',
-                [Algorithm::LEVENSHTEIN | Algorithm::NORMALISE, 0.6],
+                [Algorithm::LEVENSHTEIN | Flag::NORMALISE, 0.6],
                 $names,
             ],
             'similar_text + normalise' => [
@@ -108,7 +109,7 @@ final class SyncEntityResolverTest extends \Lkrms\Tests\Sync\SyncTestCase
                 SyncEntityFuzzyResolver::class,
                 User::class,
                 'Name',
-                [Algorithm::SIMILAR_TEXT | Algorithm::NORMALISE, 0.6],
+                [Algorithm::SIMILAR_TEXT | Flag::NORMALISE, 0.6],
                 $names,
             ]
         ];

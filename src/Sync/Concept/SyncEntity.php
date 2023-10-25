@@ -19,7 +19,8 @@ use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\NormaliserFlag;
-use Lkrms\Support\Catalog\TextComparisonAlgorithm;
+use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
+use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Lkrms\Sync\Catalog\SyncEntityState;
@@ -745,7 +746,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
                 ->with(static::class)
                 ->getResolver(
                     $nameProperty,
-                    TextComparisonAlgorithm::ALL,
+                    Algorithm::SAME | Algorithm::CONTAINS | Algorithm::NGRAM_SIMILARITY | Flag::NORMALISE,
                     $uncertaintyThreshold,
                     null,
                     true,

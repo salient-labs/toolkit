@@ -7,9 +7,9 @@ use Lkrms\Concept\Enumeration;
 /**
  * Text comparison algorithms
  *
- * A text comparison algorithm takes two strings as input and calculates an
- * uncertainty value between `0` and `1`, where `0` indicates the strings could
- * not be more similar, and `1` indicates they have no similarities.
+ * Text comparison algorithms take two strings and calculate a value between `0`
+ * and `1`, where `0` indicates the strings could not be more similar, and `1`
+ * indicates they could not be more different.
  *
  * @extends Enumeration<int>
  */
@@ -55,19 +55,4 @@ class TextComparisonAlgorithm extends Enumeration
      * @see \Lkrms\Utility\Compute::ngramIntersection()
      */
     public const NGRAM_INTERSECTION = 32;
-
-    /**
-     * Combine with one or more algorithms to indicate that values should be
-     * normalised before they are compared
-     */
-    public const NORMALISE = 64;
-
-    public const ALL =
-        TextComparisonAlgorithm::SAME
-        | TextComparisonAlgorithm::CONTAINS
-        | TextComparisonAlgorithm::LEVENSHTEIN
-        | TextComparisonAlgorithm::SIMILAR_TEXT
-        | TextComparisonAlgorithm::NGRAM_SIMILARITY
-        | TextComparisonAlgorithm::NGRAM_INTERSECTION
-        | TextComparisonAlgorithm::NORMALISE;
 }
