@@ -2,57 +2,56 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Container\Application;
-use Lkrms\Facade\File;
-use Lkrms\Facade\Sync;
-use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
+use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Sync\Contract\ISyncEntityProvider;
+use Lkrms\Sync\Contract\ISyncEntityResolver;
 use Lkrms\Sync\Support\SyncEntityFuzzyResolver;
 use Lkrms\Sync\Support\SyncEntityResolver;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
-use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 
-final class SyncEntityResolverTest extends \Lkrms\Tests\TestCase
+final class SyncEntityResolverTest extends \Lkrms\Tests\Sync\SyncTestCase
 {
-    public function testGetByName(): void
+    /**
+     * @dataProvider getByNameProvider
+     *
+     * @template T of ISyncEntity
+     *
+     * @param array<array{string|null,float|null}> $expected
+     * @param class-string<ISyncEntityResolver<T>> $resolver
+     * @param class-string<T> $entity
+     * @param mixed[] $args
+     * @param string[] $names
+     */
+    public function testGetByName(
+        array $expected,
+        string $resolver,
+        string $entity,
+        string $propertyName,
+        array $args,
+        array $names
+    ): void {
+        /** @var ISyncEntityProvider<T> */
+        $provider = [$entity, 'withDefaultProvider']($this->App);
+        /** @var ISyncEntityResolver<T> */
+        $resolver = new $resolver($provider, $propertyName, ...$args);
+        foreach ($names as $name) {
+            $uncertainty = -1;
+            $result = $resolver->getByName($name, $uncertainty);
+            if ($result) {
+                $result = $result->{$propertyName};
+            }
+            $actual[] = [$result, $uncertainty];
+        }
+        $this->assertSame($expected, $actual ?? []);
+    }
+
+    /**
+     * @return array<string,array{array<array{string|null,float|null}>,class-string<ISyncEntityResolver<ISyncEntity>>,class-string<ISyncEntity>,string,mixed[],string[]}>
+     */
+    public static function getByNameProvider(): array
     {
-        $basePath = File::createTemporaryDirectory();
-
-        $app = (new Application($basePath))
-            ->startCache()
-            ->startSync(__METHOD__, [])
-            ->syncNamespace(
-                'lkrms-tests',
-                'https://lkrms.github.io/php-util/tests/entity',
-                'Lkrms\Tests\Sync\Entity'
-            )
-            // Register JsonPlaceholderApi as the default Post and User provider
-            ->service(JsonPlaceholderApi::class);
-
-        $postProvider = Post::defaultProvider($app);
-        $postEntityProvider = $postProvider->with(Post::class);
-        $posts = $postEntityProvider->getListA();
-
-        $userEntityProvider = User::withDefaultProvider($app);
-        // Ensure deferred user entities are resolved
-        $userEntityProvider->getListA();
-
-        $post = reset($posts);
-        $user = $userEntityProvider->get($post->User->Id);
-
-        $this->assertSame(1, Sync::getRunId(), 'getRunId()');
-        $this->assertMatchesRegularExpression(Regex::anchorAndDelimit(Regex::UUID), Sync::getRunUuid(), 'getRunUuid()');
-        $this->assertSame('lkrms-tests:User', Sync::getEntityTypeUri(User::class), 'Sync::getEntityTypeUri()');
-        $this->assertSame('https://lkrms.github.io/php-util/tests/entity/User', Sync::getEntityTypeUri(User::class, false), 'Sync::getEntityTypeUri(, false)');
-        $this->assertSame('Sincere@april.biz', $user->Email);
-
-        $resolvers = [
-            'not fuzzy' => new SyncEntityResolver($userEntityProvider, 'Name'),
-            'Levenshtein' => new SyncEntityFuzzyResolver($userEntityProvider, 'Name', Algorithm::LEVENSHTEIN | Algorithm::NORMALISE, 0.6),
-            'similar text' => new SyncEntityFuzzyResolver($userEntityProvider, 'Name', Algorithm::SIMILAR_TEXT | Algorithm::NORMALISE, 0.6),
-        ];
-
         $names = [
             'Leanne Graham',
             'leanne graham',
@@ -63,113 +62,55 @@ final class SyncEntityResolverTest extends \Lkrms\Tests\TestCase
             'Lee-Anna Graham',
         ];
 
-        $output = [];
-
-        foreach ($resolvers as $group => $resolver) {
-            foreach ($names as $name) {
-                if ($resolver instanceof SyncEntityFuzzyResolver) {
-                    $uncertainty = null;
-                    /** @var User|null */
-                    $user = $resolver->getByName($name, $uncertainty);
-                    $output[$group][] = [$user->Name ?? null, $uncertainty];
-                    continue;
-                }
-                $user = $resolver->getByName($name);
-                $output[$group][] = [$user->Name ?? null];
-            }
-        }
-
-        $this->assertSame([
-            'not fuzzy' => [
+        return [
+            'first exact' => [
                 [
-                    'Leanne Graham',
+                    ['Leanne Graham', 0.0],
+                    [null, null],
+                    [null, null],
+                    [null, null],
+                    [null, null],
+                    [null, null],
+                    [null, null],
                 ],
-                [
-                    null,
-                ],
-                [
-                    null,
-                ],
-                [
-                    null,
-                ],
-                [
-                    null,
-                ],
-                [
-                    null,
-                ],
-                [
-                    null,
-                ],
+                SyncEntityResolver::class,
+                User::class,
+                'Name',
+                [],
+                $names,
             ],
-            'Levenshtein' => [
+            'levenshtein + normalise' => [
                 [
-                    'Leanne Graham',
-                    0.0,
+                    ['Leanne Graham', 0.0],
+                    ['Leanne Graham', 0.0],
+                    [null, null],
+                    ['Leanne Graham', 0.2],
+                    ['Leanne Graham', 0.0],
+                    [null, null],
+                    ['Leanne Graham', 0.2],
                 ],
-                [
-                    'Leanne Graham',
-                    0.0,
-                ],
-                [
-                    null,
-                    null,
-                ],
-                [
-                    'Leanne Graham',
-                    0.2,
-                ],
-                [
-                    'Leanne Graham',
-                    0.0,
-                ],
-                [
-                    null,
-                    null,
-                ],
-                [
-                    'Leanne Graham',
-                    0.2,
-                ],
+                SyncEntityFuzzyResolver::class,
+                User::class,
+                'Name',
+                [Algorithm::LEVENSHTEIN | Algorithm::NORMALISE, 0.6],
+                $names,
             ],
-            'similar text' => [
+            'similar_text + normalise' => [
                 [
-                    'Leanne Graham',
-                    0.0,
+                    ['Leanne Graham', 0.0],
+                    ['Leanne Graham', 0.0],
+                    ['Leanne Graham', 0.5384615384615384],
+                    ['Leanne Graham', 0.19999999999999996],
+                    ['Leanne Graham', 0.0],
+                    ['Leanne Graham', 0.5384615384615384],
+                    ['Leanne Graham', 0.19999999999999996],
                 ],
-                [
-                    'Leanne Graham',
-                    0.0,
-                ],
-                [
-                    'Leanne Graham',
-                    0.5384615384615384,
-                ],
-                [
-                    'Leanne Graham',
-                    0.19999999999999996,
-                ],
-                [
-                    'Leanne Graham',
-                    0.0,
-                ],
-                [
-                    'Leanne Graham',
-                    0.5384615384615384,
-                ],
-                [
-                    'Leanne Graham',
-                    0.19999999999999996,
-                ],
+                SyncEntityFuzzyResolver::class,
+                User::class,
+                'Name',
+                [Algorithm::SIMILAR_TEXT | Algorithm::NORMALISE, 0.6],
+                $names,
             ]
-        ], $output);
-
-        $app
-            ->stopSync()
-            ->unload();
-
-        File::pruneDirectory($basePath);
-        rmdir($basePath);
+        ];
     }
 }

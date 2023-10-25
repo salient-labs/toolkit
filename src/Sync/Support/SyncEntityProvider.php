@@ -48,7 +48,8 @@ final class SyncEntityProvider implements ISyncEntityProvider
     private $Entity;
 
     /**
-     * @var TProvider
+     * @var ISyncProvider&TProvider
+     * @todo Remove `ISyncProvider&` when Intelephense generics issues are fixed
      */
     private $Provider;
 
@@ -69,7 +70,6 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
     /**
      * @var bool|null
-     * @phpstan-ignore-next-line
      */
     private $Offline;
 
@@ -100,6 +100,30 @@ final class SyncEntityProvider implements ISyncEntityProvider
         $this->Definition = $definition;
         $this->Context = $context ?? $provider->getContext($container);
         $this->Store = $provider->store();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function provider(): ISyncProvider
+    {
+        return $this->Provider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function requireProvider(): ISyncProvider
+    {
+        return $this->Provider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function entity(): string
+    {
+        return $this->Entity;
     }
 
     /**
@@ -281,6 +305,18 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     public function get($id, ...$args): ISyncEntity
     {
+        if ($this->Offline !== false) {
+            $entity = $this->Store->entityType($this->Entity)->getEntity(
+                $this->Provider->getProviderId(),
+                $this->Entity,
+                $id,
+                $this->Offline,
+            );
+            if ($entity) {
+                return $entity;
+            }
+        }
+
         return $this->run(SyncOperation::READ, $id, ...$args);
     }
 
@@ -513,13 +549,14 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * @inheritDoc
      */
     public function getResolver(
-        string $nameProperty,
+        ?string $nameProperty = null,
         int $algorithm = TextComparisonAlgorithm::SAME,
         $uncertaintyThreshold = null,
         ?string $weightProperty = null,
         bool $requireOneMatch = false
     ): ISyncEntityResolver {
-        if ($algorithm === TextComparisonAlgorithm::SAME &&
+        if ($nameProperty !== null &&
+                $algorithm === TextComparisonAlgorithm::SAME &&
                 $weightProperty === null &&
                 !$requireOneMatch) {
             return new SyncEntityResolver($this, $nameProperty);

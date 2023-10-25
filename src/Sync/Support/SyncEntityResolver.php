@@ -45,7 +45,7 @@ final class SyncEntityResolver implements ISyncEntityResolver
             return null;
         }
 
-        $uncertainty = 0;
+        $uncertainty = 0.0;
         return $match;
     }
 }

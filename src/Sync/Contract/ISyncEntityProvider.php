@@ -2,8 +2,9 @@
 
 namespace Lkrms\Sync\Contract;
 
+use Lkrms\Contract\ReturnsProvider;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
-use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
+use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Sync\Catalog\SyncOperation;
 
 /**
@@ -11,9 +12,18 @@ use Lkrms\Sync\Catalog\SyncOperation;
  * sync operations for an entity
  *
  * @template TEntity of ISyncEntity
+ *
+ * @extends ReturnsProvider<ISyncProvider>
  */
-interface ISyncEntityProvider
+interface ISyncEntityProvider extends ReturnsProvider
 {
+    /**
+     * Get the sync entity being serviced
+     *
+     * @return class-string<TEntity>
+     */
+    public function entity(): string;
+
     /**
      * Perform an arbitrary sync operation on one or more backend entities
      *
@@ -149,15 +159,15 @@ interface ISyncEntityProvider
     /**
      * Use a property of the entity class to resolve names to entities
      *
-     * @param int-mask-of<Algorithm::*> $algorithm
-     * @param array<Algorithm::*,float>|float|null $uncertaintyThreshold
+     * @param int-mask-of<TextComparisonAlgorithm::*> $algorithm
+     * @param array<TextComparisonAlgorithm::*,float>|float|null $uncertaintyThreshold
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
      * @return ISyncEntityResolver<TEntity>
      */
     public function getResolver(
-        string $nameProperty,
-        int $algorithm = Algorithm::SAME,
+        ?string $nameProperty = null,
+        int $algorithm = TextComparisonAlgorithm::SAME,
         $uncertaintyThreshold = null,
         ?string $weightProperty = null,
         bool $requireOneMatch = false

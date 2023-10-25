@@ -2,6 +2,7 @@
 
 namespace Lkrms\Sync\Exception;
 
+use Lkrms\Facade\Format;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Throwable;
@@ -13,7 +14,7 @@ class SyncEntityNotFoundException extends SyncException
 {
     /**
      * @param class-string<ISyncEntity> $entity
-     * @param int|string $id
+     * @param int|string|array<string,mixed> $id
      */
     public function __construct(
         ISyncProvider $provider,
@@ -21,9 +22,13 @@ class SyncEntityNotFoundException extends SyncException
         $id,
         ?Throwable $previous = null
     ) {
+        if (!is_array($id)) {
+            $id = ['ID' => $id];
+        }
+        $id = substr(Format::array($id, "%s '%s', "), 0, -2);
         parent::__construct(
             sprintf(
-                "%s could not find %s with ID '%s'",
+                '%s could not find %s with %s',
                 get_class($provider),
                 $entity,
                 $id,
