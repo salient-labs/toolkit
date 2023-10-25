@@ -4,6 +4,8 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
+use Lkrms\Support\Catalog\TextComparisonFlag;
+use Lkrms\Support\Catalog\TextComparisonFlag as Flag;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
@@ -76,7 +78,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
      * Creates a new SyncEntityFuzzyResolver object
      *
      * @param ISyncEntityProvider<TEntity> $entityProvider
-     * @param int-mask-of<TextComparisonAlgorithm::*> $algorithm
+     * @param int-mask-of<TextComparisonAlgorithm::*|TextComparisonFlag::*> $algorithm
      * @param array<TextComparisonAlgorithm::*,float>|float|null $uncertaintyThreshold
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
@@ -84,7 +86,11 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     public function __construct(
         ISyncEntityProvider $entityProvider,
         ?string $nameProperty = null,
-        int $algorithm = TextComparisonAlgorithm::ALL,
+        int $algorithm =
+            TextComparisonAlgorithm::SAME
+            | TextComparisonAlgorithm::CONTAINS
+            | TextComparisonAlgorithm::NGRAM_SIMILARITY
+            | TextComparisonFlag::NORMALISE,
         $uncertaintyThreshold = null,
         ?string $weightProperty = null,
         bool $requireOneMatch = false
@@ -143,7 +149,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         }
 
         $name =
-            $this->Algorithm & Algorithm::NORMALISE
+            $this->Algorithm & Flag::NORMALISE
                 ? Convert::toNormal($name)
                 : $name;
 
@@ -240,7 +246,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         foreach ($this->EntityProvider->getList() as $entity) {
             $this->Entities[] = [
                 $entity,
-                $this->Algorithm & Algorithm::NORMALISE
+                $this->Algorithm & Flag::NORMALISE
                     ? Convert::toNormal(
                         is_string($this->NameProperty)
                             ? $entity->{$this->NameProperty}

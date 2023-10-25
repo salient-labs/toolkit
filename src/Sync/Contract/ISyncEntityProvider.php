@@ -5,6 +5,7 @@ namespace Lkrms\Sync\Contract;
 use Lkrms\Contract\ReturnsProvider;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
+use Lkrms\Support\Catalog\TextComparisonFlag;
 use Lkrms\Sync\Catalog\SyncOperation;
 
 /**
@@ -159,7 +160,7 @@ interface ISyncEntityProvider extends ReturnsProvider
     /**
      * Use a property of the entity class to resolve names to entities
      *
-     * @param int-mask-of<TextComparisonAlgorithm::*> $algorithm
+     * @param int-mask-of<TextComparisonAlgorithm::*|TextComparisonFlag::*> $algorithm
      * @param array<TextComparisonAlgorithm::*,float>|float|null $uncertaintyThreshold
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
