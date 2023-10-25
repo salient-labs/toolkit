@@ -2,6 +2,7 @@
 
 namespace Lkrms\Sync\Support;
 
+use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm as Algorithm;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
@@ -18,6 +19,15 @@ use LogicException;
  */
 final class SyncEntityFuzzyResolver implements ISyncEntityResolver
 {
+    private const ALGORITHMS = [
+        Algorithm::SAME,
+        Algorithm::CONTAINS,
+        Algorithm::LEVENSHTEIN,
+        Algorithm::SIMILAR_TEXT,
+        Algorithm::NGRAM_SIMILARITY,
+        Algorithm::NGRAM_INTERSECTION,
+    ];
+
     /**
      * @var ISyncEntityProvider<TEntity>
      */
@@ -66,19 +76,47 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
      * Creates a new SyncEntityFuzzyResolver object
      *
      * @param ISyncEntityProvider<TEntity> $entityProvider
-     * @param int-mask-of<Algorithm::*> $algorithm
-     * @param array<Algorithm::*,float>|float|null $uncertaintyThreshold
+     * @param int-mask-of<TextComparisonAlgorithm::*> $algorithm
+     * @param array<TextComparisonAlgorithm::*,float>|float|null $uncertaintyThreshold
      * @param string|null $weightProperty If multiple entities are equally
      * similar to a given name, the one with the highest weight is preferred.
      */
     public function __construct(
         ISyncEntityProvider $entityProvider,
         string $nameProperty,
-        int $algorithm = Algorithm::ALL,
+        int $algorithm = TextComparisonAlgorithm::ALL,
         $uncertaintyThreshold = null,
         ?string $weightProperty = null,
         bool $requireOneMatch = false
     ) {
+        // Reduce $uncertaintyThreshold to values that will actually be applied
+        if (is_array($uncertaintyThreshold)) {
+            $uncertaintyThreshold = array_intersect_key(
+                $uncertaintyThreshold,
+                array_flip(self::ALGORITHMS),
+            );
+            foreach (array_keys($uncertaintyThreshold) as $key) {
+                if (!($algorithm & $key)) {
+                    unset($uncertaintyThreshold[$key]);
+                }
+            }
+            if (!$uncertaintyThreshold) {
+                $uncertaintyThreshold = null;
+            }
+        }
+
+        // Throw an exception if one match is required but the list of potential
+        // matches is never narrowed
+        if (
+            $requireOneMatch &&
+            $uncertaintyThreshold === null &&
+            !($algorithm & (Algorithm::SAME | Algorithm::CONTAINS))
+        ) {
+            throw new LogicException(
+                '$requireOneMatch cannot be true when $uncertaintyThreshold is null'
+            );
+        }
+
         $this->EntityProvider = $entityProvider;
         $this->NameProperty = $nameProperty;
         $this->Algorithm = $algorithm;
@@ -87,6 +125,9 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         $this->RequireOneMatch = $requireOneMatch;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getByName(string $name, float &$uncertainty = null): ?ISyncEntity
     {
         if ($this->Entities === null) {
@@ -114,24 +155,25 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
         $entries = $this->Entities;
         $applied = 0;
 
-        foreach ([
-            Algorithm::SAME,
-            Algorithm::CONTAINS,
-            Algorithm::LEVENSHTEIN,
-            Algorithm::SIMILAR_TEXT,
-            Algorithm::NGRAM_SIMILARITY,
-            Algorithm::NGRAM_INTERSECTION,
-        ] as $algorithm) {
+        foreach (self::ALGORITHMS as $algorithm) {
             if (!($this->Algorithm & $algorithm)) {
                 continue;
             }
 
             $threshold =
-                $this->UncertaintyThreshold === null
-                    ? null
-                    : (is_array($this->UncertaintyThreshold)
-                        ? ($this->UncertaintyThreshold[$algorithm] ?? null)
-                        : $this->UncertaintyThreshold);
+                $this->RequireOneMatch &&
+                $algorithm & (Algorithm::SAME | Algorithm::CONTAINS)
+                    ? 1.0
+                    : ($this->UncertaintyThreshold === null
+                        ? null
+                        : (is_array($this->UncertaintyThreshold)
+                            ? ($this->UncertaintyThreshold[$algorithm] ?? null)
+                            : $this->UncertaintyThreshold));
+
+            // Skip this algorithm if it would achieve nothing
+            if ($this->RequireOneMatch && $threshold === null) {
+                continue;
+            }
 
             $sort = [];
             foreach ($entries as $entry) {
@@ -203,7 +245,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     }
 
     /**
-     * @param Algorithm::* $algorithm
+     * @param Algorithm::SAME|Algorithm::CONTAINS|Algorithm::LEVENSHTEIN|Algorithm::SIMILAR_TEXT|Algorithm::NGRAM_SIMILARITY|Algorithm::NGRAM_INTERSECTION $algorithm
      */
     private function getUncertainty(string $string1, string $string2, $algorithm): float
     {
