@@ -70,7 +70,6 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
     /**
      * @var bool|null
-     * @phpstan-ignore-next-line
      */
     private $Offline;
 
@@ -306,6 +305,18 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     public function get($id, ...$args): ISyncEntity
     {
+        if ($this->Offline !== false) {
+            $entity = $this->Store->entityType($this->Entity)->getEntity(
+                $this->Provider->getProviderId(),
+                $this->Entity,
+                $id,
+                $this->Offline,
+            );
+            if ($entity) {
+                return $entity;
+            }
+        }
+
         return $this->run(SyncOperation::READ, $id, ...$args);
     }
 

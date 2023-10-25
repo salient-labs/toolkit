@@ -731,10 +731,12 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
         ?float &$uncertainty = null
     ) {
         if ($nameOrId === null) {
+            $uncertainty = null;
             return null;
         }
 
         if ($provider->isValidIdentifier($nameOrId, static::class)) {
+            $uncertainty = 0.0;
             return $nameOrId;
         }
 
@@ -758,7 +760,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
             $provider,
             static::class,
             $nameProperty === null
-                ? ['@name' => $nameOrId]
+                ? ['name' => $nameOrId]
                 : [$nameProperty => $nameOrId],
         );
     }

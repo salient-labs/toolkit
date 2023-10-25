@@ -178,7 +178,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
                 continue;
             }
 
-            $sort = [];
+            $next = [];
             foreach ($entries as $entry) {
                 $entityName = $entry[1];
                 $entityUncertainty = $this->getUncertainty(
@@ -186,26 +186,29 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
                     $entityName,
                     $algorithm,
                 );
-                if ($threshold !== null && $entityUncertainty >= $threshold) {
+                if ($threshold !== null && (
+                    ($threshold !== 0.0 && $entityUncertainty >= $threshold) ||
+                    ($threshold === 0.0 && $entityUncertainty > $threshold)
+                )) {
                     continue;
                 }
                 $entry[] = $entityUncertainty;
-                $sort[] = $entry;
+                $next[] = $entry;
             }
 
             // If there are no matching entities, try again with the next
             // algorithm
-            if (!$sort) {
+            if (!$next) {
                 continue;
             }
 
             // If there is one matching entity, return it
-            if (count($sort) === 1) {
-                return $this->cacheResult($name, $sort[0], $uncertainty);
+            if (count($next) === 1) {
+                return $this->cacheResult($name, $next[0], $uncertainty);
             }
 
             // Otherwise, narrow the list of potential matches and continue
-            $entries = $sort;
+            $entries = $next;
             $applied++;
         }
 
@@ -262,7 +265,9 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     {
         switch ($algorithm) {
             case Algorithm::SAME:
-                return $string1 === $string2 ? 0.0 : 1.0;
+                return $string1 === $string2
+                    ? 0.0
+                    : 1.0;
 
             case Algorithm::CONTAINS:
                 return
