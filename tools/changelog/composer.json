@@ -1,0 +1,8 @@
+{
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "salient/changelog": "^0.1"
+    }
+}
