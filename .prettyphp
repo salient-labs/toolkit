@@ -1,13 +1,15 @@
 {
     "src": [
-        "bin",
+        "bin/lk-util",
         "lib",
         "scripts",
         "src",
-        "tests",
+        "stubs",
+        "tests/fixtures",
+        "tests/unit",
+        "tools/apigen",
         "bootstrap.php"
     ],
-    "includeIfPhp": true,
     "enable": [
         "preserve-one-line",
         "strict-lists"
