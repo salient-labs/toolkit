@@ -38,6 +38,6 @@ run scripts/generate.php --check
 run vendor/bin/pretty-php --diff
 run_with_php_versions 82 74 vendor/bin/phpstan
 run scripts/stop-mockoon.sh || (($? == 1)) || die 'error stopping mockoon'
-run scripts/start-mockoon.sh tests/fixtures/.mockoon/JsonPlaceholderApi.json 3001 >/dev/null
+run scripts/start-mockoon.sh >/dev/null
 trap 'run scripts/stop-mockoon.sh' EXIT
 run_with_php_versions 82 81 80 74 vendor/bin/phpunit

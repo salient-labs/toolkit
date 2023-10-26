@@ -78,12 +78,13 @@ interface ISyncEntity extends
      * - there are multiple matching entities
      *
      * @param int|string|null $nameOrId
+     * @param ISyncProvider|ISyncContext $providerOrContext
      * @return int|string|null
      */
     public static function idFromNameOrId(
         $nameOrId,
-        ISyncProvider $provider,
-        ?float $uncertaintyThreshold = 0.5,
+        $providerOrContext,
+        ?float $uncertaintyThreshold = null,
         ?string $nameProperty = null,
         ?float &$uncertainty = null
     );

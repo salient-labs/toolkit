@@ -12,6 +12,8 @@ function die() {
 [[ ${BASH_SOURCE[0]} -ef scripts/start-mockoon.sh ]] ||
     die "must run from root of package folder"
 
+(($#)) || set -- tests/fixtures/.mockoon/JsonPlaceholderApi.json 3001
+
 seconds=${3-60}
 [[ -r ${1-} ]] && [[ ${2-} =~ ^[1-9][0-9]+$ ]] && [[ $seconds =~ ^[0-9]+$ ]] ||
     die "usage: ${0##*/} <data_file> <port> [<seconds>]"

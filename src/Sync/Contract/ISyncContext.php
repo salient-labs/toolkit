@@ -129,12 +129,16 @@ interface ISyncContext extends IProviderContext
      * Get a value from the filter most recently passed via optional sync
      * operation arguments
      *
+     * If `$orValue` is `true` and a value for `$key` has been applied to the
+     * context via {@see IProviderContext::withValue()}, it is returned if there
+     * is no matching filter.
+     *
      * @return mixed `null` if the value has been claimed via
      * {@see ISyncContext::claimFilter()} or wasn't passed to the operation.
      *
      * @see ISyncContext::withArgs()
      */
-    public function getFilter(string $key);
+    public function getFilter(string $key, bool $orValue = true);
 
     /**
      * Get a value from the filter most recently passed via optional sync
@@ -144,12 +148,16 @@ interface ISyncContext extends IProviderContext
      * {@see ISyncContext::claimFilter()} modifies the object it is called on
      * instead of returning a modified clone.
      *
+     * If `$orValue` is `true` and a value for `$key` has been applied to the
+     * context via {@see IProviderContext::withValue()}, it is returned if there
+     * is no matching filter.
+     *
      * @return mixed `null` if the value has already been claimed or wasn't
      * passed to the operation.
      *
      * @see ISyncContext::withArgs()
      */
-    public function claimFilter(string $key);
+    public function claimFilter(string $key, bool $orValue = true);
 
     /**
      * Get the deferred sync entity policy applied to the context
