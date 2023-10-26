@@ -39,7 +39,7 @@ final class SyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
         ?float $expectedUncertainty,
         $nameOrId,
         string $entity,
-        ?float $uncertaintyThreshold = 0.5,
+        ?float $uncertaintyThreshold = null,
         ?string $nameProperty = null
     ): void {
         if ($expected === false) {

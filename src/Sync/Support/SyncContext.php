@@ -143,17 +143,17 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function getFilter(string $key)
+    public function getFilter(string $key, bool $orValue = true)
     {
-        return $this->doGetFilter($key);
+        return $this->doGetFilter($key, $orValue);
     }
 
     /**
      * @inheritDoc
      */
-    public function claimFilter(string $key)
+    public function claimFilter(string $key, bool $orValue = true)
     {
-        return $this->doGetFilter($key, true);
+        return $this->doGetFilter($key, $orValue, true);
     }
 
     /**
@@ -200,13 +200,13 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @return mixed
      */
-    private function doGetFilter(string $key, bool $claim = false)
+    private function doGetFilter(string $key, bool $orValue, bool $claim = false)
     {
         if (!array_key_exists($key, $this->Filters)) {
             $key = Convert::toSnakeCase($key);
             if (!array_key_exists($key, $this->Filters)) {
                 if (substr($key, -3) !== '_id') {
-                    return null;
+                    return $orValue ? $this->getValue($key) : null;
                 }
                 $name = Convert::toSnakeCase(substr($key, 0, -3));
                 if (array_key_exists($name, $this->FilterKeys)) {
@@ -217,7 +217,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
                 } elseif (array_key_exists($name, $this->Filters)) {
                     $key = $name;
                 } else {
-                    return null;
+                    return $orValue ? $this->getValue($key) : null;
                 }
             }
         }

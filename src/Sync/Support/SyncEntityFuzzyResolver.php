@@ -244,19 +244,15 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
     {
         $this->Entities = [];
         foreach ($this->EntityProvider->getList() as $entity) {
+            $name =
+                is_string($this->NameProperty)
+                    ? $entity->{$this->NameProperty}
+                    : ($this->NameProperty)($entity);
             $this->Entities[] = [
                 $entity,
                 $this->Algorithm & Flag::NORMALISE
-                    ? Convert::toNormal(
-                        is_string($this->NameProperty)
-                            ? $entity->{$this->NameProperty}
-                            : ($this->NameProperty)($entity)
-                    )
-                    : (
-                        is_string($this->NameProperty)
-                            ? $entity->{$this->NameProperty}
-                            : ($this->NameProperty)($entity)
-                    ),
+                    ? Convert::toNormal($name)
+                    : $name,
                 $this->WeightProperty === null
                     ? 0
                     : $entity->{$this->WeightProperty},

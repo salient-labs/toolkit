@@ -726,14 +726,22 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
      */
     final public static function idFromNameOrId(
         $nameOrId,
-        ISyncProvider $provider,
-        ?float $uncertaintyThreshold = 0.5,
+        $providerOrContext,
+        ?float $uncertaintyThreshold = null,
         ?string $nameProperty = null,
         ?float &$uncertainty = null
     ) {
         if ($nameOrId === null) {
             $uncertainty = null;
             return null;
+        }
+
+        if ($providerOrContext instanceof ISyncProvider) {
+            $provider = $providerOrContext;
+            $context = $provider->container();
+        } else {
+            $context = $providerOrContext;
+            $provider = $context->provider();
         }
 
         if ($provider->isValidIdentifier($nameOrId, static::class)) {
@@ -743,7 +751,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
 
         $entity =
             $provider
-                ->with(static::class)
+                ->with(static::class, $context)
                 ->getResolver(
                     $nameProperty,
                     Algorithm::SAME | Algorithm::CONTAINS | Algorithm::NGRAM_SIMILARITY | Flag::NORMALISE,
