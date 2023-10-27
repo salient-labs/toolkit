@@ -40,8 +40,6 @@ use Closure;
  * @method $this overrides(array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $value) An array that maps sync operations to closures that override other implementations (see {@see SyncDefinition::$Overrides})
  * @method $this keyMap(array<array-key,array-key|array-key[]>|null $value) An array that maps provider (backend) keys to one or more entity keys (see {@see SyncDefinition::$KeyMap})
  * @method $this keyMapFlags(int-mask-of<ArrayMapperFlag::*> $value) Passed to the array mapper if `$keyMap` is provided
- * @method $this pipelineFromBackend(IPipeline<mixed[],TEntity,array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $value) A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
- * @method $this pipelineToBackend(IPipeline<TEntity,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|TEntity|TEntity[]|null,...}>|null $value) A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
  * @method $this readFromReadList(bool $value = true) If true, perform READ operations by iterating over entities returned by READ_LIST (default: false; see {@see SyncDefinition::$ReadFromReadList})
  * @method $this returnEntitiesFrom(SyncEntitySource::*|null $value) Where to acquire entity data for the return value of a successful CREATE, UPDATE or DELETE operation
  *
@@ -87,6 +85,30 @@ final class HttpSyncDefinitionBuilder extends Builder
      * @return $this<TEntity,T>
      */
     public function provider(HttpSyncProvider $value)
+    {
+        return $this->getWithValue(__FUNCTION__, $value);
+    }
+
+    /**
+     * A pipeline that maps data from the provider to entity-compatible associative arrays, or `null` if mapping is not required
+     *
+     * @template T of ISyncEntity
+     * @param IPipeline<mixed[],T,array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
+     * @return $this<T,TProvider>
+     */
+    public function pipelineFromBackend(?IPipeline $value)
+    {
+        return $this->getWithValue(__FUNCTION__, $value);
+    }
+
+    /**
+     * A pipeline that maps serialized entities to data compatible with the provider, or `null` if mapping is not required
+     *
+     * @template T of ISyncEntity
+     * @param IPipeline<T,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>|null $value
+     * @return $this<T,TProvider>
+     */
+    public function pipelineToBackend(?IPipeline $value)
     {
         return $this->getWithValue(__FUNCTION__, $value);
     }

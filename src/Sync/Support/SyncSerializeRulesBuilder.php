@@ -22,7 +22,6 @@ use Closure;
  * @method $this replace(array<array<array<string|Closure>|string>|array<string|Closure>|string> $value) Values to replace with IDs (see {@see SyncSerializeRules::$Replace})
  * @method $this recurseRules(?bool $value = true) Apply path-based rules to every instance of $Entity? (default: true)
  * @method $this flags(?int $value) Set SyncSerializeRules::$Flags
- * @method $this inherit(SyncSerializeRules<TEntity>|null $value) Pass $value to `$inherit` in SyncSerializeRules::__construct()
  *
  * @uses SyncSerializeRules
  *
@@ -54,6 +53,18 @@ final class SyncSerializeRulesBuilder extends Builder
      * @return $this<T>
      */
     public function entity(string $value)
+    {
+        return $this->getWithValue(__FUNCTION__, $value);
+    }
+
+    /**
+     * Inherit rules from another instance
+     *
+     * @template T of ISyncEntity
+     * @param SyncSerializeRules<T>|null $value
+     * @return $this<T>
+     */
+    public function inherit(?SyncSerializeRules $value)
     {
         return $this->getWithValue(__FUNCTION__, $value);
     }
