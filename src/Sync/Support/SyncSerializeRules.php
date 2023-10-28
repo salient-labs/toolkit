@@ -229,7 +229,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
      * @param class-string<TEntity> $entity
      * @param array<array<array<string|Closure>|string>|array<string|Closure>|string> $remove
      * @param array<array<array<string|Closure>|string>|array<string|Closure>|string> $replace
-     * @param SyncSerializeRules<TEntity>|null $inherit
+     * @param SyncSerializeRules<TEntity>|null $inherit Inherit rules from another instance
      */
     public function __construct(
         string $entity,

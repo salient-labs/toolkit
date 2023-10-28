@@ -43,6 +43,7 @@ class GenerateBuilder extends GenerateCommand
     ];
 
     private ?string $ClassFqcn;
+
     private ?string $BuilderFqcn;
 
     /**
@@ -58,6 +59,16 @@ class GenerateBuilder extends GenerateCommand
      * @var string[]|null
      */
     private ?array $Skip;
+
+    // --
+
+    /**
+     * camelCase name => parameter received by reference, or
+     * parameter/property/method with a generic template type
+     *
+     * @var array<string,ReflectionParameter|ReflectionProperty|ReflectionMethod>
+     */
+    private array $ToDeclare = [];
 
     public function description(): string
     {
@@ -124,6 +135,7 @@ class GenerateBuilder extends GenerateCommand
     {
         $this->reset();
         $this->Skip = array_merge($this->Skip, self::SKIP);
+        $this->ToDeclare = [];
 
         $classFqcn = $this->getRequiredFqcnOptionValue(
             'class',
@@ -177,14 +189,6 @@ class GenerateBuilder extends GenerateCommand
          */
         $_params = [];
 
-        /**
-         * camelCase name => parameter received by reference or with a generic
-         * template type
-         *
-         * @var array<string,ReflectionParameter|ReflectionProperty|ReflectionMethod>
-         */
-        $toDeclare = [];
-
         /** @var array<string,array<string,PhpDocTemplateTag>> */
         $declareTemplates = [];
 
@@ -210,7 +214,7 @@ class GenerateBuilder extends GenerateCommand
                 // Variables can't be passed to __call by reference, so this
                 // parameter needs to be received via a declared method
                 if ($_param->isPassedByReference()) {
-                    $toDeclare[$name] = $_param;
+                    $this->ToDeclare[$name] = $_param;
                 }
             }
         }
@@ -301,12 +305,9 @@ class GenerateBuilder extends GenerateCommand
                         $propertyFile,
                         $templates
                     );
-                    if ($templates &&
-                        count($templates) === 1 &&
-                        ($type === 'class-string<' . ($key = array_keys($templates)[0]) . '>' ||
-                            $type === $key)) {
+                    if (count($templates) === 1) {
                         $declareTemplates[$name] = $templates;
-                        $toDeclare[$name] = $toDeclare[$name] ?? $_property;
+                        $this->ToDeclare[$name] = $this->ToDeclare[$name] ?? $_property;
                     }
                 } else {
                     $type = $_property->hasType()
@@ -370,7 +371,7 @@ class GenerateBuilder extends GenerateCommand
             $propertyFile = $_constructor->getFileName();
             $propertyNamespace = $_constructor->getDeclaringClass()->getNamespaceName();
             $declaringClass = $this->getTypeAlias($_constructor->getDeclaringClass()->getName());
-            $declare = array_key_exists($name, $toDeclare);
+            $declare = array_key_exists($name, $this->ToDeclare);
 
             // If the parameter has a matching property, retrieve its DocBlock
             if ($_property = $_allProperties[$name] ?? null) {
@@ -401,13 +402,10 @@ class GenerateBuilder extends GenerateCommand
                     $propertyFile,
                     $templates
                 );
-                if ($templates &&
-                    count($templates) === 1 &&
-                    ($type === 'class-string<' . ($key = array_keys($templates)[0]) . '>' ||
-                        $type === $key)) {
+                if (count($templates) === 1) {
                     $declareTemplates[$name] = $templates;
                     if (!$declare) {
-                        $toDeclare[$name] = $_param;
+                        $this->ToDeclare[$name] = $_param;
                         $declare = true;
                     }
                 }
@@ -561,7 +559,7 @@ class GenerateBuilder extends GenerateCommand
                 $returnsVoid = false;
 
                 if ($declare) {
-                    $toDeclare[$name] = $_method;
+                    $this->ToDeclare[$name] = $_method;
                 }
 
                 $_type = $phpDoc->Return->Type ?? null;
@@ -580,7 +578,7 @@ class GenerateBuilder extends GenerateCommand
                             $type === $key)) {
                         $declareTemplates[$name] = $templates;
                         if (!$declare) {
-                            $toDeclare[$name] = $_method;
+                            $this->ToDeclare[$name] = $_method;
                             $declare = true;
                         }
                     }
@@ -784,7 +782,7 @@ class GenerateBuilder extends GenerateCommand
             ),
         );
 
-        foreach ($toDeclare as $name => $_param) {
+        foreach ($this->ToDeclare as $name => $_param) {
             if ($_param instanceof ReflectionMethod) {
                 $_params = $_param->getParameters();
                 $return = $returnsValue[$name] ? 'return ' : '';
@@ -856,13 +854,23 @@ class GenerateBuilder extends GenerateCommand
         if ($summary !== null) {
             $summary = rtrim($summary, '.');
         }
+        $byRef = false;
+        if ($declare && $name !== null) {
+            $declaring = $this->ToDeclare[$name] ?? null;
+            if ($declaring instanceof ReflectionParameter) {
+                $byRef = $declaring->isPassedByReference();
+            }
+        }
         if ($member) {
             $class = $typeNameCallback($member->getDeclaringClass()->getName());
             $name = $member->getName();
             $param = '';
-            $see = $member instanceof ReflectionMethod ? $class . '::' . $name . '()' : $class . '::$' . $name;
+            $see =
+                $member instanceof ReflectionMethod
+                    ? $class . '::' . $name . '()'
+                    : $class . '::$' . $name;
         } else {
-            $param = "`\$$name` in ";
+            $param = $declare ? "\$$name in " : "`\$$name` in ";
             $see = $class . '::__construct()';
         }
         if ($default !== null) {
@@ -872,15 +880,27 @@ class GenerateBuilder extends GenerateCommand
             $defaultSuffix = $defaultPrefix = '';
         }
 
-        return $summary !== null
-            ? ($declare
-                ? $summary . $defaultSuffix
-                : " $summary" . ($link ? " ({$defaultPrefix}see {@see $see})" : $defaultSuffix))
-            : (($declare
-                ? ($member instanceof ReflectionMethod ? "Call $see on a new instance" : "Pass a variable to $param$see by reference")
-                : ($link
-                    ? " See {@see $see}"
-                    : ($member instanceof ReflectionMethod ? " Call $see on a new instance" : ($param !== '' ? " Pass \$value to $param$see" : " Set $see"))))
-                . $defaultSuffix);
+        return
+            $summary !== null
+                ? ($declare
+                    ? $summary . $defaultSuffix
+                    : " $summary"
+                        . ($link
+                            ? " ({$defaultPrefix}see {@see $see})"
+                            : $defaultSuffix))
+                : (($declare
+                    ? ($member instanceof ReflectionMethod
+                        ? "Call $see on a new instance"
+                        : ($byRef
+                            ? "Pass a variable to $param$see by reference"
+                            : "Pass a value to $param$see"))
+                    : ($link
+                        ? " See {@see $see}"
+                        : ($member instanceof ReflectionMethod
+                            ? " Call $see on a new instance"
+                            : ($param !== ''
+                                ? " Pass \$value to $param$see"
+                                : " Set $see"))))
+                    . $defaultSuffix);
     }
 }
