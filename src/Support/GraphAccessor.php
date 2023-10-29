@@ -13,7 +13,7 @@ use stdClass;
  *
  * @implements ArrayAccess<array-key,int|float|string|bool|object|mixed[]|static>
  */
-final class GraphNormaliser implements ArrayAccess
+final class GraphAccessor implements ArrayAccess
 {
     /**
      * @var object|mixed[]
@@ -62,7 +62,7 @@ final class GraphNormaliser implements ArrayAccess
     public function offsetGet($offset)
     {
         // If there is nothing at the requested offset, create a new object or
-        // array, add it to the graph and return a new `GraphNormaliser` for it
+        // array, add it to the graph and return a new `GraphAccessor` for it
         if (!$this->offsetExists($offset)) {
             if ($this->IsObject) {
                 $value = new stdClass();
