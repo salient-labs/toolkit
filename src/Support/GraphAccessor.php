@@ -21,6 +21,11 @@ final class GraphAccessor implements ArrayAccess
     private $Graph;
 
     /**
+     * @var array<array-key,static>
+     */
+    private $Accessors;
+
+    /**
      * @var bool
      */
     private $IsObject = true;
@@ -67,12 +72,14 @@ final class GraphAccessor implements ArrayAccess
             if ($this->IsObject) {
                 $value = new stdClass();
                 $this->Graph->$offset = $value;
-                return (new self($value))
-                    ->withParent($this, $offset);
+                return $this->Accessors[$offset] =
+                    (new self($value))
+                        ->withParent($this, $offset);
             }
             $this->Graph[$offset] = [];
-            return (new self($this->Graph[$offset]))
-                ->withParent($this, $offset);
+            return $this->Accessors[$offset] =
+                (new self($this->Graph[$offset]))
+                    ->withParent($this, $offset);
         }
 
         $value =
@@ -82,11 +89,13 @@ final class GraphAccessor implements ArrayAccess
 
         if (is_object($value) || is_array($value)) {
             if ($this->IsObject) {
-                return (new self($this->Graph->$offset))
-                    ->withParent($this, $offset);
+                return $this->Accessors[$offset]
+                    ?? ($this->Accessors[$offset] =
+                        new self($this->Graph->$offset));
             } else {
-                return (new self($this->Graph[$offset]))
-                    ->withParent($this, $offset);
+                return $this->Accessors[$offset]
+                    ?? ($this->Accessors[$offset] =
+                        new self($this->Graph[$offset]));
             }
         }
 
@@ -115,6 +124,8 @@ final class GraphAccessor implements ArrayAccess
             return;
         }
 
+        unset($this->Accessors[$offset]);
+
         if ($this->IsObject) {
             $this->Graph->$offset = $value;
             return;
@@ -125,6 +136,8 @@ final class GraphAccessor implements ArrayAccess
 
     public function offsetUnset($offset): void
     {
+        unset($this->Accessors[$offset]);
+
         if ($this->IsObject) {
             unset($this->Graph->$offset);
             return;
