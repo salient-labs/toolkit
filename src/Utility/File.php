@@ -99,8 +99,8 @@ final class File
     /**
      * True if a file appears to contain PHP code
      *
-     * Returns `true` if `$filename` has a PHP open tag (`<?php') at the start
-     * of the first line that is not a shebang (`#!').
+     * Returns `true` if `$filename` has a PHP open tag (`<?php`) at the start
+     * of the first line that is not a shebang (`#!`).
      */
     public static function isPhp(string $filename): bool
     {
