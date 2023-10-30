@@ -54,7 +54,7 @@ abstract class CommandTestCase extends \Lkrms\Tests\TestCase
 
         $this->expectOutputString(str_replace(PHP_EOL, "\n", $output));
 
-        $basePath = File::createTemporaryDirectory();
+        $basePath = File::createTempDir();
         $app = new CliApplication($basePath);
 
         try {
@@ -72,7 +72,7 @@ abstract class CommandTestCase extends \Lkrms\Tests\TestCase
         } finally {
             $app->unload();
 
-            File::pruneDirectory($basePath);
+            File::pruneDir($basePath);
             rmdir($basePath);
 
             Console::deregisterTarget($target);

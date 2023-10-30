@@ -62,8 +62,8 @@ abstract class SqliteStore implements ReceivesFacade
             throw new RuntimeException('Database already open');
         }
 
-        if ($filename != ':memory:') {
-            File::maybeCreate($filename, 0600, 0700);
+        if ($filename !== ':memory:') {
+            File::create($filename, 0600, 0700);
         }
 
         $db = new SQLite3($filename);

@@ -4,7 +4,6 @@ namespace Lkrms\Curler\Exception;
 
 use Lkrms\Curler\Curler;
 use Lkrms\Facade\Format;
-use Throwable;
 
 /**
  * Base class for Curler exceptions

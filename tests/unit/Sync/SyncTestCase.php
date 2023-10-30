@@ -15,7 +15,7 @@ abstract class SyncTestCase extends \Lkrms\Tests\TestCase
 
     protected function setUp(): void
     {
-        $this->BasePath = File::createTemporaryDirectory();
+        $this->BasePath = File::createTempDir();
 
         $this->App =
             (new Application($this->BasePath))
@@ -41,7 +41,7 @@ abstract class SyncTestCase extends \Lkrms\Tests\TestCase
         $this->App = null;
         $this->Store = null;
 
-        File::pruneDirectory($this->BasePath);
+        File::pruneDir($this->BasePath);
         rmdir($this->BasePath);
 
         $this->BasePath = null;

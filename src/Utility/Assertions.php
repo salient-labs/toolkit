@@ -36,7 +36,7 @@ final class Assertions
 
     public function sapiIsCli(): void
     {
-        if (PHP_SAPI != 'cli') {
+        if (PHP_SAPI !== 'cli') {
             throw new RuntimeException('CLI required');
         }
     }

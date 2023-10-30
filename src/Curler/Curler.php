@@ -1519,7 +1519,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
                 $page = [];
                 self::collateNested($result['data'], explode('.', $pagePath), $page);
 
-                if (count($page) != 1 ||
+                if (count($page) !== 1 ||
                         !isset($page[0]['pageInfo']['endCursor']) ||
                         !isset($page[0]['pageInfo']['hasNextPage'])) {
                     throw new CurlerUnexpectedResponseException('paginationPath did not resolve to a single object with pageInfo.endCursor and pageInfo.hasNextPage fields', $this);

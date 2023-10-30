@@ -589,7 +589,7 @@ final class Convert
      *
      * e.g. `/dir/subdir/files/../../subdir2/./doc` becomes `/dir/subdir2/doc`.
      *
-     * @see Conversions::resolveRelativeUrl()
+     * @see Convert::resolveRelativeUrl()
      */
     public static function resolvePath(string $path): string
     {
@@ -701,7 +701,7 @@ final class Convert
     /**
      * Convert a parse_url array to a string
      *
-     * Arrays returned by {@see Conversions::parseUrl()} are also converted.
+     * Arrays returned by {@see Convert::parseUrl()} are also converted.
      *
      * @param array<string,string|int> $url
      */

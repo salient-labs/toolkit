@@ -569,7 +569,7 @@ abstract class GenerateCommand extends Command
 
             if ($dir !== null) {
                 if (!$this->Check) {
-                    File::maybeCreateDirectory($dir);
+                    File::createDir($dir);
                 }
                 $file = $dir . '/' . $file;
             }

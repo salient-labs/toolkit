@@ -456,7 +456,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
                     continue;
                 }
                 array_push($classRules, ...$rules);
-            } while (($class = get_parent_class($class)) && (!$untilClass || $class != $untilClass));
+            } while (($class = get_parent_class($class)) && (!$untilClass || $class !== $untilClass));
         }
 
         // Only return the highest-precedence rule for each key

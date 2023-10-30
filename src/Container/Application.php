@@ -196,7 +196,7 @@ class Application extends Container implements IApplication
         }
 
         if ($create) {
-            File::maybeCreateDirectory($path);
+            File::createDir($path);
             $save = $path;
         }
 
