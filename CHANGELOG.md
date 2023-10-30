@@ -12,6 +12,52 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.20.83] - 2023-10-30
+
+### Added
+
+- Add `FilesystemErrorException` and throw it instead of returning `false` from (most) `File` methods
+- Add `InvalidRuntimeConfigurationException`
+- Add `Graph::from()` to allow passing the initial object or array by value
+
+### Changed
+
+- Rename `Filesystem` to `File`
+- Finalise deprecation of `File::find()` as a standalone method, replacing it with a `RecursiveFilesystemIterator()` factory
+- Rename methods:
+  - `File::createTemporaryDirectory()` -> `createTempDir()`
+  - `File::maybeCreate()` -> `create()`
+  - `File::maybeCreateDirectory()` -> `createDir()`
+  - `File::maybeDelete()` -> `delete()`
+  - `File::maybeDeleteDirectory()` -> `deleteDir()`
+  - `File::pruneDirectory()` -> `pruneDir()`
+  - `Graph::getInnerGraph()` -> `inner()`
+
+### Removed
+
+- Remove `File` facade (`Lkrms\Utility\File` is a drop-in replacement after adopting the method names above)
+
+### Fixed
+
+- Make non-strict comparisons in `File` strict
+
+## [v0.20.82] - 2023-10-29
+
+### Added
+
+- Add `Graph`, a unified interface for arbitrarily nested objects and arrays
+
+## [v0.20.81] - 2023-10-28
+
+### Added
+
+- Sync: add `SyncInvalidEntityException`
+
+### Fixed
+
+- Sync: fix definition builder issue where generic types fail to propagate
+  - "generate builder": always add a declared method for parameters and properties that receive a class-wide generic type
+
 ## [v0.20.80] - 2023-10-26
 
 ### Changed
@@ -440,6 +486,9 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.20.83]: https://github.com/lkrms/php-util/compare/v0.20.82...v0.20.83
+[v0.20.82]: https://github.com/lkrms/php-util/compare/v0.20.81...v0.20.82
+[v0.20.81]: https://github.com/lkrms/php-util/compare/v0.20.80...v0.20.81
 [v0.20.80]: https://github.com/lkrms/php-util/compare/v0.20.79...v0.20.80
 [v0.20.79]: https://github.com/lkrms/php-util/compare/v0.20.78...v0.20.79
 [v0.20.78]: https://github.com/lkrms/php-util/compare/v0.20.77...v0.20.78
