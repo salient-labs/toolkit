@@ -3,9 +3,9 @@
 namespace Lkrms\Console\Target;
 
 use Lkrms\Console\Concept\ConsoleTarget;
-use Lkrms\Facade\File;
 use Lkrms\Support\Catalog\TtyControlSequence;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\File;
 use DateTime;
 use LogicException;
 

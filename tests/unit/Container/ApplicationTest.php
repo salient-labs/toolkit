@@ -3,8 +3,8 @@
 namespace Lkrms\Tests\Container;
 
 use Lkrms\Container\Application;
-use Lkrms\Facade\File;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\File;
 
 final class ApplicationTest extends \Lkrms\Tests\TestCase
 {

@@ -3,8 +3,8 @@
 namespace Lkrms\Tests\Cli;
 
 use Lkrms\Cli\CliApplication;
-use Lkrms\Facade\File;
 use Lkrms\Tests\Cli\Command\TestOptions;
+use Lkrms\Utility\File;
 use LogicException;
 
 class CliApplicationTest extends \Lkrms\Tests\TestCase

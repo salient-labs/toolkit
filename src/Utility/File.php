@@ -12,7 +12,7 @@ use Phar;
 /**
  * Work with files and directories
  */
-final class Filesystem
+final class File
 {
     /**
      * Open a file or URL

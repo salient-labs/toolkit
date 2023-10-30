@@ -6,12 +6,12 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\File;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRules;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\File;
 
 /**
  * A generic sync entity retrieval command

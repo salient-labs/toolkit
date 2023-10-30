@@ -5,10 +5,10 @@ namespace Lkrms\LkUtil\Command\Concept;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Contract\IProvider;
-use Lkrms\Facade\File;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\File;
 
 /**
  * Base class for lk-util commands

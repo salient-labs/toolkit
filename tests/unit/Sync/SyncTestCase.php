@@ -3,9 +3,9 @@
 namespace Lkrms\Tests\Sync;
 
 use Lkrms\Container\Application;
-use Lkrms\Facade\File;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
+use Lkrms\Utility\File;
 
 abstract class SyncTestCase extends \Lkrms\Tests\TestCase
 {

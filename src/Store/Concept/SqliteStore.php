@@ -4,8 +4,8 @@ namespace Lkrms\Store\Concept;
 
 use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
-use Lkrms\Facade\File;
 use Lkrms\Facade\Sys;
+use Lkrms\Utility\File;
 use RuntimeException;
 use SQLite3;
 use Throwable;
