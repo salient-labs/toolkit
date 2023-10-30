@@ -1,0 +1,8 @@
+{
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "lkrms/pretty-php": "^0.4.42"
+    }
+}

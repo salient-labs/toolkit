@@ -42,14 +42,16 @@ jobs:
 
       - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
-        env:
-          COMPOSER_ROOT_VERSION: dev-main
+
+      - name: Install PrettyPHP and its dependencies
+        working-directory: tools/pretty-php
+        run: composer install --no-interaction --no-progress
 
       - name: Check generated files
         run: scripts/generate.php --check
 
       - name: Run PrettyPHP
-        run: vendor/bin/pretty-php --diff
+        run: tools/pretty-php/vendor/bin/pretty-php --diff
 
   phpstan:
     name: PHPStan
@@ -87,8 +89,6 @@ jobs:
 
       - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
-        env:
-          COMPOSER_ROOT_VERSION: dev-main
 
       - name: Run PHPStan
         run: vendor/bin/phpstan
@@ -150,8 +150,6 @@ jobs:
 
       - name: Install PHP dependencies
         run: composer install --no-interaction --no-progress
-        env:
-          COMPOSER_ROOT_VERSION: dev-main
 
       - name: Install Node.js dependencies
         shell: bash

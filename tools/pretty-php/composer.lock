@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9f1076d31a74347fda4c32809ce506bd",
+    "content-hash": "93e3611790ebe3309e13000adbfe692d",
     "packages": [],
     "packages-dev": [
         {
@@ -49,6 +49,64 @@
                 "source": "https://github.com/lkrms/Dice/tree/v4.1.6"
             },
             "time": "2023-06-07T04:25:00+00:00"
+        },
+        {
+            "name": "lkrms/pretty-php",
+            "version": "v0.4.42",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lkrms/pretty-php.git",
+                "reference": "ff48e68e0e6380b04ad4b11edc46e3ac5f1fec21"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lkrms/pretty-php/zipball/ff48e68e0e6380b04ad4b11edc46e3ac5f1fec21",
+                "reference": "ff48e68e0e6380b04ad4b11edc46e3ac5f1fec21",
+                "shasum": ""
+            },
+            "require": {
+                "composer-runtime-api": "^2.2",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "ext-tokenizer": "*",
+                "lkrms/util": "^0.20.74",
+                "php": ">=7.4",
+                "sebastian/diff": "^4 || ^5"
+            },
+            "require-dev": {
+                "phpstan/extension-installer": "^1",
+                "phpstan/phpstan": "^1",
+                "phpstan/phpstan-deprecation-rules": "^1",
+                "phpunit/phpunit": "^9"
+            },
+            "bin": [
+                "bin/pretty-php"
+            ],
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Lkrms\\PrettyPHP\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Luke Arms",
+                    "email": "luke@linacreative.com"
+                }
+            ],
+            "description": "The opinionated PHP code formatter",
+            "support": {
+                "issues": "https://github.com/lkrms/pretty-php/issues",
+                "source": "https://github.com/lkrms/pretty-php"
+            },
+            "time": "2023-10-26T23:34:11+00:00"
         },
         {
             "name": "lkrms/util",
@@ -226,54 +284,71 @@
             "time": "2021-05-03T11:20:27+00:00"
         },
         {
-            "name": "salient/changelog",
-            "version": "v0.1.8",
+            "name": "sebastian/diff",
+            "version": "5.0.3",
             "source": {
                 "type": "git",
-                "url": "https://github.com/salient-labs/php-changelog.git",
-                "reference": "86e066331005b56642acfe6802197575b9903a3b"
+                "url": "https://github.com/sebastianbergmann/diff.git",
+                "reference": "912dc2fbe3e3c1e7873313cc801b100b6c68c87b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/php-changelog/zipball/86e066331005b56642acfe6802197575b9903a3b",
-                "reference": "86e066331005b56642acfe6802197575b9903a3b",
+                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/912dc2fbe3e3c1e7873313cc801b100b6c68c87b",
+                "reference": "912dc2fbe3e3c1e7873313cc801b100b6c68c87b",
                 "shasum": ""
             },
             "require": {
-                "lkrms/util": "^0.20.67",
-                "php": ">=7.4"
+                "php": ">=8.1"
             },
             "require-dev": {
-                "phpstan/extension-installer": "^1",
-                "phpstan/phpstan": "^1",
-                "phpstan/phpstan-deprecation-rules": "^1",
-                "phpunit/phpunit": "^9"
+                "phpunit/phpunit": "^10.0",
+                "symfony/process": "^4.2 || ^5"
             },
-            "bin": [
-                "bin/changelog"
-            ],
             "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Salient\\Changelog\\": "src/"
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "5.0-dev"
                 }
+            },
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "MIT"
+                "BSD-3-Clause"
             ],
             "authors": [
                 {
-                    "name": "Luke Arms",
-                    "email": "luke@linacreative.com"
+                    "name": "Sebastian Bergmann",
+                    "email": "sebastian@phpunit.de"
+                },
+                {
+                    "name": "Kore Nordmann",
+                    "email": "mail@kore-nordmann.de"
                 }
             ],
-            "description": "Changelog generator",
+            "description": "Diff implementation",
+            "homepage": "https://github.com/sebastianbergmann/diff",
+            "keywords": [
+                "diff",
+                "udiff",
+                "unidiff",
+                "unified diff"
+            ],
             "support": {
-                "issues": "https://github.com/salient-labs/php-changelog/issues",
-                "source": "https://github.com/salient-labs/php-changelog"
+                "issues": "https://github.com/sebastianbergmann/diff/issues",
+                "security": "https://github.com/sebastianbergmann/diff/security/policy",
+                "source": "https://github.com/sebastianbergmann/diff/tree/5.0.3"
             },
-            "time": "2023-10-26T10:46:56+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/sebastianbergmann",
+                    "type": "github"
+                }
+            ],
+            "time": "2023-05-01T07:48:21+00:00"
         }
     ],
     "aliases": [],
