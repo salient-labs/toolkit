@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Utility;
 
-use Lkrms\Facade\File;
+use Lkrms\Utility\File;
 
 final class FilesystemTest extends \Lkrms\Tests\TestCase
 {

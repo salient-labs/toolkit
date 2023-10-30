@@ -11,13 +11,13 @@ use Lkrms\Facade\Cache;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Err;
-use Lkrms\Facade\File;
 use Lkrms\Facade\Format;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use LogicException;
@@ -196,7 +196,7 @@ class Application extends Container implements IApplication
         }
 
         if ($create) {
-            File::maybeCreateDirectory($path);
+            File::createDir($path);
             $save = $path;
         }
 

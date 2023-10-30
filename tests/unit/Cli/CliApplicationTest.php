@@ -3,8 +3,8 @@
 namespace Lkrms\Tests\Cli;
 
 use Lkrms\Cli\CliApplication;
-use Lkrms\Facade\File;
 use Lkrms\Tests\Cli\Command\TestOptions;
+use Lkrms\Utility\File;
 use LogicException;
 
 class CliApplicationTest extends \Lkrms\Tests\TestCase
@@ -13,14 +13,14 @@ class CliApplicationTest extends \Lkrms\Tests\TestCase
     {
         $this->expectException(LogicException::class);
 
-        $basePath = File::createTemporaryDirectory();
+        $basePath = File::createTempDir();
         $app = (new CliApplication($basePath))->command([], TestOptions::class);
 
         try {
             $app->command(['options', 'test'], TestOptions::class);
         } finally {
             $app->unload();
-            File::pruneDirectory($basePath);
+            File::pruneDir($basePath);
             rmdir($basePath);
         }
     }

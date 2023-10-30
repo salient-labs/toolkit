@@ -2,20 +2,17 @@
 
 namespace Lkrms\Utility;
 
-use Lkrms\Exception\Exception;
-use Lkrms\Facade\Console;
+use Lkrms\Exception\FilesystemErrorException;
+use Lkrms\Exception\InvalidEnvironmentException;
+use Lkrms\Exception\InvalidRuntimeConfigurationException;
 use Lkrms\Facade\Sys;
 use Lkrms\Iterator\RecursiveFilesystemIterator;
-use Lkrms\Utility\Compute;
-use Lkrms\Utility\Convert;
-use Lkrms\Utility\Test;
 use Phar;
-use SplFileInfo;
 
 /**
- * Work with files, directories and paths
+ * Work with files and directories
  */
-final class Filesystem
+final class File
 {
     /**
      * Open a file or URL
@@ -28,7 +25,9 @@ final class Filesystem
     {
         $handle = fopen($filename, $mode);
         if ($handle === false) {
-            throw new Exception(sprintf('Error opening file: %s', $filename));
+            throw new FilesystemErrorException(
+                sprintf('Error opening file: %s', $filename),
+            );
         }
 
         return $handle;
@@ -45,69 +44,22 @@ final class Filesystem
     {
         $result = fclose($handle);
         if ($result === false) {
-            throw new Exception(sprintf('Error closing file: %s', $filename));
+            throw new FilesystemErrorException(
+                sprintf('Error closing file: %s', $filename),
+            );
         }
     }
 
     /**
      * Iterate over files in one or more directories
      *
-     * @param string[]|string|null $directory
-     * @param array<string,callable(SplFileInfo): bool> $excludeCallbacks
-     * @param array<string,callable(SplFileInfo): bool> $includeCallbacks
+     * Syntactic sugar for `new RecursiveFilesystemIterator()`.
+     *
+     * @see RecursiveFilesystemIterator
      */
-    public static function find(
-        $directory = null,
-        ?string $exclude = null,
-        ?string $include = null,
-        ?array $excludeCallbacks = null,
-        ?array $includeCallbacks = null,
-        bool $recursive = true,
-        bool $withDirectories = false,
-        bool $withDirectoriesFirst = true
-    ): RecursiveFilesystemIterator {
-        $directory = (array) $directory;
-
-        $iterator =
-            (new RecursiveFilesystemIterator())
-                ->in(...$directory)
-                ->recurse($recursive)
-                ->dirs($withDirectories)
-                ->dirsFirst($withDirectoriesFirst);
-
-        if ($exclude !== null) {
-            $iterator = $iterator->exclude($exclude);
-        }
-
-        if ($include !== null) {
-            $iterator = $iterator->include($include);
-        }
-
-        if ($excludeCallbacks) {
-            foreach ($excludeCallbacks as $regex => $callback) {
-                $iterator = $iterator->exclude(
-                    fn(SplFileInfo $current, string $key) =>
-                        Pcre::match($regex, $key) ||
-                        ($current->isDir() && Pcre::match($regex, "{$key}/"))
-                            ? $callback($current)
-                            : false
-                );
-            }
-        }
-
-        if ($includeCallbacks) {
-            foreach ($includeCallbacks as $regex => $callback) {
-                $iterator = $iterator->include(
-                    fn(SplFileInfo $current, string $key) =>
-                        Pcre::match($regex, $key) ||
-                        ($current->isDir() && Pcre::match($regex, "{$key}/"))
-                            ? $callback($current)
-                            : false
-                );
-            }
-        }
-
-        return $iterator;
+    public static function find(): RecursiveFilesystemIterator
+    {
+        return new RecursiveFilesystemIterator();
     }
 
     /**
@@ -123,9 +75,9 @@ final class Filesystem
      */
     public static function getEol(string $filename): ?string
     {
-        $f = self::open($filename, 'r');
-        $line = fgets($f);
-        self::close($f, $filename);
+        $handle = self::open($filename, 'r');
+        $line = fgets($handle);
+        self::close($handle, $filename);
 
         if ($line === false) {
             return null;
@@ -147,16 +99,17 @@ final class Filesystem
     /**
      * True if a file appears to contain PHP code
      *
-     * @param string $filename
+     * Returns `true` if `$filename` has a PHP open tag (`<?php') at the start
+     * of the first line that is not a shebang (`#!').
      */
     public static function isPhp(string $filename): bool
     {
-        $f = self::open($filename, 'r');
-        $line = fgets($f);
+        $handle = self::open($filename, 'r');
+        $line = fgets($handle);
         if ($line !== false && substr($line, 0, 2) === '#!') {
-            $line = fgets($f);
+            $line = fgets($handle);
         }
-        self::close($f, $filename);
+        self::close($handle, $filename);
 
         if ($line === false) {
             return false;
@@ -168,113 +121,146 @@ final class Filesystem
     /**
      * Create a file if it doesn't exist
      *
-     * @param string $filename Full path to the file.
-     * @param int $permissions Only used if `$filename` needs to be created.
-     * @param int $dirPermissions Only used if `$filename`'s parent directory
-     * needs to be created.
-     * @return bool `true` on success or `false` on failure.
+     * @param int $permissions Used after creating `$filename` if it doesn't
+     * exist.
+     * @param int $dirPermissions Used if one or more directories above
+     * `$filename` don't exist.
      */
-    public static function maybeCreate(string $filename, int $permissions = 0777, int $dirPermissions = 0777): bool
-    {
-        $dir = dirname($filename);
-
-        if ((is_dir($dir) || mkdir($dir, $dirPermissions, true)) &&
-                (is_file($filename) || (touch($filename) && chmod($filename, $permissions)))) {
-            return true;
+    public static function create(
+        string $filename,
+        int $permissions = 0777,
+        int $dirPermissions = 0777
+    ): void {
+        if (is_file($filename)) {
+            return;
         }
 
-        return false;
+        self::createDir(dirname($filename), $dirPermissions);
+
+        $result = touch($filename) && chmod($filename, $permissions);
+        if (!$result) {
+            throw new FilesystemErrorException(
+                sprintf('Error creating file: %s', $filename),
+            );
+        }
     }
 
     /**
      * Create a directory if it doesn't exist
      *
-     * @param string $directory Full path to the directory.
-     * @param int $permissions Only used if `$filename` needs to be created.
-     * @return bool `true` on success or `false` on failure.
+     * @param int $permissions Used if `$directory` doesn't exist.
      */
-    public static function maybeCreateDirectory(string $directory, int $permissions = 0777): bool
-    {
-        if (is_dir($directory) || mkdir($directory, $permissions, true)) {
-            return true;
+    public static function createDir(
+        string $directory,
+        int $permissions = 0777
+    ): void {
+        if (is_dir($directory)) {
+            return;
         }
 
-        return false;
+        $result = mkdir($directory, $permissions, true);
+        if (!$result) {
+            throw new FilesystemErrorException(
+                sprintf('Error creating directory: %s', $directory),
+            );
+        }
     }
 
     /**
      * Delete a file if it exists
-     *
-     * @return bool `true` on success or `false` on failure.
      */
-    public static function maybeDelete(string $filename): bool
+    public static function delete(string $filename): void
     {
         if (!file_exists($filename)) {
-            return true;
-        }
-        if (!is_file($filename)) {
-            Console::warn('Not a file:', $filename);
-            return false;
+            return;
         }
 
-        return unlink($filename);
+        if (!is_file($filename)) {
+            throw new FilesystemErrorException(
+                sprintf('Not a file: %s', $filename),
+            );
+        }
+
+        $result = unlink($filename);
+        if (!$result) {
+            throw new FilesystemErrorException(
+                sprintf('Error deleting file: %s', $filename),
+            );
+        }
     }
 
     /**
      * Delete a directory if it exists
-     *
-     * @return bool `true` on success or `false` on failure.
      */
-    public static function maybeDeleteDirectory(string $directory, bool $recursive = false): bool
-    {
+    public static function deleteDir(
+        string $directory,
+        bool $recursive = false
+    ): void {
         if (!file_exists($directory)) {
-            return true;
-        }
-        if (!is_dir($directory)) {
-            Console::warn('Not a directory:', $directory);
-            return false;
+            return;
         }
 
-        return (!$recursive || self::pruneDirectory($directory)) &&
-            rmdir($directory);
+        if (!is_dir($directory)) {
+            throw new FilesystemErrorException(
+                sprintf('Not a directory: %s', $directory),
+            );
+        }
+
+        if ($recursive) {
+            self::pruneDir($directory);
+        }
+
+        $result = rmdir($directory);
+        if (!$result) {
+            throw new FilesystemErrorException(
+                sprintf('Error deleting directory: %s', $directory),
+            );
+        }
     }
 
     /**
      * Recursively delete the contents of a directory without deleting the
      * directory itself
-     *
-     * @return bool `true` on success or `false` on failure.
      */
-    public static function pruneDirectory(string $directory): bool
+    public static function pruneDir(string $directory): void
     {
-        (new RecursiveFilesystemIterator())
+        $files = (new RecursiveFilesystemIterator())
             ->in($directory)
             ->dirs()
-            ->dirsLast()
-            ->forEachWhile(
-                fn(SplFileInfo $file) =>
-                    $file->isDir()
-                        ? rmdir((string) $file)
-                        : unlink((string) $file),
-                $result
-            );
+            ->dirsLast();
 
-        return $result;
+        foreach ($files as $file) {
+            $result =
+                $file->isDir()
+                    ? rmdir((string) $file)
+                    : unlink((string) $file);
+
+            if (!$result) {
+                throw new FilesystemErrorException(
+                    sprintf('Error pruning directory: %s', $directory),
+                );
+            }
+        }
     }
 
     /**
      * Create a temporary directory
      */
-    public static function createTemporaryDirectory(): string
+    public static function createTempDir(): string
     {
-        $tmp = realpath($_tmp = sys_get_temp_dir());
+        $tempDir = sys_get_temp_dir();
+        $tmp = realpath($tempDir);
         if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
-            throw new Exception(sprintf('Not a writable directory: %s', $_tmp));
+            throw new FilesystemErrorException(
+                sprintf('Not a writable directory: %s', $tempDir),
+            );
         }
+
         $program = Sys::getProgramBasename();
         do {
             $dir = sprintf('%s/%s%s.tmp', $tmp, $program, Compute::randomText(8));
         } while (!@mkdir($dir, 0700));
+
         return $dir;
     }
 
@@ -286,7 +272,7 @@ final class Filesystem
      *
      * 2. If a Phar archive is running and `$filename` is a `phar://` URL:
      *    - relative path segments in `$filename` (e.g. `/../..`) are resolved
-     *      by {@see Conversions::resolvePath()}
+     *      by {@see Convert::resolvePath()}
      *    - if the file or directory exists, the resolved pathname is returned
      *    - if `$filename` doesn't exist, `false` is returned
      *
@@ -322,7 +308,7 @@ final class Filesystem
      */
     public static function getStreamUri($stream): ?string
     {
-        if (is_resource($stream) && get_resource_type($stream) == 'stream') {
+        if (is_resource($stream) && get_resource_type($stream) === 'stream') {
             return stream_get_meta_data($stream)['uri'];
         }
 
@@ -363,31 +349,45 @@ final class Filesystem
         bool $bom = true
     ) {
         if (is_resource($target)) {
-            if (($type = get_resource_type($target)) !== 'stream') {
-                throw new Exception(sprintf('Invalid resource type: %s', $type));
+            $type = get_resource_type($target);
+            if ($type !== 'stream') {
+                throw new FilesystemErrorException(
+                    sprintf('Invalid resource type: %s', $type),
+                );
             }
-            $f = $target;
+            $handle = $target;
             $targetName = 'stream';
         } elseif (is_string($target)) {
-            $f = self::open($target, 'wb');
+            $handle = self::open($target, 'wb');
             $targetName = $target;
         } else {
             $target = 'php://memory';
-            $f = self::open($target, 'w+b');
+            $handle = self::open($target, 'w+b');
             $targetName = $target;
             $target = null;
         }
 
         if ($utf16le) {
-            if (extension_loaded('iconv')) {
-                stream_filter_append($f, 'convert.iconv.UTF-8.UTF-16LE', STREAM_FILTER_WRITE);
-            } else {
-                Console::warnOnce("'iconv' extension required for UTF-16LE encoding");
+            if (!extension_loaded('iconv')) {
+                throw new InvalidRuntimeConfigurationException(
+                    "'iconv' extension required for UTF-16LE encoding",
+                );
+            }
+            $filter = 'convert.iconv.UTF-8.UTF-16LE';
+            $result = stream_filter_append(
+                $handle,
+                $filter,
+                STREAM_FILTER_WRITE,
+            );
+            if ($result === false) {
+                throw new FilesystemErrorException(
+                    sprintf('Error applying filter to stream: %s', $filter),
+                );
             }
         }
 
         if ($bom) {
-            fwrite($f, '﻿');
+            fwrite($handle, '﻿');
         }
 
         $count = 0;
@@ -405,22 +405,22 @@ final class Filesystem
             }
 
             if (!$count && $headerRow) {
-                self::fputcsv($f, array_keys($row), ',', '"', $eol);
+                self::fputcsv($handle, array_keys($row), ',', '"', $eol);
             }
 
-            self::fputcsv($f, $row, ',', '"', $eol);
+            self::fputcsv($handle, $row, ',', '"', $eol);
             $count++;
         }
 
         if ($target === null) {
-            rewind($f);
-            $csv = stream_get_contents($f);
-            self::close($f, $targetName);
+            rewind($handle);
+            $csv = stream_get_contents($handle);
+            self::close($handle, $targetName);
 
             return $csv;
         }
         if (is_string($target)) {
-            self::close($f, $targetName);
+            self::close($handle, $targetName);
         }
 
         return true;
@@ -431,7 +431,6 @@ final class Filesystem
      *
      * @param resource $stream
      * @param mixed[] $fields
-     * @return int|false
      */
     private static function fputcsv(
         $stream,
@@ -439,7 +438,7 @@ final class Filesystem
         string $separator = ',',
         string $enclosure = '"',
         string $eol = "\n"
-    ) {
+    ): int {
         $special = $separator . $enclosure . "\n\r\t ";
         foreach ($fields as &$field) {
             if (strpbrk((string) $field, $special) !== false) {
@@ -448,7 +447,12 @@ final class Filesystem
                     . $enclosure;
             }
         }
-        return fwrite($stream, implode($separator, $fields) . $eol);
+
+        $written = fwrite($stream, implode($separator, $fields) . $eol);
+        if ($written === false) {
+            throw new FilesystemErrorException('Error writing to stream');
+        }
+        return $written;
     }
 
     /**
@@ -459,31 +463,57 @@ final class Filesystem
      *
      * No changes are made to the filesystem.
      */
-    public static function getStablePath(string $suffix = '', ?string $dir = null): string
-    {
-        $path = self::realpath($program = Sys::getProgramName());
+    public static function getStablePath(
+        string $suffix = '',
+        ?string $dir = null
+    ): string {
+        $program = Sys::getProgramName();
+        $path = self::realpath($program);
         if ($path === false) {
-            throw new Exception('Unable to resolve filename used to run the script');
+            throw new FilesystemErrorException(
+                'Unable to resolve filename used to run the script',
+            );
         }
         $program = basename($program);
         $hash = Compute::hash($path);
+
         if (function_exists('posix_geteuid')) {
             $user = posix_geteuid();
         } else {
-            $user = Env::get('USERNAME', null) ?: Env::get('USER', null);
-            if (!$user) {
-                throw new Exception('Unable to identify user');
+            $user = Env::getNullable('USERNAME', null);
+            if ($user === null) {
+                $user = Env::getNullable('USER', null);
+                if ($user === null) {
+                    throw new InvalidEnvironmentException(
+                        'Unable to identify user'
+                    );
+                }
             }
-        }
-        if ($dir === null) {
-            $dir = realpath($tmp = sys_get_temp_dir());
-            if ($dir === false || !is_dir($dir) || !is_writable($dir)) {
-                throw new Exception(sprintf('Not a writable directory: %s', $tmp));
-            }
-        } else {
-            $dir = rtrim($dir, '/\\') ?: $dir;
         }
 
-        return sprintf('%s/%s-%s-%s%s', $dir ?: '.', $program, $hash, $user, $suffix);
+        if ($dir === null) {
+            $tempDir = sys_get_temp_dir();
+            $tmp = realpath($tempDir);
+            if ($tmp === false || !is_dir($tmp) || !is_writable($tmp)) {
+                throw new FilesystemErrorException(
+                    sprintf('Not a writable directory: %s', $tempDir)
+                );
+            }
+            $dir = $tmp;
+        } else {
+            $trimmed = rtrim($dir, '/\\');
+            $dir = $trimmed === '' ? $dir : $trimmed;
+        }
+
+        return sprintf(
+            '%s/%s-%s-%s%s',
+            $dir === ''
+                ? '.'
+                : $dir,
+            $program,
+            $hash,
+            $user,
+            $suffix,
+        );
     }
 }

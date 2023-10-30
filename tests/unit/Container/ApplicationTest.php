@@ -3,8 +3,8 @@
 namespace Lkrms\Tests\Container;
 
 use Lkrms\Container\Application;
-use Lkrms\Facade\File;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\File;
 
 final class ApplicationTest extends \Lkrms\Tests\TestCase
 {
@@ -14,7 +14,7 @@ final class ApplicationTest extends \Lkrms\Tests\TestCase
     public function testPaths(): void
     {
         // realpath provides cross-platform normalisation here
-        $basePath = realpath(File::createTemporaryDirectory()) ?: '';
+        $basePath = realpath(File::createTempDir()) ?: '';
         $homeDir = realpath(Env::home()) ?: '';
         $this->assertDirectoryExists($basePath);
         $this->assertDirectoryExists($homeDir);
@@ -44,7 +44,7 @@ final class ApplicationTest extends \Lkrms\Tests\TestCase
         $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getTempPath(false));
         $app->unload();
 
-        File::pruneDirectory($basePath);
+        File::pruneDir($basePath);
         rmdir($basePath);
     }
 }

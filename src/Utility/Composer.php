@@ -4,7 +4,7 @@ namespace Lkrms\Utility;
 
 use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
-use Lkrms\Facade\File;
+use Lkrms\Utility\File;
 use RuntimeException;
 
 /**

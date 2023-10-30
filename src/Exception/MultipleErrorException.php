@@ -9,7 +9,7 @@ use Lkrms\Facade\Console;
 /**
  * Base class for exceptions that represent multiple errors
  */
-abstract class MultipleErrorException extends Exception
+abstract class MultipleErrorException extends \Lkrms\Exception\Exception
 {
     /**
      * @var string[]

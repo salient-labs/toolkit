@@ -5,7 +5,7 @@ namespace Lkrms\Support;
 use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\File;
+use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
 use ErrorException;
 use Throwable;

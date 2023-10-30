@@ -25,7 +25,6 @@ use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Assertions;
 use Lkrms\Utility\Composer;
 use Lkrms\Utility\Debugging;
-use Lkrms\Utility\Filesystem;
 use Lkrms\Utility\Formatters;
 use Lkrms\Utility\System;
 
@@ -43,7 +42,6 @@ $facades = [
     Debugging::class => \Lkrms\Facade\Debug::class,
     ErrorHandler::class => [\Lkrms\Facade\Err::class, '--skip', 'handleShutdown,handleError,handleException'],
     EventDispatcher::class => \Lkrms\Facade\Event::class,
-    Filesystem::class => \Lkrms\Facade\File::class,
     Formatters::class => \Lkrms\Facade\Format::class,
     SyncStore::class => \Lkrms\Facade\Sync::class,
     System::class => \Lkrms\Facade\Sys::class,

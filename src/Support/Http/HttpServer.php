@@ -222,7 +222,7 @@ final class HttpServer implements IReadable, IImmutable
 
                 if (is_null($startLine)) {
                     $startLine = explode(' ', rtrim($line, "\r\n"));
-                    if (count($startLine) != 3 ||
+                    if (count($startLine) !== 3 ||
                             !in_array($startLine[0], HttpRequestMethods::ALL, true) ||
                             !preg_match(
                                 '/^HTTP\/([0-9]+(?:\.[0-9]+)?)$/',

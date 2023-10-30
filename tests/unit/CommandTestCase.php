@@ -9,7 +9,7 @@ use Lkrms\Console\Catalog\ConsoleLevels as Levels;
 use Lkrms\Console\Target\MockTarget;
 use Lkrms\Contract\IService;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\File;
+use Lkrms\Utility\File;
 
 abstract class CommandTestCase extends \Lkrms\Tests\TestCase
 {
@@ -54,7 +54,7 @@ abstract class CommandTestCase extends \Lkrms\Tests\TestCase
 
         $this->expectOutputString(str_replace(PHP_EOL, "\n", $output));
 
-        $basePath = File::createTemporaryDirectory();
+        $basePath = File::createTempDir();
         $app = new CliApplication($basePath);
 
         try {
@@ -72,7 +72,7 @@ abstract class CommandTestCase extends \Lkrms\Tests\TestCase
         } finally {
             $app->unload();
 
-            File::pruneDirectory($basePath);
+            File::pruneDir($basePath);
             rmdir($basePath);
 
             Console::deregisterTarget($target);

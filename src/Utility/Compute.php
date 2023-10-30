@@ -75,7 +75,7 @@ final class Compute
      * of the longest string
      *
      * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Conversions::toNormal()} before comparing them.
+     * {@see Convert::toNormal()} before comparing them.
      * @return float A value between `0` and `1`, where `0` means the strings
      * are identical, and `1` means they have no similarities.
      */
@@ -103,7 +103,7 @@ final class Compute
      * string
      *
      * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Conversions::toNormal()} before comparing them.
+     * {@see Convert::toNormal()} before comparing them.
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no similarities, and `1` means they are identical.
      */
@@ -136,7 +136,7 @@ final class Compute
      * ngrams in the longest string
      *
      * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Conversions::toNormal()} before comparing them.
+     * {@see Convert::toNormal()} before comparing them.
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no shared ngrams, and `1` means their ngrams are identical.
      */
@@ -154,7 +154,7 @@ final class Compute
      * ngrams in the shortest string
      *
      * @param bool $normalise If true, normalise `$string1` and `$string2` with
-     * {@see Conversions::toNormal()} before comparing them.
+     * {@see Convert::toNormal()} before comparing them.
      * @return float A value between `0` and `1`, where `0` means the strings
      * have no shared ngrams, and `1` means their ngrams are identical.
      */

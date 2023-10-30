@@ -3,11 +3,11 @@
 namespace Lkrms\Console\Target;
 
 use Lkrms\Console\Concept\ConsoleTarget;
-use Lkrms\Facade\File;
 use Lkrms\Support\Catalog\TtyControlSequence;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\File;
 use DateTime;
-use RuntimeException;
+use LogicException;
 
 /**
  * Write console messages to a stream (e.g. a file or TTY)
@@ -116,16 +116,19 @@ final class StreamTarget extends ConsoleTarget
     public function reopen(string $path = null)
     {
         if ($this->Path === null) {
-            throw new RuntimeException('StreamTarget not created by StreamTarget::fromPath()');
+            throw new LogicException(
+                sprintf(
+                    'Only instances created by %s::fromPath() can be reopened',
+                    static::class,
+                ),
+            );
         }
 
-        $path = ($path ?? '') === '' ? $this->Path : $path;
+        $path = $path === null || $path === '' ? $this->Path : $path;
 
-        if (!fclose($this->Stream) || !File::maybeCreate($path, 0600) || ($stream = fopen($path, 'a')) === false) {
-            throw new RuntimeException("Could not close {$this->Path} and open $path");
-        }
-
-        $this->Stream = $stream;
+        File::close($this->Stream, $this->Path);
+        File::create($path, 0600);
+        $this->Stream = File::open($path, 'a');
         $this->Path = $path;
 
         return $this;
@@ -146,11 +149,14 @@ final class StreamTarget extends ConsoleTarget
         ?string $timestamp = null,
         $timezone = null
     ): StreamTarget {
-        if (!File::maybeCreate($path, 0600) || ($stream = fopen($path, 'a')) === false) {
-            throw new RuntimeException("Could not open $path");
-        }
-
-        $stream = new StreamTarget($stream, $addTimestamp, $timestamp, $timezone);
+        File::create($path, 0600);
+        $stream =
+            new StreamTarget(
+                File::open($path, 'a'),
+                $addTimestamp,
+                $timestamp,
+                $timezone,
+            );
         $stream->Path = $path;
 
         return $stream;

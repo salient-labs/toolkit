@@ -3,9 +3,9 @@
 namespace Lkrms\Tests\Sync;
 
 use Lkrms\Container\Application;
-use Lkrms\Facade\File;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
+use Lkrms\Utility\File;
 
 abstract class SyncTestCase extends \Lkrms\Tests\TestCase
 {
@@ -15,7 +15,7 @@ abstract class SyncTestCase extends \Lkrms\Tests\TestCase
 
     protected function setUp(): void
     {
-        $this->BasePath = File::createTemporaryDirectory();
+        $this->BasePath = File::createTempDir();
 
         $this->App =
             (new Application($this->BasePath))
@@ -41,7 +41,7 @@ abstract class SyncTestCase extends \Lkrms\Tests\TestCase
         $this->App = null;
         $this->Store = null;
 
-        File::pruneDirectory($this->BasePath);
+        File::pruneDir($this->BasePath);
         rmdir($this->BasePath);
 
         $this->BasePath = null;

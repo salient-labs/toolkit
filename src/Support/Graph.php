@@ -54,7 +54,7 @@ final class Graph implements ArrayAccess
         $this->Args = $args;
 
         if ($graph === null) {
-            $graph = $this->createInnerGraph();
+            $graph = $this->createInner();
         }
 
         if (is_object($graph)) {
@@ -63,7 +63,9 @@ final class Graph implements ArrayAccess
         }
 
         if (!is_array($graph)) {
-            throw new LogicException('$graph must be an object, an array, or null');
+            throw new LogicException(
+                '$graph must be an object, an array, or null'
+            );
         }
 
         $this->Graph = &$graph;
@@ -71,9 +73,10 @@ final class Graph implements ArrayAccess
     }
 
     /**
-     * Creates a new Graph object
+     * Creates a new Graph object backed by a given object or array
      *
-     * Syntactic sugar for `new Graph()`.
+     * Syntactic sugar for `new Graph()`. Returns a {@see Graph} instance that
+     * operates on `$graph`, which is passed by reference.
      *
      * @param object|mixed[]|null $graph
      * @param class-string|null $defaultClass If `null`, arrays are added to the
@@ -81,7 +84,26 @@ final class Graph implements ArrayAccess
      * @param mixed ...$args Passed to the constructor of `$defaultClass`.
      */
     public static function with(
-        &$graph = null,
+        &$graph,
+        ?string $defaultClass = null,
+        ...$args
+    ): self {
+        return new self($graph, $defaultClass, ...$args);
+    }
+
+    /**
+     * Creates a new Graph object from an object or array
+     *
+     * Unlike {@see Graph::with()}, {@see Graph::from()} returns a {@see Graph}
+     * instance that operates on a copy of `$graph` (if it is an array).
+     *
+     * @param object|mixed[] $graph
+     * @param class-string|null $defaultClass If `null`, arrays are added to the
+     * graph as needed to accommodate values assigned by key.
+     * @param mixed ...$args Passed to the constructor of `$defaultClass`.
+     */
+    public static function from(
+        $graph,
         ?string $defaultClass = null,
         ...$args
     ): self {
@@ -93,11 +115,14 @@ final class Graph implements ArrayAccess
      *
      * @return object|mixed[]
      */
-    public function getInnerGraph()
+    public function inner()
     {
         return $this->Graph;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function offsetExists($offset): bool
     {
         if ($this->IsObject) {
@@ -107,13 +132,16 @@ final class Graph implements ArrayAccess
         return array_key_exists($offset, $this->Graph);
     }
 
+    /**
+     * @inheritDoc
+     */
     #[ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         // If there is nothing at the requested offset, create a new object or
         // array, add it to the graph and return a new `Graph` for it
         if (!$this->offsetExists($offset)) {
-            $value = $this->createInnerGraph();
+            $value = $this->createInner();
 
             if ($this->IsObject) {
                 $this->Graph->$offset = $value;
@@ -146,6 +174,9 @@ final class Graph implements ArrayAccess
         );
     }
 
+    /**
+     * @inheritDoc
+     */
     public function offsetSet($offset, $value): void
     {
         if ($offset === null) {
@@ -164,6 +195,9 @@ final class Graph implements ArrayAccess
         $this->Graph[$offset] = $value;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function offsetUnset($offset): void
     {
         if ($this->IsObject) {
@@ -177,7 +211,7 @@ final class Graph implements ArrayAccess
     /**
      * @return object|mixed[]
      */
-    private function createInnerGraph()
+    private function createInner()
     {
         if ($this->DefaultClass === null) {
             return [];
