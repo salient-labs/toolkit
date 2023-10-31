@@ -65,11 +65,11 @@ final class SyncErrorCollection extends LooselyTypedCollection implements JsonSe
         $lines = [];
         $separator = "\n  ";
         foreach ($summary as $error) {
-            $values = $error['meta']['values'];
+            $values = Convert::toScalarArray($error['meta']['values']);
 
             if ($withMarkup) {
                 foreach ($values as &$value) {
-                    $value = Formatter::escapeTags(json_encode($value));
+                    $value = Formatter::escapeTags($value);
                 }
             }
 

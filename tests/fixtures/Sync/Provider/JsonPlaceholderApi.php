@@ -2,6 +2,7 @@
 
 namespace Lkrms\Tests\Sync\Provider;
 
+use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Curler\Contract\ICurlerHeaders;
@@ -10,11 +11,13 @@ use Lkrms\Facade\Console;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Support\HttpSyncDefinitionBuilder;
+use Lkrms\Sync\Support\SyncContext;
 use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
 use Lkrms\Tests\Sync\Entity\Provider\TaskProvider;
 use Lkrms\Tests\Sync\Entity\Provider\UserProvider;
@@ -67,6 +70,13 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
     public function getBackendIdentifier(): array
     {
         return [$this->getBaseUrl()];
+    }
+
+    public function getContext(?IContainer $container = null): SyncContext
+    {
+        return
+            parent::getContext($container)
+                ->withHydrationFlags(HydrationFlag::EAGER | HydrationFlag::NO_FILTER);
     }
 
     protected function getHeartbeat()

@@ -163,7 +163,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     public function run($operation, ...$args)
     {
-        $fromCheckpoint = $this->Store->getDeferredEntityCheckpoint();
+        $fromCheckpoint = $this->Store->getDeferralCheckpoint();
 
         if (!SyncOperation::isList($operation)) {
             $result = $this->_run($operation, ...$args);
@@ -204,7 +204,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
     {
         foreach ($this->_run($operation, ...$args) as $key => $entity) {
             $this->resolveDeferredEntities($fromCheckpoint);
-            $fromCheckpoint = $this->Store->getDeferredEntityCheckpoint();
+            $fromCheckpoint = $this->Store->getDeferralCheckpoint();
             yield $key => $entity;
         }
     }
@@ -222,35 +222,10 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
     private function resolveDeferredEntities(int $fromCheckpoint): void
     {
-        while ($this->Store->resolveDeferredEntities($fromCheckpoint)) {
-            $fromCheckpoint = $this->Store->getDeferredEntityCheckpoint();
+        while ($this->Store->resolveDeferredEntities($fromCheckpoint) ||
+                $this->Store->resolveDeferredRelationships($fromCheckpoint)) {
+            $fromCheckpoint = $this->Store->getDeferralCheckpoint();
         }
-    }
-
-    /**
-     * Defer retrieval of an entity from the backend
-     *
-     * @param int|string $id
-     * @param ISyncEntity|DeferredSyncEntity|null $replace A reference to the
-     * variable, property or array element to replace when the entity is
-     * resolved.
-     */
-    public function defer($id, &$replace): void
-    {
-        DeferredSyncEntity::defer($this->Provider, $this->Context, $this->Entity, $id, $replace);
-    }
-
-    /**
-     * Defer retrieval of a list of entities from the backend
-     *
-     * @param int[]|string[] $idList
-     * @param array<ISyncEntity|DeferredSyncEntity>|null $replace A reference to
-     * the variable, property or array element to replace when the list is
-     * resolved.
-     */
-    public function deferList(array $idList, &$replace): void
-    {
-        DeferredSyncEntity::deferList($this->Provider, $this->Context, $this->Entity, $idList, $replace);
     }
 
     /**
@@ -497,7 +472,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
             throw new LogicException('Not a *_LIST operation: ' . $operation);
         }
 
-        $fromCheckpoint = $this->Store->getDeferredEntityCheckpoint();
+        $fromCheckpoint = $this->Store->getDeferralCheckpoint();
 
         $result = $this->_run($operation, ...$args);
         if (!is_array($result)) {

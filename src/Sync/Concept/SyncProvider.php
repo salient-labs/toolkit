@@ -187,7 +187,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
         /** @var IContainer */
         $container = $context instanceof ISyncContext
             ? $context->container()
-            : ($context ?? $this->App);
+            : ($context ?: $this->App);
         $container = $container->inContextOf(static::class);
 
         $context = $context instanceof ISyncContext

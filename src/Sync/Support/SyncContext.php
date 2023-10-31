@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Support\ProviderContext;
 use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy;
+use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -36,6 +37,16 @@ final class SyncContext extends ProviderContext implements ISyncContext
      * @var DeferredSyncEntityPolicy::*
      */
     protected $DeferredSyncEntityPolicy = DeferredSyncEntityPolicy::RESOLVE_EARLY;
+
+    /**
+     * @var array<class-string<ISyncEntity>,int-mask-of<HydrationFlag::*>>
+     */
+    protected $EntityHydrationFlags = [];
+
+    /**
+     * @var int-mask-of<HydrationFlag::*>
+     */
+    protected $FallbackHydrationFlags = HydrationFlag::DEFER;
 
     /**
      * @inheritDoc
@@ -135,6 +146,49 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
+    public function withHydrationFlags(int $flags, bool $replace = true, ?string $entity = null)
+    {
+        $clone = $this->mutate();
+
+        if ($entity === null) {
+            if ($replace) {
+                $clone->EntityHydrationFlags = [];
+                $clone->FallbackHydrationFlags = $flags;
+                return $clone;
+            }
+
+            foreach ($clone->EntityHydrationFlags as &$value) {
+                $value |= $flags;
+            }
+            $clone->FallbackHydrationFlags |= $flags;
+            return $clone;
+        }
+
+        if ($replace) {
+            foreach ($clone->EntityHydrationFlags as $entityType => &$value) {
+                if (is_a($entityType, $entity, true)) {
+                    $value = $flags;
+                }
+            }
+            $clone->EntityHydrationFlags[$entity] = $flags;
+            return $clone;
+        }
+
+        foreach ($clone->EntityHydrationFlags as $entityType => &$value) {
+            if (is_a($entityType, $entity, true)) {
+                $value |= $flags;
+            }
+        }
+        $clone->EntityHydrationFlags[$entity] =
+            ($clone->EntityHydrationFlags[$entity]
+                ?? $clone->FallbackHydrationFlags) | $flags;
+
+        return $clone;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getFilters(): array
     {
         return $this->Filters;
@@ -162,6 +216,28 @@ final class SyncContext extends ProviderContext implements ISyncContext
     public function getDeferredSyncEntityPolicy()
     {
         return $this->DeferredSyncEntityPolicy;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHydrationFlags(string $entity)
+    {
+        if ($this->EntityHydrationFlags) {
+            $applied = false;
+            $flags = 0;
+            foreach ($this->EntityHydrationFlags as $entityType => $value) {
+                if (is_a($entityType, $entity, true)) {
+                    $flags |= $value;
+                    $applied = true;
+                }
+            }
+            if ($applied) {
+                return $flags;
+            }
+        }
+
+        return $this->FallbackHydrationFlags;
     }
 
     /**

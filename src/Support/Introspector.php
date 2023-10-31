@@ -399,6 +399,7 @@ class Introspector
         $targets = $this->getKeyTargets($keys, true, $strict);
         $constructor = $this->_getConstructor($targets);
         $updater = $this->_getUpdater($targets);
+        $resolver = $this->_getResolver($targets);
 
         $closure = static function (
             array $array,
@@ -408,9 +409,10 @@ class Introspector
             ?IProviderContext $context,
             ?IDateFormatter $dateFormatter,
             ?ITreeable $parent
-        ) use ($constructor, $updater) {
+        ) use ($constructor, $updater, $resolver) {
             $obj = $constructor($array, $service, $container);
             $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+            $obj = $resolver($array, $service, $obj, $provider, $context);
             if ($obj instanceof IProvidable) {
                 $obj->postLoad();
             }
@@ -425,7 +427,7 @@ class Introspector
      * existing instance of the class
      *
      * @param string[] $keys
-     * @param bool $withParameters If `true`, keys are matched with constructor
+     * @param bool $forNewInstance If `true`, keys are matched with constructor
      * parameters if possible.
      * @param bool $strict If `true`, an exception is thrown if any keys cannot
      * be applied to the class.
@@ -433,33 +435,44 @@ class Introspector
      * normalised.
      * @param array<static::*_KEY,string> $customKeys An array that maps key
      * types to keys as they appear in `$keys`.
-     * @param array<string,Closure(mixed[], TClass, ?TProvider, ?TContext): void> $keyClosures Normalised key => closure
+     * @param array<string,Closure(mixed[], ?string, TClass, ?TProvider, ?TContext): void> $keyClosures Normalised key => closure
      * @return IntrospectorKeyTargets<TClass,TProvider,TContext>
      */
     protected function getKeyTargets(
         array $keys,
-        bool $withParameters,
+        bool $forNewInstance,
         bool $strict,
         bool $normalised = false,
         array $customKeys = [],
         array $keyClosures = []
     ): IntrospectorKeyTargets {
         if (!$normalised) {
-            // Normalise array keys (i.e. field/property names)
-            $keys = $this->_Class->Normaliser
-                ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
-                : array_combine($keys, $keys);
+            $keys =
+                $this->_Class->Normaliser
+                    ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
+                    : array_combine($keys, $keys);
         }
 
-        // Remove keys for which a closure is provided, because they can't be
-        // resolved before instantiation
+        /** @var array<string,string> $keys Normalised key => original key */
+
+        // Exclude keys with closures because they can't be passed to the
+        // constructor
         $keys = array_diff_key($keys, $keyClosures);
 
-        // Check for missing constructor parameters if preparing an
-        // instantiator, otherwise check for readonly properties
-        if ($withParameters) {
-            if ($missing = array_diff_key($this->_Class->RequiredParameters, $this->_Class->ServiceParameters, $keys)) {
-                throw new UnexpectedValueException("{$this->_Class->Class} constructor requires values for: " . implode(', ', $missing));
+        // Check for missing constructor arguments if preparing an object
+        // factory, otherwise check for readonly properties
+        if ($forNewInstance) {
+            $missing = array_diff_key(
+                $this->_Class->RequiredParameters,
+                $this->_Class->ServiceParameters,
+                $keys,
+            );
+            if ($missing) {
+                throw new LogicException(sprintf(
+                    'Cannot call %s::__construct() without: %s',
+                    $this->_Class->Class,
+                    implode(', ', $missing),
+                ));
             }
         } else {
             // Get keys that correspond to constructor parameters and isolate
@@ -467,75 +480,98 @@ class Introspector
             $parameters = array_intersect_key(
                 $this->_Class->Parameters,
                 $keys,
-                $keyClosures
             );
-            $readonly = array_diff(
-                array_keys($parameters),
-                $this->_Class->getWritableProperties()
+            $readonly = array_diff_key(
+                $parameters,
+                array_flip($this->_Class->getWritableProperties()),
             );
             if ($readonly) {
-                throw new UnexpectedValueException("Cannot set readonly properties of {$this->_Class->Class}: " . implode(', ', $readonly));
+                throw new LogicException(sprintf(
+                    'Cannot set readonly properties of %s: %s',
+                    $this->_Class->Class,
+                    implode(', ', $readonly),
+                ));
             }
         }
 
-        $keys = array_merge($keys, $keyClosures);
+        // Get keys that correspond to date parameters and properties
+        $dateKeys = array_values(array_intersect_key(
+            $keys,
+            array_flip($this->_Class->DateKeys) + $this->_Class->DateParameters,
+        ));
 
-        // Resolve $keys to:
-        // - constructor parameters ($parameterKeys, $passByRefKeys)
-        // - callbacks ($callbackKeys)
-        // - "magic" property methods ($methodKeys)
-        // - properties ($propertyKeys)
-        // - arbitrary properties ($metaKeys)
+        $keys += $keyClosures;
+
+        // Resolve `$keys` to:
         //
-        // Keys that correspond to date parameters or properties are also added
-        // to $dateKeys
-        $parameterKeys = $passByRefKeys = $callbackKeys = $methodKeys = $propertyKeys = $metaKeys = $dateKeys = [];
-
+        // - constructor parameters (`$parameterKeys`, `$passByRefKeys`)
+        // - callbacks (`$callbackKeys`)
+        // - "magic" property methods (`$methodKeys`)
+        // - properties (`$propertyKeys`)
+        // - arbitrary properties (`$metaKeys`)
         foreach ($keys as $normalisedKey => $key) {
             if ($key instanceof Closure) {
                 $callbackKeys[] = $key;
                 continue;
             }
-            if ($withParameters && ($param = $this->_Class->Parameters[$normalisedKey] ?? null)) {
-                $parameterKeys[$key] = $this->_Class->ParameterIndex[$param];
-                if (isset($this->_Class->PassByRefParameters[$normalisedKey])) {
-                    $passByRefKeys[$key] = true;
-                }
-                if (isset($this->_Class->DateParameters[$normalisedKey])) {
-                    $dateKeys[] = $key;
-                    // If found in DateParameters, skip DateKeys check below
-                    continue;
-                }
-            } elseif ($method = $this->_Class->Actions[IntrospectionClass::ACTION_SET][$normalisedKey] ?? null) {
-                $methodKeys[$key] = $method;
-            } elseif ($property = $this->_Class->Properties[$normalisedKey] ?? null) {
-                if (!$this->_Class->propertyActionIsAllowed($normalisedKey, IntrospectionClass::ACTION_SET)) {
-                    if ($strict) {
-                        throw new UnexpectedValueException("Cannot set unwritable property '{$this->_Class->Class}::$property'");
+
+            if ($forNewInstance) {
+                $param = $this->_Class->Parameters[$normalisedKey] ?? null;
+                if ($param !== null) {
+                    $parameterKeys[$key] = $this->_Class->ParameterIndex[$param];
+                    if (isset($this->_Class->PassByRefParameters[$normalisedKey])) {
+                        $passByRefKeys[$key] = true;
                     }
                     continue;
                 }
-                $propertyKeys[$key] = $property;
-            } elseif ($this->_Class->IsExtensible) {
-                $metaKeys[] = $key;
-            } elseif ($strict) {
-                throw new UnexpectedValueException("No matching property or constructor parameter found in {$this->_Class->Class} for '$key'");
-            } else {
+            }
+
+            $method = $this->_Class->Actions[IntrospectionClass::ACTION_SET][$normalisedKey] ?? null;
+            if ($method !== null) {
+                $methodKeys[$key] = $method;
                 continue;
             }
-            if (in_array($normalisedKey, $this->_Class->DateKeys)) {
-                $dateKeys[] = $key;
+
+            $property = $this->_Class->Properties[$normalisedKey] ?? null;
+            if ($property !== null) {
+                if ($this->_Class->propertyActionIsAllowed(
+                    $normalisedKey, IntrospectionClass::ACTION_SET
+                )) {
+                    $propertyKeys[$key] = $property;
+                    continue;
+                }
+                if ($strict) {
+                    throw new LogicException(sprintf(
+                        'Cannot set unwritable property: %s::$%s',
+                        $this->_Class->Class,
+                        $property,
+                    ));
+                }
+                continue;
+            }
+
+            if ($this->_Class->IsExtensible) {
+                $metaKeys[] = $key;
+                continue;
+            }
+
+            if ($strict) {
+                throw new LogicException(sprintf(
+                    'Cannot apply %s to %s',
+                    $key,
+                    $this->_Class->Class,
+                ));
             }
         }
 
         /** @var IntrospectorKeyTargets<TClass,TProvider,TContext> */
         $targets = new IntrospectorKeyTargets(
-            $parameterKeys,
-            $passByRefKeys,
-            $callbackKeys,
-            $methodKeys,
-            $propertyKeys,
-            $metaKeys,
+            $parameterKeys ?? [],
+            $passByRefKeys ?? [],
+            $callbackKeys ?? [],
+            $methodKeys ?? [],
+            $propertyKeys ?? [],
+            $metaKeys ?? [],
             $dateKeys,
             $customKeys,
         );
@@ -787,7 +823,6 @@ class Introspector
     {
         $isProvidable = $this->_Class->IsProvidable;
         $isTreeable = $this->_Class->IsTreeable;
-        $callbackKeys = $targets->Callbacks;
         $methodKeys = $targets->Methods;
         $propertyKeys = $targets->Properties;
         $metaKeys = $targets->MetaProperties;
@@ -804,7 +839,6 @@ class Introspector
         ) use (
             $isProvidable,
             $isTreeable,
-            $callbackKeys,
             $methodKeys,
             $propertyKeys,
             $metaKeys,
@@ -870,15 +904,36 @@ class Introspector
                 }
             }
 
-            if ($callbackKeys) {
-                foreach ($callbackKeys as $callback) {
-                    $callback($array, $obj, $provider, $context);
-                }
-            }
-
             if ($metaKeys) {
                 foreach ($metaKeys as $key) {
                     $obj->setMetaProperty((string) $key, $array[$key]);
+                }
+            }
+
+            return $obj;
+        };
+
+        return $closure->bindTo(null, $this->_Class->Class);
+    }
+
+    /**
+     * @param IntrospectorKeyTargets<TClass,TProvider,TContext> $targets
+     * @return Closure(mixed[], string|null, TClass, TProvider|null, TContext|null): TClass
+     */
+    final protected function _getResolver(IntrospectorKeyTargets $targets): Closure
+    {
+        $callbackKeys = $targets->Callbacks;
+
+        $closure = static function (
+            array $array,
+            ?string $service,
+            $obj,
+            ?IProvider $provider,
+            ?IProviderContext $context
+        ) use ($callbackKeys) {
+            if ($callbackKeys) {
+                foreach ($callbackKeys as $callback) {
+                    $callback($array, $service, $obj, $provider, $context);
                 }
             }
 

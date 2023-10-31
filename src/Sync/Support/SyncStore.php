@@ -3,16 +3,16 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
+use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Event;
 use Lkrms\Store\Concept\SqliteStore;
+use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
-use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Lkrms\Utility\Compute;
@@ -32,6 +32,11 @@ use RuntimeException;
  */
 final class SyncStore extends SqliteStore
 {
+    /**
+     * @var bool
+     */
+    private $ErrorReporting = false;
+
     /**
      * @var int|null
      */
@@ -60,6 +65,7 @@ final class SyncStore extends SqliteStore
      * Entity type ID => entity class
      *
      * @var array<int,string>
+     * @phpstan-ignore-next-line
      */
     private $EntityTypes = [];
 
@@ -101,9 +107,17 @@ final class SyncStore extends SqliteStore
     /**
      * Provider ID => entity type ID => entity ID => [ deferred entity ]
      *
-     * @var array<int,array<int,array<int|string,DeferredSyncEntity[]>>>
+     * @var array<int,array<int,array<int|string,array<DeferredSyncEntity<ISyncEntity>>>>>
      */
     private $DeferredEntities = [];
+
+    /**
+     * Provider ID => entity type ID => requesting entity type ID => requesting
+     * entity property => requesting entity ID => [ deferred relationship ]
+     *
+     * @var array<int,array<int,array<int,array<string,array<int|string,DeferredRelationship<ISyncEntity>[]>>>>>
+     */
+    private $DeferredRelationships = [];
 
     /**
      * @var SyncErrorCollection
@@ -130,7 +144,7 @@ final class SyncStore extends SqliteStore
     /**
      * @var int
      */
-    private $DeferredEntityCheckpoint = 0;
+    private $DeferralCheckpoint = 0;
 
     /**
      * @var string|null
@@ -172,8 +186,11 @@ final class SyncStore extends SqliteStore
      * operations (e.g. a qualified class and/or method name).
      * @param string[] $arguments Arguments passed to the command.
      */
-    public function __construct(string $filename = ':memory:', string $command = '', array $arguments = [])
-    {
+    public function __construct(
+        string $filename = ':memory:',
+        string $command = '',
+        array $arguments = []
+    ) {
         $this->Errors = new SyncErrorCollection();
         $this->Command = $command;
         $this->Arguments = $arguments;
@@ -341,7 +358,10 @@ final class SyncStore extends SqliteStore
         $hash = $this->getProviderHash($provider);
 
         if (isset($this->ProviderMap[$hash])) {
-            throw new LogicException(sprintf('Provider already registered: %s', $class));
+            throw new LogicException(sprintf(
+                'Provider already registered: %s',
+                $class,
+            ));
         }
 
         // Update `last_seen` if the provider is already in the database
@@ -400,7 +420,10 @@ final class SyncStore extends SqliteStore
         $hash = $this->getProviderHash($provider);
         $id = $this->ProviderMap[$hash] ?? null;
         if ($id === null) {
-            throw new LogicException(sprintf('Provider not registered: %s', get_class($provider)));
+            throw new LogicException(sprintf(
+                'Provider not registered: %s',
+                get_class($provider),
+            ));
         }
         return $id;
     }
@@ -542,12 +565,20 @@ final class SyncStore extends SqliteStore
      * @param class-string<ISyncClassResolver>|null $resolver
      * @return $this
      */
-    public function namespace(string $prefix, string $uri, string $namespace, ?string $resolver = null)
-    {
+    public function namespace(
+        string $prefix,
+        string $uri,
+        string $namespace,
+        ?string $resolver = null
+    ) {
         $prefix = strtolower($prefix);
         if (isset($this->RegisteredNamespaces[$prefix]) ||
-                ($this->RunId === null && isset($this->DeferredNamespaces[$prefix]))) {
-            throw new LogicException(sprintf('Prefix already registered: %s', $prefix));
+            ($this->RunId === null &&
+                isset($this->DeferredNamespaces[$prefix]))) {
+            throw new LogicException(sprintf(
+                'Prefix already registered: %s',
+                $prefix,
+            ));
         }
 
         // Namespaces are validated and normalised before deferral because
@@ -555,7 +586,10 @@ final class SyncStore extends SqliteStore
         // `$DeferredNamespaces` is used to ensure it's only done once.
         if (!isset($this->DeferredNamespaces[$prefix])) {
             if (!Pcre::match('/^[a-zA-Z][a-zA-Z0-9+.-]*$/', $prefix)) {
-                throw new LogicException(sprintf('Invalid prefix: %s', $prefix));
+                throw new LogicException(sprintf(
+                    'Invalid prefix: %s',
+                    $prefix,
+                ));
             }
             $uri = rtrim($uri, '/') . '/';
             $namespace = trim($namespace, '\\') . '\\';
@@ -613,8 +647,10 @@ final class SyncStore extends SqliteStore
      * entity namespace.
      * @see SyncStore::namespace()
      */
-    public function getEntityTypeUri(string $entity, bool $compact = true): ?string
-    {
+    public function getEntityTypeUri(
+        string $entity,
+        bool $compact = true
+    ): ?string {
         $prefix = $this->classToNamespace($entity, $uri, $namespace);
         if ($prefix === null) {
             return null;
@@ -647,7 +683,12 @@ final class SyncStore extends SqliteStore
      */
     public function getNamespaceResolver(string $class): ?string
     {
-        if ($this->classToNamespace($class, $uri, $namespace, $resolver) === null) {
+        if ($this->classToNamespace(
+            $class,
+            $uri,
+            $namespace,
+            $resolver
+        ) === null) {
             return null;
         }
 
@@ -703,8 +744,12 @@ final class SyncStore extends SqliteStore
      * @param int|string $entityId
      * @return $this
      */
-    public function entity(int $providerId, string $entityType, $entityId, ISyncEntity $entity)
-    {
+    public function entity(
+        int $providerId,
+        string $entityType,
+        $entityId,
+        ISyncEntity $entity
+    ) {
         $entityTypeId = $this->EntityTypeMap[$entityType];
         if (isset($this->Entities[$providerId][$entityTypeId][$entityId])) {
             throw new LogicException('Entity already registered');
@@ -730,9 +775,10 @@ final class SyncStore extends SqliteStore
      * @param class-string<ISyncEntity> $entityType
      * @param int|string $entityId
      * @param bool|null $offline If `null` (the default), the local entity store
-     * is used if its copy of the entity is sufficiently fresh. If `true`, the
-     * local entity store is used unconditionally. If `false`, the local entity
-     * store is unconditionally ignored.
+     * is used if its copy of the entity is sufficiently fresh, or if the
+     * provider cannot be reached. If `true`, the local entity store is used
+     * unconditionally. If `false`, the local entity store is unconditionally
+     * ignored.
      */
     public function getEntity(
         int $providerId,
@@ -755,42 +801,120 @@ final class SyncStore extends SqliteStore
      * already been registered, `$deferred` is resolved immediately, otherwise
      * it is added to the deferred entity queue.
      *
-     * @param class-string<ISyncEntity> $entityType
+     * @template TEntity of ISyncEntity
+     *
+     * @param class-string<TEntity> $entityType
      * @param int|string $entityId
+     * @param DeferredSyncEntity<TEntity> $deferred
      * @return $this
      */
-    public function deferredEntity(int $providerId, string $entityType, $entityId, DeferredSyncEntity $deferred)
-    {
+    public function deferredEntity(
+        int $providerId,
+        string $entityType,
+        $entityId,
+        DeferredSyncEntity $deferred
+    ) {
         $entityTypeId = $this->EntityTypeMap[$entityType];
         $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
         if ($entity) {
             $deferred->replace($entity);
             return $this;
         }
-        $this->DeferredEntities[$providerId][$entityTypeId][$entityId][$this->DeferredEntityCheckpoint++] = $deferred;
+
+        $context = $deferred->getContext();
+        $flags = $context
+            ? $context->getHydrationFlags($entityType)
+            : 0;
+
+        if ($flags & HydrationFlag::LAZY) {
+            return $this;
+        }
+
+        if ($flags & HydrationFlag::EAGER) {
+            $deferred->resolve();
+            return $this;
+        }
+
+        $this->DeferredEntities[$providerId][$entityTypeId][$entityId][
+            $this->DeferralCheckpoint++
+        ] = $deferred;
         return $this;
     }
 
     /**
-     * Get a checkpoint to delineate between entities already in the deferred
-     * entity queue and any subsequently deferred sync entities
+     * Register a deferred sync entity relationship
+     *
+     * @template TEntity of ISyncEntity
+     *
+     * @param class-string<TEntity> $entityType
+     * @param class-string<ISyncEntity> $forEntityType
+     * @param int|string $forEntityId
+     * @param DeferredRelationship<TEntity> $deferred
+     * @return $this
+     */
+    public function deferredRelationship(
+        int $providerId,
+        string $entityType,
+        string $forEntityType,
+        string $forEntityProperty,
+        $forEntityId,
+        DeferredRelationship $deferred
+    ) {
+        $entityTypeId = $this->EntityTypeMap[$entityType];
+        $forEntityTypeId = $this->EntityTypeMap[$forEntityType];
+
+        $deferredList =
+            &$this->DeferredRelationships[$providerId][$entityTypeId][
+                $forEntityTypeId
+            ][$forEntityProperty][$forEntityId];
+
+        // @phpstan-ignore-next-line
+        if (isset($deferredList)) {
+            throw new LogicException('Relationship already registered');
+        }
+
+        // @phpstan-ignore-next-line
+        $deferredList = [];
+
+        $context = $deferred->getContext();
+        $flags = $context
+            ? $context->getHydrationFlags($entityType)
+            : 0;
+
+        if ($flags & HydrationFlag::LAZY) {
+            return $this;
+        }
+
+        if ($flags & HydrationFlag::EAGER) {
+            $deferred->resolve();
+            return $this;
+        }
+
+        $deferredList[$this->DeferralCheckpoint++] = $deferred;
+        return $this;
+    }
+
+    /**
+     * Get a checkpoint to delineate between deferred entities and relationships
+     * already in their respective queues, and any subsequent deferrals
      *
      * Use the return value of this method with
-     * {@see SyncStore::resolveDeferredEntities()} to limit the range of
+     * {@see SyncStore::resolveDeferredEntities()} and
+     * {@see SyncStore::resolveDeferredRelationships()} to limit the range of
      * entities to resolve, e.g. to those produced by a particular operation.
      */
-    public function getDeferredEntityCheckpoint(): int
+    public function getDeferralCheckpoint(): int
     {
-        return $this->DeferredEntityCheckpoint;
+        return $this->DeferralCheckpoint;
     }
 
     /**
      * Resolve deferred sync entities from their respective providers and/or the
      * local entity store
      *
-     * @param class-string<ISyncEntity> $entityType
+     * @param class-string<ISyncEntity>|null $entityType
      * @param bool|null $offline If `null` (the default), the local entity store
-     * is used if its copy of the entity is sufficiently fresh, or if the
+     * is used if its copy of the entities is sufficiently fresh, or if the
      * provider cannot be reached. If `true`, the local entity store is used
      * unconditionally. If `false`, the local entity store is unconditionally
      * ignored.
@@ -811,7 +935,6 @@ final class SyncStore extends SqliteStore
             if ($providerId !== null && $provId !== $providerId) {
                 continue;
             }
-            $provider = $this->Providers[$provId];
             foreach ($entitiesByTypeId as $entTypeId => $entities) {
                 if ($entityTypeId !== null && $entTypeId !== $entityTypeId) {
                     continue;
@@ -819,12 +942,12 @@ final class SyncStore extends SqliteStore
 
                 if ($fromCheckpoint !== null) {
                     $_entities = $entities;
-                    foreach ($_entities as $id => $deferredList) {
-                        foreach ($deferredList as $index => $deferred) {
-                            if ($index < $fromCheckpoint) {
-                                unset($_entities[$id][$index]);
-                                if (!$_entities[$id]) {
-                                    unset($_entities[$id]);
+                    foreach ($_entities as $entityId => $deferred) {
+                        foreach ($deferred as $i => $deferredEntity) {
+                            if ($i < $fromCheckpoint) {
+                                unset($_entities[$entityId][$i]);
+                                if (!$_entities[$entityId]) {
+                                    unset($_entities[$entityId]);
                                 }
                             }
                         }
@@ -835,28 +958,82 @@ final class SyncStore extends SqliteStore
                     $entities = $_entities;
                 }
 
-                /** @var class-string<ISyncEntity> */
-                $entityType = $this->EntityTypes[$entTypeId];
-                $entityProvider = $provider->with($entityType);
-                if ($offline === true) {
-                    $entityProvider = $entityProvider->offline();
-                } elseif ($offline === false) {
-                    $entityProvider = $entityProvider->online();
-                }
-                $entityIds = array_keys($entities);
-                try {
-                    $list = $entityProvider->getListA(['id' => $entityIds]);
-                    array_push($resolved, ...$list);
-                } catch (SyncOperationNotImplementedException|SyncFilterPolicyViolationException $ex) {
-                    foreach ($entityIds as $entityId) {
-                        $entity = $entityProvider->get($entityId);
-                        $resolved[] = $entity;
-                    }
+                foreach ($entities as $entityId => $deferred) {
+                    $deferredEntity = reset($deferred);
+                    $resolved[] = $deferredEntity->resolve($offline);
                 }
             }
         }
 
         return $resolved;
+    }
+
+    /**
+     * Resolve deferred sync entity relationships from their respective
+     * providers and/or the local entity store
+     *
+     * @param class-string<ISyncEntity>|null $entityType
+     * @param class-string<ISyncEntity>|null $forEntityType
+     * @param bool|null $offline If `null` (the default), the local entity store
+     * is used if its copy of the entities is sufficiently fresh, or if the
+     * provider cannot be reached. If `true`, the local entity store is used
+     * unconditionally. If `false`, the local entity store is unconditionally
+     * ignored.
+     */
+    public function resolveDeferredRelationships(
+        ?int $fromCheckpoint = null,
+        ?int $providerId = null,
+        ?string $entityType = null,
+        ?string $forEntityType = null,
+        ?bool $offline = null
+    ): int {
+        $entityTypeId = $entityType === null
+            ? null
+            : $this->EntityTypeMap[$entityType];
+        $forEntityTypeId = $forEntityType === null
+            ? null
+            : $this->EntityTypeMap[$forEntityType];
+
+        $count = 0;
+        foreach ($this->DeferredRelationships as $provId => $relationshipsByEntTypeId) {
+            if ($providerId !== null && $provId !== $providerId) {
+                continue;
+            }
+            foreach ($relationshipsByEntTypeId as $entTypeId => $relationshipsByForEntTypeId) {
+                if ($entityTypeId !== null && $entTypeId !== $entityTypeId) {
+                    continue;
+                }
+                foreach ($relationshipsByForEntTypeId as $forEntTypeId => $relationshipsByForEntProp) {
+                    if ($forEntityTypeId !== null && $forEntTypeId !== $forEntityTypeId) {
+                        continue;
+                    }
+                    foreach ($relationshipsByForEntProp as $forEntProp => $relationshipsByForEntId) {
+                        foreach ($relationshipsByForEntId as $forEntId => $relationships) {
+                            if ($fromCheckpoint !== null) {
+                                $_relationships = $relationships;
+                                foreach ($_relationships as $index => $deferred) {
+                                    if ($index < $fromCheckpoint) {
+                                        unset($_relationships[$index]);
+                                    }
+                                }
+                                if (!$_relationships) {
+                                    continue;
+                                }
+                                $relationships = $_relationships;
+                            }
+
+                            foreach ($relationships as $index => $deferred) {
+                                $deferred->resolve($offline);
+                                unset($this->DeferredRelationships[$provId][$entTypeId][$forEntTypeId][$forEntProp][$forEntId][$index]);
+                                $count++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $count;
     }
 
     /**
@@ -868,8 +1045,11 @@ final class SyncStore extends SqliteStore
      *
      * @return $this
      */
-    public function checkHeartbeats(int $ttl = 300, bool $failEarly = true, ISyncProvider ...$providers)
-    {
+    public function checkHeartbeats(
+        int $ttl = 300,
+        bool $failEarly = true,
+        ISyncProvider ...$providers
+    ) {
         $this->check();
 
         if ($providers) {
@@ -901,7 +1081,7 @@ final class SyncStore extends SqliteStore
                 Console::log('No heartbeat:', $name);
                 $failed[] = $provider;
                 $this->error(
-                    SyncErrorBuilder::build()
+                    SyncError::build()
                         ->errorType(SyncErrorType::BACKEND_UNREACHABLE)
                         ->message('Heartbeat check failed: %s')
                         ->values([[
@@ -925,12 +1105,34 @@ final class SyncStore extends SqliteStore
     }
 
     /**
+     * Report sync errors to the console as they occur (disabled by default)
+     *
+     * @return $this
+     */
+    public function enableErrorReporting()
+    {
+        $this->ErrorReporting = true;
+        return $this;
+    }
+
+    /**
+     * Disable sync error reporting
+     *
+     * @return $this
+     */
+    public function disableErrorReporting()
+    {
+        $this->ErrorReporting = false;
+        return $this;
+    }
+
+    /**
      * Report an error that occurred during a sync operation
      *
      * @param SyncError|SyncErrorBuilder $error
      * @return $this
      */
-    public function error($error, bool $deduplicate = false, bool $toConsole = false)
+    public function error($error, bool $deduplicate = false)
     {
         if ($error instanceof SyncErrorBuilder) {
             $error = $error->go();
@@ -940,45 +1142,45 @@ final class SyncStore extends SqliteStore
             ? $this->Errors->get($error)
             : false;
 
-        if (!$seen) {
-            $this->Errors[] = $error;
-
-            switch ($error->Level) {
-                case Level::EMERGENCY:
-                case Level::ALERT:
-                case Level::CRITICAL:
-                case Level::ERROR:
-                    $this->ErrorCount++;
-                    break;
-                case Level::WARNING:
-                    $this->WarningCount++;
-                    break;
-            }
-        } else {
+        if ($seen) {
             $seen->count();
-        }
-
-        if ($toConsole) {
-            $args = [
-                $error->Level,
-                '[' . SyncErrorType::toName($error->ErrorType) . ']',
-                sprintf($error->Message, ...Convert::toScalarArray($error->Values)),
-            ];
-
-            if ($deduplicate) {
-                Console::messageOnce(...$args);
-            } else {
-                Console::message(...$args);
-            }
-        } else {
             Console::count($error->Level);
+            return $this;
         }
+
+        $this->Errors[] = $error;
+
+        switch ($error->Level) {
+            case Level::EMERGENCY:
+            case Level::ALERT:
+            case Level::CRITICAL:
+            case Level::ERROR:
+                $this->ErrorCount++;
+                break;
+            case Level::WARNING:
+                $this->WarningCount++;
+                break;
+        }
+
+        if (!$this->ErrorReporting) {
+            Console::count($error->Level);
+            return $this;
+        }
+
+        Console::message(
+            $error->Level,
+            '[' . SyncErrorType::toName($error->ErrorType) . ']',
+            sprintf(
+                $error->Message,
+                ...Convert::toScalarArray($error->Values),
+            ),
+        );
 
         return $this;
     }
 
     /**
-     * Get sync operation errors recorded so far
+     * Get sync errors recorded so far
      */
     public function getErrors(): SyncErrorCollection
     {
@@ -986,33 +1188,44 @@ final class SyncStore extends SqliteStore
     }
 
     /**
-     * Report sync operation errors to the console
+     * Report sync errors recorded so far to the console
      *
      * If no sync-related errors or warnings have been recorded, `$successText`
      * is printed with level NOTICE.
      *
      * @return $this
      */
-    public function reportErrors(string $successText = 'No sync errors recorded')
-    {
+    public function reportErrors(
+        string $successText = 'No sync errors recorded'
+    ) {
         if (!$this->ErrorCount && !$this->WarningCount) {
             Console::info($successText);
             return $this;
         }
 
-        $msg1 = Convert::plural($this->ErrorCount, 'sync error', null, true)
-            . ($this->WarningCount
-                ? ' and ' . Convert::plural($this->WarningCount, 'warning', null, true)
-                : '') . ' recorded:';
-        $msg2 = "\n" . $this->Errors->toString(true);
+        $level = $this->ErrorCount
+            ? Level::ERROR
+            : Level::WARNING;
 
         // Print a message with level ERROR or WARNING as appropriate without
         // Console recording an additional error or warning
-        if ($this->ErrorCount) {
-            Console::error($msg1, $msg2, null, false);
-        } else {
-            Console::warn($msg1, $msg2, null, false);
-        }
+        Console::message(
+            $level,
+            Convert::plural($this->ErrorCount, 'sync error', null, true)
+                . ($this->WarningCount
+                    ? ' and ' . Convert::plural($this->WarningCount, 'warning', null, true)
+                    : '') . ' recorded:',
+            null,
+            MessageType::DEFAULT,
+            null,
+            false,
+        );
+
+        Console::print(
+            $this->Errors->toString(true),
+            $level,
+            MessageType::UNFORMATTED,
+        );
 
         return $this;
     }

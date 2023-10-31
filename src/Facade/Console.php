@@ -35,8 +35,8 @@ use Throwable;
  * @method static ConsoleWriter logOnce(string $msg1, ?string $msg2 = null) Print " -> $msg1 $msg2" with level INFO once per run
  * @method static ConsoleWriter logProgress(string $msg1, ?string $msg2 = null) Print " -> $msg1 $msg2" with level INFO to TTY targets without moving to the next line (see {@see ConsoleWriter::logProgress()})
  * @method static ConsoleWriter maybeClearLine() Print a "clear to end of line" control sequence with level INFO to any TTY targets with a pending logProgress() message (see {@see ConsoleWriter::maybeClearLine()})
- * @method static ConsoleWriter message(Level::* $level, string $msg1, ?string $msg2 = null, Type::* $type = Type::DEFAULT, ?Throwable $ex = null) Print "$msg1 $msg2" with prefix and formatting optionally based on $level (see {@see ConsoleWriter::message()})
- * @method static ConsoleWriter messageOnce(Level::* $level, string $msg1, ?string $msg2 = null, Type::* $type = Type::DEFAULT, ?Throwable $ex = null) Print "$msg1 $msg2" with prefix and formatting optionally based on $level once per run (see {@see ConsoleWriter::messageOnce()})
+ * @method static ConsoleWriter message(Level::* $level, string $msg1, ?string $msg2 = null, Type::* $type = Type::DEFAULT, ?Throwable $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level (see {@see ConsoleWriter::message()})
+ * @method static ConsoleWriter messageOnce(Level::* $level, string $msg1, ?string $msg2 = null, Type::* $type = Type::DEFAULT, ?Throwable $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level once per run (see {@see ConsoleWriter::messageOnce()})
  * @method static ConsoleWriter out(string $msg, Level::* $level = Level::INFO, Type::* $type = Type::UNDECORATED) Print "$msg" to I/O stream targets (STDOUT or STDERR)
  * @method static ConsoleWriter print(string $msg, Level::* $level = Level::INFO, Type::* $type = Type::UNDECORATED) Print "$msg"
  * @method static ConsoleWriter registerDefaultOutputLog() Register the default output log as a target for all console messages (see {@see ConsoleWriter::registerDefaultOutputLog()})

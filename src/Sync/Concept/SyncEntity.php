@@ -29,6 +29,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncEntityNotFoundException;
+use Lkrms\Sync\Support\DeferredRelationship;
 use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
@@ -395,42 +396,6 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
             : Sync::getInstance();
     }
 
-    /**
-     * Defer instantiation of an entity or list of entities
-     *
-     * @param int|string|int[]|string[] $deferred Either an entity ID or a list
-     * of entity IDs.
-     * @param array<ISyncEntity|DeferredSyncEntity>|ISyncEntity|DeferredSyncEntity|null $replace
-     * The variable to replace when the entity or list of entities is resolved.
-     * @param class-string<ISyncEntity>|null $entity The entity to instantiate.
-     * If `null`, the return value of {@see SyncEntity::service()} is used.
-     */
-    final protected function defer($deferred, &$replace, ?string $entity = null): void
-    {
-        if (!$this->Provider || !$this->Context) {
-            throw new LogicException('Cannot defer without provider and context');
-        }
-
-        if (is_array($deferred)) {
-            DeferredSyncEntity::deferList(
-                $this->Provider,
-                $this->Context->push($this),
-                $entity ?? $this->service(),
-                $deferred,
-                $replace,
-            );
-            return;
-        }
-
-        DeferredSyncEntity::defer(
-            $this->Provider,
-            $this->Context->push($this),
-            $entity ?? $this->service(),
-            $deferred,
-            $replace,
-        );
-    }
-
     private function typeUri(bool $compact): string
     {
         $service = $this->service();
@@ -453,7 +418,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     }
 
     /**
-     * @param SyncEntity|DeferredSyncEntity|mixed[] $node
+     * @param SyncEntity|DeferredSyncEntity<SyncEntity>|DeferredRelationship<SyncEntity>|mixed[] $node
      * @param string[] $path
      * @param SerializeRules<static> $rules
      * @param array<int,true> $parents
@@ -462,6 +427,13 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     {
         if (!is_null($maxDepth = $rules->getMaxDepth()) && count($path) > $maxDepth) {
             throw new RuntimeException('In too deep: ' . implode('.', $path));
+        }
+
+        /** @todo Serialize deferred relationships */
+        if ($node instanceof DeferredRelationship) {
+            $node = null;
+
+            return;
         }
 
         if ($node instanceof DeferredSyncEntity) {
