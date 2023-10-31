@@ -12,6 +12,27 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.20.84] - 2023-10-31
+
+### Added
+
+- Add `Inflect` class with `indefinite()` method that determines which indefinite article ("a" or "an") to use before a word
+- Add `Arr::first()` and `Arr::last()`
+
+### Changed
+
+`generate sync entity` command:
+- Add a default description to entity classes
+
+`generate sync provider` command:
+- Only use `FluentIteratorInterface` as a magic method return type
+
+- Add `.gitattributes` file to reduce package size
+
+### Removed
+
+- Remove `--extend` option from `generate sync provider` command
+
 ## [v0.20.83] - 2023-10-30
 
 ### Added
@@ -486,6 +507,7 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.20.84]: https://github.com/lkrms/php-util/compare/v0.20.83...v0.20.84
 [v0.20.83]: https://github.com/lkrms/php-util/compare/v0.20.82...v0.20.83
 [v0.20.82]: https://github.com/lkrms/php-util/compare/v0.20.81...v0.20.82
 [v0.20.81]: https://github.com/lkrms/php-util/compare/v0.20.80...v0.20.81
