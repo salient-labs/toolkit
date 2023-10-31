@@ -19,6 +19,14 @@ interface ICliApplication extends IApplication
     public function getRunningCommand(): ?ICliCommand;
 
     /**
+     * Get the return value most recently recorded by run()
+     *
+     * Returns `0` if {@see ICliApplication::run()} has not recorded a return
+     * value.
+     */
+    public function getLastExitStatus(): int;
+
+    /**
      * Register a command with the container
      *
      * @param string[] $name The name of the command as an array of subcommands.
@@ -84,30 +92,44 @@ interface ICliApplication extends IApplication
     public function buildHelp(array $sections): string;
 
     /**
-     * Process command-line arguments passed to the script
+     * Process command-line arguments passed to the script and record a return
+     * value
      *
      * The first applicable action is taken:
      *
      * - If `--help` is the only remaining argument after processing subcommand
-     *   arguments, a help message is printed to `STDOUT` and `0` is returned.
+     *   arguments, a help message is printed to `STDOUT` and the return value
+     *   is `0`.
      * - If `--version` is the only remaining argument, the application's name
-     *   and version number is printed to `STDOUT` and `0` is returned.
+     *   and version number is printed to `STDOUT` and the return value is `0`.
      * - If subcommand arguments resolve to a registered command, it is invoked
-     *   and its exit status is returned.
+     *   and the return value is its exit status.
      * - If, after processing subcommand arguments, there are no further
      *   arguments but there are further subcommands, a one-line synopsis of
-     *   each registered subcommand is printed and `0` is returned.
+     *   each registered subcommand is printed and the return value is `0`.
      *
      * Otherwise, an error is reported, a one-line synopsis of each registered
-     * subcommand is printed, and `1` is returned.
+     * subcommand is printed, and the return value is `1`.
+     *
+     * @return $this
      */
-    public function run(): int;
+    public function run();
+
+    /**
+     * Exit with the return value most recently recorded by run()
+     *
+     * The exit status is `0` if {@see ICliApplication::run()} has not recorded
+     * a return value.
+     *
+     * @return never
+     */
+    public function exit();
 
     /**
      * Exit after processing command-line arguments passed to the script
      *
-     * The value returned by {@see ICliApplication::run()} is used as the exit
-     * status.
+     * The return value recorded by {@see ICliApplication::run()} is used as the
+     * exit status.
      *
      * @return never
      */
