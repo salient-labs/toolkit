@@ -42,6 +42,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Lkrms\\LkUtil\\": "lk-util/",
             "Lkrms\\Tests\\": [
                 "tests/unit/",
                 "tests/fixtures/"

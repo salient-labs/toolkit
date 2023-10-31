@@ -1,7 +1,7 @@
 {
     "src": [
         "bin/lk-util",
-        "lib",
+        "lk-util",
         "scripts",
         "src",
         "stubs",

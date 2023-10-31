@@ -6,7 +6,7 @@ parameters:
 	level: 6
 	paths:
 		- bin/lk-util
-		- lib
+		- lk-util
 		- scripts
 		- src
 		- stubs

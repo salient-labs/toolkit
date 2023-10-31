@@ -10,7 +10,9 @@ use Lkrms\LkUtil\Command\Generate\GenerateSyncProvider;
 use Lkrms\LkUtil\Command\Http\SendHttpRequest;
 use Lkrms\Sync\Command\CheckSyncProviderHeartbeat;
 
-$loader = require $GLOBALS['_composer_autoload_path'] ?? dirname(dirname(__DIR__)) . '/vendor/autoload.php';
+$loader = require $_composer_autoload_path
+    ?? dirname(__DIR__) . '/vendor/autoload.php';
+
 $loader->addPsr4('Lkrms\\LkUtil\\', __DIR__);
 
 (new CliApplication())
