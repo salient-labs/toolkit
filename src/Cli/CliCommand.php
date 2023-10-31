@@ -241,15 +241,15 @@ abstract class CliCommand implements ICliCommand
         try {
             $option->validate();
         } catch (CliUnknownValueException $ex) {
-            $this->deferOptionError($ex->getMessage());
+            // If an exception is thrown over a value found in the environment,
+            // defer it because we may only be loading options to generate a
+            // synopsis
+            $this->DeferredOptionErrors[] = $ex->getMessage();
         }
 
         $names = $option->getNames();
 
-        if (array_intersect_key(
-            array_flip($names),
-            $this->OptionsByName
-        )) {
+        if (array_intersect_key(array_flip($names), $this->OptionsByName)) {
             throw new LogicException('Option names must be unique: ' . implode(', ', $names));
         }
 
@@ -262,6 +262,7 @@ abstract class CliCommand implements ICliCommand
                     )) {
                 throw new LogicException('Required positional options must be added before optional ones');
             }
+
             if (!$option->Required &&
                     array_filter(
                         $this->PositionalOptions,
@@ -270,6 +271,7 @@ abstract class CliCommand implements ICliCommand
                     )) {
                 throw new LogicException("'multipleAllowed' positional options must be added after optional ones");
             }
+
             if ($option->MultipleAllowed &&
                     array_filter(
                         $this->PositionalOptions,
@@ -690,34 +692,8 @@ abstract class CliCommand implements ICliCommand
         return $this;
     }
 
-    /**
-     * Record an option-related error to report only if the command is running
-     *
-     * @return $this
-     * @phpstan-impure
-     */
-    private function deferOptionError(string $message)
+    private function loadOptionValues(): void
     {
-        $this->DeferredOptionErrors[] = $message;
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    private function loadOptionValues()
-    {
-        if ($this->OptionValues !== null) {
-            return $this;
-        }
-
-        $this->ArgumentValues = [];
-        $this->OptionErrors = [];
-        $this->NextArgumentIndex = null;
-        $this->HasHelpArgument = false;
-        $this->HasVersionArgument = false;
-
         $this->loadOptions();
 
         try {
@@ -764,8 +740,6 @@ abstract class CliCommand implements ICliCommand
                     ...$this->DeferredOptionErrors
                 );
             }
-
-            return $this;
         } catch (Throwable $ex) {
             $this->OptionValues = null;
 
@@ -1225,9 +1199,9 @@ abstract class CliCommand implements ICliCommand
      */
     final public function __invoke(string ...$args): int
     {
+        $this->reset();
+
         $this->Arguments = $args;
-        $this->OptionValues = null;
-        $this->ExitStatus = 0;
         $this->Runs++;
 
         $this->loadOptionValues();
@@ -1306,6 +1280,18 @@ abstract class CliCommand implements ICliCommand
     final protected function getRuns(): int
     {
         return $this->Runs;
+    }
+
+    private function reset(): void
+    {
+        $this->Arguments = [];
+        $this->ArgumentValues = [];
+        $this->OptionValues = null;
+        $this->OptionErrors = [];
+        $this->NextArgumentIndex = null;
+        $this->HasHelpArgument = false;
+        $this->HasVersionArgument = false;
+        $this->ExitStatus = 0;
     }
 
     private function getLoopbackFormatter(): Formatter

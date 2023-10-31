@@ -36,7 +36,7 @@ class CliApplication extends Application implements ICliApplication
     private $RunningCommand;
 
     /**
-     * @var CliHelpType::*
+     * @var int&CliHelpType::*
      */
     private $HelpType = CliHelpType::TTY;
 
@@ -44,6 +44,11 @@ class CliApplication extends Application implements ICliApplication
      * @var CliHelpStyle|null
      */
     private $HelpStyle;
+
+    /**
+     * @var int
+     */
+    private $LastExitStatus = 0;
 
     public function __construct(
         ?string $basePath = null,
@@ -67,9 +72,20 @@ class CliApplication extends Application implements ICliApplication
         Sys::handleExitSignals();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getRunningCommand(): ?CliCommand
     {
         return $this->RunningCommand;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLastExitStatus(): int
+    {
+        return $this->LastExitStatus;
     }
 
     /**
@@ -336,8 +352,10 @@ class CliApplication extends Application implements ICliApplication
     /**
      * @inheritDoc
      */
-    public function run(): int
+    public function run()
     {
+        $this->LastExitStatus = 0;
+
         $args = array_slice($_SERVER['argv'], 1);
 
         $lastNode = null;
@@ -352,7 +370,7 @@ class CliApplication extends Application implements ICliApplication
             if ($arg === '--help' && !$args) {
                 $usage = $this->getUsage($name, $node);
                 Console::stdout($usage);
-                return 0;
+                return $this;
             }
 
             // or version number if it's "--version"
@@ -360,7 +378,7 @@ class CliApplication extends Application implements ICliApplication
                 $appName = $this->getAppName();
                 $version = Composer::getRootPackageVersion(true, true);
                 Console::stdout("__{$appName}__ $version");
-                return 0;
+                return $this;
             }
 
             // - If $args was empty before this iteration, print terse usage
@@ -371,9 +389,11 @@ class CliApplication extends Application implements ICliApplication
                     !preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $arg)) {
                 $usage = $this->getUsage($name, $node, true);
                 Console::out($usage);
-                return $arg === null
-                    ? 0
-                    : 1;
+                $this->LastExitStatus =
+                    $arg === null
+                        ? 0
+                        : 1;
+                return $this;
             }
 
             // Descend into the command tree if $arg is a registered subcommand
@@ -406,12 +426,14 @@ class CliApplication extends Application implements ICliApplication
 
         if (($args[0] ?? null) === '_md') {
             array_shift($args);
-            return $this->generateHelp($name, $node, CliHelpType::MARKDOWN, ...$args);
+            $this->generateHelp($name, $node, CliHelpType::MARKDOWN, ...$args);
+            return $this;
         }
 
         if (($args[0] ?? null) === '_man') {
             array_shift($args);
-            return $this->generateHelp($name, $node, CliHelpType::MAN_PAGE, ...$args);
+            $this->generateHelp($name, $node, CliHelpType::MAN_PAGE, ...$args);
+            return $this;
         }
 
         $command = $this->getNodeCommand($name, $node);
@@ -422,7 +444,8 @@ class CliApplication extends Application implements ICliApplication
                 );
             }
             $this->RunningCommand = $command;
-            return $command(...$args);
+            $this->LastExitStatus = $command(...$args);
+            return $this;
         } catch (CliInvalidArgumentsException $ex) {
             $ex->reportErrors();
             if (!$node) {
@@ -433,22 +456,34 @@ class CliApplication extends Application implements ICliApplication
                     ($usage = $this->getUsage($name, $node, true)) !== null) {
                 Console::out("\n{$usage}");
             }
-            return 1;
+            $this->LastExitStatus = 1;
+            return $this;
         } finally {
             $this->RunningCommand = null;
         }
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function exit()
+    {
+        exit ($this->LastExitStatus);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function runAndExit()
     {
-        exit ($this->run());
+        $this->run()->exit();
     }
 
     /**
      * @param array<string,class-string<CliCommand>|mixed[]>|class-string<CliCommand> $node
      * @param CliHelpType::* $helpType
      */
-    private function generateHelp(string $name, $node, int $helpType, string ...$args): int
+    private function generateHelp(string $name, $node, int $helpType, string ...$args): void
     {
         $this->HelpType = $helpType;
         $this->HelpStyle = null;
@@ -477,7 +512,5 @@ class CliApplication extends Application implements ICliApplication
         $usage = $this->getUsage($name, $node);
         $usage = $formatter->formatTags($usage, false, null, false);
         printf("%s\n", str_replace('\ ', ' ', $usage));
-
-        return 0;
     }
 }
