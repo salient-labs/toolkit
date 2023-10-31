@@ -4,7 +4,7 @@ namespace Lkrms\Tests\Utility;
 
 use Lkrms\Utility\File;
 
-final class FilesystemTest extends \Lkrms\Tests\TestCase
+final class FileTest extends \Lkrms\Tests\TestCase
 {
     public function testGetStablePath(): void
     {

@@ -1,23 +1,23 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Utility\Reflection;
+namespace Lkrms\Tests\Utility\Reflect;
 
 /**
- * MyBaseTrait
+ * MyTrait
  */
-trait MyBaseTrait
+trait MyTrait
 {
-    use MyReusedTrait;
+    use MyBaseTrait;
 
     /**
-     * MyBaseTrait::$MyDocumentedProperty PHPDoc
+     * MyTrait::$MyDocumentedProperty PHPDoc
      *
      * @var mixed
      */
     public $MyDocumentedProperty;
 
     /**
-     * MyBaseTrait::MyDocumentedMethod() PHPDoc
+     * MyTrait::MyDocumentedMethod() PHPDoc
      *
      * @return mixed
      */

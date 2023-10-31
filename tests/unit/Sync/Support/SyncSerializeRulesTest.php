@@ -8,7 +8,7 @@ use Lkrms\Tests\Sync\CustomEntity\Post as CustomPost;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 
-final class SerializeRulesTest extends \Lkrms\Tests\TestCase
+final class SyncSerializeRulesTest extends \Lkrms\Tests\TestCase
 {
     public function testApply(): void
     {

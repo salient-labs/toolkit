@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Support;
+namespace Lkrms\Tests\Support\PhpDoc;
 
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use UnexpectedValueException;
 
-final class PhpDocParserTest extends \Lkrms\Tests\TestCase
+final class PhpDocTest extends \Lkrms\Tests\TestCase
 {
     /**
      * @dataProvider invalidDocBlockProvider

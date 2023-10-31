@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Concept;
+namespace Lkrms\Tests\Concern;
 
-use Lkrms\Tests\Concept\HasMutator\MyMutatingClass;
+use Lkrms\Tests\Concern\HasMutator\MyMutatingClass;
 use LogicException;
 
 final class HasMutatorTest extends \Lkrms\Tests\TestCase
