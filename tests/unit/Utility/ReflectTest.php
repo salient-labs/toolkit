@@ -2,17 +2,17 @@
 
 namespace Lkrms\Tests\Utility;
 
-use Lkrms\Tests\Utility\Reflection\MyBaseClass;
-use Lkrms\Tests\Utility\Reflection\MyBaseInterface;
-use Lkrms\Tests\Utility\Reflection\MyBaseTrait;
-use Lkrms\Tests\Utility\Reflection\MyClass;
-use Lkrms\Tests\Utility\Reflection\MyClassWithDnfTypes;
-use Lkrms\Tests\Utility\Reflection\MyClassWithUnionsAndIntersections;
-use Lkrms\Tests\Utility\Reflection\MyInterface;
-use Lkrms\Tests\Utility\Reflection\MyOtherInterface;
-use Lkrms\Tests\Utility\Reflection\MyReusedTrait;
-use Lkrms\Tests\Utility\Reflection\MySubclass;
-use Lkrms\Tests\Utility\Reflection\MyTrait;
+use Lkrms\Tests\Utility\Reflect\MyBaseClass;
+use Lkrms\Tests\Utility\Reflect\MyBaseInterface;
+use Lkrms\Tests\Utility\Reflect\MyBaseTrait;
+use Lkrms\Tests\Utility\Reflect\MyClass;
+use Lkrms\Tests\Utility\Reflect\MyClassWithDnfTypes;
+use Lkrms\Tests\Utility\Reflect\MyClassWithUnionsAndIntersections;
+use Lkrms\Tests\Utility\Reflect\MyInterface;
+use Lkrms\Tests\Utility\Reflect\MyOtherInterface;
+use Lkrms\Tests\Utility\Reflect\MyReusedTrait;
+use Lkrms\Tests\Utility\Reflect\MySubclass;
+use Lkrms\Tests\Utility\Reflect\MyTrait;
 use Lkrms\Utility\Reflect;
 use Generator;
 use ReflectionClass;
@@ -26,9 +26,9 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
     public function testGetNames(): void
     {
         $expected = [
-            'Lkrms\Tests\Utility\Reflection\MyClass',
-            'Lkrms\Tests\Utility\Reflection\MyInterface',
-            'Lkrms\Tests\Utility\Reflection\MyTrait',
+            'Lkrms\Tests\Utility\Reflect\MyClass',
+            'Lkrms\Tests\Utility\Reflect\MyInterface',
+            'Lkrms\Tests\Utility\Reflect\MyTrait',
             'MY_CONSTANT',
             'MyDocumentedMethod',
             'parent',
@@ -92,8 +92,8 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
                 [],
                 ['int'],
                 ['string'],
-                ['Lkrms\Tests\Utility\Reflection\MyClass'],
-                ['Lkrms\Tests\Utility\Reflection\MyClass'],
+                ['Lkrms\Tests\Utility\Reflect\MyClass'],
+                ['Lkrms\Tests\Utility\Reflect\MyClass'],
             ],
             MyClass::class,
             '__construct',
@@ -106,15 +106,15 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
                     ['int'],
                     ['string'],
                     ['Countable', 'ArrayAccess'],
-                    ['Lkrms\Tests\Utility\Reflection\MyBaseClass'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
+                    ['Lkrms\Tests\Utility\Reflect\MyBaseClass'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass'],
                     ['string'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string', 'null'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'array'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string', 'null'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'string'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'string', 'null'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'array'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'string', 'null'],
                     ['string'],
                 ],
                 MyClassWithUnionsAndIntersections::class,
@@ -129,20 +129,20 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
                     ['int'],
                     ['string'],
                     ['Countable', 'ArrayAccess'],
-                    ['Lkrms\Tests\Utility\Reflection\MyBaseClass'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass'],
+                    ['Lkrms\Tests\Utility\Reflect\MyBaseClass'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass'],
                     ['string'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string', 'null'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'array'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'string', 'null'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'Countable', 'ArrayAccess', 'string'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'Countable', 'ArrayAccess', 'array'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
-                    ['Lkrms\Tests\Utility\Reflection\MyClass', 'Countable', 'ArrayAccess', 'null'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'string'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'string', 'null'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'array'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'string', 'null'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'array'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'string', 'null'],
+                    ['Lkrms\Tests\Utility\Reflect\MyClass', 'Countable', 'ArrayAccess', 'null'],
                     ['string'],
                 ],
                 MyClassWithDnfTypes::class,
@@ -344,7 +344,7 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
                     '?int',
                     'string',
                     '\Countable&\ArrayAccess',
-                    '\Lkrms\Tests\Utility\Reflection\MyBaseClass',
+                    '\Lkrms\Tests\Utility\Reflect\MyBaseClass',
                     '?MyClass',
                     '?MyClass',
                     '?MyClass',
@@ -367,7 +367,7 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
                     '?int',
                     'string',
                     '\Countable&\ArrayAccess',
-                    '\Lkrms\Tests\Utility\Reflection\MyBaseClass',
+                    '\Lkrms\Tests\Utility\Reflect\MyBaseClass',
                     '?MyClass',
                     '?MyClass',
                     '?MyClass',
@@ -432,7 +432,7 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
                     '?int $nullableInt',
                     'string $string',
                     'Countable&ArrayAccess $intersection',
-                    'Lkrms\Tests\Utility\Reflection\MyBaseClass $class',
+                    'Lkrms\Tests\Utility\Reflect\MyBaseClass $class',
                     '?MyClass $nullableClass',
                     '?MyClass &$nullableClassByRef',
                     '?MyClass $nullableAndOptionalClass = null',
@@ -455,7 +455,7 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
                     '?int $nullableInt',
                     'string $string',
                     'Countable&ArrayAccess $intersection',
-                    'Lkrms\Tests\Utility\Reflection\MyBaseClass $class',
+                    'Lkrms\Tests\Utility\Reflect\MyBaseClass $class',
                     '?MyClass $nullableClass',
                     '?MyClass &$nullableClassByRef',
                     '?MyClass $nullableAndOptionalClass = null',

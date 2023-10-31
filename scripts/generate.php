@@ -29,7 +29,6 @@ use Lkrms\Utility\Formatters;
 use Lkrms\Utility\System;
 
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
-$loader->addPsr4('Lkrms\\LkUtil\\', dirname(__DIR__) . '/lib/lk-util');
 
 $facades = [
     Application::class => \Lkrms\Facade\App::class,
