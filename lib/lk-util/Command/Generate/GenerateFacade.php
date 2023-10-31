@@ -13,7 +13,7 @@ use ReflectionMethod;
 use ReflectionParameter;
 
 /**
- * Generates static interfaces to underlying classes
+ * Generates facades
  */
 final class GenerateFacade extends GenerateCommand
 {
@@ -76,6 +76,7 @@ final class GenerateFacade extends GenerateCommand
     protected function run(string ...$args)
     {
         $this->reset();
+
         $this->SkipMethods = array_merge($this->SkipMethods, self::SKIP_METHODS);
 
         $classFqcn = $this->getRequiredFqcnOptionValue(

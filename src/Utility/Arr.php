@@ -8,6 +8,38 @@ namespace Lkrms\Utility;
 final class Arr
 {
     /**
+     * Get the first value in an array
+     *
+     * @template TValue
+     *
+     * @param array<array-key,TValue> $array
+     * @return TValue|null
+     */
+    public static function first(array $array)
+    {
+        if (!$array) {
+            return null;
+        }
+        return reset($array);
+    }
+
+    /**
+     * Get the last value in an array
+     *
+     * @template TValue
+     *
+     * @param array<array-key,TValue> $array
+     * @return TValue|null
+     */
+    public static function last(array $array)
+    {
+        if (!$array) {
+            return null;
+        }
+        return end($array);
+    }
+
+    /**
      * Shift an element off the beginning of an array
      *
      * @template TKey of array-key

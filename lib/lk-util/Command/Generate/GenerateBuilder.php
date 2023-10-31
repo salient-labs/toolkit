@@ -20,7 +20,7 @@ use ReflectionParameter;
 use ReflectionProperty;
 
 /**
- * Generates builders that create instances of a class via a fluent interface
+ * Generates builders
  */
 class GenerateBuilder extends GenerateCommand
 {
@@ -134,6 +134,7 @@ class GenerateBuilder extends GenerateCommand
     protected function run(string ...$args)
     {
         $this->reset();
+
         $this->Skip = array_merge($this->Skip, self::SKIP);
         $this->ToDeclare = [];
 

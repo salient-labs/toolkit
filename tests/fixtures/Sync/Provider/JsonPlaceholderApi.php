@@ -6,7 +6,6 @@ use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\CurlerBuilder;
-use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;

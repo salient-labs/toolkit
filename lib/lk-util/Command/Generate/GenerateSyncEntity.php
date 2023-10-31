@@ -10,22 +10,16 @@ use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Test;
 use DateTimeImmutable;
 use RuntimeException;
 
 /**
- * Generates SyncEntity subclasses from reference entities
+ * Generates sync entities
  */
 class GenerateSyncEntity extends GenerateCommand
 {
-    private const METHODS = [
-        'get' => HttpRequestMethod::GET,
-        'post' => HttpRequestMethod::POST,
-    ];
-
-    private const DEFAULT_METHOD = 'get';
-
     private ?string $ClassFqcn;
 
     private ?string $MemberVisibility;
@@ -57,17 +51,16 @@ class GenerateSyncEntity extends GenerateCommand
     {
         return [
             CliOption::build()
-                ->long('generate')
+                ->long('class')
                 ->valueName('class')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->required()
                 ->bindTo($this->ClassFqcn),
-            ...$this->getOutputOptionList('entity'),
             CliOption::build()
                 ->long('visibility')
                 ->short('v')
-                ->valueName('keyword')
+                ->valueName('visibility')
                 ->description("The visibility of the entity's properties")
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues(['public', 'protected', 'private'])
@@ -83,7 +76,7 @@ class GenerateSyncEntity extends GenerateCommand
             CliOption::build()
                 ->long('provider')
                 ->short('p')
-                ->valueName('class')
+                ->valueName('provider')
                 ->description('The HttpSyncProvider class to retrieve a reference entity from')
                 ->optionType(CliOptionType::VALUE)
                 ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value))
@@ -101,8 +94,11 @@ class GenerateSyncEntity extends GenerateCommand
                 ->valueName('method')
                 ->description('The HTTP method to use when requesting a reference entity')
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(array_keys(self::METHODS))
-                ->defaultValue(self::DEFAULT_METHOD)
+                ->allowedValues([
+                    HttpRequestMethod::GET,
+                    HttpRequestMethod::POST,
+                ])
+                ->defaultValue(HttpRequestMethod::GET)
                 ->bindTo($this->HttpMethod),
             CliOption::build()
                 ->long('query')
@@ -119,11 +115,14 @@ class GenerateSyncEntity extends GenerateCommand
                 ->description('The path to JSON-serialized data to submit when requesting a reference entity')
                 ->optionType(CliOptionType::VALUE)
                 ->bindTo($this->HttpDataFile),
+            ...$this->getOutputOptionList('entity'),
         ];
     }
 
     protected function run(string ...$args)
     {
+        $this->reset();
+
         $fqcn = $this->getRequiredFqcnOptionValue(
             'class',
             $this->ClassFqcn,
@@ -137,11 +136,18 @@ class GenerateSyncEntity extends GenerateCommand
 
         $extends = $this->getFqcnAlias(SyncEntity::class);
 
-        $desc = $this->OutputDescription;
+        $desc = $this->OutputDescription === null
+            ? sprintf(
+                'Represents the state of %s %s entity in a backend',
+                Inflect::indefinite($class),
+                $class,
+            )
+            : $this->OutputDescription;
         $visibility = $this->MemberVisibility;
         $json = $this->ReferenceEntityFile;
 
-        if ($provider = $this->Provider) {
+        $provider = $this->Provider;
+        if ($provider !== null) {
             /** @var HttpSyncProvider */
             $provider = $this->getProvider($provider, HttpSyncProvider::class);
         }
@@ -165,9 +171,12 @@ class GenerateSyncEntity extends GenerateCommand
         } elseif ($provider) {
             $endpoint = $this->HttpEndpoint;
             $query = Convert::queryToData($this->HttpQuery) ?: null;
-            $data = $this->HttpDataFile;
-            $data = $data ? $this->getJson($data, $dataUri, false) : null;
-            $method = $data && $endpoint ? HttpRequestMethod::POST : self::METHODS[$this->HttpMethod];
+            $data = $this->HttpDataFile === null
+                ? null
+                : $this->getJson($this->HttpDataFile, $dataUri, false);
+            $method = $data !== null && $endpoint !== null
+                ? HttpRequestMethod::POST
+                : $this->HttpMethod;
             $endpoint = $endpoint ?: '/' . Convert::toKebabCase($class);
 
             $curler = $provider->getCurler($endpoint);
@@ -276,7 +285,7 @@ class GenerateSyncEntity extends GenerateCommand
                 $values['json'] = $entityUri ?: $this->ReferenceEntityFile;
             } elseif ($provider) {
                 unset($values['endpoint'], $values['query']);
-                $values['method'] = array_search($method ?? null, self::METHODS, true) ?: null;
+                $values['method'] = $method ?? null;
                 $values['data'] = $dataUri ?: $this->HttpDataFile;
             }
             $command = $this->getEffectiveCommandLine(true, $values);

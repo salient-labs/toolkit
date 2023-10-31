@@ -7,18 +7,16 @@ use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Sync;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
-use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Sync\Catalog\SyncOperation;
-use Lkrms\Sync\Concept\SyncEntity;
 use Lkrms\Sync\Contract\ISyncContext;
+use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Utility\Convert;
-use Lkrms\Utility\Env;
 
 /**
- * Generates provider interfaces for SyncEntity subclasses
+ * Generates provider interfaces for sync entities
  */
 class GenerateSyncProvider extends GenerateCommand
 {
@@ -41,6 +39,17 @@ class GenerateSyncProvider extends GenerateCommand
         'get-list',
     ];
 
+    private ?string $ClassFqcn;
+
+    private ?bool $Magic;
+
+    /**
+     * @var string[]|null
+     */
+    private ?array $Operations;
+
+    private ?string $Plural;
+
     public function description(): string
     {
         return 'Generate a provider interface for a sync entity class';
@@ -52,23 +61,15 @@ class GenerateSyncProvider extends GenerateCommand
             CliOption::build()
                 ->long('class')
                 ->valueName('class')
-                ->description('The SyncEntity subclass to generate a provider for')
+                ->description('The sync entity class to generate a provider for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
-                ->valueCallback(fn(string $value) => $this->getFqcnOptionValue($value, Env::get(EnvVar::NS_DEFAULT, '')))
-                ->required(),
-            CliOption::build()
-                ->long('extend')
-                ->short('x')
-                ->valueName('class')
-                ->description('An interface to extend (must extend ISyncProvider)')
-                ->optionType(CliOptionType::VALUE)
-                ->multipleAllowed()
-                ->valueCallback(fn(array $values) => $this->getMultipleFqcnOptionValue($values, Env::get(EnvVar::NS_DEFAULT, ''))),
+                ->required()
+                ->bindTo($this->ClassFqcn),
             CliOption::build()
                 ->long('magic')
-                ->short('v')
-                ->description('Generate @method tags instead of declarations'),
-            ...$this->getOutputOptionList('interface'),
+                ->short('g')
+                ->description('Generate `@method` tags instead of declarations')
+                ->bindTo($this->Magic),
             CliOption::build()
                 ->long('op')
                 ->short('o')
@@ -78,13 +79,16 @@ class GenerateSyncProvider extends GenerateCommand
                 ->allowedValues(self::OPERATIONS)
                 ->multipleAllowed()
                 ->defaultValue(self::DEFAULT_OPERATIONS)
-                ->valueCallback(fn(array $value) => array_intersect(self::OPERATIONS, $value)),
+                ->valueCallback(fn(array $value) => array_intersect(self::OPERATIONS, $value))
+                ->bindTo($this->Operations),
             CliOption::build()
                 ->long('plural')
                 ->short('l')
                 ->valueName('plural')
-                ->description('Specify the plural form of CLASS')
-                ->optionType(CliOptionType::VALUE),
+                ->description('Specify the plural form of <class>')
+                ->optionType(CliOptionType::VALUE)
+                ->bindTo($this->Plural),
+            ...$this->getOutputOptionList('interface'),
         ];
     }
 
@@ -94,6 +98,15 @@ class GenerateSyncProvider extends GenerateCommand
         if (!Sync::isLoaded()) {
             Sync::load();
         }
+
+        $this->reset();
+
+        $fqcn = $this->getRequiredFqcnOptionValue(
+            'class',
+            $this->ClassFqcn,
+            null,
+            $class
+        );
 
         $operationMap = [
             'create' => SyncOperation::CREATE,
@@ -106,52 +119,47 @@ class GenerateSyncProvider extends GenerateCommand
             'delete-list' => SyncOperation::DELETE_LIST,
         ];
 
-        $namespace = explode('\\', $classArg = $this->getOptionValue('class'));
-        $class = array_pop($namespace);
-        $namespace = implode('\\', $namespace);
-        $fqcn = $namespace . '\\' . $class;
-
-        if (!$class) {
-            throw new CliInvalidArgumentsException("invalid class: $classArg");
+        if (!$fqcn) {
+            throw new CliInvalidArgumentsException(
+                sprintf('invalid class: %s', $fqcn),
+            );
         }
 
-        if (!is_a($fqcn, SyncEntity::class, true)) {
-            throw new CliInvalidArgumentsException("not a subclass of SyncEntity: $classArg");
+        if (!is_a($fqcn, ISyncEntity::class, true)) {
+            throw new CliInvalidArgumentsException(
+                sprintf(
+                    'does not implement %s: %s',
+                    ISyncEntity::class,
+                    $fqcn,
+                ),
+            );
         }
 
-        $namespace = explode('\\', SyncIntrospector::entityToProvider($fqcn));
-        $interface = array_pop($namespace);
-        $namespace = implode('\\', $namespace);
-
-        $extendsFqcn = [];
-        foreach ($this->getOptionValue('extend') ?: [ISyncProvider::class] as $_extends) {
-            $extendsNamespace = explode('\\', $_extends);
-            $extendsClass = array_pop($extendsNamespace);
-            $extendsNamespace = implode('\\', $extendsNamespace);
-            $extendsFqcn[] = $extendsNamespace . '\\' . $extendsClass;
-        }
+        $this->getRequiredFqcnOptionValue(
+            'interface',
+            SyncIntrospector::entityToProvider($fqcn),
+            null,
+            $interface,
+            $namespace
+        );
 
         $this->OutputClass = $interface;
         $this->OutputNamespace = $namespace;
 
         $service = $this->getFqcnAlias($fqcn, $class);
-        $extends = [];
-        foreach ($extendsFqcn as $_extends) {
-            $extends[] = $this->getFqcnAlias($_extends);
-        }
-        $extends = implode(', ', $extends);
+        $extends = $this->getFqcnAlias(ISyncProvider::class);
 
         $camelClass = Convert::toCamelCase($class);
 
-        $magic = $this->getOptionValue('magic');
-        $desc = $this->OutputDescription;
-        $desc = is_null($desc) ? "Syncs $class objects with a backend" : $desc;
+        $desc = $this->OutputDescription === null
+            ? "Syncs $class objects with a backend"
+            : $this->OutputDescription;
         $ops = array_map(
             function ($op) use ($operationMap) { return $operationMap[$op]; },
-            $this->getOptionValue('op')
+            $this->Operations
         );
 
-        $plural = $this->getOptionValue('plural') ?: $fqcn::plural();
+        $plural = $this->Plural === null ? $fqcn::plural() : $this->Plural;
 
         if (strcasecmp($class, $plural)) {
             $camelPlural = Convert::toCamelCase($plural);
@@ -186,9 +194,14 @@ class GenerateSyncProvider extends GenerateCommand
             if (SyncOperation::isList($op)) {
                 $paramDoc = 'iterable<' . $service . '> $' . $camelPlural;
                 $paramCode = 'iterable $' . $camelPlural;
-                $iterator = $this->getFqcnAlias(FluentIteratorInterface::class);
-                $returnDoc = $iterator . '<array-key,' . $service . '>';
-                $returnCode = $iterator;
+                if ($this->Magic) {
+                    $iterator = $this->getFqcnAlias(FluentIteratorInterface::class);
+                    $returnDoc = $iterator . '<array-key,' . $service . '>';
+                    $returnCode = $iterator;
+                } else {
+                    $returnDoc = 'iterable<' . $service . '>';
+                    $returnCode = 'iterable';
+                }
             } else {
                 $paramDoc = $service . ' $' . $camelClass;
                 $paramCode = $paramDoc;
@@ -211,7 +224,7 @@ class GenerateSyncProvider extends GenerateCommand
             $separator = $paramCode ? ', ' : '';
             $paramCode = "$context$separator$paramCode";
 
-            if (!$magic) {
+            if (!$this->Magic) {
                 $_lines = [
                     '/**',
                     " * @param $paramDoc",
