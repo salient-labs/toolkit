@@ -483,7 +483,9 @@ final class ConsoleFormatter
      */
     public static function escapeTags(string $string, bool $newlines = false): string
     {
-        $escaped = addcslashes($string, '\!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~');
+        // Only escape recognised tag delimiters to minimise the risk of
+        // PREG_JIT_STACKLIMIT_ERROR
+        $escaped = addcslashes($string, '\#*<>_`~');
         return $newlines
             ? str_replace("\n", "\\\n", $escaped)
             : $escaped;

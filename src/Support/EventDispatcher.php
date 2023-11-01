@@ -35,7 +35,7 @@ final class EventDispatcher
      * {@see EventDispatcher::removeListener()}.
      *
      * @param string|string[] $event An event or array of events.
-     * @param callable(mixed, string): (bool|void) $listener Receives the event
+     * @param callable(mixed, string): (false|void) $listener Receives the event
      * payload and the name of the dispatched event.
      */
     public function listen($event, callable $listener): int

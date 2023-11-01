@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Contract;
 
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy;
+use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
@@ -87,6 +88,20 @@ interface ISyncContext extends IProviderContext
     public function withDeferredSyncEntityPolicy($policy);
 
     /**
+     * Apply hydration flags to the context
+     *
+     * @param int-mask-of<HydrationFlag::*> $flags
+     * @param bool $replace If `true` (the default), existing flags are cleared,
+     * otherwise they are combined.
+     * @param class-string<ISyncEntity>|null $entity Limit the scope of the
+     * change to an entity and its subclasses. Flags applied globally or to
+     * other entities are not cleared if `$entity` is given and `$replace` is
+     * `true`.
+     * @return $this
+     */
+    public function withHydrationFlags(int $flags, bool $replace = true, ?string $entity = null);
+
+    /**
      * Run the unclaimed filter policy callback
      *
      * Example:
@@ -165,4 +180,12 @@ interface ISyncContext extends IProviderContext
      * @return DeferredSyncEntityPolicy::*
      */
     public function getDeferredSyncEntityPolicy();
+
+    /**
+     * Get hydration flags applied to the context for a given entity
+     *
+     * @param class-string<ISyncEntity> $entity
+     * @return int-mask-of<HydrationFlag::*>
+     */
+    public function getHydrationFlags(string $entity);
 }

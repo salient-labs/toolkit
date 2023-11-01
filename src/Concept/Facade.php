@@ -59,8 +59,11 @@ abstract class Facade implements IFacade
             : Event::getInstance();
         $id = $dispatcher->listen(
             'container.global.set',
-            fn(?IContainer $container) =>
-                $container && $container->instanceIf($service, $instance)
+            function (?IContainer $container) use ($service, $instance): void {
+                if ($container) {
+                    $container->instanceIf($service, $instance);
+                }
+            }
         );
         self::$ListenerIds[static::class] = $id;
 

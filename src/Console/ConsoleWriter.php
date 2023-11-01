@@ -502,11 +502,14 @@ final class ConsoleWriter implements ReceivesFacade
         string $msg1,
         ?string $msg2 = null,
         $type = Type::DEFAULT,
-        ?Throwable $ex = null
+        ?Throwable $ex = null,
+        bool $count = true
     ) {
-        return $this
-            ->count($level)
-            ->write($level, $msg1, $msg2, $type, $ex);
+        if ($count) {
+            $this->count($level);
+        }
+
+        return $this->write($level, $msg1, $msg2, $type, $ex);
     }
 
     /**
@@ -524,11 +527,14 @@ final class ConsoleWriter implements ReceivesFacade
         string $msg1,
         ?string $msg2 = null,
         $type = Type::DEFAULT,
-        ?Throwable $ex = null
+        ?Throwable $ex = null,
+        bool $count = true
     ) {
-        return $this
-            ->count($level)
-            ->writeOnce($level, $msg1, $msg2, $type, $ex);
+        if ($count) {
+            $this->count($level);
+        }
+
+        return $this->writeOnce($level, $msg1, $msg2, $type, $ex);
     }
 
     /**

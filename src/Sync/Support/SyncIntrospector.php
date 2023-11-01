@@ -10,6 +10,7 @@ use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\IntrospectorKeyTargets;
+use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -359,10 +360,12 @@ final class SyncIntrospector extends Introspector
         $targets = $this->getKeyTargets($keys, true, $strict);
         $constructor = $this->_getConstructor($targets);
         $updater = $this->_getUpdater($targets);
+        $resolver = $this->_getResolver($targets);
         $idKey = $targets->CustomKeys[self::ID_KEY] ?? null;
 
         $updateTargets = $this->getKeyTargets($keys, false, $strict);
         $existingUpdater = $this->_getUpdater($updateTargets);
+        $existingResolver = $this->_getResolver($updateTargets);
 
         if ($idKey === null) {
             $closure = static function (
@@ -374,16 +377,16 @@ final class SyncIntrospector extends Introspector
                 ?DateFormatter $dateFormatter,
                 ?ITreeable $parent,
                 ?bool $offline = null
-            ) use ($constructor, $updater) {
+            ) use ($constructor, $updater, $resolver) {
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                $obj = $resolver($array, $service, $obj, $provider, $context);
                 if ($obj instanceof IProvidable) {
                     $obj->postLoad();
                 }
                 return $obj;
             };
         } else {
-            /** @var class-string<TClass> */
             $entityType = $this->_Class->Class;
             $closure = static function (
                 array $array,
@@ -394,12 +397,21 @@ final class SyncIntrospector extends Introspector
                 ?DateFormatter $dateFormatter,
                 ?ITreeable $parent,
                 ?bool $offline = null
-            ) use ($constructor, $updater, $existingUpdater, $idKey, $entityType) {
+            ) use (
+                $constructor,
+                $updater,
+                $resolver,
+                $existingUpdater,
+                $existingResolver,
+                $idKey,
+                $entityType
+            ) {
                 $id = $array[$idKey];
 
                 if ($id === null || !$provider) {
                     $obj = $constructor($array, $service, $container);
                     $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                    $obj = $resolver($array, $service, $obj, $provider, $context);
                     if ($obj instanceof IProvidable) {
                         $obj->postLoad();
                     }
@@ -412,6 +424,7 @@ final class SyncIntrospector extends Introspector
 
                 if ($obj) {
                     $obj = $existingUpdater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
+                    $obj = $existingResolver($array, $service, $obj, $provider, $context);
                     if ($obj instanceof IProvidable) {
                         $obj->postLoad();
                     }
@@ -421,6 +434,7 @@ final class SyncIntrospector extends Introspector
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
                 $store->entity($providerId, $service ?? $entityType, $id, $obj);
+                $obj = $resolver($array, $service, $obj, $provider, $context);
                 if ($obj instanceof IProvidable) {
                     $obj->postLoad();
                 }
@@ -434,7 +448,7 @@ final class SyncIntrospector extends Introspector
 
     protected function getKeyTargets(
         array $keys,
-        bool $withParameters,
+        bool $forNewInstance,
         bool $strict,
         bool $normalised = false,
         array $customKeys = [],
@@ -463,10 +477,14 @@ final class SyncIntrospector extends Introspector
         if ($this->_Class->IsSyncEntity && $this->_Class->IsRelatable &&
             ($this->_Class->OneToOneRelationships ||
                 $this->_Class->OneToManyRelationships)) {
+            $missing = null;
             foreach ([
                 $this->_Class->OneToOneRelationships,
                 $this->_Class->OneToManyRelationships,
             ] as $list => $relationships) {
+                if ($list) {
+                    $missing = array_diff_key($relationships, $keys);
+                }
                 $relationships = array_intersect_key($relationships, $keys);
 
                 if (!$relationships) {
@@ -490,6 +508,22 @@ final class SyncIntrospector extends Introspector
                     $keyClosures[$match] = $this->getRelationshipClosure($key, $list, $relationship, $property);
                 }
             }
+
+            // Check for absent one-to-many relationships to hydrate
+            if ($missing && $idKey !== null && $forNewInstance) {
+                foreach ($missing as $key => $relationship) {
+                    $filter = $key === $this->_Class->ChildrenProperty
+                        ? $this->_Class->ParentProperty
+                        : null;
+                    $property = $this->_Class->Properties[$key] ?? $key;
+                    $keyClosures[$key] = $this->getHydrator(
+                        $idKey,
+                        $relationship,
+                        $property,
+                        $filter,
+                    );
+                }
+            }
         }
 
         // Get keys left behind by constructor parameters, declared properties
@@ -503,7 +537,7 @@ final class SyncIntrospector extends Introspector
         if (!$unclaimed) {
             return parent::getKeyTargets(
                 $keys,
-                $withParameters,
+                $forNewInstance,
                 $strict,
                 true,
                 $customKeys,
@@ -560,7 +594,7 @@ final class SyncIntrospector extends Introspector
 
         return parent::getKeyTargets(
             $keys,
-            $withParameters,
+            $forNewInstance,
             $strict,
             true,
             $customKeys,
@@ -569,13 +603,21 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
-     * @return Closure(mixed[], TClass, ?ISyncProvider, ?ISyncContext): void
+     * @return Closure(mixed[], ?string, TClass, ?ISyncProvider, ?ISyncContext): void
      */
-    private function getRelationshipClosure(string $key, bool $isList, ?string $relationship, string $property): Closure
-    {
+    private function getRelationshipClosure(
+        string $key,
+        bool $isList,
+        ?string $relationship,
+        string $property
+    ): Closure {
         if ($relationship === null) {
             return
-                static function (array $data, $entity) use ($key, $property): void {
+                static function (
+                    array $data,
+                    ?string $service,
+                    $entity
+                ) use ($key, $property): void {
                     $entity->{$property} = $data[$key];
                 };
         }
@@ -583,6 +625,7 @@ final class SyncIntrospector extends Introspector
         return
             static function (
                 array $data,
+                ?string $service,
                 $entity,
                 ?ISyncProvider $provider,
                 ?ISyncContext $context
@@ -608,6 +651,56 @@ final class SyncIntrospector extends Introspector
                     return;
                 }
                 $entity->{$property} = $relationship::provide($data[$key], $provider, $context->push($entity));
+            };
+    }
+
+    /**
+     * @return Closure(mixed[], ?string, TClass, ?ISyncProvider, ?ISyncContext): void
+     */
+    private function getHydrator(
+        string $idKey,
+        string $relationship,
+        string $property,
+        ?string $filter = null
+    ): Closure {
+        $entityType = $this->_Class->Class;
+
+        return
+            static function (
+                array $data,
+                ?string $service,
+                $entity,
+                ?ISyncProvider $provider,
+                ?ISyncContext $context
+            ) use (
+                $idKey,
+                $relationship,
+                $property,
+                $filter,
+                $entityType
+            ): void {
+                if (!($context instanceof ISyncContext)) {
+                    return;
+                }
+
+                $flags = $context->getHydrationFlags($service ?? $entityType);
+                if ($flags & HydrationFlag::SUPPRESS) {
+                    return;
+                }
+
+                /** @var TClass $entity */
+                DeferredRelationship::defer(
+                    $provider,
+                    $context->push($entity),
+                    $relationship,
+                    $service ?? $entityType,
+                    $property,
+                    $data[$idKey],
+                    $filter === null || $flags & HydrationFlag::NO_FILTER
+                        ? null
+                        : [$filter => $data[$idKey]],
+                    $entity->{$property},
+                );
             };
     }
 
