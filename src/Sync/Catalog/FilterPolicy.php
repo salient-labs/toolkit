@@ -10,7 +10,7 @@ use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
  *
  * @extends Enumeration<int>
  */
-final class SyncFilterPolicy extends Enumeration
+final class FilterPolicy extends Enumeration
 {
     /**
      * Ignore unclaimed filter values

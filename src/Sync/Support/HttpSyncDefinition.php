@@ -15,8 +15,8 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Support\Pipeline;
+use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Catalog\SyncEntitySource;
-use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
@@ -240,7 +240,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param array<OP::*> $operations
      * @param string[]|string|null $path
      * @param ArrayKeyConformity::* $conformity
-     * @param SyncFilterPolicy::* $filterPolicy
+     * @param FilterPolicy::* $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
@@ -262,7 +262,7 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
         ?ICurlerPager $pager = null,
         ?callable $callback = null,
         $conformity = ArrayKeyConformity::NONE,
-        int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
+        int $filterPolicy = FilterPolicy::THROW_EXCEPTION,
         ?int $expiry = -1,
         array $methodMap = HttpSyncDefinition::DEFAULT_METHOD_MAP,
         array $curlerProperties = [],

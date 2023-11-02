@@ -9,7 +9,7 @@ use Lkrms\Concept\Enumeration;
  *
  * @extends Enumeration<int>
  */
-final class SyncEntityHydrationFlag extends Enumeration
+final class HydrationFlag extends Enumeration
 {
     /**
      * Do not perform hydration

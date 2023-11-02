@@ -2,14 +2,14 @@
 
 namespace Lkrms\Sync\Exception;
 
-use Lkrms\Sync\Catalog\SyncFilterPolicy;
+use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 
 /**
  * Thrown when there are unclaimed sync operation filter values
  *
- * @see SyncFilterPolicy
+ * @see FilterPolicy
  */
 class SyncFilterPolicyViolationException extends SyncException
 {

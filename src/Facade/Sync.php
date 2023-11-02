@@ -7,8 +7,8 @@ use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Sync\Support\DeferredRelationship;
-use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncError;
 use Lkrms\Sync\Support\SyncErrorBuilder;
 use Lkrms\Sync\Support\SyncErrorCollection;
@@ -23,7 +23,7 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static void unload() Clear the underlying SyncStore instance
  * @method static SyncStore checkHeartbeats(int $ttl = 300, bool $failEarly = true, ISyncProvider ...$providers) Throw an exception if a provider has an unreachable backend (see {@see SyncStore::checkHeartbeats()})
  * @method static SyncStore close(int $exitStatus = 0) Terminate the current run and close the database
- * @method static SyncStore deferredEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, DeferredSyncEntity<ISyncEntity> $deferred) Register a deferred sync entity (see {@see SyncStore::deferredEntity()})
+ * @method static SyncStore deferredEntity(int $providerId, class-string<ISyncEntity> $entityType, int|string $entityId, DeferredEntity<ISyncEntity> $deferred) Register a deferred sync entity (see {@see SyncStore::deferredEntity()})
  * @method static SyncStore deferredRelationship(int $providerId, class-string<ISyncEntity> $entityType, class-string<ISyncEntity> $forEntityType, string $forEntityProperty, int|string $forEntityId, DeferredRelationship<ISyncEntity> $deferred) Register a deferred relationship
  * @method static SyncStore disableErrorReporting() Disable sync error reporting
  * @method static SyncStore enableErrorReporting() Report sync errors to the console as they occur (disabled by default)

@@ -4,7 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Support\ProviderContext;
 use Lkrms\Sync\Catalog\DeferralPolicy;
-use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;

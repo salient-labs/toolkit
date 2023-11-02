@@ -4,8 +4,8 @@ namespace Lkrms\Sync\Contract;
 
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Sync\Catalog\DeferralPolicy;
-use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
-use Lkrms\Sync\Catalog\SyncFilterPolicy;
+use Lkrms\Sync\Catalog\FilterPolicy;
+use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
 
@@ -51,8 +51,8 @@ interface ISyncContext extends IProviderContext
      * {@see SyncInvalidFilterException} is thrown.
      *
      * Using {@see ISyncContext::claimFilter()} to claim filters is recommended.
-     * Depending on the provider's {@see SyncFilterPolicy}, unclaimed filters
-     * may cause requests to fail.
+     * Depending on the provider's {@see FilterPolicy}, unclaimed filters may
+     * cause requests to fail.
      *
      * When a filter is claimed, it is removed from the context.
      * {@see ISyncContext::getFilters()} and {@see ISyncContext::getFilter()}
@@ -68,7 +68,7 @@ interface ISyncContext extends IProviderContext
     /**
      * Use a callback to enforce the provider's unclaimed filter policy
      *
-     * Allows providers to enforce their {@see SyncFilterPolicy} by calling
+     * Allows providers to enforce their {@see FilterPolicy} by calling
      * {@see ISyncContext::maybeApplyFilterPolicy()} in scenarios where
      * enforcement before a sync operation starts isn't possible.
      *

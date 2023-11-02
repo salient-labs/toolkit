@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
 use Lkrms\Tests\Sync\Entity\Post;

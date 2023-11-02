@@ -11,8 +11,8 @@ use Lkrms\Facade\Console;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\DateFormatter;
-use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
-use Lkrms\Sync\Catalog\SyncFilterPolicy;
+use Lkrms\Sync\Catalog\FilterPolicy;
+use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -133,7 +133,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
                 return $defB
                     ->operations([OP::READ, OP::READ_LIST])
                     ->path('/users')
-                    ->filterPolicy(SyncFilterPolicy::IGNORE);
+                    ->filterPolicy(FilterPolicy::IGNORE);
         }
 
         return $defB;
