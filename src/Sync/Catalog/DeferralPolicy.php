@@ -3,8 +3,8 @@
 namespace Lkrms\Sync\Catalog;
 
 use Lkrms\Concept\Enumeration;
+use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Sync\Support\DeferredRelationship;
-use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncStore;
 
 /**
@@ -18,7 +18,7 @@ final class DeferralPolicy extends Enumeration
      * Do not resolve deferred entities or relationships
      *
      * If {@see SyncStore::resolveDeferred()} is not called manually, unresolved
-     * {@see DeferredSyncEntity} and {@see DeferredRelationship} instances may
+     * {@see DeferredEntity} and {@see DeferredRelationship} instances may
      * appear in object graphs returned by sync operations.
      */
     public const DO_NOT_RESOLVE = 0;
@@ -36,7 +36,7 @@ final class DeferralPolicy extends Enumeration
      * each stream of entity data
      *
      * This policy minimises the number of round trips to the backend, but
-     * unresolved {@see DeferredSyncEntity} and {@see DeferredRelationship}
+     * unresolved {@see DeferredEntity} and {@see DeferredRelationship}
      * instances may appear in object graphs until they have been fully
      * traversed.
      */

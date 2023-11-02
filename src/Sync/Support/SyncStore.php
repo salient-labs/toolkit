@@ -114,7 +114,7 @@ final class SyncStore extends SqliteStore
     /**
      * Provider ID => entity type ID => entity ID => [ deferred entity ]
      *
-     * @var array<int,array<int,array<int|string,array<DeferredSyncEntity<ISyncEntity>>>>>
+     * @var array<int,array<int,array<int|string,array<DeferredEntity<ISyncEntity>>>>>
      */
     private $DeferredEntities = [];
 
@@ -813,14 +813,14 @@ final class SyncStore extends SqliteStore
      *
      * @param class-string<TEntity> $entityType
      * @param int|string $entityId
-     * @param DeferredSyncEntity<TEntity> $deferred
+     * @param DeferredEntity<TEntity> $deferred
      * @return $this
      */
     public function deferredEntity(
         int $providerId,
         string $entityType,
         $entityId,
-        DeferredSyncEntity $deferred
+        DeferredEntity $deferred
     ) {
         $entityTypeId = $this->EntityTypeMap[$entityType];
         $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;

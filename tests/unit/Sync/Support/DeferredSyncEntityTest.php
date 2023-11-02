@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Sync\Support;
 
 use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
-use Lkrms\Sync\Support\DeferredSyncEntity;
+use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
@@ -18,7 +18,7 @@ final class DeferredSyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
         );
 
         $post = $provider->with(Post::class, $context)->get(1);
-        $this->assertInstanceOf(DeferredSyncEntity::class, $post->User);
+        $this->assertInstanceOf(DeferredEntity::class, $post->User);
 
         $userName = $post->User->Name;
         $this->assertSame('Leanne Graham', $userName);
@@ -47,10 +47,10 @@ final class DeferredSyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
         );
 
         /**
-         * @var array<DeferredSyncEntity<Post>>|Post[]|null
+         * @var array<DeferredEntity<Post>>|Post[]|null
          */
         $list = null;
-        DeferredSyncEntity::deferList(
+        DeferredEntity::deferList(
             $provider,
             $context,
             Post::class,
@@ -60,7 +60,7 @@ final class DeferredSyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
 
         $this->assertIsArray($list);
         $this->assertCount(3, $list);
-        $this->assertContainsOnlyInstancesOf(DeferredSyncEntity::class, $list);
+        $this->assertContainsOnlyInstancesOf(DeferredEntity::class, $list);
 
         $this->Store->resolveDeferredEntities();
 

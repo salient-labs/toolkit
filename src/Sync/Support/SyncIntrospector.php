@@ -707,7 +707,7 @@ final class SyncIntrospector extends Introspector
                 if ($isList) {
                     if (is_scalar($data[$key][0])) {
                         if (!$isChildren) {
-                            DeferredSyncEntity::deferList(
+                            DeferredEntity::deferList(
                                 $provider,
                                 $context->push($entity),
                                 $relationship,
@@ -718,7 +718,7 @@ final class SyncIntrospector extends Introspector
                         }
 
                         /** @var ISyncEntity&ITreeable $entity */
-                        DeferredSyncEntity::deferList(
+                        DeferredEntity::deferList(
                             $provider,
                             $context->push($entity),
                             $relationship,
@@ -755,7 +755,7 @@ final class SyncIntrospector extends Introspector
 
                 if (is_scalar($data[$key])) {
                     if (!$isParent) {
-                        DeferredSyncEntity::defer(
+                        DeferredEntity::defer(
                             $provider,
                             $context->push($entity),
                             $relationship,
@@ -766,7 +766,7 @@ final class SyncIntrospector extends Introspector
                     }
 
                     /** @var ISyncEntity&ITreeable $entity */
-                    DeferredSyncEntity::defer(
+                    DeferredEntity::defer(
                         $provider,
                         $context->push($entity),
                         $relationship,

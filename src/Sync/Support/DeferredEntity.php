@@ -10,13 +10,13 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use LogicException;
 
 /**
- * The promise of a sync entity that hasn't been created yet
+ * The promise of a sync entity that hasn't been retrieved yet
  *
  * @template TEntity of ISyncEntity
  *
  * @mixin TEntity
  */
-final class DeferredSyncEntity
+final class DeferredEntity
 {
     /**
      * The provider servicing the entity
@@ -47,7 +47,7 @@ final class DeferredSyncEntity
     private $EntityId;
 
     /**
-     * @var TEntity|DeferredSyncEntity<TEntity>|null
+     * @var TEntity|DeferredEntity<TEntity>|null
      */
     private $Replace;
 
@@ -67,11 +67,11 @@ final class DeferredSyncEntity
     private $Resolved;
 
     /**
-     * Creates a new DeferredSyncEntity object
+     * Creates a new DeferredEntity object
      *
      * @param class-string<TEntity> $entity
      * @param int|string $entityId
-     * @param TEntity|DeferredSyncEntity<TEntity>|null $replace
+     * @param TEntity|DeferredEntity<TEntity>|null $replace
      * @param (callable(TEntity): void)|null $callback
      */
     private function __construct(
@@ -227,7 +227,7 @@ final class DeferredSyncEntity
      * is servicing the entity.
      * @param class-string<TEntity> $entity The entity to instantiate.
      * @param int|string $entityId The identifier of the deferred entity.
-     * @param TEntity|DeferredSyncEntity<TEntity>|null $replace Refers to the
+     * @param TEntity|DeferredEntity<TEntity>|null $replace Refers to the
      * variable or property to replace when the entity is resolved. Do not
      * assign anything else to it after calling this method.
      * @param (callable(TEntity): void)|null $callback If given, `$replace` is
@@ -260,9 +260,9 @@ final class DeferredSyncEntity
      * @param class-string<TEntity> $entity The entity to instantiate.
      * @param array<int|string> $entityIds A list of deferred entity
      * identifiers.
-     * @param array<TEntity|DeferredSyncEntity<TEntity>>|null $replace Refers to
-     * the variable or property to replace when the entities are resolved. Do
-     * not assign anything else to it after calling this method.
+     * @param array<TEntity|DeferredEntity<TEntity>>|null $replace Refers to the
+     * variable or property to replace when the entities are resolved. Do not
+     * assign anything else to it after calling this method.
      * @param (callable(TEntity): void)|null $callback If given, `$replace` is
      * ignored and the resolved entities are passed to the callback.
      */

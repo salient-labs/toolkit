@@ -29,8 +29,8 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncEntityNotFoundException;
+use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Sync\Support\DeferredRelationship;
-use Lkrms\Sync\Support\DeferredSyncEntity;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
@@ -418,7 +418,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     }
 
     /**
-     * @param SyncEntity|DeferredSyncEntity<SyncEntity>|DeferredRelationship<SyncEntity>|mixed[] $node
+     * @param SyncEntity|DeferredEntity<SyncEntity>|DeferredRelationship<SyncEntity>|mixed[] $node
      * @param string[] $path
      * @param SerializeRules<static> $rules
      * @param array<int,true> $parents
@@ -436,7 +436,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
             return;
         }
 
-        if ($node instanceof DeferredSyncEntity) {
+        if ($node instanceof DeferredEntity) {
             $node = $node->toLink($rules->getFlags() & SerializeRules::SYNC_STORE
                 ? LinkType::INTERNAL
                 : LinkType::DEFAULT);
