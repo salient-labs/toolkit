@@ -18,10 +18,11 @@ use Closure;
  * @property-read array<string,string> $Properties Key => declared property name
  * @property-read string[] $MetaProperties Arbitrary keys
  * @property-read string[] $DateProperties Date keys
- * @property-read array<string,string> $CustomKeys Name => key
+ * @property-read array<TIntrospector::*_KEY,string> $CustomKeys Identifier => key
  *
  * @see Introspector
  *
+ * @template TIntrospector of Introspector
  * @template TClass of object
  * @template TProvider of IProvider
  * @template TContext of IProviderContext
@@ -80,9 +81,9 @@ final class IntrospectorKeyTargets implements IReadable
     protected $DateProperties;
 
     /**
-     * Name => key
+     * Identifier => key
      *
-     * @var array<string,string>
+     * @var array<TIntrospector::*_KEY,string>
      */
     protected $CustomKeys;
 
@@ -94,7 +95,7 @@ final class IntrospectorKeyTargets implements IReadable
      * @param array<string,string> $properties
      * @param string[] $metaProperties
      * @param string[] $dateProperties
-     * @param array<string,string> $customKeys
+     * @param array<TIntrospector::*_KEY,string> $customKeys
      */
     public function __construct(
         array $parameters,

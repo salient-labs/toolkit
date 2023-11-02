@@ -52,6 +52,11 @@ final class DeferredSyncEntity
     private $Replace;
 
     /**
+     * @var (callable(TEntity): void)|null
+     */
+    private $Callback;
+
+    /**
      * @var int-mask-of<HydrationFlag::*>
      */
     private $Flags;
@@ -67,20 +72,27 @@ final class DeferredSyncEntity
      * @param class-string<TEntity> $entity
      * @param int|string $entityId
      * @param TEntity|DeferredSyncEntity<TEntity>|null $replace
+     * @param (callable(TEntity): void)|null $callback
      */
     private function __construct(
         ISyncProvider $provider,
         ?ISyncContext $context,
         string $entity,
         $entityId,
-        &$replace
+        &$replace,
+        ?callable $callback = null
     ) {
         $this->Provider = $provider;
         $this->Context = $context;
         $this->Entity = $entity;
         $this->EntityId = $entityId;
-        $this->Replace = &$replace;
-        $this->Replace = $this;
+
+        if ($callback) {
+            $this->Callback = $callback;
+        } else {
+            $this->Replace = &$replace;
+            $this->Replace = $this;
+        }
 
         $this->Flags =
             $context
@@ -170,10 +182,9 @@ final class DeferredSyncEntity
 
         // If the entity was deferred with `HydrationFlag::DEFER`,
         // `Sync::entity()` calls `replace()`, otherwise the resolved entity
-        // needs to be assigned here
+        // needs to be applied here
         if ($this->Flags & (HydrationFlag::LAZY | HydrationFlag::EAGER)) {
-            $this->Replace = $entity;
-            unset($this->Replace);
+            $this->apply($entity);
         }
 
         return $entity;
@@ -191,6 +202,19 @@ final class DeferredSyncEntity
         }
 
         $this->Resolved = $entity;
+        $this->apply($entity);
+    }
+
+    /**
+     * @param TEntity $entity
+     */
+    private function apply(ISyncEntity $entity): void
+    {
+        if ($this->Callback) {
+            ($this->Callback)($entity);
+            return;
+        }
+
         $this->Replace = $entity;
         unset($this->Replace);
     }
@@ -206,13 +230,16 @@ final class DeferredSyncEntity
      * @param TEntity|DeferredSyncEntity<TEntity>|null $replace Refers to the
      * variable or property to replace when the entity is resolved. Do not
      * assign anything else to it after calling this method.
+     * @param (callable(TEntity): void)|null $callback If given, `$replace` is
+     * ignored and the resolved entity is passed to the callback.
      */
     public static function defer(
         ISyncProvider $provider,
         ?ISyncContext $context,
         string $entity,
         $entityId,
-        &$replace = null
+        &$replace = null,
+        ?callable $callback = null
     ): void {
         new self(
             $provider,
@@ -220,6 +247,7 @@ final class DeferredSyncEntity
             $entity,
             $entityId,
             $replace,
+            $callback,
         );
     }
 
@@ -235,14 +263,32 @@ final class DeferredSyncEntity
      * @param array<TEntity|DeferredSyncEntity<TEntity>>|null $replace Refers to
      * the variable or property to replace when the entities are resolved. Do
      * not assign anything else to it after calling this method.
+     * @param (callable(TEntity): void)|null $callback If given, `$replace` is
+     * ignored and the resolved entities are passed to the callback.
      */
     public static function deferList(
         ISyncProvider $provider,
         ?ISyncContext $context,
         string $entity,
         array $entityIds,
-        &$replace = null
+        &$replace = null,
+        ?callable $callback = null
     ): void {
+        if ($callback) {
+            unset($replace);
+            foreach ($entityIds as $entityId) {
+                new self(
+                    $provider,
+                    $context,
+                    $entity,
+                    $entityId,
+                    $replace,
+                    $callback,
+                );
+            }
+            return;
+        }
+
         $i = -1;
         $list = [];
         foreach ($entityIds as $entityId) {

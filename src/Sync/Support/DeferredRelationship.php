@@ -78,6 +78,11 @@ final class DeferredRelationship implements IteratorAggregate
     private $Replace;
 
     /**
+     * @var (callable(TEntity[]): void)|null
+     */
+    private $Callback;
+
+    /**
      * @var int-mask-of<HydrationFlag::*>
      */
     private $Flags;
@@ -95,6 +100,7 @@ final class DeferredRelationship implements IteratorAggregate
      * @param int|string $forEntityId
      * @param array<string,mixed>|null $filter
      * @param array<TEntity>|DeferredRelationship<TEntity>|null $replace
+     * @param (callable(TEntity[]): void)|null $callback
      */
     private function __construct(
         ISyncProvider $provider,
@@ -104,7 +110,8 @@ final class DeferredRelationship implements IteratorAggregate
         string $forEntityProperty,
         $forEntityId,
         ?array $filter,
-        &$replace
+        &$replace,
+        ?callable $callback = null
     ) {
         $this->Provider = $provider;
         $this->Context = $context;
@@ -113,8 +120,13 @@ final class DeferredRelationship implements IteratorAggregate
         $this->ForEntityProperty = $forEntityProperty;
         $this->ForEntityId = $forEntityId;
         $this->Filter = $filter;
-        $this->Replace = &$replace;
-        $this->Replace = $this;
+
+        if ($callback) {
+            $this->Callback = $callback;
+        } else {
+            $this->Replace = &$replace;
+            $this->Replace = $this;
+        }
 
         $this->Flags =
             $context
@@ -181,9 +193,7 @@ final class DeferredRelationship implements IteratorAggregate
             );
         }
 
-        $this->Resolved = $entities;
-        $this->Replace = $entities;
-        unset($this->Replace);
+        $this->apply($entities);
 
         return $entities;
     }
@@ -196,10 +206,24 @@ final class DeferredRelationship implements IteratorAggregate
     public function replace(array $entities): void
     {
         if ($this->Resolved !== null) {
-            throw new LogicException('Entity already resolved');
+            throw new LogicException('Relationship already resolved');
         }
 
+        $this->apply($entities);
+    }
+
+    /**
+     * @param TEntity[] $entities
+     */
+    private function apply(array $entities): void
+    {
         $this->Resolved = $entities;
+
+        if ($this->Callback) {
+            ($this->Callback)($entities);
+            return;
+        }
+
         $this->Replace = $entities;
         unset($this->Replace);
     }
@@ -222,6 +246,8 @@ final class DeferredRelationship implements IteratorAggregate
      * @param array<TEntity>|DeferredRelationship<TEntity>|null $replace Refers
      * to the variable or property to replace when the relationship is resolved.
      * Do not assign anything else to it after calling this method.
+     * @param (callable(TEntity[]): void)|null $callback If given, `$replace` is
+     * ignored and the resolved relationship is passed to the callback.
      */
     public static function defer(
         ISyncProvider $provider,
@@ -231,7 +257,8 @@ final class DeferredRelationship implements IteratorAggregate
         string $forEntityProperty,
         $forEntityId,
         ?array $filter = null,
-        &$replace = null
+        &$replace = null,
+        ?callable $callback = null
     ): void {
         new self(
             $provider,
@@ -242,6 +269,7 @@ final class DeferredRelationship implements IteratorAggregate
             $forEntityId,
             $filter,
             $replace,
+            $callback,
         );
     }
 

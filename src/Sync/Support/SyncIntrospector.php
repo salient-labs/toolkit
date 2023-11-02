@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidable;
+use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ITreeable;
 use Lkrms\Facade\Sync;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
@@ -33,7 +34,13 @@ use LogicException;
  */
 final class SyncIntrospector extends Introspector
 {
-    private const ID_KEY = 'Id';
+    private const ID_KEY = 0;
+
+    private const PARENT_KEY = 1;
+
+    private const CHILDREN_KEY = 2;
+
+    private const ID_PROPERTY = 'Id';
 
     /**
      * @var SyncIntrospectionClass<TClass>
@@ -460,21 +467,37 @@ final class SyncIntrospector extends Introspector
                 ? array_combine(array_map($this->_Class->CarefulNormaliser, $keys), $keys)
                 : array_combine($keys, $keys);
 
-        // Use the entity's normaliser to normalise "Id"
-        $normalisedIdKey =
-            $this->_Class->Normaliser
-                ? ($this->_Class->CarefulNormaliser)(self::ID_KEY)
-                : self::ID_KEY;
+        foreach ([
+            self::ID_KEY => self::ID_PROPERTY,
+            self::PARENT_KEY => $this->_Class->ParentProperty,
+            self::CHILDREN_KEY => $this->_Class->ChildrenProperty,
+        ] as $key => $property) {
+            if ($property === null) {
+                continue;
+            }
 
-        // If receiving values for "Id", add the relevant key to CustomKeys
-        $idKey = $keys[$normalisedIdKey] ?? null;
-        if ($idKey !== null) {
-            $customKeys = [self::ID_KEY => $idKey];
+            if ($key === self::ID_KEY) {
+                $property =
+                    $this->_Class->Normaliser
+                        ? ($this->_Class->CarefulNormaliser)($property)
+                        : $property;
+            }
+
+            // If receiving values for this property, add the relevant key to
+            // $customKeys
+            $customKey = $keys[$property] ?? null;
+            if ($customKey !== null) {
+                $customKeys[$key] = $customKey;
+            }
         }
+
+        $idKey = $customKeys[self::ID_KEY] ?? null;
+        $parentKey = $customKeys[self::PARENT_KEY] ?? null;
+        $childrenKey = $customKeys[self::CHILDREN_KEY] ?? null;
 
         // Check for relationships to honour by applying deferred entities
         // instead of raw data
-        if ($this->_Class->IsSyncEntity && $this->_Class->IsRelatable &&
+        if ($this->_Class->IsSyncEntity &&
             ($this->_Class->OneToOneRelationships ||
                 $this->_Class->OneToManyRelationships)) {
             $missing = null;
@@ -502,25 +525,45 @@ final class SyncIntrospector extends Introspector
 
                     $key = $keys[$match];
                     $list = (bool) $list;
+                    $isParent = $match === $parentKey;
+                    $isChildren = $match === $childrenKey;
                     // If $match doesn't resolve to a declared property, it will
                     // resolve to a magic method
                     $property = $this->_Class->Properties[$match] ?? $match;
-                    $keyClosures[$match] = $this->getRelationshipClosure($key, $list, $relationship, $property);
+                    $keyClosures[$match] = $this->getRelationshipClosure(
+                        $key,
+                        $list,
+                        $relationship,
+                        $property,
+                        $isParent,
+                        $isChildren,
+                    );
                 }
             }
 
             // Check for absent one-to-many relationships to hydrate
             if ($missing && $idKey !== null && $forNewInstance) {
                 foreach ($missing as $key => $relationship) {
-                    $filter = $key === $this->_Class->ChildrenProperty
-                        ? $this->_Class->ParentProperty
-                        : null;
+                    if (!is_a($relationship, ISyncEntity::class, true)) {
+                        throw new LogicException(sprintf(
+                            '%s does not implement %s',
+                            $relationship,
+                            ISyncEntity::class,
+                        ));
+                    }
+
+                    $isChildren = $key === $childrenKey;
+                    $filter =
+                        $isChildren
+                            ? $this->_Class->ParentProperty
+                            : null;
                     $property = $this->_Class->Properties[$key] ?? $key;
                     $keyClosures[$key] = $this->getHydrator(
                         $idKey,
                         $relationship,
                         $property,
                         $filter,
+                        $isChildren,
                     );
                 }
             }
@@ -557,6 +600,11 @@ final class SyncIntrospector extends Introspector
                     ? ($this->_Class->CarefulNormaliser)($matches[1])
                     : $matches[1];
 
+            // Don't use the same key twice
+            if (isset($keys[$match]) || isset($keyClosures[$match])) {
+                continue;
+            }
+
             if (!in_array($match, $this->_Class->NormalisedKeys, true)) {
                 continue;
             }
@@ -586,7 +634,16 @@ final class SyncIntrospector extends Introspector
             // As above, if $match doesn't resolve to a declared property, it
             // will resolve to a magic method
             $property = $this->_Class->Properties[$match] ?? $match;
-            $keyClosures[$match] = $this->getRelationshipClosure($key, $list, $relationship, $property);
+            $isParent = $match === $parentKey;
+            $isChildren = $match === $childrenKey;
+            $keyClosures[$match] = $this->getRelationshipClosure(
+                $key,
+                $list,
+                $relationship,
+                $property,
+                $isParent,
+                $isChildren,
+            );
 
             // Prevent duplication of the key as a meta value
             unset($keys[$normalisedKey]);
@@ -603,13 +660,16 @@ final class SyncIntrospector extends Introspector
     }
 
     /**
+     * @param class-string<ISyncEntity&IRelatable>|null $relationship
      * @return Closure(mixed[], ?string, TClass, ?ISyncProvider, ?ISyncContext): void
      */
     private function getRelationshipClosure(
         string $key,
         bool $isList,
         ?string $relationship,
-        string $property
+        string $property,
+        bool $isParent,
+        bool $isChildren
     ): Closure {
         if ($relationship === null) {
             return
@@ -629,7 +689,14 @@ final class SyncIntrospector extends Introspector
                 $entity,
                 ?ISyncProvider $provider,
                 ?ISyncContext $context
-            ) use ($key, $isList, $relationship, $property): void {
+            ) use (
+                $key,
+                $isList,
+                $relationship,
+                $property,
+                $isParent,
+                $isChildren
+            ): void {
                 if ($data[$key] === null ||
                         (Test::isListArray($data[$key]) xor $isList) ||
                         !($entity instanceof ISyncEntity) ||
@@ -638,32 +705,116 @@ final class SyncIntrospector extends Introspector
                     $entity->{$property} = $data[$key];
                     return;
                 }
+
                 if ($isList) {
                     if (is_scalar($data[$key][0])) {
-                        DeferredSyncEntity::deferList($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+                        if (!$isChildren) {
+                            DeferredSyncEntity::deferList(
+                                $provider,
+                                $context->push($entity),
+                                $relationship,
+                                $data[$key],
+                                $entity->{$property},
+                            );
+                            return;
+                        }
+
+                        /** @var ISyncEntity&ITreeable $entity */
+                        DeferredSyncEntity::deferList(
+                            $provider,
+                            $context->push($entity),
+                            $relationship,
+                            $data[$key],
+                            $replace,
+                            static function ($child) use ($entity): void {
+                                /** @var ISyncEntity&ITreeable $child */
+                                $entity->addChild($child);
+                            },
+                        );
                         return;
                     }
-                    $entity->{$property} = $relationship::provideList($data[$key], $provider, $context->getConformity(), $context->push($entity))->toArray();
+
+                    $entities =
+                        $relationship::provideList(
+                            $data[$key],
+                            $provider,
+                            $context->getConformity(),
+                            $context->push($entity),
+                        )->toArray();
+
+                    if (!$isChildren) {
+                        $entity->{$property} = $entities;
+                        return;
+                    }
+
+                    /** @var array<ISyncEntity&ITreeable> $entities */
+                    foreach ($entities as $child) {
+                        /** @var ISyncEntity&ITreeable $entity */
+                        $entity->addChild($child);
+                    }
                     return;
                 }
+
                 if (is_scalar($data[$key])) {
-                    DeferredSyncEntity::defer($provider, $context->push($entity), $relationship, $data[$key], $entity->{$property});
+                    if (!$isParent) {
+                        DeferredSyncEntity::defer(
+                            $provider,
+                            $context->push($entity),
+                            $relationship,
+                            $data[$key],
+                            $entity->{$property},
+                        );
+                        return;
+                    }
+
+                    /** @var ISyncEntity&ITreeable $entity */
+                    DeferredSyncEntity::defer(
+                        $provider,
+                        $context->push($entity),
+                        $relationship,
+                        $data[$key],
+                        $replace,
+                        static function ($parent) use ($entity): void {
+                            /** @var ISyncEntity&ITreeable $parent */
+                            $entity->setParent($parent);
+                        },
+                    );
                     return;
                 }
-                $entity->{$property} = $relationship::provide($data[$key], $provider, $context->push($entity));
+
+                $related =
+                    $relationship::provide(
+                        $data[$key],
+                        $provider,
+                        $context->push($entity),
+                    );
+
+                if (!$isParent) {
+                    $entity->{$property} = $related;
+                    return;
+                }
+
+                /**
+                 * @var ISyncEntity&ITreeable $entity
+                 * @var ISyncEntity&ITreeable $related
+                 */
+                $entity->setParent($related);
             };
     }
 
     /**
+     * @param class-string<ISyncEntity&IRelatable> $relationship
      * @return Closure(mixed[], ?string, TClass, ?ISyncProvider, ?ISyncContext): void
      */
     private function getHydrator(
         string $idKey,
         string $relationship,
         string $property,
-        ?string $filter = null
+        ?string $filter,
+        bool $isChildren
     ): Closure {
         $entityType = $this->_Class->Class;
+        $entityProvider = self::entityToProvider($relationship);
 
         return
             static function (
@@ -677,9 +828,13 @@ final class SyncIntrospector extends Introspector
                 $relationship,
                 $property,
                 $filter,
-                $entityType
+                $isChildren,
+                $entityType,
+                $entityProvider
             ): void {
-                if (!($context instanceof ISyncContext)) {
+                if (!($context instanceof ISyncContext) ||
+                        !($provider instanceof ISyncProvider) ||
+                        !is_a($provider, $entityProvider)) {
                     return;
                 }
 
@@ -688,7 +843,26 @@ final class SyncIntrospector extends Introspector
                     return;
                 }
 
-                /** @var TClass $entity */
+                $filter =
+                    $filter === null || $flags & HydrationFlag::NO_FILTER
+                        ? null
+                        : [$filter => $data[$idKey]];
+
+                if (!$isChildren) {
+                    DeferredRelationship::defer(
+                        $provider,
+                        $context->push($entity),
+                        $relationship,
+                        $service ?? $entityType,
+                        $property,
+                        $data[$idKey],
+                        $filter,
+                        $entity->{$property},
+                    );
+                    return;
+                }
+
+                /** @var ISyncEntity&ITreeable $entity */
                 DeferredRelationship::defer(
                     $provider,
                     $context->push($entity),
@@ -696,10 +870,14 @@ final class SyncIntrospector extends Introspector
                     $service ?? $entityType,
                     $property,
                     $data[$idKey],
-                    $filter === null || $flags & HydrationFlag::NO_FILTER
-                        ? null
-                        : [$filter => $data[$idKey]],
-                    $entity->{$property},
+                    $filter,
+                    $replace,
+                    static function ($entities) use ($entity): void {
+                        foreach ($entities as $child) {
+                            /** @var ISyncEntity&ITreeable $child */
+                            $entity->addChild($child);
+                        }
+                    },
                 );
             };
     }

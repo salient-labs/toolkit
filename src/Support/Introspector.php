@@ -436,7 +436,7 @@ class Introspector
      * @param array<static::*_KEY,string> $customKeys An array that maps key
      * types to keys as they appear in `$keys`.
      * @param array<string,Closure(mixed[], ?string, TClass, ?TProvider, ?TContext): void> $keyClosures Normalised key => closure
-     * @return IntrospectorKeyTargets<TClass,TProvider,TContext>
+     * @return IntrospectorKeyTargets<static,TClass,TProvider,TContext>
      */
     protected function getKeyTargets(
         array $keys,
@@ -564,7 +564,7 @@ class Introspector
             }
         }
 
-        /** @var IntrospectorKeyTargets<TClass,TProvider,TContext> */
+        /** @var IntrospectorKeyTargets<static,TClass,TProvider,TContext> */
         $targets = new IntrospectorKeyTargets(
             $parameterKeys ?? [],
             $passByRefKeys ?? [],
@@ -580,7 +580,7 @@ class Introspector
     }
 
     /**
-     * @param IntrospectorKeyTargets<TClass,TProvider,TContext> $targets
+     * @param IntrospectorKeyTargets<covariant static,TClass,TProvider,TContext> $targets
      * @return Closure(mixed[], class-string|null, IContainer): TClass
      */
     final protected function _getConstructor(IntrospectorKeyTargets $targets): Closure
@@ -816,7 +816,7 @@ class Introspector
     }
 
     /**
-     * @param IntrospectorKeyTargets<TClass,TProvider,TContext> $targets
+     * @param IntrospectorKeyTargets<covariant static,TClass,TProvider,TContext> $targets
      * @return Closure(mixed[], TClass, IContainer, TProvider|null, TContext|null, IDateFormatter|null, ITreeable|null): TClass
      */
     final protected function _getUpdater(IntrospectorKeyTargets $targets): Closure
@@ -917,7 +917,7 @@ class Introspector
     }
 
     /**
-     * @param IntrospectorKeyTargets<TClass,TProvider,TContext> $targets
+     * @param IntrospectorKeyTargets<covariant static,TClass,TProvider,TContext> $targets
      * @return Closure(mixed[], string|null, TClass, TProvider|null, TContext|null): TClass
      */
     final protected function _getResolver(IntrospectorKeyTargets $targets): Closure
