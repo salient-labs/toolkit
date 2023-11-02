@@ -3,7 +3,7 @@
 namespace Lkrms\Sync\Contract;
 
 use Lkrms\Contract\IProviderContext;
-use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy;
+use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
 use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
@@ -82,10 +82,10 @@ interface ISyncContext extends IProviderContext
     /**
      * Apply a deferred sync entity policy to the context
      *
-     * @param DeferredSyncEntityPolicy::* $policy
+     * @param DeferralPolicy::* $policy
      * @return $this
      */
-    public function withDeferredSyncEntityPolicy($policy);
+    public function withDeferralPolicy($policy);
 
     /**
      * Apply hydration flags to the context
@@ -177,9 +177,9 @@ interface ISyncContext extends IProviderContext
     /**
      * Get the deferred sync entity policy applied to the context
      *
-     * @return DeferredSyncEntityPolicy::*
+     * @return DeferralPolicy::*
      */
-    public function getDeferredSyncEntityPolicy();
+    public function getDeferralPolicy();
 
     /**
      * Get hydration flags applied to the context for a given entity

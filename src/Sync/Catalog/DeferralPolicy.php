@@ -12,15 +12,14 @@ use Lkrms\Sync\Support\SyncStore;
  *
  * @extends Enumeration<int>
  */
-final class DeferredSyncEntityPolicy extends Enumeration
+final class DeferralPolicy extends Enumeration
 {
     /**
      * Do not resolve deferred entities or relationships
      *
-     * If {@see SyncStore::resolveDeferredEntities()} and
-     * {@see SyncStore::resolveDeferredRelationships()} are not called manually,
-     * unresolved {@see DeferredSyncEntity} and {@see DeferredRelationship}
-     * instances may appear in object graphs returned by sync operations.
+     * If {@see SyncStore::resolveDeferred()} is not called manually, unresolved
+     * {@see DeferredSyncEntity} and {@see DeferredRelationship} instances may
+     * appear in object graphs returned by sync operations.
      */
     public const DO_NOT_RESOLVE = 0;
 

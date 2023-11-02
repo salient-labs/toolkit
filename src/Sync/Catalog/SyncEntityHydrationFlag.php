@@ -28,8 +28,8 @@ final class SyncEntityHydrationFlag extends Enumeration
     /**
      * Defer hydration until deferred entities are resolved
      *
-     * The {@see DeferredSyncEntityPolicy} applied to the context is also
-     * applied to hydration.
+     * The {@see DeferralPolicy} applied to the context is also applied to
+     * hydration.
      */
     public const DEFER = 4;
 

@@ -492,8 +492,6 @@ final class SyncIntrospector extends Introspector
         }
 
         $idKey = $customKeys[self::ID_KEY] ?? null;
-        $parentKey = $customKeys[self::PARENT_KEY] ?? null;
-        $childrenKey = $customKeys[self::CHILDREN_KEY] ?? null;
 
         // Check for relationships to honour by applying deferred entities
         // instead of raw data
@@ -525,8 +523,8 @@ final class SyncIntrospector extends Introspector
 
                     $key = $keys[$match];
                     $list = (bool) $list;
-                    $isParent = $match === $parentKey;
-                    $isChildren = $match === $childrenKey;
+                    $isParent = $match === $this->_Class->ParentProperty;
+                    $isChildren = $match === $this->_Class->ChildrenProperty;
                     // If $match doesn't resolve to a declared property, it will
                     // resolve to a magic method
                     $property = $this->_Class->Properties[$match] ?? $match;
@@ -552,7 +550,7 @@ final class SyncIntrospector extends Introspector
                         ));
                     }
 
-                    $isChildren = $key === $childrenKey;
+                    $isChildren = $key === $this->_Class->ChildrenProperty;
                     $filter =
                         $isChildren
                             ? $this->_Class->ParentProperty
@@ -634,8 +632,8 @@ final class SyncIntrospector extends Introspector
             // As above, if $match doesn't resolve to a declared property, it
             // will resolve to a magic method
             $property = $this->_Class->Properties[$match] ?? $match;
-            $isParent = $match === $parentKey;
-            $isChildren = $match === $childrenKey;
+            $isParent = $match === $this->_Class->ParentProperty;
+            $isChildren = $match === $this->_Class->ChildrenProperty;
             $keyClosures[$match] = $this->getRelationshipClosure(
                 $key,
                 $list,
