@@ -8,6 +8,7 @@ use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Event;
 use Lkrms\Store\Concept\SqliteStore;
+use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncClassResolver;
@@ -830,15 +831,11 @@ final class SyncStore extends SqliteStore
         }
 
         $context = $deferred->getContext();
-        $flags = $context
-            ? $context->getHydrationFlags($entityType)
-            : 0;
+        $policy = $context
+            ? $context->getDeferralPolicy()
+            : null;
 
-        if ($flags & HydrationFlag::LAZY) {
-            return $this;
-        }
-
-        if ($flags & HydrationFlag::EAGER) {
+        if ($policy === DeferralPolicy::RESOLVE_EARLY) {
             $deferred->resolve();
             return $this;
         }
@@ -914,13 +911,12 @@ final class SyncStore extends SqliteStore
     ): ?array {
         $checkpoint = $this->DeferralCheckpoint;
         do {
-            $entities = $this->resolveDeferredEntities($fromCheckpoint);
+            // Resolve relationships first because they can deliver multiple
+            // entities per round trip, some of which may be in the deferred
+            // entity queue
             $relationships = $this->resolveDeferredRelationships($fromCheckpoint);
+            $entities = $this->resolveDeferredEntities($fromCheckpoint);
             if ($return) {
-                foreach ($entities as $entity) {
-                    $resolved[spl_object_id($entity)] = $entity;
-                }
-
                 foreach ($relationships as $relationship) {
                     foreach ($relationship as $entity) {
                         $objectId = spl_object_id($entity);
@@ -929,6 +925,10 @@ final class SyncStore extends SqliteStore
                         }
                         $resolved[$objectId] = $entity;
                     }
+                }
+
+                foreach ($entities as $entity) {
+                    $resolved[spl_object_id($entity)] = $entity;
                 }
             }
         } while ($entities || $relationships);
