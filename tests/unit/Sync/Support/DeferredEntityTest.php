@@ -2,20 +2,22 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Sync\Catalog\HydrationFlag;
+use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Support\DeferredEntity;
 use Lkrms\Tests\Sync\Entity\Provider\PostProvider;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
+use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 
-final class DeferredSyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
+final class DeferredEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
 {
-    public function testDeferLazy(): void
+    public function testDoNotResolve(): void
     {
         $provider = $this->App->get(PostProvider::class);
-        $context = $provider->getContext()->withHydrationFlags(
-            HydrationFlag::LAZY | HydrationFlag::NO_FILTER
-        );
+        $context =
+            $provider
+                ->getContext()
+                ->withDeferralPolicy(DeferralPolicy::DO_NOT_RESOLVE);
 
         $post = $provider->with(Post::class, $context)->get(1);
         $this->assertInstanceOf(DeferredEntity::class, $post->User);
@@ -25,26 +27,48 @@ final class DeferredSyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
         $this->assertInstanceOf(User::class, $post->User);
     }
 
-    public function testDeferEager(): void
+    public function testResolveEarly(): void
     {
         $provider = $this->App->get(PostProvider::class);
-        $context = $provider->getContext()->withHydrationFlags(
-            HydrationFlag::EAGER | HydrationFlag::NO_FILTER
-        );
+        $context =
+            $provider
+                ->getContext()
+                ->withDeferralPolicy(DeferralPolicy::RESOLVE_EARLY);
 
-        $post = $provider->with(Post::class, $context)->get(1);
+        /** @var JsonPlaceholderApi $provider */
+        $data = $provider->getCurler('/posts/1')->get();
+        $post = Post::provide($data, $provider, $context);
         $this->assertInstanceOf(User::class, $post->User);
 
         $userName = $post->User->Name;
         $this->assertSame('Leanne Graham', $userName);
     }
 
+    public function testResolveLate(): void
+    {
+        $provider = $this->App->get(PostProvider::class);
+        $context =
+            $provider
+                ->getContext()
+                ->withDeferralPolicy(DeferralPolicy::RESOLVE_LATE);
+
+        /** @var JsonPlaceholderApi $provider */
+        $data = $provider->getCurler('/posts/1')->get();
+        $post = Post::provide($data, $provider, $context);
+        $this->assertInstanceOf(DeferredEntity::class, $post->User);
+
+        $userName = $post->User->Name;
+        $this->assertSame('Leanne Graham', $userName);
+        $this->assertInstanceOf(User::class, $post->User);
+    }
+
     public function testDeferList(): void
     {
         $provider = $this->App->get(PostProvider::class);
-        $context = $provider->getContext()->withHydrationFlags(
-            HydrationFlag::DEFER | HydrationFlag::NO_FILTER
-        );
+        $context =
+            $provider
+                ->getContext()
+                ->withDeferralPolicy(DeferralPolicy::DO_NOT_RESOLVE);
 
         /**
          * @var array<DeferredEntity<Post>>|Post[]|null
