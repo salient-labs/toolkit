@@ -911,13 +911,15 @@ final class SyncStore extends SqliteStore
     ): ?array {
         $checkpoint = $this->DeferralCheckpoint;
         do {
-            // Resolve relationships first because they can deliver multiple
-            // entities per round trip, some of which may be in the deferred
-            // entity queue
-            $relationships = $this->resolveDeferredRelationships($fromCheckpoint);
-            $entities = $this->resolveDeferredEntities($fromCheckpoint);
-            if ($return) {
-                foreach ($relationships as $relationship) {
+            // Resolve relationships first because they typically deliver
+            // multiple entities per round trip, some of which may be in the
+            // deferred entity queue
+            $deferred = $this->resolveDeferredRelationships($fromCheckpoint);
+            if ($deferred) {
+                if (!$return) {
+                    continue;
+                }
+                foreach ($deferred as $relationship) {
                     foreach ($relationship as $entity) {
                         $objectId = spl_object_id($entity);
                         if ($this->EntityCheckpoints[$objectId] < $checkpoint) {
@@ -926,12 +928,17 @@ final class SyncStore extends SqliteStore
                         $resolved[$objectId] = $entity;
                     }
                 }
-
-                foreach ($entities as $entity) {
-                    $resolved[spl_object_id($entity)] = $entity;
-                }
+                continue;
             }
-        } while ($entities || $relationships);
+
+            $deferred = $this->resolveDeferredEntities($fromCheckpoint);
+            if (!$deferred || !$return) {
+                continue;
+            }
+            foreach ($deferred as $entity) {
+                $resolved[spl_object_id($entity)] = $entity;
+            }
+        } while ($deferred);
 
         return $return
             ? array_values($resolved ?? [])
