@@ -93,6 +93,14 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
     /**
      * @inheritDoc
      */
+    public function getFilterPolicy(): ?int
+    {
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function isValidIdentifier($id, string $entity): bool
     {
         if (
@@ -133,11 +141,33 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
     }
 
     /**
+     * Perform a sync operation if its context is valid
+     *
+     * Providers where sync operations are performed by declared methods should
+     * use this method to ensure filter policy violations are caught and to take
+     * advantage of other safety checks that may be added in the future.
+     *
+     * @template T of iterable<ISyncEntity>|ISyncEntity
+     *
+     * @param callable(): T $operation
+     * @return T
+     */
+    protected function run(ISyncContext $context, callable $operation)
+    {
+        $context->maybeApplyFilterPolicy($returnEmpty, $empty);
+        if ($returnEmpty) {
+            return $empty;
+        }
+
+        return $operation();
+    }
+
+    /**
      * Get a new pipeline bound to the provider's container
      *
      * @return IPipeline<mixed,mixed,mixed>
      */
-    final protected function pipeline(): IPipeline
+    protected function pipeline(): IPipeline
     {
         return Pipeline::create($this->App);
     }
@@ -148,7 +178,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
      * @param (callable(mixed $payload, IPipeline<mixed,mixed,mixed> $pipeline, mixed $arg): mixed) $callback
      * @return IPipeline<mixed,mixed,mixed>
      */
-    final protected function callbackPipeline(callable $callback): IPipeline
+    protected function callbackPipeline(callable $callback): IPipeline
     {
         return Pipeline::create($this->App)->throughCallback($callback);
     }

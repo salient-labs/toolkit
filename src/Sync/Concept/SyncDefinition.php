@@ -11,8 +11,8 @@ use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Pipeline;
+use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Catalog\SyncEntitySource;
-use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Catalog\SyncOperations;
 use Lkrms\Sync\Contract\ISyncContext;
@@ -36,7 +36,7 @@ use LogicException;
  * @property-read TProvider $Provider The ISyncProvider servicing the entity
  * @property-read array<OP::*> $Operations A list of supported sync operations
  * @property-read ArrayKeyConformity::* $Conformity The conformity level of data returned by the provider for this entity
- * @property-read SyncFilterPolicy::* $FilterPolicy The action to take when filters are unclaimed by the provider
+ * @property-read FilterPolicy::* $FilterPolicy The action to take when filters are unclaimed by the provider
  * @property-read array<OP::*,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $Overrides An array that maps sync operations to closures that override other implementations
  * @property-read array<array-key,array-key|array-key[]>|null $KeyMap An array that maps provider (backend) keys to one or more entity keys
  * @property-read int-mask-of<ArrayMapperFlag::*> $KeyMapFlags Passed to the array mapper if `$keyMap` is provided
@@ -113,11 +113,11 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * To prevent a request for entities that meet one or more criteria
      * inadvertently reaching the backend as a request for a larger set of
      * entities--if not all of them--the default policy if there are unclaimed
-     * filters is {@see SyncFilterPolicy::THROW_EXCEPTION}. See
-     * {@see SyncFilterPolicy} for alternative policies and
-     * {@see ISyncContext::withArgs()} for more information about filters.
+     * filters is {@see FilterPolicy::THROW_EXCEPTION}. See {@see FilterPolicy}
+     * for alternative policies and {@see ISyncContext::withArgs()} for more
+     * information about filters.
      *
-     * @var SyncFilterPolicy::*
+     * @var FilterPolicy::*
      */
     protected $FilterPolicy;
 
@@ -221,7 +221,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * @param TProvider $provider
      * @param array<OP::*> $operations
      * @param ArrayKeyConformity::* $conformity
-     * @param SyncFilterPolicy::* $filterPolicy
+     * @param FilterPolicy::*|null $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
@@ -234,7 +234,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         ISyncProvider $provider,
         array $operations = [],
         $conformity = ArrayKeyConformity::NONE,
-        int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
+        ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,
         int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
@@ -243,6 +243,13 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         bool $readFromReadList = false,
         ?int $returnEntitiesFrom = null
     ) {
+        if ($filterPolicy === null) {
+            $filterPolicy = $provider->getFilterPolicy();
+            if ($filterPolicy === null) {
+                $filterPolicy = FilterPolicy::THROW_EXCEPTION;
+            }
+        }
+
         $this->Entity = $entity;
         $this->Provider = $provider;
         $this->Conformity = $conformity;
@@ -514,27 +521,30 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     {
         $returnEmpty = false;
 
-        if (SyncFilterPolicy::IGNORE === $this->FilterPolicy ||
+        if (FilterPolicy::IGNORE === $this->FilterPolicy ||
                 !($filter = $ctx->getFilters())) {
             return;
         }
 
         switch ($this->FilterPolicy) {
-            case SyncFilterPolicy::THROW_EXCEPTION:
+            case FilterPolicy::THROW_EXCEPTION:
                 throw new SyncFilterPolicyViolationException($this->Provider, $this->Entity, $filter);
 
-            case SyncFilterPolicy::RETURN_EMPTY:
+            case FilterPolicy::RETURN_EMPTY:
                 $returnEmpty = true;
                 $empty = OP::isList($operation) ? [] : null;
 
                 return;
 
-            case SyncFilterPolicy::FILTER_LOCALLY:
-                /** @todo Implement SyncFilterPolicy::FILTER_LOCALLY */
+            case FilterPolicy::FILTER_LOCALLY:
+                /** @todo Implement FilterPolicy::FILTER_LOCALLY */
                 break;
         }
 
-        throw new LogicException("SyncFilterPolicy invalid or not implemented: {$this->FilterPolicy}");
+        throw new LogicException(sprintf(
+            'FilterPolicy invalid or not implemented: %s',
+            $this->FilterPolicy,
+        ));
     }
 
     /**

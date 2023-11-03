@@ -8,7 +8,7 @@ use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Event;
 use Lkrms\Store\Concept\SqliteStore;
-use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -105,9 +105,16 @@ final class SyncStore extends SqliteStore
     private $Entities;
 
     /**
+     * SPL object ID => checkpoint
+     *
+     * @var array<int,int>
+     */
+    private $EntityCheckpoints;
+
+    /**
      * Provider ID => entity type ID => entity ID => [ deferred entity ]
      *
-     * @var array<int,array<int,array<int|string,array<DeferredSyncEntity<ISyncEntity>>>>>
+     * @var array<int,array<int,array<int|string,array<DeferredEntity<ISyncEntity>>>>>
      */
     private $DeferredEntities = [];
 
@@ -755,6 +762,7 @@ final class SyncStore extends SqliteStore
             throw new LogicException('Entity already registered');
         }
         $this->Entities[$providerId][$entityTypeId][$entityId] = $entity;
+        $this->EntityCheckpoints[spl_object_id($entity)] = $this->DeferralCheckpoint++;
 
         // Resolve the entity's entries in the deferred entity queue (if any)
         $deferred = $this->DeferredEntities[$providerId][$entityTypeId][$entityId] ?? null;
@@ -805,14 +813,14 @@ final class SyncStore extends SqliteStore
      *
      * @param class-string<TEntity> $entityType
      * @param int|string $entityId
-     * @param DeferredSyncEntity<TEntity> $deferred
+     * @param DeferredEntity<TEntity> $deferred
      * @return $this
      */
     public function deferredEntity(
         int $providerId,
         string $entityType,
         $entityId,
-        DeferredSyncEntity $deferred
+        DeferredEntity $deferred
     ) {
         $entityTypeId = $this->EntityTypeMap[$entityType];
         $entity = $this->Entities[$providerId][$entityTypeId][$entityId] ?? null;
@@ -842,7 +850,7 @@ final class SyncStore extends SqliteStore
     }
 
     /**
-     * Register a deferred sync entity relationship
+     * Register a deferred relationship
      *
      * @template TEntity of ISyncEntity
      *
@@ -895,10 +903,47 @@ final class SyncStore extends SqliteStore
     }
 
     /**
+     * Resolve deferred sync entities and relationships recursively until no
+     * deferrals remain
+     *
+     * @return ISyncEntity[]|null
+     */
+    public function resolveDeferred(
+        ?int $fromCheckpoint = null,
+        bool $return = false
+    ): ?array {
+        $checkpoint = $this->DeferralCheckpoint;
+        do {
+            $entities = $this->resolveDeferredEntities($fromCheckpoint);
+            $relationships = $this->resolveDeferredRelationships($fromCheckpoint);
+            if ($return) {
+                foreach ($entities as $entity) {
+                    $resolved[spl_object_id($entity)] = $entity;
+                }
+
+                foreach ($relationships as $relationship) {
+                    foreach ($relationship as $entity) {
+                        $objectId = spl_object_id($entity);
+                        if ($this->EntityCheckpoints[$objectId] < $checkpoint) {
+                            continue;
+                        }
+                        $resolved[$objectId] = $entity;
+                    }
+                }
+            }
+        } while ($entities || $relationships);
+
+        return $return
+            ? array_values($resolved ?? [])
+            : null;
+    }
+
+    /**
      * Get a checkpoint to delineate between deferred entities and relationships
      * already in their respective queues, and any subsequent deferrals
      *
-     * Use the return value of this method with
+     * The return value of this method can be used with
+     * {@see SyncStore::resolveDeferred()},
      * {@see SyncStore::resolveDeferredEntities()} and
      * {@see SyncStore::resolveDeferredRelationships()} to limit the range of
      * entities to resolve, e.g. to those produced by a particular operation.
@@ -969,8 +1014,8 @@ final class SyncStore extends SqliteStore
     }
 
     /**
-     * Resolve deferred sync entity relationships from their respective
-     * providers and/or the local entity store
+     * Resolve deferred relationships from their respective providers and/or the
+     * local entity store
      *
      * @param class-string<ISyncEntity>|null $entityType
      * @param class-string<ISyncEntity>|null $forEntityType
@@ -979,6 +1024,7 @@ final class SyncStore extends SqliteStore
      * provider cannot be reached. If `true`, the local entity store is used
      * unconditionally. If `false`, the local entity store is unconditionally
      * ignored.
+     * @return array<ISyncEntity[]>
      */
     public function resolveDeferredRelationships(
         ?int $fromCheckpoint = null,
@@ -986,7 +1032,7 @@ final class SyncStore extends SqliteStore
         ?string $entityType = null,
         ?string $forEntityType = null,
         ?bool $offline = null
-    ): int {
+    ): array {
         $entityTypeId = $entityType === null
             ? null
             : $this->EntityTypeMap[$entityType];
@@ -994,7 +1040,7 @@ final class SyncStore extends SqliteStore
             ? null
             : $this->EntityTypeMap[$forEntityType];
 
-        $count = 0;
+        $resolved = [];
         foreach ($this->DeferredRelationships as $provId => $relationshipsByEntTypeId) {
             if ($providerId !== null && $provId !== $providerId) {
                 continue;
@@ -1023,9 +1069,8 @@ final class SyncStore extends SqliteStore
                             }
 
                             foreach ($relationships as $index => $deferred) {
-                                $deferred->resolve($offline);
+                                $resolved[] = $deferred->resolve($offline);
                                 unset($this->DeferredRelationships[$provId][$entTypeId][$forEntTypeId][$forEntProp][$forEntId][$index]);
-                                $count++;
                             }
                         }
                     }
@@ -1033,7 +1078,7 @@ final class SyncStore extends SqliteStore
             }
         }
 
-        return $count;
+        return $resolved;
     }
 
     /**

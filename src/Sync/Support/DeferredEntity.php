@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -10,13 +10,13 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use LogicException;
 
 /**
- * The promise of a sync entity that hasn't been created yet
+ * The promise of a sync entity that hasn't been retrieved yet
  *
  * @template TEntity of ISyncEntity
  *
  * @mixin TEntity
  */
-final class DeferredSyncEntity
+final class DeferredEntity
 {
     /**
      * The provider servicing the entity
@@ -47,9 +47,14 @@ final class DeferredSyncEntity
     private $EntityId;
 
     /**
-     * @var TEntity|DeferredSyncEntity<TEntity>|null
+     * @var TEntity|DeferredEntity<TEntity>|null
      */
     private $Replace;
+
+    /**
+     * @var (callable(TEntity): void)|null
+     */
+    private $Callback;
 
     /**
      * @var int-mask-of<HydrationFlag::*>
@@ -62,25 +67,32 @@ final class DeferredSyncEntity
     private $Resolved;
 
     /**
-     * Creates a new DeferredSyncEntity object
+     * Creates a new DeferredEntity object
      *
      * @param class-string<TEntity> $entity
      * @param int|string $entityId
-     * @param TEntity|DeferredSyncEntity<TEntity>|null $replace
+     * @param TEntity|DeferredEntity<TEntity>|null $replace
+     * @param (callable(TEntity): void)|null $callback
      */
     private function __construct(
         ISyncProvider $provider,
         ?ISyncContext $context,
         string $entity,
         $entityId,
-        &$replace
+        &$replace,
+        ?callable $callback = null
     ) {
         $this->Provider = $provider;
         $this->Context = $context;
         $this->Entity = $entity;
         $this->EntityId = $entityId;
-        $this->Replace = &$replace;
-        $this->Replace = $this;
+
+        if ($callback) {
+            $this->Callback = $callback;
+        } else {
+            $this->Replace = &$replace;
+            $this->Replace = $this;
+        }
 
         $this->Flags =
             $context
@@ -170,10 +182,9 @@ final class DeferredSyncEntity
 
         // If the entity was deferred with `HydrationFlag::DEFER`,
         // `Sync::entity()` calls `replace()`, otherwise the resolved entity
-        // needs to be assigned here
+        // needs to be applied here
         if ($this->Flags & (HydrationFlag::LAZY | HydrationFlag::EAGER)) {
-            $this->Replace = $entity;
-            unset($this->Replace);
+            $this->apply($entity);
         }
 
         return $entity;
@@ -191,6 +202,19 @@ final class DeferredSyncEntity
         }
 
         $this->Resolved = $entity;
+        $this->apply($entity);
+    }
+
+    /**
+     * @param TEntity $entity
+     */
+    private function apply(ISyncEntity $entity): void
+    {
+        if ($this->Callback) {
+            ($this->Callback)($entity);
+            return;
+        }
+
         $this->Replace = $entity;
         unset($this->Replace);
     }
@@ -203,16 +227,19 @@ final class DeferredSyncEntity
      * is servicing the entity.
      * @param class-string<TEntity> $entity The entity to instantiate.
      * @param int|string $entityId The identifier of the deferred entity.
-     * @param TEntity|DeferredSyncEntity<TEntity>|null $replace Refers to the
+     * @param TEntity|DeferredEntity<TEntity>|null $replace Refers to the
      * variable or property to replace when the entity is resolved. Do not
      * assign anything else to it after calling this method.
+     * @param (callable(TEntity): void)|null $callback If given, `$replace` is
+     * ignored and the resolved entity is passed to the callback.
      */
     public static function defer(
         ISyncProvider $provider,
         ?ISyncContext $context,
         string $entity,
         $entityId,
-        &$replace = null
+        &$replace = null,
+        ?callable $callback = null
     ): void {
         new self(
             $provider,
@@ -220,6 +247,7 @@ final class DeferredSyncEntity
             $entity,
             $entityId,
             $replace,
+            $callback,
         );
     }
 
@@ -232,17 +260,35 @@ final class DeferredSyncEntity
      * @param class-string<TEntity> $entity The entity to instantiate.
      * @param array<int|string> $entityIds A list of deferred entity
      * identifiers.
-     * @param array<TEntity|DeferredSyncEntity<TEntity>>|null $replace Refers to
-     * the variable or property to replace when the entities are resolved. Do
-     * not assign anything else to it after calling this method.
+     * @param array<TEntity|DeferredEntity<TEntity>>|null $replace Refers to the
+     * variable or property to replace when the entities are resolved. Do not
+     * assign anything else to it after calling this method.
+     * @param (callable(TEntity): void)|null $callback If given, `$replace` is
+     * ignored and the resolved entities are passed to the callback.
      */
     public static function deferList(
         ISyncProvider $provider,
         ?ISyncContext $context,
         string $entity,
         array $entityIds,
-        &$replace = null
+        &$replace = null,
+        ?callable $callback = null
     ): void {
+        if ($callback) {
+            unset($replace);
+            foreach ($entityIds as $entityId) {
+                new self(
+                    $provider,
+                    $context,
+                    $entity,
+                    $entityId,
+                    $replace,
+                    $callback,
+                );
+            }
+            return;
+        }
+
         $i = -1;
         $list = [];
         foreach ($entityIds as $entityId) {

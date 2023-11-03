@@ -3,8 +3,8 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Support\ProviderContext;
-use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy;
-use Lkrms\Sync\Catalog\SyncEntityHydrationFlag as HydrationFlag;
+use Lkrms\Sync\Catalog\DeferralPolicy;
+use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -34,9 +34,9 @@ final class SyncContext extends ProviderContext implements ISyncContext
     protected $FilterPolicyCallback;
 
     /**
-     * @var DeferredSyncEntityPolicy::*
+     * @var DeferralPolicy::*
      */
-    protected $DeferredSyncEntityPolicy = DeferredSyncEntityPolicy::RESOLVE_EARLY;
+    protected $DeferralPolicy = DeferralPolicy::RESOLVE_EARLY;
 
     /**
      * @var array<class-string<ISyncEntity>,int-mask-of<HydrationFlag::*>>
@@ -138,9 +138,9 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function withDeferredSyncEntityPolicy($policy)
+    public function withDeferralPolicy($policy)
     {
-        return $this->withPropertyValue('DeferredSyncEntityPolicy', $policy);
+        return $this->withPropertyValue('DeferralPolicy', $policy);
     }
 
     /**
@@ -213,9 +213,9 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function getDeferredSyncEntityPolicy()
+    public function getDeferralPolicy()
     {
-        return $this->DeferredSyncEntityPolicy;
+        return $this->DeferralPolicy;
     }
 
     /**

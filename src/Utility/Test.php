@@ -47,7 +47,18 @@ final class Test
     public static function isIntValue($value): bool
     {
         return is_int($value) ||
-            (is_string($value) && Pcre::match('/^[+-]?[0-9]+$/', $value));
+            (is_string($value) && Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value));
+    }
+
+    /**
+     * True if $value is a float or float string
+     *
+     * @param mixed $value
+     */
+    public static function isFloatValue($value): bool
+    {
+        return is_float($value) ||
+            (is_string($value) && is_numeric($value) && !self::isIntValue($value));
     }
 
     /**

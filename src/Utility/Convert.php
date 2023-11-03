@@ -31,6 +31,41 @@ use RecursiveIteratorIterator;
 final class Convert
 {
     /**
+     * Cast a value to the type it appears to be
+     *
+     * @param mixed $value
+     * @param bool $toFloat If `true` (the default), convert float strings to
+     * `float`s.
+     * @param bool $toBool If `true` (the default), convert boolean strings to
+     * `bool`s.
+     * @return null|bool|int|float|string
+     */
+    public static function toValue($value, bool $toFloat = true, bool $toBool = true)
+    {
+        if ($value === null || is_bool($value) || is_int($value) || is_float($value)) {
+            return $value;
+        }
+        if (!is_string($value)) {
+            throw new LogicException('$value must be a scalar');
+        }
+        if (Pcre::match('/^' . Regex::INTEGER_STRING . '$/', $value)) {
+            return (int) $value;
+        }
+        if ($toFloat && is_numeric($value)) {
+            return (float) $value;
+        }
+        if ($toBool && Pcre::match(
+            '/^' . Regex::BOOLEAN_STRING . '$/',
+            $value,
+            $match,
+            PREG_UNMATCHED_AS_NULL
+        )) {
+            return $match['true'] !== null;
+        }
+        return $value;
+    }
+
+    /**
      * Cast a value to a boolean, preserving null and converting boolean strings
      *
      * @param mixed $value
@@ -40,8 +75,13 @@ final class Convert
     {
         return is_null($value)
             ? null
-            : (is_string($value) && Pcre::match('/^' . Regex::BOOLEAN_STRING . '$/', $value, $match)
-                ? ($match['true'] ? true : false)
+            : (is_string($value) && Pcre::match(
+                '/^' . Regex::BOOLEAN_STRING . '$/',
+                $value,
+                $match,
+                PREG_UNMATCHED_AS_NULL
+            )
+                ? $match['true'] !== null
                 : (bool) $value);
     }
 

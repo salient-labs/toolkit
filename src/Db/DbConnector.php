@@ -5,8 +5,8 @@ namespace Lkrms\Db;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Facade\Format;
+use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
-use Lkrms\Utility\Test;
 use ADOConnection;
 use UnexpectedValueException;
 
@@ -95,19 +95,19 @@ final class DbConnector implements IReadable
      */
     public function __construct(string $name, int $driver = null)
     {
-        $driver = is_null($driver)
-            ? Env::get("{$name}_driver")
+        $driver = $driver === null
+            ? Convert::toValue(Env::get("{$name}_driver"), false, false)
             : $driver;
 
         $this->Name = $name;
-        $this->Driver = Test::isIntValue($driver) ? (int) $driver : DbDriver::fromName($driver);
-        $this->Dsn = Env::get("{$name}_dsn", null);
-        $this->Hostname = Env::get("{$name}_hostname", null);
-        $this->Port = (int) Env::get("{$name}_port", null) ?: null;
-        $this->Username = Env::get("{$name}_username", null);
-        $this->Password = Env::get("{$name}_password", null);
-        $this->Database = Env::get("{$name}_database", null);
-        $this->Schema = Env::get("{$name}_schema", null);
+        $this->Driver = is_int($driver) ? $driver : DbDriver::fromName($driver);
+        $this->Dsn = Env::getNullable("{$name}_dsn", null);
+        $this->Hostname = Env::getNullable("{$name}_hostname", null);
+        $this->Port = Env::getNullableInt("{$name}_port", null);
+        $this->Username = Env::getNullable("{$name}_username", null);
+        $this->Password = Env::getNullable("{$name}_password", null);
+        $this->Database = Env::getNullable("{$name}_database", null);
+        $this->Schema = Env::getNullable("{$name}_schema", null);
 
         $this->AdodbDriver = DbDriver::toAdodbDriver($this->Driver);
     }
@@ -119,19 +119,23 @@ final class DbConnector implements IReadable
     {
         $parts = [];
         foreach ($attributes as $keyword => $value) {
-            switch (true) {
-                case is_int($value):
-                    $value = (string) $value;
-                    break;
-                case is_bool($value):
-                    $value = Format::bool($value);
-                    break;
+            if (is_int($value)) {
+                $value = (string) $value;
+            } elseif (is_bool($value)) {
+                $value = Format::bool($value);
             }
             if (($enclose && strpos($value, '}') !== false) ||
                     (!$enclose && strpos($value, ';') !== false)) {
-                throw new UnexpectedValueException("Illegal character in attribute: $keyword");
+                throw new UnexpectedValueException(sprintf(
+                    'Illegal character in attribute: %s',
+                    $keyword,
+                ));
             }
-            $parts[] = "$keyword=" . ($enclose ? "{{$value}}" : "$value");
+            $parts[] = sprintf(
+                $enclose ? '%s={%s}' : '%s=%s',
+                $keyword,
+                $value,
+            );
         }
 
         return implode(';', $parts);
@@ -144,9 +148,16 @@ final class DbConnector implements IReadable
 
         switch ($this->Driver) {
             case DbDriver::DB2:
-                $db->Connect(
-                    $this->Dsn ?: $this->getConnectionString(
-                        [
+                if (!Env::has('DB2CODEPAGE')) {
+                    // 1208 = UTF-8 encoding of Unicode
+                    Env::set('DB2CODEPAGE', '1208');
+                }
+
+                if ($this->Dsn !== null) {
+                    $db->Connect($this->Dsn);
+                } else {
+                    $db->Connect(
+                        $this->getConnectionString([
                             'driver' => Env::get('odbc_db2_driver', 'Db2'),
                             'hostname' => $this->Hostname,
                             'protocol' => 'tcpip',
@@ -155,11 +166,11 @@ final class DbConnector implements IReadable
                             'uid' => $this->Username,
                             'pwd' => $this->Password,
                             'connecttimeout' => $timeout,
-                        ],
-                        false
-                    )
-                );
-                if ($this->Schema) {
+                        ], false)
+                    );
+                }
+
+                if ($this->Schema !== null) {
                     $db->Execute(
                         'SET SCHEMA = ' . $db->Param('schema'),
                         ['schema' => $this->Schema]
@@ -168,19 +179,21 @@ final class DbConnector implements IReadable
                 break;
 
             case DbDriver::MSSQL:
+                $db->setConnectionParameter('CharacterSet', 'UTF-8');
                 $db->setConnectionParameter(
                     'TrustServerCertificate',
                     // @phpstan-ignore-next-line
-                    (bool) Env::get('mssql_trust_server_certificate', null)
+                    Env::getBool('mssql_trust_server_certificate', false),
                 );
                 // @phpstan-ignore-next-line
                 $db->setConnectionParameter('LoginTimeout', $timeout);
+                // No break
             default:
                 $db->Connect(
                     $this->Hostname,
                     $this->Username,
                     $this->Password,
-                    $this->Database
+                    $this->Database,
                 );
                 break;
         }

@@ -2,20 +2,22 @@
 
 namespace Lkrms\Sync\Concept;
 
+use Lkrms\Contract\IProvider;
 use Lkrms\Db\DbConnector;
-use Lkrms\Facade\Assert;
+use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Cache;
 use Lkrms\Support\SqlQuery;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
+use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\DbSyncDefinitionBuilder;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
 use ADOConnection;
 use ADODB_Exception;
-use RuntimeException;
 
 /**
  * Base class for providers with traditional database backends
@@ -23,6 +25,7 @@ use RuntimeException;
 abstract class DbSyncProvider extends SyncProvider
 {
     private DbConnector $DbConnector;
+
     private ADOConnection $Db;
 
     /**
@@ -39,20 +42,22 @@ abstract class DbSyncProvider extends SyncProvider
     public function getBackendIdentifier(): array
     {
         $connector = $this->dbConnector();
-        if ($connector->Dsn) {
+
+        if ($connector->Dsn !== null) {
             /** @todo Implement DSN parsing */
-            throw new RuntimeException('DSN parsing not implemented');
+            throw new MethodNotImplementedException(
+                static::class,
+                __FUNCTION__,
+                IProvider::class
+            );
         }
 
-        return array_map(
-            fn($value) => strtolower(trim($value)),
-            [
-                $connector->Hostname ?: '',
-                (string) $connector->Port ?: '',
-                $connector->Database ?: '',
-                $connector->Schema ?: '',
-            ]
-        );
+        return Arr::trim([
+            strtolower((string) $connector->Hostname),
+            (string) $connector->Port,
+            strtolower((string) $connector->Database),
+            strtolower((string) $connector->Schema),
+        ]);
     }
 
     /**
@@ -91,19 +96,14 @@ abstract class DbSyncProvider extends SyncProvider
      */
     final public function getDb(): ADOConnection
     {
-        if (!isset($this->Db)) {
-            Assert::localeIsUtf8();
-
-            return $this->Db = $this->dbConnector()->getConnection();
-        }
-
-        return $this->Db;
+        return $this->Db
+            ?? ($this->Db = $this->dbConnector()->getConnection());
     }
 
     /**
      * Get a SqlQuery instance to prepare queries for the backend
      */
-    final public function getSqlQuery(ADOConnection $db): SqlQuery
+    protected function getSqlQuery(ADOConnection $db): SqlQuery
     {
         return new SqlQuery(fn(string $name): string => $db->Param($name));
     }
@@ -136,6 +136,25 @@ abstract class DbSyncProvider extends SyncProvider
     }
 
     /**
+     * Get the first row in a recordset, or throw a SyncEntityNotFoundException
+     *
+     * @param array<array<string,mixed>> $rows The recordset retrieved from the
+     * backend.
+     * @param class-string<ISyncEntity> $entity The requested entity.
+     * @param int|string $id The identifier of the requested entity.
+     * @return array<string,mixed>
+     */
+    protected function first(array $rows, string $entity, $id): array
+    {
+        $row = array_shift($rows);
+        if ($row === null) {
+            throw new SyncEntityNotFoundException($this, $entity, $id);
+        }
+
+        return $row;
+    }
+
+    /**
      * Surface the provider's implementation of sync operations for an entity
      * via a DbSyncDefinition object
      *
@@ -148,7 +167,8 @@ abstract class DbSyncProvider extends SyncProvider
      * @return DbSyncDefinitionBuilder<T,static>
      */
     protected function buildDbDefinition(
-        string $entity, DbSyncDefinitionBuilder $defB
+        string $entity,
+        DbSyncDefinitionBuilder $defB
     ): DbSyncDefinitionBuilder {
         return $defB;
     }

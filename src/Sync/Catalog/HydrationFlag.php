@@ -9,7 +9,7 @@ use Lkrms\Concept\Enumeration;
  *
  * @extends Enumeration<int>
  */
-final class SyncEntityHydrationFlag extends Enumeration
+final class HydrationFlag extends Enumeration
 {
     /**
      * Do not perform hydration
@@ -28,8 +28,8 @@ final class SyncEntityHydrationFlag extends Enumeration
     /**
      * Defer hydration until deferred entities are resolved
      *
-     * The {@see DeferredSyncEntityPolicy} applied to the context is also
-     * applied to hydration.
+     * The {@see DeferralPolicy} applied to the context is also applied to
+     * hydration.
      */
     public const DEFER = 4;
 

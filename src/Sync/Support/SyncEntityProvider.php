@@ -7,7 +7,7 @@ use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
-use Lkrms\Sync\Catalog\DeferredSyncEntityPolicy as DeferredEntityPolicy;
+use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
@@ -167,23 +167,23 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
         if (!SyncOperation::isList($operation)) {
             $result = $this->_run($operation, ...$args);
-            if ($this->Context->getDeferredSyncEntityPolicy() !==
-                    DeferredEntityPolicy::DO_NOT_RESOLVE) {
+            if ($this->Context->getDeferralPolicy() !==
+                    DeferralPolicy::DO_NOT_RESOLVE) {
                 $this->resolveDeferredEntities($fromCheckpoint);
             }
             return $result;
         }
 
-        switch ($this->Context->getDeferredSyncEntityPolicy()) {
-            case DeferredEntityPolicy::DO_NOT_RESOLVE:
+        switch ($this->Context->getDeferralPolicy()) {
+            case DeferralPolicy::DO_NOT_RESOLVE:
                 $result = $this->_run($operation, ...$args);
                 break;
 
-            case DeferredEntityPolicy::RESOLVE_EARLY:
+            case DeferralPolicy::RESOLVE_EARLY:
                 $result = $this->resolveDeferredEntitiesBeforeYield($fromCheckpoint, $operation, ...$args);
                 break;
 
-            case DeferredEntityPolicy::RESOLVE_LATE:
+            case DeferralPolicy::RESOLVE_LATE:
                 $result = $this->resolveDeferredEntitiesAfterRun($fromCheckpoint, $operation, ...$args);
                 break;
         }
@@ -222,10 +222,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
 
     private function resolveDeferredEntities(int $fromCheckpoint): void
     {
-        while ($this->Store->resolveDeferredEntities($fromCheckpoint) ||
-                $this->Store->resolveDeferredRelationships($fromCheckpoint)) {
-            $fromCheckpoint = $this->Store->getDeferralCheckpoint();
-        }
+        $this->Store->resolveDeferred($fromCheckpoint);
     }
 
     /**
@@ -479,8 +476,8 @@ final class SyncEntityProvider implements ISyncEntityProvider
             $result = iterator_to_array($result);
         }
 
-        if ($this->Context->getDeferredSyncEntityPolicy() !==
-                DeferredEntityPolicy::DO_NOT_RESOLVE) {
+        if ($this->Context->getDeferralPolicy() !==
+                DeferralPolicy::DO_NOT_RESOLVE) {
             $this->resolveDeferredEntities($fromCheckpoint);
         }
 

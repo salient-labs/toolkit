@@ -7,8 +7,8 @@ use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
+use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Catalog\SyncEntitySource;
-use Lkrms\Sync\Catalog\SyncFilterPolicy;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\DbSyncProvider;
 use Lkrms\Sync\Concept\SyncDefinition;
@@ -43,7 +43,7 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param TProvider $provider
      * @param array<OP::*> $operations
      * @param ArrayKeyConformity::* $conformity
-     * @param SyncFilterPolicy::* $filterPolicy
+     * @param FilterPolicy::*|null $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
@@ -57,7 +57,7 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
         array $operations = [],
         ?string $table = null,
         $conformity = ArrayKeyConformity::PARTIAL,
-        int $filterPolicy = SyncFilterPolicy::THROW_EXCEPTION,
+        ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,
         int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
