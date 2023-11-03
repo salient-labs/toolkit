@@ -43,7 +43,7 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
      * @param TProvider $provider
      * @param array<OP::*> $operations
      * @param ArrayKeyConformity::* $conformity
-     * @param FilterPolicy::* $filterPolicy
+     * @param FilterPolicy::*|null $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(DbSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
@@ -57,7 +57,7 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
         array $operations = [],
         ?string $table = null,
         $conformity = ArrayKeyConformity::PARTIAL,
-        int $filterPolicy = FilterPolicy::THROW_EXCEPTION,
+        ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,
         int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,

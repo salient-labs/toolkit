@@ -221,7 +221,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      * @param TProvider $provider
      * @param array<OP::*> $operations
      * @param ArrayKeyConformity::* $conformity
-     * @param FilterPolicy::* $filterPolicy
+     * @param FilterPolicy::*|null $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(ISyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): (iterable<TEntity>|TEntity)> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperFlag::*> $keyMapFlags
@@ -234,7 +234,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         ISyncProvider $provider,
         array $operations = [],
         $conformity = ArrayKeyConformity::NONE,
-        int $filterPolicy = FilterPolicy::THROW_EXCEPTION,
+        ?int $filterPolicy = null,
         array $overrides = [],
         ?array $keyMap = null,
         int $keyMapFlags = ArrayMapperFlag::ADD_UNMAPPED,
@@ -243,6 +243,13 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
         bool $readFromReadList = false,
         ?int $returnEntitiesFrom = null
     ) {
+        if ($filterPolicy === null) {
+            $filterPolicy = $provider->getFilterPolicy();
+            if ($filterPolicy === null) {
+                $filterPolicy = FilterPolicy::THROW_EXCEPTION;
+            }
+        }
+
         $this->Entity = $entity;
         $this->Provider = $provider;
         $this->Conformity = $conformity;

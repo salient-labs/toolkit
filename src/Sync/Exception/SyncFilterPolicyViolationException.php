@@ -7,7 +7,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 
 /**
- * Thrown when there are unclaimed sync operation filter values
+ * Thrown when there are unclaimed sync operation filters
  *
  * @see FilterPolicy
  */

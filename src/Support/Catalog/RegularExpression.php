@@ -24,11 +24,16 @@ final class RegularExpression extends Dictionary
      */
     public const BOOLEAN_STRING = <<<'REGEX'
         (?xi)
-        (?:
+        \s*+ (?:
           (?<true>  1 | on  | y(?:es)? | t(?:rue)?  | enabled?  ) |
           (?<false> 0 | off | no?      | f(?:alse)? | disabled? )
-        )
+        ) \s*+
         REGEX;
+
+    /**
+     * An integer string
+     */
+    public const INTEGER_STRING = '\s*+[+-]?[0-9]+\s*+';
 
     /**
      * An [RFC4122]-compliant version 4 UUID

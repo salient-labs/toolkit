@@ -4,6 +4,7 @@ namespace Lkrms\Sync\Contract;
 
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
+use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Support\SyncStore;
 
 /**
@@ -43,6 +44,13 @@ interface ISyncProvider extends IProvider
      * @return ISyncDefinition<T,static>
      */
     public function getDefinition(string $entity): ISyncDefinition;
+
+    /**
+     * Get the provider's default unclaimed filter policy
+     *
+     * @return FilterPolicy::*|null
+     */
+    public function getFilterPolicy(): ?int;
 
     /**
      * True if a value is of the correct type and format to be an entity ID
