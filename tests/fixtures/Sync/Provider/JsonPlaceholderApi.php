@@ -11,7 +11,6 @@ use Lkrms\Facade\Console;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\DateFormatter;
-use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
@@ -81,7 +80,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
 
     protected function getHeartbeat()
     {
-        $user = $this->with(User::class)->get(1);
+        $user = $this->with(User::class)->withoutHydration()->get(1);
 
         Console::info(sprintf(
             'Connected to %s as %s',
@@ -132,8 +131,12 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
             case User::class:
                 return $defB
                     ->operations([OP::READ, OP::READ_LIST])
-                    ->path('/users')
-                    ->filterPolicy(FilterPolicy::IGNORE);
+                    ->path('/users');
+
+            case Task::class:
+                return $defB
+                    ->operations([OP::READ, OP::READ_LIST])
+                    ->path(['/users/:taskId/todos', '/todos']);
         }
 
         return $defB;

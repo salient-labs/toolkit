@@ -126,6 +126,7 @@ final class SyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
 
         $this->assertSame([
             'address' => null,
+            'albums' => null,
             'company' => null,
             'email' => null,
             'id' => 1,
@@ -134,6 +135,7 @@ final class SyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
             'posts' => [
                 [
                     'body' => null,
+                    'comments' => null,
                     'id' => 101,
                     'title' => null,
                     'user' => [
@@ -144,6 +146,7 @@ final class SyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
                 ],
                 [
                     'body' => null,
+                    'comments' => null,
                     'id' => 102,
                     'title' => null,
                     'user' => [
@@ -153,14 +156,17 @@ final class SyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
                     ],
                 ]
             ],
+            'tasks' => null,
             'username' => null,
         ], $_user);
         $this->assertSame([
             'body' => null,
+            'comments' => null,
             'id' => 102,
             'title' => null,
             'user' => [
                 'address' => null,
+                'albums' => null,
                 'company' => null,
                 'email' => null,
                 'id' => 1,
@@ -169,6 +175,7 @@ final class SyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
                 'posts' => [
                     [
                         'body' => null,
+                        'comments' => null,
                         'id' => 101,
                         'title' => null,
                         'user' => [
@@ -183,6 +190,7 @@ final class SyncEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
                         '@why' => 'Circular reference detected',
                     ],
                 ],
+                'tasks' => null,
                 'username' => null,
             ],
         ], $_post);

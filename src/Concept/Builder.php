@@ -67,7 +67,10 @@ abstract class Builder extends FluentInterface implements IImmutable
      *
      * @return string[]
      */
-    abstract protected static function getTerminators(): array;
+    protected static function getTerminators(): array
+    {
+        return [];
+    }
 
     protected IContainer $Container;
 

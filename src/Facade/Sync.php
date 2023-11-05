@@ -57,7 +57,7 @@ use Lkrms\Sync\Support\SyncStore;
 final class Sync extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

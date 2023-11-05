@@ -23,7 +23,7 @@ use Lkrms\Support\EventDispatcher;
 final class Event extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

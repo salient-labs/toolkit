@@ -12,6 +12,8 @@ use Lkrms\Facade\Console;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\GenerateBuilder;
 use Lkrms\LkUtil\Command\Generate\GenerateFacade;
+use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;
+use Lkrms\LkUtil\Command\Generate\GenerateSyncProvider;
 use Lkrms\Store\CacheStore;
 use Lkrms\Store\TrashStore;
 use Lkrms\Support\ArrayMapper;
@@ -22,9 +24,17 @@ use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\SyncError;
 use Lkrms\Sync\Support\SyncSerializeRules;
 use Lkrms\Sync\Support\SyncStore;
+use Lkrms\Tests\Sync\Entity\Album;
+use Lkrms\Tests\Sync\Entity\Comment;
+use Lkrms\Tests\Sync\Entity\Photo;
+use Lkrms\Tests\Sync\Entity\Post;
+use Lkrms\Tests\Sync\Entity\Task;
+use Lkrms\Tests\Sync\Entity\User;
+use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Utility\Assertions;
 use Lkrms\Utility\Composer;
 use Lkrms\Utility\Debugging;
+use Lkrms\Utility\File;
 use Lkrms\Utility\Formatters;
 use Lkrms\Utility\System;
 
@@ -57,9 +67,29 @@ $builders = [
     SyncSerializeRules::class => \Lkrms\Sync\Support\SyncSerializeRulesBuilder::class,
 ];
 
+$entities = [
+    Album::class => ['albums', '--one', 'User=User', '--many', 'Photos=Photo'],
+    Comment::class => ['comments', '--one', 'Post=Post'],
+    Photo::class => ['photos', '--one', 'Album=Album'],
+    Post::class => ['posts', '--one', 'User=User', '--many', 'Comments=Comment'],
+    Task::class => ['todos', '--one', 'User=User'],
+    User::class => ['users', '--many', 'Tasks=Task,Posts=Post,Albums=Album', '--skip', 'Website'],
+];
+
+$providers = [
+    Album::class => [],
+    Comment::class => [],
+    Photo::class => [],
+    Post::class => [],
+    Task::class => [],
+    User::class => [],
+];
+
 $app = new CliApplication(dirname(__DIR__));
 $generateFacade = new GenerateFacade($app);
 $generateBuilder = new GenerateBuilder($app);
+$generateEntity = new GenerateSyncEntity($app);
+$generateProvider = new GenerateSyncProvider($app);
 
 $class = new ReflectionClass(EnvVar::class);
 foreach ($class->getReflectionConstants() as $constant) {
@@ -93,6 +123,27 @@ foreach ($builders as $class => $builder) {
         $builder = array_shift($builderArgs);
     }
     $status |= $generateBuilder(...[...$args, ...$builderArgs, $class, $builder]);
+}
+
+foreach ($entities as $class => $entityArgs) {
+    $entity = array_shift($entityArgs);
+    $file = dirname(__DIR__) . "/tests/data/entity/{$entity}.json";
+    $save = false;
+    if (is_file($file)) {
+        array_unshift($entityArgs, '--json', $file);
+    } else {
+        array_unshift($entityArgs, '--provider', JsonPlaceholderApi::class, '--endpoint', "/{$entity}");
+        $save = true;
+    }
+    $status |= $generateEntity(...[...$args, ...$entityArgs, $class]);
+    if ($save && $generateEntity->Entity !== null) {
+        File::createDir(dirname($file));
+        file_put_contents($file, json_encode($generateEntity->Entity, JSON_PRETTY_PRINT));
+    }
+}
+
+foreach ($providers as $class => $providerArgs) {
+    $status |= $generateProvider(...[...$args, ...$providerArgs, $class]);
 }
 
 Console::summary('Code generation completed');

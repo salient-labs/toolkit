@@ -29,7 +29,7 @@ use Lkrms\Concept\Facade;
 final class Composer extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

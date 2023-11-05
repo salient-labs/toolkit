@@ -16,6 +16,7 @@ use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use LogicException;
@@ -1104,10 +1105,11 @@ abstract class CliCommand implements ICliCommand
     ): ?string {
         $this->assertHasRun();
         if (is_string($option)) {
-            if (!($option = $this->getOption($option))) {
+            $option = $this->getOption($option);
+            if (!$option) {
                 throw new LogicException("No option with name '$option'");
             }
-        } elseif ($this->Options[$option->Key] !== $option) {
+        } elseif (($this->Options[$option->Key] ?? null) !== $option) {
             throw new LogicException('No matching option');
         }
 
@@ -1121,7 +1123,7 @@ abstract class CliCommand implements ICliCommand
         }
 
         if (is_int($value)) {
-            if ($option->Short) {
+            if ($option->Short !== null) {
                 return '-' . str_repeat($option->Short, $value);
             }
 
@@ -1158,18 +1160,19 @@ abstract class CliCommand implements ICliCommand
 
         $args = $this->nameParts();
         array_unshift($args, $this->App->getProgramName());
+        $positional = [];
         foreach ($this->Options as $option) {
             $name = null;
-            foreach (array_filter([$option->Long, $option->Short]) as $key) {
+            foreach (Arr::notEmpty([$option->Long, $option->Short]) as $key) {
                 if (array_key_exists($key, $values)) {
                     $name = $key;
                     break;
                 }
             }
 
-            $arg = $name
-                ? $this->getEffectiveArgument($option, $shellEscape, $values[$name])
-                : $this->getEffectiveArgument($option, $shellEscape);
+            $arg = $name === null
+                ? $this->getEffectiveArgument($option, $shellEscape)
+                : $this->getEffectiveArgument($option, $shellEscape, $values[$name]);
 
             if ($option->IsPositional) {
                 $positional[] = $arg;
@@ -1177,9 +1180,9 @@ abstract class CliCommand implements ICliCommand
             }
             $args[] = $arg;
         }
-        array_push($args, ...($positional ?? []));
+        array_push($args, ...$positional);
 
-        return array_values(array_filter($args, fn($arg) => $arg !== null));
+        return array_values(Arr::notNull($args));
     }
 
     /**

@@ -8,6 +8,7 @@ use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
 use Lkrms\Sync\Catalog\DeferralPolicy;
+use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
@@ -494,17 +495,63 @@ final class SyncEntityProvider implements ISyncEntityProvider
         return $this->runA(SyncOperation::DELETE_LIST, $entities, ...$args);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function online()
     {
         $this->Offline = false;
-
         return $this;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function offline()
     {
         $this->Offline = true;
+        return $this;
+    }
 
+    /**
+     * @inheritDoc
+     */
+    public function withoutResolvingDeferrals()
+    {
+        $this->Context = $this->Context->withDeferralPolicy(
+            DeferralPolicy::DO_NOT_RESOLVE,
+        );
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withoutHydration(bool $lazy = false)
+    {
+        $this->Context = $this->Context->withHydrationFlags(
+            $this->preserveHydrationFlags($lazy
+                ? HydrationFlag::LAZY
+                : HydrationFlag::SUPPRESS),
+        );
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withHydration(
+        int $flags = HydrationFlag::EAGER,
+        bool $replace = true,
+        ?string $entity = null,
+        ?int $depth = null
+    ) {
+        $this->Context = $this->Context->withHydrationFlags(
+            $this->preserveHydrationFlags($flags, $entity),
+            $replace,
+            $entity,
+            $depth,
+        );
         return $this;
     }
 
@@ -554,5 +601,15 @@ final class SyncEntityProvider implements ISyncEntityProvider
             $uncertaintyThreshold,
             $weightProperty,
         );
+    }
+
+    private function preserveHydrationFlags(
+        int $flags,
+        ?string $entity = null
+    ): int {
+        $preserve = HydrationFlag::NO_FILTER;
+        return
+            ($flags & ~$preserve)
+            | ($this->Context->getHydrationFlags($entity) & $preserve);
     }
 }

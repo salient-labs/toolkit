@@ -192,8 +192,8 @@ interface ISyncContext extends IProviderContext
     /**
      * Get hydration flags applied to the context for a given entity
      *
-     * @param class-string<ISyncEntity> $entity
+     * @param class-string<ISyncEntity>|null $entity
      * @return int-mask-of<HydrationFlag::*>
      */
-    public function getHydrationFlags(string $entity);
+    public function getHydrationFlags(?string $entity);
 }

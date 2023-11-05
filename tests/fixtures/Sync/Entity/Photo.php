@@ -6,9 +6,9 @@ use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\SyncEntity;
 
 /**
- * Represents the state of a Post entity in a backend
+ * Represents the state of a Photo entity in a backend
  */
-class Post extends SyncEntity
+class Photo extends SyncEntity
 {
     /**
      * @var int|string|null
@@ -16,9 +16,9 @@ class Post extends SyncEntity
     public $Id;
 
     /**
-     * @var User|null
+     * @var Album|null
      */
-    public $User;
+    public $Album;
 
     /**
      * @var string|null
@@ -28,12 +28,12 @@ class Post extends SyncEntity
     /**
      * @var string|null
      */
-    public $Body;
+    public $Url;
 
     /**
-     * @var Comment[]|null
+     * @var string|null
      */
-    public $Comments;
+    public $ThumbnailUrl;
 
     /**
      * @inheritDoc
@@ -41,8 +41,7 @@ class Post extends SyncEntity
     public static function getRelationships(): array
     {
         return [
-            'User' => [RelationshipType::ONE_TO_ONE => User::class],
-            'Comments' => [RelationshipType::ONE_TO_MANY => Comment::class],
+            'Album' => [RelationshipType::ONE_TO_ONE => Album::class],
         ];
     }
 }

@@ -6,7 +6,9 @@ use Lkrms\Contract\ReturnsProvider;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
+use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncOperation;
+use Lkrms\Sync\Support\DeferredRelationship;
 
 /**
  * Provides an entity-agnostic interface to an ISyncProvider's implementation of
@@ -189,4 +191,43 @@ interface ISyncEntityProvider extends ReturnsProvider
      * @return $this
      */
     public function offline();
+
+    /**
+     * Do not resolve entities or relationships deferred while performing sync
+     * operations on the backend
+     *
+     * @return $this
+     */
+    public function withoutResolvingDeferrals();
+
+    /**
+     * Do not hydrate entities returned by the backend
+     *
+     * The state of {@see HydrationFlag::NO_FILTER} in the underlying context is
+     * preserved.
+     *
+     * @param bool $lazy If `true`, {@see HydrationFlag::LAZY} is applied
+     * instead of {@see HydrationFlag::SUPPRESS}, and entities may be returned
+     * with unresolved {@see DeferredRelationship} objects.
+     * @return $this
+     */
+    public function withoutHydration(bool $lazy = false);
+
+    /**
+     * Apply hydration flags to sync operations performed on backend entities
+     *
+     * The state of {@see HydrationFlag::NO_FILTER} in the underlying context is
+     * preserved.
+     *
+     * @param int-mask-of<HydrationFlag::*> $flags
+     * @param class-string<ISyncEntity>|null $entity
+     * @param int<1,max>|null $depth
+     * @return $this
+     */
+    public function withHydration(
+        int $flags = HydrationFlag::EAGER,
+        bool $replace = true,
+        ?string $entity = null,
+        ?int $depth = null
+    );
 }

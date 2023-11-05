@@ -25,7 +25,7 @@ use Lkrms\Support\ErrorHandler;
 final class Err extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

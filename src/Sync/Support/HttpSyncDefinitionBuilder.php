@@ -50,19 +50,11 @@ use Closure;
 final class HttpSyncDefinitionBuilder extends Builder
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getService(): string
     {
         return HttpSyncDefinition::class;
-    }
-
-    /**
-     * @internal
-     */
-    protected static function getTerminators(): array
-    {
-        return [];
     }
 
     /**

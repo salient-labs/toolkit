@@ -36,7 +36,7 @@ use Lkrms\Utility\System;
 final class Sys extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

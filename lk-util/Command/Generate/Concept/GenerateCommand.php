@@ -19,6 +19,7 @@ use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\ProviderContext;
 use Lkrms\Support\TokenExtractor;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Reflect;
@@ -35,16 +36,42 @@ use ReflectionType;
  */
 abstract class GenerateCommand extends Command
 {
+    protected const GENERATE_CLASS = 'class';
+    protected const GENERATE_INTERFACE = 'interface';
     protected const VISIBILITY_PUBLIC = 'public';
     protected const VISIBILITY_PROTECTED = 'protected';
     protected const VISIBILITY_PRIVATE = 'private';
     protected const TAB = '    ';
 
-    protected ?string $OutputDescription;
+    private const MEMBER_STUB = [
+        self::VISIBILITY_PUBLIC => [],
+        self::VISIBILITY_PROTECTED => [],
+        self::VISIBILITY_PRIVATE => [],
+    ];
+
+    /**
+     * The user-supplied description of the generated entity
+     *
+     * Generators should apply a default description if `null`.
+     */
+    protected ?string $Description;
+
     protected ?bool $ToStdout;
+
     protected ?bool $ReplaceIfExists;
+
     protected ?bool $Check;
+
     protected ?bool $NoMetaTags;
+
+    // --
+
+    /**
+     * The type of entity to generate
+     *
+     * @var GenerateCommand::GENERATE_*
+     */
+    protected string $OutputType = GenerateCommand::GENERATE_CLASS;
 
     /**
      * The unqualified name of the entity to generate
@@ -52,28 +79,77 @@ abstract class GenerateCommand extends Command
     protected string $OutputClass;
 
     /**
-     * The namespace of the entity being generated (may be empty)
+     * The namespace of the entity to generate (may be empty)
      */
     protected string $OutputNamespace;
 
     /**
-     * A PHPDoc for the generated entity (may be empty)
+     * The parent of the generated class, or interfaces extended by the
+     * generated interface
+     *
+     * @var class-string[]
      */
-    protected string $ClassPhpDoc;
+    protected array $Extends = [];
+
+    /**
+     * Interfaces implemented by the generated class
+     *
+     * @var class-string[]
+     */
+    protected array $Implements = [];
+
+    /**
+     * Traits used by the generated class
+     *
+     * @var class-string[]
+     */
+    protected array $Uses = [];
+
+    /**
+     * Modifiers applied to the generated class
+     *
+     * @var class-string[]
+     */
+    protected array $Modifiers = [];
+
+    /**
+     * The PHPDoc added before the generated entity
+     *
+     * {@see GenerateCommand::generate()} combines
+     * {@see GenerateCommand::$OutputDescription} and
+     * {@see GenerateCommand::$OutputPhpDoc} before applying PHPDoc delimiters.
+     */
+    protected string $PhpDoc;
+
+    /**
+     * Declared properties of the generated class
+     *
+     * @var array<GenerateCommand::VISIBILITY_*,string[]>
+     */
+    protected array $Properties = self::MEMBER_STUB;
+
+    /**
+     * Declared methods of the generated entity
+     *
+     * @var array<GenerateCommand::VISIBILITY_*,string[]>
+     */
+    protected array $Methods = self::MEMBER_STUB;
 
     /**
      * Lowercase alias => qualified name
      *
      * @var array<string,class-string>
      */
-    protected $AliasMap = [];
+    protected array $AliasMap = [];
 
     /**
      * Lowercase qualified name => alias
      *
      * @var array<class-string,string>
      */
-    protected $ImportMap = [];
+    protected array $ImportMap = [];
+
+    // --
 
     /**
      * @var ReflectionClass<object>
@@ -135,7 +211,7 @@ abstract class GenerateCommand extends Command
                 ->valueName('description')
                 ->description("A short description of the $outputType")
                 ->optionType(CliOptionType::VALUE)
-                ->bindTo($this->OutputDescription),
+                ->bindTo($this->Description),
             CliOption::build()
                 ->long('stdout')
                 ->short('s')
@@ -158,11 +234,32 @@ abstract class GenerateCommand extends Command
         ];
     }
 
+    /**
+     * Get an array of values to use with getEffectiveCommandLine() when
+     * generating repeatable commands
+     *
+     * @return array<string,null>
+     */
+    protected function outputOptionValues(): array
+    {
+        return [
+            'stdout' => null,
+            'check' => null,
+            'force' => null,
+        ];
+    }
+
     protected function reset(): void
     {
         unset($this->OutputClass);
         unset($this->OutputNamespace);
-        unset($this->ClassPhpDoc);
+        unset($this->PhpDoc);
+        $this->Extends = [];
+        $this->Implements = [];
+        $this->Uses = [];
+        $this->Modifiers = [];
+        $this->Properties = self::MEMBER_STUB;
+        $this->Methods = self::MEMBER_STUB;
         $this->AliasMap = [];
         $this->ImportMap = [];
 
@@ -401,44 +498,72 @@ abstract class GenerateCommand extends Command
     }
 
     /**
-     * @param string[] $extends
-     * @param string[] $implements
-     * @param string[] $modifiers
+     * @param string[] $innerBlocks
      */
-    protected function generate(
-        string $type = 'class',
-        array $extends = [],
-        array $implements = [],
-        array $modifiers = []
-    ): string {
-        $lines = [
-            ...$this->generatePhpDocBlock($this->ClassPhpDoc),
-            Convert::sparseToString(' ', [
-                ...$modifiers,
-                $type,
-                $this->OutputClass,
-                $extends ? 'extends' : '',
-                implode(', ', $extends),
-                $implements ? 'implements' : '',
-                implode(', ', $implements),
-            ]),
-            '{',
-            '}',
-        ];
+    protected function generate(array $innerBlocks = []): string
+    {
+        $line = PHP_EOL;
+        $blank = PHP_EOL . PHP_EOL;
 
         $blocks[] = '<?php declare(strict_types=1);';
 
-        if ($this->OutputNamespace) {
+        if ($this->OutputNamespace !== '') {
             $blocks[] = sprintf('namespace %s;', $this->OutputNamespace);
         }
 
         if ($this->ImportMap) {
-            $blocks[] = implode(PHP_EOL, $this->generateImports());
+            $blocks[] = implode($line, $this->generateImports());
         }
 
-        $blocks[] = implode(PHP_EOL, $lines);
+        $phpDoc = implode($blank, Arr::notEmpty([
+            trim($this->Description ?? ''),
+            trim($this->PhpDoc ?? ''),
+        ]));
 
-        return implode(PHP_EOL . PHP_EOL, $blocks);
+        $lines =
+            $phpDoc === ''
+                ? []
+                : $this->generatePhpDocBlock($phpDoc);
+
+        $lines[] = implode(' ', Arr::notEmpty([
+            ...$this->Modifiers,
+            $this->OutputType,
+            $this->OutputClass,
+            $this->Extends ? 'extends' : '',
+            implode(', ', $this->Extends),
+            $this->Implements ? 'implements' : '',
+            implode(', ', $this->Implements),
+        ]));
+
+        $members = [];
+
+        if ($this->Uses) {
+            $imports = [];
+            foreach ($this->Uses as $trait) {
+                $imports[] = sprintf('use %s;', $trait);
+            }
+            $members[] = implode($line, $imports);
+        }
+
+        foreach ([$this->Properties, $this->Methods] as $memberBlocks) {
+            foreach ($memberBlocks as $memberBlocks) {
+                array_push($members, ...$memberBlocks);
+            }
+        }
+
+        $innerBlocks = array_merge($members, $innerBlocks);
+
+        if ($innerBlocks) {
+            $lines[] = '{';
+            $lines[] = implode($blank, $this->indent($innerBlocks));
+            $lines[] = '}';
+        } else {
+            $lines[array_key_last($lines)] .= ' {}';
+        }
+
+        $blocks[] = implode($line, $lines);
+
+        return implode($blank, $blocks);
     }
 
     /**
@@ -460,7 +585,11 @@ abstract class GenerateCommand extends Command
         }
 
         // Sort by FQCN, depth-first
-        uksort($map, fn($a, $b) => $this->getSortableFqcn($a) <=> $this->getSortableFqcn($b));
+        uksort(
+            $map,
+            fn(string $a, string $b): int =>
+                $this->getSortableFqcn($a) <=> $this->getSortableFqcn($b)
+        );
 
         $imports = [];
         foreach ($map as $import => $alias) {
@@ -476,55 +605,95 @@ abstract class GenerateCommand extends Command
     /**
      * Generate a `protected static function` that returns a fixed value
      *
-     * @param string|string[] $phpDoc
+     * @param string[]|string $phpDoc
      * @return string[]
      */
     protected function generateGetter(
         string $name,
         string $valueCode,
-        $phpDoc = '@internal',
+        $phpDoc = '@inheritDoc',
         string $returnType = 'string',
-        string $visibility = GenerateCommand::VISIBILITY_PROTECTED
+        string $visibility = GenerateCommand::VISIBILITY_PUBLIC
     ): array {
-        $lines = [
+        return [
             ...$this->generatePhpDocBlock($phpDoc),
             sprintf('%s static function %s(): %s', $visibility, $name, $returnType),
             '{',
-            sprintf('%sreturn %s;', self::TAB, $valueCode),
+            $this->indent(sprintf('return %s;', $valueCode)),
             '}'
         ];
+    }
 
-        return array_map(fn(string $line) => self::TAB . $line, $lines);
+    /**
+     * Add a method to the generated entity
+     *
+     * @param string[]|string|null $code
+     * @param array<ReflectionParameter|string> $params
+     * @param ReflectionType|string $returnType
+     * @param string[]|string $phpDoc
+     * @param GenerateCommand::VISIBILITY_* $visibility
+     */
+    protected function addMethod(
+        string $name,
+        $code,
+        array $params = [],
+        $returnType = null,
+        $phpDoc = '',
+        bool $static = true,
+        string $visibility = GenerateCommand::VISIBILITY_PUBLIC
+    ): void {
+        $this->Methods[$visibility][] =
+            implode(PHP_EOL, $this->generateMethod(
+                $name,
+                $code,
+                $params,
+                $returnType,
+                $phpDoc,
+                $static,
+                $visibility,
+            ));
     }
 
     /**
      * Generate a method
      *
-     * @param string[] $code
+     * @param string[]|string|null $code
      * @param array<ReflectionParameter|string> $params
      * @param ReflectionType|string $returnType
+     * @param string[]|string $phpDoc
+     * @param GenerateCommand::VISIBILITY_* $visibility
      * @return string[]
      */
     protected function generateMethod(
         string $name,
-        array $code,
+        $code,
         array $params = [],
         $returnType = null,
-        string $phpDoc = '',
+        $phpDoc = '',
         bool $static = true,
         string $visibility = GenerateCommand::VISIBILITY_PUBLIC
     ): array {
-        $callback = fn(string $name): ?string => $this->getFqcnAlias($name, null, false);
+        $callback =
+            fn(string $name): ?string =>
+                $this->getFqcnAlias($name, null, false);
 
         foreach ($params as &$param) {
             if ($param instanceof ReflectionParameter) {
-                $param = Reflect::getParameterDeclaration($param, $this->getClassPrefix(), $callback);
+                $param = Reflect::getParameterDeclaration(
+                    $param,
+                    $this->getClassPrefix(),
+                    $callback,
+                );
             }
         }
         $params = implode(', ', $params);
 
         if ($returnType instanceof ReflectionType) {
-            $returnType = Reflect::getTypeDeclaration($returnType, $this->getClassPrefix(), $callback);
+            $returnType = Reflect::getTypeDeclaration(
+                $returnType,
+                $this->getClassPrefix(),
+                $callback,
+            );
         }
 
         $modifiers = [];
@@ -532,16 +701,32 @@ abstract class GenerateCommand extends Command
         if ($static) {
             $modifiers[] = 'static';
         }
+        $modifiers = implode(' ', $modifiers);
 
-        $lines = [
-            ...$this->generatePhpDocBlock($phpDoc),
-            sprintf('%s function %s(%s)' . ($returnType ? ': %s' : ''), implode(' ', $modifiers), $name, $params, $returnType),
-            '{',
-            ...array_map(fn(string $line) => self::TAB . $line, $code),
-            '}'
-        ];
+        $declaration = $returnType === null
+            ? sprintf('%s function %s(%s)', $modifiers, $name, $params)
+            : sprintf('%s function %s(%s): %s', $modifiers, $name, $params, $returnType);
 
-        return array_map(fn(string $line) => self::TAB . $line, $lines);
+        $method = $this->generatePhpDocBlock($phpDoc);
+
+        if ($this->OutputType === GenerateCommand::GENERATE_INTERFACE) {
+            $method[] = "$declaration;";
+            return $method;
+        }
+
+        $code = $this->indent((array) $code);
+
+        if (!$code) {
+            $method[] = "$declaration {}";
+            return $method;
+        }
+
+        $method[] = $declaration;
+        $method[] = '{';
+        array_push($method, ...$code);
+        $method[] = '}';
+
+        return $method;
     }
 
     /**
@@ -616,25 +801,71 @@ abstract class GenerateCommand extends Command
     }
 
     /**
-     * @param string|string[] $phpDoc
+     * Convert a value to code where arrays are broken over multiple lines
+     *
+     * @param mixed $value
+     */
+    protected function code($value): string
+    {
+        return Convert::valueToCode($value, ",\n", ' => ', null, self::TAB);
+    }
+
+    /**
+     * Add one or more levels of indentation to a line of code or an array
+     * thereof
+     *
+     * @template T of string[]|string
+     *
+     * @param T $lines
+     * @return T
+     */
+    protected function indent($lines, int $levels = 1)
+    {
+        if (is_array($lines)) {
+            foreach ($lines as &$line) {
+                $line = $this->indent($line, $levels);
+            }
+            return $lines;
+        }
+
+        $indent = str_repeat(self::TAB, $levels);
+        return $indent . str_replace("\n", "\n{$indent}", $lines);
+    }
+
+    /**
+     * Get one or more levels of indentation
+     */
+    protected function tab(int $levels = 1): string
+    {
+        return str_repeat(self::TAB, $levels);
+    }
+
+    /**
+     * @param string[]|string $phpDoc
      * @return string[]
      */
     private function generatePhpDocBlock($phpDoc): array
     {
-        if (!$phpDoc) {
+        if ($phpDoc === [] ||
+                (is_string($phpDoc) && trim($phpDoc) === '')) {
             return [];
         }
-        return [
-            '/**',
-            ...array_map(
-                fn(string $line) => $line
-                    ? ' * ' . $line
-                    : ' *',
-                // Implode and explode to allow for multi-line elements
-                explode(PHP_EOL, implode(PHP_EOL, (array) $phpDoc))
-            ),
-            ' */'
-        ];
+
+        // Implode and explode to allow for multi-line elements and unnecessary
+        // whitespace
+        $phpDoc = explode(PHP_EOL, trim(implode(PHP_EOL, (array) $phpDoc)));
+
+        $block[] = '/**';
+        foreach ($phpDoc as $line) {
+            if ($line === '') {
+                $block[] = ' *';
+                continue;
+            }
+            $block[] = ' * ' . $line;
+        }
+        $block[] = ' */';
+
+        return $block;
     }
 
     /**

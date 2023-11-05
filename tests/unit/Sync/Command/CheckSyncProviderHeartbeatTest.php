@@ -85,7 +85,6 @@ class CheckSyncProviderHeartbeatTest extends \Lkrms\Tests\CommandTestCase
                 [],
                 [
                     'http://localhost:3001/users/1' => 1,
-                    'http://localhost:3001/users/1/posts' => 1,
                 ],
                 2,
             ],

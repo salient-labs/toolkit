@@ -235,11 +235,11 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function getHydrationFlags(string $entity)
+    public function getHydrationFlags(?string $entity)
     {
         $depth = count($this->Stack) + 1;
 
-        if ($this->EntityHydrationFlags) {
+        if ($entity !== null && $this->EntityHydrationFlags) {
             $applied = false;
             $flags = 0;
             foreach ($this->EntityHydrationFlags as $entityType => $values) {

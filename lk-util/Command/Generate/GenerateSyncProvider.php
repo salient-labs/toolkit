@@ -6,13 +6,13 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliOption;
 use Lkrms\Facade\Sync;
-use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 
 /**
@@ -20,15 +20,15 @@ use Lkrms\Utility\Convert;
  */
 class GenerateSyncProvider extends GenerateCommand
 {
-    private const OPERATIONS = [
-        'create',
-        'get',
-        'update',
-        'delete',
-        'create-list',
-        'get-list',
-        'update-list',
-        'delete-list',
+    private const OPERATION_MAP = [
+        'create' => SyncOperation::CREATE,
+        'get' => SyncOperation::READ,
+        'update' => SyncOperation::UPDATE,
+        'delete' => SyncOperation::DELETE,
+        'create-list' => SyncOperation::CREATE_LIST,
+        'get-list' => SyncOperation::READ_LIST,
+        'update-list' => SyncOperation::UPDATE_LIST,
+        'delete-list' => SyncOperation::DELETE_LIST,
     ];
 
     private const DEFAULT_OPERATIONS = [
@@ -41,7 +41,7 @@ class GenerateSyncProvider extends GenerateCommand
 
     private ?string $ClassFqcn;
 
-    private ?bool $Magic;
+    private ?bool $NoMagic;
 
     /**
      * @var string[]|null
@@ -66,20 +66,21 @@ class GenerateSyncProvider extends GenerateCommand
                 ->required()
                 ->bindTo($this->ClassFqcn),
             CliOption::build()
-                ->long('magic')
-                ->short('g')
-                ->description('Generate `@method` tags instead of declarations')
-                ->bindTo($this->Magic),
+                ->long('no-magic')
+                ->short('G')
+                ->description('Generate declarations instead of `@method` tags')
+                ->bindTo($this->NoMagic),
             CliOption::build()
                 ->long('op')
                 ->short('o')
                 ->valueName('operation')
                 ->description('A sync operation to include in the interface')
                 ->optionType(CliOptionType::ONE_OF)
-                ->allowedValues(self::OPERATIONS)
+                ->allowedValues(array_keys(self::OPERATION_MAP))
                 ->multipleAllowed()
                 ->defaultValue(self::DEFAULT_OPERATIONS)
-                ->valueCallback(fn(array $value) => array_intersect(self::OPERATIONS, $value))
+                ->valueCallback(fn(array $value) =>
+                    array_intersect(array_keys(self::OPERATION_MAP), $value))
                 ->bindTo($this->Operations),
             CliOption::build()
                 ->long('plural')
@@ -101,29 +102,14 @@ class GenerateSyncProvider extends GenerateCommand
 
         $this->reset();
 
+        $this->OutputType = self::GENERATE_INTERFACE;
+
         $fqcn = $this->getRequiredFqcnOptionValue(
             'class',
             $this->ClassFqcn,
             null,
             $class
         );
-
-        $operationMap = [
-            'create' => SyncOperation::CREATE,
-            'get' => SyncOperation::READ,
-            'update' => SyncOperation::UPDATE,
-            'delete' => SyncOperation::DELETE,
-            'create-list' => SyncOperation::CREATE_LIST,
-            'get-list' => SyncOperation::READ_LIST,
-            'update-list' => SyncOperation::UPDATE_LIST,
-            'delete-list' => SyncOperation::DELETE_LIST,
-        ];
-
-        if (!$fqcn) {
-            throw new CliInvalidArgumentsException(
-                sprintf('invalid class: %s', $fqcn),
-            );
-        }
 
         if (!is_a($fqcn, ISyncEntity::class, true)) {
             throw new CliInvalidArgumentsException(
@@ -147,18 +133,22 @@ class GenerateSyncProvider extends GenerateCommand
         $this->OutputNamespace = $namespace;
 
         $service = $this->getFqcnAlias($fqcn, $class);
-        $extends = $this->getFqcnAlias(ISyncProvider::class);
+        $context = $this->getFqcnAlias(ISyncContext::class);
+        $this->Extends[] = $this->getFqcnAlias(ISyncProvider::class);
 
-        $camelClass = Convert::toCamelCase($class);
+        if ($this->Description === null) {
+            $this->Description = sprintf(
+                'Syncs %s objects with a backend',
+                $class,
+            );
+        }
 
-        $desc = $this->OutputDescription === null
-            ? "Syncs $class objects with a backend"
-            : $this->OutputDescription;
         $ops = array_map(
-            function ($op) use ($operationMap) { return $operationMap[$op]; },
+            fn($op) => self::OPERATION_MAP[$op],
             $this->Operations
         );
 
+        $camelClass = Convert::toCamelCase($class);
         $plural = $this->Plural === null ? $fqcn::plural() : $this->Plural;
 
         if (strcasecmp($class, $plural)) {
@@ -188,20 +178,13 @@ class GenerateSyncProvider extends GenerateCommand
         }
 
         $methods = [];
-        $lines = [];
         foreach ($ops as $op) {
             // CREATE and UPDATE have the same signature, so it's a good default
             if (SyncOperation::isList($op)) {
                 $paramDoc = 'iterable<' . $service . '> $' . $camelPlural;
                 $paramCode = 'iterable $' . $camelPlural;
-                if ($this->Magic) {
-                    $iterator = $this->getFqcnAlias(FluentIteratorInterface::class);
-                    $returnDoc = $iterator . '<array-key,' . $service . '>';
-                    $returnCode = $iterator;
-                } else {
-                    $returnDoc = 'iterable<' . $service . '>';
-                    $returnCode = 'iterable';
-                }
+                $returnDoc = 'iterable<' . $service . '>';
+                $returnCode = 'iterable';
             } else {
                 $paramDoc = $service . ' $' . $camelClass;
                 $paramCode = $paramDoc;
@@ -220,75 +203,47 @@ class GenerateSyncProvider extends GenerateCommand
                     break;
             }
 
-            $context = $this->getFqcnAlias(ISyncContext::class) . ' $ctx';
-            $separator = $paramCode ? ', ' : '';
-            $paramCode = "$context$separator$paramCode";
+            if ($this->NoMagic) {
+                $paramCode = Arr::notEmpty([$context . ' $ctx', $paramCode]);
 
-            if (!$this->Magic) {
-                $_lines = [
-                    '/**',
-                    " * @param $paramDoc",
-                    " * @return $returnDoc",
-                    ' */',
-                    "public function {$opMethod[$op]}($paramCode): $returnCode;",
-                ];
-                if (!$paramDoc || (!SyncOperation::isList($op) && $op !== SyncOperation::READ)) {
-                    unset($_lines[1]);
+                $phpDoc = [];
+                if ($paramDoc !== '' &&
+                        (SyncOperation::isList($op) || $op === SyncOperation::READ)) {
+                    $phpDoc[] = "@param $paramDoc";
                 }
-                if (!SyncOperation::isList($op)) {
-                    unset($_lines[2]);
+                if (SyncOperation::isList($op)) {
+                    $phpDoc[] = "@return $returnDoc";
                 }
-                array_push($lines, ...array_map(fn($line) => '    ' . $line, $_lines), ...['']);
+
+                $this->addMethod($opMethod[$op], null, $paramCode, $returnCode, $phpDoc);
             } else {
-                $methods[] = " * @method $returnDoc {$opMethod[$op]}($context$separator$paramDoc)";
+                $methods[] = sprintf(
+                    '@method %s %s(%s)',
+                    $returnDoc,
+                    $opMethod[$op],
+                    implode(', ', Arr::notEmpty([$context . ' $ctx', $paramDoc])),
+                );
             }
         }
-        if (end($lines) === '') {
-            array_pop($lines);
-        }
-        $lines[] = '}';
-        $methods = implode(PHP_EOL, $methods);
 
-        $imports = $this->generateImports();
+        $docBlock = [];
 
-        $docBlock[] = '/**';
-        if ($desc) {
-            $docBlock[] = " * $desc";
-            $docBlock[] = ' *';
-        }
         if ($methods) {
-            $docBlock[] = $methods;
-            $docBlock[] = ' *';
+            array_push($docBlock, ...$methods);
+            $docBlock[] = '';
         }
+
         if (!$this->NoMetaTags) {
-            $command = $this->getEffectiveCommandLine(true, [
-                'stdout' => null,
-                'force' => null,
-            ]);
+            $command = $this->getEffectiveCommandLine(true, $this->outputOptionValues());
             $program = array_shift($command);
-            $docBlock[] = ' * @generated by ' . $program;
-            $docBlock[] = ' * @salient-generate-command ' . implode(' ', $command);
-        }
-        $docBlock[] = ' */';
-        if (count($docBlock) == 2) {
-            $docBlock = null;
+            $docBlock[] = '@generated by ' . $program;
+            $docBlock[] = '@salient-generate-command ' . implode(' ', $command);
         }
 
-        $blocks = [
-            '<?php declare(strict_types=1);',
-            "namespace $namespace;",
-            implode(PHP_EOL, $imports),
-            ($docBlock ? implode(PHP_EOL, $docBlock) . PHP_EOL : '')
-                . "interface $interface extends $extends" . PHP_EOL
-                . '{'
-        ];
-
-        if (!$imports) {
-            unset($blocks[3]);
+        if ($docBlock) {
+            $this->PhpDoc = implode(PHP_EOL, $docBlock);
         }
 
-        array_unshift($lines, implode(PHP_EOL . PHP_EOL, $blocks));
-
-        $this->handleOutput($lines);
+        $this->handleOutput($this->generate());
     }
 }

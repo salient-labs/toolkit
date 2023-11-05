@@ -38,19 +38,11 @@ use Lkrms\Concept\Builder;
 final class CliOptionBuilder extends Builder
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getService(): string
     {
         return CliOption::class;
-    }
-
-    /**
-     * @internal
-     */
-    protected static function getTerminators(): array
-    {
-        return [];
     }
 
     /**

@@ -21,7 +21,7 @@ use Lkrms\Utility\Debugging;
 final class Debug extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

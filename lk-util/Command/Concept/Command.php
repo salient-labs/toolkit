@@ -9,6 +9,7 @@ use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
+use JsonException;
 
 /**
  * Base class for lk-util commands
@@ -121,16 +122,34 @@ abstract class Command extends CliCommand
      */
     protected function getJson(string $file, ?string &$path = null, bool $associative = true)
     {
+        $_file = $file;
         if ($file === '-') {
             $file = 'php://stdin';
-        } elseif (($file = File::realpath($_file = $file)) === false) {
-            throw new CliInvalidArgumentsException("file not found: $_file");
-        } elseif (strpos($file, $this->App->getBasePath()) === 0) {
-            $path = './' . ltrim(substr($file, strlen($this->App->getBasePath())), '/');
         } else {
-            $path = $file;
+            $file = File::realpath($file);
+
+            if ($file === false) {
+                throw new CliInvalidArgumentsException(sprintf(
+                    'file not found: %s',
+                    $_file,
+                ));
+            }
+
+            if (strpos($file, $this->App->getBasePath()) === 0) {
+                $path = './' . substr($file, strlen($this->App->getBasePath()) + 1);
+            } else {
+                $path = $file;
+            }
         }
 
-        return json_decode(file_get_contents($file), $associative);
+        try {
+            return json_decode(file_get_contents($file), $associative, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $ex) {
+            throw new CliInvalidArgumentsException(sprintf(
+                "invalid JSON in '%s': %s",
+                $_file,
+                $ex->getMessage(),
+            ));
+        }
     }
 }
