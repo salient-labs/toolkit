@@ -12,6 +12,111 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.20.87] - 2023-11-05
+
+### Added
+
+- Sync: add `SyncInvalidRequestException`
+
+### Changed
+
+- Sync: improve entity deferral and hydration
+
+  - Optionally limit hydration flag scope to a given depth
+  - Add `ISyncEntityProvider::withoutResolvingDeferrals()`, `withoutHydration()` and `withHydration()` to simplify manipulation of the underlying context
+  - `Sync::deferredEntity()`: ignore hydration flags in favour of deferral policy
+  - `Sync::resolveDeferred()`: resolve relationships first to take advantage of more entities per round trip
+  - In `SyncEntityResolver::getByName()`, catch `SyncFilterPolicyViolationException` and make a second attempt without the filter
+  - When resolving named parameters in `HttpSyncDefinition::runHttpOperation()`, claim matching **filters** before checking for matching **values**, reversing the previous order
+
+- `lk-util generate sync entity`:
+
+  - Generate sync entities with relationships and parent/child properties
+  - Allow properties in the reference entity to be skipped
+  - Treat entity properties with suffix `_id` or `_ids` as relationships
+
+- `Convert::valueToCode()`: improve string escaping and add support for multiline arrays
+- Declare `Builder::getTerminators()` so subclasses don't need to
+
+### Removed
+
+- Sync: remove dangerous `HydrationFlag::NO_FILTER` option
+
+### Fixed
+
+- Sync: fix issue where deferred entities that are immediately resolved by the provider are not assigned to the variable originally passed by reference
+- Sync: fix issue where checks are performed against the child of the intended context during entity and relationship deferral
+- Sync: fix issue where hydration flags are incorrectly performed on the receiving entity
+- Fix `CliCommand::getEffectiveArgument()` issue where short arguments with name `"0"` are not returned correctly
+
+## [v0.20.86] - 2023-11-03
+
+### Added
+
+- Sync: implement hydration of relationships
+
+  - Add `HydrationFlag`
+  - Allow hydration flags to be applied to sync contexts globally or per-entity
+  - Implement suppressed, lazy, deferred and eager hydration of relationships
+  - Apply parent/child relationships via `addChild()`/`setParent()`
+  - Register entities with the entity store before processing deferred entities and relationships to prevent race conditions and infinite recursion
+  - Add magic methods to `DeferredSyncEntity` for on-demand resolution of deferred entities (similar to lazy hydration implemented via `IteratorAggregate` in `DeferredRelationship`)
+  - Add `Sync::resolveDeferred()`
+  - Allow deferred entities and relationships to be resolved via callback instead of assignment
+  - Store resolved entities and relationships in `DeferredSyncEntity` and `DeferredRelationship` so they can forward property actions and method calls until they go out of scope
+  - Throw an exception if an attempt is made to resolve the same deferred entity or relationship multiple times
+  - In `Sync::resolveDeferredEntities()`, remove attempt to resolve multiple entities via `getListA()` in favour of resolving the first instance of each entity **in its own context** to ensure parent entities are surfaced to providers
+
+- Sync: add protected `DbSyncProvider::first()` method to simplify retrieval of a single entity
+- Add `Convert::toValue()`
+- Add `Test::isFloatValue()`
+
+### Changed
+
+- Sync: simplify filter policy API
+
+  - Add `ISyncProvider::getFilterPolicy()` so providers can specify a default without implementing `getDefinition()`
+  - Add `SyncProvider::run()` to minimise the need for boilerplate safety checks in providers where sync operations are performed by declared methods
+
+- Sync: improve error reporting
+
+  - Remove `$toConsole` parameter from `Sync::error()`
+  - Add `Sync::enableErrorReporting()` and `disableErrorReporting()`
+  - Fix issue where output from `Sync::reportErrors()` is not unescaped
+
+- Sync: rename classes and methods:
+
+  - `DeferredSyncEntity` -> `DeferredEntity`
+  - `DeferredSyncEntityPolicy` -> `DeferralPolicy`
+  - `SyncFilterPolicy` -> `FilterPolicy`
+  - `Sync::getDeferredEntityCheckpoint()` -> `getDeferralCheckpoint()`
+  - `ISyncContext::withDeferredSyncEntityPolicy()` -> `withDeferralPolicy()`
+  - `ISyncContext::getDeferredSyncEntityPolicy()` -> `getDeferralPolicy()`
+
+- Add optional `$count` parameter to `Console::message{,Once}()`
+- `DbConnector`: use `DB2CODEPAGE` to enable UTF-8 before connecting to Db2
+- `DbSyncProvider`: remove UTF-8 locale assertion
+- `Convert`/`Test`: accept leading and trailing spaces in integer and boolean strings
+
+### Removed
+
+- Remove unused entity deferral methods from `SyncEntity` and `SyncEntityProvider`
+- Remove references to `DeferredSyncEntity::$Entity`'s unsupported nullability
+
+### Fixed
+
+- In `ConsoleFormatter::escapeTags()`, mitigate `PREG_JIT_STACKLIMIT_ERROR` when printing long `Console` messages with many special characters (e.g. JSON-encoded values) by only escaping recognised tag delimiters
+- Fix `Event::listen()` callback signature
+
+## [v0.20.85] - 2023-10-31
+
+### Changed
+
+- ICliApplication: rework to allow chained methods after `run()`
+  - Return `$this` from `ICliApplication::run()`
+  - Surface the most recent return value via `ICliApplication::getLastExitStatus()`
+  - Add `ICliApplication::exit()`
+
 ## [v0.20.84] - 2023-10-31
 
 ### Added
@@ -507,6 +612,9 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.20.87]: https://github.com/lkrms/php-util/compare/v0.20.86...v0.20.87
+[v0.20.86]: https://github.com/lkrms/php-util/compare/v0.20.85...v0.20.86
+[v0.20.85]: https://github.com/lkrms/php-util/compare/v0.20.84...v0.20.85
 [v0.20.84]: https://github.com/lkrms/php-util/compare/v0.20.83...v0.20.84
 [v0.20.83]: https://github.com/lkrms/php-util/compare/v0.20.82...v0.20.83
 [v0.20.82]: https://github.com/lkrms/php-util/compare/v0.20.81...v0.20.82
