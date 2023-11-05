@@ -12,7 +12,7 @@ function die() {
 [[ ${BASH_SOURCE[0]} -ef scripts/start-mockoon.sh ]] ||
     die "must run from root of package folder"
 
-(($#)) || set -- tests/fixtures/.mockoon/JsonPlaceholderApi.json 3001
+(($#)) || set -- tests/data/mockoon/JsonPlaceholderApi.json 3001
 
 seconds=${3-60}
 [[ -r ${1-} ]] && [[ ${2-} =~ ^[1-9][0-9]+$ ]] && [[ $seconds =~ ^[0-9]+$ ]] ||
@@ -26,7 +26,7 @@ if curl -sI "http://localhost:$2" &>/dev/null; then
     die "port $2 is already in use"
 fi
 
-"$mockoon_path" start --data "$1" --port "$2" --log-transaction &
+"$mockoon_path" start --data "$1" --port "$2" --log-transaction &>/dev/null &
 
 i=-1
 while :; do

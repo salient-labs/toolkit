@@ -24,7 +24,7 @@ use Closure;
 final class Mapper extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

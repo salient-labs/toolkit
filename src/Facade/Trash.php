@@ -27,7 +27,7 @@ use Lkrms\Store\TrashStore;
 final class Trash extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

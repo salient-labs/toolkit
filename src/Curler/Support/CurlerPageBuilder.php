@@ -25,18 +25,10 @@ use Lkrms\Curler\Curler;
 final class CurlerPageBuilder extends Builder
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getService(): string
     {
         return CurlerPage::class;
-    }
-
-    /**
-     * @internal
-     */
-    protected static function getTerminators(): array
-    {
-        return [];
     }
 }

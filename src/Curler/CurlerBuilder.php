@@ -69,7 +69,7 @@ use Lkrms\Curler\Contract\ICurlerPager;
 final class CurlerBuilder extends Builder
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getService(): string
     {
@@ -77,7 +77,7 @@ final class CurlerBuilder extends Builder
     }
 
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getTerminators(): array
     {

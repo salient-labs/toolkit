@@ -25,7 +25,7 @@ use Lkrms\Utility\Assertions;
 final class Assert extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

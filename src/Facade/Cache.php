@@ -32,7 +32,7 @@ use Lkrms\Store\CacheStore;
 final class Cache extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

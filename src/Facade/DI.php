@@ -47,7 +47,7 @@ use Lkrms\Contract\IService;
 final class DI extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

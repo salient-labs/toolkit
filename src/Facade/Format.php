@@ -28,7 +28,7 @@ use DateTimeInterface;
 final class Format extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

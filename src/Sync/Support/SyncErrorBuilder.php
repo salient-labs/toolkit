@@ -26,18 +26,10 @@ use Lkrms\Sync\Contract\ISyncProvider;
 final class SyncErrorBuilder extends Builder
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getService(): string
     {
         return SyncError::class;
-    }
-
-    /**
-     * @internal
-     */
-    protected static function getTerminators(): array
-    {
-        return [];
     }
 }

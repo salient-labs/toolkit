@@ -13,6 +13,19 @@ abstract class SyncTestCase extends \Lkrms\Tests\TestCase
     protected ?Application $App;
     protected ?SyncStore $Store;
 
+    /**
+     * @param array<string,int> $expected
+     */
+    protected function assertHttpRequestCounts(array $expected): void
+    {
+        $provider = $this->App->get(JsonPlaceholderApi::class);
+        $baseUrl = $provider->getBaseUrl();
+        foreach ($expected as $endpoint => $count) {
+            $endpoints[$baseUrl . $endpoint] = $count;
+        }
+        $this->assertSame($endpoints ?? [], $provider->HttpRequestCount);
+    }
+
     protected function setUp(): void
     {
         $this->BasePath = File::createTempDir();

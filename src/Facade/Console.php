@@ -59,7 +59,7 @@ use Throwable;
 final class Console extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

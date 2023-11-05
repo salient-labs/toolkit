@@ -1521,51 +1521,150 @@ final class Convert
     /**
      * Like var_export but with more compact output
      *
+     * Indentation is applied automatically if `$delimiter` contains one or more
+     * newline characters.
+     *
+     * Array keys are suppressed for list arrays.
+     *
      * @param mixed $value
+     * @param string $delimiter Added between array elements.
+     * @param string $arrow Added between array keys and values.
+     * @param string|null $escapeCharacters Characters to escape in hexadecimal
+     * notation.
      */
     public static function valueToCode(
         $value,
         string $delimiter = ', ',
         string $arrow = ' => ',
-        ?string $escapeCharacters = null
+        ?string $escapeCharacters = null,
+        string $tab = '    '
+    ): string {
+        $eol = Inspect::getEol($delimiter) ?: '';
+        $multiline = (bool) $eol;
+        return self::doValueToCode(
+            $value,
+            $delimiter,
+            $arrow,
+            $escapeCharacters,
+            $tab,
+            $multiline,
+            $eol,
+        );
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private static function doValueToCode(
+        $value,
+        string $delimiter,
+        string $arrow,
+        ?string $escapeCharacters,
+        string $tab,
+        bool $multiline,
+        string $eol,
+        string $indent = ''
     ): string {
         if (is_null($value)) {
             return 'null';
         }
+
         if (is_string($value) &&
-            (($escapeCharacters && strpbrk($value, $escapeCharacters) !== false) ||
-                Pcre::match('/\v/', $value))) {
-            $escaped = addcslashes($value, "\n\r\t\v\e\f\\\$\"" . $escapeCharacters);
-            if ($escapeCharacters) {
+            (Pcre::match('/\v/', $value) ||
+                ($escapeCharacters !== null &&
+                    strpbrk($value, $escapeCharacters) !== false))) {
+            $characters = "\0..\x1f\$\\" . $escapeCharacters;
+            $escaped = addcslashes($value, $characters);
+
+            // Escape explicitly requested characters in hexadecimal notation
+            if ($escapeCharacters !== null) {
+                $search = [];
+                $replace = [];
                 foreach (str_split($escapeCharacters) as $character) {
-                    $oct = sprintf('\%03o', ord($character));
-                    $escaped = str_replace(addcslashes($character, $character), $oct, $escaped);
+                    $search[] = sprintf('/((?<!\\\\)(?:\\\\\\\\)*)%s/', preg_quote(addcslashes($character, $character), '/'));
+                    $replace[] = sprintf('$1\x%02x', ord($character));
                 }
+                $escaped = Pcre::replace($search, $replace, $escaped);
             }
+
+            // Convert octal notation to hexadecimal and correct for differences
+            // between C and PHP escape sequences:
+            // - recognised by PHP: \0 \e \f \n \r \t \v
+            // - returned by addcslashes: \000 \033 \a \b \f \n \r \t \v
+            Pcre::replaceCallback(
+                '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?P<octal>[0-7]{3})|(?P<cslash>[ab]))/',
+                fn(array $matches) =>
+                    $matches[1]
+                    . ($matches['octal'] !== null
+                        ? (($dec = octdec($matches['octal']))
+                            ? ($dec === 27 ? '\e' : sprintf('\x%02x', $dec))
+                            : '\0')
+                        : sprintf('\x%02x', ['a' => 7, 'b' => 8][$matches['cslash']])),
+                $escaped,
+                -1,
+                $count,
+                PREG_UNMATCHED_AS_NULL,
+            );
 
             return '"' . $escaped . '"';
         }
+
         if (!is_array($value)) {
             return var_export($value, true);
         }
-        if (empty($value)) {
+
+        if (!$value) {
             return '[]';
         }
-        $code = '';
+
+        $prefix = '[';
+        $suffix = ']';
+        $glue = $delimiter;
+
+        if ($multiline) {
+            $suffix = "{$delimiter}{$indent}{$suffix}";
+            $indent .= $tab;
+            $prefix .= "{$eol}{$indent}";
+            $glue .= $indent;
+        }
+
         if (Test::isListArray($value)) {
             foreach ($value as $value) {
-                $code .= ($code ? $delimiter : '[')
-                    . self::valueToCode($value, $delimiter, $arrow, $escapeCharacters);
+                $values[] = self::doValueToCode(
+                    $value,
+                    $delimiter,
+                    $arrow,
+                    $escapeCharacters,
+                    $tab,
+                    $multiline,
+                    $eol,
+                    $indent,
+                );
             }
         } else {
             foreach ($value as $key => $value) {
-                $code .= ($code ? $delimiter : '[')
-                    . self::valueToCode($key, $delimiter, $arrow, $escapeCharacters)
-                    . $arrow
-                    . self::valueToCode($value, $delimiter, $arrow, $escapeCharacters);
+                $values[] = self::doValueToCode(
+                    $key,
+                    $delimiter,
+                    $arrow,
+                    $escapeCharacters,
+                    $tab,
+                    $multiline,
+                    $eol,
+                    $indent,
+                ) . $arrow . self::doValueToCode(
+                    $value,
+                    $delimiter,
+                    $arrow,
+                    $escapeCharacters,
+                    $tab,
+                    $multiline,
+                    $eol,
+                    $indent,
+                );
             }
         }
 
-        return $code . ']';
+        return $prefix . implode($glue, $values) . $suffix;
     }
 }

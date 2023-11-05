@@ -1386,4 +1386,87 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
             ],
         ];
     }
+
+    /**
+     * @dataProvider valueToCodeProvider
+     *
+     * @param mixed $value
+     */
+    public function testValueToCode(
+        string $expected,
+        $value,
+        string $delimiter = ', ',
+        string $arrow = ' => ',
+        ?string $escapeCharacters = null,
+        string $tab = '    '
+    ): void {
+        $this->assertSame($expected, Convert::valueToCode($value, $delimiter, $arrow, $escapeCharacters, $tab));
+    }
+
+    /**
+     * @return array<string,array{string,mixed,2?:string,3?:string,4?:string|null,5?:string}>
+     */
+    public static function valueToCodeProvider(): array
+    {
+        $array = [
+            'list1' => [1, 2.0, 3.14],
+            'list2' => [1],
+            'empty' => [],
+            'index' => [5 => 'a', 9 => 'b', 2 => 'c'],
+            "multiline\nkey" => 'This string has "double quotes", \'single quotes\', and commas.',
+            'bool1' => true,
+            'bool2' => false,
+        ];
+
+        return [
+            'default' => [
+                <<<'EOF'
+                ['list1' => [1, 2.0, 3.14], 'list2' => [1], 'empty' => [], 'index' => [5 => 'a', 9 => 'b', 2 => 'c'], "multiline\nkey" => 'This string has "double quotes", \'single quotes\', and commas.', 'bool1' => true, 'bool2' => false]
+                EOF,
+                $array,
+            ],
+            'compact' => [
+                <<<'EOF'
+                ['list1'=>[1,2.0,3.14],'list2'=>[1],'empty'=>[],'index'=>[5=>'a',9=>'b',2=>'c'],"multiline\nkey"=>'This string has "double quotes", \'single quotes\', and commas.','bool1'=>true,'bool2'=>false]
+                EOF,
+                $array,
+                ',',
+                '=>',
+            ],
+            'multiline' => [
+                <<<'EOF'
+                [
+                    'list1' => [
+                        1,
+                        2.0,
+                        3.14,
+                    ],
+                    'list2' => [
+                        1,
+                    ],
+                    'empty' => [],
+                    'index' => [
+                        5 => 'a',
+                        9 => 'b',
+                        2 => 'c',
+                    ],
+                    "multiline\nkey" => 'This string has "double quotes", \'single quotes\', and commas.',
+                    'bool1' => true,
+                    'bool2' => false,
+                ]
+                EOF,
+                $array,
+                ',' . PHP_EOL,
+            ],
+            'escaped commas' => [
+                <<<'EOF'
+                ['list1' => [1, 2.0, 3.14], 'list2' => [1], 'empty' => [], 'index' => [5 => 'a', 9 => 'b', 2 => 'c'], "multiline\nkey" => "This string has "double quotes"\x2c 'single quotes'\x2c and commas.", 'bool1' => true, 'bool2' => false]
+                EOF,
+                $array,
+                ', ',
+                ' => ',
+                ',',
+            ],
+        ];
+    }
 }

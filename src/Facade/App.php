@@ -72,7 +72,7 @@ use Lkrms\Utility\Env;
 final class App extends Facade
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getServiceName(): string
     {

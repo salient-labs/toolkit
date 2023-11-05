@@ -97,9 +97,17 @@ interface ISyncContext extends IProviderContext
      * change to an entity and its subclasses. Flags applied globally or to
      * other entities are not cleared if `$entity` is given and `$replace` is
      * `true`.
+     * @param int<1,max>|null $depth Limit the scope of the change to entities
+     * up to a given `$depth` from the current context. Use `1` if the flags
+     * should only be applied once.
      * @return $this
      */
-    public function withHydrationFlags(int $flags, bool $replace = true, ?string $entity = null);
+    public function withHydrationFlags(
+        int $flags,
+        bool $replace = true,
+        ?string $entity = null,
+        ?int $depth = null
+    );
 
     /**
      * Run the unclaimed filter policy callback
@@ -184,8 +192,8 @@ interface ISyncContext extends IProviderContext
     /**
      * Get hydration flags applied to the context for a given entity
      *
-     * @param class-string<ISyncEntity> $entity
+     * @param class-string<ISyncEntity>|null $entity
      * @return int-mask-of<HydrationFlag::*>
      */
-    public function getHydrationFlags(string $entity);
+    public function getHydrationFlags(?string $entity);
 }

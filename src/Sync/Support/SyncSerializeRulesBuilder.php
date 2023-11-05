@@ -30,19 +30,11 @@ use Closure;
 final class SyncSerializeRulesBuilder extends Builder
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getService(): string
     {
         return SyncSerializeRules::class;
-    }
-
-    /**
-     * @internal
-     */
-    protected static function getTerminators(): array
-    {
-        return [];
     }
 
     /**

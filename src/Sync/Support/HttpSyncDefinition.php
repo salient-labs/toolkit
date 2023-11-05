@@ -589,9 +589,10 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
                             );
                         }
 
-                        $value = $ctx->getValue($name);
+                        $value = $ctx->getFilter($name);
                         if ($value === null) {
-                            $value = $ctx->getFilter($name);
+                            $value = $ctx->getValue($name);
+                        } else {
                             $claim[$name] = true;
                         }
 

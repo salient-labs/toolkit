@@ -8,6 +8,7 @@ use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
 use Lkrms\Sync\Catalog\DeferralPolicy;
+use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
@@ -164,28 +165,37 @@ final class SyncEntityProvider implements ISyncEntityProvider
     public function run($operation, ...$args)
     {
         $fromCheckpoint = $this->Store->getDeferralCheckpoint();
+        $deferralPolicy = $this->Context->getDeferralPolicy();
 
         if (!SyncOperation::isList($operation)) {
             $result = $this->_run($operation, ...$args);
-            if ($this->Context->getDeferralPolicy() !==
-                    DeferralPolicy::DO_NOT_RESOLVE) {
-                $this->resolveDeferredEntities($fromCheckpoint);
+
+            if ($deferralPolicy === DeferralPolicy::RESOLVE_LATE) {
+                $this->Store->resolveDeferred($fromCheckpoint);
             }
+
             return $result;
         }
 
-        switch ($this->Context->getDeferralPolicy()) {
+        switch ($deferralPolicy) {
             case DeferralPolicy::DO_NOT_RESOLVE:
+            case DeferralPolicy::RESOLVE_EARLY:
                 $result = $this->_run($operation, ...$args);
                 break;
 
-            case DeferralPolicy::RESOLVE_EARLY:
-                $result = $this->resolveDeferredEntitiesBeforeYield($fromCheckpoint, $operation, ...$args);
+            case DeferralPolicy::RESOLVE_LATE:
+                $result = $this->resolveDeferredEntitiesAfterRun(
+                    $fromCheckpoint,
+                    $operation,
+                    ...$args,
+                );
                 break;
 
-            case DeferralPolicy::RESOLVE_LATE:
-                $result = $this->resolveDeferredEntitiesAfterRun($fromCheckpoint, $operation, ...$args);
-                break;
+            default:
+                throw new LogicException(sprintf(
+                    'Invalid deferral policy: %d',
+                    $deferralPolicy,
+                ));
         }
 
         if (!($result instanceof FluentIteratorInterface)) {
@@ -200,28 +210,9 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * @param mixed ...$args
      * @return Generator<TEntity>
      */
-    private function resolveDeferredEntitiesBeforeYield(int $fromCheckpoint, $operation, ...$args): Generator
-    {
-        foreach ($this->_run($operation, ...$args) as $key => $entity) {
-            $this->resolveDeferredEntities($fromCheckpoint);
-            $fromCheckpoint = $this->Store->getDeferralCheckpoint();
-            yield $key => $entity;
-        }
-    }
-
-    /**
-     * @param SyncOperation::* $operation
-     * @param mixed ...$args
-     * @return Generator<TEntity>
-     */
     private function resolveDeferredEntitiesAfterRun(int $fromCheckpoint, $operation, ...$args): Generator
     {
         yield from $this->_run($operation, ...$args);
-        $this->resolveDeferredEntities($fromCheckpoint);
-    }
-
-    private function resolveDeferredEntities(int $fromCheckpoint): void
-    {
         $this->Store->resolveDeferred($fromCheckpoint);
     }
 
@@ -470,15 +461,15 @@ final class SyncEntityProvider implements ISyncEntityProvider
         }
 
         $fromCheckpoint = $this->Store->getDeferralCheckpoint();
+        $deferralPolicy = $this->Context->getDeferralPolicy();
 
         $result = $this->_run($operation, ...$args);
         if (!is_array($result)) {
             $result = iterator_to_array($result);
         }
 
-        if ($this->Context->getDeferralPolicy() !==
-                DeferralPolicy::DO_NOT_RESOLVE) {
-            $this->resolveDeferredEntities($fromCheckpoint);
+        if ($deferralPolicy === DeferralPolicy::RESOLVE_LATE) {
+            $this->Store->resolveDeferred($fromCheckpoint);
         }
 
         return $result;
@@ -504,17 +495,65 @@ final class SyncEntityProvider implements ISyncEntityProvider
         return $this->runA(SyncOperation::DELETE_LIST, $entities, ...$args);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function online()
     {
         $this->Offline = false;
-
         return $this;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function offline()
     {
         $this->Offline = true;
+        return $this;
+    }
 
+    /**
+     * @inheritDoc
+     */
+    public function withoutResolvingDeferrals()
+    {
+        $this->Context = $this->Context->withDeferralPolicy(
+            DeferralPolicy::DO_NOT_RESOLVE,
+        );
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withoutHydration(bool $lazy = false)
+    {
+        $this->Context =
+            $this->Context->withHydrationFlags(
+                $lazy
+                    ? HydrationFlag::LAZY
+                    : HydrationFlag::SUPPRESS,
+            );
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withHydration(
+        int $flags = HydrationFlag::EAGER,
+        bool $replace = true,
+        ?string $entity = null,
+        ?int $depth = null
+    ) {
+        $this->Context =
+            $this->Context->withHydrationFlags(
+                $flags,
+                $replace,
+                $entity,
+                $depth,
+            );
         return $this;
     }
 

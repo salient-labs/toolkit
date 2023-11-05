@@ -57,11 +57,6 @@ final class DeferredEntity
     private $Callback;
 
     /**
-     * @var int-mask-of<HydrationFlag::*>
-     */
-    private $Flags;
-
-    /**
      * @var TEntity|null
      */
     private $Resolved;
@@ -93,11 +88,6 @@ final class DeferredEntity
             $this->Replace = &$replace;
             $this->Replace = $this;
         }
-
-        $this->Flags =
-            $context
-                ? $context->getHydrationFlags($entity)
-                : 0;
 
         $this
             ->store()
@@ -179,13 +169,6 @@ final class DeferredEntity
 
         $entity = $provider->get($this->EntityId);
         $this->Resolved = $entity;
-
-        // If the entity was deferred with `HydrationFlag::DEFER`,
-        // `Sync::entity()` calls `replace()`, otherwise the resolved entity
-        // needs to be applied here
-        if ($this->Flags & (HydrationFlag::LAZY | HydrationFlag::EAGER)) {
-            $this->apply($entity);
-        }
 
         return $entity;
     }

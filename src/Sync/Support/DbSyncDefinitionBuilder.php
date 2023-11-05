@@ -38,19 +38,11 @@ use Closure;
 final class DbSyncDefinitionBuilder extends Builder
 {
     /**
-     * @internal
+     * @inheritDoc
      */
     protected static function getService(): string
     {
         return DbSyncDefinition::class;
-    }
-
-    /**
-     * @internal
-     */
-    protected static function getTerminators(): array
-    {
-        return [];
     }
 
     /**

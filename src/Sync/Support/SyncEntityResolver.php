@@ -5,6 +5,7 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncEntityProvider;
 use Lkrms\Sync\Contract\ISyncEntityResolver;
+use Lkrms\Sync\Exception\SyncFilterPolicyViolationException;
 
 /**
  * Resolves a name to an entity
@@ -35,10 +36,19 @@ final class SyncEntityResolver implements ISyncEntityResolver
 
     public function getByName(string $name, ?float &$uncertainty = null): ?ISyncEntity
     {
-        $match = $this
-            ->EntityProvider
-            ->getList([$this->NameProperty => $name])
-            ->nextWithValue($this->NameProperty, $name);
+        $match = null;
+        foreach ([[[$this->NameProperty => $name]], []] as $args) {
+            try {
+                $match = $this
+                    ->EntityProvider
+                    ->getList(...$args)
+                    ->nextWithValue($this->NameProperty, $name);
+                break;
+            } catch (SyncFilterPolicyViolationException $ex) {
+                $match = false;
+                continue;
+            }
+        }
 
         if ($match === false) {
             $uncertainty = null;

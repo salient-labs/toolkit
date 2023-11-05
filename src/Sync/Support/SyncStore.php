@@ -8,6 +8,7 @@ use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Event;
 use Lkrms\Store\Concept\SqliteStore;
+use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\HydrationFlag;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncClassResolver;
@@ -829,23 +830,31 @@ final class SyncStore extends SqliteStore
             return $this;
         }
 
+        // Get the deferral policy of the context within which the entity was
+        // deferred
         $context = $deferred->getContext();
-        $flags = $context
-            ? $context->getHydrationFlags($entityType)
-            : 0;
-
-        if ($flags & HydrationFlag::LAZY) {
-            return $this;
+        if ($context) {
+            $last = $context->last();
+            if ($last) {
+                $context = $last->context();
+            }
         }
-
-        if ($flags & HydrationFlag::EAGER) {
-            $deferred->resolve();
-            return $this;
-        }
+        $policy = $context
+            ? $context->getDeferralPolicy()
+            : null;
 
         $this->DeferredEntities[$providerId][$entityTypeId][$entityId][
             $this->DeferralCheckpoint++
         ] = $deferred;
+
+        // In `RESOLVE_EARLY` mode, deferred entities are added to
+        // `$this->DeferredEntities` for the benefit of `$this->entity()`, which
+        // only calls `DeferredEntity::replace()` method on registered instances
+        if ($policy === DeferralPolicy::RESOLVE_EARLY) {
+            $deferred->resolve();
+            return $this;
+        }
+
         return $this;
     }
 
@@ -884,7 +893,15 @@ final class SyncStore extends SqliteStore
         // @phpstan-ignore-next-line
         $deferredList = [];
 
+        // Get hydration flags from the context within which the deferral was
+        // created
         $context = $deferred->getContext();
+        if ($context) {
+            $last = $context->last();
+            if ($last) {
+                $context = $last->context();
+            }
+        }
         $flags = $context
             ? $context->getHydrationFlags($entityType)
             : 0;
@@ -914,14 +931,15 @@ final class SyncStore extends SqliteStore
     ): ?array {
         $checkpoint = $this->DeferralCheckpoint;
         do {
-            $entities = $this->resolveDeferredEntities($fromCheckpoint);
-            $relationships = $this->resolveDeferredRelationships($fromCheckpoint);
-            if ($return) {
-                foreach ($entities as $entity) {
-                    $resolved[spl_object_id($entity)] = $entity;
+            // Resolve relationships first because they typically deliver
+            // multiple entities per round trip, some of which may be in the
+            // deferred entity queue
+            $deferred = $this->resolveDeferredRelationships($fromCheckpoint);
+            if ($deferred) {
+                if (!$return) {
+                    continue;
                 }
-
-                foreach ($relationships as $relationship) {
+                foreach ($deferred as $relationship) {
                     foreach ($relationship as $entity) {
                         $objectId = spl_object_id($entity);
                         if ($this->EntityCheckpoints[$objectId] < $checkpoint) {
@@ -930,8 +948,17 @@ final class SyncStore extends SqliteStore
                         $resolved[$objectId] = $entity;
                     }
                 }
+                continue;
             }
-        } while ($entities || $relationships);
+
+            $deferred = $this->resolveDeferredEntities($fromCheckpoint);
+            if (!$deferred || !$return) {
+                continue;
+            }
+            foreach ($deferred as $entity) {
+                $resolved[spl_object_id($entity)] = $entity;
+            }
+        } while ($deferred);
 
         return $return
             ? array_values($resolved ?? [])
