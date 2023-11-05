@@ -836,15 +836,14 @@ final class SyncIntrospector extends Introspector
                     return;
                 }
 
-                $flags = $context->getHydrationFlags($service ?? $entityType);
+                $flags = $context->getHydrationFlags($relationship);
                 if ($flags & HydrationFlag::SUPPRESS) {
                     return;
                 }
 
-                $filter =
-                    $filter === null || $flags & HydrationFlag::NO_FILTER
-                        ? null
-                        : [$filter => $data[$idKey]];
+                if ($filter !== null) {
+                    $filter = [$filter => $data[$idKey]];
+                }
 
                 if (!$isChildren) {
                     DeferredRelationship::defer(

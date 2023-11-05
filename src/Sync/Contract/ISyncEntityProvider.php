@@ -203,9 +203,6 @@ interface ISyncEntityProvider extends ReturnsProvider
     /**
      * Do not hydrate entities returned by the backend
      *
-     * The state of {@see HydrationFlag::NO_FILTER} in the underlying context is
-     * preserved.
-     *
      * @param bool $lazy If `true`, {@see HydrationFlag::LAZY} is applied
      * instead of {@see HydrationFlag::SUPPRESS}, and entities may be returned
      * with unresolved {@see DeferredRelationship} objects.
@@ -215,9 +212,6 @@ interface ISyncEntityProvider extends ReturnsProvider
 
     /**
      * Apply hydration flags to sync operations performed on backend entities
-     *
-     * The state of {@see HydrationFlag::NO_FILTER} in the underlying context is
-     * preserved.
      *
      * @param int-mask-of<HydrationFlag::*> $flags
      * @param class-string<ISyncEntity>|null $entity

@@ -164,37 +164,11 @@ final class SyncContext extends ProviderContext implements ISyncContext
         }
 
         $clone = $this->mutate();
-        $currentDepth = count($clone->Stack);
+        $clone->applyHydrationFlags($flags, $replace, $entity, $depth);
 
-        if ($replace && $entity === null && $depth === null) {
-            $clone->EntityHydrationFlags = [];
-            $clone->FallbackHydrationFlags = [0 => $flags];
-            return $clone;
-        }
-
-        if ($entity === null) {
-            $clone->FallbackHydrationFlags = $clone->applyHydrationFlags(
-                $flags,
-                $replace,
-                $depth,
-                $currentDepth,
-                $clone->FallbackHydrationFlags,
-            );
-        } else {
-            $clone->EntityHydrationFlags +=
-                [$entity => $clone->FallbackHydrationFlags];
-        }
-
-        foreach ($clone->EntityHydrationFlags as $entityType => &$value) {
-            if ($entity === null || is_a($entityType, $entity, true)) {
-                $value = $clone->applyHydrationFlags(
-                    $flags,
-                    $replace,
-                    $depth,
-                    $currentDepth,
-                    $value,
-                );
-            }
+        if ($this->EntityHydrationFlags === $clone->EntityHydrationFlags &&
+                $this->FallbackHydrationFlags === $clone->FallbackHydrationFlags) {
+            return $this;
         }
 
         return $clone;
@@ -332,10 +306,55 @@ final class SyncContext extends ProviderContext implements ISyncContext
 
     /**
      * @param int-mask-of<HydrationFlag::*> $flags
+     * @param class-string<ISyncEntity>|null $entity
+     * @param int<1,max>|null $depth
+     */
+    private function applyHydrationFlags(
+        int $flags,
+        bool $replace,
+        ?string $entity,
+        ?int $depth
+    ): void {
+        $currentDepth = count($this->Stack);
+
+        if ($replace && $entity === null && $depth === null) {
+            $this->EntityHydrationFlags = [];
+            $this->FallbackHydrationFlags = [0 => $flags];
+            return;
+        }
+
+        if ($entity === null) {
+            $this->FallbackHydrationFlags = $this->doApplyHydrationFlags(
+                $flags,
+                $replace,
+                $depth,
+                $currentDepth,
+                $this->FallbackHydrationFlags,
+            );
+        } else {
+            $this->EntityHydrationFlags +=
+                [$entity => $this->FallbackHydrationFlags];
+        }
+
+        foreach ($this->EntityHydrationFlags as $entityType => &$value) {
+            if ($entity === null || is_a($entityType, $entity, true)) {
+                $value = $this->doApplyHydrationFlags(
+                    $flags,
+                    $replace,
+                    $depth,
+                    $currentDepth,
+                    $value,
+                );
+            }
+        }
+    }
+
+    /**
+     * @param int-mask-of<HydrationFlag::*> $flags
      * @param array<int<0,max>,int-mask-of<HydrationFlag::*>> $currentFlags
      * @return array<int<0,max>,int-mask-of<HydrationFlag::*>>
      */
-    private function applyHydrationFlags(
+    private function doApplyHydrationFlags(
         int $flags,
         bool $replace,
         ?int $depth,

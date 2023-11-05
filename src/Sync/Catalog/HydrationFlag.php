@@ -39,9 +39,4 @@ final class HydrationFlag extends Enumeration
      * Relationships are hydrated synchronously when entities are created.
      */
     public const EAGER = 8;
-
-    /**
-     * Do not apply a filter to the context when hydrating relationships
-     */
-    public const NO_FILTER = 16;
 }

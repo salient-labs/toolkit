@@ -1456,7 +1456,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
                 ]
                 EOF,
                 $array,
-                ",\n",
+                ',' . PHP_EOL,
             ],
             'escaped commas' => [
                 <<<'EOF'

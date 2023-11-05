@@ -1539,13 +1539,16 @@ final class Convert
         ?string $escapeCharacters = null,
         string $tab = '    '
     ): string {
+        $eol = Inspect::getEol($delimiter) ?: '';
+        $multiline = (bool) $eol;
         return self::doValueToCode(
             $value,
             $delimiter,
             $arrow,
             $escapeCharacters,
             $tab,
-            strpos($delimiter, "\n") !== false,
+            $multiline,
+            $eol,
         );
     }
 
@@ -1559,6 +1562,7 @@ final class Convert
         ?string $escapeCharacters,
         string $tab,
         bool $multiline,
+        string $eol,
         string $indent = ''
     ): string {
         if (is_null($value)) {
@@ -1620,7 +1624,7 @@ final class Convert
         if ($multiline) {
             $suffix = "{$delimiter}{$indent}{$suffix}";
             $indent .= $tab;
-            $prefix .= "\n{$indent}";
+            $prefix .= "{$eol}{$indent}";
             $glue .= $indent;
         }
 
@@ -1633,6 +1637,7 @@ final class Convert
                     $escapeCharacters,
                     $tab,
                     $multiline,
+                    $eol,
                     $indent,
                 );
             }
@@ -1645,6 +1650,7 @@ final class Convert
                     $escapeCharacters,
                     $tab,
                     $multiline,
+                    $eol,
                     $indent,
                 ) . $arrow . self::doValueToCode(
                     $value,
@@ -1653,6 +1659,7 @@ final class Convert
                     $escapeCharacters,
                     $tab,
                     $multiline,
+                    $eol,
                     $indent,
                 );
             }

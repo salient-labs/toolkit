@@ -830,19 +830,31 @@ final class SyncStore extends SqliteStore
             return $this;
         }
 
+        // Get the deferral policy of the context within which the entity was
+        // deferred
         $context = $deferred->getContext();
+        if ($context) {
+            $last = $context->last();
+            if ($last) {
+                $context = $last->context();
+            }
+        }
         $policy = $context
             ? $context->getDeferralPolicy()
             : null;
 
+        $this->DeferredEntities[$providerId][$entityTypeId][$entityId][
+            $this->DeferralCheckpoint++
+        ] = $deferred;
+
+        // In `RESOLVE_EARLY` mode, deferred entities are added to
+        // `$this->DeferredEntities` for the benefit of `$this->entity()`, which
+        // only calls `DeferredEntity::replace()` method on registered instances
         if ($policy === DeferralPolicy::RESOLVE_EARLY) {
             $deferred->resolve();
             return $this;
         }
 
-        $this->DeferredEntities[$providerId][$entityTypeId][$entityId][
-            $this->DeferralCheckpoint++
-        ] = $deferred;
         return $this;
     }
 
@@ -881,7 +893,15 @@ final class SyncStore extends SqliteStore
         // @phpstan-ignore-next-line
         $deferredList = [];
 
+        // Get hydration flags from the context within which the deferral was
+        // created
         $context = $deferred->getContext();
+        if ($context) {
+            $last = $context->last();
+            if ($last) {
+                $context = $last->context();
+            }
+        }
         $flags = $context
             ? $context->getHydrationFlags($entityType)
             : 0;

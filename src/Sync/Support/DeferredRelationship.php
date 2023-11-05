@@ -83,11 +83,6 @@ final class DeferredRelationship implements IteratorAggregate
     private $Callback;
 
     /**
-     * @var int-mask-of<HydrationFlag::*>
-     */
-    private $Flags;
-
-    /**
      * @var array<TEntity>|null
      */
     private $Resolved;
@@ -127,11 +122,6 @@ final class DeferredRelationship implements IteratorAggregate
             $this->Replace = &$replace;
             $this->Replace = $this;
         }
-
-        $this->Flags =
-            $context
-                ? $context->getHydrationFlags($entity)
-                : 0;
 
         $this
             ->store()
@@ -180,18 +170,14 @@ final class DeferredRelationship implements IteratorAggregate
             $provider = $provider->online();
         }
 
-        if ($this->Flags & HydrationFlag::NO_FILTER) {
-            $entities = $provider->getListA();
-        } else {
-            $entities = $provider->getListA(
-                $this->Filter !== null
-                    ? $this->Filter
-                    : [
-                        Convert::classToBasename($this->ForEntity) =>
-                            $this->ForEntityId,
-                    ],
-            );
-        }
+        $entities = $provider->getListA(
+            $this->Filter !== null
+                ? $this->Filter
+                : [
+                    Convert::classToBasename($this->ForEntity) =>
+                        $this->ForEntityId,
+                ],
+        );
 
         $this->apply($entities);
 

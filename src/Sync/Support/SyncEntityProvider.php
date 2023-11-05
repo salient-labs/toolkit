@@ -529,11 +529,12 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     public function withoutHydration(bool $lazy = false)
     {
-        $this->Context = $this->Context->withHydrationFlags(
-            $this->preserveHydrationFlags($lazy
-                ? HydrationFlag::LAZY
-                : HydrationFlag::SUPPRESS),
-        );
+        $this->Context =
+            $this->Context->withHydrationFlags(
+                $lazy
+                    ? HydrationFlag::LAZY
+                    : HydrationFlag::SUPPRESS,
+            );
         return $this;
     }
 
@@ -546,12 +547,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
         ?string $entity = null,
         ?int $depth = null
     ) {
-        $this->Context = $this->Context->withHydrationFlags(
-            $this->preserveHydrationFlags($flags, $entity),
-            $replace,
-            $entity,
-            $depth,
-        );
+        $this->Context =
+            $this->Context->withHydrationFlags(
+                $flags,
+                $replace,
+                $entity,
+                $depth,
+            );
         return $this;
     }
 
@@ -601,15 +603,5 @@ final class SyncEntityProvider implements ISyncEntityProvider
             $uncertaintyThreshold,
             $weightProperty,
         );
-    }
-
-    private function preserveHydrationFlags(
-        int $flags,
-        ?string $entity = null
-    ): int {
-        $preserve = HydrationFlag::NO_FILTER;
-        return
-            ($flags & ~$preserve)
-            | ($this->Context->getHydrationFlags($entity) & $preserve);
     }
 }
