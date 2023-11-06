@@ -72,23 +72,38 @@ final class Pipeline extends FluentInterface implements IPipeline
     private $CollectThen = false;
 
     /**
+     * @var array<callable(TOutput, IPipeline<TInput,TOutput,TArgument>, TArgument): mixed>
+     */
+    private $Cc = [];
+
+    /**
      * @var (callable(TOutput, IPipeline<TInput,TOutput,TArgument>, TArgument): bool)|null
      */
     private $Unless;
 
+    /**
+     * Creates a new Pipeline object
+     */
     public function __construct(?IContainer $container = null)
     {
         $this->Container = $container;
     }
 
     /**
-     * @return IPipeline<TInput,TOutput,TArgument>
+     * Get a new pipeline
+     *
+     * Syntactic sugar for `new Pipeline()`.
+     *
+     * @return self<TInput,TOutput,TArgument>
      */
-    public static function create(?IContainer $container = null): IPipeline
+    public static function create(?IContainer $container = null): self
     {
         return new self($container);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function send($payload, $arg = null)
     {
         $clone = clone $this;
@@ -100,6 +115,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $clone;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function stream(iterable $payload, $arg = null)
     {
         $clone = clone $this;
@@ -111,6 +129,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $clone;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function withConformity($conformity = ArrayKeyConformity::PARTIAL)
     {
         $clone = clone $this;
@@ -119,6 +140,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $clone;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function after(callable $callback)
     {
         if ($this->After) {
@@ -130,6 +154,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $clone;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function afterIf(callable $callback)
     {
         if ($this->After) {
@@ -139,6 +166,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $this->after($callback);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function through(...$pipes)
     {
         $clone = clone $this;
@@ -147,6 +177,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $clone;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function throughCallback(callable $callback)
     {
         return $this->through(
@@ -155,6 +188,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         );
     }
 
+    /**
+     * @inheritDoc
+     */
     public function throughKeyMap(array $keyMap, int $flags = ArrayMapperFlag::ADD_UNMAPPED)
     {
         return $this->through(
@@ -167,6 +203,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         );
     }
 
+    /**
+     * @inheritDoc
+     */
     public function then(callable $callback)
     {
         if ($this->Then) {
@@ -178,6 +217,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $clone;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function thenIf(callable $callback)
     {
         if ($this->Then) {
@@ -187,6 +229,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $this->then($callback);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function collectThen(callable $callback)
     {
         if ($this->Then) {
@@ -199,6 +244,32 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $clone;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function collectThenIf(callable $callback)
+    {
+        if ($this->Then) {
+            return $this;
+        }
+
+        return $this->collectThen($callback);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function cc(callable $callback)
+    {
+        $clone = clone $this;
+        $clone->Cc[] = $callback;
+
+        return $clone;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function unless(callable $filter)
     {
         if ($this->Unless) {
@@ -210,6 +281,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $clone;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function unlessIf(callable $filter)
     {
         if ($this->Unless) {
@@ -219,6 +293,9 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $this->unless($filter);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function run()
     {
         if ($this->Stream || $this->CollectThen) {
@@ -240,9 +317,16 @@ final class Pipeline extends FluentInterface implements IPipeline
             throw new PipelineResultRejectedException($this->Payload, $result);
         }
 
+        if ($this->Cc) {
+            $this->ccResult($result);
+        }
+
         return $result;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function start(): Generator
     {
         if (!$this->Stream) {
@@ -271,6 +355,10 @@ final class Pipeline extends FluentInterface implements IPipeline
                 continue;
             }
 
+            if ($this->Cc) {
+                $this->ccResult($result);
+            }
+
             yield $key => $result;
         }
 
@@ -280,23 +368,46 @@ final class Pipeline extends FluentInterface implements IPipeline
 
         $results = ($this->Then)($results, $this, $this->Arg);
         foreach ($results as $key => $result) {
+            if ($this->Cc) {
+                $this->ccResult($result);
+            }
+
             yield $key => $result;
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getConformity()
     {
         return $this->PayloadConformity;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function runInto(IPipeline $next)
     {
         return $next->send($this->run(), $this->Arg);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function startInto(IPipeline $next)
     {
         return $next->stream($this->start(), $this->Arg);
+    }
+
+    /**
+     * @param mixed $result
+     */
+    private function ccResult($result): void
+    {
+        foreach ($this->Cc as $callback) {
+            $callback($result, $this, $this->Arg);
+        }
     }
 
     /**
