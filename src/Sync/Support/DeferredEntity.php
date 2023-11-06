@@ -145,30 +145,21 @@ final class DeferredEntity
     /**
      * Resolve the deferred entity from the provider or the local entity store
      *
-     * @param bool|null $offline If `null` (the default), the local entity store
-     * is used if its copy of the entity is sufficiently fresh, or if the
-     * provider cannot be reached. If `true`, the local entity store is used
-     * unconditionally. If `false`, the local entity store is unconditionally
-     * ignored.
      * @return TEntity
      */
-    public function resolve(?bool $offline = null): ISyncEntity
+    public function resolve(): ISyncEntity
     {
         if ($this->Resolved !== null) {
             return $this->Resolved;
         }
 
-        $provider = $this->Provider->with($this->Entity, $this->Context);
+        $entity =
+            $this
+                ->Provider
+                ->with($this->Entity, $this->Context)
+                ->get($this->EntityId);
 
-        if ($offline === true) {
-            $provider = $provider->offline();
-        } elseif ($offline === false) {
-            $provider = $provider->online();
-        }
-
-        $entity = $provider->get($this->EntityId);
         $this->Resolved = $entity;
-
         return $entity;
     }
 

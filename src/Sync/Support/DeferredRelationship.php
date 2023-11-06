@@ -148,38 +148,28 @@ final class DeferredRelationship implements IteratorAggregate
      * Resolve the deferred relationship with entities retrieved from the
      * provider or the local entity store
      *
-     * @param bool|null $offline If `null` (the default), the local entity store
-     * is used if its copy of the entities is sufficiently fresh, or if the
-     * provider cannot be reached. If `true`, the local entity store is used
-     * unconditionally. If `false`, the local entity store is unconditionally
-     * ignored.
      * @return TEntity[]
      */
-    public function resolve(?bool $offline = null): array
+    public function resolve(): array
     {
         if ($this->Resolved !== null) {
             return $this->Resolved;
         }
 
-        $provider = $this->Provider->with($this->Entity, $this->Context);
-
-        if ($offline === true) {
-            $provider = $provider->offline();
-        } elseif ($offline === false) {
-            $provider = $provider->online();
-        }
-
-        $entities = $provider->getListA(
-            $this->Filter !== null
-                ? $this->Filter
-                : [
-                    Convert::classToBasename($this->ForEntity) =>
-                        $this->ForEntityId,
-                ],
-        );
+        $entities =
+            $this
+                ->Provider
+                ->with($this->Entity, $this->Context)
+                ->getListA(
+                    $this->Filter !== null
+                        ? $this->Filter
+                        : [
+                            Convert::classToBasename($this->ForEntity) =>
+                                $this->ForEntityId,
+                        ],
+                );
 
         $this->apply($entities);
-
         return $entities;
     }
 
