@@ -55,6 +55,30 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
         );
     }
 
+    public function testCc(): void
+    {
+        $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];
+        $out1 = [];
+        $out2 = [];
+        foreach ((new Pipeline())
+                ->stream($in)
+                ->through(fn($payload, Closure $next) => $next($payload * 6))
+                ->cc(function ($result) use (&$out1) { $out1[] = round($result / 23, 3); })
+                ->start() as $_out) {
+            $out2[] = $_out;
+        }
+
+        $this->assertSame(
+            [3.13, 6.0, 8.87, 11.739, 14.609, 17.478, 20.348, 23.217, 23.478],
+            $out1
+        );
+
+        $this->assertSame(
+            [72, 138, 204, 270, 336, 402, 468, 534, 540],
+            $out2
+        );
+    }
+
     public function testUnless(): void
     {
         $in = [12, 23, 34, 45, 56, 67, 78, 89, 90];

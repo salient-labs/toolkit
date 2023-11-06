@@ -163,12 +163,34 @@ interface IPipeline extends IFluentInterface, IImmutable
     public function collectThen(callable $callback);
 
     /**
+     * Collect results from the pipeline and pass them to a callback in batches
+     * if a collectThen() callback hasn't already been applied
+     *
+     * @template TThenOutput
+     * @param callable(array<TInput|TOutput> $results, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): iterable<TThenOutput> $callback
+     * @return IPipeline<TInput,TThenOutput,TArgument>
+     */
+    public function collectThenIf(callable $callback);
+
+    /**
+     * Pass each result to a callback
+     *
+     * Results not discarded by {@see IPipeline::unless()} are passed to the
+     * callback before leaving the pipeline. The callback's return value is
+     * ignored.
+     *
+     * @param callable(TOutput $result, IPipeline<TInput,TOutput,TArgument> $pipeline, TArgument $arg): mixed $callback
+     * @return IPipeline<TInput,TOutput,TArgument>
+     */
+    public function cc(callable $callback);
+
+    /**
      * Apply a filter to each result
      *
      * This method can only be called once per pipeline.
      *
      * Analogous to `array_filter()`, although the effect of the callback's
-     * return value is inverted.
+     * return value is reversed.
      *
      * If `$filter` returns `false`, `$result` is returned to the caller,
      * otherwise:
