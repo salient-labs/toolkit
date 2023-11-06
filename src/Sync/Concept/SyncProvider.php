@@ -147,6 +147,34 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
      * use this method to ensure filter policy violations are caught and to take
      * advantage of other safety checks that may be added in the future.
      *
+     * Example:
+     *
+     * ```php
+     * <?php
+     * class Provider extends HttpSyncProvider
+     * {
+     *     public function getEntities(ISyncContext $ctx): iterable
+     *     {
+     *         // Claim filter values
+     *         $start = $ctx->claimFilter('start_date');
+     *         $end = $ctx->claimFilter('end_date');
+     *
+     *         return $this->run(
+     *             $ctx,
+     *             fn(): iterable =>
+     *                 Entity::provide(
+     *                     $this->getCurler('/entities')->getP([
+     *                         'from' => $start,
+     *                         'to' => $end,
+     *                     ]),
+     *                     $this,
+     *                     $ctx,
+     *                 )
+     *         );
+     *     }
+     * }
+     * ```
+     *
      * @template T of iterable<ISyncEntity>|ISyncEntity
      *
      * @param callable(): T $operation
@@ -154,7 +182,7 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
      */
     protected function run(ISyncContext $context, callable $operation)
     {
-        $context->maybeApplyFilterPolicy($returnEmpty, $empty);
+        $context->applyFilterPolicy($returnEmpty, $empty);
         if ($returnEmpty) {
             return $empty;
         }

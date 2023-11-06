@@ -108,6 +108,8 @@ jobs:
           - "8.2"
         include:
           - os: ubuntu-latest
+            php-version: "8.3"
+          - os: ubuntu-latest
             php-version: "8.1"
           - os: ubuntu-latest
             php-version: "8.0"

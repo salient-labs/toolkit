@@ -5,25 +5,25 @@ namespace Lkrms\Sync\Catalog;
 use Lkrms\Concept\Enumeration;
 
 /**
- * Sync entity hydration flags
+ * Sync entity hydration policies
  *
  * @extends Enumeration<int>
  */
-final class HydrationFlag extends Enumeration
+final class HydrationPolicy extends Enumeration
 {
     /**
      * Do not perform hydration
      *
      * Uninitialised relationship properties are ignored.
      */
-    public const SUPPRESS = 1;
+    public const SUPPRESS = 0;
 
     /**
      * Perform hydration on demand
      *
      * Relationships are hydrated when they are accessed.
      */
-    public const LAZY = 2;
+    public const LAZY = 1;
 
     /**
      * Defer hydration until deferred entities are resolved
@@ -31,12 +31,12 @@ final class HydrationFlag extends Enumeration
      * The {@see DeferralPolicy} applied to the context is also applied to
      * hydration.
      */
-    public const DEFER = 4;
+    public const DEFER = 2;
 
     /**
      * Perform hydration on load
      *
      * Relationships are hydrated synchronously when entities are created.
      */
-    public const EAGER = 8;
+    public const EAGER = 3;
 }

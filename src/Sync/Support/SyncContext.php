@@ -4,7 +4,7 @@ namespace Lkrms\Sync\Support;
 
 use Lkrms\Support\ProviderContext;
 use Lkrms\Sync\Catalog\DeferralPolicy;
-use Lkrms\Sync\Catalog\HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -35,21 +35,26 @@ final class SyncContext extends ProviderContext implements ISyncContext
     protected $FilterPolicyCallback;
 
     /**
+     * @var bool|null
+     */
+    protected $Offline;
+
+    /**
      * @var DeferralPolicy::*
      */
     protected $DeferralPolicy = DeferralPolicy::RESOLVE_EARLY;
 
     /**
-     * Entity => depth => flags
+     * Entity => depth => policy
      *
-     * @var array<class-string<ISyncEntity>,array<int<0,max>,int-mask-of<HydrationFlag::*>>>
+     * @var array<class-string<ISyncEntity>,array<int<0,max>,HydrationPolicy::*>>
      */
-    protected $EntityHydrationFlags = [];
+    protected $EntityHydrationPolicy = [];
 
     /**
-     * @var array<int<0,max>,int-mask-of<HydrationFlag::*>>
+     * @var array<int<0,max>,HydrationPolicy::*>
      */
-    protected $FallbackHydrationFlags = [0 => HydrationFlag::DEFER];
+    protected $FallbackHydrationPolicy = [0 => HydrationPolicy::DEFER];
 
     /**
      * @inheritDoc
@@ -62,7 +67,31 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function maybeApplyFilterPolicy(?bool &$returnEmpty, &$empty): void
+    public function online()
+    {
+        return $this->withPropertyValue('Offline', false);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offline()
+    {
+        return $this->withPropertyValue('Offline', true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offlineFirst()
+    {
+        return $this->withPropertyValue('Offline', null);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function applyFilterPolicy(?bool &$returnEmpty, &$empty): void
     {
         $returnEmpty = false;
 
@@ -149,25 +178,21 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function withHydrationFlags(
-        int $flags,
-        bool $replace = true,
+    public function withHydrationPolicy(
+        int $policy,
         ?string $entity = null,
-        ?int $depth = null
+        $depth = null
     ) {
         // @phpstan-ignore-next-line
-        if ($depth !== null && $depth < 1) {
-            throw new LogicException(sprintf(
-                '$depth must be greater than 0: %d',
-                $depth,
-            ));
+        if ($depth !== null && array_filter((array) $depth, fn($depth) => $depth < 1)) {
+            throw new LogicException('$depth must be greater than 0');
         }
 
         $clone = $this->mutate();
-        $clone->applyHydrationFlags($flags, $replace, $entity, $depth);
+        $clone->applyHydrationPolicy($policy, $entity, $depth);
 
-        if ($this->EntityHydrationFlags === $clone->EntityHydrationFlags &&
-                $this->FallbackHydrationFlags === $clone->FallbackHydrationFlags) {
+        if ($this->EntityHydrationPolicy === $clone->EntityHydrationPolicy &&
+                $this->FallbackHydrationPolicy === $clone->FallbackHydrationPolicy) {
             return $this;
         }
 
@@ -201,6 +226,14 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
+    public function getOffline(): ?bool
+    {
+        return $this->Offline;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getDeferralPolicy()
     {
         return $this->DeferralPolicy;
@@ -209,14 +242,14 @@ final class SyncContext extends ProviderContext implements ISyncContext
     /**
      * @inheritDoc
      */
-    public function getHydrationFlags(?string $entity)
+    public function getHydrationPolicy(?string $entity): int
     {
         $depth = count($this->Stack) + 1;
 
-        if ($entity !== null && $this->EntityHydrationFlags) {
+        if ($entity !== null && $this->EntityHydrationPolicy) {
             $applied = false;
             $flags = 0;
-            foreach ($this->EntityHydrationFlags as $entityType => $values) {
+            foreach ($this->EntityHydrationPolicy as $entityType => $values) {
                 if (!is_a($entityType, $entity, true)) {
                     continue;
                 }
@@ -232,9 +265,9 @@ final class SyncContext extends ProviderContext implements ISyncContext
             }
         }
 
-        return $this->FallbackHydrationFlags[$depth]
-            ?? $this->FallbackHydrationFlags[0]
-            ?? HydrationFlag::DEFER;
+        return $this->FallbackHydrationPolicy[$depth]
+            ?? $this->FallbackHydrationPolicy[0]
+            ?? HydrationPolicy::DEFER;
     }
 
     /**
@@ -305,42 +338,39 @@ final class SyncContext extends ProviderContext implements ISyncContext
     }
 
     /**
-     * @param int-mask-of<HydrationFlag::*> $flags
+     * @param HydrationPolicy::* $policy
      * @param class-string<ISyncEntity>|null $entity
-     * @param int<1,max>|null $depth
+     * @param array<int<1,max>>|int<1,max>|null $depth
      */
-    private function applyHydrationFlags(
-        int $flags,
-        bool $replace,
+    private function applyHydrationPolicy(
+        int $policy,
         ?string $entity,
-        ?int $depth
+        $depth
     ): void {
         $currentDepth = count($this->Stack);
 
-        if ($replace && $entity === null && $depth === null) {
-            $this->EntityHydrationFlags = [];
-            $this->FallbackHydrationFlags = [0 => $flags];
+        if ($entity === null && $depth === null) {
+            $this->EntityHydrationPolicy = [];
+            $this->FallbackHydrationPolicy = [0 => $policy];
             return;
         }
 
         if ($entity === null) {
-            $this->FallbackHydrationFlags = $this->doApplyHydrationFlags(
-                $flags,
-                $replace,
+            $this->FallbackHydrationPolicy = $this->doApplyHydrationPolicy(
+                $policy,
                 $depth,
                 $currentDepth,
-                $this->FallbackHydrationFlags,
+                $this->FallbackHydrationPolicy,
             );
         } else {
-            $this->EntityHydrationFlags +=
-                [$entity => $this->FallbackHydrationFlags];
+            $this->EntityHydrationPolicy +=
+                [$entity => $this->FallbackHydrationPolicy];
         }
 
-        foreach ($this->EntityHydrationFlags as $entityType => &$value) {
+        foreach ($this->EntityHydrationPolicy as $entityType => &$value) {
             if ($entity === null || is_a($entityType, $entity, true)) {
-                $value = $this->doApplyHydrationFlags(
-                    $flags,
-                    $replace,
+                $value = $this->doApplyHydrationPolicy(
+                    $policy,
                     $depth,
                     $currentDepth,
                     $value,
@@ -350,41 +380,24 @@ final class SyncContext extends ProviderContext implements ISyncContext
     }
 
     /**
-     * @param int-mask-of<HydrationFlag::*> $flags
-     * @param array<int<0,max>,int-mask-of<HydrationFlag::*>> $currentFlags
-     * @return array<int<0,max>,int-mask-of<HydrationFlag::*>>
+     * @param HydrationPolicy::* $policy
+     * @param array<int<1,max>>|int<1,max>|null $depth
+     * @param array<int<0,max>,HydrationPolicy::*> $currentPolicy
+     * @return array<int<0,max>,HydrationPolicy::*>
      */
-    private function doApplyHydrationFlags(
-        int $flags,
-        bool $replace,
-        ?int $depth,
+    private function doApplyHydrationPolicy(
+        int $policy,
+        $depth,
         int $currentDepth,
-        array $currentFlags
+        array $currentPolicy
     ): array {
         if ($depth === null) {
-            if ($replace) {
-                return [0 => $flags];
-            }
-
-            foreach ($currentFlags as &$value) {
-                $value |= $flags;
-            }
-            if (!array_key_exists(0, $currentFlags)) {
-                $currentFlags[0] = $flags;
-            }
-            return $currentFlags;
+            return [0 => $policy];
         }
 
-        if ($replace) {
-            for ($i = 1; $i <= $depth; $i++) {
-                $currentFlags[$i] = $flags;
-            }
-            return $currentFlags;
+        foreach ((array) $depth as $depth) {
+            $currentPolicy[$currentDepth + $depth] = $policy;
         }
-
-        for ($i = 1; $i <= $depth; $i++) {
-            $currentFlags[$currentDepth + $i] = ($currentFlags[$currentDepth + $i] ?? $currentFlags[0] ?? 0) | $flags;
-        }
-        return $currentFlags;
+        return $currentPolicy;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Sync\Catalog\HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Support\DeferredRelationship;
 use Lkrms\Tests\Sync\Entity\Provider\AlbumProvider;
 use Lkrms\Tests\Sync\Entity\Provider\UserProvider;
@@ -19,7 +19,7 @@ final class DeferredRelationshipTest extends \Lkrms\Tests\Sync\SyncTestCase
         $provider = $this->App->get(UserProvider::class);
         $context = $provider
             ->getContext()
-            ->withHydrationFlags(HydrationFlag::LAZY);
+            ->withHydrationPolicy(HydrationPolicy::LAZY);
 
         $user = $provider->with(User::class, $context)->get(1);
         $this->assertInstanceOf(DeferredRelationship::class, $user->Posts);
@@ -47,7 +47,7 @@ final class DeferredRelationshipTest extends \Lkrms\Tests\Sync\SyncTestCase
         $provider = $this->App->get(UserProvider::class);
         $context = $provider
             ->getContext()
-            ->withHydrationFlags(HydrationFlag::EAGER);
+            ->withHydrationPolicy(HydrationPolicy::EAGER);
 
         $user = $provider->with(User::class, $context)->get(1);
         $this->assertIsArray($user->Posts);
@@ -84,37 +84,43 @@ final class DeferredRelationshipTest extends \Lkrms\Tests\Sync\SyncTestCase
         ]);
     }
 
-    public function testHydrationFlagDepth(): void
+    public function testHydrationPolicyDepth(): void
     {
         $provider = $this->App->get(AlbumProvider::class);
         $context = $provider
             ->getContext()
-            ->withHydrationFlags(HydrationFlag::SUPPRESS)
-            ->withHydrationFlags(HydrationFlag::EAGER, true, null, 1);
+            ->withHydrationPolicy(HydrationPolicy::SUPPRESS)
+            ->withHydrationPolicy(HydrationPolicy::EAGER, null, 1);
 
-        $album = $provider->with(Album::class, $context)->get(1);
+        $album = $provider
+            ->with(Album::class, $context)
+            ->hydrate(HydrationPolicy::EAGER, Task::class, 2)
+            ->get(1);
         $this->assertIsArray($album->Photos);
         $this->assertCount(50, $album->Photos);
         $this->assertContainsOnlyInstancesOf(Photo::class, $album->Photos);
         $this->assertInstanceOf(User::class, $album->User);
         $this->assertNull($album->User->Posts);
         $this->assertNull($album->User->Albums);
-        $this->assertNull($album->User->Tasks);
+        $this->assertIsArray($album->User->Tasks);
+        $this->assertCount(20, $album->User->Tasks);
+        $this->assertContainsOnlyInstancesOf(Task::class, $album->User->Tasks);
 
         $this->assertHttpRequestCounts([
             '/albums/1' => 1,
             '/albums/1/photos' => 1,
             '/users/1' => 1,
+            '/users/1/todos' => 1,
         ]);
     }
 
-    public function testHydrationFlagEntity(): void
+    public function testHydrationPolicyEntity(): void
     {
         $provider = $this->App->get(AlbumProvider::class);
         $context = $provider
             ->getContext()
-            ->withHydrationFlags(HydrationFlag::SUPPRESS)
-            ->withHydrationFlags(HydrationFlag::EAGER, true, Task::class);
+            ->withHydrationPolicy(HydrationPolicy::SUPPRESS)
+            ->withHydrationPolicy(HydrationPolicy::EAGER, Task::class);
 
         $album = $provider->with(Album::class, $context)->get(1);
         $this->assertNull($album->Photos);

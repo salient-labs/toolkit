@@ -5,8 +5,9 @@ namespace Lkrms\Sync\Contract;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\FilterPolicy;
-use Lkrms\Sync\Catalog\HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
+use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
 
 /**
@@ -17,35 +18,34 @@ use Lkrms\Sync\Exception\SyncInvalidFilterException;
 interface ISyncContext extends IProviderContext
 {
     /**
-     * Normalise non-mandatory sync operation arguments and add them to the
-     * context
+     * Normalise optional sync operation arguments and apply them to the context
      *
      * If, after removing the operation's mandatory arguments from `$args`, the
      * remaining values match one of the following signatures, they are mapped
-     * to an associative array surfaced by {@see ISyncContext::getFilters()},
+     * to a filter surfaced by {@see ISyncContext::getFilters()},
      * {@see ISyncContext::getFilter()} and {@see ISyncContext::claimFilter()}:
      *
-     * - One array argument (`fn(...$mandatoryArgs, array $filter)`)
+     * 1. One array argument (`fn(...$mandatoryArgs, array $filter)`)
      *
-     *   - Alphanumeric keys are converted to snake_case
-     *   - Keys containing characters other than letters, numbers, hyphens and
-     *     underscores, e.g. `'$orderby'`, are left as-is
-     *   - {@see ISyncEntity} objects are replaced with their respective IDs
-     *   - Empty keys (`''` after snake_case conversion) are invalid
+     *    - Alphanumeric keys are converted to snake_case
+     *    - Keys containing characters other than letters, numbers, hyphens and
+     *      underscores, e.g. `'$orderby'`, are left as-is
+     *    - {@see ISyncEntity} objects are replaced with their respective IDs
+     *    - Empty keys (`''` after snake_case conversion) are invalid
      *
-     * - A list of identifiers (`fn(...$mandatoryArgs, int|string ...$ids)`)
+     * 2. A list of identifiers (`fn(...$mandatoryArgs, int|string ...$ids)`)
      *
-     *   - Converted to `[ 'id' => $ids ]`
+     *    - Converted to `[ 'id' => $ids ]`
      *
-     * - A list of entities (`fn(...$mandatoryArgs, ISyncEntity ...$entities)`)
+     * 3. A list of entities (`fn(...$mandatoryArgs, ISyncEntity ...$entities)`)
      *
-     *   - Entities are grouped by snake_case
-     *     {@see \Lkrms\Contract\IProvidable::service()} basename and replaced
-     *     with their IDs, e.g. `['faculty' => [42, 71], 'user' => [101]]`
+     *    - Entities are grouped by snake_case
+     *      {@see \Lkrms\Contract\IProvidable::service()} basename and replaced
+     *      with their IDs, e.g. `['faculty' => [42, 71], 'user' => [101]]`
      *
-     * - No arguments (`fn(...$mandatoryArgs)`)
+     * 4. No arguments (`fn(...$mandatoryArgs)`)
      *
-     *   - Converted to an empty array (`[]`)
+     *    - Converted to an empty array (`[]`)
      *
      * If `$args` doesn't match any of these, a
      * {@see SyncInvalidFilterException} is thrown.
@@ -69,10 +69,10 @@ interface ISyncContext extends IProviderContext
      * Use a callback to enforce the provider's unclaimed filter policy
      *
      * Allows providers to enforce their {@see FilterPolicy} by calling
-     * {@see ISyncContext::maybeApplyFilterPolicy()} in scenarios where
-     * enforcement before a sync operation starts isn't possible.
+     * {@see ISyncContext::applyFilterPolicy()} in scenarios where enforcement
+     * before a sync operation starts isn't possible.
      *
-     * @see ISyncContext::maybeApplyFilterPolicy()
+     * @see ISyncContext::applyFilterPolicy()
      *
      * @param (callable(ISyncContext, ?bool &$returnEmpty, array{}|null &$empty): void)|null $callback
      * @return $this
@@ -80,7 +80,34 @@ interface ISyncContext extends IProviderContext
     public function withFilterPolicyCallback(?callable $callback);
 
     /**
-     * Apply a deferred sync entity policy to the context
+     * Reject entities from the local entity store
+     *
+     * @return $this
+     */
+    public function online();
+
+    /**
+     * Reject entities from the provider
+     *
+     * An exception is thrown if the local entity store is unable to satisfy
+     * subsequent entity requests.
+     *
+     * @return $this
+     */
+    public function offline();
+
+    /**
+     * Accept entities from the local entity store if they are sufficiently
+     * fresh or if the provider cannot be reached
+     *
+     * This is the default behaviour.
+     *
+     * @return $this
+     */
+    public function offlineFirst();
+
+    /**
+     * Apply the given deferral policy to the context
      *
      * @param DeferralPolicy::* $policy
      * @return $this
@@ -88,59 +115,58 @@ interface ISyncContext extends IProviderContext
     public function withDeferralPolicy($policy);
 
     /**
-     * Apply hydration flags to the context
+     * Apply the given hydration policy to the context
      *
-     * @param int-mask-of<HydrationFlag::*> $flags
-     * @param bool $replace If `true` (the default), existing flags are cleared,
-     * otherwise they are combined.
+     * @param HydrationPolicy::* $policy
      * @param class-string<ISyncEntity>|null $entity Limit the scope of the
-     * change to an entity and its subclasses. Flags applied globally or to
-     * other entities are not cleared if `$entity` is given and `$replace` is
-     * `true`.
-     * @param int<1,max>|null $depth Limit the scope of the change to entities
-     * up to a given `$depth` from the current context. Use `1` if the flags
-     * should only be applied once.
+     * change to an entity and its subclasses.
+     * @param array<int<1,max>>|int<1,max>|null $depth Limit the scope of the
+     * change to entities at a given `$depth` from the current context.
      * @return $this
      */
-    public function withHydrationFlags(
-        int $flags,
-        bool $replace = true,
+    public function withHydrationPolicy(
+        int $policy,
         ?string $entity = null,
-        ?int $depth = null
+        $depth = null
     );
 
     /**
      * Run the unclaimed filter policy callback
      *
+     * {@see SyncProvider::run()} calls this method on your behalf and is
+     * recommended for providers where sync operations are performed by declared
+     * methods.
+     *
      * Example:
      *
      * ```php
      * <?php
-     * class Provider extends \Lkrms\Sync\Concept\HttpSyncProvider
+     * class Provider extends HttpSyncProvider
      * {
-     *     public function getList_Entity(\Lkrms\Sync\Contract\ISyncContext $ctx): iterable
+     *     public function getEntities(ISyncContext $ctx): iterable
      *     {
-     *         if ($ctx->claimFilter('pending')) {
-     *             $entryTypes[] = 0;
-     *         }
-     *         if ($ctx->claimFilter('completed')) {
-     *             $entryTypes[] = 1;
-     *         }
-     *         $ctx->maybeApplyFilterPolicy($returnEmpty, $empty);
+     *         // Claim filter values
+     *         $start = $ctx->claimFilter('start_date');
+     *         $end = $ctx->claimFilter('end_date');
+     *
+     *         // Check for violations and return `$empty` if `$returnEmpty` is true
+     *         $ctx->applyFilterPolicy($returnEmpty, $empty);
      *         if ($returnEmpty) {
      *             return $empty;
      *         }
-     *         // ...
+     *
+     *         // Perform sync operation
      *     }
      * }
      * ```
      *
      * @param array{}|null $empty
      */
-    public function maybeApplyFilterPolicy(?bool &$returnEmpty, &$empty): void;
+    public function applyFilterPolicy(?bool &$returnEmpty, &$empty): void;
 
     /**
-     * Get the filter most recently passed via optional sync operation arguments
+     * Get the filters passed to the context via optional sync operation
+     * arguments
      *
      * @see ISyncContext::withArgs()
      *
@@ -149,7 +175,7 @@ interface ISyncContext extends IProviderContext
     public function getFilters(): array;
 
     /**
-     * Get a value from the filter most recently passed via optional sync
+     * Get the value of a filter passed to the context via optional sync
      * operation arguments
      *
      * If `$orValue` is `true` and a value for `$key` has been applied to the
@@ -164,7 +190,7 @@ interface ISyncContext extends IProviderContext
     public function getFilter(string $key, bool $orValue = true);
 
     /**
-     * Get a value from the filter most recently passed via optional sync
+     * Get the value of a filter passed to the context via optional sync
      * operation arguments
      *
      * Unlike other {@see ISyncContext} methods,
@@ -183,6 +209,20 @@ interface ISyncContext extends IProviderContext
     public function claimFilter(string $key, bool $orValue = true);
 
     /**
+     * Get the "work offline" status applied via online(), offline() or
+     * offlineFirst()
+     *
+     * If `null` (the default), entities are returned from the local entity
+     * store if they are sufficiently fresh or if the provider cannot be
+     * reached.
+     *
+     * If `true`, the local entity store is used unconditionally.
+     *
+     * If `false`, the local entity store is unconditionally ignored.
+     */
+    public function getOffline(): ?bool;
+
+    /**
      * Get the deferred sync entity policy applied to the context
      *
      * @return DeferralPolicy::*
@@ -190,10 +230,10 @@ interface ISyncContext extends IProviderContext
     public function getDeferralPolicy();
 
     /**
-     * Get hydration flags applied to the context for a given entity
+     * Get the hydration policy applied to the context for a given sync entity
      *
      * @param class-string<ISyncEntity>|null $entity
-     * @return int-mask-of<HydrationFlag::*>
+     * @return HydrationPolicy::*
      */
-    public function getHydrationFlags(?string $entity);
+    public function getHydrationPolicy(?string $entity): int;
 }
