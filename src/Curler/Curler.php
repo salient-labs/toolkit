@@ -384,12 +384,12 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     /**
      * @var \CurlHandle|resource|null
      */
-    private static $Handle;
+    private $Handle;
 
     /**
      * @var bool|null
      */
-    private static $HandleIsReset;
+    private $HandleIsReset;
 
     /**
      * @var int
@@ -405,6 +405,21 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
      * @var string|null
      */
     private static $DefaultUserAgent;
+
+    /**
+     * @var \CurlHandle|resource|null
+     */
+    private static $SharedHandle;
+
+    /**
+     * @var bool|null
+     */
+    private static $SharedHandleIsReset;
+
+    /**
+     * @var int
+     */
+    private static $HandleCount = 0;
 
     /**
      * @param (callable(Curler): string[])|null $responseCacheKeyCallback
@@ -588,29 +603,29 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
 
     protected function getEffectiveUrl(): ?string
     {
-        return self::$Handle
-            ? curl_getinfo(self::$Handle, CURLINFO_EFFECTIVE_URL)
+        return $this->Handle
+            ? curl_getinfo($this->Handle, CURLINFO_EFFECTIVE_URL)
             : null;
     }
 
     protected function close(): void
     {
-        if (!self::$Handle) {
+        if (!$this->Handle) {
             return;
         }
 
         if ($this->CookieKey && $this->ExecuteCount) {
-            Cache::set($this->CookieKey, curl_getinfo(self::$Handle, CURLINFO_COOKIELIST));
+            Cache::set($this->CookieKey, curl_getinfo($this->Handle, CURLINFO_COOKIELIST));
         }
 
-        curl_reset(self::$Handle);
-        self::$HandleIsReset = true;
+        curl_reset($this->Handle);
+        $this->HandleIsReset = true;
     }
 
     /**
      * @param mixed[]|null $query
      */
-    private function initialise(string $method, ?array $query, ?ICurlerPager $pager = null): void
+    private function initialise(string $method, ?array $query, ?ICurlerPager $pager = null, bool $async = false): void
     {
         $this->ExecuteCount = 0;
 
@@ -619,57 +634,71 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         }
         $this->QueryString = $this->getQueryString($query);
 
-        if (self::$Handle) {
-            if (!self::$HandleIsReset) {
-                curl_reset(self::$Handle);
+        if ($async) {
+            if ($this->Handle && $this->Handle === self::$SharedHandle) {
+                $handle = null;
+                $handleIsReset = null;
+                $this->Handle = &$handle;
+                $this->HandleIsReset = &$handleIsReset;
             }
-            self::$HandleIsReset = false;
-            curl_setopt(self::$Handle, CURLOPT_URL, $this->BaseUrl . $this->QueryString);
         } else {
-            self::$Handle = curl_init($this->BaseUrl . $this->QueryString);
+            $this->maybeDiscardHandle();
+            $this->Handle = &self::$SharedHandle;
+            $this->HandleIsReset = &self::$SharedHandleIsReset;
+        }
+
+        if ($this->Handle) {
+            if (!$this->HandleIsReset) {
+                curl_reset($this->Handle);
+            }
+            $this->HandleIsReset = false;
+            curl_setopt($this->Handle, CURLOPT_URL, $this->BaseUrl . $this->QueryString);
+        } else {
+            $this->Handle = curl_init($this->BaseUrl . $this->QueryString);
+            self::$HandleCount++;
         }
 
         // Return the transfer as a string
-        curl_setopt(self::$Handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($this->Handle, CURLOPT_RETURNTRANSFER, true);
 
         // Enable all supported encoding types (e.g. gzip, deflate) and set
         // Accept-Encoding header accordingly
-        curl_setopt(self::$Handle, CURLOPT_ENCODING, '');
+        curl_setopt($this->Handle, CURLOPT_ENCODING, '');
 
         // Collect response headers
         curl_setopt(
-            self::$Handle,
+            $this->Handle,
             CURLOPT_HEADERFUNCTION,
             fn($curl, $header) => strlen($this->processHeader($header))
         );
 
         if ($this->ConnectTimeout !== null) {
-            curl_setopt(self::$Handle, CURLOPT_CONNECTTIMEOUT, $this->ConnectTimeout);
+            curl_setopt($this->Handle, CURLOPT_CONNECTTIMEOUT, $this->ConnectTimeout);
         }
 
         if ($this->Timeout !== null) {
-            curl_setopt(self::$Handle, CURLOPT_TIMEOUT, $this->Timeout);
+            curl_setopt($this->Handle, CURLOPT_TIMEOUT, $this->Timeout);
         }
 
         if ($this->FollowRedirects) {
-            curl_setopt(self::$Handle, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($this->Handle, CURLOPT_FOLLOWLOCATION, true);
             if ($this->MaxRedirects !== null) {
-                curl_setopt(self::$Handle, CURLOPT_MAXREDIRS, $this->MaxRedirects);
+                curl_setopt($this->Handle, CURLOPT_MAXREDIRS, $this->MaxRedirects);
             }
         }
 
         if ($this->CookieKey = $this->getCookieKey()) {
             // Enable cookies without loading them from a file
-            curl_setopt(self::$Handle, CURLOPT_COOKIEFILE, '');
+            curl_setopt($this->Handle, CURLOPT_COOKIEFILE, '');
 
             foreach (Cache::get($this->CookieKey) ?: [] as $cookie) {
-                curl_setopt(self::$Handle, CURLOPT_COOKIELIST, $cookie);
+                curl_setopt($this->Handle, CURLOPT_COOKIELIST, $cookie);
             }
         }
 
         // In debug mode, collect request headers
         if (Env::debug()) {
-            curl_setopt(self::$Handle, CURLINFO_HEADER_OUT, true);
+            curl_setopt($this->Handle, CURLINFO_HEADER_OUT, true);
         }
 
         switch ($method) {
@@ -677,11 +706,11 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
                 break;
 
             case HttpRequestMethod::HEAD:
-                curl_setopt(self::$Handle, CURLOPT_NOBODY, true);
+                curl_setopt($this->Handle, CURLOPT_NOBODY, true);
                 break;
 
             case HttpRequestMethod::POST:
-                curl_setopt(self::$Handle, CURLOPT_POST, true);
+                curl_setopt($this->Handle, CURLOPT_POST, true);
                 break;
 
             case HttpRequestMethod::PUT:
@@ -690,7 +719,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             case HttpRequestMethod::CONNECT:
             case HttpRequestMethod::OPTIONS:
             case HttpRequestMethod::TRACE:
-                curl_setopt(self::$Handle, CURLOPT_CUSTOMREQUEST, $method);
+                curl_setopt($this->Handle, CURLOPT_CUSTOMREQUEST, $method);
                 break;
 
             default:
@@ -782,7 +811,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     private function applyData($data): void
     {
         curl_setopt(
-            self::$Handle,
+            $this->Handle,
             CURLOPT_POSTFIELDS,
             ($this->Body = $this->prepareData($data))
         );
@@ -912,7 +941,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
 
         $this->ExecuteCount++;
 
-        curl_setopt(self::$Handle, CURLOPT_HTTPHEADER, $this->Headers->getHeaders());
+        curl_setopt($this->Handle, CURLOPT_HTTPHEADER, $this->Headers->getHeaders());
 
         $attempt = 0;
         while ($attempt++ < 2) {
@@ -929,11 +958,11 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             }
 
             // Execute the request
-            $result = curl_exec(self::$Handle);
-            $this->CurlInfo = curl_getinfo(self::$Handle);
+            $result = curl_exec($this->Handle);
+            $this->CurlInfo = curl_getinfo($this->Handle);
 
             if ($result === false) {
-                $error = curl_errno(self::$Handle);
+                $error = curl_errno($this->Handle);
                 throw new CurlerCurlErrorException($error, $this);
             }
 
@@ -1183,7 +1212,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         if (is_array($data) || is_object($data)) {
             $this->applyData($data);
         } elseif (is_string($data) && $mimeType) {
-            curl_setopt(self::$Handle, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($this->Handle, CURLOPT_POSTFIELDS, $data);
             $this->setContentType($mimeType);
         }
 
@@ -1224,7 +1253,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             $data = $this->Pager->prepareData($data);
         }
 
-        $this->initialise($method, $query, $this->Pager);
+        $this->initialise($method, $query, $this->Pager, true);
 
         do {
             if ($data !== null) {
@@ -1251,7 +1280,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             }
             [$url, $data, $headers] =
                 [$page->nextUrl(), $page->nextData(), $page->nextHeaders()];
-            curl_setopt(self::$Handle, CURLOPT_URL, $url);
+            curl_setopt($this->Handle, CURLOPT_URL, $url);
             if ($headers !== null) {
                 $this->Headers = $headers;
             }
@@ -1361,7 +1390,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
 
         do {
             if ($nextUrl) {
-                curl_setopt(self::$Handle, CURLOPT_URL, $nextUrl);
+                curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
                 $this->clearResponse();
                 $nextUrl = null;
             }
@@ -1395,7 +1424,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
 
         do {
             if ($nextUrl) {
-                curl_setopt(self::$Handle, CURLOPT_URL, $nextUrl);
+                curl_setopt($this->Handle, CURLOPT_URL, $nextUrl);
                 $this->clearResponse();
             }
 
@@ -1544,5 +1573,17 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     public static function getBuilder(): string
     {
         return CurlerBuilder::class;
+    }
+
+    public function __destruct()
+    {
+        $this->maybeDiscardHandle();
+    }
+
+    private function maybeDiscardHandle(): void
+    {
+        if ($this->Handle && $this->Handle !== self::$SharedHandle) {
+            self::$HandleCount--;
+        }
     }
 }
