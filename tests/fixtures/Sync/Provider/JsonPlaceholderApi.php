@@ -92,7 +92,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
 
     protected function getHeartbeat()
     {
-        $user = $this->with(User::class)->withoutHydration()->get(1);
+        $user = $this->with(User::class)->doNotHydrate()->get(1);
 
         Console::info(sprintf(
             'Connected to %s as %s',

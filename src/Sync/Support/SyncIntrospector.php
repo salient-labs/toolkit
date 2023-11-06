@@ -11,7 +11,7 @@ use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Support\Introspector;
 use Lkrms\Support\IntrospectorKeyTargets;
-use Lkrms\Sync\Catalog\HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -836,8 +836,8 @@ final class SyncIntrospector extends Introspector
                     return;
                 }
 
-                $flags = $context->getHydrationFlags($relationship);
-                if ($flags & HydrationFlag::SUPPRESS) {
+                $policy = $context->getHydrationPolicy($relationship);
+                if ($policy === HydrationPolicy::SUPPRESS) {
                     return;
                 }
 

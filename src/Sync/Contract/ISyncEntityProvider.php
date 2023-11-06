@@ -6,7 +6,7 @@ use Lkrms\Contract\ReturnsProvider;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
-use Lkrms\Sync\Catalog\HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Support\DeferredRelationship;
 
@@ -193,35 +193,53 @@ interface ISyncEntityProvider extends ReturnsProvider
     public function offline();
 
     /**
-     * Do not resolve entities or relationships deferred while performing sync
-     * operations on the backend
+     * Retrieve entities directly from the backend unless it cannot be reached
+     * or the entity store's copies are sufficiently fresh
      *
      * @return $this
      */
-    public function withoutResolvingDeferrals();
+    public function offlineFirst();
+
+    /**
+     * Do not resolve deferred entities or relationships
+     *
+     * @return $this
+     */
+    public function doNotResolve();
+
+    /**
+     * Resolve deferred entities and relationships immediately
+     *
+     * @return $this
+     */
+    public function resolveEarly();
+
+    /**
+     * Resolve deferred entities and relationships after reaching the end of
+     * each stream of entity data
+     *
+     * @return $this
+     */
+    public function resolveLate();
 
     /**
      * Do not hydrate entities returned by the backend
      *
-     * @param bool $lazy If `true`, {@see HydrationFlag::LAZY} is applied
-     * instead of {@see HydrationFlag::SUPPRESS}, and entities may be returned
-     * with unresolved {@see DeferredRelationship} objects.
      * @return $this
      */
-    public function withoutHydration(bool $lazy = false);
+    public function doNotHydrate();
 
     /**
-     * Apply hydration flags to sync operations performed on backend entities
+     * Apply the given hydration policy to entities returned by the backend
      *
-     * @param int-mask-of<HydrationFlag::*> $flags
+     * @param HydrationPolicy::* $policy
      * @param class-string<ISyncEntity>|null $entity
-     * @param int<1,max>|null $depth
+     * @param array<int<1,max>>|int<1,max>|null $depth
      * @return $this
      */
-    public function withHydration(
-        int $flags = HydrationFlag::EAGER,
-        bool $replace = true,
+    public function hydrate(
+        int $policy = HydrationPolicy::EAGER,
         ?string $entity = null,
-        ?int $depth = null
+        $depth = null
     );
 }

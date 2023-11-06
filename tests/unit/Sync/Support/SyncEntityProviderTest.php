@@ -2,7 +2,7 @@
 
 namespace Lkrms\Tests\Sync\Support;
 
-use Lkrms\Sync\Catalog\HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
@@ -12,13 +12,13 @@ final class SyncEntityProviderTest extends \Lkrms\Tests\Sync\SyncTestCase
     public function testGetListA(): void
     {
         $postEntityProvider = Post::withDefaultProvider($this->App)
-            ->withoutResolvingDeferrals()
-            ->withoutHydration();
+            ->doNotResolve()
+            ->doNotHydrate();
         $posts = $postEntityProvider->getListA();
 
         $userEntityProvider = User::withDefaultProvider($this->App)
-            ->withoutResolvingDeferrals()
-            ->withoutHydration();
+            ->doNotResolve()
+            ->doNotHydrate();
         // Load every user entity so deferred users are resolved
         // immediately
         $userEntityProvider->getListA();

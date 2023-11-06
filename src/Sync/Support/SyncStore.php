@@ -9,7 +9,7 @@ use Lkrms\Facade\Console;
 use Lkrms\Facade\Event;
 use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Sync\Catalog\DeferralPolicy;
-use Lkrms\Sync\Catalog\HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -893,7 +893,7 @@ final class SyncStore extends SqliteStore
         // @phpstan-ignore-next-line
         $deferredList = [];
 
-        // Get hydration flags from the context within which the deferral was
+        // Get hydration policy from the context within which the deferral was
         // created
         $context = $deferred->getContext();
         if ($context) {
@@ -902,15 +902,15 @@ final class SyncStore extends SqliteStore
                 $context = $last->context();
             }
         }
-        $flags = $context
-            ? $context->getHydrationFlags($entityType)
+        $policy = $context
+            ? $context->getHydrationPolicy($entityType)
             : 0;
 
-        if ($flags & HydrationFlag::LAZY) {
+        if ($policy === HydrationPolicy::LAZY) {
             return $this;
         }
 
-        if ($flags & HydrationFlag::EAGER) {
+        if ($policy === HydrationPolicy::EAGER) {
             $deferred->resolve();
             return $this;
         }

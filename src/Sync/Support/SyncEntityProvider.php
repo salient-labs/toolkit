@@ -8,7 +8,7 @@ use Lkrms\Iterator\IterableIterator;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
 use Lkrms\Sync\Catalog\DeferralPolicy;
-use Lkrms\Sync\Catalog\HydrationFlag;
+use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncDefinition;
@@ -69,11 +69,6 @@ final class SyncEntityProvider implements ISyncEntityProvider
      * @var SyncStore
      */
     private $Store;
-
-    /**
-     * @var bool|null
-     */
-    private $Offline;
 
     /**
      * @param class-string<TEntity> $entity
@@ -269,12 +264,13 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     public function get($id, ...$args): ISyncEntity
     {
-        if ($this->Offline !== false) {
+        $offline = $this->Context->getOffline();
+        if ($offline !== false) {
             $entity = $this->Store->entityType($this->Entity)->getEntity(
                 $this->Provider->getProviderId(),
                 $this->Entity,
                 $id,
-                $this->Offline,
+                $offline,
             );
             if ($entity) {
                 return $entity;
@@ -500,7 +496,7 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     public function online()
     {
-        $this->Offline = false;
+        $this->Context = $this->Context->online();
         return $this;
     }
 
@@ -509,14 +505,23 @@ final class SyncEntityProvider implements ISyncEntityProvider
      */
     public function offline()
     {
-        $this->Offline = true;
+        $this->Context = $this->Context->offline();
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function withoutResolvingDeferrals()
+    public function offlineFirst()
+    {
+        $this->Context = $this->Context->offlineFirst();
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function doNotResolve()
     {
         $this->Context = $this->Context->withDeferralPolicy(
             DeferralPolicy::DO_NOT_RESOLVE,
@@ -527,33 +532,50 @@ final class SyncEntityProvider implements ISyncEntityProvider
     /**
      * @inheritDoc
      */
-    public function withoutHydration(bool $lazy = false)
+    public function resolveEarly()
     {
-        $this->Context =
-            $this->Context->withHydrationFlags(
-                $lazy
-                    ? HydrationFlag::LAZY
-                    : HydrationFlag::SUPPRESS,
-            );
+        $this->Context = $this->Context->withDeferralPolicy(
+            DeferralPolicy::RESOLVE_EARLY,
+        );
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function withHydration(
-        int $flags = HydrationFlag::EAGER,
-        bool $replace = true,
+    public function resolveLate()
+    {
+        $this->Context = $this->Context->withDeferralPolicy(
+            DeferralPolicy::RESOLVE_LATE,
+        );
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function doNotHydrate()
+    {
+        $this->Context = $this->Context->withHydrationPolicy(
+            HydrationPolicy::SUPPRESS,
+        );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hydrate(
+        int $policy = HydrationPolicy::EAGER,
         ?string $entity = null,
-        ?int $depth = null
+        $depth = null
     ) {
-        $this->Context =
-            $this->Context->withHydrationFlags(
-                $flags,
-                $replace,
-                $entity,
-                $depth,
-            );
+        $this->Context = $this->Context->withHydrationPolicy(
+            $policy,
+            $entity,
+            $depth,
+        );
         return $this;
     }
 
@@ -580,28 +602,6 @@ final class SyncEntityProvider implements ISyncEntityProvider
             $uncertaintyThreshold,
             $weightProperty,
             $requireOneMatch,
-        );
-    }
-
-    /**
-     * @deprecated Use {@see SyncEntityProvider::getResolver()} instead
-     *
-     * @return SyncEntityFuzzyResolver<TEntity>
-     */
-    public function getFuzzyResolver(
-        string $nameProperty,
-        ?string $weightProperty,
-        int $algorithm =
-            TextComparisonAlgorithm::LEVENSHTEIN
-            | TextComparisonFlag::NORMALISE,
-        ?float $uncertaintyThreshold = null
-    ): SyncEntityFuzzyResolver {
-        return new SyncEntityFuzzyResolver(
-            $this,
-            $nameProperty,
-            $algorithm,
-            $uncertaintyThreshold,
-            $weightProperty,
         );
     }
 }
