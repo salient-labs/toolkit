@@ -9,13 +9,7 @@ if (PHP_VERSION_ID < 80000) {
                     'tests/fixtures/Utility/Reflect/MyClassWithUnionsAndIntersections.php',
                 ],
             ],
-            'ignoreErrors' => [
-                [
-                    'message' => '#^Property Lkrms\\\\Curler\\\\Curler\:\:\$Handle has unknown class CurlHandle as its type\.$#',
-                    'count' => 1,
-                    'path' => '../src/Curler/Curler.php',
-                ],
-            ],
+            'ignoreErrors' => [],
         ]
     ];
 }
