@@ -867,7 +867,11 @@ final class SyncIntrospector extends Introspector
                     $data[$idKey],
                     $filter,
                     $replace,
-                    static function ($entities) use ($entity): void {
+                    static function ($entities) use ($entity, $property): void {
+                        if (!$entities) {
+                            $entity->{$property} = [];
+                            return;
+                        }
                         foreach ($entities as $child) {
                             /** @var ISyncEntity&ITreeable $child */
                             $entity->addChild($child);
