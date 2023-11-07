@@ -12,6 +12,57 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.1] - 2023-11-07
+
+### Changed
+
+- Sync: remove superfluous propagation of `$offline`
+- Sync: Add optional `$entityType` parameter to `Sync::resolveDeferred()`
+
+## [v0.21.0] - 2023-11-06
+
+### Changed
+
+- Sync: rename `HydrationFlag` to `HydrationPolicy` and rework related methods
+
+  `ISyncContext`:
+  - Rename:
+    - `withHydrationFlags()` -> `withHydrationPolicy()`
+    - `maybeApplyFilterPolicy()` -> `applyFilterPolicy()`
+    - `getHydrationFlags()` -> `getHydrationPolicy()`
+  - Add:
+    - `online()`
+    - `offline()`
+    - `offlineFirst()`
+    - `getOffline()`
+
+  `ISyncEntityProvider`:
+  - Rename:
+    - `withoutResolvingDeferrals()` -> `doNotResolve()`
+    - `withoutHydration()` -> `doNotHydrate()`
+    - `withHydration()` -> `hydrate()`
+  - Add:
+    - `resolveEarly()`
+    - `resolveLate()`
+    - `offlineFirst()`
+
+  `SyncEntityProvider`:
+  - Track online/offline status in `ISyncContext`
+  - Remove deprecated `getFuzzyResolver()`
+
+## [v0.20.89] - 2023-11-06
+
+### Fixed
+
+- Create a separate cURL handle for each request that returns paginated data via a generator to resolve errors arising from multiple `Curler` instances sharing one handle
+
+## [v0.20.88] - 2023-11-06
+
+### Added
+
+- Add `IPipeline::cc()` to allow more flexible workflows, e.g. in sync entity pipelines
+- Add `IPipeline::collectThenIf()` for completeness
+
 ## [v0.20.87] - 2023-11-05
 
 ### Added
@@ -612,6 +663,10 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.1]: https://github.com/lkrms/php-util/compare/v0.21.0...v0.21.1
+[v0.21.0]: https://github.com/lkrms/php-util/compare/v0.20.89...v0.21.0
+[v0.20.89]: https://github.com/lkrms/php-util/compare/v0.20.88...v0.20.89
+[v0.20.88]: https://github.com/lkrms/php-util/compare/v0.20.87...v0.20.88
 [v0.20.87]: https://github.com/lkrms/php-util/compare/v0.20.86...v0.20.87
 [v0.20.86]: https://github.com/lkrms/php-util/compare/v0.20.85...v0.20.86
 [v0.20.85]: https://github.com/lkrms/php-util/compare/v0.20.84...v0.20.85
