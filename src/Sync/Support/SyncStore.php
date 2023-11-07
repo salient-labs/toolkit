@@ -923,10 +923,12 @@ final class SyncStore extends SqliteStore
      * Resolve deferred sync entities and relationships recursively until no
      * deferrals remain
      *
+     * @param class-string<ISyncEntity>|null $entityType
      * @return ISyncEntity[]|null
      */
     public function resolveDeferred(
         ?int $fromCheckpoint = null,
+        ?string $entityType = null,
         bool $return = false
     ): ?array {
         $checkpoint = $this->DeferralCheckpoint;
@@ -934,7 +936,7 @@ final class SyncStore extends SqliteStore
             // Resolve relationships first because they typically deliver
             // multiple entities per round trip, some of which may be in the
             // deferred entity queue
-            $deferred = $this->resolveDeferredRelationships($fromCheckpoint);
+            $deferred = $this->resolveDeferredRelationships($fromCheckpoint, $entityType);
             if ($deferred) {
                 if (!$return) {
                     continue;
@@ -951,7 +953,7 @@ final class SyncStore extends SqliteStore
                 continue;
             }
 
-            $deferred = $this->resolveDeferredEntities($fromCheckpoint);
+            $deferred = $this->resolveDeferredEntities($fromCheckpoint, $entityType);
             if (!$deferred || !$return) {
                 continue;
             }
@@ -985,18 +987,12 @@ final class SyncStore extends SqliteStore
      * local entity store
      *
      * @param class-string<ISyncEntity>|null $entityType
-     * @param bool|null $offline If `null` (the default), the local entity store
-     * is used if its copy of the entities is sufficiently fresh, or if the
-     * provider cannot be reached. If `true`, the local entity store is used
-     * unconditionally. If `false`, the local entity store is unconditionally
-     * ignored.
      * @return ISyncEntity[]
      */
     public function resolveDeferredEntities(
         ?int $fromCheckpoint = null,
-        ?int $providerId = null,
         ?string $entityType = null,
-        ?bool $offline = null
+        ?int $providerId = null
     ): array {
         $entityTypeId = $entityType === null
             ? null
@@ -1032,7 +1028,7 @@ final class SyncStore extends SqliteStore
 
                 foreach ($entities as $entityId => $deferred) {
                     $deferredEntity = reset($deferred);
-                    $resolved[] = $deferredEntity->resolve($offline);
+                    $resolved[] = $deferredEntity->resolve();
                 }
             }
         }
@@ -1046,19 +1042,13 @@ final class SyncStore extends SqliteStore
      *
      * @param class-string<ISyncEntity>|null $entityType
      * @param class-string<ISyncEntity>|null $forEntityType
-     * @param bool|null $offline If `null` (the default), the local entity store
-     * is used if its copy of the entities is sufficiently fresh, or if the
-     * provider cannot be reached. If `true`, the local entity store is used
-     * unconditionally. If `false`, the local entity store is unconditionally
-     * ignored.
      * @return array<ISyncEntity[]>
      */
     public function resolveDeferredRelationships(
         ?int $fromCheckpoint = null,
-        ?int $providerId = null,
         ?string $entityType = null,
         ?string $forEntityType = null,
-        ?bool $offline = null
+        ?int $providerId = null
     ): array {
         $entityTypeId = $entityType === null
             ? null
@@ -1096,7 +1086,7 @@ final class SyncStore extends SqliteStore
                             }
 
                             foreach ($relationships as $index => $deferred) {
-                                $resolved[] = $deferred->resolve($offline);
+                                $resolved[] = $deferred->resolve();
                                 unset($this->DeferredRelationships[$provId][$entTypeId][$forEntTypeId][$forEntProp][$forEntId][$index]);
                             }
                         }

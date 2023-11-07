@@ -46,9 +46,9 @@ use Lkrms\Sync\Support\SyncStore;
  * @method static SyncStore namespace(string $prefix, string $uri, string $namespace, class-string<ISyncClassResolver>|null $resolver = null) Register a sync entity namespace (see {@see SyncStore::namespace()})
  * @method static SyncStore provider(ISyncProvider $provider) Register a sync provider and set its provider ID (see {@see SyncStore::provider()})
  * @method static SyncStore reportErrors(string $successText = 'No sync errors recorded') Report sync errors recorded so far to the console (see {@see SyncStore::reportErrors()})
- * @method static ISyncEntity[]|null resolveDeferred(?int $fromCheckpoint = null, bool $return = false) Resolve deferred sync entities and relationships recursively until no deferrals remain
- * @method static ISyncEntity[] resolveDeferredEntities(?int $fromCheckpoint = null, ?int $providerId = null, class-string<ISyncEntity>|null $entityType = null, bool|null $offline = null) Resolve deferred sync entities from their respective providers and/or the local entity store (see {@see SyncStore::resolveDeferredEntities()})
- * @method static array<ISyncEntity[]> resolveDeferredRelationships(?int $fromCheckpoint = null, ?int $providerId = null, class-string<ISyncEntity>|null $entityType = null, class-string<ISyncEntity>|null $forEntityType = null, bool|null $offline = null) Resolve deferred relationships from their respective providers and/or the local entity store (see {@see SyncStore::resolveDeferredRelationships()})
+ * @method static ISyncEntity[]|null resolveDeferred(?int $fromCheckpoint = null, class-string<ISyncEntity>|null $entityType = null, bool $return = false) Resolve deferred sync entities and relationships recursively until no deferrals remain
+ * @method static ISyncEntity[] resolveDeferredEntities(?int $fromCheckpoint = null, class-string<ISyncEntity>|null $entityType = null, ?int $providerId = null) Resolve deferred sync entities from their respective providers and/or the local entity store
+ * @method static array<ISyncEntity[]> resolveDeferredRelationships(?int $fromCheckpoint = null, class-string<ISyncEntity>|null $entityType = null, class-string<ISyncEntity>|null $forEntityType = null, ?int $providerId = null) Resolve deferred relationships from their respective providers and/or the local entity store
  *
  * @uses SyncStore
  *

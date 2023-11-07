@@ -350,7 +350,7 @@ final class SyncIntrospector extends Introspector
 
     /**
      * @param string[] $keys
-     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, ITreeable|null, bool|null $offline=): TClass
+     * @return Closure(mixed[], string|null, IContainer, ISyncProvider|null, ISyncContext|null, DateFormatter|null, ITreeable|null): TClass
      */
     private function _getCreateFromSignatureSyncClosure(array $keys, bool $strict = false): Closure
     {
@@ -382,8 +382,7 @@ final class SyncIntrospector extends Introspector
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,
-                ?ITreeable $parent,
-                ?bool $offline = null
+                ?ITreeable $parent
             ) use ($constructor, $updater, $resolver) {
                 $obj = $constructor($array, $service, $container);
                 $obj = $updater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
@@ -402,8 +401,7 @@ final class SyncIntrospector extends Introspector
                 ?ISyncProvider $provider,
                 ?ISyncContext $context,
                 ?DateFormatter $dateFormatter,
-                ?ITreeable $parent,
-                ?bool $offline = null
+                ?ITreeable $parent
             ) use (
                 $constructor,
                 $updater,
@@ -427,7 +425,7 @@ final class SyncIntrospector extends Introspector
 
                 $store = $provider->store()->entityType($service ?? $entityType);
                 $providerId = $provider->getProviderId();
-                $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $offline);
+                $obj = $store->getEntity($providerId, $service ?? $entityType, $id, $context->getOffline());
 
                 if ($obj) {
                     $obj = $existingUpdater($array, $obj, $container, $provider, $context, $dateFormatter, $parent);
