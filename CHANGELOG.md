@@ -12,6 +12,13 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.2] - 2023-11-07
+
+### Fixed
+
+- Sync: fix issue where empty child relationships do not always resolve
+  - If a child relationship resolves to an empty list, assign it directly to the children property because `addChild()` will not be called
+
 ## [v0.21.1] - 2023-11-07
 
 ### Changed
@@ -663,6 +670,7 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.2]: https://github.com/lkrms/php-util/compare/v0.21.1...v0.21.2
 [v0.21.1]: https://github.com/lkrms/php-util/compare/v0.21.0...v0.21.1
 [v0.21.0]: https://github.com/lkrms/php-util/compare/v0.20.89...v0.21.0
 [v0.20.89]: https://github.com/lkrms/php-util/compare/v0.20.88...v0.20.89
