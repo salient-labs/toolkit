@@ -7,8 +7,8 @@ use Lkrms\Store\CacheStore;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Catalog\EnvFlag;
-use Lkrms\Utility\Composer;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\Package;
 use Lkrms\Utility\System;
 
 /**
@@ -52,7 +52,7 @@ interface IApplication extends IContainer, ReturnsEnvironment
      * - a Phar archive is currently executing, or
      * - the application was installed with `composer --no-dev`
      *
-     * @see Composer::hasDevDependencies()
+     * @see Package::hasDevPackages()
      */
     public function isProduction(): bool;
 

@@ -12,11 +12,11 @@ use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Container\Application;
 use Lkrms\Facade\Assert;
-use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use LogicException;
 
@@ -376,7 +376,7 @@ class CliApplication extends Application implements ICliApplication
             // or version number if it's "--version"
             if ($arg === '--version' && !$args) {
                 $appName = $this->getAppName();
-                $version = Composer::getRootPackageVersion(true, true);
+                $version = Package::version(true, true);
                 Console::stdout("__{$appName}__ $version");
                 return $this;
             }
@@ -499,8 +499,8 @@ class CliApplication extends Application implements ICliApplication
                     "%% %s(%d) %s | %s\n\n",
                     strtoupper(str_replace(' ', '-', trim($this->getProgramName() . " $name"))),
                     (int) ($args[0] ?? '1'),
-                    $args[1] ?? Composer::getRootPackageVersion(true),
-                    $args[2] ?? (Composer::getRootPackageName() . ' Documentation'),
+                    $args[1] ?? Package::version(),
+                    $args[2] ?? (Package::name() . ' Documentation'),
                 );
                 break;
 

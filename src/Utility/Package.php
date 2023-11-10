@@ -4,133 +4,146 @@ namespace Lkrms\Utility;
 
 use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
+use Lkrms\Exception\Exception;
 use Lkrms\Utility\File;
-use RuntimeException;
 
 /**
- * Get information about the root package and installed dependencies
+ * Get information about the package and its dependencies from Composer's
+ * runtime API
  */
-final class Composer
+final class Package
 {
+    private const SHORT_REFERENCE_LENGTH = 8;
+
     /**
-     * Return true if require-dev packages are installed
+     * True if require-dev packages are installed
      *
-     * Returns `false` if `--no-dev` was passed to `composer install`, e.g. with
-     * the following packaging command:
-     *
-     * ```shell
-     * composer install --no-dev --no-plugins --optimize-autoloader --classmap-authoritative
-     * ```
+     * @api
      */
-    public function hasDevDependencies(): bool
+    public static function hasDevPackages(): bool
     {
-        return $this->getRootPackageValue('dev');
+        return self::getRootPackageValue('dev');
     }
 
     /**
      * Get the name of the root package
+     *
+     * @api
      */
-    public function getRootPackageName(): string
+    public static function name(): string
     {
-        return $this->getRootPackageValue('name');
+        return self::getRootPackageValue('name');
     }
 
     /**
      * Get the commit reference of the root package, if known
+     *
+     * @api
      */
-    public function getRootPackageReference(?int $abbrev = 8): ?string
+    public static function reference(bool $short = true): ?string
     {
-        return $this->formatReference(
-            $this->getRootPackageValue('reference'),
-            $abbrev
+        return self::formatReference(
+            self::getRootPackageValue('reference'),
+            $short
         );
     }
 
     /**
      * Get the version of the root package
      *
-     * If Composer returns a version like `dev-<branch>`, `@<reference>` is
-     * added after the branch name. Otherwise, if `$withReference` is `true` and
-     * a commit reference is available, `-<reference>` is added to the version
-     * number.
+     * If Composer returns a version like `dev-*` or `v1.x-dev`, `@<reference>`
+     * is added. Otherwise, if `$withReference` is `true` and a commit reference
+     * is available, `-<reference>` is added.
      *
      * @param bool $pretty If `true`, return the original version number, e.g.
-     * `v0.3.1` instead of `0.3.1.0`.
+     * `v1.2.3` instead of `1.2.3.0`.
+     *
+     * @api
      */
-    public function getRootPackageVersion(bool $pretty = false, bool $withReference = false): string
-    {
-        return $this->formatVersion(
-            $this->getRootPackageValue($pretty ? 'pretty_version' : 'version'),
+    public static function version(
+        bool $pretty = true,
+        bool $withReference = false
+    ): string {
+        return self::formatVersion(
+            self::getRootPackageValue($pretty ? 'pretty_version' : 'version'),
             $withReference,
-            fn() => $this->getRootPackageReference()
+            fn() => self::reference()
         );
     }
 
     /**
      * Get the canonical path of the root package
+     *
+     * @api
      */
-    public function getRootPackagePath(): string
+    public static function path(): string
     {
-        $path = $this->getRootPackageValue('install_path');
-        if (($realpath = File::realpath($path)) === false) {
-            throw new RuntimeException('Directory not found: ' . $path);
+        $path = self::getRootPackageValue('install_path');
+        $realpath = File::realpath($path);
+        if ($realpath === false) {
+            throw new Exception(
+                sprintf('Root package install path not found: %s', $path)
+            );
         }
-
         return $realpath;
     }
 
     /**
      * Get the commit reference of an installed package, if known
+     *
+     * @api
      */
-    public function getPackageReference(string $package = 'lkrms/util', ?int $abbrev = 8): ?string
-    {
+    public static function packageReference(
+        string $package,
+        bool $short = true
+    ): ?string {
         if (!InstalledVersions::isInstalled($package)) {
             return null;
         }
-
-        return $this->formatReference(
+        return self::formatReference(
             InstalledVersions::getReference($package),
-            $abbrev
+            $short
         );
     }
 
     /**
      * Get the version of an installed package
      *
-     * If Composer returns a version like `dev-<branch>`, `@<reference>` is
-     * added after the branch name. Otherwise, if `$withReference` is `true` and
-     * a commit reference is available, `-<reference>` is added to the version
-     * number.
-     *
-     * Returns `null` if `$package` is not installed.
+     * If Composer returns a version like `dev-*` or `v1.x-dev`, `@<reference>`
+     * is added. Otherwise, if `$withReference` is `true` and a commit reference
+     * is available, `-<reference>` is added.
      *
      * @param bool $pretty If `true`, return the original version number, e.g.
-     * `v0.3.1` instead of `0.3.1.0`.
+     * `v1.2.3` instead of `1.2.3.0`.
+     * @return string|null `null` if `$package` is not installed.
+     *
+     * @api
      */
-    public function getPackageVersion(
-        string $package = 'lkrms/util',
-        bool $pretty = false,
+    public static function packageVersion(
+        string $package,
+        bool $pretty = true,
         bool $withReference = false
     ): ?string {
         if (!InstalledVersions::isInstalled($package)) {
             return null;
         }
-
-        return $this->formatVersion(
+        return self::formatVersion(
             $pretty
                 ? InstalledVersions::getPrettyVersion($package)
                 : InstalledVersions::getVersion($package),
             $withReference,
-            fn() => $this->getPackageReference($package)
+            fn() => self::packageReference($package)
         );
     }
 
     /**
      * Get the canonical path of an installed package
      *
-     * Returns `null` if `$package` is not installed.
+     * @return string|null `null` if `$package` is not installed.
+     *
+     * @api
      */
-    public function getPackagePath(string $package = 'lkrms/util'): ?string
+    public static function packagePath(string $package): ?string
     {
         if (!InstalledVersions::isInstalled($package)) {
             return null;
@@ -142,11 +155,12 @@ final class Composer
     /**
      * Use ClassLoader to find the file where a class is defined
      *
-     * Returns `null` if `$class` doesn't exist.
+     * @param class-string $class
+     * @return string|null `null` if `$class` doesn't exist.
      *
-     * @see Composer::getNamespacePath()
+     * @see Package::namespacePath()
      */
-    public function getClassPath(string $class): ?string
+    public static function classPath(string $class): ?string
     {
         $class = ltrim($class, '\\');
         foreach (ClassLoader::getRegisteredLoaders() as $loader) {
@@ -159,38 +173,48 @@ final class Composer
     }
 
     /**
-     * Use ClassLoader to resolve a namespace to a path
+     * Use ClassLoader to resolve a namespace to a directory, which need not
+     * exist
      *
-     * Returns `null` if `$namespace` doesn't match a PSR-4 mapping defined by
-     * the root package or an installed dependency in one of their
-     * `composer.json` files.
-     *
-     * The path returned need not exist.
+     * @return string|null `null` if `$namespace` doesn't match a PSR-4 prefix
+     * registered with Composer. Preference is given to the longest prefix where
+     * a directory for the namespace already exists. If there is no match where
+     * the namespace resolves to an existing directory, preference is given to
+     * the longest prefix.
      */
-    public function getNamespacePath(string $namespace): ?string
+    public static function namespacePath(string $namespace): ?string
     {
         $namespace = trim($namespace, '\\');
+
         $prefixes = [];
         foreach (ClassLoader::getRegisteredLoaders() as $loader) {
             $prefixes = array_merge_recursive($loader->getPrefixesPsr4(), $prefixes);
         }
+
         // Sort prefixes from longest to shortest
-        uksort($prefixes, fn($p1, $p2) => strlen($p2) <=> strlen($p1));
+        uksort(
+            $prefixes,
+            fn(string $p1, string $p2): int =>
+                strlen($p2) <=> strlen($p1)
+        );
 
         foreach ($prefixes as $prefix => $dirs) {
-            if (!strcasecmp(substr($namespace . '\\', 0, strlen($prefix)), $prefix)) {
-                foreach ((array) $dirs as $dir) {
-                    if (($dir = File::realpath($dir)) && is_dir($dir)) {
-                        $subdir = strtr(substr($namespace, strlen($prefix)), '\\', '/');
-                        $path = $subdir
-                            ? $dir . '/' . $subdir
-                            : $dir;
-                        if (is_dir($path)) {
-                            return $path;
-                        }
-                        $fallback = $fallback ?? $path;
-                    }
+            if (strcasecmp(substr($namespace . '\\', 0, strlen($prefix)), $prefix)) {
+                continue;
+            }
+            foreach ((array) $dirs as $dir) {
+                $dir = File::realpath($dir);
+                if ($dir === false || !is_dir($dir)) {
+                    continue;
                 }
+                $subdir = strtr(substr($namespace, strlen($prefix)), '\\', '/');
+                $path = $subdir === ''
+                    ? $dir
+                    : $dir . '/' . $subdir;
+                if (is_dir($path)) {
+                    return $path;
+                }
+                $fallback = $fallback ?? $path;
             }
         }
 
@@ -198,34 +222,48 @@ final class Composer
     }
 
     /**
-     * @return string|string[]|bool|null
+     * @return string[]|string|bool|null
      */
-    private function getRootPackageValue(string $key)
+    private static function getRootPackageValue(string $key)
     {
         $values = InstalledVersions::getRootPackage();
         if (!array_key_exists($key, $values)) {
-            throw new RuntimeException("Value not found in root package: $key");
+            throw new Exception(
+                sprintf('Value not found in root package: %s', $key)
+            );
         }
 
         return $values[$key];
     }
 
-    private function formatVersion(string $version, bool $withReference, callable $refCallback): string
-    {
-        if (strpos($version, 'dev-') === 0 && ($ref = $refCallback())) {
-            return $version . "@$ref";
+    private static function formatVersion(
+        string $version,
+        bool $withRef,
+        callable $refCallback
+    ): string {
+        if (Pcre::match('/(?:^dev-|-dev$)/', $version)) {
+            $ref = $refCallback();
+            if ($ref !== null) {
+                return $version . "@$ref";
+            }
+            return $version;
         }
-        if ($withReference && ($ref = $refCallback())) {
-            return $version . "-$ref";
+        if ($withRef) {
+            $ref = $refCallback();
+            if ($ref !== null) {
+                return $version . "-$ref";
+            }
         }
-
         return $version;
     }
 
-    private function formatReference(?string $ref, ?int $abbrev): ?string
-    {
-        return is_string($ref)
-            ? (($abbrev ?: 0) < 4 ? $ref : substr($ref, 0, $abbrev))
-            : null;
+    private static function formatReference(
+        ?string $ref,
+        bool $short
+    ): ?string {
+        if ($ref === null || !$short) {
+            return $ref;
+        }
+        return substr($ref, 0, self::SHORT_REFERENCE_LENGTH);
     }
 }

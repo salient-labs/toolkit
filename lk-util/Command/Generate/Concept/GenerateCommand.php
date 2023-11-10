@@ -9,7 +9,6 @@ use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Concept\Entity;
 use Lkrms\Concept\Provider;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
-use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\LkUtil\Command\Concept\Command;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
@@ -22,6 +21,7 @@ use Lkrms\Support\TokenExtractor;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Package;
 use Lkrms\Utility\Reflect;
 use Lkrms\Utility\Test;
 use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
@@ -750,7 +750,7 @@ abstract class GenerateCommand extends Command
             $verb = null;
         } else {
             $file = sprintf('%s.php', $this->OutputClass);
-            $dir = Composer::getNamespacePath($this->OutputNamespace);
+            $dir = Package::namespacePath($this->OutputNamespace);
 
             if ($dir !== null) {
                 if (!$this->Check) {
@@ -766,7 +766,7 @@ abstract class GenerateCommand extends Command
                     return;
                 }
                 if ($this->Check || !$this->ReplaceIfExists) {
-                    $basePath = Composer::getRootPackagePath();
+                    $basePath = Package::path();
                     $relative = File::realpath($file);
                     if (strpos($relative, $basePath) === 0) {
                         $relative = substr($relative, strlen($basePath) + 1);

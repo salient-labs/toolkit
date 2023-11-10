@@ -18,7 +18,6 @@ use Lkrms\Curler\Exception\CurlerHttpErrorException;
 use Lkrms\Curler\Exception\CurlerInvalidResponseException;
 use Lkrms\Curler\Exception\CurlerUnexpectedResponseException;
 use Lkrms\Facade\Cache;
-use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Iterator\RecursiveCallbackIterator;
 use Lkrms\Iterator\RecursiveMutableGraphIterator;
@@ -29,6 +28,7 @@ use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\Package;
 use Lkrms\Utility\Test;
 use DateTimeInterface;
 use Generator;
@@ -912,8 +912,8 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     {
         return self::$DefaultUserAgent
             ?: (self::$DefaultUserAgent = implode(' ', [
-                str_replace('/', '~', Composer::getRootPackageName())
-                    . '/' . Composer::getRootPackageVersion(true, true),
+                str_replace('/', '~', Package::name())
+                    . '/' . Package::version(true, true),
                 'php/' . PHP_VERSION
             ]));
     }

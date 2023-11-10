@@ -8,7 +8,6 @@ use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IApplication;
 use Lkrms\Facade\Cache;
-use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Err;
 use Lkrms\Facade\Format;
@@ -18,6 +17,7 @@ use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use LogicException;
@@ -277,7 +277,7 @@ class Application extends Container implements IApplication
         if ($basePath === null) {
             $basePath = $this->Env->get('app_base_path', null);
             if ($basePath === null) {
-                $basePath = Composer::getRootPackagePath();
+                $basePath = Package::path();
             }
         }
 
@@ -316,7 +316,7 @@ class Application extends Container implements IApplication
 
         Err::register();
 
-        $adodb = Composer::getPackagePath('adodb/adodb-php');
+        $adodb = Package::packagePath('adodb/adodb-php');
         if ($adodb !== null) {
             Err::silencePath($adodb);
         }
@@ -382,7 +382,7 @@ class Application extends Container implements IApplication
             $env === 'production' ||
             ($env === null &&
                 (!$this->RunningFromSource ||
-                    !Composer::hasDevDependencies()));
+                    !Package::hasDevPackages()));
     }
 
     /**

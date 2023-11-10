@@ -32,7 +32,6 @@ use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Utility\Assertions;
-use Lkrms\Utility\Composer;
 use Lkrms\Utility\Debugging;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Formatters;
@@ -45,7 +44,6 @@ $facades = [
     ArrayMapper::class => \Lkrms\Facade\Mapper::class,
     Assertions::class => \Lkrms\Facade\Assert::class,
     CacheStore::class => \Lkrms\Facade\Cache::class,
-    Composer::class => \Lkrms\Facade\Composer::class,
     ConsoleWriter::class => \Lkrms\Facade\Console::class,
     Container::class => \Lkrms\Facade\DI::class,
     Debugging::class => \Lkrms\Facade\Debug::class,
