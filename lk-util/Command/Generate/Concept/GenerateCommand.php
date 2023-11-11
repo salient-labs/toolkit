@@ -50,6 +50,16 @@ abstract class GenerateCommand extends Command
     ];
 
     /**
+     * The path to the generated file
+     *
+     * Set by {@see GenerateCommand::handleOutput()} unless output is written to
+     * the standard output.
+     *
+     * May be relative to the current working directory.
+     */
+    public ?string $OutputFile = null;
+
+    /**
      * The user-supplied description of the generated entity
      *
      * Generators should apply a default description if `null`.
@@ -251,6 +261,7 @@ abstract class GenerateCommand extends Command
 
     protected function reset(): void
     {
+        $this->OutputFile = null;
         unset($this->OutputClass);
         unset($this->OutputNamespace);
         unset($this->PhpDoc);
@@ -758,6 +769,8 @@ abstract class GenerateCommand extends Command
                 }
                 $file = $dir . '/' . $file;
             }
+
+            $this->OutputFile = $file;
 
             if (file_exists($file)) {
                 $input = file_get_contents($file);
