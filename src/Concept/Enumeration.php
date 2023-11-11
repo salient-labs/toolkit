@@ -14,9 +14,7 @@ use Lkrms\Contract\IEnumeration;
  */
 abstract class Enumeration implements IEnumeration
 {
-    /**
-     * @use IsCatalog<TValue>
-     */
+    /** @use IsCatalog<TValue> */
     use IsCatalog {
         constants as cases;
     }

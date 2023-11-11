@@ -4,28 +4,28 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9f1076d31a74347fda4c32809ce506bd",
+    "content-hash": "9143cb954e46474bd0a3d03296e734fb",
     "packages": [],
     "packages-dev": [
         {
             "name": "lkrms/dice",
-            "version": "v4.1.6",
+            "version": "v4.1.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/Dice.git",
-                "reference": "44e35d7cbd4a08d8eadf91c6d47c19cc0c8aaaf9"
+                "reference": "1f219484fcb55a8fab4943672f73f7993480bfea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/Dice/zipball/44e35d7cbd4a08d8eadf91c6d47c19cc0c8aaaf9",
-                "reference": "44e35d7cbd4a08d8eadf91c6d47c19cc0c8aaaf9",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/1f219484fcb55a8fab4943672f73f7993480bfea",
+                "reference": "1f219484fcb55a8fab4943672f73f7993480bfea",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^8"
+                "phpunit/phpunit": "^9"
             },
             "type": "library",
             "autoload": {
@@ -46,22 +46,22 @@
                 "ioc"
             ],
             "support": {
-                "source": "https://github.com/lkrms/Dice/tree/v4.1.6"
+                "source": "https://github.com/lkrms/Dice/tree/v4.1.7"
             },
-            "time": "2023-06-07T04:25:00+00:00"
+            "time": "2023-11-05T22:53:14+00:00"
         },
         {
             "name": "lkrms/util",
-            "version": "v0.20.82",
+            "version": "v0.21.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "9dab397ed4c2a86d3633a2859b9bca41fb17b804"
+                "reference": "3b5022cdcf585bce2ad333327a20c004f5577724"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/9dab397ed4c2a86d3633a2859b9bca41fb17b804",
-                "reference": "9dab397ed4c2a86d3633a2859b9bca41fb17b804",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/3b5022cdcf585bce2ad333327a20c004f5577724",
+                "reference": "3b5022cdcf585bce2ad333327a20c004f5577724",
                 "shasum": ""
             },
             "require": {
@@ -77,7 +77,6 @@
                 "clue/phar-composer": "^1",
                 "firebase/php-jwt": "^6",
                 "league/oauth2-client": "^2",
-                "lkrms/pretty-php": "0.4.41",
                 "phpstan/extension-installer": "^1",
                 "phpstan/phpstan": "^1",
                 "phpstan/phpstan-deprecation-rules": "^1",
@@ -95,11 +94,6 @@
                 "bin/lk-util"
             ],
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "0.20.x-dev"
-                }
-            },
             "autoload": {
                 "files": [
                     "bootstrap.php"
@@ -118,9 +112,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.20.82"
+                "source": "https://github.com/lkrms/php-util/tree/v0.21.2"
             },
-            "time": "2023-10-29T23:41:57+00:00"
+            "time": "2023-11-07T11:00:33+00:00"
         },
         {
             "name": "psr/container",
@@ -227,20 +221,20 @@
         },
         {
             "name": "salient/changelog",
-            "version": "v0.1.8",
+            "version": "v0.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/php-changelog.git",
-                "reference": "86e066331005b56642acfe6802197575b9903a3b"
+                "reference": "a3cca868cdaff58bdca9cf0feb6c2dcf2d55e257"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/php-changelog/zipball/86e066331005b56642acfe6802197575b9903a3b",
-                "reference": "86e066331005b56642acfe6802197575b9903a3b",
+                "url": "https://api.github.com/repos/salient-labs/php-changelog/zipball/a3cca868cdaff58bdca9cf0feb6c2dcf2d55e257",
+                "reference": "a3cca868cdaff58bdca9cf0feb6c2dcf2d55e257",
                 "shasum": ""
             },
             "require": {
-                "lkrms/util": "^0.20.67",
+                "lkrms/util": "0.21.2",
                 "php": ">=7.4"
             },
             "require-dev": {
@@ -273,7 +267,7 @@
                 "issues": "https://github.com/salient-labs/php-changelog/issues",
                 "source": "https://github.com/salient-labs/php-changelog"
             },
-            "time": "2023-10-26T10:46:56+00:00"
+            "time": "2023-11-09T10:52:28+00:00"
         }
     ],
     "aliases": [],
@@ -282,8 +276,11 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.4"
+        "php": "^8.1"
     },
     "platform-dev": [],
+    "platform-overrides": {
+        "php": "8.1.2"
+    },
     "plugin-api-version": "2.6.0"
 }

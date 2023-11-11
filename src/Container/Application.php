@@ -8,16 +8,17 @@ use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IApplication;
 use Lkrms\Facade\Cache;
-use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Err;
 use Lkrms\Facade\Format;
+use Lkrms\Facade\Profile;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use LogicException;
@@ -277,7 +278,7 @@ class Application extends Container implements IApplication
         if ($basePath === null) {
             $basePath = $this->Env->get('app_base_path', null);
             if ($basePath === null) {
-                $basePath = Composer::getRootPackagePath();
+                $basePath = Package::path();
             }
         }
 
@@ -316,7 +317,7 @@ class Application extends Container implements IApplication
 
         Err::register();
 
-        $adodb = Composer::getPackagePath('adodb/adodb-php');
+        $adodb = Package::packagePath('adodb/adodb-php');
         if ($adodb !== null) {
             Err::silencePath($adodb);
         }
@@ -382,7 +383,7 @@ class Application extends Container implements IApplication
             $env === 'production' ||
             ($env === null &&
                 (!$this->RunningFromSource ||
-                    !Composer::hasDevDependencies()));
+                    !Package::hasDevPackages()));
     }
 
     /**
@@ -581,7 +582,7 @@ class Application extends Container implements IApplication
      */
     private static function doReportTimers(int $level, bool $includeRunning, $types, ?int $limit): void
     {
-        $typeTimers = Sys::getTimers($includeRunning, $types);
+        $typeTimers = Profile::getTimers($includeRunning, $types);
         foreach ($typeTimers as $type => $timers) {
             // Sort by milliseconds elapsed, in descending order
             uasort($timers, fn(array $a, array $b) => $b[0] <=> $a[0]);

@@ -3,6 +3,7 @@
 
 use Lkrms\Cli\CliApplication;
 use Lkrms\Cli\CliOption;
+use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleWriter;
 use Lkrms\Container\Application;
 use Lkrms\Container\Container;
@@ -10,6 +11,7 @@ use Lkrms\Curler\Support\CurlerPage;
 use Lkrms\Curler\Curler;
 use Lkrms\Facade\Console;
 use Lkrms\LkUtil\Catalog\EnvVar;
+use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\LkUtil\Command\Generate\GenerateBuilder;
 use Lkrms\LkUtil\Command\Generate\GenerateFacade;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;
@@ -19,6 +21,7 @@ use Lkrms\Store\TrashStore;
 use Lkrms\Support\ArrayMapper;
 use Lkrms\Support\ErrorHandler;
 use Lkrms\Support\EventDispatcher;
+use Lkrms\Support\Timekeeper;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\SyncError;
@@ -31,8 +34,7 @@ use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
-use Lkrms\Utility\Assertions;
-use Lkrms\Utility\Composer;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Debugging;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Formatters;
@@ -43,9 +45,7 @@ $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 $facades = [
     Application::class => \Lkrms\Facade\App::class,
     ArrayMapper::class => \Lkrms\Facade\Mapper::class,
-    Assertions::class => \Lkrms\Facade\Assert::class,
     CacheStore::class => \Lkrms\Facade\Cache::class,
-    Composer::class => \Lkrms\Facade\Composer::class,
     ConsoleWriter::class => \Lkrms\Facade\Console::class,
     Container::class => \Lkrms\Facade\DI::class,
     Debugging::class => \Lkrms\Facade\Debug::class,
@@ -53,6 +53,7 @@ $facades = [
     EventDispatcher::class => \Lkrms\Facade\Event::class,
     Formatters::class => \Lkrms\Facade\Format::class,
     SyncStore::class => \Lkrms\Facade\Sync::class,
+    Timekeeper::class => \Lkrms\Facade\Profile::class,
     System::class => \Lkrms\Facade\Sys::class,
     TrashStore::class => \Lkrms\Facade\Trash::class,
 ];
@@ -105,7 +106,26 @@ $args = [
     ...array_slice($_SERVER['argv'], 1),
 ];
 
+/**
+ * @param GenerateCommand|string $commandOrFile
+ */
+function generated($commandOrFile): void
+{
+    global $generated;
+
+    $file = $commandOrFile instanceof GenerateCommand
+        ? $commandOrFile->OutputFile
+        : $commandOrFile;
+
+    if ($file === null) {
+        throw new LogicException('No file generated');
+    }
+
+    $generated[] = '/' . File::relativeToParent($file);
+}
+
 $status = 0;
+$generated = [];
 
 foreach ($facades as $class => $facade) {
     $facadeArgs = [];
@@ -114,6 +134,7 @@ foreach ($facades as $class => $facade) {
         $facade = array_shift($facadeArgs);
     }
     $status |= $generateFacade(...[...$args, ...$facadeArgs, $class, $facade]);
+    generated($generateFacade);
 }
 
 foreach ($builders as $class => $builder) {
@@ -123,6 +144,7 @@ foreach ($builders as $class => $builder) {
         $builder = array_shift($builderArgs);
     }
     $status |= $generateBuilder(...[...$args, ...$builderArgs, $class, $builder]);
+    generated($generateBuilder);
 }
 
 foreach ($entities as $class => $entityArgs) {
@@ -131,19 +153,48 @@ foreach ($entities as $class => $entityArgs) {
     $save = false;
     if (is_file($file)) {
         array_unshift($entityArgs, '--json', $file);
+        generated($file);
     } else {
         array_unshift($entityArgs, '--provider', JsonPlaceholderApi::class, '--endpoint', "/{$entity}");
         $save = true;
     }
     $status |= $generateEntity(...[...$args, ...$entityArgs, $class]);
+    generated($generateEntity);
     if ($save && $generateEntity->Entity !== null) {
         File::createDir(dirname($file));
         file_put_contents($file, json_encode($generateEntity->Entity, JSON_PRETTY_PRINT));
+        generated($file);
     }
 }
 
 foreach ($providers as $class => $providerArgs) {
     $status |= $generateProvider(...[...$args, ...$providerArgs, $class]);
+    generated($generateProvider);
+}
+
+$file = dirname(__DIR__) . '/.gitattributes';
+$attributes = preg_grep(
+    '/(^#| linguist-generated$)/',
+    Arr::notEmpty(Arr::trim(file($file))),
+    PREG_GREP_INVERT
+);
+// @phpstan-ignore-next-line
+foreach ($generated as $generated) {
+    $attributes[] = sprintf('%s linguist-generated', $generated);
+}
+sort($attributes);
+$attributes = implode(PHP_EOL, $attributes) . PHP_EOL;
+if (file_get_contents($file) !== $attributes) {
+    if (in_array('--check', $args)) {
+        Console::info('Would replace', $file);
+        Console::count(Level::ERROR);
+        $status |= 1;
+    } else {
+        Console::info('Replacing', $file);
+        file_put_contents($file, $attributes);
+    }
+} else {
+    Console::log('Nothing to do:', $file);
 }
 
 Console::summary('Code generation completed');

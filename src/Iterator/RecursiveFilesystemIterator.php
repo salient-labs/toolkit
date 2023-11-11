@@ -27,9 +27,7 @@ use Traversable;
  */
 class RecursiveFilesystemIterator implements IteratorAggregate, FluentIteratorInterface, IImmutable
 {
-    /**
-     * @use FluentIteratorTrait<string,SplFileInfo>
-     */
+    /** @use FluentIteratorTrait<string,SplFileInfo> */
     use FluentIteratorTrait;
 
     private bool $GetFiles = true;

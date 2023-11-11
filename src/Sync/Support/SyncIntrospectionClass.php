@@ -187,9 +187,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
                         return;
                     }
 
-                    /**
-                     * @var SyncOperation::* $operation
-                     */
+                    /** @var SyncOperation::* $operation */
                     $this->SyncOperationMagicMethods[$method] = [$operation, $entity->Class];
                 };
 

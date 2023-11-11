@@ -1,8 +1,13 @@
 {
     "require": {
-        "php": ">=7.4"
+        "php": "^8.1"
     },
     "require-dev": {
-        "lkrms/pretty-php": "^0.4.42"
+        "lkrms/pretty-php": "^0.4.43"
+    },
+    "config": {
+        "platform": {
+            "php": "8.1.2"
+        }
     }
 }

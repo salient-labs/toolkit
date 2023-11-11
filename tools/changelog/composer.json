@@ -1,8 +1,13 @@
 {
     "require": {
-        "php": ">=7.4"
+        "php": "^8.1"
     },
     "require-dev": {
         "salient/changelog": "^0.1"
+    },
+    "config": {
+        "platform": {
+            "php": "8.1.2"
+        }
     }
 }

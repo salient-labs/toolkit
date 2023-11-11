@@ -3,18 +3,18 @@
 namespace Lkrms\Tests\Utility;
 
 use Composer\InstalledVersions;
-use Lkrms\Facade\Composer;
+use Lkrms\Utility\Package;
 
 final class ComposerTest extends \Lkrms\Tests\TestCase
 {
     public function testHasDevDependencies(): void
     {
-        $this->assertTrue(Composer::hasDevDependencies());
+        $this->assertTrue(Package::hasDevPackages());
     }
 
     public function testGetRootPackageName(): void
     {
-        $this->assertSame('lkrms/util', Composer::getRootPackageName());
+        $this->assertSame('lkrms/util', Package::name());
     }
 
     public function testGetRootPackageReference(): void
@@ -29,7 +29,7 @@ final class ComposerTest extends \Lkrms\Tests\TestCase
 
     public function testGetRootPackagePath(): void
     {
-        $this->assertSame(realpath(dirname(__DIR__, 3)), Composer::getRootPackagePath());
+        $this->assertSame(realpath(dirname(__DIR__, 3)), Package::path());
     }
 
     public function testGetPackageReference(): void
@@ -41,14 +41,14 @@ final class ComposerTest extends \Lkrms\Tests\TestCase
     {
         $this->assertSame(
             InstalledVersions::getPrettyVersion('phpstan/phpstan'),
-            Composer::getPackageVersion('phpstan/phpstan', true)
+            Package::packageVersion('phpstan/phpstan')
         );
         $this->assertSame(
             InstalledVersions::getPrettyVersion('phpstan/phpstan')
                 . '-' . substr(InstalledVersions::getReference('phpstan/phpstan'), 0, 8),
-            Composer::getPackageVersion('phpstan/phpstan', true, true)
+            Package::packageVersion('phpstan/phpstan', true, true)
         );
-        $this->assertNull(Composer::getPackageVersion('composer/composer'));
+        $this->assertNull(Package::packageVersion('composer/composer'));
     }
 
     public function testGetPackagePath(): void

@@ -14,9 +14,7 @@ use Lkrms\Contract\IDictionary;
  */
 abstract class Dictionary implements IDictionary
 {
-    /**
-     * @use IsCatalog<TValue>
-     */
+    /** @use IsCatalog<TValue> */
     use IsCatalog {
         constants as definitions;
     }

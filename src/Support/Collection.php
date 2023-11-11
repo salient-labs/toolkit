@@ -15,8 +15,6 @@ use Lkrms\Contract\ICollection;
  */
 final class Collection implements ICollection
 {
-    /**
-     * @use TCollection<TKey,TValue>
-     */
+    /** @use TCollection<TKey,TValue> */
     use TCollection;
 }

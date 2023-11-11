@@ -14,11 +14,11 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Console\ConsoleFormatter as Formatter;
-use Lkrms\Facade\Composer;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\Package;
 use LogicException;
 use RuntimeException;
 use Throwable;
@@ -1218,7 +1218,7 @@ abstract class CliCommand implements ICliCommand
 
         if ($this->HasVersionArgument) {
             $appName = $this->App->getAppName();
-            $version = Composer::getRootPackageVersion(true, true);
+            $version = Package::version(true, true);
             Console::stdout("__{$appName}__ $version");
 
             return 0;

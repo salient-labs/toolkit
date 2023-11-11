@@ -25,9 +25,7 @@ abstract class TypedCollection implements ICollection, IImmutable
      */
     protected const ITEM_CLASS = \stdClass::class;
 
-    /**
-     * @use TCollection<TKey,TValue>
-     */
+    /** @use TCollection<TKey,TValue> */
     use TCollection {
         push as private _push;
         unshift as private _unshift;
