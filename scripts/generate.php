@@ -32,7 +32,6 @@ use Lkrms\Tests\Sync\Entity\Post;
 use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
-use Lkrms\Utility\Assertions;
 use Lkrms\Utility\Debugging;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Formatters;
@@ -43,7 +42,6 @@ $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 $facades = [
     Application::class => \Lkrms\Facade\App::class,
     ArrayMapper::class => \Lkrms\Facade\Mapper::class,
-    Assertions::class => \Lkrms\Facade\Assert::class,
     CacheStore::class => \Lkrms\Facade\Cache::class,
     ConsoleWriter::class => \Lkrms\Facade\Console::class,
     Container::class => \Lkrms\Facade\DI::class,

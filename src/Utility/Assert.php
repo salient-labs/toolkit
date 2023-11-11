@@ -2,60 +2,106 @@
 
 namespace Lkrms\Utility;
 
-use RuntimeException;
-use UnexpectedValueException;
+use Lkrms\Exception\AssertionFailedException;
+use Lkrms\Exception\FilesystemErrorException;
 
 /**
  * Throw an exception if a condition isn't met
  */
-final class Assertions
+final class Assert
 {
-    private function throwUnexpectedValueException(string $message, ?string $name): void
+    private static function throwException(string $message, ?string $name): void
     {
-        throw new UnexpectedValueException(
-            str_replace('{}', $name ? "'$name'" : 'value', $message)
+        throw new AssertionFailedException(
+            str_replace(
+                '{}',
+                $name === null ? 'value' : "'$name'",
+                $message
+            )
         );
+    }
+
+    /**
+     * Assert that a file or directory exists
+     *
+     * @throws FilesystemErrorException if `$filename` does not exist.
+     */
+    public static function fileExists(string $filename): void
+    {
+        if (!file_exists($filename)) {
+            throw new FilesystemErrorException(
+                sprintf('File not found: %s', $filename)
+            );
+        }
+    }
+
+    /**
+     * Assert that a file exists
+     *
+     * @throws FilesystemErrorException if `$filename` is not a regular file.
+     */
+    public static function isFile(string $filename): void
+    {
+        if (!is_file($filename)) {
+            throw new FilesystemErrorException(
+                sprintf('Not a file: %s', $filename)
+            );
+        }
+    }
+
+    /**
+     * Assert that a directory exists
+     *
+     * @throws FilesystemErrorException if `$filename` is not a directory.
+     */
+    public static function isDir(string $filename): void
+    {
+        if (!is_dir($filename)) {
+            throw new FilesystemErrorException(
+                sprintf('Not a directory: %s', $filename)
+            );
+        }
     }
 
     /**
      * @param mixed $value
      */
-    public function notEmpty($value, ?string $name = null): void
+    public static function notEmpty($value, ?string $name = null): void
     {
         if (empty($value)) {
-            $this->throwUnexpectedValueException('{} cannot be empty', $name);
+            self::throwException('{} cannot be empty', $name);
         }
     }
 
-    public function patternMatches(?string $value, string $pattern, ?string $name = null): void
+    public static function patternMatches(?string $value, string $pattern, ?string $name = null): void
     {
         if (is_null($value) || !preg_match($pattern, $value)) {
-            $this->throwUnexpectedValueException("{} must match pattern '$pattern'", $name);
+            self::throwException("{} must match pattern '$pattern'", $name);
         }
     }
 
-    public function sapiIsCli(): void
+    public static function sapiIsCli(): void
     {
         if (PHP_SAPI !== 'cli') {
-            throw new RuntimeException('CLI required');
+            throw new AssertionFailedException('CLI required');
         }
     }
 
-    public function argvIsRegistered(): void
+    public static function argvIsRegistered(): void
     {
         if (!ini_get('register_argc_argv')) {
-            throw new RuntimeException('register_argc_argv is not enabled');
+            throw new AssertionFailedException('register_argc_argv is not enabled');
         }
     }
 
-    public function localeIsUtf8(): void
+    public static function localeIsUtf8(): void
     {
         if (($locale = setlocale(LC_CTYPE, '0')) === false) {
-            throw new RuntimeException('Invalid locale settings');
+            throw new AssertionFailedException('Invalid locale settings');
         }
 
         if (!preg_match('/\.utf-?8$/i', $locale)) {
-            throw new RuntimeException("'$locale' is not a UTF-8 locale");
+            throw new AssertionFailedException("'$locale' is not a UTF-8 locale");
         }
     }
 }
