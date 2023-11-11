@@ -31,7 +31,7 @@ function run_with_php_versions() {
     done
 }
 
-[[ ${BASH_SOURCE[0]} -ef scripts/test.sh ]] ||
+[[ ${BASH_SOURCE[0]} -ef scripts/run-tests.sh ]] ||
     die "must run from root of package folder"
 
 run scripts/generate.php --check
