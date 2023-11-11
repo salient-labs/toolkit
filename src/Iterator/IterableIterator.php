@@ -21,9 +21,7 @@ use Traversable;
  */
 class IterableIterator extends IteratorIterator implements FluentIteratorInterface
 {
-    /**
-     * @use FluentIteratorTrait<TKey,TValue>
-     */
+    /** @use FluentIteratorTrait<TKey,TValue> */
     use FluentIteratorTrait;
 
     /**

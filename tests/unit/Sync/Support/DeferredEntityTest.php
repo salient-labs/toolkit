@@ -70,9 +70,7 @@ final class DeferredEntityTest extends \Lkrms\Tests\Sync\SyncTestCase
                 ->getContext()
                 ->withDeferralPolicy(DeferralPolicy::DO_NOT_RESOLVE);
 
-        /**
-         * @var array<DeferredEntity<Post>>|Post[]|null
-         */
+        /** @var array<DeferredEntity<Post>>|Post[]|null */
         $list = null;
         DeferredEntity::deferList(
             $provider,

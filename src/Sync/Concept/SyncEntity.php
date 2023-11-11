@@ -71,9 +71,7 @@ use UnexpectedValueException;
  */
 abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormaliser
 {
-    /**
-     * @use TProvidable<ISyncProvider,ISyncContext>
-     */
+    /** @use TProvidable<ISyncProvider,ISyncContext> */
     use TConstructible, TReadable, TWritable, TExtensible, TProvidable, HasNormaliser, RequiresContainer;
 
     /**

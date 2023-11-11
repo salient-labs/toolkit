@@ -19,8 +19,6 @@ use Lkrms\Contract\IImmutable;
  */
 abstract class LooselyTypedCollection implements ICollection, IImmutable
 {
-    /**
-     * @use TCollection<TKey,TValue>
-     */
+    /** @use TCollection<TKey,TValue> */
     use TCollection;
 }

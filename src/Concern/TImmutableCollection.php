@@ -14,9 +14,7 @@ use LogicException;
  */
 trait TImmutableCollection
 {
-    /**
-     * @use TCollection<TKey,TValue>
-     */
+    /** @use TCollection<TKey,TValue> */
     use TCollection;
 
     /**

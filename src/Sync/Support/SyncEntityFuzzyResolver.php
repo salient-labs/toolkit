@@ -158,9 +158,7 @@ final class SyncEntityFuzzyResolver implements ISyncEntityResolver
             return $entity;
         }
 
-        /**
-         * @var array<array{TEntity,string,mixed|null,...}>
-         */
+        /** @var array<array{TEntity,string,mixed|null,...}> */
         $entries = $this->Entities;
         $applied = 0;
 

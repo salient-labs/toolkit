@@ -16,8 +16,6 @@ use Lkrms\Contract\IImmutable;
  */
 final class ImmutableCollection implements ICollection, IImmutable
 {
-    /**
-     * @use TImmutableCollection<TKey,TValue>
-     */
+    /** @use TImmutableCollection<TKey,TValue> */
     use TImmutableCollection;
 }
