@@ -290,13 +290,44 @@ final class File
             return 'php://fd/' . $matches[1];
         }
         if (Test::isPharUrl($filename) &&
-                extension_loaded('Phar') && Phar::running()) {
+                extension_loaded('Phar') &&
+                Phar::running()) {
+            // @codeCoverageIgnoreStart
             $filename = Convert::resolvePath($filename);
 
             return file_exists($filename) ? $filename : false;
+            // @codeCoverageIgnoreEnd
         }
 
         return realpath($filename);
+    }
+
+    /**
+     * Get a path relative to a parent directory
+     *
+     * If `$parentDir` is `null`, the path of the root package is used.
+     *
+     * @throws FilesystemErrorException if `$filename` or `$parentDir` do not
+     * exist or if `$filename` does not belong to `$parentDir`.
+     */
+    public static function relativeToParent(
+        string $filename,
+        ?string $parentDir = null
+    ): string {
+        if ($parentDir === null) {
+            $basePath = Package::path();
+        } else {
+            Assert::fileExists($parentDir);
+            $basePath = File::realpath($parentDir);
+        }
+        Assert::fileExists($filename);
+        $path = File::realpath($filename);
+        if (strpos($path, $basePath) === 0) {
+            return substr($path, strlen($basePath) + 1);
+        }
+        throw new FilesystemErrorException(
+            sprintf("'%s' does not belong to '%s'", $filename, $parentDir)
+        );
     }
 
     /**
