@@ -2,6 +2,7 @@
 
 namespace Lkrms\Tests\Utility;
 
+use Lkrms\Support\Timekeeper;
 use Lkrms\Utility\System;
 use LogicException;
 
@@ -9,7 +10,7 @@ final class SystemTest extends \Lkrms\Tests\TestCase
 {
     public function testStartTimer(): void
     {
-        $system = new System();
+        $system = new Timekeeper();
 
         $time0 = hrtime(true) / 1000000;
         $system->startTimer('primary');
@@ -57,7 +58,7 @@ final class SystemTest extends \Lkrms\Tests\TestCase
     public function testStopTimer(): void
     {
         $this->expectException(LogicException::class);
-        $system = new System();
+        $system = new Timekeeper();
         $system->stopTimer('primary');
     }
 

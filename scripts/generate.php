@@ -19,6 +19,7 @@ use Lkrms\Store\TrashStore;
 use Lkrms\Support\ArrayMapper;
 use Lkrms\Support\ErrorHandler;
 use Lkrms\Support\EventDispatcher;
+use Lkrms\Support\Timekeeper;
 use Lkrms\Sync\Support\DbSyncDefinition;
 use Lkrms\Sync\Support\HttpSyncDefinition;
 use Lkrms\Sync\Support\SyncError;
@@ -51,6 +52,7 @@ $facades = [
     EventDispatcher::class => \Lkrms\Facade\Event::class,
     Formatters::class => \Lkrms\Facade\Format::class,
     SyncStore::class => \Lkrms\Facade\Sync::class,
+    Timekeeper::class => \Lkrms\Facade\Profile::class,
     System::class => \Lkrms\Facade\Sys::class,
     TrashStore::class => \Lkrms\Facade\Trash::class,
 ];

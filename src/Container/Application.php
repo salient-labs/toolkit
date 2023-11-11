@@ -11,6 +11,7 @@ use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Err;
 use Lkrms\Facade\Format;
+use Lkrms\Facade\Profile;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
 use Lkrms\Utility\Catalog\EnvFlag;
@@ -581,7 +582,7 @@ class Application extends Container implements IApplication
      */
     private static function doReportTimers(int $level, bool $includeRunning, $types, ?int $limit): void
     {
-        $typeTimers = Sys::getTimers($includeRunning, $types);
+        $typeTimers = Profile::getTimers($includeRunning, $types);
         foreach ($typeTimers as $type => $timers) {
             // Sort by milliseconds elapsed, in descending order
             uasort($timers, fn(array $a, array $b) => $b[0] <=> $a[0]);

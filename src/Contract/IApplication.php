@@ -4,12 +4,12 @@ namespace Lkrms\Contract;
 
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Store\CacheStore;
+use Lkrms\Support\Timekeeper;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Package;
-use Lkrms\Utility\System;
 
 /**
  * A service container for applications
@@ -191,8 +191,8 @@ interface IApplication extends IContainer, ReturnsEnvironment
      * Print a summary of the application's timers and system resource usage
      * when it terminates
      *
-     * Use {@see System::startTimer()} and {@see System::stopTimer()} to collect
-     * timing information.
+     * Use {@see Timekeeper::startTimer()} and {@see Timekeeper::stopTimer()} to
+     * collect timing information.
      *
      * @param Level::* $level
      * @param string[]|string|null $timerTypes If `null` or `["*"]`, all timers
@@ -224,9 +224,9 @@ interface IApplication extends IContainer, ReturnsEnvironment
      * reported, otherwise only timers of the given types are reported.
      * @return $this
      *
-     * @see System::startTimer()
-     * @see System::stopTimer()
-     * @see System::getTimers()
+     * @see Timekeeper::startTimer()
+     * @see Timekeeper::stopTimer()
+     * @see Timekeeper::getTimers()
      */
     public function reportTimers(
         int $level = Level::INFO,
