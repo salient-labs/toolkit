@@ -212,16 +212,22 @@ abstract class GenerateCommand extends Command
      *
      * @return array<CliOption|CliOptionBuilder>
      */
-    protected function getOutputOptionList(string $outputType): array
-    {
-        return [
-            CliOption::build()
+    protected function getOutputOptionList(
+        string $outputType,
+        bool $withDesc = true
+    ): array {
+        $options = [];
+        if ($withDesc) {
+            $options[] = CliOption::build()
                 ->long('desc')
                 ->short('d')
                 ->valueName('description')
                 ->description("A short description of the $outputType")
                 ->optionType(CliOptionType::VALUE)
-                ->bindTo($this->Description),
+                ->bindTo($this->Description);
+        }
+        return [
+            ...$options,
             CliOption::build()
                 ->long('stdout')
                 ->short('s')

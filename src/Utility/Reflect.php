@@ -2,6 +2,8 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Facade\Sys;
+use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Convert;
 use ReflectionClass;
 use ReflectionException;
@@ -241,30 +243,35 @@ final class Reflect
     }
 
     /**
-     * Convert the given ReflectionType to a PHP type declaration
+     * Convert a ReflectionType to a PHP type declaration
      *
-     * @param ReflectionType|null $type e.g. the return value of
-     * {@see ReflectionParameter::getType()}.
-     * @param (callable(string): (string|null))|null $typeNameCallback Applied
-     * to qualified class names if given. Must return `null` or an unqualified
-     * alias.
+     * @param (callable(class-string): (string|null))|null $typeNameCallback
+     * Applied to qualified class names if given. Must return `null` or an
+     * unqualified alias.
      */
     public static function getTypeDeclaration(
         ?ReflectionType $type,
         string $classPrefix = '\\',
         ?callable $typeNameCallback = null
     ): string {
-        $glue = '|';
         if ($type === null) {
-            $types = [];
-        } elseif ($type instanceof ReflectionUnionType) {
+            return '';
+        }
+
+        $glue = '|';
+        if ($type instanceof ReflectionUnionType) {
             $types = [];
             foreach ($type->getTypes() as $type) {
-                if ($type instanceof ReflectionIntersectionType) {
-                    $types[] = '(' . self::getTypeDeclaration($type, $classPrefix, $typeNameCallback) . ')';
+                if (!($type instanceof ReflectionIntersectionType)) {
+                    $types[] = $type;
                     continue;
                 }
-                $types[] = $type;
+                $type = self::getTypeDeclaration(
+                    $type,
+                    $classPrefix,
+                    $typeNameCallback
+                );
+                $types[] = "($type)";
             }
         } elseif ($type instanceof ReflectionIntersectionType) {
             $glue = '&';
@@ -272,21 +279,23 @@ final class Reflect
         } else {
             $types = [$type];
         }
+
         $parts = [];
         /** @var array<ReflectionNamedType|string> $types */
         foreach ($types as $type) {
-            if (!($type instanceof ReflectionType)) {
+            if (is_string($type)) {
                 $parts[] = $type;
                 continue;
             }
             $name = $type->getName();
             $alias =
-                $typeNameCallback === null
+                $typeNameCallback === null || $type->isBuiltin()
                     ? null
                     : $typeNameCallback($name);
-            $parts[] = ($type->allowsNull() && strcasecmp($name, 'null') ? '?' : '')
+            $parts[] =
+                ($type->allowsNull() && strcasecmp($name, 'null') ? '?' : '')
                 . ($alias === null && !$type->isBuiltin() ? $classPrefix : '')
-                . ($alias ?? $name);
+                . ($alias === null ? $name : $alias);
         }
 
         return implode($glue, $parts);
@@ -295,11 +304,9 @@ final class Reflect
     /**
      * Convert a ReflectionParameter to a PHP parameter declaration
      *
-     * @param callable|null $typeNameCallback Applied to qualified class names
-     * if set. Must return `null` or an unqualified alias:
-     * ```php
-     * callback(string $name): ?string
-     * ```
+     * @param (callable(class-string): (string|null))|null $typeNameCallback
+     * Applied to qualified class names if given. Must return `null` or an
+     * unqualified alias.
      * @param string|null $type If set, ignore the parameter's declared type and
      * use `$type` instead. Do not use when generating code unless `$type` is
      * from a trusted source.
@@ -312,36 +319,56 @@ final class Reflect
         ?string $name = null,
         bool $phpDoc = false
     ): string {
-        // If getTypeDeclaration isn't called, neither is $typeNameCallback
-        $param = self::getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
-        $param = is_null($type) ? $param : $type;
-        $param .= ($param ? ' ' : '')
+        // Always call getTypeDeclaration so $typeNameCallback is always called,
+        // otherwise callback-dependent actions are not taken when $type is set
+        $param = self::getTypeDeclaration(
+            $parameter->getType(),
+            $classPrefix,
+            $typeNameCallback
+        );
+
+        if ($type !== null) {
+            $param = $type;
+        }
+
+        $param .=
+            ($param === '' ? '' : ' ')
             . ($parameter->isPassedByReference() ? '&' : '')
             . ($parameter->isVariadic() ? '...' : '')
-            . '$' . ($name ?: $parameter->getName());
+            . '$' . ($name === null ? $parameter->getName() : $name);
+
         if (!$parameter->isDefaultValueAvailable()) {
             return $param;
         }
+
         $param .= ' = ';
+
         if (!$parameter->isDefaultValueConstant()) {
+            $value = $parameter->getDefaultValue();
             // Escape commas for phpDocumentor
-            return $param . Convert::valueToCode($parameter->getDefaultValue(), ',', '=>', $phpDoc ? ',' : null);
+            $escape = $phpDoc ? ',' : null;
+            $param .= Convert::valueToCode($value, ',', '=>', $escape);
+            return $param;
         }
+
+        /** @var string */
         $const = $parameter->getDefaultValueConstantName();
-        if (!preg_match('/^(self|parent|static)::/i', $const)) {
-            if ($typeNameCallback &&
-                    ($_const = preg_replace_callback(
-                        '/^[^:\\\\]+(?:\\\\[^:\\\\]+)+(?=::)/',
-                        fn($matches) => $typeNameCallback($matches[0]) ?: $matches[0],
-                        $const
-                    )) !== $const) {
+        if (preg_match('/^(self|parent|static)::/i', $const)) {
+            return "$param$const";
+        }
+        if ($typeNameCallback) {
+            $_const = Pcre::replaceCallback(
+                Regex::delimit('^' . Regex::PHP_TYPE . '(?=::)'),
+                fn(array $matches): string =>
+                    $typeNameCallback($matches[0]) ?? $matches[0],
+                $const
+            );
+            if ($_const !== $const) {
                 return "$param$_const";
             }
-
-            return "$param$classPrefix$const";
         }
 
-        return "$param$const";
+        return "$param$classPrefix$const";
     }
 
     /**
@@ -352,11 +379,9 @@ final class Reflect
      * - `$documentation` is empty or `null`, and
      * - there is no difference between PHPDoc and native data types
      *
-     * @param callable|null $typeNameCallback Applied to qualified class names
-     * if set. Must return `null` or an unqualified alias:
-     * ```php
-     * callback(string $name): ?string
-     * ```
+     * @param (callable(class-string): (string|null))|null $typeNameCallback
+     * Applied to qualified class names if given. Must return `null` or an
+     * unqualified alias.
      * @param string|null $type If set, ignore the parameter's declared type and
      * use `$type` instead.
      */
@@ -369,23 +394,42 @@ final class Reflect
         ?string $documentation = null,
         bool $force = false
     ): ?string {
-        // If getTypeDeclaration isn't called, neither is $typeNameCallback
-        $param = self::getTypeDeclaration($parameter->getType(), $classPrefix, $typeNameCallback);
-        $param = is_null($type) ? $param : $type;
-        $param .= ($param ? ' ' : '')
-            . ($parameter->isVariadic() ? '...' : '')
-            . '$' . ($name ?: $parameter->getName());
+        // Always call getTypeDeclaration so $typeNameCallback is always called,
+        // otherwise callback-dependent actions are not taken when $type is set
+        $param = self::getTypeDeclaration(
+            $parameter->getType(),
+            $classPrefix,
+            $typeNameCallback
+        );
 
-        if (!$force && !$documentation &&
-                preg_replace(
-                    ['/ = .*/', '/&(?=(\.\.\.)?\$)/'],
-                    '',
-                    self::getParameterDeclaration($parameter, $classPrefix, $typeNameCallback, null, $name)
-                ) === $param) {
-            return null;
+        if ($type !== null) {
+            $param = $type;
         }
 
-        return "@param $param" . ($documentation ? " $documentation" : '');
+        $param .=
+            ($param === '' ? '' : ' ')
+            . ($parameter->isVariadic() ? '...' : '')
+            . '$' . ($name === null ? $parameter->getName() : $name);
+
+        if (!$force && $documentation === null) {
+            $native = Pcre::replace(
+                ['/ = .*/', '/&(?=(\.\.\.)?\$)/'],
+                '',
+                self::getParameterDeclaration(
+                    $parameter,
+                    $classPrefix,
+                    $typeNameCallback,
+                    null,
+                    $name
+                )
+            );
+            if ($native === $param) {
+                return null;
+            }
+        }
+
+        return "@param $param"
+            . ($documentation === null ? '' : " $documentation");
     }
 
     /**

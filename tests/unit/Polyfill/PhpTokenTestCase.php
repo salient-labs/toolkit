@@ -589,9 +589,9 @@ abstract class PhpTokenTestCase extends \Lkrms\Tests\TestCase
         $actualCode = array_reduce(
             $actual,
             fn(string $code, $token) => sprintf(
-                "%s    new self::\$Token(%s, %s, %d, %d),\n",
+                "%s    new static::\$Token(%s, %s, %d, %d),\n",
                 $code,
-                $token->id < 128 ? $token->id : $token->getTokenName(),
+                $token->id < 128 ? $token->id : '\\' . $token->getTokenName(),
                 Convert::valueToCode($token->text),
                 $token->line,
                 $token->pos
