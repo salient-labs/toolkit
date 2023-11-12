@@ -25,6 +25,7 @@ use Lkrms\Support\Catalog\HttpHeader;
 use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Support\Catalog\MimeType;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
@@ -898,7 +899,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     private function getCookieKey(): ?string
     {
         return $this->HandleCookies
-            ? Convert::sparseToString(':', [self::class, 'cookies', $this->CookieCacheKey])
+            ? Arr::implodeNotEmpty(':', [self::class, 'cookies', $this->CookieCacheKey])
             : null;
     }
 

@@ -12,6 +12,7 @@ use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncSerializeRules;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Closure;
 use LogicException;
@@ -394,7 +395,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
     ): array {
         $depth = count($path);
         $path = '.' . implode('.', $path);
-        $key = Convert::sparseToString("\0", [$class, $untilClass, $path]);
+        $key = Arr::implodeNotEmpty("\0", [$class, $untilClass, $path]);
 
         if (!is_null($rules = $this->RuleCache[$cacheKey][$key] ?? null)) {
             return $rules;

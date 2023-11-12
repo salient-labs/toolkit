@@ -905,16 +905,14 @@ final class Convert
     }
 
     /**
-     * Remove zero-width values from an array before imploding it
-     *
      * @param mixed[] $array
+     * @deprecated Use {@see Arr::implodeNotEmpty()} instead
      */
     public static function sparseToString(string $separator, array $array): string
     {
-        return implode($separator, array_filter(
-            $array,
-            function ($value) { return strlen((string) $value) > 0; }
-        ));
+        // @codeCoverageIgnoreStart
+        return Arr::implodeNotEmpty($separator, $array);
+        // @codeCoverageIgnoreEnd
     }
 
     /**

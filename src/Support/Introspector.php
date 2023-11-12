@@ -13,8 +13,10 @@ use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ISerializeRules;
 use Lkrms\Contract\ITreeable;
+use Lkrms\Contract\ReturnsDescription;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Closure;
 use LogicException;
@@ -711,13 +713,22 @@ class Introspector
         return $this->_Class->PropertyActionClosures[$_name][$action] = $closure;
     }
 
+    /**
+     * Get a closure that returns the name of an instance on a best-effort basis
+     *
+     * Intended for use in default {@see ReturnsDescription::name()}
+     * implementations. Instance names are returned from properties most likely
+     * to contain them.
+     *
+     * @return Closure(TClass): string
+     */
     final public function getGetNameClosure(): Closure
     {
         if ($this->_Class->GetNameClosure) {
             return $this->_Class->GetNameClosure;
         }
 
-        $names = $this->_Class->maybeNormalise([
+        $names = [
             'display_name',
             'displayname',
             'name',
@@ -727,38 +738,77 @@ class Introspector
             'last_name',
             'first_name',
             'title',
-            'description',
             'id',
-        ], NormaliserFlag::CAREFUL);
+        ];
 
-        $names = array_intersect($names, $this->_Class->getReadableProperties());
+        $names = array_combine(
+            $names,
+            $this->_Class->maybeNormalise($names, NormaliserFlag::CAREFUL)
+        );
+
+        $surname = $names['surname'];
+        $lastName = $names['last_name'];
+        $firstName = $names['first_name'];
+        $id = $names['id'];
+
+        $names = array_intersect(
+            $names,
+            $this->_Class->getReadableProperties()
+        );
 
         // If surname|last_name and first_name exist, use them together,
         // otherwise don't use either of them
-        if (in_array($last = reset($names), ['surname', 'last_name'])) {
+        $maybeLast = reset($names);
+        if (in_array($maybeLast, [$surname, $lastName], true)) {
             array_shift($names);
-            if (($first = reset($names)) == 'first_name') {
-                $last = $this->getPropertyActionClosure($last, IntrospectionClass::ACTION_GET);
-                $first = $this->getPropertyActionClosure($first, IntrospectionClass::ACTION_GET);
+            $maybeFirst = reset($names);
+            if ($maybeFirst === $firstName) {
+                $last = $this->getPropertyActionClosure(
+                    $maybeLast,
+                    IntrospectionClass::ACTION_GET
+                );
+                $first = $this->getPropertyActionClosure(
+                    $maybeFirst,
+                    IntrospectionClass::ACTION_GET
+                );
 
                 return $this->_Class->GetNameClosure =
-                    static function ($instance) use ($first, $last): ?string {
-                        return Convert::sparseToString(' ', [$first($instance), $last($instance)]) ?: null;
+                    static function (
+                        $instance
+                    ) use ($first, $last): string {
+                        return Arr::implodeNotEmpty(' ', [
+                            $first($instance),
+                            $last($instance),
+                        ]);
                     };
             }
         }
-        while (in_array(reset($names), ['last_name', 'first_name'])) {
-            array_shift($names);
-        }
+        unset($names['last_name']);
+        unset($names['first_name']);
 
         if (!$names) {
-            return $this->_Class->GetNameClosure = static function (): ?string { return null; };
+            $name = Convert::classToBasename($this->_Class->Class);
+            $name = "<$name>";
+            return $this->_Class->GetNameClosure =
+                static function () use ($name): string {
+                    return $name;
+                };
         }
 
-        return $this->_Class->GetNameClosure = $this->getPropertyActionClosure(
-            array_shift($names),
+        $name = array_shift($names);
+        $closure = $this->getPropertyActionClosure(
+            $name,
             IntrospectionClass::ACTION_GET
         );
+
+        return $this->_Class->GetNameClosure =
+            $name === $id
+                ? static function ($instance) use ($closure): string {
+                    return '#' . $closure($instance);
+                }
+                : static function ($instance) use ($closure): string {
+                    return (string) $closure($instance);
+                };
     }
 
     final public function getSerializeClosure(?ISerializeRules $rules = null): Closure

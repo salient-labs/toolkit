@@ -6,7 +6,7 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\CurlerHeaders;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Arr;
 
 /**
  * Represents an outgoing HTTP response
@@ -65,7 +65,7 @@ final class HttpResponse implements IReadable
     public function __toString(): string
     {
         $response = [
-            Convert::sparseToString(' ', [
+            Arr::implodeNotEmpty(' ', [
                 sprintf('HTTP/%s', $this->ProtocolVersion ?: '1.1'),
                 $this->StatusCode,
                 $this->ReasonPhrase,

@@ -15,6 +15,7 @@ use Lkrms\Facade\Profile;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
 use Lkrms\Utility\Catalog\EnvFlag;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
@@ -153,7 +154,7 @@ class Application extends Container implements IApplication
             }
 
             return $this->checkPath(
-                Convert::sparseToString('/', [$path, $app, $windowsChild]),
+                Arr::implodeNotEmpty('/', [$path, $app, $windowsChild]),
                 $name,
                 $create,
                 $save,
@@ -181,7 +182,7 @@ class Application extends Container implements IApplication
         }
 
         return $this->checkPath(
-            Convert::sparseToString('/', [$path, $app, $child]),
+            Arr::implodeNotEmpty('/', [$path, $app, $child]),
             $name,
             $create,
             $save,

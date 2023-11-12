@@ -365,7 +365,7 @@ abstract class CliCommand implements ICliCommand
 
         $name = $b . $this->getNameWithProgram() . $b;
         $full = $this->getOptionsSynopsis($withMarkup, $style, $collapsed);
-        $synopsis = Convert::sparseToString(' ', [$name, $full]);
+        $synopsis = Arr::implodeNotEmpty(' ', [$name, $full]);
 
         if ($width !== null) {
             $wrapped = $prefix . str_replace(
@@ -378,7 +378,7 @@ abstract class CliCommand implements ICliCommand
                 return $wrapped;
             }
 
-            $synopsis = Convert::sparseToString(' ', [$name, $collapsed]);
+            $synopsis = Arr::implodeNotEmpty(' ', [$name, $collapsed]);
         }
 
         return $prefix . $this

@@ -14,8 +14,8 @@ use Lkrms\Container\Application;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Sys;
 use Lkrms\Utility\Catalog\EnvFlag;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Assert;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use LogicException;
@@ -268,7 +268,7 @@ class CliApplication extends Application implements ICliApplication
 
         if ($terse) {
             return Formatter::escapeTags("$synopses\n\nSee '"
-                . (Convert::sparseToString(' ', ["$progName help", $name, '<command>']))
+                . (Arr::implodeNotEmpty(' ', ["$progName help", $name, '<command>']))
                 . "' for more information.");
         }
 
