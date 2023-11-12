@@ -188,7 +188,7 @@ class TestOptions extends CliCommand
                         'oneOfOpt3' => $this->oneOfOpt3,
                     ]
                 ],
-                JSON_PRETTY_PRINT
+                \JSON_PRETTY_PRINT
             );
         }
     }

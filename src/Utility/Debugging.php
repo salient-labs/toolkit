@@ -78,7 +78,7 @@ final class Debugging implements ReceivesFacade
         //
         // Use class (or namespace) and function from 2 if possible, otherwise
         // file and line from 1
-        $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $depth + 3);
+        $frames = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, $depth + 3);
         $file = $frames[$depth + 1]['file'] ?? null;
         $line = $frames[$depth + 1]['line'] ?? null;
 

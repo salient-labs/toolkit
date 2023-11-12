@@ -513,8 +513,8 @@ abstract class GenerateCommand extends Command
      */
     protected function generate(array $innerBlocks = []): string
     {
-        $line = PHP_EOL;
-        $blank = PHP_EOL . PHP_EOL;
+        $line = \PHP_EOL;
+        $blank = \PHP_EOL . \PHP_EOL;
 
         $blocks[] = '<?php declare(strict_types=1);';
 
@@ -654,7 +654,7 @@ abstract class GenerateCommand extends Command
         string $visibility = GenerateCommand::VISIBILITY_PUBLIC
     ): void {
         $this->Methods[$visibility][] =
-            implode(PHP_EOL, $this->generateMethod(
+            implode(\PHP_EOL, $this->generateMethod(
                 $name,
                 $code,
                 $params,
@@ -746,12 +746,12 @@ abstract class GenerateCommand extends Command
     protected function handleOutput($lines): void
     {
         $output = is_array($lines)
-            ? implode(PHP_EOL, $lines) . PHP_EOL
-            : rtrim($lines) . PHP_EOL;
+            ? implode(\PHP_EOL, $lines) . \PHP_EOL
+            : rtrim($lines) . \PHP_EOL;
 
-        $empty = PHP_EOL . '{' . PHP_EOL . '}' . PHP_EOL;
+        $empty = \PHP_EOL . '{' . \PHP_EOL . '}' . \PHP_EOL;
         if (substr($output, -strlen($empty)) === $empty) {
-            $output = substr($output, 0, -strlen($empty)) . ' {}' . PHP_EOL;
+            $output = substr($output, 0, -strlen($empty)) . ' {}' . \PHP_EOL;
         }
 
         $verb = 'Creating';
@@ -866,7 +866,7 @@ abstract class GenerateCommand extends Command
 
         // Implode and explode to allow for multi-line elements and unnecessary
         // whitespace
-        $phpDoc = explode(PHP_EOL, trim(implode(PHP_EOL, (array) $phpDoc)));
+        $phpDoc = explode(\PHP_EOL, trim(implode(\PHP_EOL, (array) $phpDoc)));
 
         $block[] = '/**';
         foreach ($phpDoc as $line) {

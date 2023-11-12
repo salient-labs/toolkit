@@ -68,7 +68,7 @@ final class SystemTest extends \Lkrms\Tests\TestCase
     public function testEscapeCommand(string $arg): void
     {
         $command = [
-            PHP_BINARY,
+            \PHP_BINARY,
             $this->getFixturesPath(__CLASS__) . '/unescape.php',
             $arg,
         ];
@@ -77,7 +77,7 @@ final class SystemTest extends \Lkrms\Tests\TestCase
         $output = stream_get_contents($handle);
         $status = pclose($handle);
         $this->assertSame(0, $status);
-        $this->assertSame($arg . PHP_EOL, $output);
+        $this->assertSame($arg . \PHP_EOL, $output);
     }
 
     /**

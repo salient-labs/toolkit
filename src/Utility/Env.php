@@ -74,7 +74,7 @@ final class Env
     public static function apply(int $flags = EnvFlag::ALL): void
     {
         if ($flags & EnvFlag::LOCALE) {
-            if (($locale = setlocale(LC_ALL, '')) === false) {
+            if (($locale = setlocale(\LC_ALL, '')) === false) {
                 throw new InvalidEnvironmentException('Unable to set locale from environment');
             }
             Console::debug('Locale:', $locale);
@@ -248,7 +248,7 @@ final class Env
             Regex::anchorAndDelimit(Regex::BOOLEAN_STRING),
             $value,
             $match,
-            PREG_UNMATCHED_AS_NULL
+            \PREG_UNMATCHED_AS_NULL
         )) {
             throw new InvalidEnvironmentException(sprintf('Value is not boolean: %s', $name));
         }
@@ -417,7 +417,7 @@ final class Env
             Regex::anchorAndDelimit(Regex::BOOLEAN_STRING),
             $value,
             $match,
-            PREG_UNMATCHED_AS_NULL
+            \PREG_UNMATCHED_AS_NULL
         )) {
             throw new InvalidEnvironmentException(sprintf('Value is not boolean: %s', $name));
         }
@@ -470,7 +470,7 @@ final class Env
      */
     public static function isLocaleUtf8(): bool
     {
-        if (($locale = setlocale(LC_CTYPE, '0')) === false) {
+        if (($locale = setlocale(\LC_CTYPE, '0')) === false) {
             Console::warnOnce('Invalid locale settings');
 
             return false;
@@ -517,7 +517,7 @@ final class Env
                     ' (?<single> (?: [^']++            | ' \\ ' ' )*+ ) ' |
                       (?<none>   (?: [^]"$'*?\\`\s[]++     | \\ . )*+ )
                     ) $ /xi
-                    REGEX, $line, $match, PREG_UNMATCHED_AS_NULL)) {
+                    REGEX, $line, $match, \PREG_UNMATCHED_AS_NULL)) {
                 $errors[] = $filename === null
                     ? sprintf('invalid syntax at index %d', $i)
                     : sprintf('invalid syntax at %s:%d', $filename, $i + 1);

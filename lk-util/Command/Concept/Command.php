@@ -143,7 +143,7 @@ abstract class Command extends CliCommand
         }
 
         try {
-            return json_decode(file_get_contents($file), $associative, 512, JSON_THROW_ON_ERROR);
+            return json_decode(file_get_contents($file), $associative, 512, \JSON_THROW_ON_ERROR);
         } catch (JsonException $ex) {
             throw new CliInvalidArgumentsException(sprintf(
                 "invalid JSON in '%s': %s",

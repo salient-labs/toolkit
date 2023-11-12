@@ -139,7 +139,7 @@ class Application extends Container implements IApplication
 
         $app = $this->getAppName();
 
-        if (PHP_OS_FAMILY === 'Windows') {
+        if (\PHP_OS_FAMILY === 'Windows') {
             switch ($parent) {
                 case self::DIR_CONFIG:
                 case self::DIR_DATA:
@@ -499,7 +499,7 @@ class Application extends Container implements IApplication
                 ? Sys::getProgramName($this->BasePath)
                 : $command,
             ($arguments === null
-                ? (PHP_SAPI == 'cli'
+                ? (\PHP_SAPI == 'cli'
                     ? array_slice($_SERVER['argv'], 1)
                     : ['_GET' => $_GET, '_POST' => $_POST])
                 : $arguments)

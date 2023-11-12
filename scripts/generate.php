@@ -162,7 +162,7 @@ foreach ($entities as $class => $entityArgs) {
     generated($generateEntity);
     if ($save && $generateEntity->Entity !== null) {
         File::createDir(dirname($file));
-        file_put_contents($file, json_encode($generateEntity->Entity, JSON_PRETTY_PRINT));
+        file_put_contents($file, json_encode($generateEntity->Entity, \JSON_PRETTY_PRINT));
         generated($file);
     }
 }
@@ -176,14 +176,14 @@ $file = dirname(__DIR__) . '/.gitattributes';
 $attributes = preg_grep(
     '/(^#| linguist-generated$)/',
     Arr::notEmpty(Arr::trim(file($file))),
-    PREG_GREP_INVERT
+    \PREG_GREP_INVERT
 );
 // @phpstan-ignore-next-line
 foreach ($generated as $generated) {
     $attributes[] = sprintf('%s linguist-generated', $generated);
 }
 sort($attributes);
-$attributes = implode(PHP_EOL, $attributes) . PHP_EOL;
+$attributes = implode(\PHP_EOL, $attributes) . \PHP_EOL;
 if (file_get_contents($file) !== $attributes) {
     if (in_array('--check', $args)) {
         Console::info('Would replace', $file);

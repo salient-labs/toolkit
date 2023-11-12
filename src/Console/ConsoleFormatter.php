@@ -249,7 +249,7 @@ final class ConsoleFormatter
             Regex::delimit(self::PARSER_REGEX) . 'u',
             Str::setEol($string),
             $matches,
-            PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL
+            \PREG_SET_ORDER | \PREG_UNMATCHED_AS_NULL
         )) {
             throw new RuntimeException(
                 sprintf('Unable to parse: %s', $string)
@@ -307,7 +307,7 @@ final class ConsoleFormatter
                     $text,
                     -1,
                     $count,
-                    PREG_OFFSET_CAPTURE
+                    \PREG_OFFSET_CAPTURE
                 );
 
                 $string .= $text;
@@ -403,7 +403,7 @@ final class ConsoleFormatter
             $string,
             -1,
             $count,
-            PREG_OFFSET_CAPTURE
+            \PREG_OFFSET_CAPTURE
         );
 
         if (is_array($wrapToWidth)) {
@@ -439,8 +439,8 @@ final class ConsoleFormatter
             $string = substr_replace($string, $replacement, $offset, $length);
         }
 
-        if (PHP_EOL !== "\n") {
-            $string = str_replace("\n", PHP_EOL, $string);
+        if (\PHP_EOL !== "\n") {
+            $string = str_replace("\n", \PHP_EOL, $string);
         }
 
         return $string . $append;

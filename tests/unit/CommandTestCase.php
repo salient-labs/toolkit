@@ -52,7 +52,7 @@ abstract class CommandTestCase extends \Lkrms\Tests\TestCase
         $target = new MockTarget(true, true, true, 80, $f);
         Console::registerTarget($target, Levels::ALL_EXCEPT_DEBUG);
 
-        $this->expectOutputString(str_replace(PHP_EOL, "\n", $output));
+        $this->expectOutputString(str_replace(\PHP_EOL, "\n", $output));
 
         $basePath = File::createTempDir();
         $app = new CliApplication($basePath);

@@ -13,7 +13,7 @@ require __DIR__ . '/../vendor/autoload.php';
 Err::register();
 
 // Send all output, including debug messages and errors, to STDOUT
-Console::registerTarget(new StreamTarget(STDOUT));
+Console::registerTarget(new StreamTarget(\STDOUT));
 
 $items = [
     [100, 101, 102],

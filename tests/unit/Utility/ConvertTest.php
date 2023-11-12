@@ -902,7 +902,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
     public function testUnwrap(
         string $expected,
         string $string,
-        string $break = PHP_EOL,
+        string $break = \PHP_EOL,
         bool $ignoreEscapes = true,
         bool $trimTrailingWhitespace = false,
         bool $collapseBlankLines = false
@@ -1000,7 +1000,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
                 consectetur irure ad nisi
                 Lorem non ea reprehenderit id eu.
                 EOF,
-                PHP_EOL,
+                \PHP_EOL,
                 false,
             ],
             'trimmed #1 (baseline)' => [
@@ -1020,7 +1020,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
 
 
                 EOF,
-                PHP_EOL,
+                \PHP_EOL,
             ],
             'trimmed #2 (+ trimTrailingWhitespace)' => [
                 <<<'EOF'
@@ -1039,7 +1039,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
 
 
                 EOF,
-                PHP_EOL,
+                \PHP_EOL,
                 true,
                 true,
             ],
@@ -1060,7 +1060,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
 
 
                 EOF,
-                PHP_EOL,
+                \PHP_EOL,
                 false,
                 true,
             ],
@@ -1079,7 +1079,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
 
 
                 EOF,
-                PHP_EOL,
+                \PHP_EOL,
                 false,
                 true,
                 true,
@@ -1456,7 +1456,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
                 ]
                 EOF,
                 $array,
-                ',' . PHP_EOL,
+                ',' . \PHP_EOL,
             ],
             'escaped commas' => [
                 <<<'EOF'

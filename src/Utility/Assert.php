@@ -82,7 +82,7 @@ final class Assert
 
     public static function sapiIsCli(): void
     {
-        if (PHP_SAPI !== 'cli') {
+        if (\PHP_SAPI !== 'cli') {
             throw new AssertionFailedException('CLI required');
         }
     }
@@ -96,7 +96,7 @@ final class Assert
 
     public static function localeIsUtf8(): void
     {
-        if (($locale = setlocale(LC_CTYPE, '0')) === false) {
+        if (($locale = setlocale(\LC_CTYPE, '0')) === false) {
             throw new AssertionFailedException('Invalid locale settings');
         }
 

@@ -455,7 +455,7 @@ class GenerateSyncEntity extends GenerateCommand
         }
 
         if ($docBlock) {
-            $this->PhpDoc = implode(PHP_EOL, $docBlock);
+            $this->PhpDoc = implode(\PHP_EOL, $docBlock);
         }
 
         $blocks = [];
@@ -470,12 +470,12 @@ class GenerateSyncEntity extends GenerateCommand
         }
 
         if ($parent) {
-            $blocks[] = implode(PHP_EOL, $this->generateGetter(
+            $blocks[] = implode(\PHP_EOL, $this->generateGetter(
                 'getParentProperty',
                 $this->code(array_key_first($parent)),
                 '@inheritDoc',
             ));
-            $blocks[] = implode(PHP_EOL, $this->generateGetter(
+            $blocks[] = implode(\PHP_EOL, $this->generateGetter(
                 'getChildrenProperty',
                 $this->code(array_key_first($children)),
                 '@inheritDoc',
@@ -493,9 +493,9 @@ class GenerateSyncEntity extends GenerateCommand
                     $type,
                 );
             }
-            $blocks[] = implode(PHP_EOL, $this->generateGetter(
+            $blocks[] = implode(\PHP_EOL, $this->generateGetter(
                 'getRelationships',
-                '[' . PHP_EOL . implode(PHP_EOL, $this->indent($lines)) . PHP_EOL . ']',
+                '[' . \PHP_EOL . implode(\PHP_EOL, $this->indent($lines)) . \PHP_EOL . ']',
                 '@inheritDoc',
                 'array',
             ));

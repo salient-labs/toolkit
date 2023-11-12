@@ -114,7 +114,7 @@ final class Arr
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE> $callbackOrFlags
+     * @param (callable(TValue, TValue): int)|int-mask-of<\SORT_REGULAR|\SORT_NUMERIC|\SORT_STRING|\SORT_LOCALE_STRING|\SORT_NATURAL|\SORT_FLAG_CASE> $callbackOrFlags
      *
      * @return list<TValue>|array<TKey,TValue>
      * @phpstan-return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
@@ -122,7 +122,7 @@ final class Arr
     public static function sort(
         array $array,
         bool $preserveKeys = false,
-        $callbackOrFlags = SORT_REGULAR
+        $callbackOrFlags = \SORT_REGULAR
     ): array {
         if (is_callable($callbackOrFlags)) {
             $callback = $callbackOrFlags;
@@ -154,7 +154,7 @@ final class Arr
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE> $flags
+     * @param int-mask-of<\SORT_REGULAR|\SORT_NUMERIC|\SORT_STRING|\SORT_LOCALE_STRING|\SORT_NATURAL|\SORT_FLAG_CASE> $flags
      *
      * @return list<TValue>|array<TKey,TValue>
      * @phpstan-return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
@@ -162,7 +162,7 @@ final class Arr
     public static function sortDesc(
         array $array,
         bool $preserveKeys = false,
-        int $flags = SORT_REGULAR
+        int $flags = \SORT_REGULAR
     ): array {
         if (!$preserveKeys) {
             arsort($array, $flags);
@@ -180,13 +180,13 @@ final class Arr
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param (callable(TValue, TValue): int)|int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE> $callbackOrFlags
+     * @param (callable(TValue, TValue): int)|int-mask-of<\SORT_REGULAR|\SORT_NUMERIC|\SORT_STRING|\SORT_LOCALE_STRING|\SORT_NATURAL|\SORT_FLAG_CASE> $callbackOrFlags
      *
      * @return array<TKey,TValue>
      */
     public static function sortByKey(
         array $array,
-        $callbackOrFlags = SORT_REGULAR
+        $callbackOrFlags = \SORT_REGULAR
     ): array {
         if (is_callable($callbackOrFlags)) {
             $callback = $callbackOrFlags;
@@ -208,13 +208,13 @@ final class Arr
      * @template TValue
      *
      * @param array<TKey,TValue> $array
-     * @param int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE> $flags
+     * @param int-mask-of<\SORT_REGULAR|\SORT_NUMERIC|\SORT_STRING|\SORT_LOCALE_STRING|\SORT_NATURAL|\SORT_FLAG_CASE> $flags
      *
      * @return array<TKey,TValue>
      */
     public static function sortByKeyDesc(
         array $array,
-        int $flags = SORT_REGULAR
+        int $flags = \SORT_REGULAR
     ): array {
         krsort($array, $flags);
         return $array;

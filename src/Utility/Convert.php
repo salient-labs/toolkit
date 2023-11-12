@@ -58,7 +58,7 @@ final class Convert
             '/^' . Regex::BOOLEAN_STRING . '$/',
             $value,
             $match,
-            PREG_UNMATCHED_AS_NULL
+            \PREG_UNMATCHED_AS_NULL
         )) {
             return $match['true'] !== null;
         }
@@ -79,7 +79,7 @@ final class Convert
                 '/^' . Regex::BOOLEAN_STRING . '$/',
                 $value,
                 $match,
-                PREG_UNMATCHED_AS_NULL
+                \PREG_UNMATCHED_AS_NULL
             )
                 ? $match['true'] !== null
                 : (bool) $value);
@@ -1603,7 +1603,7 @@ final class Convert
                 $escaped,
                 -1,
                 $count,
-                PREG_UNMATCHED_AS_NULL,
+                \PREG_UNMATCHED_AS_NULL,
             );
 
             return '"' . $escaped . '"';
