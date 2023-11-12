@@ -12,6 +12,7 @@ use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\Debug;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
@@ -780,7 +781,7 @@ final class ConsoleWriter implements ReceivesFacade
         ?string $msg2 = null
     ) {
         $this->GroupLevel++;
-        $this->GroupMessageStack[] = Convert::sparseToString(' ', [$msg1, $msg2]);
+        $this->GroupMessageStack[] = Arr::implodeNotEmpty(' ', [$msg1, $msg2]);
 
         return $this->write(Level::NOTICE, $msg1, $msg2, Type::GROUP_START);
     }

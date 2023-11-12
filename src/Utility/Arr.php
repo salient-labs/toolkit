@@ -13,6 +13,7 @@ final class Arr
      * @template TValue
      *
      * @param array<array-key,TValue> $array
+     *
      * @return TValue|null
      */
     public static function first(array $array)
@@ -29,6 +30,7 @@ final class Arr
      * @template TValue
      *
      * @param array<array-key,TValue> $array
+     *
      * @return TValue|null
      */
     public static function last(array $array)
@@ -262,6 +264,27 @@ final class Arr
         }
 
         return $filtered ?? [];
+    }
+
+    /**
+     * Implode values that remain in an array of strings and Stringables after
+     * removing empty strings
+     *
+     * @param array<int|float|string|bool|\Stringable|null> $array
+     *
+     * @return string
+     */
+    public static function implodeNotEmpty(string $separator, array $array): string
+    {
+        foreach ($array as $value) {
+            $value = (string) $value;
+            if ($value === '') {
+                continue;
+            }
+            $filtered[] = $value;
+        }
+
+        return implode($separator, $filtered ?? []);
     }
 
     /**
