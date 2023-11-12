@@ -308,11 +308,11 @@ final class SyncStore extends SqliteStore
             SQL;
 
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':exit_status', $exitStatus, SQLITE3_INTEGER);
-        $stmt->bindValue(':run_uuid', $this->RunUuid, SQLITE3_BLOB);
-        $stmt->bindValue(':error_count', $this->ErrorCount, SQLITE3_INTEGER);
-        $stmt->bindValue(':warning_count', $this->WarningCount, SQLITE3_INTEGER);
-        $stmt->bindValue(':errors_json', json_encode($this->Errors), SQLITE3_TEXT);
+        $stmt->bindValue(':exit_status', $exitStatus, \SQLITE3_INTEGER);
+        $stmt->bindValue(':run_uuid', $this->RunUuid, \SQLITE3_BLOB);
+        $stmt->bindValue(':error_count', $this->ErrorCount, \SQLITE3_INTEGER);
+        $stmt->bindValue(':warning_count', $this->WarningCount, \SQLITE3_INTEGER);
+        $stmt->bindValue(':errors_json', json_encode($this->Errors), \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
@@ -384,8 +384,8 @@ final class SyncStore extends SqliteStore
               last_seen = CURRENT_TIMESTAMP;
             SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':provider_hash', $hash, SQLITE3_BLOB);
-        $stmt->bindValue(':provider_class', $class, SQLITE3_TEXT);
+        $stmt->bindValue(':provider_hash', $hash, \SQLITE3_BLOB);
+        $stmt->bindValue(':provider_class', $class, \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
@@ -398,9 +398,9 @@ final class SyncStore extends SqliteStore
               provider_hash = :provider_hash;
             SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':provider_hash', $hash, SQLITE3_BLOB);
+        $stmt->bindValue(':provider_hash', $hash, \SQLITE3_BLOB);
         $result = $stmt->execute();
-        $row = $result->fetchArray(SQLITE3_NUM);
+        $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
         if ($row === false) {
@@ -525,7 +525,7 @@ final class SyncStore extends SqliteStore
               last_seen = CURRENT_TIMESTAMP;
             SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':entity_type_class', $entity, SQLITE3_TEXT);
+        $stmt->bindValue(':entity_type_class', $entity, \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
@@ -538,9 +538,9 @@ final class SyncStore extends SqliteStore
               entity_type_class = :entity_type_class;
             SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':entity_type_class', $entity, SQLITE3_TEXT);
+        $stmt->bindValue(':entity_type_class', $entity, \SQLITE3_TEXT);
         $result = $stmt->execute();
-        $row = $result->fetchArray(SQLITE3_NUM);
+        $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
         if ($row === false) {
@@ -627,9 +627,9 @@ final class SyncStore extends SqliteStore
               last_seen = CURRENT_TIMESTAMP;
             SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':entity_namespace_prefix', $prefix, SQLITE3_TEXT);
-        $stmt->bindValue(':base_uri', $uri, SQLITE3_TEXT);
-        $stmt->bindValue(':php_namespace', $namespace, SQLITE3_TEXT);
+        $stmt->bindValue(':entity_namespace_prefix', $prefix, \SQLITE3_TEXT);
+        $stmt->bindValue(':base_uri', $uri, \SQLITE3_TEXT);
+        $stmt->bindValue(':php_namespace', $namespace, \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
@@ -1313,9 +1313,9 @@ final class SyncStore extends SqliteStore
 
         $db = $this->db();
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':run_uuid', $uuid = Compute::uuid(true), SQLITE3_BLOB);
-        $stmt->bindValue(':run_command', $this->Command, SQLITE3_TEXT);
-        $stmt->bindValue(':run_arguments_json', json_encode($this->Arguments), SQLITE3_TEXT);
+        $stmt->bindValue(':run_uuid', $uuid = Compute::uuid(true), \SQLITE3_BLOB);
+        $stmt->bindValue(':run_command', $this->Command, \SQLITE3_TEXT);
+        $stmt->bindValue(':run_arguments_json', json_encode($this->Arguments), \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 
@@ -1362,7 +1362,7 @@ final class SyncStore extends SqliteStore
         $result = $stmt->execute();
         $this->NamespacesByPrefix = [];
         $this->NamespaceUrisByPrefix = [];
-        while (($row = $result->fetchArray(SQLITE3_NUM)) !== false) {
+        while (($row = $result->fetchArray(\SQLITE3_NUM)) !== false) {
             $this->NamespacesByPrefix[$row[0]] = strtolower($row[2]);
             $this->NamespaceUrisByPrefix[$row[0]] = $row[1];
         }

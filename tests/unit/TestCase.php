@@ -80,7 +80,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         return
             $string === null
                 ? null
-                : str_replace("\n", PHP_EOL, $string);
+                : str_replace("\n", \PHP_EOL, $string);
     }
 
     /**
@@ -91,6 +91,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         return
             $string === null
                 ? null
-                : str_replace('/', DIRECTORY_SEPARATOR, $string);
+                : str_replace('/', \DIRECTORY_SEPARATOR, $string);
     }
 }

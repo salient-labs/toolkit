@@ -115,9 +115,9 @@ final class CacheStore extends SqliteStore
               OR expires_at IS NOT excluded.expires_at;
             SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
-        $stmt->bindValue(':item_value', serialize($value), SQLITE3_BLOB);
-        $stmt->bindValue(':expires_at', $expiry, SQLITE3_INTEGER);
+        $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
+        $stmt->bindValue(':item_value', serialize($value), \SQLITE3_BLOB);
+        $stmt->bindValue(':expires_at', $expiry, \SQLITE3_INTEGER);
         $stmt->execute();
         $stmt->close();
 
@@ -136,13 +136,13 @@ final class CacheStore extends SqliteStore
     public function has(string $key, ?int $maxAge = null): bool
     {
         $where[] = 'item_key = :item_key';
-        $bind[] = [':item_key', $key, SQLITE3_TEXT];
+        $bind[] = [':item_key', $key, \SQLITE3_TEXT];
 
         if (is_null($maxAge) || $maxAge > 2592000) {
             $where[] = '(expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)';
         } elseif ($maxAge) {
             $where[] = 'DATETIME(set_at, :max_age) > CURRENT_TIMESTAMP';
-            $bind[] = [':max_age', "+$maxAge seconds", SQLITE3_TEXT];
+            $bind[] = [':max_age', "+$maxAge seconds", \SQLITE3_TEXT];
         }
 
         $db = $this->db();
@@ -157,7 +157,7 @@ final class CacheStore extends SqliteStore
             $stmt->bindValue(...$param);
         }
         $result = $stmt->execute();
-        $row = $result->fetchArray(SQLITE3_NUM);
+        $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
         return (bool) $row[0];
@@ -177,13 +177,13 @@ final class CacheStore extends SqliteStore
     public function get(string $key, ?int $maxAge = null)
     {
         $where[] = 'item_key = :item_key';
-        $bind[] = [':item_key', $key, SQLITE3_TEXT];
+        $bind[] = [':item_key', $key, \SQLITE3_TEXT];
 
         if (is_null($maxAge) || $maxAge > 2592000) {
             $where[] = '(expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)';
         } elseif ($maxAge) {
             $where[] = 'DATETIME(set_at, :max_age) > CURRENT_TIMESTAMP';
-            $bind[] = [':max_age', "+$maxAge seconds", SQLITE3_TEXT];
+            $bind[] = [':max_age', "+$maxAge seconds", \SQLITE3_TEXT];
         }
 
         $db = $this->db();
@@ -198,7 +198,7 @@ final class CacheStore extends SqliteStore
             $stmt->bindValue(...$param);
         }
         $result = $stmt->execute();
-        $row = $result->fetchArray(SQLITE3_NUM);
+        $row = $result->fetchArray(\SQLITE3_NUM);
         $stmt->close();
 
         if ($row === false) {
@@ -227,7 +227,7 @@ final class CacheStore extends SqliteStore
               item_key = :item_key;
             SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
+        $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
         $stmt->execute();
         $stmt->close();
 

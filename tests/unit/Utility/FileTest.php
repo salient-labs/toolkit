@@ -42,7 +42,7 @@ final class FileTest extends \Lkrms\Tests\TestCase
 
         return [
             [
-                implode(DIRECTORY_SEPARATOR, ['dir', 'file']),
+                implode(\DIRECTORY_SEPARATOR, ['dir', 'file']),
                 "$path/dir/file",
                 $path,
             ],
@@ -57,7 +57,7 @@ final class FileTest extends \Lkrms\Tests\TestCase
                 "$path/does_not_exist",
             ],
             [
-                implode(DIRECTORY_SEPARATOR, ['tests', 'fixtures', 'Utility', 'File', 'dir', 'file']),
+                implode(\DIRECTORY_SEPARATOR, ['tests', 'fixtures', 'Utility', 'File', 'dir', 'file']),
                 "$path/dir/file",
             ],
         ];

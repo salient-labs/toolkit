@@ -506,7 +506,7 @@ class GenerateBuilder extends GenerateCommand
                 if ($link) {
                     $lines[] = "@see $see";
                 }
-                $docBlocks[$name] = implode(PHP_EOL, $lines);
+                $docBlocks[$name] = implode(\PHP_EOL, $lines);
             } else {
                 $type = ($type ?? '') !== '' ? "$type " : '';
                 $methods[] = " * @method \$this $name($type\$value$default)"
@@ -680,11 +680,11 @@ class GenerateBuilder extends GenerateCommand
                     if ($link) {
                         $lines[] = "@see $see";
                     }
-                    $docBlocks[$name] = implode(PHP_EOL, $lines);
+                    $docBlocks[$name] = implode(\PHP_EOL, $lines);
                     $returnsValue[$name] = !$returnsVoid;
                 } else {
                     $methods[] = " * @method $type $name("
-                        . str_replace(PHP_EOL, PHP_EOL . ' * ', implode(', ', $params)) . ')'
+                        . str_replace(\PHP_EOL, \PHP_EOL . ' * ', implode(', ', $params)) . ')'
                         . $this->getSummary(
                             $summary,
                             $_method,
@@ -700,7 +700,7 @@ class GenerateBuilder extends GenerateCommand
             }
         }
 
-        $methods = implode(PHP_EOL, $methods ?? []);
+        $methods = implode(\PHP_EOL, $methods ?? []);
 
         $docBlock[] = '/**';
         if ($desc) {
@@ -742,9 +742,9 @@ class GenerateBuilder extends GenerateCommand
         $blocks = [
             '<?php declare(strict_types=1);',
             "namespace $builderNamespace;",
-            implode(PHP_EOL, $imports),
-            implode(PHP_EOL, $docBlock) . PHP_EOL
-                . "final class $builderClass extends $extends" . PHP_EOL
+            implode(\PHP_EOL, $imports),
+            implode(\PHP_EOL, $docBlock) . \PHP_EOL
+                . "final class $builderClass extends $extends" . \PHP_EOL
                 . '{'
         ];
 
@@ -756,7 +756,7 @@ class GenerateBuilder extends GenerateCommand
             unset($blocks[2]);
         }
 
-        $lines = [implode(PHP_EOL . PHP_EOL, $blocks)];
+        $lines = [implode(\PHP_EOL . \PHP_EOL, $blocks)];
 
         array_push(
             $lines,

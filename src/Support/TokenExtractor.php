@@ -23,8 +23,8 @@ final class TokenExtractor
     public function __construct(string $filename)
     {
         $this->Tokens = array_values(array_filter(
-            token_get_all(file_get_contents($filename), TOKEN_PARSE),
-            fn($t) => !is_array($t) || !in_array($t[0], [T_WHITESPACE])
+            token_get_all(file_get_contents($filename), \TOKEN_PARSE),
+            fn($t) => !is_array($t) || !in_array($t[0], [\T_WHITESPACE])
         ));
     }
 
@@ -53,19 +53,19 @@ final class TokenExtractor
     {
         /** @todo: Revisit this with navigable tokens */
         $map = [];
-        foreach ($this->getTokensByType(T_USE, T_CLASS, T_TRAIT) as $i) {
+        foreach ($this->getTokensByType(\T_USE, \T_CLASS, \T_TRAIT) as $i) {
             // Ignore:
             // - `class <class> { use <trait> ...`
             // - `trait <trait> { use <trait> ...`
             // - `function() use (<variable> ...`
-            if (in_array($this->Tokens[$i][0], [T_CLASS, T_TRAIT], true)) {
+            if (in_array($this->Tokens[$i][0], [\T_CLASS, \T_TRAIT], true)) {
                 break;
             }
             if ($this->Tokens[$i - 1] === ')') {
                 continue;
             }
             $index = $i + 1;
-            if (in_array($this->Tokens[$index][0] ?? null, [T_CONST, T_FUNCTION], true)) {
+            if (in_array($this->Tokens[$index][0] ?? null, [\T_CONST, \T_FUNCTION], true)) {
                 $index++;
             }
             $this->_getUseMap($index, $map);
@@ -100,11 +100,11 @@ final class TokenExtractor
         do {
             $token = $this->Tokens[$index++];
             switch ($token[0] ?? $token) {
-                case T_NAME_FULLY_QUALIFIED:
-                case T_NAME_QUALIFIED:
-                case T_NAME_RELATIVE:
-                case T_NS_SEPARATOR:
-                case T_STRING:
+                case \T_NAME_FULLY_QUALIFIED:
+                case \T_NAME_QUALIFIED:
+                case \T_NAME_RELATIVE:
+                case \T_NS_SEPARATOR:
+                case \T_STRING:
                     $current .= $token[1];
                     break;
 
@@ -113,7 +113,7 @@ final class TokenExtractor
                     $pending = false;
                     break;
 
-                case T_CLOSE_TAG:
+                case \T_CLOSE_TAG:
                 case '}':
                 case ';':
                     if ($pending) {
@@ -129,9 +129,9 @@ final class TokenExtractor
                     $pending = true;
                     break;
 
-                case T_AS:
+                case \T_AS:
                     $token = $this->Tokens[$index++];
-                    if (($token[0] ?? null) !== T_STRING) {
+                    if (($token[0] ?? null) !== \T_STRING) {
                         throw new UnexpectedValueException('T_AS not followed by T_STRING');
                     }
                     $map[$token[1]] = $current;

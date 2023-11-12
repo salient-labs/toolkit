@@ -91,7 +91,7 @@ final class System
 
         if (($basePath = File::realpath($basePath)) !== false &&
                 ($filename = File::realpath($filename)) !== false &&
-                strpos($filename, $basePath . DIRECTORY_SEPARATOR) === 0) {
+                strpos($filename, $basePath . \DIRECTORY_SEPARATOR) === 0) {
             return substr($filename, strlen($basePath) + 1);
         }
 
@@ -126,7 +126,7 @@ final class System
     {
         $command = '';
 
-        if (PHP_OS_FAMILY !== 'Windows') {
+        if (\PHP_OS_FAMILY !== 'Windows') {
             foreach ($args as $arg) {
                 $command .= ($command ? ' ' : '') . Convert::toShellArg($arg);
             }
@@ -146,13 +146,13 @@ final class System
      */
     public static function getCwd(): string
     {
-        $handle = popen(PHP_OS_FAMILY === 'Windows' ? 'cd' : 'pwd', 'rb');
+        $handle = popen(\PHP_OS_FAMILY === 'Windows' ? 'cd' : 'pwd', 'rb');
         $dir = stream_get_contents($handle);
         $status = pclose($handle);
 
         if (!$status) {
-            if (substr($dir, -strlen(PHP_EOL)) === PHP_EOL) {
-                $dir = substr($dir, 0, -strlen(PHP_EOL));
+            if (substr($dir, -strlen(\PHP_EOL)) === \PHP_EOL) {
+                $dir = substr($dir, 0, -strlen(\PHP_EOL));
             }
             return $dir;
         }
@@ -192,15 +192,15 @@ final class System
         $handler =
             function (int $signal): void {
                 Console::debug(sprintf('Received signal %d', $signal));
-                if ($signal === SIGINT &&
+                if ($signal === \SIGINT &&
                         function_exists('posix_getpgid') &&
                         ($pgid = posix_getpgid(posix_getpid())) !== false) {
                     // Stop handling SIGINT before propagating it
-                    pcntl_signal(SIGINT, SIG_DFL);
+                    pcntl_signal(\SIGINT, \SIG_DFL);
                     register_shutdown_function(
                         function () use ($pgid) {
                             Console::debug(sprintf('Sending SIGINT to process group %d', $pgid));
-                            posix_kill($pgid, SIGINT);
+                            posix_kill($pgid, \SIGINT);
                         }
                     );
                 }
@@ -208,8 +208,8 @@ final class System
             };
 
         pcntl_async_signals(true);
-        pcntl_signal(SIGINT, $handler);
-        pcntl_signal(SIGTERM, $handler);
+        pcntl_signal(\SIGINT, $handler);
+        pcntl_signal(\SIGTERM, $handler);
         return true;
     }
 }

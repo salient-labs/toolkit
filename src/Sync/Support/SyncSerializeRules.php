@@ -433,7 +433,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
         $pathRules = array_filter(
             $allRules,
             fn($key) => is_int($key),
-            ARRAY_FILTER_USE_KEY
+            \ARRAY_FILTER_USE_KEY
         );
         // Discard if ".path.to" is not in $paths
         $pathRules = array_filter(

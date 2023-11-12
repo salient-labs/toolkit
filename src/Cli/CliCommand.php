@@ -785,7 +785,7 @@ abstract class CliCommand implements ICliCommand
                 $name = $matches[1];
                 $value = $matches[2] === '' ? null : $matches[2];
                 $short = true;
-            } elseif (preg_match('/^--([a-z0-9_][-a-z0-9_]+)(?:=(.*))?$/i', $arg, $matches, PREG_UNMATCHED_AS_NULL)) {
+            } elseif (preg_match('/^--([a-z0-9_][-a-z0-9_]+)(?:=(.*))?$/i', $arg, $matches, \PREG_UNMATCHED_AS_NULL)) {
                 $name = $matches[1];
                 $value = $matches[2];
             } elseif ($arg === '--') {

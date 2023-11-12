@@ -408,7 +408,7 @@ final class File
             $result = stream_filter_append(
                 $handle,
                 $filter,
-                STREAM_FILTER_WRITE,
+                \STREAM_FILTER_WRITE,
             );
             if ($result === false) {
                 throw new FilesystemErrorException(

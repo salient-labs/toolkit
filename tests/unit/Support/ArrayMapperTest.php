@@ -37,7 +37,7 @@ final class ArrayMapperTest extends \Lkrms\Tests\TestCase
         if (!is_array($expected)) {
             $this->expectException(
                 $expected
-                    ?: (PHP_VERSION_ID < 80000
+                    ?: (\PHP_VERSION_ID < 80000
                         ? UnexpectedValueException::class
                         : ValueError::class)
             );

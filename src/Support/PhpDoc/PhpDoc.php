@@ -344,7 +344,7 @@ final class PhpDoc implements IReadable
         $regex = self::$PhpDocTypeRegex
             ?: (self::$PhpDocTypeRegex = Regex::delimit('^' . Regex::PHPDOC_TYPE));
         $type = null;
-        if (preg_match($regex, $text, $matches, PREG_OFFSET_CAPTURE)) {
+        if (preg_match($regex, $text, $matches, \PREG_OFFSET_CAPTURE)) {
             /** @var array<array{0:string,1:int}> $matches */
             $type = $matches[0][0];
             return ltrim(substr_replace($text, '', $matches[0][1], strlen($matches[0][0])));

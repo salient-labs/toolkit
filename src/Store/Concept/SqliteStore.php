@@ -67,7 +67,7 @@ abstract class SqliteStore implements ReceivesFacade
         }
 
         $db = new SQLite3($filename);
-        if (PHP_VERSION_ID < 80300) {
+        if (\PHP_VERSION_ID < 80300) {
             $db->enableExceptions();
         }
         $db->busyTimeout(60000);

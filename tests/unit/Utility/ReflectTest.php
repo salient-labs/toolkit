@@ -99,7 +99,7 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
             '__construct',
         ];
 
-        if (PHP_VERSION_ID >= 80100) {
+        if (\PHP_VERSION_ID >= 80100) {
             yield 'MyClassWithUnionsAndIntersections::MyMethod()' => [
                 [
                     [],
@@ -122,7 +122,7 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
             ];
         }
 
-        if (PHP_VERSION_ID >= 80200) {
+        if (\PHP_VERSION_ID >= 80200) {
             yield 'MyClassWithDnfTypes::MyMethod()' => [
                 [
                     [],
@@ -337,7 +337,7 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
             '__construct',
         ];
 
-        if (PHP_VERSION_ID >= 80100) {
+        if (\PHP_VERSION_ID >= 80100) {
             yield 'MyClassWithUnionsAndIntersections::MyMethod()' => [
                 [
                     '',
@@ -360,7 +360,7 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
             ];
         }
 
-        if (PHP_VERSION_ID >= 80200) {
+        if (\PHP_VERSION_ID >= 80200) {
             yield 'MyClassWithDnfTypes::MyMethod()' => [
                 [
                     '',
@@ -425,7 +425,7 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
             '__construct',
         ];
 
-        if (PHP_VERSION_ID >= 80100) {
+        if (\PHP_VERSION_ID >= 80100) {
             yield 'MyClassWithUnionsAndIntersections::MyMethod()' => [
                 [
                     '$mixed',
@@ -448,7 +448,7 @@ final class ReflectTest extends \Lkrms\Tests\TestCase
             ];
         }
 
-        if (PHP_VERSION_ID >= 80200) {
+        if (\PHP_VERSION_ID >= 80200) {
             yield 'MyClassWithDnfTypes::MyMethod()' => [
                 [
                     '$mixed',

@@ -280,10 +280,10 @@ final class GenerateFacade extends GenerateCommand
                     $lines[] = "@see $methodFqsen";
                 }
 
-                $toDeclare[] = [$_method, implode(PHP_EOL, $lines), !$returnsVoid];
+                $toDeclare[] = [$_method, implode(\PHP_EOL, $lines), !$returnsVoid];
             } else {
                 $methods[] = " * @method static $type $method("
-                    . str_replace(PHP_EOL, PHP_EOL . ' * ', implode(', ', $params)) . ')'
+                    . str_replace(\PHP_EOL, \PHP_EOL . ' * ', implode(', ', $params)) . ')'
                     . " $summary";
             }
 
@@ -291,7 +291,7 @@ final class GenerateFacade extends GenerateCommand
                 array_push($methods, ...$facadeMethods);
             }
         }
-        $methods = implode(PHP_EOL, $methods);
+        $methods = implode(\PHP_EOL, $methods);
 
         $imports = $this->generateImports();
 
@@ -319,9 +319,9 @@ final class GenerateFacade extends GenerateCommand
         $blocks = [
             '<?php declare(strict_types=1);',
             "namespace $facadeNamespace;",
-            implode(PHP_EOL, $imports),
-            implode(PHP_EOL, $docBlock) . PHP_EOL
-                . "final class $facadeClass extends $extends" . PHP_EOL
+            implode(\PHP_EOL, $imports),
+            implode(\PHP_EOL, $docBlock) . \PHP_EOL
+                . "final class $facadeClass extends $extends" . \PHP_EOL
                 . '{'
         ];
 
@@ -333,7 +333,7 @@ final class GenerateFacade extends GenerateCommand
             unset($blocks[2]);
         }
 
-        $lines = [implode(PHP_EOL . PHP_EOL, $blocks)];
+        $lines = [implode(\PHP_EOL . \PHP_EOL, $blocks)];
 
         array_push(
             $lines,

@@ -150,7 +150,7 @@ final class ConsoleWriter implements ReceivesFacade
             }
         }
 
-        if (stream_isatty(STDERR) && !stream_isatty(STDOUT)) {
+        if (stream_isatty(\STDERR) && !stream_isatty(\STDOUT)) {
             return $this->registerStderrTarget($replace);
         }
 
@@ -170,7 +170,7 @@ final class ConsoleWriter implements ReceivesFacade
      */
     public function registerStdioTargets(bool $replace = false)
     {
-        if (PHP_SAPI !== 'cli' || ($this->StdioTargetsByLevel && !$replace)) {
+        if (\PHP_SAPI !== 'cli' || ($this->StdioTargetsByLevel && !$replace)) {
             return $this;
         }
 
@@ -882,7 +882,7 @@ final class ConsoleWriter implements ReceivesFacade
         Target $target,
         bool $force = false
     ) {
-        if (!($force || PHP_SAPI === 'cli') ||
+        if (!($force || \PHP_SAPI === 'cli') ||
                 ($this->StdioTargetsByLevel && !$replace)) {
             return $this;
         }
@@ -929,7 +929,7 @@ final class ConsoleWriter implements ReceivesFacade
     private function getStdoutTarget(): Target
     {
         if (!$this->StdoutTarget) {
-            return $this->StdoutTarget = new StreamTarget(STDOUT);
+            return $this->StdoutTarget = new StreamTarget(\STDOUT);
         }
         return $this->StdoutTarget;
     }
@@ -937,7 +937,7 @@ final class ConsoleWriter implements ReceivesFacade
     private function getStderrTarget(): Target
     {
         if (!$this->StderrTarget) {
-            return $this->StderrTarget = new StreamTarget(STDERR);
+            return $this->StderrTarget = new StreamTarget(\STDERR);
         }
         return $this->StderrTarget;
     }

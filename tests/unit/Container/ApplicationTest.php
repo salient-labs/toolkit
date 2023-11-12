@@ -37,11 +37,11 @@ final class ApplicationTest extends \Lkrms\Tests\TestCase
         $_ENV['app_env'] = 'production';
         $app = new Application($basePath);
         $this->assertSame($basePath, $app->getBasePath());
-        $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getCachePath(false));
-        $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getConfigPath(false));
-        $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getDataPath(false));
-        $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getLogPath(false));
-        $this->assertStringStartsWith("$homeDir" . DIRECTORY_SEPARATOR, $app->getTempPath(false));
+        $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getCachePath(false));
+        $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getConfigPath(false));
+        $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getDataPath(false));
+        $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getLogPath(false));
+        $this->assertStringStartsWith("$homeDir" . \DIRECTORY_SEPARATOR, $app->getTempPath(false));
         $app->unload();
 
         File::pruneDir($basePath);

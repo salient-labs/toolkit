@@ -15,12 +15,12 @@ use Throwable;
  */
 final class ErrorHandler implements ReceivesFacade
 {
-    private const FATAL_ERRORS = E_ERROR
-        | E_PARSE
-        | E_CORE_ERROR
-        | E_CORE_WARNING
-        | E_COMPILE_ERROR
-        | E_COMPILE_WARNING;
+    private const FATAL_ERRORS = \E_ERROR
+        | \E_PARSE
+        | \E_CORE_ERROR
+        | \E_CORE_WARNING
+        | \E_COMPILE_ERROR
+        | \E_COMPILE_WARNING;
 
     /**
      * [ [ Path regex, error levels ], ... ]
@@ -113,7 +113,7 @@ final class ErrorHandler implements ReceivesFacade
      *
      * @return $this
      */
-    public function silencePath(string $path, int $levels = E_STRICT | E_DEPRECATED | E_USER_DEPRECATED)
+    public function silencePath(string $path, int $levels = \E_STRICT | \E_DEPRECATED | \E_USER_DEPRECATED)
     {
         $path = File::realpath($path);
 
@@ -134,7 +134,7 @@ final class ErrorHandler implements ReceivesFacade
      *
      * @return $this
      */
-    public function silencePattern(string $pattern, int $levels = E_STRICT | E_DEPRECATED | E_USER_DEPRECATED)
+    public function silencePattern(string $pattern, int $levels = \E_STRICT | \E_DEPRECATED | \E_USER_DEPRECATED)
     {
         $entry = [$pattern, $levels];
         if (!in_array($entry, $this->Silenced, true)) {

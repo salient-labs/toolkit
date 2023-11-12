@@ -92,12 +92,12 @@ final class TrashStore extends SqliteStore
               )
             SQL;
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(':item_type', $type ?: get_class($object), SQLITE3_TEXT);
-        $stmt->bindValue(':item_key', $key, SQLITE3_TEXT);
-        $stmt->bindValue(':item_json', json_encode($object), SQLITE3_TEXT);
-        $stmt->bindValue(':deleted_from', $deletedFrom, SQLITE3_TEXT);
-        $stmt->bindValue(':created_at', $createdAt, SQLITE3_INTEGER);
-        $stmt->bindValue(':modified_at', $modifiedAt, SQLITE3_INTEGER);
+        $stmt->bindValue(':item_type', $type ?: get_class($object), \SQLITE3_TEXT);
+        $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
+        $stmt->bindValue(':item_json', json_encode($object), \SQLITE3_TEXT);
+        $stmt->bindValue(':deleted_from', $deletedFrom, \SQLITE3_TEXT);
+        $stmt->bindValue(':created_at', $createdAt, \SQLITE3_INTEGER);
+        $stmt->bindValue(':modified_at', $modifiedAt, \SQLITE3_INTEGER);
         $stmt->execute();
         $stmt->close();
 

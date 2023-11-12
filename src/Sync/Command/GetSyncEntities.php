@@ -159,15 +159,15 @@ final class GetSyncEntities extends AbstractSyncCommand
                 $result = [$result];
             }
 
-            $tty = stream_isatty(STDOUT);
+            $tty = stream_isatty(\STDOUT);
             File::writeCsv(
                 $result,
-                STDOUT,
+                \STDOUT,
                 true,
                 null,
                 fn(ISyncEntity $entity) => $entity->toArrayWith($rules),
                 $count,
-                $tty ? PHP_EOL : "\r\n",
+                $tty ? \PHP_EOL : "\r\n",
                 !$tty,
                 !$tty,
             );
