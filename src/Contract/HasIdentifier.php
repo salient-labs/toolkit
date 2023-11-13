@@ -2,9 +2,6 @@
 
 namespace Lkrms\Contract;
 
-/**
- * Instances have a unique identifier
- */
 interface HasIdentifier
 {
     /**

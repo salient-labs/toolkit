@@ -72,7 +72,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
      */
     public array $HttpRequestCount = [];
 
-    public function name(): ?string
+    public function name(): string
     {
         return sprintf('JSONPlaceholder { %s }', $this->getBaseUrl());
     }

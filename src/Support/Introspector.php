@@ -4,7 +4,7 @@ namespace Lkrms\Support;
 
 use Lkrms\Concept\Entity;
 use Lkrms\Concept\Provider;
-use Lkrms\Contract\HasDescription;
+use Lkrms\Contract\HasName;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IExtensible;
@@ -716,9 +716,8 @@ class Introspector
     /**
      * Get a closure that returns the name of an instance on a best-effort basis
      *
-     * Intended for use in default {@see ReturnsDescription::name()}
-     * implementations. Instance names are returned from properties most likely
-     * to contain them.
+     * Intended for use in default {@see HasName::name()} implementations.
+     * Instance names are returned from properties most likely to contain them.
      *
      * @return Closure(TClass): string
      */

@@ -207,7 +207,7 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
-     * Get the command name as a string of space-delimited subcommands
+     * @inheritDoc
      */
     final public function name(): string
     {

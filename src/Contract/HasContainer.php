@@ -3,18 +3,12 @@
 namespace Lkrms\Contract;
 
 /**
- * Returns a service container, creating one if necessary
- *
  * @template T of IContainer
  */
 interface HasContainer
 {
     /**
-     * Identical to container()
-     *
-     * Provided for convenience and consistency.
-     *
-     * See {@see ReturnsContainer::container()} for more information.
+     * Get the object's service container
      *
      * @return T
      */
@@ -22,15 +16,6 @@ interface HasContainer
 
     /**
      * Get the object's service container
-     *
-     * Objects typically return the container that created them, but if the
-     * object was instantiated directly, or didn't receive a container via
-     * dependency injection or {@see ReceivesContainer::setContainer()}, it
-     * should either:
-     * - return {@see \Lkrms\Container\Container::getGlobalContainer()}, or
-     * - throw a `RuntimeException`
-     *
-     * Identical to {@see ReturnsContainer::app()}.
      *
      * @return T
      */

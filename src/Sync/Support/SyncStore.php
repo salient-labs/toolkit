@@ -1125,7 +1125,7 @@ final class SyncStore extends SqliteStore
         $failed = [];
         /** @var ISyncProvider $provider */
         foreach ($providers as $provider) {
-            $name = $provider->name() ?? get_class($provider);
+            $name = $provider->name();
             $id = $provider->getProviderId();
             if ($id === null) {
                 $name .= ' [unregistered]';

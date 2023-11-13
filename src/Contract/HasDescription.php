@@ -2,24 +2,10 @@
 
 namespace Lkrms\Contract;
 
-/**
- * Returns a "friendly name" for the object
- */
-interface HasDescription
+interface HasDescription extends HasName
 {
     /**
-     * Get the name or title of the object
-     *
-     * Appropriate values to return are:
-     * - already in scope (no lookup required)
-     * - ready to use (no formatting required)
-     * - unique enough that duplicates are rare
-     * - easy to read
+     * Get a description of the object
      */
-    public function name(): ?string;
-
-    /**
-     * Get a brief description of the object
-     */
-    public function description(): ?string;
+    public function description(): string;
 }

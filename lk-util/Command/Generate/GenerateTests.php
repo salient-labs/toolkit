@@ -135,7 +135,7 @@ class GenerateTests extends GenerateCommand
                         $extendsGenerality = $generality;
                     }
                 }
-            };
+            }
         }
 
         $this->Extends[] = $classPrefix . (

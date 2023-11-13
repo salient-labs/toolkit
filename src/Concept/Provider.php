@@ -43,9 +43,13 @@ abstract class Provider implements IProvider
     /**
      * @inheritDoc
      */
-    public function description(): ?string
+    public function description(): string
     {
-        return null;
+        throw new MethodNotImplementedException(
+            static::class,
+            __FUNCTION__,
+            IProvider::class
+        );
     }
 
     /**
