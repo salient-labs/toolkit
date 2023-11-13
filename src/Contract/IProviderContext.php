@@ -11,13 +11,13 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
  * @template TProvider of IProvider
  * @template TEntity of IProvidable
  *
- * @extends ReturnsContainer<IContainer>
- * @extends ReturnsProvider<TProvider>
+ * @extends HasContainer<IContainer>
+ * @extends HasProvider<TProvider>
  */
 interface IProviderContext extends
     IImmutable,
-    ReturnsContainer,
-    ReturnsProvider
+    HasContainer,
+    HasProvider
 {
     /**
      * Apply a container to the context

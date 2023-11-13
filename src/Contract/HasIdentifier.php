@@ -5,7 +5,7 @@ namespace Lkrms\Contract;
 /**
  * Instances have a unique identifier
  */
-interface ReturnsIdentifier
+interface HasIdentifier
 {
     /**
      * Get the object's unique identifier

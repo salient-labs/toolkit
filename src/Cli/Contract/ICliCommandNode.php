@@ -4,19 +4,19 @@ namespace Lkrms\Cli\Contract;
 
 use Lkrms\Cli\Catalog\CliHelpSectionName;
 use Lkrms\Cli\CliCommand;
-use Lkrms\Contract\ReturnsContainer;
-use Lkrms\Contract\ReturnsDescription;
-use Lkrms\Contract\ReturnsEnvironment;
+use Lkrms\Contract\HasContainer;
+use Lkrms\Contract\HasDescription;
+use Lkrms\Contract\HasEnvironment;
 use LogicException;
 
 /**
  * A node in a CLI command tree
  *
- * @extends ReturnsContainer<ICliApplication>
+ * @extends HasContainer<ICliApplication>
  *
  * @see CliCommand
  */
-interface ICliCommandNode extends ReturnsContainer, ReturnsEnvironment, ReturnsDescription
+interface ICliCommandNode extends HasContainer, HasEnvironment, HasDescription
 {
     /**
      * Get the command name as a string of space-delimited subcommands

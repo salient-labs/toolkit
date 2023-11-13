@@ -4,6 +4,7 @@ namespace Lkrms\Support;
 
 use Lkrms\Concept\Entity;
 use Lkrms\Concept\Provider;
+use Lkrms\Contract\HasDescription;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IExtensible;
@@ -13,7 +14,6 @@ use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ISerializeRules;
 use Lkrms\Contract\ITreeable;
-use Lkrms\Contract\ReturnsDescription;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Arr;

@@ -13,16 +13,16 @@ use Lkrms\Support\Catalog\ArrayKeyConformity;
  *
  * @extends ReceivesProvider<TProvider>
  * @extends ReceivesProviderContext<TContext>
- * @extends ReturnsProvider<TProvider>
- * @extends ReturnsProviderContext<TContext>
+ * @extends HasProvider<TProvider>
+ * @extends HasProviderContext<TContext>
  */
 interface IProvidable extends
     ReceivesProvider,
     ReceivesProviderContext,
     ReceivesService,
-    ReturnsProvider,
-    ReturnsProviderContext,
-    ReturnsService
+    HasProvider,
+    HasProviderContext,
+    HasService
 {
     /**
      * Create an instance of the class from an array on behalf of a provider

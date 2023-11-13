@@ -9,12 +9,12 @@ use Lkrms\Exception\MethodNotImplementedException;
  *
  * @template TContext of IProviderContext
  *
- * @extends ReturnsContainer<IContainer>
+ * @extends HasContainer<IContainer>
  */
 interface IProvider extends
-    ReturnsContainer,
-    ReturnsEnvironment,
-    ReturnsDescription
+    HasContainer,
+    HasEnvironment,
+    HasDescription
 {
     /**
      * Get a context for instantiation of objects on the provider's behalf

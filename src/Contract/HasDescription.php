@@ -5,7 +5,7 @@ namespace Lkrms\Contract;
 /**
  * Returns a "friendly name" for the object
  */
-interface ReturnsDescription
+interface HasDescription
 {
     /**
      * Get the name or title of the object

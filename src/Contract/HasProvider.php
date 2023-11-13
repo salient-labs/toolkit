@@ -7,7 +7,7 @@ namespace Lkrms\Contract;
  *
  * @template TProvider of IProvider
  */
-interface ReturnsProvider
+interface HasProvider
 {
     /**
      * Get the object's provider

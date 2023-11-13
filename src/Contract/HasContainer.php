@@ -7,7 +7,7 @@ namespace Lkrms\Contract;
  *
  * @template T of IContainer
  */
-interface ReturnsContainer
+interface HasContainer
 {
     /**
      * Identical to container()
