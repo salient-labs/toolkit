@@ -8,6 +8,7 @@
         "composer-runtime-api": "^2.2",
         "lkrms/dice": "^4.1.6",
         "psr/container": "^2",
+        "psr/event-dispatcher": "^1",
         "psr/log": "^1"
     },
     "suggest": {
@@ -18,7 +19,7 @@
         "clue/phar-composer": "Simplifies creation of phar archives"
     },
     "require-dev": {
-        "adodb/adodb-php": "^5.22",
+        "adodb/adodb-php": "^5",
         "analog/analog": "^1",
         "clue/phar-composer": "^1",
         "firebase/php-jwt": "^6",
@@ -28,6 +29,9 @@
         "phpstan/phpstan-deprecation-rules": "^1",
         "phpunit/phpunit": "^9",
         "sebastian/diff": "^4 || ^5"
+    },
+    "provide": {
+        "psr/event-dispatcher-implementation": "^1"
     },
     "autoload": {
         "psr-4": {

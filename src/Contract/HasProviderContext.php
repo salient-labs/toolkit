@@ -7,7 +7,7 @@ namespace Lkrms\Contract;
  *
  * @template TContext of IProviderContext
  */
-interface ReturnsProviderContext
+interface HasProviderContext
 {
     /**
      * Get the object's current provider context

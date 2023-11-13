@@ -8,6 +8,7 @@ use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\Event;
 use Lkrms\Support\EventDispatcher;
+use Lkrms\Support\ServiceEvent;
 use RuntimeException;
 
 /**
@@ -58,12 +59,14 @@ abstract class Facade implements IFacade
             ? $instance
             : Event::getInstance();
         $id = $dispatcher->listen(
-            'container.global.set',
-            function (?IContainer $container) use ($service, $instance): void {
+            function (ServiceEvent $event) use ($service, $instance): void {
+                /** @var IContainer|null */
+                $container = $event->service();
                 if ($container) {
                     $container->instanceIf($service, $instance);
                 }
-            }
+            },
+            Container::EVENT_GLOBAL_CONTAINER_SET,
         );
         self::$ListenerIds[static::class] = $id;
 

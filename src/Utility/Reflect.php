@@ -2,11 +2,13 @@
 
 namespace Lkrms\Utility;
 
-use Lkrms\Facade\Sys;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Convert;
+use Closure;
+use LogicException;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionFunction;
 use ReflectionIntersectionType;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -14,36 +16,62 @@ use ReflectionParameter;
 use ReflectionProperty;
 use ReflectionType;
 use ReflectionUnionType;
-use UnexpectedValueException;
 
 /**
  * Work with PHP's reflection API
+ *
+ * @api
  */
 final class Reflect
 {
     /**
      * Get a list of names from a list of reflectors
      *
-     * @param array<ReflectionClass<object>|\ReflectionClassConstant|\ReflectionFunctionAbstract|ReflectionParameter|ReflectionProperty> $reflectors
+     * @param array<\ReflectionAttribute<object>|\ReflectionClass<object>|\ReflectionClassConstant|\ReflectionExtension|\ReflectionFunctionAbstract|\ReflectionNamedType|\ReflectionParameter|\ReflectionProperty|\ReflectionZendExtension> $reflectors
      * @return string[]
      */
     public static function getNames(array $reflectors): array
     {
-        $names = [];
         foreach ($reflectors as $reflector) {
             $names[] = $reflector->getName();
         }
-        return $names;
+        return $names ?? [];
+    }
+
+    /**
+     * Get a list of classes accepted by the first parameter of a callback
+     *
+     * @return class-string[]
+     *
+     * @throws LogicException if `$callback` resolves to a closure with no
+     * parameters.
+     */
+    public static function getFirstCallbackParameterClassNames(callable $callback): array
+    {
+        if (!($callback instanceof Closure)) {
+            $callback = Closure::fromCallable($callback);
+        }
+        $param = Arr::first((new ReflectionFunction($callback))->getParameters());
+        if (!$param) {
+            throw new LogicException('$callable has no parameters');
+        }
+        foreach (self::getAllTypes($param->getType()) as $type) {
+            if ($type->isBuiltin()) {
+                continue;
+            }
+            $classes[] = $type->getName();
+        }
+        return $classes ?? [];
     }
 
     /**
      * Follow ReflectionClass->getParentClass() until an ancestor with no parent
      * is found
      *
-     * @param ReflectionClass<object>|class-string $class
+     * @param ReflectionClass<object> $class
      * @return ReflectionClass<object>
      */
-    public static function getBaseClass($class): ReflectionClass
+    public static function getBaseClass(ReflectionClass $class): ReflectionClass
     {
         if (!($class instanceof ReflectionClass)) {
             $class = new ReflectionClass($class);
@@ -55,8 +83,8 @@ final class Reflect
     }
 
     /**
-     * If a method has a prototype, return its declaring class, otherwise return
-     * the method's declaring class
+     * Get the prototype of a method and return its declaring class, or return
+     * the method's declaring class if it doesn't have a prototype
      *
      * @return ReflectionClass<object>
      */
@@ -92,7 +120,6 @@ final class Reflect
             return [];
         }
 
-        $types = [];
         foreach (self::doGetAllTypes($type) as $type) {
             $name = $type->getName();
             if (isset($seen[$name])) {
@@ -102,7 +129,7 @@ final class Reflect
             $seen[$name] = true;
         }
 
-        return $types;
+        return $types ?? [];
     }
 
     /**
@@ -118,7 +145,6 @@ final class Reflect
             return [];
         }
 
-        $names = [];
         foreach (self::doGetAllTypes($type) as $type) {
             $name = $type->getName();
             if (isset($seen[$name])) {
@@ -128,7 +154,7 @@ final class Reflect
             $seen[$name] = true;
         }
 
-        return $names;
+        return $names ?? [];
     }
 
     /**
@@ -433,32 +459,6 @@ final class Reflect
     }
 
     /**
-     * Get an array of traits used by this class and its parent classes
-     *
-     * In other words, merge arrays returned by `ReflectionClass::getTraits()`
-     * for `$class`, `$class->getParentClass()`, etc.
-     *
-     * @param ReflectionClass<object> $class
-     * @return array<string,ReflectionClass<object>> An array that maps trait
-     * names to `ReflectionClass` instances.
-     */
-    public static function getAllTraits(ReflectionClass $class): array
-    {
-        $allTraits = [];
-
-        while ($class && ($traits = $class->getTraits())) {
-            $allTraits = array_merge($allTraits, $traits);
-            $class = $class->getParentClass();
-        }
-
-        if ($class) {
-            throw new UnexpectedValueException(sprintf('Error retrieving traits for class %s', $class->getName()));
-        }
-
-        return $allTraits;
-    }
-
-    /**
      * @return ReflectionNamedType[]
      */
     private static function doGetAllTypes(ReflectionType $type): array
@@ -478,7 +478,6 @@ final class Reflect
 
         if ($type instanceof ReflectionIntersectionType) {
             $types = $type->getTypes();
-
             /** @var ReflectionNamedType[] $types */
             return $types;
         }
@@ -507,7 +506,8 @@ final class Reflect
                     ? -1
                     : ($b->isSubclassOf($a)
                         ? 1
-                        : self::getBaseClass($a)->getName() <=> self::getBaseClass($b)->getName())
+                        : self::getBaseClass($a)->getName() <=>
+                            self::getBaseClass($b)->getName())
         );
 
         return $interfaces;

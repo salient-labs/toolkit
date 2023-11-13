@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\ReturnsProvider;
+use Lkrms\Contract\HasProvider;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Support\Catalog\TextComparisonAlgorithm;
 use Lkrms\Support\Catalog\TextComparisonFlag;
@@ -16,9 +16,9 @@ use Lkrms\Sync\Support\DeferredRelationship;
  *
  * @template TEntity of ISyncEntity
  *
- * @extends ReturnsProvider<ISyncProvider>
+ * @extends HasProvider<ISyncProvider>
  */
-interface ISyncEntityProvider extends ReturnsProvider
+interface ISyncEntityProvider extends HasProvider
 {
     /**
      * Get the sync entity being serviced

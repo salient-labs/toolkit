@@ -5,7 +5,7 @@ namespace Lkrms\Contract;
 /**
  * Returns the name of the class or interface it was resolved from
  */
-interface ReturnsService
+interface HasService
 {
     /**
      * Get the name of the class or interface the container resolved by creating

@@ -14,6 +14,7 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ReturnsNormaliser;
+use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Sync;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
@@ -148,18 +149,23 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     /**
      * @inheritDoc
      */
-    public function name(): ?string
+    public function name(): string
     {
-        return SyncIntrospector::get(static::class)
-            ->getGetNameClosure()($this);
+        return
+            SyncIntrospector::get(static::class)
+                ->getGetNameClosure()($this);
     }
 
     /**
      * @inheritDoc
      */
-    public function description(): ?string
+    public function description(): string
     {
-        return null;
+        throw new MethodNotImplementedException(
+            static::class,
+            __FUNCTION__,
+            ISyncEntity::class
+        );
     }
 
     /**

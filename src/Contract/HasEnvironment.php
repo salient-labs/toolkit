@@ -7,7 +7,7 @@ use Lkrms\Utility\Env;
 /**
  * Returns a shared instance of Lkrms\Utility\Env
  */
-interface ReturnsEnvironment
+interface HasEnvironment
 {
     /**
      * Get a shared instance of Lkrms\Utility\Env

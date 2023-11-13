@@ -2,17 +2,17 @@
 
 namespace Lkrms\Tests\Container;
 
+use Lkrms\Contract\HasContainer;
+use Lkrms\Contract\HasService;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\ReceivesContainer;
 use Lkrms\Contract\ReceivesService;
-use Lkrms\Contract\ReturnsContainer;
-use Lkrms\Contract\ReturnsService;
 
 /**
  * @template T of IContainer
- * @implements ReturnsContainer<T>
+ * @implements HasContainer<T>
  */
-class A implements ReceivesContainer, ReceivesService, ReturnsContainer, ReturnsService
+class A implements ReceivesContainer, ReceivesService, HasContainer, HasService
 {
     use TestTrait;
 

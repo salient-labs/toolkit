@@ -3,12 +3,12 @@
 namespace Lkrms\Support;
 
 use Lkrms\Concern\HasMutator;
+use Lkrms\Contract\HasIdentifier;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ITreeable;
-use Lkrms\Contract\ReturnsIdentifier;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Utility\Convert;
 
@@ -109,7 +109,7 @@ class ProviderContext implements IProviderContext
         $clone = $this->mutate();
         $clone->Stack[] = $entity;
 
-        if ($entity instanceof ReturnsIdentifier) {
+        if ($entity instanceof HasIdentifier) {
             $id = $entity->id();
             if ($id !== null) {
                 $name = Convert::classToBasename(get_class($entity));

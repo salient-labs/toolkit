@@ -2,31 +2,53 @@
 
 namespace Lkrms\Support;
 
+use Lkrms\Contract\HasName;
+use Lkrms\Utility\Reflect;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\EventDispatcher\ListenerProviderInterface;
+use Psr\EventDispatcher\StoppableEventInterface;
+use Generator;
 use LogicException;
 
 /**
  * Dispatches events to listeners
  */
-final class EventDispatcher
+final class EventDispatcher implements EventDispatcherInterface, ListenerProviderInterface
 {
     /**
      * Listener ID => list of events
      *
      * @var array<int,string[]>
      */
-    private $Listeners = [];
+    private array $Listeners = [];
 
     /**
      * Event => [ listener ID => listener ]
      *
-     * @var array<string,array<int,callable(mixed, string): (bool|void)>>
+     * @var array<string,array<int,callable(object): mixed>>
      */
-    private $EventListeners = [];
+    private array $EventListeners = [];
 
     /**
      * @var int
      */
-    private $NextListenerId = 0;
+    private int $NextListenerId = 0;
+
+    /**
+     * @var ListenerProviderInterface[]
+     */
+    private array $ListenerProviders = [];
+
+    /**
+     * Creates a new EventDispatcher object
+     */
+    public function __construct(?ListenerProviderInterface $listenerProvider = null)
+    {
+        if ($listenerProvider) {
+            $this->ListenerProviders[] = $listenerProvider;
+        }
+        $this->ListenerProviders[] = $this;
+    }
 
     /**
      * Register an event listener with the dispatcher
@@ -34,14 +56,24 @@ final class EventDispatcher
      * Returns a listener ID that can be passed to
      * {@see EventDispatcher::removeListener()}.
      *
-     * @param string|string[] $event An event or array of events.
-     * @param callable(mixed, string): (false|void) $listener Receives the event
-     * payload and the name of the dispatched event.
+     * @param callable(object): mixed $listener
+     * @param string[]|string|null $event An event or array of events. If
+     * `null`, the listener is registered to receive events accepted by its
+     * first parameter.
      */
-    public function listen($event, callable $listener): int
+    public function listen(callable $listener, $event = null): int
     {
+        if ($event === null) {
+            $event = Reflect::getFirstCallbackParameterClassNames($listener);
+        }
+
+        if ($event === []) {
+            throw new LogicException('At least one event must be given');
+        }
+
         $id = $this->NextListenerId++;
         foreach ((array) $event as $event) {
+            $event = strtolower($event);
             $this->Listeners[$id][] = $event;
             $this->EventListeners[$event][$id] = $listener;
         }
@@ -52,22 +84,59 @@ final class EventDispatcher
     /**
      * Dispatch an event to listeners registered to receive it
      *
-     * If `$cancellable` is `true` and a listener returns `false`, no further
-     * listeners will receive the event.
-     *
-     * @param mixed $payload
-     * @return mixed[]|false Returns an array of listener responses, or `false`
-     * if the event was cancellable and a listener returned `false`.
+     * @template T of object
+     * @param T $event
+     * @return T
      */
-    public function dispatch(string $event, $payload = null, bool $cancellable = false)
+    public function dispatch(object $event): object
     {
-        foreach ($this->EventListeners[$event] ?? [] as $listener) {
-            $responses[] = $response = $listener($payload, $event);
-            if ($cancellable && $response === false) {
-                return false;
+        foreach ($this->ListenerProviders as $provider) {
+            $listeners = $provider->getListenersForEvent($event);
+            foreach ($listeners as $listener) {
+                if ($event instanceof StoppableEventInterface &&
+                        $event->isPropagationStopped()) {
+                    return $event;
+                }
+                $listener($event);
             }
         }
-        return $responses ?? [];
+
+        return $event;
+    }
+
+    /**
+     * @return Generator<callable(object): mixed>
+     */
+    public function getListenersForEvent(object $event): Generator
+    {
+        $events = array_merge(
+            [get_class($event)],
+            class_parents($event),
+            class_implements($event),
+        );
+
+        if ($event instanceof HasName) {
+            $eventName = $event->name();
+            // If the event returns a name we already have, do nothing
+            if (!is_a($event, $eventName)) {
+                $events[] = $eventName;
+            }
+        }
+
+        $index = [];
+        foreach ($events as $event) {
+            $index[strtolower($event)] = null;
+        }
+
+        $listenersByEvent = array_intersect_key($this->EventListeners, $index);
+        $listeners = [];
+        foreach ($listenersByEvent as $eventListeners) {
+            $listeners += $eventListeners;
+        }
+
+        foreach ($listeners as $listener) {
+            yield $listener;
+        }
     }
 
     /**

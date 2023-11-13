@@ -9,13 +9,30 @@ use Lkrms\Exception\MethodNotImplementedException;
  *
  * @template TContext of IProviderContext
  *
- * @extends ReturnsContainer<IContainer>
+ * @extends HasContainer<IContainer>
  */
 interface IProvider extends
-    ReturnsContainer,
-    ReturnsEnvironment,
-    ReturnsDescription
+    HasContainer,
+    HasEnvironment,
+    HasDescription
 {
+    /**
+     * Get the name of the provider
+     *
+     * Appropriate values to return are:
+     *
+     * - already in scope (no lookup required)
+     * - ready to use (no formatting required)
+     * - unique enough that duplicates are rare
+     * - human-readable
+     */
+    public function name(): string;
+
+    /**
+     * Get a description of the provider
+     */
+    public function description(): string;
+
     /**
      * Get a context for instantiation of objects on the provider's behalf
      *

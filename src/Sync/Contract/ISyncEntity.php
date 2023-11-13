@@ -2,12 +2,12 @@
 
 namespace Lkrms\Sync\Contract;
 
+use Lkrms\Contract\HasDescription;
+use Lkrms\Contract\HasIdentifier;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderEntity;
 use Lkrms\Contract\IRelatable;
-use Lkrms\Contract\ReturnsDescription;
-use Lkrms\Contract\ReturnsIdentifier;
 use Lkrms\Sync\Catalog\SyncEntityLinkType as LinkType;
 use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
@@ -24,12 +24,22 @@ use JsonSerializable;
  * @extends IProviderEntity<ISyncProvider,ISyncContext>
  */
 interface ISyncEntity extends
-    ReturnsIdentifier,
-    ReturnsDescription,
+    HasIdentifier,
+    HasDescription,
     IProviderEntity,
     IRelatable,
     JsonSerializable
 {
+    /**
+     * Get the name of the entity
+     */
+    public function name(): string;
+
+    /**
+     * Get a description of the entity
+     */
+    public function description(): string;
+
     /**
      * Get an instance of the entity's default provider
      */
