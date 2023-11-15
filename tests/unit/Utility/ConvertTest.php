@@ -85,46 +85,6 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
     }
 
     /**
-     * @dataProvider flattenProvider
-     *
-     * @param mixed $expected
-     * @param mixed $value
-     */
-    public function testFlatten($expected, $value): void
-    {
-        $this->assertSame($expected, Arr::unwrap($value));
-    }
-
-    /**
-     * @return array<mixed[]>
-     */
-    public static function flattenProvider(): array
-    {
-        return [
-            [
-                ['id' => 1],
-                [[['id' => 1]]],
-            ],
-            [
-                'nested scalar',
-                ['nested scalar'],
-            ],
-            [
-                ['nested associative' => 1],
-                ['nested associative' => 1],
-            ],
-            [
-                [1, 'links' => [2, 3]],
-                [[1, 'links' => [2, 3]]],
-            ],
-            [
-                'plain scalar',
-                'plain scalar',
-            ],
-        ];
-    }
-
-    /**
      * @dataProvider expandTabsProvider
      */
     public function testExpandTabs(
