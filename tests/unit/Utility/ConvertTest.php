@@ -3,6 +3,7 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Support\DateFormatter;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -79,46 +80,6 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
             "'yes'" => [
                 true,
                 'yes',
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider flattenProvider
-     *
-     * @param mixed $expected
-     * @param mixed $value
-     */
-    public function testFlatten($expected, $value): void
-    {
-        $this->assertSame($expected, Convert::flatten($value));
-    }
-
-    /**
-     * @return array<mixed[]>
-     */
-    public static function flattenProvider(): array
-    {
-        return [
-            [
-                ['id' => 1],
-                [[['id' => 1]]],
-            ],
-            [
-                'nested scalar',
-                ['nested scalar'],
-            ],
-            [
-                ['nested associative' => 1],
-                ['nested associative' => 1],
-            ],
-            [
-                [1, 'links' => [2, 3]],
-                [[1, 'links' => [2, 3]]],
-            ],
-            [
-                'plain scalar',
-                'plain scalar',
             ],
         ];
     }

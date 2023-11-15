@@ -16,9 +16,9 @@ use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Test;
 use Closure;
 use LogicException;
 
@@ -694,7 +694,7 @@ final class SyncIntrospector extends Introspector
                 $isChildren
             ): void {
                 if ($data[$key] === null ||
-                        (Test::isListArray($data[$key]) xor $isList) ||
+                        (Arr::isList($data[$key]) xor $isList) ||
                         !($entity instanceof ISyncEntity) ||
                         !($provider instanceof ISyncProvider) ||
                         !($context instanceof ISyncContext)) {

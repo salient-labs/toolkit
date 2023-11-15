@@ -365,7 +365,7 @@ abstract class CliCommand implements ICliCommand
 
         $name = $b . $this->getNameWithProgram() . $b;
         $full = $this->getOptionsSynopsis($withMarkup, $style, $collapsed);
-        $synopsis = Arr::implodeNotEmpty(' ', [$name, $full]);
+        $synopsis = Arr::implode(' ', [$name, $full]);
 
         if ($width !== null) {
             $wrapped = $prefix . str_replace(
@@ -378,7 +378,7 @@ abstract class CliCommand implements ICliCommand
                 return $wrapped;
             }
 
-            $synopsis = Arr::implodeNotEmpty(' ', [$name, $collapsed]);
+            $synopsis = Arr::implode(' ', [$name, $collapsed]);
         }
 
         return $prefix . $this
@@ -750,8 +750,8 @@ abstract class CliCommand implements ICliCommand
 
     /**
      * @param string[] $args
-     * @param array<string,array<string|int>|string|int|bool|null> $argValues
-     * @return array<string,array<string|int>|string|int|bool|null>
+     * @param array<string,array<string|int|true>|string|int|bool|null> $argValues
+     * @return array<string,array<string|int|true>|string|int|bool|null>
      */
     private function mergeArguments(
         array $args,
@@ -771,7 +771,7 @@ abstract class CliCommand implements ICliCommand
                         ($option->IsFlag && !$option->MultipleAllowed)) {
                     $argValues[$key] = $value;
                 } else {
-                    $argValues[$key] = array_merge((array) $argValues[$key], Convert::toArray($value));
+                    $argValues[$key] = array_merge((array) $argValues[$key], Arr::wrap($value));
                 }
             };
         $merged = [];
@@ -870,7 +870,7 @@ abstract class CliCommand implements ICliCommand
 
             if (array_key_exists($key, $merged) &&
                     !($option->IsFlag && !$option->MultipleAllowed)) {
-                $merged[$key] = array_merge((array) $merged[$key], Convert::toArray($value));
+                $merged[$key] = array_merge((array) $merged[$key], Arr::wrap($value));
             } else {
                 $merged[$key] = $value;
             }
@@ -1009,8 +1009,8 @@ abstract class CliCommand implements ICliCommand
      * Optionally normalise an array of option values, assign them to the
      * command, and return them to the caller
      *
-     * @param array<string,array<string|int>|string|int|bool|null> $values An
-     * array that maps options to values.
+     * @param array<string,array<string|int|true>|string|int|bool|null> $values
+     * An array that maps options to values.
      * @param bool $normalise `false` if `$value` has already been normalised.
      * @param bool $expand If `true`, replace `null` (or `true`, if the option
      * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
@@ -1163,7 +1163,7 @@ abstract class CliCommand implements ICliCommand
         $positional = [];
         foreach ($this->Options as $option) {
             $name = null;
-            foreach (Arr::notEmpty([$option->Long, $option->Short]) as $key) {
+            foreach (Arr::whereNotEmpty([$option->Long, $option->Short]) as $key) {
                 if (array_key_exists($key, $values)) {
                     $name = $key;
                     break;
@@ -1182,7 +1182,7 @@ abstract class CliCommand implements ICliCommand
         }
         array_push($args, ...$positional);
 
-        return array_values(Arr::notNull($args));
+        return array_values(Arr::whereNotNull($args));
     }
 
     /**

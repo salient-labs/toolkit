@@ -12,10 +12,10 @@ use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Support\Catalog\RelationshipType;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Sync\Concept\SyncEntity;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Test;
 use Closure;
 use DateTimeImmutable;
 
@@ -327,7 +327,7 @@ class GenerateSyncEntity extends GenerateCommand
                 }
             }
 
-            if (Test::isListArray($entity)) {
+            if (Arr::isList($entity)) {
                 $entity = $entity[0];
             }
 
@@ -370,7 +370,7 @@ class GenerateSyncEntity extends GenerateCommand
                     continue;
                 }
 
-                if (Test::isArrayOfArrayKey($value, true) &&
+                if (Arr::ofArrayKey($value, true) &&
                         Pcre::match('/^(?<class>[[:alpha:]_][[:alnum:]_]*)Ids$/', $key, $matches)) {
                     $key = $matches['class'];
                     $properties[$key] = "{$key}[]|null";

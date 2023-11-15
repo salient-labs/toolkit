@@ -532,17 +532,17 @@ abstract class GenerateCommand extends Command
             $blocks[] = implode($line, $this->generateImports());
         }
 
-        $phpDoc = implode($blank, Arr::notEmpty([
-            trim($this->Description ?? ''),
-            trim($this->PhpDoc ?? ''),
-        ]));
+        $phpDoc = Arr::trimAndImplode($blank, [
+            $this->Description ?? '',
+            $this->PhpDoc ?? '',
+        ]);
 
         $lines =
             $phpDoc === ''
                 ? []
                 : $this->generatePhpDocBlock($phpDoc);
 
-        $lines[] = implode(' ', Arr::notEmpty([
+        $lines[] = Arr::implode(' ', [
             ...$this->Modifiers,
             $this->OutputType,
             $this->OutputClass,
@@ -550,7 +550,7 @@ abstract class GenerateCommand extends Command
             implode(', ', $this->Extends),
             $this->Implements ? 'implements' : '',
             implode(', ', $this->Implements),
-        ]));
+        ]);
 
         $members = [];
 

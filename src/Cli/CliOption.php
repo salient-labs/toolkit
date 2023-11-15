@@ -17,6 +17,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Facade\Console;
 use Lkrms\Support\Catalog\CharacterSequence as Char;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Assert;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
@@ -377,8 +378,8 @@ final class CliOption implements IReadable, IImmutable, ProvidesBuilder
      * Split delimited values into an array, if possible
      *
      * @internal
-     * @param array<string|int>|string|int|bool|null $value
-     * @return array<string|int>
+     * @param array<string|int|true>|string|int|bool|null $value
+     * @return array<string|int|true>
      */
     public function maybeSplitValue($value): array
     {
@@ -529,7 +530,7 @@ final class CliOption implements IReadable, IImmutable, ProvidesBuilder
      * UnknownValuePolicy
      *
      * @internal
-     * @template T of array<string|int>|string|int|bool|null
+     * @template T of array<string|int|true>|string|int|bool|null
      * @param T $value
      * @return T
      */
@@ -621,7 +622,7 @@ final class CliOption implements IReadable, IImmutable, ProvidesBuilder
      * it to the caller
      *
      * @internal
-     * @param array<string|int>|string|int|bool|null $value
+     * @param array<string|int|true>|string|int|bool|null $value
      * @param bool $normalise `false` if `$value` has already been normalised.
      * @param bool $expand If `true`, replace `null` (or `true`, if the option
      * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
@@ -646,7 +647,7 @@ final class CliOption implements IReadable, IImmutable, ProvidesBuilder
      * value to the option's value type
      *
      * @internal
-     * @param array<string|int>|string|int|bool|null $value
+     * @param array<string|int|true>|string|int|bool|null $value
      * @param bool $expand If `true`, replace `null` (or `true`, if the option
      * is not a flag and doesn't have type {@see CliOptionValueType::BOOLEAN})
      * with the default value of the option if it has an optional value.
@@ -681,7 +682,7 @@ final class CliOption implements IReadable, IImmutable, ProvidesBuilder
         } else {
             if (is_array($value)) {
                 if ($this->IsFlag &&
-                        (!$this->MultipleAllowed || !Test::isArrayOfValue($value, true))) {
+                        (!$this->MultipleAllowed || Arr::unique($value) !== [true])) {
                     $this->throwValueTypeException(
                         $value,
                         $this->MultipleAllowed

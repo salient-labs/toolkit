@@ -9,6 +9,7 @@ use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
@@ -141,7 +142,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
             return $this->applyFilters($filters ?? [], $filterKeys ?? []);
         }
 
-        if (Test::isArrayOfArrayKey($args)) {
+        if (Arr::ofArrayKey($args)) {
             return $this->applyFilters(['id' => $args]);
         }
 

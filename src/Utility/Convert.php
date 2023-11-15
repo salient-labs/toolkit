@@ -96,76 +96,36 @@ final class Convert
     }
 
     /**
-     * If a value isn't an array, make it the first element of one
-     *
-     * Cast `$value` to `array` instead of calling this method unless you need a
-     * non-empty array (`[null]` instead of `[]`) when `$value` is `null`.
-     *
      * @param mixed $value
-     * @return mixed[] Either `$value`, `[$value]`, or `[]` (only if
-     * `$emptyIfNull` is set and `$value` is `null`).
+     * @return mixed[]
+     * @deprecated Use {@see Arr::wrap()} instead
+     * @codeCoverageIgnore
      */
-    public static function toArray($value, bool $emptyIfNull = false): array
+    public static function toArray($value): array
     {
-        return is_array($value)
-            ? $value
-            : ($emptyIfNull && is_null($value) ? [] : [$value]);
+        return Arr::wrap($value);
     }
 
     /**
-     * If a value isn't a list, make it the first element of one
-     *
      * @param mixed $value
-     * @return mixed[] Either `$value`, `[$value]`, or `[]` (only if
-     * `$emptyIfNull` is set and `$value` is `null`).
+     * @return mixed[]
+     * @deprecated Use {@see Arr::listWrap()} instead
+     * @codeCoverageIgnore
      */
-    public static function toList($value, bool $emptyIfNull = false): array
+    public static function toList($value): array
     {
-        return Test::isListArray($value, true)
-            ? $value
-            : ($emptyIfNull && is_null($value) ? [] : [$value]);
+        return Arr::listWrap($value);
     }
 
     /**
-     * Recursively remove outer single-element arrays
-     *
-     * Example:
-     *
-     * ```php
-     * var_export([
-     *     Convert::flatten([[['id' => 1]]]),
-     *     Convert::flatten(['nested scalar']),
-     *     Convert::flatten(['nested associative' => 1]),
-     *     Convert::flatten('plain scalar'),
-     * ]);
-     * ```
-     *
-     * Output:
-     *
-     * ```php
-     * array (
-     *   0 =>
-     *   array (
-     *     'id' => 1,
-     *   ),
-     *   1 => 'nested scalar',
-     *   2 =>
-     *   array (
-     *     'nested associative' => 1,
-     *   ),
-     *   3 => 'plain scalar',
-     * )
-     * ```
      * @param mixed $value
      * @return mixed
+     * @deprecated Use {@see Arr::unwrap()} instead
+     * @codeCoverageIgnore
      */
     public static function flatten($value)
     {
-        if (!is_array($value) || count($value) !== 1 || array_key_first($value) !== 0) {
-            return $value;
-        }
-
-        return self::flatten(reset($value));
+        return Arr::unwrap($value);
     }
 
     /**
@@ -189,44 +149,15 @@ final class Convert
     }
 
     /**
-     * A type-agnostic array_unique
-     *
-     * @template TKey of array-key
-     * @template TValue
-     * @param array<TKey,TValue> $array
-     * @return array<TKey,TValue>
-     */
-    public static function toUnique(array $array): array
-    {
-        $list = [];
-        foreach ($array as $key => $value) {
-            if (in_array($value, $list, true)) {
-                continue;
-            }
-            $list[$key] = $value;
-        }
-
-        return $list;
-    }
-
-    /**
-     * A type-agnostic array_unique with reindexing
-     *
      * @template T
      * @param T[] $array
      * @return T[]
+     * @deprecated Use {@see Arr::unique()} instead
+     * @codeCoverageIgnore
      */
     public static function toUniqueList(array $array): array
     {
-        $list = [];
-        foreach ($array as $value) {
-            if (in_array($value, $list, true)) {
-                continue;
-            }
-            $list[] = $value;
-        }
-
-        return $list;
+        return Arr::unique($array);
     }
 
     /**
@@ -255,40 +186,6 @@ final class Convert
             $list[$key] = $value;
             foreach ($columns as $columnIndex => $column) {
                 $columns2[$columnIndex][$key] = $column[$key];
-            }
-        }
-        foreach ($columns as $columnIndex => &$column) {
-            $column = $columns2[$columnIndex] ?? [];
-        }
-
-        return $list;
-    }
-
-    /**
-     * A type-agnostic multi-column array_unique with reindexing
-     *
-     * It is assumed that every array provided has the same signature (i.e.
-     * identical lengths and keys).
-     *
-     * Whenever a value is excluded from `$array`, its counterparts in the
-     * `$columns` arrays are also excluded. Only values in `$array` are checked
-     * for uniqueness.
-     *
-     * @template T
-     * @param T[] $array
-     * @param mixed[] ...$columns
-     * @return T[]
-     */
-    public static function columnsToUniqueList(array $array, array &...$columns): array
-    {
-        $list = [];
-        foreach ($array as $rowIndex => $value) {
-            if (in_array($value, $list, true)) {
-                continue;
-            }
-            $list[] = $value;
-            foreach ($columns as $columnIndex => $column) {
-                $columns2[$columnIndex][] = $column[$rowIndex];
             }
         }
         foreach ($columns as $columnIndex => &$column) {
@@ -518,13 +415,12 @@ final class Convert
     }
 
     /**
-     * A shim for DateTimeImmutable::createFromInterface() (PHP 8+)
+     * @deprecated Use {@see Date::immutable()} instead
+     * @codeCoverageIgnore
      */
     public static function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
     {
-        return $date instanceof DateTimeImmutable
-            ? $date
-            : DateTimeImmutable::createFromMutable($date);
+        return Date::immutable($date);
     }
 
     /**
@@ -906,13 +802,12 @@ final class Convert
 
     /**
      * @param mixed[] $array
-     * @deprecated Use {@see Arr::implodeNotEmpty()} instead
+     * @deprecated Use {@see Arr::implode()} instead
+     * @codeCoverageIgnore
      */
     public static function sparseToString(string $separator, array $array): string
     {
-        // @codeCoverageIgnoreStart
-        return Arr::implodeNotEmpty($separator, $array);
-        // @codeCoverageIgnoreEnd
+        return Arr::implode($separator, $array);
     }
 
     /**
@@ -1426,17 +1321,12 @@ final class Convert
     }
 
     /**
-     * Replace a string's CRLF or CR end-of-line sequences with LF
-     *
      * @deprecated Use {@see Str::setEol()} instead
+     * @codeCoverageIgnore
      */
     public static function lineEndingsToUnix(string $string): string
     {
-        if (strpos($string, "\r") === false) {
-            return $string;
-        }
-
-        return Pcre::replace("/(\r\n|\r)/", "\n", $string);
+        return Str::setEol($string);
     }
 
     /**
@@ -1480,7 +1370,7 @@ final class Convert
                 $query .= ($query ? '&' : '') . rawurlencode($name . $_name) . '=' . rawurlencode((string) $value);
 
                 continue;
-            } elseif (!$preserveKeys && Test::isListArray($value, true)) {
+            } elseif (!$preserveKeys && Arr::isList($value, true)) {
                 $_format = '[]';
             } else {
                 $_format = '[%s]';
@@ -1626,7 +1516,7 @@ final class Convert
             $glue .= $indent;
         }
 
-        if (Test::isListArray($value)) {
+        if (Arr::isList($value)) {
             foreach ($value as $value) {
                 $values[] = self::doValueToCode(
                     $value,

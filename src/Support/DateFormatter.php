@@ -9,6 +9,7 @@ use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Support\DateParser\CreateFromFormatDateParser;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -62,7 +63,7 @@ final class DateFormatter implements IDateFormatter, IImmutable, IReadable
     {
         if ($this->Timezone &&
                 $this->Timezone->getName() !== $date->getTimezone()->getName()) {
-            $date = Convert::toDateTimeImmutable($date)->setTimezone($this->Timezone);
+            $date = Date::immutable($date)->setTimezone($this->Timezone);
         }
 
         return $date->format($this->Format);

@@ -6,7 +6,7 @@ use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Support\CurlerPageBuilder;
 use Lkrms\Curler\Curler;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Arr;
 use Closure;
 
 /**
@@ -53,7 +53,7 @@ final class QueryPager implements ICurlerPager
                 ? $selector
                 : (is_string($selector)
                     ? fn($response) => $response[$selector]
-                    : fn($response) => Convert::toList($response));
+                    : fn($response) => Arr::listWrap($response));
         $this->PageSize = $pageSize;
     }
 

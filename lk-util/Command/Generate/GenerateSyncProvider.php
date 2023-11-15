@@ -204,7 +204,7 @@ class GenerateSyncProvider extends GenerateCommand
             }
 
             if ($this->NoMagic) {
-                $paramCode = Arr::notEmpty([$context . ' $ctx', $paramCode]);
+                $paramCode = Arr::whereNotEmpty([$context . ' $ctx', $paramCode]);
 
                 $phpDoc = [];
                 if ($paramDoc !== '' &&
@@ -221,7 +221,7 @@ class GenerateSyncProvider extends GenerateCommand
                     '@method %s %s(%s)',
                     $returnDoc,
                     $opMethod[$op],
-                    implode(', ', Arr::notEmpty([$context . ' $ctx', $paramDoc])),
+                    Arr::implode(', ', [$context . ' $ctx', $paramDoc]),
                 );
             }
         }

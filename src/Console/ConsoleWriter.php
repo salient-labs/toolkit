@@ -781,7 +781,7 @@ final class ConsoleWriter implements ReceivesFacade
         ?string $msg2 = null
     ) {
         $this->GroupLevel++;
-        $this->GroupMessageStack[] = Arr::implodeNotEmpty(' ', [$msg1, $msg2]);
+        $this->GroupMessageStack[] = Arr::implode(' ', [$msg1, $msg2]);
 
         return $this->write(Level::NOTICE, $msg1, $msg2, Type::GROUP_START);
     }
