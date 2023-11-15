@@ -6,6 +6,7 @@ use Lkrms\Concept\LooselyTypedCollection;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Sync\Catalog\SyncErrorType as ErrorType;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use JsonSerializable;
 
@@ -43,7 +44,7 @@ final class SyncErrorCollection extends LooselyTypedCollection implements JsonSe
                     ],
                 ];
             }
-            $summary[$key]['meta']['values'][] = Convert::flatten($error->Values);
+            $summary[$key]['meta']['values'][] = Arr::unwrap($error->Values);
             $summary[$key]['meta']['count']++;
             $summary[$key]['meta']['seen'] += $error->Count;
         }

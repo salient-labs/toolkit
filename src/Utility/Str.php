@@ -3,7 +3,7 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Support\Catalog\RegularExpression as Regex;
-use LogicException;
+use InvalidArgumentException;
 
 /**
  * Manipulate strings
@@ -28,7 +28,7 @@ final class Str
                 return str_replace(["\r\n", "\r", "\n"], ["\n", "\n", $eol], $string);
 
             default:
-                throw new LogicException(sprintf('Invalid end-of-line sequence: %s', $eol));
+                throw new InvalidArgumentException(sprintf('Invalid end-of-line sequence: %s', $eol));
         }
     }
 
@@ -42,18 +42,10 @@ final class Str
      */
     public static function splitAndTrim(string $separator, string $string, ?string $characters = null): array
     {
-        // 4. Reindex
-        return array_values(
-            // 3. Remove empty strings
-            Arr::notEmpty(
-                // 2. Trim each substring
-                Arr::trim(
-                    // 1. Split the string
-                    explode($separator, $string),
-                    $characters
-                )
-            )
-        );
+        return array_values(Arr::trim(
+            explode($separator, $string),
+            $characters
+        ));
     }
 
     /**
@@ -67,14 +59,10 @@ final class Str
      */
     public static function splitAndTrimOutsideBrackets(string $separator, string $string, ?string $characters = null): array
     {
-        return array_values(
-            Arr::notEmpty(
-                Arr::trim(
-                    self::splitOutsideBrackets($separator, $string),
-                    $characters
-                )
-            )
-        );
+        return array_values(Arr::trim(
+            self::splitOutsideBrackets($separator, $string),
+            $characters
+        ));
     }
 
     /**
@@ -86,11 +74,11 @@ final class Str
     public static function splitOutsideBrackets(string $separator, string $string): array
     {
         if (strlen($separator) !== 1) {
-            throw new LogicException('Separator must be a single character');
+            throw new InvalidArgumentException('Separator must be a single character');
         }
 
         if (strpos('()<>[]{}', $separator) !== false) {
-            throw new LogicException('Separator cannot be a bracket character');
+            throw new InvalidArgumentException('Separator cannot be a bracket character');
         }
 
         $quoted = preg_quote($separator, '/');

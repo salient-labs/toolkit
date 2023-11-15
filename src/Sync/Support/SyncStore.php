@@ -17,6 +17,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
@@ -1118,7 +1119,7 @@ final class SyncStore extends SqliteStore
         $this->check();
 
         if ($providers) {
-            $providers = Convert::toUniqueList($providers);
+            $providers = Arr::unique($providers);
         } elseif ($this->Providers) {
             $providers = $this->Providers;
         } else {

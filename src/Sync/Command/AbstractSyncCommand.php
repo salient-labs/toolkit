@@ -87,9 +87,9 @@ abstract class AbstractSyncCommand extends CliCommand
             $providers[$providerKey] = $provider;
         }
 
-        $this->Entities = Arr::sort(Arr::notNull($entities), true);
-        $this->Providers = Arr::sort(Arr::notNull($providers), true);
-        $this->EntityProviders = Arr::sort(Arr::notNull($entityProviders), true);
+        $this->Entities = Arr::sort(Arr::whereNotNull($entities), true);
+        $this->Providers = Arr::sort(Arr::whereNotNull($providers), true);
+        $this->EntityProviders = Arr::sort(Arr::whereNotNull($entityProviders), true);
     }
 
     public function getLongDescription(): ?string

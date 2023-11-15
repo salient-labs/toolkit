@@ -175,7 +175,7 @@ foreach ($providers as $class => $providerArgs) {
 $file = dirname(__DIR__) . '/.gitattributes';
 $attributes = preg_grep(
     '/(^#| linguist-generated$)/',
-    Arr::notEmpty(Arr::trim(file($file))),
+    Arr::trim(file($file)),
     \PREG_GREP_INVERT
 );
 // @phpstan-ignore-next-line

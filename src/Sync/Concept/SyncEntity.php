@@ -36,6 +36,7 @@ use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncSerializeRules as SerializeRules;
 use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
@@ -551,7 +552,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
         }
 
         if (is_array($node)) {
-            if (Test::isIndexedArray($node)) {
+            if (Arr::isIndexed($node)) {
                 $isList = true;
                 $lastKey = array_pop($path);
                 $path[] = $lastKey . '[]';
@@ -585,7 +586,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
             return;
         }
 
-        if (Test::isArrayOf($node, SyncEntity::class, true) && Test::isIndexedArray($node, true)) {
+        if (Test::isArrayOf($node, SyncEntity::class, true) && Arr::isIndexed($node, true)) {
             /** @var SyncEntity $child */
             foreach ($node as &$child) {
                 $child = $child->Id;

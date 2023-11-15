@@ -268,7 +268,7 @@ class CliApplication extends Application implements ICliApplication
 
         if ($terse) {
             return Formatter::escapeTags("$synopses\n\nSee '"
-                . (Arr::implodeNotEmpty(' ', ["$progName help", $name, '<command>']))
+                . (Arr::implode(' ', ["$progName help", $name, '<command>']))
                 . "' for more information.");
         }
 

@@ -3,6 +3,7 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Support\DateFormatter;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -91,7 +92,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
      */
     public function testFlatten($expected, $value): void
     {
-        $this->assertSame($expected, Convert::flatten($value));
+        $this->assertSame($expected, Arr::unwrap($value));
     }
 
     /**

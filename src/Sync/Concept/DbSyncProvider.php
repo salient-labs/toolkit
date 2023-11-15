@@ -57,7 +57,7 @@ abstract class DbSyncProvider extends SyncProvider
             (string) $connector->Port,
             strtolower((string) $connector->Database),
             strtolower((string) $connector->Schema),
-        ]);
+        ], null, false);
     }
 
     /**

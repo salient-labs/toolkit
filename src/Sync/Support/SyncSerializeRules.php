@@ -395,7 +395,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
     ): array {
         $depth = count($path);
         $path = '.' . implode('.', $path);
-        $key = Arr::implodeNotEmpty("\0", [$class, $untilClass, $path]);
+        $key = Arr::implode("\0", [$class, $untilClass, $path]);
 
         if (!is_null($rules = $this->RuleCache[$cacheKey][$key] ?? null)) {
             return $rules;

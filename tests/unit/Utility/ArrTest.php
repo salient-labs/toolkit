@@ -7,19 +7,19 @@ use Lkrms\Utility\Arr;
 final class ArrTest extends \Lkrms\Tests\TestCase
 {
     /**
-     * @dataProvider implodeNotEmptyProvider
+     * @dataProvider implodeProvider
      *
      * @param mixed[] $array
      */
-    public function testImplodeNotEmpty(string $expected, string $separator, array $array): void
+    public function testImplode(string $expected, string $separator, array $array): void
     {
-        $this->assertSame($expected, Arr::implodeNotEmpty($separator, $array));
+        $this->assertSame($expected, Arr::implode($separator, $array));
     }
 
     /**
      * @return array<array{string,string,mixed[]}>
      */
-    public static function implodeNotEmptyProvider(): array
+    public static function implodeProvider(): array
     {
         return [
             [

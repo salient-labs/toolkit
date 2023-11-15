@@ -223,6 +223,157 @@ final class Arr
     }
 
     /**
+     * Remove duplicate values from an array without preserving keys
+     *
+     * @template TValue
+     *
+     * @param array<array-key,TValue> $array
+     *
+     * @return list<TValue>
+     */
+    public static function unique(array $array): array
+    {
+        $unique = [];
+        foreach ($array as $value) {
+            if (in_array($value, $unique, true)) {
+                continue;
+            }
+            $unique[] = $value;
+        }
+        return $unique;
+    }
+
+    /**
+     * True if a value is an array with consecutive integer keys numbered from 0
+     *
+     * @param mixed $value
+     */
+    public static function isList($value, bool $orEmpty = false): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+        if (!$value) {
+            return $orEmpty;
+        }
+        $i = 0;
+        foreach ($value as $key => $value) {
+            if ($i++ !== $key) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * True if a value is an array with integer keys
+     *
+     * @param mixed $value
+     */
+    public static function isIndexed($value, bool $orEmpty = false): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+        if (!$value) {
+            return $orEmpty;
+        }
+        foreach ($value as $key => $value) {
+            if (!is_int($key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * True if a value is an array of integers or an array of strings
+     *
+     * @param mixed $value
+     */
+    public static function ofArrayKey($value, bool $orEmpty = false): bool
+    {
+        return
+            self::ofInt($value, $orEmpty) ||
+            self::ofString($value);
+    }
+
+    /**
+     * True if a value is a list of integers or a list of strings
+     *
+     * @param mixed $value
+     */
+    public static function listOfArrayKey($value, bool $orEmpty = false): bool
+    {
+        return
+            self::listOfInt($value, $orEmpty) ||
+            self::listOfString($value);
+    }
+
+    /**
+     * True if a value is an array of integers
+     *
+     * @param mixed $value
+     */
+    public static function ofInt($value, bool $orEmpty = false): bool
+    {
+        return self::doOfType('is_int', $value, $orEmpty, false);
+    }
+
+    /**
+     * True if a value is a list of integers
+     *
+     * @param mixed $value
+     */
+    public static function listOfInt($value, bool $orEmpty = false): bool
+    {
+        return self::doOfType('is_int', $value, $orEmpty, true);
+    }
+
+    /**
+     * True if a value is an array of strings
+     *
+     * @param mixed $value
+     */
+    public static function ofString($value, bool $orEmpty = false): bool
+    {
+        return self::doOfType('is_string', $value, $orEmpty, false);
+    }
+
+    /**
+     * True if a value is a list of strings
+     *
+     * @param mixed $value
+     */
+    public static function listOfString($value, bool $orEmpty = false): bool
+    {
+        return self::doOfType('is_string', $value, $orEmpty, true);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private static function doOfType(string $func, $value, bool $orEmpty, bool $requireList): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+        if (!$value) {
+            return $orEmpty;
+        }
+        $i = 0;
+        foreach ($value as $key => $value) {
+            if ($requireList && $i++ !== $key) {
+                return false;
+            }
+            if (!$func($value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Remove null values from an array
      *
      * @template TKey of array-key
@@ -232,7 +383,7 @@ final class Arr
      *
      * @return array<TKey,TValue>
      */
-    public static function notNull(array $array): array
+    public static function whereNotNull(array $array): array
     {
         foreach ($array as $key => $value) {
             if ($value === null) {
@@ -240,7 +391,6 @@ final class Arr
             }
             $filtered[$key] = $value;
         }
-
         return $filtered ?? [];
     }
 
@@ -254,7 +404,7 @@ final class Arr
      *
      * @return array<TKey,TValue>
      */
-    public static function notEmpty(array $array): array
+    public static function whereNotEmpty(array $array): array
     {
         foreach ($array as $key => $value) {
             if ((string) $value === '') {
@@ -262,8 +412,35 @@ final class Arr
             }
             $filtered[$key] = $value;
         }
-
         return $filtered ?? [];
+    }
+
+    /**
+     * Implode values that remain in an array of strings and Stringables after
+     * removing whitespace from the beginning and end of each value and
+     * optionally removing empty strings
+     *
+     * @param array<int|float|string|bool|\Stringable|null> $array
+     * @param string|null $characters Optionally specify characters to remove
+     * instead of whitespace.
+     */
+    public static function trimAndImplode(
+        string $separator,
+        array $array,
+        ?string $characters = null,
+        bool $removeEmpty = true
+    ): string {
+        foreach ($array as $value) {
+            $value =
+                $characters === null
+                    ? trim((string) $value)
+                    : trim((string) $value, $characters);
+            if ($removeEmpty && $value === '') {
+                continue;
+            }
+            $trimmed[] = $value;
+        }
+        return implode($separator, $trimmed ?? []);
     }
 
     /**
@@ -274,7 +451,7 @@ final class Arr
      *
      * @return string
      */
-    public static function implodeNotEmpty(string $separator, array $array): string
+    public static function implode(string $separator, array $array): string
     {
         foreach ($array as $value) {
             $value = (string) $value;
@@ -283,13 +460,12 @@ final class Arr
             }
             $filtered[] = $value;
         }
-
         return implode($separator, $filtered ?? []);
     }
 
     /**
      * Remove whitespace from the beginning and end of each value in an array
-     * of strings and Stringables
+     * of strings and Stringables before optionally removing empty strings
      *
      * @template TKey of array-key
      * @template TValue of int|float|string|bool|\Stringable|null
@@ -302,17 +478,18 @@ final class Arr
      */
     public static function trim(
         array $array,
-        ?string $characters = null
+        ?string $characters = null,
+        bool $removeEmpty = true
     ): array {
-        if ($characters === null) {
-            foreach ($array as $key => $value) {
-                $trimmed[$key] = trim((string) $value);
-            }
-            return $trimmed ?? [];
-        }
-
         foreach ($array as $key => $value) {
-            $trimmed[$key] = trim((string) $value, $characters);
+            $value =
+                $characters === null
+                    ? trim((string) $value)
+                    : trim((string) $value, $characters);
+            if ($removeEmpty && $value === '') {
+                continue;
+            }
+            $trimmed[$key] = $value;
         }
         return $trimmed ?? [];
     }
@@ -358,6 +535,59 @@ final class Arr
     {
         foreach ($array as $key => $arrayValue) {
             $value = $callback($value, $arrayValue, $key);
+        }
+        return $value;
+    }
+
+    /**
+     * If a value is not an array, wrap it in one
+     *
+     * @param mixed $value
+     *
+     * @return mixed[]
+     */
+    public static function wrap($value): array
+    {
+        if ($value === null) {
+            return [];
+        }
+        return is_array($value) ? $value : [$value];
+    }
+
+    /**
+     * If a value is not a list, wrap it in one
+     *
+     * @param mixed $value
+     *
+     * @return mixed[]
+     */
+    public static function listWrap($value): array
+    {
+        if ($value === null) {
+            return [];
+        }
+        return self::isList($value, true) ? $value : [$value];
+    }
+
+    /**
+     * Remove arrays wrapped around a value
+     *
+     * @param mixed $value
+     * @param int $limit The maximum number of arrays to remove. Default: `-1`
+     * (no limit)
+     *
+     * @return mixed
+     */
+    public static function unwrap($value, int $limit = -1)
+    {
+        while (
+            $limit &&
+            is_array($value) &&
+            count($value) === 1 &&
+            array_key_first($value) === 0
+        ) {
+            $value = $value[0];
+            $limit--;
         }
         return $value;
     }

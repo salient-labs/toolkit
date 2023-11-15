@@ -775,7 +775,7 @@ class Introspector
                     static function (
                         $instance
                     ) use ($first, $last): string {
-                        return Arr::implodeNotEmpty(' ', [
+                        return Arr::implode(' ', [
                             $first($instance),
                             $last($instance),
                         ]);

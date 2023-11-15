@@ -154,7 +154,7 @@ class Application extends Container implements IApplication
             }
 
             return $this->checkPath(
-                Arr::implodeNotEmpty('/', [$path, $app, $windowsChild]),
+                Arr::implode('/', [$path, $app, $windowsChild]),
                 $name,
                 $create,
                 $save,
@@ -182,7 +182,7 @@ class Application extends Container implements IApplication
         }
 
         return $this->checkPath(
-            Arr::implodeNotEmpty('/', [$path, $app, $child]),
+            Arr::implode('/', [$path, $app, $child]),
             $name,
             $create,
             $save,

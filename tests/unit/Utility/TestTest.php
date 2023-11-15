@@ -2,6 +2,7 @@
 
 namespace Lkrms\Tests\Utility;
 
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Test;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -112,7 +113,7 @@ final class TestTest extends \Lkrms\Tests\TestCase
      */
     public function testIsListArray(bool $expected, $value, bool $allowEmpty = false): void
     {
-        $this->assertSame($expected, Test::isListArray($value, $allowEmpty));
+        $this->assertSame($expected, Arr::isList($value, $allowEmpty));
     }
 
     /**
@@ -134,41 +135,13 @@ final class TestTest extends \Lkrms\Tests\TestCase
     }
 
     /**
-     * @dataProvider isAssociativeArrayProvider
-     *
-     * @param mixed $value
-     */
-    public function testIsAssociativeArray(bool $expected, $value, bool $allowEmpty = false): void
-    {
-        $this->assertSame($expected, Test::isAssociativeArray($value, $allowEmpty));
-    }
-
-    /**
-     * @return array<array{bool,mixed,2?:bool}>
-     */
-    public static function isAssociativeArrayProvider(): array
-    {
-        return [
-            [false, null],
-            [false, []],
-            [true, [], true],
-            [false, ['a', 'b', 'c']],
-            [false, [1 => 'a', 2 => 'b', 3 => 'c']],
-            [false, ['a', 'b', 5 => 'c']],
-            [false, ['a', 3 => 'b', 2 => 'c']],
-            [true, ['a' => 'alpha', 2 => 'b', 3 => 'c']],
-            [true, ['a' => 'alpha', 'b' => 'bravo', 'c' => 'charlie']],
-        ];
-    }
-
-    /**
      * @dataProvider isIndexedArrayProvider
      *
      * @param mixed $value
      */
     public function testIsIndexedArray(bool $expected, $value, bool $allowEmpty = false): void
     {
-        $this->assertSame($expected, Test::isIndexedArray($value, $allowEmpty));
+        $this->assertSame($expected, Arr::isIndexed($value, $allowEmpty));
     }
 
     /**
@@ -196,8 +169,8 @@ final class TestTest extends \Lkrms\Tests\TestCase
      */
     public function testIsArrayOfArrayKey($value, bool $expected, bool $expectedIfAllowEmpty): void
     {
-        $this->assertSame($expected, Test::isArrayOfArrayKey($value));
-        $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfArrayKey($value, true));
+        $this->assertSame($expected, Arr::ofArrayKey($value));
+        $this->assertSame($expectedIfAllowEmpty, Arr::ofArrayKey($value, true));
     }
 
     /**
@@ -227,8 +200,8 @@ final class TestTest extends \Lkrms\Tests\TestCase
      */
     public function testIsArrayOfInt($value, bool $expected, bool $expectedIfAllowEmpty): void
     {
-        $this->assertSame($expected, Test::isArrayOfInt($value));
-        $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfInt($value, true));
+        $this->assertSame($expected, Arr::ofInt($value));
+        $this->assertSame($expectedIfAllowEmpty, Arr::ofInt($value, true));
     }
 
     /**
@@ -258,8 +231,8 @@ final class TestTest extends \Lkrms\Tests\TestCase
      */
     public function testIsArrayOfString($value, bool $expected, bool $expectedIfAllowEmpty): void
     {
-        $this->assertSame($expected, Test::isArrayOfString($value));
-        $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfString($value, true));
+        $this->assertSame($expected, Arr::ofString($value));
+        $this->assertSame($expectedIfAllowEmpty, Arr::ofString($value, true));
     }
 
     /**
@@ -279,49 +252,6 @@ final class TestTest extends \Lkrms\Tests\TestCase
             'mixed #3' => [[0, 1, null], false, false],
             'mixed #4' => [['a', 'b', true], false, false],
             'mixed #5' => [['a', 'b', null], false, false],
-        ];
-    }
-
-    /**
-     * @dataProvider isArrayOfValueProvider
-     *
-     * @param mixed $value
-     * @param mixed $itemValue
-     */
-    public function testIsArrayOfValue($value, $itemValue, bool $strict, bool $expected, bool $expectedIfAllowEmpty): void
-    {
-        $this->assertSame($expected, Test::isArrayOfValue($value, $itemValue, $strict));
-        $this->assertSame($expectedIfAllowEmpty, Test::isArrayOfValue($value, $itemValue, $strict, true));
-    }
-
-    /**
-     * @return array<string,array{mixed,mixed,bool,bool,bool}>
-     */
-    public static function isArrayOfValueProvider(): array
-    {
-        return [
-            'null' => [null, null, false, false, false],
-            'bool' => [true, true, false, false, false],
-            'int' => [0, 0, false, false, false],
-            'string' => ['a', 'a', false, false, false],
-            'empty' => [[], null, true, false, true],
-            'bools #1' => [[false, false], false, true, true, true],
-            'bools #2' => [[true, true], true, true, true, true],
-            'strict bools' => [[0, false], false, true, false, false],
-            'relaxed bools' => [[0, false], false, false, true, true],
-            'mixed bools #1' => [[true, false], false, true, false, false],
-            'mixed bools #2' => [[false, true], false, true, false, false],
-            'mixed bools #3' => [[true, false], false, false, false, false],
-            'mixed bools #4' => [[false, true], false, false, false, false],
-            'ints #1' => [[1, '1'], 1, true, false, false],
-            'ints #2' => [[1, '1'], 1, false, true, true],
-            'ints #3' => [[1, 1], 1, true, true, true],
-            'strings #1' => [['a', 'a'], 'a', true, true, true],
-            'strings #2' => [['a', 'a'], 0, false, \PHP_VERSION_ID < 80000, \PHP_VERSION_ID < 80000],
-            'strings #3' => [['a', 'b'], 'a', false, false, false],
-            'nulls' => [[null, null], null, true, true, true],
-            'mixed #1' => [['', 0, [], false, null], null, true, false, false],
-            'mixed #2' => [['', 0, [], false, null], null, false, true, true],
         ];
     }
 

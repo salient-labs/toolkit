@@ -62,154 +62,48 @@ final class Test
     }
 
     /**
-     * True if $value is an array with consecutive integer keys numbered from 0
-     *
      * @param mixed $value
+     * @deprecated Use {@see Arr::isList()} instead
      */
     public static function isListArray($value, bool $allowEmpty = false): bool
     {
-        return is_array($value) &&
-            ($value
-                ? array_keys($value) === range(0, count($value) - 1)
-                : $allowEmpty);
+        return Arr::isList($value, $allowEmpty);
     }
 
     /**
-     * True if $value is an array with one or more string keys
-     *
      * @param mixed $value
-     */
-    public static function isAssociativeArray($value, bool $allowEmpty = false): bool
-    {
-        if (!is_array($value)) {
-            return false;
-        }
-        if (!$value) {
-            return $allowEmpty;
-        }
-        foreach (array_keys($value) as $key) {
-            if (is_string($key)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * True if $value is an array with no string keys
-     *
-     * @param mixed $value
+     * @deprecated Use {@see Arr::isIndexed()} instead
      */
     public static function isIndexedArray($value, bool $allowEmpty = false): bool
     {
-        return is_array($value) &&
-            ($value
-                ? !self::isAssociativeArray($value)
-                : $allowEmpty);
+        return Arr::isIndexed($value, $allowEmpty);
     }
 
     /**
-     * True if $value is a string[] or int[]
-     *
      * @param mixed $value
+     * @deprecated Use {@see Arr::ofArrayKey()} instead
      */
     public static function isArrayOfArrayKey($value, bool $allowEmpty = false): bool
     {
-        if (!is_array($value)) {
-            return false;
-        }
-        if (!$value) {
-            return $allowEmpty;
-        }
-        if (is_int($last = array_pop($value))) {
-            foreach ($value as $item) {
-                if (!is_int($item)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-        if (is_string($last)) {
-            foreach ($value as $item) {
-                if (!is_string($item)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        return false;
+        return Arr::ofArrayKey($value, $allowEmpty);
     }
 
     /**
-     * True if $value is an int[]
-     *
      * @param mixed $value
+     * @deprecated Use {@see Arr::ofInt()} instead
      */
     public static function isArrayOfInt($value, bool $allowEmpty = false): bool
     {
-        if (!is_array($value)) {
-            return false;
-        }
-        if (!$value) {
-            return $allowEmpty;
-        }
-        foreach ($value as $item) {
-            if (!is_int($item)) {
-                return false;
-            }
-        }
-
-        return true;
+        return Arr::ofInt($value, $allowEmpty);
     }
 
     /**
-     * True if $value is a string[]
-     *
      * @param mixed $value
+     * @deprecated Use {@see Arr::ofString()} instead
      */
     public static function isArrayOfString($value, bool $allowEmpty = false): bool
     {
-        if (!is_array($value)) {
-            return false;
-        }
-        if (!$value) {
-            return $allowEmpty;
-        }
-        foreach ($value as $item) {
-            if (!is_string($item)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * True if $value is an array filled exclusively with $itemValue
-     *
-     * @param mixed $value
-     * @param mixed $itemValue
-     */
-    public static function isArrayOfValue($value, $itemValue, bool $strict = true, bool $allowEmpty = false): bool
-    {
-        if (!is_array($value)) {
-            return false;
-        }
-        if (!$value) {
-            return $allowEmpty;
-        }
-        foreach ($value as $item) {
-            if (($strict && $item !== $itemValue) ||
-                    (!$strict && $item != $itemValue)) {
-                return false;
-            }
-        }
-
-        return true;
+        return Arr::ofString($value, $allowEmpty);
     }
 
     /**

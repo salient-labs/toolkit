@@ -899,7 +899,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     private function getCookieKey(): ?string
     {
         return $this->HandleCookies
-            ? Arr::implodeNotEmpty(':', [self::class, 'cookies', $this->CookieCacheKey])
+            ? Arr::implode(':', [self::class, 'cookies', $this->CookieCacheKey])
             : null;
     }
 
@@ -1448,8 +1448,8 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     private static function collateNested($data, array $path, array &$entities): void
     {
         if (empty($path)) {
-            $entities = array_merge($entities, Convert::toList($data));
-        } elseif (Test::isListArray($data, true)) {
+            $entities = array_merge($entities, Arr::listWrap($data));
+        } elseif (Arr::isList($data, true)) {
             foreach ($data as $nested) {
                 self::collateNested($nested, $path, $entities);
             }
@@ -1468,7 +1468,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
      */
     final public static function walkGraphQL(array &$data, callable $filter = null): void
     {
-        if (Test::isListArray($data, true)) {
+        if (Arr::isList($data, true)) {
             array_walk(
                 $data,
                 function (&$data) use ($filter) {

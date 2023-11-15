@@ -65,7 +65,7 @@ final class HttpResponse implements IReadable
     public function __toString(): string
     {
         $response = [
-            Arr::implodeNotEmpty(' ', [
+            Arr::implode(' ', [
                 sprintf('HTTP/%s', $this->ProtocolVersion ?: '1.1'),
                 $this->StatusCode,
                 $this->ReasonPhrase,
