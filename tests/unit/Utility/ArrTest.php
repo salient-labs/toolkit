@@ -7,6 +7,41 @@ use Lkrms\Utility\Arr;
 final class ArrTest extends \Lkrms\Tests\TestCase
 {
     /**
+     * @dataProvider firstProvider
+     *
+     * @param mixed $expected
+     * @param mixed[] $array
+     */
+    public function testFirst($expected, array $array): void
+    {
+        $this->assertSame($expected, Arr::first($array));
+    }
+
+    /**
+     * @return array<array{mixed,mixed[]}>
+     */
+    public static function firstProvider(): array
+    {
+        $object1 = new \stdClass();
+        $object2 = new \stdClass();
+        return [
+            [null, []],
+            [null, [null]],
+            [true, [true, false]],
+            [false, [false, true]],
+            [0, [0, 1, 2]],
+            [2, [2, 1, 0]],
+            [0, [
+                2 => 0,
+                1 => 1,
+                0 => 2,
+            ]],
+            [$object1, [$object1, $object2]],
+            [$object2, [$object2, $object1]],
+        ];
+    }
+
+    /**
      * @dataProvider implodeProvider
      *
      * @param mixed[] $array
@@ -191,6 +226,161 @@ final class ArrTest extends \Lkrms\Tests\TestCase
             'mixed #3' => [[0, 1, null], false, false],
             'mixed #4' => [['a', 'b', true], false, false],
             'mixed #5' => [['a', 'b', null], false, false],
+        ];
+    }
+
+    /**
+     * @dataProvider lastProvider
+     *
+     * @param mixed $expected
+     * @param mixed[] $array
+     */
+    public function testLast($expected, array $array): void
+    {
+        $this->assertSame($expected, Arr::last($array));
+    }
+
+    /**
+     * @return array<array{mixed,mixed[]}>
+     */
+    public static function lastProvider(): array
+    {
+        $object1 = new \stdClass();
+        $object2 = new \stdClass();
+        return [
+            [null, []],
+            [null, [null]],
+            [false, [true, false]],
+            [true, [false, true]],
+            [2, [0, 1, 2]],
+            [0, [2, 1, 0]],
+            [2, [
+                2 => 0,
+                1 => 1,
+                0 => 2,
+            ]],
+            [$object2, [$object1, $object2]],
+            [$object1, [$object2, $object1]],
+        ];
+    }
+
+    /**
+     * @dataProvider popProvider
+     *
+     * @param mixed[] $expected
+     * @param mixed $popped
+     * @param mixed[] $array
+     */
+    public function testPop(array $expected, $popped, array $array): void
+    {
+        // @phpstan-ignore-next-line
+        $this->assertSame($expected, Arr::pop($array, $actualShifted));
+        $this->assertSame($popped, $actualShifted);
+    }
+
+    /**
+     * @return array<array{mixed[],mixed,mixed[]}>
+     */
+    public static function popProvider(): array
+    {
+        return [
+            [['a', 'b'], 'c', ['a', 'b', 'c']],
+            [[0, 1], 2, [0, 1, 2]],
+            [[false], true, [false, true]],
+            [[true], false, [true, false]],
+            [[], null, [null]],
+            [[], null, []],
+            [['a' => 'foo'], 'bar', ['a' => 'foo', 'b' => 'bar']],
+        ];
+    }
+
+    /**
+     * @dataProvider pushProvider
+     *
+     * @param mixed[] $expected
+     * @param mixed[] $array
+     * @param mixed ...$values
+     */
+    public function testPush(array $expected, array $array, ...$values): void
+    {
+        $this->assertSame($expected, Arr::push($array, ...$values));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[],...}>
+     */
+    public static function pushProvider(): array
+    {
+        return [
+            [['a', 'b', 'c', 'd', 'e'], ['a', 'b', 'c'], 'd', 'e'],
+            [[0, 1, 2, 3, 4], [0, 1, 2], 3, 4],
+            [[false, true, true, false], [false, true], true, false],
+            [[true, false, false, true], [true, false], false, true],
+            [[], []],
+            [[null], [], null],
+            [[false], [], false],
+            [[0], [], 0],
+            [['a' => 'foo', 'b' => 'bar', 'baz', 'qux'], ['a' => 'foo', 'b' => 'bar'], 'baz', 'qux'],
+        ];
+    }
+
+    /**
+     * @dataProvider shiftProvider
+     *
+     * @param mixed[] $expected
+     * @param mixed $shifted
+     * @param mixed[] $array
+     */
+    public function testShift(array $expected, $shifted, array $array): void
+    {
+        // @phpstan-ignore-next-line
+        $this->assertSame($expected, Arr::shift($array, $actualShifted));
+        $this->assertSame($shifted, $actualShifted);
+    }
+
+    /**
+     * @return array<array{mixed[],mixed,mixed[]}>
+     */
+    public static function shiftProvider(): array
+    {
+        return [
+            [['b', 'c'], 'a', ['a', 'b', 'c']],
+            [[1, 2], 0, [0, 1, 2]],
+            [[true], false, [false, true]],
+            [[false], true, [true, false]],
+            [[], null, [null]],
+            [[], null, []],
+            [['b' => 'bar'], 'foo', ['a' => 'foo', 'b' => 'bar']],
+        ];
+    }
+
+    /**
+     * @dataProvider unshiftProvider
+     *
+     * @param mixed[] $expected
+     * @param mixed[] $array
+     * @param mixed ...$values
+     */
+    public function testUnshift(array $expected, array $array, ...$values): void
+    {
+        $this->assertSame($expected, Arr::unshift($array, ...$values));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[],...}>
+     */
+    public static function unshiftProvider(): array
+    {
+        return [
+            [['d', 'e', 'a', 'b', 'c'], ['a', 'b', 'c'], 'd', 'e'],
+            [[3, 4, 0, 1, 2], [0, 1, 2], 3, 4],
+            [[true, false, false, true], [false, true], true, false],
+            [[false, true, true, false], [true, false], false, true],
+            [[], []],
+            [[null], [], null],
+            [[false], [], false],
+            [[0], [], 0],
+            [['baz', 'qux', 'a' => 'foo', 'b' => 'bar'], ['a' => 'foo', 'b' => 'bar'], 'baz', 'qux'],
         ];
     }
 
