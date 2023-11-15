@@ -194,10 +194,12 @@ final class GenerateFacade extends GenerateCommand
                 }
 
                 switch ($type) {
+                    case '\static':
                     case 'static':
                     case '$this':
                         $type = $service;
                         break;
+                    case '\self':
                     case 'self':
                         $type = $declaring;
                         break;

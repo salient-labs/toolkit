@@ -60,7 +60,7 @@ final class CacheStore extends SqliteStore
      * representing its lifetime in seconds.
      * @return $this
      */
-    public function set(string $key, $value, $expires = null)
+    public function set(string $key, $value, $expires = null): self
     {
         if ($expires instanceof DateTimeInterface) {
             $expires = $expires->getTimestamp();
@@ -176,26 +176,75 @@ final class CacheStore extends SqliteStore
     /**
      * Retrieve an instance of a class stored under a given key
      *
-     * If `$maxAge` is `null` (the default), the item's expiration time is
-     * honoured, otherwise it is ignored and the item is considered fresh if:
-     *
-     * - its age in seconds is less than or equal to `$maxAge`, or
-     * - `$maxAge` is `0`
-     *
-     * @template T
+     * @template T of object
      *
      * @param class-string<T> $class
-     * @return T|false `false` if the item has expired or doesn't exist.
+     * @return T|null `null` if the item has expired or doesn't exist.
      * @throws AssertionFailedException if the item stored under `$key` is not
      * an instance of `$class`.
      */
-    public function getInstanceOf(string $key, string $class, ?int $maxAge = null)
+    public function getInstanceOf(string $key, string $class, ?int $maxAge = null): ?object
     {
-        $item = $this->get($key, $maxAge);
-        if ($item === false) {
-            return false;
+        $store = $this->maybeAsOfNow();
+        if (!$store->has($key, $maxAge)) {
+            return null;
         }
+        $item = $store->get($key, $maxAge);
         Assert::instanceOf($item, $class);
+        return $item;
+    }
+
+    /**
+     * Retrieve an array stored under a given key
+     *
+     * @return mixed[]|null `null` if the item has expired or doesn't exist.
+     * @throws AssertionFailedException if the item stored under `$key` is not
+     * an array.
+     */
+    public function getArray(string $key, ?int $maxAge = null): ?array
+    {
+        $store = $this->maybeAsOfNow();
+        if (!$store->has($key, $maxAge)) {
+            return null;
+        }
+        $item = $store->get($key, $maxAge);
+        Assert::isarray($item);
+        return $item;
+    }
+
+    /**
+     * Retrieve an integer stored under a given key
+     *
+     * @return int|null `null` if the item has expired or doesn't exist.
+     * @throws AssertionFailedException if the item stored under `$key` is not
+     * an integer.
+     */
+    public function getInt(string $key, ?int $maxAge = null): ?int
+    {
+        $store = $this->maybeAsOfNow();
+        if (!$store->has($key, $maxAge)) {
+            return null;
+        }
+        $item = $store->get($key, $maxAge);
+        Assert::isInt($item);
+        return $item;
+    }
+
+    /**
+     * Retrieve a string stored under a given key
+     *
+     * @return string|null `null` if the item has expired or doesn't exist.
+     * @throws AssertionFailedException if the item stored under `$key` is not a
+     * string.
+     */
+    public function getString(string $key, ?int $maxAge = null): ?string
+    {
+        $store = $this->maybeAsOfNow();
+        if (!$store->has($key, $maxAge)) {
+            return null;
+        }
+        $item = $store->get($key, $maxAge);
+        Assert::isString($item);
         return $item;
     }
 
@@ -204,7 +253,7 @@ final class CacheStore extends SqliteStore
      *
      * @return $this
      */
-    public function delete(string $key)
+    public function delete(string $key): self
     {
         $db = $this->db();
         $sql = <<<SQL
@@ -225,7 +274,7 @@ final class CacheStore extends SqliteStore
      *
      * @return $this
      */
-    public function deleteAll()
+    public function deleteAll(): self
     {
         $db = $this->db();
         $db->exec(
@@ -242,7 +291,7 @@ final class CacheStore extends SqliteStore
      *
      * @return $this
      */
-    public function flush()
+    public function flush(): self
     {
         $sql = <<<SQL
             DELETE FROM _cache_item
@@ -273,11 +322,7 @@ final class CacheStore extends SqliteStore
      */
     public function maybeGet(string $key, callable $callback, $expires = null)
     {
-        $store =
-            $this->Now === null
-                ? $this->asOfNow()
-                : $this;
-
+        $store = $this->maybeAsOfNow();
         if ($store->has($key)) {
             return $store->get($key);
         }
@@ -363,9 +408,8 @@ final class CacheStore extends SqliteStore
      *
      * @param int|null $now If given, items expire relative to this Unix
      * timestamp instead of the time {@see CacheStore::asOfNow()} is called.
-     * @return $this
      */
-    public function asOfNow(?int $now = null)
+    public function asOfNow(?int $now = null): self
     {
         if ($this->Now !== null) {
             // @codeCoverageIgnoreStart
@@ -387,6 +431,13 @@ final class CacheStore extends SqliteStore
         return $this->Now === null
             ? time()
             : $this->Now;
+    }
+
+    private function maybeAsOfNow(): self
+    {
+        return $this->Now === null
+            ? $this->asOfNow()
+            : $this;
     }
 
     /**
