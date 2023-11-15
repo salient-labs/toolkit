@@ -397,8 +397,6 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     }
 
     /**
-     * @deprecated Use {@see SyncDefinition::getFallbackClosure()} instead
-     *
      * @param OP::* $operation
      * @return (Closure(ISyncContext, mixed...): (iterable<TEntity>|TEntity))|null
      * @phpstan-return (
@@ -414,6 +412,8 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
      *         )
      *     )
      * )|null
+     * @deprecated Use {@see SyncDefinition::getFallbackClosure()} instead
+     * @codeCoverageIgnore
      */
     final public function getFallbackSyncOperationClosure($operation): ?Closure
     {

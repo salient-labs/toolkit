@@ -64,6 +64,7 @@ final class Test
     /**
      * @param mixed $value
      * @deprecated Use {@see Arr::isList()} instead
+     * @codeCoverageIgnore
      */
     public static function isListArray($value, bool $allowEmpty = false): bool
     {
@@ -73,6 +74,7 @@ final class Test
     /**
      * @param mixed $value
      * @deprecated Use {@see Arr::isIndexed()} instead
+     * @codeCoverageIgnore
      */
     public static function isIndexedArray($value, bool $allowEmpty = false): bool
     {
@@ -82,6 +84,7 @@ final class Test
     /**
      * @param mixed $value
      * @deprecated Use {@see Arr::ofArrayKey()} instead
+     * @codeCoverageIgnore
      */
     public static function isArrayOfArrayKey($value, bool $allowEmpty = false): bool
     {
@@ -91,6 +94,7 @@ final class Test
     /**
      * @param mixed $value
      * @deprecated Use {@see Arr::ofInt()} instead
+     * @codeCoverageIgnore
      */
     public static function isArrayOfInt($value, bool $allowEmpty = false): bool
     {
@@ -100,6 +104,7 @@ final class Test
     /**
      * @param mixed $value
      * @deprecated Use {@see Arr::ofString()} instead
+     * @codeCoverageIgnore
      */
     public static function isArrayOfString($value, bool $allowEmpty = false): bool
     {

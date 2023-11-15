@@ -99,6 +99,7 @@ final class Convert
      * @param mixed $value
      * @return mixed[]
      * @deprecated Use {@see Arr::wrap()} instead
+     * @codeCoverageIgnore
      */
     public static function toArray($value): array
     {
@@ -109,6 +110,7 @@ final class Convert
      * @param mixed $value
      * @return mixed[]
      * @deprecated Use {@see Arr::listWrap()} instead
+     * @codeCoverageIgnore
      */
     public static function toList($value): array
     {
@@ -119,6 +121,7 @@ final class Convert
      * @param mixed $value
      * @return mixed
      * @deprecated Use {@see Arr::unwrap()} instead
+     * @codeCoverageIgnore
      */
     public static function flatten($value)
     {
@@ -150,6 +153,7 @@ final class Convert
      * @param T[] $array
      * @return T[]
      * @deprecated Use {@see Arr::unique()} instead
+     * @codeCoverageIgnore
      */
     public static function toUniqueList(array $array): array
     {
@@ -412,6 +416,7 @@ final class Convert
 
     /**
      * @deprecated Use {@see Date::immutable()} instead
+     * @codeCoverageIgnore
      */
     public static function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
     {
@@ -798,12 +803,11 @@ final class Convert
     /**
      * @param mixed[] $array
      * @deprecated Use {@see Arr::implode()} instead
+     * @codeCoverageIgnore
      */
     public static function sparseToString(string $separator, array $array): string
     {
-        // @codeCoverageIgnoreStart
         return Arr::implode($separator, $array);
-        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -1318,14 +1322,11 @@ final class Convert
 
     /**
      * @deprecated Use {@see Str::setEol()} instead
+     * @codeCoverageIgnore
      */
     public static function lineEndingsToUnix(string $string): string
     {
-        if (strpos($string, "\r") === false) {
-            return $string;
-        }
-
-        return Pcre::replace("/(\r\n|\r)/", "\n", $string);
+        return Str::setEol($string);
     }
 
     /**
