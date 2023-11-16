@@ -3,8 +3,8 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Exception\FilesystemErrorException;
+use Lkrms\Exception\IncompatibleRuntimeEnvironmentException;
 use Lkrms\Exception\InvalidEnvironmentException;
-use Lkrms\Exception\InvalidRuntimeConfigurationException;
 use Lkrms\Facade\Sys;
 use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Phar;
@@ -400,7 +400,7 @@ final class File
 
         if ($utf16le) {
             if (!extension_loaded('iconv')) {
-                throw new InvalidRuntimeConfigurationException(
+                throw new IncompatibleRuntimeEnvironmentException(
                     "'iconv' extension required for UTF-16LE encoding",
                 );
             }

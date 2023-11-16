@@ -4,9 +4,10 @@ namespace Lkrms\Store\Concept;
 
 use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Exception\IncompatibleRuntimeEnvironmentException;
 use Lkrms\Facade\Sys;
 use Lkrms\Utility\File;
-use RuntimeException;
+use LogicException;
 use SQLite3;
 use Throwable;
 
@@ -54,12 +55,12 @@ abstract class SqliteStore implements ReceivesFacade
      * Create or open a database
      *
      * @return $this
-     * @throws RuntimeException if a database is already open.
+     * @throws LogicException if a database is already open.
      */
     final protected function openDb(string $filename, ?string $query = null)
     {
         if ($this->Db) {
-            throw new RuntimeException('Database already open');
+            throw new LogicException('Database already open');
         }
 
         if ($filename !== ':memory:') {
@@ -176,7 +177,7 @@ abstract class SqliteStore implements ReceivesFacade
     /**
      * Get the open SQLite3 instance
      *
-     * @throws RuntimeException if no database is open.
+     * @throws LogicException if no database is open.
      */
     final protected function db(): SQLite3
     {
@@ -188,7 +189,7 @@ abstract class SqliteStore implements ReceivesFacade
             return $this->safeCheck()->Db;
         }
 
-        throw new RuntimeException('No database open');
+        throw new LogicException('No database open');
     }
 
     final protected function isTransactionOpen(): bool
@@ -200,12 +201,12 @@ abstract class SqliteStore implements ReceivesFacade
      * BEGIN a transaction
      *
      * @return $this
-     * @throws RuntimeException if a transaction is already open.
+     * @throws LogicException if a transaction is already open.
      */
     final protected function beginTransaction()
     {
         if ($this->Db && $this->IsTransactionOpen) {
-            throw new RuntimeException('Transaction already open');
+            throw new LogicException('Transaction already open');
         }
 
         $this->db()->exec('BEGIN');
@@ -218,12 +219,12 @@ abstract class SqliteStore implements ReceivesFacade
      * COMMIT a transaction
      *
      * @return $this
-     * @throws RuntimeException if no transaction is open.
+     * @throws LogicException if no transaction is open.
      */
     final protected function commitTransaction()
     {
         if ($this->Db && !$this->IsTransactionOpen) {
-            throw new RuntimeException('No transaction open');
+            throw new LogicException('No transaction open');
         }
 
         $this->db()->exec('COMMIT');
@@ -239,7 +240,7 @@ abstract class SqliteStore implements ReceivesFacade
      * return without throwing an exception. Recommended in `catch` blocks where
      * a transaction may or may not have been successfully opened.
      * @return $this
-     * @throws RuntimeException if no transaction is open.
+     * @throws LogicException if no transaction is open.
      */
     final protected function rollbackTransaction(bool $ignoreNoTransaction = false)
     {
@@ -248,7 +249,7 @@ abstract class SqliteStore implements ReceivesFacade
                 return $this;
             }
 
-            throw new RuntimeException('No transaction open');
+            throw new LogicException('No transaction open');
         }
 
         $this->db()->exec('ROLLBACK');
@@ -264,12 +265,12 @@ abstract class SqliteStore implements ReceivesFacade
      * transaction is committed.
      *
      * @return mixed The callback's return value.
-     * @throws RuntimeException if a transaction is already open.
+     * @throws LogicException if a transaction is already open.
      */
     final protected function callInTransaction(callable $callback)
     {
         if ($this->Db && $this->IsTransactionOpen) {
-            throw new RuntimeException('Transaction already open');
+            throw new LogicException('Transaction already open');
         }
 
         $this->beginTransaction();
@@ -297,6 +298,6 @@ abstract class SqliteStore implements ReceivesFacade
             return $this;
         }
 
-        throw new RuntimeException('SQLite 3.24 or above required');
+        throw new IncompatibleRuntimeEnvironmentException('SQLite 3.24 or above required');
     }
 }
