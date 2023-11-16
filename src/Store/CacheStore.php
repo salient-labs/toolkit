@@ -2,98 +2,73 @@
 
 namespace Lkrms\Store;
 
-use Lkrms\Facade\Console;
 use Lkrms\Store\Concept\SqliteStore;
+use DateTimeInterface;
+use InvalidArgumentException;
 
 /**
- * A SQLite object cache inspired by memcached
+ * A SQLite-backed key-value store
  */
 final class CacheStore extends SqliteStore
 {
-    /**
-     * @var bool|null
-     */
-    private $FlushedExpired;
+    private ?int $Now = null;
 
+    /**
+     * Creates a new CacheStore object
+     */
     public function __construct(string $filename = ':memory:')
     {
         $this
             ->requireUpsert()
-            ->open($filename);
+            ->openDb(
+                $filename,
+                <<<SQL
+                CREATE TABLE IF NOT EXISTS
+                  _cache_item (
+                    item_key TEXT NOT NULL PRIMARY KEY,
+                    item_value BLOB,
+                    expires_at DATETIME,
+                    added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    set_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                  ) WITHOUT ROWID;
+
+                CREATE TRIGGER IF NOT EXISTS _cache_item_update AFTER
+                UPDATE ON _cache_item BEGIN
+                UPDATE _cache_item
+                SET
+                  set_at = CURRENT_TIMESTAMP
+                WHERE
+                  item_key = NEW.item_key;
+                END;
+                SQL
+            );
     }
 
     /**
-     * Create or open a cache database
-     *
-     * @return $this
-     */
-    public function open(string $filename = ':memory:')
-    {
-        $this->openDb($filename);
-
-        $db = $this->db();
-        $db->exec(
-            <<<SQL
-            CREATE TABLE IF NOT EXISTS
-              _cache_item (
-                item_key TEXT NOT NULL PRIMARY KEY,
-                item_value BLOB,
-                expires_at DATETIME,
-                added_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                set_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-              ) WITHOUT ROWID;
-
-            CREATE TRIGGER IF NOT EXISTS _cache_item_update AFTER
-            UPDATE
-              ON _cache_item BEGIN
-            UPDATE
-              _cache_item
-            SET
-              set_at = CURRENT_TIMESTAMP
-            WHERE
-              item_key = NEW.item_key;
-            END;
-            SQL
-        );
-
-        return $this;
-    }
-
-    private function maybeFlush(): void
-    {
-        if (!$this->FlushedExpired) {
-            $this->flushExpired();
-            $this->FlushedExpired = true;
-        }
-    }
-
-    /**
-     * Store an item
-     *
-     * Stores `$value` under `$key` until the cache is flushed or `$expiry`
-     * seconds have passed.
+     * Store an item under a given key
      *
      * @param mixed $value
-     * @param int $expiry The time in seconds before `$value` expires (maximum
-     * 30 days), or the expiry time's Unix timestamp. `0` = no expiry.
+     * @param DateTimeInterface|int|null $expires `null` or `0` if the value
+     * should be cached indefinitely, otherwise a {@see DateTimeInterface} or
+     * Unix timestamp representing its expiration time, or an integer
+     * representing its lifetime in seconds.
      * @return $this
      */
-    public function set(string $key, $value, int $expiry = 0)
+    public function set(string $key, $value, $expires = null)
     {
-        if ($value === false) {
-            $this->delete($key);
-
-            return $this;
-        }
-
-        $this->maybeFlush();
-
-        // If $expiry is non-zero and exceeds 60*60*24*30 seconds (30 days),
-        // take it as a Unix timestamp, otherwise take it as seconds from now
-        if (!$expiry) {
-            $expiry = null;
-        } elseif ($expiry <= 2592000) {
-            $expiry += time();
+        if ($expires instanceof DateTimeInterface) {
+            $expires = $expires->getTimestamp();
+        } elseif (!$expires) {
+            $expires = null;
+        } elseif (!is_int($expires) || $expires < 0) {
+            throw new InvalidArgumentException(sprintf(
+                'Invalid $expires: %s',
+                $expires
+            ));
+        } elseif ($expires < 1625061600) {
+            // Assume values less than the timestamp of 1 Jul 2021 00:00:00 AEST
+            // are lifetimes in seconds
+            $expires += time();
         }
 
         $db = $this->db();
@@ -105,7 +80,8 @@ final class CacheStore extends SqliteStore
                 :item_key,
                 :item_value,
                 DATETIME(:expires_at, 'unixepoch')
-              ) ON CONFLICT (item_key) DO
+              )
+            ON CONFLICT (item_key) DO
             UPDATE
             SET
               item_value = excluded.item_value,
@@ -117,11 +93,9 @@ final class CacheStore extends SqliteStore
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':item_key', $key, \SQLITE3_TEXT);
         $stmt->bindValue(':item_value', serialize($value), \SQLITE3_BLOB);
-        $stmt->bindValue(':expires_at', $expiry, \SQLITE3_INTEGER);
+        $stmt->bindValue(':expires_at', $expires, \SQLITE3_INTEGER);
         $stmt->execute();
         $stmt->close();
-
-        Console::debug('_cache_item changes:', (string) $db->changes());
 
         return $this;
     }
@@ -129,30 +103,41 @@ final class CacheStore extends SqliteStore
     /**
      * True if an item exists and has not expired
      *
-     * @param int|null $maxAge The time in seconds before stored values should
-     * be considered expired (maximum 30 days). Overrides stored expiry times
-     * for this request only. `0` = no expiry.
+     * If `$maxAge` is `null` (the default), the item's expiration time is
+     * honoured, otherwise it is ignored and the item is considered fresh if:
+     *
+     * - its age in seconds is less than or equal to `$maxAge`, or
+     * - `$maxAge` is `0`
      */
     public function has(string $key, ?int $maxAge = null): bool
     {
         $where[] = 'item_key = :item_key';
         $bind[] = [':item_key', $key, \SQLITE3_TEXT];
 
-        if (is_null($maxAge) || $maxAge > 2592000) {
-            $where[] = '(expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)';
+        $bindNow = false;
+        if ($maxAge === null) {
+            $where[] = "(expires_at IS NULL OR expires_at > DATETIME(:now, 'unixepoch'))";
+            $bindNow = true;
         } elseif ($maxAge) {
-            $where[] = 'DATETIME(set_at, :max_age) > CURRENT_TIMESTAMP';
+            $where[] = "DATETIME(set_at, :max_age) > DATETIME(:now, 'unixepoch')";
             $bind[] = [':max_age', "+$maxAge seconds", \SQLITE3_TEXT];
+            $bindNow = true;
+        }
+        if ($bindNow) {
+            $bind[] = [':now', $this->now(), \SQLITE3_INTEGER];
         }
 
-        $db = $this->db();
+        $where = implode(' AND ', $where);
         $sql = <<<SQL
             SELECT
               COUNT(*)
             FROM
               _cache_item
+            WHERE
+              $where
             SQL;
-        $stmt = $db->prepare("$sql WHERE " . implode(' AND ', $where));
+        $db = $this->db();
+        $stmt = $db->prepare($sql);
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
@@ -164,36 +149,45 @@ final class CacheStore extends SqliteStore
     }
 
     /**
-     * Retrieve an item
+     * Retrieve an item stored under a given key
      *
-     * Returns the value previously stored under `$key`, or `false` if it has
-     * expired or doesn't exist in the cache.
+     * If `$maxAge` is `null` (the default), the item's expiration time is
+     * honoured, otherwise it is ignored and the item is considered fresh if:
      *
-     * @param int|null $maxAge The time in seconds before stored values should
-     * be considered expired (maximum 30 days). Overrides stored expiry times
-     * for this request only. `0` = no expiry.
-     * @return mixed|false
+     * - its age in seconds is less than or equal to `$maxAge`, or
+     * - `$maxAge` is `0`
+     *
+     * @return mixed|false `false` if the item has expired or doesn't exist.
      */
     public function get(string $key, ?int $maxAge = null)
     {
         $where[] = 'item_key = :item_key';
         $bind[] = [':item_key', $key, \SQLITE3_TEXT];
 
-        if (is_null($maxAge) || $maxAge > 2592000) {
-            $where[] = '(expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)';
+        $bindNow = false;
+        if ($maxAge === null) {
+            $where[] = "(expires_at IS NULL OR expires_at > DATETIME(:now, 'unixepoch'))";
+            $bindNow = true;
         } elseif ($maxAge) {
-            $where[] = 'DATETIME(set_at, :max_age) > CURRENT_TIMESTAMP';
+            $where[] = "DATETIME(set_at, :max_age) > DATETIME(:now, 'unixepoch')";
             $bind[] = [':max_age', "+$maxAge seconds", \SQLITE3_TEXT];
+            $bindNow = true;
+        }
+        if ($bindNow) {
+            $bind[] = [':now', $this->now(), \SQLITE3_INTEGER];
         }
 
-        $db = $this->db();
+        $where = implode(' AND ', $where);
         $sql = <<<SQL
             SELECT
               item_value
             FROM
               _cache_item
+            WHERE
+              $where
             SQL;
-        $stmt = $db->prepare("$sql WHERE " . implode(' AND ', $where));
+        $db = $this->db();
+        $stmt = $db->prepare($sql);
         foreach ($bind as $param) {
             $stmt->bindValue(...$param);
         }
@@ -203,22 +197,17 @@ final class CacheStore extends SqliteStore
 
         if ($row === false) {
             return false;
-        } else {
-            return unserialize($row[0]);
         }
+        return unserialize($row[0]);
     }
 
     /**
-     * Delete an item
-     *
-     * Deletes the value stored under `$key` from the cache.
+     * Delete an item stored under a given key
      *
      * @return $this
      */
     public function delete(string $key)
     {
-        $this->maybeFlush();
-
         $db = $this->db();
         $sql = <<<SQL
             DELETE FROM
@@ -231,8 +220,6 @@ final class CacheStore extends SqliteStore
         $stmt->execute();
         $stmt->close();
 
-        Console::debug('_cache_item changes:', (string) $db->changes());
-
         return $this;
     }
 
@@ -241,7 +228,7 @@ final class CacheStore extends SqliteStore
      *
      * @return $this
      */
-    public function flush()
+    public function deleteAll()
     {
         $db = $this->db();
         $db->exec(
@@ -251,8 +238,6 @@ final class CacheStore extends SqliteStore
             SQL
         );
 
-        Console::debug('_cache_item changes:', (string) $db->changes());
-
         return $this;
     }
 
@@ -261,7 +246,7 @@ final class CacheStore extends SqliteStore
      *
      * @return $this
      */
-    public function flushExpired()
+    public function flush()
     {
         $db = $this->db();
         $db->exec(
@@ -273,23 +258,62 @@ final class CacheStore extends SqliteStore
             SQL
         );
 
-        Console::debug('_cache_item changes:', (string) $db->changes());
-
         return $this;
     }
 
     /**
-     * Retrieve an item, or get it from a callback and store it for next time
+     * Retrieve an item stored under a given key, or get it from a callback and
+     * store it for subsequent retrieval
      *
+     * @param callable(): mixed $callback
+     * @param DateTimeInterface|int|null $expires `null` or `0` if the value
+     * should be cached indefinitely, otherwise a {@see DateTimeInterface} or
+     * Unix timestamp representing its expiration time, or an integer
+     * representing its lifetime in seconds.
      * @return mixed
      */
-    public function maybeGet(string $key, callable $callback, int $expiry = 0)
+    public function maybeGet(string $key, callable $callback, $expires = null)
     {
-        if (($value = $this->get($key, $expiry)) === false) {
-            $value = $callback();
-            $this->set($key, $value, $expiry);
+        $store = $this->asOfNow();
+        if ($store->has($key)) {
+            return $store->get($key);
         }
 
+        $value = $callback();
+        $this->set($key, $value, $expires);
+
         return $value;
+    }
+
+    /**
+     * Get a copy of the store where items do not expire over time
+     *
+     * Returns a {@see CacheStore} instance where items expire relative to the
+     * time {@see CacheStore::asOfNow()} is called, allowing clients to mitigate
+     * race conditions arising from items expiring between subsequent calls to
+     * {@see CacheStore::has()} and {@see CacheStore::get()}, for example.
+     *
+     * @param int|null $now If given, items expire relative to this Unix
+     * timestamp instead of the time {@see CacheStore::asOfNow()} is called.
+     * @return $this
+     */
+    public function asOfNow(?int $now = null)
+    {
+        if ($now === null && $this->Now !== null) {
+            return $this;
+        }
+
+        $clone = clone $this;
+        $clone->Now = $now === null
+            ? time()
+            : $now;
+        return $clone;
+    }
+
+    private function now(): int
+    {
+        return $this->Now === null
+            ? time()
+            : $this->Now;
     }
 }
