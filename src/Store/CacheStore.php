@@ -5,6 +5,7 @@ namespace Lkrms\Store;
 use Lkrms\Store\Concept\SqliteStore;
 use DateTimeInterface;
 use InvalidArgumentException;
+use LogicException;
 
 /**
  * A SQLite-backed key-value store
@@ -61,10 +62,12 @@ final class CacheStore extends SqliteStore
         } elseif (!$expires) {
             $expires = null;
         } elseif (!is_int($expires) || $expires < 0) {
+            // @codeCoverageIgnoreStart
             throw new InvalidArgumentException(sprintf(
                 'Invalid $expires: %s',
                 $expires
             ));
+            // @codeCoverageIgnoreEnd
         } elseif ($expires < 1625061600) {
             // Assume values less than the timestamp of 1 Jul 2021 00:00:00 AEST
             // are lifetimes in seconds
@@ -274,7 +277,11 @@ final class CacheStore extends SqliteStore
      */
     public function maybeGet(string $key, callable $callback, $expires = null)
     {
-        $store = $this->asOfNow();
+        $store =
+            $this->Now === null
+                ? $this->asOfNow()
+                : $this;
+
         if ($store->has($key)) {
             return $store->get($key);
         }
@@ -299,8 +306,12 @@ final class CacheStore extends SqliteStore
      */
     public function asOfNow(?int $now = null)
     {
-        if ($now === null && $this->Now !== null) {
-            return $this;
+        if ($this->Now !== null) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException(
+                sprintf('Calls to %s cannot be nested', __METHOD__)
+            );
+            // @codeCoverageIgnoreEnd
         }
 
         $clone = clone $this;

@@ -47,6 +47,7 @@ final class CacheStoreTest extends \Lkrms\Tests\TestCase
     {
         $arr = ['foo' => 'bar'];
         $this->Cache->set(__METHOD__, $arr, new DateTimeImmutable('24 hours ago'));
+        $this->Cache->set('key0', 'value0', new DateTimeImmutable('10 seconds ago'));
         $this->Cache->set('key1', 'value1', 60);
         $this->Cache->set('key2', 'value2', time() + 60);
         $now = time();
@@ -56,6 +57,10 @@ final class CacheStoreTest extends \Lkrms\Tests\TestCase
         $this->assertFalse($this->Cache->has(__METHOD__));
         $this->assertTrue($this->Cache->has(__METHOD__, 0));
         $this->assertSame($arr, $this->Cache->get(__METHOD__, 0));
+
+        $this->assertFalse($this->Cache->has('key0'));
+        $this->assertTrue($this->Cache->has('key0', 60));
+        $this->assertSame('value0', $this->Cache->get('key0', 60));
 
         $this->Cache->flush();
         $this->assertFalse($this->Cache->has(__METHOD__, 0));
