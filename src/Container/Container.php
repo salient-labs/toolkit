@@ -5,6 +5,7 @@ namespace Lkrms\Container;
 use Dice\Dice;
 use Dice\DiceException;
 use Lkrms\Concept\FluentInterface;
+use Lkrms\Container\Event\GlobalContainerSetEvent;
 use Lkrms\Container\Exception\ContainerNotLocatedException;
 use Lkrms\Container\Exception\ContainerServiceNotFoundException;
 use Lkrms\Contract\IContainer;
@@ -14,7 +15,6 @@ use Lkrms\Contract\IServiceSingleton;
 use Lkrms\Contract\ReceivesContainer;
 use Lkrms\Contract\ReceivesService;
 use Lkrms\Facade\Event;
-use Lkrms\Support\ServiceEvent;
 use Psr\Container\ContainerInterface;
 use Closure;
 use ReflectionClass;
@@ -28,8 +28,6 @@ use UnexpectedValueException;
  */
 class Container extends FluentInterface implements IContainer
 {
-    public const EVENT_GLOBAL_CONTAINER_SET = self::class . '::globalContainerSet';
-
     private static ?IContainer $GlobalContainer = null;
 
     private Dice $Dice;
@@ -152,7 +150,7 @@ class Container extends FluentInterface implements IContainer
      */
     final public static function setGlobalContainer(?IContainer $container): ?IContainer
     {
-        Event::dispatch(new ServiceEvent(self::EVENT_GLOBAL_CONTAINER_SET, $container));
+        Event::dispatch(new GlobalContainerSetEvent($container));
 
         self::$GlobalContainer = $container;
 

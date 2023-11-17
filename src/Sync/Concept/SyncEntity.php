@@ -10,11 +10,11 @@ use Lkrms\Concern\TExtensible;
 use Lkrms\Concern\TProvidable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
+use Lkrms\Contract\HasDescription;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ReturnsNormaliser;
-use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Sync;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
@@ -155,18 +155,6 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
         return
             SyncIntrospector::get(static::class)
                 ->getGetNameClosure()($this);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function description(): string
-    {
-        throw new MethodNotImplementedException(
-            static::class,
-            __FUNCTION__,
-            ISyncEntity::class
-        );
     }
 
     /**
@@ -353,13 +341,16 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
                 ];
 
             case LinkType::FRIENDLY:
-                return array_filter([
+                return Arr::whereNotEmpty([
                     '@type' => $this->typeUri($compact),
                     '@id' => is_null($this->Id)
                         ? spl_object_id($this)
                         : $this->Id,
                     '@name' => $this->name(),
-                    '@description' => $this->description(),
+                    '@description' =>
+                        $this instanceof HasDescription
+                            ? $this->description()
+                            : null,
                 ]);
 
             default:

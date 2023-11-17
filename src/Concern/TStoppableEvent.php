@@ -1,17 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support;
+namespace Lkrms\Concern;
 
-use Psr\EventDispatcher\StoppableEventInterface;
+use Lkrms\Contract\IStoppableEvent;
 
 /**
- * A cancellable event dispatched by a service
+ * Implements IStoppableEvent
  *
- * @template TService of object
- *
- * @extends ServiceEvent<TService>
+ * @see IStoppableEvent
  */
-class StoppableServiceEvent extends ServiceEvent implements StoppableEventInterface
+trait TStoppableEvent
 {
     protected bool $Propagate = true;
 
@@ -24,7 +22,7 @@ class StoppableServiceEvent extends ServiceEvent implements StoppableEventInterf
     }
 
     /**
-     * Don't pass the event to any more listeners
+     * @inheritDoc
      *
      * @return $this
      */

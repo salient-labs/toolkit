@@ -2,8 +2,8 @@
 
 namespace Lkrms\Sync\Contract;
 
-use Lkrms\Contract\HasDescription;
 use Lkrms\Contract\HasIdentifier;
+use Lkrms\Contract\HasName;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidable;
 use Lkrms\Contract\IProviderEntity;
@@ -25,7 +25,7 @@ use JsonSerializable;
  */
 interface ISyncEntity extends
     HasIdentifier,
-    HasDescription,
+    HasName,
     IProviderEntity,
     IRelatable,
     JsonSerializable
@@ -34,11 +34,6 @@ interface ISyncEntity extends
      * Get the name of the entity
      */
     public function name(): string;
-
-    /**
-     * Get a description of the entity
-     */
-    public function description(): string;
 
     /**
      * Get an instance of the entity's default provider

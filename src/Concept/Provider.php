@@ -43,18 +43,6 @@ abstract class Provider implements IProvider
     /**
      * @inheritDoc
      */
-    public function description(): string
-    {
-        throw new MethodNotImplementedException(
-            static::class,
-            __FUNCTION__,
-            IProvider::class
-        );
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getContext(?IContainer $container = null): ProviderContext
     {
         if (!$container) {

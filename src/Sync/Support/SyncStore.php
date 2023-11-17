@@ -8,13 +8,13 @@ use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Event;
 use Lkrms\Store\Concept\SqliteStore;
-use Lkrms\Support\ServiceEvent;
 use Lkrms\Sync\Catalog\DeferralPolicy;
 use Lkrms\Sync\Catalog\HydrationPolicy;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncClassResolver;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Sync\Event\SyncStoreLoadedEvent;
 use Lkrms\Sync\Exception\SyncProviderBackendUnreachableException;
 use Lkrms\Sync\Exception\SyncProviderHeartbeatCheckFailedException;
 use Lkrms\Utility\Arr;
@@ -35,8 +35,6 @@ use RuntimeException;
  */
 final class SyncStore extends SqliteStore
 {
-    public const EVENT_SYNC_STORE_LOAD = self::class . '::syncStoreLoad';
-
     /**
      * @var bool
      */
@@ -284,7 +282,7 @@ final class SyncStore extends SqliteStore
                 SQL
             );
 
-        Event::dispatch(new ServiceEvent(self::EVENT_SYNC_STORE_LOAD, $this));
+        Event::dispatch(new SyncStoreLoadedEvent($this));
     }
 
     /**
