@@ -2,13 +2,18 @@
 
 namespace Lkrms\Store;
 
+use Lkrms\Exception\AssertionFailedException;
 use Lkrms\Store\Concept\SqliteStore;
+use Lkrms\Utility\Assert;
 use DateTimeInterface;
 use InvalidArgumentException;
 use LogicException;
 
 /**
  * A SQLite-backed key-value store
+ *
+ * Expired items are not implicitly flushed. {@see CacheStore::flush()} must be
+ * called explicitly, e.g. on a schedule or once per run.
  */
 final class CacheStore extends SqliteStore
 {
@@ -114,30 +119,12 @@ final class CacheStore extends SqliteStore
      */
     public function has(string $key, ?int $maxAge = null): bool
     {
-        $where[] = 'item_key = :item_key';
-        $bind[] = [':item_key', $key, \SQLITE3_TEXT];
-
-        $bindNow = false;
-        if ($maxAge === null) {
-            $where[] = "(expires_at IS NULL OR expires_at > DATETIME(:now, 'unixepoch'))";
-            $bindNow = true;
-        } elseif ($maxAge) {
-            $where[] = "DATETIME(set_at, :max_age) > DATETIME(:now, 'unixepoch')";
-            $bind[] = [':max_age', "+$maxAge seconds", \SQLITE3_TEXT];
-            $bindNow = true;
-        }
-        if ($bindNow) {
-            $bind[] = [':now', $this->now(), \SQLITE3_INTEGER];
-        }
-
-        $where = implode(' AND ', $where);
+        $where = $this->getWhere($key, $maxAge, $bind);
         $sql = <<<SQL
             SELECT
               COUNT(*)
             FROM
-              _cache_item
-            WHERE
-              $where
+              _cache_item $where
             SQL;
         $db = $this->db();
         $stmt = $db->prepare($sql);
@@ -164,30 +151,12 @@ final class CacheStore extends SqliteStore
      */
     public function get(string $key, ?int $maxAge = null)
     {
-        $where[] = 'item_key = :item_key';
-        $bind[] = [':item_key', $key, \SQLITE3_TEXT];
-
-        $bindNow = false;
-        if ($maxAge === null) {
-            $where[] = "(expires_at IS NULL OR expires_at > DATETIME(:now, 'unixepoch'))";
-            $bindNow = true;
-        } elseif ($maxAge) {
-            $where[] = "DATETIME(set_at, :max_age) > DATETIME(:now, 'unixepoch')";
-            $bind[] = [':max_age', "+$maxAge seconds", \SQLITE3_TEXT];
-            $bindNow = true;
-        }
-        if ($bindNow) {
-            $bind[] = [':now', $this->now(), \SQLITE3_INTEGER];
-        }
-
-        $where = implode(' AND ', $where);
+        $where = $this->getWhere($key, $maxAge, $bind);
         $sql = <<<SQL
             SELECT
               item_value
             FROM
-              _cache_item
-            WHERE
-              $where
+              _cache_item $where
             SQL;
         $db = $this->db();
         $stmt = $db->prepare($sql);
@@ -205,6 +174,32 @@ final class CacheStore extends SqliteStore
     }
 
     /**
+     * Retrieve an instance of a class stored under a given key
+     *
+     * If `$maxAge` is `null` (the default), the item's expiration time is
+     * honoured, otherwise it is ignored and the item is considered fresh if:
+     *
+     * - its age in seconds is less than or equal to `$maxAge`, or
+     * - `$maxAge` is `0`
+     *
+     * @template T
+     *
+     * @param class-string<T> $class
+     * @return T|false `false` if the item has expired or doesn't exist.
+     * @throws AssertionFailedException if the item stored under `$key` is not
+     * an instance of `$class`.
+     */
+    public function getInstanceOf(string $key, string $class, ?int $maxAge = null)
+    {
+        $item = $this->get($key, $maxAge);
+        if ($item === false) {
+            return false;
+        }
+        Assert::instanceOf($item, $class);
+        return $item;
+    }
+
+    /**
      * Delete an item stored under a given key
      *
      * @return $this
@@ -213,8 +208,7 @@ final class CacheStore extends SqliteStore
     {
         $db = $this->db();
         $sql = <<<SQL
-            DELETE FROM
-              _cache_item
+            DELETE FROM _cache_item
             WHERE
               item_key = :item_key;
             SQL;
@@ -236,8 +230,7 @@ final class CacheStore extends SqliteStore
         $db = $this->db();
         $db->exec(
             <<<SQL
-            DELETE FROM
-              _cache_item;
+            DELETE FROM _cache_item;
             SQL
         );
 
@@ -251,15 +244,16 @@ final class CacheStore extends SqliteStore
      */
     public function flush()
     {
-        $db = $this->db();
-        $db->exec(
-            <<<SQL
-            DELETE FROM
-              _cache_item
+        $sql = <<<SQL
+            DELETE FROM _cache_item
             WHERE
-              expires_at <= CURRENT_TIMESTAMP;
-            SQL
-        );
+              expires_at <= DATETIME(:now, 'unixepoch');
+            SQL;
+        $db = $this->db();
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(':now', $this->now(), \SQLITE3_INTEGER);
+        $stmt->execute();
+        $stmt->close();
 
         return $this;
     }
@@ -268,12 +262,14 @@ final class CacheStore extends SqliteStore
      * Retrieve an item stored under a given key, or get it from a callback and
      * store it for subsequent retrieval
      *
-     * @param callable(): mixed $callback
+     * @template T
+     *
+     * @param callable(): T $callback
      * @param DateTimeInterface|int|null $expires `null` or `0` if the value
      * should be cached indefinitely, otherwise a {@see DateTimeInterface} or
      * Unix timestamp representing its expiration time, or an integer
      * representing its lifetime in seconds.
-     * @return mixed
+     * @return T
      */
     public function maybeGet(string $key, callable $callback, $expires = null)
     {
@@ -290,6 +286,71 @@ final class CacheStore extends SqliteStore
         $this->set($key, $value, $expires);
 
         return $value;
+    }
+
+    /**
+     * Get the number of unexpired items in the store
+     *
+     * If `$maxAge` is `null` (the default), each item's expiration time is
+     * honoured, otherwise it is ignored and items are considered fresh if:
+     *
+     * - their age in seconds is less than or equal to `$maxAge`, or
+     * - `$maxAge` is `0`
+     */
+    public function getItemCount(?int $maxAge = null): int
+    {
+        $where = $this->getWhere(null, $maxAge, $bind);
+        $sql = <<<SQL
+            SELECT
+              COUNT(*)
+            FROM
+              _cache_item $where
+            SQL;
+        $db = $this->db();
+        $stmt = $db->prepare($sql);
+        foreach ($bind as $param) {
+            $stmt->bindValue(...$param);
+        }
+        $result = $stmt->execute();
+        $row = $result->fetchArray(\SQLITE3_NUM);
+        $stmt->close();
+
+        return $row[0];
+    }
+
+    /**
+     * Get a list of keys under which unexpired items are stored
+     *
+     * If `$maxAge` is `null` (the default), each item's expiration time is
+     * honoured, otherwise it is ignored and items are considered fresh if:
+     *
+     * - their age in seconds is less than or equal to `$maxAge`, or
+     * - `$maxAge` is `0`
+     *
+     * @return string[]
+     */
+    public function getAllKeys(?int $maxAge = null): array
+    {
+        $where = $this->getWhere(null, $maxAge, $bind);
+        $sql = <<<SQL
+            SELECT
+              item_key
+            FROM
+              _cache_item $where
+            SQL;
+        $db = $this->db();
+        $stmt = $db->prepare($sql);
+        foreach ($bind as $param) {
+            $stmt->bindValue(...$param);
+        }
+        $result = $stmt->execute();
+        while (($row = $result->fetchArray(\SQLITE3_NUM)) !== false) {
+            $keys[] = $row[0];
+        }
+        $result->finalize();
+        $stmt->close();
+
+        return $keys ?? [];
     }
 
     /**
@@ -326,5 +387,38 @@ final class CacheStore extends SqliteStore
         return $this->Now === null
             ? time()
             : $this->Now;
+    }
+
+    /**
+     * @param array<string,mixed> $bind
+     */
+    private function getWhere(?string $key, ?int $maxAge, ?array &$bind): string
+    {
+        $where = [];
+        $bind = [];
+
+        if ($key !== null) {
+            $where[] = 'item_key = :item_key';
+            $bind[] = [':item_key', $key, \SQLITE3_TEXT];
+        }
+
+        $bindNow = false;
+        if ($maxAge === null) {
+            $where[] = "(expires_at IS NULL OR expires_at > DATETIME(:now, 'unixepoch'))";
+            $bindNow = true;
+        } elseif ($maxAge) {
+            $where[] = "DATETIME(set_at, :max_age) > DATETIME(:now, 'unixepoch')";
+            $bind[] = [':max_age', "+$maxAge seconds", \SQLITE3_TEXT];
+            $bindNow = true;
+        }
+        if ($bindNow) {
+            $bind[] = [':now', $this->now(), \SQLITE3_INTEGER];
+        }
+
+        $where = implode(' AND ', $where);
+        if ($where === '') {
+            return '';
+        }
+        return "WHERE $where";
     }
 }
