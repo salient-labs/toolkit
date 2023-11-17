@@ -2,13 +2,12 @@
 
 namespace Lkrms\Concept;
 
+use Lkrms\Container\Event\GlobalContainerSetEvent;
 use Lkrms\Container\Container;
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\Event;
 use Lkrms\Support\EventDispatcher;
-use Lkrms\Support\ServiceEvent;
 use RuntimeException;
 
 /**
@@ -59,14 +58,12 @@ abstract class Facade implements IFacade
             ? $instance
             : Event::getInstance();
         $id = $dispatcher->listen(
-            function (ServiceEvent $event) use ($service, $instance): void {
-                /** @var IContainer|null */
-                $container = $event->service();
+            function (GlobalContainerSetEvent $event) use ($service, $instance): void {
+                $container = $event->container();
                 if ($container) {
                     $container->instanceIf($service, $instance);
                 }
-            },
-            Container::EVENT_GLOBAL_CONTAINER_SET,
+            }
         );
         self::$ListenerIds[static::class] = $id;
 

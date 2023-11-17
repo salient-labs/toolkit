@@ -14,7 +14,7 @@ use Lkrms\Exception\MethodNotImplementedException;
 interface IProvider extends
     HasContainer,
     HasEnvironment,
-    HasDescription
+    HasName
 {
     /**
      * Get the name of the provider
@@ -27,11 +27,6 @@ interface IProvider extends
      * - human-readable
      */
     public function name(): string;
-
-    /**
-     * Get a description of the provider
-     */
-    public function description(): string;
 
     /**
      * Get a context for instantiation of objects on the provider's behalf
