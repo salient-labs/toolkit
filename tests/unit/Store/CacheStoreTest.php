@@ -2,6 +2,7 @@
 
 namespace Lkrms\Tests\Store;
 
+use Lkrms\Exception\AssertionFailedException;
 use Lkrms\Store\CacheStore;
 use Lkrms\Utility\File;
 use DateTimeImmutable;
@@ -32,13 +33,16 @@ final class CacheStoreTest extends \Lkrms\Tests\TestCase
 
         $arr = ['foo' => 'bar'];
         $this->Cache->set(__METHOD__, $arr);
+        $this->Cache->set('key1', 'value1');
 
         $this->reopenCache();
 
         $this->assertTrue($this->Cache->has(__METHOD__));
         $this->assertSame($arr, $this->Cache->get(__METHOD__));
+        $this->assertEqualsCanonicalizing([__METHOD__, 'key1'], $this->Cache->getAllKeys());
 
         $this->Cache->delete(__METHOD__);
+        $this->assertSame(['key1'], $this->Cache->getAllKeys());
         $this->assertFalse($this->Cache->has(__METHOD__));
         $this->assertFalse($this->Cache->get(__METHOD__));
     }
@@ -54,13 +58,26 @@ final class CacheStoreTest extends \Lkrms\Tests\TestCase
 
         $this->reopenCache();
 
+        // "rewind" by 30 seconds
+        $current = $this->Cache->asOfNow($now - 30);
         $this->assertFalse($this->Cache->has(__METHOD__));
+        $this->assertFalse($this->Cache->has('key0'));
+        $this->assertFalse($current->has(__METHOD__));
+        $this->assertTrue($current->has('key0'));
+        $this->assertTrue($this->Cache->has(__METHOD__, 30));
         $this->assertTrue($this->Cache->has(__METHOD__, 0));
+        $this->assertSame('value0', $current->get('key0'));
+        $this->assertSame($arr, $this->Cache->get(__METHOD__, 30));
         $this->assertSame($arr, $this->Cache->get(__METHOD__, 0));
 
-        $this->assertFalse($this->Cache->has('key0'));
-        $this->assertTrue($this->Cache->has('key0', 60));
-        $this->assertSame('value0', $this->Cache->get('key0', 60));
+        $this->assertEqualsCanonicalizing(['key1', 'key2'], $this->Cache->getAllKeys());
+        $this->assertEqualsCanonicalizing(['key0', 'key1', 'key2'], $current->getAllKeys());
+        $this->assertEqualsCanonicalizing([__METHOD__, 'key0', 'key1', 'key2'], $this->Cache->getAllKeys(30));
+        $this->assertEqualsCanonicalizing([__METHOD__, 'key0', 'key1', 'key2'], $this->Cache->getAllKeys(0));
+        $this->assertSame(2, $this->Cache->getItemCount());
+        $this->assertSame(3, $current->getItemCount());
+        $this->assertSame(4, $this->Cache->getItemCount(30));
+        $this->assertSame(4, $this->Cache->getItemCount(0));
 
         $this->Cache->flush();
         $this->assertFalse($this->Cache->has(__METHOD__, 0));
@@ -78,6 +95,25 @@ final class CacheStoreTest extends \Lkrms\Tests\TestCase
         $current = $this->Cache->asOfNow($now + 120);
         $this->assertSame(false, $current->get('key1'));
         $this->assertSame(false, $current->get('key2'));
+    }
+
+    public function testGetInstanceOf(): void
+    {
+        $this->assertFalse($this->Cache->getInstanceOf(__METHOD__, stdClass::class));
+
+        $objIn = new stdClass();
+        $objIn->Foo = 'bar';
+        $this->Cache->set(__METHOD__, $objIn);
+
+        $objOut = $this->Cache->getInstanceOf(__METHOD__, stdClass::class);
+        $this->assertInstanceOf(stdClass::class, $objOut);
+        $this->assertEquals($objIn, $objOut);
+        $this->assertNotSame($objIn, $objOut);
+
+        $arr = ['foo' => 'bar'];
+        $this->Cache->set(__METHOD__, $arr);
+        $this->expectException(AssertionFailedException::class);
+        $this->Cache->getInstanceOf(__METHOD__, stdClass::class);
     }
 
     public function testMaybeGet(): void
@@ -101,9 +137,11 @@ final class CacheStoreTest extends \Lkrms\Tests\TestCase
         $this->Cache->set('key2', 'value2');
         $this->assertSame('value1', $this->Cache->get('key1'));
         $this->assertSame('value2', $this->Cache->get('key2'));
+        $this->assertEqualsCanonicalizing(['key1', 'key2'], $this->Cache->getAllKeys(0));
         $this->Cache->deleteAll();
         $this->assertFalse($this->Cache->get('key1'));
         $this->assertFalse($this->Cache->get('key2'));
+        $this->assertSame([], $this->Cache->getAllKeys(0));
     }
 
     protected function setUp(): void

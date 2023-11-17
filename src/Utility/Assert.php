@@ -73,6 +73,19 @@ final class Assert
         }
     }
 
+    /**
+     * Assert that a value is an instance of a class or interface
+     *
+     * @param mixed $value
+     * @param class-string $class
+     */
+    public static function instanceOf($value, string $class, ?string $name = null): void
+    {
+        if (!is_a($value, $class)) {
+            self::throwException(sprintf('{} must be an instance of %s', $class), $name);
+        }
+    }
+
     public static function patternMatches(?string $value, string $pattern, ?string $name = null): void
     {
         if (is_null($value) || !preg_match($pattern, $value)) {
