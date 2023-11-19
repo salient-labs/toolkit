@@ -16,7 +16,9 @@ $finder = (new PhpCsFixer\Finder())
 
 return (new PhpCsFixer\Config())
     ->setRules([
+        'is_null' => true,
         'native_constant_invocation' => true,
+        'yoda_style' => ['equal' => false, 'identical' => false],
     ])
     ->setFinder($finder)
     ->setRiskyAllowed(true);

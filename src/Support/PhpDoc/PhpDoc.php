@@ -433,7 +433,7 @@ final class PhpDoc implements IReadable
 
     public function unwrap(?string $value): ?string
     {
-        return is_null($value) ? null : str_replace("\n", ' ', $value);
+        return $value === null ? null : str_replace("\n", ' ', $value);
     }
 
     /**

@@ -42,7 +42,7 @@ abstract class Command extends CliCommand
         if ($namespaceEnvVar) {
             $namespace = Env::get($namespaceEnvVar, null);
         }
-        if (is_null($namespace)) {
+        if ($namespace === null) {
             $namespace = Env::get(EnvVar::NS_DEFAULT, null);
         }
         if ($namespace && trim($value) && strpos($value, '\\') === false) {

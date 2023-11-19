@@ -315,7 +315,7 @@ final class AssertTest extends \Lkrms\Tests\TestCase
 
     public function testRunningOnCli(): void
     {
-        if (PHP_SAPI === 'cli') {
+        if (\PHP_SAPI === 'cli') {
             $this->expectNotToPerformAssertions();
         } else {
             $this->expectException(AssertionFailedException::class);

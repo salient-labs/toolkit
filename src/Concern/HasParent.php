@@ -154,7 +154,7 @@ trait HasParent
 
         $depth = 0;
         $parent = $this->{$_parent};
-        while (!is_null($parent)) {
+        while ($parent !== null) {
             $depth++;
             $parent = $parent->{$_parent};
         }

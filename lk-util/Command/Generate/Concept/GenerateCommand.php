@@ -479,7 +479,7 @@ abstract class GenerateCommand extends Command
             return $lastAlias;
         }
 
-        $alias = is_null($alias) ? Convert::classToBasename($fqcn) : $alias;
+        $alias = $alias === null ? Convert::classToBasename($fqcn) : $alias;
         $_alias = strtolower($alias);
 
         // Use $alias if it already maps to $fqcn

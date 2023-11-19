@@ -329,13 +329,13 @@ class Container extends FluentInterface implements IContainer
         ?array $shareInstances,
         array $rule = []
     ) {
-        if (!is_null($instanceOf)) {
+        if ($instanceOf !== null) {
             $rule['instanceOf'] = $instanceOf;
         }
-        if (!is_null($constructParams)) {
+        if ($constructParams !== null) {
             $rule['constructParams'] = $constructParams;
         }
-        if (!is_null($shareInstances)) {
+        if ($shareInstances !== null) {
             $rule['shareInstances'] = array_merge($rule['shareInstances'] ?? [], $shareInstances);
         }
         $this->addRule($id, $rule);
@@ -441,13 +441,13 @@ class Container extends FluentInterface implements IContainer
         }
 
         $bind = $id::getServices();
-        if (!is_null($services)) {
+        if ($services !== null) {
             $bind = array_intersect($bind, $services = array_unique($services));
             if (count($bind) < count($services)) {
                 throw new UnexpectedValueException($id . ' does not implement: ' . implode(', ', array_diff($services, $bind)));
             }
         }
-        if (!is_null($exceptServices)) {
+        if ($exceptServices !== null) {
             $bind = array_diff($bind, $exceptServices);
         }
 

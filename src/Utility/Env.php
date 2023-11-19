@@ -565,7 +565,7 @@ final class Env
 
     private static function getOrSetBool(string $name, ?bool $newState = null): bool
     {
-        if (func_num_args() > 1 && !is_null($newState)) {
+        if (func_num_args() > 1 && $newState !== null) {
             if ($newState) {
                 self::set($name, '1');
             } else {

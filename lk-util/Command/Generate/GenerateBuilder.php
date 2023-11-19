@@ -339,7 +339,7 @@ class GenerateBuilder extends GenerateCommand
                         $default = ' = true';
                         if (array_key_exists($name, $_defaultProperties)) {
                             $defaultValue = $_defaultProperties[$name];
-                            if (!is_null($defaultValue)) {
+                            if ($defaultValue !== null) {
                                 $defaultText = sprintf(
                                     'default: %s',
                                     var_export($defaultValue, true)
@@ -439,7 +439,7 @@ class GenerateBuilder extends GenerateCommand
                     $default = ' = true';
                     if ($_param->isDefaultValueAvailable()) {
                         $defaultValue = $_param->getDefaultValue();
-                        if (!is_null($defaultValue)) {
+                        if ($defaultValue !== null) {
                             $defaultText = sprintf(
                                 'default: %s',
                                 var_export($defaultValue, true)

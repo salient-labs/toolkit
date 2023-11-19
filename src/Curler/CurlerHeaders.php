@@ -115,7 +115,7 @@ final class CurlerHeaders implements ICurlerHeaders
         // line with horizontal whitespace, so if the line starts with SP or
         // HTAB, add it to the previous header
         if (strpos(" \t", $line[0]) !== false) {
-            if (!is_null($key = $this->LastRawHeaderKey)) {
+            if (null !== ($key = $this->LastRawHeaderKey)) {
                 $this->Headers[$key] = $this->Headers[$key]->withValueExtended($line);
             }
 

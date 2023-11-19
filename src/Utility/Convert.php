@@ -73,7 +73,7 @@ final class Convert
      */
     public static function toBoolOrNull($value): ?bool
     {
-        return is_null($value)
+        return $value === null
             ? null
             : (is_string($value) && Pcre::match(
                 '/^' . Regex::BOOLEAN_STRING . '$/',
@@ -92,7 +92,7 @@ final class Convert
      */
     public static function toIntOrNull($value): ?int
     {
-        return is_null($value) ? null : (int) $value;
+        return $value === null ? null : (int) $value;
     }
 
     /**
@@ -247,7 +247,7 @@ final class Convert
     public static function toScalarArray(array $array): array
     {
         foreach ($array as &$value) {
-            if (is_scalar($value) || is_null($value)) {
+            if (is_scalar($value) || $value === null) {
                 continue;
             }
             $value = json_encode($value);
@@ -365,11 +365,11 @@ final class Convert
     {
         $keys = array_keys($array);
         $offset = array_flip($keys)[$key] ?? null;
-        if (is_null($offset)) {
+        if ($offset === null) {
             throw new LogicException("Array key not found: $key");
         }
         // $length can't be null in PHP 7.4
-        if (is_null($length)) {
+        if ($length === null) {
             $length = count($array);
         }
         $values = array_values($array);
@@ -649,7 +649,7 @@ final class Convert
             $url .= '//';
             !array_key_exists('user', $u) || $auth = $u['user'];
             !array_key_exists('pass', $u) || $auth = ($auth ?? '') . ":{$u['pass']}";
-            is_null($auth ?? null) || $url .= "$auth@";
+            null === ($auth ?? null) || $url .= "$auth@";
             $url .= $u['host'];
             !array_key_exists('port', $u) || $url .= ":{$u['port']}";
         }
@@ -850,7 +850,7 @@ final class Convert
     {
         $noun = $number == 1
             ? $singular
-            : (is_null($plural) ? $singular . 's' : $plural);
+            : ($plural === null ? $singular . 's' : $plural);
 
         return $includeNumber
             ? "$number $noun"
@@ -871,7 +871,7 @@ final class Convert
         string $preposition = 'on'
     ): string {
         return $to - $from
-            ? sprintf('between %s %d and %d', is_null($plural) ? $singular . 's' : $plural, $from, $to)
+            ? sprintf('between %s %d and %d', $plural === null ? $singular . 's' : $plural, $from, $to)
             : sprintf('%s %s %d', $preposition, $singular, $from);
     }
 
@@ -1353,7 +1353,7 @@ final class Convert
         string $name = '',
         string $format = '%s'
     ): string {
-        if (is_null($query)) {
+        if ($query === null) {
             $query = '';
         }
 
@@ -1453,7 +1453,7 @@ final class Convert
         string $eol,
         string $indent = ''
     ): string {
-        if (is_null($value)) {
+        if ($value === null) {
             return 'null';
         }
 

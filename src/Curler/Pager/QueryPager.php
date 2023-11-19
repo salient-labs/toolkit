@@ -63,7 +63,7 @@ final class QueryPager implements ICurlerPager
         $this->Query = $query ?: [];
 
         // Clear the last detected page key to ensure `getPage()` starts over
-        if (is_null($this->PageKey)) {
+        if ($this->PageKey === null) {
             $this->QueryPageKey = null;
             $this->QueryPageKeyChecked = null;
 
@@ -98,7 +98,7 @@ final class QueryPager implements ICurlerPager
                 $this->PageSize < 1 ||
                 count($data) === $this->PageSize)) {
             $key = $this->PageKey;
-            if (is_null($key)) {
+            if ($key === null) {
                 if ($this->QueryPageKeyChecked) {
                     $key = $this->QueryPageKey;
                 } else {
@@ -108,7 +108,7 @@ final class QueryPager implements ICurlerPager
                     $this->QueryPageKeyChecked = true;
                 }
             }
-            if (!is_null($key)) {
+            if ($key !== null) {
                 $this->Query[$key]++;
                 $nextUrl = $curler->getQueryUrl($this->Query);
             }

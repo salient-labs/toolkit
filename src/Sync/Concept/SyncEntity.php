@@ -330,7 +330,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
             case LinkType::DEFAULT:
                 return [
                     '@type' => $this->typeUri($compact),
-                    '@id' => is_null($this->Id)
+                    '@id' => $this->Id === null
                         ? spl_object_id($this)
                         : $this->Id,
                 ];
@@ -343,7 +343,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
             case LinkType::FRIENDLY:
                 return Arr::whereNotEmpty([
                     '@type' => $this->typeUri($compact),
-                    '@id' => is_null($this->Id)
+                    '@id' => $this->Id === null
                         ? spl_object_id($this)
                         : $this->Id,
                     '@name' => $this->name(),
@@ -366,7 +366,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
         return sprintf(
             '%s/%s',
             $this->typeUri($compact),
-            is_null($this->Id)
+            $this->Id === null
                 ? spl_object_id($this)
                 : $this->Id
         );
@@ -421,7 +421,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
      */
     private function _serialize(&$node, array $path, SerializeRules $rules, array $parents = []): void
     {
-        if (!is_null($maxDepth = $rules->getMaxDepth()) && count($path) > $maxDepth) {
+        if (null !== ($maxDepth = $rules->getMaxDepth()) && count($path) > $maxDepth) {
             throw new RuntimeException('In too deep: ' . implode('.', $path));
         }
 
@@ -549,7 +549,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
                 $path[] = $lastKey . '[]';
             }
             foreach ($node as $key => &$child) {
-                if (is_null($child) || is_scalar($child)) {
+                if ($child === null || is_scalar($child)) {
                     continue;
                 }
                 if (!($isList ?? null)) {
@@ -573,7 +573,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
      */
     private function _serializeId(&$node, array $path): void
     {
-        if (is_null($node)) {
+        if ($node === null) {
             return;
         }
 

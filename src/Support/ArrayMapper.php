@@ -111,7 +111,7 @@ final class ArrayMapper
                 static function (array $in) use ($closure): array {
                     return array_filter(
                         $closure($in),
-                        function ($value) { return !is_null($value); }
+                        function ($value) { return $value !== null; }
                     );
                 };
         }

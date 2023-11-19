@@ -1553,7 +1553,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
 
             $nextQuery = null;
             $objects = [];
-            self::collateNested($result['data'], is_null($entityPath) ? null : explode('.', $entityPath), $objects);
+            self::collateNested($result['data'], $entityPath === null ? null : explode('.', $entityPath), $objects);
 
             self::walkGraphQL($objects, $filter);
 
