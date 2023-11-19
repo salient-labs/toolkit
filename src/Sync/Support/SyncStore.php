@@ -568,7 +568,7 @@ final class SyncStore extends SqliteStore
      *
      * @param string $prefix A short alternative to `$uri`. Case-insensitive.
      * Must be unique to the {@see SyncStore}. Must be a scheme name that
-     * complies with Section 3.1 of [RFC3986], i.e. a match for the regular
+     * complies with Section 3.1 of \[RFC3986], i.e. a match for the regular
      * expression `^[a-zA-Z][a-zA-Z0-9+.-]*$`.
      * @param string $uri A globally unique namespace URI.
      * @param string $namespace A fully-qualified PHP namespace.
