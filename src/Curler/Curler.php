@@ -188,7 +188,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
      * {@see Cache} is used as an HTTP response cache. Set
      * {@see Curler::$CachePostResponse} to cache `POST` responses too.
      *
-     * Not compliant with [RFC9111], obviously. Use responsibly.
+     * Not compliant with \[RFC9111], obviously. Use responsibly.
      *
      * @see Curler::$Expiry
      * @see Curler::$Flush

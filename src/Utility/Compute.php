@@ -14,7 +14,7 @@ final class Compute
      *
      * Of the 128 bits returned, 122 are random.
      *
-     * Compliant with [RFC4122].
+     * Compliant with \[RFC4122].
      *
      * @param bool $binary If `true`, 16 bytes of raw binary data are returned
      * instead of a 36-byte hexadecimal representation.
