@@ -14,9 +14,9 @@ use Lkrms\Curler\Contract\ICurlerPager;
  * @method $this baseUrl(string $value) Request endpoint
  * @method $this headers(?ICurlerHeaders $value) Request headers
  * @method $this pager(?ICurlerPager $value) Pagination handler
- * @method $this cacheResponse(bool $value = true) Cache responses to GET and HEAD requests? (HTTP caching directives are ignored) (default: false; see {@see Curler::$CacheResponse})
+ * @method $this cacheResponse(bool $value = true) Cache responses to GET and HEAD requests? (ignored if $expiry is null or >= 0; HTTP caching directives are not honoured) (default: false; see {@see Curler::$CacheResponse})
  * @method $this cachePostResponse(bool $value = true) Cache responses to eligible POST requests? (default: false; see {@see Curler::$CachePostResponse})
- * @method $this expiry(int $value) Seconds before cached responses expire (0 = no expiry) (see {@see Curler::$Expiry})
+ * @method $this expiry(int|null $value) Seconds before cached responses expire (0 = no expiry, null = do not cache, -1 = use default expiry) (see {@see Curler::$Expiry})
  * @method $this flush(bool $value = true) Replace cached responses that haven't expired? (default: false; see {@see Curler::$Flush})
  * @method $this responseCacheKeyCallback((callable(Curler): string[])|null $value) Override the default cache key when saving and loading cached responses (see {@see Curler::$ResponseCacheKeyCallback})
  * @method $this throwHttpErrors(bool $value = true) Throw an exception if the status code is >= 400? (default: true)

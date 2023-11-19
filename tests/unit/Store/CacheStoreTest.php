@@ -99,7 +99,7 @@ final class CacheStoreTest extends \Lkrms\Tests\TestCase
 
     public function testGetInstanceOf(): void
     {
-        $this->assertFalse($this->Cache->getInstanceOf(__METHOD__, stdClass::class));
+        $this->assertNull($this->Cache->getInstanceOf(__METHOD__, stdClass::class));
 
         $objIn = new stdClass();
         $objIn->Foo = 'bar';

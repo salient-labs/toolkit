@@ -324,10 +324,12 @@ class GenerateBuilder extends GenerateCommand
                 $default = '';
                 $defaultText = null;
                 switch (preg_replace('/^(\?|null\|)|\|null$/', '', $type)) {
+                    case '\static':
                     case 'static':
                     case '$this':
                         $type = $service;
                         break;
+                    case '\self':
                     case 'self':
                         $type = $this->getTypeAlias(
                             $_property->getDeclaringClass()->getName()
@@ -424,10 +426,12 @@ class GenerateBuilder extends GenerateCommand
             $default = '';
             $defaultText = null;
             switch (preg_replace('/^(\?|null\|)|\|null$/', '', $type)) {
+                case '\static':
                 case 'static':
                 case '$this':
                     $type = $service;
                     break;
+                case '\self':
                 case 'self':
                     $type = $declaringClass;
                     break;
@@ -595,10 +599,12 @@ class GenerateBuilder extends GenerateCommand
                 }
 
                 switch ($type) {
+                    case '\static':
                     case 'static':
                     case '$this':
                         $type = $service;
                         break;
+                    case '\self':
                     case 'self':
                         $type = $declaringClass;
                         break;

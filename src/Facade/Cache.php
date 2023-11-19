@@ -21,9 +21,12 @@ use DateTimeInterface;
  * @method static CacheStore flush() Delete expired items
  * @method static mixed|false get(string $key, ?int $maxAge = null) Retrieve an item stored under a given key (see {@see CacheStore::get()})
  * @method static string[] getAllKeys(?int $maxAge = null) Get a list of keys under which unexpired items are stored (see {@see CacheStore::getAllKeys()})
+ * @method static mixed[]|null getArray(string $key, ?int $maxAge = null) Retrieve an array stored under a given key (see {@see CacheStore::getArray()})
  * @method static string|null getFilename() Get the filename of the database
- * @method static mixed|false getInstanceOf(string $key, class-string $class, ?int $maxAge = null) Retrieve an instance of a class stored under a given key (see {@see CacheStore::getInstanceOf()})
+ * @method static object|null getInstanceOf(string $key, class-string $class, ?int $maxAge = null) Retrieve an instance of a class stored under a given key (see {@see CacheStore::getInstanceOf()})
+ * @method static int|null getInt(string $key, ?int $maxAge = null) Retrieve an integer stored under a given key (see {@see CacheStore::getInt()})
  * @method static int getItemCount(?int $maxAge = null) Get the number of unexpired items in the store (see {@see CacheStore::getItemCount()})
+ * @method static string|null getString(string $key, ?int $maxAge = null) Retrieve a string stored under a given key (see {@see CacheStore::getString()})
  * @method static bool has(string $key, ?int $maxAge = null) True if an item exists and has not expired (see {@see CacheStore::has()})
  * @method static bool isOpen() Check if a database is open
  * @method static mixed maybeGet(string $key, callable(): mixed $callback, DateTimeInterface|int|null $expires = null) Retrieve an item stored under a given key, or get it from a callback and store it for subsequent retrieval (see {@see CacheStore::maybeGet()})

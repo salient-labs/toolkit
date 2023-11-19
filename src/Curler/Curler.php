@@ -54,7 +54,7 @@ use RecursiveIteratorIterator;
  * @property-read string|null $ReasonPhrase Response status explanation
  * @property-read string|null $ResponseBody Response body
  * @property-read mixed[]|null $CurlInfo curl_getinfo()'s most recent return value
- * @property bool $CacheResponse Cache responses to GET and HEAD requests? (HTTP caching directives are ignored)
+ * @property bool $CacheResponse Cache responses to GET and HEAD requests? (HTTP caching directives are not honoured)
  * @property bool $CachePostResponse Cache responses to eligible POST requests?
  * @property int $Expiry Seconds before cached responses expire (0 = no expiry)
  * @property bool $Flush Replace cached responses that haven't expired?
@@ -182,7 +182,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
 
     /**
      * Cache responses to GET and HEAD requests? (HTTP caching directives are
-     * ignored)
+     * not honoured)
      *
      * If `true`, the shared {@see \Lkrms\Store\CacheStore} instance serviced by
      * {@see Cache} is used as an HTTP response cache. Set
@@ -423,6 +423,11 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     private static $HandleCount = 0;
 
     /**
+     * @param bool $cacheResponse Cache responses to GET and HEAD requests?
+     * (ignored if $expiry is null or >= 0; HTTP caching directives are not
+     * honoured)
+     * @param int|null $expiry Seconds before cached responses expire (0 = no
+     * expiry, null = do not cache, -1 = use default expiry)
      * @param (callable(Curler): string[])|null $responseCacheKeyCallback
      * @param (callable(Curler): Curler)|null $responseCallback
      */
@@ -432,7 +437,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         ?ICurlerPager $pager = null,
         bool $cacheResponse = false,
         bool $cachePostResponse = false,
-        int $expiry = 3600,
+        ?int $expiry = -1,
         bool $flush = false,
         ?callable $responseCacheKeyCallback = null,
         bool $throwHttpErrors = true,
@@ -453,6 +458,15 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         bool $alwaysPaginate = false,
         bool $objectAsArray = true
     ) {
+        if ($expiry === null) {
+            $cacheResponse = false;
+            $expiry = 3600;
+        } elseif ($expiry >= 0) {
+            $cacheResponse = true;
+        } else {
+            $expiry = 3600;
+        }
+
         $this->BaseUrl = $baseUrl;
         $this->Headers = $headers ?: new CurlerHeaders();
         $this->Pager = $pager;

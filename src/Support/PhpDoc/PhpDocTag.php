@@ -85,7 +85,7 @@ class PhpDocTag
         }
 
         $replace = [
-            '/\bclass-string<mixed>/i' => 'class-string',
+            '/\bclass-string<(mixed|object)>/i' => 'class-string',
         ];
         $replace =
             fn(array $types): array =>

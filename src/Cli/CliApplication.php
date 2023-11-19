@@ -57,8 +57,8 @@ class CliApplication extends Application implements ICliApplication
     ) {
         parent::__construct($basePath, $appName, $envFlags);
 
-        Assert::sapiIsCli();
-        Assert::argvIsRegistered();
+        Assert::runningOnCli();
+        Assert::argvIsDeclared();
 
         // Keep running, even if:
         // - the TTY disconnects
@@ -192,7 +192,7 @@ class CliApplication extends Application implements ICliApplication
     public function command(array $name, string $id)
     {
         foreach ($name as $i => $subcommand) {
-            Assert::patternMatches($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "name[$i]");
+            Assert::isMatch($subcommand, '/^[a-zA-Z][a-zA-Z0-9_-]*$/', "\$name[$i]");
         }
 
         if ($this->getNode($name) !== null) {
