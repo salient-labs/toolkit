@@ -55,7 +55,6 @@ $facades = [
     SyncStore::class => \Lkrms\Facade\Sync::class,
     Timekeeper::class => \Lkrms\Facade\Profile::class,
     System::class => \Lkrms\Facade\Sys::class,
-    TrashStore::class => \Lkrms\Facade\Trash::class,
 ];
 
 $builders = [
