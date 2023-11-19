@@ -2,8 +2,8 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
-use InvalidArgumentException;
 
 /**
  * Manipulate strings

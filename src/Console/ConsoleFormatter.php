@@ -10,11 +10,12 @@ use Lkrms\Console\Contract\IConsoleFormat as Format;
 use Lkrms\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Lkrms\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
-use RuntimeException;
+use LogicException;
 
 /**
  * Formats messages for a console output target
@@ -251,7 +252,7 @@ final class ConsoleFormatter
             $matches,
             \PREG_SET_ORDER | \PREG_UNMATCHED_AS_NULL
         )) {
-            throw new RuntimeException(
+            throw new UnexpectedValueException(
                 sprintf('Unable to parse: %s', $string)
             );
         }
@@ -570,6 +571,6 @@ final class ConsoleFormatter
                 ]);
         }
 
-        throw new RuntimeException(sprintf('Invalid tag: %s', $tag));
+        throw new LogicException(sprintf('Invalid tag: %s', $tag));
     }
 }

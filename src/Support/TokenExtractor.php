@@ -2,9 +2,9 @@
 
 namespace Lkrms\Support;
 
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Utility\Convert;
 use Generator;
-use UnexpectedValueException;
 
 defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10007);
 defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 10008);

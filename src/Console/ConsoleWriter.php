@@ -11,6 +11,8 @@ use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Exception\Contract\ExceptionInterface;
+use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Debug;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
@@ -18,7 +20,6 @@ use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
 use Throwable;
-use UnexpectedValueException;
 
 /**
  * Logs messages to registered targets
@@ -145,7 +146,7 @@ final class ConsoleWriter implements ReceivesFacade
                     );
 
                 default:
-                    throw new UnexpectedValueException(
+                    throw new InvalidEnvironmentException(
                         sprintf('Invalid CONSOLE_OUTPUT value: %s', $output)
                     );
             }
@@ -860,7 +861,7 @@ final class ConsoleWriter implements ReceivesFacade
             '__Stack trace:__',
             "\n" . $exception->getTraceAsString()
         );
-        if ($exception instanceof \Lkrms\Exception\Exception) {
+        if ($exception instanceof ExceptionInterface) {
             foreach ($exception->getDetail() as $section => $text) {
                 $this->write(
                     $stackTraceLevel,

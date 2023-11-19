@@ -4,7 +4,8 @@ namespace Lkrms\Utility;
 
 use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
-use Lkrms\Exception\Exception;
+use Lkrms\Exception\FilesystemErrorException;
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Utility\File;
 
 /**
@@ -81,7 +82,7 @@ final class Package
         $path = self::getRootPackageValue('install_path');
         $realpath = File::realpath($path);
         if ($realpath === false) {
-            throw new Exception(
+            throw new FilesystemErrorException(
                 sprintf('Root package install path not found: %s', $path)
             );
         }
@@ -228,7 +229,7 @@ final class Package
     {
         $values = InstalledVersions::getRootPackage();
         if (!array_key_exists($key, $values)) {
-            throw new Exception(
+            throw new UnexpectedValueException(
                 sprintf('Value not found in root package: %s', $key)
             );
         }

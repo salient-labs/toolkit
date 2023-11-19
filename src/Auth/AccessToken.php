@@ -5,10 +5,10 @@ namespace Lkrms\Auth;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
-use InvalidArgumentException;
 
 /**
  * A token issued by an authorization provider for access to protected resources

@@ -3,10 +3,10 @@
 namespace Lkrms\Store;
 
 use Lkrms\Exception\AssertionFailedException;
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Store\Concept\SqliteStore;
 use Lkrms\Utility\Assert;
 use DateTimeInterface;
-use InvalidArgumentException;
 use LogicException;
 
 /**

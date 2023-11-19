@@ -2,9 +2,9 @@
 
 namespace Lkrms\Tests\Support\PhpDoc;
 
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\PhpDoc\PhpDoc;
-use UnexpectedValueException;
 
 final class PhpDocTest extends \Lkrms\Tests\TestCase
 {
@@ -13,7 +13,7 @@ final class PhpDocTest extends \Lkrms\Tests\TestCase
      */
     public function testInvalidDocBlock(string $docBlock): void
     {
-        $this->expectException(UnexpectedValueException::class);
+        $this->expectException(InvalidArgumentException::class);
         new PhpDoc($docBlock);
     }
 

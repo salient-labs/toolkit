@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support\PhpDoc;
 
-use UnexpectedValueException;
+use Lkrms\Exception\InvalidArgumentException;
 
 /**
  * A "var" tag extracted from a PHP DocBlock
@@ -24,7 +24,7 @@ class PhpDocVarTag extends PhpDocTag
     ) {
         parent::__construct('var', $name, $type, $description, $class, $member, $legacyNullable);
         if (!$this->Type) {
-            throw new UnexpectedValueException(sprintf('Invalid type: %s', $type));
+            throw new InvalidArgumentException(sprintf('Invalid type: %s', $type));
         }
     }
 }

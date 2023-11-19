@@ -7,6 +7,8 @@ use Lkrms\Console\Catalog\ConsoleLevels;
 use Lkrms\Console\Target\StreamTarget;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IApplication;
+use Lkrms\Exception\FilesystemErrorException;
+use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Err;
@@ -24,7 +26,6 @@ use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
 use LogicException;
 use Phar;
-use RuntimeException;
 
 /**
  * A service container for applications
@@ -119,7 +120,7 @@ class Application extends Container implements IApplication
         $path = $this->Env->get($name, null);
         if ($path !== null) {
             if (trim($path) === '') {
-                throw new RuntimeException(
+                throw new InvalidEnvironmentException(
                     sprintf('%s disabled in this environment', $name)
                 );
             }
@@ -163,7 +164,7 @@ class Application extends Container implements IApplication
 
         $home = $this->Env->home();
         if ($home === null || !is_dir($home)) {
-            throw new RuntimeException('Home directory not found');
+            throw new InvalidEnvironmentException('Home directory not found');
         }
 
         switch ($parent) {
@@ -192,7 +193,7 @@ class Application extends Container implements IApplication
     private function checkPath(string $path, string $name, bool $create, ?string &$save): string
     {
         if (!Test::isAbsolutePath($path)) {
-            throw new RuntimeException(
+            throw new InvalidEnvironmentException(
                 sprintf('Absolute path required: %s', $name)
             );
         }
@@ -276,9 +277,13 @@ class Application extends Container implements IApplication
                 Sys::getProgramBasename('.php', '.phar')
             );
 
+        $explicitBasePath = true;
+        $defaultBasePath = false;
         if ($basePath === null) {
+            $explicitBasePath = false;
             $basePath = $this->Env->get('app_base_path', null);
             if ($basePath === null) {
+                $defaultBasePath = true;
                 $basePath = Package::path();
             }
         }
@@ -286,7 +291,11 @@ class Application extends Container implements IApplication
         $_basePath = $basePath;
         if (!is_dir($basePath) ||
                 ($basePath = File::realpath($basePath)) === false) {
-            throw new RuntimeException(
+            $exception =
+                $explicitBasePath || $defaultBasePath
+                    ? FilesystemErrorException::class
+                    : InvalidEnvironmentException::class;
+            throw new $exception(
                 sprintf('Invalid basePath: %s', $_basePath)
             );
         }

@@ -19,7 +19,6 @@ use Lkrms\Support\Http\HttpServer;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Env;
 use LogicException;
-use RuntimeException;
 use Throwable;
 
 /**
@@ -351,7 +350,7 @@ abstract class OAuth2Client
 
         $tokenType = $_values['token_type'] ?? null;
         if ($tokenType === null) {
-            throw new RuntimeException('OAuth 2.0 provider did not return a token type');
+            throw new OAuth2Exception('OAuth 2.0 provider did not return a token type');
         }
 
         $accessToken = $_token->getToken();

@@ -8,7 +8,7 @@ use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Facade\Event;
 use Lkrms\Support\EventDispatcher;
-use RuntimeException;
+use LogicException;
 
 /**
  * A static interface to an instance of an underlying class
@@ -85,7 +85,7 @@ abstract class Facade implements IFacade
     final public static function load()
     {
         if (isset(self::$Instances[static::class])) {
-            throw new RuntimeException(static::class . ' already loaded');
+            throw new LogicException(static::class . ' already loaded');
         }
 
         return self::_load(...func_get_args());

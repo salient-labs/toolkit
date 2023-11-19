@@ -4,9 +4,10 @@ namespace Lkrms\Support\PhpDoc;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Exception\InvalidArgumentException;
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Str;
-use UnexpectedValueException;
 
 /**
  * Parses PSR-5 PHPDocs
@@ -127,7 +128,7 @@ final class PhpDoc implements IReadable
     ) {
         // Check for a leading "*" after every newline as per PSR-5
         if (!preg_match(Regex::anchorAndDelimit(Regex::PHP_DOCBLOCK), $docBlock, $matches)) {
-            throw new UnexpectedValueException('Invalid DocBlock');
+            throw new InvalidArgumentException('Invalid DocBlock');
         }
         $this->LegacyNullable = $legacyNullable;
 

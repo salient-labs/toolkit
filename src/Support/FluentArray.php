@@ -4,8 +4,8 @@ namespace Lkrms\Support;
 
 use Lkrms\Concern\HasMutator;
 use Lkrms\Contract\IImmutable;
+use Lkrms\Exception\InvalidArgumentException;
 use Iterator;
-use UnexpectedValueException;
 
 /**
  * Wraps (some of) PHP's array functions in a fluent interface
@@ -157,7 +157,7 @@ final class FluentArray implements IImmutable
         }
 
         // @phpstan-ignore-next-line
-        throw new UnexpectedValueException(sprintf(
+        throw new InvalidArgumentException(sprintf(
             'Argument #1 ($array) must be of type array|Iterator|%s, %s given',
             static::class,
             is_object($array) ? get_class($array) : gettype($array)

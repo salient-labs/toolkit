@@ -2,11 +2,11 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
 use LogicException;
-use RuntimeException;
 use SQLite3;
 
 /**
@@ -78,7 +78,7 @@ final class System
      * To get the running script's canonical path relative to the application,
      * set `$basePath` to the application's root directory.
      *
-     * @throws RuntimeException if the filename used to run the script doesn't
+     * @throws LogicException if the filename used to run the script doesn't
      * belong to `$basePath`.
      */
     public static function getProgramName(?string $basePath = null): string
@@ -95,7 +95,7 @@ final class System
             return substr($filename, strlen($basePath) + 1);
         }
 
-        throw new RuntimeException('SCRIPT_FILENAME is not in $basePath');
+        throw new LogicException('SCRIPT_FILENAME is not in $basePath');
     }
 
     /**
@@ -159,7 +159,7 @@ final class System
 
         $dir = getcwd();
         if ($dir === false) {
-            throw new RuntimeException('Unable to get current working directory');
+            throw new FilesystemErrorException('Unable to get current working directory');
         }
         return $dir;
     }

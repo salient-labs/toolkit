@@ -2,10 +2,10 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Exception\UnexpectedValueException;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
-use UnexpectedValueException;
 
 /**
  * Make data human-readable

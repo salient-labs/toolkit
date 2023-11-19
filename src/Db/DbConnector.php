@@ -4,11 +4,11 @@ namespace Lkrms\Db;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Facade\Format;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use ADOConnection;
-use UnexpectedValueException;
 
 /**
  * Creates connections to databases

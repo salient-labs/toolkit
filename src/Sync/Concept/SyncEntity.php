@@ -15,6 +15,7 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ReturnsNormaliser;
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Facade\Sync;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Iterator\IterableIterator;
@@ -45,8 +46,6 @@ use DateTimeInterface;
 use Generator;
 use LogicException;
 use ReflectionClass;
-use RuntimeException;
-use UnexpectedValueException;
 
 /**
  * Represents the state of an entity in an external system
@@ -422,7 +421,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     private function _serialize(&$node, array $path, SerializeRules $rules, array $parents = []): void
     {
         if (null !== ($maxDepth = $rules->getMaxDepth()) && count($path) > $maxDepth) {
-            throw new RuntimeException('In too deep: ' . implode('.', $path));
+            throw new UnexpectedValueException('In too deep: ' . implode('.', $path));
         }
 
         /** @todo Serialize deferred relationships */
@@ -776,7 +775,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
             if ($property === 'Provider' && $value !== null) {
                 $value = $this->store()->getProvider($value);
                 if (!$value) {
-                    throw new RuntimeException('Cannot unserialize missing provider');
+                    throw new UnexpectedValueException('Cannot unserialize missing provider');
                 }
             }
             $this->{$property} = $value;
