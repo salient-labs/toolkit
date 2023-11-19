@@ -4,12 +4,12 @@ namespace Lkrms\LkUtil\Command\Http;
 
 use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\LkUtil\Command\Concept\Command;
 use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Sync\Concept\HttpSyncProvider;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
-use UnexpectedValueException;
 
 /**
  * Sends HTTP requests to HTTP sync providers

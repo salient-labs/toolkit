@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support\PhpDoc;
 
-use UnexpectedValueException;
+use Lkrms\Exception\InvalidArgumentException;
 
 /**
  * A "template" tag extracted from a PHP DocBlock
@@ -35,7 +35,7 @@ class PhpDocTemplateTag extends PhpDocTag
         parent::__construct('template', $name, $type, null, $class, $member, $legacyNullable);
         $this->Variance = $variance;
         if (!$this->Name) {
-            throw new UnexpectedValueException(sprintf('Invalid name: %s', $name));
+            throw new InvalidArgumentException(sprintf('Invalid name: %s', $name));
         }
     }
 

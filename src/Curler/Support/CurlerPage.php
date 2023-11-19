@@ -5,7 +5,7 @@ namespace Lkrms\Curler\Support;
 use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Curler;
-use RuntimeException;
+use Lkrms\Exception\AssertionFailedException;
 
 /**
  * Implements ICurlerPage
@@ -88,7 +88,7 @@ final class CurlerPage implements ICurlerPage
     private function assertHasNextPage(): void
     {
         if ($this->IsLastPage) {
-            throw new RuntimeException('No more pages');
+            throw new AssertionFailedException('No more pages');
         }
     }
 

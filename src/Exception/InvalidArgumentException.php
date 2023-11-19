@@ -6,9 +6,9 @@ use Lkrms\Exception\Concern\ExceptionTrait;
 use Lkrms\Exception\Contract\ExceptionInterface;
 
 /**
- * Base class for exceptions
+ * Thrown when an invalid argument is passed to a method
  */
-class Exception extends \Exception implements ExceptionInterface
+class InvalidArgumentException extends \InvalidArgumentException implements ExceptionInterface
 {
     use ExceptionTrait;
 }

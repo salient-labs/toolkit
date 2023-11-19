@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support\PhpDoc;
 
-use UnexpectedValueException;
+use Lkrms\Exception\InvalidArgumentException;
 
 /**
  * A "return" tag extracted from a PHP DocBlock
@@ -28,7 +28,7 @@ class PhpDocReturnTag extends PhpDocTag
     ) {
         parent::__construct('return', null, $type, $description, $class, $member, $legacyNullable);
         if (!$this->Type) {
-            throw new UnexpectedValueException(sprintf('Invalid type: %s', $type));
+            throw new InvalidArgumentException(sprintf('Invalid type: %s', $type));
         }
     }
 }

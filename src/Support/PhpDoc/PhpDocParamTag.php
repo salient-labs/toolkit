@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support\PhpDoc;
 
-use UnexpectedValueException;
+use Lkrms\Exception\InvalidArgumentException;
 
 /**
  * A "param" tag extracted from a PHP DocBlock
@@ -31,7 +31,7 @@ class PhpDocParamTag extends PhpDocTag
         parent::__construct('param', $name, $type, $description, $class, $member, $legacyNullable);
         $this->IsVariadic = $isVariadic;
         if (!$this->Name) {
-            throw new UnexpectedValueException(sprintf('Invalid name: %s', $name));
+            throw new InvalidArgumentException(sprintf('Invalid name: %s', $name));
         }
     }
 }

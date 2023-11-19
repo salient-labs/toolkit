@@ -6,9 +6,9 @@ use Lkrms\Exception\Concern\ExceptionTrait;
 use Lkrms\Exception\Contract\ExceptionInterface;
 
 /**
- * Base class for exceptions
+ * Thrown when a value is missing or invalid
  */
-class Exception extends \Exception implements ExceptionInterface
+class UnexpectedValueException extends \UnexpectedValueException implements ExceptionInterface
 {
     use ExceptionTrait;
 }

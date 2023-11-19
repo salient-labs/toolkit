@@ -2,10 +2,10 @@
 
 namespace Lkrms\Support;
 
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Closure;
-use UnexpectedValueException;
 
 /**
  * Creates closures that rearrange arrays

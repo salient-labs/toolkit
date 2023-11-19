@@ -8,6 +8,7 @@ use Lkrms\Concept\FluentInterface;
 use Lkrms\Container\Event\GlobalContainerSetEvent;
 use Lkrms\Container\Exception\ContainerNotLocatedException;
 use Lkrms\Container\Exception\ContainerServiceNotFoundException;
+use Lkrms\Container\Exception\InvalidContainerBindingException;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IService;
 use Lkrms\Contract\IServiceShared;
@@ -18,7 +19,6 @@ use Lkrms\Facade\Event;
 use Psr\Container\ContainerInterface;
 use Closure;
 use ReflectionClass;
-use UnexpectedValueException;
 
 /**
  * A simple service container with context-based dependency injection
@@ -217,7 +217,7 @@ class Container extends FluentInterface implements IContainer
                 array_keys($rule['substitutions'] ?? [])
             )
         )) {
-            throw new UnexpectedValueException("Dependencies in 'shareInstances' cannot be substituted: " . implode(', ', $subs));
+            throw new InvalidContainerBindingException("Dependencies in 'shareInstances' cannot be substituted: " . implode(', ', $subs));
         }
     }
 
@@ -394,7 +394,7 @@ class Container extends FluentInterface implements IContainer
         int $lifetime = ServiceLifetime::INHERIT
     ) {
         if (!is_subclass_of($id, IService::class)) {
-            throw new UnexpectedValueException($id . ' does not implement ' . IService::class);
+            throw new InvalidContainerBindingException($id . ' does not implement ' . IService::class);
         }
         $this->applyService($id, $services, $exceptServices, $lifetime);
         $this->Services[$id] = true;
@@ -444,7 +444,7 @@ class Container extends FluentInterface implements IContainer
         if ($services !== null) {
             $bind = array_intersect($bind, $services = array_unique($services));
             if (count($bind) < count($services)) {
-                throw new UnexpectedValueException($id . ' does not implement: ' . implode(', ', array_diff($services, $bind)));
+                throw new InvalidContainerBindingException($id . ' does not implement: ' . implode(', ', array_diff($services, $bind)));
             }
         }
         if ($exceptServices !== null) {

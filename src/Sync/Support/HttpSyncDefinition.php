@@ -11,6 +11,7 @@ use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerHttpErrorException;
 use Lkrms\Curler\Curler;
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Catalog\HttpRequestMethod;
@@ -31,7 +32,6 @@ use Lkrms\Utility\Env;
 use Lkrms\Utility\Pcre;
 use Closure;
 use LogicException;
-use UnexpectedValueException;
 
 /**
  * Provides direct access to an HttpSyncProvider's implementation of sync

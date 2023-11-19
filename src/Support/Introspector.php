@@ -14,14 +14,13 @@ use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\IRelatable;
 use Lkrms\Contract\ISerializeRules;
 use Lkrms\Contract\ITreeable;
+use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Closure;
 use LogicException;
-use RuntimeException;
-use UnexpectedValueException;
 
 /**
  * Generates closures that perform operations on a class
@@ -705,7 +704,7 @@ class Introspector
         }
 
         if (!$closure) {
-            throw new RuntimeException("Unable to perform '$action' on property '$name'");
+            throw new UnexpectedValueException("Unable to perform '$action' on property '$name'");
         }
 
         $closure = $closure->bindTo(null, $this->_Class->Class);

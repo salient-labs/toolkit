@@ -4,7 +4,7 @@ namespace Lkrms\Tests\Container;
 
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
-use RuntimeException;
+use LogicException;
 
 trait TestTrait
 {
@@ -30,7 +30,7 @@ trait TestTrait
     public function setContainer(IContainer $container)
     {
         if ($this->Container) {
-            throw new RuntimeException('setContainer already called');
+            throw new LogicException('setContainer already called');
         }
         $this->Container = $container;
 
@@ -40,7 +40,7 @@ trait TestTrait
     public function setService(string $service)
     {
         if ($this->Service) {
-            throw new RuntimeException('setService already called');
+            throw new LogicException('setService already called');
         }
         $this->Service = $service;
 

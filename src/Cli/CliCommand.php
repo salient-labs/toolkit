@@ -20,7 +20,6 @@ use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Package;
 use LogicException;
-use RuntimeException;
 use Throwable;
 
 /**
@@ -1191,7 +1190,7 @@ abstract class CliCommand implements ICliCommand
     private function assertHasRun()
     {
         if ($this->OptionValues === null) {
-            throw new RuntimeException('Command must be invoked first');
+            throw new LogicException('Command must be invoked first');
         }
 
         return $this;

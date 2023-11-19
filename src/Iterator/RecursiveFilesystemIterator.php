@@ -3,7 +3,7 @@
 namespace Lkrms\Iterator;
 
 use Lkrms\Contract\IImmutable;
-use Lkrms\Exception\Exception;
+use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Iterator\Concern\FluentIteratorTrait;
 use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Utility\Pcre;
@@ -329,7 +329,7 @@ class RecursiveFilesystemIterator implements IteratorAggregate, FluentIteratorIn
 
         foreach ($this->Dirs as $directory) {
             if (!is_dir($directory)) {
-                throw new Exception(sprintf('Not a directory: %s', $directory));
+                throw new FilesystemErrorException(sprintf('Not a directory: %s', $directory));
             }
 
             if (!$this->Recurse) {
