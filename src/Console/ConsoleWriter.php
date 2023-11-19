@@ -392,7 +392,7 @@ final class ConsoleWriter implements ReceivesFacade
         string $successText = 'without errors'
     ) {
         $msg1 = trim($finishedText);
-        if (0 === $this->Errors + $this->Warnings) {
+        if ($this->Errors + $this->Warnings === 0) {
             return $this->write(Level::INFO, "$msg1 $successText", null, Type::SUCCESS);
         }
 

@@ -87,7 +87,7 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
     protected function getClosure($operation): ?Closure
     {
         // Return null if no table name has been provided
-        if (is_null($this->Table)) {
+        if ($this->Table === null) {
             return null;
         }
 

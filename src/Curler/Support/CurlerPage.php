@@ -61,7 +61,7 @@ final class CurlerPage implements ICurlerPage
     ) {
         $this->Entities = $entities;
         $this->EntityCount = count($entities) + ($previous ? $previous->entityCount() : 0);
-        $this->IsLastPage = is_null($isLastPage) ? empty($nextUrl) : $isLastPage;
+        $this->IsLastPage = $isLastPage === null ? empty($nextUrl) : $isLastPage;
 
         if (!$this->IsLastPage) {
             $this->NextUrl = $nextUrl ?: $curler->BaseUrl . $curler->QueryString;

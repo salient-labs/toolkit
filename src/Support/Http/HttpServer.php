@@ -180,7 +180,7 @@ final class HttpServer implements IReadable, IImmutable
 
     public function isRunning(): bool
     {
-        return !is_null($this->Server);
+        return $this->Server !== null;
     }
 
     /**
@@ -200,7 +200,7 @@ final class HttpServer implements IReadable, IImmutable
             throw new RuntimeException('start() must be called first');
         }
 
-        $timeout = is_null($timeout) ? $this->Timeout : $timeout;
+        $timeout = $timeout === null ? $this->Timeout : $timeout;
         do {
             $peer = null;
             $socket = stream_socket_accept($this->Server, $timeout, $peer);
@@ -220,7 +220,7 @@ final class HttpServer implements IReadable, IImmutable
                     throw new RuntimeException("Error reading request from $peer");
                 }
 
-                if (is_null($startLine)) {
+                if ($startLine === null) {
                     $startLine = explode(' ', rtrim($line, "\r\n"));
                     if (count($startLine) !== 3 ||
                             !in_array($startLine[0], HttpRequestMethods::ALL, true) ||

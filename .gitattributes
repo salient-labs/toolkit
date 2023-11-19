@@ -22,7 +22,6 @@
 /src/Facade/Profile.php linguist-generated
 /src/Facade/Sync.php linguist-generated
 /src/Facade/Sys.php linguist-generated
-/src/Facade/Trash.php linguist-generated
 /src/Sync/Support/DbSyncDefinitionBuilder.php linguist-generated
 /src/Sync/Support/HttpSyncDefinitionBuilder.php linguist-generated
 /src/Sync/Support/SyncErrorBuilder.php linguist-generated

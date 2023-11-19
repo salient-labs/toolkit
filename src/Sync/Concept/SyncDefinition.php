@@ -506,7 +506,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
                     return $entity;
                 }
             )
-            ->unlessIf(fn($entity) => is_null($entity));
+            ->unlessIf(fn($entity) => $entity === null);
     }
 
     /**
@@ -521,7 +521,7 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     {
         $returnEmpty = false;
 
-        if (FilterPolicy::IGNORE === $this->FilterPolicy ||
+        if ($this->FilterPolicy === FilterPolicy::IGNORE ||
                 !($filter = $ctx->getFilters())) {
             return;
         }

@@ -397,7 +397,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
         $path = '.' . implode('.', $path);
         $key = Arr::implode("\0", [$class, $untilClass, $path]);
 
-        if (!is_null($rules = $this->RuleCache[$cacheKey][$key] ?? null)) {
+        if (null !== ($rules = $this->RuleCache[$cacheKey][$key] ?? null)) {
             return $rules;
         }
 

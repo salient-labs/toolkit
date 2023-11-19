@@ -98,13 +98,13 @@ final class Debugging implements ReceivesFacade
                 'file' => $file,
                 0 => $frame['type'] ?? ($file ? '::' : null),
                 'function' => $function['function'],
-                1 => is_null($line) ? null : ':',
+                1 => $line === null ? null : ':',
                 'line' => $line,
             ]);
         } elseif (isset($frames[$depth + 1])) {
             return array_filter([
                 'file' => $file,
-                0 => is_null($line) ? null : ':',
+                0 => $line === null ? null : ':',
                 'line' => $line,
             ]);
         }
