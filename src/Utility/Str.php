@@ -3,6 +3,7 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Exception\InvalidArgumentException;
+use Lkrms\Support\Catalog\CharacterSequence as Char;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 
 /**
@@ -10,6 +11,22 @@ use Lkrms\Support\Catalog\RegularExpression as Regex;
  */
 final class Str
 {
+    /**
+     * Convert ASCII alphabetic characters in a string to lowercase
+     */
+    public static function lower(string $string): string
+    {
+        return strtr($string, Char::ALPHABETIC_UPPER, Char::ALPHABETIC_LOWER);
+    }
+
+    /**
+     * Convert ASCII alphabetic characters in a string to uppercase
+     */
+    public static function upper(string $string): string
+    {
+        return strtr($string, Char::ALPHABETIC_LOWER, Char::ALPHABETIC_UPPER);
+    }
+
     /**
      * Apply an end-of-line sequence to a string
      */
