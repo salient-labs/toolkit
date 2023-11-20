@@ -46,6 +46,59 @@ final class RegularExpression extends Dictionary
     public const MONGODB_OBJECTID = '(?i)[0-9a-f]{24}';
 
     /**
+     * An [RFC3986]-compliant URI scheme
+     */
+    public const URI_SCHEME = '(?i)[a-z][-a-z0-9+.]*';
+
+    /**
+     * An [RFC3986]-compliant URI host
+     */
+    public const URI_HOST = '(?i)(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\])';
+
+    /**
+     * An [RFC3986]-compliant URI
+     */
+    public const URI = <<<'REGEX'
+        (?xi)
+        (?(DEFINE)
+          # Percent-encoded octets in this set should be decoded by normalisers
+          (?<unreserved> [-a-z0-9._~] )
+          (?<sub_delims> [!$&'()*+,;=] )
+          # Case-insensitive but normalisers should use uppercase
+          (?<pct_encoded> % [0-9a-f]{2} )
+          (?<reg_char> (?&unreserved) | (?&pct_encoded) | (?&sub_delims) )
+          (?<pchar> (?&reg_char) | [:@] )
+        )
+        # Case-insensitive but canonical form is lowercase
+        (?: (?<scheme> [a-z] [-a-z0-9+.]* ) : )?+
+        (?:
+          //
+          (?<authority>
+            (?:
+              (?<userinfo>
+                (?<user> (?&reg_char)* )
+                (?: : (?<pass> (?: (?&reg_char) | : )* ) )?
+              )
+              @
+            )?+
+            # Case-insensitive
+            (?<host> (?&reg_char)++ | \[ (?<ipv6address> [0-9a-f:]++ ) \] )
+            (?: : (?<port> [0-9]+ ) )?+
+          )
+          # Path after authority must be empty or begin with "/"
+          (?= / | \? | \# | $ ) |
+          # Path cannot begin with "//" except after authority
+          (?= / ) (?! // ) |
+          # Rootless paths can only begin with ":" after scheme
+          (?(<scheme>) (?= (?&pchar) ) | (?= (?&reg_char) | @ ) ) |
+          (?= \? | \# | $ )
+        )
+        (?<path> (?: (?&pchar) | / )*+ )
+        (?: \? (?<query>    (?: (?&pchar) | [?/] )* ) )?+
+        (?: \# (?<fragment> (?: (?&pchar) | [?/] )* ) )?+
+        REGEX;
+
+    /**
      * A valid PHP identifier, e.g. for variable names and classes
      *
      * @link https://www.php.net/manual/en/language.variables.basics.php
