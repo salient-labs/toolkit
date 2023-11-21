@@ -15,17 +15,35 @@ use IteratorAggregate;
  * @extends IteratorAggregate<TKey,TValue>
  * @extends ArrayAccess<TKey,TValue>
  */
-interface ICollection extends IteratorAggregate, ArrayAccess, Countable, Arrayable
+interface ICollection extends IteratorAggregate, ArrayAccess, Countable
 {
     /**
-     * Pop an item off the end of the collection
+     * Add or replace an item with a given key
      *
-     * @param TValue|false|null $last Receives the value removed from the
-     * collection, or `false` if the collection is empty.
-     * @param-out TValue|false $last
+     * @param TKey $key
+     * @param TValue $value
      * @return static
      */
-    public function pop(&$last = null);
+    public function set($key, $value);
+
+    /**
+     * Remove an item with a given key
+     *
+     * @param TKey $key
+     * @param TValue|null $value Receives the value removed from the collection,
+     * or `null` if it does not exist.
+     * @param-out TValue|null $value
+     * @return static
+     */
+    public function unset($key, &$value = null);
+
+    /**
+     * Add or replace items from an array or Traversable
+     *
+     * @param static|iterable<TKey,TValue> $items
+     * @return static
+     */
+    public function merge($items);
 
     /**
      * Sort items in the collection
@@ -58,11 +76,11 @@ interface ICollection extends IteratorAggregate, ArrayAccess, Countable, Arrayab
     public function filter(callable $callback);
 
     /**
-     * Get the first item that satisfies a callback, or false if there is no
-     * such item in the collection
+     * Get the first item that satisfies a callback, or null if there is no such
+     * item in the collection
      *
      * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
-     * @return TValue|false
+     * @return TValue|null
      */
     public function find(callable $callback);
 
@@ -81,20 +99,20 @@ interface ICollection extends IteratorAggregate, ArrayAccess, Countable, Arrayab
     public function has($value, bool $strict = false): bool;
 
     /**
-     * Get the first key at which a value is found, or false if it's not in the
+     * Get the first key at which a value is found, or null if it's not in the
      * collection
      *
      * @param TValue $value
-     * @return TKey|false
+     * @return TKey|null
      */
     public function keyOf($value, bool $strict = false);
 
     /**
      * Get the first item equal but not necessarily identical to a value, or
-     * false if it's not in the collection
+     * null if it's not in the collection
      *
      * @param TValue $value
-     * @return TValue|false
+     * @return TValue|null
      */
     public function get($value);
 
@@ -106,36 +124,46 @@ interface ICollection extends IteratorAggregate, ArrayAccess, Countable, Arrayab
     public function all(): array;
 
     /**
-     * Get the first item, or false if the collection is empty
+     * Get the first item, or null if the collection is empty
      *
-     * @return TValue|false
+     * @return TValue|null
      */
     public function first();
 
     /**
-     * Get the last item, or false if the collection is empty
+     * Get the last item, or null if the collection is empty
      *
-     * @return TValue|false
+     * @return TValue|null
      */
     public function last();
 
     /**
-     * Get the nth item (1-based), or false if there is no such item in the
+     * Get the nth item (1-based), or null if there is no such item in the
      * collection
      *
      * If `$n` is negative, the nth item from the end of the collection is
      * returned.
      *
-     * @return TValue|false
+     * @return TValue|null
      */
     public function nth(int $n);
 
     /**
+     * Pop an item off the end of the collection
+     *
+     * @param TValue|null $last Receives the value removed from the collection,
+     * or `null` if the collection is empty.
+     * @param-out TValue|null $last
+     * @return static
+     */
+    public function pop(&$last = null);
+
+    /**
      * Shift an item off the beginning of the collection
      *
-     * @param TValue|false|null $first Receives the value removed from the
-     * collection, or `false` if the collection is empty.
-     * @param-out TValue|false $first
+     * @param TValue|null $first Receives the value removed from the collection,
+     * or `null` if the collection is empty.
+     * @param-out TValue|null $first
      * @return static
      */
     public function shift(&$first = null);

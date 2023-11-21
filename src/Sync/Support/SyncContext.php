@@ -189,7 +189,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
             throw new LogicException('$depth must be greater than 0');
         }
 
-        $clone = $this->mutate();
+        $clone = $this->clone();
         $clone->applyHydrationPolicy($policy, $entity, $depth);
 
         if ($this->EntityHydrationPolicy === $clone->EntityHydrationPolicy &&

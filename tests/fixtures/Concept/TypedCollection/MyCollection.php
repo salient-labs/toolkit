@@ -9,8 +9,6 @@ use Lkrms\Concept\TypedCollection;
  */
 class MyCollection extends TypedCollection
 {
-    protected const ITEM_CLASS = MyClass::class;
-
     protected function compareItems($a, $b): int
     {
         return strlen($b->Name) - strlen($a->Name);

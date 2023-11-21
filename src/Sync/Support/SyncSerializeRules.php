@@ -3,7 +3,7 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\HasBuilder;
-use Lkrms\Concern\HasMutator;
+use Lkrms\Concern\Immutable;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
@@ -94,7 +94,7 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
 {
     use TFullyReadable;
     use HasBuilder;
-    use HasMutator;
+    use Immutable;
 
     /**
      * Values are being serialized for an entity store
