@@ -2,6 +2,8 @@
 
 namespace Lkrms\Utility;
 
+use ReflectionClass;
+
 /**
  * Get information from (or about) data
  */
@@ -15,7 +17,9 @@ final class Inspect
     public static function getType($value): string
     {
         if (is_object($value)) {
-            return get_class($value);
+            return (new ReflectionClass($value))->isAnonymous()
+                ? 'class@anonymous'
+                : get_class($value);
         }
         if (is_resource($value)) {
             return sprintf('resource (%s)', get_resource_type($value));
