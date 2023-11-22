@@ -13,6 +13,23 @@ namespace Lkrms\Contract;
 interface IList extends ICollection, Arrayable
 {
     /**
+     * Add an item
+     *
+     * @param TValue $value
+     * @return static
+     */
+    public function add($value);
+
+    /**
+     * Replace an item with a given key
+     *
+     * @param int $key
+     * @param TValue $value
+     * @return static
+     */
+    public function set($key, $value);
+
+    /**
      * Push one or more items onto the end of the list
      *
      * @param TValue ...$item

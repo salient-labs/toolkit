@@ -2,6 +2,7 @@
 
 namespace Lkrms\Tests\Concept;
 
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Tests\Concept\TypedList\MyClass;
 use Lkrms\Tests\Concept\TypedList\MyList;
 
@@ -12,32 +13,32 @@ final class TypedListTest extends \Lkrms\Tests\TestCase
         $list = new MyList();
 
         $e0 = new MyClass('delta');
-        $e1 = new MyClass('november');
-        $e2 = new MyClass('charlie');
+        $e1 = new MyClass('charlie');
+        $e2 = new MyClass('november');
 
         $list[] = $e0;
         $list[] = $e1;
         $list[] = $e2;
 
-        $this->assertTrue(isset($list[1]));
-        unset($list[1]);
-        $this->assertFalse(isset($list[1]));
-        $list[7] = $e1;
-        $this->assertSame([0 => $e0, 2 => $e2, 7 => $e1], $list->all());
+        $this->assertTrue(isset($list[2]));
+        unset($list[2]);
+        $this->assertFalse(isset($list[2]));
+        $list[2] = $e2;
+        $this->assertSame([0 => $e0, 1 => $e1, 2 => $e2], $list->all());
         $sorted = $list->sort();
         $sorted2 = $sorted->sort();
         $this->assertNotSame($sorted, $list);
         $this->assertSame($sorted2, $sorted);
-        $this->assertSame([7 => $e1, 2 => $e2, 0 => $e0], $sorted->all());
+        $this->assertSame([0 => $e2, 1 => $e1, 2 => $e0], $sorted->all());
         $reversed = $sorted->reverse();
         $this->assertNotSame($reversed, $sorted);
-        $this->assertSame([0 => $e0, 2 => $e2, 7 => $e1], $reversed->all());
+        $this->assertSame([0 => $e0, 1 => $e1, 2 => $e2], $reversed->all());
         $this->assertCount(3, $list);
 
         foreach ($list as $key => $value) {
             $arr[$key] = $value;
         }
-        $this->assertSame([0 => $e0, 2 => $e2, 7 => $e1], $arr ?? null);
+        $this->assertSame([0 => $e0, 1 => $e1, 2 => $e2], $arr ?? null);
 
         $arr = $arrNext = $arrPrev = [];
         $l = $list->forEach(
@@ -48,9 +49,9 @@ final class TypedListTest extends \Lkrms\Tests\TestCase
             }
         );
         $this->assertSame($list, $l);
-        $this->assertSame([$e0, $e2, $e1], $arr);
-        $this->assertSame([$e2, $e1, null], $arrNext);
-        $this->assertSame([null, $e0, $e2], $arrPrev);
+        $this->assertSame([$e0, $e1, $e2], $arr);
+        $this->assertSame([$e1, $e2, null], $arrNext);
+        $this->assertSame([null, $e0, $e1], $arrPrev);
 
         $arr = $arrNext = $arrPrev = [];
         $l = $list->filter(
@@ -62,10 +63,10 @@ final class TypedListTest extends \Lkrms\Tests\TestCase
                 return (bool) $prev;
             }
         );
-        $this->assertSame([2 => $e2, 7 => $e1], $l->all());
-        $this->assertSame([$e0, $e2, $e1], $arr);
-        $this->assertSame([$e2, $e1, null], $arrNext);
-        $this->assertSame([null, $e0, $e2], $arrPrev);
+        $this->assertSame([0 => $e1, 1 => $e2], $l->all());
+        $this->assertSame([$e0, $e1, $e2], $arr);
+        $this->assertSame([$e1, $e2, null], $arrNext);
+        $this->assertSame([null, $e0, $e1], $arrPrev);
 
         $arr = $arrNext = $arrPrev = [];
         $found = $list->find(
@@ -77,32 +78,32 @@ final class TypedListTest extends \Lkrms\Tests\TestCase
                 return !$next;
             }
         );
-        $this->assertSame($e1, $found);
-        $this->assertSame([$e0, $e2, $e1], $arr);
-        $this->assertSame([$e2, $e1, null], $arrNext);
-        $this->assertSame([null, $e0, $e2], $arrPrev);
+        $this->assertSame($e2, $found);
+        $this->assertSame([$e0, $e1, $e2], $arr);
+        $this->assertSame([$e1, $e2, null], $arrNext);
+        $this->assertSame([null, $e0, $e1], $arrPrev);
 
         $this->assertNull($list->find(fn() => false));
 
         $slice = $list->slice(1, 1);
-        $this->assertSame([2 => $e2], $slice->toArray());
+        $this->assertSame([0 => $e1], $slice->toArray());
 
         $e3 = new MyClass('charlie');
         $e4 = new MyClass('echo');
         $this->assertTrue($list->has($e3));
         $this->assertFalse($list->has($e3, true));
-        $this->assertSame(2, $list->keyOf($e3));
+        $this->assertSame(1, $list->keyOf($e3));
         $this->assertNull($list->keyOf($e3, true));
-        $this->assertSame(2, $list->keyOf($e2, true));
-        $this->assertSame($e2, $list->get($e3));
+        $this->assertSame(1, $list->keyOf($e1, true));
+        $this->assertSame($e1, $list->get($e3));
         $this->assertSame(null, $list->get($e4));
 
-        $list->set(7, $e4);
-        $this->assertSame([0 => $e0, 2 => $e2, 7 => $e4], $list->all());
+        $list->set(2, $e4);
+        $this->assertSame([0 => $e0, 1 => $e1, 2 => $e4], $list->all());
         $list->unset(0);
-        $this->assertSame([2 => $e2, 7 => $e4], $list->all());
-        $list->merge([13 => $e0, 7 => $e1, 11 => $e4]);
-        $this->assertSame([2 => $e2, 7 => $e4, 8 => $e0, 9 => $e1, 10 => $e4], $list->all());
+        $this->assertSame([0 => $e1, 1 => $e4], $list->all());
+        $list->merge([13 => $e0, 7 => $e2, 11 => $e4]);
+        $this->assertSame([0 => $e1, 1 => $e4, 2 => $e0, 3 => $e2, 4 => $e4], $list->all());
     }
 
     public function testEmptyTypedList(): void
@@ -154,5 +155,39 @@ final class TypedListTest extends \Lkrms\Tests\TestCase
         $this->assertNull($list->first());
         $this->assertNull($list->last());
         $this->assertNull($list->nth(1));
+    }
+
+    public function testInvalidKeyType(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Argument #1 ($offset) must be of type int, string given');
+        $list = new MyList();
+        // @phpstan-ignore-next-line
+        $list['foo'] = new MyClass('bar');
+    }
+
+    public function testSetInvalidKeyType(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Argument #1 ($key) must be of type int, string given');
+        $list = new MyList();
+        // @phpstan-ignore-next-line
+        $list->set('foo', new MyClass('bar'));
+    }
+
+    public function testInvalidKey(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Item cannot be added with key: 1');
+        $list = new MyList();
+        $list[1] = new MyClass('foo');
+    }
+
+    public function testSetInvalidKey(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Item cannot be added with key: 1');
+        $list = new MyList();
+        $list->set(1, new MyClass('foo'));
     }
 }

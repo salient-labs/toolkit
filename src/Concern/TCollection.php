@@ -60,9 +60,9 @@ trait TCollection
             return $this;
         }
         $value = $this->Items[$key];
-        $clone = $this->clone();
-        unset($clone->Items[$key]);
-        return $clone;
+        $items = $this->Items;
+        unset($items[$key]);
+        return $this->replaceItems($items);
     }
 
     /**
@@ -76,9 +76,9 @@ trait TCollection
             $last = null;
             return $this;
         }
-        $clone = $this->clone();
-        $last = array_pop($clone->Items);
-        return $clone;
+        $items = $this->Items;
+        $last = array_pop($items);
+        return $this->replaceItems($items);
     }
 
     /**
@@ -319,9 +319,9 @@ trait TCollection
             $first = null;
             return $this;
         }
-        $clone = $this->clone();
-        $first = array_shift($clone->Items);
-        return $clone;
+        $items = $this->Items;
+        $first = array_shift($items);
+        return $this->replaceItems($items);
     }
 
     /**
@@ -331,6 +331,9 @@ trait TCollection
     public function merge($items)
     {
         $_items = $this->getItems($items);
+        if (!$_items) {
+            return $this;
+        }
         $items = $this->Items;
         foreach ($_items as $key => $_item) {
             if (is_int($key)) {
@@ -449,6 +452,15 @@ trait TCollection
         if ($items === $this->Items) {
             return $this;
         }
+        return $this->replaceItems($items, $alwaysClone);
+    }
+
+    /**
+     * @param array<TKey,TValue> $items
+     * @return static
+     */
+    protected function replaceItems(array $items, bool $alwaysClone = false)
+    {
         $clone = $alwaysClone
             ? clone $this
             : $this->clone();
