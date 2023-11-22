@@ -11,8 +11,7 @@ trait Immutable
      */
     protected function clone()
     {
-        $clone = clone $this;
-        return $clone;
+        return clone $this;
     }
 
     /**

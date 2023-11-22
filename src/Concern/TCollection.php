@@ -463,7 +463,7 @@ trait TCollection
     {
         $clone = $alwaysClone
             ? clone $this
-            : $this->clone();
+            : $this->maybeClone();
         $clone->Items = $items;
         return $clone;
     }
@@ -471,7 +471,7 @@ trait TCollection
     /**
      * @return $this
      */
-    protected function clone()
+    protected function maybeClone()
     {
         return $this;
     }

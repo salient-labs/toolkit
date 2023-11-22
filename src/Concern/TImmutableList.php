@@ -20,7 +20,13 @@ trait TImmutableList
         ImmutableArrayAccess::offsetSet insteadof TList;
         ImmutableArrayAccess::offsetUnset insteadof TList;
     }
-    use Immutable {
-        Immutable::clone insteadof TList;
+    use Immutable;
+
+    /**
+     * @return static
+     */
+    protected function maybeClone()
+    {
+        return $this->clone();
     }
 }

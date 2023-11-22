@@ -24,7 +24,13 @@ trait TImmutableCollection
         ImmutableArrayAccess::offsetSet insteadof TCollection;
         ImmutableArrayAccess::offsetUnset insteadof TCollection;
     }
-    use Immutable {
-        Immutable::clone insteadof TCollection;
+    use Immutable;
+
+    /**
+     * @return static
+     */
+    protected function maybeClone()
+    {
+        return $this->clone();
     }
 }
