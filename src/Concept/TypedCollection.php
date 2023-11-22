@@ -17,4 +17,14 @@ abstract class TypedCollection implements ICollection
 {
     /** @use TCollection<TKey,TValue> */
     use TCollection;
+
+    /**
+     * Clone the collection
+     *
+     * @return static
+     */
+    public function clone()
+    {
+        return clone $this;
+    }
 }

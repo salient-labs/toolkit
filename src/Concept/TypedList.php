@@ -16,4 +16,14 @@ abstract class TypedList implements IList
 {
     /** @use TList<TValue> */
     use TList;
+
+    /**
+     * Clone the list
+     *
+     * @return static
+     */
+    public function clone()
+    {
+        return clone $this;
+    }
 }

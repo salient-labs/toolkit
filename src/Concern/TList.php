@@ -78,7 +78,7 @@ trait TList
         if (!$item) {
             return $this;
         }
-        $clone = $this->clone();
+        $clone = $this->maybeClone();
         array_push($clone->Items, ...$item);
         return $clone;
     }
@@ -92,7 +92,7 @@ trait TList
         if (!$item) {
             return $this;
         }
-        $clone = $this->clone();
+        $clone = $this->maybeClone();
         array_unshift($clone->Items, ...$item);
         return $clone;
     }
