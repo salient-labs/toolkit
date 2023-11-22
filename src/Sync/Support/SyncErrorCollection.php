@@ -2,7 +2,7 @@
 
 namespace Lkrms\Sync\Support;
 
-use Lkrms\Concept\LooselyTypedCollection;
+use Lkrms\Concept\TypedCollection;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Sync\Catalog\SyncErrorType as ErrorType;
@@ -13,12 +13,10 @@ use JsonSerializable;
 /**
  * A collection of SyncError objects
  *
- * @extends LooselyTypedCollection<int,SyncError>
+ * @extends TypedCollection<int,SyncError>
  */
-final class SyncErrorCollection extends LooselyTypedCollection implements JsonSerializable
+final class SyncErrorCollection extends TypedCollection implements JsonSerializable
 {
-    protected const ITEM_CLASS = SyncError::class;
-
     /**
      * Get a JSON:API-compatible representation of the errors
      *

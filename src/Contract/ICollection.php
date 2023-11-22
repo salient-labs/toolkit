@@ -4,51 +4,63 @@ namespace Lkrms\Contract;
 
 use ArrayAccess;
 use Countable;
-use Iterator;
+use IteratorAggregate;
 
 /**
- * A flexible array-like collection of values
+ * An array-like collection of items
  *
  * @template TKey
  * @template TValue
  *
- * @extends Iterator<TKey,TValue>
+ * @extends IteratorAggregate<TKey,TValue>
  * @extends ArrayAccess<TKey,TValue>
  */
-interface ICollection extends Iterator, ArrayAccess, Countable
+interface ICollection extends IteratorAggregate, ArrayAccess, Countable
 {
     /**
-     * Push one or more items onto the end of the collection
+     * Add or replace an item with a given key
      *
-     * @param TValue ...$item
-     * @return $this
+     * @param TKey $key
+     * @param TValue $value
+     * @return static
      */
-    public function push(...$item);
+    public function set($key, $value);
 
     /**
-     * Pop an item off the end of the collection
+     * Remove an item with a given key
      *
-     * @return TValue|false The item removed from the collection, or `false` if
-     * the collection is empty.
+     * @param TKey $key
+     * @param TValue|null $value Receives the value removed from the collection,
+     * or `null` if it does not exist.
+     * @param-out TValue|null $value
+     * @return static
      */
-    public function pop();
+    public function unset($key, &$value = null);
+
+    /**
+     * Add or replace items from an array or Traversable
+     *
+     * @param static|iterable<TKey,TValue> $items
+     * @return static
+     */
+    public function merge($items);
 
     /**
      * Sort items in the collection
      *
-     * @return $this
+     * @return static
      */
     public function sort();
 
     /**
      * Reverse the order of items in the collection
      *
-     * @return $this
+     * @return static
      */
     public function reverse();
 
     /**
-     * Apply a callback to every item in the collection
+     * Apply a callback to items in the collection
      *
      * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): mixed $callback
      * @return $this
@@ -59,95 +71,100 @@ interface ICollection extends Iterator, ArrayAccess, Countable
      * Reduce the collection to items that satisfy a callback
      *
      * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
-     * @return $this
+     * @return static
      */
     public function filter(callable $callback);
 
     /**
-     * Get the first item that satisfies a callback, or false if there is no
-     * such item in the collection
+     * Get the first item that satisfies a callback, or null if there is no such
+     * item in the collection
      *
      * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
-     * @return TValue|false
+     * @return TValue|null
      */
     public function find(callable $callback);
 
     /**
      * Extract a slice of the collection
      *
-     * @return $this
+     * @return static
      */
     public function slice(int $offset, ?int $length = null);
 
     /**
-     * True if an item is in the collection
+     * True if a value is in the collection
      *
-     * @param TValue $item
+     * @param TValue $value
      */
-    public function has($item, bool $strict = false): bool;
+    public function has($value, bool $strict = false): bool;
 
     /**
-     * Get the first key at which an item is found, or false if it's not in the
+     * Get the first key at which a value is found, or null if it's not in the
      * collection
      *
-     * @param TValue $item
-     * @return TKey|false
+     * @param TValue $value
+     * @return TKey|null
      */
-    public function keyOf($item, bool $strict = false);
+    public function keyOf($value, bool $strict = false);
 
     /**
-     * Get the first item equal but not necessarily identical to $item, or false
-     * if there is no such item in the collection
+     * Get the first item equal but not necessarily identical to a value, or
+     * null if it's not in the collection
      *
-     * @param TValue $item
-     * @return TValue|false
+     * @param TValue $value
+     * @return TValue|null
      */
-    public function get($item);
+    public function get($value);
 
     /**
      * Get all items in the collection
      *
-     * @return TValue[]
+     * @return array<TKey,TValue>
      */
     public function all(): array;
 
     /**
-     * Get the first item, or false if the collection is empty
+     * Get the first item, or null if the collection is empty
      *
-     * @return TValue|false
+     * @return TValue|null
      */
     public function first();
 
     /**
-     * Get the last item, or false if the collection is empty
+     * Get the last item, or null if the collection is empty
      *
-     * @return TValue|false
+     * @return TValue|null
      */
     public function last();
 
     /**
-     * Get the nth item (1-based), or false if no such item is in the collection
+     * Get the nth item (1-based), or null if there is no such item in the
+     * collection
      *
      * If `$n` is negative, the nth item from the end of the collection is
      * returned.
      *
-     * @return TValue|false
+     * @return TValue|null
      */
     public function nth(int $n);
 
     /**
-     * Shift an item off the beginning of the collection
+     * Pop an item off the end of the collection
      *
-     * @return TValue|false The item removed from the collection, or `false` if
-     * the collection is empty.
+     * @param TValue|null $last Receives the value removed from the collection,
+     * or `null` if the collection is empty.
+     * @param-out TValue|null $last
+     * @return static
      */
-    public function shift();
+    public function pop(&$last = null);
 
     /**
-     * Add one or more items to the beginning of the collection
+     * Shift an item off the beginning of the collection
      *
-     * @param TValue ...$item
-     * @return $this
+     * @param TValue|null $first Receives the value removed from the collection,
+     * or `null` if the collection is empty.
+     * @param-out TValue|null $first
+     * @return static
      */
-    public function unshift(...$item);
+    public function shift(&$first = null);
 }

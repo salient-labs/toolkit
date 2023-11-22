@@ -2,33 +2,48 @@
 
 namespace Lkrms\Tests\Concern;
 
-use Lkrms\Tests\Concern\HasMutator\MyMutatingClass;
-use LogicException;
+use Lkrms\Tests\Concern\Immutable\MyImmutableClass;
 
-final class HasMutatorTest extends \Lkrms\Tests\TestCase
+final class ImmutableTest extends \Lkrms\Tests\TestCase
 {
     public function testWithPropertyValue(): void
     {
-        $a = new MyMutatingClass();
+        $a = new MyImmutableClass();
         $b = $a->with('A', 1);
         $c = $b
             ->with('B', 2)
             ->with('C', $b->C * 10);
+
+        $arr1 = $c->Arr1;
+        $arr1['b'] = 'bbb';
+        $arr1['c'] = 'ccc';
+
+        $arr2 = $c->Arr2;
+        $arr2['d'] = 'ddd';
+
+        $arr3 = $c->Arr3 ?? [];
+        $arr3['e'] = 'eee';
+
+        $arr4 = $c->Arr4 ?? [];
+        $arr4['f'] = 'fff';
+
         $d = $c
-            ->with('Arr1', 'bbb', 'b')
-            ->with('Arr1', 'ccc', 'c')
-            ->with('Arr2', 'ddd', 'd')
-            ->with('Arr3', 'eee', 'e')
-            ->with('Arr4', 'fff', 'f');
+            ->with('Arr1', $arr1)
+            ->with('Arr2', $arr2)
+            ->with('Arr3', $arr3)
+            ->with('Arr4', $arr4);
+
+        $obj = clone $d->Obj;
+        $obj->A = 'aa';
+        $obj->B = 'bb';
+
         $e = $d
-            ->with('Obj', 'aa', 'A')
-            ->with('Obj', 'bb', 'B');
+            ->with('Obj', $obj);
         $f = $e
             ->with('A', 1)  // Changes to $f should be no-ops
-            ->with('Obj', 'aa', 'A')
-            ->with('Obj', 'bb', 'B');
-        $g = $f->with('Coll', new \stdClass(), 'g');
-        $h = $g->asNew();
+            ->with('Obj', $obj);
+
+        $g = $f->with('Coll', $f->Coll->set('g', new \stdClass()));
 
         $this->assertNotSame($a, $b);
         $this->assertNotEquals($a, $b);
@@ -40,8 +55,6 @@ final class HasMutatorTest extends \Lkrms\Tests\TestCase
         $this->assertNotEquals($d, $e);
         $this->assertNotSame($f, $g);
         $this->assertNotEquals($f, $g);
-        $this->assertNotSame($g, $h);
-        $this->assertNotEquals($g, $h);
 
         $this->assertSame($e, $f);
 
@@ -51,7 +64,7 @@ final class HasMutatorTest extends \Lkrms\Tests\TestCase
         $this->assertSame($d->Coll, $e->Coll);
         $this->assertNotSame($f->Coll, $g->Coll);
 
-        $A = new MyMutatingClass();
+        $A = new MyImmutableClass();
         $A->A = 1;
         $A->B = 2;
         $A->C = 30;
@@ -71,11 +84,8 @@ final class HasMutatorTest extends \Lkrms\Tests\TestCase
         ];
         $A->Obj->A = 'aa';
         $A->Obj->B = 'bb';
-        $A->Coll['g'] = new \stdClass();
+        $A->Coll = $A->Coll->set('g', new \stdClass());
 
-        $this->assertEquals($A, $h);
-
-        $this->expectException(LogicException::class);
-        $g->with('B', 5, 'index');
+        $this->assertEquals($A, $g);
     }
 }

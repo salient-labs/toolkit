@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Concern\HasMutator;
+use Lkrms\Concern\Immutable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Exception\InvalidArgumentException;
 use Iterator;
@@ -15,7 +15,7 @@ use Iterator;
  */
 final class FluentArray implements IImmutable
 {
-    use HasMutator;
+    use Immutable;
 
     /**
      * @var array<TKey,TValue>
@@ -47,7 +47,7 @@ final class FluentArray implements IImmutable
      */
     public function map(?callable $callback, ...$arrays)
     {
-        $clone = $this->mutate();
+        $clone = $this->clone();
         $clone->Array = array_map($callback, $clone->Array, ...$this->getArrays($arrays));
         return $clone;
     }
@@ -58,7 +58,7 @@ final class FluentArray implements IImmutable
      */
     public function filter(?callable $callback, int $mode = 0)
     {
-        $clone = $this->mutate();
+        $clone = $this->clone();
         $clone->Array = array_filter($clone->Array, $callback, $mode);
         return $clone;
     }
@@ -72,7 +72,7 @@ final class FluentArray implements IImmutable
      */
     public function merge(...$arrays)
     {
-        $clone = $this->mutate();
+        $clone = $this->clone();
         $clone->Array = array_merge($clone->Array, ...$this->getArrays($arrays));
         return $clone;
     }
@@ -85,7 +85,7 @@ final class FluentArray implements IImmutable
      */
     public function diff(...$arrays)
     {
-        $clone = $this->mutate();
+        $clone = $this->clone();
         $clone->Array = array_diff($clone->Array, ...$this->getArrays($arrays));
         return $clone;
     }
@@ -98,7 +98,7 @@ final class FluentArray implements IImmutable
      */
     public function diffKey(...$arrays)
     {
-        $clone = $this->mutate();
+        $clone = $this->clone();
         $clone->Array = array_diff_key($clone->Array, ...$this->getArrays($arrays));
         return $clone;
     }
@@ -111,7 +111,7 @@ final class FluentArray implements IImmutable
      */
     public function intersect(...$arrays)
     {
-        $clone = $this->mutate();
+        $clone = $this->clone();
         $clone->Array = array_intersect($clone->Array, ...$this->getArrays($arrays));
         return $clone;
     }
@@ -124,7 +124,7 @@ final class FluentArray implements IImmutable
      */
     public function intersectKey(...$arrays)
     {
-        $clone = $this->mutate();
+        $clone = $this->clone();
         $clone->Array = array_intersect_key($clone->Array, ...$this->getArrays($arrays));
         return $clone;
     }

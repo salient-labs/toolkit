@@ -3,104 +3,101 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Contract\IComparable;
-use LogicException;
+use Lkrms\Exception\InvalidArgumentException;
+use ArrayIterator;
 use ReturnTypeWillChange;
+use Traversable;
 
 /**
- * Implements ICollection
+ * Implements ICollection and Arrayable
+ *
+ * Unless otherwise noted, {@see TCollection} methods operate on one instance of
+ * the class. Immutable classes should use {@see TImmutableCollection} instead.
  *
  * @template TKey of array-key
  * @template TValue
  *
  * @see \Lkrms\Contract\ICollection
+ * @see \Lkrms\Contract\Arrayable
  */
 trait TCollection
 {
-    use HasMutator;
-
     /**
-     * @var TValue[]
+     * @var array<TKey,TValue>
      */
-    private $Items;
+    protected $Items;
 
     /**
-     * @param TValue[] $items
+     * @param static|iterable<TKey,TValue> $items
      */
     public function __construct($items = [])
     {
-        $this->Items = $items;
+        $this->Items = $this->getItems($items);
     }
 
     /**
-     * Push one or more items onto the end of the collection
-     *
-     * Returns a new instance of the collection.
-     *
-     * @param TValue ...$item
-     * @return $this
+     * @param TKey $key
+     * @param TValue $value
+     * @return static
      */
-    public function push(...$item)
+    public function set($key, $value)
     {
-        if (!$item) {
+        $items = $this->Items;
+        $items[$key] = $value;
+        return $this->maybeReplaceItems($items);
+    }
+
+    /**
+     * @param TKey $key
+     * @param TValue|null $value
+     * @param-out TValue|null $value
+     * @return static
+     */
+    public function unset($key, &$value = null)
+    {
+        if (!array_key_exists($key, $this->Items)) {
+            $value = null;
             return $this;
         }
-
-        $clone = $this->mutate();
-        array_push($clone->Items, ...$item);
-        return $clone;
+        $value = $this->Items[$key];
+        $items = $this->Items;
+        unset($items[$key]);
+        return $this->replaceItems($items);
     }
 
     /**
-     * @return TValue|false
+     * @param TValue|null $last
+     * @param-out TValue|null $last
+     * @return static
      */
-    public function pop()
+    public function pop(&$last = null)
     {
         if (!$this->Items) {
-            return false;
+            $last = null;
+            return $this;
         }
-        $this->markAsMutant();
-        return array_pop($this->Items);
+        $items = $this->Items;
+        $last = array_pop($items);
+        return $this->replaceItems($items);
     }
 
     /**
-     * Sort items in the collection
-     *
-     * Returns a new instance of the collection.
-     *
-     * @return $this
+     * @return static A copy of the collection with items sorted by value.
      */
     public function sort()
     {
         $items = $this->Items;
         uasort($items, fn($a, $b) => $this->compareItems($a, $b));
-
-        if ($items === $this->Items) {
-            return $this;
-        }
-
-        $clone = $this->mutate();
-        $clone->Items = $items;
-        return $clone;
+        return $this->maybeReplaceItems($items, true);
     }
 
     /**
-     * Reverse the order of items in the collection
-     *
-     * Returns a new instance of the collection.
-     *
-     * @return $this
+     * @return static A copy of the collection with items in reverse order.
      */
     public function reverse()
     {
         $items = array_reverse($this->Items, true);
-
-        if ($items === $this->Items) {
-            return $this;
-        }
-
-        $clone = $this->mutate();
-        $clone->Items = $items;
-        return $clone;
+        return $this->maybeReplaceItems($items, true);
     }
 
     /**
@@ -129,12 +126,9 @@ trait TCollection
     }
 
     /**
-     * Reduce the collection to items that satisfy a callback
-     *
-     * Returns a new instance of the collection.
-     *
      * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
-     * @return $this
+     * @return static A copy of the collection with items that satisfy
+     * `$callback`.
      */
     public function filter(callable $callback)
     {
@@ -159,18 +153,12 @@ trait TCollection
             $items[$key] = $item;
         }
 
-        if ($items === $this->Items) {
-            return $this;
-        }
-
-        $clone = $this->mutate();
-        $clone->Items = $items;
-        return $clone;
+        return $this->maybeReplaceItems($items, true);
     }
 
     /**
      * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
-     * @return TValue|false
+     * @return TValue|null
      */
     public function find(callable $callback)
     {
@@ -192,76 +180,75 @@ trait TCollection
             return $item;
         }
 
-        return false;
+        return null;
     }
 
     /**
-     * @return $this
+     * @return static A copy of the collection with items starting from
+     * `$offset`.
      */
     public function slice(int $offset, ?int $length = null)
     {
         $items = array_slice($this->Items, $offset, $length, true);
-
-        if ($items === $this->Items) {
-            return $this;
-        }
-
-        $clone = $this->mutate();
-        $clone->Items = $items;
-        return $clone;
+        return $this->maybeReplaceItems($items, true);
     }
 
     /**
-     * @param TValue $item
+     * @param TValue $value
      */
-    public function has($item, bool $strict = false): bool
+    public function has($value, bool $strict = false): bool
     {
         if ($strict) {
-            return in_array($item, $this->Items, true);
+            return in_array($value, $this->Items, true);
         }
 
         foreach ($this->Items as $_item) {
-            if (!$this->compareItems($item, $_item)) {
+            if (!$this->compareItems($value, $_item)) {
                 return true;
             }
         }
+
         return false;
     }
 
     /**
-     * @param TValue $item
-     * @return TKey|false
+     * @param TValue $value
+     * @return TKey|null
      */
-    public function keyOf($item, bool $strict = false)
+    public function keyOf($value, bool $strict = false)
     {
         if ($strict) {
-            return array_search($item, $this->Items, true);
+            $key = array_search($value, $this->Items, true);
+            return $key === false
+                ? null
+                : $key;
         }
 
         foreach ($this->Items as $key => $_item) {
-            if (!$this->compareItems($item, $_item)) {
+            if (!$this->compareItems($value, $_item)) {
                 return $key;
             }
         }
-        return false;
+
+        return null;
     }
 
     /**
-     * @param TValue $item
-     * @return TValue|false
+     * @param TValue $value
+     * @return TValue|null
      */
-    public function get($item)
+    public function get($value)
     {
         foreach ($this->Items as $_item) {
-            if (!$this->compareItems($item, $_item)) {
+            if (!$this->compareItems($value, $_item)) {
                 return $_item;
             }
         }
-        return false;
+        return null;
     }
 
     /**
-     * @return TValue[]
+     * @return array<TKey,TValue>
      */
     public function all(): array
     {
@@ -269,108 +256,103 @@ trait TCollection
     }
 
     /**
-     * @return TValue|false
+     * @return array<TKey,TValue>
+     */
+    public function toArray(): array
+    {
+        return $this->Items;
+    }
+
+    /**
+     * @return TValue|null
      */
     public function first()
     {
-        $copy = $this->Items;
-        return reset($copy);
+        if (!$this->Items) {
+            return null;
+        }
+        return $this->Items[array_key_first($this->Items)];
     }
 
     /**
-     * @return TValue|false
+     * @return TValue|null
      */
     public function last()
     {
-        $copy = $this->Items;
-        return end($copy);
+        if (!$this->Items) {
+            return null;
+        }
+        return $this->Items[array_key_last($this->Items)];
     }
 
     /**
-     * @return TValue|false
+     * @return TValue|null
      */
     public function nth(int $n)
     {
         if ($n === 0) {
-            throw new LogicException('Argument #1 ($n) is 1-based, 0 given');
+            throw new InvalidArgumentException('Argument #1 ($n) is 1-based, 0 given');
         }
+
         $keys = array_keys($this->Items);
         if ($n < 0) {
             $keys = array_reverse($keys);
             $n = -$n;
         }
+
         $key = $keys[$n - 1] ?? null;
         if ($key === null) {
-            return false;
+            return null;
         }
 
         return $this->Items[$key];
     }
 
     /**
-     * @return TValue|false
+     * @param TValue|null $first
+     * @param-out TValue|null $first
+     * @return static
      */
-    public function shift()
+    public function shift(&$first = null)
     {
         if (!$this->Items) {
-            return false;
-        }
-        $this->markAsMutant();
-        return array_shift($this->Items);
-    }
-
-    /**
-     * Add one or more items to the beginning of the collection
-     *
-     * Returns a new instance of the collection.
-     *
-     * @param TValue ...$item
-     * @return $this
-     */
-    public function unshift(...$item)
-    {
-        if (!$item) {
+            $first = null;
             return $this;
         }
-
-        $clone = $this->mutate();
-        array_unshift($clone->Items, ...$item);
-        return $clone;
-    }
-
-    // Implementation of `Iterator`:
-
-    /**
-     * @return TValue|false
-     */
-    #[ReturnTypeWillChange]
-    public function current()
-    {
-        return current($this->Items);
+        $items = $this->Items;
+        $first = array_shift($items);
+        return $this->replaceItems($items);
     }
 
     /**
-     * @return TKey
+     * @param static|iterable<TKey,TValue> $items
+     * @return static
      */
-    #[ReturnTypeWillChange]
-    public function key()
+    public function merge($items)
     {
-        return key($this->Items);
+        $_items = $this->getItems($items);
+        if (!$_items) {
+            return $this;
+        }
+        $items = $this->Items;
+        foreach ($_items as $key => $_item) {
+            if (is_int($key)) {
+                $items[] = $_item;
+                continue;
+            }
+            $items[$key] = $_item;
+        }
+        return $this->maybeReplaceItems($items);
     }
 
-    public function next(): void
-    {
-        next($this->Items);
-    }
+    // Implementation of `IteratorAggregate`:
 
-    public function rewind(): void
+    /**
+     * @return Traversable<TKey,TValue>
+     */
+    public function getIterator(): Traversable
     {
-        reset($this->Items);
-    }
-
-    public function valid(): bool
-    {
-        return key($this->Items) !== null;
+        return new ArrayIterator($this->Items);
     }
 
     // Implementation of `ArrayAccess`:
@@ -424,6 +406,21 @@ trait TCollection
     // --
 
     /**
+     * @param static|iterable<TKey,TValue> $items
+     * @return array<TKey,TValue>
+     */
+    protected function getItems($items): array
+    {
+        if ($items instanceof static) {
+            return $items->Items;
+        }
+        if (is_array($items)) {
+            return $items;
+        }
+        return iterator_to_array($items);
+    }
+
+    /**
      * Compare items using IComparable::compare() if implemented
      *
      * @param TValue $a
@@ -431,14 +428,51 @@ trait TCollection
      */
     protected function compareItems($a, $b): int
     {
-        if ($a instanceof IComparable && is_a($b, get_class($a))) {
-            return $a::compare($a, $b);
-        }
-
-        if ($b instanceof IComparable && is_a($a, get_class($b))) {
-            return -$b::compare($a, $b);
+        if (
+            $a instanceof IComparable &&
+            $b instanceof IComparable
+        ) {
+            if ($b instanceof $a) {
+                return $a->compare($a, $b);
+            }
+            if ($a instanceof $b) {
+                return $b->compare($a, $b);
+            }
         }
 
         return $a <=> $b;
+    }
+
+    /**
+     * @param array<TKey,TValue> $items
+     * @return static
+     */
+    protected function maybeReplaceItems(array $items, bool $alwaysClone = false)
+    {
+        if ($items === $this->Items) {
+            return $this;
+        }
+        return $this->replaceItems($items, $alwaysClone);
+    }
+
+    /**
+     * @param array<TKey,TValue> $items
+     * @return static
+     */
+    protected function replaceItems(array $items, bool $alwaysClone = false)
+    {
+        $clone = $alwaysClone
+            ? clone $this
+            : $this->clone();
+        $clone->Items = $items;
+        return $clone;
+    }
+
+    /**
+     * @return $this
+     */
+    protected function clone()
+    {
+        return $this;
     }
 }

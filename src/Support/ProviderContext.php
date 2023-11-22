@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Concern\HasMutator;
+use Lkrms\Concern\Immutable;
 use Lkrms\Contract\HasIdentifier;
 use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IProvidable;
@@ -19,7 +19,7 @@ use Lkrms\Utility\Convert;
  */
 class ProviderContext implements IProviderContext
 {
-    use HasMutator;
+    use Immutable;
 
     protected IContainer $Container;
 
@@ -106,7 +106,7 @@ class ProviderContext implements IProviderContext
      */
     final public function push($entity)
     {
-        $clone = $this->mutate();
+        $clone = $this->clone();
         $clone->Stack[] = $entity;
 
         if ($entity instanceof HasIdentifier) {
@@ -126,20 +126,17 @@ class ProviderContext implements IProviderContext
     final public function withValue(string $name, $value)
     {
         $name = Convert::toSnakeCase($name);
+        $values = $this->Values;
+        $values[$name] = $value;
 
-        $instance = $this->withPropertyValue('Values', $value, $name);
-
-        if (substr($name, -3) !== '_id') {
-            return $instance;
+        if (substr($name, -3) === '_id') {
+            $name = Convert::toSnakeCase(substr($name, 0, -3));
+            if ($name !== '') {
+                $values[$name] = $value;
+            }
         }
 
-        $name = Convert::toSnakeCase(substr($name, 0, -3));
-
-        if ($name === '') {
-            return $instance;
-        }
-
-        return $this->withPropertyValue('Values', $value, $name);
+        return $this->withPropertyValue('Values', $values);
     }
 
     /**

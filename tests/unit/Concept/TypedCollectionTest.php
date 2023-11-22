@@ -4,7 +4,6 @@ namespace Lkrms\Tests\Concept;
 
 use Lkrms\Tests\Concept\TypedCollection\MyClass;
 use Lkrms\Tests\Concept\TypedCollection\MyCollection;
-use LogicException;
 
 final class TypedCollectionTest extends \Lkrms\Tests\TestCase
 {
@@ -83,10 +82,77 @@ final class TypedCollectionTest extends \Lkrms\Tests\TestCase
         $this->assertSame([$e2, $e1, null], $arrNext);
         $this->assertSame([null, $e0, $e2], $arrPrev);
 
-        $this->assertFalse($collection->find(fn() => false));
+        $this->assertNull($collection->find(fn() => false));
 
-        $this->expectException(LogicException::class);
-        // @phpstan-ignore-next-line
-        $collection[] = 'romeo';
+        $slice = $collection->slice(1, 1);
+        $this->assertSame([2 => $e2], $slice->toArray());
+
+        $e3 = new MyClass('charlie');
+        $e4 = new MyClass('echo');
+        $this->assertTrue($collection->has($e3));
+        $this->assertFalse($collection->has($e3, true));
+        $this->assertSame(2, $collection->keyOf($e3));
+        $this->assertNull($collection->keyOf($e3, true));
+        $this->assertSame(2, $collection->keyOf($e2, true));
+        $this->assertSame($e2, $collection->get($e3));
+        $this->assertSame(null, $collection->get($e4));
+
+        $collection->set('n', $e4);
+        $this->assertSame([0 => $e0, 2 => $e2, 'n' => $e4], $collection->all());
+        $collection->unset(0);
+        $this->assertSame([2 => $e2, 'n' => $e4], $collection->all());
+        $collection->merge(['i' => $e0, 'n' => $e1, 11 => $e4]);
+        $this->assertSame([2 => $e2, 'n' => $e1, 'i' => $e0, 3 => $e4], $collection->all());
+    }
+
+    public function testEmptyTypedCollection(): void
+    {
+        $collection = new MyCollection();
+
+        $coll = $collection->pop($last);
+        $this->assertSame($collection, $coll);
+        $this->assertNull($last);
+
+        $coll = $collection->shift($first);
+        $this->assertSame($collection, $coll);
+        $this->assertNull($first);
+
+        $coll = $collection->sort();
+        $this->assertSame($collection, $coll);
+
+        $coll = $collection->reverse();
+        $this->assertSame($collection, $coll);
+
+        $count = 0;
+        $collection->forEach(
+            function () use (&$count) {
+                $count++;
+            }
+        );
+        $this->assertSame($coll, $collection);
+        $this->assertSame(0, $count);
+
+        $coll = $collection->filter(fn() => true);
+        $this->assertSame($collection, $coll);
+
+        $this->assertNull($collection->find(fn() => true));
+
+        $coll = $collection->slice(0);
+        $this->assertSame($collection, $coll);
+
+        $coll = $collection->merge([]);
+        $this->assertSame($collection, $coll);
+
+        $e0 = new MyClass('foo');
+        $this->assertFalse($collection->has($e0));
+        $this->assertFalse($collection->has($e0, true));
+        $this->assertNull($collection->keyOf($e0));
+        $this->assertNull($collection->keyOf($e0, true));
+        $this->assertNull($collection->get($e0));
+        $this->assertSame([], $collection->all());
+        $this->assertSame([], $collection->toArray());
+        $this->assertNull($collection->first());
+        $this->assertNull($collection->last());
+        $this->assertNull($collection->nth(1));
     }
 }

@@ -3,7 +3,7 @@
 namespace Lkrms\Curler;
 
 use Lkrms\Concern\HasBuilder;
-use Lkrms\Concern\HasMutator;
+use Lkrms\Concern\Immutable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
 use Lkrms\Contract\IDateFormatter;
@@ -84,7 +84,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     use TReadable;
     use TWritable;
     use HasBuilder;
-    use HasMutator;
+    use Immutable;
 
     /**
      * Request endpoint
@@ -554,7 +554,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
      */
     public function withHeaders(ICurlerHeaders $headers)
     {
-        $clone = $this->mutate();
+        $clone = $this->clone();
         $clone->Headers = $headers;
 
         return $clone;
@@ -567,7 +567,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
      */
     public function withPager(ICurlerPager $pager)
     {
-        $clone = $this->mutate();
+        $clone = $this->clone();
         $clone->Pager = $pager;
 
         return $clone;

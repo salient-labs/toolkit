@@ -2,7 +2,7 @@
 
 namespace Lkrms\Support\Http;
 
-use Lkrms\Concern\HasMutator;
+use Lkrms\Concern\Immutable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Arr;
@@ -15,7 +15,7 @@ use Psr\Http\Message\UriInterface;
  */
 class Uri implements UriInterface
 {
-    use HasMutator;
+    use Immutable;
 
     protected const SCHEME_PORT = [
         'http' => 80,

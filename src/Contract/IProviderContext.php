@@ -22,7 +22,7 @@ interface IProviderContext extends
     /**
      * Apply a container to the context
      *
-     * @return $this
+     * @return static
      */
     public function withContainer(IContainer $container);
 
@@ -46,7 +46,7 @@ interface IProviderContext extends
      * other than `null`.
      *
      * @param TEntity $entity
-     * @return $this
+     * @return static
      */
     public function push($entity);
 
@@ -54,7 +54,7 @@ interface IProviderContext extends
      * Apply a value to the context
      *
      * @param mixed $value
-     * @return $this
+     * @return static
      */
     public function withValue(string $name, $value);
 
@@ -64,7 +64,7 @@ interface IProviderContext extends
      * @see IProviderContext::push()
      *
      * @param (TEntity&ITreeable)|null $parent
-     * @return $this
+     * @return static
      */
     public function withParent(?ITreeable $parent);
 
@@ -74,7 +74,7 @@ interface IProviderContext extends
      * @param ArrayKeyConformity::* $conformity Use
      * {@see ArrayKeyConformity::COMPLETE} wherever possible to improve
      * performance.
-     * @return $this
+     * @return static
      */
     public function withConformity($conformity);
 

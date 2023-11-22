@@ -1,14 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Concern\HasMutator;
+namespace Lkrms\Tests\Concern\Immutable;
 
-use Lkrms\Concern\HasMutator;
+use Lkrms\Concern\Immutable;
+use Lkrms\Support\ImmutableCollection;
 
-class MyMutatingClass
+class MyImmutableClass
 {
-    use HasMutator {
-        asNew as public;
-    }
+    use Immutable;
 
     public int $A;
 
@@ -41,7 +40,7 @@ class MyMutatingClass
     public array $Arr3;
 
     /**
-     * @var array<string,string>
+     * @var array<string,string>|null
      */
     public $Arr4;
 
@@ -51,22 +50,22 @@ class MyMutatingClass
     public $Obj;
 
     /**
-     * @var MyArrayAccessClass
+     * @var ImmutableCollection<array-key,mixed>
      */
     public $Coll;
 
     public function __construct()
     {
         $this->Obj = new \stdClass();
-        $this->Coll = new MyArrayAccessClass();
+        $this->Coll = new ImmutableCollection();
     }
 
     /**
      * @param mixed $value
-     * @return $this
+     * @return static
      */
-    public function with(string $property, $value, ?string $key = null)
+    public function with(string $property, $value)
     {
-        return $this->withPropertyValue($property, $value, $key);
+        return $this->withPropertyValue($property, $value);
     }
 }
