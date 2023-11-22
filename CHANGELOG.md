@@ -12,6 +12,161 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.5] - 2023-11-22
+
+### Added
+
+- Add initial event class hierarchies
+- Add `IStoppableEvent` interface
+- Reinstate parts of removed `StoppableServiceEvent` class as new `TStoppableEvent` trait
+- Add `Assert::isArray()`, `Assert::isInt()`, `Assert::isString()`
+- Add `Cache::getArray()`, `Cache::getInt()`, `Cache::getString()`
+- Add `Inspect::getType()`
+- Add ASCII-only `Str::lower()` and `Str::upper()` methods
+- Add `ExceptionInterface` and `ExceptionTrait` to simplify inheritance of native exception classes
+- Add `InvalidArgumentException`, `UnexpectedValueException`, `InvalidContainerBindingException` and adopt where appropriate
+- Add a robust `Uri` class ahead of upcoming `Curler` improvements
+
+### Changed
+
+- Refactor `OAuth2Client` as an `abstract` class
+- Refactor `*Collection` interfaces, traits and classes, moving some functionality to new `*List` or `*ListCollection` counterparts
+- Remove type checks from `TypedCollection`
+- In collection classes, return `null` instead of `false` when there is no item to return
+- In `Cache::getInstanceOf()`, return `null` instead of `false` if there is no item to return (for consistency with other `get<type>()` methods)
+- In `Curler`, derive `$cacheResponse` from `$expiry` if an explicit expiry is given
+- Dispatch `GlobalContainerSetEvent` and `SyncStoreLoadedEvent` instead of named `ServiceEvent`s
+- In `IProvider` and `ISyncEntity`, extend `HasName` instead of `HasDescription` to remove requirement for unused `description()` method
+- Rename `Assert` methods:
+  - `patternMatches()` -> `isMatch()`
+  - `sapiIsCli()` -> `runningOnCli()`
+  - `argvIsRegistered()` -> `argvIsDeclared()`
+
+### Removed
+
+- Remove `OAuth2Provider` (unnecessary with `OAuth2Client`'s closure-based workaround for access to protected values)
+- Remove redundant `<service>::EVENT_*` constants
+- Remove unnecessary `ServiceEvent` and `StoppableServiceEvent` classes
+- Remove unused `Assert::localeIsUtf8()` method
+- Remove legacy `Trash` class
+- Remove `HasMutator` trait (replaced with `Immutable`)
+- Remove `LooselyTypedCollection` (use `TypedCollection` instead)
+
+### Fixed
+
+- Fix code generator issue where `\self` and `\static` return types are not resolved correctly
+
+## [v0.21.4] - 2023-11-17
+
+### Added
+
+- `lk-util`: add first cut of `generate tests` command
+- Add `Cache::asOfNow()` to mitigate race conditions arising from expiry of items between subsequent calls to `Cache::has()` and `Cache::get()`
+- Add `Cache::getInstanceOf()`, `Cache::getItemCount()` and `Cache::getAllKeys()`
+
+- Implement PSR-14
+  - `EventDispatcher`:
+    - Implement `EventDispatcherInterface` and `ListenerProviderInterface`
+    - Optionally compose a separate `ListenerProviderInterface`
+    - Rework `dispatch()` and listener signatures for PSR-14 compliance
+  - Add `Reflect::getFirstCallbackParameterClassNames()` (required for event listener autowiring)
+  - Add `ServiceEvent` and `StoppableServiceEvent`
+
+- Add methods:
+  - `Arr::listOfArrayKey()`
+  - `Arr::listOfInt()`
+  - `Arr::listOfString()`
+  - `Arr::trimAndImplode()`
+  - `Assert::instanceOf()`
+
+### Changed
+
+- In `Arr::trim()`, remove empty strings by default
+- In `Cache::set()` and `Cache::maybeGet()`, accept `DateTimeInterface` expiration times
+- Rename `InvalidRuntimeConfigurationException` to `IncompatibleRuntimeEnvironmentException`
+- Add `HasName` interface and move `HasDescription::name()` to `HasName`
+- Remove nullability from return types of `HasName::name()` and `HasDescription::description()`
+
+- Move and/or refactor methods, deprecating the original:
+  - `Convert::sparseToString()` -> `Arr::implodeNotEmpty()`
+  - `Convert::flatten()` -> `Arr::unwrap()`
+  - `Convert::toArray()` -> `Arr::wrap()`
+  - `Convert::toList()` -> `Arr::listWrap()`
+  - `Convert::toUniqueList()` -> `Arr::unique()`
+  - `Convert::toDateTimeImmutable()` -> `Date::immutable()`
+  - `Test::isListArray()` -> `Arr::isList()`
+  - `Test::isIndexedArray()` -> `Arr::isIndexed()`
+  - `Test::isArrayOfArrayKey()` -> `Arr::ofArrayKey()`
+  - `Test::isArrayOfInt()` -> `Arr::ofInt()`
+  - `Test::isArrayOfString()` -> `Arr::ofString()`
+
+- Rename methods:
+  - `Arr::notNull()` -> `whereNotNull()`
+  - `Arr::notEmpty()` -> `whereNotEmpty()`
+  - `Arr::implodeNotEmpty()` -> `implode()`
+
+- Rename `Returns*` interfaces to `Has*` to simplify grammar:
+  - `ReturnsContainer` -> `HasContainer`
+  - `ReturnsDescription` -> `HasDescription`
+  - `ReturnsEnvironment` -> `HasEnvironment`
+  - `ReturnsIdentifier` -> `HasIdentifier`
+  - `ReturnsProvider` -> `HasProvider`
+  - `ReturnsProviderContext` -> `HasProviderContext`
+  - `ReturnsService` -> `HasService`
+
+- `Introspector::getGetNameClosure()`:
+  - Remove nullability from closure return type
+  - Do not fall back to `description` when there are no name properties
+  - Return `"#$id"` when falling back to `id`
+  - Fix issue where closures may return types other than `string`
+  - Fix issue where closures fail to resolve first and last name pairs when normalisers other than snake_case are used
+
+### Removed
+
+- Remove unused methods:
+  - `Convert::toUnique()`
+  - `Convert::columnsToUniqueList()`
+  - `Test::isAssociativeArray()`
+  - `Test::isArrayOfValue()`
+  - `Reflect::getAllTraits()`
+
+### Fixed
+
+- Fix builtin type handling in `Reflect::getTypeDeclaration()`
+
+## [v0.21.3] - 2023-11-11
+
+### Added
+
+- Add `File::relativeToParent()`
+- Add `Assert::fileExists()`, `Assert::isFile()`, `Assert::isDir()`
+- Add `AssertionFailedException`
+- Add `Timekeeper` class
+- Add `Profile` facade for `Timekeeper`
+
+### Changed
+
+- Rename `Lkrms\Utility\Composer` to `Lkrms\Utility\Package` and rename methods:
+
+  - `hasDevDependencies()` -> `hasDevPackages()`
+  - `getRootPackageName()` -> `name()`
+  - `getRootPackageReference()` -> `reference()`
+  - `getRootPackageVersion()` -> `version()`
+  - `getRootPackagePath()` -> `path()`
+  - `getPackageReference()` -> `packageReference()`
+  - `getPackageVersion()` -> `packageVersion()`
+  - `getPackagePath()` -> `packagePath()`
+  - `getClassPath()` -> `classPath()`
+  - `getNamespacePath()` -> `namespacePath()`
+
+- Rename `Lkrms\Utility\Assertions` to `Lkrms\Utility\Assert`
+
+### Removed
+
+- Remove `Composer` facade
+- Remove `Assert` facade
+- Remove timer implementation from `System` (moved to `Timekeeper`)
+
 ## [v0.21.2] - 2023-11-07
 
 ### Fixed
@@ -670,6 +825,9 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.5]: https://github.com/lkrms/php-util/compare/v0.21.4...v0.21.5
+[v0.21.4]: https://github.com/lkrms/php-util/compare/v0.21.3...v0.21.4
+[v0.21.3]: https://github.com/lkrms/php-util/compare/v0.21.2...v0.21.3
 [v0.21.2]: https://github.com/lkrms/php-util/compare/v0.21.1...v0.21.2
 [v0.21.1]: https://github.com/lkrms/php-util/compare/v0.21.0...v0.21.1
 [v0.21.0]: https://github.com/lkrms/php-util/compare/v0.20.89...v0.21.0
