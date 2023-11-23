@@ -110,6 +110,29 @@ final class Arr
     }
 
     /**
+     * Push one or more values onto the end of an array after removing values
+     * already present in the array
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $array
+     * @param TValue ...$values
+     *
+     * @return array<TKey,TValue>
+     */
+    public static function extend(array $array, ...$values): array
+    {
+        return array_merge(
+            $array,
+            array_diff(
+                $values,
+                $array,
+            ),
+        );
+    }
+
+    /**
      * Sort an array by value
      *
      * @template TKey of array-key

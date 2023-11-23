@@ -3,9 +3,9 @@
 namespace Lkrms\Tests\Auth;
 
 use League\OAuth2\Client\Provider\GenericProvider;
-use League\OAuth2\Client\Token\AccessTokenInterface;
-use Lkrms\Auth\Catalog\OAuth2Flow;
+use Lkrms\Auth\AccessToken;
 use Lkrms\Auth\OAuth2Client;
+use Lkrms\Auth\OAuth2Flow;
 use Lkrms\Support\Http\HttpServer;
 
 class OAuth2TestClient extends OAuth2Client
@@ -58,5 +58,5 @@ class OAuth2TestClient extends OAuth2Client
         return 'https://login.microsoftonline.com/common/discovery/keys';
     }
 
-    protected function receiveToken(AccessTokenInterface $token): void {}
+    protected function receiveToken(AccessToken $token, ?array $idToken, string $grantType): void {}
 }

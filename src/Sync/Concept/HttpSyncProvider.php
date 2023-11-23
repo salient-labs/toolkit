@@ -118,7 +118,7 @@ abstract class HttpSyncProvider extends SyncProvider
             Compute::hash(...$this->getBackendIdentifier()),
         ]);
 
-        if (Cache::get($key, $ttl) === false) {
+        if (Cache::get($key, $ttl) === null) {
             try {
                 $resource = $this->getHeartbeat();
             } catch (CurlerCurlErrorException $ex) {

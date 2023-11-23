@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Auth\Catalog;
+namespace Lkrms\Auth;
 
 use Lkrms\Concept\Enumeration;
 
 /**
- * Supported OAuth 2.0 flows
+ * OAuth 2.0 flows
  *
  * @extends Enumeration<int>
  */

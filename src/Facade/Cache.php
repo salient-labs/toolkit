@@ -19,7 +19,7 @@ use DateTimeInterface;
  * @method static CacheStore delete(string $key) Delete an item stored under a given key
  * @method static CacheStore deleteAll() Delete all items
  * @method static CacheStore flush() Delete expired items
- * @method static mixed|false get(string $key, ?int $maxAge = null) Retrieve an item stored under a given key (see {@see CacheStore::get()})
+ * @method static mixed|null get(string $key, ?int $maxAge = null) Retrieve an item stored under a given key (see {@see CacheStore::get()})
  * @method static string[] getAllKeys(?int $maxAge = null) Get a list of keys under which unexpired items are stored (see {@see CacheStore::getAllKeys()})
  * @method static mixed[]|null getArray(string $key, ?int $maxAge = null) Retrieve an array stored under a given key (see {@see CacheStore::getArray()})
  * @method static string|null getFilename() Get the filename of the database

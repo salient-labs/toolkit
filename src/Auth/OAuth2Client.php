@@ -6,9 +6,8 @@ use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
 use Firebase\JWT\SignatureInvalidException;
 use League\OAuth2\Client\Provider\AbstractProvider;
-use League\OAuth2\Client\Token\AccessTokenInterface;
-use Lkrms\Auth\Catalog\OAuth2Flow;
 use Lkrms\Curler\Curler;
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
 use Lkrms\Store\CacheStore;
@@ -18,6 +17,7 @@ use Lkrms\Support\Http\HttpResponse;
 use Lkrms\Support\Http\HttpServer;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Env;
+use Lkrms\Utility\Inspect;
 use LogicException;
 use Throwable;
 
@@ -127,8 +127,11 @@ abstract class OAuth2Client
 
     /**
      * Called when an access token is received from the OAuth 2.0 provider
+     *
+     * @param array<string,mixed>|null $idToken
+     * @param OAuth2GrantType::* $grantType
      */
-    abstract protected function receiveToken(AccessTokenInterface $token): void;
+    abstract protected function receiveToken(AccessToken $token, ?array $idToken, string $grantType): void;
 
     /**
      * Creates a new OAuth2Client object
@@ -178,7 +181,7 @@ abstract class OAuth2Client
             }
 
             Console::debug('Cached token has missing scopes; re-authorizing');
-            return $this->authorize();
+            return $this->authorize(['scope' => $scopes], $cache);
         }
 
         try {
@@ -196,7 +199,7 @@ abstract class OAuth2Client
             );
         }
 
-        return $this->authorize();
+        return $this->authorize($scopes ? ['scope' => $scopes] : [], $cache);
     }
 
     /**
@@ -223,52 +226,91 @@ abstract class OAuth2Client
         }
 
         return $this->requestAccessToken(
-            'refresh_token',
+            OAuth2GrantType::REFRESH_TOKEN,
             ['refresh_token' => $cache->getString("{$this->TokenKey}:refresh")]
         );
     }
 
     /**
      * Get an access token from the OAuth 2.0 provider
+     *
+     * @param array<string,mixed> $options
      */
-    final protected function authorize(): AccessToken
-    {
+    final protected function authorize(
+        array $options = [],
+        CacheStore $cache = null
+    ): AccessToken {
+        if (isset($options['scope'])) {
+            $scopes = $this->resolveScopes($options['scope']);
+
+            // If an unexpired access or refresh token is available, extend the
+            // scope of the most recently issued access token
+            if (!$cache) {
+                $cache = Cache::asOfNow();
+            }
+            if (
+                $cache->has($this->TokenKey) ||
+                $cache->has("{$this->TokenKey}:refresh")
+            ) {
+                $lastToken = $cache->getInstanceOf($this->TokenKey, AccessToken::class, 0);
+                if ($lastToken) {
+                    $scopes = Arr::extend($lastToken->Scopes, ...$scopes);
+                }
+            }
+
+            // Always include the provider's default scopes
+            $options['scope'] = Arr::extend($this->getDefaultScopes(), ...$scopes);
+        }
+
         $this->flushTokens();
 
         switch ($this->Flow) {
             case OAuth2Flow::CLIENT_CREDENTIALS:
-                return $this->authorizeWithClientCredentials();
+                return $this->authorizeWithClientCredentials($options);
 
             case OAuth2Flow::AUTHORIZATION_CODE:
-                return $this->authorizeWithAuthorizationCode();
+                return $this->authorizeWithAuthorizationCode($options);
 
             default:
                 throw new LogicException(sprintf('Invalid OAuth2Flow: %d', $this->Flow));
         }
     }
 
-    private function authorizeWithClientCredentials(): AccessToken
+    /**
+     * @param array<string,mixed> $options
+     */
+    private function authorizeWithClientCredentials(array $options = []): AccessToken
     {
         // league/oauth2-client doesn't add scopes to client_credentials
         // requests
-        $options = [];
-        $scopes = $this->getDefaultScopes($this->Provider);
+        $scopes = null;
+        if (!isset($options['scope'])) {
+            $scopes = $this->getDefaultScopes() ?: null;
+        } elseif (is_array($options['scope'])) {
+            $scopes = $options['scope'];
+        }
 
-        if ($scopes) {
-            $separator = $this->getScopeSeparator($this->Provider);
+        if ($scopes !== null) {
+            $separator = $this->getScopeSeparator();
             $options['scope'] = implode($separator, $scopes);
         }
 
-        return $this->requestAccessToken('client_credentials', $options);
+        return $this->requestAccessToken(
+            OAuth2GrantType::CLIENT_CREDENTIALS,
+            $options
+        );
     }
 
-    private function authorizeWithAuthorizationCode(): AccessToken
+    /**
+     * @param array<string,mixed> $options
+     */
+    private function authorizeWithAuthorizationCode(array $options = []): AccessToken
     {
         if (!$this->Listener) {
             throw new LogicException('Cannot use the Authorization Code flow without a Listener');
         }
 
-        $url = $this->Provider->getAuthorizationUrl();
+        $url = $this->Provider->getAuthorizationUrl($options);
         $state = $this->Provider->getState();
         Cache::set("{$this->TokenKey}:state", $state);
 
@@ -298,7 +340,11 @@ abstract class OAuth2Client
             throw new OAuth2Exception('OAuth 2.0 provider did not return an authorization code');
         }
 
-        return $this->requestAccessToken('authorization_code', ['code' => $code]);
+        return $this->requestAccessToken(
+            OAuth2GrantType::AUTHORIZATION_CODE,
+            ['code' => $code],
+            $options['scope'] ?? null
+        );
     }
 
     /**
@@ -339,13 +385,18 @@ abstract class OAuth2Client
      * Request an access token from the OAuth 2.0 provider, then validate, cache
      * and return it
      *
-     * @param array<string,mixed> $parameters
+     * @param OAuth2GrantType::* $grantType
+     * @param array<string,mixed> $options
+     * @param string[]|string|null $scope
      */
-    private function requestAccessToken(string $grant, array $parameters = []): AccessToken
-    {
-        Console::debug('Requesting access token with ' . $grant);
+    private function requestAccessToken(
+        string $grantType,
+        array $options = [],
+        $scope = null
+    ): AccessToken {
+        Console::debug('Requesting access token with ' . $grantType);
 
-        $_token = $this->Provider->getAccessToken($grant, $parameters);
+        $_token = $this->Provider->getAccessToken($grantType, $options);
         $_values = $_token->getValues();
 
         $tokenType = $_values['token_type'] ?? null;
@@ -365,19 +416,33 @@ abstract class OAuth2Client
         if ($expires === null) {
             $expires = $claims['exp'] ?? null;
         }
-        $scope = $_values['scope'] ?? $claims['scope'] ?? null;
 
-        if (is_string($scope)) {
-            $scopes = Arr::trim(explode(' ', $scope));
-        } elseif (Arr::listOfString($scope)) {
-            $scopes = $scope;
+        // In order of preference, get authorized scopes from:
+        //
+        // - The 'scope' value in the HTTP response
+        // - The 'scope' claim in the access token
+        // - The 'scope' sent with the request (Client Credentials flow only)
+        // - The 'scope' sent with the authorization request
+        // - The expired token (grant type 'refresh_token' only)
+        // - The provider's default scopes
+        $scopes = $this->resolveScopes($_values['scope']
+            ?? $claims['scope']
+            ?? $options['scope']
+            ?? $scope);
+
+        if (!$scopes && $grantType === OAuth2GrantType::REFRESH_TOKEN) {
+            $cache = Cache::asOfNow();
+            if ($cache->has($this->TokenKey, 0)) {
+                $lastToken = $cache->getInstanceOf($this->TokenKey, AccessToken::class, 0);
+                $scopes = $lastToken->Scopes;
+            }
         }
 
         $token = new AccessToken(
             $accessToken,
             $tokenType,
             $expires,
-            $scopes ?? $this->getDefaultScopes($this->Provider),
+            $scopes ?: $this->getDefaultScopes(),
             $claims
         );
 
@@ -393,7 +458,7 @@ abstract class OAuth2Client
             Cache::set("{$this->TokenKey}:refresh", $refreshToken);
         }
 
-        $this->receiveToken($_token);
+        $this->receiveToken($token, $idToken, $grantType);
 
         return $token;
     }
@@ -403,7 +468,7 @@ abstract class OAuth2Client
      *
      * @return $this
      */
-    final protected function flushTokens()
+    final public function flushTokens()
     {
         Console::debug('Flushing cached tokens');
         Cache::delete($this->TokenKey);
@@ -516,7 +581,7 @@ abstract class OAuth2Client
      *
      * @return array<string,mixed>|null
      */
-    final protected function getIdToken(): ?array
+    final public function getIdToken(): ?array
     {
         // Don't [re-]authorize for an ID token that won't be issued
         if (
@@ -541,24 +606,45 @@ abstract class OAuth2Client
     /**
      * @return string[]
      */
-    private function getDefaultScopes(AbstractProvider $provider)
+    private function getDefaultScopes()
     {
         return (function () {
             /** @var AbstractProvider $this */
             // @phpstan-ignore-next-line
             return $this->getDefaultScopes();
-        })->bindTo($provider, $provider)();
+        })->bindTo($this->Provider, $this->Provider)();
     }
 
     /**
      * @return string
      */
-    private function getScopeSeparator(AbstractProvider $provider)
+    private function getScopeSeparator()
     {
         return (function () {
             /** @var AbstractProvider $this */
             // @phpstan-ignore-next-line
             return $this->getScopeSeparator();
-        })->bindTo($provider, $provider)();
+        })->bindTo($this->Provider, $this->Provider)();
+    }
+
+    /**
+     * @param string[]|string|null $scopes
+     * @return string[]
+     */
+    private function resolveScopes($scopes): array
+    {
+        if ($scopes === null) {
+            return [];
+        }
+        if (is_string($scopes)) {
+            return Arr::trim(explode(' ', $scopes));
+        }
+        if (!Arr::listOfString($scopes, true)) {
+            throw new InvalidArgumentException(sprintf(
+                'Argument #1 ($scopes) must be of type string[]|string|null, %s given',
+                Inspect::getType($scopes),
+            ));
+        }
+        return $scopes;
     }
 }

@@ -147,7 +147,7 @@ final class CacheStore extends SqliteStore
      * - its age in seconds is less than or equal to `$maxAge`, or
      * - `$maxAge` is `0`
      *
-     * @return mixed|false `false` if the item has expired or doesn't exist.
+     * @return mixed|null `null` if the item has expired or doesn't exist.
      */
     public function get(string $key, ?int $maxAge = null)
     {
@@ -168,7 +168,7 @@ final class CacheStore extends SqliteStore
         $stmt->close();
 
         if ($row === false) {
-            return false;
+            return null;
         }
         return unserialize($row[0]);
     }
