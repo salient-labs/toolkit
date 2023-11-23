@@ -12,6 +12,34 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.7] - 2023-11-23
+
+### Added
+
+- Add `Arr::extend()`
+- Sync: add `SyncProvider::pipelineFrom()` and `pipelineTo()` to simplify creation of entity pipelines that satisfy static analysis
+
+### Changed
+
+- **In `Cache::get()`, return `null` instead of `false` when an item has expired or doesn't exist**
+- In `OAuth2Client`, extend the scope of the most recently issued token if possible
+- Make `OAuth2Client::flushTokens()` and `OAuth2Client::getIdToken()` public
+- Move `OAuth2Flow` from `Auth\Catalog` to `Auth` namespace
+
+### Deprecated
+
+- Deprecate `SyncProvider::pipeline()` and `callbackPipeline()`
+
+### Fixed
+
+- Fix OAuth 2.0 issue where explicitly requested scopes are not propagated
+
+## [v0.21.6] - 2023-11-22
+
+### Changed
+
+- Allow non-immutable collections and lists to be explicitly cloned via a public `clone()` method
+
 ## [v0.21.5] - 2023-11-22
 
 ### Added
@@ -825,6 +853,8 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.7]: https://github.com/lkrms/php-util/compare/v0.21.6...v0.21.7
+[v0.21.6]: https://github.com/lkrms/php-util/compare/v0.21.5...v0.21.6
 [v0.21.5]: https://github.com/lkrms/php-util/compare/v0.21.4...v0.21.5
 [v0.21.4]: https://github.com/lkrms/php-util/compare/v0.21.3...v0.21.4
 [v0.21.3]: https://github.com/lkrms/php-util/compare/v0.21.2...v0.21.3
