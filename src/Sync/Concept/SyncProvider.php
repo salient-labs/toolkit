@@ -8,6 +8,7 @@ use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IService;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Support\Pipeline;
+use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -191,9 +192,34 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
     }
 
     /**
-     * Get a new pipeline bound to the provider's container
+     * Get a new pipeline for mapping provider data to entities
      *
+     * @template T of ISyncEntity
+     * @param class-string<T> $entity
+     * @return IPipeline<mixed[],T,array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>
+     */
+    protected function pipelineFrom(string $entity): IPipeline
+    {
+        return Pipeline::create($this->App);
+    }
+
+    /**
+     * Get a new pipeline for mapping entities to provider data
+     *
+     * @template T of ISyncEntity
+     * @param class-string<T> $entity
+     * @return IPipeline<T,mixed[],array{0:OP::*,1:ISyncContext,2?:int|string|T|T[]|null,...}>
+     */
+    protected function pipelineTo(string $entity): IPipeline
+    {
+        return Pipeline::create($this->App);
+    }
+
+    /**
      * @return IPipeline<mixed,mixed,mixed>
+     * @deprecated Use {@see SyncProvider::pipelineFrom()} or
+     * {@see SyncProvider::pipelineTo()} instead
+     * @codeCoverageIgnore
      */
     protected function pipeline(): IPipeline
     {
@@ -201,10 +227,11 @@ abstract class SyncProvider extends Provider implements ISyncProvider, IService
     }
 
     /**
-     * Wrap a new pipeline around a callback
-     *
      * @param (callable(mixed $payload, IPipeline<mixed,mixed,mixed> $pipeline, mixed $arg): mixed) $callback
      * @return IPipeline<mixed,mixed,mixed>
+     * @deprecated Use {@see SyncProvider::pipelineFrom()} or
+     * {@see SyncProvider::pipelineTo()} instead
+     * @codeCoverageIgnore
      */
     protected function callbackPipeline(callable $callback): IPipeline
     {
