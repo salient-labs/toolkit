@@ -30,7 +30,6 @@ use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Package;
-use Lkrms\Utility\Test;
 use DateTimeInterface;
 use Generator;
 use LogicException;
@@ -706,7 +705,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             // Enable cookies without loading them from a file
             curl_setopt($this->Handle, \CURLOPT_COOKIEFILE, '');
 
-            foreach (Cache::get($this->CookieKey) ?: [] as $cookie) {
+            foreach (Cache::getArray($this->CookieKey) ?: [] as $cookie) {
                 curl_setopt($this->Handle, \CURLOPT_COOKIELIST, $cookie);
             }
         }
@@ -938,7 +937,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         if ($this->CacheResponse &&
                 ($cacheKey = $this->getCacheKey()) &&
                 !$this->Flush &&
-                ($last = Cache::get($cacheKey, $this->Expiry)) !== false) {
+                ($last = Cache::get($cacheKey, $this->Expiry)) !== null) {
             if ($close) {
                 $this->close();
             }

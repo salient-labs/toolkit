@@ -7,6 +7,41 @@ use Lkrms\Utility\Arr;
 final class ArrTest extends \Lkrms\Tests\TestCase
 {
     /**
+     * @dataProvider extendProvider
+     *
+     * @param mixed[] $expected
+     * @param mixed[] $array
+     * @param mixed ...$values
+     */
+    public function testExtend(array $expected, array $array, ...$values): void
+    {
+        $this->assertSame($expected, Arr::extend($array, ...$values));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[],...}>
+     */
+    public static function extendProvider(): array
+    {
+        return [
+            [
+                ['a', 'd', 'b', 'c'],
+                ['a', 'd'],
+                'a',
+                'b',
+                'c',
+            ],
+            [
+                ['a', 'd', 'A', 'B', 'C'],
+                ['a', 'd'],
+                'A',
+                'B',
+                'C',
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider firstProvider
      *
      * @param mixed $expected

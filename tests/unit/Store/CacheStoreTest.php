@@ -44,7 +44,7 @@ final class CacheStoreTest extends \Lkrms\Tests\TestCase
         $this->Cache->delete(__METHOD__);
         $this->assertSame(['key1'], $this->Cache->getAllKeys());
         $this->assertFalse($this->Cache->has(__METHOD__));
-        $this->assertFalse($this->Cache->get(__METHOD__));
+        $this->assertNull($this->Cache->get(__METHOD__));
     }
 
     public function testWithExpiration(): void
@@ -81,7 +81,7 @@ final class CacheStoreTest extends \Lkrms\Tests\TestCase
 
         $this->Cache->flush();
         $this->assertFalse($this->Cache->has(__METHOD__, 0));
-        $this->assertFalse($this->Cache->get(__METHOD__, 0));
+        $this->assertNull($this->Cache->get(__METHOD__, 0));
 
         $this->assertSame('value1', $this->Cache->get('key1'));
         $this->assertSame('value2', $this->Cache->get('key2'));
@@ -93,8 +93,8 @@ final class CacheStoreTest extends \Lkrms\Tests\TestCase
 
         // "sleep" for a further 90 seconds
         $current = $this->Cache->asOfNow($now + 120);
-        $this->assertSame(false, $current->get('key1'));
-        $this->assertSame(false, $current->get('key2'));
+        $this->assertNull($current->get('key1'));
+        $this->assertNull($current->get('key2'));
     }
 
     public function testGetInstanceOf(): void
@@ -139,8 +139,8 @@ final class CacheStoreTest extends \Lkrms\Tests\TestCase
         $this->assertSame('value2', $this->Cache->get('key2'));
         $this->assertEqualsCanonicalizing(['key1', 'key2'], $this->Cache->getAllKeys(0));
         $this->Cache->deleteAll();
-        $this->assertFalse($this->Cache->get('key1'));
-        $this->assertFalse($this->Cache->get('key2'));
+        $this->assertNull($this->Cache->get('key1'));
+        $this->assertNull($this->Cache->get('key2'));
         $this->assertSame([], $this->Cache->getAllKeys(0));
     }
 
