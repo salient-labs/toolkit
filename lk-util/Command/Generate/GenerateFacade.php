@@ -134,12 +134,14 @@ final class GenerateFacade extends GenerateCommand
             $alias[] = $this->getFqcnAlias($aliasFqcn);
         }
 
-        $desc = $this->Description === null
-            ? "A facade for $service"
-            : $this->Description;
+        if ($this->Description === null) {
+            $this->Description = sprintf(
+                'A facade for %s',
+                $service,
+            );
+        }
 
         $_methods = $this->InputClass->getMethods(ReflectionMethod::IS_PUBLIC);
-
         usort(
             $_methods,
             fn(ReflectionMethod $a, ReflectionMethod $b) =>
@@ -309,8 +311,8 @@ final class GenerateFacade extends GenerateCommand
         $imports = $this->generateImports();
 
         $docBlock[] = '/**';
-        if ($desc) {
-            $docBlock[] = " * $desc";
+        if ($this->Description) {
+            $docBlock[] = " * {$this->Description}";
             $docBlock[] = ' *';
         }
         if ($methods) {

@@ -127,9 +127,13 @@ abstract class GenerateCommand extends Command
     /**
      * The PHPDoc added before the generated entity
      *
-     * {@see GenerateCommand::generate()} combines
-     * {@see GenerateCommand::$OutputDescription} and
-     * {@see GenerateCommand::$OutputPhpDoc} before applying PHPDoc delimiters.
+     * {@see GenerateCommand::generate()} combines each of the following before
+     * applying PHPDoc delimiters:
+     *
+     * - {@see GenerateCommand::$Description}
+     * - {@see GenerateCommand::$PhpDoc}
+     * - {@see GenerateCommand::$MagicProperties}
+     * - {@see GenerateCommand::$MagicMethods}
      */
     protected string $PhpDoc;
 
@@ -141,11 +145,25 @@ abstract class GenerateCommand extends Command
     protected array $Properties = self::MEMBER_STUB;
 
     /**
+     * "Magic" properties of the generated class
+     *
+     * @var array<string,string>
+     */
+    protected array $MagicProperties = [];
+
+    /**
      * Declared methods of the generated entity
      *
      * @var array<GenerateCommand::VISIBILITY_*,string[]>
      */
     protected array $Methods = self::MEMBER_STUB;
+
+    /**
+     * "Magic" methods of the generated entity
+     *
+     * @var array<string,string>
+     */
+    protected array $MagicMethods = [];
 
     /**
      * Lowercase alias => alias
@@ -332,7 +350,7 @@ abstract class GenerateCommand extends Command
         $class = $this->InputClass;
         do {
             $file = $class->getFileName();
-            if ($file) {
+            if ($file !== false) {
                 $this->InputFiles[$class->getName()] = $file;
                 $files[$file] = true;
             }
@@ -413,8 +431,13 @@ abstract class GenerateCommand extends Command
      * @param array<string,PhpDocTemplateTag> $templates
      * @param array<string,PhpDocTemplateTag> $inputClassTemplates
      */
-    protected function getPhpDocTypeAlias($type, array $templates, string $namespace, ?string $filename = null, array &$inputClassTemplates = []): string
-    {
+    protected function getPhpDocTypeAlias(
+        $type,
+        array $templates,
+        string $namespace,
+        ?string $filename = null,
+        array &$inputClassTemplates = []
+    ): string {
         /** @var string */
         $subject = $type instanceof PhpDocTag
             ? Str::coalesce($type->Type, '')
@@ -485,6 +508,13 @@ abstract class GenerateCommand extends Command
     /**
      * Convert a built-in or user-defined type to a code-safe identifier, using
      * the same alias as the declaring class if possible
+     *
+     * Use this method to prepare an arbitrary type for inclusion in a method
+     * declaration or PHPDoc tag. If a type is known to be a FQCN, bypass
+     * {@see GenerateCommand::getTypeAlias()} and call
+     * {@see GenerateCommand::getFqcnAlias()} directly instead. Types that
+     * originate from a PHPDoc should be passed to
+     * {@see GenerateCommand::getPhpDocTypeAlias()}.
      *
      * @param string $type Either a built-in type (e.g. `bool`) or a FQCN.
      * @param string|null $filename File where `$type` is declared (if
@@ -598,6 +628,8 @@ abstract class GenerateCommand extends Command
         $phpDoc = Arr::trimAndImplode($blank, [
             $this->Description ?? '',
             $this->PhpDoc ?? '',
+            implode($line, $this->MagicProperties),
+            implode($line, $this->MagicMethods),
             $this->ApiTag ? '@api' : '',
             '@generated',
         ]);
@@ -741,6 +773,60 @@ abstract class GenerateCommand extends Command
             $this->indent(sprintf('return %s;', $valueCode)),
             '}'
         ];
+    }
+
+    /**
+     * Add a "magic" method to the generated entity
+     *
+     * @param array<ReflectionParameter|string> $params
+     * @param ReflectionType|string $returnType
+     */
+    protected function addMagicMethod(
+        string $name,
+        array $params = [],
+        $returnType = null,
+        ?string $description = null,
+        bool $static = true
+    ): void {
+        $callback =
+            fn(string $name): ?string =>
+                $this->getFqcnAlias($name, null, false);
+
+        foreach ($params as &$param) {
+            if ($param instanceof ReflectionParameter) {
+                $param = Reflect::getParameterDeclaration(
+                    $param,
+                    $this->getClassPrefix(),
+                    $callback,
+                    null,
+                    null,
+                    true,
+                );
+            }
+        }
+        $params = implode(', ', $params);
+
+        if ($returnType instanceof ReflectionType) {
+            $returnType = Reflect::getTypeDeclaration(
+                $returnType,
+                $this->getClassPrefix(),
+                $callback,
+            );
+        }
+
+        $parts = ['@method'];
+        if ($static) {
+            $parts[] = 'static';
+        }
+        $parts[] = $returnType === null ? 'mixed' : $returnType;
+        $parts[] = "{$name}({$params})";
+        if ($description !== null) {
+            $description = trim($description);
+            if ($description !== '') {
+                $parts[] = $description;
+            }
+        }
+        $this->MagicMethods[$name] = implode(' ', $parts);
     }
 
     /**
