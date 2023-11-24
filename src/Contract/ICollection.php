@@ -18,6 +18,21 @@ use IteratorAggregate;
 interface ICollection extends IteratorAggregate, ArrayAccess, Countable
 {
     /**
+     * Pass the value of each item to the callback
+     */
+    public const CALLBACK_USE_VALUE = 0;
+
+    /**
+     * Pass the key of each item to the callback
+     */
+    public const CALLBACK_USE_KEY = 1;
+
+    /**
+     * Pass an array to the callback that maps the key of each item to its value
+     */
+    public const CALLBACK_USE_BOTH = 2;
+
+    /**
      * Add or replace an item with a given key
      *
      * @param TKey $key
@@ -30,12 +45,9 @@ interface ICollection extends IteratorAggregate, ArrayAccess, Countable
      * Remove an item with a given key
      *
      * @param TKey $key
-     * @param TValue|null $value Receives the value removed from the collection,
-     * or `null` if it does not exist.
-     * @param-out TValue|null $value
      * @return static
      */
-    public function unset($key, &$value = null);
+    public function unset($key);
 
     /**
      * Add or replace items from an array or Traversable
@@ -62,27 +74,30 @@ interface ICollection extends IteratorAggregate, ArrayAccess, Countable
     /**
      * Apply a callback to items in the collection
      *
-     * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): mixed $callback
+     * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): mixed)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): mixed)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): mixed)) $callback
+     * @param ICollection::CALLBACK_USE_* $mode
      * @return $this
      */
-    public function forEach(callable $callback);
+    public function forEach(callable $callback, int $mode = ICollection::CALLBACK_USE_VALUE);
 
     /**
      * Reduce the collection to items that satisfy a callback
      *
-     * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
+     * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): bool)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): bool)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): bool)) $callback
+     * @param ICollection::CALLBACK_USE_* $mode
      * @return static
      */
-    public function filter(callable $callback);
+    public function filter(callable $callback, int $mode = ICollection::CALLBACK_USE_VALUE);
 
     /**
      * Get the first item that satisfies a callback, or null if there is no such
      * item in the collection
      *
-     * @param callable(TValue $item, ?TValue $nextItem, ?TValue $prevItem): bool $callback
+     * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): bool)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): bool)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): bool)) $callback
+     * @param ICollection::CALLBACK_USE_* $mode
      * @return TValue|null
      */
-    public function find(callable $callback);
+    public function find(callable $callback, int $mode = ICollection::CALLBACK_USE_VALUE);
 
     /**
      * Extract a slice of the collection
