@@ -23,7 +23,7 @@ trait TReadableCollection
     /**
      * @var array<TKey,TValue>
      */
-    protected $Items;
+    protected $Items = [];
 
     /**
      * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): mixed)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): mixed)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): mixed)) $callback
