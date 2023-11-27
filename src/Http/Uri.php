@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Http;
+namespace Lkrms\Http;
 
 use Lkrms\Concern\Immutable;
 use Lkrms\Exception\InvalidArgumentException;

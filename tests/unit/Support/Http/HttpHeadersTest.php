@@ -3,9 +3,9 @@
 namespace Lkrms\Tests\Support\Http;
 
 use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Support\Catalog\HttpHeader;
+use Lkrms\Http\Catalog\HttpHeader;
+use Lkrms\Http\HttpHeaders;
 use Lkrms\Support\Catalog\MimeType;
-use Lkrms\Support\Http\HttpHeaders;
 use LogicException;
 
 final class HttpHeadersTest extends \Lkrms\Tests\TestCase

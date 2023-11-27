@@ -2,10 +2,10 @@
 
 namespace Lkrms\Curler\Contract;
 
-use Lkrms\Auth\AccessToken;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Curler\CurlerHeadersFlag as Flag;
-use Lkrms\Support\Catalog\HttpHeader;
+use Lkrms\Http\Auth\AccessToken;
+use Lkrms\Http\Catalog\HttpHeader;
 
 /**
  * A collection of HTTP headers

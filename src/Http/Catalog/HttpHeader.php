@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Catalog;
+namespace Lkrms\Http\Catalog;
 
 use Lkrms\Concept\Dictionary;
 

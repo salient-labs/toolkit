@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Http;
+namespace Lkrms\Http;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IImmutable;
@@ -8,9 +8,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Curler\CurlerHeadersFlag;
 use Lkrms\Facade\Console;
-use Lkrms\Support\Catalog\HttpRequestMethods;
-use Lkrms\Support\Http\HttpRequest;
-use Lkrms\Support\Http\HttpResponse;
+use Lkrms\Http\Catalog\HttpRequestMethods;
 use RuntimeException;
 
 /**
