@@ -5,6 +5,7 @@ namespace Lkrms\Http;
 use Lkrms\Concern\Immutable;
 use Lkrms\Concern\ImmutableArrayAccess;
 use Lkrms\Concern\TReadableCollection;
+use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Exception\InvalidArgumentException;
@@ -224,7 +225,7 @@ class HttpHeaders implements ICollection, IImmutable
      * Apply values to headers from an array or Traversable, optionally
      * preserving existing values
      *
-     * @param self|iterable<string,string[]|string> $items
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
      * @return static
      */
     public function merge($items, bool $preserveExisting = true)
@@ -357,6 +358,24 @@ class HttpHeaders implements ICollection, IImmutable
             null,
             array_slice($this->Index, $offset, $length, true)
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toArray(): array
+    {
+        return $this->Items;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @return array<string,string[]>
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->Items;
     }
 
     /**

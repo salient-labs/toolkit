@@ -2,10 +2,11 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
 
 /**
- * Implements ICollection and Arrayable
+ * Implements ICollection
  *
  * Unless otherwise noted, {@see TCollection} methods operate on one instance of
  * the class. Immutable classes should use {@see TImmutableCollection} instead.
@@ -13,8 +14,7 @@ use Lkrms\Contract\ICollection;
  * @template TKey of array-key
  * @template TValue
  *
- * @see \Lkrms\Contract\ICollection
- * @see \Lkrms\Contract\Arrayable
+ * @see ICollection
  */
 trait TCollection
 {
@@ -22,7 +22,7 @@ trait TCollection
     use TReadableCollection;
 
     /**
-     * @param static|iterable<TKey,TValue> $items
+     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
      */
     public function __construct($items = [])
     {
@@ -154,7 +154,7 @@ trait TCollection
     }
 
     /**
-     * @param static|iterable<TKey,TValue> $items
+     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
      * @return static
      */
     public function merge($items)
@@ -200,7 +200,7 @@ trait TCollection
     // --
 
     /**
-     * @param static|iterable<TKey,TValue> $items
+     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
      * @return array<TKey,TValue>
      */
     protected function getItems($items): array

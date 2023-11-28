@@ -5,17 +5,19 @@ namespace Lkrms\Contract;
 use ArrayAccess;
 use Countable;
 use IteratorAggregate;
+use JsonSerializable;
 
 /**
  * An array-like collection of items
  *
- * @template TKey
+ * @template TKey of array-key
  * @template TValue
  *
- * @extends IteratorAggregate<TKey,TValue>
  * @extends ArrayAccess<TKey,TValue>
+ * @extends Arrayable<TKey,TValue>
+ * @extends IteratorAggregate<TKey,TValue>
  */
-interface ICollection extends IteratorAggregate, ArrayAccess, Countable
+interface ICollection extends ArrayAccess, Arrayable, Countable, IteratorAggregate, JsonSerializable, Jsonable
 {
     /**
      * Pass the value of each item to the callback
@@ -50,9 +52,9 @@ interface ICollection extends IteratorAggregate, ArrayAccess, Countable
     public function unset($key);
 
     /**
-     * Add or replace items from an array or Traversable
+     * Merge the collection with the given items
      *
-     * @param static|iterable<TKey,TValue> $items
+     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
      * @return static
      */
     public function merge($items);

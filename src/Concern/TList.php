@@ -2,6 +2,7 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\Arrayable;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Utility\Inspect;
 
@@ -24,7 +25,7 @@ trait TList
     }
 
     /**
-     * @param static|iterable<array-key,TValue> $items
+     * @param Arrayable<array-key,TValue>|iterable<array-key,TValue> $items
      */
     public function __construct($items = [])
     {
@@ -56,7 +57,7 @@ trait TList
     }
 
     /**
-     * @param static|iterable<array-key,TValue> $items
+     * @param Arrayable<array-key,TValue>|iterable<array-key,TValue> $items
      * @return static
      */
     public function merge($items)
@@ -129,8 +130,8 @@ trait TList
     }
 
     /**
-     * @param static|iterable<array-key,TValue> $items
-     * @return array<int,TValue>
+     * @param Arrayable<array-key,TValue>|iterable<array-key,TValue> $items
+     * @return list<TValue>
      */
     protected function getItems($items): array
     {
