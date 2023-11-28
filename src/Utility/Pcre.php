@@ -10,6 +10,29 @@ use Lkrms\Exception\PcreErrorException;
 final class Pcre
 {
     /**
+     * A wrapper for preg_grep()
+     *
+     * @template TKey of array-key
+     * @template TValue of int|float|string|bool|\Stringable|null
+     *
+     * @param array<TKey,TValue> $array
+     * @param int-mask<0,\PREG_GREP_INVERT> $flags
+     * @return array<TKey,TValue>
+     */
+    public static function grep(
+        string $pattern,
+        array $array,
+        int $flags = 0
+    ): array {
+        $result = preg_grep($pattern, $array, $flags);
+        $error = preg_last_error();
+        if ($result === false || $error !== PREG_NO_ERROR) {
+            throw new PcreErrorException($error, 'preg_grep', $pattern, $array);
+        }
+        return $result;
+    }
+
+    /**
      * A wrapper for preg_match()
      *
      * @param mixed[] $matches

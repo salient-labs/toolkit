@@ -300,6 +300,55 @@ final class ArrTest extends \Lkrms\Tests\TestCase
     }
 
     /**
+     * @dataProvider lowerProvider
+     *
+     * @param string[] $expected
+     * @param array<int|float|string|bool|\Stringable|null> $array
+     */
+    public function testLower($expected, $array): void
+    {
+        $this->assertSame($expected, Arr::lower($array));
+    }
+
+    /**
+     * @return array<array{string[],array<int|float|string|bool|\Stringable|null>}>
+     */
+    public static function lowerProvider(): array
+    {
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                [
+                    '0',
+                    '3.14',
+                    'null' => '',
+                    '1',
+                    'false' => '',
+                    'string' => 'title',
+                    \Stringable::class => "i'm batman.",
+                ],
+                [
+                    0,
+                    3.14,
+                    'null' => null,
+                    true,
+                    'false' => false,
+                    'string' => 'TITLE',
+                    \Stringable::class => new class implements \Stringable {
+                        public function __toString(): string
+                        {
+                            return "I'm Batman.";
+                        }
+                    },
+                ],
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider popProvider
      *
      * @param mixed[] $expected
@@ -386,6 +435,48 @@ final class ArrTest extends \Lkrms\Tests\TestCase
             [[], null, [null]],
             [[], null, []],
             [['b' => 'bar'], 'foo', ['a' => 'foo', 'b' => 'bar']],
+        ];
+    }
+
+    /**
+     * @dataProvider toIndexProvider
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey,TValue> $expected
+     * @param array<array-key,TKey> $array
+     * @param TValue $value
+     */
+    public function testToIndex(array $expected, array $array, $value = true): void
+    {
+        $this->assertSame($expected, Arr::toIndex($array, $value));
+    }
+
+    /**
+     * @return array<array{mixed[],mixed[],2?:mixed}>
+     */
+    public static function toIndexProvider(): array
+    {
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                ['foo' => true, 'bar' => true],
+                ['foo', 'bar'],
+            ],
+            [
+                ['foo' => null, 'bar' => null],
+                ['foo', 'bar'],
+                null,
+            ],
+            [
+                ['foo' => 'qux', 'bar' => 'qux'],
+                ['foo', 'bar'],
+                'qux',
+            ],
         ];
     }
 
@@ -525,6 +616,55 @@ final class ArrTest extends \Lkrms\Tests\TestCase
                 'plain scalar',
                 'plain scalar',
                 1,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider upperProvider
+     *
+     * @param string[] $expected
+     * @param array<int|float|string|bool|\Stringable|null> $array
+     */
+    public function testUpper($expected, $array): void
+    {
+        $this->assertSame($expected, Arr::upper($array));
+    }
+
+    /**
+     * @return array<array{string[],array<int|float|string|bool|\Stringable|null>}>
+     */
+    public static function upperProvider(): array
+    {
+        return [
+            [
+                [],
+                [],
+            ],
+            [
+                [
+                    '0',
+                    '3.14',
+                    'null' => '',
+                    '1',
+                    'false' => '',
+                    'string' => 'TITLE',
+                    \Stringable::class => "I'M BATMAN.",
+                ],
+                [
+                    0,
+                    3.14,
+                    'null' => null,
+                    true,
+                    'false' => false,
+                    'string' => 'title',
+                    \Stringable::class => new class implements \Stringable {
+                        public function __toString(): string
+                        {
+                            return "I'm Batman.";
+                        }
+                    },
+                ],
             ],
         ];
     }

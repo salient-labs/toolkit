@@ -24,15 +24,7 @@ final class HttpHeadersTest extends \Lkrms\Tests\TestCase
      */
     public function testAddLine($expected, array $lines, bool $strict = false, ?bool $trailers = null): void
     {
-        if (is_string($expected)) {
-            $split = explode(',', $expected, 2);
-            if (count($split) === 2) {
-                $expected = $split[0];
-                $this->expectExceptionMessage($split[1]);
-            }
-            $this->expectException($expected);
-        }
-
+        $this->maybeExpectException($expected);
         $headers = new HttpHeaders();
         foreach ($lines as $line) {
             $headers = $headers->addLine($line, $strict);

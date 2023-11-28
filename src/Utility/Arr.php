@@ -518,6 +518,61 @@ final class Arr
     }
 
     /**
+     * Make an array of strings and Stringables lowercase
+     *
+     * @template TKey of array-key
+     * @template TValue of int|float|string|bool|\Stringable|null
+     *
+     * @param array<TKey,TValue> $array
+     *
+     * @return array<TKey,string>
+     */
+    public static function lower(array $array): array
+    {
+        foreach ($array as $key => $value) {
+            $lower[$key] = strtolower((string) $value);
+        }
+        return $lower ?? [];
+    }
+
+    /**
+     * Make an array of strings and Stringables uppercase
+     *
+     * @template TKey of array-key
+     * @template TValue of int|float|string|bool|\Stringable|null
+     *
+     * @param array<TKey,TValue> $array
+     *
+     * @return array<TKey,string>
+     */
+    public static function upper(array $array): array
+    {
+        foreach ($array as $key => $value) {
+            $upper[$key] = strtoupper((string) $value);
+        }
+        return $upper ?? [];
+    }
+
+    /**
+     * Get an array that maps the values in an array to a given value
+     *
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<array-key,TKey> $array
+     * @param TValue $value
+     *
+     * @return array<TKey,TValue>
+     */
+    public static function toIndex(array $array, $value = true): array
+    {
+        return array_combine(
+            $array,
+            array_fill(0, count($array), $value)
+        );
+    }
+
+    /**
      * Apply a callback to the elements of an array
      *
      * @template TKey of array-key

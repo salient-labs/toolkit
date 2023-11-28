@@ -59,6 +59,31 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * Expect an exception if a given value is a string
+     *
+     * If `$expected` is a string with no commas, it is passed to
+     * {@see expectException()}. If it is a string with at least one comma, text
+     * before the first comma is passed to {@see expectException()}, and text
+     * after the comma is passed to {@see expectExceptionMessage()}.
+     *
+     * If `$expected` is not a string, no action is taken.
+     *
+     * @param class-string<\Throwable>|string|mixed $expected
+     */
+    public function maybeExpectException($expected): void
+    {
+        if (!is_string($expected)) {
+            return;
+        }
+        $split = explode(',', $expected, 2);
+        if (count($split) === 2) {
+            $expected = $split[0];
+            $this->expectExceptionMessage($split[1]);
+        }
+        $this->expectException($expected);
+    }
+
+    /**
      * Get the path to the fixtures directory for a class
      */
     public static function getFixturesPath(string $class): string
