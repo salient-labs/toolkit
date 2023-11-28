@@ -2,12 +2,11 @@
 
 namespace Lkrms\Tests\Sync\Provider;
 
-use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IServiceSingleton;
-use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\CurlerBuilder;
 use Lkrms\Facade\Console;
+use Lkrms\Http\Contract\IHttpHeaders;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
 use Lkrms\Sync\Concept\HttpSyncProvider;
@@ -127,7 +126,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return Env::get('JSON_PLACEHOLDER_BASE_URL', 'http://localhost:3001');
     }
 
-    protected function getHeaders(?string $path): ?ICurlerHeaders
+    protected function getHeaders(?string $path): ?IHttpHeaders
     {
         return null;
     }

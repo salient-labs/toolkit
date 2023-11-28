@@ -4,7 +4,7 @@ namespace Lkrms\Http;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Curler\Contract\ICurlerHeaders;
+use Lkrms\Http\Contract\IHttpHeaders;
 
 /**
  * Represents an incoming HTTP request
@@ -12,7 +12,7 @@ use Lkrms\Curler\Contract\ICurlerHeaders;
  * @property-read string $Method
  * @property-read string $Target
  * @property-read string $ProtocolVersion
- * @property-read ICurlerHeaders $Headers
+ * @property-read IHttpHeaders $Headers
  * @property-read string|null $Body
  * @property-read string|null $Client
  */
@@ -36,7 +36,7 @@ final class HttpRequest implements IReadable
     protected $ProtocolVersion;
 
     /**
-     * @var ICurlerHeaders
+     * @var IHttpHeaders
      */
     protected $Headers;
 
@@ -54,7 +54,7 @@ final class HttpRequest implements IReadable
         string $method,
         string $target,
         string $protocolVersion,
-        ICurlerHeaders $headers,
+        IHttpHeaders $headers,
         ?string $body,
         ?string $client = null
     ) {

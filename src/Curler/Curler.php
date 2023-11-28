@@ -6,12 +6,12 @@ use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\Immutable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
+use Lkrms\Contract\ICollection;
 use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Curler\Catalog\CurlerProperty;
-use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
 use Lkrms\Curler\Exception\CurlerHttpErrorException;
@@ -20,7 +20,10 @@ use Lkrms\Curler\Exception\CurlerUnexpectedResponseException;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
 use Lkrms\Http\Catalog\HttpHeader;
+use Lkrms\Http\Catalog\HttpHeaderGroup;
 use Lkrms\Http\Catalog\HttpRequestMethod;
+use Lkrms\Http\Contract\IHttpHeaders;
+use Lkrms\Http\HttpHeaders;
 use Lkrms\Iterator\RecursiveCallbackIterator;
 use Lkrms\Iterator\RecursiveMutableGraphIterator;
 use Lkrms\Support\Catalog\MimeType;
@@ -40,14 +43,14 @@ use RecursiveIteratorIterator;
  *
  * A (very) lightweight Guzzle alternative.
  *
- * @property-read string $BaseUrl Request endpoint
- * @property-read ICurlerHeaders $Headers Request headers
+ * @property-read string $BaseUrl Resource URL (no query or fragment)
+ * @property-read IHttpHeaders $Headers Request headers
  * @property-read string|null $Method Most recent request method
  * @property-read string|null $QueryString Query string most recently added to request URL
  * @property-read string|mixed[]|null $Body Request body, as passed to cURL
  * @property-read string|mixed[]|object|null $Data Request body, before serialization
  * @property-read ICurlerPager|null $Pager Pagination handler
- * @property-read ICurlerHeaders|null $ResponseHeaders Response headers
+ * @property-read IHttpHeaders|null $ResponseHeaders Response headers
  * @property-read array<string,string>|null $ResponseHeadersByName An array that maps lowercase response headers to their combined values
  * @property-read int|null $StatusCode Response status code
  * @property-read string|null $ReasonPhrase Response status explanation
@@ -57,9 +60,9 @@ use RecursiveIteratorIterator;
  * @property bool $CachePostResponse Cache responses to eligible POST requests?
  * @property int $Expiry Seconds before cached responses expire (0 = no expiry)
  * @property bool $Flush Replace cached responses that haven't expired?
- * @property callable|null $ResponseCacheKeyCallback Override the default cache key when saving and loading cached responses
+ * @property (callable(Curler): string[])|null $ResponseCacheKeyCallback Override the default cache key when saving and loading cached responses
  * @property bool $ThrowHttpErrors Throw an exception if the status code is >= 400?
- * @property callable|null $ResponseCallback Apply a callback to responses before they are returned
+ * @property (callable(Curler): Curler)|null $ResponseCallback Apply a callback to responses before they are returned
  * @property int|null $ConnectTimeout Override the default number of seconds the connection phase of the transfer is allowed to take
  * @property int|null $Timeout Limit the number of seconds the transfer is allowed to take
  * @property bool $FollowRedirects Follow "Location:" headers?
@@ -86,7 +89,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     use Immutable;
 
     /**
-     * Request endpoint
+     * Resource URL (no query or fragment)
      *
      * @var string
      */
@@ -95,7 +98,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     /**
      * Request headers
      *
-     * @var ICurlerHeaders
+     * @var IHttpHeaders
      */
     protected $Headers;
 
@@ -140,7 +143,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     /**
      * Response headers
      *
-     * @var ICurlerHeaders|null
+     * @var IHttpHeaders|null
      */
     protected $ResponseHeaders;
 
@@ -230,8 +233,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
      * The `string[]` returned by the callback is hashed and combined with the
      * request method and effective URL.
      *
-     * The default callback returns unprivileged request headers from
-     * {@see ICurlerHeaders::getPublicHeaders()}.
+     * Unprivileged request headers are used by default.
      *
      * Ignored unless {@see Curler::$CacheResponse} is `true`.
      *
@@ -402,6 +404,13 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     private $CookieKey;
 
     /**
+     * [ Lowercase name => true ]
+     *
+     * @var array<string,true>
+     */
+    private array $SensitiveHeaderIndex;
+
+    /**
      * @var string|null
      */
     private static $DefaultUserAgent;
@@ -432,7 +441,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
      */
     public function __construct(
         string $baseUrl,
-        ?ICurlerHeaders $headers = null,
+        ?IHttpHeaders $headers = null,
         ?ICurlerPager $pager = null,
         bool $cacheResponse = false,
         bool $cachePostResponse = false,
@@ -467,7 +476,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         }
 
         $this->BaseUrl = $baseUrl;
-        $this->Headers = $headers ?: new CurlerHeaders();
+        $this->Headers = $headers ?: new HttpHeaders();
         $this->Pager = $pager;
         $this->CacheResponse = $cacheResponse;
         $this->CachePostResponse = $cachePostResponse;
@@ -491,45 +500,47 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         $this->UserAgent = $userAgent;
         $this->AlwaysPaginate = $alwaysPaginate;
         $this->ObjectAsArray = $objectAsArray;
+
+        /** @var array<string,true> */
+        $index = Arr::toIndex(Arr::lower(HttpHeaderGroup::SENSITIVE));
+        $this->SensitiveHeaderIndex = $index;
     }
 
     /**
+     * @param string[]|string $value
      * @return $this
      */
-    public function addHeader(string $name, string $value, bool $private = false)
+    public function addHeader(string $name, $value)
     {
-        $this->Headers = $this->Headers->addHeader($name, $value, $private);
-
+        $this->Headers = $this->Headers->add($name, $value);
         return $this;
     }
 
     /**
      * @return $this
      */
-    public function unsetHeader(string $name, ?string $pattern = null)
+    public function unsetHeader(string $name)
     {
-        $this->Headers = $this->Headers->unsetHeader($name, $pattern);
+        $this->Headers = $this->Headers->unset($name);
+        return $this;
+    }
 
+    /**
+     * @param string[]|string $value
+     * @return $this
+     */
+    public function setHeader(string $name, $value)
+    {
+        $this->Headers = $this->Headers->set($name, $value);
         return $this;
     }
 
     /**
      * @return $this
      */
-    public function setHeader(string $name, string $value, bool $private = false)
+    public function addSensitiveHeaderName(string $name)
     {
-        $this->Headers = $this->Headers->setHeader($name, $value, $private);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function addPrivateHeaderName(string $name)
-    {
-        $this->Headers = $this->Headers->addPrivateHeaderName($name);
-
+        $this->SensitiveHeaderIndex[strtolower($name)] = true;
         return $this;
     }
 
@@ -538,11 +549,11 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
      */
     public function setContentType(?string $mimeType)
     {
-        $this->Headers =
-            $mimeType === null
-                ? $this->Headers->unsetHeader(HttpHeader::CONTENT_TYPE)
-                : $this->Headers->setHeader(HttpHeader::CONTENT_TYPE, $mimeType);
-
+        if ($mimeType === null) {
+            $this->Headers = $this->Headers->unset(HttpHeader::CONTENT_TYPE);
+            return $this;
+        }
+        $this->Headers = $this->Headers->set(HttpHeader::CONTENT_TYPE, $mimeType);
         return $this;
     }
 
@@ -551,11 +562,10 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
      *
      * @return $this
      */
-    public function withHeaders(ICurlerHeaders $headers)
+    public function withHeaders(IHttpHeaders $headers)
     {
         $clone = $this->clone();
         $clone->Headers = $headers;
-
         return $clone;
     }
 
@@ -568,7 +578,6 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     {
         $clone = $this->clone();
         $clone->Pager = $pager;
-
         return $clone;
     }
 
@@ -584,7 +593,6 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         if (!in_array($property, $this->getWritable(), true)) {
             throw new LogicException(sprintf('Invalid property: %s', $property));
         }
-
         return $this->withPropertyValue($property, $value);
     }
 
@@ -596,19 +604,15 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         if ($cookieKey = $this->getCookieKey()) {
             Cache::delete($cookieKey);
         }
-
         return $this;
     }
 
     public function responseContentTypeIs(string $mimeType): bool
     {
-        $contentType = $this->ResponseHeaders->getHeaderValue(
-            HttpHeader::CONTENT_TYPE,
-            CurlerHeadersFlag::KEEP_LAST
-        );
+        $contentType = $this->ResponseHeaders->getHeaderLine(HttpHeader::CONTENT_TYPE, true);
 
         // Assume JSON if it's expected and no Content-Type is specified
-        if ($contentType === null) {
+        if ($contentType === '') {
             return !strcasecmp($mimeType, MimeType::JSON) && $this->ExpectJson;
         }
 
@@ -755,14 +759,14 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         }
 
         if ($this->ExpectJson) {
-            $this->Headers = $this->Headers->setHeader(
+            $this->Headers = $this->Headers->set(
                 HttpHeader::ACCEPT,
                 MimeType::JSON
             );
         }
 
         if (!$this->Headers->hasHeader(HttpHeader::USER_AGENT)) {
-            $this->Headers = $this->Headers->setHeader(
+            $this->Headers = $this->Headers->set(
                 HttpHeader::USER_AGENT,
                 $this->UserAgent ?: self::getDefaultUserAgent()
             );
@@ -799,14 +803,14 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             if (count($split = explode(' ', $header, 3)) < 2) {
                 throw new CurlerInvalidResponseException('Invalid status line in response', $this);
             }
-            $this->ResponseHeaders = new CurlerHeaders();
+            $this->ResponseHeaders = new HttpHeaders();
             $this->ReasonPhrase = trim($split[2] ?? '');
             return $header;
         }
         if ($this->ReasonPhrase === null) {
             throw new CurlerInvalidResponseException('No status line in response', $this);
         }
-        $this->ResponseHeaders = $this->ResponseHeaders->addRawHeader($header);
+        $this->ResponseHeaders = $this->ResponseHeaders->addLine($header);
         return $header;
     }
 
@@ -948,14 +952,14 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             $this->ResponseBody = $last[3];
 
             $this->ResponseHeadersByName =
-                $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE);
+                $this->ResponseHeaders->getHeaderLines();
 
             return $this->ResponseBody;
         }
 
         $this->ExecuteCount++;
 
-        curl_setopt($this->Handle, \CURLOPT_HTTPHEADER, $this->Headers->getHeaders());
+        curl_setopt($this->Handle, \CURLOPT_HTTPHEADER, $this->Headers->getLines());
 
         $attempt = 0;
         while ($attempt++ < 2) {
@@ -981,7 +985,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             }
 
             // ReasonPhrase is set by processHeader()
-            $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderValues(CurlerHeadersFlag::COMBINE);
+            $this->ResponseHeadersByName = $this->ResponseHeaders->getHeaderLines();
             $this->StatusCode = $this->CurlInfo['http_code'];
             $this->ResponseBody = $result;
 
@@ -1049,7 +1053,10 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
 
         $key = $this->ResponseCacheKeyCallback
             ? ($this->ResponseCacheKeyCallback)($this)
-            : $this->Headers->getPublicHeaders();
+            : $this->Headers->filter(
+                fn(string $key) => !($this->SensitiveHeaderIndex[$key] ?? false),
+                ICollection::CALLBACK_USE_KEY
+            )->getLines('%s:%s');
         if ($this->Method === HttpRequestMethod::POST) {
             $key[] = $this->Body;
         }
@@ -1066,7 +1073,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
     /**
      * @param mixed[]|null $query
      */
-    public function head(?array $query = null): ICurlerHeaders
+    public function head(?array $query = null): IHttpHeaders
     {
         return $this->process(HttpRequestMethod::HEAD, $query);
     }

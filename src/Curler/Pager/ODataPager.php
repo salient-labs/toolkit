@@ -7,6 +7,7 @@ use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Support\CurlerPageBuilder;
 use Lkrms\Curler\Curler;
 use Lkrms\Http\Catalog\HttpHeader;
+use Lkrms\Utility\Pcre;
 
 final class ODataPager implements ICurlerPager
 {
@@ -42,13 +43,24 @@ final class ODataPager implements ICurlerPager
 
     public function prepareCurler(Curler $curler): Curler
     {
-        if ($this->MaxPageSize !== null) {
-            return $curler
-                ->unsetHeader(HttpHeader::PREFER, '/^odata\.maxpagesize\h*=/')
-                ->addHeader(HttpHeader::PREFER, sprintf('odata.maxpagesize=%d', $this->MaxPageSize));
+        if ($this->MaxPageSize === null) {
+            return $curler;
         }
-
-        return $curler;
+        /** @todo implement `Prefer` header wrangling in `IHttpHeaders`? */
+        $preference = sprintf('odata.maxpagesize=%d', $this->MaxPageSize);
+        $value = $curler->Headers->getHeader(HttpHeader::PREFER);
+        $pattern = '/^odata\.maxpagesize\h*=/i';
+        $replace = Pcre::grep($pattern, $value);
+        if (count($replace) === 1) {
+            reset($replace);
+            $value[key($replace)] = $preference;
+        } else {
+            // [RFC7240], Section 2: "If any preference is specified more
+            // than once, only the first instance is to be considered."
+            $value = Pcre::grep($pattern, $value, PREG_GREP_INVERT);
+            array_unshift($value, $preference);
+        }
+        return $curler->setHeader(HttpHeader::PREFER, $value);
     }
 
     public function getPage($data, Curler $curler, ?ICurlerPage $previous = null): ICurlerPage

@@ -5,8 +5,6 @@ namespace Lkrms\Http;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Curler\CurlerHeaders;
-use Lkrms\Curler\CurlerHeadersFlag;
 use Lkrms\Facade\Console;
 use Lkrms\Http\Catalog\HttpRequestMethodGroup;
 use RuntimeException;
@@ -211,7 +209,7 @@ final class HttpServer implements IReadable, IImmutable
 
             $startLine = null;
             $version = null;
-            $headers = new CurlerHeaders();
+            $headers = new HttpHeaders();
             $body = null;
             do {
                 if (($line = fgets($socket)) === false) {
@@ -232,7 +230,7 @@ final class HttpServer implements IReadable, IImmutable
                     continue;
                 }
 
-                $headers = $headers->addRawHeader($line);
+                $headers = $headers->addLine($line, true);
 
                 if (!trim($line)) {
                     break;
@@ -240,7 +238,7 @@ final class HttpServer implements IReadable, IImmutable
             } while (true);
 
             /** @todo Add support for Transfer-Encoding */
-            if ($length = $headers->getHeaderValue('Content-Length', CurlerHeadersFlag::KEEP_LAST)) {
+            if ($length = $headers->getHeaderLine('Content-Length', true)) {
                 if (($body = fread($socket, (int) $length)) === false) {
                     throw new RuntimeException("Error reading request body from $peer");
                 }
