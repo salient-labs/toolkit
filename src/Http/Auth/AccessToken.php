@@ -6,6 +6,7 @@ use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Exception\InvalidArgumentException;
+use Lkrms\Http\Contract\IAccessToken;
 use Lkrms\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -19,34 +20,25 @@ use DateTimeInterface;
  * @property-read string[] $Scopes
  * @property-read array<string,mixed> $Claims
  */
-final class AccessToken implements IReadable, IImmutable
+final class AccessToken implements IAccessToken, IImmutable, IReadable
 {
     use TFullyReadable;
 
-    /**
-     * @var string
-     */
-    protected $Token;
+    protected string $Token;
 
-    /**
-     * @var string
-     */
-    protected $Type;
+    protected string $Type;
 
-    /**
-     * @var DateTimeImmutable|null
-     */
-    protected $Expires;
+    protected ?DateTimeImmutable $Expires;
 
     /**
      * @var string[]
      */
-    protected $Scopes;
+    protected array $Scopes;
 
     /**
      * @var array<string,mixed>
      */
-    protected $Claims;
+    protected array $Claims;
 
     /**
      * Creates a new AccessToken object
@@ -57,8 +49,13 @@ final class AccessToken implements IReadable, IImmutable
      * @param string[]|null $scopes
      * @param array<string,mixed>|null $claims
      */
-    public function __construct(string $token, string $type, $expires, ?array $scopes = null, ?array $claims = null)
-    {
+    public function __construct(
+        string $token,
+        string $type,
+        $expires,
+        ?array $scopes = null,
+        ?array $claims = null
+    ) {
         if (is_int($expires) && $expires < 0) {
             throw new InvalidArgumentException(sprintf(
                 'Invalid $expires: %d',
@@ -75,5 +72,21 @@ final class AccessToken implements IReadable, IImmutable
                 : new DateTimeImmutable("@$expires"));
         $this->Scopes = $scopes ?: [];
         $this->Claims = $claims ?: [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getToken(): string
+    {
+        return $this->Token;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getType(): string
+    {
+        return $this->Type;
     }
 }

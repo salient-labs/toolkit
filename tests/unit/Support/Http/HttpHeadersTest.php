@@ -2,10 +2,14 @@
 
 namespace Lkrms\Tests\Support\Http;
 
+use Lkrms\Contract\ICollection;
 use Lkrms\Exception\InvalidArgumentException;
+use Lkrms\Http\Auth\AccessToken;
 use Lkrms\Http\Catalog\HttpHeader;
+use Lkrms\Http\Catalog\HttpHeaderGroup;
 use Lkrms\Http\HttpHeaders;
 use Lkrms\Support\Catalog\MimeType;
+use Lkrms\Utility\Arr;
 use LogicException;
 
 final class HttpHeadersTest extends \Lkrms\Tests\TestCase
@@ -160,7 +164,7 @@ final class HttpHeadersTest extends \Lkrms\Tests\TestCase
                 true,
             ],
             '[strict] trailing header #4' => [
-                InvalidArgumentException::class . ',HTTP message cannot have empty line after body',
+                InvalidArgumentException::class . ',HTTP message cannot have empty header after body',
                 ["foo: bar\r\n", "\r\n", "baz: qux\r\n", "\r\n"],
                 true,
                 true,
@@ -256,6 +260,27 @@ final class HttpHeadersTest extends \Lkrms\Tests\TestCase
             ['A' => ['']],
             (new HttpHeaders())->set('A', '')->getHeaders()
         );
+    }
+
+    public function testFilter(): void
+    {
+        $index = Arr::toIndex(Arr::lower(HttpHeaderGroup::SENSITIVE));
+        $token = new AccessToken('foo.bar.baz', 'Bearer', time() + 3600);
+        $headers = (new HttpHeaders())
+            ->authorize($token)
+            ->set(HttpHeader::ACCEPT, '*/*');
+        $this->assertSame([
+            'Authorization' => ['Bearer foo.bar.baz'],
+            'Accept' => ['*/*'],
+        ], $headers->getHeaders());
+        $headers = $headers
+            ->filter(
+                fn(string $key) => !($index[$key] ?? false),
+                ICollection::CALLBACK_USE_KEY
+            );
+        $this->assertSame([
+            'Accept' => ['*/*'],
+        ], $headers->getHeaders());
     }
 
     public function testOffsetSet(): void
