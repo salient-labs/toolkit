@@ -8,7 +8,7 @@ use Lkrms\Contract\IReadable;
 use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Curler\CurlerHeadersFlag;
 use Lkrms\Facade\Console;
-use Lkrms\Http\Catalog\HttpRequestMethods;
+use Lkrms\Http\Catalog\HttpRequestMethodGroup;
 use RuntimeException;
 
 /**
@@ -221,7 +221,7 @@ final class HttpServer implements IReadable, IImmutable
                 if ($startLine === null) {
                     $startLine = explode(' ', rtrim($line, "\r\n"));
                     if (count($startLine) !== 3 ||
-                            !in_array($startLine[0], HttpRequestMethods::ALL, true) ||
+                            !in_array($startLine[0], HttpRequestMethodGroup::ALL, true) ||
                             !preg_match(
                                 '/^HTTP\/([0-9]+(?:\.[0-9]+)?)$/',
                                 $startLine[2],

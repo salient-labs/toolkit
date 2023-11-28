@@ -30,7 +30,14 @@ final class HttpHeadersTest extends \Lkrms\Tests\TestCase
             $headers = $headers->addLine($line, $strict);
         }
 
-        $this->assertSame($expected, $headers->getHeaders($trailers));
+        $this->assertSame(
+            $expected,
+            $trailers === null
+                ? $headers->getHeaders()
+                : ($trailers
+                    ? $headers->trailers()->getHeaders()
+                    : $headers->withoutTrailers()->getHeaders())
+        );
     }
 
     /**
@@ -247,7 +254,7 @@ final class HttpHeadersTest extends \Lkrms\Tests\TestCase
     {
         $this->assertSame(
             ['A' => ['']],
-            (new HttpHeaders())->set('A', '')->all()
+            (new HttpHeaders())->set('A', '')->getHeaders()
         );
     }
 

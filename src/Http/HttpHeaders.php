@@ -7,8 +7,8 @@ use Lkrms\Concern\ImmutableArrayAccess;
 use Lkrms\Concern\TReadableCollection;
 use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
-use Lkrms\Contract\IImmutable;
 use Lkrms\Exception\InvalidArgumentException;
+use Lkrms\Http\Contract\IHttpHeaders;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Pcre;
@@ -17,16 +17,16 @@ use LogicException;
 
 /**
  * A collection of HTTP headers
- *
- * @implements ICollection<string,string[]>
  */
-class HttpHeaders implements ICollection, IImmutable
+class HttpHeaders implements IHttpHeaders
 {
     /** @use TReadableCollection<string,string[]> */
     use TReadableCollection;
     /** @use ImmutableArrayAccess<string,string[]> */
     use ImmutableArrayAccess;
-    use Immutable;
+    use Immutable {
+        withPropertyValue as with;
+    }
 
     /**
      * [ [ Name => value ], ... ]
@@ -59,87 +59,68 @@ class HttpHeaders implements ICollection, IImmutable
     protected ?string $Carry = null;
 
     /**
-     * Parse and apply an HTTP header field
-     *
-     * @param bool $strict If `true`, an exception is thrown if `$line` is not
-     * \[RFC7230]-compliant.
-     * @return static
+     * @inheritDoc
      */
     public function addLine(string $line, bool $strict = false)
     {
+        if ($strict && substr($line, -2) !== "\r\n") {
+            throw new InvalidArgumentException('HTTP header field must end with CRLF');
+        }
+
+        if ($line === "\r\n" || (!$strict && trim($line) === '')) {
+            if ($strict && $this->Closed) {
+                throw new InvalidArgumentException('HTTP message cannot have empty line after body');
+            }
+            return $this->with('Closed', true)->with('Carry', null);
+        }
+
+        $extend = false;
+        $name = null;
+        $value = null;
         if ($strict) {
-            return $this->strictAddLine($line);
-        }
-
-        if (trim($line) === '') {
-            return $this->close()->carry(null);
-        }
-
-        $line = rtrim($line, "\r\n");
-        $carry = Pcre::match('/\h+$/', $line, $matches) ? $matches[0] : null;
-        if (strpos(" \t", $line[0]) !== false) {
+            $line = substr($line, 0, -2);
+            $regex = Regex::anchorAndDelimit(Regex::HTTP_HEADER_FIELD);
+            if (!Pcre::match($regex, $line, $matches, PREG_UNMATCHED_AS_NULL) ||
+                    $matches['bad_whitespace'] !== null) {
+                throw new InvalidArgumentException(sprintf('Invalid HTTP header field: %s', $line));
+            }
             // Section 3.2.4 of [RFC7230]: "A user agent that receives an
             // obs-fold in a response message that is not within a message/http
             // container MUST replace each received obs-fold with one or more SP
             // octets prior to interpreting the field value."
-            $line = $this->Carry . ' ' . trim($line);
-            return $this->extendLast($line)->carry($carry);
-        }
-        $split = explode(':', $line, 2);
-        if (count($split) !== 2) {
-            return $this->carry(null);
-        }
-        [$name, $value] = $split;
-        // Whitespace between field name and ":" is not allowed since [RFC7230]
-        // (see Section 3.2.4) and should be removed from upstream responses
-        return $this
-            ->add(rtrim($name), trim($value))
-            ->maybeIndexTrailer()
-            ->carry($carry);
-    }
-
-    /**
-     * @return static
-     */
-    private function strictAddLine(string $line)
-    {
-        if (substr($line, -2) !== "\r\n") {
-            throw new InvalidArgumentException('HTTP header field must end with CRLF');
-        }
-
-        if ($line === "\r\n") {
-            if ($this->Closed) {
-                throw new InvalidArgumentException('HTTP message cannot have empty line after body');
+            $carry = $matches['carry'];
+            if ($matches['extended'] !== null) {
+                $extend = true;
+                $line = $this->Carry . ' ' . $matches['extended'];
+            } else {
+                $name = $matches['name'];
+                $value = $matches['value'];
             }
-            return $this->close()->carry(null);
+        } else {
+            $line = rtrim($line, "\r\n");
+            $carry = Pcre::match('/\h+$/', $line, $matches) ? $matches[0] : null;
+            if (strpos(" \t", $line[0]) !== false) {
+                $extend = true;
+                $line = $this->Carry . ' ' . trim($line);
+            } else {
+                $split = explode(':', $line, 2);
+                if (count($split) !== 2) {
+                    return $this->with('Carry', null);
+                }
+                // Whitespace after name is not allowed since [RFC7230] (see
+                // Section 3.2.4) and should be removed from upstream responses
+                $name = rtrim($split[0]);
+                $value = trim($split[1]);
+            }
         }
 
-        $line = substr($line, 0, -2);
-        if (!Pcre::match(
-            Regex::anchorAndDelimit(Regex::HTTP_HEADER_FIELD),
-            $line,
-            $matches,
-            PREG_UNMATCHED_AS_NULL
-        ) || $matches['bad_whitespace'] !== null) {
-            throw new InvalidArgumentException(sprintf('Invalid HTTP header field: %s', $line));
-        }
-        $carry = $matches['carry'];
-        if ($matches['extended'] !== null) {
-            $line = $this->Carry . ' ' . $matches['extended'];
-            return $this->extendLast($line)->carry($carry);
-        }
-        return $this
-            ->add($matches['name'], $matches['value'])
-            ->maybeIndexTrailer()
-            ->carry($carry);
+        return $extend
+            ? $this->extendLast($line)->with('Carry', $carry)
+            : $this->add($name, $value)->maybeIndexTrailer()->with('Carry', $carry);
     }
 
     /**
-     * Apply a value to a header, preserving any existing values
-     *
-     * @param string $key
-     * @param string[]|string $value
-     * @return static
+     * @inheritDoc
      */
     public function add($key, $value)
     {
@@ -159,11 +140,7 @@ class HttpHeaders implements ICollection, IImmutable
     }
 
     /**
-     * Apply a value to a header, replacing any existing values
-     *
-     * @param string $key
-     * @param string[]|string $value
-     * @return static
+     * @inheritDoc
      */
     public function set($key, $value)
     {
@@ -201,10 +178,7 @@ class HttpHeaders implements ICollection, IImmutable
     }
 
     /**
-     * Remove a header
-     *
-     * @param string $key
-     * @return static
+     * @inheritDoc
      */
     public function unset($key)
     {
@@ -222,13 +196,9 @@ class HttpHeaders implements ICollection, IImmutable
     }
 
     /**
-     * Apply values to headers from an array or Traversable, optionally
-     * preserving existing values
-     *
-     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
-     * @return static
+     * @inheritDoc
      */
-    public function merge($items, bool $preserveExisting = true)
+    public function merge($items, bool $preserveExisting = false)
     {
         $normalise = true;
         if ($items instanceof self) {
@@ -370,8 +340,6 @@ class HttpHeaders implements ICollection, IImmutable
 
     /**
      * @inheritDoc
-     *
-     * @return array<string,string[]>
      */
     public function jsonSerialize(): array
     {
@@ -409,13 +377,86 @@ class HttpHeaders implements ICollection, IImmutable
     }
 
     /**
-     * Iterate over headers in their original order
-     *
-     * The original case of each header is preserved.
-     *
+     * @inheritDoc
+     */
+    public function trailers()
+    {
+        return $this->whereIsTrailer();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withoutTrailers()
+    {
+        return $this->whereIsTrailer(false);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLines(string $format = '%s: %s'): array
+    {
+        foreach ($this->headers() as $key => $value) {
+            $lines[] = sprintf($format, $key, $value);
+        }
+        return $lines ?? [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHeaders(): array
+    {
+        return $this->doGetHeaders(true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHeaderLines(): array
+    {
+        foreach ($this->Items as $lower => $values) {
+            $lines[$lower] = implode(',', $values);
+        }
+        return $lines ?? [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasHeader(string $name): bool
+    {
+        return isset($this->Items[strtolower($name)]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHeader(string $name): array
+    {
+        return $this->Items[strtolower($name)] ?? [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHeaderLine(string $name, bool $lastValueOnly = false): string
+    {
+        $values = $this->Items[strtolower($name)] ?? [];
+        if (!$values) {
+            return '';
+        }
+        if ($lastValueOnly) {
+            return end($values);
+        }
+        return implode(',', $values);
+    }
+
+    /**
      * @return Generator<string,string>
      */
-    public function headers(): Generator
+    protected function headers(): Generator
     {
         foreach ($this->Headers as $header) {
             $value = reset($header);
@@ -482,30 +523,22 @@ class HttpHeaders implements ICollection, IImmutable
         $clone = $this->clone();
         $clone->Headers = $headers;
         $clone->Index = $index;
-        $clone->Items = $clone->getHeaders();
+        $clone->Items = $clone->doGetHeaders();
         return $clone;
     }
 
     /**
-     * Get an array that maps header names to values, preserving the original
-     * case of the first appearance of each header
-     *
-     * @param bool|null $trailers If `false`, trailers are not returned. If
-     * `true`, only trailers are returned. If `null` (the default), all headers
-     * are returned.
      * @return array<string,string[]>
      */
-    public function getHeaders(?bool $trailers = null): array
+    protected function doGetHeaders(bool $preserveCase = false): array
     {
-        foreach ($this->Index as $headerIndex) {
-            unset($key);
+        foreach ($this->Index as $lower => $headerIndex) {
+            if ($preserveCase) {
+                unset($key);
+            } else {
+                $key = $lower;
+            }
             foreach ($headerIndex as $i) {
-                if ($trailers === false && ($this->Trailers[$i] ?? false)) {
-                    continue;
-                }
-                if ($trailers === true && !($this->Trailers[$i] ?? false)) {
-                    continue;
-                }
                 $header = $this->Headers[$i];
                 $value = reset($header);
                 $key ??= key($header);
@@ -547,33 +580,7 @@ class HttpHeaders implements ICollection, IImmutable
     /**
      * @return static
      */
-    protected function close()
-    {
-        if ($this->Closed) {
-            return $this;
-        }
-        $clone = $this->clone();
-        $clone->Closed = true;
-        return $clone;
-    }
-
-    /**
-     * @return static
-     */
-    protected function carry(?string $carry)
-    {
-        if ($this->Carry === $carry) {
-            return $this;
-        }
-        $clone = $this->clone();
-        $clone->Carry = $carry;
-        return $clone;
-    }
-
-    /**
-     * @return static
-     */
-    protected function extendLast(string $line)
+    private function extendLast(string $line)
     {
         if (!$this->Headers) {
             return $this;
@@ -590,7 +597,7 @@ class HttpHeaders implements ICollection, IImmutable
     /**
      * @return static
      */
-    protected function maybeIndexTrailer()
+    private function maybeIndexTrailer()
     {
         if (!$this->Headers) {
             throw new LogicException('No headers applied');
@@ -599,11 +606,29 @@ class HttpHeaders implements ICollection, IImmutable
             return $this;
         }
         $i = array_key_last($this->Headers);
-        if ($this->Trailers[$i] ?? null) {
-            return $this;
+        $trailers = $this->Trailers;
+        $trailers[$i] = true;
+        return $this->with('Trailers', $trailers);
+    }
+
+    /**
+     * @return static
+     */
+    private function whereIsTrailer(bool $value = true)
+    {
+        $headers = [];
+        $index = [];
+        foreach ($this->Index as $lower => $headerIndex) {
+            foreach ($headerIndex as $i) {
+                $isTrailer = $this->Trailers[$i] ?? false;
+                if ($value xor $isTrailer) {
+                    continue;
+                }
+                $headers[$i] = $this->Headers[$i];
+                $index[$lower][] = $i;
+            }
         }
-        $clone = $this->clone();
-        $clone->Trailers[$i] = true;
-        return $clone;
+        ksort($headers);
+        return $this->maybeReplaceHeaders($headers, $index);
     }
 }

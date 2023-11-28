@@ -9,12 +9,12 @@ use Lkrms\Concept\Dictionary;
  *
  * @extends Dictionary<array<HttpRequestMethod::*>>
  */
-final class HttpRequestMethods extends Dictionary
+final class HttpRequestMethodGroup extends Dictionary
 {
     /**
      * @var array<HttpRequestMethod::*>
      */
-    const ALL = [
+    public const ALL = [
         HttpRequestMethod::GET,
         HttpRequestMethod::HEAD,
         HttpRequestMethod::POST,
