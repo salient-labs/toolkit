@@ -5,6 +5,7 @@ namespace Lkrms\Http\Contract;
 use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
 use Lkrms\Contract\IImmutable;
+use Lkrms\Http\Catalog\HttpHeader;
 
 /**
  * A collection of HTTP headers
@@ -51,12 +52,22 @@ interface IHttpHeaders extends ICollection, IImmutable
     public function unset($key);
 
     /**
-     * Apply values to headers from an array or Traversable, optionally
-     * preserving existing values
+     * Merge the collection with the given headers, optionally preserving
+     * existing values
      *
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
      */
     public function merge($items, bool $preserveExisting = false);
+
+    /**
+     * Apply an access token to the collection
+     *
+     * @return static
+     */
+    public function authorize(
+        IAccessToken $token,
+        string $headerName = HttpHeader::AUTHORIZATION
+    );
 
     /**
      * Reduce the collection to headers received after the HTTP message body

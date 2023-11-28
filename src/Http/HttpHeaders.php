@@ -5,9 +5,10 @@ namespace Lkrms\Http;
 use Lkrms\Concern\Immutable;
 use Lkrms\Concern\ImmutableArrayAccess;
 use Lkrms\Concern\TReadableCollection;
-use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
 use Lkrms\Exception\InvalidArgumentException;
+use Lkrms\Http\Catalog\HttpHeader;
+use Lkrms\Http\Contract\IAccessToken;
 use Lkrms\Http\Contract\IHttpHeaders;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Arr;
@@ -69,7 +70,7 @@ class HttpHeaders implements IHttpHeaders
 
         if ($line === "\r\n" || (!$strict && trim($line) === '')) {
             if ($strict && $this->Closed) {
-                throw new InvalidArgumentException('HTTP message cannot have empty line after body');
+                throw new InvalidArgumentException('HTTP message cannot have empty header after body');
             }
             return $this->with('Closed', true)->with('Carry', null);
         }
@@ -253,6 +254,19 @@ class HttpHeaders implements IHttpHeaders
     /**
      * @inheritDoc
      */
+    public function authorize(
+        IAccessToken $token,
+        string $headerName = HttpHeader::AUTHORIZATION
+    ) {
+        return $this->set(
+            $headerName,
+            sprintf('%s %s', $token->getType(), $token->getToken())
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function sort()
     {
         return $this->maybeReplaceHeaders(
@@ -285,21 +299,19 @@ class HttpHeaders implements IHttpHeaders
         $changed = false;
 
         foreach ($index as $nextLower => $headerIndex) {
-            $nextKey = null;
             $nextValue = null;
             foreach ($headerIndex as $i) {
                 $header = $this->Headers[$i];
                 $value = reset($header);
-                $nextKey ??= key($header);
                 if ($mode === ICollection::CALLBACK_USE_KEY) {
                     break;
                 }
                 $nextValue[] = $value;
             }
             $next = $mode === ICollection::CALLBACK_USE_KEY
-                ? $nextKey
+                ? $nextLower
                 : ($mode === ICollection::CALLBACK_USE_BOTH
-                    ? [$nextKey => $nextValue]
+                    ? [$nextLower => $nextValue]
                     : $nextValue);
             if ($count++) {
                 if (!$callback($item, $next, $prev)) {
