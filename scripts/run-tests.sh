@@ -36,7 +36,7 @@ function run_with_php_versions() {
 
 run scripts/generate.php --check
 run tools/pretty-php/vendor/bin/pretty-php --diff
-run_with_php_versions 82 74 vendor/bin/phpstan
+run_with_php_versions 83 74 vendor/bin/phpstan
 run scripts/stop-mockoon.sh || (($? == 1)) || die 'error stopping mockoon'
 run scripts/start-mockoon.sh >/dev/null
 trap 'run scripts/stop-mockoon.sh' EXIT
