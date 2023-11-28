@@ -3,15 +3,13 @@
 namespace Lkrms\Contract;
 
 /**
- * Has a toArray() method
- *
  * @template TKey of array-key
  * @template TValue
  */
 interface Arrayable
 {
     /**
-     * Get the instance as an array
+     * Get the object as an array
      *
      * @return array<TKey,TValue>
      */

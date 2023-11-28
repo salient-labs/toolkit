@@ -2,28 +2,30 @@
 
 namespace Lkrms\Concern;
 
+use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
 use Lkrms\Contract\IComparable;
+use Lkrms\Contract\Jsonable;
 use Lkrms\Exception\InvalidArgumentException;
 use ArrayIterator;
+use JsonSerializable;
 use ReturnTypeWillChange;
 use Traversable;
 
 /**
- * Implements ICollection and Arrayable getters
+ * Implements ICollection getters
  *
  * @template TKey of array-key
  * @template TValue
  *
  * @see \Lkrms\Contract\ICollection
- * @see \Lkrms\Contract\Arrayable
  */
 trait TReadableCollection
 {
     /**
      * @var array<TKey,TValue>
      */
-    protected $Items;
+    protected $Items = [];
 
     /**
      * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): mixed)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): mixed)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): mixed)) $callback
@@ -152,11 +154,41 @@ trait TReadableCollection
     }
 
     /**
-     * @return array<TKey,TValue>
+     * @return array<TKey,mixed>
      */
     public function toArray(): array
     {
-        return $this->Items;
+        $array = $this->Items;
+        foreach ($array as &$value) {
+            if ($value instanceof Arrayable) {
+                $value = $value->toArray();
+            }
+        }
+        return $array;
+    }
+
+    /**
+     * @return array<TKey,mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        $array = $this->Items;
+        foreach ($array as &$value) {
+            if ($value instanceof JsonSerializable) {
+                continue;
+            }
+            if ($value instanceof Jsonable) {
+                $value = json_decode($value->toJson(), true);
+            } elseif ($value instanceof Arrayable) {
+                $value = $value->toArray();
+            }
+        }
+        return $array;
+    }
+
+    public function toJson(int $flags = 0): string
+    {
+        return json_encode($this->jsonSerialize(), $flags);
     }
 
     /**

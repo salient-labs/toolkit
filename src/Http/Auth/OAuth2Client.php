@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Auth;
+namespace Lkrms\Http\Auth;
 
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
@@ -10,11 +10,11 @@ use Lkrms\Curler\Curler;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
+use Lkrms\Http\Catalog\HttpRequestMethod as Method;
+use Lkrms\Http\HttpRequest;
+use Lkrms\Http\HttpResponse;
+use Lkrms\Http\HttpServer;
 use Lkrms\Store\CacheStore;
-use Lkrms\Support\Catalog\HttpRequestMethod as Method;
-use Lkrms\Support\Http\HttpRequest;
-use Lkrms\Support\Http\HttpResponse;
-use Lkrms\Support\Http\HttpServer;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Inspect;

@@ -11,13 +11,16 @@ use Traversable;
  * @template TKey of array-key
  * @template TValue
  *
+ * @extends Arrayable<TKey|int,TValue>
  * @extends Traversable<TKey,TValue>
- * @extends Arrayable<TKey,TValue>
  */
-interface FluentIteratorInterface extends Traversable, Arrayable
+interface FluentIteratorInterface extends Arrayable, Traversable
 {
     /**
      * Copy the elements of the iterator to an array
+     *
+     * @return array<TKey,TValue>|list<TValue>
+     * @phpstan-return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public function toArray(bool $preserveKeys = true): array;
 

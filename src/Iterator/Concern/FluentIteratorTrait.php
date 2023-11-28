@@ -15,7 +15,8 @@ use Lkrms\Iterator\Contract\FluentIteratorInterface;
 trait FluentIteratorTrait
 {
     /**
-     * @return array<TKey,TValue>
+     * @return array<TKey,TValue>|list<TValue>
+     * @phpstan-return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
     public function toArray(bool $preserveKeys = true): array
     {
@@ -24,8 +25,8 @@ trait FluentIteratorTrait
                 $array[$key] = $value;
             }
         } else {
-            foreach ($this as $current) {
-                $array[] = $current;
+            foreach ($this as $value) {
+                $array[] = $value;
             }
         }
         return $array ?? [];

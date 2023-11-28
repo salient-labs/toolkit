@@ -1115,7 +1115,7 @@ final class Convert
         bool $collapseBlankLines = false
     ): string {
         $newline = preg_quote($break, '/');
-        $escapes = $ignoreEscapes ? '' : Regex::NOT_ESCAPED . '\K';
+        $escapes = $ignoreEscapes ? '' : Regex::BEFORE_UNESCAPED . '\K';
 
         if ($trimTrailingWhitespace) {
             $search[] = "/{$escapes}\h+{$newline}/";

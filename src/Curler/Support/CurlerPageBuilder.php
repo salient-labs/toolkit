@@ -3,9 +3,9 @@
 namespace Lkrms\Curler\Support;
 
 use Lkrms\Concept\Builder;
-use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPage;
 use Lkrms\Curler\Curler;
+use Lkrms\Http\Contract\IHttpHeaders;
 
 /**
  * Creates CurlerPage objects via a fluent interface
@@ -16,7 +16,7 @@ use Lkrms\Curler\Curler;
  * @method $this nextUrl(string|null $value) The URL of the next page, including the query component (if any)
  * @method $this isLastPage(bool|null $value = true) Set if no more data is available
  * @method $this nextData(mixed[]|null $value) Data to send in the body of the next request
- * @method $this nextHeaders(ICurlerHeaders|null $value) Replaces the next request's HTTP headers
+ * @method $this nextHeaders(IHttpHeaders|null $value) Replaces the next request's HTTP headers
  *
  * @uses CurlerPage
  *

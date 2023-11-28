@@ -3,14 +3,14 @@
 namespace Lkrms\Sync\Concept;
 
 use Lkrms\Contract\IDateFormatter;
-use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
 use Lkrms\Curler\Curler;
 use Lkrms\Curler\CurlerBuilder;
-use Lkrms\Curler\CurlerHeaders;
 use Lkrms\Exception\MethodNotImplementedException;
 use Lkrms\Facade\Cache;
+use Lkrms\Http\Contract\IHttpHeaders;
+use Lkrms\Http\HttpHeaders;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncDefinition;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -38,7 +38,7 @@ abstract class HttpSyncProvider extends SyncProvider
     final public function getCurler(
         string $path,
         ?int $expiry = -1,
-        ?ICurlerHeaders $headers = null,
+        ?IHttpHeaders $headers = null,
         ?ICurlerPager $pager = null,
         ?IDateFormatter $dateFormatter = null
     ): Curler {
@@ -149,11 +149,11 @@ abstract class HttpSyncProvider extends SyncProvider
     }
 
     /**
-     * Get a new CurlerHeaders instance
+     * Get a new HttpHeaders instance
      */
-    final protected function headers(): CurlerHeaders
+    final protected function headers(): HttpHeaders
     {
-        return CurlerHeaders::create();
+        return new HttpHeaders();
     }
 
     /**
@@ -204,7 +204,7 @@ abstract class HttpSyncProvider extends SyncProvider
     /**
      * Get HTTP headers required by the upstream API
      */
-    protected function getHeaders(?string $path): ?ICurlerHeaders
+    protected function getHeaders(?string $path): ?IHttpHeaders
     {
         return null;
     }

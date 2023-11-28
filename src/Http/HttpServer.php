@@ -1,16 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Support\Http;
+namespace Lkrms\Http;
 
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Curler\CurlerHeaders;
-use Lkrms\Curler\CurlerHeadersFlag;
 use Lkrms\Facade\Console;
-use Lkrms\Support\Catalog\HttpRequestMethods;
-use Lkrms\Support\Http\HttpRequest;
-use Lkrms\Support\Http\HttpResponse;
+use Lkrms\Http\Catalog\HttpRequestMethodGroup;
 use RuntimeException;
 
 /**
@@ -213,7 +209,7 @@ final class HttpServer implements IReadable, IImmutable
 
             $startLine = null;
             $version = null;
-            $headers = new CurlerHeaders();
+            $headers = new HttpHeaders();
             $body = null;
             do {
                 if (($line = fgets($socket)) === false) {
@@ -223,7 +219,7 @@ final class HttpServer implements IReadable, IImmutable
                 if ($startLine === null) {
                     $startLine = explode(' ', rtrim($line, "\r\n"));
                     if (count($startLine) !== 3 ||
-                            !in_array($startLine[0], HttpRequestMethods::ALL, true) ||
+                            !in_array($startLine[0], HttpRequestMethodGroup::ALL, true) ||
                             !preg_match(
                                 '/^HTTP\/([0-9]+(?:\.[0-9]+)?)$/',
                                 $startLine[2],
@@ -234,7 +230,7 @@ final class HttpServer implements IReadable, IImmutable
                     continue;
                 }
 
-                $headers = $headers->addRawHeader($line);
+                $headers = $headers->addLine($line, true);
 
                 if (!trim($line)) {
                     break;
@@ -242,7 +238,7 @@ final class HttpServer implements IReadable, IImmutable
             } while (true);
 
             /** @todo Add support for Transfer-Encoding */
-            if ($length = $headers->getHeaderValue('Content-Length', CurlerHeadersFlag::KEEP_LAST)) {
+            if ($length = $headers->getHeaderLine('Content-Length', true)) {
                 if (($body = fread($socket, (int) $length)) === false) {
                     throw new RuntimeException("Error reading request body from $peer");
                 }

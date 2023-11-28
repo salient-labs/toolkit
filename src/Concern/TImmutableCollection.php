@@ -2,10 +2,8 @@
 
 namespace Lkrms\Concern;
 
-use LogicException;
-
 /**
- * Implements ICollection and Arrayable for immutable classes
+ * Implements ICollection for immutable classes
  *
  * Mutable classes should use {@see TCollection} instead.
  *
@@ -13,7 +11,6 @@ use LogicException;
  * @template TValue
  *
  * @see \Lkrms\Contract\ICollection
- * @see \Lkrms\Contract\Arrayable
  */
 trait TImmutableCollection
 {

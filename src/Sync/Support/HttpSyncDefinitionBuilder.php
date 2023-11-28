@@ -5,11 +5,11 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Concept\Builder;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Curler\Catalog\CurlerProperty;
-use Lkrms\Curler\Contract\ICurlerHeaders;
 use Lkrms\Curler\Contract\ICurlerPager;
+use Lkrms\Http\Catalog\HttpRequestMethod;
+use Lkrms\Http\Contract\IHttpHeaders;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
-use Lkrms\Support\Catalog\HttpRequestMethod;
 use Lkrms\Sync\Catalog\FilterPolicy;
 use Lkrms\Sync\Catalog\SyncEntitySource;
 use Lkrms\Sync\Catalog\SyncOperation as OP;
@@ -28,7 +28,7 @@ use Closure;
  * @method $this operations(array<OP::*> $value) A list of supported sync operations
  * @method $this path(string[]|string|null $value) The path to the provider endpoint servicing the entity, e.g. "/v1/user" (see {@see HttpSyncDefinition::$Path})
  * @method $this query(mixed[]|null $value) Query parameters applied to the sync operation URL (see {@see HttpSyncDefinition::$Query})
- * @method $this headers(?ICurlerHeaders $value) HTTP headers applied to the sync operation request (see {@see HttpSyncDefinition::$Headers})
+ * @method $this headers(?IHttpHeaders $value) HTTP headers applied to the sync operation request (see {@see HttpSyncDefinition::$Headers})
  * @method $this pager(?ICurlerPager $value) The pagination handler for the endpoint servicing the entity (see {@see HttpSyncDefinition::$Pager})
  * @method $this callback((callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $value) A callback applied to the definition before every sync operation (see {@see HttpSyncDefinition::$Callback})
  * @method $this conformity(ArrayKeyConformity::* $value) The conformity level of data returned by the provider for this entity (see {@see SyncDefinition::$Conformity})

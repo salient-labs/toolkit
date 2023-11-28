@@ -7,6 +7,90 @@ use Lkrms\Utility\Pcre;
 
 final class PcreTest extends \Lkrms\Tests\TestCase
 {
+    public function testGrepFails(): void
+    {
+        $this->expectException(PcreErrorException::class);
+        $this->expectExceptionMessage('Call to preg_grep() failed with PREG_BACKTRACK_LIMIT_ERROR');
+        Pcre::grep('/(?:\D+|<\d+>)*[!?]/', ['foobar foobar foobar']);
+    }
+
+    /**
+     * @dataProvider grepProvider
+     *
+     * @template TKey of array-key
+     * @template TValue of int|float|string|bool|\Stringable|null
+     *
+     * @param array<TKey,TValue>|string $expected
+     * @param array<TKey,TValue> $array
+     */
+    public function testGrep($expected, string $pattern, array $array, int $flags = 0): void
+    {
+        $this->maybeExpectException($expected);
+        $this->assertSame($expected, Pcre::grep($pattern, $array, $flags));
+    }
+
+    /**
+     * @return array<array{mixed[]|string,string,mixed[],3?:int}>
+     */
+    public static function grepProvider(): array
+    {
+        $obj = new class implements \Stringable {
+            public function __toString(): string
+            {
+                return 'foobar';
+            }
+        };
+
+        return [
+            [
+                [
+                    0,
+                    3.14,
+                    true,
+                    'string' => 'foobar',
+                    \Stringable::class => $obj,
+                ],
+                '/./',
+                [
+                    0,
+                    3.14,
+                    'null' => null,
+                    true,
+                    'false' => false,
+                    'string' => 'foobar',
+                    '',
+                    \Stringable::class => $obj,
+                ],
+            ],
+            [
+                [
+                    'null' => null,
+                    'false' => false,
+                    3 => '',
+                ],
+                '/./',
+                [
+                    0,
+                    3.14,
+                    'null' => null,
+                    true,
+                    'false' => false,
+                    'string' => 'foobar',
+                    '',
+                    \Stringable::class => $obj,
+                ],
+                PREG_GREP_INVERT,
+            ],
+            [
+                \Error::class,
+                '/./',
+                [
+                    new class {},
+                ],
+            ],
+        ];
+    }
+
     public function testMatch(): void
     {
         $this->expectException(PcreErrorException::class);

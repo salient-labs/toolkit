@@ -3,10 +3,10 @@
 namespace Lkrms\Tests\Support\Http;
 
 use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Support\Http\Uri;
+use Lkrms\Http\Uri;
 
 /**
- * Unit tests for \Lkrms\Support\Http\Uri
+ * Unit tests for \Lkrms\Http\Uri
  *
  * Some of the following tests were adapted from
  * {@link https://github.com/guzzle/psr7/blob/2.6/tests/UriTest.php guzzlehttp/psr7's `UriTest` class}
