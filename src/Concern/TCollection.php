@@ -205,8 +205,11 @@ trait TCollection
      */
     protected function getItems($items): array
     {
-        if ($items instanceof static) {
+        if ($items instanceof self) {
             return $items->Items;
+        }
+        if ($items instanceof Arrayable) {
+            return $items->toArray();
         }
         if (is_array($items)) {
             return $items;

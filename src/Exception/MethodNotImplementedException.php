@@ -2,14 +2,18 @@
 
 namespace Lkrms\Exception;
 
+use Lkrms\Exception\Concern\ExceptionTrait;
+use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Utility\Reflect;
-use ReflectionClass;
+use ReflectionMethod;
 
 /**
  * Thrown when an unimplemented method is called
  */
-class MethodNotImplementedException extends \Lkrms\Exception\Exception
+class MethodNotImplementedException extends \BadMethodCallException implements ExceptionInterface
 {
+    use ExceptionTrait;
+
     /**
      * @var class-string
      */
@@ -31,9 +35,10 @@ class MethodNotImplementedException extends \Lkrms\Exception\Exception
      */
     public function __construct(string $class, string $method, ?string $prototypeClass = null)
     {
-        if (!$prototypeClass &&
-                ($_class = new ReflectionClass($class))->hasMethod($method)) {
-            $prototypeClass = Reflect::getMethodPrototypeClass($_class->getMethod($method))->getName();
+        if ($prototypeClass === null) {
+            $prototypeClass = Reflect::getMethodPrototypeClass(
+                new ReflectionMethod($class, $method)
+            )->getName();
         }
 
         $this->Class = $class;
@@ -41,10 +46,10 @@ class MethodNotImplementedException extends \Lkrms\Exception\Exception
         $this->PrototypeClass = $prototypeClass;
 
         parent::__construct(sprintf(
-            '%s has not implemented %s::%s()',
+            '%s does not implement %s::%s()',
             $class,
             $prototypeClass,
-            $method
+            $method,
         ));
     }
 
