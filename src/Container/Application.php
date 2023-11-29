@@ -637,7 +637,7 @@ class Application extends Container implements IApplication
             $report[] = implode("\n", $lines);
         }
 
-        if ($report ?? null) {
+        if (isset($report)) {
             Console::print("\n" . implode("\n\n", $report), $level);
         }
     }

@@ -1028,7 +1028,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
             $this->close();
         }
 
-        if ($cacheKey ?? null) {
+        if (isset($cacheKey)) {
             Cache::set(
                 $cacheKey,
                 [$this->StatusCode, $this->ReasonPhrase, $this->ResponseHeaders, $this->ResponseBody],
@@ -1246,7 +1246,7 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         if ($this->responseContentTypeIs(MimeType::JSON)) {
             $response = json_decode($this->ResponseBody, $this->ObjectAsArray);
 
-            if ($pager ?? null) {
+            if (isset($pager)) {
                 $response = $pager->getPage($response, $this)->entities();
                 if (array_keys($response) === [0] &&
                         (is_array($response[0]) || is_scalar($response[0]))) {
