@@ -5,6 +5,7 @@ namespace Lkrms\Http;
 use Lkrms\Concern\Immutable;
 use Lkrms\Concern\ImmutableArrayAccess;
 use Lkrms\Concern\TReadableCollection;
+use Lkrms\Contract\Arrayable;
 use Lkrms\Contract\ICollection;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Catalog\HttpHeader;
@@ -201,10 +202,10 @@ class HttpHeaders implements IHttpHeaders
      */
     public function merge($items, bool $preserveExisting = false)
     {
-        $normalise = true;
         if ($items instanceof self) {
             $items = $items->headers();
-            $normalise = false;
+        } elseif ($items instanceof Arrayable) {
+            $items = $items->toArray();
         }
 
         $headers = $this->Headers;
@@ -231,12 +232,10 @@ class HttpHeaders implements IHttpHeaders
                 // Maintain the order of $index for comparison
                 $index[$lower] = [];
             }
-            if ($normalise) {
-                $key = $this->normaliseName($key);
-            }
+            $key = $this->normaliseName($key);
             foreach ($values as $value) {
                 $applied = true;
-                $headers[] = [$key => $normalise ? $this->normaliseValue($value) : $value];
+                $headers[] = [$key => $this->normaliseValue($value)];
                 $index[$lower][] = array_key_last($headers);
             }
         }

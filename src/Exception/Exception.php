@@ -6,9 +6,9 @@ use Lkrms\Exception\Concern\ExceptionTrait;
 use Lkrms\Exception\Contract\ExceptionInterface;
 
 /**
- * Base class for exceptions
+ * Base class for runtime exceptions
  */
-class Exception extends \Exception implements ExceptionInterface
+abstract class Exception extends \RuntimeException implements ExceptionInterface
 {
     use ExceptionTrait;
 }

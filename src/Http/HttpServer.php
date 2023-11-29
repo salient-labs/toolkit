@@ -10,7 +10,7 @@ use Lkrms\Http\Catalog\HttpRequestMethodGroup;
 use RuntimeException;
 
 /**
- * Listen for HTTP requests on a local address
+ * Listens for HTTP requests on a local address
  *
  * @property-read string $Host
  * @property-read int $Port

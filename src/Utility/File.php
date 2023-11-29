@@ -23,31 +23,107 @@ final class File
      */
     public static function open(string $filename, string $mode)
     {
-        $handle = fopen($filename, $mode);
-        if ($handle === false) {
+        $stream = fopen($filename, $mode);
+        if ($stream === false) {
             throw new FilesystemErrorException(
-                sprintf('Error opening file: %s', $filename),
+                sprintf('Error opening stream: %s', $filename),
             );
         }
-
-        return $handle;
+        return $stream;
     }
 
     /**
-     * Close an open file or URL
+     * Close an open stream
      *
      * A wrapper around {@see fclose()} that throws an exception on failure.
      *
-     * @param resource $handle
+     * @param resource $stream
      */
-    public static function close($handle, string $filename): void
+    public static function close($stream, ?string $uri = null): void
     {
-        $result = fclose($handle);
+        $uri = self::maybeGetStreamUri($stream, $uri);
+        $result = fclose($stream);
         if ($result === false) {
             throw new FilesystemErrorException(
-                sprintf('Error closing file: %s', $filename),
+                sprintf('Error closing file: %s', $uri),
             );
         }
+    }
+
+    /**
+     * Write to an open stream
+     *
+     * A wrapper around {@see fwrite()} that throws an exception on failure and
+     * when fewer bytes are written than expected.
+     *
+     * @param resource $stream
+     */
+    public static function write($stream, string $data, ?int $length = null, ?string $uri = null): int
+    {
+        $result = fwrite($stream, $data, $length);
+        if ($result === false) {
+            throw new FilesystemErrorException(
+                sprintf(
+                    'Error writing to stream: %s',
+                    self::maybeGetStreamUri($stream, $uri),
+                ),
+            );
+        }
+        $length = $length === null ? strlen($data) : min($length, strlen($data));
+        if ($result !== $length) {
+            throw new FilesystemErrorException(
+                sprintf(
+                    'Error writing to stream: %d of %d %s written to %s',
+                    $result,
+                    $length,
+                    Convert::plural($length, 'byte'),
+                    self::maybeGetStreamUri($stream, $uri),
+                ),
+            );
+        }
+        return $result;
+    }
+
+    /**
+     * Set the file position indicator for a stream
+     *
+     * A wrapper around {@see fseek()} that throws an exception on failure.
+     *
+     * @param resource $stream
+     * @param \SEEK_SET|\SEEK_CUR|\SEEK_END $whence
+     */
+    public static function seek($stream, int $offset, int $whence = SEEK_SET, ?string $uri = null): void
+    {
+        $result = fseek($stream, $offset, $whence);
+        if ($result === -1) {
+            throw new FilesystemErrorException(
+                sprintf(
+                    'Error setting file position indicator for stream: %s',
+                    self::maybeGetStreamUri($stream, $uri),
+                ),
+            );
+        }
+    }
+
+    /**
+     * Get the file position indicator for a stream
+     *
+     * A wrapper around {@see ftell()} that throws an exception on failure.
+     *
+     * @param resource $stream
+     */
+    public static function tell($stream, ?string $uri = null): int
+    {
+        $result = ftell($stream);
+        if ($result === false) {
+            throw new FilesystemErrorException(
+                sprintf(
+                    'Error getting file position indicator for stream: %s',
+                    self::maybeGetStreamUri($stream, $uri),
+                ),
+            );
+        }
+        return $result;
     }
 
     /**
@@ -331,19 +407,33 @@ final class File
     }
 
     /**
-     * Get the URI or filename associated with a stream
+     * Get the URI associated with a stream
      *
-     * @param resource $stream A stream opened by `fopen()`, `fsockopen()`,
-     * `pfsockopen()` or `stream_socket_client()`.
-     * @return string|null `null` if `$stream` is not an open stream resource.
+     * @param resource $stream
+     * @return string|null `null` if `$stream` is closed or does not have a URI.
      */
     public static function getStreamUri($stream): ?string
     {
         if (is_resource($stream) && get_resource_type($stream) === 'stream') {
-            return stream_get_meta_data($stream)['uri'];
+            // @phpstan-ignore-next-line
+            return stream_get_meta_data($stream)['uri'] ?? null;
         }
-
         return null;
+    }
+
+    /**
+     * @param resource $stream
+     */
+    private static function maybeGetStreamUri($stream, ?string $uri): string
+    {
+        if ($uri !== null) {
+            return $uri;
+        }
+        $uri = self::getStreamUri($stream);
+        if ($uri === null) {
+            return '<no URI>';
+        }
+        return $uri;
     }
 
     /**
@@ -392,7 +482,7 @@ final class File
             $handle = self::open($target, 'wb');
             $targetName = $target;
         } else {
-            $target = 'php://memory';
+            $target = 'php://temp';
             $handle = self::open($target, 'w+b');
             $targetName = $target;
             $target = null;
@@ -418,7 +508,7 @@ final class File
         }
 
         if ($bom) {
-            fwrite($handle, '﻿');
+            self::write($handle, '﻿', null, $targetName);
         }
 
         $count = 0;
@@ -436,7 +526,7 @@ final class File
             }
 
             if (!$count && $headerRow) {
-                self::fputcsv($handle, array_keys($row), ',', '"', $eol);
+                self::fputcsv($handle, array_keys($row), ',', '"', $eol, $targetName);
             }
 
             self::fputcsv($handle, $row, ',', '"', $eol);
@@ -444,7 +534,7 @@ final class File
         }
 
         if ($target === null) {
-            rewind($handle);
+            self::seek($handle, 0);
             $csv = stream_get_contents($handle);
             self::close($handle, $targetName);
 
@@ -468,7 +558,8 @@ final class File
         array $fields,
         string $separator = ',',
         string $enclosure = '"',
-        string $eol = "\n"
+        string $eol = "\n",
+        ?string $uri = null
     ): int {
         $special = $separator . $enclosure . "\n\r\t ";
         foreach ($fields as &$field) {
@@ -479,11 +570,12 @@ final class File
             }
         }
 
-        $written = fwrite($stream, implode($separator, $fields) . $eol);
-        if ($written === false) {
-            throw new FilesystemErrorException('Error writing to stream');
-        }
-        return $written;
+        return self::write(
+            $stream,
+            implode($separator, $fields) . $eol,
+            null,
+            $uri,
+        );
     }
 
     /**
