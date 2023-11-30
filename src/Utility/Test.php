@@ -112,29 +112,16 @@ final class Test
     }
 
     /**
-     * True if $value is an array of $class instances
-     *
      * @template T of object
-     *
      * @param mixed $value
      * @param class-string<T> $class
      * @phpstan-assert-if-true T[] $value
+     * @deprecated Use {@see Arr::of()} instead
+     * @codeCoverageIgnore
      */
     public static function isArrayOf($value, string $class, bool $allowEmpty = false): bool
     {
-        if (!is_array($value)) {
-            return false;
-        }
-        if (!$value) {
-            return $allowEmpty;
-        }
-        foreach ($value as $item) {
-            if (!is_a($item, $class)) {
-                return false;
-            }
-        }
-
-        return true;
+        return Arr::of($value, $class, $allowEmpty);
     }
 
     /**

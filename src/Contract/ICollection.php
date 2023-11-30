@@ -35,6 +35,18 @@ interface ICollection extends ArrayAccess, Arrayable, Countable, IteratorAggrega
     public const CALLBACK_USE_BOTH = 2;
 
     /**
+     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
+     */
+    public function __construct($items = []);
+
+    /**
+     * Get a new collection with no items
+     *
+     * @return static
+     */
+    public static function empty();
+
+    /**
      * Add or replace an item with a given key
      *
      * @param TKey $key
