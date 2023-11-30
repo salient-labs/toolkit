@@ -326,11 +326,11 @@ final class Arr
      *
      * @param mixed $value
      */
-    public static function listOfArrayKey($value, bool $orEmpty = false): bool
+    public static function isListOfArrayKey($value, bool $orEmpty = false): bool
     {
         return
-            self::listOfInt($value, $orEmpty) ||
-            self::listOfString($value);
+            self::isListOfInt($value, $orEmpty) ||
+            self::isListOfString($value);
     }
 
     /**
@@ -340,7 +340,7 @@ final class Arr
      */
     public static function ofInt($value, bool $orEmpty = false): bool
     {
-        return self::doOfType('is_int', $value, $orEmpty, false);
+        return self::doIsArrayOf('is_int', $value, $orEmpty, false);
     }
 
     /**
@@ -348,9 +348,9 @@ final class Arr
      *
      * @param mixed $value
      */
-    public static function listOfInt($value, bool $orEmpty = false): bool
+    public static function isListOfInt($value, bool $orEmpty = false): bool
     {
-        return self::doOfType('is_int', $value, $orEmpty, true);
+        return self::doIsArrayOf('is_int', $value, $orEmpty, true);
     }
 
     /**
@@ -360,7 +360,7 @@ final class Arr
      */
     public static function ofString($value, bool $orEmpty = false): bool
     {
-        return self::doOfType('is_string', $value, $orEmpty, false);
+        return self::doIsArrayOf('is_string', $value, $orEmpty, false);
     }
 
     /**
@@ -368,15 +368,44 @@ final class Arr
      *
      * @param mixed $value
      */
-    public static function listOfString($value, bool $orEmpty = false): bool
+    public static function isListOfString($value, bool $orEmpty = false): bool
     {
-        return self::doOfType('is_string', $value, $orEmpty, true);
+        return self::doIsArrayOf('is_string', $value, $orEmpty, true);
+    }
+
+    /**
+     * True if a value is an array of instances of a given class
+     *
+     * @template T of object
+     *
+     * @param mixed $value
+     * @param class-string<T> $class
+     * @phpstan-assert-if-true T[] $value
+     */
+    public static function of($value, string $class, bool $orEmpty = false): bool
+    {
+        return self::doIsArrayOf('is_a', $value, $orEmpty, false, $class);
+    }
+
+    /**
+     * True if a value is a list of instances of a given class
+     *
+     * @template T of object
+     *
+     * @param mixed $value
+     * @param class-string<T> $class
+     * @phpstan-assert-if-true list<T> $value
+     */
+    public static function isListOf($value, string $class, bool $orEmpty = false): bool
+    {
+        return self::doIsArrayOf('is_a', $value, $orEmpty, true, $class);
     }
 
     /**
      * @param mixed $value
+     * @param mixed ...$args
      */
-    private static function doOfType(string $func, $value, bool $orEmpty, bool $requireList): bool
+    private static function doIsArrayOf(string $func, $value, bool $orEmpty, bool $requireList, ...$args): bool
     {
         if (!is_array($value)) {
             return false;
@@ -389,7 +418,7 @@ final class Arr
             if ($requireList && $i++ !== $key) {
                 return false;
             }
-            if (!$func($value)) {
+            if (!$func($value, ...$args)) {
                 return false;
             }
         }

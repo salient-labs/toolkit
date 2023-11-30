@@ -22,14 +22,6 @@ trait TCollection
     use TReadableCollection;
 
     /**
-     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
-     */
-    public function __construct($items = [])
-    {
-        $this->Items = $this->getItems($items);
-    }
-
-    /**
      * @param TKey $key
      * @param TValue $value
      * @return static
@@ -198,24 +190,6 @@ trait TCollection
     }
 
     // --
-
-    /**
-     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
-     * @return array<TKey,TValue>
-     */
-    protected function getItems($items): array
-    {
-        if ($items instanceof self) {
-            return $items->Items;
-        }
-        if ($items instanceof Arrayable) {
-            return $items->toArray();
-        }
-        if (is_array($items)) {
-            return $items;
-        }
-        return iterator_to_array($items);
-    }
 
     /**
      * @param array<TKey,TValue> $items

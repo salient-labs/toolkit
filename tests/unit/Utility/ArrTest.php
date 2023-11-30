@@ -3,6 +3,8 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Utility\Arr;
+use DateTimeImmutable;
+use DateTimeInterface;
 
 final class ArrTest extends \Lkrms\Tests\TestCase
 {
@@ -176,29 +178,40 @@ final class ArrTest extends \Lkrms\Tests\TestCase
      *
      * @param mixed $value
      */
-    public function testOfArrayKey($value, bool $expected, bool $expectedIfAllowEmpty): void
-    {
+    public function testOfArrayKey(
+        $value,
+        bool $expected,
+        bool $expectedIfOrEmpty,
+        bool $expectedIfList,
+        bool $expectedIfOrEmptyList
+    ): void {
         $this->assertSame($expected, Arr::ofArrayKey($value));
-        $this->assertSame($expectedIfAllowEmpty, Arr::ofArrayKey($value, true));
+        $this->assertSame($expectedIfOrEmpty, Arr::ofArrayKey($value, true));
+        $this->assertSame($expectedIfList, Arr::isListOfArrayKey($value));
+        $this->assertSame($expectedIfOrEmptyList, Arr::isListOfArrayKey($value, true));
     }
 
     /**
-     * @return array<string,array{mixed,bool,bool}>
+     * @return array<string,array{mixed,bool,bool,bool,bool}>
      */
     public static function ofArrayKeyProvider(): array
     {
         return [
-            'null' => [null, false, false],
-            'int' => [0, false, false],
-            'string' => ['a', false, false],
-            'empty' => [[], false, true],
-            'ints' => [[0, 1], true, true],
-            'strings' => [['a', 'b'], true, true],
-            'mixed #1' => [[0, 'a'], false, false],
-            'mixed #2' => [[0, 1, true], false, false],
-            'mixed #3' => [[0, 1, null], false, false],
-            'mixed #4' => [['a', 'b', true], false, false],
-            'mixed #5' => [['a', 'b', null], false, false],
+            'null' => [null, false, false, false, false],
+            'int' => [0, false, false, false, false],
+            'string' => ['a', false, false, false, false],
+            'empty' => [[], false, true, false, true],
+            'ints' => [[0, 1], true, true, true, true],
+            'ints (indexed)' => [[7 => 0, 1 => 1], true, true, false, false],
+            'ints (associative)' => [['a' => 0, 'b' => 1], true, true, false, false],
+            'strings' => [['a', 'b'], true, true, true, true],
+            'strings (indexed)' => [[7 => 'a', 1 => 'b'], true, true, false, false],
+            'strings (associative)' => [['a' => 'a', 'b' => 'b'], true, true, false, false],
+            'mixed #1' => [[0, 'a'], false, false, false, false],
+            'mixed #2' => [[0, 1, true], false, false, false, false],
+            'mixed #3' => [[0, 1, null], false, false, false, false],
+            'mixed #4' => [['a', 'b', true], false, false, false, false],
+            'mixed #5' => [['a', 'b', null], false, false, false, false],
         ];
     }
 
@@ -207,29 +220,38 @@ final class ArrTest extends \Lkrms\Tests\TestCase
      *
      * @param mixed $value
      */
-    public function testOfInt($value, bool $expected, bool $expectedIfAllowEmpty): void
-    {
+    public function testOfInt(
+        $value,
+        bool $expected,
+        bool $expectedIfOrEmpty,
+        bool $expectedIfList,
+        bool $expectedIfOrEmptyList
+    ): void {
         $this->assertSame($expected, Arr::ofInt($value));
-        $this->assertSame($expectedIfAllowEmpty, Arr::ofInt($value, true));
+        $this->assertSame($expectedIfOrEmpty, Arr::ofInt($value, true));
+        $this->assertSame($expectedIfList, Arr::isListOfInt($value));
+        $this->assertSame($expectedIfOrEmptyList, Arr::isListOfInt($value, true));
     }
 
     /**
-     * @return array<string,array{mixed,bool,bool}>
+     * @return array<string,array{mixed,bool,bool,bool,bool}>
      */
     public static function ofIntProvider(): array
     {
         return [
-            'null' => [null, false, false],
-            'int' => [0, false, false],
-            'string' => ['a', false, false],
-            'empty' => [[], false, true],
-            'ints' => [[0, 1], true, true],
-            'strings' => [['a', 'b'], false, false],
-            'mixed #1' => [[0, 'a'], false, false],
-            'mixed #2' => [[0, 1, true], false, false],
-            'mixed #3' => [[0, 1, null], false, false],
-            'mixed #4' => [['a', 'b', true], false, false],
-            'mixed #5' => [['a', 'b', null], false, false],
+            'null' => [null, false, false, false, false],
+            'int' => [0, false, false, false, false],
+            'string' => ['a', false, false, false, false],
+            'empty' => [[], false, true, false, true],
+            'ints' => [[0, 1], true, true, true, true],
+            'ints (indexed)' => [[7 => 0, 1 => 1], true, true, false, false],
+            'ints (associative)' => [['a' => 0, 'b' => 1], true, true, false, false],
+            'strings' => [['a', 'b'], false, false, false, false],
+            'mixed #1' => [[0, 'a'], false, false, false, false],
+            'mixed #2' => [[0, 1, true], false, false, false, false],
+            'mixed #3' => [[0, 1, null], false, false, false, false],
+            'mixed #4' => [['a', 'b', true], false, false, false, false],
+            'mixed #5' => [['a', 'b', null], false, false, false, false],
         ];
     }
 
@@ -238,29 +260,38 @@ final class ArrTest extends \Lkrms\Tests\TestCase
      *
      * @param mixed $value
      */
-    public function testOfString($value, bool $expected, bool $expectedIfAllowEmpty): void
-    {
+    public function testOfString(
+        $value,
+        bool $expected,
+        bool $expectedIfOrEmpty,
+        bool $expectedIfList,
+        bool $expectedIfOrEmptyList
+    ): void {
         $this->assertSame($expected, Arr::ofString($value));
-        $this->assertSame($expectedIfAllowEmpty, Arr::ofString($value, true));
+        $this->assertSame($expectedIfOrEmpty, Arr::ofString($value, true));
+        $this->assertSame($expectedIfList, Arr::isListOfString($value));
+        $this->assertSame($expectedIfOrEmptyList, Arr::isListOfString($value, true));
     }
 
     /**
-     * @return array<string,array{mixed,bool,bool}>
+     * @return array<string,array{mixed,bool,bool,bool,bool}>
      */
     public static function ofStringProvider(): array
     {
         return [
-            'null' => [null, false, false],
-            'int' => [0, false, false],
-            'string' => ['a', false, false],
-            'empty' => [[], false, true],
-            'ints' => [[0, 1], false, false],
-            'strings' => [['a', 'b'], true, true],
-            'mixed #1' => [[0, 'a'], false, false],
-            'mixed #2' => [[0, 1, true], false, false],
-            'mixed #3' => [[0, 1, null], false, false],
-            'mixed #4' => [['a', 'b', true], false, false],
-            'mixed #5' => [['a', 'b', null], false, false],
+            'null' => [null, false, false, false, false],
+            'int' => [0, false, false, false, false],
+            'string' => ['a', false, false, false, false],
+            'empty' => [[], false, true, false, true],
+            'ints' => [[0, 1], false, false, false, false],
+            'strings' => [['a', 'b'], true, true, true, true],
+            'strings (indexed)' => [[7 => 'a', 1 => 'b'], true, true, false, false],
+            'strings (associative)' => [['a' => 'a', 'b' => 'b'], true, true, false, false],
+            'mixed #1' => [[0, 'a'], false, false, false, false],
+            'mixed #2' => [[0, 1, true], false, false, false, false],
+            'mixed #3' => [[0, 1, null], false, false, false, false],
+            'mixed #4' => [['a', 'b', true], false, false, false, false],
+            'mixed #5' => [['a', 'b', null], false, false, false, false],
         ];
     }
 
@@ -345,6 +376,52 @@ final class ArrTest extends \Lkrms\Tests\TestCase
                     },
                 ],
             ],
+        ];
+    }
+
+    /**
+     * @dataProvider ofProvider
+     *
+     * @param mixed $value
+     */
+    public function testOf(
+        $value,
+        string $class,
+        bool $expected,
+        bool $expectedIfOrEmpty,
+        bool $expectedIfList,
+        bool $expectedIfOrEmptyList
+    ): void {
+        $this->assertSame($expected, Arr::of($value, $class));
+        $this->assertSame($expectedIfOrEmpty, Arr::of($value, $class, true));
+        $this->assertSame($expectedIfList, Arr::isListOf($value, $class));
+        $this->assertSame($expectedIfOrEmptyList, Arr::isListOf($value, $class, true));
+    }
+
+    /**
+     * @return array<string,array{mixed,string,bool,bool,bool,bool}>
+     */
+    public static function ofProvider(): array
+    {
+        $now = fn() => new DateTimeImmutable();
+
+        return [
+            'null' => [null, DateTimeInterface::class, false, false, false, false],
+            'int' => [0, DateTimeInterface::class, false, false, false, false],
+            'string' => ['a', DateTimeInterface::class, false, false, false, false],
+            'empty' => [[], DateTimeInterface::class, false, true, false, true],
+            'ints' => [[0, 1], DateTimeInterface::class, false, false, false, false],
+            'strings' => [['a', 'b'], DateTimeInterface::class, false, false, false, false],
+            'datetimes' => [[$now(), $now()], DateTimeInterface::class, true, true, true, true],
+            'datetimes (indexed)' => [[7 => $now(), 1 => $now()], DateTimeInterface::class, true, true, false, false],
+            'datetimes (associative)' => [['from' => $now(), 'to' => $now()], DateTimeInterface::class, true, true, false, false],
+            'mixed #1' => [[0, 'a', $now()], DateTimeInterface::class, false, false, false, false],
+            'mixed #2' => [[0, 1, true], DateTimeInterface::class, false, false, false, false],
+            'mixed #3' => [[0, 1, null], DateTimeInterface::class, false, false, false, false],
+            'mixed #4' => [['a', 'b', true], DateTimeInterface::class, false, false, false, false],
+            'mixed #5' => [['a', 'b', null], DateTimeInterface::class, false, false, false, false],
+            'mixed #6' => [[$now, $now, true], DateTimeInterface::class, false, false, false, false],
+            'mixed #7' => [[$now, $now, null], DateTimeInterface::class, false, false, false, false],
         ];
     }
 

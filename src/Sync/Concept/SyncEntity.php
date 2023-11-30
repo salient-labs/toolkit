@@ -40,7 +40,6 @@ use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Test;
 use Closure;
 use DateTimeInterface;
 use Generator;
@@ -576,7 +575,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
             return;
         }
 
-        if (Test::isArrayOf($node, SyncEntity::class, true) && Arr::isIndexed($node, true)) {
+        if (Arr::of($node, SyncEntity::class, true) && Arr::isIndexed($node, true)) {
             /** @var SyncEntity $child */
             foreach ($node as &$child) {
                 $child = $child->Id;

@@ -28,6 +28,22 @@ trait TReadableCollection
     protected $Items = [];
 
     /**
+     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
+     */
+    public function __construct($items = [])
+    {
+        $this->Items = $this->getItems($items);
+    }
+
+    /**
+     * @return static
+     */
+    public static function empty()
+    {
+        return new static();
+    }
+
+    /**
      * @param ((callable(TValue, TValue|null $nextValue, TValue|null $prevValue): mixed)|(callable(TKey, TKey|null $nextKey, TKey|null $prevKey): mixed)|(callable(array<TKey,TValue>, array<TKey,TValue>|null $nextItem, array<TKey,TValue>|null $prevItem): mixed)) $callback
      * @param ICollection::CALLBACK_USE_* $mode
      * @return $this
@@ -276,6 +292,24 @@ trait TReadableCollection
     // --
 
     /**
+     * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
+     * @return array<TKey,TValue>
+     */
+    protected function getItems($items): array
+    {
+        if ($items instanceof self) {
+            return $items->Items;
+        }
+        if ($items instanceof Arrayable) {
+            return $items->toArray();
+        }
+        if (is_array($items)) {
+            return $items;
+        }
+        return iterator_to_array($items);
+    }
+
+    /**
      * Compare items using IComparable::compare() if implemented
      *
      * @param TValue $a
@@ -294,7 +328,6 @@ trait TReadableCollection
                 return $b->compare($a, $b);
             }
         }
-
         return $a <=> $b;
     }
 }

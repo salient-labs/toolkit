@@ -12,7 +12,6 @@ use Lkrms\Sync\Exception\SyncInvalidFilterException;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
-use Lkrms\Utility\Test;
 use LogicException;
 
 /**
@@ -146,7 +145,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
             return $this->applyFilters(['id' => $args]);
         }
 
-        if (Test::isArrayOf($args, ISyncEntity::class)) {
+        if (Arr::of($args, ISyncEntity::class)) {
             return $this->applyFilters(
                 array_merge_recursive(
                     ...array_map(
@@ -293,7 +292,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
         if ($value instanceof ISyncEntity) {
             return $value->id();
         }
-        if (Test::isArrayOf($value, ISyncEntity::class)) {
+        if (Arr::of($value, ISyncEntity::class)) {
             $ids = [];
             /** @var ISyncEntity $entity */
             foreach ($value as $entity) {

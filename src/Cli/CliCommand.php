@@ -562,20 +562,20 @@ abstract class CliCommand implements ICliCommand
                     if ($short !== null) {
                         $line[] = "{$b}-{$short}{$b}";
                         $value[] = $option->ValueRequired
-                            ? "{$esc} {}{$ellipsis}"
+                            ? " {}{$ellipsis}"
                             : "{$esc}[{}{$ellipsis}]";
                     }
 
                     if ($long !== null) {
                         $line[] = "{$b}--{$long}{$b}";
                         $value[] = $option->ValueRequired
-                            ? "{$esc} {}{$ellipsis}"
+                            ? " {}{$ellipsis}"
                             : "{$esc}[={}{$ellipsis}]";
                     }
                 }
             }
 
-            $line = $prefix . implode(",{$esc} ", $line) . array_pop($value) . $suffix;
+            $line = $prefix . implode(', ', $line) . array_pop($value) . $suffix;
 
             // Replace value name with allowed values if $synopsis won't break
             // over multiple lines, otherwise add them after the description
@@ -625,14 +625,20 @@ abstract class CliCommand implements ICliCommand
                 (!($option->Visibility & CliOptionVisibility::HIDE_DEFAULT) ||
                     $visibility === CliOptionVisibility::HELP)) {
                 foreach ((array) $option->DefaultValue as $value) {
+                    if ((string) $value === '') {
+                        continue;
+                    }
                     $default[] = $em . $formatter->escapeTags((string) $value) . $em;
                 }
-                $lines[] = sprintf(
-                    "%sThe default %s is:{$esc} %s",
-                    $indent,
-                    $valueName,
-                    implode($option->Delimiter ?? ' ', $default)
-                );
+                $default = implode($option->Delimiter ?? ' ', $default);
+                if ($default !== '') {
+                    $lines[] = sprintf(
+                        '%sThe default %s is: %s',
+                        $indent,
+                        $valueName,
+                        $default,
+                    );
+                }
             }
 
             $options[] = $beforeSynopsis . $synopsis

@@ -639,7 +639,7 @@ abstract class OAuth2Client
         if (is_string($scopes)) {
             return Arr::trim(explode(' ', $scopes));
         }
-        if (!Arr::listOfString($scopes, true)) {
+        if (!Arr::isListOfString($scopes, true)) {
             throw new InvalidArgumentException(sprintf(
                 'Argument #1 ($scopes) must be of type string[]|string|null, %s given',
                 Inspect::getType($scopes),
