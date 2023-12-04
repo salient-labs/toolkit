@@ -10,46 +10,7 @@ use Lkrms\Support\ProviderContext;
 use LogicException;
 
 /**
- * Base class for object builders
- *
- * For example:
- *
- * ```php
- * <?php
- * class Foo implements ProvidesBuilder
- * {
- *     use HasBuilder;
- *
- *     protected $Bar;
- *
- *     public function __construct($bar)
- *     {
- *         $this->Bar = $bar;
- *     }
- *
- *     public static function getBuilder(): string
- *     {
- *         return FooBuilder::class;
- *     }
- * }
- *
- * class FooBuilder extends Builder
- * {
- *     protected static function getService(): string
- *     {
- *         return Foo::class;
- *     }
- *
- *     protected static function getTerminators(): array
- *     {
- *         return [];
- *     }
- * }
- *
- * $foo = Foo::build()
- *     ->bar('baz')
- *     ->go();
- * ```
+ * Base class for builders
  *
  * @template TClass of object
  */
@@ -168,6 +129,22 @@ abstract class Builder extends FluentInterface implements IImmutable
     }
 
     /**
+     * Remove a value applied to the builder
+     *
+     * @return static
+     */
+    final public function unsetB(string $name)
+    {
+        $name = $this->Introspector->maybeNormalise($name);
+        if (!array_key_exists($name, $this->Data)) {
+            return $this;
+        }
+        $clone = clone $this;
+        unset($clone->Data[$name]);
+        return $clone;
+    }
+
+    /**
      * Get a new instance of the service class
      *
      * @return TClass
@@ -181,50 +158,49 @@ abstract class Builder extends FluentInterface implements IImmutable
      * @internal
      *
      * @param mixed[] $arguments
-     * @return $this
+     * @return static
      */
     final public function __call(string $name, array $arguments)
     {
-        if (($this->Terminators[$name] ?? null) ||
-                ($this->Terminators[$this->Introspector->maybeNormalise($name)] ?? null)) {
+        if (
+            ($this->Terminators[$name] ?? null) ||
+            ($this->Terminators[$this->Introspector->maybeNormalise($name)] ?? null)
+        ) {
             return $this->go()->{$name}(...$arguments);
         }
 
-        if (count($arguments) > 1) {
+        $count = count($arguments);
+        if ($count > 1) {
             throw new LogicException('Invalid arguments');
         }
 
-        return $this->getWithValue(
-            $name,
-            array_key_exists(0, $arguments)
-                ? $arguments[0]
-                : true
-        );
+        return $this->withValueB($name, $count ? $arguments[0] : true);
     }
 
     /**
      * @param mixed $value
-     * @return $this
+     * @return static
      */
-    final protected function getWithValue(string $name, $value)
+    final protected function withValueB(string $name, $value)
     {
+        $name = $this->Introspector->maybeNormalise($name);
+        if (array_key_exists($name, $this->Data) && $this->Data[$name] === $value) {
+            return $this;
+        }
         $clone = clone $this;
-        $name = $clone->Introspector->maybeNormalise($name);
         $clone->Data[$name] = $value;
-
         return $clone;
     }
 
     /**
      * @param mixed $variable
-     * @return $this
+     * @return static
      */
-    final protected function getWithReference(string $name, &$variable)
+    final protected function withRefB(string $name, &$variable)
     {
+        $name = $this->Introspector->maybeNormalise($name);
         $clone = clone $this;
-        $name = $clone->Introspector->maybeNormalise($name);
         $clone->Data[$name] = &$variable;
-
         return $clone;
     }
 }

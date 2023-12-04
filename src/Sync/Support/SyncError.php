@@ -5,10 +5,10 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Console\Catalog\ConsoleLevel;
+use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IComparable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Sync\Catalog\SyncErrorType;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
@@ -25,9 +25,9 @@ use Lkrms\Sync\Contract\ISyncProvider;
  * @property-read ISyncProvider|null $Provider The sync provider associated with the error
  * @property-read int $Count How many times the error has been reported
  *
- * @implements ProvidesBuilder<SyncErrorBuilder>
+ * @implements Buildable<SyncErrorBuilder>
  */
-final class SyncError implements IReadable, IComparable, IImmutable, ProvidesBuilder
+final class SyncError implements IReadable, IComparable, IImmutable, Buildable
 {
     use TFullyReadable;
     use HasBuilder;
@@ -144,13 +144,5 @@ final class SyncError implements IReadable, IComparable, IImmutable, ProvidesBui
     public function getCode(): string
     {
         return sprintf('%02d-%04d', $this->Level, $this->ErrorType);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function getBuilder(): string
-    {
-        return SyncErrorBuilder::class;
     }
 }

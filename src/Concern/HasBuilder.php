@@ -3,25 +3,24 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Concept\Builder;
-use Lkrms\Container\Container;
+use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IContainer;
-use Lkrms\Contract\ProvidesBuilder;
 
 /**
- * Implements ProvidesBuilder
+ * Implements Buildable
  *
- * @see ProvidesBuilder
+ * @see Buildable
  */
 trait HasBuilder
 {
-    abstract public static function getBuilder(): string;
+    public static function getBuilder(): string
+    {
+        return static::class . 'Builder';
+    }
 
     final public static function build(?IContainer $container = null): Builder
     {
-        if (!$container) {
-            $container = Container::getGlobalContainer();
-        }
-        return $container->get(static::getBuilder());
+        return static::getBuilder()::build($container);
     }
 
     final public static function resolve($object)

@@ -12,9 +12,9 @@ use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\TFullyReadable;
 use Lkrms\Console\Catalog\ConsoleLevel as Level;
 use Lkrms\Console\Catalog\ConsoleMessageType as MessageType;
+use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Facade\Console;
 use Lkrms\Support\Catalog\CharacterSequence as Char;
 use Lkrms\Utility\Arr;
@@ -56,9 +56,9 @@ use Throwable;
  * @property-read callable|null $ValueCallback Applied to the option's value as it is assigned
  * @property-read int-mask-of<CliOptionVisibility::*> $Visibility The option's visibility to users
  *
- * @implements ProvidesBuilder<CliOptionBuilder>
+ * @implements Buildable<CliOptionBuilder>
  */
-final class CliOption implements IReadable, IImmutable, ProvidesBuilder
+final class CliOption implements IReadable, IImmutable, Buildable
 {
     use TFullyReadable;
     use HasBuilder;
@@ -786,13 +786,5 @@ final class CliOption implements IReadable, IImmutable, ProvidesBuilder
             $message = sprintf('invalid %s value %s (%s expected)', $this->DisplayName, Convert::valueToCode($value), $type);
         }
         throw new CliInvalidArgumentsException($message);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function getBuilder(): string
-    {
-        return CliOptionBuilder::class;
     }
 }

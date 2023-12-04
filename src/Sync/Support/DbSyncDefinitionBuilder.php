@@ -54,7 +54,7 @@ final class DbSyncDefinitionBuilder extends Builder
      */
     public function entity(string $value)
     {
-        return $this->getWithValue(__FUNCTION__, $value);
+        return $this->withValueB(__FUNCTION__, $value);
     }
 
     /**
@@ -66,7 +66,7 @@ final class DbSyncDefinitionBuilder extends Builder
      */
     public function provider(DbSyncProvider $value)
     {
-        return $this->getWithValue(__FUNCTION__, $value);
+        return $this->withValueB(__FUNCTION__, $value);
     }
 
     /**
@@ -78,7 +78,7 @@ final class DbSyncDefinitionBuilder extends Builder
      */
     public function pipelineFromBackend(?IPipeline $value)
     {
-        return $this->getWithValue(__FUNCTION__, $value);
+        return $this->withValueB(__FUNCTION__, $value);
     }
 
     /**
@@ -90,6 +90,6 @@ final class DbSyncDefinitionBuilder extends Builder
      */
     public function pipelineToBackend(?IPipeline $value)
     {
-        return $this->getWithValue(__FUNCTION__, $value);
+        return $this->withValueB(__FUNCTION__, $value);
     }
 }

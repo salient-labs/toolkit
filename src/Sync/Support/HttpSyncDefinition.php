@@ -3,9 +3,9 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\HasBuilder;
+use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Contract\IProviderContext;
-use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerHttpErrorException;
@@ -70,9 +70,9 @@ use LogicException;
  * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, ISyncContext, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback A callback applied to the definition before every sync operation
  *
  * @extends SyncDefinition<TEntity,TProvider>
- * @implements ProvidesBuilder<HttpSyncDefinitionBuilder<TEntity,TProvider>>
+ * @implements Buildable<HttpSyncDefinitionBuilder<TEntity,TProvider>>
  */
-final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
+final class HttpSyncDefinition extends SyncDefinition implements Buildable
 {
     use HasBuilder;
 
@@ -764,13 +764,5 @@ final class HttpSyncDefinition extends SyncDefinition implements ProvidesBuilder
             'SyncOneEntityPerRequest',
             'Callback',
         ];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function getBuilder(): string
-    {
-        return HttpSyncDefinitionBuilder::class;
     }
 }
