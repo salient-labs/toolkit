@@ -66,7 +66,7 @@ final class HttpSyncDefinitionBuilder extends Builder
      */
     public function entity(string $value)
     {
-        return $this->getWithValue(__FUNCTION__, $value);
+        return $this->withValueB(__FUNCTION__, $value);
     }
 
     /**
@@ -78,7 +78,7 @@ final class HttpSyncDefinitionBuilder extends Builder
      */
     public function provider(HttpSyncProvider $value)
     {
-        return $this->getWithValue(__FUNCTION__, $value);
+        return $this->withValueB(__FUNCTION__, $value);
     }
 
     /**
@@ -90,7 +90,7 @@ final class HttpSyncDefinitionBuilder extends Builder
      */
     public function pipelineFromBackend(?IPipeline $value)
     {
-        return $this->getWithValue(__FUNCTION__, $value);
+        return $this->withValueB(__FUNCTION__, $value);
     }
 
     /**
@@ -102,6 +102,6 @@ final class HttpSyncDefinitionBuilder extends Builder
      */
     public function pipelineToBackend(?IPipeline $value)
     {
-        return $this->getWithValue(__FUNCTION__, $value);
+        return $this->withValueB(__FUNCTION__, $value);
     }
 }

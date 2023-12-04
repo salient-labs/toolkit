@@ -11,7 +11,7 @@ use Lkrms\Support\EventDispatcher;
 use LogicException;
 
 /**
- * A static interface to an instance of an underlying class
+ * Base class for facades
  *
  * @template TClass of object
  * @implements IFacade<TClass>

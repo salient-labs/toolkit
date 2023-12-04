@@ -33,13 +33,14 @@ class GenerateBuilder extends GenerateCommand
         'resolve',
         'getB',
         'issetB',
+        'unsetB',
         'go',
         'apply',
         'if',
         'getService',
         'getTerminators',
-        'getWithValue',
-        'getWithReference',
+        'withValueB',
+        'withRefB',
     ];
 
     private ?string $ClassFqcn;
@@ -819,10 +820,10 @@ class GenerateBuilder extends GenerateCommand
             }
 
             if ($_param instanceof ReflectionParameter && $_param->isPassedByReference()) {
-                $code = 'return $this->getWithReference(__FUNCTION__, $variable);';
+                $code = 'return $this->withRefB(__FUNCTION__, $variable);';
                 $param = '&$variable';
             } else {
-                $code = 'return $this->getWithValue(__FUNCTION__, $value);';
+                $code = 'return $this->withValueB(__FUNCTION__, $value);';
                 $param = '$value';
             }
 

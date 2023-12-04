@@ -5,9 +5,9 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\Immutable;
 use Lkrms\Concern\TFullyReadable;
+use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
-use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Sync\Contract\ISyncEntity;
@@ -88,9 +88,9 @@ use LogicException;
  * @property-read bool|null $RecurseRules Apply path-based rules to every instance of $Entity? (default: true)
  * @property-read int $Flags
  *
- * @implements ProvidesBuilder<SyncSerializeRulesBuilder<TEntity>>
+ * @implements Buildable<SyncSerializeRulesBuilder<TEntity>>
  */
-final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmutable, ProvidesBuilder
+final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmutable, Buildable
 {
     use TFullyReadable;
     use HasBuilder;
@@ -587,13 +587,5 @@ final class SyncSerializeRules implements ISyncSerializeRules, IReadable, IImmut
     public function withMaxDepth(?int $value)
     {
         return $this->withPropertyValue('MaxDepth', $value);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function getBuilder(): string
-    {
-        return SyncSerializeRulesBuilder::class;
     }
 }

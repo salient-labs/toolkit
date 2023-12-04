@@ -6,11 +6,11 @@ use Lkrms\Concern\HasBuilder;
 use Lkrms\Concern\Immutable;
 use Lkrms\Concern\TReadable;
 use Lkrms\Concern\TWritable;
+use Lkrms\Contract\Buildable;
 use Lkrms\Contract\ICollection;
 use Lkrms\Contract\IDateFormatter;
 use Lkrms\Contract\IReadable;
 use Lkrms\Contract\IWritable;
-use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Curler\Catalog\CurlerProperty;
 use Lkrms\Curler\Contract\ICurlerPager;
 use Lkrms\Curler\Exception\CurlerCurlErrorException;
@@ -79,9 +79,9 @@ use RecursiveIteratorIterator;
  * @property bool $AlwaysPaginate Pass every response to the pager?
  * @property bool $ObjectAsArray Return deserialized objects as associative arrays?
  *
- * @implements ProvidesBuilder<CurlerBuilder>
+ * @implements Buildable<CurlerBuilder>
  */
-final class Curler implements IReadable, IWritable, ProvidesBuilder
+final class Curler implements IReadable, IWritable, Buildable
 {
     use TReadable;
     use TWritable;
@@ -1586,14 +1586,6 @@ final class Curler implements IReadable, IWritable, ProvidesBuilder
         } while ($nextQuery);
 
         return $entities;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function getBuilder(): string
-    {
-        return CurlerBuilder::class;
     }
 
     public function __destruct()

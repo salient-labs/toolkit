@@ -3,8 +3,8 @@
 namespace Lkrms\Sync\Support;
 
 use Lkrms\Concern\HasBuilder;
+use Lkrms\Contract\Buildable;
 use Lkrms\Contract\IPipeline;
-use Lkrms\Contract\ProvidesBuilder;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Sync\Catalog\FilterPolicy;
@@ -27,9 +27,9 @@ use LogicException;
  * @property-read string|null $Table
  *
  * @extends SyncDefinition<TEntity,TProvider>
- * @implements ProvidesBuilder<DbSyncDefinitionBuilder<TEntity,TProvider>>
+ * @implements Buildable<DbSyncDefinitionBuilder<TEntity,TProvider>>
  */
-final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
+final class DbSyncDefinition extends SyncDefinition implements Buildable
 {
     use HasBuilder;
 
@@ -116,13 +116,5 @@ final class DbSyncDefinition extends SyncDefinition implements ProvidesBuilder
             ...parent::getReadable(),
             'Table',
         ];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function getBuilder(): string
-    {
-        return DbSyncDefinitionBuilder::class;
     }
 }

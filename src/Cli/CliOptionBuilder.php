@@ -53,6 +53,6 @@ final class CliOptionBuilder extends Builder
      */
     public function bindTo(&$variable)
     {
-        return $this->getWithReference(__FUNCTION__, $variable);
+        return $this->withRefB(__FUNCTION__, $variable);
     }
 }
