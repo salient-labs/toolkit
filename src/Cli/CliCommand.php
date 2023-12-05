@@ -234,16 +234,15 @@ abstract class CliCommand implements ICliCommand
     }
 
     /**
-     * @return $this
+     * @param CliOption|CliOptionBuilder $option
      */
-    private function addOption(CliOption $option)
+    private function addOption($option): void
     {
         try {
-            $option->validate();
+            $option = $option->load();
         } catch (CliUnknownValueException $ex) {
             // If an exception is thrown over a value found in the environment,
-            // defer it because we may only be loading options to generate a
-            // synopsis
+            // defer it in case we're only loading options for a help message
             $this->DeferredOptionErrors[] = $ex->getMessage();
         }
 
@@ -254,16 +253,16 @@ abstract class CliCommand implements ICliCommand
         }
 
         if ($option->IsPositional) {
-            if ($option->Required &&
+            if ($option->WasRequired &&
                     array_filter(
                         $this->PositionalOptions,
                         fn(CliOption $opt) =>
-                            !$opt->Required && !$opt->MultipleAllowed
+                            !$opt->WasRequired && !$opt->MultipleAllowed
                     )) {
                 throw new LogicException('Required positional options must be added before optional ones');
             }
 
-            if (!$option->Required &&
+            if (!$option->WasRequired &&
                     array_filter(
                         $this->PositionalOptions,
                         fn(CliOption $opt) =>
@@ -289,8 +288,6 @@ abstract class CliCommand implements ICliCommand
         foreach ($names as $name) {
             $this->OptionsByName[$name] = $option;
         }
-
-        return $this;
     }
 
     /**
@@ -304,7 +301,7 @@ abstract class CliCommand implements ICliCommand
 
         try {
             foreach ($this->getOptionList() as $option) {
-                $this->addOption(CliOption::resolve($option));
+                $this->addOption($option);
             }
 
             return $this
@@ -325,10 +322,10 @@ abstract class CliCommand implements ICliCommand
      */
     private function maybeAddHiddenOption(string $long)
     {
-        if (array_key_exists($long, $this->OptionsByName)) {
-            return $this;
+        if (!array_key_exists($long, $this->OptionsByName)) {
+            $this->addOption(CliOption::build()->long($long)->hide());
         }
-        return $this->addOption(CliOption::build()->long($long)->hide()->go());
+        return $this;
     }
 
     /**
@@ -411,7 +408,7 @@ abstract class CliCommand implements ICliCommand
                 continue;
             }
 
-            if ($option->IsFlag || !($option->IsPositional || $option->Required)) {
+            if ($option->IsFlag || !($option->IsPositional || $option->WasRequired)) {
                 $count++;
                 if ($option->MultipleAllowed) {
                     $count++;
@@ -427,7 +424,7 @@ abstract class CliCommand implements ICliCommand
                 continue;
             }
 
-            $valueName = $option->getFriendlyValueName();
+            $valueName = $option->formatValueName();
             if (!$withMarkup) {
                 $valueName = Formatter::escapeTags($valueName);
             }
@@ -436,7 +433,7 @@ abstract class CliCommand implements ICliCommand
                 if ($option->MultipleAllowed) {
                     $valueName .= '...';
                 }
-                $positional[] = $option->Required ? $valueName : "\[{$valueName}]";
+                $positional[] = $option->WasRequired ? $valueName : "\[{$valueName}]";
                 continue;
             }
 
@@ -447,7 +444,7 @@ abstract class CliCommand implements ICliCommand
                 if ($option->Delimiter) {
                     $valueName .= "{$option->Delimiter}...";
                 } elseif ($option->ValueRequired) {
-                    if ($option->Required) {
+                    if ($option->WasRequired) {
                         $prefix = '\(';
                         $suffix = ')...';
                     } else {
@@ -468,7 +465,7 @@ abstract class CliCommand implements ICliCommand
                         ? "\ {$valueName}{$suffix}"
                         : "\[={$valueName}]{$suffix}");
 
-            if ($option->Required) {
+            if ($option->WasRequired) {
                 $required[] = $valueName . $ellipsis;
             } else {
                 $optional[] = "\[$valueName]" . $ellipsis;
@@ -520,7 +517,7 @@ abstract class CliCommand implements ICliCommand
             $long = $option->Long;
             $line = [];
             $value = [];
-            $valueName = $option->IsFlag ? '' : $option->getFriendlyValueName();
+            $valueName = $option->IsFlag ? '' : $option->formatValueName();
             $allowed = null;
             $default = null;
             $prefix = '';
@@ -620,11 +617,11 @@ abstract class CliCommand implements ICliCommand
             }
 
             if (!$option->IsFlag &&
-                $option->DefaultValue !== null &&
-                $option->DefaultValue !== [] &&
+                $option->OriginalDefaultValue !== null &&
+                $option->OriginalDefaultValue !== [] &&
                 (!($option->Visibility & CliOptionVisibility::HIDE_DEFAULT) ||
                     $visibility === CliOptionVisibility::HELP)) {
-                foreach ((array) $option->DefaultValue as $value) {
+                foreach ((array) $option->OriginalDefaultValue as $value) {
                     if ((string) $value === '') {
                         continue;
                     }
@@ -718,7 +715,7 @@ abstract class CliCommand implements ICliCommand
                         $this->optionError(sprintf(
                             '%s required%s',
                             $option->DisplayName,
-                            $option->getFriendlyAllowedValues()
+                            $option->formatAllowedValues()
                         ));
                     }
 
@@ -817,7 +814,6 @@ abstract class CliCommand implements ICliCommand
             }
 
             $key = $option->Key;
-            $valueIsDefault = false;
             if ($option->IsFlag) {
                 // Handle multiple short flags per argument, e.g. `cp -rv`
                 if ($short && $value !== null) {
@@ -831,7 +827,6 @@ abstract class CliCommand implements ICliCommand
                 if ($value === null && $option->DefaultValue !== null) {
                     $saveArgValue($key, $value);
                     $value = $option->DefaultValue;
-                    $valueIsDefault = true;
                 }
             } elseif ($value === null) {
                 $i++;
@@ -841,7 +836,7 @@ abstract class CliCommand implements ICliCommand
                     $this->optionError(sprintf(
                         '%s requires a value%s',
                         $option->DisplayName,
-                        $option->getFriendlyAllowedValues()
+                        $option->formatAllowedValues()
                     ));
                     $i--;
                 }
@@ -861,16 +856,7 @@ abstract class CliCommand implements ICliCommand
                 } else {
                     $value = $option->maybeSplitValue($value);
                 }
-                // Use $value to extend $option->DefaultValue if:
-                // - $option->DefaultValue wasn't just assigned to $value
-                // - extension of default values is enabled, and
-                // - this is $option's first appearance in $args
                 $saveArgValue($key, $value);
-                if (!$valueIsDefault &&
-                        ($option->KeepDefault || $option->KeepEnv) &&
-                        !array_key_exists($key, $merged)) {
-                    $value = array_merge($option->DefaultValue, $value);
-                }
             }
 
             if (array_key_exists($key, $merged) &&
@@ -924,7 +910,8 @@ abstract class CliCommand implements ICliCommand
      * returned. For flags that can be given multiple times, the number of uses
      * will be returned.
      *
-     * @param string $name Either the `Short` or `Long` name of the option
+     * @param string $name The value of the option's {@see CliOption::$Name},
+     * {@see CliOption::$Long} or {@see CliOption::$Short} property.
      * @return array<string|int>|string|int|bool|null
      */
     final protected function getOptionValue(string $name)
@@ -963,9 +950,9 @@ abstract class CliCommand implements ICliCommand
                 (!$wasArg ||
                     // Skip this option if `$value` is empty because
                     // user-supplied values were discarded
-                    ($value === [] && $option->isOriginalDefaultValue($value))) &&
+                    ($value === [] && $option->OriginalDefaultValue === $value)) &&
                 (($option->IsFlag && !$value) ||
-                    ($option->ValueRequired && $option->isOriginalDefaultValue($value)) ||
+                    ($option->ValueRequired && $option->OriginalDefaultValue === $value) ||
                     ($option->ValueOptional && $value === null))) {
                 continue;
             }
