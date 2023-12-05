@@ -31,14 +31,14 @@ use RecursiveIteratorIterator;
 final class Convert
 {
     /**
-     * Cast a value to the type it appears to be
+     * Convert a scalar to the type it appears to be
      *
      * @param mixed $value
      * @param bool $toFloat If `true` (the default), convert float strings to
      * `float`s.
      * @param bool $toBool If `true` (the default), convert boolean strings to
      * `bool`s.
-     * @return null|bool|int|float|string
+     * @return int|float|string|bool|null
      */
     public static function toValue($value, bool $toFloat = true, bool $toBool = true)
     {
@@ -66,33 +66,38 @@ final class Convert
     }
 
     /**
-     * Cast a value to a boolean, preserving null and converting boolean strings
+     * Convert a value to a boolean, preserving null
      *
      * @param mixed $value
      * @see Test::isBoolValue()
      */
-    public static function toBoolOrNull($value): ?bool
+    public static function toBool($value): ?bool
     {
-        return $value === null
-            ? null
-            : (is_string($value) && Pcre::match(
-                '/^' . Regex::BOOLEAN_STRING . '$/',
-                $value,
-                $match,
-                \PREG_UNMATCHED_AS_NULL
-            )
-                ? $match['true'] !== null
-                : (bool) $value);
+        if ($value === null || is_bool($value)) {
+            return $value;
+        }
+        if (is_string($value) && Pcre::match(
+            '/^' . Regex::BOOLEAN_STRING . '$/',
+            $value,
+            $match,
+            \PREG_UNMATCHED_AS_NULL
+        )) {
+            return $match['true'] !== null;
+        }
+        return (bool) $value;
     }
 
     /**
-     * Cast a value to an integer, preserving null
+     * Convert a value to an integer, preserving null
      *
      * @param mixed $value
      */
-    public static function toIntOrNull($value): ?int
+    public static function toInt($value): ?int
     {
-        return $value === null ? null : (int) $value;
+        if ($value === null) {
+            return null;
+        }
+        return (int) $value;
     }
 
     /**
@@ -436,17 +441,6 @@ final class Convert
         } elseif (is_string($value)) {
             return new DateTimeZone($value);
         }
-    }
-
-    /**
-     * If a value is 'falsey', make it null
-     *
-     * @param mixed $value
-     * @return mixed Either `$value` or `null`.
-     */
-    public static function emptyToNull($value)
-    {
-        return !$value ? null : $value;
     }
 
     /**
@@ -1480,7 +1474,7 @@ final class Convert
             // - recognised by PHP: \0 \e \f \n \r \t \v
             // - returned by addcslashes: \000 \033 \a \b \f \n \r \t \v
             Pcre::replaceCallback(
-                '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?P<octal>[0-7]{3})|(?P<cslash>[ab]))/',
+                '/((?<!\\\\)(?:\\\\\\\\)*)\\\\(?:(?<octal>[0-7]{3})|(?<cslash>[ab]))/',
                 fn(array $matches) =>
                     $matches[1]
                     . ($matches['octal'] !== null

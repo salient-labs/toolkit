@@ -486,6 +486,99 @@ final class ArrTest extends \Lkrms\Tests\TestCase
     }
 
     /**
+     * @dataProvider sameValuesProvider
+     *
+     * @param mixed[] ...$arrays
+     */
+    public function testSameValues(bool $expected, array ...$arrays): void
+    {
+        $this->assertSame($expected, Arr::sameValues(...$arrays));
+    }
+
+    /**
+     * @return array<array{bool,mixed[],...}>
+     */
+    public static function sameValuesProvider(): array
+    {
+        return [
+            [
+                false,
+                [],
+            ],
+            [
+                true,
+                [],
+                [],
+            ],
+            [
+                true,
+                [null],
+                [null],
+            ],
+            [
+                false,
+                [null],
+                [],
+            ],
+            [
+                true,
+                ['a'],
+                ['a'],
+            ],
+            [
+                false,
+                ['a'],
+                ['a', 'a'],
+            ],
+            [
+                true,
+                [0],
+                [0],
+            ],
+            [
+                false,
+                [0],
+                [0, 0],
+            ],
+            [
+                true,
+                [1],
+                [1],
+            ],
+            [
+                false,
+                [1],
+                [1, 1],
+            ],
+            [
+                false,
+                [1],
+                ['1'],
+            ],
+            [
+                true,
+                ['a', 1, null, true],
+                ['a', 1, null, true],
+            ],
+            [
+                true,
+                ['a', 1, null, true],
+                [true, null, 1, 'a'],
+            ],
+            [
+                true,
+                ['a', 1, null, true],
+                ['foo' => true, 'bar' => null, 'qux' => 1, 'quux' => 'a'],
+            ],
+            [
+                false,
+                ['a', 1, null, true],
+                [true, false, 1, 'a'],
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider shiftProvider
      *
      * @param mixed[] $expected

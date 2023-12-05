@@ -73,19 +73,30 @@ final class Env
     public static function apply(int $flags = EnvFlag::ALL): void
     {
         if ($flags & EnvFlag::LOCALE) {
-            if (($locale = setlocale(\LC_ALL, '')) === false) {
-                throw new InvalidEnvironmentException('Unable to set locale from environment');
+            $locale = setlocale(\LC_ALL, '');
+            if ($locale === false) {
+                throw new InvalidEnvironmentException(
+                    'Unable to set locale from environment'
+                );
             }
             Console::debug('Locale:', $locale);
         }
 
-        if ($flags & EnvFlag::TIMEZONE &&
-                ($tz = preg_replace(['/^:?(.*\/zoneinfo\/)?/', '/^UTC0$/'], ['', 'UTC'], self::get('TZ', ''))) !== '') {
-            if (($timezone = @timezone_open($tz)) === false) {
-                Console::debug('Invalid timezone:', $tz);
-            } else {
-                date_default_timezone_set($tz = $timezone->getName());
-                Console::debug('Timezone:', $tz);
+        if ($flags & EnvFlag::TIMEZONE) {
+            $tz = Pcre::replace(
+                ['/^:?(.*\/zoneinfo\/)?/', '/^(UTC)0$/'],
+                ['', '$1'],
+                self::get('TZ', '')
+            );
+            if ($tz !== '') {
+                $timezone = @timezone_open($tz);
+                if ($timezone === false) {
+                    Console::debug('Invalid timezone:', $tz);
+                } else {
+                    $tz = $timezone->getName();
+                    date_default_timezone_set($tz);
+                    Console::debug('Timezone:', $tz);
+                }
             }
         }
     }
@@ -98,7 +109,10 @@ final class Env
     public static function set(string $name, string $value): void
     {
         if (putenv($name . '=' . $value) === false) {
-            throw new RuntimeException(sprintf('Unable to set environment variable: %s', $name));
+            throw new RuntimeException(sprintf(
+                'Unable to set environment variable: %s',
+                $name,
+            ));
         }
         $_ENV[$name] = $value;
         $_SERVER[$name] = $value;
@@ -112,7 +126,10 @@ final class Env
     public static function unset(string $name): void
     {
         if (putenv($name) === false) {
-            throw new RuntimeException(sprintf('Unable to unset environment variable: %s', $name));
+            throw new RuntimeException(sprintf(
+                'Unable to unset environment variable: %s',
+                $name,
+            ));
         }
         unset($_ENV[$name]);
         unset($_SERVER[$name]);
@@ -128,12 +145,14 @@ final class Env
         } elseif (array_key_exists($name, $_SERVER)) {
             $value = $_SERVER[$name];
         } else {
-            return ($value = getenv($name, true)) === false
-                ? getenv($name)
-                : $value;
+            $value = getenv($name, true);
+            return $value === false ? getenv($name) : $value;
         }
         if ($assertValueIsString && !is_string($value)) {
-            throw new InvalidEnvironmentException(sprintf('Environment variable is not a string: %s', $name));
+            throw new InvalidEnvironmentException(sprintf(
+                'Value is not a string: %s',
+                $name,
+            ));
         }
         return $value;
     }
@@ -201,8 +220,14 @@ final class Env
             }
             return $default;
         }
-        if (!preg_match('/^[0-9]+$/', $value)) {
-            throw new InvalidEnvironmentException(sprintf('Value is not an integer: %s', $name));
+        if (!Pcre::match(
+            Regex::anchorAndDelimit(Regex::INTEGER_STRING),
+            $value
+        )) {
+            throw new InvalidEnvironmentException(sprintf(
+                'Value is not an integer: %s',
+                $name,
+            ));
         }
         return (int) $value;
     }
@@ -240,10 +265,10 @@ final class Env
             }
             return $default;
         }
-        if ($value === '') {
+        if (trim($value) === '') {
             return false;
         }
-        if (!preg_match(
+        if (!Pcre::match(
             Regex::anchorAndDelimit(Regex::BOOLEAN_STRING),
             $value,
             $match,
@@ -307,12 +332,16 @@ final class Env
             }
             return $default;
         }
-        if ($value === '') {
+        if (trim($value) === '') {
             return [];
         }
         $sep = preg_quote($delimiter, '/');
-        if (!preg_match("/^[0-9]++(?:{$sep}[0-9]++)*+\$/", $value)) {
-            throw new InvalidEnvironmentException(sprintf('Value is not an integer list: %s', $name));
+        $int = Regex::INTEGER_STRING;
+        if (!Pcre::match("/^{$int}(?:{$sep}{$int})*+\$/", $value)) {
+            throw new InvalidEnvironmentException(sprintf(
+                'Value is not an integer list: %s',
+                $name,
+            ));
         }
         $list = [];
         foreach (explode($delimiter, $value) as $value) {
@@ -370,11 +399,17 @@ final class Env
             }
             return $default;
         }
-        if ($value === '') {
+        if (trim($value) === '') {
             return null;
         }
-        if (!preg_match('/^[0-9]+$/', $value)) {
-            throw new InvalidEnvironmentException(sprintf('Value is not an integer: %s', $name));
+        if (!Pcre::match(
+            Regex::anchorAndDelimit(Regex::INTEGER_STRING),
+            $value
+        )) {
+            throw new InvalidEnvironmentException(sprintf(
+                'Value is not an integer: %s',
+                $name,
+            ));
         }
         return (int) $value;
     }
@@ -409,10 +444,10 @@ final class Env
             }
             return $default;
         }
-        if ($value === '') {
+        if (trim($value) === '') {
             return null;
         }
-        if (!preg_match(
+        if (!Pcre::match(
             Regex::anchorAndDelimit(Regex::BOOLEAN_STRING),
             $value,
             $match,
@@ -475,7 +510,7 @@ final class Env
             return false;
         }
 
-        return (bool) preg_match('/\.utf-?8$/i', $locale);
+        return (bool) Pcre::match('/\.utf-?8$/i', $locale);
     }
 
     /**
@@ -509,7 +544,7 @@ final class Env
             if (!trim($line) || $line[0] === '#') {
                 continue;
             }
-            if (!preg_match(<<<'REGEX'
+            if (!Pcre::match(<<<'REGEX'
                     / ^
                     (?<name> [a-z_] [a-z0-9_]*+ ) = (?:
                     " (?<double> (?: [^"$\\`]++ | \\ ["$\\`] | \\ )*+ ) " |
@@ -528,15 +563,21 @@ final class Env
                     getenv($name) !== false) {
                 continue;
             }
-            if (($double = $match['double']) !== null) {
-                $queue[$name] = preg_replace('/\\\\(["$\\\\`])/', '\1', $double);
+            /** @var string|null */
+            $double = $match['double'];
+            if ($double !== null) {
+                $queue[$name] = Pcre::replace('/\\\\(["$\\\\`])/', '$1', $double);
                 continue;
             }
-            if (($single = $match['single']) !== null) {
+            /** @var string|null */
+            $single = $match['single'];
+            if ($single !== null) {
                 $queue[$name] = str_replace("'\''", "'", $single);
                 continue;
             }
-            $queue[$name] = preg_replace('/\\\\(.)/', '\1', $match['none']);
+            /** @var string */
+            $none = $match['none'];
+            $queue[$name] = Pcre::replace('/\\\\(.)/', '$1', $none);
         }
     }
 
