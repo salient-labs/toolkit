@@ -12,6 +12,125 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.10] - 2023-12-05
+
+### Added
+
+- Add `Str::coalesce()`
+- Add `Arr::sameValues()`
+- Add `RecursiveFilesystemIterator::count()`
+- Add `Builder::unsetB()`
+
+### Changed
+
+- In `Builder` methods, only return a clone if a value is changed
+- Rename `ProvidesBuilder` interface to `Buildable` and consolidate extended interfaces, reverting needlessly complicated split
+- Add default implementation of `Buildable::getBuilder()` to `HasBuilder` trait and remove boilerplate code from classes that use it
+- Allow assertions in `Assert` to throw a given exception
+- Clean up and rename `Convert::toBoolOrNull()` and `toIntOrNull()` to `toBool()` and `toInt()`
+- Clean up `Env` and adopt `Pcre::*` methods
+- Tolerate whitespace around boolean and integer values in environment variables
+- Clean up abstract enumeration and dictionary classes
+
+`Cli`:
+- Add `CliOption::$Name`
+  - Primarily for `*_POSITIONAL` options, but others can use it too
+  - Takes the value of `CliOption::$Long` if not set explicitly
+  - Positional options are not permitted to apply different values to `CliOption::$Name` and `CliOption::$Long`
+- Add `CliOption::$IsBound`
+  - `true` if the option is bound to a variable via constructor parameter `$bindTo`
+  - Prevents propagation of normalised values into the option's scope
+- Add `CliOption::$Unique`
+- Implement case-insensitive `ONE_OF_*` value matching
+
+### Removed
+
+- Remove support for extending default and/or environment values via `CliOption::$KeepDefault` and `CliOption::$KeepEnv`
+- Remove unused `Convert::emptyToNull()` method
+- Remove `ResolvesBuilder`, `ReturnsBuilder`, `ReturnsBuilderService` interfaces
+
+### Fixed
+
+- `Env`: fix issue where negative integers are rejected
+- `Cli`: add explicit checks for `null`, `''` and `[]` to prevent issues with "falsey" values like `"0"`
+- Fix `Introspector` issues:
+  - Detect constructor parameters that have a default value but are not nullable, and throw an exception if `null` is passed to them, e.g. from a builder
+  - Determine minimum number of arguments to pass to a constructor and suppress unnecessary arguments, e.g. so classes can rely on `func_num_args()` to detect variables passed by reference
+
+## [v0.21.9] - 2023-11-30
+
+### Added
+
+- Add `ICollection::empty()`
+- Add `Arr::of()`, `Arr::isListOf()`
+
+### Changed
+
+- Rename:
+  - `Arr::listOfArrayKey()` -> `Arr::isListOfArrayKey()`
+  - `Arr::listOfInt()` -> `Arr::isListOfInt()`
+  - `Arr::listOfString()` -> `Arr::isListOfString()`
+
+### Deprecated
+
+- Deprecate `Test::isArrayOf()` (replaced with `Arr::of()`)
+
+### Fixed
+
+- `Cli`: fix issue where empty default values are displayed in help messages
+- `Cli`: remove escapes from horizontal whitespace to fix issue where help written as Markdown wraps weirdly when rendered
+
+## [v0.21.8] - 2023-11-29
+
+### Added
+
+- Add `HttpHeaders` and `IHttpHeaders`
+- Add `IAccessToken` and implement its methods in `AccessToken`
+- Add `Jsonable`
+- Add `Arr::lower()`, `Arr::upper()`, `Arr::toIndex()`
+- Add `File::write()`, `File::seek()`, `File::tell()`
+- Add `Pcre::grep()`
+
+### Changed
+
+- `ICollection`:
+
+  - Allow callbacks to receive item keys, values or both
+  - Limit `TKey` to `array-key`, removing hypothetical support for arbitrary key types but allowing implementation of `Arrayable` etc.
+  - Implement `Arrayable`, `Jsonable`, `JsonSerializable`
+  - In `ICollection::merge()`, accept `Arrayable|iterable` instead of `static|iterable`
+
+- Move parts of `TCollection` to a separate `TReadableCollection` trait
+- Move `Lkrms\Support\Http` -> `Lkrms\Http`
+- Move `Lkrms\Support\Catalog\Http*` -> `Lkrms\Http\Catalog`
+- Move `Lkrms\Auth` -> `Lkrms\Http\Auth`
+- Add `HttpHeaderGroup` and clean up existing `Http` enumerations
+- Rename `HttpRequestMethods` -> `HttpRequestMethodGroup`
+- Rename `Curler::addPrivateHeaderName()` -> `addSensitiveHeaderName()`
+- Replace `CurlerHeaders` and friends with `HttpHeaders` and friends
+- Replace `ICurlerHeaders` calls with `IHttpHeaders` equivalents:
+
+  - `getHeaders()` -> `getLines()`
+  - `getHeaderValue()` -> `getHeaderLine()`
+  - `getHeaderValues()` -> `getHeaderLines()`
+
+- In `File::close()`, make `$filename` optional and rename it to `$uri`
+- In `File::writeCsv()`, use `php://temp` instead of `php://memory` for temporary output
+- Rename `Regex::NOT_ESCAPED` -> `Regex::BEFORE_UNESCAPED`
+- Make `FilesystemErrorException` (and most other exceptions) extend `RuntimeException` instead of `Exception`
+
+### Removed
+
+- Remove superseded `ICurlerHeaders`, `CurlerHeaders`, `CurlerHeadersFlag`, `CurlerHeader`
+- Remove unused `FluentArray` class
+- Remove `$private` arguments from `Curler::addHeader()` and `Curler::setHeader()`
+- Remove support for filtering headers by pattern in `Curler::unsetHeader()`
+- Remove `$value` parameter from `ICollection::unset()`
+
+### Fixed
+
+- Fix issue where `File::getStreamUri()` fails for streams with no URI
+
 ## [v0.21.7] - 2023-11-23
 
 ### Added
@@ -853,6 +972,9 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.10]: https://github.com/lkrms/php-util/compare/v0.21.9...v0.21.10
+[v0.21.9]: https://github.com/lkrms/php-util/compare/v0.21.8...v0.21.9
+[v0.21.8]: https://github.com/lkrms/php-util/compare/v0.21.7...v0.21.8
 [v0.21.7]: https://github.com/lkrms/php-util/compare/v0.21.6...v0.21.7
 [v0.21.6]: https://github.com/lkrms/php-util/compare/v0.21.5...v0.21.6
 [v0.21.5]: https://github.com/lkrms/php-util/compare/v0.21.4...v0.21.5
