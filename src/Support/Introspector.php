@@ -40,10 +40,12 @@ use LogicException;
  * @property-read array<string,array<string,string>> $Actions Action => normalised property name => "magic" property method
  * @property-read array<string,string> $Parameters Constructor parameters (normalised name => declared name)
  * @property-read array<string,string> $RequiredParameters Parameters that aren't nullable and don't have a default value (normalised name => declared name)
+ * @property-read array<string,string> $NotNullableParameters Parameters that aren't nullable and have a default value (normalised name => declared name)
  * @property-read array<string,string> $ServiceParameters Required parameters with a declared type that can be resolved by a service container (normalised name => class/interface name)
  * @property-read array<string,string> $PassByRefParameters Parameters to pass by reference (normalised name => declared name)
  * @property-read array<string,string> $DateParameters Parameters with a declared type that implements DateTimeInterface (normalised name => declared name)
  * @property-read mixed[] $DefaultArguments Default values for (all) constructor parameters
+ * @property-read int $RequiredArguments Minimum number of arguments required by the constructor
  * @property-read array<string,int> $ParameterIndex Constructor parameter name => index
  * @property-read string[] $SerializableProperties Declared and "magic" properties that are both readable and writable
  * @property-read string[] $NormalisedKeys Normalised properties (declared and "magic" property names)
@@ -97,8 +99,8 @@ class Introspector
     /**
      * Get an introspector for a service
      *
-     * Uses `$container` to resolve `$service` to the name of a concrete class
-     * and returns an {@see Introspector} for it.
+     * Uses a container to resolve a service to a concrete class and returns an
+     * introspector for it.
      *
      * @template T of object
      *
@@ -436,7 +438,7 @@ class Introspector
      * normalised.
      * @param array<static::*_KEY,string> $customKeys An array that maps key
      * types to keys as they appear in `$keys`.
-     * @param array<string,Closure(mixed[], ?string, TClass, ?TProvider, ?TContext): void> $keyClosures Normalised key => closure
+     * @param array<string,Closure(mixed[] $data, string|null $service, TClass $entity, TProvider|null, TContext|null): void> $keyClosures Normalised key => closure
      * @return IntrospectorKeyTargets<static,TClass,TProvider,TContext>
      */
     protected function getKeyTargets(
@@ -505,7 +507,7 @@ class Introspector
 
         // Resolve `$keys` to:
         //
-        // - constructor parameters (`$parameterKeys`, `$passByRefKeys`)
+        // - constructor parameters (`$parameterKeys`, `$passByRefKeys`, `$notNullableKeys`)
         // - callbacks (`$callbackKeys`)
         // - "magic" property methods (`$methodKeys`)
         // - properties (`$propertyKeys`)
@@ -522,6 +524,9 @@ class Introspector
                     $parameterKeys[$key] = $this->_Class->ParameterIndex[$param];
                     if (isset($this->_Class->PassByRefParameters[$normalisedKey])) {
                         $passByRefKeys[$key] = true;
+                    }
+                    if (isset($this->_Class->NotNullableParameters[$normalisedKey])) {
+                        $notNullableKeys[$key] = true;
                     }
                     continue;
                 }
@@ -569,6 +574,7 @@ class Introspector
         $targets = new IntrospectorKeyTargets(
             $parameterKeys ?? [],
             $passByRefKeys ?? [],
+            $notNullableKeys ?? [],
             $callbackKeys ?? [],
             $methodKeys ?? [],
             $propertyKeys ?? [],
@@ -586,7 +592,11 @@ class Introspector
      */
     final protected function _getConstructor(IntrospectorKeyTargets $targets): Closure
     {
-        $args = $this->_Class->DefaultArguments;
+        $length = max(
+            $this->_Class->RequiredArguments,
+            $targets->LastParameterIndex + 1,
+        );
+        $args = array_slice($this->_Class->DefaultArguments, 0, $length);
         $class = $this->_Class->Class;
 
         if (!$targets->Parameters) {
@@ -605,16 +615,25 @@ class Introspector
 
         $parameterKeys = $targets->Parameters;
         $passByRefKeys = $targets->PassByRefParameters;
+        $notNullableKeys = $targets->NotNullableParameters;
 
         return static function (
             array $array,
             ?string $service,
             IContainer $container
-        ) use ($args, $class, $parameterKeys, $passByRefKeys) {
+        ) use ($args, $class, $parameterKeys, $passByRefKeys, $notNullableKeys) {
             foreach ($parameterKeys as $key => $index) {
                 if ($passByRefKeys[$key] ?? false) {
                     $args[$index] = &$array[$key];
                     continue;
+                }
+                if ($array[$key] === null && ($notNullableKeys[$key] ?? false)) {
+                    throw new LogicException(sprintf(
+                        "Argument #%d is not nullable, cannot apply value at key '%s': %s::__construct()",
+                        $index + 1,
+                        $key,
+                        $class,
+                    ));
                 }
                 $args[$index] = $array[$key];
             }

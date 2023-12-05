@@ -13,6 +13,7 @@ use Lkrms\Contract\IWritable;
 use Lkrms\Contract\ReturnsNormaliser;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\Catalog\RelationshipType;
+use Lkrms\Utility\Arr;
 use Lkrms\Utility\Reflect;
 use DateTimeInterface;
 use ReflectionClass;
@@ -155,6 +156,14 @@ class IntrospectionClass
     public $RequiredParameters = [];
 
     /**
+     * Parameters that aren't nullable and have a default value (normalised name
+     * => declared name)
+     *
+     * @var array<string,string>
+     */
+    public $NotNullableParameters = [];
+
+    /**
      * Required parameters with a declared type that can be resolved by a
      * service container (normalised name => class/interface name)
      *
@@ -185,6 +194,13 @@ class IntrospectionClass
      * @var mixed[]
      */
     public $DefaultArguments = [];
+
+    /**
+     * Minimum number of arguments required by the constructor
+     *
+     * @var int
+     */
+    public $RequiredArguments = 0;
 
     /**
      * Constructor parameter name => index
@@ -456,6 +472,8 @@ class IntrospectionClass
 
         // Get constructor parameters
         if (($constructor = $class->getConstructor()) && $constructor->isPublic()) {
+            $lastRequired = -1;
+            $index = -1;
             foreach ($constructor->getParameters() as $param) {
                 $type = $param->getType();
                 $type = $type instanceof ReflectionNamedType && !$type->isBuiltin()
@@ -463,13 +481,22 @@ class IntrospectionClass
                     : null;
                 $normalised = $this->maybeNormalise($name = $param->getName(), NormaliserFlag::LAZY);
                 $defaultValue = null;
+                $isOptional = false;
                 if ($param->isOptional()) {
                     $defaultValue = $param->getDefaultValue();
+                    $isOptional = true;
+                    if (!$param->allowsNull()) {
+                        $this->NotNullableParameters[$normalised] = $name;
+                    }
                 } elseif (!$param->allowsNull()) {
                     $this->RequiredParameters[$normalised] = $name;
                     if ($type) {
                         $this->ServiceParameters[$normalised] = $type;
                     }
+                }
+                $index++;
+                if (!$isOptional) {
+                    $lastRequired = $index;
                 }
                 if ($param->isPassedByReference()) {
                     $this->PassByRefParameters[$normalised] = $name;
@@ -480,6 +507,7 @@ class IntrospectionClass
                 $this->Parameters[$normalised] = $name;
                 $this->DefaultArguments[] = $defaultValue;
             }
+            $this->RequiredArguments = $lastRequired + 1;
             $this->ParameterIndex = array_flip(array_values($this->Parameters));
         }
 

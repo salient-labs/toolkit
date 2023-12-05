@@ -5,6 +5,7 @@ namespace Lkrms\Tests\Support;
 use Lkrms\Support\Introspector;
 use Lkrms\Tests\Support\Introspector\A;
 use Lkrms\Tests\Support\Introspector\B;
+use Lkrms\Tests\Support\Introspector\C;
 use Lkrms\Tests\Support\Introspector\FirstAndLastNamesA;
 use Lkrms\Tests\Support\Introspector\FirstAndLastNamesB;
 use Lkrms\Tests\Support\Introspector\FirstNameAndSurnameA;
@@ -67,10 +68,12 @@ final class IntrospectorTest extends \Lkrms\Tests\TestCase
                     'Actions' => [],
                     'Parameters' => [],
                     'RequiredParameters' => [],
+                    'NotNullableParameters' => [],
                     'ServiceParameters' => [],
                     'PassByRefParameters' => [],
                     'DateParameters' => [],
                     'DefaultArguments' => [],
+                    'RequiredArguments' => 0,
                     'ParameterIndex' => [],
                     'SerializableProperties' => [
                         'Id',
@@ -140,6 +143,7 @@ final class IntrospectorTest extends \Lkrms\Tests\TestCase
                     'RequiredParameters' => [
                         'created_at' => 'createdAt',
                     ],
+                    'NotNullableParameters' => [],
                     'ServiceParameters' => [
                         'created_at' => 'DateTimeImmutable',
                     ],
@@ -148,6 +152,7 @@ final class IntrospectorTest extends \Lkrms\Tests\TestCase
                     'DefaultArguments' => [
                         null,
                     ],
+                    'RequiredArguments' => 1,
                     'ParameterIndex' => [
                         'createdAt' => 0,
                     ],
@@ -174,6 +179,66 @@ final class IntrospectorTest extends \Lkrms\Tests\TestCase
                 ],
                 B::class,
             ],
+            C::class => [
+                [
+                    'Class' => C::class,
+                    'IsReadable' => false,
+                    'IsWritable' => false,
+                    'IsExtensible' => false,
+                    'IsProvidable' => false,
+                    'IsRelatable' => false,
+                    'IsTreeable' => false,
+                    'HasDates' => false,
+                    'Properties' => [],
+                    'PublicProperties' => [],
+                    'ReadableProperties' => [],
+                    'WritableProperties' => [],
+                    'Actions' => [],
+                    'Parameters' => [
+                        'long' => 'long',
+                        'short' => 'short',
+                        'valueName' => 'valueName',
+                        'type' => 'type',
+                        'valueType' => 'valueType',
+                        'description' => 'description',
+                    ],
+                    'RequiredParameters' => [
+                        'long' => 'long',
+                    ],
+                    'NotNullableParameters' => [
+                        'type' => 'type',
+                        'valueType' => 'valueType',
+                    ],
+                    'ServiceParameters' => [],
+                    'PassByRefParameters' => [],
+                    'DateParameters' => [],
+                    'DefaultArguments' => [
+                        null,
+                        null,
+                        null,
+                        0,
+                        0,
+                        null,
+                    ],
+                    'RequiredArguments' => 3,
+                    'ParameterIndex' => [
+                        'long' => 0,
+                        'short' => 1,
+                        'valueName' => 2,
+                        'type' => 3,
+                        'valueType' => 4,
+                        'description' => 5,
+                    ],
+                    'SerializableProperties' => [],
+                    'NormalisedKeys' => [],
+                    'ParentProperty' => null,
+                    'ChildrenProperty' => null,
+                    'OneToOneRelationships' => [],
+                    'OneToManyRelationships' => [],
+                    'DateKeys' => [],
+                ],
+                C::class,
+            ]
         ];
     }
 
