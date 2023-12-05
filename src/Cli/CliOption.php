@@ -699,7 +699,7 @@ final class CliOption implements IReadable, IImmutable, Buildable
                 $value = is_array($value)
                     ? count($value)
                     : (Test::isBoolValue($value)
-                        ? (Convert::toBoolOrNull($value) ? 1 : 0)
+                        ? (Convert::toBool($value) ? 1 : 0)
                         : $value);
             }
         }
@@ -732,7 +732,7 @@ final class CliOption implements IReadable, IImmutable, Buildable
                 if (!Test::isBoolValue($value)) {
                     $this->throwValueTypeException($value, 'boolean');
                 }
-                return Convert::toBoolOrNull($value);
+                return Convert::toBool($value);
 
             case CliOptionValueType::INTEGER:
                 if (is_int($value)) {

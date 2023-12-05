@@ -3,7 +3,6 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Support\DateFormatter;
-use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -14,19 +13,19 @@ use ReflectionParameter;
 final class ConvertTest extends \Lkrms\Tests\TestCase
 {
     /**
-     * @dataProvider toBoolOrNullProvider
+     * @dataProvider toBoolProvider
      *
      * @param mixed $value
      */
-    public function testToBoolOrNull(?bool $expected, $value): void
+    public function testToBool(?bool $expected, $value): void
     {
-        $this->assertSame($expected, Convert::toBoolOrNull($value));
+        $this->assertSame($expected, Convert::toBool($value));
     }
 
     /**
      * @return array<string,array{bool|null,mixed}>
      */
-    public static function toBoolOrNullProvider(): array
+    public static function toBoolProvider(): array
     {
         return [
             "''" => [

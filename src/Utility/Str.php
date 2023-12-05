@@ -12,6 +12,22 @@ use Lkrms\Support\Catalog\RegularExpression as Regex;
 final class Str
 {
     /**
+     * Get the first string that is not null or empty, or return the last value
+     */
+    public static function coalesce(?string $string, ?string ...$strings): ?string
+    {
+        array_unshift($strings, $string);
+        $last = array_pop($strings);
+        foreach ($strings as $string) {
+            if ($string === null || $string === '') {
+                continue;
+            }
+            return $string;
+        }
+        return $last;
+    }
+
+    /**
      * Convert ASCII alphabetic characters in a string to lowercase
      */
     public static function lower(string $string): string

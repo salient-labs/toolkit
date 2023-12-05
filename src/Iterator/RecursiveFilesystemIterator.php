@@ -9,6 +9,7 @@ use Lkrms\Iterator\Contract\FluentIteratorInterface;
 use Lkrms\Utility\Pcre;
 use AppendIterator;
 use CallbackFilterIterator;
+use Countable;
 use EmptyIterator;
 use FilesystemIterator;
 use IteratorAggregate;
@@ -25,7 +26,11 @@ use Traversable;
  * @implements IteratorAggregate<string,SplFileInfo>
  * @implements FluentIteratorInterface<string,SplFileInfo>
  */
-class RecursiveFilesystemIterator implements IteratorAggregate, FluentIteratorInterface, IImmutable
+class RecursiveFilesystemIterator implements
+    IteratorAggregate,
+    FluentIteratorInterface,
+    IImmutable,
+    Countable
 {
     /** @use FluentIteratorTrait<string,SplFileInfo> */
     use FluentIteratorTrait;
@@ -243,6 +248,14 @@ class RecursiveFilesystemIterator implements IteratorAggregate, FluentIteratorIn
     public function doNotMatchRelative()
     {
         return $this->matchRelative(false);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function count(): int
+    {
+        return iterator_count($this->getIterator());
     }
 
     /**

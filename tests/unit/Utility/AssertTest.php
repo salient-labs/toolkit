@@ -117,15 +117,15 @@ final class AssertTest extends \Lkrms\Tests\TestCase
     public static function notEmptyProvider(): array
     {
         return [
-            [false, null, 'argument', 'argument cannot be empty'],
-            [false, [], 'array', 'array cannot be empty'],
+            [false, null, 'argument', 'argument must not be empty'],
+            [false, [], 'array', 'array must not be empty'],
             [true, [null]],
-            [false, '', null, 'value cannot be empty'],
-            [false, '0', '$string', '$string cannot be empty'],
+            [false, '', null, 'value must not be empty'],
+            [false, '0', '$string', '$string must not be empty'],
             [true, '1'],
-            [false, 0, 'integer', 'integer cannot be empty'],
+            [false, 0, 'integer', 'integer must not be empty'],
             [true, 1],
-            [false, false, 'boolean', 'boolean cannot be empty'],
+            [false, false, 'boolean', 'boolean must not be empty'],
             [true, true],
         ];
     }

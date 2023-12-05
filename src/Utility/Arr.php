@@ -313,6 +313,7 @@ final class Arr
      * True if a value is an array of integers or an array of strings
      *
      * @param mixed $value
+     * @phpstan-assert-if-true int[]|string[] $value
      */
     public static function ofArrayKey($value, bool $orEmpty = false): bool
     {
@@ -325,6 +326,7 @@ final class Arr
      * True if a value is a list of integers or a list of strings
      *
      * @param mixed $value
+     * @phpstan-assert-if-true list<int>|list<string> $value
      */
     public static function isListOfArrayKey($value, bool $orEmpty = false): bool
     {
@@ -337,6 +339,7 @@ final class Arr
      * True if a value is an array of integers
      *
      * @param mixed $value
+     * @phpstan-assert-if-true int[] $value
      */
     public static function ofInt($value, bool $orEmpty = false): bool
     {
@@ -347,6 +350,7 @@ final class Arr
      * True if a value is a list of integers
      *
      * @param mixed $value
+     * @phpstan-assert-if-true list<int> $value
      */
     public static function isListOfInt($value, bool $orEmpty = false): bool
     {
@@ -357,6 +361,7 @@ final class Arr
      * True if a value is an array of strings
      *
      * @param mixed $value
+     * @phpstan-assert-if-true string[] $value
      */
     public static function ofString($value, bool $orEmpty = false): bool
     {
@@ -367,6 +372,7 @@ final class Arr
      * True if a value is a list of strings
      *
      * @param mixed $value
+     * @phpstan-assert-if-true list<string> $value
      */
     public static function isListOfString($value, bool $orEmpty = false): bool
     {
@@ -422,6 +428,31 @@ final class Arr
                 return false;
             }
         }
+        return true;
+    }
+
+    /**
+     * True if arrays have the same values after sorting for comparison
+     *
+     * Returns `false` if fewer than two arrays are given.
+     *
+     * @param mixed[] ...$arrays
+     */
+    public static function sameValues(array ...$arrays): bool
+    {
+        if (count($arrays) < 2) {
+            return false;
+        }
+
+        $last = null;
+        foreach ($arrays as $array) {
+            usort($array, fn($a, $b) => gettype($a) <=> gettype($b) ?: $a <=> $b);
+            if ($last !== null && $last !== $array) {
+                return false;
+            }
+            $last = $array;
+        }
+
         return true;
     }
 
