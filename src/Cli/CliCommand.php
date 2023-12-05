@@ -956,7 +956,7 @@ abstract class CliCommand implements ICliCommand
                     ($option->ValueOptional && $value === null))) {
                 continue;
             }
-            $name = $option->Long ?: $option->Short;
+            $name = $option->Name;
             if ($nameCallback) {
                 $name = $nameCallback($name);
             }
@@ -987,7 +987,7 @@ abstract class CliCommand implements ICliCommand
         $values = [];
         foreach ($this->Options as $option) {
             $value = $option->ValueOptional ? null : $option->OriginalDefaultValue;
-            $name = $option->Long ?: $option->Short;
+            $name = $option->Name;
             if ($nameCallback) {
                 $name = $nameCallback($name);
             }
@@ -1155,7 +1155,7 @@ abstract class CliCommand implements ICliCommand
         $positional = [];
         foreach ($this->Options as $option) {
             $name = null;
-            foreach (Arr::whereNotEmpty([$option->Long, $option->Short]) as $key) {
+            foreach ($option->getNames() as $key) {
                 if (array_key_exists($key, $values)) {
                     $name = $key;
                     break;

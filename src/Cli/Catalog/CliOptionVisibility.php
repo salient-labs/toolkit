@@ -42,9 +42,31 @@ final class CliOptionVisibility extends Enumeration
     public const COMPLETION = 16;
 
     /**
+     * Include the option when generating a JSON Schema
+     */
+    public const SCHEMA = 32;
+
+    /**
      * Hide the option's default value if not writing help to a terminal
      */
-    public const HIDE_DEFAULT = 32;
+    public const HIDE_DEFAULT = 64;
 
-    public const ALL = CliOptionVisibility::SYNOPSIS | CliOptionVisibility::HELP | CliOptionVisibility::MARKDOWN | CliOptionVisibility::MAN_PAGE | CliOptionVisibility::COMPLETION;
+    /**
+     * Show the option everywhere
+     */
+    public const ALL =
+        CliOptionVisibility::SYNOPSIS
+        | CliOptionVisibility::HELP
+        | CliOptionVisibility::MARKDOWN
+        | CliOptionVisibility::MAN_PAGE
+        | CliOptionVisibility::COMPLETION;
+
+    /**
+     * Show the option everywhere except in command synopses
+     */
+    public const ALL_EXCEPT_SYNOPSIS =
+        CliOptionVisibility::HELP
+        | CliOptionVisibility::MARKDOWN
+        | CliOptionVisibility::MAN_PAGE
+        | CliOptionVisibility::COMPLETION;
 }

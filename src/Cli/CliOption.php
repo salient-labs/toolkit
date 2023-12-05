@@ -58,7 +58,7 @@ use Throwable;
  * @property-read bool $AddAll True if 'ALL' should be added to the list of possible values when the option can be given more than once
  * @property-read array<string|int|bool>|string|int|bool|null $DefaultValue Assigned to the option if no value is given on the command line
  * @property-read array<string|int|bool>|string|int|bool|null $OriginalDefaultValue The option's default value before applying values from the environment
- * @property-read string|null $EnvVariable The name of an environment variable that replaces or extends the option's default value
+ * @property-read string|null $EnvVariable The name of a value in the environment that replaces the option's default value
  * @property-read (callable(array<string|int|bool>|string|int|bool): mixed)|null $ValueCallback Applied to the option's value as it is assigned
  * @property-read int-mask-of<CliOptionVisibility::*> $Visibility The option's visibility to users
  * @property-read bool $IsBound True if the option is bound to a variable
@@ -69,6 +69,10 @@ final class CliOption implements IImmutable, IReadable, Buildable
 {
     use HasBuilder;
     use TFullyReadable;
+
+    private const LONG_REGEX = '/^[a-z0-9_][-a-z0-9_]++$/i';
+
+    private const SHORT_REGEX = '/^[a-z0-9_]$/i';
 
     /**
      * The name of the option
@@ -239,8 +243,8 @@ final class CliOption implements IImmutable, IReadable, Buildable
     protected $OriginalDefaultValue;
 
     /**
-     * The name of an environment variable that replaces or extends the option's
-     * default value
+     * The name of a value in the environment that replaces the option's default
+     * value
      *
      * Ignored if the option is positional.
      */
@@ -274,6 +278,8 @@ final class CliOption implements IImmutable, IReadable, Buildable
      * @phpstan-ignore-next-line
      */
     private $BindTo;
+
+    private bool $IsLoaded = false;
 
     /**
      * Creates a new CliOption object
@@ -356,11 +362,15 @@ final class CliOption implements IImmutable, IReadable, Buildable
      */
     public function load()
     {
+        if ($this->IsLoaded) {
+            // @codeCoverageIgnoreStart
+            return $this;
+            // @codeCoverageIgnoreEnd
+        }
+
         $clone = clone $this;
         $clone->doLoad();
-        if ($clone == $this) {
-            return $this;
-        }
+        $clone->IsLoaded = true;
         return $clone;
     }
 
@@ -379,13 +389,11 @@ final class CliOption implements IImmutable, IReadable, Buildable
                 throw new LogicException("At least one of 'long' and 'short' must be set");
             }
 
-            $regex = '/^[a-z0-9_][-a-z0-9_]++$/i';
-            if ($this->Long !== null && !Pcre::match($regex, $this->Long)) {
+            if ($this->Long !== null && !Pcre::match(self::LONG_REGEX, $this->Long)) {
                 throw new LogicException("'long' must start with a letter, number or underscore, followed by one or more letters, numbers, underscores or hyphens");
             }
 
-            $regex = '/^[a-z0-9_]$/i';
-            if ($this->Short !== null && !Pcre::match($regex, $this->Short)) {
+            if ($this->Short !== null && !Pcre::match(self::SHORT_REGEX, $this->Short)) {
                 throw new LogicException("'short' must contain one letter, number or underscore");
             }
         }
@@ -470,7 +478,7 @@ final class CliOption implements IImmutable, IReadable, Buildable
                 if (
                     $this->DefaultValue && (
                         Arr::sameValues($this->DefaultValue, $values) ||
-                        in_array('ALL', $this->DefaultValue)
+                        in_array('ALL', $this->DefaultValue, true)
                     )
                 ) {
                     $this->DefaultValue = ['ALL'];
@@ -681,7 +689,7 @@ final class CliOption implements IImmutable, IReadable, Buildable
 
         if ($this->AllowedValues) {
             $value = $this->filterValue($value);
-            if ($this->AddAll && in_array('ALL', Arr::wrap($value))) {
+            if ($this->AddAll && in_array('ALL', Arr::wrap($value), true)) {
                 $value = array_diff($this->AllowedValues, ['ALL']);
             }
         } else {
@@ -783,65 +791,48 @@ final class CliOption implements IImmutable, IReadable, Buildable
     }
 
     /**
-     * @param string|int|bool|null $value
+     * @param mixed $value
      * @return mixed
      */
     private function normaliseValueType($value)
     {
+        if (!$this->checkValueType($value)) {
+            $this->throwValueTypeException($value);
+        }
+
         switch ($this->ValueType) {
             case CliOptionValueType::BOOLEAN:
-                if (is_bool($value)) {
-                    return $value;
-                }
-                if (!Test::isBoolValue($value)) {
-                    $this->throwValueTypeException($value);
-                }
                 return Convert::toBool($value);
 
             case CliOptionValueType::INTEGER:
-                if (is_int($value)) {
-                    return $value;
-                }
-                if (!Test::isIntValue($value)) {
-                    $this->throwValueTypeException($value);
-                }
                 return (int) $value;
 
             case CliOptionValueType::STRING:
-                if (is_string($value)) {
-                    return $value;
-                }
-                if (is_scalar($value)) {
-                    return (string) $value;
-                }
-                // @phpstan-ignore-next-line
-                if (is_object($value) && method_exists($value, '__toString')) {
-                    return (string) $value;
-                }
-                $this->throwValueTypeException($value);
+                return (string) $value;
 
             case CliOptionValueType::DATE:
-                // @phpstan-ignore-next-line
-                if ($value instanceof DateTimeInterface) {
-                    return Date::immutable($value);
-                }
-                try {
-                    return new DateTimeImmutable($value);
-                } catch (Throwable $ex) {
-                    $this->throwValueTypeException($value);
-                }
+                return $value instanceof DateTimeInterface
+                    ? Date::immutable($value)
+                    : new DateTimeImmutable($value);
 
             case CliOptionValueType::PATH:
+                $dashOk = false;
+            case CliOptionValueType::PATH_OR_DASH:
+                $dashOk ??= true;
                 $fileType = 'path';
                 $callable = 'file_exists';
             case CliOptionValueType::FILE:
-                $fileType = $fileType ?? 'file';
-                $callable = $callable ?? 'is_file';
+                $dashOk ??= false;
+            case CliOptionValueType::FILE_OR_DASH:
+                $dashOk ??= true;
+                $fileType ??= 'file';
+                $callable ??= 'is_file';
             case CliOptionValueType::DIRECTORY:
-                $fileType = $fileType ?? 'directory';
-                $callable = $callable ?? 'is_dir';
-                if (!is_string($value)) {
-                    $this->throwValueTypeException($value);
+                $dashOk ??= false;
+                $fileType ??= 'directory';
+                $callable ??= 'is_dir';
+                if ($dashOk && $value === '-') {
+                    return $value;
                 }
                 if (!$callable($value)) {
                     throw new CliInvalidArgumentsException(
@@ -878,15 +869,19 @@ final class CliOption implements IImmutable, IReadable, Buildable
                 return Test::isIntValue($value);
 
             case CliOptionValueType::STRING:
-            case CliOptionValueType::PATH:
-            case CliOptionValueType::FILE:
-            case CliOptionValueType::DIRECTORY:
-                return is_string($value) ||
+                return is_scalar($value) ||
                     (is_object($value) && method_exists($value, '__toString'));
 
             case CliOptionValueType::DATE:
                 return $value instanceof DateTimeInterface ||
                     (is_string($value) && strtotime($value) !== false);
+
+            case CliOptionValueType::PATH:
+            case CliOptionValueType::FILE:
+            case CliOptionValueType::DIRECTORY:
+            case CliOptionValueType::PATH_OR_DASH:
+            case CliOptionValueType::FILE_OR_DASH:
+                return is_string($value);
 
             default:
                 return false;
