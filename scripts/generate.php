@@ -17,7 +17,6 @@ use Lkrms\LkUtil\Command\Generate\GenerateFacade;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncProvider;
 use Lkrms\Store\CacheStore;
-use Lkrms\Store\TrashStore;
 use Lkrms\Support\ArrayMapper;
 use Lkrms\Support\ErrorHandler;
 use Lkrms\Support\EventDispatcher;
@@ -58,7 +57,7 @@ $facades = [
 ];
 
 $builders = [
-    CliOption::class => \Lkrms\Cli\CliOptionBuilder::class,
+    CliOption::class => [\Lkrms\Cli\CliOptionBuilder::class, '--forward=load'],
     Curler::class => [\Lkrms\Curler\CurlerBuilder::class, '--forward', '--skip', 'responseContentTypeIs,getQueryUrl'],
     CurlerPage::class => \Lkrms\Curler\Support\CurlerPageBuilder::class,
     DbSyncDefinition::class => \Lkrms\Sync\Support\DbSyncDefinitionBuilder::class,

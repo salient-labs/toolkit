@@ -13,12 +13,14 @@ use Closure;
  *
  * @property-read array<string,int> $Parameters Key => constructor parameter index
  * @property-read array<string,true> $PassByRefParameters Key => `true`
+ * @property-read array<string,true> $NotNullableParameters Key => `true`
  * @property-read array<Closure(mixed[], ?string, TClass, ?TProvider, ?TContext): void> $Callbacks Arbitrary callbacks
  * @property-read array<string,string> $Methods Key => "magic" property method
  * @property-read array<string,string> $Properties Key => declared property name
  * @property-read string[] $MetaProperties Arbitrary keys
  * @property-read string[] $DateProperties Date keys
  * @property-read array<TIntrospector::*_KEY,string> $CustomKeys Identifier => key
+ * @property-read int $LastParameterIndex Index of the last constructor parameter to which array values are mapped
  *
  * @see Introspector
  *
@@ -44,6 +46,13 @@ final class IntrospectorKeyTargets implements IReadable
      * @var array<string,true>
      */
     protected $PassByRefParameters;
+
+    /**
+     * Key => `true`
+     *
+     * @var array<string,true>
+     */
+    protected $NotNullableParameters;
 
     /**
      * Arbitrary callbacks
@@ -88,8 +97,16 @@ final class IntrospectorKeyTargets implements IReadable
     protected $CustomKeys;
 
     /**
+     * Index of the last constructor parameter to which array values are mapped
+     *
+     * @var int
+     */
+    protected $LastParameterIndex = -1;
+
+    /**
      * @param array<string,int> $parameters
-     * @param array<string,true> $passByRefProperties
+     * @param array<string,true> $passByRefParameters
+     * @param array<string,true> $notNullableParameters
      * @param array<Closure(mixed[], ?string, TClass, ?TProvider, ?TContext): void> $callbacks
      * @param array<string,string> $methods
      * @param array<string,string> $properties
@@ -99,7 +116,8 @@ final class IntrospectorKeyTargets implements IReadable
      */
     public function __construct(
         array $parameters,
-        array $passByRefProperties,
+        array $passByRefParameters,
+        array $notNullableParameters,
         array $callbacks,
         array $methods,
         array $properties,
@@ -108,12 +126,17 @@ final class IntrospectorKeyTargets implements IReadable
         array $customKeys
     ) {
         $this->Parameters = $parameters;
-        $this->PassByRefParameters = $passByRefProperties;
+        $this->PassByRefParameters = $passByRefParameters;
+        $this->NotNullableParameters = $notNullableParameters;
         $this->Callbacks = $callbacks;
         $this->Methods = $methods;
         $this->Properties = $properties;
         $this->MetaProperties = $metaProperties;
         $this->DateProperties = $dateProperties;
         $this->CustomKeys = $customKeys;
+
+        if ($this->Parameters) {
+            $this->LastParameterIndex = max(...array_values($parameters));
+        }
     }
 }

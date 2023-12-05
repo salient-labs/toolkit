@@ -14,7 +14,6 @@ use Lkrms\Contract\Buildable;
  */
 class Option implements Buildable
 {
-    /** @use HasBuilder<OptionBuilder> */
     use HasBuilder;
 
     protected $Long;

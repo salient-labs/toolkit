@@ -2,19 +2,24 @@
 
 namespace Lkrms\Concept;
 
+use Lkrms\Concern\IsConvertibleEnumeration;
 use Lkrms\Contract\IConvertibleEnumeration;
 use LogicException;
 
 /**
- * Uses static arrays to convert public constants to and from their names
+ * Base class for enumerations that use static array properties to convert
+ * constants to and from their names
  *
- * @template TValue
+ * @template TValue of array-key
  *
  * @extends Enumeration<TValue>
  * @implements IConvertibleEnumeration<TValue>
  */
 abstract class ConvertibleEnumeration extends Enumeration implements IConvertibleEnumeration
 {
+    /** @use IsConvertibleEnumeration<TValue> */
+    use IsConvertibleEnumeration;
+
     /**
      * An array that maps values to names
      *
@@ -29,11 +34,15 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
      */
     protected static $ValueMap = [];
 
+    /**
+     * @inheritDoc
+     */
     final public static function fromName(string $name)
     {
-        if (($value = static::$ValueMap[$name]
-                ?? static::$ValueMap[strtoupper($name)]
-                ?? null) === null) {
+        $value = static::$ValueMap[$name]
+            ?? static::$ValueMap[strtoupper($name)]
+            ?? null;
+        if ($value === null) {
             throw new LogicException(
                 sprintf('Argument #1 ($name) is invalid: %s', $name)
             );
@@ -41,46 +50,25 @@ abstract class ConvertibleEnumeration extends Enumeration implements IConvertibl
         return $value;
     }
 
+    /**
+     * @inheritDoc
+     */
     final public static function toName($value): string
     {
-        if (($name = static::$NameMap[$value] ?? null) === null) {
+        $name = static::$NameMap[$value] ?? null;
+        if ($name === null) {
             throw new LogicException(
-                sprintf('Argument #1 ($value) is invalid: %d', $value)
+                sprintf('Argument #1 ($value) is invalid: %s', $value)
             );
         }
         return $name;
     }
 
+    /**
+     * @inheritDoc
+     */
     final public static function cases(): array
     {
         return static::$ValueMap;
-    }
-
-    /**
-     * Get the values of constants from their names
-     *
-     * @param string[] $names
-     * @return TValue[]
-     */
-    final public static function fromNames(array $names): array
-    {
-        return array_map(
-            fn(string $name) => self::fromName($name),
-            $names
-        );
-    }
-
-    /**
-     * Get the names of constants from their values
-     *
-     * @param TValue[] $values
-     * @return string[]
-     */
-    final public static function toNames(array $values): array
-    {
-        return array_map(
-            fn($value): string => self::toName($value),
-            $values
-        );
     }
 }

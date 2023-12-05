@@ -15,7 +15,13 @@ use Lkrms\Contract\IEnumeration;
 abstract class Enumeration implements IEnumeration
 {
     /** @use IsCatalog<TValue> */
-    use IsCatalog {
-        constants as cases;
+    use IsCatalog;
+
+    /**
+     * @inheritDoc
+     */
+    public static function cases(): array
+    {
+        return self::constants();
     }
 }

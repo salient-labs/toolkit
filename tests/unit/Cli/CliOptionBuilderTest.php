@@ -10,6 +10,7 @@ use Lkrms\Cli\CliOption;
 use Lkrms\Cli\CliOptionBuilder;
 use Lkrms\Container\Container;
 use Lkrms\Contract\IContainer;
+use ReflectionClass;
 
 final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
 {
@@ -17,36 +18,40 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
     {
         $option = $this
             ->getFlag()
-            ->go()
-            ->validate();
+            ->load();
         $this->assertIsFlag($option);
         $this->assertSame(CliOptionValueType::BOOLEAN, $option->ValueType);
         $this->assertSame(false, $option->MultipleAllowed);
+        $this->assertSame(false, $option->Unique);
         $this->assertSame(false, $option->DefaultValue);
+        $this->assertSame(false, $option->OriginalDefaultValue);
         $this->assertSame(null, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
+        $this->assertSame(false, $option->IsBound);
 
         $option = $this
             ->getFlag()
             ->multipleAllowed()
-            ->go()
-            ->validate();
+            ->load();
         $this->assertIsFlag($option);
         $this->assertSame(CliOptionValueType::INTEGER, $option->ValueType);
         $this->assertSame(true, $option->MultipleAllowed);
+        $this->assertSame(true, $option->Unique);
         $this->assertSame(0, $option->DefaultValue);
+        $this->assertSame(0, $option->OriginalDefaultValue);
         $this->assertSame(null, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
+        $this->assertSame(false, $option->IsBound);
 
         $_ENV[__METHOD__] = '1';
 
         $option = $this
             ->getFlag()
             ->envVariable(__METHOD__)
-            ->go()
-            ->validate();
+            ->load();
         $this->assertSame(false, $option->MultipleAllowed);
         $this->assertSame(true, $option->DefaultValue);
+        $this->assertSame(false, $option->OriginalDefaultValue);
         $this->assertSame(__METHOD__, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
 
@@ -54,10 +59,10 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
             ->getFlag()
             ->envVariable(__METHOD__)
             ->multipleAllowed()
-            ->go()
-            ->validate();
+            ->load();
         $this->assertSame(true, $option->MultipleAllowed);
         $this->assertSame(1, $option->DefaultValue);
+        $this->assertSame(0, $option->OriginalDefaultValue);
         $this->assertSame(__METHOD__, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
 
@@ -66,54 +71,26 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $option = $this
             ->getFlag()
             ->envVariable(__METHOD__)
-            ->go()
-            ->validate();
+            ->load();
         $this->assertSame(false, $option->MultipleAllowed);
         $this->assertSame(false, $option->DefaultValue);
+        $this->assertSame(false, $option->OriginalDefaultValue);
         $this->assertSame(__METHOD__, $option->EnvVariable);
         $this->assertSame(null, $option->ValueCallback);
     }
 
-    public function testValue(): void
-    {
-        $option = CliOption::build(new Container())
-            ->long('dest')
-            ->short('d')
-            ->valueName('DIR')
-            ->description('Sync files to DIR')
-            ->optionType(CliOptionType::VALUE)
-            ->required()
-            ->go()
-            ->validate();
-        $this->assertSame('dest', $option->Long);
-        $this->assertSame('d', $option->Short);
-        $this->assertSame('d|dest', $option->Key);
-        $this->assertSame('DIR', $option->ValueName);
-        $this->assertSame('--dest', $option->DisplayName);
-        $this->assertSame(CliOptionType::VALUE, $option->OptionType);
-        $this->assertSame(CliOptionValueType::STRING, $option->ValueType);
-        $this->assertSame(false, $option->IsFlag);
-        $this->assertSame(false, $option->IsOneOf);
-        $this->assertSame(false, $option->IsPositional);
-        $this->assertSame(true, $option->Required);
-        $this->assertSame(true, $option->ValueRequired);
-        $this->assertSame(false, $option->ValueOptional);
-        $this->assertSame(false, $option->MultipleAllowed);
-        $this->assertSame(null, $option->Delimiter);
-        $this->assertSame('Sync files to DIR', $option->Description);
-        $this->assertSame(null, $option->AllowedValues);
-        $this->assertSame(null, $option->UnknownValuePolicy);
-        $this->assertSame(false, $option->AddAll);
-        $this->assertSame(null, $option->DefaultValue);
-        $this->assertSame(false, $option->KeepDefault);
-        $this->assertSame(null, $option->EnvVariable);
-        $this->assertSame(false, $option->KeepEnv);
-        $this->assertSame(null, $option->ValueCallback);
-        $this->assertSame(CliOptionVisibility::ALL, $option->Visibility);
-    }
-
     private function assertIsFlag(CliOption $option): void
     {
+        // No assertions for:
+        // - ValueType
+        // - MultipleAllowed
+        // - Unique
+        // - DefaultValue
+        // - OriginalDefaultValue
+        // - EnvVariable
+        // - ValueCallback
+        // - IsBound
+        $this->assertSame('flag', $option->Name);
         $this->assertSame('flag', $option->Long);
         $this->assertSame('f', $option->Short);
         $this->assertSame('f|flag', $option->Key);
@@ -124,42 +101,204 @@ final class CliOptionBuilderTest extends \Lkrms\Tests\TestCase
         $this->assertSame(false, $option->IsOneOf);
         $this->assertSame(false, $option->IsPositional);
         $this->assertSame(false, $option->Required);
+        $this->assertSame(false, $option->WasRequired);
         $this->assertSame(false, $option->ValueRequired);
         $this->assertSame(false, $option->ValueOptional);
         $this->assertSame(null, $option->Delimiter);
         $this->assertSame('Description of flag', $option->Description);
         $this->assertSame(null, $option->AllowedValues);
+        $this->assertSame(true, $option->CaseSensitive);
         $this->assertSame(null, $option->UnknownValuePolicy);
         $this->assertSame(false, $option->AddAll);
-        $this->assertSame(false, $option->KeepDefault);
-        $this->assertSame(false, $option->KeepEnv);
         $this->assertSame(CliOptionVisibility::ALL, $option->Visibility);
     }
 
     private function getFlag(?CliOptionBuilder $option = null): CliOptionBuilder
     {
-        return
-            ($option ?: $this->getOption())
-                ->long('flag')
-                ->short('f')
-                ->description('Description of flag')
-                ->optionType(CliOptionType::FLAG);
+        return ($option ?: $this->getOption())
+            ->long('flag')
+            ->short('f')
+            ->description('Description of flag')
+            ->optionType(CliOptionType::FLAG);
+    }
+
+    public function testValue(): void
+    {
+        $option = $this
+            ->getValue()
+            ->load();
+        $this->assertIsValue($option);
+        $this->assertSame(CliOptionValueType::STRING, $option->ValueType);
+        $this->assertSame(true, $option->Required);
+        $this->assertSame(true, $option->WasRequired);
+        $this->assertSame(false, $option->MultipleAllowed);
+        $this->assertSame(false, $option->Unique);
+        $this->assertSame(null, $option->Delimiter);
+        $this->assertSame(null, $option->DefaultValue);
+        $this->assertSame(null, $option->OriginalDefaultValue);
+        $this->assertSame(null, $option->EnvVariable);
+        $this->assertSame(null, $option->ValueCallback);
+        $this->assertSame(false, $option->IsBound);
+
+        $option = $this
+            ->getValue()
+            ->required(false)
+            ->multipleAllowed()
+            ->load();
+        $this->assertIsValue($option);
+        $this->assertSame(CliOptionValueType::STRING, $option->ValueType);
+        $this->assertSame(false, $option->Required);
+        $this->assertSame(false, $option->WasRequired);
+        $this->assertSame(true, $option->MultipleAllowed);
+        $this->assertSame(true, $option->Unique);
+        $this->assertSame(':', $option->Delimiter);
+        $this->assertSame(['today'], $option->DefaultValue);
+        $this->assertSame(['today'], $option->OriginalDefaultValue);
+        $this->assertSame(null, $option->EnvVariable);
+        $this->assertSame(null, $option->ValueCallback);
+        $this->assertSame(false, $option->IsBound);
+
+        $bound = null;
+        $option = $this
+            ->getValue()
+            ->required(false)
+            ->multipleAllowed()
+            ->bindTo($bound)
+            ->load();
+        $message = sprintf(
+            '%s::bindTo() failed. Check comparison with func_num_args() in %s::__construct() is >= %d',
+            CliOptionBuilder::class,
+            CliOption::class,
+            (new ReflectionClass(CliOption::class))
+                ->getConstructor()
+                ->getNumberOfParameters(),
+        );
+        $this->assertSame(true, $option->IsBound, $message);
+        $this->assertNull($bound);
+        $option->applyValue([]);
+        $this->assertSame([], $bound);
+    }
+
+    private function assertIsValue(CliOption $option): void
+    {
+        // No assertions for:
+        // - ValueType
+        // - Required
+        // - WasRequired
+        // - MultipleAllowed
+        // - Unique
+        // - Delimiter
+        // - DefaultValue
+        // - OriginalDefaultValue
+        // - EnvVariable
+        // - ValueCallback
+        // - IsBound
+        $this->assertSame('value', $option->Name);
+        $this->assertSame('value', $option->Long);
+        $this->assertSame('v', $option->Short);
+        $this->assertSame('v|value', $option->Key);
+        $this->assertSame('NAME', $option->ValueName);
+        $this->assertSame('--value', $option->DisplayName);
+        $this->assertSame(CliOptionType::VALUE, $option->OptionType);
+        $this->assertSame(false, $option->IsFlag);
+        $this->assertSame(false, $option->IsOneOf);
+        $this->assertSame(false, $option->IsPositional);
+        $this->assertSame(true, $option->ValueRequired);
+        $this->assertSame(false, $option->ValueOptional);
+        $this->assertSame('Description of <NAME>', $option->Description);
+        $this->assertSame(null, $option->AllowedValues);
+        $this->assertSame(true, $option->CaseSensitive);
+        $this->assertSame(null, $option->UnknownValuePolicy);
+        $this->assertSame(false, $option->AddAll);
+        $this->assertSame(CliOptionVisibility::ALL, $option->Visibility);
+    }
+
+    private function getValue(?CliOptionBuilder $option = null): CliOptionBuilder
+    {
+        return ($option ?: $this->getOption())
+            ->long('value')
+            ->short('v')
+            ->valueName('NAME')
+            ->unsetB('valueType')
+            ->description('Description of <NAME>')
+            ->optionType(CliOptionType::VALUE);
+    }
+
+    public function testOneOf(): void
+    {
+        $option = $this
+            ->getOneOf()
+            ->load();
+        $this->assertIsOneOf($option);
+        $this->assertSame(CliOptionValueType::DATE, $option->ValueType);
+        $this->assertSame(true, $option->Required);
+        $this->assertSame(true, $option->WasRequired);
+        $this->assertSame(true, $option->MultipleAllowed);
+        $this->assertSame(true, $option->Unique);
+        $this->assertSame(':', $option->Delimiter);
+        $this->assertSame(null, $option->DefaultValue);
+        $this->assertSame(null, $option->OriginalDefaultValue);
+        $this->assertSame(null, $option->EnvVariable);
+        $this->assertSame(null, $option->ValueCallback);
+        $this->assertSame(false, $option->IsBound);
+    }
+
+    private function assertIsOneOf(CliOption $option): void
+    {
+        // No assertions for:
+        // - ValueType
+        // - Required
+        // - WasRequired
+        // - MultipleAllowed
+        // - Unique
+        // - Delimiter
+        // - DefaultValue
+        // - OriginalDefaultValue
+        // - EnvVariable
+        // - ValueCallback
+        // - IsBound
+        $this->assertSame('one-of', $option->Name);
+        $this->assertSame('one-of', $option->Long);
+        $this->assertSame('o', $option->Short);
+        $this->assertSame('o|one-of', $option->Key);
+        $this->assertSame('selection', $option->ValueName);
+        $this->assertSame('--one-of', $option->DisplayName);
+        $this->assertSame(CliOptionType::ONE_OF, $option->OptionType);
+        $this->assertSame(false, $option->IsFlag);
+        $this->assertSame(true, $option->IsOneOf);
+        $this->assertSame(false, $option->IsPositional);
+        $this->assertSame(true, $option->ValueRequired);
+        $this->assertSame(false, $option->ValueOptional);
+        $this->assertSame('Description of items', $option->Description);
+        $this->assertSame(['today', 'yesterday', 'tomorrow', 'ALL'], $option->AllowedValues);
+        $this->assertSame(true, $option->CaseSensitive);
+        $this->assertSame(CliOptionValueUnknownPolicy::ACCEPT, $option->UnknownValuePolicy);
+        $this->assertSame(true, $option->AddAll);
+        $this->assertSame(CliOptionVisibility::ALL, $option->Visibility);
+    }
+
+    private function getOneOf(?CliOptionBuilder $option = null): CliOptionBuilder
+    {
+        return ($option ?: $this->getOption())
+            ->long('one-of')
+            ->short('o')
+            ->valueName('selection')
+            ->description('Description of items')
+            ->optionType(CliOptionType::ONE_OF)
+            ->multipleAllowed();
     }
 
     private function getOption(): CliOptionBuilder
     {
-        return
-            CliOption::build($this->getContainer())
-                ->valueName('Start Date')
-                ->valueType(CliOptionValueType::DATE)
-                ->allowedValues(['today', 'yesterday', 'tomorrow'])
-                ->unknownValuePolicy(CliOptionValueUnknownPolicy::ACCEPT)
-                ->required()
-                ->addAll()
-                ->defaultValue(['today'])
-                ->keepDefault()
-                ->keepEnv()
-                ->delimiter(':');
+        return CliOption::build($this->getContainer())
+            ->valueType(CliOptionValueType::DATE)
+            ->allowedValues(['today', 'yesterday', 'tomorrow'])
+            ->unknownValuePolicy(CliOptionValueUnknownPolicy::ACCEPT)
+            ->required()
+            ->unique()
+            ->addAll()
+            ->defaultValue('today')
+            ->delimiter(':');
     }
 
     private function getContainer(): IContainer

@@ -15,7 +15,13 @@ use Lkrms\Contract\IDictionary;
 abstract class Dictionary implements IDictionary
 {
     /** @use IsCatalog<TValue> */
-    use IsCatalog {
-        constants as definitions;
+    use IsCatalog;
+
+    /**
+     * @inheritDoc
+     */
+    public static function definitions(): array
+    {
+        return self::constants();
     }
 }

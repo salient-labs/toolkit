@@ -19,7 +19,7 @@ trait IsCatalog
     /**
      * @return array<string,TValue>
      */
-    public static function constants(): array
+    protected static function constants(): array
     {
         return self::$Constants[static::class]
             ?? (self::$Constants[static::class] = self::getConstants());
