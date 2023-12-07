@@ -397,30 +397,6 @@ abstract class SyncDefinition extends FluentInterface implements ISyncDefinition
     }
 
     /**
-     * @param OP::* $operation
-     * @return (Closure(ISyncContext, mixed...): (iterable<TEntity>|TEntity))|null
-     * @phpstan-return (
-     *     $operation is OP::READ
-     *     ? (Closure(ISyncContext, int|string|null, mixed...): TEntity)
-     *     : (
-     *         $operation is OP::READ_LIST
-     *         ? (Closure(ISyncContext, mixed...): iterable<TEntity>)
-     *         : (
-     *             $operation is OP::CREATE|OP::UPDATE|OP::DELETE
-     *             ? (Closure(ISyncContext, TEntity, mixed...): TEntity)
-     *             : (Closure(ISyncContext, iterable<TEntity>, mixed...): iterable<TEntity>)
-     *         )
-     *     )
-     * )|null
-     * @deprecated Use {@see SyncDefinition::getFallbackClosure()} instead
-     * @codeCoverageIgnore
-     */
-    final public function getFallbackSyncOperationClosure($operation): ?Closure
-    {
-        return $this->getFallbackClosure($operation);
-    }
-
-    /**
      * Specify whether to perform READ operations by iterating over entities
      * returned by READ_LIST
      *

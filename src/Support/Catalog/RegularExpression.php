@@ -24,8 +24,8 @@ final class RegularExpression extends Dictionary
     public const BOOLEAN_STRING = <<<'REGEX'
         (?xi)
         \s*+ (?:
-          (?<true>  1 | on  | y(?:es)? | t(?:rue)?  | enabled?  ) |
-          (?<false> 0 | off | no?      | f(?:alse)? | disabled? )
+          (?<true>  1 | on  | y(?:es)? | true  | enabled?  ) |
+          (?<false> 0 | off | no?      | false | disabled? )
         ) \s*+
         REGEX;
 

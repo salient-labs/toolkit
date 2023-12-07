@@ -6,8 +6,8 @@ use Lkrms\Cli\Catalog\CliOptionType;
 use Lkrms\Cli\CliOption;
 use Lkrms\LkUtil\Catalog\EnvVar;
 use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Reflect;
+use Lkrms\Utility\Str;
 
 /**
  * Generates PHPUnit tests
@@ -165,8 +165,8 @@ class GenerateTests extends GenerateCommand
                 continue;
             }
 
-            $testMethod = Convert::toCamelCase("test_{$method}");
-            $providerMethod = Convert::toCamelCase("{$method}_provider");
+            $testMethod = Str::toCamelCase("test_{$method}");
+            $providerMethod = Str::toCamelCase("{$method}_provider");
 
             $_parameters = $_method->getParameters();
             if ($_method->hasReturnType()) {

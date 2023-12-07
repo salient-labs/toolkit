@@ -16,6 +16,7 @@ use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Inflect;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use Closure;
 use DateTimeImmutable;
 
@@ -276,7 +277,7 @@ class GenerateSyncEntity extends GenerateCommand
                 ? HttpRequestMethod::POST
                 : $this->HttpMethod;
             $endpoint = $endpoint === null
-                ? '/' . Convert::toKebabCase($class)
+                ? '/' . Str::toKebabCase($class)
                 : $endpoint;
 
             $curler = $provider->getCurler($endpoint);
@@ -309,7 +310,7 @@ class GenerateSyncEntity extends GenerateCommand
         $normaliser = $entityClass::normaliser();
         $normaliser =
             fn(string $name): string =>
-                Convert::toPascalCase($normaliser($name));
+                Str::toPascalCase($normaliser($name));
 
         $skip = [];
         foreach ($this->SkipProperties as $property) {

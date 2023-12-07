@@ -101,39 +101,6 @@ final class Convert
     }
 
     /**
-     * @param mixed $value
-     * @return mixed[]
-     * @deprecated Use {@see Arr::wrap()} instead
-     * @codeCoverageIgnore
-     */
-    public static function toArray($value): array
-    {
-        return Arr::wrap($value);
-    }
-
-    /**
-     * @param mixed $value
-     * @return mixed[]
-     * @deprecated Use {@see Arr::listWrap()} instead
-     * @codeCoverageIgnore
-     */
-    public static function toList($value): array
-    {
-        return Arr::listWrap($value);
-    }
-
-    /**
-     * @param mixed $value
-     * @return mixed
-     * @deprecated Use {@see Arr::unwrap()} instead
-     * @codeCoverageIgnore
-     */
-    public static function flatten($value)
-    {
-        return Arr::unwrap($value);
-    }
-
-    /**
      * array_walk_recursive for a graph of arbitrarily nested objects and arrays
      *
      * @param object|mixed[] $graph
@@ -151,18 +118,6 @@ final class Convert
                 return;
             }
         }
-    }
-
-    /**
-     * @template T
-     * @param T[] $array
-     * @return T[]
-     * @deprecated Use {@see Arr::unique()} instead
-     * @codeCoverageIgnore
-     */
-    public static function toUniqueList(array $array): array
-    {
-        return Arr::unique($array);
     }
 
     /**
@@ -420,27 +375,13 @@ final class Convert
     }
 
     /**
-     * @deprecated Use {@see Date::immutable()} instead
-     * @codeCoverageIgnore
-     */
-    public static function toDateTimeImmutable(DateTimeInterface $date): DateTimeImmutable
-    {
-        return Date::immutable($date);
-    }
-
-    /**
-     * Convert a value to a DateTimeZone instance
-     *
      * @param DateTimeZone|string $value
-     * @return DateTimeZone
+     * @deprecated Use {@see Date::timezone()} instead
+     * @codeCoverageIgnore
      */
     public static function toTimezone($value): DateTimeZone
     {
-        if ($value instanceof DateTimeZone) {
-            return $value;
-        } elseif (is_string($value)) {
-            return new DateTimeZone($value);
-        }
+        return Date::timezone($value);
     }
 
     /**
@@ -795,16 +736,6 @@ final class Convert
     }
 
     /**
-     * @param mixed[] $array
-     * @deprecated Use {@see Arr::implode()} instead
-     * @codeCoverageIgnore
-     */
-    public static function sparseToString(string $separator, array $array): string
-    {
-        return Arr::implode($separator, $array);
-    }
-
-    /**
      * Convert a scalar to a string
      *
      * @param mixed $value
@@ -952,7 +883,7 @@ final class Convert
         bool $clean = false,
         bool $loose = false
     ): string {
-        $marker = ($marker ?? '') !== '' ? $marker . ' ' : null;
+        $marker = (string) $marker !== '' ? $marker . ' ' : null;
         $indent = $marker !== null ? str_repeat(' ', mb_strlen($marker)) : '';
         $markerIsItem = $marker !== null && Pcre::match($regex, $marker);
 
@@ -1213,78 +1144,44 @@ final class Convert
     }
 
     /**
-     * Convert an identifier to snake_case
+     * @deprecated Use {@see Str::toSnakeCase()} instead
      */
     public static function toSnakeCase(string $text, ?string $preserve = null): string
     {
-        return strtolower(self::splitWords($text, $preserve, '_'));
+        return Str::toSnakeCase($text, $preserve);
     }
 
     /**
-     * Convert an identifier to kebab-case
+     * @deprecated Use {@see Str::toKebabCase()} instead
      */
     public static function toKebabCase(string $text, ?string $preserve = null): string
     {
-        return strtolower(self::splitWords($text, $preserve, '-'));
+        return Str::toKebabCase($text, $preserve);
     }
 
     /**
-     * Convert an identifier to PascalCase
+     * @deprecated Use {@see Str::toPascalCase()} instead
      */
     public static function toPascalCase(string $text, ?string $preserve = null): string
     {
-        return self::splitWords(
-            $text, $preserve, '', fn(string $word): string => ucfirst(strtolower($word))
-        );
+        return Str::toPascalCase($text, $preserve);
     }
 
     /**
-     * Convert an identifier to camelCase
+     * @deprecated Use {@see Str::toCamelCase()} instead
      */
     public static function toCamelCase(string $text, ?string $preserve = null): string
     {
-        return lcfirst(self::toPascalCase($text, $preserve));
+        return Str::toCamelCase($text, $preserve);
     }
 
     /**
-     * Optionally delimit and apply a callback to words in a string before
-     * removing any non-alphanumeric characters
-     *
+     * @deprecated Use {@see Str::toWords()} instead
      * @param (callable(string): string)|null $callback
      */
     public static function splitWords(string $text, ?string $preserve, string $delimiter, ?callable $callback = null): string
     {
-        $regex = '(?:[[:upper:]]?[[:lower:][:digit:]]+|(?:[[:upper:]](?![[:lower:]]))+[[:digit:]]*)';
-        if (($preserve ?? '') === '') {
-            $preserve = '';
-            $delimitRegex = '';
-        } else {
-            $preserve = addcslashes($preserve, '-/[\^');
-            $delimitRegex = "(?<![[:alnum:]{$preserve}])";
-        }
-
-        // Add a delimiter before words not adjacent to a preserved character
-        if ($delimiter !== '') {
-            $text = Pcre::replace(
-                "/$delimitRegex$regex/u", $delimiter . '$0', $text
-            );
-        }
-
-        // Apply a callback to every word
-        if ($callback) {
-            $text = Pcre::replaceCallback(
-                "/$regex/u", fn(array $match): string => $callback($match[0]), $text
-            );
-        }
-
-        // Replace one or more non-alphanumeric characters with one delimiter
-        $text = Pcre::replace("/[^[:alnum:]$preserve]+/", $delimiter, $text);
-
-        // Remove leading and trailing delimiters
-        return
-            $delimiter === ''
-                ? $text
-                : trim($text, $delimiter);
+        return Str::toWords($text, $delimiter, $preserve, $callback);
     }
 
     /**
@@ -1312,15 +1209,6 @@ final class Convert
             array_values($replace),
             $text
         )));
-    }
-
-    /**
-     * @deprecated Use {@see Str::setEol()} instead
-     * @codeCoverageIgnore
-     */
-    public static function lineEndingsToUnix(string $string): string
-    {
-        return Str::setEol($string);
     }
 
     /**

@@ -133,4 +133,73 @@ final class PcreTest extends \Lkrms\Tests\TestCase
         $this->expectExceptionMessage('Call to preg_split() failed with PREG_BACKTRACK_LIMIT_ERROR');
         Pcre::split('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
     }
+
+    /**
+     * @dataProvider quoteCharacterClassProvider
+     */
+    public function testQuoteCharacterClass(string $expected, string $characters, ?string $delimiter = null): void
+    {
+        $this->assertSame($expected, Pcre::quoteCharacterClass($characters, $delimiter));
+    }
+
+    /**
+     * @return array<array{string,string,2?:string|null}>
+     */
+    public static function quoteCharacterClassProvider(): array
+    {
+        return [
+            [
+                '\\\\',
+                '\\',
+            ],
+            [
+                '\-',
+                '-',
+            ],
+            [
+                '\^',
+                '^',
+            ],
+            [
+                '\]',
+                ']',
+            ],
+            [
+                '[',
+                '[',
+            ],
+            [
+                '|',
+                '|',
+            ],
+            [
+                '/',
+                '/',
+            ],
+            [
+                '/',
+                '/',
+                '',
+            ],
+            [
+                '\/',
+                '/',
+                '/',
+            ],
+            [
+                '\]\-\^\\\\@\/',
+                ']-^\@/',
+                '/',
+            ],
+            [
+                '\]\-\^\\\\\\@/',
+                ']-^\@/',
+                '@',
+            ],
+            [
+                'a\-z0\-9',
+                'a-z0-9',
+            ],
+        ];
+    }
 }

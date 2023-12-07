@@ -46,10 +46,8 @@ final class Str
     /**
      * Apply an end-of-line sequence to a string
      */
-    public static function setEol(
-        string $string,
-        string $eol = "\n"
-    ): string {
+    public static function setEol(string $string, string $eol = "\n"): string
+    {
         switch ($eol) {
             case "\n":
                 return str_replace(["\r\n", "\r"], $eol, $string);
@@ -63,6 +61,133 @@ final class Str
             default:
                 throw new InvalidArgumentException(sprintf('Invalid end-of-line sequence: %s', $eol));
         }
+    }
+
+    /**
+     * Convert words in an arbitrarily capitalised string to snake_case,
+     * optionally preserving given characters
+     *
+     * @see Str::toWords()
+     */
+    public static function toSnakeCase(string $string, ?string $preserve = null): string
+    {
+        return strtolower(self::toWords($string, '_', $preserve));
+    }
+
+    /**
+     * Convert words in an arbitrarily capitalised string to kebab-case,
+     * optionally preserving given characters
+     *
+     * @see Str::toWords()
+     */
+    public static function toKebabCase(string $string, ?string $preserve = null): string
+    {
+        return strtolower(self::toWords($string, '-', $preserve));
+    }
+
+    /**
+     * Convert words in an arbitrarily capitalised string to camelCase,
+     * optionally preserving given characters
+     *
+     * @see Str::toWords()
+     */
+    public static function toCamelCase(string $string, ?string $preserve = null): string
+    {
+        return Pcre::replaceCallback(
+            '/(?<![[:alnum:]])[[:alpha:]]/u',
+            fn($matches) => strtolower($matches[0]),
+            self::toPascalCase($string, $preserve)
+        );
+    }
+
+    /**
+     * Convert words in an arbitrarily capitalised string to PascalCase,
+     * optionally preserving given characters
+     *
+     * @see Str::toWords()
+     */
+    public static function toPascalCase(string $string, ?string $preserve = null): string
+    {
+        return self::toWords(
+            $string,
+            '',
+            $preserve,
+            fn($word) => ucfirst(strtolower($word))
+        );
+    }
+
+    /**
+     * Get the words in an arbitrarily capitalised string and delimit them with
+     * a given separator, optionally preserving given characters and applying a
+     * callback to each word
+     *
+     * Words in `$string` may be separated by any combination of
+     * non-alphanumeric characters and capitalisation. For example:
+     *
+     * - `foo bar` => foo bar
+     * - `FOO_BAR` => FOO BAR
+     * - `fooBar` => foo Bar
+     * - `$this = fooBar` => this foo Bar
+     * - `PHPDoc` => PHP Doc
+     *
+     * This method forms the basis of capitalisation methods.
+     *
+     * @param string|null $preserve Characters to keep in the string.
+     * Alphanumeric characters are always preserved.
+     * @param (callable(string): string)|null $callback
+     */
+    public static function toWords(
+        string $string,
+        string $separator = ' ',
+        ?string $preserve = null,
+        ?callable $callback = null
+    ): string {
+        $notAfterPreserve = '';
+        if ((string) $preserve !== '') {
+            $preserve = Pcre::replace('/[[:alnum:]]/u', '', (string) $preserve);
+            if ($preserve !== '') {
+                // Prevent "key=value" becoming "key= value" when preserving "="
+                // by asserting that when separating words, they must appear:
+                // - immediately after the previous word (\G)
+                // - after an unpreserved character, or
+                // - at a word boundary (e.g. "Value" in "key=someValue")
+                $preserve = Pcre::quoteCharacterClass($preserve, '/');
+                $notAfterPreserve = "(?:\G|(?<=[^[:alnum:]{$preserve}])|(?<=[[:lower:][:digit:]])(?=[[:upper:]]))";
+            }
+        }
+        $preserve = "[:alnum:]{$preserve}";
+        $word = '(?:[[:upper:]]?[[:lower:][:digit:]]+|(?:[[:upper:]](?![[:lower:]]))+[[:digit:]]*)';
+
+        // Insert separators before words not adjacent to a preserved character
+        // to prevent "foo bar" becoming "foobar", for example
+        if ($separator !== '') {
+            $string = Pcre::replace(
+                "/$notAfterPreserve$word/u",
+                $separator . '$0',
+                $string
+            );
+        }
+
+        if ($callback !== null) {
+            $string = Pcre::replaceCallback(
+                "/$word/u",
+                fn(array $match): string => $callback($match[0]),
+                $string
+            );
+        }
+
+        // Trim unpreserved characters from the beginning and end of the string,
+        // then replace sequences of one or more unpreserved characters with one
+        // separator
+        $string = Pcre::replace([
+            "/^[^{$preserve}]++|[^{$preserve}]++\$/u",
+            "/[^{$preserve}]++/u",
+        ], [
+            '',
+            $separator,
+        ], $string);
+
+        return $string;
     }
 
     /**
@@ -175,5 +300,16 @@ final class Str
             wordwrap(str_repeat('x', $delta) . $string, $width, $break, $cutLongWords),
             $delta
         );
+    }
+
+    /**
+     * Enclose a string between delimiters
+     *
+     * @param string|null $after If `null`, `$before` is used before and after
+     * the string.
+     */
+    public static function wrap(string $string, string $before, ?string $after = null): string
+    {
+        return $before . $string . ($after ?? $before);
     }
 }

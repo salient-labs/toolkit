@@ -28,7 +28,6 @@ use Lkrms\Utility\Test;
 use DateTimeImmutable;
 use DateTimeInterface;
 use LogicException;
-use Throwable;
 
 /**
  * A getopt-style command line option
@@ -334,7 +333,7 @@ final class CliOption implements IImmutable, IReadable, Buildable
         $this->Long = Str::coalesce($long, null);
         $this->Short = $this->IsPositional ? null : Str::coalesce($short, null);
         $this->Key = $this->IsPositional ? (string) $this->Name : ($short . '|' . $long);
-        $this->ValueName = $this->IsFlag ? null : Str::coalesce($valueName, $this->IsPositional ? Convert::toKebabCase((string) $this->Name, '=') : null, 'value');
+        $this->ValueName = $this->IsFlag ? null : Str::coalesce($valueName, $this->IsPositional ? Str::toKebabCase((string) $this->Name, '=') : null, 'value');
         $this->DisplayName = $this->IsPositional ? $this->formatValueName(false) : ($this->Long !== null ? "--{$long}" : "-{$short}");
         $this->ValueType = $this->IsFlag ? ($multipleAllowed ? CliOptionValueType::INTEGER : CliOptionValueType::BOOLEAN) : $valueType;
         $this->Delimiter = $multipleAllowed && !$this->IsFlag ? Str::coalesce($delimiter, null) : null;
@@ -543,6 +542,18 @@ final class CliOption implements IImmutable, IReadable, Buildable
     }
 
     /**
+     * Get the option's value name as lowercase, space-separated words
+     */
+    public function getValueName(): string
+    {
+        if ($this->ValueName === null) {
+            return '';
+        }
+
+        return strtolower(Str::toWords($this->ValueName));
+    }
+
+    /**
      * Get the option's value name
      *
      * - If {@see CliOption::$ValueName} contains one or more angle brackets, it
@@ -567,7 +578,7 @@ final class CliOption implements IImmutable, IReadable, Buildable
             return $this->ValueName;
         }
 
-        $name = Convert::toKebabCase($this->ValueName, '=');
+        $name = Str::toKebabCase($this->ValueName, '=');
 
         if (
             strpbrk($this->ValueName, Char::ALPHABETIC_UPPER) !== false &&

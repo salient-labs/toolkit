@@ -13,7 +13,7 @@ use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Str;
 
 /**
  * Generates provider interfaces for sync entities
@@ -148,11 +148,11 @@ class GenerateSyncProvider extends GenerateCommand
             $this->Operations
         );
 
-        $camelClass = Convert::toCamelCase($class);
+        $camelClass = Str::toCamelCase($class);
         $plural = $this->Plural === null ? $fqcn::plural() : $this->Plural;
 
         if (strcasecmp($class, $plural)) {
-            $camelPlural = Convert::toCamelCase($plural);
+            $camelPlural = Str::toCamelCase($plural);
             $opMethod = [
                 SyncOperation::CREATE => 'create' . $class,
                 SyncOperation::READ => 'get' . $class,

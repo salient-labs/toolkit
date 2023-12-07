@@ -2,6 +2,7 @@
 
 namespace Lkrms\Console\Support;
 
+use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
 use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Contract\IConsoleFormat as Format;
 use Lkrms\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
@@ -46,6 +47,20 @@ final class ConsoleTagFormats
     public function get($tag): Format
     {
         return $this->Formats[$tag] ?? $this->FallbackFormat;
+    }
+
+    /**
+     * Get the format assigned to a tag and use it to format a string before it
+     * is written to the target
+     *
+     * @param Tag::* $tag
+     * @param array<Attribute::*,mixed> $attributes
+     */
+    public function apply($tag, ?string $text, array $attributes = []): string
+    {
+        $attributes[Attribute::TAG_ID] = $tag;
+        $format = $this->Formats[$tag] ?? $this->FallbackFormat;
+        return $format->apply($text, $attributes);
     }
 
     public static function getLoopbackFormats(): self

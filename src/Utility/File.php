@@ -173,6 +173,19 @@ final class File
     }
 
     /**
+     * True if two paths refer to the same filesystem entry
+     */
+    public static function is(string $filename1, string $filename2): bool
+    {
+        if (!file_exists($filename1) || !file_exists($filename2)) {
+            return false;
+        }
+        $inode = fileinode($filename1);
+        return $inode !== false &&
+            fileinode($filename2) === $inode;
+    }
+
+    /**
      * True if a file appears to contain PHP code
      *
      * Returns `true` if `$filename` has a PHP open tag (`<?php`) at the start

@@ -2,6 +2,8 @@
 
 namespace Lkrms\Console\Support;
 
+use Lkrms\Console\Catalog\ConsoleAttribute as Attribute;
+use Lkrms\Console\Catalog\ConsoleTag as Tag;
 use Lkrms\Console\Contract\IConsoleFormat;
 use Lkrms\Support\Catalog\TtyControlSequence as Colour;
 
@@ -46,8 +48,21 @@ final class ConsoleFormat implements IConsoleFormat
 
     public function apply(?string $text, array $attributes = []): string
     {
-        if (($text ?? '') === '') {
+        if ((string) $text === '') {
             return '';
+        }
+
+        // Remove indentation from the first line of code in fenced code blocks
+        // to prevent doubling up
+        $tagId = $attributes[Attribute::TAG_ID] ?? null;
+        if ($tagId === Tag::CODE_BLOCK) {
+            $indent = $attributes[Attribute::INDENT] ?? '';
+            if ($indent !== '') {
+                $length = strlen($indent);
+                if (substr($text, 0, $length) === $indent) {
+                    $text = substr($text, $length);
+                }
+            }
         }
 
         if ($this->Replace) {

@@ -12,6 +12,7 @@ use Lkrms\Sync\Exception\SyncInvalidFilterException;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use LogicException;
 
 /**
@@ -122,7 +123,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
                     continue;
                 }
 
-                $key = Convert::toSnakeCase($key);
+                $key = Str::toSnakeCase($key);
                 if ($key === '') {
                     throw new SyncInvalidFilterException(...$args);
                 }
@@ -133,7 +134,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
                     continue;
                 }
 
-                $name = Convert::toSnakeCase(substr($key, 0, -3));
+                $name = Str::toSnakeCase(substr($key, 0, -3));
                 if ($name !== '') {
                     $filterKeys[$name] = $key;
                 }
@@ -150,7 +151,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
                 array_merge_recursive(
                     ...array_map(
                         fn(ISyncEntity $entity): array => [
-                            Convert::toSnakeCase(
+                            Str::toSnakeCase(
                                 Convert::classToBasename(
                                     $entity->service()
                                 )
@@ -309,12 +310,12 @@ final class SyncContext extends ProviderContext implements ISyncContext
     private function doGetFilter(string $key, bool $orValue, bool $claim = false)
     {
         if (!array_key_exists($key, $this->Filters)) {
-            $key = Convert::toSnakeCase($key);
+            $key = Str::toSnakeCase($key);
             if (!array_key_exists($key, $this->Filters)) {
                 if (substr($key, -3) !== '_id') {
                     return $orValue ? $this->getValue($key) : null;
                 }
-                $name = Convert::toSnakeCase(substr($key, 0, -3));
+                $name = Str::toSnakeCase(substr($key, 0, -3));
                 if (array_key_exists($name, $this->FilterKeys)) {
                     $key = $this->FilterKeys[$name];
                     if ($claim) {

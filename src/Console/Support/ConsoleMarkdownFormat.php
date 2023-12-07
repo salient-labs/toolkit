@@ -23,7 +23,7 @@ final class ConsoleMarkdownFormat implements IConsoleFormat
 
     public function apply(?string $text, array $attributes = []): string
     {
-        if (($text ?? '') === '') {
+        if ((string) $text === '') {
             return '';
         }
 
@@ -44,7 +44,7 @@ final class ConsoleMarkdownFormat implements IConsoleFormat
             $after = '`**';
         } elseif ($this->Before === '```') {
             $before = $tag . ($attributes[Attribute::INFO_STRING] ?? '') . "\n";
-            $after = "\n" . $tag;
+            $after = "\n" . ($attributes[Attribute::INDENT] ?? '') . $tag;
         }
 
         return $before . $text . $after;

@@ -48,28 +48,32 @@ final class ConsoleFormatter
     private const PARSER_REGEX = <<<'REGEX'
         (?msx)
         (?(DEFINE)
-          (?<endofblock> ^ \k<fence> \h*+ $ )
+          (?<endofline> \h*+ \n )
+          (?<endofblock> ^ \k<indent> \k<fence> \h*+ $ )
           (?<endofspan> \k<backtickstring> (?! ` ) )
         )
         # Do not allow gaps between matches
         \G
         # Do not allow empty matches
         (?= . )
+        # Claim indentation early so horizontal whitespace before fenced code
+        # blocks is not mistaken for text
+        (?<indent> ^ \h*+ )?
         (?:
           # Whitespace before paragraphs
-          (?<breaks> \n+ ) |
+          (?<breaks> (?&endofline)+ ) |
           # Everything except unescaped backticks until the start of the next
           # paragraph
-          (?<text> (?> (?: [^\\`\n]+ | \\ [-\\!"\#$%&'()*+,./:;<=>?@[\]^_`{|}~\n] | \\ | \n (?! \n ) )+ \n* ) ) |
+          (?<text> (?> (?: [^\\`\n]+ | \\ [-\\!"\#$%&'()*+,./:;<=>?@[\]^_`{|}~\n] | \\ | \n (?! (?&endofline) ) )+ (?&endofline)* ) ) |
           # CommonMark-compliant fenced code blocks
-          (?> ^
+          (?> (?(indent)
             (?> (?<fence> ```+ ) (?<infostring> [^\n]* ) \n )
             # Match empty blocks--with no trailing newline--and blocks with an
             # empty line by making the subsequent newline conditional on inblock
-            (?<block> (?> (?<inblock> (?: (?! (?&endofblock) ) [^\n]* (?: (?= \n (?&endofblock) ) | \n | \z ) )+ )? ) )
+            (?<block> (?> (?<inblock> (?: (?! (?&endofblock) ) (?: \k<indent> | (?= (?&endofline) ) ) [^\n]* (?: (?= \n (?&endofblock) ) | \n | \z ) )+ )? ) )
             # Allow code fences to terminate at the end of the subject
             (?: (?(inblock) \n ) (?&endofblock) | \z )
-          ) |
+          ) ) |
           # CommonMark-compliant code spans
           (?<backtickstring> (?> `+ ) ) (?<span> (?> (?: [^`]+ | (?! (?&endofspan) ) `+ )* ) ) (?&endofspan) |
           # Unmatched backticks
@@ -260,24 +264,25 @@ final class ConsoleFormatter
         $string = '';
         /** @var array<int|string,string|null> $match */
         foreach ($matches as $match) {
-            if (($breaks = $match['breaks']) !== null) {
-                $string .= $breaks;
+            $indent = (string) $match['indent'];
+
+            if ($match['breaks'] !== null) {
+                $string .= $indent . $match['breaks'];
                 continue;
             }
 
             // Treat unmatched backticks as plain text
-            if (($extra = $match['extra']) !== null) {
-                $string .= $extra;
+            if ($match['extra'] !== null) {
+                $string .= $indent . $match['extra'];
                 continue;
             }
 
-            $baseOffset = strlen($string);
+            $baseOffset = strlen($string . $indent);
 
-            if (($text = $match['text']) !== null) {
-                if (strpos($text, "\n") !== false) {
-                    if ($unwrap) {
-                        $text = Convert::unwrap($text, "\n", false, true, true);
-                    }
+            if ($match['text'] !== null) {
+                $text = $match['text'];
+                if ($unwrap && strpos($text, "\n") !== false) {
+                    $text = Convert::unwrap($text, "\n", false, true, true);
                 }
 
                 $adjust = 0;
@@ -311,20 +316,21 @@ final class ConsoleFormatter
                     \PREG_OFFSET_CAPTURE
                 );
 
-                $string .= $text;
+                $string .= $indent . $text;
                 continue;
             }
 
-            if (($block = $match['block']) !== null) {
+            if ($match['block'] !== null) {
                 // Reinstate unwrapped newlines before blocks
                 if ($unwrap && $string !== '' && $string[-1] !== "\n") {
                     $string[-1] = "\n";
                 }
 
                 $infostring = trim($match['infostring']);
-                $formatted = $this->TagFormats->get(Tag::CODE_BLOCK)->apply($block, [
+                $formatted = $this->TagFormats->apply(Tag::CODE_BLOCK, $match['block'], [
                     Attribute::TAG => $match['fence'],
-                    Attribute::INFO_STRING => $infostring === '' ? null : $infostring,
+                    Attribute::INFO_STRING => Str::coalesce($infostring, null),
+                    Attribute::INDENT => $indent,
                 ]);
                 $placeholder = '?';
                 $replace[] = [
@@ -333,11 +339,12 @@ final class ConsoleFormatter
                     $formatted,
                 ];
 
-                $string .= $placeholder;
+                $string .= $indent . $placeholder;
                 continue;
             }
 
-            if (($span = $match['span']) !== null) {
+            if ($match['span'] !== null) {
+                $span = $match['span'];
                 // As per CommonMark:
                 // - Convert line endings to spaces
                 // - If the string begins and ends with a space but doesn't
@@ -347,7 +354,7 @@ final class ConsoleFormatter
                     '$1',
                     strtr($span, "\n", ' '),
                 );
-                $formatted = $this->TagFormats->get(Tag::CODE_SPAN)->apply($span, [
+                $formatted = $this->TagFormats->apply(Tag::CODE_SPAN, $span, [
                     Attribute::TAG => $match['backtickstring'],
                 ]);
                 $placeholder = Pcre::replace('/[^ ]/u', 'x', $span);
@@ -357,7 +364,7 @@ final class ConsoleFormatter
                     $formatted,
                 ];
 
-                $string .= $placeholder;
+                $string .= $indent . $placeholder;
                 continue;
             }
         }
@@ -544,29 +551,29 @@ final class ConsoleFormatter
             case '___':
             case '***':
             case '##':
-                return $formats->get(Tag::HEADING)->apply($text, [
+                return $formats->apply(Tag::HEADING, $text, [
                     Attribute::TAG => $tag,
                 ]);
 
             case '__':
             case '**':
-                return $formats->get(Tag::BOLD)->apply($text, [
+                return $formats->apply(Tag::BOLD, $text, [
                     Attribute::TAG => $tag,
                 ]);
 
             case '_':
             case '*':
-                return $formats->get(Tag::ITALIC)->apply($text, [
+                return $formats->apply(Tag::ITALIC, $text, [
                     Attribute::TAG => $tag,
                 ]);
 
             case '<':
-                return $formats->get(Tag::UNDERLINE)->apply($text, [
+                return $formats->apply(Tag::UNDERLINE, $text, [
                     Attribute::TAG => $tag,
                 ]);
 
             case '~~':
-                return $formats->get(Tag::LOW_PRIORITY)->apply($text, [
+                return $formats->apply(Tag::LOW_PRIORITY, $text, [
                     Attribute::TAG => $tag,
                 ]);
         }

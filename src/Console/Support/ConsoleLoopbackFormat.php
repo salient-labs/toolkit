@@ -22,7 +22,7 @@ final class ConsoleLoopbackFormat implements IConsoleFormat
 
     public function apply(?string $text, array $attributes = []): string
     {
-        if (($text ?? '') === '') {
+        if ((string) $text === '') {
             return '';
         }
 
@@ -35,7 +35,7 @@ final class ConsoleLoopbackFormat implements IConsoleFormat
             $after = ' ##';
         } elseif ($this->Before === '```') {
             $before .= ($attributes[Attribute::INFO_STRING] ?? '') . "\n";
-            $after = "\n" . $after;
+            $after = "\n" . ($attributes[Attribute::INDENT] ?? '') . $after;
         }
 
         return $before . $text . $after;

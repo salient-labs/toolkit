@@ -593,16 +593,13 @@ abstract class CliCommand implements ICliCommand
                 $synopsis = $line;
             }
 
-            if ($valueName !== null) {
-                $valueName = $formatter->removeTags($valueName);
-                $valueName = strtolower(Convert::splitWords($valueName, null, ' '));
-            }
-
             $lines = [];
             if ($option->Description !== null &&
                     ($description = trim($option->Description)) !== '') {
                 $lines[] = $this->prepareUsage($description, $formatter, $width, $indent);
             }
+
+            $valueName = $option->getValueName();
 
             if ($allowed) {
                 foreach ($allowed as &$value) {
@@ -660,7 +657,7 @@ abstract class CliCommand implements ICliCommand
 
     private function prepareUsage(?string $description, Formatter $formatter, ?int $width, ?string $indent = null): string
     {
-        if (($description ?? '') === '') {
+        if ((string) $description === '') {
             return '';
         }
 

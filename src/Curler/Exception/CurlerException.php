@@ -3,7 +3,7 @@
 namespace Lkrms\Curler\Exception;
 
 use Lkrms\Curler\Curler;
-use Lkrms\Facade\Format;
+use Lkrms\Utility\Format;
 
 /**
  * Base class for Curler exceptions

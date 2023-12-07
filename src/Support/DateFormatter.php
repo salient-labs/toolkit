@@ -8,7 +8,6 @@ use Lkrms\Contract\IDateParser;
 use Lkrms\Contract\IImmutable;
 use Lkrms\Contract\IReadable;
 use Lkrms\Support\DateParser\CreateFromFormatDateParser;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -47,7 +46,7 @@ final class DateFormatter implements IDateFormatter, IImmutable, IReadable
     public function __construct(string $format = DateTimeInterface::ATOM, $timezone = null, IDateParser ...$parsers)
     {
         $this->Format = $format;
-        $this->Timezone = $timezone === null ? null : Convert::toTimezone($timezone);
+        $this->Timezone = $timezone === null ? null : Date::timezone($timezone);
         $this->Parsers = $parsers ?: [new CreateFromFormatDateParser($format)];
     }
 

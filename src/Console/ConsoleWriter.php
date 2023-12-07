@@ -697,7 +697,7 @@ final class ConsoleWriter implements ReceivesFacade
             return $this;
         }
 
-        if (($msg2 ?? '') === '') {
+        if ((string) $msg2 === '') {
             $msg1 = rtrim($msg1, "\r") . "\r";
         } else {
             $msg2 = rtrim($msg2, "\r") . "\r";
@@ -1043,7 +1043,7 @@ final class ConsoleWriter implements ReceivesFacade
                 $_msg1 = str_replace("\n", "\n" . str_repeat(' ', $margin + $indent), $_msg1);
             }
 
-            if (($msg2 ?? '') !== '') {
+            if ((string) $msg2 !== '') {
                 $_msg2 = $msg2HasTags ? $formatter->formatTags($msg2) : $msg2;
                 $_msg2 = strpos($msg2, "\n") !== false
                     ? str_replace("\n", "\n" . str_repeat(' ', $margin + $indent + 2), "\n" . ltrim($_msg2))

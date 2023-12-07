@@ -2,9 +2,9 @@
 
 namespace Lkrms\Sync\Exception;
 
-use Lkrms\Facade\Format;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
+use Lkrms\Utility\Format;
 use Throwable;
 
 /**
