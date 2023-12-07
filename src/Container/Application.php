@@ -12,7 +12,6 @@ use Lkrms\Exception\InvalidEnvironmentException;
 use Lkrms\Facade\Cache;
 use Lkrms\Facade\Console;
 use Lkrms\Facade\Err;
-use Lkrms\Facade\Format;
 use Lkrms\Facade\Profile;
 use Lkrms\Facade\Sync;
 use Lkrms\Facade\Sys;
@@ -21,6 +20,7 @@ use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Format;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Test;
@@ -429,7 +429,7 @@ class Application extends Container implements IApplication
 
         if (Cache::isLoaded()) {
             $file = Cache::getFilename();
-            if (Test::areSameFile($cacheDb, $file)) {
+            if (File::is($cacheDb, $file)) {
                 return $this;
             }
             throw new LogicException(sprintf('Cache store already started: %s', $file));
@@ -456,7 +456,7 @@ class Application extends Container implements IApplication
     final public function stopCache()
     {
         if (!Cache::isLoaded() ||
-                !Test::areSameFile($this->getCacheDb(false), Cache::getFilename())) {
+                !File::is($this->getCacheDb(false), Cache::getFilename())) {
             return $this;
         }
         Cache::close();
@@ -497,7 +497,7 @@ class Application extends Container implements IApplication
 
         if (Sync::isLoaded()) {
             $file = Sync::getFilename();
-            if (Test::areSameFile($syncDb, $file)) {
+            if (File::is($syncDb, $file)) {
                 return $this;
             }
             throw new LogicException(sprintf('Entity store already started: %s', $file));
@@ -537,7 +537,7 @@ class Application extends Container implements IApplication
     final public function stopSync()
     {
         if (!Sync::isLoaded() ||
-                !Test::areSameFile($this->getSyncDb(false), Sync::getFilename())) {
+                !File::is($this->getSyncDb(false), Sync::getFilename())) {
             return $this;
         }
         Sync::close();

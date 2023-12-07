@@ -42,7 +42,7 @@ final class ConsoleMessageFormat
             . ($msg1 !== '' ? $this->Msg1Format->apply(
                 $msg1, [Attribute::IS_MSG1 => true] + $attributes
             ) : '')
-            . (($msg2 ?? '') !== '' ? $this->Msg2Format->apply(
+            . ((string) $msg2 !== '' ? $this->Msg2Format->apply(
                 $msg2, [Attribute::IS_MSG2 => true] + $attributes
             ) : '');
     }

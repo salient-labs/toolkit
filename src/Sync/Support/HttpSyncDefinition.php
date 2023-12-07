@@ -27,9 +27,9 @@ use Lkrms\Sync\Exception\SyncEntityNotFoundException;
 use Lkrms\Sync\Exception\SyncInvalidContextException;
 use Lkrms\Sync\Exception\SyncInvalidEntitySourceException;
 use Lkrms\Sync\Exception\SyncOperationNotImplementedException;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use Closure;
 use LogicException;
 
@@ -582,7 +582,7 @@ final class HttpSyncDefinition extends SyncDefinition implements Buildable
                     ): string {
                         $name = $matches['name'];
                         if ($id !== null &&
-                                Convert::toSnakeCase($name) === 'id') {
+                                Str::toSnakeCase($name) === 'id') {
                             $idApplied = true;
                             return $this->checkParameterValue(
                                 (string) $id, $name, $path

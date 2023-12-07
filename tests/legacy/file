@@ -5,7 +5,6 @@ namespace Lkrms\Tests;
 
 use Lkrms\Facade\Err;
 use Lkrms\Utility\File;
-use Lkrms\Utility\Test;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -32,7 +31,7 @@ print_r([
     'STDOUT' => File::getStreamUri(\STDOUT),
     'STDERR' => File::getStreamUri(\STDERR),
     'areSame' => array_map(
-        function ($f) { return array_merge($f, [Test::areSameFile($f[0], $f[1])]); },
+        function ($f) { return array_merge($f, [File::is($f[0], $f[1])]); },
         $compare
     )
 ]);

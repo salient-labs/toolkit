@@ -4,7 +4,7 @@ namespace Lkrms\Console\Target;
 
 use Lkrms\Console\Concept\ConsoleTarget;
 use Lkrms\Support\Catalog\TtyControlSequence;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Date;
 use Lkrms\Utility\File;
 use DateTime;
 use LogicException;
@@ -90,7 +90,7 @@ final class StreamTarget extends ConsoleTarget
                 $this->Timestamp = $timestamp;
             }
             if ($timezone !== null) {
-                $this->Timezone = Convert::toTimezone($timezone);
+                $this->Timezone = Date::timezone($timezone);
             }
         }
     }

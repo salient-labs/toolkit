@@ -10,9 +10,9 @@ use Lkrms\LkUtil\Command\Generate\Concept\GenerateCommand;
 use Lkrms\Support\PhpDoc\PhpDoc;
 use Lkrms\Support\PhpDoc\PhpDocTemplateTag;
 use Lkrms\Support\Introspector;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Reflect;
+use Lkrms\Utility\Str;
 use Lkrms\Utility\Test;
 use Closure;
 use ReflectionMethod;
@@ -175,7 +175,7 @@ class GenerateBuilder extends GenerateCommand
             $writable = $introspector->getWritableProperties();
             $writable = array_combine(
                 array_map(
-                    fn(string $name) => Convert::toCamelCase($name),
+                    fn(string $name) => Str::toCamelCase($name),
                     $writable
                 ),
                 $writable
@@ -210,7 +210,7 @@ class GenerateBuilder extends GenerateCommand
 
         if ($_constructor = $this->InputClass->getConstructor()) {
             foreach ($_constructor->getParameters() as $_param) {
-                $name = Convert::toCamelCase($_param->getName());
+                $name = Str::toCamelCase($_param->getName());
                 unset($writable[$name]);
                 $_params[$name] = $_param;
                 // Variables can't be passed to __call by reference, so this
@@ -244,7 +244,7 @@ class GenerateBuilder extends GenerateCommand
                     continue;
                 }
                 $_name = $_property->getName();
-                $name = Convert::toCamelCase($_name);
+                $name = Str::toCamelCase($_name);
                 $_allProperties[$name] = $_property;
                 if (array_key_exists($_name, $defaults)) {
                     $_defaultProperties[$name] = $defaults[$_name];
@@ -541,8 +541,8 @@ class GenerateBuilder extends GenerateCommand
                         $_method->isStatic() ||
                         strpos($name, '__') === 0 ||
                         isset($phpDoc->TagsByName['deprecated']) ||
-                        in_array(Convert::toCamelCase($name), $names) ||
-                        in_array(Convert::toCamelCase(Pcre::replace('/^(with|get)/i', '', $name)), $names) ||
+                        in_array(Str::toCamelCase($name), $names) ||
+                        in_array(Str::toCamelCase(Pcre::replace('/^(with|get)/i', '', $name)), $names) ||
                         in_array($name, $this->Skip) ||
                         ($this->Forward !== [] && !in_array($name, $this->Forward))) {
                     continue;

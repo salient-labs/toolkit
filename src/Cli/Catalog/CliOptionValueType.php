@@ -54,6 +54,17 @@ final class CliOptionValueType extends ConvertibleEnumeration
      */
     public const DIRECTORY = 6;
 
+    /**
+     * Path to an existing file or directory, or a dash ('-') for standard input
+     * or output
+     */
+    public const PATH_OR_DASH = 7;
+
+    /**
+     * Path to an existing file, or a dash ('-') for standard input or output
+     */
+    public const FILE_OR_DASH = 8;
+
     protected static $NameMap = [
         self::BOOLEAN => 'BOOLEAN',
         self::INTEGER => 'INTEGER',
@@ -62,6 +73,8 @@ final class CliOptionValueType extends ConvertibleEnumeration
         self::PATH => 'PATH',
         self::FILE => 'FILE',
         self::DIRECTORY => 'DIRECTORY',
+        self::PATH_OR_DASH => 'PATH_OR_DASH',
+        self::FILE_OR_DASH => 'FILE_OR_DASH',
     ];
 
     protected static $ValueMap = [
@@ -72,5 +85,7 @@ final class CliOptionValueType extends ConvertibleEnumeration
         'PATH' => self::PATH,
         'FILE' => self::FILE,
         'DIRECTORY' => self::DIRECTORY,
+        'PATH_OR_DASH' => self::PATH_OR_DASH,
+        'FILE_OR_DASH' => self::FILE_OR_DASH,
     ];
 }

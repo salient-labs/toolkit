@@ -244,10 +244,10 @@ final class Env
      * If the variable is not found, `$default` is returned if given, otherwise
      * an {@see InvalidEnvironmentException} is thrown.
      *
-     * - Values equivalent to `false`: `""`, `"0"`, `"n"`, `"no"`, `"off"`,
-     *   `"f"`, `"false"`, `"disable"` `"disabled"`
-     * - Values equivalent to `true`: `"1"`, `"y"`, `"yes"`, `"on"`, `"t"`,
-     *   `"true"`, `"enable"`, `"enabled"`
+     * - Values equivalent to `false`: `""`, `"0"`, `"off"`, `"false"`, `"n"`,
+     *   `"no"`, `"disable"`, `"disabled"`
+     * - Values equivalent to `true`: `"1"`, `"on"`, `"true"`, `"y"`, `"yes"`,
+     *   `"enable"`, `"enabled"`
      *
      * @template T of bool|null
      * @param T $default
@@ -426,10 +426,10 @@ final class Env
      * If the variable is not found, `$default` is returned if given, otherwise
      * an {@see InvalidEnvironmentException} is thrown.
      *
-     * - Values equivalent to `false`: `"0"`, `"n"`, `"no"`, `"off"`, `"f"`,
-     *   `"false"`, `"disable"` `"disabled"`
-     * - Values equivalent to `true`: `"1"`, `"y"`, `"yes"`, `"on"`, `"t"`,
-     *   `"true"`, `"enable"`, `"enabled"`
+     * - Values equivalent to `false`: `""`, `"0"`, `"off"`, `"false"`, `"n"`,
+     *   `"no"`, `"disable"`, `"disabled"`
+     * - Values equivalent to `true`: `"1"`, `"on"`, `"true"`, `"y"`, `"yes"`,
+     *   `"enable"`, `"enabled"`
      *
      * @throws InvalidEnvironmentException if `$name` is not present in the
      * environment and `$default` is not given, or if the value of `$name` is

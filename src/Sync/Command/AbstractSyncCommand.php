@@ -10,6 +10,7 @@ use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Str;
 
 /**
  * Base class for generic sync commands
@@ -62,7 +63,7 @@ abstract class AbstractSyncCommand extends CliCommand
                 continue;
             }
 
-            $providerKey = Convert::toKebabCase(
+            $providerKey = Str::toKebabCase(
                 Convert::classToBasename($provider, 'SyncProvider', 'Provider')
             );
 

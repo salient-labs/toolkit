@@ -593,16 +593,13 @@ abstract class CliCommand implements ICliCommand
                 $synopsis = $line;
             }
 
-            if ($valueName !== null) {
-                $valueName = $formatter->removeTags($valueName);
-                $valueName = strtolower(Convert::splitWords($valueName, null, ' '));
-            }
-
             $lines = [];
             if ($option->Description !== null &&
                     ($description = trim($option->Description)) !== '') {
                 $lines[] = $this->prepareUsage($description, $formatter, $width, $indent);
             }
+
+            $valueName = $option->getValueName();
 
             if ($allowed) {
                 foreach ($allowed as &$value) {
@@ -660,7 +657,7 @@ abstract class CliCommand implements ICliCommand
 
     private function prepareUsage(?string $description, Formatter $formatter, ?int $width, ?string $indent = null): string
     {
-        if (($description ?? '') === '') {
+        if ((string) $description === '') {
             return '';
         }
 
@@ -956,7 +953,7 @@ abstract class CliCommand implements ICliCommand
                     ($option->ValueOptional && $value === null))) {
                 continue;
             }
-            $name = $option->Long ?: $option->Short;
+            $name = $option->Name;
             if ($nameCallback) {
                 $name = $nameCallback($name);
             }
@@ -987,7 +984,7 @@ abstract class CliCommand implements ICliCommand
         $values = [];
         foreach ($this->Options as $option) {
             $value = $option->ValueOptional ? null : $option->OriginalDefaultValue;
-            $name = $option->Long ?: $option->Short;
+            $name = $option->Name;
             if ($nameCallback) {
                 $name = $nameCallback($name);
             }
@@ -1155,7 +1152,7 @@ abstract class CliCommand implements ICliCommand
         $positional = [];
         foreach ($this->Options as $option) {
             $name = null;
-            foreach (Arr::whereNotEmpty([$option->Long, $option->Short]) as $key) {
+            foreach ($option->getNames() as $key) {
                 if (array_key_exists($key, $values)) {
                     $name = $key;
                     break;

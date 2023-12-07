@@ -11,6 +11,7 @@ use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ITreeable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Str;
 
 /**
  * The context within which an entity is instantiated by a provider
@@ -125,12 +126,12 @@ class ProviderContext implements IProviderContext
      */
     final public function withValue(string $name, $value)
     {
-        $name = Convert::toSnakeCase($name);
+        $name = Str::toSnakeCase($name);
         $values = $this->Values;
         $values[$name] = $value;
 
         if (substr($name, -3) === '_id') {
-            $name = Convert::toSnakeCase(substr($name, 0, -3));
+            $name = Str::toSnakeCase(substr($name, 0, -3));
             if ($name !== '') {
                 $values[$name] = $value;
             }
@@ -184,7 +185,7 @@ class ProviderContext implements IProviderContext
      */
     final public function getValue(string $name)
     {
-        $name = Convert::toSnakeCase($name);
+        $name = Str::toSnakeCase($name);
 
         if (array_key_exists($name, $this->Values)) {
             return $this->Values[$name];
@@ -194,7 +195,7 @@ class ProviderContext implements IProviderContext
             return null;
         }
 
-        $name = Convert::toSnakeCase(substr($name, 0, -3));
+        $name = Str::toSnakeCase(substr($name, 0, -3));
 
         return $this->Values[$name] ?? null;
     }
@@ -204,7 +205,7 @@ class ProviderContext implements IProviderContext
      */
     final public function hasValue(string $name): bool
     {
-        $name = Convert::toSnakeCase($name);
+        $name = Str::toSnakeCase($name);
 
         if (array_key_exists($name, $this->Values)) {
             return true;
@@ -214,7 +215,7 @@ class ProviderContext implements IProviderContext
             return false;
         }
 
-        $name = Convert::toSnakeCase(substr($name, 0, -3));
+        $name = Str::toSnakeCase(substr($name, 0, -3));
 
         return array_key_exists($name, $this->Values);
     }

@@ -48,6 +48,16 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
 
             ___HEADING 3___
 
+                Indented paragraph.
+
+                `Indented _code span_`
+
+                ```php
+                <?php
+                /**Indented code block**/
+                $a = b($c);
+                ```
+
             __Bold__, _italic_ and <underline>.
 
             \<This> is \`some escaped` \__text__. \
@@ -79,6 +89,14 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
                 $a = b($c);
 
                 HEADING 3
+
+                    Indented paragraph.
+
+                    Indented _code span_
+
+                    <?php
+                    /**Indented code block**/
+                    $a = b($c);
 
                 Bold, italic and underline.
 
@@ -115,6 +133,16 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
 
                 ___HEADING 3___
 
+                    Indented paragraph.
+
+                    `Indented _code span_`
+
+                    ```php
+                    <?php
+                    /**Indented code block**/
+                    $a = b($c);
+                    ```
+
                 __Bold__, _italic_ and <underline>.
 
                 \<This> is \`some escaped` \__text__. \
@@ -132,6 +160,58 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
                 false,
                 null,
                 false,
+            ],
+            [
+                <<<'EOF'
+                Heading
+
+                ` <== an unmatched backtick
+                EOF,
+                $default,
+                <<<'EOF'
+                ## Heading
+
+                ` <== an unmatched backtick
+                EOF,
+            ],
+            [
+                <<<'EOF'
+                ## Heading ##
+
+                ` <== an unmatched backtick
+                EOF,
+                $loopback,
+                <<<'EOF'
+                ## Heading
+
+                ` <== an unmatched backtick
+                EOF,
+            ],
+            [
+                <<<'EOF'
+                Heading
+
+                    ` <== an indented backtick
+                EOF,
+                $default,
+                <<<'EOF'
+                ## Heading
+
+                    ` <== an indented backtick
+                EOF,
+            ],
+            [
+                <<<'EOF'
+                ## Heading ##
+
+                    ` <== an indented backtick
+                EOF,
+                $loopback,
+                <<<'EOF'
+                ## Heading
+
+                    ` <== an indented backtick
+                EOF,
             ],
         ];
     }

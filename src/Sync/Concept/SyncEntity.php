@@ -40,6 +40,7 @@ use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Str;
 use Closure;
 use DateTimeInterface;
 use Generator;
@@ -268,13 +269,13 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
                 static function (string $name): string {
                     return self::$NormalisedPropertyMap[static::class][$name]
                         ?? (self::$NormalisedPropertyMap[static::class][$name] =
-                            Convert::toSnakeCase($name));
+                            Str::toSnakeCase($name));
                 };
         }
 
         // ['admin_user_group'] -> ['admin_user_group', 'user_group', 'group']
         foreach ($prefixes as $prefix) {
-            $prefix = Convert::toSnakeCase($prefix);
+            $prefix = Str::toSnakeCase($prefix);
             $expanded[$prefix] = true;
             $prefix = explode('_', $prefix);
             while (array_shift($prefix)) {
@@ -291,9 +292,9 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
                 if ($greedy && !$hints) {
                     return self::$NormalisedPropertyMap[static::class][$name]
                         ?? (self::$NormalisedPropertyMap[static::class][$name] =
-                            Pcre::replace($regex, '', Convert::toSnakeCase($name)));
+                            Pcre::replace($regex, '', Str::toSnakeCase($name)));
                 }
-                $_name = Convert::toSnakeCase($name);
+                $_name = Str::toSnakeCase($name);
                 if (!$greedy || in_array($_name, $hints)) {
                     return $_name;
                 }

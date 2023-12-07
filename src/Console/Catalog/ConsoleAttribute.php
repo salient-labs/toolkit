@@ -27,9 +27,22 @@ final class ConsoleAttribute extends Enumeration
     public const TAG = 'tag';
 
     /**
+     * The identifier of the Markdown-like inline formatting tag applied to the
+     * text
+     *
+     * @see ConsoleTag
+     */
+    public const TAG_ID = 'tag_id';
+
+    /**
      * The info string associated with a fenced code block
      */
     public const INFO_STRING = 'info_string';
+
+    /**
+     * The indent associated with a fenced code block
+     */
+    public const INDENT = 'indent';
 
     /**
      * True if the text is part 1 of a message

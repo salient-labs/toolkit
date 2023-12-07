@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Support\Introspector;
 
 use Lkrms\Contract\IResolvable;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Str;
 
 class ResolvableB implements IResolvable
 {
@@ -12,6 +12,6 @@ class ResolvableB implements IResolvable
         bool $greedy = true,
         string ...$hints
     ): string {
-        return strtoupper(Convert::toKebabCase($name));
+        return strtoupper(Str::toKebabCase($name));
     }
 }

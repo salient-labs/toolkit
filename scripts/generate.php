@@ -36,7 +36,6 @@ use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Debugging;
 use Lkrms\Utility\File;
-use Lkrms\Utility\Formatters;
 use Lkrms\Utility\System;
 
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
@@ -50,7 +49,6 @@ $facades = [
     Debugging::class => \Lkrms\Facade\Debug::class,
     ErrorHandler::class => [\Lkrms\Facade\Err::class, '--skip', 'handleShutdown,handleError,handleException'],
     EventDispatcher::class => \Lkrms\Facade\Event::class,
-    Formatters::class => \Lkrms\Facade\Format::class,
     SyncStore::class => \Lkrms\Facade\Sync::class,
     Timekeeper::class => \Lkrms\Facade\Profile::class,
     System::class => \Lkrms\Facade\Sys::class,

@@ -3,7 +3,7 @@
 namespace Lkrms\Concern;
 
 use Lkrms\Contract\ReturnsNormaliser;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Str;
 use Closure;
 
 /**
@@ -22,7 +22,7 @@ trait HasNormaliser
     {
         return
             fn(string $name): string =>
-                Convert::toSnakeCase($name);
+                Str::toSnakeCase($name);
     }
 
     final public static function normalise(string $name, bool $greedy = true, string ...$hints): string

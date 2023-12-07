@@ -165,4 +165,22 @@ final class Pcre
         }
         return $result;
     }
+
+    /**
+     * Quote characters for use in a character class
+     *
+     * @param string|null $delimiter The PCRE pattern delimiter to escape.
+     * Forward slash ('/') is most commonly used.
+     */
+    public static function quoteCharacterClass(
+        string $characters,
+        ?string $delimiter = null
+    ): string {
+        $orDelimiter = $delimiter === null || $delimiter === ''
+            ? ''
+            : '|' . preg_quote($delimiter, '/');
+        // "All non-alphanumeric characters other than \, -, ^ (at the start)
+        // and the terminating ] are non-special in character classes"
+        return self::replace("/(?:[]^\\\\-]$orDelimiter)/", '\\\\$0', $characters);
+    }
 }

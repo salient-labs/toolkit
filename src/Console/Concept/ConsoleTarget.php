@@ -49,7 +49,7 @@ abstract class ConsoleTarget implements IConsoleTargetWithPrefix
     final public function setPrefix(?string $prefix): void
     {
         $this->Prefix =
-            ($prefix ?? '') === ''
+            (string) $prefix === ''
                 ? null
                 : $this
                     ->getFormatter()

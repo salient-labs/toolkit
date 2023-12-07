@@ -3,6 +3,7 @@
 namespace Lkrms\Utility;
 
 use Lkrms\Support\Catalog\RegularExpression as Regex;
+use Stringable;
 
 /**
  * Perform true/false tests on values
@@ -10,26 +11,17 @@ use Lkrms\Support\Catalog\RegularExpression as Regex;
 final class Test
 {
     /**
-     * True if $value is a boolean or boolean string
+     * True if a value is a boolean or boolean string
      *
      * The following are regarded as boolean strings (case-insensitive):
      *
-     * - `"0"`
-     * - `"1"`
-     * - `"disable"`
-     * - `"disabled"`
-     * - `"enable"`
-     * - `"enabled"`
-     * - `"f"`
-     * - `"false"`
-     * - `"n"`
-     * - `"no"`
-     * - `"off"`
-     * - `"on"`
-     * - `"t"`
-     * - `"true"`
-     * - `"y"`
-     * - `"yes"`
+     * - `"1"`, `"0"`
+     * - `"on"`, `"off"`
+     * - `"true"`, `"false"`
+     * - `"y"`, `"n"`
+     * - `"yes"`, `"no"`
+     * - `"enable"`, `"disable"`
+     * - `"enabled"`, `"disabled"`
      *
      * @param mixed $value
      */
@@ -40,7 +32,7 @@ final class Test
     }
 
     /**
-     * True if $value is an integer or integer string
+     * True if a value is an integer or integer string
      *
      * @param mixed $value
      */
@@ -51,7 +43,7 @@ final class Test
     }
 
     /**
-     * True if $value is a float or float string
+     * True if a value is a float or float string
      *
      * @param mixed $value
      */
@@ -62,72 +54,22 @@ final class Test
     }
 
     /**
+     * True if a value is a string or Stringable
+     *
      * @param mixed $value
-     * @deprecated Use {@see Arr::isList()} instead
-     * @codeCoverageIgnore
      */
-    public static function isListArray($value, bool $allowEmpty = false): bool
+    public static function isStringable($value): bool
     {
-        return Arr::isList($value, $allowEmpty);
+        return is_string($value) ||
+            $value instanceof Stringable ||
+            (is_object($value) && method_exists($value, '__toString'));
     }
 
     /**
-     * @param mixed $value
-     * @deprecated Use {@see Arr::isIndexed()} instead
-     * @codeCoverageIgnore
-     */
-    public static function isIndexedArray($value, bool $allowEmpty = false): bool
-    {
-        return Arr::isIndexed($value, $allowEmpty);
-    }
-
-    /**
-     * @param mixed $value
-     * @deprecated Use {@see Arr::ofArrayKey()} instead
-     * @codeCoverageIgnore
-     */
-    public static function isArrayOfArrayKey($value, bool $allowEmpty = false): bool
-    {
-        return Arr::ofArrayKey($value, $allowEmpty);
-    }
-
-    /**
-     * @param mixed $value
-     * @deprecated Use {@see Arr::ofInt()} instead
-     * @codeCoverageIgnore
-     */
-    public static function isArrayOfInt($value, bool $allowEmpty = false): bool
-    {
-        return Arr::ofInt($value, $allowEmpty);
-    }
-
-    /**
-     * @param mixed $value
-     * @deprecated Use {@see Arr::ofString()} instead
-     * @codeCoverageIgnore
-     */
-    public static function isArrayOfString($value, bool $allowEmpty = false): bool
-    {
-        return Arr::ofString($value, $allowEmpty);
-    }
-
-    /**
-     * @template T of object
-     * @param mixed $value
-     * @param class-string<T> $class
-     * @phpstan-assert-if-true T[] $value
-     * @deprecated Use {@see Arr::of()} instead
-     * @codeCoverageIgnore
-     */
-    public static function isArrayOf($value, string $class, bool $allowEmpty = false): bool
-    {
-        return Arr::of($value, $class, $allowEmpty);
-    }
-
-    /**
-     * True if $value is a number within a range
+     * True if a value is a number within a range
      *
      * @template T of int|float
+     *
      * @param T $value
      * @param T $min
      * @param T $max
@@ -138,31 +80,18 @@ final class Test
     }
 
     /**
-     * True if an object or class implements an interface
-     *
-     * @param object|class-string $class
-     * @param class-string $interface
-     */
-    public static function classImplements($class, string $interface): bool
-    {
-        return in_array($interface, class_implements($class) ?: [], true);
-    }
-
-    /**
-     * True if $path starts with 'phar://'
+     * True if a path starts with 'phar://'
      */
     public static function isPharUrl(string $path): bool
     {
-        return count($split = explode('://', $path, 2)) === 2 &&
-            $split[0] === 'phar';
+        return substr($path, 0, 7) === 'phar://';
     }
 
     /**
-     * True if $path is an absolute path
+     * True if a path is absolute
      *
-     * A string that starts with `/` (a forward slash), `\\` (two backslashes),
-     * or `[a-z]:\` (a letter followed by a colon and backslash) is regarded as
-     * an absolute path.
+     * Paths that start with `/`, `\\`, or `[a-z]:\` are regarded as absolute
+     * paths.
      */
     public static function isAbsolutePath(string $path): bool
     {
@@ -170,13 +99,11 @@ final class Test
     }
 
     /**
-     * True if two paths exist and refer to the same file
+     * @deprecated Use {@see File::is()} instead
      */
     public static function areSameFile(string $path1, string $path2): bool
     {
-        return file_exists($path1) && file_exists($path2) &&
-            ($inode = fileinode($path1)) !== false &&
-            fileinode($path2) === $inode;
+        return File::is($path1, $path2);
     }
 
     /**
@@ -197,7 +124,7 @@ final class Test
     }
 
     /**
-     * True if $value is a PHP reserved word
+     * True if a value is a PHP reserved word
      *
      * @link https://www.php.net/manual/en/reserved.php
      */
