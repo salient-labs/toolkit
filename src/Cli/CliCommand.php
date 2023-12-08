@@ -66,8 +66,8 @@ abstract class CliCommand implements ICliCommand
      * ```php
      * [
      *     CliHelpSectionName::EXIT_STATUS => <<<EOF
-     * `{{command}}` returns 0 when the operation succeeds, 1 when invalid arguments
-     * are given, and 15 when an unhandled exception is thrown. Other non-zero values
+     * `{{program}}` returns 0 when the operation succeeds, 1 when invalid arguments
+     * are given, and 16 when an unhandled exception is thrown. Other non-zero values
      * may be returned for other failures.
      * EOF,
      * ];

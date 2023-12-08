@@ -4,6 +4,7 @@ namespace Lkrms\Support;
 
 use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
+use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\File;
 use Lkrms\Utility\Pcre;
@@ -29,7 +30,7 @@ final class ErrorHandler implements ReceivesFacade
      */
     private array $Silenced = [];
 
-    private int $ExitStatus = 15;
+    private int $ExitStatus = 16;
 
     private bool $IsRegistered = false;
 
@@ -197,6 +198,12 @@ final class ErrorHandler implements ReceivesFacade
         Console::exception($exception);
 
         if (!$this->IsShuttingDown) {
+            if ($exception instanceof ExceptionInterface) {
+                $exitStatus = $exception->getExitStatus();
+                if ($exitStatus !== null) {
+                    exit ($exitStatus);
+                }
+            }
             exit ($this->ExitStatus);
         }
     }

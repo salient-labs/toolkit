@@ -52,8 +52,9 @@ final class ConsoleFormat implements IConsoleFormat
             return '';
         }
 
-        // Remove indentation from the first line of code in fenced code blocks
-        // to prevent doubling up
+        // In fenced code blocks:
+        // - remove indentation from the first line of code
+        // - add a level of indentation to the block
         $tagId = $attributes[Attribute::TAG_ID] ?? null;
         if ($tagId === Tag::CODE_BLOCK) {
             $indent = $attributes[Attribute::INDENT] ?? '';
@@ -63,6 +64,7 @@ final class ConsoleFormat implements IConsoleFormat
                     $text = substr($text, $length);
                 }
             }
+            $text = '    ' . str_replace("\n", "\n    ", $text);
         }
 
         if ($this->Replace) {
