@@ -12,11 +12,28 @@ use Throwable;
  */
 trait ExceptionTrait
 {
+    protected ?int $ExitStatus = null;
+
     public function __construct(
         string $message = '',
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
+        ?int $exitStatus = null
     ) {
+        $this->ExitStatus = $exitStatus;
         parent::__construct($message, 0, $previous);
+    }
+
+    /**
+     * Set the exit status to return if the exception is not caught on the
+     * command line
+     *
+     * @return static
+     */
+    public function withExitStatus(?int $exitStatus)
+    {
+        $clone = clone $this;
+        $clone->ExitStatus = $exitStatus;
+        return $clone;
     }
 
     /**
@@ -27,6 +44,14 @@ trait ExceptionTrait
     public function getDetail(): array
     {
         return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getExitStatus(): ?int
+    {
+        return $this->ExitStatus;
     }
 
     /**

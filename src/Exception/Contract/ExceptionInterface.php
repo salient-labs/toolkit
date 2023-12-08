@@ -12,4 +12,10 @@ interface ExceptionInterface extends Throwable
      * @return array<string,string>
      */
     public function getDetail(): array;
+
+    /**
+     * Get the exit status to return if the exception is not caught on the
+     * command line
+     */
+    public function getExitStatus(): ?int;
 }

@@ -68,7 +68,7 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
             *0*   escapes \
             *1*   with \
             *2*   adjacent \
-            *15*  tags
+            *16*  tags
             EOF;
 
         return [
@@ -84,9 +84,9 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
 
                 Low-priority information with embedded tags.
 
-                <?php
-                /**Preformatted code block**/
-                $a = b($c);
+                    <?php
+                    /**Preformatted code block**/
+                    $a = b($c);
 
                 HEADING 3
 
@@ -94,9 +94,9 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
 
                     Indented _code span_
 
-                    <?php
-                    /**Indented code block**/
-                    $a = b($c);
+                        <?php
+                        /**Indented code block**/
+                        $a = b($c);
 
                 Bold, italic and underline.
 
@@ -108,7 +108,7 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
                 0   escapes
                 1   with
                 2   adjacent
-                15  tags
+                16  tags
                 EOF,
                 $default,
                 $input,
@@ -153,7 +153,7 @@ final class ConsoleFormatterTest extends \Lkrms\Tests\TestCase
                 *0*   escapes \
                 *1*   with \
                 *2*   adjacent \
-                *15*  tags
+                *16*  tags
                 EOF,
                 $loopback,
                 $input,
