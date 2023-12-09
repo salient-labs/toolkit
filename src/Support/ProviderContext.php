@@ -10,7 +10,7 @@ use Lkrms\Contract\IProvider;
 use Lkrms\Contract\IProviderContext;
 use Lkrms\Contract\ITreeable;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Str;
 
 /**
@@ -113,7 +113,7 @@ class ProviderContext implements IProviderContext
         if ($entity instanceof HasIdentifier) {
             $id = $entity->id();
             if ($id !== null) {
-                $name = Convert::classToBasename(get_class($entity));
+                $name = Get::basename(get_class($entity));
                 return $clone->withValue("{$name}_id", $id);
             }
         }

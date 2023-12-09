@@ -21,6 +21,7 @@ use Lkrms\Support\TokenExtractor;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Reflect;
 use Lkrms\Utility\Test;
@@ -479,7 +480,7 @@ abstract class GenerateCommand extends Command
             return $lastAlias;
         }
 
-        $alias = $alias === null ? Convert::classToBasename($fqcn) : $alias;
+        $alias = $alias === null ? Get::basename($fqcn) : $alias;
         $_alias = strtolower($alias);
 
         // Use $alias if it already maps to $fqcn
@@ -594,7 +595,7 @@ abstract class GenerateCommand extends Command
         $map = [];
         foreach ($this->ImportMap as $alias) {
             $import = $this->AliasMap[strtolower($alias)];
-            if (!strcasecmp($alias, Convert::classToBasename($import))) {
+            if (!strcasecmp($alias, Get::basename($import))) {
                 $map[$import] = null;
                 continue;
             }

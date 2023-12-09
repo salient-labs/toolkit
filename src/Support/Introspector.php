@@ -18,7 +18,7 @@ use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Support\Catalog\NormaliserFlag;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Closure;
 use LogicException;
 
@@ -804,7 +804,7 @@ class Introspector
         unset($names['first_name']);
 
         if (!$names) {
-            $name = Convert::classToBasename($this->_Class->Class);
+            $name = Get::basename($this->_Class->Class);
             $name = "<$name>";
             return $this->_Class->GetNameClosure =
                 static function () use ($name): string {

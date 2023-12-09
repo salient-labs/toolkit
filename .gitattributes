@@ -14,13 +14,10 @@
 /src/Facade/Cache.php linguist-generated
 /src/Facade/Console.php linguist-generated
 /src/Facade/DI.php linguist-generated
-/src/Facade/Debug.php linguist-generated
 /src/Facade/Err.php linguist-generated
 /src/Facade/Event.php linguist-generated
-/src/Facade/Mapper.php linguist-generated
 /src/Facade/Profile.php linguist-generated
 /src/Facade/Sync.php linguist-generated
-/src/Facade/Sys.php linguist-generated
 /src/Sync/Support/DbSyncDefinitionBuilder.php linguist-generated
 /src/Sync/Support/HttpSyncDefinitionBuilder.php linguist-generated
 /src/Sync/Support/SyncErrorBuilder.php linguist-generated

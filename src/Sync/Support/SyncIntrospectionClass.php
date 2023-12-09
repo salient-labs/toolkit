@@ -7,7 +7,7 @@ use Lkrms\Sync\Catalog\SyncOperation;
 use Lkrms\Sync\Concept\SyncProvider;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Reflect;
 use Lkrms\Utility\Str;
 use ReflectionClass;
@@ -130,7 +130,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
         $this->IsSyncProvider = $class->implementsInterface(ISyncProvider::class);
 
         if ($this->IsSyncEntity) {
-            $this->EntityNoun = Convert::classToBasename($this->Class);
+            $this->EntityNoun = Get::basename($this->Class);
             $plural = $class->getMethod('plural')->invoke(null);
             if (strcasecmp($this->EntityNoun, $plural)) {
                 $this->EntityPlural = $plural;
@@ -160,7 +160,7 @@ final class SyncIntrospectionClass extends IntrospectionClass
 
                 // Map unambiguous kebab-case entity basenames to qualified names in
                 // SyncProviderEntityBasenames
-                $basename = Str::toKebabCase(Convert::classToBasename($entity->Class));
+                $basename = Str::toKebabCase(Get::basename($entity->Class));
                 $this->SyncProviderEntityBasenames[$basename] =
                     array_key_exists($basename, $this->SyncProviderEntityBasenames)
                         ? null

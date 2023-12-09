@@ -12,12 +12,12 @@ use Lkrms\Console\Support\ConsoleTagFormats as TagFormats;
 use Lkrms\Console\ConsoleFormatter as Formatter;
 use Lkrms\Container\Application;
 use Lkrms\Facade\Console;
-use Lkrms\Facade\Sys;
 use Lkrms\Utility\Catalog\EnvFlag;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Assert;
 use Lkrms\Utility\Package;
 use Lkrms\Utility\Pcre;
+use Lkrms\Utility\Sys;
 use LogicException;
 
 /**

@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\CharacterSequence as Char;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
@@ -9,7 +10,7 @@ use Lkrms\Support\Catalog\RegularExpression as Regex;
 /**
  * Manipulate strings
  */
-final class Str
+final class Str extends Utility
 {
     /**
      * Get the first string that is not null or empty, or return the last value

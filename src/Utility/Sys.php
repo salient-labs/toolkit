@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
 use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Facade\Console;
 use Lkrms\Utility\Convert;
@@ -12,7 +13,7 @@ use SQLite3;
 /**
  * Get information about the runtime environment
  */
-final class System
+final class Sys extends Utility
 {
     /**
      * Get the configured memory_limit, in bytes

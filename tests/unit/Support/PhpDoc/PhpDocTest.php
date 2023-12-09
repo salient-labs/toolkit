@@ -79,7 +79,7 @@ final class PhpDocTest extends \Lkrms\Tests\TestCase
             ```php
             // code here
             ```
-            EOF, $this->newlinesToNative($phpDoc->Description));
+            EOF, $this->eolToNative($phpDoc->Description));
         $this->assertSame([
             '@param $arg1 Description from ClassC (untyped)',
             '@param string[] $arg3',
@@ -140,7 +140,7 @@ final class PhpDocTest extends \Lkrms\Tests\TestCase
     ): void {
         $phpDoc = new PhpDoc($docBlock);
         $this->assertSame($summary, $phpDoc->Summary);
-        $this->assertSame($description, $this->newlinesToNative($phpDoc->Description));
+        $this->assertSame($description, $this->eolToNative($phpDoc->Description));
         $this->assertCount(count($varKeys), $phpDoc->Vars);
         foreach ($varKeys as $i => $key) {
             $this->assertArrayHasKey($key, $phpDoc->Vars);
@@ -373,7 +373,7 @@ final class PhpDocTest extends \Lkrms\Tests\TestCase
             ```php
             callback(string $value): string
             ```
-            EOF, $this->newlinesToNative($phpDoc->Description));
+            EOF, $this->eolToNative($phpDoc->Description));
         $this->assertCount(1, $phpDoc->Vars);
         $this->assertSame(null, $phpDoc->Vars[0]->Name ?? null);
         $this->assertSame('?callable', $phpDoc->Vars[0]->Type ?? null);

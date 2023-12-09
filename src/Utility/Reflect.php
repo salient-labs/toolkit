@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Lkrms\Utility\Convert;
 use Closure;
@@ -22,7 +23,7 @@ use ReflectionUnionType;
  *
  * @api
  */
-final class Reflect
+final class Reflect extends Utility
 {
     /**
      * Get a list of names from a list of reflectors

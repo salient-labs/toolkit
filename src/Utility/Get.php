@@ -2,19 +2,59 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
 use ReflectionClass;
 
 /**
- * Get information from (or about) data
+ * Get values from other values
  */
-final class Inspect
+final class Get extends Utility
 {
+    /**
+     * Get the unqualified name of a class, optionally removing a suffix
+     *
+     * Only the first matching `$suffix` is removed, so longer suffixes should
+     * be given first.
+     */
+    public static function basename(string $class, string ...$suffix): string
+    {
+        $class = substr(strrchr('\\' . $class, '\\'), 1);
+
+        if (!$suffix) {
+            return $class;
+        }
+
+        foreach ($suffix as $suffix) {
+            if ($suffix === $class) {
+                continue;
+            }
+            $length = strlen($suffix);
+            if (substr($class, -$length) === $suffix) {
+                return substr($class, 0, -$length);
+            }
+        }
+
+        return $class;
+    }
+
+    /**
+     * Get the namespace of a class
+     */
+    public static function namespace(string $class): string
+    {
+        $length = strrpos('\\' . $class, '\\') - 1;
+
+        return $length < 1
+            ? ''
+            : trim(substr($class, 0, $length), '\\');
+    }
+
     /**
      * Get the type of a variable
      *
      * @param mixed $value
      */
-    public static function getType($value): string
+    public static function type($value): string
     {
         if (is_object($value)) {
             return (new ReflectionClass($value))->isAnonymous()
@@ -45,7 +85,7 @@ final class Inspect
      * @see Filesystem::getEol()
      * @see Str::setEol()
      */
-    public static function getEol(string $string): ?string
+    public static function eol(string $string): ?string
     {
         $lfPos = strpos($string, "\n");
         if ($lfPos === false) {

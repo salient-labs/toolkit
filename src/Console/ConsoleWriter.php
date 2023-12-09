@@ -13,12 +13,13 @@ use Lkrms\Contract\IFacade;
 use Lkrms\Contract\ReceivesFacade;
 use Lkrms\Exception\Contract\ExceptionInterface;
 use Lkrms\Exception\InvalidEnvironmentException;
-use Lkrms\Facade\Debug;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Compute;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Debug;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Get;
 use Throwable;
 
 /**
@@ -727,8 +728,8 @@ final class ConsoleWriter implements ReceivesFacade
     /**
      * Print "--- {CALLER} $msg1 $msg2" with level DEBUG
      *
-     * @param int $depth Passed to {@see \Lkrms\Utility\Debugging::getCaller()}.
-     * To print your caller's name instead of your own, set `$depth` to 1.
+     * @param int $depth Passed to {@see Debug::getCaller()}. To print your
+     * caller's name instead of your own, set `$depth` to 1.
      * @return $this
      */
     public function debug(
@@ -750,8 +751,8 @@ final class ConsoleWriter implements ReceivesFacade
     /**
      * Print "--- {CALLER} $msg1 $msg2" with level DEBUG once per run
      *
-     * @param int $depth Passed to {@see \Lkrms\Utility\Debugging::getCaller()}.
-     * To print your caller's name instead of your own, set `$depth` to 1.
+     * @param int $depth Passed to {@see Debug::getCaller()}. To print your
+     * caller's name instead of your own, set `$depth` to 1.
      * @return $this
      */
     public function debugOnce(
@@ -832,7 +833,7 @@ final class ConsoleWriter implements ReceivesFacade
         $i = 0;
         do {
             if ($i++) {
-                $class = Formatter::escapeTags(Convert::classToBasename(get_class($ex)));
+                $class = Formatter::escapeTags(Get::basename(get_class($ex)));
                 $msg2 .= sprintf("\nCaused by __%s__: ", $class);
             }
 
@@ -844,7 +845,7 @@ final class ConsoleWriter implements ReceivesFacade
             $ex = $ex->getPrevious();
         } while ($ex);
 
-        $class = Formatter::escapeTags(Convert::classToBasename(get_class($exception)));
+        $class = Formatter::escapeTags(Get::basename(get_class($exception)));
         $this->count($messageLevel)->write(
             $messageLevel,
             sprintf('__%s__:', $class),

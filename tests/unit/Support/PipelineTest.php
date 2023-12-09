@@ -2,13 +2,13 @@
 
 namespace Lkrms\Tests\Support;
 
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Exception\PipelineResultRejectedException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Lkrms\Support\Pipeline;
 use Closure;
 use Throwable;
-use UnexpectedValueException;
 
 final class PipelineTest extends \Lkrms\Tests\TestCase
 {
@@ -213,7 +213,7 @@ final class PipelineTest extends \Lkrms\Tests\TestCase
 
         $pipeline = Pipeline::create()
             ->throughKeyMap($map, ArrayMapperFlag::REQUIRE_MAPPED);
-        $this->expectException(UnexpectedValueException::class);
+        $this->expectException(InvalidArgumentException::class);
         foreach ($in as $_in) {
             $pipeline->send($_in)->run();
         }

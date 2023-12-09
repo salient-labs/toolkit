@@ -2,13 +2,14 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
 use Stringable;
 
 /**
  * Perform true/false tests on values
  */
-final class Test
+final class Test extends Utility
 {
     /**
      * True if a value is a boolean or boolean string

@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
 use Lkrms\Contract\IDateFormatter;
 use Lkrms\Iterator\Contract\MutableIterator;
 use Lkrms\Iterator\RecursiveGraphIterator;
@@ -28,7 +29,7 @@ use RecursiveIteratorIterator;
  * - pluralise a singular noun
  * - extract a class name from a FQCN
  */
-final class Convert
+final class Convert extends Utility
 {
     /**
      * Convert a scalar to the type it appears to be
@@ -227,7 +228,7 @@ final class Convert
         if (strpos($text, "\t") === false) {
             return $text;
         }
-        $eol = Inspect::getEol($text) ?: "\n";
+        $eol = Get::eol($text) ?: "\n";
         $expanded = '';
         foreach (explode($eol, $text) as $i => $line) {
             !$i || $expanded .= $eol;
@@ -261,7 +262,7 @@ final class Convert
         if (strpos($text, "\t") === false) {
             return $text;
         }
-        $eol = Inspect::getEol($text) ?: "\n";
+        $eol = Get::eol($text) ?: "\n";
         $softTab = str_repeat(' ', $tabSize);
         $expanded = '';
         foreach (explode($eol, $text) as $i => $line) {
@@ -597,37 +598,19 @@ final class Convert
     }
 
     /**
-     * Remove the namespace and the first matched suffix from a class name
+     * @deprecated Use {@see Get::basename()} instead
      */
-    public static function classToBasename(string $class, string ...$suffixes): string
+    public static function classToBasename(string $class, string ...$suffix): string
     {
-        $class = substr(strrchr('\\' . $class, '\\'), 1);
-        while ($suffixes) {
-            if (($suffix = array_shift($suffixes)) && ($pos = strrpos($class, $suffix)) > 0) {
-                return substr($class, 0, $pos);
-            }
-        }
-
-        return $class;
+        return Get::basename($class, ...$suffix);
     }
 
     /**
-     * Get the namespace of a class
-     *
-     * Returns an empty string if `$class` is not namespaced, otherwise returns
-     * the namespace without adding or removing the global prefix operator.
+     * @deprecated Use {@see Get::namespace()} instead
      */
     public static function classToNamespace(string $class): string
     {
-        return substr($class, 0, max(0, strrpos('\\' . $class, '\\') - 1));
-    }
-
-    /**
-     * Remove the class from a method name
-     */
-    public static function methodToFunction(string $method): string
-    {
-        return Pcre::replace('/^.*?([a-z0-9_]*)$/i', '$1', $method);
+        return Get::namespace($class);
     }
 
     /**
@@ -1309,7 +1292,7 @@ final class Convert
         ?string $escapeCharacters = null,
         string $tab = '    '
     ): string {
-        $eol = Inspect::getEol($delimiter) ?: '';
+        $eol = Get::eol($delimiter) ?: '';
         $multiline = (bool) $eol;
         return self::doValueToCode(
             $value,

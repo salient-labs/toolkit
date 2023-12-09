@@ -9,7 +9,7 @@ use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Sync\Support\SyncIntrospector;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Str;
 
 /**
@@ -64,7 +64,7 @@ abstract class AbstractSyncCommand extends CliCommand
             }
 
             $providerKey = Str::toKebabCase(
-                Convert::classToBasename($provider, 'SyncProvider', 'Provider')
+                Get::basename($provider, 'SyncProvider', 'Provider')
             );
 
             $introspector = SyncIntrospector::get($provider);

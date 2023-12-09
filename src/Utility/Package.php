@@ -4,6 +4,7 @@ namespace Lkrms\Utility;
 
 use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
+use Lkrms\Concept\Utility;
 use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\UnexpectedValueException;
 use Lkrms\Utility\File;
@@ -12,7 +13,7 @@ use Lkrms\Utility\File;
  * Get information about the package and its dependencies from Composer's
  * runtime API
  */
-final class Package
+final class Package extends Utility
 {
     private const SHORT_REFERENCE_LENGTH = 8;
 

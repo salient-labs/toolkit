@@ -39,6 +39,7 @@ use Lkrms\Sync\Support\SyncSerializeRulesBuilder as SerializeRulesBuilder;
 use Lkrms\Sync\Support\SyncStore;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use Closure;
@@ -127,7 +128,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
      */
     public static function plural(): string
     {
-        return Convert::nounToPlural(Convert::classToBasename(static::class));
+        return Convert::nounToPlural(Get::basename(static::class));
     }
 
     /**
@@ -189,7 +190,7 @@ abstract class SyncEntity extends Entity implements ISyncEntity, ReturnsNormalis
     {
         $current = new ReflectionClass(static::class);
         while ($current->isSubclassOf(self::class)) {
-            $prefixes[] = Convert::classToBasename($current->getName());
+            $prefixes[] = Get::basename($current->getName());
             $current = $current->getParentClass();
         }
         return $prefixes ?? [];

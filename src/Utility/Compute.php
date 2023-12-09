@@ -2,12 +2,13 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
 use Lkrms\Support\Catalog\CharacterSequence as Char;
 
 /**
  * Generate values like hashes and secure UUIDs
  */
-final class Compute
+final class Compute extends Utility
 {
     /**
      * Get a cryptographically secure UUID

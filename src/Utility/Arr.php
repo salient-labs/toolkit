@@ -2,10 +2,12 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
+
 /**
  * Manipulate arrays
  */
-final class Arr
+final class Arr extends Utility
 {
     /**
      * Get the first value in an array

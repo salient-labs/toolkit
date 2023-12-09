@@ -5,7 +5,7 @@ namespace Lkrms\Sync\Support;
 use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use ArrayIterator;
 use IteratorAggregate;
 use LogicException;
@@ -164,7 +164,7 @@ final class DeferredRelationship implements IteratorAggregate
                     $this->Filter !== null
                         ? $this->Filter
                         : [
-                            Convert::classToBasename($this->ForEntity) =>
+                            Get::basename($this->ForEntity) =>
                                 $this->ForEntityId,
                         ],
                 );

@@ -5,6 +5,7 @@ namespace Lkrms\Tests;
 
 use Lkrms\Facade\Err;
 use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -118,15 +119,15 @@ $fqcn = [
 
 print_r([
     'basename' => array_combine($fqcn, array_map(
-        fn($i) => Convert::classToBasename($i),
+        fn($i) => Get::basename($i),
         $fqcn
     )),
     'basename_sans_suffix' => array_combine($fqcn, array_map(
-        fn($i) => Convert::classToBasename($i, 'Command'),
+        fn($i) => Get::basename($i, 'Command'),
         $fqcn
     )),
     'namespace' => array_combine($fqcn, array_map(
-        fn($i) => Convert::classToNamespace($i),
+        fn($i) => Get::namespace($i),
         $fqcn
     ))
 ]);

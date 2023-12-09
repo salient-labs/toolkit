@@ -6,9 +6,9 @@ use Lkrms\Cli\Exception\CliInvalidArgumentsException;
 use Lkrms\Cli\CliCommand;
 use Lkrms\Contract\IProvider;
 use Lkrms\LkUtil\Catalog\EnvVar;
-use Lkrms\Utility\Convert;
 use Lkrms\Utility\Env;
 use Lkrms\Utility\File;
+use Lkrms\Utility\Get;
 use JsonException;
 
 /**
@@ -50,8 +50,8 @@ abstract class Command extends CliCommand
         } else {
             $fqcn = ltrim($value, '\\');
         }
-        $class = Convert::classToBasename($fqcn);
-        $namespace = Convert::classToNamespace($fqcn);
+        $class = Get::basename($fqcn);
+        $namespace = Get::namespace($fqcn);
 
         return $fqcn;
     }
