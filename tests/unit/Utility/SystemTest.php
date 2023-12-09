@@ -3,7 +3,7 @@
 namespace Lkrms\Tests\Utility;
 
 use Lkrms\Support\Timekeeper;
-use Lkrms\Utility\System;
+use Lkrms\Utility\Sys;
 use LogicException;
 
 final class SystemTest extends \Lkrms\Tests\TestCase
@@ -45,12 +45,12 @@ final class SystemTest extends \Lkrms\Tests\TestCase
         $this->assertSame(1, $timers['general']['primary'][1]);
         $this->assertSame(2, $timers['general']['secondary'][1]);
         $this->assertSame(1, $timers['special']['other'][1]);
-        $this->assertArrayHasSignature(['general'], $generalTimers);
-        $this->assertArrayHasSignature(['primary', 'secondary'], $generalTimers['general']);
-        $this->assertArrayHasSignature(['special'], $specialTimers);
-        $this->assertArrayHasSignature(['other'], $specialTimers['special']);
-        $this->assertArrayHasSignature(['secondary'], $stoppedTimers['general']);
-        $this->assertArrayHasSignature(['other'], $stoppedTimers['special']);
+        $this->assertSame(['general'], array_keys($generalTimers));
+        $this->assertSame(['primary', 'secondary'], array_keys($generalTimers['general']));
+        $this->assertSame(['special'], array_keys($specialTimers));
+        $this->assertSame(['other'], array_keys($specialTimers['special']));
+        $this->assertSame(['secondary'], array_keys($stoppedTimers['general']));
+        $this->assertSame(['other'], array_keys($stoppedTimers['special']));
         $this->expectException(LogicException::class);
         $system->startTimer('primary');
     }
@@ -72,7 +72,7 @@ final class SystemTest extends \Lkrms\Tests\TestCase
             $this->getFixturesPath(__CLASS__) . '/unescape.php',
             $arg,
         ];
-        $command = System::escapeCommand($command);
+        $command = Sys::escapeCommand($command);
         $handle = popen($command, 'rb');
         $output = stream_get_contents($handle);
         $status = pclose($handle);
@@ -133,8 +133,7 @@ final class SystemTest extends \Lkrms\Tests\TestCase
 
     public function testGetCwd(): void
     {
-        $system = new System();
-        $cwd = $system->getCwd();
+        $cwd = Sys::getCwd();
         $this->assertSame(fileinode($cwd), fileinode(getcwd()));
     }
 }

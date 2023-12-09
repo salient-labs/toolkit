@@ -17,7 +17,6 @@ use Lkrms\LkUtil\Command\Generate\GenerateFacade;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncEntity;
 use Lkrms\LkUtil\Command\Generate\GenerateSyncProvider;
 use Lkrms\Store\CacheStore;
-use Lkrms\Support\ArrayMapper;
 use Lkrms\Support\ErrorHandler;
 use Lkrms\Support\EventDispatcher;
 use Lkrms\Support\Timekeeper;
@@ -34,24 +33,19 @@ use Lkrms\Tests\Sync\Entity\Task;
 use Lkrms\Tests\Sync\Entity\User;
 use Lkrms\Tests\Sync\Provider\JsonPlaceholderApi;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Debugging;
 use Lkrms\Utility\File;
-use Lkrms\Utility\System;
 
 $loader = require dirname(__DIR__) . '/vendor/autoload.php';
 
 $facades = [
     Application::class => \Lkrms\Facade\App::class,
-    ArrayMapper::class => \Lkrms\Facade\Mapper::class,
     CacheStore::class => \Lkrms\Facade\Cache::class,
     ConsoleWriter::class => \Lkrms\Facade\Console::class,
     Container::class => \Lkrms\Facade\DI::class,
-    Debugging::class => \Lkrms\Facade\Debug::class,
     ErrorHandler::class => [\Lkrms\Facade\Err::class, '--skip', 'handleShutdown,handleError,handleException'],
     EventDispatcher::class => \Lkrms\Facade\Event::class,
     SyncStore::class => \Lkrms\Facade\Sync::class,
     Timekeeper::class => \Lkrms\Facade\Profile::class,
-    System::class => \Lkrms\Facade\Sys::class,
 ];
 
 $builders = [

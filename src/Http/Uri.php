@@ -369,6 +369,9 @@ class Uri implements UriInterface
             );
     }
 
+    /**
+     * @return static
+     */
     private function validate(): self
     {
         if (

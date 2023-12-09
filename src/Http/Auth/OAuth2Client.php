@@ -17,7 +17,7 @@ use Lkrms\Http\HttpServer;
 use Lkrms\Store\CacheStore;
 use Lkrms\Utility\Arr;
 use Lkrms\Utility\Env;
-use Lkrms\Utility\Inspect;
+use Lkrms\Utility\Get;
 use LogicException;
 use Throwable;
 
@@ -642,7 +642,7 @@ abstract class OAuth2Client
         if (!Arr::isListOfString($scopes, true)) {
             throw new InvalidArgumentException(sprintf(
                 'Argument #1 ($scopes) must be of type string[]|string|null, %s given',
-                Inspect::getType($scopes),
+                Get::type($scopes),
             ));
         }
         return $scopes;

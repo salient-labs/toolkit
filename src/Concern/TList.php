@@ -4,7 +4,7 @@ namespace Lkrms\Concern;
 
 use Lkrms\Contract\Arrayable;
 use Lkrms\Exception\InvalidArgumentException;
-use Lkrms\Utility\Inspect;
+use Lkrms\Utility\Get;
 
 /**
  * Implements IList
@@ -162,7 +162,7 @@ trait TList
             throw new InvalidArgumentException(sprintf(
                 'Argument #1 (%s) must be of type int, %s given',
                 $argument,
-                Inspect::getType($key),
+                Get::type($key),
             ));
         }
         if (

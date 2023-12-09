@@ -2,6 +2,7 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -9,7 +10,7 @@ use DateTimeZone;
 /**
  * Manipulate dates and times
  */
-final class Date
+final class Date extends Utility
 {
     /**
      * Get a DateTimeImmutable from a DateTimeInterface

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use function Lkrms\Tests\Utility\Debugging\getCaller;
+use function Lkrms\Tests\Utility\Debug\getCaller;
 
 /**
  * @return array<int|string>

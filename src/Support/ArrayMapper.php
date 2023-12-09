@@ -2,25 +2,50 @@
 
 namespace Lkrms\Support;
 
-use Lkrms\Exception\UnexpectedValueException;
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
-use Closure;
+use Lkrms\Utility\Arr;
 
 /**
- * Creates closures that rearrange arrays
+ * Moves array values from one set of keys to another
  */
 final class ArrayMapper
 {
     /**
-     * @var Closure[]
+     * Output key => input key
+     *
+     * @var array<array-key,array-key>
      */
-    private $KeyMapClosures = [];
+    private array $OutputMap = [];
 
     /**
-     * Get a closure to move array values from one set of keys to another
+     * Output keys
      *
-     * By default, the closure:
+     * @var array-key[]|null
+     */
+    private ?array $OutputKeys = null;
+
+    /**
+     * Input key => output key
+     *
+     * @var array<array-key,array-key>
+     */
+    private array $KeyMap;
+
+    private bool $RemoveNull;
+
+    private bool $AddUnmapped;
+
+    private bool $AddMissing;
+
+    private bool $RequireMapped;
+
+    /**
+     * Creates a new ArrayMapper object
+     *
+     * By default, an array mapper:
+     *
      * - populates an "output" array with values mapped from an "input" array
      * - ignores missing values (maps for which there are no input values)
      * - discards unmapped values (input values for which there are no maps)
@@ -31,91 +56,79 @@ final class ArrayMapper
      *
      * @param array<array-key,array-key|array-key[]> $keyMap An array that maps
      * input keys to one or more output keys.
-     * @param ArrayKeyConformity::* $conformity Use `COMPLETE` wherever possible
-     * to improve performance.
+     * @param ArrayKeyConformity::* $conformity Use
+     * {@see ArrayKeyConformity::COMPLETE} wherever possible to improve
+     * performance.
      * @param int-mask-of<ArrayMapperFlag::*> $flags
-     * @return Closure(array<array-key,mixed>): array<array-key,mixed>
      */
-    public function getKeyMapClosure(
+    public function __construct(
         array $keyMap,
         $conformity = ArrayKeyConformity::NONE,
         int $flags = ArrayMapperFlag::ADD_UNMAPPED
-    ): Closure {
-        $sig = implode("\x01", array_map(
-            fn($keyOrKeys) =>
-                is_array($keyOrKeys)
-                    ? implode("\x02", $keyOrKeys)
-                    : $keyOrKeys,
-            array_merge(
-                array_keys($keyMap),
-                array_values($keyMap),
-                [$conformity, $flags]
-            )
-        ));
-
-        if ($closure = $this->KeyMapClosures[$sig] ?? null) {
-            return $closure;
+    ) {
+        foreach ($keyMap as $inKey => $outKey) {
+            foreach ((array) $outKey as $outKey) {
+                $this->OutputMap[$outKey] = $inKey;
+            }
         }
 
-        $flipped = [];
-        foreach ($keyMap as $inKey => $out) {
-            if (is_array($out)) {
-                foreach ($out as $outKey) {
-                    $flipped[$outKey] = $inKey;
-                }
+        $this->RemoveNull = (bool) ($flags & ArrayMapperFlag::REMOVE_NULL);
+
+        if (
+            count($keyMap) === count($this->OutputMap) &&
+            $conformity === ArrayKeyConformity::COMPLETE
+        ) {
+            $this->OutputKeys = array_keys($this->OutputMap);
+            return;
+        }
+
+        $this->KeyMap = $keyMap;
+        $this->AddUnmapped = (bool) ($flags & ArrayMapperFlag::ADD_UNMAPPED);
+        $this->AddMissing = (bool) ($flags & ArrayMapperFlag::ADD_MISSING);
+        $this->RequireMapped = (bool) ($flags & ArrayMapperFlag::REQUIRE_MAPPED);
+    }
+
+    /**
+     * Map an input array to an output array
+     *
+     * @param array<array-key,mixed> $in
+     * @return array<array-key,mixed>
+     */
+    public function map(array $in): array
+    {
+        if ($this->OutputKeys !== null) {
+            $out = @array_combine($this->OutputKeys, $in);
+
+            if ($out === false) {
+                throw new InvalidArgumentException('Invalid input array');
+            }
+
+            return $this->RemoveNull
+                ? Arr::whereNotNull($out)
+                : $out;
+        }
+
+        $out = [];
+        foreach ($this->OutputMap as $outKey => $inKey) {
+            if ($this->AddMissing || array_key_exists($inKey, $in)) {
+                $out[$outKey] = $in[$inKey] ?? null;
                 continue;
             }
-            $flipped[$out] = $inKey;
-        }
-
-        if (count($keyMap) === count($flipped) &&
-                $conformity === ArrayKeyConformity::COMPLETE) {
-            $outKeys = array_keys($flipped);
-            $closure =
-                static function (array $in) use ($outKeys): array {
-                    $out = @array_combine($outKeys, $in);
-                    if ($out === false) {
-                        throw new UnexpectedValueException('Invalid input array');
-                    }
-                    return $out;
-                };
-        } else {
-            $addMissing = (bool) ($flags & ArrayMapperFlag::ADD_MISSING);
-            $requireMapped = (bool) ($flags & ArrayMapperFlag::REQUIRE_MAPPED);
-            $closure =
-                static function (array $in) use ($flipped, $addMissing, $requireMapped): array {
-                    foreach ($flipped as $outKey => $inKey) {
-                        if ($addMissing || array_key_exists($inKey, $in)) {
-                            $out[$outKey] = $in[$inKey] ?? null;
-                        } elseif ($requireMapped) {
-                            throw new UnexpectedValueException(sprintf('No data at input key: %s', $inKey));
-                        }
-                    }
-                    return $out ?? [];
-                };
-
-            // Add unmapped values that don't conflict with output array keys
-            if ($flags & ArrayMapperFlag::ADD_UNMAPPED) {
-                $closure =
-                    static function (array $in) use ($keyMap, $flipped, $closure): array {
-                        return array_merge(
-                            $closure($in),
-                            array_diff_key($in, $keyMap, $flipped)
-                        );
-                    };
+            if ($this->RequireMapped) {
+                throw new InvalidArgumentException(sprintf('No data at input key: %s', $inKey));
             }
         }
 
-        if ($flags & ArrayMapperFlag::REMOVE_NULL) {
-            $closure =
-                static function (array $in) use ($closure): array {
-                    return array_filter(
-                        $closure($in),
-                        function ($value) { return $value !== null; }
-                    );
-                };
+        // Add unmapped values that don't conflict with output array keys
+        if ($this->AddUnmapped) {
+            $out = array_merge(
+                $out,
+                array_diff_key($in, $this->KeyMap, $this->OutputMap)
+            );
         }
 
-        return $this->KeyMapClosures[$sig] = $closure;
+        return $this->RemoveNull
+            ? Arr::whereNotNull($out)
+            : $out;
     }
 }

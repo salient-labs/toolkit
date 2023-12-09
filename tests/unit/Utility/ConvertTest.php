@@ -604,7 +604,7 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
      */
     public function testLinesToLists(string $expected, ...$args): void
     {
-        $this->assertSame($expected, $this->newlinesToNative(Convert::linesToLists(...$args)));
+        $this->assertSame($expected, $this->eolToNative(Convert::linesToLists(...$args)));
     }
 
     /**

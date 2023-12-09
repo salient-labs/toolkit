@@ -3,7 +3,7 @@
 namespace Lkrms\Support;
 
 use Lkrms\Exception\UnexpectedValueException;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Generator;
 
 defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 10007);
@@ -117,13 +117,13 @@ final class TokenExtractor
                 case '}':
                 case ';':
                     if ($pending) {
-                        $map[Convert::classToBasename($current)] = $current;
+                        $map[Get::basename($current)] = $current;
                     }
                     break 2;
 
                 case ',':
                     if ($pending) {
-                        $map[Convert::classToBasename($current)] = $current;
+                        $map[Get::basename($current)] = $current;
                     }
                     $current = $namespace;
                     $pending = true;

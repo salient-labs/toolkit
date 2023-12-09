@@ -2,17 +2,17 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
 use Lkrms\Exception\FilesystemErrorException;
 use Lkrms\Exception\IncompatibleRuntimeEnvironmentException;
 use Lkrms\Exception\InvalidEnvironmentException;
-use Lkrms\Facade\Sys;
 use Lkrms\Iterator\RecursiveFilesystemIterator;
 use Phar;
 
 /**
  * Work with files and directories
  */
-final class File
+final class File extends Utility
 {
     /**
      * Open a file or URL
@@ -146,7 +146,7 @@ final class File
      * @return string|null `null` if there are no recognised line breaks in the
      * file.
      *
-     * @see Inspect::getEol()
+     * @see Get::eol()
      * @see Str::setEol()
      */
     public static function getEol(string $filename): ?string

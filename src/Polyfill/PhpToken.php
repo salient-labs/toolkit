@@ -2,7 +2,7 @@
 
 namespace Lkrms\Polyfill;
 
-use Lkrms\Utility\Inspect;
+use Lkrms\Utility\Get;
 use Stringable;
 use TypeError;
 
@@ -153,7 +153,7 @@ class PhpToken implements Stringable
     public static function tokenize(string $code, int $flags = 0): array
     {
         $_tokens = token_get_all($code, $flags);
-        $eol = Inspect::getEol($code) ?: "\n";
+        $eol = Get::eol($code) ?: "\n";
         $pos = 0;
         $last = null;
         /** @var static[] */

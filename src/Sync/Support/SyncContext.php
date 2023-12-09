@@ -10,7 +10,7 @@ use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Exception\SyncInvalidFilterException;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Pcre;
 use Lkrms\Utility\Str;
 use LogicException;
@@ -152,7 +152,7 @@ final class SyncContext extends ProviderContext implements ISyncContext
                     ...array_map(
                         fn(ISyncEntity $entity): array => [
                             Str::toSnakeCase(
-                                Convert::classToBasename(
+                                Get::basename(
                                     $entity->service()
                                 )
                             ) => [

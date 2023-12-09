@@ -8,7 +8,6 @@ use Lkrms\Contract\IContainer;
 use Lkrms\Contract\IPipe;
 use Lkrms\Contract\IPipeline;
 use Lkrms\Exception\PipelineResultRejectedException;
-use Lkrms\Facade\Mapper;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
 use Closure;
@@ -52,17 +51,22 @@ final class Pipeline extends FluentInterface implements IPipeline
     private $Stream;
 
     /**
-     * @var array<IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, Closure, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>>>
+     * @var array<IPipe<TInput,TOutput,TArgument>|(callable(TInput|TOutput, Closure, static, TArgument): (TInput|TOutput))|class-string<IPipe<TInput,TOutput,TArgument>>>
      */
     private $Pipes = [];
 
     /**
-     * @var (callable(TInput, IPipeline<TInput,TOutput,TArgument>, TArgument): (TInput|TOutput))|null
+     * @var array<array{array<array-key,array-key|array-key[]>,int-mask-of<ArrayMapperFlag::*>}>
+     */
+    private $KeyMaps = [];
+
+    /**
+     * @var (callable(TInput, static, TArgument): (TInput|TOutput))|null
      */
     private $After;
 
     /**
-     * @var (callable(TInput, IPipeline<TInput,TOutput,TArgument>, TArgument): TOutput)|null
+     * @var (callable(TInput, static, TArgument): TOutput)|null
      */
     private $Then;
 
@@ -72,14 +76,19 @@ final class Pipeline extends FluentInterface implements IPipeline
     private $CollectThen = false;
 
     /**
-     * @var array<callable(TOutput, IPipeline<TInput,TOutput,TArgument>, TArgument): mixed>
+     * @var array<callable(TOutput, static, TArgument): mixed>
      */
     private $Cc = [];
 
     /**
-     * @var (callable(TOutput, IPipeline<TInput,TOutput,TArgument>, TArgument): bool)|null
+     * @var (callable(TOutput, static, TArgument): bool)|null
      */
     private $Unless;
+
+    /**
+     * @var ArrayMapper[]
+     */
+    private $ArrayMappers = [];
 
     /**
      * Creates a new Pipeline object
@@ -111,6 +120,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         $clone->PayloadConformity = ArrayKeyConformity::NONE;
         $clone->Arg = $arg;
         $clone->Stream = false;
+        $clone->ArrayMappers = [];
 
         return $clone;
     }
@@ -125,6 +135,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         $clone->PayloadConformity = ArrayKeyConformity::NONE;
         $clone->Arg = $arg;
         $clone->Stream = true;
+        $clone->ArrayMappers = [];
 
         return $clone;
     }
@@ -136,6 +147,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     {
         $clone = clone $this;
         $clone->PayloadConformity = $conformity;
+        $clone->ArrayMappers = [];
 
         return $clone;
     }
@@ -183,7 +195,7 @@ final class Pipeline extends FluentInterface implements IPipeline
     public function throughCallback(callable $callback)
     {
         return $this->through(
-            fn($payload, Closure $next, IPipeline $pipeline, $args) =>
+            fn($payload, Closure $next, self $pipeline, $args) =>
                 $next($callback($payload, $pipeline, $args))
         );
     }
@@ -193,14 +205,13 @@ final class Pipeline extends FluentInterface implements IPipeline
      */
     public function throughKeyMap(array $keyMap, int $flags = ArrayMapperFlag::ADD_UNMAPPED)
     {
-        return $this->through(
-            fn($payload, Closure $next, IPipeline $pipeline) =>
-                $next((Mapper::getKeyMapClosure(
-                    $keyMap,
-                    $pipeline->getConformity(),
-                    $flags
-                ))($payload))
+        $keyMapKey = count($this->KeyMaps);
+        $clone = $this->through(
+            fn($payload, Closure $next, self $pipeline) =>
+                $next($pipeline->arrayMapper($keyMapKey)->map($payload))
         );
+        $clone->KeyMaps[] = [$keyMap, $flags];
+        return $clone;
     }
 
     /**
@@ -398,6 +409,16 @@ final class Pipeline extends FluentInterface implements IPipeline
     public function startInto(IPipeline $next)
     {
         return $next->stream($this->start(), $this->Arg);
+    }
+
+    private function arrayMapper(int $keyMapKey): ArrayMapper
+    {
+        return $this->ArrayMappers[$keyMapKey] ??=
+            new ArrayMapper(
+                $this->KeyMaps[$keyMapKey][0],
+                $this->PayloadConformity,
+                $this->KeyMaps[$keyMapKey][1],
+            );
     }
 
     /**

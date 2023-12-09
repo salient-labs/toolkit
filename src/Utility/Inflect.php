@@ -2,10 +2,12 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
+
 /**
  * Inflect English words
  */
-class Inflect
+class Inflect extends Utility
 {
     /**
      * Get the indefinite article ("a" or "an") to use before a word

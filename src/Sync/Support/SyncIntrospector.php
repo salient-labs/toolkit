@@ -17,7 +17,7 @@ use Lkrms\Sync\Contract\ISyncContext;
 use Lkrms\Sync\Contract\ISyncEntity;
 use Lkrms\Sync\Contract\ISyncProvider;
 use Lkrms\Utility\Arr;
-use Lkrms\Utility\Convert;
+use Lkrms\Utility\Get;
 use Lkrms\Utility\Pcre;
 use Closure;
 use LogicException;
@@ -62,8 +62,8 @@ final class SyncIntrospector extends Introspector
 
         return sprintf(
             '%s\Provider\%sProvider',
-            Convert::classToNamespace($entity),
-            Convert::classToBasename($entity)
+            Get::namespace($entity),
+            Get::basename($entity)
         );
     }
 

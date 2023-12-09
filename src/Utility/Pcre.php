@@ -2,12 +2,13 @@
 
 namespace Lkrms\Utility;
 
+use Lkrms\Concept\Utility;
 use Lkrms\Exception\PcreErrorException;
 
 /**
  * preg_* function wrappers that throw an exception on failure
  */
-final class Pcre
+final class Pcre extends Utility
 {
     /**
      * A wrapper for preg_grep()

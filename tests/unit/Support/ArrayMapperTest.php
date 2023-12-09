@@ -2,55 +2,51 @@
 
 namespace Lkrms\Tests\Support;
 
-use Lkrms\Facade\Mapper;
+use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Support\Catalog\ArrayKeyConformity;
 use Lkrms\Support\Catalog\ArrayMapperFlag;
-use UnexpectedValueException;
+use Lkrms\Support\ArrayMapper;
 use ValueError;
 
 final class ArrayMapperTest extends \Lkrms\Tests\TestCase
 {
-    public function testGetKeyMapClosureCache(): void
-    {
-        $map = [
-            'USER_ID' => 'Id',
-            'FULL_NAME' => 'Name',
-            'MAIL' => 'Email',
-        ];
-        $closure1 = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
-        $closure2 = Mapper::getKeyMapClosure($map, ArrayKeyConformity::NONE, ArrayMapperFlag::ADD_UNMAPPED | ArrayMapperFlag::ADD_MISSING);
-        $this->assertSame($closure1, $closure2);
-    }
-
     /**
-     * @dataProvider getKeyMapClosureProvider
+     * @dataProvider mapProvider
      *
      * @param array<string,mixed>|class-string<\Throwable>|null $expected
-     * @param array<array-key,array-key|array-key[]> $map
+     * @param array<array-key,array-key|array-key[]> $keyMap
      * @param array<string,mixed> $in
      * @param ArrayKeyConformity::* $conformity
      * @param int-mask-of<ArrayMapperFlag::*> $flags
      */
-    public function testGetKeyMapClosure($expected, array $map, array $in, $conformity = ArrayKeyConformity::NONE, int $flags = ArrayMapperFlag::ADD_UNMAPPED): void
-    {
-        $closure = Mapper::getKeyMapClosure($map, $conformity, $flags);
-        if (!is_array($expected)) {
-            $this->expectException(
-                $expected
-                    ?: (\PHP_VERSION_ID < 80000
-                        ? UnexpectedValueException::class
-                        : ValueError::class)
-            );
-            $closure($in);
+    public function testMap(
+        $expected,
+        array $keyMap,
+        array $in,
+        $conformity = ArrayKeyConformity::NONE,
+        int $flags = ArrayMapperFlag::ADD_UNMAPPED
+    ): void {
+        $mapper = new ArrayMapper($keyMap, $conformity, $flags);
+
+        if (is_array($expected)) {
+            $this->assertSame($expected, $mapper->map($in));
             return;
         }
-        $this->assertSame($expected, $closure($in));
+
+        $this->expectException(
+            $expected !== null
+                ? $expected
+                : (\PHP_VERSION_ID < 80000
+                    ? InvalidArgumentException::class
+                    : ValueError::class)
+        );
+        $mapper->map($in);
     }
 
     /**
      * @return array<string,array{array<string,mixed>|class-string<\Throwable>|null,array<array-key,array-key|array-key[]>,array<string,mixed>,3?:ArrayKeyConformity::*,4?:int-mask-of<ArrayMapperFlag::*>}>
      */
-    public static function getKeyMapClosureProvider(): array
+    public static function mapProvider(): array
     {
         $in = [
             'A_mapped' => 'value 1',
@@ -183,7 +179,7 @@ final class ArrayMapperTest extends \Lkrms\Tests\TestCase
                 ArrayMapperFlag::REQUIRE_MAPPED | ArrayMapperFlag::REMOVE_NULL,
             ],
             'require mapped + missing input key' => [
-                UnexpectedValueException::class,
+                InvalidArgumentException::class,
                 $map2,
                 [
                     'USER_ID' => 32,

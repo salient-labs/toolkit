@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lkrms\Tests\Utility\Debugging;
+namespace Lkrms\Tests\Utility\Debug;
 
-use Lkrms\Facade\Debug;
+use Lkrms\Utility\Debug;
 use Closure;
 
 class GetCallerClass
