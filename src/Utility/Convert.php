@@ -4,6 +4,7 @@ namespace Lkrms\Utility;
 
 use Lkrms\Concept\Utility;
 use Lkrms\Contract\IDateFormatter;
+use Lkrms\Http\Uri;
 use Lkrms\Iterator\Contract\MutableIterator;
 use Lkrms\Iterator\RecursiveGraphIterator;
 use Lkrms\Support\Catalog\RegularExpression as Regex;
@@ -457,148 +458,46 @@ final class Convert extends Utility
     }
 
     /**
-     * Resolve relative segments in a pathname
-     *
-     * e.g. `/dir/subdir/files/../../subdir2/./doc` becomes `/dir/subdir2/doc`.
-     *
-     * @see Convert::resolveRelativeUrl()
+     * @deprecated Use {@see File::resolve()} instead
+     * @codeCoverageIgnore
      */
     public static function resolvePath(string $path): string
     {
-        $path = Pcre::replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
-        do {
-            $path = Pcre::replace('@(?<=/)(?!\.\./)[^/]+/\.\./@', '', $path, 1, $count);
-        } while ($count);
-        $path = Pcre::replace('@(?<=/)(?!\.\./)[^/]+/\.\.$@', '', $path, 1, $count);
-
-        return rtrim($path, '/');
+        return File::resolve($path);
     }
 
     /**
-     * Get the absolute form of a URL relative to a base URL, as per [RFC1808]
+     * @deprecated Use {@see Uri::resolveReference()} instead
+     * @codeCoverageIgnore
      */
     public static function resolveRelativeUrl(string $embeddedUrl, string $baseUrl): string
     {
-        // Step 1
-        if (!$baseUrl) {
-            return $embeddedUrl;
-        }
-        // Step 2a
-        if (!$embeddedUrl) {
-            return $baseUrl;
-        }
-        $url = self::parseUrl($embeddedUrl);
-        // Step 2b
-        if (isset($url['scheme'])) {
-            return $embeddedUrl;
-        }
-        $base = self::parseUrl($baseUrl);
-        // Step 2c
-        $url['scheme'] = $base['scheme'] ?? null;
-        // Step 3
-        if (self::netLoc($url)) {
-            return self::unparseUrl($url);
-        }
-        $url = self::netLoc($base) + $url;
-        // Step 4
-        if (substr($path = $url['path'] ?? '', 0, 1) === '/') {
-            return self::unparseUrl($url);
-        }
-        // Step 5
-        if (!$path) {
-            $url['path'] = $base['path'] ?? null;
-            // Step 5a
-            if (!($url['params'] ?? null)) {
-                $url['params'] = $base['params'] ?? null;
-                // Step 5b
-                if (!($url['query'] ?? null)) {
-                    $url['query'] = $base['query'] ?? null;
-                }
-            }
-
-            return self::unparseUrl($url);
-        }
-        $base['path'] = $base['path'] ?? '';
-        // Step 6
-        $path = substr($base['path'], 0, strrpos("/{$base['path']}", '/')) . $path;
-        // Steps 6a and 6b
-        $path = Pcre::replace(['@(?<=/)\./@', '@(?<=/)\.$@'], '', $path);
-        // Step 6c
-        do {
-            $path = Pcre::replace('@(?<=/)(?!\.\./)[^/]+/\.\./@', '', $path, 1, $count);
-        } while ($count);
-        // Step 6d
-        $url['path'] = Pcre::replace('@(?<=/)(?!\.\./)[^/]+/\.\.$@', '', $path, 1, $count);
-
-        return self::unparseUrl($url);
+        return Uri::resolveReference($embeddedUrl, $baseUrl);
     }
 
     /**
-     * @param array<string,string|int|null> $url
-     * @return array<string,string|int|null>
+     * @return array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}
+     * @deprecated Use {@see Uri::parse()} instead
+     * @codeCoverageIgnore
      */
-    private static function netLoc(array $url): array
+    public static function parseUrl(string $url): array
     {
-        return array_intersect_key($url, array_flip(['host', 'port', 'user', 'pass']));
+        return Uri::parse($url);
     }
 
     /**
-     * Parse a URL and return its components, including "params" if FTP
-     * parameters are present
-     *
-     * Other components are as per `parse_url`.
-     *
-     * @return array<string,string|int>|false `false` if `$url` cannot be
-     * parsed.
-     */
-    public static function parseUrl(string $url)
-    {
-        // Extract "params" early because parse_url doesn't accept URLs where
-        // "path" has a leading ";"
-        if (strpos($url, ';') !== false) {
-            Pcre::match('/;([^?]*)/', $url, $matches);
-            $params = $matches[1];
-            $url = Pcre::replace('/;[^?]*/', '', $url, 1);
-        }
-        if (($url = parse_url($url)) === false) {
-            return false;
-        }
-        if (isset($params)) {
-            $url['params'] = $params;
-        }
-
-        return $url;
-    }
-
-    /**
-     * Convert a parse_url array to a string
-     *
-     * Arrays returned by {@see Convert::parseUrl()} are also converted.
-     *
-     * @param array<string,string|int> $url
+     * @param array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} $url
+     * @deprecated Use {@see Uri::unparse()} instead
+     * @codeCoverageIgnore
      */
     public static function unparseUrl(array $url): string
     {
-        [$u, $url] = [$url, ''];
-        !($u['scheme'] ?? null) || $url .= "{$u['scheme']}:";
-        if (isset($u['host'])) {
-            $url .= '//';
-            !array_key_exists('user', $u) || $auth = $u['user'];
-            !array_key_exists('pass', $u) || $auth = ($auth ?? '') . ":{$u['pass']}";
-            null === ($auth ?? null) || $url .= "$auth@";
-            $url .= $u['host'];
-            !array_key_exists('port', $u) || $url .= ":{$u['port']}";
-        }
-        !($u['path'] ?? null) || $url .= $u['path'];
-        !array_key_exists('params', $u) || $url .= ";{$u['params']}";
-        !array_key_exists('query', $u) || $url .= "?{$u['query']}";
-        !array_key_exists('fragment', $u) || $url .= "#{$u['fragment']}";
-
-        return $url;
+        return Uri::unparse($url);
     }
 
     /**
      * @deprecated Use {@see Get::basename()} instead
+     * @codeCoverageIgnore
      */
     public static function classToBasename(string $class, string ...$suffix): string
     {
@@ -607,6 +506,7 @@ final class Convert extends Utility
 
     /**
      * @deprecated Use {@see Get::namespace()} instead
+     * @codeCoverageIgnore
      */
     public static function classToNamespace(string $class): string
     {
@@ -1128,6 +1028,7 @@ final class Convert extends Utility
 
     /**
      * @deprecated Use {@see Str::toSnakeCase()} instead
+     * @codeCoverageIgnore
      */
     public static function toSnakeCase(string $text, ?string $preserve = null): string
     {
@@ -1136,6 +1037,7 @@ final class Convert extends Utility
 
     /**
      * @deprecated Use {@see Str::toKebabCase()} instead
+     * @codeCoverageIgnore
      */
     public static function toKebabCase(string $text, ?string $preserve = null): string
     {
@@ -1144,6 +1046,7 @@ final class Convert extends Utility
 
     /**
      * @deprecated Use {@see Str::toPascalCase()} instead
+     * @codeCoverageIgnore
      */
     public static function toPascalCase(string $text, ?string $preserve = null): string
     {
@@ -1152,6 +1055,7 @@ final class Convert extends Utility
 
     /**
      * @deprecated Use {@see Str::toCamelCase()} instead
+     * @codeCoverageIgnore
      */
     public static function toCamelCase(string $text, ?string $preserve = null): string
     {
@@ -1159,8 +1063,9 @@ final class Convert extends Utility
     }
 
     /**
-     * @deprecated Use {@see Str::toWords()} instead
      * @param (callable(string): string)|null $callback
+     * @deprecated Use {@see Str::toWords()} instead
+     * @codeCoverageIgnore
      */
     public static function splitWords(string $text, ?string $preserve, string $delimiter, ?callable $callback = null): string
     {

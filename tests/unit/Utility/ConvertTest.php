@@ -2,11 +2,11 @@
 
 namespace Lkrms\Tests\Utility;
 
+use Lkrms\Http\Uri;
 use Lkrms\Support\DateFormatter;
 use Lkrms\Utility\Convert;
 use DateTimeImmutable;
 use DateTimeInterface;
-use Generator;
 use LogicException;
 use ReflectionParameter;
 
@@ -289,63 +289,6 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
         $slice = Convert::renameArrayKey('c', 2, $data);
     }
 
-    public function testResolvePath(): void
-    {
-        $this->assertEquals('/dir/subdir2/doc', Convert::resolvePath('/dir/subdir/files/../../subdir2/./doc'));
-    }
-
-    public function testResolveRelativeUrl(): void
-    {
-        // From [RFC1808] Section 5
-        $baseUrl = 'http://a/b/c/d;p?q#f';
-        // "Normal Examples"
-        $relativeUrls = [
-            'g:h' => 'g:h',
-            'g' => 'http://a/b/c/g',
-            './g' => 'http://a/b/c/g',
-            'g/' => 'http://a/b/c/g/',
-            '/g' => 'http://a/g',
-            '//g' => 'http://g',
-            '?y' => 'http://a/b/c/d;p?y',
-            'g?y' => 'http://a/b/c/g?y',
-            'g?y/./x' => 'http://a/b/c/g?y/./x',
-            '#s' => 'http://a/b/c/d;p?q#s',
-            'g#s' => 'http://a/b/c/g#s',
-            'g#s/./x' => 'http://a/b/c/g#s/./x',
-            'g?y#s' => 'http://a/b/c/g?y#s',
-            ';x' => 'http://a/b/c/d;x',
-            'g;x' => 'http://a/b/c/g;x',
-            'g;x?y#s' => 'http://a/b/c/g;x?y#s',
-            '.' => 'http://a/b/c/',
-            './' => 'http://a/b/c/',
-            '..' => 'http://a/b/',
-            '../' => 'http://a/b/',
-            '../g' => 'http://a/b/g',
-            '../..' => 'http://a/',
-            '../../' => 'http://a/',
-            '../../g' => 'http://a/g',
-            // "Abnormal Examples"
-            '' => 'http://a/b/c/d;p?q#f',
-            '../../../g' => 'http://a/../g',
-            '../../../../g' => 'http://a/../../g',
-            '/./g' => 'http://a/./g',
-            '/../g' => 'http://a/../g',
-            'g.' => 'http://a/b/c/g.',
-            '.g' => 'http://a/b/c/.g',
-            'g..' => 'http://a/b/c/g..',
-            '..g' => 'http://a/b/c/..g',
-            './../g' => 'http://a/b/g',
-            './g/.' => 'http://a/b/c/g/',
-            'g/./h' => 'http://a/b/c/g/h',
-            'g/../h' => 'http://a/b/c/h',
-            'http:g' => 'http:g',
-            'http:' => 'http:',
-        ];
-        foreach ($relativeUrls as $url => $expected) {
-            $this->assertSame($expected, Convert::resolveRelativeUrl($url, $baseUrl));
-        }
-    }
-
     public function testParseUrl(): void
     {
         $expected = [
@@ -355,10 +298,9 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
                 'port' => 8443,
                 'user' => 'user',
                 'pass' => 'pass',
-                'path' => '/path/',
+                'path' => '/path/;params',
                 'query' => 'query',
                 'fragment' => 'fragment',
-                'params' => 'params',
             ],
             [
                 'scheme' => 'https',
@@ -366,10 +308,9 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
                 'port' => 8443,
                 'user' => 'user',
                 'pass' => '',
-                'path' => '/path/',
+                'path' => '/path/;params',
                 'query' => 'query',
                 'fragment' => 'fragment',
-                'params' => 'params',
             ],
             [
                 'scheme' => 'https',
@@ -377,10 +318,9 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
                 'port' => 8443,
                 'user' => '',
                 'pass' => 'pass',
-                'path' => '/path/',
+                'path' => '/path/;params',
                 'query' => 'query',
                 'fragment' => 'fragment',
-                'params' => 'params',
             ],
             [
                 'scheme' => 'https',
@@ -388,40 +328,26 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
                 'port' => 8443,
                 'user' => '',
                 'pass' => '',
-                'path' => '/path/',
+                'path' => '/path/;params',
                 'query' => 'query',
                 'fragment' => 'fragment',
-                'params' => 'params',
             ],
             [
                 'scheme' => 'https',
                 'host' => 'host',
                 'port' => 8443,
                 'user' => '',
-                'path' => '/path/',
+                'path' => '/path/;params',
                 'query' => 'query',
                 'fragment' => 'fragment',
-                'params' => 'params',
             ],
             [
                 'scheme' => 'https',
                 'host' => 'host',
                 'port' => 8443,
-                'path' => '/path/',
+                'path' => '/path/;params',
                 'query' => 'query',
                 'fragment' => 'fragment',
-                'params' => 'params',
-            ],
-            [
-                'scheme' => 'https',
-                'host' => 'host',
-                'port' => 8443,
-                'params' => 'params',
-            ],
-            [
-                'scheme' => 'https',
-                'host' => 'host',
-                'params' => 'params',
             ],
             [
                 'scheme' => 'https',
@@ -493,17 +419,17 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
             ],
         ];
         foreach ($this->getUrls(true) as $i => $url) {
-            $this->assertSame($expected[$i], Convert::parseUrl($url));
+            $this->assertSame($expected[$i], Uri::parse($url));
         }
     }
 
     public function testUnparseUrl(): void
     {
         foreach ($this->getUrls() as $url) {
-            $this->assertSame($url, Convert::unparseUrl(parse_url($url)));
+            $this->assertSame($url, Uri::unparse(parse_url($url)));
         }
         foreach ($this->getUrls(true) as $url) {
-            $this->assertSame($url, Convert::unparseUrl(Convert::parseUrl($url)));
+            $this->assertSame($url, Uri::unparse(Uri::parse($url)));
         }
     }
 
@@ -521,10 +447,6 @@ final class ConvertTest extends \Lkrms\Tests\TestCase
             "https://:@host:8443/path/$params?query#fragment",
             "https://@host:8443/path/$params?query#fragment",
             "https://host:8443/path/$params?query#fragment",
-            ...(!$withParams ? [] : [
-                'https://host:8443;params',
-                'https://host;params',
-            ]),
             'https://host:8443?query',
             'https://host?query',
             'https://host:8443#fragment',

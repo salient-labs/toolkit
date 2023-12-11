@@ -103,7 +103,7 @@ final class Pipeline extends FluentInterface implements IPipeline
      *
      * Syntactic sugar for `new Pipeline()`.
      *
-     * @return self<TInput,TOutput,TArgument>
+     * @return static
      */
     public static function create(?IContainer $container = null): self
     {
@@ -208,7 +208,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         $keyMapKey = count($this->KeyMaps);
         $clone = $this->through(
             fn($payload, Closure $next, self $pipeline) =>
-                $next($pipeline->arrayMapper($keyMapKey)->map($payload))
+                $next($pipeline->getArrayMapper($keyMapKey)->map($payload))
         );
         $clone->KeyMaps[] = [$keyMap, $flags];
         return $clone;
@@ -411,7 +411,7 @@ final class Pipeline extends FluentInterface implements IPipeline
         return $next->stream($this->start(), $this->Arg);
     }
 
-    private function arrayMapper(int $keyMapKey): ArrayMapper
+    private function getArrayMapper(int $keyMapKey): ArrayMapper
     {
         return $this->ArrayMappers[$keyMapKey] ??=
             new ArrayMapper(

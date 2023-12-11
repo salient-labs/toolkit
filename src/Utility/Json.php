@@ -12,12 +12,12 @@ final class Json extends Utility
     /**
      * Flags passed to json_encode()
      */
-    public const ENCODE_FLAGS = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR;
+    public const ENCODE_FLAGS = \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR;
 
     /**
      * Flags passed to json_decode()
      */
-    public const DECODE_FLAGS = JSON_THROW_ON_ERROR;
+    public const DECODE_FLAGS = \JSON_THROW_ON_ERROR;
 
     /**
      * Convert a value to a JSON string
@@ -38,7 +38,7 @@ final class Json extends Utility
      */
     public static function prettyPrint($value, int $flags = 0): string
     {
-        return json_encode($value, self::ENCODE_FLAGS | JSON_PRETTY_PRINT | $flags);
+        return json_encode($value, self::ENCODE_FLAGS | \JSON_PRETTY_PRINT | $flags);
     }
 
     /**

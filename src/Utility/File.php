@@ -92,7 +92,7 @@ final class File extends Utility
      * @param resource $stream
      * @param \SEEK_SET|\SEEK_CUR|\SEEK_END $whence
      */
-    public static function seek($stream, int $offset, int $whence = SEEK_SET, ?string $uri = null): void
+    public static function seek($stream, int $offset, int $whence = \SEEK_SET, ?string $uri = null): void
     {
         $result = fseek($stream, $offset, $whence);
         if ($result === -1) {
@@ -361,7 +361,7 @@ final class File extends Utility
      *
      * 2. If a Phar archive is running and `$filename` is a `phar://` URL:
      *    - relative path segments in `$filename` (e.g. `/../..`) are resolved
-     *      by {@see Convert::resolvePath()}
+     *      by {@see File::resolve()}
      *    - if the file or directory exists, the resolved pathname is returned
      *    - if `$filename` doesn't exist, `false` is returned
      *
@@ -382,13 +382,56 @@ final class File extends Utility
                 extension_loaded('Phar') &&
                 Phar::running()) {
             // @codeCoverageIgnoreStart
-            $filename = Convert::resolvePath($filename);
+            $filename = self::resolve($filename);
 
             return file_exists($filename) ? $filename : false;
             // @codeCoverageIgnoreEnd
         }
 
         return realpath($filename);
+    }
+
+    /**
+     * Resolve "/./" and "/../" segments in a path
+     *
+     * Relative directory segments are removed without accessing the filesystem,
+     * so `$path` need not exist.
+     *
+     * If `$withEmptySegments` is `true`, a `"/../"` segment after two or more
+     * consecutive directory separators is resolved by removing one of the
+     * separators. If `false` (the default), it is resolved by treating
+     * consecutive separators as one separator.
+     *
+     * Example:
+     *
+     * ```php
+     * <?php
+     * echo File::resolve('/dir/subdir//../') . PHP_EOL;
+     * echo File::resolve('/dir/subdir//../', true) . PHP_EOL;
+     * ```
+     *
+     * Output:
+     *
+     * ```
+     * /dir/
+     * /dir/subdir/
+     * ```
+     */
+    public static function resolve(string $path, bool $withEmptySegments = false): string
+    {
+        $path = str_replace('\\', '/', $path);
+
+        // Remove "/./" segments
+        $path = Pcre::replace('@(?<=/|^)\.(?:/|$)@', '', $path);
+
+        // Remove "/../" segments
+        $regex = $withEmptySegments ? '/' : '/+';
+        $regex = "@(?:^|(?<=^/)|(?<=/|^(?!/))(?!\.\.(?:/|\$))[^/]*{$regex})\.\.(?:/|\$)@";
+        do {
+            $path = Pcre::replace($regex, '', $path, -1, $count);
+        } while ($count);
+
+        return $path;
     }
 
     /**
@@ -407,10 +450,10 @@ final class File extends Utility
             $basePath = Package::path();
         } else {
             Assert::fileExists($parentDir);
-            $basePath = File::realpath($parentDir);
+            $basePath = self::realpath($parentDir);
         }
         Assert::fileExists($filename);
-        $path = File::realpath($filename);
+        $path = self::realpath($filename);
         if (strpos($path, $basePath) === 0) {
             return substr($path, strlen($basePath) + 1);
         }

@@ -2,6 +2,7 @@
 
 namespace Lkrms\Iterator;
 
+use Lkrms\Iterator\Contract\RecursiveCallbackIteratorInterface;
 use IteratorIterator;
 use RecursiveIterator;
 
@@ -18,9 +19,9 @@ use RecursiveIterator;
  *
  * @extends IteratorIterator<TKey,TValue,RecursiveIterator<TKey,TValue>>
  *
- * @implements RecursiveIterator<TKey,TValue>
+ * @implements RecursiveCallbackIteratorInterface<TKey,TValue>
  */
-class RecursiveCallbackIterator extends IteratorIterator implements RecursiveIterator
+class RecursiveCallbackIterator extends IteratorIterator implements RecursiveCallbackIteratorInterface
 {
     /**
      * @var RecursiveIterator<TKey,TValue>
@@ -58,18 +59,17 @@ class RecursiveCallbackIterator extends IteratorIterator implements RecursiveIte
     }
 
     /**
-     * @return self<TKey,TValue>|null
+     * @return static|null
      */
     public function getChildren(): ?self
     {
         /** @var RecursiveIterator<TKey,TValue>|null */
         $children = $this->Iterator->getChildren();
 
-        return
-            $children === null
-                // @codeCoverageIgnoreStart
-                ? null
-                // @codeCoverageIgnoreEnd
-                : new self($children, $this->Callback);
+        return $children === null
+            // @codeCoverageIgnoreStart
+            ? null
+            // @codeCoverageIgnoreEnd
+            : new static($children, $this->Callback);
     }
 }
