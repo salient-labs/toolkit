@@ -9,16 +9,16 @@
     "packages-dev": [
         {
             "name": "lkrms/dice",
-            "version": "v4.1.7",
+            "version": "v4.1.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/Dice.git",
-                "reference": "1f219484fcb55a8fab4943672f73f7993480bfea"
+                "reference": "08b5151cd9cf80771d8b45808a3e19de99f1ae12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/Dice/zipball/1f219484fcb55a8fab4943672f73f7993480bfea",
-                "reference": "1f219484fcb55a8fab4943672f73f7993480bfea",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/08b5151cd9cf80771d8b45808a3e19de99f1ae12",
+                "reference": "08b5151cd9cf80771d8b45808a3e19de99f1ae12",
                 "shasum": ""
             },
             "require": {
@@ -46,33 +46,38 @@
                 "ioc"
             ],
             "support": {
-                "source": "https://github.com/lkrms/Dice/tree/v4.1.7"
+                "source": "https://github.com/lkrms/Dice/tree/v4.1.8"
             },
-            "time": "2023-11-05T22:53:14+00:00"
+            "time": "2023-12-04T15:05:42+00:00"
         },
         {
             "name": "lkrms/util",
-            "version": "v0.21.2",
+            "version": "v0.21.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/php-util.git",
-                "reference": "3b5022cdcf585bce2ad333327a20c004f5577724"
+                "reference": "36770b8f1170cbde44b82ef7d892f7fae48db0ba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/php-util/zipball/3b5022cdcf585bce2ad333327a20c004f5577724",
-                "reference": "3b5022cdcf585bce2ad333327a20c004f5577724",
+                "url": "https://api.github.com/repos/lkrms/php-util/zipball/36770b8f1170cbde44b82ef7d892f7fae48db0ba",
+                "reference": "36770b8f1170cbde44b82ef7d892f7fae48db0ba",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2.2",
-                "lkrms/dice": "^4.1.6",
+                "lkrms/dice": "^4.1.8",
                 "php": ">=7.4",
                 "psr/container": "^2",
+                "psr/event-dispatcher": "^1",
+                "psr/http-message": "^1.1 || ^2",
                 "psr/log": "^1"
             },
+            "provide": {
+                "psr/event-dispatcher-implementation": "^1"
+            },
             "require-dev": {
-                "adodb/adodb-php": "^5.22",
+                "adodb/adodb-php": "^5",
                 "analog/analog": "^1",
                 "clue/phar-composer": "^1",
                 "firebase/php-jwt": "^6",
@@ -112,9 +117,9 @@
             "description": "A lightweight PHP toolkit for expressive backend/CLI apps",
             "support": {
                 "issues": "https://github.com/lkrms/php-util/issues",
-                "source": "https://github.com/lkrms/php-util/tree/v0.21.2"
+                "source": "https://github.com/lkrms/php-util/tree/v0.21.12"
             },
-            "time": "2023-11-07T11:00:33+00:00"
+            "time": "2023-12-12T15:24:37+00:00"
         },
         {
             "name": "psr/container",
@@ -170,6 +175,109 @@
             "time": "2021-11-05T16:47:00+00:00"
         },
         {
+            "name": "psr/event-dispatcher",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/event-dispatcher.git",
+                "reference": "dbefd12671e8a14ec7f180cab83036ed26714bb0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/event-dispatcher/zipball/dbefd12671e8a14ec7f180cab83036ed26714bb0",
+                "reference": "dbefd12671e8a14ec7f180cab83036ed26714bb0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\EventDispatcher\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Standard interfaces for event handling.",
+            "keywords": [
+                "events",
+                "psr",
+                "psr-14"
+            ],
+            "support": {
+                "issues": "https://github.com/php-fig/event-dispatcher/issues",
+                "source": "https://github.com/php-fig/event-dispatcher/tree/1.0.0"
+            },
+            "time": "2019-01-08T18:20:26+00:00"
+        },
+        {
+            "name": "psr/http-message",
+            "version": "2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-message.git",
+                "reference": "402d35bcb92c70c026d1a6a9883f06b2ead23d71"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+                "reference": "402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2 || ^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP messages",
+            "homepage": "https://github.com/php-fig/http-message",
+            "keywords": [
+                "http",
+                "http-message",
+                "psr",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-message/tree/2.0"
+            },
+            "time": "2023-04-04T09:54:51+00:00"
+        },
+        {
             "name": "psr/log",
             "version": "1.1.4",
             "source": {
@@ -221,20 +329,20 @@
         },
         {
             "name": "salient/changelog",
-            "version": "v0.1.9",
+            "version": "v0.1.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/php-changelog.git",
-                "reference": "a3cca868cdaff58bdca9cf0feb6c2dcf2d55e257"
+                "reference": "f2b9b1c621c57a363ed17b5456620a36167680bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/salient-labs/php-changelog/zipball/a3cca868cdaff58bdca9cf0feb6c2dcf2d55e257",
-                "reference": "a3cca868cdaff58bdca9cf0feb6c2dcf2d55e257",
+                "url": "https://api.github.com/repos/salient-labs/php-changelog/zipball/f2b9b1c621c57a363ed17b5456620a36167680bc",
+                "reference": "f2b9b1c621c57a363ed17b5456620a36167680bc",
                 "shasum": ""
             },
             "require": {
-                "lkrms/util": "0.21.2",
+                "lkrms/util": "^0.21.12",
                 "php": ">=7.4"
             },
             "require-dev": {
@@ -267,7 +375,7 @@
                 "issues": "https://github.com/salient-labs/php-changelog/issues",
                 "source": "https://github.com/salient-labs/php-changelog"
             },
-            "time": "2023-11-09T10:52:28+00:00"
+            "time": "2023-12-12T22:01:51+00:00"
         }
     ],
     "aliases": [],

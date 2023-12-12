@@ -9,16 +9,16 @@
     "packages-dev": [
         {
             "name": "lkrms/dice",
-            "version": "v4.1.7",
+            "version": "v4.1.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/Dice.git",
-                "reference": "1f219484fcb55a8fab4943672f73f7993480bfea"
+                "reference": "08b5151cd9cf80771d8b45808a3e19de99f1ae12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/Dice/zipball/1f219484fcb55a8fab4943672f73f7993480bfea",
-                "reference": "1f219484fcb55a8fab4943672f73f7993480bfea",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/08b5151cd9cf80771d8b45808a3e19de99f1ae12",
+                "reference": "08b5151cd9cf80771d8b45808a3e19de99f1ae12",
                 "shasum": ""
             },
             "require": {
@@ -46,9 +46,9 @@
                 "ioc"
             ],
             "support": {
-                "source": "https://github.com/lkrms/Dice/tree/v4.1.7"
+                "source": "https://github.com/lkrms/Dice/tree/v4.1.8"
             },
-            "time": "2023-11-05T22:53:14+00:00"
+            "time": "2023-12-04T15:05:42+00:00"
         },
         {
             "name": "lkrms/pretty-php",

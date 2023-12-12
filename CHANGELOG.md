@@ -12,6 +12,116 @@ The format is based on [Keep a Changelog][], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.21.12] - 2023-12-12
+
+### Added
+
+- In `CliApplication`, generate a JSON Schema when `_json_schema` is the first argument after a command
+- Add `Uri::follow()` and `Uri::resolveReference()`, deprecating `Convert::resolveRelativeUrl()` and removing support for obsolete \[RFC1808]
+- Add `Uri::parse()`, deprecating `Convert::parseUrl()`
+- Add `Uri::unparse()`, deprecating `Convert::unparseUrl()`
+- Add `Uri::toParts()`, `Uri::fromParts()`, `Uri::normalise()`, `Uri::isReference()`
+- Add `CliCommand::filterJsonSchema()`
+- Add `CliOption::getSummary()`
+
+### Changed
+
+- Replace `Sys` facade with renamed `System` class
+- Replace `Debug` facade with renamed `Debugging` class after making its methods static
+- Refactor `Debug::getCaller()`
+- Rename `Inspect` to `Get` and shorten method names, i.e.
+  - `Inspect::getType()` -> `Get::type()`
+  - `Inspect::getEol()` -> `Get::eol()`
+- Move `Convert::classToBasename()` and `Convert::classToNamespace()` to `Get::basename()` and `Get::namespace()`, deprecating the former
+- Rewrite `Convert::resolvePath()` and move to `File::resolve()`, deprecating the former
+
+`ArrayMapper`:
+- Rewrite as a self-contained class instead of a closure factory
+- Remove its `Mapper` facade
+- Refactor `Pipeline::throughKeyMap()`
+
+`Uri`:
+- Implement `JsonSerializable`
+- Make distinction between undefined (`null`) and empty (`''`) values when converting to and from URI strings and arrays
+- Move regular expressions from `RegularExpression` to `Uri`
+
+`MultipleErrorException`:
+- Add `MultipleErrorExceptionInterface` and move implementation from `MultipleErrorException` to `MultipleErrorExceptionTrait`
+- Add `hasUnreportedErrors()` and `getMessageWithoutErrors()`
+- In `Console::exception()`, use `hasUnreportedErrors()` and `getMessageWithoutErrors()` to ensure errors are only reported once
+
+### Deprecated
+
+- As above, deprecate:
+  - `Convert::classToBasename()`
+  - `Convert::classToNamespace()`
+  - `Convert::parseUrl()`
+  - `Convert::resolvePath()`
+  - `Convert::resolveRelativeUrl()`
+  - `Convert::unparseUrl()`
+
+### Removed
+
+- Remove redundant `FluentIterator` class (`IterableIterator` can be used or extended instead)
+
+### Fixed
+
+- Fix issue where `Convert::classToBasename()` removes suffixes from the middle of class names
+- Fix issue where URI strings with an empty host are considered invalid
+- Fix issue where URI objects with an empty host cannot have userinfo or port
+- Fix issue where `file://` URIs are composed as `file:`
+- Fix issue where errors passed to `MultipleErrorException` are not reported if `ErrorHandler` is not handling exceptions (e.g. when running PHPUnit) by adding errors to the exception message
+
+## [v0.21.11] - 2023-12-08
+
+### Added
+
+- Allow exceptions to be thrown with an exit status
+- In `ErrorHandler`, check unhandled exceptions for an exit status to return
+- Add and implement `CliOptionValueType::PATH_OR_DASH` and `CliOptionValueType::FILE_OR_DASH`
+- Add `CliOptionVisibility::SCHEMA` so options can be flagged for inclusion in a JSON Schema
+- Add `CliOptionVisibility::ALL_EXCEPT_SYNOPSIS` for convenience
+- Add `Json` class
+- Add utility methods:
+  - `Date::timezone()`, `Date::maybeSetTimezone()`
+  - `File::is()`
+  - `Pcre::quoteCharacterClass()`
+  - `Str::wrap()`
+  - `Test::isStringable()`
+
+### Changed
+
+- `ErrorHandler`: change default exit status from 15 to 16 to improve support for bitmasks as return values
+- `Console`: indent fenced code blocks for separation from surrounding text
+- Move and refactor, deprecating the former:
+  - `Convert::splitWords()` -> `Str::toWords()`
+  - `Convert::toSnakeCase()` -> `Str::toSnakeCase()`
+  - `Convert::toKebabCase()` -> `Str::toKebabCase()`
+  - `Convert::toCamelCase()` -> `Str::toCamelCase()`
+  - `Convert::toPascalCase()` -> `Str::toPascalCase()`
+- Review `Formatters`
+  - Extend `Utility` and make methods `static`
+  - Remove `Format` facade and rename `Formatters` to `Format`
+  - Add `Format::value()`
+  - Refactor `Format::date()` and `Format::dateRange()`
+
+### Deprecated
+
+- Deprecate `Convert::toTimezone()` (replaced with `Date::timezone()`)
+- Deprecate `Test::areSameFile()` (replaced with `File::is()`)
+- Deprecate case conversion methods (as above)
+
+### Removed
+
+- Remove support for `"t"` and `"f"` as boolean strings
+- Remove previously deprecated methods
+- Remove `Test::classImplements()`
+
+### Fixed
+
+- Fix `CliCommand` issue where `getOptionValues()` and `getDefaultOptionValues()` fail with an exception when a positional option's `$Long` property is `null`
+- Fix `Console` issue where fenced code blocks are formatted as inline spans when indented
+
 ## [v0.21.10] - 2023-12-05
 
 ### Added
@@ -972,6 +1082,8 @@ The format is based on [Keep a Changelog][], and this project adheres to
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.21.12]: https://github.com/lkrms/php-util/compare/v0.21.11...v0.21.12
+[v0.21.11]: https://github.com/lkrms/php-util/compare/v0.21.10...v0.21.11
 [v0.21.10]: https://github.com/lkrms/php-util/compare/v0.21.9...v0.21.10
 [v0.21.9]: https://github.com/lkrms/php-util/compare/v0.21.8...v0.21.9
 [v0.21.8]: https://github.com/lkrms/php-util/compare/v0.21.7...v0.21.8
