@@ -79,7 +79,7 @@ final class PcreTest extends \Lkrms\Tests\TestCase
                     '',
                     \Stringable::class => $obj,
                 ],
-                PREG_GREP_INVERT,
+                \PREG_GREP_INVERT,
             ],
             [
                 \Error::class,

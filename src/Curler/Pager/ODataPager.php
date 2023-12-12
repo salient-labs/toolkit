@@ -57,7 +57,7 @@ final class ODataPager implements ICurlerPager
         } else {
             // [RFC7240], Section 2: "If any preference is specified more
             // than once, only the first instance is to be considered."
-            $value = Pcre::grep($pattern, $value, PREG_GREP_INVERT);
+            $value = Pcre::grep($pattern, $value, \PREG_GREP_INVERT);
             array_unshift($value, $preference);
         }
         return $curler->setHeader(HttpHeader::PREFER, $value);

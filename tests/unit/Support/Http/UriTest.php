@@ -4,6 +4,9 @@ namespace Lkrms\Tests\Support\Http;
 
 use Lkrms\Exception\InvalidArgumentException;
 use Lkrms\Http\Uri;
+use Lkrms\Utility\Arr;
+use Lkrms\Utility\Pcre;
+use Generator;
 
 /**
  * Unit tests for \Lkrms\Http\Uri
@@ -195,6 +198,19 @@ final class UriTest extends \Lkrms\Tests\TestCase
                 null,
                 './foo/../bar',
             ],
+            [
+                'file:///etc/hosts',
+                'file',
+                '',
+                '',
+                '',
+                null,
+                '/etc/hosts',
+            ],
+            [
+                'http://',
+                'http',
+            ]
         ];
     }
 
@@ -214,12 +230,29 @@ final class UriTest extends \Lkrms\Tests\TestCase
     public static function invalidUriProvider(): array
     {
         return [
-            ['//'],
-            ['///'],
             ['//example.com:-1'],
-            ['http://'],
+            ['http://host:8080;params'],
             ['urn://host:with:colon'],
             [':path:with:colon'],
+        ];
+    }
+
+    /**
+     * @dataProvider isReferenceProvider
+     */
+    public function testIsReference(string $uri): void
+    {
+        $this->assertTrue((new Uri($uri))->isReference());
+    }
+
+    /**
+     * @return array<array{string}>
+     */
+    public static function isReferenceProvider(): array
+    {
+        return [
+            ['//'],
+            ['///'],
         ];
     }
 
@@ -495,20 +528,6 @@ final class UriTest extends \Lkrms\Tests\TestCase
         $this->assertSame('http://example.com', (string) $uri);
     }
 
-    public function testWithUserInfoWithoutHost(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('URI without host cannot have userinfo or port');
-        $uri = (new Uri())->withUserInfo('user', 'pass');
-    }
-
-    public function testWithPortWithoutHost(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('URI without host cannot have userinfo or port');
-        $uri = (new Uri())->withPort(8080);
-    }
-
     public function testWithEncoding(): void
     {
         $uri = (new Uri())->withPath('/baz?#€/b%61r');
@@ -622,5 +641,147 @@ final class UriTest extends \Lkrms\Tests\TestCase
         $this->assertSame('[2a00:f48:1008::212:183:10]', $uri->getHost());
         $this->assertSame(56, $uri->getPort());
         $this->assertSame('foo=bar', $uri->getQuery());
+    }
+
+    /**
+     * @dataProvider followProvider
+     */
+    public function testFollow(string $expected, string $uri, string $reference): void
+    {
+        $uri = new Uri($uri);
+        $reference = new Uri($reference);
+        $target = $uri->follow($reference);
+        $this->assertSame($expected, (string) $target);
+
+        // Check the target path matches the output of the remove_dot_segments
+        // algorithm given in [RFC3986]
+        if (
+            !$reference->isReference() ||
+            $reference->getAuthority() !== '' ||
+            ($reference->getPath()[0] ?? null) === '/'
+        ) {
+            $path = $reference->getPath();
+        } elseif ($reference->getPath() === '') {
+            $path = $uri->getPath();
+        } else {
+            $path = implode('/', Arr::pop(explode('/', $uri->getPath()))) . '/' . $reference->getPath();
+        }
+        $this->assertSame($this->removeDotSegments($path), $target->getPath());
+    }
+
+    /**
+     * @return Generator<array{string,string,string}>
+     */
+    public static function followProvider(): Generator
+    {
+        $references = [
+            // [RFC3986] Section 5.4.1 ("Normal Examples")
+            ['g:h', 'g:h'],
+            ['http://a/b/c/g', 'g'],
+            ['http://a/b/c/g', './g'],
+            ['http://a/b/c/g/', 'g/'],
+            ['http://a/g', '/g'],
+            ['http://g', '//g'],
+            ['http://a/b/c/d;p?y', '?y'],
+            ['http://a/b/c/g?y', 'g?y'],
+            ['http://a/b/c/d;p?q#s', '#s'],
+            ['http://a/b/c/g#s', 'g#s'],
+            ['http://a/b/c/g?y#s', 'g?y#s'],
+            ['http://a/b/c/;x', ';x'],
+            ['http://a/b/c/g;x', 'g;x'],
+            ['http://a/b/c/g;x?y#s', 'g;x?y#s'],
+            ['http://a/b/c/d;p?q', ''],
+            ['http://a/b/c/', '.'],
+            ['http://a/b/c/', './'],
+            ['http://a/b/', '..'],
+            ['http://a/b/', '../'],
+            ['http://a/b/g', '../g'],
+            ['http://a/', '../..'],
+            ['http://a/', '../../'],
+            ['http://a/g', '../../g'],
+            // [RFC3986] Section 5.4.1 ("Abnormal Examples")
+            ['http://a/g', '../../../g'],
+            ['http://a/g', '../../../../g'],
+            ['http://a/g', '/./g'],
+            ['http://a/g', '/../g'],
+            ['http://a/b/c/g.', 'g.'],
+            ['http://a/b/c/.g', '.g'],
+            ['http://a/b/c/g..', 'g..'],
+            ['http://a/b/c/..g', '..g'],
+            ['http://a/b/g', './../g'],
+            ['http://a/b/c/g/', './g/.'],
+            ['http://a/b/c/g/h', 'g/./h'],
+            ['http://a/b/c/h', 'g/../h'],
+            ['http://a/b/c/g;x=1/y', 'g;x=1/./y'],
+            ['http://a/b/c/y', 'g;x=1/../y'],
+            ['http://a/b/c/g?y/./x', 'g?y/./x'],
+            ['http://a/b/c/g?y/../x', 'g?y/../x'],
+            ['http://a/b/c/g#s/./x', 'g#s/./x'],
+            ['http://a/b/c/g#s/../x', 'g#s/../x'],
+            ['http:g', 'http:g'],
+            // Empty segments ([RFC3986] does not specify correct behaviour)
+            ['http://a/b/c//', './/'],
+            ['http://a/b/c///', './//'],
+            ['http://a/b//', '..//'],
+            ['http://a/b///', '..///'],
+            ['http://a/b/c/', './/..'],
+            ['http://a/b/c/', './/../'],
+            ['http://a/b/c//', './/..//'],
+            ['http://a/b/', '..//..'],
+            ['http://a/b/', '..//../'],
+            ['http://a/b//', '..//..//'],
+            ['http://a/b/', '..///../..'],
+            ['http://a/b/', '..///../../'],
+            ['http://a/b//', '..///../..//'],
+            ['http://a//', '/.//'],
+            ['http://a///', '/.///'],
+            ['http://a/', '/.//..'],
+            ['http://a/', '/.//../'],
+            ['http://a/', '/.//../..'],
+            ['http://a/', '/.//../../'],
+        ];
+
+        $baseUrl = 'http://a/b/c/d;p?q';
+
+        foreach ($references as [$expected, $reference]) {
+            yield $baseUrl . ' + ' . $reference =>
+                [$expected, $baseUrl, $reference];
+        }
+    }
+
+    /**
+     * Implements [RFC3986] Section 5.2.4 ("Remove Dot Segments")
+     */
+    private static function removeDotSegments(string $path): string
+    {
+        $in = $path;
+        $out = '';
+        while ($in !== '') {
+            // 2A
+            $in = Pcre::replace('@^(?:\.\./|\./)@', '', (string) $in, -1, $count);
+            if ($count) {
+                continue;
+            }
+            // 2B
+            $in = Pcre::replace('@^/\.(?:/|$)@', '/', $in, -1, $count);
+            if ($count) {
+                continue;
+            }
+            // 2C
+            $in = Pcre::replace('@^/\.\.(?:/|$)@', '/', $in, -1, $count);
+            if ($count) {
+                $out = Pcre::replace('@(?:/|^)[^/]*$@', '', $out);
+                continue;
+            }
+            // 2D
+            if ($in === '.' || $in === '..') {
+                break;
+            }
+            // 2E
+            Pcre::match('@^/?[^/]*@', $in, $matches);
+            $out .= $matches[0];
+            $in = substr($in, strlen($matches[0]));
+        }
+        return $out;
     }
 }

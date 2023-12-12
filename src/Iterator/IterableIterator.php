@@ -3,7 +3,7 @@
 namespace Lkrms\Iterator;
 
 use Lkrms\Iterator\Concern\FluentIteratorTrait;
-use Lkrms\Iterator\Contract\FluentIteratorInterface;
+use Lkrms\Iterator\Contract\IterableIteratorInterface;
 use ArrayIterator;
 use IteratorIterator;
 use Traversable;
@@ -17,9 +17,9 @@ use Traversable;
  *
  * @extends IteratorIterator<TKey,TValue,Traversable<TKey,TValue>>
  *
- * @implements FluentIteratorInterface<TKey,TValue>
+ * @implements IterableIteratorInterface<TKey,TValue>
  */
-class IterableIterator extends IteratorIterator implements FluentIteratorInterface
+class IterableIterator extends IteratorIterator implements IterableIteratorInterface
 {
     /** @use FluentIteratorTrait<TKey,TValue> */
     use FluentIteratorTrait;
@@ -37,19 +37,16 @@ class IterableIterator extends IteratorIterator implements FluentIteratorInterfa
     }
 
     /**
-     * @template T0 of array-key
-     * @template T1
+     * @param iterable<TKey,TValue> $iterable
      *
-     * @param iterable<T0,T1> $iterable
-     *
-     * @return self<T0,T1>
+     * @return static
      */
     public static function from(iterable $iterable): self
     {
-        if ($iterable instanceof self) {
+        if ($iterable instanceof static) {
             return $iterable;
         }
 
-        return new self($iterable);
+        return new static($iterable);
     }
 }

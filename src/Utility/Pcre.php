@@ -27,7 +27,7 @@ final class Pcre extends Utility
     ): array {
         $result = preg_grep($pattern, $array, $flags);
         $error = preg_last_error();
-        if ($result === false || $error !== PREG_NO_ERROR) {
+        if ($result === false || $error !== \PREG_NO_ERROR) {
             throw new PcreErrorException($error, 'preg_grep', $pattern, $array);
         }
         return $result;

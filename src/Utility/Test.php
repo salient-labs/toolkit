@@ -101,6 +101,7 @@ final class Test extends Utility
 
     /**
      * @deprecated Use {@see File::is()} instead
+     * @codeCoverageIgnore
      */
     public static function areSameFile(string $path1, string $path2): bool
     {

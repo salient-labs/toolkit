@@ -82,7 +82,7 @@ class HttpHeaders implements IHttpHeaders
         if ($strict) {
             $line = substr($line, 0, -2);
             $regex = Regex::anchorAndDelimit(Regex::HTTP_HEADER_FIELD);
-            if (!Pcre::match($regex, $line, $matches, PREG_UNMATCHED_AS_NULL) ||
+            if (!Pcre::match($regex, $line, $matches, \PREG_UNMATCHED_AS_NULL) ||
                     $matches['bad_whitespace'] !== null) {
                 throw new InvalidArgumentException(sprintf('Invalid HTTP header field: %s', $line));
             }
