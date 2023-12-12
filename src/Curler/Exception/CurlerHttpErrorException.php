@@ -5,7 +5,7 @@ namespace Lkrms\Curler\Exception;
 use Lkrms\Curler\Curler;
 
 /**
- * Thrown when an HTTP status code of 400 or above is received
+ * Thrown when an HTTP response is received with a status code of 400 or above
  */
 class CurlerHttpErrorException extends CurlerException
 {

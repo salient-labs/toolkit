@@ -3,6 +3,6 @@
 namespace Lkrms\Container\Exception;
 
 /**
- * Thrown when a service container cannot be located
+ * Thrown when a service container cannot be found
  */
 class ContainerNotLocatedException extends ContainerException {}

@@ -3,6 +3,6 @@
 namespace Lkrms\Container\Exception;
 
 /**
- * Thrown when a binding cannot be registered with a service container
+ * Thrown when a service cannot be bound to a container
  */
 class InvalidContainerBindingException extends ContainerException {}
